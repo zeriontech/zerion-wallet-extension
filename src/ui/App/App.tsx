@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AreaProvider } from 'react-area';
+import { AreaProvider, RenderArea } from 'react-area';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
   HashRouter as Router,
@@ -81,7 +81,7 @@ import { BackupPage } from '../pages/Backup/Backup';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
-import { hideBalancesStore } from '../features/hide-balances/store';
+import { HideBalancesFeature } from '../features/hide-balances/HideBalancesFeature';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -447,12 +447,6 @@ function GlobalKeyboardShortcuts() {
       ) : null}
 
       <KeyboardShortcut
-        combination="shift+h"
-        onKeyDown={() => {
-          hideBalancesStore.nextMode();
-        }}
-      />
-      <KeyboardShortcut
         combination="ctrl+alt+0"
         onKeyDown={() => {
           // Helper for development and debugging :)
@@ -460,6 +454,7 @@ function GlobalKeyboardShortcuts() {
           openUrl(url, { windowType: 'tab' });
         }}
       />
+      <RenderArea name="global-keyboard-shortcuts" />
     </>
   );
 }
@@ -509,10 +504,12 @@ export function App({ initialView, inspect }: AppProps) {
           <DesignTheme bodyClassList={bodyClassList} />
           <Router>
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
+              <GlobalKeyboardShortcuts />
               <InactivityDetector />
               <SessionResetHandler />
               <ProgrammaticNavigationHelper />
               <ThemeDecoration />
+              <HideBalancesFeature />
               {inspect && !isProd ? (
                 <UIText
                   kind="small/regular"
@@ -524,7 +521,6 @@ export function App({ initialView, inspect }: AppProps) {
                   {inspect.message}
                 </UIText>
               ) : null}
-              <GlobalKeyboardShortcuts />
               <VersionUpgrade>
                 {!isOnboardingView && !isPageLayout ? (
                   // Render above <ViewSuspense /> so that it doesn't flicker

@@ -11,7 +11,6 @@ import {
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
-import EyeIcon from 'jsx:src/ui/assets/eye.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
@@ -70,7 +69,7 @@ import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigV
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { emitter } from 'src/ui/shared/events';
 import { HideBalance } from 'src/ui/components/HideBalance';
-import { hideBalancesStore } from 'src/ui/features/hide-balances/store';
+import { HideBalancesModeToggle } from 'src/ui/features/hide-balances/HideBalancesModeToggle';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -125,37 +124,6 @@ function PendingTransactionsIndicator() {
       </svg>
     );
   }
-}
-
-function HideBalancesModeControl() {
-  const { mode } = useStore(hideBalancesStore);
-  if (mode === hideBalancesStore.MODE.default) {
-    return null;
-  }
-  return (
-    <Button
-      kind="text-primary"
-      size={36}
-      title="Toggle Balances: Shift+H"
-      onClick={() => {
-        hideBalancesStore.nextMode();
-      }}
-      style={{
-        ['--button-text-hover' as string]: 'var(--neutral-800)',
-        padding: 4,
-      }}
-    >
-      <EyeIcon
-        style={{
-          display: 'block',
-          color:
-            mode === hideBalancesStore.MODE.blurred
-              ? 'var(--neutral-800)'
-              : 'var(--primary)',
-        }}
-      />
-    </Button>
-  );
 }
 
 /**
@@ -281,7 +249,7 @@ function CurrentAccountControls() {
         textToCopy={addressToCopy}
         tooltipContent="Address Copied"
       />
-      <HideBalancesModeControl />
+      <HideBalancesModeToggle />
 
       <RenderArea name="wallet-name-end" />
     </HStack>

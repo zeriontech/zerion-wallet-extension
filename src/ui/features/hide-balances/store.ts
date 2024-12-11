@@ -42,6 +42,23 @@ class HideBalancesStore extends PersistentStore<State> {
     });
   }
 
+  nextTemporary() {
+    this.setState((state) => {
+      const nextMap = {
+        [HideBalanceMode.default]: HideBalanceMode.poorMode1,
+        [HideBalanceMode.poorMode1]: HideBalanceMode.poorMode2,
+        [HideBalanceMode.poorMode2]: HideBalanceMode.poorMode3,
+        [HideBalanceMode.poorMode3]: HideBalanceMode.default,
+        [HideBalanceMode.blurred]: HideBalanceMode.default,
+      };
+      const mode = nextMap[state.mode];
+      return {
+        mode,
+        poorModeKind: isPoorMode(mode) ? mode : state.poorModeKind,
+      };
+    });
+  }
+
   setMode(mode: HideBalanceMode) {
     this.setState((state) => ({
       mode,
