@@ -19,14 +19,14 @@ interface EthersV5Transaction {
 
   to?: string;
   from?: string;
-  nonce: number;
+  nonce: EthersV5BigNumber | number;
 
   gasLimit: EthersV5BigNumber | string; // TODO: | string?
   gasPrice?: EthersV5BigNumber | string;
 
   data: string;
   value: EthersV5BigNumber | string;
-  chainId: number;
+  chainId: EthersV5BigNumber | number;
 
   r?: string;
   s?: string;
@@ -78,7 +78,7 @@ export function v5ToPlainTransactionResponse(
   return {
     blockHash: value.blockHash ?? null,
     blockNumber: value.blockNumber ?? null,
-    chainId: valueToHex(BigInt(value.chainId)),
+    chainId: valueToHex(fromEthersBigNumber(value.chainId) ?? 'never'),
     data: value.data,
     from: value.from,
     gasLimit: (fromEthersBigNumber(value.gasLimit) ?? 0n).toString(),
@@ -89,7 +89,7 @@ export function v5ToPlainTransactionResponse(
     maxFeePerGas: fromEthersBigNumber(value.maxFeePerGas)?.toString() ?? null,
     maxPriorityFeePerGas:
       fromEthersBigNumber(value.maxPriorityFeePerGas)?.toString() ?? null,
-    nonce: value.nonce,
+    nonce: Number(fromEthersBigNumber(value.nonce) ?? 0),
     to: value.to ?? null,
     type: value.type ?? 0,
     value: (fromEthersBigNumber(value.value) ?? 0n).toString(),
@@ -147,6 +147,11 @@ export function toEthersV5TransactionResponse(
     type: value.type,
   };
 }
+Object.assign(globalThis, {
+  toEthersV5TransactionResponse,
+  v5ToPlainTransactionResponse,
+  toPlainTransactionResponse,
+});
 
 export interface EthersV5TransactionReceiptStripped {
   to: string;

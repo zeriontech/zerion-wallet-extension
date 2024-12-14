@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Provider as ZksProvider } from 'zksync-ethers';
+import { EIP712Signer, Provider as ZksProvider } from 'zksync-ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
@@ -1185,6 +1185,11 @@ export class Wallet {
         invariant(chainId, 'ChainId missing from TransactionRequest');
         const typedData = createTypedData(transaction);
         console.log('will sign typedData:', { typedData });
+        const eip712Signer = new EIP712Signer(
+          this.getOfflineSigner(),
+          Number(chainId)
+        );
+        const signatureFromSigner = eip712Signer.sign(transaction);
         const signature = await this.signTypedData_v4({
           context,
           params: { typedData, ...transactionContextParams },
@@ -1192,6 +1197,7 @@ export class Wallet {
         console.log('will serialize transaction + signature', {
           transaction,
           signature,
+          signatureFromSigner,
         });
         const rawTransaction = serializePaymasterTx({
           transaction,
@@ -1199,6 +1205,7 @@ export class Wallet {
         });
 
         console.log({ rawTransaction, transactionContextParams });
+        throw new Error('testing');
         return await this.sendSignedTransaction({
           context,
           params: { serialized: rawTransaction, ...transactionContextParams },

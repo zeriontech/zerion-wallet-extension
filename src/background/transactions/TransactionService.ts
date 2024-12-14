@@ -228,6 +228,7 @@ export class TransactionService {
           initiator,
           timestamp: Date.now(),
         };
+        console.log('transactionSent', { transaction, newItem });
         if (
           addressAction &&
           isLocalAddressAction(addressAction) &&

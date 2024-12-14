@@ -154,6 +154,7 @@ export class TransactionsPoller {
     // Any txs with same "chainId" and "from" and <= "nonce" are considered DROPPED
     for (const tx of this.hashes.values()) {
       if (tx.from === from && tx.chainId === chainId && tx.nonce <= nonce) {
+        console.log('dropped', { receipt });
         this.emitter.emit('dropped', tx.hash);
         this.hashes.delete(tx.hash);
       }
@@ -170,6 +171,7 @@ export class TransactionsPoller {
         tx.chainId === value.chainId &&
         tx.nonce < latestNonce // for equal nonces we don't know if this tx has been mined or dropped
       ) {
+        console.log('dropped', { count, value, tx });
         this.emitter.emit('dropped', tx.hash);
         this.hashes.delete(tx.hash);
       }
