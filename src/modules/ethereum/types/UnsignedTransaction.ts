@@ -1,5 +1,3 @@
-import type { UnsignedTransaction as UnsignedTransactionWithoutFrom } from 'ethers';
+import type { PreparedTransactionRequest } from 'ethers';
 
-export interface UnsignedTransaction extends UnsignedTransactionWithoutFrom {
-  from?: string;
-}
+export type UnsignedTransaction = PreparedTransactionRequest;

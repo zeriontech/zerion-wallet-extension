@@ -106,7 +106,7 @@ function FungibleAsset({
   );
 }
 
-function NFTAsset({ nft }: { nft: NFTAsset }) {
+function NFTAssetComponent({ nft }: { nft: NFTAsset }) {
   const iconUrl = nft.icon_url || nft.collection?.icon_url;
 
   return (
@@ -175,7 +175,7 @@ export function SingleAsset({
     );
   }
   if (nftAsset) {
-    return <NFTAsset nft={nftAsset} />;
+    return <NFTAssetComponent nft={nftAsset} />;
   }
 
   return null;

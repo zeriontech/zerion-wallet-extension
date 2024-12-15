@@ -1,10 +1,11 @@
 import { ethers } from 'ethers';
+import { isValidMnemonic as isValidMnemonicV5 } from '@ethersproject/hdnode';
 
 export function isValidMnemonic(phrase: string) {
-  return ethers.utils.isValidMnemonic(phrase);
+  return isValidMnemonicV5(phrase);
 }
 
 export function isValidPrivateKey(key: string) {
   const prefixedKey = key.startsWith('0x') ? key : `0x${key}`;
-  return ethers.utils.isHexString(prefixedKey, 32);
+  return ethers.isHexString(prefixedKey, 32);
 }

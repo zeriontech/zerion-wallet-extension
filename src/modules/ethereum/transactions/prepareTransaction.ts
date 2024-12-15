@@ -1,10 +1,14 @@
 import { valueToHex } from 'src/shared/units/valueToHex';
 import type { types as zkSyncTypes } from 'zksync-ethers';
-import type { TransactionRequest } from '@ethersproject/abstract-provider';
-import type { IncomingTransactionAA } from '../types/IncomingTransaction';
+import type { TransactionRequest } from 'ethers/lib.esm/providers';
+import type {
+  IncomingTransactionAA,
+  PlainAddressFields,
+} from '../types/IncomingTransaction';
 
 const knownFields: Array<
-  | (keyof TransactionRequest & zkSyncTypes.TransactionRequest)
+  | (keyof TransactionRequest &
+      PlainAddressFields<zkSyncTypes.TransactionRequest>)
   | 'gasPerPubdataByteLimit'
 > = [
   'from',
@@ -24,7 +28,7 @@ const knownFields: Array<
 ];
 
 export function prepareTransaction(incomingTransaction: IncomingTransactionAA) {
-  const transaction: zkSyncTypes.TransactionRequest = {};
+  const transaction: PlainAddressFields<zkSyncTypes.TransactionRequest> = {};
   for (const field of knownFields) {
     const knownField = field as keyof TransactionRequest;
     if (incomingTransaction[knownField] !== undefined) {

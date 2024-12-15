@@ -1,13 +1,20 @@
-import type { BigNumberish } from 'ethers';
-import type { TransactionRequest } from '@ethersproject/abstract-provider';
+import type { BigNumberish, TransactionRequest } from 'ethers';
 import type { types } from 'zksync-ethers';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 
+type AddressStr = string;
+export type PlainAddressFields<T> = Omit<T, 'from' | 'to'> & {
+  /** remove promise-like values from TransactionRequest */
+  to?: null | AddressStr;
+  /** remove promise-like values from TransactionRequest */
+  from?: null | AddressStr;
+};
+
 export type IncomingTransaction = Omit<
-  TransactionRequest,
-  'chainId' | 'type'
+  PlainAddressFields<TransactionRequest>,
+  'type'
 > & {
-  chainId?: number | string;
+  // chainId?: number | string;
   gas?: string;
   type?: string | number | null;
 };

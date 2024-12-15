@@ -1,4 +1,4 @@
-import type { BigNumberish } from '@ethersproject/bignumber';
+import type { BigNumberish } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexValue, isHexString } from '@ethersproject/bytes';
 
