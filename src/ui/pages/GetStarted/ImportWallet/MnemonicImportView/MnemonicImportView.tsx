@@ -8,11 +8,11 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
+import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
-import { useStaleTime } from './useStaleTime';
 
 function useMnenomicPhraseForLocation({
   locationStateStore,
