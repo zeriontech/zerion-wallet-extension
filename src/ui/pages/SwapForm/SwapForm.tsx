@@ -814,6 +814,7 @@ export function SwapFormComponent() {
                     chain={chain}
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
+                    paymasterWaiting={false}
                     onFeeValueCommonReady={handleFeeValueCommonReady}
                     configuration={configuration}
                     onConfigurationChange={(value) =>

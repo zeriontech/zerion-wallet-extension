@@ -91,6 +91,7 @@ import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { valueToHex } from 'src/shared/units/valueToHex';
+import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -330,6 +331,7 @@ function TransactionDefaultView({
   onConfigurationChange,
   paymasterEligible,
   paymasterPossible,
+  paymasterWaiting,
   onOpenAdvancedView,
   onFeeValueCommonReady,
 }: {
@@ -350,6 +352,7 @@ function TransactionDefaultView({
   onConfigurationChange: (value: CustomConfiguration) => void;
   paymasterEligible: boolean;
   paymasterPossible: boolean;
+  paymasterWaiting: boolean;
   onOpenAdvancedView: () => void;
   onFeeValueCommonReady: (value: string) => void;
 }) {
@@ -481,6 +484,7 @@ function TransactionDefaultView({
                     onConfigurationChange={onConfigurationChange}
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
+                    paymasterWaiting={paymasterWaiting}
                     gasback={
                       interpretation?.action?.transaction.gasback != null
                         ? { value: interpretation.action.transaction.gasback }
@@ -527,7 +531,7 @@ function SendTransactionContent({
   const { singleAddress } = useAddressParams();
   const { preferences } = usePreferences();
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
-  const { data: chainGasPrices } = useGasPrices(chain);
+  const { data: chainGasPrices, ...gasPricesQuery } = useGasPrices(chain);
 
   const transactionAction = describeTransaction(populatedTransaction, {
     networks,
@@ -570,7 +574,9 @@ function SendTransactionContent({
     USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
 
   const eligibilityQuery = useQuery({
-    enabled: paymasterPossible,
+    // transaction gas type may change when gasPrices responds, so we should wait
+    // to avoid inconsistency between paymasterCheckEligibility and getPaymasterParams calls
+    enabled: paymasterPossible && gasPricesQuery.isFetched,
     suspense: false,
     staleTime: 120000,
     queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
@@ -580,6 +586,10 @@ function SendTransactionContent({
       });
       assertProp(tx, 'nonce');
       assertProp(tx, 'to');
+      /** assume only EIP-1559 tx to be eligible */
+      assertProp(tx, 'maxFeePerGas');
+      assertProp(tx, 'maxPriorityFeePerGas');
+
       const gas = getGas(tx);
       invariant(gas, 'gasLimit missing');
       return adjustedCheckEligibility(
@@ -590,6 +600,10 @@ function SendTransactionContent({
   });
 
   const paymasterEligible = Boolean(eligibilityQuery.data?.data?.eligible);
+  const { isStale } = useStaleTime(eligibilityQuery.isLoading, 2000);
+  /** avoid a flash between network fee and "free" label, but not wait too long */
+  const paymasterWaiting =
+    paymasterPossible && eligibilityQuery.isLoading && !isStale;
 
   const client = useDefiSdkClient();
 
@@ -780,6 +794,7 @@ function SendTransactionContent({
             onConfigurationChange={setConfiguration}
             paymasterEligible={paymasterEligible}
             paymasterPossible={paymasterPossible}
+            paymasterWaiting={paymasterWaiting}
             onOpenAdvancedView={openAdvancedView}
             onFeeValueCommonReady={handleFeeValueCommonReady}
           />
