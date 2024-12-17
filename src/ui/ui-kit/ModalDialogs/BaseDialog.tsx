@@ -8,6 +8,7 @@ export interface BaseDialogProps
   closeOnClickOutside?: boolean;
   render?: (open: boolean) => React.ReactNode;
   renderWhenOpen?: () => React.ReactNode;
+  /** Called AFTER the dialog had been actually closed. Can't be used for closing */
   onClosed?: () => void;
 }
 
@@ -77,6 +78,15 @@ export const BaseDialog = React.forwardRef(
     }, []);
 
     useEffect(() => {
+      const dialogEl = dialogRef.current;
+      if (dialogEl) {
+        const onClosed = () => onClosedRef.current?.();
+        dialogEl.addEventListener('close', onClosed);
+        return () => dialogEl.removeEventListener('close', onClosed);
+      }
+    }, []);
+
+    useEffect(() => {
       if (!closeOnClickOutside) {
         return;
       }
@@ -86,7 +96,6 @@ export const BaseDialog = React.forwardRef(
             dialogRef.current.returnValue = '';
             dialogRef.current.close();
           }
-          onClosedRef.current?.();
         }
       };
       document.body.addEventListener('click', handler);
