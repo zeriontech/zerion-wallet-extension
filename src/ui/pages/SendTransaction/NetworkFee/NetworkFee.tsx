@@ -122,6 +122,8 @@ export function NetworkFee({
           value={networkFeeConfiguration}
           onSubmit={(value) => {
             onChange(value);
+          }}
+          onDismiss={() => {
             dialogRef.current?.close();
           }}
           chain={chain}

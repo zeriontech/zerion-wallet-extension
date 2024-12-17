@@ -3,7 +3,6 @@ import type { IncomingTransaction } from '../../types/IncomingTransaction';
 import { resolveChainId } from '../resolveChainId';
 import type { ChainId } from '../ChainId';
 import { estimateFee } from './eip1559/estimateFee';
-import { getEip1559Base } from './eip1559/getEip1559Base';
 import type { GasPriceObject } from './GasPriceObject';
 import { hexifyTxValues } from './hexifyTxValues';
 import { createOptimisticFee } from './optimistic/fee';
@@ -40,6 +39,7 @@ export async function estimateNetworkFee({
       ? await createOptimisticFee({
           gasPriceInfo: gasPrices?.fast,
           gasPriceObject: gasPrice,
+          gasLimit: gas,
           transaction: hexifyTxValues(transaction),
           getNonce: async () => (chainId ? getNonce(address, chainId) : 0),
         })
@@ -65,7 +65,8 @@ export async function estimateNetworkFee({
   if (eip1559 && gasPrices?.fast.eip1559) {
     const estimatedFee = estimateFee({
       gas,
-      eip1559Base: getEip1559Base(eip1559, gasPrices.fast.eip1559),
+      eip1559,
+      baseFee: gasPrices.fast.eip1559.baseFee,
     });
     const maxFee = Number(gas) * eip1559.maxFee;
     return { estimatedFee, maxFee, type: 'eip1559' };
