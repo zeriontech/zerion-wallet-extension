@@ -78,15 +78,11 @@ export const BaseDialog = React.forwardRef(
     }, []);
 
     useEffect(() => {
-      function afterClose() {
-        onClosedRef.current?.();
-      }
       const dialogEl = dialogRef.current;
       if (dialogEl) {
-        dialogEl.addEventListener('close', afterClose);
-        return () => {
-          dialogEl.removeEventListener('close', afterClose);
-        };
+        const onClosed = () => onClosedRef.current?.();
+        dialogEl.addEventListener('close', onClosed);
+        return () => dialogEl.removeEventListener('close', onClosed);
       }
     }, []);
 
