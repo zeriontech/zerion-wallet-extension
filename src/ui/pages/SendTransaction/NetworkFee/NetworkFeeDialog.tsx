@@ -50,6 +50,7 @@ import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { apostrophe } from 'src/ui/shared/typography';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { estimateFee } from 'src/modules/ethereum/transactions/gasPrices/eip1559/estimateFee';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeIcon } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -112,15 +113,22 @@ function setFormValue(form: HTMLFormElement, name: string, value: unknown) {
   }
 }
 
-function setPatternValidity(event: React.ChangeEvent<HTMLInputElement>) {
-  if (event.currentTarget.validity.patternMismatch) {
-    event.currentTarget.setCustomValidity(
-      'Gas Price value must be a positive number'
-    );
-  } else {
-    event.currentTarget.setCustomValidity('');
-  }
-}
+const setPatternValidity =
+  (message: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.currentTarget.validity.patternMismatch) {
+      event.currentTarget.setCustomValidity(message);
+    } else {
+      event.currentTarget.setCustomValidity('');
+    }
+  };
+
+const setGasPriceValidationMessage = setPatternValidity(
+  'Gas Price value must be a positive number'
+);
+
+const setGasLimitValidationMessage = setPatternValidity(
+  'Gas Limit value must be a natural number'
+);
 
 function CustomNetworkFeeForm({
   chain,
@@ -169,37 +177,48 @@ function CustomNetworkFeeForm({
   const transactionGasLimit = new BigNumber(
     Number(getGas(transaction))
   ).toFixed();
-  const defaultGas = value.gasLimit || transactionGasLimit;
+  const defaultGasLimit = value.gasLimit || transactionGasLimit;
 
   const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
   const priorityFee =
     configuration.custom1559GasPrice?.priorityFee ?? defaultPriorityFee;
   const maxFee = configuration.custom1559GasPrice?.maxFee ?? defaultMaxFee;
 
+  const gasLimit = configuration.gasLimit ?? defaultGasLimit;
+  const showLowGasLimitWarning =
+    gasEstimation != null && Number(gasLimit) * 1.1 < gasEstimation;
+
   const { expectedFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
-    const gas = getGas(transaction);
-    if (!nativeAsset?.price || !gas) {
+    if (!nativeAsset?.price || !gasLimit) {
       return {};
     }
     const { price } = nativeAsset;
     const decimals = getDecimals({ asset: nativeAsset, chain });
 
-    function getFiatValue(fee: number | string) {
-      return baseToCommon(fee, decimals).times(price.value).times(Number(gas));
+    function getFiatValue(fee: number | string | BigNumber) {
+      return baseToCommon(fee, decimals).times(price.value);
     }
 
     return {
       expectedFeeFiat: getFiatValue(
-        Math.min((priorityFee || 0) + (eip1559?.baseFee || 0), maxFee)
+        estimateFee({
+          gas: gasLimit,
+          baseFee: eip1559?.baseFee || 0,
+          eip1559: { maxFee, priorityFee },
+        })
       ),
-      maxFeeFiat: getFiatValue(maxFee),
-      baseFeeFiat: getFiatValue(baseFee),
+      maxFeeFiat: getFiatValue(new BigNumber(maxFee).times(gasLimit)),
+      baseFeeFiat: getFiatValue(new BigNumber(baseFee).times(gasLimit)),
     };
-  }, [nativeAsset, priorityFee, maxFee, baseFee, eip1559, transaction, chain]);
-
-  const [gasLimit, setGasLimit] = useState(defaultGas);
-  const showLowGasLimitWarning =
-    gasEstimation && Number(gasLimit) * 1.1 < gasEstimation;
+  }, [
+    nativeAsset,
+    gasLimit,
+    chain,
+    priorityFee,
+    maxFee,
+    eip1559?.baseFee,
+    baseFee,
+  ]);
 
   return (
     <form
@@ -250,7 +269,7 @@ function CustomNetworkFeeForm({
               placeholder="0"
               style={{ border: '1px solid var(--neutral-400)' }}
               defaultValue={defaultPriorityFeeGWEI}
-              onChange={setPatternValidity}
+              onChange={setGasPriceValidationMessage}
               pattern={FLOAT_INPUT_PATTERN}
               required={true}
             />
@@ -261,7 +280,7 @@ function CustomNetworkFeeForm({
               placeholder="0"
               style={{ border: '1px solid var(--neutral-400)' }}
               defaultValue={defaultMaxFeeGWEI}
-              onChange={setPatternValidity}
+              onChange={setGasPriceValidationMessage}
               pattern={FLOAT_INPUT_PATTERN}
               required={true}
             />
@@ -291,7 +310,7 @@ function CustomNetworkFeeForm({
               }}
               defaultValue={gasLimit}
               pattern={INT_INPUT_PATTERN}
-              onChange={(e) => setGasLimit(e.target.value)}
+              onChange={setGasLimitValidationMessage}
               required={true}
             />
             {isGasEstimationError ? (
@@ -316,12 +335,12 @@ function CustomNetworkFeeForm({
                 <UnstyledButton
                   type="button"
                   style={{ color: 'var(--primary)' }}
-                  onClick={() => {
-                    if (formRef.current) {
-                      setFormValue(
-                        formRef.current,
-                        'gasLimit',
-                        String(gasEstimation)
+                  onClick={(event) => {
+                    const { form } = event.currentTarget;
+                    if (form) {
+                      setFormValue(form, 'gasLimit', String(gasEstimation));
+                      setConfiguration(
+                        formDataToGasConfiguration(new FormData(form))
                       );
                     }
                   }}
@@ -373,7 +392,7 @@ function CustomNetworkFeeForm({
             placeholder="0"
             style={{ border: '1px solid var(--neutral-400)' }}
             defaultValue={defaultBaseFeeGWEI}
-            onChange={setPatternValidity}
+            onChange={setGasPriceValidationMessage}
             pattern={FLOAT_INPUT_PATTERN}
             required={true}
           />
@@ -528,6 +547,7 @@ export const NetworkFeeDialog = React.forwardRef<
   HTMLDialogElementInterface,
   {
     onSubmit(value: NetworkFeeConfiguration): void;
+    onDismiss(): void;
     chain: Chain;
     value: NetworkFeeConfiguration;
     transaction: IncomingTransactionWithFrom;
@@ -538,6 +558,7 @@ export const NetworkFeeDialog = React.forwardRef<
   (
     {
       onSubmit,
+      onDismiss,
       value,
       chain,
       transaction,
@@ -559,6 +580,7 @@ export const NetworkFeeDialog = React.forwardRef<
         containerStyle={{
           ['--surface-background-color' as string]: 'transparent',
         }}
+        onClosed={() => setView('default')}
       >
         {view === 'default' ? (
           <>
@@ -587,6 +609,7 @@ export const NetworkFeeDialog = React.forwardRef<
                             setView('custom');
                           } else {
                             onSubmit({ ...value, speed: option });
+                            onDismiss();
                           }
                         }}
                         chain={chain}

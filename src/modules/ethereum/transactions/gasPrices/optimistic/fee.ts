@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import RLP from 'rlp';
 import type { ChainGasPrice } from '../types';
-import { getGas } from '../../getGas';
 import type { GasPriceObject } from '../GasPriceObject';
 
 interface Transaction {
@@ -42,11 +41,13 @@ interface OptimisticFee {
 export async function createOptimisticFee({
   gasPriceInfo,
   transaction,
+  gasLimit,
   getNonce,
   gasPriceObject,
 }: {
   gasPriceInfo: ChainGasPrice['fast'];
   transaction: Transaction;
+  gasLimit: string | number;
   gasPriceObject: GasPriceObject | null;
   getNonce: () => Promise<number>;
 }): Promise<OptimisticFee | null> {
@@ -55,9 +56,8 @@ export async function createOptimisticFee({
     return null;
   }
   const { fixedOverhead, dynamicOverhead } = optimistic;
-  const gas = getGas(transaction) as string;
   const { to = '0x', value = '0x0', data = '0x' } = transaction;
-  if (gas == null) {
+  if (gasLimit == null) {
     return null;
   }
 
@@ -73,13 +73,13 @@ export async function createOptimisticFee({
         nonce,
         eip1559GasPrice.priorityFee,
         eip1559GasPrice.maxFee,
-        gas,
+        gasLimit,
         to,
         value,
         data,
       ])
     : classicGasPrice != null
-    ? rlpEncode([nonce, classicGasPrice, gas, to, value, data])
+    ? rlpEncode([nonce, classicGasPrice, gasLimit, to, value, data])
     : null;
   if (encoded_tx_data == null) {
     return null;
@@ -96,7 +96,7 @@ export async function createOptimisticFee({
       (eip1559GasPrice
         ? Number(eip1559GasPrice.maxFee)
         : Number(classicGasPrice)) *
-        Number(gas) +
+        Number(gasLimit) +
       Math.round(l1GasEstimation * 1.25), // Optimism guarantees that there should not be one-time jumps of l1 component of gas estimation more than 25%
     estimatedFee:
       (eip1559GasPrice
@@ -105,7 +105,7 @@ export async function createOptimisticFee({
             Number(baseFee) + Number(eip1559GasPrice.priorityFee)
           )
         : Number(classicGasPrice)) *
-        Number(gas) +
+        Number(gasLimit) +
       Math.round(l1GasEstimation),
   };
 }
