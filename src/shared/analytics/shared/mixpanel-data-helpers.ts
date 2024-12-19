@@ -1,3 +1,4 @@
+import type { PortfolioDecomposition } from 'defi-sdk';
 import type { Account } from 'src/background/account/Account';
 import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
@@ -34,8 +35,7 @@ async function getPortfolioStats(addresses: string[]) {
     getFundedWalletsCount(addresses),
   ]).then(([result1, result2]) => {
     return {
-      totalValue:
-        result1.status === 'fulfilled' ? result1.value.total_value : null,
+      portfolio: result1.status === 'fulfilled' ? result1.value : null,
       fundedCount: result2.status === 'fulfilled' ? result2.value : null,
     };
   });
@@ -92,6 +92,17 @@ async function fetchWalletsMeta({ addresses }: { addresses: string[] }) {
   });
 }
 
+export function getChainBreakdown(portfolio: PortfolioDecomposition | null) {
+  const chainBreakdown: Record<string, number> = {};
+  if (portfolio) {
+    for (const internalId in portfolio.positions_chains_distribution) {
+      const key = `${internalId}_balance`;
+      chainBreakdown[key] = portfolio.positions_chains_distribution[internalId];
+    }
+  }
+  return chainBreakdown;
+}
+
 export async function getBaseMixpanelParams(account: Account) {
   const apiLayer = account.getCurrentWallet();
   const groups = await apiLayer.uiGetWalletGroups({
@@ -137,14 +148,13 @@ export async function getBaseMixpanelParams(account: Account) {
     getProviderForMixpanel(getProviderNameFromGroup(group))
   );
 
-  const portfolioStats =
-    ownedAddresses?.length && ownedWalletsMeta
-      ? await getPortfolioStats(ownedAddresses)
-      : null;
-  const zerionStats =
-    ownedAddresses?.length && ownedWalletsMeta
-      ? await getZerionStats({ ownedWalletsMeta })
-      : null;
+  const portfolioStats = ownedAddresses?.length
+    ? await getPortfolioStats(ownedAddresses)
+    : null;
+  const zerionStats = ownedWalletsMeta
+    ? await getZerionStats({ ownedWalletsMeta })
+    : null;
+
   return {
     num_favourite_tokens: 0,
     num_wallets: addressesCount,
@@ -157,7 +167,8 @@ export async function getBaseMixpanelParams(account: Account) {
     num_zerion_wallets: ownedAddressesCount,
     num_connected_wallets: 0,
     num_wallet_groups: groups?.length ?? 0,
-    total_balance: portfolioStats?.totalValue ?? 0,
+    total_balance: portfolioStats?.portfolio?.total_value ?? 0,
+    ...getChainBreakdown(portfolioStats?.portfolio ?? null),
     currency: 'usd',
     language: 'en',
     zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
@@ -168,4 +179,18 @@ export async function getBaseMixpanelParams(account: Account) {
     num_zerion_wallets_eligible_for_xp_drop: eligibleOwnedAddresses.length,
     num_readonly_wallets_eligible_for_xp_drop: eligibleReadonlyAddresses.length,
   };
+}
+
+export async function getOwnedWalletsPortolio(account: Account) {
+  const apiLayer = account.getCurrentWallet();
+  const groups = await apiLayer.uiGetWalletGroups({
+    context: INTERNAL_SYMBOL_CONTEXT,
+  });
+  const ownedGroups = groups?.filter(
+    (group) => !isReadonlyContainer(group.walletContainer)
+  );
+  const ownedAddresses = ownedGroups?.flatMap((group) =>
+    group.walletContainer.wallets.map((wallet) => wallet.address)
+  );
+  return ownedAddresses?.length ? getAddressesPortfolio(ownedAddresses) : null;
 }

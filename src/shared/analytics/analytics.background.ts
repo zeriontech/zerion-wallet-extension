@@ -27,6 +27,10 @@ import {
 } from './shared/getProviderNameFromGroup';
 import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
 import { mixpanelTrack, mixpanelIdentify, mixpanelReset } from './mixpanel';
+import {
+  getChainBreakdown,
+  getOwnedWalletsPortolio,
+} from './shared/mixpanel-data-helpers';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -79,7 +83,7 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(account, 'DApp: DApp Connection', mixpanelParams);
   });
 
-  emitter.on('screenView', (data) => {
+  emitter.on('screenView', async (data) => {
     const params = createParams({
       request_name: 'screen_view',
       wallet_address: data.address,
@@ -88,7 +92,12 @@ function trackAppEvents({ account }: { account: Account }) {
       screen_size: data.screenSize,
     });
     sendToMetabase('screen_view', params);
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    const portfolio = await getOwnedWalletsPortolio(account);
+    const mixpanelParams: Record<string, unknown> = {
+      ...omit(params, ['request_name', 'wallet_address']),
+      total_balance: portfolio?.total_value ?? 0,
+      ...getChainBreakdown(portfolio),
+    };
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
   });
 
