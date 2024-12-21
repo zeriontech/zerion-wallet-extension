@@ -1,19 +1,10 @@
 import { ethers } from 'ethers';
 import RLP from 'rlp';
+import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { ChainGasPrice } from '../types';
 import { getGas } from '../../getGas';
 import type { GasPriceObject } from '../GasPriceObject';
-
-interface Transaction {
-  data?: string;
-  to?: string;
-  gas?: string;
-  gasLimit?: string;
-  gasPrice?: string;
-  maxPriorityFeePerGas?: string;
-  maxFeePerGas?: string;
-  value?: string | number;
-}
 
 function bufferToHex(buffer: Uint8Array) {
   return Array.from(buffer)
@@ -22,7 +13,7 @@ function bufferToHex(buffer: Uint8Array) {
 }
 
 function bytesLength(str: string) {
-  return ethers.utils.arrayify(str).length;
+  return ethers.getBytes(str).length;
 }
 
 function countZeroBytes(str: string) {
@@ -46,7 +37,7 @@ export async function createOptimisticFee({
   gasPriceObject,
 }: {
   gasPriceInfo: ChainGasPrice['fast'];
-  transaction: Transaction;
+  transaction: IncomingTransaction;
   gasPriceObject: GasPriceObject | null;
   getNonce: () => Promise<number>;
 }): Promise<OptimisticFee | null> {
@@ -74,12 +65,19 @@ export async function createOptimisticFee({
         eip1559GasPrice.priorityFee,
         eip1559GasPrice.maxFee,
         gas,
-        to,
-        value,
-        data,
+        to ?? '0x',
+        valueToHex(value ?? '0x0'),
+        data ?? '0x',
       ])
     : classicGasPrice != null
-    ? rlpEncode([nonce, classicGasPrice, gas, to, value, data])
+    ? rlpEncode([
+        nonce,
+        classicGasPrice,
+        gas,
+        to ?? '0x',
+        valueToHex(value ?? '0x0'),
+        data ?? '0x',
+      ])
     : null;
   if (encoded_tx_data == null) {
     return null;

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { HDNode } from '@ethersproject/hdnode';
 import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import { getAccountPath } from 'src/shared/wallet/derivation-paths';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
@@ -14,7 +14,7 @@ export interface Params {
 
 export type Result = MaskedBareWallet[];
 
-function fromHDNode(hdNode: ethers.utils.HDNode): MaskedBareWallet {
+function fromHDNode(hdNode: HDNode): MaskedBareWallet {
   if (!hdNode.mnemonic) {
     throw new Error('Expected an HDNode with a mnemonic');
   }
@@ -34,7 +34,7 @@ function getFirstNMnemonicWallets({ phrase, n }: Params) {
   // NOTE:
   // ethers.utils.HDNode is _much_ faster at generating wallets
   // than ethers.Wallet
-  const hd = ethers.utils.HDNode.fromMnemonic(decodeMasked(phrase));
+  const hd = HDNode.fromMnemonic(decodeMasked(phrase));
   for (let i = 0; i < n; i++) {
     const path = getAccountPath(i);
     const wallet = hd.derivePath(path);

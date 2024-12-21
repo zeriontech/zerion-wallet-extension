@@ -3,5 +3,5 @@ import { ethers } from 'ethers';
 
 // 2 ** 256 - 1
 export const UNLIMITED_APPROVAL_AMOUNT = new BigNumber(
-  ethers.constants.MaxUint256.toString()
+  ethers.MaxUint256.toString()
 );

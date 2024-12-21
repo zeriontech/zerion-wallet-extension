@@ -11,7 +11,7 @@ import { GAS_PER_PUBDATA_BYTE_DEFAULT } from './constants';
 type NetworksSource = 'mainnet' | 'testnet';
 
 function adjustGas(value: ethers.BigNumberish): string {
-  return ethers.BigNumber.from(value).add(50000).toHexString();
+  return ethers.toQuantity(BigInt(value) + 50000n);
 }
 
 export function adjustedCheckEligibility(

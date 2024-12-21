@@ -13,7 +13,7 @@ import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
 
-type TransactionResponse = ethers.providers.TransactionResponse;
+type TransactionResponse = ethers.TransactionResponse;
 
 export interface ScreenViewParams {
   pathname: string;

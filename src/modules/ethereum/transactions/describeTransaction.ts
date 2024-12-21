@@ -50,12 +50,12 @@ function getMaybeAmount(transaction: IncomingTransaction) {
     : undefined;
 }
 
-function sliceSelector(data: ethers.utils.BytesLike) {
-  return ethers.utils.hexDataSlice(data, 0, 4);
+function sliceSelector(data: string) {
+  return ethers.dataSlice(data, 0, 4);
 }
 
-function sliceArguments(data: ethers.utils.BytesLike) {
-  return ethers.utils.hexDataSlice(data, 4);
+function sliceArguments(data: string) {
+  return ethers.dataSlice(data, 4);
 }
 
 function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
@@ -74,8 +74,8 @@ function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
 }
 
 function encodeSelector(signature: string) {
-  return ethers.utils.hexDataSlice(
-    ethers.utils.keccak256(ethers.utils.toUtf8Bytes(signature)),
+  return ethers.dataSlice(
+    ethers.keccak256(ethers.toUtf8Bytes(signature)),
     0,
     4
   );
@@ -93,7 +93,7 @@ const selectors = {
   send: encodeSelector('send(address,uint256,bytes)'),
 };
 
-const abiCoder = ethers.utils.defaultAbiCoder;
+const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
 function createExecuteAction(
   transaction: IncomingTransaction,
