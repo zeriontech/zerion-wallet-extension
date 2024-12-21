@@ -60,7 +60,6 @@ async function getPaymasterParams(
     apiClient: ZerionApiClient;
   }
 ) {
-  console.log({ incomingTransaction });
   const transaction = normalizeTransactionProps(incomingTransaction);
   type Request = Parameters<ZerionApiClient['getPaymasterParams']>[0];
   const params: Request = {
