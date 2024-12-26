@@ -9,7 +9,7 @@ import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
 } from 'src/modules/ethereum/types/IncomingTransaction';
-import type { TransactionResponsePlain } from 'src/modules/ethereum/types/TransactionResponsePlain';
+import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -700,7 +700,7 @@ function SendTransactionContent({
   }, []);
 
   const next = params.get('next');
-  async function handleSentTransaction(tx: TransactionResponsePlain) {
+  async function handleSentTransaction(tx: SerializableTransactionResponse) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
       await wait(500);

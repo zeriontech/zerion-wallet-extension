@@ -1,7 +1,7 @@
 type HexString = string;
 
 /** Serializable subset of public props of {ethers.TransactionResponse} */
-export interface TransactionResponsePlain {
+export interface SerializableTransactionResponse {
   /**
    *  The block number of the block that this transaction was included in.
    *

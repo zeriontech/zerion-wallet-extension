@@ -4,7 +4,7 @@
  */
 import { BigNumber as EthersV5BigNumber } from '@ethersproject/bignumber';
 import type { ethers } from 'ethers';
-import type { TransactionResponsePlain } from 'src/modules/ethereum/types/TransactionResponsePlain';
+import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import { invariant } from 'src/shared/invariant';
 import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
 import { valueToHex } from 'src/shared/units/valueToHex';
@@ -91,7 +91,7 @@ function fromEthersBigNumber(
 
 export function v5ToPlainTransactionResponse(
   value: EthersV5TransactionResponse
-): TransactionResponsePlain {
+): SerializableTransactionResponse {
   return {
     blockHash: value.blockHash ?? null,
     blockNumber: value.blockNumber ?? null,
@@ -115,7 +115,7 @@ export function v5ToPlainTransactionResponse(
 
 export function toPlainTransactionResponse(
   value: PartiallyOptional<ethers.TransactionResponse, 'gasPrice' | 'signature'>
-): TransactionResponsePlain {
+): SerializableTransactionResponse {
   return {
     blockHash: value.blockHash,
     blockNumber: value.blockNumber,

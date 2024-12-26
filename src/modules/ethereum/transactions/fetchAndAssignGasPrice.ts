@@ -51,7 +51,7 @@ async function fetchGasPriceForTransaction(
 
 export function hasGasEstimation(transaction: IncomingTransaction) {
   const gas = getGas(transaction);
-  return gas && BigInt(gas) !== 0n;
+  return gas && Number(gas) !== 0;
 }
 
 /**

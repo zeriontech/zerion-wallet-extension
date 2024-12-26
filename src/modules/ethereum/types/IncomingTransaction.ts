@@ -40,7 +40,10 @@ export type IncomingTransactionAA = IncomingTransaction & {
 /**
  * Represents a tx object that is compatible with the ethers library
  */
-export type PlainTransactionRequest = Omit<IncomingTransactionAA, 'gas'> & {
+export type SerializableTransactionRequest = Omit<
+  IncomingTransactionAA,
+  'gas'
+> & {
   type?: null | number;
   value?: null | string;
   chainId?: null | number;

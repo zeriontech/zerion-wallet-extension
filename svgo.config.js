@@ -15,7 +15,6 @@ module.exports = {
           removeHiddenElems: false,
           removeEmptyAttrs: false,
           removeEmptyContainers: false,
-          // removeOffCanvasPaths: false,
           removeUselessDefs: false,
           cleanupIds: false,
         },

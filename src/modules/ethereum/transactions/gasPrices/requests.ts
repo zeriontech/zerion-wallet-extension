@@ -17,7 +17,7 @@ export async function fetchGasPriceFromNode(
     method: 'eth_gasPrice',
     params: null,
   });
-  const gasPrice = Number(BigInt(result));
+  const gasPrice = Number(result);
   return {
     average: {
       classic: gasPrice,

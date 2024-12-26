@@ -96,7 +96,7 @@ function useFeeEstimation(
   { keepPreviousData = false } = {}
 ) {
   const gas = getGasFromConfiguration(transaction, networkFeeConfiguration);
-  if (!gas || BigInt(gas) === 0n) {
+  if (!gas || Number(gas) === 0) {
     // TODO: allow zero gas?
     throw new Error('gas field is expected to be found on Transaction object');
   }

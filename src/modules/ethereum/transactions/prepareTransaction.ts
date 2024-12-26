@@ -2,7 +2,7 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import type {
   IncomingTransaction,
   IncomingTransactionAA,
-  PlainTransactionRequest,
+  SerializableTransactionRequest,
 } from '../types/IncomingTransaction';
 
 const knownFields: Array<keyof IncomingTransaction> = [
@@ -23,7 +23,7 @@ const knownFields: Array<keyof IncomingTransaction> = [
 ];
 
 export function prepareTransaction(incomingTransaction: IncomingTransactionAA) {
-  const transaction: PlainTransactionRequest = {};
+  const transaction: SerializableTransactionRequest = {};
   for (const field of knownFields) {
     const knownField = field as keyof IncomingTransactionAA;
     if (incomingTransaction[knownField] !== undefined) {

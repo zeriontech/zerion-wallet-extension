@@ -47,10 +47,13 @@ export async function createOptimisticFee({
     return null;
   }
   const { fixedOverhead, dynamicOverhead } = optimistic;
-  const { to = '0x', value = '0x0', data = '0x' } = transaction;
   if (gasLimit == null) {
     return null;
   }
+
+  const to = transaction.to ?? '0x';
+  const value = transaction.value ?? '0x';
+  const data = transaction.data ?? '0x';
 
   const baseFee = optimistic.underlying.eip1559?.baseFee;
   const eip1559GasPrice =
@@ -65,19 +68,12 @@ export async function createOptimisticFee({
         eip1559GasPrice.priorityFee,
         eip1559GasPrice.maxFee,
         gasLimit,
-        to ?? '0x',
-        valueToHex(value ?? '0x0'),
-        data ?? '0x',
+        to,
+        valueToHex(value),
+        data,
       ])
     : classicGasPrice != null
-    ? rlpEncode([
-        nonce,
-        classicGasPrice,
-        gasLimit,
-        to ?? '0x',
-        valueToHex(value ?? '0x0'),
-        data ?? '0x',
-      ])
+    ? rlpEncode([nonce, classicGasPrice, gasLimit, to, valueToHex(value), data])
     : null;
   if (encoded_tx_data == null) {
     return null;

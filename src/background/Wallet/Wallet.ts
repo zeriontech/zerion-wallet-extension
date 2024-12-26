@@ -88,7 +88,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
-import type { TransactionResponsePlain } from 'src/modules/ethereum/types/TransactionResponsePlain';
+import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import {
   broadcastTransactionPatched,
   checkEip712Tx,
@@ -1125,7 +1125,7 @@ export class Wallet {
   }: {
     transaction: IncomingTransactionAA;
     context: Partial<ChannelContext> | undefined;
-  } & TransactionContextParams): Promise<TransactionResponsePlain> {
+  } & TransactionContextParams): Promise<SerializableTransactionResponse> {
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
       throw new Error(
@@ -1188,7 +1188,7 @@ export class Wallet {
         const signer = await this.getSigner(chainId);
         const transactionResponse = await signer.sendTransaction({
           ...transaction,
-          type: transaction.type || undefined, // to exclude null
+          type: transaction.type ?? undefined, // to exclude null
         });
         const safeTx = removeSignature(transactionResponse);
 
@@ -1227,7 +1227,7 @@ export class Wallet {
     context,
   }: WalletMethodParams<
     { serialized: string } & TransactionContextParams
-  >): Promise<TransactionResponsePlain> {
+  >): Promise<SerializableTransactionResponse> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     const { serialized, ...transactionContextParams } = params;

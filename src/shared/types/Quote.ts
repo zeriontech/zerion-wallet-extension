@@ -17,7 +17,7 @@ export interface TransactionDescription {
   data: string;
   from: string;
   to: string;
-  gas: string;
+  gas: number;
   value: string;
   chain_id: string;
 }
