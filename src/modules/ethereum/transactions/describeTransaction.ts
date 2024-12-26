@@ -61,14 +61,15 @@ function sliceArguments(data: string) {
 }
 
 function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
-  if (!transaction.data || !transaction.to) {
+  const { data } = transaction;
+  if (!transaction.to || data == null || ethers.toQuantity(data) === '0x0') {
     return null;
   }
-  const selector = sliceSelector(transaction.data);
+  const selector = sliceSelector(data);
   if (!selectors.some((s) => s === selector)) {
     return null;
   }
-  const args = sliceArguments(transaction.data);
+  const args = sliceArguments(data);
   return {
     selector,
     args,
