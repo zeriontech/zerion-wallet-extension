@@ -70,6 +70,17 @@ function getGasPriceFromConfiguration({
   return chainGasPrices[speed];
 }
 
+function getGasFromConfiguration(
+  transaction: IncomingTransaction,
+  configuration: NetworkFeeConfiguration | null
+) {
+  if (configuration?.speed === 'custom') {
+    return configuration.gasLimit ?? getGas(transaction);
+  } else {
+    return getGas(transaction);
+  }
+}
+
 function useFeeEstimation(
   {
     chain,
@@ -85,7 +96,7 @@ function useFeeEstimation(
   },
   { keepPreviousData = false } = {}
 ) {
-  const gas = getGas(transaction);
+  const gas = getGasFromConfiguration(transaction, networkFeeConfiguration);
   if (!gas || ethers.BigNumber.from(gas).isZero()) {
     throw new Error('gas field is expected to be found on Transaction object');
   }
@@ -236,6 +247,7 @@ export function useTransactionFee({
   );
 
   const feeEstimation = feeEstimationQuery.data?.feeEstimation;
+
   const transactionGasPrice = feeEstimationQuery.data?.gasPrice;
 
   const time = useMemo(
