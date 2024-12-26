@@ -130,6 +130,11 @@ const setGasLimitValidationMessage = setPatternValidity(
   'Gas Limit value must be a natural number'
 );
 
+/** Avoids scientific notation */
+function numberToStr(n: number) {
+  return new BigNumber(n).toFixed();
+}
+
 function CustomNetworkFeeForm({
   chain,
   value,
@@ -171,9 +176,9 @@ function CustomNetworkFeeForm({
   const defaultMaxFee =
     value.custom1559GasPrice?.maxFee ?? eip1559?.maxFee ?? 0;
 
-  const defaultBaseFeeGWEI = weiToGwei(defaultBaseFee);
-  const defaultPriorityFeeGWEI = weiToGwei(defaultPriorityFee);
-  const defaultMaxFeeGWEI = weiToGwei(defaultMaxFee);
+  const defaultBaseFeeGWEI = numberToStr(weiToGwei(defaultBaseFee));
+  const defaultPriorityFeeGWEI = numberToStr(weiToGwei(defaultPriorityFee));
+  const defaultMaxFeeGWEI = numberToStr(weiToGwei(defaultMaxFee));
   const transactionGasLimit = new BigNumber(
     Number(getGas(transaction))
   ).toFixed();
