@@ -14,8 +14,8 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { wait } from 'src/shared/wait';
 import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
-import { useStaleTime } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/useStaleTime';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
+import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import * as helperStyles from '../shared/helperStyles.module.css';
 import { SelectWalletsFAQ } from '../FAQ';
 

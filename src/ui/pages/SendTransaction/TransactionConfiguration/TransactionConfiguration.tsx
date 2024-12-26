@@ -23,6 +23,7 @@ import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { NonceLine } from '../NonceLine';
 import { NetworkFee } from '../NetworkFee';
 import { useTransactionFee } from './useTransactionFee';
@@ -174,6 +175,7 @@ export function TransactionConfiguration({
   onConfigurationChange,
   paymasterEligible,
   paymasterPossible,
+  paymasterWaiting,
   keepPreviousData = false,
   gasback: gasbackData,
   listViewTransitions = false,
@@ -186,6 +188,7 @@ export function TransactionConfiguration({
   onConfigurationChange: null | ((value: CustomConfiguration) => void);
   paymasterEligible: boolean;
   paymasterPossible: boolean;
+  paymasterWaiting: boolean;
   keepPreviousData?: boolean;
   gasback: GasbackData | null;
   /** Hacky, experimental and only needed on SendTransaction View because list is stuck to the bottom */
@@ -229,7 +232,11 @@ export function TransactionConfiguration({
 
   return (
     <VStack gap={8}>
-      {paymasterEligible ? (
+      {paymasterWaiting ? (
+        <div style={{ display: 'flex', justifyContent: 'end' }}>
+          <CircleSpinner />
+        </div>
+      ) : paymasterEligible ? (
         <HStack
           style={{
             ['viewTransitionName' as string]: `network-fee-free-line-${id}`,

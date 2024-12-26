@@ -126,6 +126,7 @@ export function TransactionConfirmationView({
             onFeeValueCommonReady={null}
             paymasterEligible={paymasterEligible}
             paymasterPossible={paymasterPossible}
+            paymasterWaiting={false}
             gasback={
               txInterpretQuery.data?.action?.transaction.gasback != null
                 ? { value: txInterpretQuery.data?.action.transaction.gasback }

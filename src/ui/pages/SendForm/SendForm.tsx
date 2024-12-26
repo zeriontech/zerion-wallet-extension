@@ -608,6 +608,7 @@ function SendFormComponent() {
                       // before {paymasterEligible} becomes true
                       paymasterEligible={paymasterEligible}
                       paymasterPossible={paymasterPossible}
+                      paymasterWaiting={false}
                       onFeeValueCommonReady={handleFeeValueCommonReady}
                       configuration={configuration}
                       onConfigurationChange={(value) =>
