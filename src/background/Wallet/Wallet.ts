@@ -42,10 +42,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import {
-  prepareTypedData,
-  removeUnusedTypes,
-} from 'src/modules/ethereum/message-signing/prepareTypedData';
+import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -90,6 +87,7 @@ import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
+import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1303,21 +1301,8 @@ export class Wallet {
       throw new InvalidParams();
     }
     const signer = this.getOfflineSigner();
-    const typedData = prepareTypedData(rawTypedData);
+    const signature = signTypedData(rawTypedData, signer);
 
-    // ethers throws error if typedData.types has unused types
-    // however we can remove them and signed message will stay the same
-    // so we can safely remove them
-    const filteredTypes = removeUnusedTypes(
-      typedData.types,
-      typedData.primaryType
-    );
-
-    const signature = await signer._signTypedData(
-      typedData.domain,
-      filteredTypes,
-      typedData.message
-    );
     this.registerTypedDataSign({
       params: {
         address: signer.address,
