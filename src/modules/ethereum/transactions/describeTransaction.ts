@@ -1,8 +1,7 @@
-import type BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
-import { toNumber } from 'src/shared/units/toNumber';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 export type TransactionActionType = 'deploy' | 'send' | 'execute' | 'approve';
@@ -12,7 +11,7 @@ interface OutgoingValue {
   chain: Chain;
   assetId: string | null;
   assetAddress: string | null;
-  amount?: number;
+  amount?: string;
 }
 
 export type TransactionAction = OutgoingValue &
@@ -21,7 +20,7 @@ export type TransactionAction = OutgoingValue &
         type: 'send';
         receiverAddress: string;
         contractAddress?: string;
-        amount: number;
+        amount: string;
       }
     | {
         type: 'execute';
@@ -31,7 +30,7 @@ export type TransactionAction = OutgoingValue &
         type: 'approve';
         spenderAddress: string;
         contractAddress: string;
-        amount: number;
+        amount: string;
       }
   );
 
@@ -40,33 +39,37 @@ interface DescriberContext {
   networks: Networks;
 }
 
-function amountToNumber(value: BigNumber.Value = 0) {
-  return toNumber(value);
+/**
+ * Avoids scientific notation, e.g. 0.00000000000000000000000002 –> '0.00000000000000000000000002'
+ * NOT '2e-26'
+ */
+function amountToString(value: number | string | bigint): string {
+  const n = typeof value === 'bigint' ? String(value) : value;
+  return new BigNumber(n).toFixed();
 }
 
 function getMaybeAmount(transaction: IncomingTransaction) {
-  return transaction.value
-    ? amountToNumber(transaction.value.toString())
-    : undefined;
+  return transaction.value ? amountToString(transaction.value) : undefined;
 }
 
-function sliceSelector(data: ethers.utils.BytesLike) {
-  return ethers.utils.hexDataSlice(data, 0, 4);
+function sliceSelector(data: string) {
+  return ethers.dataSlice(data, 0, 4);
 }
 
-function sliceArguments(data: ethers.utils.BytesLike) {
-  return ethers.utils.hexDataSlice(data, 4);
+function sliceArguments(data: string) {
+  return ethers.dataSlice(data, 4);
 }
 
 function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
-  if (!transaction.data || !transaction.to) {
+  const { data } = transaction;
+  if (!transaction.to || data == null || ethers.toQuantity(data) === '0x0') {
     return null;
   }
-  const selector = sliceSelector(transaction.data);
+  const selector = sliceSelector(data);
   if (!selectors.some((s) => s === selector)) {
     return null;
   }
-  const args = sliceArguments(transaction.data);
+  const args = sliceArguments(data);
   return {
     selector,
     args,
@@ -74,8 +77,8 @@ function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
 }
 
 function encodeSelector(signature: string) {
-  return ethers.utils.hexDataSlice(
-    ethers.utils.keccak256(ethers.utils.toUtf8Bytes(signature)),
+  return ethers.dataSlice(
+    ethers.keccak256(ethers.toUtf8Bytes(signature)),
     0,
     4
   );
@@ -93,7 +96,7 @@ const selectors = {
   send: encodeSelector('send(address,uint256,bytes)'),
 };
 
-const abiCoder = ethers.utils.defaultAbiCoder;
+const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
 function createExecuteAction(
   transaction: IncomingTransaction,
@@ -146,7 +149,7 @@ function describeApprove(
     type: 'approve',
     contractAddress,
     spenderAddress,
-    amount: amount,
+    amount: amountToString(amount as number | bigint),
     isNativeAsset: true,
     chain: context.chain,
     assetAddress: contractAddress,
@@ -172,7 +175,7 @@ function describeSend(
       assetId: network?.native_asset?.id || null,
       assetAddress: network?.native_asset?.address || null,
       receiverAddress: transaction.to,
-      amount: amountToNumber(transaction.value?.toString()),
+      amount: amountToString(transaction.value ?? '0'),
     };
   }
 
@@ -208,7 +211,7 @@ function describeSend(
     assetId: null,
     assetAddress: contractAddress,
     receiverAddress,
-    amount: amountToNumber(amount),
+    amount: amountToString(amount),
   };
 }
 

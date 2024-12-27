@@ -1,6 +1,6 @@
 import { produce } from 'immer';
-import type { BigNumberish, BytesLike } from 'ethers';
-import { BigNumber } from 'ethers';
+import type { BigNumberish } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
 import omit from 'lodash/omit';
 import {
   isLocalAddressAction,
@@ -17,10 +17,10 @@ export function fromAddressActionTransaction(
     | TransactionObject['transaction']
     | AnyAddressAction['transaction']
   ) & {
-    gasLimit?: BigNumber;
-    gasPrice?: BigNumber;
-    maxFeePerGas?: BigNumber;
-    maxPriorityFeePerGas?: BigNumber;
+    gasLimit?: BigNumberish;
+    gasPrice?: BigNumberish;
+    maxFeePerGas?: BigNumberish;
+    maxPriorityFeePerGas?: BigNumberish;
     value?: BigNumberish;
   }
 ) {
@@ -43,6 +43,8 @@ export function fromAddressActionTransaction(
     const key = untypedKey as keyof typeof tx;
     const value = tx[key];
     if (BigNumber.isBigNumber(value)) {
+      // TODO: Refactor to BigInt,
+      // NOTE: handle cases for { "_hex": "0x06a11e3d", "_isBigNumber": true }
       // @ts-ignore
       tx[key] = BigNumber.from(value).toHexString();
     }
@@ -88,13 +90,11 @@ export function createCancelTransaction({
   return { from, to: from, value: valueToHex(0), chainId, data: '0x', nonce };
 }
 
-function restoreValue(value: BigNumberish | BytesLike) {
+function restoreValue(value: BigNumberish) {
   if (value === '0x') {
     return '0x0';
   }
-  return BigNumber.isBigNumber(value)
-    ? BigNumber.from(value).toHexString()
-    : valueToHex(value);
+  return valueToHex(value);
 }
 
 export function isCancelTx(addressAction: AnyAddressAction) {
@@ -110,7 +110,7 @@ export function isCancelTx(addressAction: AnyAddressAction) {
     if (value && data) {
       // TODO:
       // This logic falsely counts mint transaction on https://docs.zero.network/build-on-zero/claim-docs
-      // as "cancel". This isn't critical currently as it only affects some UI labels, but doesn't affect functionality
+      // as "cancel". This isn't critical currently as it only affects some UI labels, and doesn't affect functionality
       return (
         Number(restoreValue(value)) === 0 && Number(restoreValue(data)) === 0
       );

@@ -1,22 +1,53 @@
-import type { BigNumberish } from 'ethers';
-import type { TransactionRequest } from '@ethersproject/abstract-provider';
+import type { BytesLike, TransactionRequest } from 'ethers';
 import type { types } from 'zksync-ethers';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 
-export type IncomingTransaction = Omit<
+type AddressStr = string;
+
+/**
+ * Represents a tx object that can be received from
+ * a dapp, an API response or created manually
+ */
+export type IncomingTransaction = Pick<
   TransactionRequest,
-  'chainId' | 'type'
+  'nonce' | 'data' | 'customData' | 'accessList'
 > & {
-  chainId?: number | string;
-  gas?: string;
-  type?: string | number | null;
+  type?: null | string | number;
+  to?: null | AddressStr;
+  from?: null | AddressStr;
+  gasLimit?: null | number | string;
+  gas?: null | number | string;
+  gasPrice?: null | number | string;
+  maxPriorityFeePerGas?: null | number | string;
+  maxFeePerGas?: null | number | string;
+  value?: null | number | string;
+  maxFeePerBlobGas?: null | number | string;
+  chainId?: null | number | string;
+};
+
+type Eip712Meta = {
+  gasPerPubdata?: string | number;
+  factoryDeps?: BytesLike[];
+  customSignature?: BytesLike;
+  paymasterParams?: types.PaymasterParams;
 };
 
 export type IncomingTransactionAA = IncomingTransaction & {
   /** The custom data for EIP712 transaction metadata. */
-  customData?: types.TransactionRequest['customData'] & {
-    gasPerPubdataByte?: BigNumberish;
-  };
+  customData?: null | (Eip712Meta & { gasPerPubdataByte?: string | number });
+};
+
+/**
+ * Represents a tx object that is compatible with the ethers library
+ */
+export type SerializableTransactionRequest = Omit<
+  IncomingTransactionAA,
+  'gas'
+> & {
+  type?: null | number;
+  value?: null | string;
+  chainId?: null | number;
+  gasLimit?: null | string;
 };
 
 export type IncomingTransactionWithChainId = PartiallyRequired<

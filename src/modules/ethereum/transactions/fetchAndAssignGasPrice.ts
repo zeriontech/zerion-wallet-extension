@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { produce } from 'immer';
 import omit from 'lodash/omit';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -52,7 +51,7 @@ async function fetchGasPriceForTransaction(
 
 export function hasGasEstimation(transaction: IncomingTransaction) {
   const gas = getGas(transaction);
-  return gas && !ethers.BigNumber.from(gas).isZero();
+  return gas && Number(gas) !== 0;
 }
 
 /**

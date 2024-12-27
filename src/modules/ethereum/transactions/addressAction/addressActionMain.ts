@@ -1,5 +1,5 @@
 import type { AddressAction, Asset, NFT, NFTAsset } from 'defi-sdk';
-import type { BigNumberish, BytesLike } from 'ethers';
+import type { BigNumberish } from 'ethers';
 import { createChain, type Chain } from 'src/modules/networks/Chain';
 import { nanoid } from 'nanoid';
 import type {
@@ -15,7 +15,7 @@ export type ClientTransactionStatus =
 export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
   transaction: Omit<AddressAction['transaction'], 'status'> & {
     status: ClientTransactionStatus;
-    data?: BytesLike;
+    data?: string;
     value?: BigNumberish;
     from?: string;
   };

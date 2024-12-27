@@ -65,6 +65,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { assertProp } from 'src/shared/assert-property';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
+import { getError } from 'src/shared/errors/getError';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -550,8 +551,11 @@ function SendFormComponent() {
       </form>
       <Spacer height={16} />
       <ErrorBoundary
-        renderError={() => (
-          <UIText kind="body/regular">
+        // TODO:
+        // Once this error boundary kicks in, we no longer render EstimateTransactionGas
+        // and therefore never refetch gas, even when form values change
+        renderError={(error) => (
+          <UIText kind="body/regular" title={error?.message}>
             <span style={{ display: 'inline-block' }}>
               <WarningIcon />
             </span>{' '}
@@ -585,7 +589,9 @@ function SendFormComponent() {
               );
             }
             if (gasQuery.isError) {
-              throw new Error('Failed to estimate gas');
+              throw new Error(
+                `Failed to estimate gas (${getError(gasQuery.error).message})`
+              );
             }
             return transaction && chain && transaction.gas ? (
               <React.Suspense

@@ -1,7 +1,4 @@
-import type {
-  TypedDataDomain,
-  TypedDataField,
-} from '@ethersproject/abstract-signer';
+import type { TypedDataDomain, TypedDataField } from 'ethers';
 
 export interface TypedData {
   domain: TypedDataDomain;

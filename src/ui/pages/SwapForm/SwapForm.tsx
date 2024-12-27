@@ -330,13 +330,11 @@ export function SwapFormComponent() {
     },
   });
 
-  const txNonce = txToCheck && 'nonce' in txToCheck ? txToCheck.nonce : null;
-
   const USE_PAYMASTER_FEATURE = true;
 
   const configuration = useStore(swapView.store.configuration);
   const userNonce = configuration.nonce;
-  const nonce = userNonce ?? txNonce ?? networkNonce ?? undefined;
+  const nonce = userNonce ?? networkNonce ?? undefined;
   const gas = txToCheck ? getGas(txToCheck) : null;
   const eligibilityParams:
     | null
@@ -346,10 +344,10 @@ export function SwapFormComponent() {
           chainId: txToCheck.chainId,
           from: address,
           to: txToCheck.to,
-          value: txToCheck.value,
+          value: 'value' in txToCheck ? txToCheck.value : null,
           data: txToCheck.data,
           gas,
-          nonce,
+          nonce: Number(nonce),
         }
       : null;
   const paymasterPossible =
@@ -372,7 +370,10 @@ export function SwapFormComponent() {
       const configuration = swapView.store.configuration.getState();
       let txToSign = applyConfiguration(tx, configuration, gasPrices);
       if (paymasterEligible && txToSign.nonce == null) {
-        txToSign = { ...txToSign, nonce };
+        txToSign = {
+          ...txToSign,
+          nonce: nonce != null ? Number(nonce) : undefined,
+        };
         invariant(txToSign.nonce, 'Nonce is required for a paymaster tx');
       }
       return { ...txToSign, from: address };
@@ -796,7 +797,7 @@ export function SwapFormComponent() {
         >
           <RateLine swapView={swapView} quotesData={quotesData} />
           <SlippageLine swapView={swapView} />
-          {currentTransaction && chain && currentTransaction.gas ? (
+          {currentTransaction && chain && currentTransaction.gasLimit ? (
             <React.Suspense
               fallback={
                 <div style={{ display: 'flex', justifyContent: 'end' }}>

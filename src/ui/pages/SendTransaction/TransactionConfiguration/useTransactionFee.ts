@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import type { Asset } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
-import { ethers } from 'ethers';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import type {
@@ -97,7 +96,8 @@ function useFeeEstimation(
   { keepPreviousData = false } = {}
 ) {
   const gas = getGasFromConfiguration(transaction, networkFeeConfiguration);
-  if (!gas || ethers.BigNumber.from(gas).isZero()) {
+  if (!gas || Number(gas) === 0) {
+    // TODO: allow zero gas?
     throw new Error('gas field is expected to be found on Transaction object');
   }
   return useQuery({

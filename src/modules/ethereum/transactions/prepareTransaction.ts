@@ -1,12 +1,11 @@
 import { valueToHex } from 'src/shared/units/valueToHex';
-import type { types as zkSyncTypes } from 'zksync-ethers';
-import type { TransactionRequest } from '@ethersproject/abstract-provider';
-import type { IncomingTransactionAA } from '../types/IncomingTransaction';
+import type {
+  IncomingTransaction,
+  IncomingTransactionAA,
+  SerializableTransactionRequest,
+} from '../types/IncomingTransaction';
 
-const knownFields: Array<
-  | (keyof TransactionRequest & zkSyncTypes.TransactionRequest)
-  | 'gasPerPubdataByteLimit'
-> = [
+const knownFields: Array<keyof IncomingTransaction> = [
   'from',
   'to',
   'nonce',
@@ -20,13 +19,13 @@ const knownFields: Array<
   'maxPriorityFeePerGas',
   'maxFeePerGas',
   'customData',
-  'gasPerPubdataByteLimit',
+  'maxFeePerBlobGas',
 ];
 
 export function prepareTransaction(incomingTransaction: IncomingTransactionAA) {
-  const transaction: zkSyncTypes.TransactionRequest = {};
+  const transaction: SerializableTransactionRequest = {};
   for (const field of knownFields) {
-    const knownField = field as keyof TransactionRequest;
+    const knownField = field as keyof IncomingTransactionAA;
     if (incomingTransaction[knownField] !== undefined) {
       // @ts-ignore
       transaction[knownField] = incomingTransaction[knownField];

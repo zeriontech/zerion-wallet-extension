@@ -20,7 +20,10 @@ export interface QuotesData {
   quotes: Quote[] | null;
   transaction:
     | null
-    | (Omit<TransactionDescription, 'chain_id'> & { chainId: string });
+    | (Omit<TransactionDescription, 'chain_id' | 'gas'> & {
+        chainId: string;
+        gasLimit: string;
+      });
   setQuote: (quote: Quote) => void;
   isLoading: boolean;
   done: boolean;
@@ -153,8 +156,9 @@ export function useQuotes({
   const transaction = useMemo(() => {
     if (quote?.transaction) {
       return {
-        ...omit(quote.transaction, ['chain_id']),
+        ...omit(quote.transaction, ['chain_id', 'gas']),
         chainId: quote.transaction.chain_id,
+        gasLimit: String(quote.transaction.gas),
       };
     } else {
       return null;

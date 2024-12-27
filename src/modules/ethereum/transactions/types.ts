@@ -1,12 +1,15 @@
 import type { AddressAction } from 'defi-sdk';
-import type { ethers } from 'ethers';
+import type {
+  EthersV5TransactionReceiptStripped,
+  EthersV5TransactionResponse,
+} from 'src/background/Wallet/model/ethers-v5-types';
 
 export interface TransactionObject {
   hash: string;
   timestamp: number;
-  transaction: ethers.providers.TransactionResponse;
+  transaction: EthersV5TransactionResponse;
   initiator: string;
-  receipt?: ethers.providers.TransactionReceipt;
+  receipt?: EthersV5TransactionReceiptStripped;
   dropped?: boolean;
   relatedTransactionHash?: string; // hash of related transaction (cancelled or sped-up)
 }

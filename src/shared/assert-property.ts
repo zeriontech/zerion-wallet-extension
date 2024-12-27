@@ -4,8 +4,11 @@ import { invariant } from './invariant';
 export function assertProp<T extends object, K extends keyof T>(
   value: T,
   prop: K
-): asserts value is T & { [P in K]-?: T[P] } {
-  invariant(prop in value && value[prop], `Missing property: ${String(prop)}`);
+): asserts value is T & { [P in K]-?: NonNullable<T[P]> } {
+  invariant(
+    prop in value && value[prop] != null,
+    `Missing property: ${String(prop)}`
+  );
 }
 
 // Test Cases:

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { getAddress } from 'ethers';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
@@ -15,9 +15,7 @@ export type ConnectedSiteItem = Permission & {
 
 function createExternallyOwnedAccount(address: string): ExternallyOwnedAccount {
   return {
-    address: isEthereumAddress(address)
-      ? ethers.utils.getAddress(address)
-      : address,
+    address: isEthereumAddress(address) ? getAddress(address) : address,
     name: null,
   };
 }

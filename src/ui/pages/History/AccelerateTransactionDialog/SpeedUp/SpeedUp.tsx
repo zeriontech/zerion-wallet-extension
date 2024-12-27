@@ -75,6 +75,7 @@ export function SpeedUp({
     chainGasPrices: acceleratedGasPrices,
     networkFeeConfiguration: configuration.networkFee,
     onFeeValueCommonReady: handleFeeValueCommonReady,
+    keepPreviousData: true,
   });
 
   const signTxBtnRef = useRef<SendTxBtnHandle | null>(null);

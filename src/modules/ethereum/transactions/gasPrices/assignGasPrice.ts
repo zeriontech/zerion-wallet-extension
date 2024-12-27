@@ -33,15 +33,15 @@ export function assignGasPrice<
   if (eip1559GasPrices) {
     delete transaction.gasPrice;
     return Object.assign(transaction, {
-      maxFeePerGas: ethers.utils.hexValue(eip1559GasPrices.maxFee),
-      maxPriorityFeePerGas: ethers.utils.hexValue(eip1559GasPrices.priorityFee),
+      maxFeePerGas: ethers.toQuantity(eip1559GasPrices.maxFee),
+      maxPriorityFeePerGas: ethers.toQuantity(eip1559GasPrices.priorityFee),
     });
   } else if (classicGasPrices != null) {
     delete transaction.maxFeePerGas;
     delete transaction.maxPriorityFeePerGas;
     delete transaction.type;
     return Object.assign(transaction, {
-      gasPrice: ethers.utils.hexValue(classicGasPrices),
+      gasPrice: ethers.toQuantity(classicGasPrices),
     });
   }
   throw new Error(

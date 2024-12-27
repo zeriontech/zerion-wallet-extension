@@ -585,7 +585,11 @@ export const NetworkFeeDialog = React.forwardRef<
         containerStyle={{
           ['--surface-background-color' as string]: 'transparent',
         }}
-        onClosed={() => setView('default')}
+        onClosed={() => {
+          if (!customViewOnly) {
+            setView('default');
+          }
+        }}
       >
         {view === 'default' ? (
           <>
@@ -685,10 +689,12 @@ export const NetworkFeeDialog = React.forwardRef<
                 chain={chain}
                 value={value}
                 onSubmit={(value) => {
-                  if (!customViewOnly) {
+                  onSubmit(value);
+                  if (customViewOnly) {
+                    onDismiss();
+                  } else {
                     setView('default');
                   }
-                  onSubmit(value);
                 }}
                 transaction={transaction}
                 chainGasPrices={chainGasPrices}

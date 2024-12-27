@@ -1,18 +1,9 @@
 import { ethers } from 'ethers';
 import RLP from 'rlp';
+import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
+import { valueToHex } from 'src/shared/units/valueToHex';
 import type { ChainGasPrice } from '../types';
 import type { GasPriceObject } from '../GasPriceObject';
-
-interface Transaction {
-  data?: string;
-  to?: string;
-  gas?: string;
-  gasLimit?: string;
-  gasPrice?: string;
-  maxPriorityFeePerGas?: string;
-  maxFeePerGas?: string;
-  value?: string | number;
-}
 
 function bufferToHex(buffer: Uint8Array) {
   return Array.from(buffer)
@@ -21,7 +12,7 @@ function bufferToHex(buffer: Uint8Array) {
 }
 
 function bytesLength(str: string) {
-  return ethers.utils.arrayify(str).length;
+  return ethers.getBytes(str).length;
 }
 
 function countZeroBytes(str: string) {
@@ -46,8 +37,8 @@ export async function createOptimisticFee({
   gasPriceObject,
 }: {
   gasPriceInfo: ChainGasPrice['fast'];
-  transaction: Transaction;
   gasLimit: string | number;
+  transaction: IncomingTransaction;
   gasPriceObject: GasPriceObject | null;
   getNonce: () => Promise<number>;
 }): Promise<OptimisticFee | null> {
@@ -56,10 +47,13 @@ export async function createOptimisticFee({
     return null;
   }
   const { fixedOverhead, dynamicOverhead } = optimistic;
-  const { to = '0x', value = '0x0', data = '0x' } = transaction;
   if (gasLimit == null) {
     return null;
   }
+
+  const to = transaction.to ?? '0x';
+  const value = transaction.value ?? '0x';
+  const data = transaction.data ?? '0x';
 
   const baseFee = optimistic.underlying.eip1559?.baseFee;
   const eip1559GasPrice =
@@ -75,11 +69,11 @@ export async function createOptimisticFee({
         eip1559GasPrice.maxFee,
         gasLimit,
         to,
-        value,
+        valueToHex(value),
         data,
       ])
     : classicGasPrice != null
-    ? rlpEncode([nonce, classicGasPrice, gasLimit, to, value, data])
+    ? rlpEncode([nonce, classicGasPrice, gasLimit, to, valueToHex(value), data])
     : null;
   if (encoded_tx_data == null) {
     return null;

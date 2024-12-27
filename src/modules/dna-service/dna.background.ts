@@ -139,7 +139,7 @@ export class DnaService {
   }) {
     const actionId = uuidv4();
     const rawMessage = `Make ${collectionName} #${tokenName} primary\n\n${actionId}`;
-    const message = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(rawMessage));
+    const message = ethers.hexlify(ethers.toUtf8Bytes(rawMessage));
     return { message, actionId };
   }
 

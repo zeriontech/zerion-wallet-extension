@@ -1,11 +1,12 @@
-import { Provider as ZksProvider } from 'zksync-ethers';
+import { types } from 'zksync-ethers';
 import { createTypedData, serializePaymasterTx } from './createTypedData';
+import { parseEip712Patched } from './zksync-patch';
 
 const sample = {
   transaction: {
     from: '0x969F1B5f8b1B9De7157Ee12E96dF3A47130834F9',
     to: '0x6a6394f47dd0baf794808f2749c09bd4ee874e70',
-    nonce: '0x0',
+    nonce: 0,
     data: '0xa9059cbb0000000000000000000000001b620fae836730584803dd11bca76bc393ba641900000000000000000000000000000000000000000000000000000000000fb770',
     value: '0x0',
     chainId: 543210,
@@ -55,7 +56,7 @@ const sample = {
       maxFeePerGas: '0x564eba0',
       maxPriorityFeePerGas: '0x0',
       paymaster: '0x4667ffb6a24017f977c93da1bd630cf1801343b6',
-      nonce: '0x0',
+      nonce: 0,
       value: '0x0',
       data: '0xa9059cbb0000000000000000000000001b620fae836730584803dd11bca76bc393ba641900000000000000000000000000000000000000000000000000000000000fb770',
       factoryDeps: [],
@@ -69,7 +70,7 @@ const signatureSample = {
   transaction: {
     from: '0xE093d671dA3D42fBf79BC333692a7A5f794EdDFb',
     to: '0x6a6394f47dd0baf794808f2749c09bd4ee874e70',
-    nonce: '0x0',
+    nonce: 0,
     data: '0xa9059cbb0000000000000000000000001b620fae836730584803dd11bca76bc393ba641900000000000000000000000000000000000000000000000000000000000fb770',
     value: '0x0',
     chainId: 543210,
@@ -119,7 +120,7 @@ const signatureSample = {
       maxFeePerGas: '0x564eba0',
       maxPriorityFeePerGas: '0x0',
       paymaster: '0x4667ffb6a24017f977c93da1bd630cf1801343b6',
-      nonce: '0x0',
+      nonce: 0,
       value: '0x0',
       data: '0xa9059cbb0000000000000000000000001b620fae836730584803dd11bca76bc393ba641900000000000000000000000000000000000000000000000000000000000fb770',
       factoryDeps: [],
@@ -180,15 +181,20 @@ describe('Paymaster tx signing', () => {
   });
 
   test('Transaction serializes to expected hash', () => {
-    const zksProvider = new ZksProvider();
     const rawTransaction = serializePaymasterTx({
-      transaction: hashSample.transaction,
+      transaction: {
+        ...hashSample.transaction,
+        nonce: Number(hashSample.transaction.nonce),
+      },
       signature: hashSample.signature,
     });
 
     expect(rawTransaction).toBe(hashSample.rawTransaction);
 
-    const formattedTx = zksProvider.formatter.transaction(rawTransaction);
+    const formattedTx = types.Transaction.from(
+      parseEip712Patched(rawTransaction)
+    );
+
     expect(formattedTx.hash).toBe(hashSample.expectedHash);
   });
 });

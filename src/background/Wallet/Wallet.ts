@@ -1,4 +1,3 @@
-import type { BigNumberish, UnsignedTransaction } from 'ethers';
 import { ethers } from 'ethers';
 import { Provider as ZksProvider } from 'zksync-ethers';
 import type { Emitter } from 'nanoevents';
@@ -34,6 +33,7 @@ import {
   getNetworksStore,
 } from 'src/modules/networks/networks-store.background';
 import type {
+  IncomingTransaction,
   IncomingTransactionAA,
   IncomingTransactionWithChainId,
 } from 'src/modules/ethereum/types/IncomingTransaction';
@@ -88,6 +88,11 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
+import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
+import {
+  broadcastTransactionPatched,
+  checkEip712Tx,
+} from 'src/modules/ethereum/account-abstraction/zksync-patch';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -111,12 +116,11 @@ import {
   DeviceAccountContainer,
   ReadonlyAccountContainer,
 } from './model/AccountContainer';
+import { toPlainTransactionResponse } from './model/ethers-v5-types';
 
-async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
-  transaction: T,
-  networks: Networks,
-  chain: string
-) {
+async function prepareNonce<
+  T extends { nonce?: number | null; from?: string | null }
+>(transaction: T, networks: Networks, chain: string) {
   if (transaction.nonce == null) {
     invariant(transaction.from, '"from" field is missing from transaction');
     const txCount = await backgroundGetBestKnownTransactionCount({
@@ -125,42 +129,10 @@ async function prepareNonce<T extends { nonce?: BigNumberish; from?: string }>(
       address: transaction.from,
       defaultBlock: 'pending',
     });
-    return { ...transaction, nonce: parseInt(txCount.value) };
+    return { ...transaction, nonce: txCount.value };
   } else {
     return transaction;
   }
-}
-
-// NOTE: this is a temporary helper to avoid ethers v5 error when populating transactions for some chains
-// TODO: remove after update to ethers v6
-function prepareTransactionType<
-  T extends {
-    type?: number;
-    maxFeePerGas?: BigNumberish;
-    maxPriorityFeePerGas?: BigNumberish;
-    gasPrice?: BigNumberish;
-  }
->(transaction: T) {
-  if (transaction.type != null) {
-    return transaction;
-  }
-  if (
-    transaction.maxFeePerGas != null &&
-    transaction.maxPriorityFeePerGas != null
-  ) {
-    return {
-      ...transaction,
-      type: 2,
-    };
-  }
-  if (transaction.gasPrice != null) {
-    return {
-      ...transaction,
-      type: 0,
-    };
-  }
-  // we weren't able to populate transaction's type
-  return transaction;
 }
 
 export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
@@ -934,7 +906,12 @@ export class Wallet {
     contractAddress: string;
     allowanceQuantityBase: string;
     spender: string;
-  }>) {
+  }>): Promise<{
+    from?: string;
+    chainId: string;
+    data: string;
+    to: string;
+  }> {
     this.verifyInternalOrigin(context);
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const networks = await networksStore.load({ chains: [chain] });
@@ -945,7 +922,7 @@ export class Wallet {
       'function approve(address, uint256) public returns (bool success)',
     ];
     const contract = new ethers.Contract(contractAddress, abi, provider);
-    const tx = await contract.populateTransaction.approve(
+    const tx = await contract.approve.populateTransaction(
       spender,
       allowanceQuantityBase
     );
@@ -972,8 +949,9 @@ export class Wallet {
       ERC20_ALLOWANCE_ABI,
       provider
     );
-    const result = await contract.allowance(owner, spender);
-    return (result as ethers.BigNumber).toString();
+    const resultUntyped = await contract.allowance(owner, spender);
+    const result = resultUntyped as bigint | string;
+    return BigInt(result).toString();
   }
 
   async switchChainForOrigin({
@@ -1064,12 +1042,20 @@ export class Wallet {
     return typedData;
   }
 
-  private async getProvider(chainId: ChainId) {
+  private async getNodeUrlByChainId(chainId: ChainId) {
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const networks = await networksStore.loadNetworksByChainId(chainId);
-    const nodeUrl = networks.getRpcUrlInternal(networks.getChainById(chainId));
-    // TODO: should we conditionally use regular provider for non-paymaster txs?
+    return networks.getRpcUrlInternal(networks.getChainById(chainId));
+  }
+
+  private async getZkSyncProvider(chainId: ChainId) {
+    const nodeUrl = await this.getNodeUrlByChainId(chainId);
     return new ZksProvider(nodeUrl); // return new ethers.providers.JsonRpcProvider(nodeUrl);
+  }
+
+  private async getProvider(chainId: ChainId) {
+    const nodeUrl = await this.getNodeUrlByChainId(chainId);
+    return new ethers.JsonRpcProvider(nodeUrl);
   }
 
   private getOfflineSignerByAddress(address: string) {
@@ -1139,7 +1125,7 @@ export class Wallet {
   }: {
     transaction: IncomingTransactionAA;
     context: Partial<ChannelContext> | undefined;
-  } & TransactionContextParams): Promise<ethers.providers.TransactionResponse> {
+  } & TransactionContextParams): Promise<SerializableTransactionResponse> {
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
       throw new Error(
@@ -1187,13 +1173,8 @@ export class Wallet {
           context,
           params: { typedData, ...transactionContextParams },
         });
-        console.log('will serialize transaction + signature', {
-          transaction,
-          signature,
-        });
         const rawTransaction = serializePaymasterTx({ transaction, signature });
 
-        console.log({ rawTransaction, transactionContextParams });
         return await this.sendSignedTransaction({
           context,
           params: { serialized: rawTransaction, ...transactionContextParams },
@@ -1204,23 +1185,20 @@ export class Wallet {
       }
     } else {
       try {
-        // TODO: remove `prepareTransactionType` helper after update to ethers v6
-        // ethers v5 throws error inside `getFeeData` for some chains with too big totalDifficulty param
-        // can be reproduced with https://chainlist.org/chain/30732
-        const txWithType = prepareTransactionType(transaction);
-
         const signer = await this.getSigner(chainId);
         const transactionResponse = await signer.sendTransaction({
-          ...txWithType,
-          type: txWithType.type || undefined, // to exclude null
+          ...transaction,
+          type: transaction.type ?? undefined, // to exclude null
         });
         const safeTx = removeSignature(transactionResponse);
+
+        const safeTxPlain = toPlainTransactionResponse(safeTx);
         emitter.emit('transactionSent', {
-          transaction: safeTx,
+          transaction: transactionResponse,
           mode,
           ...transactionContextParams,
         });
-        return safeTx;
+        return safeTxPlain;
       } catch (error) {
         throw getEthersError(error);
       }
@@ -1249,7 +1227,7 @@ export class Wallet {
     context,
   }: WalletMethodParams<
     { serialized: string } & TransactionContextParams
-  >): Promise<ethers.providers.TransactionResponse> {
+  >): Promise<SerializableTransactionResponse> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     const { serialized, ...transactionContextParams } = params;
@@ -1259,16 +1237,27 @@ export class Wallet {
     const chainId = networks.getChainId(createChain(chain));
     invariant(chainId, 'Chain id should exist for send signed transaction');
     const { mode } = await this.assertNetworkMode(chainId); // MUST assert even if result is not used
-    const provider = await this.getProvider(chainId);
     try {
-      const transactionResponse = await provider.sendTransaction(serialized);
+      const isEip712Tx = checkEip712Tx(serialized);
+      let transactionResponse: ethers.TransactionResponse;
+      if (isEip712Tx) {
+        const provider = await this.getZkSyncProvider(chainId);
+        transactionResponse = await broadcastTransactionPatched(
+          provider,
+          serialized
+        );
+      } else {
+        const provider = await this.getProvider(chainId);
+        transactionResponse = await provider.broadcastTransaction(serialized);
+      }
       const safeTx = removeSignature(transactionResponse);
+      const safeTxPlain = toPlainTransactionResponse(safeTx);
       emitter.emit('transactionSent', {
-        transaction: safeTx,
+        transaction: transactionResponse,
         mode,
         ...transactionContextParams,
       });
-      return safeTx;
+      return safeTxPlain;
     } catch (error) {
       throw getEthersError(error);
     }
@@ -1341,8 +1330,8 @@ export class Wallet {
 
     // Some dapps provide a hex message that doesn't parse as a utf string,
     // but wallets sign it anyway
-    const messageToSign = ethers.utils.isHexString(messageAsUtf8String)
-      ? ethers.utils.arrayify(messageAsUtf8String)
+    const messageToSign = ethers.isHexString(messageAsUtf8String)
+      ? ethers.getBytes(messageAsUtf8String)
       : messageAsUtf8String;
 
     const signer = this.getOfflineSignerByAddress(signerAddress);
@@ -1611,7 +1600,7 @@ export class Wallet {
     initiator,
     tabId,
   }: {
-    transaction: UnsignedTransaction;
+    transaction: IncomingTransaction;
     initiator: string;
     tabId: number | null;
   }) {
@@ -1804,7 +1793,7 @@ class PublicController {
     id,
   }: PublicMethodParams<
     [
-      UnsignedTransaction,
+      IncomingTransaction,
       /* TODO: refactor to use {context} instead? */ { clientScope?: string }?
     ]
   >) {
