@@ -9,9 +9,6 @@ async function build() {
     // pass --no-content-hash flag to avoid code-splitting issues:
     // https://github.com/parcel-bundler/parcel/issues/8071#issuecomment-1214438848
     // https://github.com/parcel-bundler/parcel/issues/8071#issuecomment-1133549719
-    //
-    // pass --no-scope-hoist to fix re_export error with ethers@v6 ($re_export$ethers is not defined)
-    // https://github.com/parcel-bundler/parcel/issues/4796#issuecomment-658283698
     './node_modules/.bin/parcel build src/manifest.json src/ui/hardware-wallet/ledger.html --no-content-hash --no-source-maps'
   );
 
