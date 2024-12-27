@@ -313,7 +313,7 @@ export function SwapFormComponent() {
       ? approvalTransaction
       : swapTransaction;
 
-  const { data: networkNonce } = useQuery({
+  const { data: networkNonce, refetch: refetchNonce } = useQuery({
     suspense: false,
     queryKey: ['uiGetBestKnownTransactionCount', address, chain, networks],
     queryFn: async () => {
@@ -428,12 +428,14 @@ export function SwapFormComponent() {
     if (approveTxStatus === 'confirmed') {
       refetchAllowanceQuery();
       refetchQuotes();
+      refetchNonce();
     } else if (approveTxStatus === 'failed' || approveTxStatus === 'dropped') {
       resetApproveMutation();
     }
   }, [
     approveTxStatus,
     refetchAllowanceQuery,
+    refetchNonce,
     refetchQuotes,
     resetApproveMutation,
   ]);
