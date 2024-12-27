@@ -12,7 +12,7 @@ async function build() {
     //
     // pass --no-scope-hoist to fix re_export error with ethers@v6 ($re_export$ethers is not defined)
     // https://github.com/parcel-bundler/parcel/issues/4796#issuecomment-658283698
-    './node_modules/.bin/parcel build src/manifest.json src/ui/hardware-wallet/ledger.html --no-content-hash --no-source-maps --no-scope-hoist'
+    './node_modules/.bin/parcel build src/manifest.json src/ui/hardware-wallet/ledger.html --no-content-hash --no-source-maps'
   );
 
   console.log('Done'); // eslint-disable-line no-console

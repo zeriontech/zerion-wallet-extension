@@ -20,6 +20,7 @@
   "alias": {
     "src": "./src",
     "zksync-ethers": "zksync-ethers/build",
+    "ethers": "ethers/lib.commonjs",
     "ui-lab:src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
     "ui-lab:src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.client.mock.ts",
     "ui-lab:src/background/constants": "./src/background/constants.mock.ts",
