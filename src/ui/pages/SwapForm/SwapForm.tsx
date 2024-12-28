@@ -76,6 +76,7 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
+import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -832,6 +833,16 @@ export function SwapFormComponent() {
         </VStack>
         {quote ? <ProtocolFeeLine quote={quote} /> : null}
       </VStack>
+      <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
+        <HiddenValidationInput
+          form={formId}
+          customValidity={
+            currentTransaction
+              ? ''
+              : 'Form is not ready. Please check your network, gas token amount and input values'
+          }
+        />
+      </div>
       <VStack gap={16} style={{ marginTop: 'auto' }}>
         <AnimatedAppear display={showApproveHintLine}>
           <HStack gap={12} alignItems="center">
