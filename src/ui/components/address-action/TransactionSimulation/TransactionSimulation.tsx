@@ -209,15 +209,15 @@ export function TransactionSimulation({
         showApplicationLine={showApplicationLine}
         singleAssetElementEnd={
           allowanceQuantityBase && onOpenAllowanceForm ? (
-            <UnstyledButton
-              type="button"
-              className="hover:underline"
-              onClick={onOpenAllowanceForm}
-            >
-              <UIText kind="small/accent" color="var(--primary)">
+            <UIText kind="small/accent" color="var(--primary)">
+              <UnstyledButton
+                type="button"
+                className="hover:underline"
+                onClick={onOpenAllowanceForm}
+              >
                 Edit
-              </UIText>
-            </UnstyledButton>
+              </UnstyledButton>
+            </UIText>
           ) : null
         }
       />
