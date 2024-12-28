@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from 'src/modules/crypto';
-import { produce } from 'immer';
+import { createDraft, finishDraft, produce } from 'immer';
 import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
@@ -477,7 +477,27 @@ export class WalletRecordModel {
       })
     );
 
-    return WalletRecordModel.verifyStateIntegrity(entry as WalletRecord);
+    return WalletRecordModel.verifyStateIntegrity(entry);
+  }
+
+  static async reEncryptRecord(
+    record: WalletRecord,
+    {
+      credentials,
+      newCredentials,
+    }: { credentials: SessionCredentials; newCredentials: SessionCredentials }
+  ) {
+    // Async update flow for Immer: https://immerjs.github.io/immer/async/
+    const draft = createDraft(record);
+    for (const group of draft.walletManager.groups) {
+      if (isMnemonicContainer(group.walletContainer)) {
+        await group.walletContainer.reEncryptWallets({
+          credentials,
+          newCredentials,
+        });
+      }
+    }
+    return finishDraft(draft);
   }
 
   static async getRecoveryPhrase(
