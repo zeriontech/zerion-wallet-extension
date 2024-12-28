@@ -34,6 +34,7 @@ import {
 } from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { HideBalance } from 'src/ui/components/HideBalance';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -133,9 +134,16 @@ function NFTItem({
           </UIText>
           {price ? (
             <UIText kind="small/accent">
-              <NeutralDecimals
-                parts={formatCurrencyToParts(price, 'en', currency)}
-              />
+              <HideBalance
+                kind="NeutralDecimals"
+                value={price}
+                locale="en"
+                currency={currency}
+              >
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(price, 'en', currency)}
+                />
+              </HideBalance>
             </UIText>
           ) : someHavePrice ? (
             <UIText kind="small/accent">{NBSP}</UIText>
@@ -318,9 +326,16 @@ export function NonFungibleTokens({
           onChange={onChainChange}
           value={
             nftChainValue != null ? (
-              <NeutralDecimals
-                parts={formatCurrencyToParts(nftChainValue, 'en', currency)}
-              />
+              <HideBalance
+                kind="NeutralDecimals"
+                value={nftChainValue}
+                locale="en"
+                currency={currency}
+              >
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(nftChainValue, 'en', currency)}
+                />
+              </HideBalance>
             ) : null
           }
         />
