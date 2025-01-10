@@ -53,7 +53,17 @@ function getMaybeAmount(transaction: IncomingTransaction) {
 }
 
 function sliceSelector(data: string) {
-  return ethers.dataSlice(data, 0, 4);
+  try {
+    /**
+     * ethers throws error if data is less than 4 bytes. We could
+     * check bytes length before trying to slice, but because this is
+     * a local helper to match against known selectors, we don't need to crash
+     * for other invalid arguments. It's okay to return data as is if we can't slice
+     */
+    return ethers.dataSlice(data, 0, 4);
+  } catch {
+    return data;
+  }
 }
 
 function sliceArguments(data: string) {
