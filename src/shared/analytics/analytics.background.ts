@@ -31,6 +31,10 @@ import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
+import {
+  resetGoogleAnalyticsSessionId,
+  sendToGoogleAnalytics,
+} from './google-analytics';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -99,6 +103,10 @@ function trackAppEvents({ account }: { account: Account }) {
       ...getChainBreakdown(portfolio),
     };
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+  });
+
+  emitter.on('screenView', async () => {
+    sendToGoogleAnalytics('page_view', {});
   });
 
   emitter.on('buttonClicked', (data) => {
@@ -348,7 +356,13 @@ export function initialize({ account }: { account: Account }) {
     willSendRequest: createAddProviderHook({ getWalletProvider }),
   });
   const handleUserId = () => mixpanelIdentify(account);
-  account.on('authenticated', () => handleUserId());
+
+  account.on('authenticated', () =>
+    // Google Analytics does not have a clear definition of a user session.
+    // Hence, we need to define what a user session means within the extension.
+    // For simplicity, we initiate a new session each time the user authenticates.
+    Promise.allSettled([handleUserId(), resetGoogleAnalyticsSessionId()])
+  );
   if (account.getUser()) {
     handleUserId();
   }
