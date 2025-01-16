@@ -48,22 +48,48 @@ async function getSessionId() {
   return sessionId;
 }
 
+function getEventParams(event: GoogleAnalyticsEvent) {
+  if (event === 'page_view')
+    return {
+      page_title: document.title,
+      page_location: document.location.href,
+    };
+
+  return {};
+}
+
 export async function sendToGoogleAnalytics(
   event: GoogleAnalyticsEvent,
-  params: Record<string, unknown>
+  extraParams: Record<string, unknown>
 ) {
+  // Both session_id and engagement_time_msec are recommended parameters when using
+  // the Google Analytics Measurement Protocol as they are required
+  // for user activity to display in standard reports like Realtime.
+  // See: https://developer.chrome.com/docs/extensions/how-to/integrate/google-analytics-4?hl=en
+  const clientId = await getClientId();
+  const sessionId = await getSessionId();
+
+  const baseParams = {
+    session_id: sessionId,
+    engagement_time_msec: DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
+  };
+
+  const eventParams = getEventParams(event);
+
+  const eventPayload = {
+    name: event,
+    params: {
+      ...baseParams,
+      ...eventParams,
+      ...extraParams,
+    },
+  };
+
   logToConsole(Loglevel.info, 'group', `Google Analytics: ${event}`);
-  logTable(Loglevel.info, params);
+  logTable(Loglevel.info, eventPayload);
   logToConsole(Loglevel.info, 'groupEnd');
 
   if (process.env.NODE_ENV !== 'development') {
-    // Both session_id and engagement_time_msec are recommended parameters when using
-    // the Google Analytics Measurement Protocol as they are required
-    // for user activity to display in standard reports like Realtime.
-    // See: https://developer.chrome.com/docs/extensions/how-to/integrate/google-analytics-4?hl=en
-    const clientId = await getClientId();
-    const sessionId = await getSessionId();
-
     onIdle(() => {
       fetch(
         `${ENDPOINT}?measurement_id=${GOOGLE_ANALYTICS_MEASUREMENT_ID}&api_secret=${GOOGLE_ANALYTICS_API_SECRET}`,
@@ -71,18 +97,7 @@ export async function sendToGoogleAnalytics(
           method: 'POST',
           body: JSON.stringify({
             client_id: clientId,
-            events: [
-              {
-                name: event,
-                params: {
-                  session_id: sessionId,
-                  engagement_time_msec: DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
-                  page_title: document.title,
-                  page_location: document.location.href,
-                  ...params,
-                },
-              },
-            ],
+            events: [eventPayload],
           }),
         }
       );
