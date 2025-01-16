@@ -33,3 +33,12 @@ export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;
+export const GOOGLE_ANALYTICS_MEASUREMENT_ID = process.env.GOOGLE_ANALYTICS_MEASUREMENT_ID;
+export const GOOGLE_ANALYTICS_API_SECRET = process.env.GOOGLE_ANALYTICS_API_SECRET;
+
+if (!PROXY_URL) {
+  throw new Error('PROXY_URL must be defined in ENV');
+}
+if (!ZERION_API_URL) {
+  throw new Error('ZERION_API_URL must be defined in ENV');
+}

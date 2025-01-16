@@ -34,6 +34,7 @@ import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
+import { gaCollect } from './google-analytics';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -103,6 +104,13 @@ function trackAppEvents({ account }: { account: Account }) {
       ...getChainBreakdown(portfolio),
     };
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+  });
+
+  emitter.on('screenView', async (data) => {
+    gaCollect(account, 'page_view', {
+      page_title: data.title,
+      page_location: data.pathname,
+    });
   });
 
   emitter.on('buttonClicked', (data) => {
@@ -181,6 +189,7 @@ function trackAppEvents({ account }: { account: Account }) {
         ...addressActionAnalytics,
       });
       sendToMetabase('signed_transaction', params);
+      gaCollect(account, 'signed_transaction', params);
       const mixpanelParams = omit(params, [
         'request_name',
         'hash',
@@ -241,6 +250,7 @@ function trackAppEvents({ account }: { account: Account }) {
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
     });
     sendToMetabase('signed_message', params);
+    gaCollect(account, 'signed_message', params);
     const mixpanelParams = omit(params, [
       'request_name',
       'wallet_address',
@@ -397,12 +407,11 @@ export function initialize({ account }: { account: Account }) {
     willSendRequest: createAddProviderHook({ getWalletProvider }),
   });
   const handleUserId = () => mixpanelIdentify(account);
+
   account.on('authenticated', () => handleUserId());
   if (account.getUser()) {
     handleUserId();
   }
-  account.on('reset', () => {
-    mixpanelReset();
-  });
+  account.on('reset', () => mixpanelReset());
   return trackAppEvents({ account });
 }
