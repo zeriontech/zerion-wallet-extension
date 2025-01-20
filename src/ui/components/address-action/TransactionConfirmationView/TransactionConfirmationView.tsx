@@ -12,14 +12,12 @@ import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/Transacti
 import { UIText } from 'src/ui/ui-kit/UIText';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { isDeviceAccount } from 'src/shared/types/validators';
-import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
+import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
 import { usePreferences } from 'src/ui/features/preferences';
+import { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
-import {
-  TransactionSimulation,
-  useTxInterpretQuery,
-} from '../TransactionSimulation';
+import { TransactionSimulation } from '../TransactionSimulation';
 
 export function TransactionConfirmationView({
   title,
@@ -50,13 +48,10 @@ export function TransactionConfirmationView({
 }) {
   const { preferences, query } = usePreferences();
 
-  // TODO:
-  // Refactor:
-  // refactor to a single hook that can interpret both regular
-  // and paymaster transactions
-  const txInterpretQuery = useTxInterpretQuery({
+  const txInterpretQuery = useInterpretTxBasedOnEligibility({
     transaction,
     eligibilityQuery,
+    origin: 'https://app.zerion.io',
   });
   const gasbackValue =
     txInterpretQuery.data?.action?.transaction.gasback ?? null;
@@ -106,7 +101,6 @@ export function TransactionConfirmationView({
           onOpenAllowanceForm={onOpenAllowanceForm}
           address={wallet.address}
           transaction={transaction}
-          paymasterEligible={paymasterEligible}
           txInterpretQuery={txInterpretQuery}
         />
         <Spacer height={20} />

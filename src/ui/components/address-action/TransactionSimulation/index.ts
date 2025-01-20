@@ -1,4 +1,1 @@
-export {
-  TransactionSimulation,
-  useTxInterpretQuery,
-} from './TransactionSimulation';
+export { TransactionSimulation } from './TransactionSimulation';
