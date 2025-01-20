@@ -466,6 +466,7 @@ function SignTypedDataContent({
       chainId,
       typedData,
       currency,
+      origin,
     ],
     queryFn: () =>
       chainId
@@ -474,6 +475,7 @@ function SignTypedDataContent({
             chainId,
             typedData,
             currency,
+            origin,
           })
         : null,
     enabled: Boolean(chainId && network?.supports_simulations),

@@ -76,8 +76,9 @@ export async function interpretTxBasedOnEligibility({
       address: transaction.from,
       chainId: normalizeChainId(toSign.chainId),
       typedData,
-      client,
       currency,
+      origin,
+      client,
     });
   }
 }
