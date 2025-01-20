@@ -199,6 +199,7 @@ initialize().then((values) => {
   });
 
   emitter.on('sessionExpired', () => account.logout());
+  userActivity.expireSessionIfNeeded();
 });
 
 browser.runtime.onInstalled.addListener(({ reason }) => {

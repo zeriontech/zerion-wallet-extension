@@ -34,16 +34,20 @@ async function getIdleTimeout() {
   return preferences.autoLockTimeout;
 }
 
+export async function expireSessionIfNeeded() {
+  const lastActive = await getLastActive();
+  const autoLockTimeout = await getIdleTimeout();
+  if (autoLockTimeout === 'none') {
+    return;
+  }
+  if (lastActive && Date.now() - lastActive > autoLockTimeout) {
+    emitter.emit('sessionExpired');
+  }
+}
+
 export async function handleAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === 'lastActiveCheck') {
-    const lastActive = await getLastActive();
-    const autoLockTimeout = await getIdleTimeout();
-    if (autoLockTimeout === 'none') {
-      return;
-    }
-    if (lastActive && Date.now() - lastActive > autoLockTimeout) {
-      emitter.emit('sessionExpired');
-    }
+    await expireSessionIfNeeded();
   }
 }
 
