@@ -389,7 +389,16 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       windowId: tabWhereRequestComesFrom?.windowId ?? null,
     });
     const windowId = tabWhereRequestComesFrom?.windowId;
-    const browserWindow = windowId ? await browser.windows.get(windowId) : null;
+    let browserWindow: browser.Windows.Window | null = null;
+    try {
+      if (windowId) {
+        // In Kiwi Browser this fails even though windowId is defined
+        browserWindow = await browser.windows.get(windowId);
+      }
+    } catch (error) {
+      console.warn(`No window found for id ${windowId}`);
+      browserWindow = null;
+    }
     // NOTE: Only use sidepanel if request comes from the currently active tab
     // and this tab has a sidepanel opened
     // NOTE: Tab may be active inside a non-active window. If we were able to show the request
