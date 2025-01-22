@@ -32,6 +32,13 @@ export function assignGasPrice<
     gasPrice.eip1559 || gasPrice.optimistic?.underlying.eip1559;
   if (eip1559GasPrices) {
     delete transaction.gasPrice;
+    const EIP1559_TYPE = 2;
+    if (transaction.type != null && Number(transaction.type) <= EIP1559_TYPE) {
+      // type == 2 is an eip-1559 transaction. Types == 0 and == 1 are "pre-eip-1559"
+      // and do not support eip-1559 gas prices. Removing type prop for eip-1559 and less is safe
+      // because it will be implied by gas prices
+      delete transaction.type;
+    }
     return Object.assign(transaction, {
       maxFeePerGas: ethers.toQuantity(eip1559GasPrices.maxFee),
       maxPriorityFeePerGas: ethers.toQuantity(eip1559GasPrices.priorityFee),
