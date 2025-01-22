@@ -527,18 +527,23 @@ function SendFormComponent() {
               store={store}
               keys={['to', 'addressInputValue']}
               render={({ to, addressInputValue }) => (
-                <AddressInputWrapper
-                  name="addressInputValue"
-                  value={addressInputValue ?? ''}
-                  required={true}
-                  resolvedAddress={to ?? null}
-                  onChange={(value) =>
-                    sendView.handleChange('addressInputValue', value)
-                  }
-                  onResolvedChange={(value) =>
-                    sendView.handleChange('to', value)
-                  }
-                />
+                <>
+                  <HiddenValidationInput
+                    customValidity={to ? '' : 'Cannot resolve recipient'}
+                  />
+                  <AddressInputWrapper
+                    name="addressInputValue"
+                    value={addressInputValue ?? ''}
+                    required={true}
+                    resolvedAddress={to ?? null}
+                    onChange={(value) =>
+                      sendView.handleChange('addressInputValue', value)
+                    }
+                    onResolvedChange={(value) =>
+                      sendView.handleChange('to', value)
+                    }
+                  />
+                </>
               )}
             />
             {type === 'token' ? (

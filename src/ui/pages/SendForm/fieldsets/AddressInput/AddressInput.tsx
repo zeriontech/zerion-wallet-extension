@@ -239,30 +239,31 @@ export function AddressInput({
     );
   }, [allItems, value, domainNames, showAllItems]);
 
+  const normalizedValue = value.trim().toLowerCase();
   const { data: resolvedValue, isLoading } = useQuery({
-    queryKey: ['resolveAddressInput', value, domainNames],
+    queryKey: ['resolveAddressInput', normalizedValue, domainNames],
     queryFn: () => {
-      if (!value) {
+      if (!normalizedValue) {
         return null;
       }
-      if (isEthereumAddress(value)) {
-        return value;
+      if (isEthereumAddress(normalizedValue)) {
+        return normalizedValue;
       }
       const existingAddress = allItems.find(
         (item) =>
-          item.name === value ||
-          truncateAddress(item.address.toLowerCase(), 4) === value.toLowerCase()
+          item.name?.toLowerCase() === normalizedValue ||
+          truncateAddress(item.address.toLowerCase(), 4) === normalizedValue
       )?.address;
       if (existingAddress) {
         return existingAddress;
       }
       const preresolvedAddress = Object.keys(domainNames).find((address) =>
-        domainNames[address].includes(value)
+        domainNames[address].includes(normalizedValue)
       );
       if (preresolvedAddress) {
         return preresolvedAddress;
       }
-      return resolveDomain(value || '');
+      return resolveDomain(normalizedValue || '');
     },
     suspense: false,
   });
