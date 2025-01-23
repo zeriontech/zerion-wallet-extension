@@ -532,6 +532,7 @@ function SendTransactionContent({
     enabled: paymasterPossible && gasPricesQuery.isFetched,
     suspense: false,
     staleTime: 120000,
+    retry: 1,
     queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
     queryFn: async () => {
       const tx = await configureTransactionToBeSigned(populatedTransaction, {

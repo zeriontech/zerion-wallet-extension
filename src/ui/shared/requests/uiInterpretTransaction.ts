@@ -64,7 +64,7 @@ export async function interpretTxBasedOnEligibility({
       currency,
       client,
     });
-  } else {
+  } else if (network.supports_sponsored_transactions && eligibilityQueryData) {
     const toSign = await fetchAndAssignPaymaster(transaction, {
       source,
       apiClient: ZerionAPI,
@@ -80,6 +80,8 @@ export async function interpretTxBasedOnEligibility({
       origin,
       client,
     });
+  } else {
+    return null;
   }
 }
 
