@@ -108,7 +108,10 @@ export function WalletSelect() {
   );
 
   const { data: walletsMeta, isLoading: isLoadingWalletsMeta } =
-    useWalletsMetaByChunks({ addresses: ownedAddresses });
+    useWalletsMetaByChunks({
+      addresses: ownedAddresses,
+      useErrorBoundary: false,
+    });
 
   const ownedAddressesCount = ownedAddresses.length;
 
