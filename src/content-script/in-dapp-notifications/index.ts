@@ -1,22 +1,24 @@
 import browser from 'webextension-polyfill';
 import type { InDappNotification } from 'src/shared/types/InDappNotification';
 import { isObj } from 'src/shared/isObj';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import * as styles from './styles.module.css';
+import { createNode as r } from './createNode';
 
-function preloadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = url;
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-  });
+function preloadImage(url: string): Promise<void> {
+  return Promise.race<void>([
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => resolve();
+      img.onerror = reject;
+    }),
+    rejectAfterDelay(2000, `Failed to preload network icon: ${url}`),
+  ]);
 }
 
 const notifications = {
   async chainChanged(networkName: string, networkUrl: string) {
-    const el = document.createElement('div');
-    el.className = `${styles.notification} ${styles.chainChanged}`;
-
     let isIconLoaded = false;
     try {
       await preloadImage(networkUrl);
@@ -26,47 +28,43 @@ const notifications = {
       console.warn(`Failed to load network icon ${networkUrl}`, e);
     }
 
-    const networkIconHTML = isIconLoaded
-      ? `<img src="${networkUrl}" class="${styles.networkIcon}" alt="">`
-      : '';
+    const networkIcon = isIconLoaded
+      ? r('img', { src: networkUrl, class: styles.networkIcon, alt: '' })
+      : null;
 
-    el.innerHTML = `
-    <div class="${styles.hstack}" style="grid-gap: 12px;">
-      <div class=${styles.zerionLogo}>
-        ${networkIconHTML}
-      </div>
-      <div class="${styles.vstack}" style="grid-gap: 0px;">
-        <div class="${styles.title}">Network Switched</div>
-        <div class="${styles.message}">${networkName}</div>
-      </div>
-    </div>
-    <button aria-label="Close" class="${styles.closeButton}">
-    </button>
-  `;
+    // prettier-ignore
+    const el = r('div', { class: `${styles.notification} ${styles.chainChanged}` },
+      r('div',null,
+        r('div', { class: styles.hstack, style: 'grid-gap: 12px; background: pink;' },
+          r('div', { class: styles.zerionLogo }, networkIcon),
+          r('div', { class: styles.vstack, style: 'grid-gap: 0px;' },
+            r('div', { class: styles.title }, 'Network Switched'),
+            r('div', { class: styles.message }, networkName),
+          ),
+        ),
+        r('button', { 'aria-label': 'Close', class:styles.closeButton})
+      )
+    )
 
     return el;
   },
 
   switchChainError(chainId: string) {
-    const el = document.createElement('div');
-    el.className = `${styles.notification} ${styles.switchChainError}`;
-
-    el.innerHTML = `
-    <div class="${styles.vstack}" style="grid-gap: 8px;">
-      <div class="${styles.hstack}" style="grid-gap: 12px">
-        <div class=${styles.zerionLogo}></div>
-        <div class="${styles.title}">Unrecognized Network</div>
-      </div>
-      <div class="${styles.message}">
-        Unable to switch network to the <span class="${
-          styles.chainId
-        }">Chain Id: ${chainId.toString()}</span>.
-        Please check your network settings and try again.
-      </div>
-    </div>
-    <button aria-label="Close" class="${styles.closeButton}">
-    </button>
-  `;
+    // prettier-ignore
+    const el = r('div', { class: `${styles.notification} ${styles.switchChainError}`},
+      r('div', { class: styles.vstack, style: 'grid-gap: 8px;' },
+        r('div', { class: styles.hstack, style: 'grid-gap: 12px' },
+          r('div', { class: styles.zerionLogo }),
+          r('div', { class: styles.title }, 'Unrecognized Network')
+        ),
+        r('div', { class: styles.message },
+          'Unable to switch network to the ',
+          r('span', { class: styles.chainId }, `Chain Id: ${chainId.toString()}`),
+          '.\nPlease check your network settings and try again.'
+        )
+      ),
+      r('button', { 'aria-label': 'Close', class: styles.closeButton })
+    )
 
     return el;
   },
@@ -101,12 +99,14 @@ async function showNotification(notification: InDappNotification) {
   const el = await createNotification(notification);
   document.body.appendChild(el);
 
+  const closeTimeout =
+    notification.notificationEvent === 'switchChainError' ? 3500 : 2400;
   setTimeout(() => {
     el.classList.add(styles.show);
   }, 100);
   setTimeout(() => {
     removeNotification(el);
-  }, 2400);
+  }, closeTimeout);
 
   el.querySelector(`.${styles.closeButton}`)?.addEventListener('click', () => {
     removeNotification(el);
