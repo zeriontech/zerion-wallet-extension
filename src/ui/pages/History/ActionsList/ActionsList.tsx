@@ -55,7 +55,7 @@ export function ActionsList({
                 const hash = addressAction.transaction.hash;
                 return {
                   key: isLocalAddressAction(addressAction)
-                    ? addressAction.relatedTransaction || hash
+                    ? `local-${addressAction.relatedTransaction || hash}`
                     : hash,
                   component: (
                     <ActionItem

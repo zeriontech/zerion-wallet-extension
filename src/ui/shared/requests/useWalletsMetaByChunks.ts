@@ -5,15 +5,18 @@ export function useWalletsMetaByChunks({
   addresses,
   enabled = true,
   suspense = true,
+  useErrorBoundary = true,
 }: {
   addresses: string[];
   enabled?: boolean;
   suspense?: boolean;
+  useErrorBoundary?: boolean;
 }) {
   return useQuery({
     enabled: enabled && addresses.length > 0,
     queryKey: ['ZerionAPI.getWalletsMetaByChunks', addresses],
     queryFn: () => ZerionAPI.getWalletsMetaByChunks(addresses),
     suspense,
+    useErrorBoundary,
   });
 }
