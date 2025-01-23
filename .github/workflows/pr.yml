@@ -83,7 +83,7 @@ jobs:
         run: |
           mkdir -p ./pr
           echo $PR_NUMBER > ./pr/pr_number
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pr_number
           path: pr/
@@ -97,7 +97,7 @@ jobs:
 
       - name: Upload build
         if: ${{ success() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: zerion-wallet-extension
           path: zerion-wallet-extension-${{github.sha}}.zip
