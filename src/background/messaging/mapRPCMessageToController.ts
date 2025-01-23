@@ -57,7 +57,7 @@ export function mapRPCMessageToController<T>(
           return formatJsonRpcResultForPort(id, result);
         },
         (error: Error | DOMException | ErrorResponse) => {
-          return formatJsonRpcWalletError(
+          const normalizedError = formatJsonRpcWalletError(
             id,
             error instanceof DOMException
               ? domExceptionToError(error).message
@@ -65,6 +65,10 @@ export function mapRPCMessageToController<T>(
               ? error
               : getError(error)
           );
+          console.group('Controller error'); // eslint-disable-line no-console
+          console.table(normalizedError); // eslint-disable-line no-console
+          console.groupEnd(); // eslint-disable-line no-console
+          return normalizedError;
         }
       )
       .then((result: JsonRpcResponse) => {
