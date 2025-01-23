@@ -139,8 +139,8 @@ export function ConnectionHeader() {
     onSuccess: () => chainQuery.refetch(),
   });
 
-  const isConnectableSite = activeTabOrigin
-    ? isConnectableDapp(new URL(activeTabOrigin))
+  const isConnectableSite = tabData?.url
+    ? isConnectableDapp(tabData.url)
     : false;
 
   const isHidden = !isConnectableSite && !showPausedHeader;
