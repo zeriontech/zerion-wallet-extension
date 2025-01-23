@@ -45,10 +45,6 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import {
-  interpretSignature,
-  interpretTransaction,
-} from 'src/modules/ethereum/transactions/interpret';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
@@ -84,7 +80,6 @@ import {
   adjustedCheckEligibility,
   fetchAndAssignPaymaster,
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { RenderArea } from 'react-area';
 import { wait } from 'src/shared/wait';
@@ -92,6 +87,7 @@ import { assertProp } from 'src/shared/assert-property';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
+import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -265,49 +261,6 @@ function useLocalAddressAction({
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
-  });
-}
-
-function useInterpretTransaction({
-  transaction,
-  address,
-  origin,
-  client,
-  enabled = true,
-}: {
-  transaction: IncomingTransactionWithChainId;
-  address: string;
-  origin: string;
-  client: Client;
-  enabled?: boolean;
-}) {
-  const { currency } = useCurrency();
-  return useQuery({
-    queryKey: [
-      'interpretTransaction',
-      transaction,
-      address,
-      origin,
-      currency,
-      client,
-    ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
-    queryFn: () =>
-      interpretTransaction({
-        address,
-        transaction,
-        origin,
-        client,
-        currency,
-      }),
-    enabled,
-    keepPreviousData: true,
-    staleTime: 20000,
-    suspense: false,
-    retry: 1,
   });
 }
 
@@ -579,6 +532,7 @@ function SendTransactionContent({
     enabled: paymasterPossible && gasPricesQuery.isFetched,
     suspense: false,
     staleTime: 120000,
+    retry: 1,
     queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
     queryFn: async () => {
       const tx = await configureTransactionToBeSigned(populatedTransaction, {
@@ -607,25 +561,14 @@ function SendTransactionContent({
 
   const client = useDefiSdkClient();
 
-  const txInterpretQuery = useInterpretTransaction({
-    transaction: populatedTransaction,
-    address: singleAddress,
-    origin,
-    client,
-    enabled: USE_PAYMASTER_FEATURE
-      ? shouldInterpretTransaction({ network, eligibilityQuery })
-      : Boolean(network?.supports_simulations),
-  });
-
-  const paymasterTxInterpretQuery = useQuery({
-    enabled: Boolean(network?.supports_simulations) && paymasterEligible,
-    // Both paymasterTxInterpretQuery and txInterpret query must behave the same
-    // and keepPreviousData. Failing to do this currently may break AllowanceView
+  const interpretQuery = useQuery({
+    enabled: Boolean(network?.supports_simulations),
+    // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
     keepPreviousData: true,
     suspense: false,
     queryKey: [
-      'interpret/typedData',
+      'interpretTxBasedOnEligibility',
       populatedTransaction,
       chainGasPrices,
       configuration,
@@ -637,6 +580,9 @@ function SendTransactionContent({
       client,
       currency,
       source,
+      eligibilityQuery.data?.data.eligible,
+      eligibilityQuery.status,
+      origin,
     ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -656,26 +602,16 @@ function SendTransactionContent({
           requireNonce: true,
         }
       );
-      const toSign = await fetchAndAssignPaymaster(configuredTx, {
-        source,
-        apiClient: ZerionAPI,
-      });
-      const typedData = await walletPort.request('uiGetEip712Transaction', {
-        transaction: toSign,
-      });
-      return interpretSignature({
-        address: toSign.from,
-        chainId: normalizeChainId(toSign.chainId),
-        typedData,
-        client,
+      return interpretTxBasedOnEligibility({
+        transaction: configuredTx,
+        eligibilityQueryData: eligibilityQuery.data?.data.eligible,
+        eligibilityQueryStatus: eligibilityQuery.status,
         currency,
+        origin,
+        client,
       });
     },
   });
-
-  const interpretQuery = paymasterEligible
-    ? paymasterTxInterpretQuery
-    : txInterpretQuery;
 
   const interpretationHasCriticalWarning = hasCriticalWarning(
     interpretQuery.data?.warnings

@@ -7,7 +7,7 @@ import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/
 import type { Chain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
-import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
+import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
 
 const QUERY_KEY = ['configureSendTransaction'];
 

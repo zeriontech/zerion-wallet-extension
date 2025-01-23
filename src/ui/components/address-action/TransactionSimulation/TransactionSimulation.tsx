@@ -9,65 +9,19 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { invariant } from 'src/shared/invariant';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
-import {
-  interpretSignature,
-  interpretTransaction,
-} from 'src/modules/ethereum/transactions/interpret';
 import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import type { EligibilityQuery } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
-import { shouldInterpretTransaction } from 'src/modules/ethereum/account-abstraction/shouldInterpretTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { usePreferences } from 'src/ui/features/preferences';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { AddressActionDetails } from '../AddressActionDetails';
 import { InterpretationState } from '../../InterpretationState';
-
-export function useTxInterpretQuery({
-  transaction,
-  eligibilityQuery,
-}: {
-  transaction: IncomingTransactionWithChainId;
-  eligibilityQuery: EligibilityQuery;
-}) {
-  const { networks } = useNetworks();
-  const chain = networks?.getChainById(normalizeChainId(transaction.chainId));
-  const network = chain ? networks?.getNetworkByName(chain) || null : null;
-  const { currency } = useCurrency();
-  const client = useDefiSdkClient();
-
-  return useQuery({
-    enabled: shouldInterpretTransaction({ network, eligibilityQuery }),
-    queryKey: ['interpretTransaction', transaction, currency, client],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
-    queryFn: () => {
-      invariant(transaction.from, 'transaction must have a from value');
-      return interpretTransaction({
-        address: transaction.from,
-        transaction,
-        origin: 'https://app.zerion.io',
-        currency,
-        client,
-      });
-    },
-    keepPreviousData: true,
-    staleTime: 20000,
-    suspense: false,
-    retry: 1,
-  });
-}
 
 export function TransactionSimulation({
   vGap = 16,
   address,
   transaction,
-  paymasterEligible,
   txInterpretQuery,
   localAllowanceQuantityBase,
   showApplicationLine,
@@ -76,8 +30,7 @@ export function TransactionSimulation({
   vGap?: number;
   address: string;
   transaction: IncomingTransactionWithChainId;
-  paymasterEligible: boolean;
-  txInterpretQuery: ReturnType<typeof useTxInterpretQuery>;
+  txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   localAllowanceQuantityBase?: string;
   showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
@@ -140,47 +93,7 @@ export function TransactionSimulation({
     useErrorBoundary: true,
   });
 
-  const network = chain ? networks?.getNetworkByName(chain) || null : null;
-
-  const { preferences } = usePreferences();
-  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
-  // TODO:
-  // Refactor:
-  // This must be called on the same level as `txInterpretQuery`
-  // in TransactionConfirmationView
-  const paymasterTxInterpretQuery = useQuery({
-    enabled: Boolean(network?.supports_simulations) && paymasterEligible,
-    suspense: false,
-    keepPreviousData: true,
-    queryKey: ['interpret/typedData', client, currency, transaction, source],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
-    queryFn: async () => {
-      invariant(transaction.from, 'transaction must have a from value');
-      const toSign = await fetchAndAssignPaymaster(transaction, {
-        source,
-        apiClient: ZerionAPI,
-      });
-      const typedData = await walletPort.request('uiGetEip712Transaction', {
-        transaction: toSign,
-      });
-      return interpretSignature({
-        address: transaction.from,
-        chainId: normalizeChainId(toSign.chainId),
-        typedData,
-        client,
-        currency,
-      });
-    },
-  });
-
-  const interpretQuery = paymasterEligible
-    ? paymasterTxInterpretQuery
-    : txInterpretQuery;
-
-  const interpretation = interpretQuery.data;
+  const interpretation = txInterpretQuery.data;
 
   const interpretAddressAction = interpretation?.action;
   const addressAction = interpretAddressAction || localAddressAction;
@@ -191,7 +104,9 @@ export function TransactionSimulation({
   const actionTransfers = addressAction.content?.transfers;
   const singleAsset = addressAction.content?.single_asset;
 
-  const allowanceQuantityBase = interpretQuery.isFetching
+  // TODO: what if network doesn't support simulations (txInterpretQuery is idle or isError),
+  // but this is an approval tx? Can there be a bug?
+  const allowanceQuantityBase = txInterpretQuery.isFetching
     ? localAllowanceQuantityBase
     : addressAction.content?.single_asset?.quantity;
 
@@ -223,7 +138,7 @@ export function TransactionSimulation({
       />
       <InterpretationState
         interpretation={interpretation}
-        interpretQuery={interpretQuery}
+        interpretQuery={txInterpretQuery}
       />
       <RenderArea name="transaction-warning-section" />
     </VStack>

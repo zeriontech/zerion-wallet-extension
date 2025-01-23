@@ -75,12 +75,14 @@ export function interpretSignature({
   typedData,
   client = defaultClient,
   currency,
+  origin,
 }: {
   address: string;
   chainId?: ChainId | null;
   typedData: TypedData;
   client?: Client;
   currency: string;
+  origin: string;
 }): Promise<InterpretResponse> {
   return Promise.race([
     rejectAfterDelay(10000, 'interpret signature'),
@@ -101,6 +103,7 @@ export function interpretSignature({
             chain_id: chainId,
             currency,
             typed_data: typedData,
+            domain: origin,
           },
         },
         // Here we're using onMessage instead of onData because of
