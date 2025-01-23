@@ -1,0 +1,58 @@
+name: Run tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      DEFI_SDK_API_URL:
+        description: 'URL for DeFi SDK API'
+        required: false
+        default: 'wss://api-v4.zerion.io/'
+      ZERION_API_URL:
+        description: 'URL for Zerion API'
+        required: false
+        default: 'https://zpi.zerion.io/'
+      BACKEND_ENV:
+        description: 'Backend environment'
+        required: false
+        default: ''
+      PROXY_URL:
+        description: 'Proxy URL'
+        required: false
+        default: 'https://proxy.zerion.io/'
+      DEFI_SDK_TRANSACTIONS_API_URL:
+        description: 'URL for DeFi SDK Transactions API'
+        required: false
+        default: 'https://transactions.zerion.io'
+      SOCIAL_API_URL:
+        description: 'URL for Social API'
+        required: false
+        default: 'https://social.zerion.io/'
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install dependencies and test
+        env:
+          DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL }}
+          ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL }}
+          BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV }}
+          PROXY_URL: ${{ github.event.inputs.PROXY_URL }}
+          DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL }}
+          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
+          SOCIAL_API_URL: ${{ github.event.inputs.SOCIAL_API_URL }}
+          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          FEATURE_SEND_FORM: on
+          FEATURE_FOOTER_BUG_BUTTON: off
+          MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
+        run: |
+          npm install
+          npm test
