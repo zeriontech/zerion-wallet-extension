@@ -34,8 +34,8 @@ const notifications = {
 
     // prettier-ignore
     const el = r('div', { class: `${styles.notification} ${styles.chainChanged}` },
-      r('div',null,
-        r('div', { class: styles.hstack, style: 'grid-gap: 12px; background: pink;' },
+      r('div', null,
+        r('div', { class: styles.hstack, style: 'grid-gap: 12px;' },
           r('div', { class: styles.zerionLogo }, networkIcon),
           r('div', { class: styles.vstack, style: 'grid-gap: 0px;' },
             r('div', { class: styles.title }, 'Network Switched'),
