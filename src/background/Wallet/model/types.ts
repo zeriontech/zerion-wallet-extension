@@ -47,6 +47,7 @@ interface PublicPreferences {
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
   inviteFriendsBannerDismissed?: boolean;
+  exploreZeroBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
   /** @deprecated */
   enableTestnets?: boolean;
