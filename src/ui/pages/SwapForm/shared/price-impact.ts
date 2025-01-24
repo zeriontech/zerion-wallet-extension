@@ -1,6 +1,6 @@
 import type BigNumber from 'bignumber.js';
 
-const PRICE_IMPACT_WARNING_THRESHOLD = -0.03;
+const PRICE_IMPACT_WARNING_THRESHOLD = -0.05;
 
 export function exceedsPriceImpactThreshold({
   relativeChange,
