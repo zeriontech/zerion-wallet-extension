@@ -66,8 +66,8 @@ function verifyDotEnv() {
   ];
 
   for (const key of requiredKeys) {
-    if (!(key in env)) {
-      throw new Error(`Missing required env key: ${key}`);
+    if (!(key in envExample)) {
+      throw new Error(`Missing required env key in .env.example: ${key}`);
     }
   }
 }
