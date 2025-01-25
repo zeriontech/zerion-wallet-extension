@@ -4,6 +4,8 @@ import type {
   EthersV5TransactionResponse,
 } from 'src/background/Wallet/model/ethers-v5-types';
 
+type AddressActionStoredV1 = AddressAction;
+
 export interface TransactionObject {
   hash: string;
   timestamp: number;
@@ -12,6 +14,7 @@ export interface TransactionObject {
   receipt?: EthersV5TransactionReceiptStripped;
   dropped?: boolean;
   relatedTransactionHash?: string; // hash of related transaction (cancelled or sped-up)
+  addressAction?: AddressActionStoredV1;
 }
 
 export type StoredTransactions = Array<TransactionObject>;

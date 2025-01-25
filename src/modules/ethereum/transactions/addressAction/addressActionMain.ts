@@ -31,6 +31,20 @@ export function isLocalAddressAction(
   return 'local' in addressAction && addressAction.local;
 }
 
+export function toLocalAddressAction(
+  addressAction: AddressAction,
+  status: ClientTransactionStatus
+): LocalAddressAction {
+  return {
+    ...addressAction,
+    local: true,
+    transaction: {
+      ...addressAction.transaction,
+      status,
+    },
+  };
+}
+
 export const ZERO_HASH =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 
