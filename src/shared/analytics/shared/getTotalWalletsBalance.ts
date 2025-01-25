@@ -7,7 +7,7 @@ export async function getAddressesPortfolio(addresses: string[]) {
       () => reject(new Error('Request timed out: getAddressesPortfolio')),
       10000
     );
-    const { unsubscribe } = client.addressPortfolioDecomposition(
+    const { } = client.addressPortfolioDecomposition(
       {
         addresses,
         currency: 'usd', // keep currency const for analytics purpose
