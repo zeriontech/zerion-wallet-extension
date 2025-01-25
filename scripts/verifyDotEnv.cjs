@@ -46,6 +46,30 @@ function verifyDotEnv() {
       );
     }
   }
+
+  const requiredKeys = [
+    'DEFI_SDK_API_URL',
+    'DEFI_SDK_API_TOKEN',
+    'DEFI_SDK_TESTNET_API_URL',
+    'DEFI_SDK_TRANSACTIONS_API_URL',
+    'ZERION_API_URL',
+    'ZERION_TESTNET_API_URL',
+    'SOCIAL_API_URL',
+    'TEST_WALLET_ADDRESS',
+    'PROXY_URL',
+    'FEATURE_FOOTER_BUG_BUTTON',
+    'FEATURE_SEND_FORM',
+    'MIXPANEL_TOKEN_PUBLIC',
+    'FEATURE_LOYALTY_FLOW',
+    'GOOGLE_ANALYTICS_MEASUREMENT_ID',
+    'GOOGLE_ANALYTICS_API_SECRET',
+  ];
+
+  for (const key of requiredKeys) {
+    if (!(key in env)) {
+      throw new Error(`Missing required env key: ${key}`);
+    }
+  }
 }
 
 verifyDotEnv();
