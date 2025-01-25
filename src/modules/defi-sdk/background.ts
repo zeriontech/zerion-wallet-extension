@@ -5,6 +5,11 @@ import {
   DEFI_SDK_API_TOKEN,
   BACKEND_ENV,
   DEFI_SDK_TESTNET_API_URL,
+  TEST_WALLET_ADDRESS,
+  FEATURE_FOOTER_BUG_BUTTON,
+  FEATURE_SEND_FORM,
+  GOOGLE_ANALYTICS_MEASUREMENT_ID,
+  GOOGLE_ANALYTICS_API_SECRET,
 } from 'src/env/config';
 import { version } from 'src/shared/packageVersion';
 import { platform } from 'src/shared/analytics/platform';

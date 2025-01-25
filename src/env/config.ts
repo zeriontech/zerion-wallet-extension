@@ -24,6 +24,12 @@ export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;
 
+export const TEST_WALLET_ADDRESS = process.env.TEST_WALLET_ADDRESS;
+export const FEATURE_FOOTER_BUG_BUTTON = process.env.FEATURE_FOOTER_BUG_BUTTON;
+export const FEATURE_SEND_FORM = process.env.FEATURE_SEND_FORM;
+export const GOOGLE_ANALYTICS_MEASUREMENT_ID = process.env.GOOGLE_ANALYTICS_MEASUREMENT_ID;
+export const GOOGLE_ANALYTICS_API_SECRET = process.env.GOOGLE_ANALYTICS_API_SECRET;
+
 if (!PROXY_URL) {
   throw new Error('PROXY_URL must be defined in ENV');
 }
