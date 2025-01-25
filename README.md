@@ -8,7 +8,7 @@ Built for a better Web3 browsing experience in a multichain world with advanced 
 
 ## Security Audits
 
-Leading security firms have Independently audited the Zerion Extension: [Cure-53](https://cure53.de/), [Secfault](https://secfault-security.com/), [Slowmist](https://www.slowmist.com/), and [Zokyo](https://www.zokyo.io/). [Learn more](https://zerion.io/security) about Zerion's commitment to security and user safety.
+Leading security firms have independently audited the Zerion Extension: [Cure-53](https://cure53.de/), [Secfault](https://secfault-security.com/), [Slowmist](https://www.slowmist.com/), and [Zokyo](https://www.zokyo.io/). [Learn more](https://zerion.io/security) about Zerion's commitment to security and user safety.
 
 ## Install
 
