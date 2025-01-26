@@ -31,6 +31,10 @@ import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
+import {
+  resetGoogleAnalyticsSessionId,
+  sendToGoogleAnalytics,
+} from './google-analytics';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -99,6 +103,13 @@ function trackAppEvents({ account }: { account: Account }) {
       ...getChainBreakdown(portfolio),
     };
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+  });
+
+  emitter.on('screenView', async (data) => {
+    sendToGoogleAnalytics('page_view', {
+      page_title: data.title,
+      page_location: data.pathname,
+    });
   });
 
   emitter.on('buttonClicked', (data) => {
@@ -177,6 +188,7 @@ function trackAppEvents({ account }: { account: Account }) {
         ...addressActionAnalytics,
       });
       sendToMetabase('signed_transaction', params);
+      sendToGoogleAnalytics('signed_transaction', params);
       const mixpanelParams = omit(params, [
         'request_name',
         'hash',
@@ -237,6 +249,7 @@ function trackAppEvents({ account }: { account: Account }) {
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
     });
     sendToMetabase('signed_message', params);
+    sendToGoogleAnalytics('signed_message', params);
     const mixpanelParams = omit(params, [
       'request_name',
       'wallet_address',
@@ -348,7 +361,13 @@ export function initialize({ account }: { account: Account }) {
     willSendRequest: createAddProviderHook({ getWalletProvider }),
   });
   const handleUserId = () => mixpanelIdentify(account);
-  account.on('authenticated', () => handleUserId());
+
+  account.on('authenticated', () =>
+    // Google Analytics does not have a clear definition of a user session.
+    // Hence, we need to define what a user session means within the extension.
+    // For simplicity, we initiate a new session each time the user authenticates.
+    Promise.allSettled([handleUserId(), resetGoogleAnalyticsSessionId()])
+  );
   if (account.getUser()) {
     handleUserId();
   }

@@ -16,6 +16,7 @@ import type { WalletContainer } from './Wallet/model/types';
 type TransactionResponse = ethers.TransactionResponse;
 
 export interface ScreenViewParams {
+  title: string;
   pathname: string;
   previous: string | null;
   address: string | null;
