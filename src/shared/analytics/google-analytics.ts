@@ -7,12 +7,17 @@ import {
 import { Loglevel, logTable, logToConsole } from '../logger';
 import { onIdle } from './analytics';
 
-type GoogleAnalyticsEvent = 'page_view';
+type GoogleAnalyticsEvent =
+  | 'page_view'
+  | 'signed_message'
+  | 'signed_transaction';
 
 export const SESSION_ID_KEY = 'GOOGLE_ANALYTICS_V4_SESSION_ID';
 const CLIENT_ID_KEY = 'GOOGLE_ANALYTICS_V4_CLIENT_ID';
 const ENDPOINT = 'https://www.google-analytics.com/mp/collect';
 const DEFAULT_ENGAGEMENT_TIME_IN_MSEC = 100;
+
+const DEBUG_MODE = true;
 
 function readClientid() {
   return browserStorage.get<string>(CLIENT_ID_KEY);
@@ -21,7 +26,8 @@ function readClientid() {
 async function getClientId() {
   let clientId = await readClientid();
   if (!clientId) {
-    // Generate a unique client ID for Google Analytics V4.
+    // Generate a unique client ID for Google Analytics V4. The client ID should
+    // stay the same, as long as the extension is installed on a user’s browser.
     // The actual value is not relevant.
     clientId = crypto.randomUUID();
     await browserStorage.set(CLIENT_ID_KEY, clientId);
@@ -48,19 +54,9 @@ async function getSessionId() {
   return sessionId;
 }
 
-function getEventParams(event: GoogleAnalyticsEvent) {
-  if (event === 'page_view')
-    return {
-      page_title: document.title,
-      page_location: document.location.href,
-    };
-
-  return {};
-}
-
 export async function sendToGoogleAnalytics(
   event: GoogleAnalyticsEvent,
-  extraParams: Record<string, unknown>
+  params: Record<string, unknown>
 ) {
   // Both session_id and engagement_time_msec are recommended parameters when using
   // the Google Analytics Measurement Protocol as they are required
@@ -74,14 +70,11 @@ export async function sendToGoogleAnalytics(
     engagement_time_msec: DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
   };
 
-  const eventParams = getEventParams(event);
-
   const eventPayload = {
     name: event,
     params: {
       ...baseParams,
-      ...eventParams,
-      ...extraParams,
+      ...params,
     },
   };
 
@@ -89,18 +82,18 @@ export async function sendToGoogleAnalytics(
   logTable(Loglevel.info, eventPayload);
   logToConsole(Loglevel.info, 'groupEnd');
 
-  if (process.env.NODE_ENV !== 'development') {
-    onIdle(() => {
-      fetch(
-        `${ENDPOINT}?measurement_id=${GOOGLE_ANALYTICS_MEASUREMENT_ID}&api_secret=${GOOGLE_ANALYTICS_API_SECRET}`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            client_id: clientId,
-            events: [eventPayload],
-          }),
-        }
-      );
-    });
-  }
+  const debugParam = DEBUG_MODE ? '&debug_mode=1' : '';
+
+  onIdle(() => {
+    fetch(
+      `${ENDPOINT}?measurement_id=${GOOGLE_ANALYTICS_MEASUREMENT_ID}&api_secret=${GOOGLE_ANALYTICS_API_SECRET}${debugParam}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          client_id: clientId,
+          events: [eventPayload],
+        }),
+      }
+    );
+  });
 }

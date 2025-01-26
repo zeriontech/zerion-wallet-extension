@@ -105,8 +105,11 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
   });
 
-  emitter.on('screenView', async () => {
-    sendToGoogleAnalytics('page_view', {});
+  emitter.on('screenView', async (data) => {
+    sendToGoogleAnalytics('page_view', {
+      page_title: data.title,
+      page_location: data.pathname,
+    });
   });
 
   emitter.on('buttonClicked', (data) => {
@@ -185,6 +188,7 @@ function trackAppEvents({ account }: { account: Account }) {
         ...addressActionAnalytics,
       });
       sendToMetabase('signed_transaction', params);
+      sendToGoogleAnalytics('signed_transaction', params);
       const mixpanelParams = omit(params, [
         'request_name',
         'hash',
@@ -245,6 +249,7 @@ function trackAppEvents({ account }: { account: Account }) {
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
     });
     sendToMetabase('signed_message', params);
+    sendToGoogleAnalytics('signed_message', params);
     const mixpanelParams = omit(params, [
       'request_name',
       'wallet_address',
