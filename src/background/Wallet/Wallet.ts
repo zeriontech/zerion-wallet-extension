@@ -198,6 +198,14 @@ export class Wallet {
     this.disposer.add(
       this.walletStore.on('change', this.notifyExternalStores.bind(this))
     );
+    this.disposer.add(
+      emitter.on('transactionSent', ({ chain, clientScope, transaction }) => {
+        if (clientScope === 'Swap') {
+          this.setLastSwapChainByAddress({ address: transaction.from, chain });
+        }
+      })
+    );
+
     this.notificationWindow = notificationWindow;
     this.userCredentials = userCredentials;
     this.record = null;
@@ -666,6 +674,27 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     const groups = this.record?.walletManager.groups;
     return groups ? maskWalletGroups(groups) : null;
+  }
+
+  async getLastSwapChainByAddress({
+    params: { address },
+    context,
+  }: WalletMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    return Model.getLastSwapChain(this.record, { address });
+  }
+
+  private setLastSwapChainByAddress({
+    address,
+    chain,
+  }: {
+    address: string;
+    chain: string;
+  }) {
+    this.ensureRecord(this.record);
+    this.record = Model.setLastSwapChain(this.record, { address, chain });
+    this.updateWalletStore(this.record);
   }
 
   async uiGetWalletGroup({

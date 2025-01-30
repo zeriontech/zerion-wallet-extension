@@ -45,7 +45,7 @@ const mockedGlobalPreferences: GlobalPreferences = {
 };
 
 const mockRecord: WalletRecord = {
-  version: 5,
+  version: 6,
   publicPreferences: {
     showNetworkSwitchShortcut: true,
     overviewChain: '',
@@ -81,6 +81,7 @@ const mockRecord: WalletRecord = {
     completedAbilities: [],
     dismissedAbilities: [],
   },
+  activityRecord: {},
 };
 
 class WalletPortMock {

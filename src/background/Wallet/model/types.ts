@@ -3,6 +3,7 @@ import type { SignerContainer } from './WalletContainer';
 import type { WalletOrigin } from './WalletOrigin';
 import type { AccountContainer } from './AccountContainer';
 import type { EthersV5TransactionResponse } from './ethers-v5-types';
+import type { ActivityRecord } from './ActivityRecord';
 
 export type WalletContainer = SignerContainer | AccountContainer;
 
@@ -102,9 +103,15 @@ export interface WalletRecordVersion4
   feed: WalletFeed;
 }
 
-export interface WalletRecord extends Omit<WalletRecordVersion4, 'version'> {
+export interface WalletRecordVersion5
+  extends Omit<WalletRecordVersion4, 'version'> {
+  /** This version introduces normalized addresses in "permissions", see ./versions.ts */
   version: 5;
-  /** This version introduces normalized addresses in "permissions" */
+}
+
+export interface WalletRecord extends Omit<WalletRecordVersion5, 'version'> {
+  version: 6;
+  activityRecord: ActivityRecord;
 }
 
 export interface PendingWallet {
