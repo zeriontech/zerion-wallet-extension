@@ -987,7 +987,6 @@ function SwapFormPrepareChain({ children }: React.PropsWithChildren) {
     }
     setPrepared(true);
   }, [
-    address,
     isFetchedAfterMount,
     lastUsedChain,
     prepared,
