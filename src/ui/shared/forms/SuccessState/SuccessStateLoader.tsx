@@ -156,14 +156,14 @@ function BackgroundDecoration({ color }: { color: string | null }) {
     <div
       style={{
         position: 'absolute',
-        top: -100,
+        top: '-30vh',
         left: 0,
         right: 0,
-        bottom: 0,
+        height: '60vh',
         transitionDuration: '1s',
         willChange: 'opacity',
         opacity: color ? 0.7 : 0,
-        background: `radial-gradient(circle at top center, ${color}, transparent 40%)`,
+        background: `radial-gradient(circle at top center, ${color}, transparent 65%)`,
       }}
     />
   );
