@@ -1,77 +1,19 @@
-import React from 'react';
-import { animated, useTrail } from '@react-spring/web';
+import React, { useMemo } from 'react';
 import type { SwapFormState } from '@zeriontech/transactions';
-import { PageColumn } from 'src/ui/components/PageColumn';
-import CheckIcon from 'jsx:src/ui/assets/check-circle-thin.svg';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { UIText } from 'src/ui/ui-kit/UIText';
-import ArrowDown from 'jsx:src/ui/assets/arrow-down.svg';
-import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import { invariant } from 'src/shared/invariant';
-import { PageBottom } from 'src/ui/components/PageBottom';
-import { Button } from 'src/ui/ui-kit/Button';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { Media } from 'src/ui/ui-kit/Media';
-import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
-import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
-import type { BareAddressPosition } from '../BareAddressPosition';
+import { SuccessStateLoader } from 'src/ui/shared/forms/SuccessState/SuccessStateLoader';
+import { SuccessStateToken } from 'src/ui/shared/forms/SuccessState/SuccessStateToken';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { GasbackDecorated } from '../../SendForm/SuccessState/SuccessState';
-
-function SwapVisualization({
-  spendPosition,
-  receivePosition,
-  spendInput,
-  receiveInput,
-}: {
-  spendPosition: BareAddressPosition;
-  receivePosition: BareAddressPosition;
-  spendInput: string;
-  receiveInput: string;
-}) {
-  return (
-    <VStack gap={4} style={{ justifyItems: 'center' }}>
-      <Media
-        image={
-          <TokenIcon
-            src={spendPosition.asset.icon_url}
-            symbol={spendPosition.asset.symbol}
-          />
-        }
-        text={
-          <UIText kind="headline/h2">
-            {formatTokenValue(spendInput)} {spendPosition.asset.symbol}
-          </UIText>
-        }
-        detailText={null}
-      />
-      <ArrowDown style={{ color: 'var(--neutral-500)' }} />
-      <Media
-        image={
-          <TokenIcon
-            src={receivePosition.asset.icon_url}
-            symbol={receivePosition.asset.symbol}
-          />
-        }
-        text={
-          <UIText kind="headline/h2">
-            {formatTokenValue(receiveInput)} {receivePosition.asset.symbol}
-          </UIText>
-        }
-        detailText={null}
-      />
-    </VStack>
-  );
-}
+import type { BareAddressPosition } from '../BareAddressPosition';
 
 export function SuccessState({
-  paddingTop = 64,
   swapFormState,
   spendPosition,
   receivePosition,
@@ -85,25 +27,19 @@ export function SuccessState({
   hash: string | null;
   gasbackValue: number | null;
   onDone: () => void;
-  paddingTop?: number;
 }) {
+  useBodyStyle(
+    useMemo(() => ({ ['--url-bar-background' as string]: 'transparent' }), [])
+  );
+
   const { networks } = useNetworks();
   const { chainInput, spendInput, receiveInput } = swapFormState;
   invariant(
     chainInput && spendInput && receiveInput,
     'Required Form values are missing'
   );
-  const trail = useTrail(4, {
-    config: { tension: 400 },
-    from: {
-      opacity: 0,
-      y: 40,
-    },
-    to: {
-      opacity: 1,
-      y: 0,
-    },
-  });
+
+  const actionStatus = useActionStatusByHash(hash);
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
@@ -115,81 +51,39 @@ export function SuccessState({
   }
   const chain = createChain(chainInput);
   const chainName = networks.getChainName(chain);
+  const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
+
   return (
-    <PageColumn>
-      <Spacer height={paddingTop} />
-      <animated.div style={trail[0]}>
-        <CheckIcon
-          style={{
-            display: 'block',
-            marginInline: 'auto',
-            width: 72,
-            height: 72,
-            color: 'var(--primary-500)',
-          }}
+    <SuccessStateLoader
+      startItem={
+        <SuccessStateToken
+          iconUrl={spendPosition.asset.icon_url}
+          symbol={spendPosition.asset.symbol}
+          chainName={chainName}
+          chainIconUrl={chainIconUrl}
         />
-      </animated.div>
-      <Spacer height={32} />
-      <animated.div style={trail[1]}>
-        <UIText kind="headline/h1" style={{ textAlign: 'center' }}>
-          Swapping
-        </UIText>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <UIText kind="small/accent" style={{ textAlign: 'center' }}>
-            <HStack gap={8}>
-              <span>on</span>
-              <HStack gap={10}>
-                <NetworkIcon
-                  size={20}
-                  name={chainName}
-                  src={networks.getNetworkByName(chain)?.icon_url}
-                />{' '}
-                {chainName}
-              </HStack>
-            </HStack>
-          </UIText>
-        </div>
-      </animated.div>
-      <Spacer height={32} />
-      <animated.div style={trail[2]}>
-        <SwapVisualization
-          spendInput={spendInput}
-          receiveInput={receiveInput}
-          spendPosition={spendPosition}
-          receivePosition={receivePosition}
+      }
+      endItem={
+        <SuccessStateToken
+          iconUrl={receivePosition.asset.icon_url}
+          symbol={receivePosition.asset.symbol}
+          chainName={chainName}
+          chainIconUrl={chainIconUrl}
         />
-      </animated.div>
-      {gasbackValue && FEATURE_GASBACK ? (
-        <animated.div style={trail[3]}>
-          <div style={{ paddingInline: 32 }}>
-            <Spacer height={32} />
-            <GasbackDecorated value={gasbackValue} />
-          </div>
-        </animated.div>
-      ) : null}
-      <PageBottom />
-      <VStack gap={16} style={{ marginTop: 'auto', textAlign: 'center' }}>
-        {hash ? (
-          <UIText kind="caption/regular" color="var(--neutral-600)">
-            The transaction is still pending.
-            <br />
-            You can check the status on{' '}
-            <TextAnchor
-              style={{ color: 'var(--primary)' }}
-              href={networks.getExplorerTxUrlByName(chain, hash)}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              {networks.getExplorerNameByChainName(chain)}
-            </TextAnchor>
-            .
-          </UIText>
-        ) : null}
-        <Button style={{ marginTop: 'auto' }} onClick={onDone}>
-          Done
-        </Button>
-      </VStack>
-      <PageBottom />
-    </PageColumn>
+      }
+      status={actionStatus}
+      pendingTitle="Swapping"
+      failedTitle="Swap failed"
+      dropppedTitle="Swap cancelled"
+      explorerUrl={
+        hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
+      }
+      successContent={
+        gasbackValue && FEATURE_GASBACK ? (
+          <GasbackDecorated value={gasbackValue} />
+        ) : null
+      }
+      onDone={onDone}
+    />
   );
 }
