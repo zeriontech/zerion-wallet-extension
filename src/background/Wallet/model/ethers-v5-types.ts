@@ -188,6 +188,7 @@ export function toEthersV5Receipt(
     to: value.to ?? '',
     transactionHash: value.hash,
     type: value.type,
-    status: value.status ?? undefined,
+    // some nodes return 0x1 here instead of number
+    status: Number(value.status) ?? undefined,
   };
 }
