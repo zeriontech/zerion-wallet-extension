@@ -227,6 +227,25 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     }
     this.wallets.push(wallet);
   }
+
+  async reEncryptWallets({
+    credentials,
+    newCredentials,
+  }: {
+    credentials: SessionCredentials;
+    newCredentials: SessionCredentials;
+  }) {
+    const { mnemonic: encryptedMnemonic } = this.getFirstWallet();
+    invariant(encryptedMnemonic, 'Must be a Mnemonic WalletContainer');
+    const phrase = await decryptMnemonic(encryptedMnemonic.phrase, credentials);
+    const { seedPhraseEncryptionKey } = newCredentials;
+    const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
+    for (const wallet of this.wallets) {
+      if (wallet.mnemonic) {
+        wallet.mnemonic.phrase = updatedPhrase;
+      }
+    }
+  }
 }
 
 export class PrivateKeyWalletContainer extends WalletContainerImpl {
