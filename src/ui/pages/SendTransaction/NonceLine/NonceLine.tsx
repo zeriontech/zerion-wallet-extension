@@ -158,7 +158,7 @@ export function NonceLine({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const nonce = data?.value;
   const value = userNonce ?? transaction.nonce ?? nonce;
-  const displayValue = value ? parseInt(String(value)) : noValueDash;
+  const displayValue = value != null ? parseInt(String(value)) : noValueDash;
   const source =
     userNonce != null
       ? NonceSource.user
