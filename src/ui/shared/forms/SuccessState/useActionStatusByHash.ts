@@ -27,6 +27,8 @@ export function useActionStatusByHash(hash: string | null, chain: Chain) {
       return getTransactionReceipt({ hash, rpcUrl });
     },
     enabled: Boolean(!localStatus && rpcUrl && hash),
+    refetchOnWindowFocus: false,
+    refetchInterval: (data) => (data ? false : 3000),
   });
 
   const ethersv5Receipt = data ? toEthersV5Receipt(data) : null;

@@ -125,7 +125,7 @@ export function transactionReceiptToActionStatus(
   transactionObject: Pick<TransactionObject, 'receipt' | 'dropped'>
 ): ClientTransactionStatus {
   return transactionObject.receipt
-    ? transactionObject.receipt.status === 1
+    ? Number(transactionObject.receipt.status) === 1
       ? 'confirmed'
       : 'failed'
     : transactionObject.dropped
