@@ -39,7 +39,8 @@ export function SuccessState({
     'Required Form values are missing'
   );
 
-  const actionStatus = useActionStatusByHash(hash);
+  const chain = createChain(chainInput);
+  const actionStatus = useActionStatusByHash(hash, chain);
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
@@ -49,7 +50,7 @@ export function SuccessState({
   if (!networks) {
     return <ViewLoading />;
   }
-  const chain = createChain(chainInput);
+
   const chainName = networks.getChainName(chain);
   const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
 
