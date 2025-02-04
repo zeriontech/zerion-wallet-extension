@@ -38,6 +38,7 @@
   transition: 0.3s ease-in-out;
   transform: translate(-50%, -50%);
   opacity: 1;
+  white-space: nowrap;
 }
 
 .title.hidden {
