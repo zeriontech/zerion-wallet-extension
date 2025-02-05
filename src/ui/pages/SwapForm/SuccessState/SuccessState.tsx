@@ -24,7 +24,7 @@ export function SuccessState({
   swapFormState: SwapFormState;
   spendPosition: BareAddressPosition;
   receivePosition: BareAddressPosition;
-  hash: string | null;
+  hash: string;
   gasbackValue: number | null;
   onDone: () => void;
 }) {
@@ -39,8 +39,7 @@ export function SuccessState({
     'Required Form values are missing'
   );
 
-  const chain = createChain(chainInput);
-  const actionStatus = useActionStatusByHash(hash, chain);
+  const actionStatus = useActionStatusByHash(hash);
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
@@ -51,6 +50,7 @@ export function SuccessState({
     return <ViewLoading />;
   }
 
+  const chain = createChain(chainInput);
   const chainName = networks.getChainName(chain);
   const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
 

@@ -1,39 +1,34 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useStore } from '@store-unit/react';
 import { transactionReceiptToActionStatus } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { localTransactionsStore } from 'src/ui/transactions/transactions-store';
-import type { Chain } from 'src/modules/networks/Chain';
-import { useQuery } from '@tanstack/react-query';
-import { useNetworks } from 'src/modules/networks/useNetworks';
-import { getTransactionReceipt } from 'src/modules/ethereum/transactions/getTransactionReceipt';
-import { toEthersV5Receipt } from 'src/background/Wallet/model/ethers-v5-types';
 
-export function useActionStatusByHash(hash: string | null, chain: Chain) {
+function useCachedValue<T>(key: string, value: T | null) {
+  const keyRef = useRef(key);
+  const savedRef = useRef(value);
+
+  if (keyRef.current !== key) {
+    keyRef.current = key;
+    savedRef.current = null;
+  }
+
+  if (value !== null) {
+    savedRef.current = value;
+  }
+
+  return savedRef.current;
+}
+
+export function useActionStatusByHash(hash: string) {
   const localActions = useStore(localTransactionsStore);
   const localStatus = useMemo(() => {
     const action = localActions.find((item) => item.transaction.hash === hash);
     return action ? transactionReceiptToActionStatus(action) : null;
   }, [localActions, hash]);
 
-  const { networks } = useNetworks();
-
-  const { data } = useQuery({
-    queryKey: ['getTransactionReceipt', hash, chain, networks],
-    queryFn: async () => {
-      if (!hash || !networks) {
-        return null;
-      }
-      return getTransactionReceipt({ hash, chain, networks });
-    },
-    enabled: Boolean(!localStatus && networks && hash),
-    refetchOnWindowFocus: false,
-    refetchInterval: (data) => (data ? false : 3000),
-  });
-
-  const ethersv5Receipt = data ? toEthersV5Receipt(data) : null;
-  const nodeStatus = ethersv5Receipt
-    ? transactionReceiptToActionStatus({ receipt: ethersv5Receipt })
-    : null;
-
-  return localStatus || nodeStatus || 'pending';
+  /**
+   * Once we get any status from the local store, we should save it
+   * And use it even after the local action has been removed
+   */
+  return useCachedValue(hash, localStatus) || 'pending';
 }

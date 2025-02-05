@@ -57,7 +57,7 @@ export function SuccessState({
 }: {
   sendFormSnapshot: SendFormSnapshot;
   gasbackValue: number | null;
-  hash: string | null;
+  hash: string;
   onDone: () => void;
 }) {
   useBodyStyle(
@@ -70,8 +70,7 @@ export function SuccessState({
   const currentChain = type === 'token' ? tokenChain : nftChain;
   invariant(to && currentChain, 'Required Form values are missing');
 
-  const chain = createChain(currentChain);
-  const actionStatus = useActionStatusByHash(hash, chain);
+  const actionStatus = useActionStatusByHash(hash);
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
@@ -81,6 +80,7 @@ export function SuccessState({
     return <ViewLoading />;
   }
 
+  const chain = createChain(currentChain);
   const chainName = networks.getChainName(chain);
   const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
 
