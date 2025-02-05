@@ -144,7 +144,7 @@ export interface Props {
   items: BareAddressPosition[];
   filterItemsLocally?: boolean;
   noItemsMessage: string;
-  isLoading?: boolean;
+  loading?: boolean;
   getGroupName?: (item: BareAddressPosition) => string;
   selectedItem: BareAddressPosition;
   onChange(position: BareAddressPosition): void;
@@ -246,7 +246,7 @@ const rootNode = getRootDomNode();
 function AssetSelectComponent({
   items: allItems,
   filterItemsLocally = true,
-  isLoading,
+  loading,
   noItemsMessage,
   selectedItem,
   getGroupName,
@@ -612,6 +612,7 @@ function AssetSelectComponent({
                 textAlign: 'start',
                 fontSize:
                   selectedItem.asset.symbol.length > 8 ? '0.8em' : undefined,
+                color: loading ? 'var(--neutral-600)' : undefined,
               }}
             >
               {selectedItem.asset.symbol}
@@ -625,7 +626,7 @@ function AssetSelectComponent({
                 }}
               />
             </HStack>
-            {!isLoading && chain && !assetExistsOnChain ? (
+            {!loading && chain && !assetExistsOnChain ? (
               <div
                 style={{ display: 'flex' }}
                 title="Asset is not found on selected chain"
@@ -707,7 +708,7 @@ function AssetSelectComponent({
                 items={listItems}
               />
             </div>
-          ) : isLoading ? (
+          ) : loading ? (
             <ViewLoading />
           ) : (
             <UIText kind="body/regular" style={{ padding: '8px 12px' }}>
