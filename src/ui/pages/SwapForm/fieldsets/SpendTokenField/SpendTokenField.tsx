@@ -25,7 +25,7 @@ import {
 import { FiatInputValue } from '../FiatInputValue';
 
 export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
-  const { spendPosition } = swapView;
+  const { spendPosition, spendAssetQuery } = swapView;
   const { primaryInput, spendInput, chainInput } = useSelectorStore(
     swapView.store,
     ['primaryInput', 'spendInput', 'chainInput']
@@ -120,6 +120,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                 chain={chain}
                 selectedItem={spendPosition}
                 noItemsMessage="No positions found"
+                loading={spendAssetQuery.isLoading}
               />
             ) : (
               <div
