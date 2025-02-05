@@ -3,6 +3,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 
 const ICON_SIZE = 72;
 const BORDER_RADIUS = 20;
+const BORDER_WIDTH = 4;
 
 export function SuccessStateAddress({ address }: { address: string }) {
   return (
@@ -11,12 +12,12 @@ export function SuccessStateAddress({ address }: { address: string }) {
         width: ICON_SIZE,
         height: ICON_SIZE,
         borderRadius: BORDER_RADIUS,
-        border: '4px solid var(--white)',
+        border: `${BORDER_WIDTH}px solid var(--white)`,
       }}
     >
       <WalletAvatar
         address={address}
-        size={ICON_SIZE - 8}
+        size={ICON_SIZE - BORDER_WIDTH * 2}
         borderRadius={BORDER_RADIUS}
       />
     </div>

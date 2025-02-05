@@ -16,17 +16,16 @@ export function useActionStatusByHash(hash: string | null, chain: Chain) {
   }, [localActions, hash]);
 
   const { networks } = useNetworks();
-  const rpcUrl = networks?.getRpcUrlInternal(chain);
 
   const { data } = useQuery({
-    queryKey: ['getTransactionReceipt', hash, rpcUrl],
+    queryKey: ['getTransactionReceipt', hash, chain, networks],
     queryFn: async () => {
-      if (!hash || !rpcUrl) {
+      if (!hash || !networks) {
         return null;
       }
-      return getTransactionReceipt({ hash, rpcUrl });
+      return getTransactionReceipt({ hash, chain, networks });
     },
-    enabled: Boolean(!localStatus && rpcUrl && hash),
+    enabled: Boolean(!localStatus && networks && hash),
     refetchOnWindowFocus: false,
     refetchInterval: (data) => (data ? false : 3000),
   });

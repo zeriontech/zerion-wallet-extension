@@ -179,7 +179,7 @@ export function SuccessStateLoader({
   dropppedTitle = 'Dropped',
   explorerUrl,
   error,
-  successContent,
+  confirmedContent,
   onDone,
 }: {
   startItem: React.ReactNode;
@@ -191,7 +191,7 @@ export function SuccessStateLoader({
   dropppedTitle?: string;
   explorerUrl?: string;
   error?: string;
-  successContent?: React.ReactNode;
+  confirmedContent?: React.ReactNode;
   onDone?: () => void;
 }) {
   const showLongWaitNotice = useRenderDelay(5000);
@@ -292,7 +292,7 @@ export function SuccessStateLoader({
                 </UIText>
               ) : null}
             </VStack>
-            {status === 'confirmed' ? successContent : null}
+            {status === 'confirmed' ? confirmedContent : null}
           </VStack>
           {explorerUrl ? (
             <UIText kind="caption/accent">

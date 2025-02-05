@@ -106,7 +106,7 @@ export function SuccessState({
       explorerUrl={
         hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
       }
-      successContent={
+      confirmedContent={
         gasbackValue && FEATURE_GASBACK ? (
           <GasbackDecorated value={gasbackValue} />
         ) : null
