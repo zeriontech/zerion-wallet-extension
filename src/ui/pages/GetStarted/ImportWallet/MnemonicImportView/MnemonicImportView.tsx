@@ -59,19 +59,40 @@ function useMnenomicPhraseForLocation({
   }
 }
 
+function mix<T>(arr1: T[], arr2: T[]) {
+  const res: T[] = [];
+  while (arr1.length || arr2.length) {
+    if (arr1.length) {
+      res.push(arr1.shift() as T);
+    }
+    if (arr2.length) {
+      res.push(arr2.shift() as T);
+    }
+  }
+  return res;
+}
+
 export function MnemonicImportView({
   locationStateStore,
 }: {
   locationStateStore: MemoryLocationState;
 }) {
-  const [count] = useState(100);
+  const [count] = useState(50);
   const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation({
     locationStateStore,
   });
   const { data: wallets } = useQuery({
     queryKey: ['getFirstNMnemonicWallets', phrase, count],
-    queryFn: async () =>
-      phrase ? getFirstNMnemonicWallets({ phrase, n: count }) : undefined,
+    queryFn: async () => {
+      if (!phrase) {
+        return;
+      }
+      const n = count;
+      const a = await getFirstNMnemonicWallets({ phrase, n, curve: 'ecdsa' });
+      const b = await getFirstNMnemonicWallets({ phrase, n, curve: 'ed25519' });
+      return mix(a, b);
+    },
+
     enabled: Boolean(phrase),
     useErrorBoundary: true,
   });

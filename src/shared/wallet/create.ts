@@ -1,5 +1,12 @@
 import { Wallet as EthersV5Wallet } from '@ethersproject/wallet';
 import type { BareWallet } from '../types/BareWallet';
+import { isSolanaPath } from './derivation-paths';
+import {
+  fromMnemonicToEd25519,
+  fromSecretKeyToEd25519,
+  fromSolanaKeypair,
+  isSolanaAddress,
+} from './solana';
 
 export function walletToObject(
   wallet: EthersV5Wallet | BareWallet
@@ -31,10 +38,23 @@ export function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet {
       name: name || null,
     };
   } else if (privateKey) {
-    return fromEthersWallet(new EthersV5Wallet(privateKey));
+    if (isSolanaAddress(privateKey)) {
+      const keypair = fromSecretKeyToEd25519(privateKey);
+      return fromSolanaKeypair({ keypair, mnemonic: null });
+    } else {
+      return fromEthersWallet(new EthersV5Wallet(privateKey));
+    }
   } else if (mnemonic) {
-    const wallet = EthersV5Wallet.fromMnemonic(mnemonic.phrase, mnemonic.path);
-    return fromEthersWallet(wallet);
+    if (isSolanaPath(mnemonic.path)) {
+      const keypair = fromMnemonicToEd25519(mnemonic.phrase, mnemonic.path);
+      return fromSolanaKeypair({ mnemonic, keypair });
+    } else {
+      const wallet = EthersV5Wallet.fromMnemonic(
+        mnemonic.phrase,
+        mnemonic.path
+      );
+      return fromEthersWallet(wallet);
+    }
   } else {
     return fromEthersWallet(EthersV5Wallet.createRandom());
   }
