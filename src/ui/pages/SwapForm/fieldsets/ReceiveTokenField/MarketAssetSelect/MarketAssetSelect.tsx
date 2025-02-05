@@ -47,7 +47,6 @@ export function MarketAssetSelect({
   const { data: popularAssets } = useQuery({
     queryKey: ['getPopularTokens', chain],
     queryFn: () => getPopularTokens(chain),
-    enabled: Boolean(chain),
     suspense: false,
     staleTime: Infinity,
   });
