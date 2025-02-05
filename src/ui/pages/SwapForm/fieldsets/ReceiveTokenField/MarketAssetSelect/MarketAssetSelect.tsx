@@ -1,8 +1,4 @@
-import {
-  ETH,
-  EmptyAddressPosition,
-  popularAssetsList,
-} from '@zeriontech/transactions';
+import { ETH, EmptyAddressPosition } from '@zeriontech/transactions';
 import { useAssetsPrices } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -23,11 +19,13 @@ export function MarketAssetSelect({
   selectedItem,
   addressPositions,
   onChange,
+  loading,
 }: {
   chain: Chain;
   selectedItem: BareAddressPosition | null;
   addressPositions: BareAddressPosition[];
   onChange: AssetSelectProps['onChange'];
+  loading?: boolean;
 }) {
   // We need to save a selected item locally, because the SwapForm
   // takes time to query the newly selected position if it is not among address positions,
@@ -48,10 +46,9 @@ export function MarketAssetSelect({
     : ETH;
   const { data: popularAssetsResponse } = useAssetsPrices({
     currency,
-    asset_codes: [
-      nativeAssetId !== ETH ? nativeAssetId : null,
-      ...popularAssetsList,
-    ].filter(Boolean) as string[],
+    asset_codes: [nativeAssetId !== ETH ? nativeAssetId : null].filter(
+      Boolean
+    ) as string[],
   });
 
   const [query, setQuery] = useState('');
@@ -188,6 +185,7 @@ export function MarketAssetSelect({
       }
       onQueryDidChange={handleQueryDidChange}
       onClosed={() => setSearchAllNetworks(false)}
+      loading={loading}
     />
   );
 }
