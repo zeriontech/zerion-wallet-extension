@@ -27,8 +27,8 @@ export function useActionStatusByHash(hash: string) {
   }, [localActions, hash]);
 
   /**
-   * Once we get any status from the local store, we should save it
-   * And use it even after the local action has been removed
+   * Once we get any status update for the local action, we should save it
+   * And use it even after this local action has been removed
    */
   return useCachedValue(hash, localStatus) || 'pending';
 }
