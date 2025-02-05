@@ -9,7 +9,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
-import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
+import { inferIndexFromDerivationPath } from 'src/shared/wallet/derivation-paths';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -39,7 +39,7 @@ export function WalletListPresentation({
   renderMedia,
   values,
   onSelect,
-  derivationPathType = 'bip44',
+  // derivationPathType = 'bip44',
   hasMore = false,
   isLoadingMore = false,
   onLoadMore,
@@ -79,10 +79,7 @@ export function WalletListPresentation({
                     style={{ cursor: 'help' }}
                   >
                     {wallet.mnemonic
-                      ? getIndexFromPath(
-                          wallet.mnemonic.path,
-                          derivationPathType
-                        )
+                      ? inferIndexFromDerivationPath(wallet.mnemonic.path)
                       : null}
                   </UIText>
                   {renderMedia ? (

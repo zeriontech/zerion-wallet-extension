@@ -23,6 +23,9 @@ import { SignTypedData } from 'src/ui/pages/SignTypedData';
 import { useStore } from '@store-unit/react';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { PageColumn } from 'src/ui/components/PageColumn';
+import { PageHeading } from 'src/ui/components/PageHeading';
+import { PageTop } from 'src/ui/components/PageTop';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import {
@@ -85,8 +88,20 @@ import { XpDrop } from '../features/xp-drop';
 import { BridgeForm } from '../pages/BridgeForm';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
+import { SolanaPlayground } from './SolanaPlayground';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+function Playground() {
+  return (
+    <PageColumn>
+      <PageTop />
+      <PageHeading>Playground</PageHeading>
+      <PageTop />
+      <SolanaPlayground />
+    </PageColumn>
+  );
+}
 
 function DefiSdkClientProvider({ children }: React.PropsWithChildren) {
   const client = useDefiSdkClient();
@@ -223,6 +238,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route path="/intro" element={<Intro />} />
+          <Route path="/playground" element={<Playground />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

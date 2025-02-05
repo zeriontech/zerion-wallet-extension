@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 export function toChecksumAddress(address: string) {
-  return ethers.getAddress(address);
+  return address.startsWith('0x') ? ethers.getAddress(address) : address;
 }
 
 export function hasChecksumError(address: string) {

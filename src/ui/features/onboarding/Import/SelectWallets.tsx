@@ -35,7 +35,7 @@ export function SelectWallets({
     queryFn: async () => {
       await wait(1000);
       const phrase = encodeForMasking(mnemonic);
-      return getFirstNMnemonicWallets({ phrase, n: count });
+      return getFirstNMnemonicWallets({ phrase, n: count, curve: 'ecdsa' });
     },
     useErrorBoundary: true,
     suspense: false,
