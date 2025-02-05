@@ -12,7 +12,10 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { getAssetImplementationInChain } from 'src/modules/networks/asset';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useQuery } from '@tanstack/react-query';
+import { isTruthy } from 'is-truthy-ts';
 import type { BareAddressPosition } from '../../../BareAddressPosition';
+import { getPopularTokens } from '../../../shared/getPopularTokens';
 
 export function MarketAssetSelect({
   chain,
@@ -40,15 +43,28 @@ export function MarketAssetSelect({
       ),
     [addressPositions]
   );
+
+  const { data: popularAssets } = useQuery({
+    queryKey: ['getPopularTokens', chain],
+    queryFn: () => getPopularTokens(chain),
+    enabled: Boolean(chain),
+    suspense: false,
+    staleTime: Infinity,
+  });
+
   const { networks } = useNetworks();
   const nativeAssetId = chain
     ? networks?.getNetworkByName(chain)?.native_asset?.id
     : ETH;
+
   const { data: popularAssetsResponse } = useAssetsPrices({
     currency,
-    asset_codes: [nativeAssetId !== ETH ? nativeAssetId : null].filter(
-      Boolean
-    ) as string[],
+    asset_codes: [
+      nativeAssetId !== ETH ? nativeAssetId : null,
+      ...(popularAssets || []),
+    ]
+      .filter(isTruthy)
+      .slice(0, 5),
   });
 
   const [query, setQuery] = useState('');
