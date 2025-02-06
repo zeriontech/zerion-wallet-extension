@@ -13,7 +13,6 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { getAssetImplementationInChain } from 'src/modules/networks/asset';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useQuery } from '@tanstack/react-query';
-import { isTruthy } from 'is-truthy-ts';
 import type { BareAddressPosition } from '../../../BareAddressPosition';
 import { getPopularTokens } from '../../../shared/getPopularTokens';
 
@@ -44,10 +43,11 @@ export function MarketAssetSelect({
     [addressPositions]
   );
 
-  const { data: popularAssets } = useQuery({
+  const { data: popularAssets, isLoading: popularAssetsAreLoading } = useQuery({
     queryKey: ['getPopularTokens', chain],
     queryFn: () => getPopularTokens(chain),
     suspense: false,
+    retry: false,
     staleTime: Infinity,
   });
 
@@ -58,12 +58,7 @@ export function MarketAssetSelect({
 
   const { data: popularAssetsResponse } = useAssetsPrices({
     currency,
-    asset_codes: [
-      nativeAssetId !== ETH ? nativeAssetId : null,
-      ...(popularAssets || []),
-    ]
-      .filter(isTruthy)
-      .slice(0, 5),
+    asset_codes: (popularAssets || [nativeAssetId || ETH]).slice(0, 5),
   });
 
   const [query, setQuery] = useState('');
@@ -76,7 +71,7 @@ export function MarketAssetSelect({
   const shouldQueryByChain = !searchAllNetworks && chain;
 
   const popularPositions = useMemo(() => {
-    if (!popularAssetsResponse || query) {
+    if (!popularAssetsResponse || query || popularAssetsAreLoading) {
       return [];
     }
     return Object.values(popularAssetsResponse.prices)
@@ -89,7 +84,14 @@ export function MarketAssetSelect({
           ? Boolean(getAssetImplementationInChain({ chain, asset })) // exists on chain
           : true;
       });
-  }, [chain, query, popularAssetsResponse, positionsMap, shouldQueryByChain]);
+  }, [
+    chain,
+    query,
+    popularAssetsResponse,
+    positionsMap,
+    shouldQueryByChain,
+    popularAssetsAreLoading,
+  ]);
 
   const {
     items: marketAssets,
@@ -129,7 +131,10 @@ export function MarketAssetSelect({
     }
   }, [chain, marketAssets, popularAssetCodes, positionsMap]);
 
-  const items = [...popularPositions, ...marketPositions];
+  const items = useMemo(
+    () => [...popularPositions, ...marketPositions],
+    [popularPositions, marketPositions]
+  );
   const getGroupName = useCallback(
     (position: BareAddressPosition) => {
       return popularAssetCodes.has(position.asset.asset_code)
