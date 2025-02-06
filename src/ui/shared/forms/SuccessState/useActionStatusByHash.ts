@@ -2,22 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useStore } from '@store-unit/react';
 import { transactionReceiptToActionStatus } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { localTransactionsStore } from 'src/ui/transactions/transactions-store';
-
-function useCachedValue<T>(key: string, value: T | null) {
-  const keyRef = useRef(key);
-  const savedRef = useRef(value);
-
-  if (keyRef.current !== key) {
-    keyRef.current = key;
-    savedRef.current = null;
-  }
-
-  if (value !== null) {
-    savedRef.current = value;
-  }
-
-  return savedRef.current;
-}
+import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
 
 export function useActionStatusByHash(hash: string) {
   const localActions = useStore(localTransactionsStore);
@@ -27,8 +12,14 @@ export function useActionStatusByHash(hash: string) {
   }, [localActions, hash]);
 
   /**
-   * Once we get any status update for the local action, we should save it
-   * And use it even after this local action has been removed
+   * Every ~4 mins we remove local actions from the store that our backend has already processed
+   * see `performPurgeCheck` in `TransactionService`
+   * To avoid fallback into `pending` state we should use the last non-null status
    */
-  return useCachedValue(hash, localStatus) || 'pending';
+  const lastNonNullableStatus = useRef<ClientTransactionStatus | null>(null);
+  if (localStatus) {
+    lastNonNullableStatus.current = localStatus;
+  }
+
+  return lastNonNullableStatus.current || 'pending';
 }
