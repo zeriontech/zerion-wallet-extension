@@ -23,7 +23,6 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { getNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { createChain } from 'src/modules/networks/Chain';
 import { PageTop } from 'src/ui/components/PageTop';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -82,6 +81,7 @@ import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transaction
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -217,7 +217,10 @@ export function SwapFormComponent() {
     client,
     positions,
     asset_code: null,
-    getNativeAsset: ({ chain }) => getNativeAsset({ chain, currency }),
+    getNetworks: async () => {
+      const networksStore = await getNetworksStore();
+      return networksStore.load();
+    },
     supportedChains,
     DEFAULT_CONFIGURATION,
     getPopularTokens,
