@@ -20,6 +20,5 @@ export function useActionStatusByHash(hash: string) {
   if (localStatus) {
     lastNonNullableStatus.current = localStatus;
   }
-
   return lastNonNullableStatus.current || 'pending';
 }
