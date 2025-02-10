@@ -1,12 +1,12 @@
 import { Wallet as EthersV5Wallet } from '@ethersproject/wallet';
-import type { BareWallet } from '../types/BareWallet';
-import { isSolanaPath } from './derivation-paths';
 import {
   fromMnemonicToEd25519,
   fromSecretKeyToEd25519,
   fromSolanaKeypair,
-  isSolanaAddress,
-} from './solana';
+} from 'src/modules/solana/keypairs';
+import { isSolanaPrivateKey } from 'src/modules/solana/shared';
+import type { BareWallet } from '../types/BareWallet';
+import { isSolanaPath } from './derivation-paths';
 
 export function walletToObject(
   wallet: EthersV5Wallet | BareWallet
@@ -38,7 +38,7 @@ export function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet {
       name: name || null,
     };
   } else if (privateKey) {
-    if (isSolanaAddress(privateKey)) {
+    if (isSolanaPrivateKey(privateKey)) {
       const keypair = fromSecretKeyToEd25519(privateKey);
       return fromSolanaKeypair({ keypair, mnemonic: null });
     } else {

@@ -33,6 +33,7 @@ import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -109,7 +110,7 @@ export function WalletSelect() {
 
   const { data: walletsMeta, isLoading: isLoadingWalletsMeta } =
     useWalletsMetaByChunks({
-      addresses: ownedAddresses,
+      addresses: ownedAddresses.filter(isEthereumAddress),
       useErrorBoundary: false,
     });
 

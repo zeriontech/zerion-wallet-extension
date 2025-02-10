@@ -3,7 +3,7 @@
  */
 export function invariant<T>(
   value: T | false | null | undefined,
-  message: string | (() => Error)
+  message: string | (() => Error) = 'Assertion failed'
 ): asserts value {
   if (value === false || value == null) {
     if (typeof message === 'function') {

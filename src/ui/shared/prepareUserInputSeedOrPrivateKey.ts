@@ -1,3 +1,3 @@
 export function prepareUserInputSeedOrPrivateKey(value: string) {
-  return (value as string).toLowerCase().trim().replace(/\s+/g, ' ');
+  return (value as string).trim().replace(/\s+/g, ' ');
 }

@@ -85,7 +85,7 @@ export function SpeedUp({
     isError,
     error,
   } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<string> => {
       if (!acceleratedGasPrices) {
         throw new Error('Unknown gas price');
       }
@@ -101,13 +101,15 @@ export function SpeedUp({
       );
       const txResponse = await signTxBtnRef.current.sendTransaction({
         transaction: tx,
+        solTransaction: undefined,
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Speed Up',
         feeValueCommon,
         addressAction: createAcceleratedAddressAction(addressAction, tx),
       });
-      return txResponse.hash;
+      invariant(txResponse.ethereum?.hash);
+      return txResponse.ethereum.hash;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)

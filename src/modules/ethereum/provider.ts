@@ -91,6 +91,8 @@ export class EthereumProvider extends JsonRpcProvider {
           updateChainId(this, value);
         }
         if (event === 'accountsChanged' && Array.isArray(value)) {
+          // TODO: filter out solana addresses
+
           // it's okay to perform search like this because `this.accounts`
           // always has at most one element
           if (accountsEquals(value, this.accounts)) {

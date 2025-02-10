@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
 import React, { useImperativeHandle, useRef } from 'react';
-import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { createChain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
@@ -19,16 +18,17 @@ import {
 } from 'src/ui/ui-kit/Button';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import type { OneOf } from 'src/shared/type-utils/OneOf';
+import type { SubmittedTransactionResponse } from 'src/shared/types/SubmittedTransactionResponse';
+import type { SolTransaction } from 'src/modules/solana/SolTransaction';
+import { solToBase64 } from 'src/modules/solana/transactions/create';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
-type SendTxParams = TransactionContextParams & {
-  transaction: IncomingTransaction;
-};
+type SendTxParams = TransactionContextParams &
+  OneOf<{ transaction: IncomingTransaction; solTransaction: SolTransaction }>;
 
 export interface SendTxBtnHandle {
-  sendTransaction(
-    params: SendTxParams
-  ): Promise<SerializableTransactionResponse>;
+  sendTransaction(params: SendTxParams): Promise<SubmittedTransactionResponse>;
 }
 
 export const SignTransactionButton = React.forwardRef(
@@ -54,26 +54,42 @@ export const SignTransactionButton = React.forwardRef(
   ) {
     const hardwareSignRef = useRef<SignTransactionHandle | null>(null);
     const { mutateAsync: sendTransaction, ...sendTxMutation } = useMutation({
-      mutationFn: async ({ transaction, ...params }: SendTxParams) => {
-        if (isDeviceAccount(wallet)) {
-          invariant(
-            hardwareSignRef.current,
-            'HardwareSignTransaction must be mounted'
-          );
-          const signedTx = await hardwareSignRef.current.signTransaction({
-            transaction,
-            chain: createChain(params.chain),
-            address: wallet.address,
-          });
-          return walletPort.request('sendSignedTransaction', {
-            serialized: signedTx,
-            ...params,
-          });
+      mutationFn: async ({
+        transaction,
+        solTransaction,
+        ...params
+      }: SendTxParams) => {
+        if (transaction) {
+          // ethereum flow
+          if (isDeviceAccount(wallet)) {
+            invariant(
+              hardwareSignRef.current,
+              'HardwareSignTransaction must be mounted'
+            );
+            const signedTx = await hardwareSignRef.current.signTransaction({
+              transaction,
+              chain: createChain(params.chain),
+              address: wallet.address,
+            });
+            const result = await walletPort.request('sendSignedTransaction', {
+              serialized: signedTx,
+              ...params,
+            });
+            return { ethereum: result };
+          } else {
+            const result = await walletPort.request('signAndSendTransaction', [
+              transaction,
+              params,
+            ]);
+            return { ethereum: result };
+          }
         } else {
-          return await walletPort.request('signAndSendTransaction', [
-            transaction,
-            params,
-          ]);
+          // solana
+          const result = await walletPort.request(
+            'solana_signAndSendTransaction',
+            [solToBase64(solTransaction), params]
+          );
+          return { solana: result };
         }
       },
     });
