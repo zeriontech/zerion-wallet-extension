@@ -68,6 +68,7 @@ import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { emitter } from 'src/ui/shared/events';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -379,7 +380,9 @@ function OverviewComponent() {
   const isReadonlyGroup =
     walletGroup && isReadonlyContainer(walletGroup.walletContainer);
   const [searchParams, setSearchParams] = useSearchParams();
-  const filterChain = searchParams.get('chain') || null;
+  const filterChain = isSolanaAddress(singleAddress)
+    ? 'solana'
+    : searchParams.get('chain') || null;
   const setFilterChain = useEvent((value: string | null) => {
     // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
     setSearchParams(value ? [['chain', value]] : '');
