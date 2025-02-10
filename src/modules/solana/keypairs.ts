@@ -3,7 +3,7 @@ import bs58 from 'bs58';
 import * as bip39 from 'bip39';
 /** TODO: replace with @noble/ed25519 ? */
 import { derivePath } from 'ed25519-hd-key';
-import type { BareWallet } from '../types/BareWallet';
+import type { BareWallet } from 'src/shared/types/BareWallet';
 
 export function fromSolanaKeypair({
   mnemonic,
@@ -19,8 +19,6 @@ export function fromSolanaKeypair({
     name: null,
   };
 }
-
-export const isSolanaAddress = (s: string) => !s.startsWith('0x');
 
 export function fromMnemonicToEd25519(phrase: string, path: string): Keypair {
   const seed = bip39.mnemonicToSeedSync(phrase);
