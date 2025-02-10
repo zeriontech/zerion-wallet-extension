@@ -51,7 +51,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
-import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { useAddressPositionFromNode } from 'src/ui/shared/requests/useEvmAddressPositions';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { invariant } from 'src/shared/invariant';
@@ -67,6 +67,7 @@ import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -749,6 +750,7 @@ function RawChainPositions({
   onChainChange,
   ...positionListProps
 }: {
+  address: string;
   renderEmptyView: () => React.ReactNode;
   renderLoadingView: () => React.ReactNode;
   renderErrorView: (chainName: string) => React.ReactNode;
@@ -772,7 +774,7 @@ function RawChainPositions({
     data: addressPositions,
     isLoading,
     isError,
-  } = useEvmAddressPositions({ address, chain });
+  } = useAddressPositionFromNode({ address, chain });
   if (isError) {
     return renderErrorView(
       networks?.getChainName(chain) || chainValue
@@ -792,6 +794,7 @@ function RawChainPositions({
           dappChain={dappChain}
           filterChain={filterChain}
           onChange={onChainChange}
+          showAllNetworksOption={!isSolanaAddress(address)}
           value={
             <NeutralDecimals
               parts={formatCurrencyToParts(
@@ -824,10 +827,11 @@ export function Positions({
 }) {
   const { currency } = useCurrency();
   const { ready, params, singleAddressNormalized } = useAddressParams();
+  const addrIsSolana = isSolanaAddress(singleAddressNormalized);
   const { data, ...portfolioQuery } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready && !addrIsSolana }
   );
   const walletPortfolio = data?.data;
   const chainValue = filterChain || dappChain || NetworkSelectValue.All;
@@ -843,7 +847,9 @@ export function Positions({
   const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
-  const { networks, isLoading } = useNetworks(positionChains);
+  const { networks, isLoading } = useNetworks(
+    positionChains.length ? positionChains : undefined
+  );
   if (!ready) {
     return (
       <CenteredFillViewportView
@@ -857,7 +863,7 @@ export function Positions({
   }
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
   const isSupportedByBackend =
-    chain == null ? true : networks?.supports('positions', chain);
+    chain == null ? !addrIsSolana : networks?.supports('positions', chain);
 
   const emptyNetworkBalance = (
     <div
@@ -927,12 +933,12 @@ export function Positions({
       />
     );
   } else {
-    if (isLoading || portfolioQuery.isLoading) {
+    if (isLoading || portfolioQuery.fetchStatus === 'fetching') {
       return renderLoadingViewForNetwork();
     }
     invariant(networks, `Failed to load network info for ${chain}`);
     const network = chain ? networks.getNetworkByName(chain) : null;
-    if (!network?.id) {
+    if (!network?.id && !addrIsSolana) {
       return renderErrorViewForNetwork(chainValue);
     }
 
