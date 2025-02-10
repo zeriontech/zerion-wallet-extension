@@ -23,6 +23,7 @@ import { walletPort } from 'src/ui/shared/channels';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 
 async function updateNetworks() {
   const networksStore = await getNetworksStore();
@@ -53,7 +54,8 @@ export function NetworkSelect({
   const { currency } = useCurrency();
   const { data } = useWalletPortfolio(
     { addresses: [params.address], currency },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
+    { enabled: Boolean(isEthereumAddress(params.address)) }
   );
   const walletPortfolio = data?.data;
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);

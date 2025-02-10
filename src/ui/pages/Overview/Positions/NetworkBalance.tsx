@@ -113,11 +113,13 @@ export function NetworkBalance({
   filterChain,
   dappChain,
   onChange,
+  showAllNetworksOption = true,
 }: {
   value: React.ReactNode | null;
   filterChain: string | null;
   dappChain: string | null;
   onChange(value: string | null): void;
+  showAllNetworksOption?: boolean;
 }) {
   const { networks, isLoading } = useNetworks([dappChain].filter(isTruthy));
   const [showWalletNameContent, setShowWalletNameContent] = useState(false);
@@ -200,7 +202,7 @@ export function NetworkBalance({
       >
         <NetworkSelect
           filterPredicate={networksPredicate}
-          showAllNetworksOption={true}
+          showAllNetworksOption={showAllNetworksOption}
           value={chain}
           onChange={(selectedValue) =>
             onChange(selectedValue === dappChain ? null : selectedValue)

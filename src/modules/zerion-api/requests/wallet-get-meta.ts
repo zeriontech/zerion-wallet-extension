@@ -1,5 +1,7 @@
 import type { Options as KyOptions } from 'ky';
 import { isTruthy } from 'is-truthy-ts';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
@@ -153,7 +155,13 @@ function getWalletsMetaInternal(
   kyOptions: KyOptions,
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
-  const params = new URLSearchParams({ identifiers: identifiers.join(',') });
+  if (identifiers.every(isSolanaAddress)) {
+    // TODO: temporary guard, remove later
+    return { data: null, errors: undefined } satisfies Response;
+  }
+  const params = new URLSearchParams({
+    identifiers: identifiers.filter(isEthereumAddress).join(','),
+  });
   const endpoint = `wallet/get-meta/v1?${params}`;
   return ZerionHttpClient.get<Response>({ endpoint, ...options }, kyOptions);
 }

@@ -22,6 +22,7 @@ export function useWalletPortfolio(
   return useQuery({
     queryKey: persistentQuery(['walletGetPortfolio', params, source]),
     queryFn: () => ZerionAPI.walletGetPortfolio(params, { source }),
+    retry: 0, // if not 0, there are too many rerenders if the queryFn throws synchronously
     suspense,
     enabled,
     keepPreviousData,

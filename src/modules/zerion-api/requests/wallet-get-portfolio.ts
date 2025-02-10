@@ -1,3 +1,5 @@
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { invariant } from 'src/shared/invariant';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
@@ -46,14 +48,16 @@ export async function walletGetPortfolio(
   params: Params,
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
-  const firstAddress = params.addresses[0];
+  const addresses = params.addresses.filter((addr) => isEthereumAddress(addr));
+  invariant(addresses.length > 0, 'Addresses param is empty');
+  const firstAddress = addresses[0];
   const provider = await this.getAddressProviderHeader(firstAddress);
   const kyOptions = this.getKyOptions();
   const endpoint = 'wallet/get-portfolio/v1';
   return ZerionHttpClient.post<Response>(
     {
       endpoint,
-      body: JSON.stringify(params),
+      body: JSON.stringify({ ...params, addresses }),
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
