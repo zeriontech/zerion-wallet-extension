@@ -12,7 +12,7 @@ import {
   decodeMasked,
   encodeForMasking,
 } from 'src/shared/wallet/encode-locally';
-import { fromSolanaKeypair } from 'src/shared/wallet/solana';
+import { fromSolanaKeypair } from 'src/modules/solana/keypairs';
 
 export interface Params {
   /**

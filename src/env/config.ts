@@ -1,4 +1,5 @@
 import { createUrl } from 'src/shared/createUrl';
+import { invariant } from 'src/shared/invariant';
 
 const backendUrl = (url: string | undefined, backend_env: string | undefined) => {
   if (url) {
@@ -23,6 +24,9 @@ export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;
+
+invariant(process.env.SOLANA_RPC_URL, 'SOLANA_RPC_URL not found in .env');
+export const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL;
 
 if (!PROXY_URL) {
   throw new Error('PROXY_URL must be defined in ENV');
