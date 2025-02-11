@@ -58,11 +58,15 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     invariant(address, 'No address returned');
     const publicKey = new PublicKey(address);
     this.publicKey = publicKey;
+    this.emit('connect');
     return { publicKey };
   }
 
-  disconnect(): Promise<void> {
-    throw new Error('disconnect: Not Implemented');
+  async disconnect(): Promise<void> {
+    await this.connection.send(
+      formatJsonRpcRequestPatched('sol_disconnect', [])
+    );
+    this.emit('disconnect');
   }
 
   signIn(_input?: SolanaSignInInput | undefined): Promise<SolanaSignInOutput> {
