@@ -85,10 +85,20 @@ export const SignTransactionButton = React.forwardRef(
           }
         } else {
           // solana
-          const result = await walletPort.request(
-            'solana_signAndSendTransaction',
-            [solToBase64(solTransaction), params]
-          );
+          const methodMap = {
+            default: 'solana_signAndSendTransaction',
+            signAndSendTransaction: 'solana_signAndSendTransaction',
+            signTransaction: 'solana_signTransaction',
+            signAllTransactions: 'solana_signAllTransactions',
+          } as const;
+          const methodName = params.method
+            ? methodMap[params.method]
+            : methodMap.default;
+
+          const result = await walletPort.request(methodName, {
+            transaction: solToBase64(solTransaction),
+            params,
+          });
           return { solana: result };
         }
       },
