@@ -14,7 +14,8 @@ import { invariant } from 'src/shared/invariant';
 import type { Connection } from '../ethereum/connection';
 import type { Ghost } from './wallet-standard/window';
 import { isSolanaAddress } from './shared';
-import { solToBase64 } from './transactions/create';
+import { solFromBase64, solToBase64 } from './transactions/create';
+import type { SolTransactionResponse } from './transactions/SolTransactionResponse';
 
 export class ZerionSolana extends EventEmitter implements Ghost {
   name = 'Zerion';
@@ -55,9 +56,9 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     );
     const address = (result as [string])[0];
     invariant(address, 'No address returned');
-    console.log('solana connect', { address });
-    return { publicKey: new PublicKey(address) };
-    // throw new Error('connect: Not Implemented');
+    const publicKey = new PublicKey(address);
+    this.publicKey = publicKey;
+    return { publicKey };
   }
 
   disconnect(): Promise<void> {
@@ -72,10 +73,14 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     throw new Error('signMessage: Not Implemented');
   }
 
-  signTransaction<T extends Transaction | VersionedTransaction>(
-    _transaction: T
+  async signTransaction<T extends Transaction | VersionedTransaction>(
+    transaction: T
   ): Promise<T> {
-    throw new Error('signTransaction: Not Implemented');
+    const txBase64 = solToBase64(transaction);
+    const { tx } = await this.connection.send<SolTransactionResponse>(
+      formatJsonRpcRequestPatched('sol_signTransaction', { txBase64 })
+    );
+    return solFromBase64(tx) as T;
   }
 
   signAllTransactions<T extends Transaction | VersionedTransaction>(
@@ -88,9 +93,11 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     transaction: T,
     _options?: SendOptions | undefined
   ): Promise<{ signature: string }> {
-    const base64 = solToBase64(transaction);
-    return this.connection.send(
-      formatJsonRpcRequestPatched('sol_signAndSendTransaction', [base64])
+    const txBase64 = solToBase64(transaction);
+    const { signature } = await this.connection.send<SolTransactionResponse>(
+      formatJsonRpcRequestPatched('sol_signAndSendTransaction', { txBase64 })
     );
+    invariant(signature, 'signature is expected');
+    return { signature };
   }
 }

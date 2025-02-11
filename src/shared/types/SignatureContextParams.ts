@@ -15,6 +15,18 @@ export interface TransactionContextParams {
   initiator: string;
   clientScope: ClientScope | null;
   addressAction: AnyAddressAction | null;
+  /**
+   * Currenly only applies to Solana dapp requests
+   * This indicates the method that the dapp called originally
+   * and dictates the strategy for the SendTransaction View flow.
+   * `signTransaction`:
+   *     we return the signed tx to the dapp, and the dapp submits it to the node itself
+   * `signAndSendTransaction`:
+   *     we sign and submit tx to the node and return the "signature" (hash) to the dapp
+   * `signAllTransactions`:
+   *     TODO
+   */
+  method?: 'signTransaction' | 'signAndSendTransaction' | 'signAllTransactions';
   quote?: Quote;
 }
 

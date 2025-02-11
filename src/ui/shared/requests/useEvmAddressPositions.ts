@@ -88,7 +88,7 @@ function createSolPosition(balance: number): AddressPosition {
       name: 'Solana',
       price: null,
       symbol: 'SOL',
-      type: 'native',
+      type: null,
       is_displayable: true,
       is_verified: true,
     },

@@ -103,6 +103,7 @@ import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
 import { Connection, PublicKey } from '@solana/web3.js';
 import type { SolTransactionResponse } from 'src/modules/solana/transactions/SolTransactionResponse';
 import { SOLANA_RPC_URL } from 'src/env/config';
+import { SolanaTransactionLegacy } from 'src/modules/solana/SolTransaction';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1265,22 +1266,27 @@ export class Wallet {
     });
   }
 
-  async solana_signAndSendTransaction({
+  async solana_signTransaction({
     params,
     context,
-  }: WalletMethodParams<
-    [string, TransactionContextParams]
-  >): Promise<SolTransactionResponse> {
+  }: WalletMethodParams<{
+    transaction: string;
+    params: TransactionContextParams;
+  }>): Promise<SolTransactionResponse> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
     const currentAddress = this.ensureCurrentAddress();
     // TODO: infer signer address from transaction instead
     invariant(isSolanaAddress(currentAddress), 'Active address is not solana');
-    const [base64, _transactionContextParams] = params;
+    const { transaction: base64, params: _transactionContextParams } = params;
     invariant(base64, () => new InvalidParams());
     const transaction = solFromBase64(base64);
-    const feePayer = transaction.feePayer?.toBase58();
+
+    const feePayer =
+      transaction instanceof SolanaTransactionLegacy
+        ? transaction.feePayer?.toBase58()
+        : transaction.message.staticAccountKeys.at(0)?.toBase58();
     // TODO: infer signer address from transaction instead
     invariant(
       feePayer === currentAddress,
@@ -1292,27 +1298,59 @@ export class Wallet {
       currentAddress
     );
     invariant(signerWallet, `Signer wallet not found for ${currentAddress}`);
-    const connection = new Connection(
-      // clusterApiUrl('mainnet-beta'),
-      SOLANA_RPC_URL,
-      'confirmed'
-    );
-
-    console.log('will submit to solana', { transaction });
 
     const keypair = fromSecretKeyToEd25519(signerWallet.privateKey);
-    transaction.partialSign(keypair);
+    if (transaction instanceof SolanaTransactionLegacy) {
+      transaction.partialSign(keypair);
+    } else {
+      transaction.sign([keypair]);
+    }
+
+    return {
+      signature: null,
+      publicKey: currentAddress,
+      tx: solToBase64(transaction),
+    };
+  }
+
+  async solana_signAndSendTransaction({
+    params,
+    context,
+  }: WalletMethodParams<{
+    transaction: string;
+    params: TransactionContextParams;
+  }>): Promise<SolTransactionResponse> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    this.ensureRecord(this.record);
+    const currentAddress = this.ensureCurrentAddress();
+
+    const { tx: signed } = await this.solana_signTransaction({
+      params,
+      context,
+    });
+    const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+
+    const transaction = solFromBase64(signed);
 
     const signature = await connection.sendRawTransaction(
       transaction.serialize()
     );
-    console.log('done', { signature });
     // TODO: emit 'transactionSent'
     return {
       signature,
       publicKey: currentAddress,
       tx: solToBase64(transaction),
     };
+  }
+
+  async solana_signAllTransactions(
+    _params: WalletMethodParams<{
+      transactions: string[];
+      params: TransactionContextParams;
+    }>
+  ): Promise<SolTransactionResponse> {
+    throw new Error('TODO: solana_signAllTransactions Not Implemented');
   }
 
   async sendSignedTransaction({
@@ -1804,29 +1842,39 @@ class PublicController {
     );
   }
 
+  async sol_signTransaction({
+    id,
+    params: { txBase64, clientScope },
+    context,
+  }: PublicMethodParams<{
+    txBase64: string;
+    clientScope?: string;
+  }>) {
+    return this.sol_signAndSendTransaction({
+      id,
+      params: { txBase64, clientScope, method: 'signTransaction' },
+      context,
+    });
+  }
+
   async sol_signAndSendTransaction({
     id,
-    params,
+    params: { txBase64, clientScope, method = 'signAndSendTransaction' },
     context,
-  }: PublicMethodParams<
-    [
-      string,
-      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?
-    ]
-  >) {
-    console.log('sol_signAndSendTransaction', params);
-    invariant(typeof params[0] === 'string', () => new InvalidParams());
-    const [base64tx, { clientScope } = { clientScope: undefined }] = params;
-    // const transaction = solFromBase64(base64tx);
-    // console.log('must sign', { transaction });
+  }: PublicMethodParams<{
+    txBase64: string;
+    clientScope?: string;
+    method?: 'signAndSendTransaction' | 'signTransaction';
+  }>) {
     const currentAddress = this.wallet.ensureCurrentAddress();
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
     const searchParams = new URLSearchParams({
       origin: context.origin,
-      transaction: base64tx, // JSON.stringify(transaction),
+      transaction: txBase64, // JSON.stringify(transaction),
       ecosystem: 'solana',
+      method,
     });
     if (clientScope) {
       searchParams.append('clientScope', clientScope);
@@ -1839,9 +1887,9 @@ class PublicController {
         // height: isDeviceWallet ? 800 : undefined,
         search: `?${searchParams}`,
         tabId: context.tabId || null,
-        onResolve: (signature) => {
-          console.log({ signature });
-          resolve({ signature });
+        onResolve: (result: SolTransactionResponse) => {
+          console.log({ result });
+          resolve(result);
         },
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
