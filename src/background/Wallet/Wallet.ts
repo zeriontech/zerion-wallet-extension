@@ -556,6 +556,17 @@ export class Wallet {
     this.emitter.emit('permissionsUpdated');
   }
 
+  async removeSolanaPermissions({
+    context,
+    params: { origin },
+  }: WalletMethodParams<{ origin: string; address?: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    this.record = Model.removeSolanaPermissions(this.record, { origin });
+    this.updateWalletStore(this.record);
+    this.emitter.emit('permissionsUpdated');
+  }
+
   async removePermission({
     context,
     params: { origin, address },
@@ -1827,6 +1838,15 @@ class PublicController {
       { id, context, params: [] },
       { ecosystem: 'solana' }
     );
+  }
+
+  async sol_disconnect({ context }: PublicMethodParams) {
+    invariant(context?.origin, 'This method requires origin');
+
+    return this.wallet.removeSolanaPermissions({
+      context: INTERNAL_SYMBOL_CONTEXT,
+      params: { origin: context.origin },
+    });
   }
 
   async sol_signTransaction({
