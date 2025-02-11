@@ -28,6 +28,7 @@ import { capitalize } from 'capitalize-ts';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { emitter } from '../events';
 import type {
@@ -796,6 +797,28 @@ export class WalletRecordModel {
         existingPermissions.length = 0;
       }
       if (existingPermissions.length === 0) {
+        delete draft.permissions[origin];
+      }
+    });
+  }
+
+  /** Removes only solana addresses from permissions for origin */
+  static removeSolanaPermissions(
+    record: WalletRecord,
+    { origin }: { origin: string }
+  ) {
+    return produce(record, (draft) => {
+      if (origin in draft.permissions === false) {
+        throw new Error(`Record for ${origin} not found`);
+      }
+      const permission = draft.permissions[origin];
+      const { addresses: existingPermissions } = permission;
+      if (existingPermissions.some(isSolanaAddress)) {
+        permission.addresses = existingPermissions.filter(
+          (address) => !isSolanaAddress(address)
+        );
+      }
+      if (permission.addresses.length === 0) {
         delete draft.permissions[origin];
       }
     });
