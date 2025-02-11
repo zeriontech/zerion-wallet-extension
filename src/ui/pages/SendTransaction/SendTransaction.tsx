@@ -87,9 +87,9 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
-import type { SolTransaction } from 'src/modules/solana/SolTransaction';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type { SubmittedTransactionResponse } from 'src/shared/types/SubmittedTransactionResponse';
+import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -869,123 +869,6 @@ function EthSendTransaction() {
   );
 }
 
-/**
- * Converts a simplified Solana transaction object to an AddressAction object, focusing on basic SOL transfers.
- * This version is HIGHLY LIMITED due to missing metadata and assumes the first instruction is the SOL transfer.
- */
-function solanaTransactionToAddressAction(
-  transaction: SolTransaction,
-  from: string
-): AnyAddressAction {
-  try {
-    const transactionHash = transaction.signatures
-      ? transaction.signatures[0].publicKey.toBase58()
-      : 'UNKNOWN'; // Assuming the first signature is the transaction hash
-    const blockTime = null; // Block time is unavailable in this simplified object
-
-    // Derive address from feePayer
-    const feePayer = transaction.feePayer;
-    const address = feePayer || null;
-    const addressStr = address?.toBase58();
-
-    // Basic Asset Structure
-    const solAsset = {
-      id: 'solana',
-      asset_code: 'SOL',
-      decimals: 9,
-      icon_url: 'https://example.com/solana_logo.png', // Replace with a real URL
-      name: 'Solana',
-      price: null,
-      symbol: 'SOL',
-      type: 'native',
-      is_displayable: true,
-      is_verified: true,
-    };
-
-    let recipient = null;
-    let sender = null;
-    let actionType: 'send' | 'execute' = 'execute'; // Cannot accurately determine without balance data
-    let quantity = '0';
-
-    // Attempt to extract recipient from the first instruction (HIGHLY unreliable)
-    if (transaction.instructions && transaction.instructions.length > 0) {
-      const firstInstruction = transaction.instructions[0];
-      if (firstInstruction.keys && firstInstruction.keys.length >= 2) {
-        const signer = firstInstruction.keys.find(
-          (key) => key.isSigner
-        )?.pubkey;
-        recipient = firstInstruction.keys.find((key) => !key.isSigner)?.pubkey;
-
-        sender = signer;
-        actionType = 'send';
-        // quantity = 'UNKNOWN'; // Cannot determine amount accurately without balance data
-        // Attempt to extract amount from instruction data
-        if (firstInstruction.data && firstInstruction.data.length > 0) {
-          // Assuming the amount is encoded in the instruction data
-          // This is HIGHLY SPECIFIC to the SystemProgram transfer instruction
-          // and will likely NOT work for other transactions.
-          const amountLamports = firstInstruction.data
-            .slice(4)
-            .reduce((acc, val, idx) => acc + val * Math.pow(256, idx), 0);
-          quantity = amountLamports.toFixed();
-        }
-      }
-    }
-
-    const recipientStr = recipient?.toBase58();
-
-    return {
-      id: transactionHash,
-      datetime: blockTime
-        ? new Date(blockTime * 1000).toISOString()
-        : new Date().toISOString(), // Use current time if blockTime is unavailable
-      address: address?.toBase58() ?? from,
-      type: {
-        value: actionType,
-        display_value: actionType.charAt(0).toUpperCase() + actionType.slice(1), // "Others" if undetermined
-      },
-      transaction: {
-        chain: 'solana',
-        hash: String(transactionHash),
-        status: 'pending', // Cannot accurately determine without meta data
-        nonce: 0, // Solana doesn't use nonces like Ethereum
-        sponsored: false, // Assuming not sponsored
-        fee: null,
-        gasback: null,
-      },
-      label: recipientStr
-        ? {
-            type: 'to',
-            value: recipientStr,
-            display_value: { wallet_address: recipientStr },
-          }
-        : null,
-
-      // const recipientAddress = addressAction.label?.display_value.wallet_address;
-      content: {
-        transfers: {
-          outgoing: recipientStr
-            ? [
-                {
-                  asset: { fungible: solAsset },
-                  quantity: quantity,
-                  price: null,
-                  recipient: recipientStr !== addressStr ? recipientStr : null,
-                  sender:
-                    sender?.toBase58() !== addressStr
-                      ? sender?.toBase58()
-                      : null,
-                },
-              ]
-            : [],
-        },
-      },
-    };
-  } catch (error) {
-    throw new Error('Error converting Solana transaction');
-  }
-}
-
 function SolDefaultView({
   addressAction,
   origin,
@@ -1055,12 +938,21 @@ function SolDefaultView({
   );
 }
 
+function normalizeMethod(value: string | null): 'signTransaction' | undefined {
+  if (value === 'signTransaction') {
+    return value;
+  }
+  return undefined;
+}
+
 function SolSendTransaction() {
   const [params] = useSearchParams();
   const origin = params.get('origin');
   const clientScope = params.get('clientScope');
   const base64tx = params.get('transaction');
   invariant(base64tx, 'transaction get-parameter is required for this view');
+  const method = params.get('method');
+  const signOnlyFlow = method === 'signTransaction';
   const transaction = useMemo(() => solFromBase64(base64tx), [base64tx]);
   console.log(transaction);
 
@@ -1086,12 +978,8 @@ function SolSendTransaction() {
     }
     const windowId = params.get('windowId');
     invariant(windowId, 'windowId get-parameter is required');
-    const result = res.ethereum ? res.ethereum.hash : res.solana.signature;
-    if (!result) {
-      console.log({ result });
-      throw new Error('no result?');
-    }
-    windowPort.confirm(windowId, result);
+    invariant(res.solana, 'Solana response is expected');
+    windowPort.confirm(windowId, res.solana);
     if (next) {
       navigate(next);
     }
@@ -1122,6 +1010,7 @@ function SolSendTransaction() {
         feeValueCommon: null,
         initiator: origin,
         clientScope: clientScope || 'External Dapp',
+        method: normalizeMethod(method),
         addressAction,
       });
       // throw new Error('to implement');
@@ -1154,6 +1043,7 @@ function SolSendTransaction() {
           />
         ) : null}
         <Spacer height={16} />
+        {signOnlyFlow ? 'Must sign only' : null}
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />
