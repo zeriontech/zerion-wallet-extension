@@ -472,6 +472,7 @@ function AssetSelectComponent({
     if (optionItem.type === ItemType.group) {
       return {
         key: optionItem.name,
+        pad: false,
         component: (
           <UIText
             kind="caption/accent"
