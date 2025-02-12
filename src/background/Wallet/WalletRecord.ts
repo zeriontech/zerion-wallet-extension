@@ -870,12 +870,6 @@ export class WalletRecordModel {
     });
   }
 
-  static tempResetActivity(record: WalletRecord) {
-    return produce(record, (draft) => {
-      draft.activityRecord = {};
-    });
-  }
-
   static getFeedInfo(record: WalletRecord): WalletFeed {
     return record.feed;
   }
