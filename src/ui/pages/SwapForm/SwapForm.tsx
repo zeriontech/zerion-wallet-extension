@@ -1,4 +1,10 @@
 import { useSelectorStore, useStore } from '@store-unit/react';
+import {
+  Navigate,
+  useNavigate,
+  useNavigationType,
+  useSearchParams,
+} from 'react-router-dom';
 import { client, useAddressMembership } from 'defi-sdk';
 import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
 import { useSwapForm } from '@zeriontech/transactions';
@@ -52,7 +58,6 @@ import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { Navigate, useNavigate } from 'react-router-dom';
 import { isNumeric } from 'src/shared/isNumeric';
 import {
   createApproveAddressAction,
@@ -956,10 +961,51 @@ export function SwapFormComponent() {
   );
 }
 
+/** Sets initial chainInput to last used chain for current address */
+function SwapFormPrepareChain({ children }: React.PropsWithChildren) {
+  const { singleAddress: address, ready } = useAddressParams();
+  const navigationType = useNavigationType();
+  const isBackOrForward = navigationType === 'POP';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [prepared, setPrepared] = useState(
+    isBackOrForward || searchParams.has('chainInput')
+  );
+  const { data: lastUsedChain, isFetchedAfterMount } = useQuery({
+    enabled: ready && !prepared,
+    // Avoid using stale value. Leaving form and coming back should use new value instantly
+    staleTime: 0,
+    queryKey: ['wallet/getLastSwapChainByAddress', address],
+    queryFn: () => walletPort.request('getLastSwapChainByAddress', { address }),
+  });
+  useEffect(() => {
+    if (prepared || !isFetchedAfterMount) {
+      return;
+    }
+    if (lastUsedChain) {
+      searchParams.set('chainInput', lastUsedChain);
+      setSearchParams(searchParams, { replace: true });
+    }
+    setPrepared(true);
+  }, [
+    isFetchedAfterMount,
+    lastUsedChain,
+    prepared,
+    searchParams,
+    setSearchParams,
+  ]);
+  return prepared ? children : null;
+}
+
 export function SwapForm() {
   const { preferences } = usePreferences();
   if (preferences?.testnetMode?.on) {
     return <Navigate to="/" />;
   }
-  return <SwapFormComponent />;
+  return (
+    <>
+      <SwapFormPrepareChain>
+        <SwapFormComponent />
+      </SwapFormPrepareChain>
+    </>
+  );
 }

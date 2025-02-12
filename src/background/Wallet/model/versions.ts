@@ -6,6 +6,7 @@ import type {
   WalletRecordVersion2,
   WalletRecordVersion3,
   WalletRecordVersion4,
+  WalletRecordVersion5,
 } from './types';
 
 type PossibleEntry =
@@ -13,6 +14,7 @@ type PossibleEntry =
   | WalletRecordVersion2
   | WalletRecordVersion3
   | WalletRecordVersion4
+  | WalletRecordVersion5
   | WalletRecord;
 
 function mapObject<V, NewValue>(
@@ -69,5 +71,8 @@ export const walletRecordUpgrades: Upgrades<PossibleEntry> = {
         return [key, { ...value, addresses }];
       }),
     };
+  },
+  6: (entry) => {
+    return { ...entry, version: 6, activityRecord: {} };
   },
 };

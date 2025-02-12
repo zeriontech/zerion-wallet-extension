@@ -1,4 +1,5 @@
 import { decrypt, encrypt } from 'src/modules/crypto';
+import type { Draft } from 'immer';
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
@@ -162,18 +163,30 @@ function spliceItem<T>(arr: T[], item: T) {
   }
 }
 
-function verifyCurrentAddress(record: WalletRecord) {
-  const { currentAddress } = record.walletManager;
+function verifyCurrentAddress(draft: Draft<WalletRecord>) {
+  const { currentAddress } = draft.walletManager;
   if (currentAddress) {
     const normalizedAddress = normalizeAddress(currentAddress);
-    const walletExists = record.walletManager.groups.some((group) =>
+    const walletExists = draft.walletManager.groups.some((group) =>
       group.walletContainer.wallets.some(
         (wallet) => normalizeAddress(wallet.address) === normalizedAddress
       )
     );
     if (!walletExists) {
-      record.walletManager.currentAddress =
-        WalletRecordModel.getFirstWallet(record)?.address || null;
+      draft.walletManager.currentAddress =
+        WalletRecordModel.getFirstWallet(draft)?.address || null;
+    }
+  }
+}
+
+function cleanupActivityRecord(draft: Draft<WalletRecord>) {
+  const addresses = draft.walletManager.groups.flatMap((group) =>
+    group.walletContainer.wallets.map((wallet) => wallet.address)
+  );
+  const set = new Set(addresses);
+  for (const address in draft.activityRecord) {
+    if (!set.has(address)) {
+      delete draft.activityRecord[address];
     }
   }
 }
@@ -182,6 +195,7 @@ export class WalletRecordModel {
   static verifyStateIntegrity(record: WalletRecord) {
     return produce(record, (draft) => {
       verifyCurrentAddress(draft);
+      cleanupActivityRecord(draft);
     });
   }
 
@@ -267,7 +281,7 @@ export class WalletRecordModel {
       const isHardwareGroup = isHardwareContainer(walletContainer);
       const isMnemonicGroup = isMnemonicContainer(walletContainer);
       return {
-        version: 5,
+        version: 6,
         walletManager: {
           groups: [
             createGroup({
@@ -284,6 +298,7 @@ export class WalletRecordModel {
         transactions: [],
         permissions: {},
         publicPreferences: {},
+        activityRecord: {},
         feed: { completedAbilities: [], dismissedAbilities: [] },
       };
     }
@@ -604,6 +619,7 @@ export class WalletRecordModel {
             .address;
         draft.walletManager.currentAddress = newAddress || null;
       }
+      cleanupActivityRecord(draft);
     });
   }
 
@@ -659,6 +675,7 @@ export class WalletRecordModel {
           group.walletContainer.getFirstWallet().address;
       }
     }
+    cleanupActivityRecord(draft);
   }
 
   static removeAddress(
@@ -833,6 +850,23 @@ export class WalletRecordModel {
         throw new Error(`Group with id ${groupId} not found`);
       }
       group.lastBackedUp = timestamp;
+    });
+  }
+
+  static getLastSwapChain(
+    record: WalletRecord,
+    { address }: { address: string }
+  ) {
+    return record.activityRecord[address]?.lastSwapChain ?? null;
+  }
+
+  static setLastSwapChain(
+    record: WalletRecord,
+    { address, chain }: { address: string; chain: string }
+  ) {
+    return produce(record, (draft) => {
+      draft.activityRecord[address] ??= {};
+      draft.activityRecord[address].lastSwapChain = chain;
     });
   }
 
