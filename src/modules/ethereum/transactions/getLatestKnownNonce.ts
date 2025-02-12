@@ -1,3 +1,4 @@
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { ChainId } from './ChainId';
 import type { StoredTransactions } from './types';
@@ -13,7 +14,7 @@ export function getLatestLocallyKnownNonce({
 }): number {
   const transactions = state.filter(
     (tx) =>
-      tx.transaction.from === address &&
+      normalizeAddress(tx.transaction.from) === normalizeAddress(address) &&
       normalizeChainId(tx.transaction.chainId) === chainId
   );
   const nonces = transactions.map((tx) => Number(tx.transaction.nonce));
