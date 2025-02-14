@@ -178,7 +178,9 @@ export function SignInWithEthereum() {
               <Spacer height={16} />
               <Button
                 kind="neutral"
-                onClick={() => updateSearchParam('step', 'data')}
+                onClick={() =>
+                  setSearchParams(updateSearchParam('step', 'data'))
+                }
               >
                 Advanced View
               </Button>
