@@ -75,7 +75,7 @@ export function ReceiveTokenField({
                   )
                 }
                 addressPositions={swapView.availablePositions}
-                loading={receiveAssetQuery.isLoading}
+                isLoading={receiveAssetQuery.isLoading}
               />
             ) : null}
           </div>
