@@ -138,7 +138,7 @@ export function createExtensionTest(testConfig?: Config) {
     // eslint-disable-next-line no-empty-pattern
     context: async ({}, use) => {
       // Determine headless mode:
-      // - in CI: always run headless
+      // - in CI: always run headed
       // - in dev: use RUN_HEADED_IN_DEV value unless overridden by testConfig
       const headless =
         !process.env.CI && (testConfig?.headless ?? !RUN_HEADED_IN_DEV);
