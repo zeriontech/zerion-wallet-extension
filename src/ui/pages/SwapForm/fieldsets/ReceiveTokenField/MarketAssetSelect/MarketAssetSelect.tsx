@@ -16,18 +16,20 @@ import { useQuery } from '@tanstack/react-query';
 import type { BareAddressPosition } from '../../../BareAddressPosition';
 import { getPopularTokens } from '../../../shared/getPopularTokens';
 
+const ONE_DAY = 1000 * 60 * 60 * 24;
+
 export function MarketAssetSelect({
   chain,
   selectedItem,
   addressPositions,
   onChange,
-  loading,
+  isLoading,
 }: {
   chain: Chain;
   selectedItem: BareAddressPosition | null;
   addressPositions: BareAddressPosition[];
   onChange: AssetSelectProps['onChange'];
-  loading?: boolean;
+  isLoading?: boolean;
 }) {
   // We need to save a selected item locally, because the SwapForm
   // takes time to query the newly selected position if it is not among address positions,
@@ -48,7 +50,7 @@ export function MarketAssetSelect({
     queryFn: () => getPopularTokens(chain),
     suspense: false,
     retry: false,
-    staleTime: Infinity,
+    staleTime: ONE_DAY,
   });
 
   const { networks } = useNetworks();
@@ -97,7 +99,7 @@ export function MarketAssetSelect({
     items: marketAssets,
     hasNextPage,
     fetchNextPage,
-    isLoading,
+    isLoading: marketAssetsAreLoading,
     isFetchingNextPage,
   } = useAssetsInfoPaginatedQuery(
     {
@@ -181,7 +183,7 @@ export function MarketAssetSelect({
       pagination={{
         fetchMore: fetchNextPage,
         hasMore: Boolean(hasNextPage),
-        isLoading: isLoading || isFetchingNextPage,
+        isLoading: marketAssetsAreLoading || isFetchingNextPage,
       }}
       noItemsMessage="No assets found"
       dialogTitle="Receive"
@@ -205,7 +207,7 @@ export function MarketAssetSelect({
       }
       onQueryDidChange={handleQueryDidChange}
       onClosed={() => setSearchAllNetworks(false)}
-      loading={loading}
+      isLoading={isLoading}
     />
   );
 }
