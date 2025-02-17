@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { SwapFormState } from '@zeriontech/transactions';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
@@ -8,8 +8,8 @@ import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { SuccessStateLoader } from 'src/ui/shared/forms/SuccessState/SuccessStateLoader';
 import { SuccessStateToken } from 'src/ui/shared/forms/SuccessState/SuccessStateToken';
-import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from '../../SendForm/SuccessState/SuccessState';
 import type { BareAddressPosition } from '../BareAddressPosition';
 
@@ -28,10 +28,6 @@ export function SuccessState({
   gasbackValue: number | null;
   onDone: () => void;
 }) {
-  useBodyStyle(
-    useMemo(() => ({ ['--url-bar-background' as string]: 'transparent' }), [])
-  );
-
   const { networks } = useNetworks();
   const { chainInput, spendInput, receiveInput } = swapFormState;
   invariant(
@@ -55,36 +51,39 @@ export function SuccessState({
   const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
 
   return (
-    <SuccessStateLoader
-      startItem={
-        <SuccessStateToken
-          iconUrl={spendPosition.asset.icon_url}
-          symbol={spendPosition.asset.symbol}
-          chainName={chainName}
-          chainIconUrl={chainIconUrl}
-        />
-      }
-      endItem={
-        <SuccessStateToken
-          iconUrl={receivePosition.asset.icon_url}
-          symbol={receivePosition.asset.symbol}
-          chainName={chainName}
-          chainIconUrl={chainIconUrl}
-        />
-      }
-      status={actionStatus}
-      pendingTitle="Swapping"
-      failedTitle="Swap failed"
-      dropppedTitle="Swap cancelled"
-      explorerUrl={
-        hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
-      }
-      confirmedContent={
-        gasbackValue && FEATURE_GASBACK ? (
-          <GasbackDecorated value={gasbackValue} />
-        ) : null
-      }
-      onDone={onDone}
-    />
+    <>
+      <NavigationTitle urlBar="none" title="Swap Success" />
+      <SuccessStateLoader
+        startItem={
+          <SuccessStateToken
+            iconUrl={spendPosition.asset.icon_url}
+            symbol={spendPosition.asset.symbol}
+            chainName={chainName}
+            chainIconUrl={chainIconUrl}
+          />
+        }
+        endItem={
+          <SuccessStateToken
+            iconUrl={receivePosition.asset.icon_url}
+            symbol={receivePosition.asset.symbol}
+            chainName={chainName}
+            chainIconUrl={chainIconUrl}
+          />
+        }
+        status={actionStatus}
+        pendingTitle="Swapping"
+        failedTitle="Swap failed"
+        dropppedTitle="Swap cancelled"
+        explorerUrl={
+          hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
+        }
+        confirmedContent={
+          gasbackValue && FEATURE_GASBACK ? (
+            <GasbackDecorated value={gasbackValue} />
+          ) : null
+        }
+        onDone={onDone}
+      />
+    </>
   );
 }

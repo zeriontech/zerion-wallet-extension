@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { SendFormState, SendFormView } from '@zeriontech/transactions';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -13,7 +13,7 @@ import { SuccessStateLoader } from 'src/ui/shared/forms/SuccessState/SuccessStat
 import { SuccessStateAddress } from 'src/ui/shared/forms/SuccessState/SuccessStateAddress';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { SuccessStateNft } from 'src/ui/shared/forms/SuccessState/SuccessStateNft';
-import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 
 export function GasbackDecorated({ value }: { value: number }) {
   return (
@@ -60,10 +60,6 @@ export function SuccessState({
   hash: string;
   onDone: () => void;
 }) {
-  useBodyStyle(
-    useMemo(() => ({ ['--url-bar-background' as string]: 'transparent' }), [])
-  );
-
   const { networks } = useNetworks();
   const { tokenItem, nftItem, state } = sendFormSnapshot;
   const { type, tokenChain, nftChain, to } = state;
@@ -85,33 +81,36 @@ export function SuccessState({
   const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
 
   return (
-    <SuccessStateLoader
-      startItem={
-        type === 'token' && tokenItem ? (
-          <SuccessStateToken
-            iconUrl={tokenItem?.asset.icon_url}
-            symbol={tokenItem?.asset.symbol}
-            chainName={chainName}
-            chainIconUrl={chainIconUrl}
-          />
-        ) : type === 'nft' && nftItem ? (
-          <SuccessStateNft nftItem={nftItem} />
-        ) : null
-      }
-      endItem={<SuccessStateAddress address={to} />}
-      status={actionStatus}
-      pendingTitle="Transferring"
-      failedTitle="Transfer failed"
-      dropppedTitle="Transfer cancelled"
-      explorerUrl={
-        hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
-      }
-      confirmedContent={
-        gasbackValue && FEATURE_GASBACK ? (
-          <GasbackDecorated value={gasbackValue} />
-        ) : null
-      }
-      onDone={onDone}
-    />
+    <>
+      <NavigationTitle urlBar="none" title="Send Success" />
+      <SuccessStateLoader
+        startItem={
+          type === 'token' && tokenItem ? (
+            <SuccessStateToken
+              iconUrl={tokenItem?.asset.icon_url}
+              symbol={tokenItem?.asset.symbol}
+              chainName={chainName}
+              chainIconUrl={chainIconUrl}
+            />
+          ) : type === 'nft' && nftItem ? (
+            <SuccessStateNft nftItem={nftItem} />
+          ) : null
+        }
+        endItem={<SuccessStateAddress address={to} />}
+        status={actionStatus}
+        pendingTitle="Transferring"
+        failedTitle="Transfer failed"
+        dropppedTitle="Transfer cancelled"
+        explorerUrl={
+          hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
+        }
+        confirmedContent={
+          gasbackValue && FEATURE_GASBACK ? (
+            <GasbackDecorated value={gasbackValue} />
+          ) : null
+        }
+        onDone={onDone}
+      />
+    </>
   );
 }

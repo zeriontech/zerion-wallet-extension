@@ -1,3 +1,16 @@
+.container {
+  animation: appear 150ms ease-in-out;
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .dots div {
   animation: jump 2s infinite;
   transform-origin: 50% 100%;
@@ -43,10 +56,12 @@
 
 .title.hidden {
   opacity: 0;
+  user-select: none;
   transform: translate(-50%, calc(-50% + 20px));
 }
 
 .title.gone {
   opacity: 0;
+  user-select: none;
   transform: translate(-50%, calc(-50% - 20px));
 }

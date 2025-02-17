@@ -76,7 +76,8 @@ function AnimatedIcons({
   useChain(
     playExitAnimation
       ? [itemStyleRef, itemsStyleRef, resultIconStyleRef]
-      : [itemStyleRef]
+      : [itemStyleRef],
+    playExitAnimation ? undefined : [0.3]
   );
   return (
     <div
@@ -210,6 +211,7 @@ export function SuccessStateLoader({
         marginInline: 'auto',
         position: 'relative',
       }}
+      className={styles.container}
     >
       <BackgroundDecoration color={backgroundColor} />
       <VStack
