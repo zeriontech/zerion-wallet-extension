@@ -60,7 +60,7 @@ export function MarketAssetSelect({
 
   const { data: popularAssetsResponse } = useAssetsPrices({
     currency,
-    asset_codes: (popularAssets || [nativeAssetId || ETH]).slice(0, 5),
+    asset_codes: popularAssets || [nativeAssetId || ETH],
   });
 
   const [query, setQuery] = useState('');
