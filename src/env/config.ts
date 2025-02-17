@@ -30,3 +30,7 @@ if (!PROXY_URL) {
 if (!ZERION_API_URL) {
   throw new Error('ZERION_API_URL must be defined in ENV');
 }
+
+if (!DEFI_SDK_TRANSACTIONS_API_URL) {
+  throw new Error('DEFI_SDK_TRANSACTIONS_API_URL must be defined in ENV');
+}

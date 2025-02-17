@@ -1,8 +1,4 @@
-import {
-  ETH,
-  EmptyAddressPosition,
-  popularAssetsList,
-} from '@zeriontech/transactions';
+import { ETH, EmptyAddressPosition } from '@zeriontech/transactions';
 import { useAssetsPrices } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -16,18 +12,24 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { getAssetImplementationInChain } from 'src/modules/networks/asset';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useQuery } from '@tanstack/react-query';
 import type { BareAddressPosition } from '../../../BareAddressPosition';
+import { getPopularTokens } from '../../../shared/getPopularTokens';
+
+const ONE_DAY = 1000 * 60 * 60 * 24;
 
 export function MarketAssetSelect({
   chain,
   selectedItem,
   addressPositions,
   onChange,
+  isLoading,
 }: {
   chain: Chain;
   selectedItem: BareAddressPosition | null;
   addressPositions: BareAddressPosition[];
   onChange: AssetSelectProps['onChange'];
+  isLoading?: boolean;
 }) {
   // We need to save a selected item locally, because the SwapForm
   // takes time to query the newly selected position if it is not among address positions,
@@ -42,16 +44,23 @@ export function MarketAssetSelect({
       ),
     [addressPositions]
   );
+
+  const { data: popularAssets, isLoading: popularAssetsAreLoading } = useQuery({
+    queryKey: ['getPopularTokens', chain],
+    queryFn: () => getPopularTokens(chain),
+    suspense: false,
+    retry: false,
+    staleTime: ONE_DAY,
+  });
+
   const { networks } = useNetworks();
   const nativeAssetId = chain
     ? networks?.getNetworkByName(chain)?.native_asset?.id
     : ETH;
+
   const { data: popularAssetsResponse } = useAssetsPrices({
     currency,
-    asset_codes: [
-      nativeAssetId !== ETH ? nativeAssetId : null,
-      ...popularAssetsList,
-    ].filter(Boolean) as string[],
+    asset_codes: popularAssets || [nativeAssetId || ETH],
   });
 
   const [query, setQuery] = useState('');
@@ -64,7 +73,7 @@ export function MarketAssetSelect({
   const shouldQueryByChain = !searchAllNetworks && chain;
 
   const popularPositions = useMemo(() => {
-    if (!popularAssetsResponse || query) {
+    if (!popularAssetsResponse || query || popularAssetsAreLoading) {
       return [];
     }
     return Object.values(popularAssetsResponse.prices)
@@ -77,13 +86,20 @@ export function MarketAssetSelect({
           ? Boolean(getAssetImplementationInChain({ chain, asset })) // exists on chain
           : true;
       });
-  }, [chain, query, popularAssetsResponse, positionsMap, shouldQueryByChain]);
+  }, [
+    chain,
+    query,
+    popularAssetsResponse,
+    positionsMap,
+    shouldQueryByChain,
+    popularAssetsAreLoading,
+  ]);
 
   const {
     items: marketAssets,
     hasNextPage,
     fetchNextPage,
-    isLoading,
+    isLoading: marketAssetsAreLoading,
     isFetchingNextPage,
   } = useAssetsInfoPaginatedQuery(
     {
@@ -117,7 +133,10 @@ export function MarketAssetSelect({
     }
   }, [chain, marketAssets, popularAssetCodes, positionsMap]);
 
-  const items = [...popularPositions, ...marketPositions];
+  const items = useMemo(
+    () => [...popularPositions, ...marketPositions],
+    [popularPositions, marketPositions]
+  );
   const getGroupName = useCallback(
     (position: BareAddressPosition) => {
       return popularAssetCodes.has(position.asset.asset_code)
@@ -164,7 +183,7 @@ export function MarketAssetSelect({
       pagination={{
         fetchMore: fetchNextPage,
         hasMore: Boolean(hasNextPage),
-        isLoading: isLoading || isFetchingNextPage,
+        isLoading: marketAssetsAreLoading || isFetchingNextPage,
       }}
       noItemsMessage="No assets found"
       dialogTitle="Receive"
@@ -188,6 +207,7 @@ export function MarketAssetSelect({
       }
       onQueryDidChange={handleQueryDidChange}
       onClosed={() => setSearchAllNetworks(false)}
+      isLoading={isLoading}
     />
   );
 }
