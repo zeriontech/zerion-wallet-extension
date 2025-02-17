@@ -278,8 +278,8 @@ export function SuccessStateLoader({
                   color="var(--neutral-500)"
                   style={{ textAlign: 'center' }}
                 >
-                  It{apostrophe}s taking longer than usual. Feel free to leave{' '}
-                  {emDash} we{apostrophe}ll let you know when it{apostrophe}s
+                  It{apostrophe}s taking longer than usual. Feel free to leave
+                  {emDash}we{apostrophe}ll let you know when it{apostrophe}s
                   done.
                 </UIText>
               ) : status !== 'confirmed' && error ? (
