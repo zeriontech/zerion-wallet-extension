@@ -120,7 +120,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                 chain={chain}
                 selectedItem={spendPosition}
                 noItemsMessage="No positions found"
-                loading={spendAssetQuery.isLoading}
+                isLoading={spendAssetQuery.isLoading}
               />
             ) : (
               <div
