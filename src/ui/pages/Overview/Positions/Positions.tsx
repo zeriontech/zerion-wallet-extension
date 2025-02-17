@@ -63,6 +63,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
+import { HideBalance } from 'src/ui/components/HideBalance';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -234,14 +235,26 @@ function AddressPositionItem({
                     </span>
                   ) : position.quantity ? (
                     <span key="position-quantity" style={textOverflowStyle}>
-                      {formatTokenValue(
-                        getCommonQuantity({
+                      <HideBalance
+                        value={getCommonQuantity({
                           asset: position.asset,
                           chain,
                           baseQuantity: position.quantity,
-                        }),
-                        position.asset.symbol
-                      )}
+                        }).toNumber()}
+                        kind="tokenValue"
+                        locale="en"
+                        currency={currency}
+                        symbol={position.asset.symbol}
+                      >
+                        {formatTokenValue(
+                          getCommonQuantity({
+                            asset: position.asset,
+                            chain,
+                            baseQuantity: position.quantity,
+                          }),
+                          position.asset.symbol
+                        )}
+                      </HideBalance>
                     </span>
                   ) : null,
                 ],
@@ -255,7 +268,13 @@ function AddressPositionItem({
         {position.value != null ? (
           <VStack gap={0} style={{ textAlign: 'right' }}>
             <UIText kind="body/regular">
-              {formatCurrencyValue(position.value, 'en', currency)}
+              <HideBalance
+                value={position.value}
+                locale="en"
+                currency={currency}
+              >
+                {formatCurrencyValue(position.value, 'en', currency)}
+              </HideBalance>
             </UIText>
             {position.asset.price?.relative_change_24h ? (
               <UIText
@@ -271,7 +290,15 @@ function AddressPositionItem({
                 }${formatPercent(
                   Math.abs(position.asset.price.relative_change_24h),
                   'en'
-                )}% (${formatCurrencyValue(absoluteChange, 'en', currency)})`}
+                )}% (`}
+                <HideBalance
+                  value={absoluteChange}
+                  locale="en"
+                  currency={currency}
+                >
+                  {formatCurrencyValue(absoluteChange, 'en', currency)}
+                </HideBalance>
+                {')'}
               </UIText>
             ) : null}
           </VStack>
@@ -601,9 +628,16 @@ function PositionList({
                 </div>
                 <Spacer height={4} />
                 <UIText style={{ paddingInline: 16 }} kind="headline/h2">
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(totalValue, 'en', currency)}
-                  />
+                  <HideBalance
+                    kind="NeutralDecimals"
+                    value={totalValue}
+                    locale="en"
+                    currency={currency}
+                  >
+                    <NeutralDecimals
+                      parts={formatCurrencyToParts(totalValue, 'en', currency)}
+                    />
+                  </HideBalance>
                 </UIText>
               </>
             ) : null}
@@ -703,9 +737,16 @@ function MultiChainPositions({
           onChange={onChainChange}
           value={
             chainTotalValue ? (
-              <NeutralDecimals
-                parts={formatCurrencyToParts(chainTotalValue, 'en', currency)}
-              />
+              <HideBalance
+                kind="NeutralDecimals"
+                value={chainTotalValue}
+                locale="en"
+                currency={currency}
+              >
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(chainTotalValue, 'en', currency)}
+                />
+              </HideBalance>
             ) : null
           }
         />

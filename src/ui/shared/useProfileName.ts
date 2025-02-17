@@ -27,12 +27,13 @@ export function useProfileName(
   {
     padding = 5,
     maxCharacters,
-  }: { padding?: number; maxCharacters?: number } = {}
+    enabled = true,
+  }: { padding?: number; maxCharacters?: number; enabled?: boolean } = {}
 ): { type: WalletNameType; value: string } {
   const { isLoading: isDomainLoading, data: domain } = useQuery({
     queryKey: persistentQuery([lookupAddressNameKey, wallet.address]),
     queryFn: async () => lookupAddressName(wallet.address),
-    enabled: !wallet.name,
+    enabled: enabled && !wallet.name,
     suspense: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
