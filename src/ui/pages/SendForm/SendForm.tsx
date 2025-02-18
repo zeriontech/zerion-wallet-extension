@@ -347,7 +347,7 @@ function SendFormComponent() {
     isSuccess,
     ...sendTxMutation
   } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<string> => {
       const { to } = store.getState();
       invariant(to, 'Send Form parameters missing');
       const {
@@ -371,6 +371,7 @@ function SendFormComponent() {
 
       const txResponse = await signTxBtnRef.current.sendTransaction({
         transaction,
+        solTransaction: undefined,
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Send',
@@ -390,7 +391,8 @@ function SendFormComponent() {
           ),
         });
       }
-      return txResponse.hash;
+      invariant(txResponse.ethereum?.hash);
+      return txResponse.ethereum.hash;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)

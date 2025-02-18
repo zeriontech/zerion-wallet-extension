@@ -93,6 +93,16 @@ import {
   broadcastTransactionPatched,
   checkEip712Tx,
 } from 'src/modules/ethereum/account-abstraction/zksync-patch';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import {
+  solFromBase64,
+  solToBase64,
+} from 'src/modules/solana/transactions/create';
+import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
+import { Connection, PublicKey } from '@solana/web3.js';
+import type { SolTransactionResponse } from 'src/modules/solana/transactions/SolTransactionResponse';
+import { SOLANA_RPC_URL } from 'src/env/config';
+import { SolanaTransactionLegacy } from 'src/modules/solana/SolTransaction';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -117,6 +127,8 @@ import {
   ReadonlyAccountContainer,
 } from './model/AccountContainer';
 import { toPlainTransactionResponse } from './model/ethers-v5-types';
+
+Object.assign(globalThis, { Connection, PublicKey });
 
 async function prepareNonce<
   T extends { nonce?: number | null; from?: string | null }
@@ -540,6 +552,17 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.record = Model.removeAllOriginPermissions(this.record);
+    this.updateWalletStore(this.record);
+    this.emitter.emit('permissionsUpdated');
+  }
+
+  async removeSolanaPermissions({
+    context,
+    params: { origin },
+  }: WalletMethodParams<{ origin: string; address?: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    this.record = Model.removeSolanaPermissions(this.record, { origin });
     this.updateWalletStore(this.record);
     this.emitter.emit('permissionsUpdated');
   }
@@ -1251,6 +1274,93 @@ export class Wallet {
     });
   }
 
+  async solana_signTransaction({
+    params,
+    context,
+  }: WalletMethodParams<{
+    transaction: string;
+    params: TransactionContextParams;
+  }>): Promise<SolTransactionResponse> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    this.ensureRecord(this.record);
+    const currentAddress = this.ensureCurrentAddress();
+    // TODO: infer signer address from transaction instead
+    invariant(isSolanaAddress(currentAddress), 'Active address is not solana');
+    const { transaction: base64, params: _transactionContextParams } = params;
+    invariant(base64, () => new InvalidParams());
+    const transaction = solFromBase64(base64);
+
+    const feePayer =
+      transaction instanceof SolanaTransactionLegacy
+        ? transaction.feePayer?.toBase58()
+        : transaction.message.staticAccountKeys.at(0)?.toBase58();
+    // TODO: infer signer address from transaction instead
+    invariant(
+      feePayer === currentAddress,
+      "feePayer doesn't match active address"
+    );
+
+    const signerWallet = Model.getSignerWalletByAddress(
+      this.record,
+      currentAddress
+    );
+    invariant(signerWallet, `Signer wallet not found for ${currentAddress}`);
+
+    const keypair = fromSecretKeyToEd25519(signerWallet.privateKey);
+    if (transaction instanceof SolanaTransactionLegacy) {
+      transaction.partialSign(keypair);
+    } else {
+      transaction.sign([keypair]);
+    }
+
+    return {
+      signature: null,
+      publicKey: currentAddress,
+      tx: solToBase64(transaction),
+    };
+  }
+
+  async solana_signAndSendTransaction({
+    params,
+    context,
+  }: WalletMethodParams<{
+    transaction: string;
+    params: TransactionContextParams;
+  }>): Promise<SolTransactionResponse> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    this.ensureRecord(this.record);
+    const currentAddress = this.ensureCurrentAddress();
+
+    const { tx: signed } = await this.solana_signTransaction({
+      params,
+      context,
+    });
+    const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+
+    const transaction = solFromBase64(signed);
+
+    const signature = await connection.sendRawTransaction(
+      transaction.serialize()
+    );
+    // TODO: emit 'transactionSent'
+    return {
+      signature,
+      publicKey: currentAddress,
+      tx: solToBase64(transaction),
+    };
+  }
+
+  async solana_signAllTransactions(
+    _params: WalletMethodParams<{
+      transactions: string[];
+      params: TransactionContextParams;
+    }>
+  ): Promise<SolTransactionResponse> {
+    throw new Error('TODO: solana_signAllTransactions Not Implemented');
+  }
+
   async sendSignedTransaction({
     params,
     context,
@@ -1722,30 +1832,119 @@ class PublicController {
     }
   }
 
-  async eth_requestAccounts({
-    context,
+  async sol_connect({ context, id }: PublicMethodParams) {
+    invariant(context?.origin, 'This method requires origin');
+    return this.eth_requestAccounts(
+      { id, context, params: [] },
+      { ecosystem: 'solana' }
+    );
+  }
+
+  async sol_disconnect({ context }: PublicMethodParams) {
+    invariant(context?.origin, 'This method requires origin');
+
+    return this.wallet.removeSolanaPermissions({
+      context: INTERNAL_SYMBOL_CONTEXT,
+      params: { origin: context.origin },
+    });
+  }
+
+  async sol_signTransaction({
     id,
-    params,
-  }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>) {
+    params: { txBase64, clientScope },
+    context,
+  }: PublicMethodParams<{
+    txBase64: string;
+    clientScope?: string;
+  }>) {
+    return this.sol_signAndSendTransaction({
+      id,
+      params: { txBase64, clientScope, method: 'signTransaction' },
+      context,
+    });
+  }
+
+  async sol_signAndSendTransaction({
+    id,
+    params: { txBase64, clientScope, method = 'signAndSendTransaction' },
+    context,
+  }: PublicMethodParams<{
+    txBase64: string;
+    clientScope?: string;
+    method?: 'signAndSendTransaction' | 'signTransaction';
+  }>) {
+    const currentAddress = this.wallet.ensureCurrentAddress();
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+      throw new OriginNotAllowed();
+    }
+    const searchParams = new URLSearchParams({
+      origin: context.origin,
+      transaction: txBase64, // JSON.stringify(transaction),
+      ecosystem: 'solana',
+      method,
+    });
+    if (clientScope) {
+      searchParams.append('clientScope', clientScope);
+    }
+
+    return new Promise((resolve, reject) => {
+      this.safeOpenDialogWindow(context.origin, {
+        requestId: `${context.origin}:${id}`,
+        route: '/sendTransaction',
+        // height: isDeviceWallet ? 800 : undefined,
+        search: `?${searchParams}`,
+        tabId: context.tabId || null,
+        onResolve: (result: SolTransactionResponse) => {
+          console.log({ result });
+          resolve(result);
+        },
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+      });
+    });
+  }
+
+  async eth_requestAccounts(
+    {
+      context,
+      id,
+      params,
+    }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>,
+    opts: { ecosystem: 'ethereum' | 'solana' } = { ecosystem: 'ethereum' }
+  ) {
     if (debugValue && process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.log('PublicController: eth_requestAccounts', debugValue);
     }
     const currentAddress = this.wallet.readCurrentAddress();
-    if (currentAddress && this.wallet.allowedOrigin(context, currentAddress)) {
-      const { origin } = context;
-      emitter.emit('requestAccountsResolved', {
-        origin,
-        address: currentAddress,
-        explicitly: false,
-      });
-      // Some dapps expect lowercase to be returned, otherwise they crash the moment after connection
-      const result = [currentAddress.toLowerCase()];
-      if (debugValue && process.env.NODE_ENV === 'development') {
-        result.push(String(debugValue));
-      }
-      return result;
+    const addrIsEthereum = currentAddress && isEthereumAddress(currentAddress);
+    const addrIsSolana = currentAddress && isSolanaAddress(currentAddress);
+    if (opts.ecosystem === 'ethereum') {
+      invariant(!currentAddress || addrIsEthereum, 'addresss is not ethereum');
+    } else if (opts.ecosystem === 'solana') {
+      invariant(!currentAddress || addrIsSolana, 'addresss is not solana');
     }
+    if (currentAddress)
+      if (
+        currentAddress &&
+        this.wallet.allowedOrigin(context, currentAddress)
+      ) {
+        const { origin } = context;
+        emitter.emit('requestAccountsResolved', {
+          origin,
+          address: currentAddress,
+          explicitly: false,
+        });
+        // Some ethereum dapps expect lowercase to be returned, otherwise they crash the moment after connection
+        const result = [
+          addrIsEthereum ? currentAddress.toLowerCase() : currentAddress,
+        ];
+        if (debugValue && process.env.NODE_ENV === 'development') {
+          result.push(String(debugValue));
+        }
+        return result;
+      }
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
@@ -1755,7 +1954,7 @@ class PublicController {
         route: '/requestAccounts',
         search: `?origin=${origin}&nonEip6963Request=${String(
           params?.[0]?.nonEip6963Request ? 'yes' : 'no'
-        )}`,
+        )}&ecosystem=${opts.ecosystem}`,
         requestId: `${origin}:${id}`,
         tabId: context.tabId || null,
         onResolve: async ({
@@ -1768,6 +1967,11 @@ class PublicController {
           invariant(address, 'Invalid arguments: missing address');
           invariant(resolvedOrigin, 'Invalid arguments: missing origin');
           invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
+          if (opts.ecosystem === 'ethereum') {
+            invariant(isEthereumAddress(address), 'Wrong addr for ecosystem');
+          } else if (opts.ecosystem === 'solana') {
+            invariant(isSolanaAddress(address), 'Wrong addr for ecosystem');
+          }
           const currentAddress = this.wallet.ensureCurrentAddress();
           if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
             await this.wallet.setCurrentAddress({
@@ -1785,7 +1989,7 @@ class PublicController {
             address,
             explicitly: true,
           });
-          resolve(accounts.map((item) => item.toLowerCase()));
+          resolve(accounts.map((item) => normalizeAddress(item)));
         },
         onDismiss: () => {
           reject(new UserRejected('User Rejected the Request'));
