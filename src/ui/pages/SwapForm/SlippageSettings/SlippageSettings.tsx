@@ -9,7 +9,9 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { isNumeric } from 'src/shared/isNumeric';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import type { Chain } from 'src/modules/networks/Chain';
 import * as styles from './styles.module.css';
+import { getSlippageOptions } from './getSlippageOptions';
 
 function Radio({
   name,
@@ -46,9 +48,6 @@ function toPercents(value: number) {
 function fromPercents(value: number) {
   return value / 100;
 }
-
-const SLIPPAGE_OPTIONS = ['0.2', '0.5'];
-const DEFAULT_SLIPPAGE_VALUE = SLIPPAGE_OPTIONS[1];
 
 function getSlippageWarning(percentValue: string) {
   const isTooLarge = isNumeric(percentValue) && Number(percentValue) >= 1;
@@ -139,18 +138,23 @@ function CustomValueOverlay({
 }
 
 export function SlippageSettings({
+  chain,
   configuration,
   onConfigurationChange,
 }: {
+  chain: Chain;
   configuration: CustomConfiguration;
   onConfigurationChange: (value: CustomConfiguration) => void;
 }) {
-  const { slippage } = configuration;
-  const [percentValue, setPercentValue] = useState(() =>
-    String(toPercents(slippage))
-  );
+  const { slippage: userSlippage } = configuration;
+  const { defaultSlippagePercent, slippageOptions } = getSlippageOptions(chain);
+  const slippage = userSlippage
+    ? toPercents(userSlippage)
+    : defaultSlippagePercent;
+
+  const [percentValue, setPercentValue] = useState(() => String(slippage));
   const [isCustomValue, setIsCustomValue] = useState(
-    () => !SLIPPAGE_OPTIONS.includes(percentValue)
+    () => !slippageOptions.includes(Number(percentValue))
   );
   const [isCustomValueFocused, setIsCustomValueFocused] = useState(false);
   const { isOptimal } = getSlippageWarning(percentValue);
@@ -172,18 +176,18 @@ export function SlippageSettings({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${SLIPPAGE_OPTIONS.length}, 1fr) 1fr`,
+            gridTemplateColumns: `repeat(${slippageOptions.length}, 1fr) 1fr`,
             gap: 8,
           }}
         >
-          {SLIPPAGE_OPTIONS.map((value) => (
+          {slippageOptions.map((value) => (
             <Radio
               key={value}
               name="slippage"
               value={value}
-              checked={!isCustomValue && value === percentValue}
+              checked={!isCustomValue && String(value) === percentValue}
               onChange={() => {
-                setPercentValue(value);
+                setPercentValue(String(value));
                 setIsCustomValue(false);
               }}
               onFocus={() => {
@@ -243,7 +247,7 @@ export function SlippageSettings({
           type="button"
           onClick={() => {
             setIsCustomValue(false);
-            setPercentValue(DEFAULT_SLIPPAGE_VALUE);
+            setPercentValue(String(defaultSlippagePercent));
           }}
         >
           Reset

@@ -8,15 +8,27 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import type { Chain } from 'src/modules/networks/Chain';
+import { getSlippageOptions } from './getSlippageOptions';
 
 const HIGH_SLIPPAGE_THRESHOLD = 0.01; // 1%
 
-export function SlippageLine({ swapView }: { swapView: SwapFormView }) {
+export function SlippageLine({
+  chain,
+  swapView,
+}: {
+  chain: Chain;
+  swapView: SwapFormView;
+}) {
   const { currency } = useCurrency();
   const { receiveInput } = useSelectorStore(swapView.store, ['receiveInput']);
-  const { slippage } = useSelectorStore(swapView.store.configuration, [
-    'slippage',
-  ]);
+  const { slippage: userSlippage } = useSelectorStore(
+    swapView.store.configuration,
+    ['slippage']
+  );
+
+  const { defaultSlippagePercent } = getSlippageOptions(chain);
+  const slippage = userSlippage ?? defaultSlippagePercent / 100;
 
   const price = swapView.receiveAsset?.price?.value || 0;
   const fiatValue = new BigNumber(receiveInput || 0)
