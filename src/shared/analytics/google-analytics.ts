@@ -27,7 +27,6 @@ type GoogleAnalyticsEvent =
 class GoogleAnalyticsApi {
   baseParams?: Record<string, unknown>;
   deviceId?: string;
-  sessionId?: string;
   url: string;
   apiSecret: string | null;
   measurementId: string | null;
@@ -72,17 +71,11 @@ class GoogleAnalyticsApi {
     this.baseParams = values;
   }
 
-  setSessionId(sessionId: string) {
-    this.sessionId = sessionId;
-  }
-
-  async collect(event: GoogleAnalyticsEvent, values: Record<string, unknown>) {
-    if (!this.sessionId) {
-      // eslint-disable-next-line no-console
-      console.warn('Must not call collect() method without a session id');
-      return;
-    }
-
+  async collect(
+    event: GoogleAnalyticsEvent,
+    sessionId: string,
+    values: Record<string, unknown>
+  ) {
     await this.ready();
 
     const url = new URL('/mp/collect', this.url);
@@ -105,7 +98,7 @@ class GoogleAnalyticsApi {
         // using the Google Analytics Measurement Protocol as they are required
         // for user activity to display in standard reports like Realtime.
         // See: https://developer.chrome.com/docs/extensions/how-to/integrate/google-analytics-4?hl=en
-        session_id: this.sessionId,
+        session_id: sessionId,
         engagement_time_msec: 100,
       }),
     };
@@ -135,10 +128,6 @@ class GoogleAnalyticsApi {
       return ky.post(url, options);
     }
   }
-
-  clearSessionId() {
-    this.sessionId = undefined;
-  }
 }
 
 const googleAnalyticsApi = new GoogleAnalyticsApi({
@@ -156,25 +145,20 @@ googleAnalyticsApi.setBaseParams({
   app_version: version,
 });
 
-export function gaBeginSession(account: Account) {
-  const userId = account.getUser()?.id;
-  if (!userId) {
-    return;
-  }
-  googleAnalyticsApi.setSessionId(userId);
-}
-
-export async function gaEndSession() {
-  googleAnalyticsApi.clearSessionId();
-}
-
 export async function gaCollect(
   account: Account,
   event: GoogleAnalyticsEvent,
   values: Record<string, unknown>
 ) {
   const userId = account.getUser()?.id;
-  googleAnalyticsApi.collect(event, {
+  if (!userId) {
+    return;
+  }
+  // Google Analytics does not have a clear definition of a user session.
+  // Hence, we need to define what a user session means within the extension.
+  const sessionId = userId;
+
+  googleAnalyticsApi.collect(event, sessionId, {
     ...values,
     ...(userId ? { user_id: userId } : null),
   });
