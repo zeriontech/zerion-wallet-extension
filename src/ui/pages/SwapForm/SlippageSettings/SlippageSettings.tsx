@@ -148,11 +148,11 @@ export function SlippageSettings({
 }) {
   const { slippage: userSlippage } = configuration;
   const { defaultSlippagePercent, slippageOptions } = getSlippageOptions(chain);
-  const slippage = userSlippage
-    ? toPercents(userSlippage)
-    : defaultSlippagePercent;
+  const slippage = String(
+    userSlippage ? toPercents(userSlippage) : defaultSlippagePercent
+  );
 
-  const [percentValue, setPercentValue] = useState(() => String(slippage));
+  const [percentValue, setPercentValue] = useState(slippage);
   const [isCustomValue, setIsCustomValue] = useState(
     () => !slippageOptions.includes(Number(percentValue))
   );
