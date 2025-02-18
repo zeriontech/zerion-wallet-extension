@@ -50,7 +50,7 @@ function fromPercents(value: number) {
 }
 
 function getSlippageWarning(percentValue: string) {
-  const isTooLarge = isNumeric(percentValue) && Number(percentValue) >= 1;
+  const isTooLarge = isNumeric(percentValue) && Number(percentValue) > 1;
   const isTooSmall = isNumeric(percentValue) && Number(percentValue) < 0.2;
   return { isTooLarge, isTooSmall, isOptimal: !isTooLarge && !isTooSmall };
 }

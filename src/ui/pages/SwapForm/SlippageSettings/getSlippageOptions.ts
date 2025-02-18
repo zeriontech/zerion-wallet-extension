@@ -7,7 +7,7 @@ interface SlippageConfig {
   [chainId: string]: SlippageOptions;
 }
 
-const DEFAULT_SLIPPAGE_OPTIONS: SlippageOptions = [0, [0.5, 1.0]];
+const DEFAULT_SLIPPAGE_OPTIONS: SlippageOptions = [1, [0.5, 1.0]];
 const SLIPPAGE_BY_CHAIN: SlippageConfig = {
   ethereum: [1, [0.2, 0.5]],
 };
