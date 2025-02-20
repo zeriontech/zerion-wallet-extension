@@ -27,7 +27,7 @@ export function SlippageLine({
     ['slippage']
   );
 
-  const { defaultSlippagePercent } = getSlippageOptions(chain);
+  const { default: defaultSlippagePercent } = getSlippageOptions(chain);
   const slippage = userSlippage ?? defaultSlippagePercent / 100;
 
   const price = swapView.receiveAsset?.price?.value || 0;

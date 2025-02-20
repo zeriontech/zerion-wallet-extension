@@ -147,7 +147,9 @@ export function SlippageSettings({
   onConfigurationChange: (value: CustomConfiguration) => void;
 }) {
   const { slippage: userSlippage } = configuration;
-  const { defaultSlippagePercent, slippageOptions } = getSlippageOptions(chain);
+  const { default: defaultSlippagePercent, options: slippageOptions } =
+    getSlippageOptions(chain);
+
   const slippage = String(
     userSlippage ? toPercents(userSlippage) : defaultSlippagePercent
   );
