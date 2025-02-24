@@ -29,6 +29,7 @@ export interface DaylightEventParams {
 }
 
 export const emitter = createNanoEvents<{
+  backgroundScriptInitialized: () => void;
   accountsChanged: () => void;
   chainsUpdated: () => void;
   chainChanged: (chain: Chain, origin: string) => void;

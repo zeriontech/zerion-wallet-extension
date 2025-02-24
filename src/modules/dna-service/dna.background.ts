@@ -5,7 +5,7 @@ import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { createNanoEvents } from 'nanoevents';
 import { ethers } from 'ethers';
 import { version } from 'src/shared/packageVersion';
-import * as browserStorage from 'src/background/webapis/storage';
+import { BrowserStorage } from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { emitter } from 'src/background/events';
 import { isReadonlyContainer } from 'src/shared/types/validators';
@@ -37,10 +37,10 @@ export class DnaService {
   }
 
   async pushAction(action: DnaAction) {
-    const currentQueue = await browserStorage.get<DnaActionWithTimestamp[]>(
+    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(
       ACTION_QUEUE_KEY
     );
-    await browserStorage.set(ACTION_QUEUE_KEY, [
+    await BrowserStorage.set(ACTION_QUEUE_KEY, [
       ...(currentQueue || []),
       { ...action, timestamp: Date.now() },
     ]);
@@ -62,16 +62,16 @@ export class DnaService {
   }
 
   private async popAction() {
-    const currentQueue = await browserStorage.get<DnaActionWithTimestamp[]>(
+    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(
       ACTION_QUEUE_KEY
     );
     currentQueue?.shift();
-    await browserStorage.set(ACTION_QUEUE_KEY, currentQueue);
+    await BrowserStorage.set(ACTION_QUEUE_KEY, currentQueue);
     this.tryRegisterAction();
   }
 
   private async takeFirstRecentAction() {
-    const currentQueue = await browserStorage.get<DnaActionWithTimestamp[]>(
+    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(
       ACTION_QUEUE_KEY
     );
     if (!currentQueue?.length) {
@@ -85,7 +85,7 @@ export class DnaService {
     ) {
       currentQueue.shift();
     }
-    await browserStorage.set(ACTION_QUEUE_KEY, currentQueue);
+    await BrowserStorage.set(ACTION_QUEUE_KEY, currentQueue);
     return omit(currentQueue[0], 'timestamp');
   }
 
@@ -257,7 +257,7 @@ export class DnaService {
   }
 
   async developerOnly_resetActionQueue() {
-    return browserStorage.set(ACTION_QUEUE_KEY, []);
+    return BrowserStorage.set(ACTION_QUEUE_KEY, []);
   }
 
   async registerAllWallets() {
@@ -271,7 +271,7 @@ export class DnaService {
     // wallets previously registered without 'v' are effectively unregistered.
     // To handle this, we have to re-register all existing wallets.
 
-    const hasBeenFinished = await browserStorage.get<boolean>(
+    const hasBeenFinished = await BrowserStorage.get<boolean>(
       REGISTER_ALL_WALLETS_INVOKED_KEY
     );
     if (hasBeenFinished) {
@@ -307,7 +307,7 @@ export class DnaService {
     );
 
     if (hasFulfilledRequests && !hasRejectedRequests) {
-      await browserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
+      await BrowserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);
     }
   }
 

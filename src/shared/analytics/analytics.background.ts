@@ -1,16 +1,19 @@
 import omit from 'lodash/omit';
-import type { Account } from 'src/background/account/Account';
+import { LoginActivity, type Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
 import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
+import { estimateSessionExpiry } from 'src/background/user-activity';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
   isPrivateKeyContainer,
 } from '../types/validators';
 import { getError } from '../errors/getError';
+import { runtimeStore } from '../core/runtime-store';
+import { packageVersionStore } from '../core/package-version-store';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -329,6 +332,38 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('eip6963SupportDetected', ({ origin }) => {
     eip6963Dapps.add(origin);
+  });
+
+  emitter.on('backgroundScriptInitialized', async () => {
+    // We want to check whether background script got restarted in a way
+    // that has led to an unexpected logout.
+    // The browser restart is considered an expected logout.
+    const { startupEvent } = runtimeStore.getState();
+    const isIntentionalBrowserRestart = Boolean(startupEvent);
+    if (isIntentionalBrowserRestart) {
+      return;
+    }
+    const hasExistingUser = await account.hasExistingUser();
+    const didNotOnboardYet = !hasExistingUser;
+    const isAuthenticated = account.isAuthenticated();
+    const { loggedInAt } = await LoginActivity.getState();
+    const didLogoutIntentionally = loggedInAt == null;
+
+    if (didNotOnboardYet || isAuthenticated || didLogoutIntentionally) {
+      return;
+    }
+
+    const sessionExpiry = await estimateSessionExpiry();
+    const { previousVersion } = packageVersionStore;
+
+    sendToMetabase(
+      'background_script_reloaded',
+      createParams({
+        request_name: 'background_script_reloaded',
+        time_to_expiry: sessionExpiry.timeToExpiry,
+        is_update_from_version: previousVersion,
+      })
+    );
   });
 
   dnaServiceEmitter.on('registerError', async (error, action) => {

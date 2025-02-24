@@ -106,10 +106,10 @@ async function handleFailedHandshake() {
 new BackgroundScriptUpdateHandler({
   onActivate: () => {
     initializeChannels();
-    runtimeStore.setState({ connected: true });
+    runtimeStore.setState((state) => ({ ...state, connected: true }));
   },
   onDisconnect: () => {
-    runtimeStore.setState({ connected: false });
+    runtimeStore.setState((state) => ({ ...state, connected: false }));
   },
   onFailedHandshake: () => handleFailedHandshake(),
 }).keepAlive();

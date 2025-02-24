@@ -1,5 +1,5 @@
 import { Store } from 'store-unit';
-import * as browserStorage from 'src/background/webapis/storage';
+import { BrowserStorage } from 'src/background/webapis/storage';
 
 type Options<S> = {
   retrieve: (key: string) => Promise<S | undefined>;
@@ -8,7 +8,7 @@ type Options<S> = {
 
 export class PersistentStore<T> extends Store<T> {
   static async readSavedState<T>(key: string) {
-    return browserStorage.get<T>(key);
+    return BrowserStorage.get<T>(key);
   }
 
   protected key: string;
@@ -18,7 +18,7 @@ export class PersistentStore<T> extends Store<T> {
   public options: Options<T>;
   public defaultOptions: Options<T> = {
     retrieve: <S>(key: string) => PersistentStore.readSavedState<S>(key),
-    save: (key, value) => browserStorage.set(key, value),
+    save: (key, value) => BrowserStorage.set(key, value),
   };
 
   constructor(initialState: T, key: string, options: Partial<Options<T>> = {}) {
