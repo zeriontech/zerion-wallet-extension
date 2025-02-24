@@ -78,6 +78,7 @@ import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
+import { AssetPage } from '../pages/AssetInfo';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
@@ -243,6 +244,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <Overview />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/asset/:asset_code"
+            element={
+              <RequireAuth>
+                <AssetPage />
               </RequireAuth>
             }
           />
