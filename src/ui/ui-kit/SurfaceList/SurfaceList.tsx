@@ -14,12 +14,14 @@ export function ItemLink({
   children,
   style,
   className,
+  decorationStyle,
   ...props
 }: {
   to: LinkProps['to'];
   children: React.ReactNode;
   onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
   className?: React.AnchorHTMLAttributes<HTMLAnchorElement>['className'];
+  decorationStyle?: React.CSSProperties;
 } & React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <UnstyledLink
@@ -29,7 +31,9 @@ export function ItemLink({
       onClick={onClick}
       className={cn(s.option, className)}
     >
-      <div className={s.decoration}>{children}</div>
+      <div className={s.decoration} style={decorationStyle}>
+        {children}
+      </div>
     </UnstyledLink>
   );
 }
