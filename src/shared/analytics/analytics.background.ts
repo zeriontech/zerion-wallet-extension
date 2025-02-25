@@ -363,16 +363,15 @@ function trackAppEvents({ account }: { account: Account }) {
 
     const sessionExpiry = await estimateSessionExpiry();
     const { previousVersion } = packageVersionStore;
-
-    sendToMetabase(
-      'background_script_reloaded',
-      createParams({
-        request_name: 'background_script_reloaded',
-        time_to_expiry: sessionExpiry.timeToExpiry,
-        is_update_from_version: previousVersion,
-        likely_reason: likelyReason,
-      })
-    );
+    const params = createParams({
+      request_name: 'background_script_reloaded',
+      time_to_expiry: sessionExpiry.timeToExpiry,
+      is_update_from_version: previousVersion,
+      likely_reason: likelyReason,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    const event = 'General: Background Script Reloaded';
+    mixpanelTrack(account, event, mixpanelParams);
   });
 
   dnaServiceEmitter.on('registerError', async (error, action) => {
