@@ -45,13 +45,14 @@ export function MarketAssetSelect({
     [addressPositions]
   );
 
-  const { data: popularAssets, isLoading: popularAssetsAreLoading } = useQuery({
-    queryKey: ['getPopularTokens', chain],
-    queryFn: () => getPopularTokens(chain),
-    suspense: false,
-    retry: false,
-    staleTime: ONE_DAY,
-  });
+  const { data: popularAssetCodes, isLoading: popularAssetCodesAreLoading } =
+    useQuery({
+      queryKey: ['getPopularTokens', chain],
+      queryFn: () => getPopularTokens(chain),
+      suspense: false,
+      retry: false,
+      staleTime: ONE_DAY,
+    });
 
   const { networks } = useNetworks();
   const nativeAssetId = chain
@@ -60,7 +61,7 @@ export function MarketAssetSelect({
 
   const { data: popularAssetsResponse } = useAssetsPrices({
     currency,
-    asset_codes: popularAssets || [nativeAssetId || ETH],
+    asset_codes: popularAssetCodes || [nativeAssetId || ETH],
   });
 
   const [query, setQuery] = useState('');
@@ -73,7 +74,7 @@ export function MarketAssetSelect({
   const shouldQueryByChain = !searchAllNetworks && chain;
 
   const popularPositions = useMemo(() => {
-    if (!popularAssetsResponse || query || popularAssetsAreLoading) {
+    if (!popularAssetsResponse || query || popularAssetCodesAreLoading) {
       return [];
     }
     return Object.values(popularAssetsResponse.prices)
@@ -92,7 +93,7 @@ export function MarketAssetSelect({
     popularAssetsResponse,
     positionsMap,
     shouldQueryByChain,
-    popularAssetsAreLoading,
+    popularAssetCodesAreLoading,
   ]);
 
   const {
@@ -111,17 +112,18 @@ export function MarketAssetSelect({
     { suspense: false }
   );
 
-  const popularAssetCodes = useMemo(
+  const popularAssetCodeSet = useMemo(
     () =>
       new Set(popularPositions.map((position) => position.asset.asset_code)),
     [popularPositions]
   );
+
   const marketPositions = useMemo(() => {
     if (marketAssets) {
       return marketAssets
         .filter(
           (item): item is Exclude<typeof item, null> =>
-            !popularAssetCodes.has(item.asset.asset_code)
+            !popularAssetCodeSet.has(item.asset.asset_code)
         )
         .map(
           (item) =>
@@ -131,7 +133,7 @@ export function MarketAssetSelect({
     } else {
       return [];
     }
-  }, [chain, marketAssets, popularAssetCodes, positionsMap]);
+  }, [chain, marketAssets, popularAssetCodeSet, positionsMap]);
 
   const items = useMemo(
     () => [...popularPositions, ...marketPositions],
@@ -139,11 +141,11 @@ export function MarketAssetSelect({
   );
   const getGroupName = useCallback(
     (position: BareAddressPosition) => {
-      return popularAssetCodes.has(position.asset.asset_code)
+      return popularAssetCodeSet.has(position.asset.asset_code)
         ? 'Popular'
         : 'Others';
     },
-    [popularAssetCodes]
+    [popularAssetCodeSet]
   );
 
   const currentItem = selectedItem || savedSelectedItem;
