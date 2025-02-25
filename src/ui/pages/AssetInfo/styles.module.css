@@ -1,0 +1,19 @@
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  1% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.assetHeaderContent {
+  animation: appear 150ms ease-in-out;
+  animation-fill-mode: both;
+}
