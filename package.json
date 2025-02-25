@@ -112,6 +112,7 @@
     "buffer": "^6.0.3",
     "canvas-confetti": "^1.6.0",
     "capitalize-ts": "^1.0.0",
+    "chart.js": "^4.4.8",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.9",
     "defi-sdk": "^0.1.9",
