@@ -1,5 +1,5 @@
-import { useAssetsFullInfo } from 'defi-sdk';
-import React from 'react';
+import { type Asset, useAssetsFullInfo } from 'defi-sdk';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -18,7 +18,46 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { emDash } from 'src/ui/shared/typography';
+import * as styles from './styles.module.css';
 
+const SCROLL_THRESHOLD = 80;
+
+function AssetPageHeader({ asset }: { asset: Asset }) {
+  const [showTokenInfoInHeader, setShowTokenInfoInHeader] = useState(false);
+  const { currency } = useCurrency();
+
+  useEffect(() => {
+    const handleScroll = () =>
+      setShowTokenInfoInHeader(window.scrollY > SCROLL_THRESHOLD);
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  return showTokenInfoInHeader ? null : (
+    <HStack
+      gap={8}
+      alignItems="center"
+      justifyContent="center"
+      className={styles.assetHeaderContent}
+    >
+      <TokenIcon
+        src={asset.icon_url}
+        symbol={asset.symbol}
+        size={20}
+        title={asset.name}
+      />
+      <UIText kind="body/accent">
+        {asset.symbol} {emDash}{' '}
+        {formatCurrencyValue(asset.price?.value || 0, 'en', currency)}
+      </UIText>
+    </HStack>
+  );
+}
 export function AssetPage() {
   const { asset_code } = useParams();
   const { currency } = useCurrency();
@@ -35,7 +74,10 @@ export function AssetPage() {
 
   return (
     <PageColumn>
-      <NavigationTitle title="Token name" />
+      <NavigationTitle
+        title={<AssetPageHeader asset={value.asset} />}
+        documentTitle={`${value.asset.name} - info`}
+      />
       <PageTop />
       <VStack gap={24} style={{ flexGrow: 1 }}>
         <VStack gap={16}>
@@ -83,6 +125,7 @@ export function AssetPage() {
             </HStack>
           </VStack>
         </VStack>
+        <div style={{ height: 15000 }} />
       </VStack>
       <StickyBottomPanel
         style={{ padding: 0, background: 'none', boxShadow: 'none' }}
