@@ -16,8 +16,6 @@ import { useQuery } from '@tanstack/react-query';
 import type { BareAddressPosition } from '../../../BareAddressPosition';
 import { getPopularTokens } from '../../../shared/getPopularTokens';
 
-const ONE_DAY = 1000 * 60 * 60 * 24;
-
 export function MarketAssetSelect({
   chain,
   selectedItem,
@@ -51,7 +49,7 @@ export function MarketAssetSelect({
       queryFn: () => getPopularTokens(chain),
       suspense: false,
       retry: false,
-      staleTime: ONE_DAY,
+      staleTime: Infinity,
     });
 
   const { networks } = useNetworks();
