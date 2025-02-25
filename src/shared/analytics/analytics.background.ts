@@ -338,8 +338,16 @@ function trackAppEvents({ account }: { account: Account }) {
     // We want to check whether background script got restarted in a way
     // that has led to an unexpected logout.
     // The browser restart is considered an expected logout.
-    const { startupEvent } = runtimeStore.getState();
+    const { startupEvent, installedEvent } = runtimeStore.getState();
+
     const isIntentionalBrowserRestart = Boolean(startupEvent);
+
+    const likelyReason = installedEvent
+      ? installedEvent.reason
+      : isIntentionalBrowserRestart
+      ? 'browser restart'
+      : 're-enabled by user';
+
     if (isIntentionalBrowserRestart) {
       return;
     }
@@ -362,6 +370,7 @@ function trackAppEvents({ account }: { account: Account }) {
         request_name: 'background_script_reloaded',
         time_to_expiry: sessionExpiry.timeToExpiry,
         is_update_from_version: previousVersion,
+        likely_reason: likelyReason,
       })
     );
   });
