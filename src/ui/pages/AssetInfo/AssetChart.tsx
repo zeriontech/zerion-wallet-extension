@@ -13,6 +13,7 @@ const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
     datasets: [],
   },
   options: {
+    events: ['mousemove', 'mouseout', 'mousedown', 'mouseup'],
     showLine: true,
     responsive: true,
     maintainAspectRatio: false,
@@ -151,6 +152,8 @@ export function AssetChart({
   const { currency } = useCurrency();
   const chartPointsRef = useRef<[number, number][]>([]);
   const activeElementIndexRef = useRef<number>(Infinity);
+  const clickedElementIndexRef = useRef<number>(Infinity);
+  const clickedElementXRef = useRef<number | null>(null);
   const onActiveElementChangeEvent = useEvent(onActiveElementChange);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -186,7 +189,17 @@ export function AssetChart({
                   (chartPointsRef.current[activeElementIndexRef.current]?.[1] ??
                     chartPointsRef.current.at(-1)?.[1]) >=
                   chartPointsRef.current[0]?.[1];
-                return ctx.p1DataIndex > activeElementIndexRef.current
+                const shouldHightlight =
+                  (clickedElementIndexRef.current === Infinity &&
+                    activeElementIndexRef.current !== Infinity &&
+                    ctx.p1DataIndex > activeElementIndexRef.current) ||
+                  (clickedElementIndexRef.current !== Infinity &&
+                    activeElementIndexRef.current !== Infinity &&
+                    (clickedElementIndexRef.current - ctx.p1DataIndex) *
+                      (ctx.p1DataIndex - activeElementIndexRef.current) <
+                      0);
+
+                return shouldHightlight
                   ? isPositive
                     ? 'rgba(100, 255, 100, 0.5)'
                     : 'rgba(255, 0, 0, 0.5)'
@@ -238,14 +251,16 @@ export function AssetChart({
             ctx.save();
             ctx.setLineDash([5, 5]);
 
-            // Draw vertical line
-            ctx.beginPath();
-            ctx.moveTo(x, 8);
-            ctx.lineTo(x, chart.height - 2);
-            ctx.strokeStyle = 'grey';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            ctx.closePath();
+            if (clickedElementIndexRef.current === Infinity) {
+              // Draw vertical line
+              ctx.beginPath();
+              ctx.moveTo(x, 8);
+              ctx.lineTo(x, chart.height - 2);
+              ctx.strokeStyle = 'grey';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+              ctx.closePath();
+            }
 
             // Draw horizontal line
             ctx.beginPath();
@@ -267,6 +282,45 @@ export function AssetChart({
             ctx.fill();
             ctx.stroke();
             ctx.closePath();
+
+            ctx.restore();
+          },
+        },
+        {
+          id: 'rangeSelectPlugin',
+          beforeEvent: (chart, args) => {
+            if (args.event.type === 'mousedown') {
+              clickedElementIndexRef.current =
+                chart.getActiveElements()[0]?.index ?? Infinity;
+              clickedElementXRef.current = args.event.x;
+            }
+            if (args.event.type === 'mouseup') {
+              clickedElementIndexRef.current = Infinity;
+              clickedElementXRef.current = null;
+            }
+          },
+          afterDraw: (chart) => {
+            const activeElement = chart.getActiveElements()?.[0];
+            const { ctx } = chart;
+
+            if (!activeElement || !ctx || !clickedElementXRef.current) {
+              return;
+            }
+
+            const clickedX = clickedElementXRef.current;
+            const { x } = activeElement.element.tooltipPosition(false);
+
+            ctx.save();
+
+            // Fill background between clickedX and x
+            ctx.beginPath();
+            ctx.moveTo(clickedX, 0);
+            ctx.lineTo(clickedX, chart.height);
+            ctx.lineTo(x, chart.height);
+            ctx.lineTo(x, 0);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fill();
 
             ctx.restore();
           },
