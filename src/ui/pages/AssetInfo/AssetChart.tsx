@@ -83,6 +83,17 @@ function toScatterData(points: [number, number][]) {
   return points.map(([x, y]) => ({ x, y }));
 }
 
+function getYLimits(points: [number, number][]) {
+  const values = points.map(([, value]) => value);
+  const minLimit = Math.min(...values);
+  const maxLimit = Math.max(...values);
+  if (minLimit && maxLimit / minLimit < 1.02) {
+    const diff = maxLimit - minLimit;
+    return { min: minLimit - diff * 5, max: maxLimit + diff * 5 };
+  }
+  return { min: minLimit, max: maxLimit };
+}
+
 function updateChartPoints({
   chart,
   prevPoints,
@@ -92,6 +103,9 @@ function updateChartPoints({
   prevPoints: [number, number][];
   nextPoints: [number, number][];
 }) {
+  const { min: prevYMin, max: prevYMax } = getYLimits(prevPoints);
+  const { min: nextYMin, max: nextYMax } = getYLimits(nextPoints);
+
   chart.data.datasets[0].data = toScatterData(nextPoints);
   chart.data.datasets[1] = {
     data: toScatterData(prevPoints),
@@ -104,7 +118,7 @@ function updateChartPoints({
       min: prevPoints[0]?.[0],
       max: prevPoints.at(-1)?.[0],
     },
-    y: { display: false },
+    y: { display: false, min: prevYMin, max: prevYMax },
   };
   chart.update('none');
 
@@ -114,7 +128,7 @@ function updateChartPoints({
       min: nextPoints[0]?.[0],
       max: nextPoints.at(-1)?.[0],
     },
-    y: { display: false },
+    y: { display: false, min: nextYMin, max: nextYMax },
   };
   chart.options.animation = {
     onComplete: () => {
@@ -289,7 +303,7 @@ export function AssetChart({
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
-          style={{ position: 'absolute', bottom: -8, right: 0 }}
+          style={{ position: 'absolute', bottom: -12, right: 0 }}
         >
           {formatCurrencyValue(minChartPointValue, 'en', currency)}
         </UIText>
