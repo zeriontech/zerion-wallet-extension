@@ -203,7 +203,7 @@ initialize().then((values) => {
 });
 
 browser.runtime.onInstalled.addListener(({ reason }) => {
-  if (reason === 'install') {
+  if (reason === 'install' && process.env.NODE_ENV !== 'test') {
     userLifecycleStore.handleRuntimeInstalledEvent();
     openOnboarding();
   }
