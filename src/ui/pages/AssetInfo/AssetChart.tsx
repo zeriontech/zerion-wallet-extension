@@ -226,6 +226,8 @@ export function AssetChart({
             const event = args.event;
             if (event.type === 'mouseout') {
               activeElementIndexRef.current = Infinity;
+              clickedElementIndexRef.current = Infinity;
+              clickedElementXRef.current = null;
               onActiveElementChangeEvent(activeElementIndexRef.current);
               chart.update();
             }
@@ -251,7 +253,7 @@ export function AssetChart({
             ctx.save();
             ctx.setLineDash([5, 5]);
 
-            if (clickedElementIndexRef.current === Infinity) {
+            if (clickedElementXRef.current == null) {
               // Draw vertical line
               ctx.beginPath();
               ctx.moveTo(x, 8);
