@@ -87,11 +87,11 @@ function getYLimits(points: [number, number][]) {
   const values = points.map(([, value]) => value);
   const minLimit = Math.min(...values);
   const maxLimit = Math.max(...values);
+  const diff = maxLimit - minLimit;
   if (minLimit && maxLimit / minLimit < 1.02) {
-    const diff = maxLimit - minLimit;
     return { min: minLimit - diff * 5, max: maxLimit + diff * 5 };
   }
-  return { min: minLimit, max: maxLimit };
+  return { min: minLimit - diff / 50, max: maxLimit + diff / 50 };
 }
 
 function updateChartPoints({
@@ -240,8 +240,8 @@ export function AssetChart({
 
             // Draw vertical line
             ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, chart.height);
+            ctx.moveTo(x, 8);
+            ctx.lineTo(x, chart.height - 2);
             ctx.strokeStyle = 'grey';
             ctx.lineWidth = 1;
             ctx.stroke();
@@ -294,7 +294,7 @@ export function AssetChart({
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
-          style={{ position: 'absolute', top: -8, right: 0 }}
+          style={{ position: 'absolute', top: -14, right: 0 }}
         >
           {formatCurrencyValue(maxChartPointValue, 'en', currency)}
         </UIText>
@@ -303,7 +303,7 @@ export function AssetChart({
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
-          style={{ position: 'absolute', bottom: -12, right: 0 }}
+          style={{ position: 'absolute', bottom: -14, right: 0 }}
         >
           {formatCurrencyValue(minChartPointValue, 'en', currency)}
         </UIText>
