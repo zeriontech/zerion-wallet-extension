@@ -13,7 +13,7 @@ import {
 } from '../types/validators';
 import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
-import { packageVersionStore } from '../core/package-version-store';
+import { productionVersion } from '../packageVersion';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -362,11 +362,16 @@ function trackAppEvents({ account }: { account: Account }) {
     }
 
     const sessionExpiry = await estimateSessionExpiry();
-    const { previousVersion } = packageVersionStore;
+
+    /** We want to use this only if it differs from current version */
+    const prevVersion = installedEvent?.previousVersion;
+    const fromVersion =
+      prevVersion && prevVersion !== productionVersion ? prevVersion : null;
+
     const params = createParams({
       request_name: 'background_script_reloaded',
       time_to_expiry: sessionExpiry.timeToExpiry,
-      is_update_from_version: previousVersion,
+      is_update_from_version: fromVersion,
       likely_reason: likelyReason,
     });
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);

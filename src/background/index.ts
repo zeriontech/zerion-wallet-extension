@@ -209,8 +209,8 @@ initialize().then((values) => {
   userActivity.expireSessionIfNeeded();
 });
 
-browser.runtime.onInstalled.addListener(({ reason }) => {
-  runtimeStore.handleInstalledEvent({ reason });
+browser.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
+  runtimeStore.handleInstalledEvent({ reason, previousVersion });
   if (reason === 'install') {
     userLifecycleStore.handleRuntimeInstalledEvent();
     openOnboarding();
