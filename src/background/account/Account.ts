@@ -64,6 +64,14 @@ export class Account extends EventEmitter<AccountEvents> {
     await BrowserStorage.set(currentUserKey, user);
   }
 
+  static async readCurrentUser() {
+    return BrowserStorage.get<User>(currentUserKey);
+  }
+
+  private static async removeCurrentUser() {
+    await BrowserStorage.remove(currentUserKey);
+  }
+
   private static async writeCredentials(credentials: Credentials) {
     await SessionStorage.set(credentialsKey, credentials);
     await LoginActivity.recordLogin();
@@ -76,14 +84,6 @@ export class Account extends EventEmitter<AccountEvents> {
   private static async removeCredentials() {
     await SessionStorage.remove(credentialsKey);
     await LoginActivity.recordLogout();
-  }
-
-  static async readCurrentUser() {
-    return BrowserStorage.get<User>(currentUserKey);
-  }
-
-  private static async removeCurrentUser() {
-    await BrowserStorage.remove(currentUserKey);
   }
 
   static async ensureUserAndWallet() {
