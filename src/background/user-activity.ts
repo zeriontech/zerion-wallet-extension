@@ -41,10 +41,7 @@ export async function estimateSessionExpiry(): Promise<{
 }> {
   const lastActive = await getLastActive();
   const autoLockTimeout = await getIdleTimeout();
-  if (autoLockTimeout === 'none') {
-    return { autoLockTimeout, shouldExpire: false, timeToExpiry: Infinity };
-  }
-  if (lastActive != null) {
+  if (autoLockTimeout !== 'none' && lastActive != null) {
     const timeToExpiry = autoLockTimeout - (Date.now() - lastActive);
     return { autoLockTimeout, shouldExpire: timeToExpiry < 0, timeToExpiry };
   } else {
