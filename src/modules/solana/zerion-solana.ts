@@ -11,8 +11,8 @@ import type {
 } from '@solana/wallet-standard-features';
 import { formatJsonRpcRequestPatched } from 'src/shared/custom-rpc/formatJsonRpcRequestPatched';
 import { invariant } from 'src/shared/invariant';
+import type { Ghost } from '@zeriontech/solana-wallet-standard';
 import type { Connection } from '../ethereum/connection';
-import type { Ghost } from './wallet-standard/window';
 import { isSolanaAddress } from './shared';
 import { solFromBase64, solToBase64 } from './transactions/create';
 import type { SolTransactionResponse } from './transactions/SolTransactionResponse';
