@@ -1,8 +1,8 @@
+import { initialize } from '@zeriontech/solana-wallet-standard';
 import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { isMetamaskModeOn } from 'src/shared/preferences-helpers';
-import { initialize } from 'src/modules/solana/wallet-standard';
 import { ZerionSolana } from 'src/modules/solana/zerion-solana';
 import { pageObserver } from './dapp-mutation';
 import * as dappDetection from './dapp-detection';
