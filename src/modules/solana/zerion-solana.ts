@@ -16,9 +16,11 @@ import type { Ghost } from './wallet-standard/window';
 import { isSolanaAddress } from './shared';
 import { solFromBase64, solToBase64 } from './transactions/create';
 import type { SolTransactionResponse } from './transactions/SolTransactionResponse';
+import { icon } from './icon';
 
 export class ZerionSolana extends EventEmitter implements Ghost {
   name = 'Zerion';
+  icon = icon;
   connection: Connection;
   publicKey: PublicKey | null;
 
