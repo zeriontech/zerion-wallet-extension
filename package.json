@@ -65,7 +65,7 @@
     "@tanstack/eslint-plugin-query": "^4.29.9",
     "@types/canvas-confetti": "^1.6.4",
     "@types/chrome": "^0.0.270",
-    "@types/dom-navigation": "^1.0.3",
+    "@types/dom-navigation": "^1.0.5",
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.7",
     "@types/node": "^22.4.0",
@@ -92,7 +92,7 @@
     "process": "^0.11.10",
     "svgo": "^3.3.2",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.4.3"
+    "typescript": "^5.8.2"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --cache --fix",
@@ -111,12 +111,12 @@
     "@store-unit/react": "^1.0.4",
     "@tanstack/react-query": "^4.35.3",
     "@tanstack/react-virtual": "^3.2.0",
-    "@wallet-standard/base": "^1.1.0",
     "@walletconnect/jsonrpc-provider": "^1.0.13",
     "@walletconnect/jsonrpc-utils": "^1.0.8",
     "@zeriontech/components": "^1.1.0",
     "@zeriontech/hardware-wallet-connection": "^1.0.11",
     "@zeriontech/transactions": "^0.3.3",
+    "@zeriontech/solana-wallet-standard": "^1.0.0-alpha.2",
     "bignumber.js": "^9.1.1",
     "bip32": "^5.0.0-rc.0",
     "bip39": "^3.1.0",

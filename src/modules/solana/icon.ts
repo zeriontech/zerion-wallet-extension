@@ -1,4 +1,4 @@
-import type { WalletIcon } from '@wallet-standard/base';
+import type { WalletIcon } from '@zeriontech/solana-wallet-standard';
 
 import zerionLogoDataUrl from 'data-url:src/ui/assets/zerion-logo-blue.svg';
 
