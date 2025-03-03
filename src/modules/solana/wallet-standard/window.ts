@@ -2,6 +2,7 @@ import {
   type SolanaSignInInput,
   type SolanaSignInOutput,
 } from '@solana/wallet-standard-features';
+import type { WalletIcon } from '@wallet-standard/base';
 import type {
   PublicKey,
   SendOptions,
@@ -33,7 +34,9 @@ export interface GhostEventEmitter {
 
 export interface Ghost extends GhostEventEmitter {
   name: string;
+  icon: WalletIcon;
   publicKey: PublicKey | null;
+  features?: Record<`${string}:${string}`, unknown>;
   connect(options?: {
     onlyIfTrusted?: boolean;
   }): Promise<{ publicKey: PublicKey }>;
