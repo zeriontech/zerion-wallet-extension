@@ -19,6 +19,7 @@ import {
 import type { Transaction } from '@solana/web3.js';
 import { VersionedTransaction } from '@solana/web3.js';
 import type { Wallet } from '@wallet-standard/base';
+import type { WalletIcon } from '@wallet-standard/base';
 import {
   StandardConnect,
   type StandardConnectFeature,
@@ -34,7 +35,6 @@ import {
 } from '@wallet-standard/features';
 import bs58 from 'bs58';
 import { GhostWalletAccount } from './account.js';
-import { icon } from './icon.js';
 import type { SolanaChain } from './solana.js';
 import {
   isSolanaChain,
@@ -44,12 +44,10 @@ import {
 import { bytesEqual } from './util.js';
 import type { Ghost } from './window.js';
 
-export const GhostNamespace = 'zerion:';
+export type GhostNamespace = `${string}:${string}`;
 
-export type GhostFeature = {
-  [GhostNamespace]: {
-    zerion: Ghost;
-  };
+export type GhostFeature<T extends GhostNamespace> = {
+  readonly [K in T]: unknown;
 };
 
 export class GhostWallet implements Wallet {
@@ -58,7 +56,7 @@ export class GhostWallet implements Wallet {
   } = {};
   readonly #version = '1.0.0' as const;
   readonly #name = 'Ghost' as string;
-  readonly #icon = icon;
+  readonly #icon: WalletIcon; // = icon;
   #account: GhostWalletAccount | null = null;
   readonly #implementation: Ghost;
 
@@ -85,8 +83,8 @@ export class GhostWallet implements Wallet {
     SolanaSignTransactionFeature &
     SolanaSignMessageFeature &
     SolanaSignInFeature &
-    GhostFeature {
-    return {
+    GhostFeature<`${string}:${string}`> {
+    const features = {
       [StandardConnect]: {
         version: '1.0.0',
         connect: this.#connect,
@@ -117,10 +115,8 @@ export class GhostWallet implements Wallet {
         version: '1.0.0',
         signIn: this.#signIn,
       },
-      [GhostNamespace]: {
-        zerion: this.#implementation,
-      },
-    };
+    } as const;
+    return Object.assign(features, this.#implementation.features);
   }
 
   get accounts() {
@@ -129,6 +125,7 @@ export class GhostWallet implements Wallet {
 
   constructor(implementation: Ghost) {
     this.#name = implementation.name;
+    this.#icon = implementation.icon;
     if (new.target === GhostWallet) {
       Object.freeze(this);
     }
