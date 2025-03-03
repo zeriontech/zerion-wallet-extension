@@ -1,0 +1,78 @@
+import type { ClientOptions } from '../shared';
+import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
+import type { ZerionApiContext } from '../zerion-api-bare';
+import type { ResponseBody } from './ResponseBody';
+
+export interface Params {
+  fungibleId: string;
+  currency: string;
+}
+
+export interface Asset {
+  id: string;
+  iconUrl: string | null;
+  name: string;
+  new: boolean;
+  symbol: string;
+  verified: boolean;
+  implementations: Record<string, { address: string | null; decimals: number }>;
+  meta: {
+    circulatingSupply: number;
+    fullyDilutedValuation: number;
+    marketCap: number;
+    price: number;
+    relativeChange1d: number;
+    relativeChange30d: number;
+    relativeChange90d: number;
+    relativeChange365d: number;
+    totalSupply: number;
+  };
+}
+
+export interface AssetResource {
+  name: string;
+  url: string;
+  iconUrl: string;
+  displayableName: string;
+}
+
+export interface AssetFullInfo {
+  extra: {
+    createdAt: string;
+    description: string;
+    holders: null;
+    liquidity: null;
+    top10: null;
+    volume24h: null;
+    relevantResources: AssetResource[];
+  };
+  fungible: Asset;
+}
+
+type Response = ResponseBody<AssetFullInfo>;
+
+export async function assetGetFungibleFullInfo(
+  this: ZerionApiContext,
+  payload: Params,
+  options: ClientOptions = CLIENT_DEFAULTS
+) {
+  const params = new URLSearchParams({
+    fungibleId: payload.fungibleId,
+    currency: payload.currency,
+  });
+  const endpoint = `asset/get-fungible-full-info/v1?${params}`;
+  return ZerionHttpClient.get<Response>({
+    endpoint,
+    ...options,
+  });
+
+  // return ZerionHttpClient.post<Response>({
+  //   endpoint: '/asset/get-chart/v1',
+  //   body: JSON.stringify({
+  //     ...payload,
+  //     addresses: ['0x015FccD4ED178d3b3663157718C6aC8B3BFC1Eb7'],
+  //     period: '1d',
+  //   }),
+  //   ...options,
+  // });
+}
