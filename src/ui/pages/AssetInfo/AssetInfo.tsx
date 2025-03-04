@@ -12,12 +12,18 @@ import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
 import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import FlagIcon from 'jsx:src/ui/assets/flag.svg';
+import EyeIcon from 'jsx:src/ui/assets/eye.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { emDash } from 'src/ui/shared/typography';
+import {
+  formatCurrencyToParts,
+  formatCurrencyValue,
+} from 'src/shared/units/formatCurrencyValue';
+import { emDash, minus } from 'src/ui/shared/typography';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import type {
   Asset,
@@ -33,7 +39,21 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { middleTruncate } from 'src/ui/shared/middleTruncate';
 import { createChain } from 'src/modules/networks/Chain';
 import { isTruthy } from 'is-truthy-ts';
+import { useQuery } from '@tanstack/react-query';
+import { walletPort } from 'src/ui/shared/channels';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { useWalletPnL } from 'src/modules/zerion-api/hooks/useWalletPnL';
+import { isReadonlyAccount } from 'src/shared/types/validators';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { useWalletAssetDetails } from 'src/modules/zerion-api/hooks/useWalletAssetDetails';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import type { WalletAssetDetails } from 'src/modules/zerion-api/requests/wallet-get-asset-details';
 import * as styles from './styles.module.css';
+import { AssetHistory } from './AssetHistory';
 
 const SCROLL_THRESHOLD = 80;
 
@@ -254,9 +274,167 @@ function AssetCommonStats({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
   );
 }
 
-// function AssetAddressStats({ asset }: { asset: Asset }) {
-//   return null;
-// }
+function AssetAddressStats({
+  asset,
+  wallet,
+  walletAssetDetails,
+}: {
+  asset: Asset;
+  wallet: ExternallyOwnedAccount;
+  walletAssetDetails: WalletAssetDetails;
+}) {
+  const { ready, singleAddressNormalized } = useAddressParams();
+  const { currency } = useCurrency();
+
+  const { data: walletPnL } = useWalletPnL(
+    { addresses: [singleAddressNormalized], currency, fungibleIds: [asset.id] },
+    { enabled: ready }
+  );
+
+  const isWatchedAddress = isReadonlyAccount(wallet);
+
+  const fullValue = walletAssetDetails.wallets[0].value;
+  const unrealizedGainRaw = walletPnL?.data.unrealizedGain || 0;
+  const unrealizedGainFormatted = `${
+    unrealizedGainRaw > 0 ? '+' : unrealizedGainRaw < 0 ? minus : ''
+  }${formatCurrencyValue(
+    Math.abs(unrealizedGainRaw),
+    'en',
+    currency
+  )} (${formatPercent(Math.abs(unrealizedGainRaw / fullValue), 'en')}%)`;
+
+  return (
+    <VStack
+      gap={0}
+      style={{
+        position: 'relative',
+        border: '2px solid var(--neutral-200)',
+        borderRadius: 16,
+      }}
+    >
+      {isWatchedAddress ? (
+        <HStack
+          gap={8}
+          alignItems="center"
+          justifyContent="center"
+          style={{
+            backgroundColor: 'var(--neutral-200)',
+            borderRadius: '16px 16px 0 0',
+            padding: '4px 8px 6px',
+          }}
+        >
+          <EyeIcon
+            style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
+          />
+          <UIText kind="caption/accent" color="var(--neutral-500)">
+            You’re following this wallet
+          </UIText>
+        </HStack>
+      ) : null}
+      <VStack gap={12} style={{ padding: 16 }}>
+        <UnstyledLink
+          to="/wallet-select"
+          title="Change Wallet"
+          className="parent-hover"
+          style={{
+            ['--parent-content-color' as string]: 'var(--neutral-500)',
+            ['--parent-hovered-content-color' as string]: 'var(--black)',
+          }}
+        >
+          <HStack gap={4} alignItems="center">
+            <HStack gap={8} alignItems="center">
+              <WalletAvatar
+                active={false}
+                address={singleAddressNormalized}
+                size={24}
+                borderRadius={4}
+              />
+              <WalletDisplayName
+                wallet={wallet}
+                maxCharacters={16}
+                render={(name) => (
+                  <UIText kind="body/accent">{name.value}</UIText>
+                )}
+              />
+            </HStack>
+            <ArrowDownIcon
+              className="content-hover"
+              style={{ width: 24, height: 24 }}
+            />
+          </HStack>
+        </UnstyledLink>
+        {fullValue === 0 ? (
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            {formatTokenValue(0, asset.symbol)}
+          </UIText>
+        ) : (
+          <VStack gap={12}>
+            <VStack gap={4}>
+              <UIText kind="headline/h1">
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(
+                    walletAssetDetails.wallets[0].value,
+                    'en',
+                    currency
+                  )}
+                />
+              </UIText>
+              <UIText kind="small/regular" color="var(--neutral-500)">
+                {formatTokenValue(
+                  walletAssetDetails.wallets[0].convertedQuantity,
+                  asset.symbol
+                )}
+              </UIText>
+            </VStack>
+            <HStack gap={12} style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <VStack gap={4}>
+                <UIText kind="caption/regular" color="var(--neutral-500)">
+                  Unrealised PnL
+                </UIText>
+                <UIText
+                  kind="body/accent"
+                  color={
+                    unrealizedGainRaw > 0
+                      ? 'var(--positive-500)'
+                      : unrealizedGainRaw < 0
+                      ? 'var(--negative-500)'
+                      : 'var(--neutral-500)'
+                  }
+                >
+                  {unrealizedGainFormatted}
+                </UIText>
+              </VStack>
+              <VStack gap={4}>
+                <UIText kind="caption/regular" color="var(--neutral-500)">
+                  Invested
+                </UIText>
+                <UIText kind="body/accent">
+                  {formatCurrencyValue(
+                    walletPnL?.data.netInvested || 0,
+                    'en',
+                    currency
+                  )}
+                </UIText>
+              </VStack>
+            </HStack>
+            <Button
+              as={UnstyledLink}
+              to="/wallets"
+              kind="neutral"
+              size={48}
+              style={{
+                ['--button-background' as string]: 'var(--neutral-200)',
+                ['--button-background-hover' as string]: 'var(--neutral-300)',
+              }}
+            >
+              <UIText kind="body/accent"> More Details</UIText>
+            </Button>
+          </VStack>
+        )}
+      </VStack>
+    </VStack>
+  );
+}
 
 function AssetImplementationButton({
   network,
@@ -292,9 +470,13 @@ function AssetImplementationButton({
           </UIText>
         </HStack>
         {isSuccess ? (
-          <CheckIcon style={{ color: 'var(--positive-500)' }} />
+          <CheckIcon
+            style={{ color: 'var(--positive-500)', width: 20, height: 20 }}
+          />
         ) : (
-          <CopyIcon style={{ color: 'var(--neutral-500)' }} />
+          <CopyIcon
+            style={{ color: 'var(--neutral-500)', width: 20, height: 20 }}
+          />
         )}
       </HStack>
     </Button>
@@ -358,19 +540,66 @@ function AssetResources({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
   );
 }
 
+function ReportAssetLink({ asset }: { asset: Asset }) {
+  return (
+    <UnstyledAnchor
+      target="_blank"
+      href={`https://zerion-io.typeform.com/to/IVsRHfBy?typeform-medium=embed-snippet#symbol=${asset.symbol}&asset_id=${asset.id}`}
+      rel="noopener noreferrer"
+      className="parent-hover"
+      style={{
+        ['--parent-content-color' as string]: 'var(--neutral-400)',
+        ['--parent-hovered-content-color' as string]: 'var(--neutral-700)',
+      }}
+    >
+      <HStack
+        gap={8}
+        alignItems="center"
+        className="content-hover"
+        justifyContent="center"
+      >
+        <FlagIcon style={{ width: 20, height: 20 }} />
+        <UIText kind="small/accent">Report Asset</UIText>
+      </HStack>
+    </UnstyledAnchor>
+  );
+}
+
 export function AssetPage() {
   const { asset_code } = useParams();
   invariant(asset_code, 'Asset Code is required');
 
   const { currency } = useCurrency();
   const { data } = useAssetFullInfo({ currency, fungibleId: asset_code });
+  const { ready, singleAddress, singleAddressNormalized } = useAddressParams();
+  const { data: walletData } = useWalletAssetDetails(
+    {
+      assetId: asset_code,
+      currency,
+      groupBy: ['by-wallet', 'by-app'],
+      addresses: [singleAddressNormalized],
+    },
+    { enabled: ready }
+  );
 
-  const showSendButton = true;
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetWalletByAddress', singleAddress, null],
+    queryFn: () =>
+      walletPort.request('uiGetWalletByAddress', {
+        address: singleAddress,
+        groupId: null,
+      }),
+    suspense: false,
+    enabled: ready,
+  });
 
-  if (!data?.data.fungible) {
+  if (!data?.data.fungible || !wallet || !walletData) {
     return null;
   }
+
   const asset = data.data.fungible;
+  const isWatchedAddress = isReadonlyAccount(wallet);
+  const isEmptyBalance = walletData?.data.wallets[0].value === 0;
 
   return (
     <PageColumn>
@@ -382,42 +611,55 @@ export function AssetPage() {
       <VStack gap={24} style={{ flexGrow: 1, alignContent: 'start' }}>
         <AssetTitleAndChart asset={asset} />
         <AssetCommonStats assetFullInfo={data.data} />
+        <AssetAddressStats
+          wallet={wallet}
+          asset={asset}
+          walletAssetDetails={walletData.data}
+        />
         <AssetResources assetFullInfo={data.data} />
+        <AssetHistory />
+        <ReportAssetLink asset={asset} />
       </VStack>
-      <StickyBottomPanel
-        style={{ padding: 0, background: 'none', boxShadow: 'none' }}
-      >
-        <HStack
-          gap={8}
-          style={{
-            width: '100%',
-            gridTemplateColumns: showSendButton ? '1fr auto auto' : '1fr',
-          }}
+      {isWatchedAddress ? null : (
+        <StickyBottomPanel
+          style={{ padding: 0, background: 'none', boxShadow: 'none' }}
         >
-          <Button kind="primary" size={48}>
-            <HStack gap={8} alignItems="center" justifyContent="center">
-              <SwapIcon style={{ width: 20, height: 20 }} />
-              <UIText kind="body/accent">Swap</UIText>
-            </HStack>
-          </Button>
-          <Button
-            kind="primary"
-            size={48}
-            style={{ padding: 14 }}
-            aria-label="Send Token"
+          <HStack
+            gap={8}
+            style={{
+              width: '100%',
+              gridTemplateColumns: isEmptyBalance ? '1fr' : '1fr auto auto',
+            }}
           >
-            <SendIcon style={{ width: 20, height: 20 }} />
-          </Button>
-          <Button
-            kind="primary"
-            size={48}
-            style={{ padding: 14 }}
-            aria-label="Bridge Token"
-          >
-            <BridgeIcon style={{ width: 20, height: 20 }} />
-          </Button>
-        </HStack>
-      </StickyBottomPanel>
+            <Button kind="primary" size={48}>
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                <SwapIcon style={{ width: 20, height: 20 }} />
+                <UIText kind="body/accent">Swap</UIText>
+              </HStack>
+            </Button>
+            {isEmptyBalance ? null : (
+              <>
+                <Button
+                  kind="primary"
+                  size={48}
+                  style={{ padding: 14 }}
+                  aria-label="Send Token"
+                >
+                  <SendIcon style={{ width: 20, height: 20 }} />
+                </Button>
+                <Button
+                  kind="primary"
+                  size={48}
+                  style={{ padding: 14 }}
+                  aria-label="Bridge Token"
+                >
+                  <BridgeIcon style={{ width: 20, height: 20 }} />
+                </Button>
+              </>
+            )}
+          </HStack>
+        </StickyBottomPanel>
+      )}
     </PageColumn>
   );
 }
