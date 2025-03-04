@@ -24,7 +24,7 @@ export async function assetGetChart(
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
   return ZerionHttpClient.post<Response>({
-    endpoint: '/asset/get-chart/v1',
+    endpoint: 'asset/get-chart/v1',
     body: JSON.stringify(payload),
     ...options,
   });
