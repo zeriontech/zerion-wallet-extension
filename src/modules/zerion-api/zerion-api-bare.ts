@@ -16,6 +16,8 @@ import { checkReferral } from './requests/check-referral';
 import { referWallet } from './requests/refer-wallet';
 import { claimRetro } from './requests/claim-retro';
 import { assetGetFungibleFullInfo } from './requests/asset-get-fungible-full-info';
+import { assetGetChart } from './requests/asset-get-chart';
+import { walletGetPnL } from './requests/wallet-get-pnl';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -36,6 +38,8 @@ export const ZerionApiBare = {
   referWallet,
   claimRetro,
   assetGetFungibleFullInfo,
+  assetGetChart,
+  walletGetPnL,
 };
 
 export type ZerionApiClient = typeof ZerionApiBare;

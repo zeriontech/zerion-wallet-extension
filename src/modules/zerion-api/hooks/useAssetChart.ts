@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { type Params } from '../requests/asset-get-fungible-full-info';
+import { type Params } from '../requests/asset-get-chart';
 
-export function useAssetFullInfo(
+export function useAssetChart(
   params: Params,
   {
     suspense = false,
@@ -11,9 +11,9 @@ export function useAssetFullInfo(
   } = {}
 ) {
   return useQuery({
-    queryKey: ['assetGetFungibleFullInfo', params],
+    queryKey: ['assetGetChart', params],
     queryFn: async () => {
-      return ZerionAPI.assetGetFungibleFullInfo(params);
+      return ZerionAPI.assetGetChart(params);
     },
     suspense,
     staleTime: 1000 * 60,
