@@ -608,7 +608,10 @@ export function AssetPage() {
         documentTitle={`${asset.name} - info`}
       />
       <PageTop />
-      <VStack gap={24} style={{ flexGrow: 1, alignContent: 'start' }}>
+      <VStack
+        gap={24}
+        style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
+      >
         <AssetTitleAndChart asset={asset} />
         <AssetCommonStats assetFullInfo={data.data} />
         <AssetAddressStats
@@ -617,12 +620,13 @@ export function AssetPage() {
           walletAssetDetails={walletData.data}
         />
         <AssetResources assetFullInfo={data.data} />
-        <AssetHistory />
+        <AssetHistory assetId={asset_code} asset={asset} />
         <ReportAssetLink asset={asset} />
       </VStack>
       {isWatchedAddress ? null : (
         <StickyBottomPanel
           style={{ padding: 0, background: 'none', boxShadow: 'none' }}
+          backdropStyle={{ inset: '-16px -16px 0' }}
         >
           <HStack
             gap={8}
