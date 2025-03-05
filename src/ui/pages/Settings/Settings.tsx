@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
@@ -54,9 +54,12 @@ import { invariant } from 'src/shared/invariant';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { emitter } from 'src/ui/shared/events';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
+import type { PopoverToastHandle } from './PopoverToast';
+import { PopoverToast } from './PopoverToast';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
@@ -340,6 +343,44 @@ function ToggleSettingLine({
   );
 }
 
+function ClearPendingTransactionsLine() {
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const { mutate: clearPendingTransactions, ...mutation } = useMutation({
+    mutationFn: async () => {
+      await new Promise((r) => setTimeout(r, 500)); // artificial delay
+      toastRef.current?.removeToast();
+      return walletPort.request('clearPendingTransactions');
+    },
+    onSuccess: () => {
+      toastRef.current?.showToast();
+    },
+  });
+  return (
+    <>
+      <PopoverToast ref={toastRef}>Pending transactions cleared</PopoverToast>
+
+      <Frame
+        as={UnstyledButton}
+        interactiveStyles={true}
+        onClick={() => clearPendingTransactions()}
+        disabled={mutation.isLoading}
+        style={{ padding: 20 }}
+      >
+        <Media
+          image={null}
+          text={<UIText kind="body/accent">Clear Pending Transactions</UIText>}
+          vGap={0}
+          detailText={
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              This can fix stuck transactions
+            </UIText>
+          }
+        />
+      </Frame>
+    </>
+  );
+}
+
 function DeveloperTools() {
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
   const { preferences, setPreferences } = usePreferences();
@@ -411,6 +452,7 @@ function DeveloperTools() {
             }
           />
         </Frame>
+        <ClearPendingTransactionsLine />
       </VStack>
       <PageBottom />
     </PageColumn>

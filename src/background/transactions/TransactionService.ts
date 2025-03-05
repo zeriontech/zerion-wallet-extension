@@ -8,7 +8,10 @@ import type {
   TransactionObject,
 } from 'src/modules/ethereum/transactions/types';
 import { upsert } from 'src/shared/upsert';
-import { getPendingTransactions } from 'src/modules/ethereum/transactions/model';
+import {
+  getPendingTransactions,
+  isPendingTransaction,
+} from 'src/modules/ethereum/transactions/model';
 import { registerTransaction } from 'src/modules/defi-sdk/registerTransaction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -48,6 +51,10 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
   bulkDeleteTransactionsByHash(hashes: string[]) {
     const hashesSet = new Set(hashes);
     this.setState((state) => state.filter((item) => !hashesSet.has(item.hash)));
+  }
+
+  clearPendingTransactions() {
+    this.setState((state) => state.filter((t) => !isPendingTransaction(t)));
   }
 }
 
@@ -273,6 +280,11 @@ export class TransactionService {
       const item = this.transactionsStore.getByHash(hash);
       this.markAsDropped(item);
     });
+  }
+
+  async clearPendingTransactions() {
+    await this.transactionsStore.ready();
+    this.transactionsStore.clearPendingTransactions();
   }
 }
 

@@ -98,6 +98,7 @@ import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { lastUsedAddressStore } from '../user-activity';
+import { transactionService } from '../transactions/TransactionService';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
@@ -1662,6 +1663,11 @@ export class Wallet {
       }
     }
     return null;
+  }
+
+  async clearPendingTransactions({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    transactionService.clearPendingTransactions();
   }
 }
 
