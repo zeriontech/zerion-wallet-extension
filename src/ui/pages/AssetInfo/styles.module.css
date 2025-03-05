@@ -17,3 +17,17 @@
   animation: appear 150ms ease-in-out;
   animation-fill-mode: both;
 }
+
+.historyItem {
+  position: relative;
+}
+
+.historyItem:hover .historyItemBackdrop {
+  position: absolute;
+  top: 4px;
+  right: -12px;
+  bottom: 4px;
+  left: -8px;
+  background-color: var(--neutral-200);
+  border-radius: 12px;
+}
