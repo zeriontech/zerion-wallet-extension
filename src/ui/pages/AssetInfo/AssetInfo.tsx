@@ -620,7 +620,11 @@ export function AssetPage() {
           walletAssetDetails={walletData.data}
         />
         <AssetResources assetFullInfo={data.data} />
-        <AssetHistory assetId={asset_code} asset={asset} />
+        <AssetHistory
+          assetId={asset_code}
+          asset={asset}
+          address={singleAddressNormalized}
+        />
         <ReportAssetLink asset={asset} />
       </VStack>
       {isWatchedAddress ? null : (
