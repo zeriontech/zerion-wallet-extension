@@ -13,6 +13,7 @@ import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
+import { useBackgroundKind } from 'src/ui/components/Background';
 
 function useMnenomicPhraseForLocation({
   locationStateStore,
@@ -102,9 +103,10 @@ export function MnemonicImportView({
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
+  useBackgroundKind({ kind: 'white' });
   return (
     <>
-      <NavigationTitle title="Wallets Ready to Import" />
+      <NavigationTitle title={null} documentTitle="Wallets Ready to Import" />
       {isLoadingPhrase || shouldWaitForValue || wallets == null ? (
         <PageColumn>
           <PageTop />
