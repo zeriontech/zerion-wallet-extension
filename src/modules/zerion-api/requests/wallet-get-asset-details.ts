@@ -49,6 +49,8 @@ export interface WalletAssetDetails {
     percentageAllocation: number;
   }[];
   pnl: null;
+  totalValue: number;
+  totalConvertedQuantity: number;
 }
 
 type Response = ResponseBody<WalletAssetDetails>;

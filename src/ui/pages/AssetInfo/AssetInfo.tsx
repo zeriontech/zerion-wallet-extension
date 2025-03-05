@@ -23,7 +23,7 @@ import {
   formatCurrencyToParts,
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
-import { emDash, minus } from 'src/ui/shared/typography';
+import { minus } from 'src/ui/shared/typography';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import type {
   Asset,
@@ -59,12 +59,12 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
+import { AssetAddressDetails, AssetHeader } from './AssetAddressDetails';
 
 const SCROLL_THRESHOLD = 80;
 
 function AssetPageHeader({ asset }: { asset: Asset }) {
   const [showTokenInfoInHeader, setShowTokenInfoInHeader] = useState(false);
-  const { currency } = useCurrency();
 
   useEffect(() => {
     const handleScroll = () =>
@@ -78,23 +78,7 @@ function AssetPageHeader({ asset }: { asset: Asset }) {
   }, []);
 
   return showTokenInfoInHeader ? null : (
-    <HStack
-      gap={8}
-      alignItems="center"
-      justifyContent="center"
-      className={styles.assetHeaderContent}
-    >
-      <TokenIcon
-        src={asset.iconUrl}
-        symbol={asset.symbol}
-        size={20}
-        title={asset.name}
-      />
-      <UIText kind="body/accent">
-        {asset.symbol} {emDash}{' '}
-        {formatCurrencyValue(asset.meta.price || 0, 'en', currency)}
-      </UIText>
-    </HStack>
+    <AssetHeader asset={asset} className={styles.assetHeaderContent} />
   );
 }
 
@@ -280,16 +264,18 @@ function AssetCommonStats({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
 }
 
 function AssetAddressStats({
-  asset,
+  assetFullInfo,
   wallet,
   walletAssetDetails,
 }: {
-  asset: Asset;
+  assetFullInfo: AssetFullInfo;
   wallet: ExternallyOwnedAccount;
   walletAssetDetails: WalletAssetDetails;
 }) {
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { ready, singleAddressNormalized } = useAddressParams();
   const { currency } = useCurrency();
+  const asset = assetFullInfo.fungible;
 
   const { data: walletPnL } = useWalletPnL(
     { addresses: [singleAddressNormalized], currency, fungibleIds: [asset.id] },
@@ -298,7 +284,6 @@ function AssetAddressStats({
 
   const isWatchedAddress = isReadonlyAccount(wallet);
 
-  const fullValue = walletAssetDetails.wallets[0].value;
   const unrealizedGainRaw = walletPnL?.data.unrealizedGain || 0;
   const unrealizedGainFormatted = `${
     unrealizedGainRaw > 0 ? '+' : unrealizedGainRaw < 0 ? minus : ''
@@ -306,138 +291,169 @@ function AssetAddressStats({
     Math.abs(unrealizedGainRaw),
     'en',
     currency
-  )} (${formatPercent(Math.abs(unrealizedGainRaw / fullValue), 'en')}%)`;
+  )} (${formatPercent(
+    Math.abs(unrealizedGainRaw / walletAssetDetails.totalValue),
+    'en'
+  )}%)`;
 
   return (
-    <VStack
-      gap={0}
-      style={{
-        position: 'relative',
-        border: '2px solid var(--neutral-200)',
-        borderRadius: 16,
-      }}
-    >
-      {isWatchedAddress ? (
-        <HStack
-          gap={8}
-          alignItems="center"
-          justifyContent="center"
-          style={{
-            backgroundColor: 'var(--neutral-200)',
-            borderRadius: '16px 16px 0 0',
-            padding: '4px 8px 6px',
-          }}
-        >
-          <EyeIcon
-            style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
-          />
-          <UIText kind="caption/accent" color="var(--neutral-500)">
-            You’re following this wallet
-          </UIText>
-        </HStack>
-      ) : null}
-      <VStack gap={12} style={{ padding: 16 }}>
-        <UnstyledLink
-          to="/wallet-select"
-          title="Change Wallet"
-          className="parent-hover"
-          style={{
-            ['--parent-content-color' as string]: 'var(--neutral-500)',
-            ['--parent-hovered-content-color' as string]: 'var(--black)',
-          }}
-        >
-          <HStack gap={4} alignItems="center">
-            <HStack gap={8} alignItems="center">
-              <WalletAvatar
-                active={false}
-                address={singleAddressNormalized}
-                size={24}
-                borderRadius={4}
-              />
-              <WalletDisplayName
-                wallet={wallet}
-                maxCharacters={16}
-                render={(name) => (
-                  <UIText kind="body/accent">{name.value}</UIText>
-                )}
-              />
-            </HStack>
-            <ArrowDownIcon
-              className="content-hover"
-              style={{ width: 24, height: 24 }}
+    <>
+      <VStack
+        gap={0}
+        style={{
+          position: 'relative',
+          border: '2px solid var(--neutral-200)',
+          borderRadius: 16,
+        }}
+      >
+        {isWatchedAddress ? (
+          <HStack
+            gap={8}
+            alignItems="center"
+            justifyContent="center"
+            style={{
+              backgroundColor: 'var(--neutral-200)',
+              borderRadius: '16px 16px 0 0',
+              padding: '4px 8px 6px',
+            }}
+          >
+            <EyeIcon
+              style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
             />
+            <UIText kind="caption/accent" color="var(--neutral-500)">
+              You’re following this wallet
+            </UIText>
           </HStack>
-        </UnstyledLink>
-        {fullValue === 0 ? (
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            {formatTokenValue(0, asset.symbol)}
-          </UIText>
-        ) : (
-          <VStack gap={12}>
-            <VStack gap={4}>
-              <UIText kind="headline/h1">
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(
-                    walletAssetDetails.wallets[0].value,
-                    'en',
-                    currency
+        ) : null}
+        <VStack gap={12} style={{ padding: 16 }}>
+          <UnstyledLink
+            to="/wallet-select"
+            title="Change Wallet"
+            className="parent-hover"
+            style={{
+              ['--parent-content-color' as string]: 'var(--neutral-500)',
+              ['--parent-hovered-content-color' as string]: 'var(--black)',
+            }}
+          >
+            <HStack gap={4} alignItems="center">
+              <HStack gap={8} alignItems="center">
+                <WalletAvatar
+                  active={false}
+                  address={singleAddressNormalized}
+                  size={24}
+                  borderRadius={4}
+                />
+                <WalletDisplayName
+                  wallet={wallet}
+                  maxCharacters={16}
+                  render={(name) => (
+                    <UIText kind="body/accent">{name.value}</UIText>
                   )}
                 />
-              </UIText>
-              <UIText kind="small/regular" color="var(--neutral-500)">
-                {formatTokenValue(
-                  walletAssetDetails.wallets[0].convertedQuantity,
-                  asset.symbol
-                )}
-              </UIText>
-            </VStack>
-            <HStack gap={12} style={{ gridTemplateColumns: '1fr 1fr' }}>
+              </HStack>
+              <ArrowDownIcon
+                className="content-hover"
+                style={{ width: 24, height: 24 }}
+              />
+            </HStack>
+          </UnstyledLink>
+          {walletAssetDetails.totalValue === 0 ? (
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              {formatTokenValue(0, asset.symbol)}
+            </UIText>
+          ) : (
+            <VStack gap={12}>
               <VStack gap={4}>
-                <UIText kind="caption/regular" color="var(--neutral-500)">
-                  Unrealised PnL
+                <UIText kind="headline/h1">
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(
+                      walletAssetDetails.totalValue,
+                      'en',
+                      currency
+                    )}
+                  />
                 </UIText>
-                <UIText
-                  kind="body/accent"
-                  color={
-                    unrealizedGainRaw > 0
-                      ? 'var(--positive-500)'
-                      : unrealizedGainRaw < 0
-                      ? 'var(--negative-500)'
-                      : 'var(--neutral-500)'
-                  }
-                >
-                  {unrealizedGainFormatted}
-                </UIText>
-              </VStack>
-              <VStack gap={4}>
-                <UIText kind="caption/regular" color="var(--neutral-500)">
-                  Invested
-                </UIText>
-                <UIText kind="body/accent">
-                  {formatCurrencyValue(
-                    walletPnL?.data.netInvested || 0,
-                    'en',
-                    currency
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  {formatTokenValue(
+                    walletAssetDetails.totalConvertedQuantity,
+                    asset.symbol
                   )}
                 </UIText>
               </VStack>
-            </HStack>
-            <Button
-              as={UnstyledLink}
-              to="/wallets"
-              kind="neutral"
-              size={48}
-              style={{
-                ['--button-background' as string]: 'var(--neutral-200)',
-                ['--button-background-hover' as string]: 'var(--neutral-300)',
-              }}
-            >
-              <UIText kind="body/accent"> More Details</UIText>
-            </Button>
-          </VStack>
-        )}
+              <HStack gap={12} style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <VStack gap={4}>
+                  <UIText kind="caption/regular" color="var(--neutral-500)">
+                    Unrealised PnL
+                  </UIText>
+                  <UIText
+                    kind="body/accent"
+                    color={
+                      unrealizedGainRaw > 0
+                        ? 'var(--positive-500)'
+                        : unrealizedGainRaw < 0
+                        ? 'var(--negative-500)'
+                        : 'var(--neutral-500)'
+                    }
+                  >
+                    {unrealizedGainFormatted}
+                  </UIText>
+                </VStack>
+                <VStack gap={4}>
+                  <UIText kind="caption/regular" color="var(--neutral-500)">
+                    Invested
+                  </UIText>
+                  <UIText kind="body/accent">
+                    {formatCurrencyValue(
+                      walletPnL?.data.netInvested || 0,
+                      'en',
+                      currency
+                    )}
+                  </UIText>
+                </VStack>
+              </HStack>
+              <Button
+                kind="neutral"
+                size={48}
+                onClick={() => dialogRef.current?.showModal()}
+                style={{
+                  ['--button-background' as string]: 'var(--neutral-200)',
+                  ['--button-background-hover' as string]: 'var(--neutral-300)',
+                }}
+              >
+                <UIText kind="body/accent"> More Details</UIText>
+              </Button>
+            </VStack>
+          )}
+        </VStack>
       </VStack>
-    </VStack>
+      <CenteredDialog
+        ref={dialogRef}
+        containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
+        renderWhenOpen={() => (
+          <>
+            <Button
+              kind="ghost"
+              value="cancel"
+              size={40}
+              style={{
+                width: 40,
+                padding: 8,
+                position: 'absolute',
+                top: 16,
+                left: 8,
+              }}
+              onClick={() => dialogRef.current?.close()}
+            >
+              <ArrowLeftIcon />
+            </Button>
+            <AssetAddressDetails
+              assetFullInfo={assetFullInfo}
+              walletAssetDetails={walletAssetDetails}
+            />
+          </>
+        )}
+      />
+    </>
   );
 }
 
@@ -738,7 +754,7 @@ export function AssetPage() {
     {
       assetId: asset_code,
       currency,
-      groupBy: ['by-wallet', 'by-app'],
+      groupBy: ['by-app'],
       addresses: [singleAddressNormalized],
     },
     { enabled: ready }
@@ -761,7 +777,7 @@ export function AssetPage() {
 
   const asset = data.data.fungible;
   const isWatchedAddress = isReadonlyAccount(wallet);
-  const isEmptyBalance = walletData?.data.wallets[0].value === 0;
+  const isEmptyBalance = walletData?.data.totalValue === 0;
 
   return (
     <PageColumn>
@@ -778,7 +794,7 @@ export function AssetPage() {
         <AssetCommonStats assetFullInfo={data.data} />
         <AssetAddressStats
           wallet={wallet}
-          asset={asset}
+          assetFullInfo={data.data}
           walletAssetDetails={walletData.data}
         />
         <AssetResources assetFullInfo={data.data} />
