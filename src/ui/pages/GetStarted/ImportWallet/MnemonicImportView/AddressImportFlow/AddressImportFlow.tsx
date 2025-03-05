@@ -19,6 +19,8 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList } from './WalletList';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
+import { PagePaddingInline } from 'src/ui/components/PageColumn/PageColumn';
 
 export function PortfolioValueDetail({ address }: { address: string }) {
   const { currency } = useCurrency();
@@ -85,31 +87,37 @@ function AddressImportList({
           <UIText kind="body/regular">
             We found these wallets associated with your recovery phrase
           </UIText>
-          <VStack gap={20}>
-            {active ? (
-              <WalletList
-                listTitle="Active wallets"
-                wallets={active}
-                renderDetail={(index) => (
-                  <PortfolioValueDetail address={active[index].address} />
-                )}
-                existingAddressesSet={existingAddressesSet}
-                values={values}
-                onSelect={toggleAddress}
-              />
-            ) : null}
-            {rest ? (
-              <WalletList
-                listTitle="Inactive wallets"
-                wallets={rest}
-                renderDetail={null}
-                existingAddressesSet={existingAddressesSet}
-                values={values}
-                onSelect={toggleAddress}
-                initialCount={active?.length ? 0 : 3}
-              />
-            ) : null}
-          </VStack>
+          <PageFullBleedColumn paddingInline={false}>
+            <VStack gap={20}>
+              {active ? (
+                <WalletList
+                  listTitle={
+                    <PagePaddingInline>Active wallets</PagePaddingInline>
+                  }
+                  wallets={active}
+                  renderDetail={(index) => (
+                    <PortfolioValueDetail address={active[index].address} />
+                  )}
+                  existingAddressesSet={existingAddressesSet}
+                  values={values}
+                  onSelect={toggleAddress}
+                />
+              ) : null}
+              {rest ? (
+                <WalletList
+                  listTitle={
+                    <PagePaddingInline>Inactive wallets</PagePaddingInline>
+                  }
+                  wallets={rest}
+                  renderDetail={null}
+                  existingAddressesSet={existingAddressesSet}
+                  values={values}
+                  onSelect={toggleAddress}
+                  initialCount={active?.length ? 0 : 3}
+                />
+              ) : null}
+            </VStack>
+          </PageFullBleedColumn>
         </VStack>
         <PageBottom />
       </PageColumn>
