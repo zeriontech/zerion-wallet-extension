@@ -44,7 +44,6 @@ import { isTruthy } from 'is-truthy-ts';
 import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { useWalletPnL } from 'src/modules/zerion-api/hooks/useWalletPnL';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -264,27 +263,23 @@ function AssetCommonStats({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
 }
 
 function AssetAddressStats({
+  address,
   assetFullInfo,
   wallet,
   walletAssetDetails,
 }: {
+  address: string;
   assetFullInfo: AssetFullInfo;
   wallet: ExternallyOwnedAccount;
   walletAssetDetails: WalletAssetDetails;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const { ready, singleAddressNormalized } = useAddressParams();
   const { currency } = useCurrency();
   const asset = assetFullInfo.fungible;
 
-  const { data: walletPnL } = useWalletPnL(
-    { addresses: [singleAddressNormalized], currency, fungibleIds: [asset.id] },
-    { enabled: ready }
-  );
-
   const isWatchedAddress = isReadonlyAccount(wallet);
 
-  const unrealizedGainRaw = walletPnL?.data.unrealizedGain || 0;
+  const unrealizedGainRaw = walletAssetDetails.pnl?.unrealizedPnl || 0;
   const unrealizedGainFormatted = `${
     unrealizedGainRaw > 0 ? '+' : unrealizedGainRaw < 0 ? minus : ''
   }${formatCurrencyValue(
@@ -339,7 +334,7 @@ function AssetAddressStats({
               <HStack gap={8} alignItems="center">
                 <WalletAvatar
                   active={false}
-                  address={singleAddressNormalized}
+                  address={address}
                   size={24}
                   borderRadius={4}
                 />
@@ -404,7 +399,7 @@ function AssetAddressStats({
                   </UIText>
                   <UIText kind="body/accent">
                     {formatCurrencyValue(
-                      walletPnL?.data.netInvested || 0,
+                      walletAssetDetails.pnl?.bought || 0,
                       'en',
                       currency
                     )}
@@ -447,6 +442,7 @@ function AssetAddressStats({
               <ArrowLeftIcon />
             </Button>
             <AssetAddressDetails
+              address={wallet.address}
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}
             />
@@ -756,6 +752,7 @@ export function AssetPage() {
       currency,
       groupBy: ['by-app'],
       addresses: [singleAddressNormalized],
+      addPnl: true,
     },
     { enabled: ready }
   );
@@ -793,6 +790,7 @@ export function AssetPage() {
         <AssetTitleAndChart asset={asset} />
         <AssetCommonStats assetFullInfo={data.data} />
         <AssetAddressStats
+          address={singleAddressNormalized}
           wallet={wallet}
           assetFullInfo={data.data}
           walletAssetDetails={walletData.data}

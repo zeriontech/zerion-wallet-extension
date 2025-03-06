@@ -3,6 +3,7 @@ import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
 import { ZerionAPI } from '../zerion-api.client';
 import type { Params } from '../requests/wallet-get-pnl';
 
+// TODO: remove?
 export function useWalletPnL(
   params: Params,
   {
