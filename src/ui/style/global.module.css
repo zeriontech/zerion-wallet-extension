@@ -148,6 +148,7 @@ body.isDialog:not(.pageLayout) {
 @media (hover: hover) {
   :global(.parent-hover):hover :global(.content-hover) {
     color: var(--parent-hovered-content-color);
+    background-color: var(--parent-hovered-content-background-color);
   }
 }
 
