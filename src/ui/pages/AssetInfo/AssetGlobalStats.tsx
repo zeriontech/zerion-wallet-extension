@@ -36,6 +36,11 @@ function AssetStatsChip({
   );
 }
 
+const numberFormatter = Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
 export function AssetGlobalStats({
   assetFullInfo,
 }: {
@@ -99,7 +104,7 @@ export function AssetGlobalStats({
         <AssetStatsChip
           title="HLDRS"
           fullTitle="Holders"
-          value={assetFullInfo.extra.holders}
+          value={numberFormatter.format(assetFullInfo.extra.holders)}
         />
       ) : null}
       {assetFullInfo.extra.top10 ? (

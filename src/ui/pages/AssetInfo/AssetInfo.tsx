@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -22,6 +22,11 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { useWalletAssetDetails } from 'src/modules/zerion-api/hooks/useWalletAssetDetails';
+import { useBackgroundKind } from 'src/ui/components/Background';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
@@ -78,11 +83,21 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
 
 export function AssetPage() {
   const { asset_code } = useParams();
+  useBackgroundKind({ kind: 'white' });
   invariant(asset_code, 'Asset Code is required');
 
   const { currency } = useCurrency();
   const { data } = useAssetFullInfo({ currency, fungibleId: asset_code });
   const { ready, singleAddress, singleAddressNormalized } = useAddressParams();
+  const { data: portfolioData } = useWalletPortfolio(
+    {
+      addresses: [singleAddressNormalized],
+      currency,
+      nftPriceType: 'not_included',
+    },
+    { source: useHttpClientSource() },
+    { enabled: ready }
+  );
   const { data: walletData } = useWalletAssetDetails(
     {
       assetId: asset_code,
@@ -105,13 +120,54 @@ export function AssetPage() {
     enabled: ready,
   });
 
+  const chainWithTheBiggestBalance = useMemo(() => {
+    const chainData = walletData?.data?.chainsDistribution;
+    if (!chainData) {
+      return NetworkId.Zero;
+    }
+    return chainData.reduce(
+      (acc, chain) =>
+        chain.value > acc.value
+          ? { value: chain.value, chain: chain.chain.id }
+          : acc,
+      { value: chainData[0].value ?? 0, chain: chainData[0].chain.id }
+    ).chain;
+  }, [walletData]);
+
+  const bestChainForPurchase = useMemo(() => {
+    const avaliableChains = Object.keys(
+      data?.data.fungible.implementations || {}
+    );
+    const chainPortfolioDistribution =
+      portfolioData?.data?.positionsChainsDistribution;
+    if (!chainPortfolioDistribution || !avaliableChains.length) {
+      return NetworkId.Zero;
+    }
+    return avaliableChains.reduce(
+      (acc, chain) =>
+        chainPortfolioDistribution[chain] > chainPortfolioDistribution[acc]
+          ? chain
+          : acc,
+      avaliableChains[0]
+    );
+  }, [portfolioData, data]);
+
   if (!data?.data.fungible || !wallet || !walletData) {
-    return null;
+    return (
+      <>
+        <NavigationTitle title={null} documentTitle={`${asset_code} - info`} />
+      </>
+    );
   }
 
   const asset = data.data.fungible;
   const isWatchedAddress = isReadonlyAccount(wallet);
-  const isEmptyBalance = walletData?.data.totalValue === 0;
+  const isEmptyBalance =
+    walletData?.data.totalValue === 0 && walletData?.data.pnl?.bought === 0;
+
+  const chainForSwap = isEmptyBalance
+    ? bestChainForPurchase
+    : chainWithTheBiggestBalance;
 
   return (
     <PageColumn>
@@ -152,7 +208,16 @@ export function AssetPage() {
               gridTemplateColumns: isEmptyBalance ? '1fr' : '1fr auto auto',
             }}
           >
-            <Button kind="primary" size={48}>
+            <Button
+              kind="primary"
+              size={48}
+              as={UnstyledLink}
+              to={
+                isEmptyBalance
+                  ? `/swap-form?chainInput=${chainForSwap}&receiveTokenInput=${asset_code}`
+                  : `/swap-form?chainInput=${chainForSwap}&spendTokenInput=${asset_code}`
+              }
+            >
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <SwapIcon style={{ width: 20, height: 20 }} />
                 <UIText kind="body/accent">Swap</UIText>
@@ -161,8 +226,10 @@ export function AssetPage() {
             {isEmptyBalance ? null : (
               <>
                 <Button
+                  as={UnstyledLink}
                   kind="primary"
                   size={48}
+                  to={`/send-form?tokenAssetCode=${asset_code}`}
                   style={{ padding: 14 }}
                   aria-label="Send Token"
                 >
