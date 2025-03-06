@@ -19,6 +19,7 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import CheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 
 function AssetImplementationButton({
   network,
@@ -76,6 +77,7 @@ function AssetImplementationButton({
       kind="neutral"
       className="parent-hover"
       style={{
+        paddingInline: 8,
         ['--parent-content-color' as string]: 'var(--neutral-400)',
         ['--parent-hovered-content-color' as string]: 'var(--neutral-700)',
         ['--button-background' as string]: 'var(--neutral-200)',
@@ -91,7 +93,11 @@ function AssetImplementationButton({
             height={24}
           />
           <UIText kind="small/accent">
-            {middleTruncate({ value: address })}
+            {middleTruncate({
+              value: address,
+              leadingLettersCount: 5,
+              trailingLettersCount: 4,
+            })}
           </UIText>
         </HStack>
         {isSuccess ? (
@@ -122,7 +128,11 @@ function CopyAddressButton({ address }: { address: string }) {
         ['--parent-hovered-content-color' as string]: 'var(--neutral-700)',
       }}
     >
-      {isSuccess ? <CheckIcon /> : <CopyIcon className="content-hover" />}
+      {isSuccess ? (
+        <CheckIcon style={{ color: 'var(--positive-500)' }} />
+      ) : (
+        <CopyIcon className="content-hover" />
+      )}
     </UnstyledButton>
   );
 }
@@ -214,20 +224,33 @@ export function AssetResources({
     [assetFullInfo.fungible.implementations, networks]
   );
 
+  const mainImplementation = useMemo(() => {
+    return (
+      implementations.find(
+        (implementation) => implementation.network.id === NetworkId.Ethereum
+      ) || implementations[0]
+    );
+  }, [implementations]);
+
   return (
     <>
-      <HStack gap={24} justifyContent="space-between">
+      <HStack gap={8} justifyContent="space-between">
         <HStack gap={8}>
-          {assetFullInfo.extra.relevantResources.map((resource) => (
+          {assetFullInfo.extra.relevantResources.slice(0, 3).map((resource) => (
             <Button
               key={resource.name}
               as={UnstyledAnchor}
               rel="noopenner noreferrer"
               target="_blank"
-              kind="neutral"
+              kind="regular"
               size={36}
               href={resource.url}
-              style={{ padding: 6, border: '2px solid var(--neutral-200)' }}
+              style={{
+                padding: 6,
+                border: '2px solid var(--neutral-200)',
+                ['--button-background' as string]: 'var(--white)',
+                ['--button-background-hover' as string]: 'var(--neutral-200)',
+              }}
               aria-label={resource.displayableName}
             >
               <img src={resource.iconUrl} width={20} height={20} />
@@ -235,10 +258,10 @@ export function AssetResources({
           ))}
         </HStack>
         <HStack gap={4}>
-          {implementations.length ? (
+          {mainImplementation ? (
             <AssetImplementationButton
-              address={implementations[0].address}
-              network={implementations[0].network}
+              address={mainImplementation.address}
+              network={mainImplementation.network}
             />
           ) : null}
           {implementations.length > 1 ? (
@@ -259,7 +282,7 @@ export function AssetResources({
       </HStack>
       <CenteredDialog
         ref={dialogRef}
-        containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
+        containerStyle={{ backgroundColor: 'var(--white)' }}
         renderWhenOpen={() => (
           <>
             <Button
