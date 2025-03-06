@@ -495,11 +495,10 @@ function AssetAddressDetailsDialog({
     <VStack
       gap={14}
       style={{
-        paddingTop: 6,
+        padding: '8px 16px 16px',
         ['--surface-background-color' as string]: 'var(--white)',
       }}
     >
-      <AssetHeader asset={assetFullInfo.fungible} />
       <VStack gap={24}>
         <AssetDetailsTitle
           address={address}
@@ -684,24 +683,36 @@ export function AssetAddressStats({
       </VStack>
       <CenteredDialog
         ref={dialogRef}
-        containerStyle={{ backgroundColor: 'var(--white)' }}
+        containerStyle={{ backgroundColor: 'var(--white)', padding: 0 }}
         renderWhenOpen={() => (
           <>
-            <Button
-              kind="ghost"
-              value="cancel"
-              size={40}
+            <div
               style={{
-                width: 40,
-                padding: 8,
-                position: 'absolute',
-                top: 16,
-                left: 8,
+                position: 'sticky',
+                top: 0,
+                zIndex: 1,
+                padding: 16,
+                backdropFilter: 'blur(8px)',
               }}
-              onClick={() => dialogRef.current?.close()}
             >
-              <ArrowLeftIcon />
-            </Button>
+              <Button
+                kind="ghost"
+                value="cancel"
+                size={40}
+                style={{
+                  width: 40,
+                  padding: 8,
+                  position: 'absolute',
+                  top: 8,
+                  left: 0,
+                  zIndex: 2,
+                }}
+                onClick={() => dialogRef.current?.close()}
+              >
+                <ArrowLeftIcon />
+              </Button>
+              <AssetHeader asset={asset} />
+            </div>
             <AssetAddressDetailsDialog
               address={wallet.address}
               assetFullInfo={assetFullInfo}
