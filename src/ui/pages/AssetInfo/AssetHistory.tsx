@@ -119,7 +119,11 @@ function AssetHistoryItem({
 
   const actionTitle = `${actionType} at ${formattedPrice}`;
   const actionDatetime = dateFormatter.format(new Date(action.datetime));
-  const balanceColor = isIncoming ? 'var(--positive-500)' : 'currentColor';
+  const balanceColor = isIncoming
+    ? 'var(--positive-500)'
+    : action.type.value === 'trade'
+    ? 'var(--negative-500)'
+    : 'currentColor';
   const actionBalance = `${isIncoming ? '+' : minus}${formatTokenValue(
     normalizedQuantity,
     asset.symbol,
