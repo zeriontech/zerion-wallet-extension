@@ -146,11 +146,11 @@ function AssetImplementationsDialog({
   return (
     <VStack
       gap={14}
-      style={{ ['--surface-background-color' as string]: 'var(--white)' }}
+      style={{
+        ['--surface-background-color' as string]: 'var(--white)',
+        padding: '8px 16px 24px',
+      }}
     >
-      <UIText kind="body/accent" style={{ justifySelf: 'center' }}>
-        Explorers
-      </UIText>
       <VStack gap={0}>
         {implementations.map(({ address, network }) => (
           <HStack
@@ -282,24 +282,38 @@ export function AssetResources({
       </HStack>
       <CenteredDialog
         ref={dialogRef}
-        containerStyle={{ backgroundColor: 'var(--white)' }}
+        containerStyle={{ backgroundColor: 'var(--white)', padding: 0 }}
         renderWhenOpen={() => (
           <>
-            <Button
-              kind="ghost"
-              value="cancel"
-              size={40}
+            <div
               style={{
-                width: 40,
-                padding: 8,
-                position: 'absolute',
-                top: 16,
-                left: 8,
+                position: 'sticky',
+                top: 0,
+                zIndex: 1,
+                padding: 16,
+                backdropFilter: 'blur(8px)',
               }}
-              onClick={() => dialogRef.current?.close()}
             >
-              <ArrowLeftIcon />
-            </Button>
+              <Button
+                kind="ghost"
+                value="cancel"
+                size={36}
+                style={{
+                  width: 36,
+                  padding: 8,
+                  position: 'absolute',
+                  top: 16,
+                  left: 8,
+                  zIndex: 2,
+                }}
+                onClick={() => dialogRef.current?.close()}
+              >
+                <ArrowLeftIcon style={{ width: 20, height: 20 }} />
+              </Button>
+              <UIText kind="body/accent" style={{ justifySelf: 'center' }}>
+                Explorers
+              </UIText>
+            </div>
             <AssetImplementationsDialog implementations={implementations} />
           </>
         )}

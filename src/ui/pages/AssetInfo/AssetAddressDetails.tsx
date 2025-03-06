@@ -495,7 +495,7 @@ function AssetAddressDetailsDialog({
     <VStack
       gap={14}
       style={{
-        padding: '8px 16px 16px',
+        padding: '8px 16px 24px',
         ['--surface-background-color' as string]: 'var(--white)',
       }}
     >
@@ -698,18 +698,18 @@ export function AssetAddressStats({
               <Button
                 kind="ghost"
                 value="cancel"
-                size={40}
+                size={36}
                 style={{
-                  width: 40,
+                  width: 36,
                   padding: 8,
                   position: 'absolute',
-                  top: 8,
-                  left: 0,
+                  top: 16,
+                  left: 8,
                   zIndex: 2,
                 }}
                 onClick={() => dialogRef.current?.close()}
               >
-                <ArrowLeftIcon />
+                <ArrowLeftIcon style={{ width: 20, height: 20 }} />
               </Button>
               <AssetHeader asset={asset} />
             </div>
