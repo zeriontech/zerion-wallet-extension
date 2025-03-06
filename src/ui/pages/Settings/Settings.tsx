@@ -8,7 +8,6 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Media } from 'src/ui/ui-kit/Media';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -326,18 +325,14 @@ function ToggleSettingLine({
 }) {
   return (
     <HStack gap={4} justifyContent="space-between" style={{ padding: 12 }}>
-      <Media
-        image={null}
-        text={<UIText kind="body/accent">{text}</UIText>}
-        vGap={0}
-        detailText={
-          detailText ? (
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {detailText}
-            </UIText>
-          ) : null
-        }
-      />
+      <VStack gap={0}>
+        <UIText kind="body/accent">{text}</UIText>
+        {detailText ? (
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            {detailText}
+          </UIText>
+        ) : null}
+      </VStack>
       <Toggle checked={checked} onChange={onChange} />
     </HStack>
   );
@@ -364,18 +359,14 @@ function ClearPendingTransactionsLine() {
         interactiveStyles={true}
         onClick={() => clearPendingTransactions()}
         disabled={mutation.isLoading}
-        style={{ padding: 20 }}
+        style={{ padding: 20, textAlign: 'start' }}
       >
-        <Media
-          image={null}
-          text={<UIText kind="body/accent">Clear Pending Transactions</UIText>}
-          vGap={0}
-          detailText={
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              This can fix stuck transactions
-            </UIText>
-          }
-        />
+        <VStack gap={0}>
+          <UIText kind="body/accent">Clear Pending Transactions</UIText>
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            This can fix stuck transactions
+          </UIText>
+        </VStack>
       </Frame>
     </>
   );
