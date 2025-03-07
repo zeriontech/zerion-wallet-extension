@@ -3,9 +3,10 @@ import { Keypair } from '@solana/web3.js';
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import type { BareWallet, MaskedBareWallet } from 'src/shared/types/BareWallet';
+import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import {
+  getAccountPathEthereum,
   getAccountPath,
-  getAccountPathSolana,
 } from 'src/shared/wallet/derivation-paths';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import {
@@ -21,6 +22,7 @@ export interface Params {
    */
   curve: 'ecdsa' | 'ed25519';
   phrase: LocallyEncoded;
+  pathType?: DerivationPathType;
   n: number;
 }
 
@@ -44,6 +46,7 @@ function fromHDNode(hdNode: HDNode): MaskedBareWallet {
   return locallyMaskWallet(hdNode);
 }
 
+/** Ethereum keypairs */
 function getFirstNMnemonicWalletsEcdsa({ phrase, n }: Omit<Params, 'curve'>) {
   const result: Result = [];
   // NOTE:
@@ -51,7 +54,7 @@ function getFirstNMnemonicWalletsEcdsa({ phrase, n }: Omit<Params, 'curve'>) {
   // than ethers.Wallet
   const hd = HDNode.fromMnemonic(decodeMasked(phrase));
   for (let i = 0; i < n; i++) {
-    const path = getAccountPath(i);
+    const path = getAccountPathEthereum(i);
     const wallet = hd.derivePath(path);
     result.push(fromHDNode(wallet));
   }
@@ -62,12 +65,13 @@ function getFirstNMnemonicWalletsEcdsa({ phrase, n }: Omit<Params, 'curve'>) {
 function getFirstNMnemonicWalletsEd25519({
   phrase: phraseEncoded,
   n,
+  pathType = 'solanaBip44Change',
 }: Omit<Params, 'curve'>) {
   const result: Result = [];
   const phrase = decodeMasked(phraseEncoded);
   const seed = bip39.mnemonicToSeedSync(phrase);
   for (let i = 0; i < n; i++) {
-    const path = getAccountPathSolana(i);
+    const path = getAccountPath(pathType, i);
     const { key: derivedSeed } = derivePath(path, seed.toString('hex'));
     const keypair = Keypair.fromSeed(derivedSeed);
     const wallet = fromSolanaKeypair({ mnemonic: { phrase, path }, keypair });
