@@ -26,8 +26,15 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList, WalletListPresentation } from './WalletList';
+
+export type DerivedWallets = Array<{
+  curve: 'ecdsa' | 'ed25519';
+  pathType: DerivationPathType;
+  wallets: MaskedBareWallet[];
+}>;
 
 export function PortfolioValueDetail({ address }: { address: string }) {
   const { currency } = useCurrency();
@@ -78,20 +85,42 @@ function SelectMoreWalletsDialog({
   onSubmit,
 }: {
   initialValues: Set<string>;
-  wallets: MaskedBareWallet[] | null;
+  wallets: DerivedWallets | null;
   existingAddressesSet: Set<string>;
   activeWallets: Record<string, { active: boolean }>;
   dialogRef: React.RefObject<HTMLDialogElementInterface>;
   onSubmit: (values: Set<string>) => void;
 }) {
-  const grouped = groupBy(wallets, ({ address }) =>
-    activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest'
-  );
-  const { active, rest } = grouped as Record<
-    'active' | 'rest',
-    MaskedBareWallet[] | undefined
-  >;
+  const groupedByEcosystem = useMemo(() => {
+    const toActiveStatus = ({ address }: { address: string }) =>
+      activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest';
+
+    type Grouped = Record<'active' | 'rest', MaskedBareWallet[] | undefined>;
+    return wallets?.reduce((acc, config) => {
+      const key = `${config.curve}:${config.pathType}`;
+      acc[key] = groupBy(config.wallets, toActiveStatus) as Grouped;
+      return acc;
+    }, {} as { [key: string]: Grouped });
+  }, [activeWallets, wallets]);
+
+  const [curve, setCurve] = useState<'ecdsa' | 'ed25519'>('ecdsa');
+  const ethPathType = 'bip44';
+  type SolanaPathType =
+    | 'solanaBip44Change'
+    | 'solanaBip44'
+    | 'solanaDeprecated';
+  const [solPathType, setSolPathType] =
+    useState<SolanaPathType>('solanaBip44Change');
+
   const [values, toggleValue] = useToggledValues(initialValues);
+
+  if (!groupedByEcosystem) {
+    return null;
+  }
+
+  const filter =
+    curve === 'ecdsa' ? `${curve}:${ethPathType}` : `${curve}:${solPathType}`;
+  const { active, rest } = groupedByEcosystem[filter];
   return (
     <BottomSheetDialog
       ref={dialogRef}
@@ -117,6 +146,58 @@ function SelectMoreWalletsDialog({
             <DialogTitle
               title={<UIText kind="headline/h3">Select Another Wallet</UIText>}
             />
+          </div>
+          <Spacer height={8} />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 3fr 1fr',
+              paddingInline: 20,
+            }}
+          >
+            <div
+              style={{
+                placeSelf: 'center',
+                gridColumnStart: 2,
+                display: 'flex',
+                gap: 12,
+              }}
+            >
+              <label>
+                <input
+                  type="radio"
+                  name="curve"
+                  value="ecdsa"
+                  checked={curve === 'ecdsa'}
+                  onChange={() => setCurve('ecdsa')}
+                />{' '}
+                EVM
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="curve"
+                  value="ed25519"
+                  checked={curve === 'ed25519'}
+                  onChange={() => setCurve('ed25519')}
+                />{' '}
+                Solana
+              </label>
+            </div>
+            {curve === 'ed25519' ? (
+              <select
+                style={{ justifySelf: 'end' }}
+                name="solPathType"
+                value={solPathType}
+                onChange={(event) =>
+                  setSolPathType(event.currentTarget.value as SolanaPathType)
+                }
+              >
+                <option value="solanaBip44Change">Bip44Change</option>
+                <option value="solanaBip44">Bip44</option>
+                <option value="solanaDeprecated">Deprecated</option>
+              </select>
+            ) : null}
           </div>
           <Spacer height={24} />
 
@@ -192,14 +273,15 @@ function suggestInitialWallets({
   activeWallets,
   existingAddressesSet,
 }: {
-  wallets: MaskedBareWallet[];
+  wallets: DerivedWallets;
   activeWallets: Record<string, { active: boolean }>;
   existingAddressesSet: Set<string>;
 }): {
   activeCount: number;
   groups: { ecosystem: 'solana' | 'ethereum'; wallets: MaskedBareWallet[] }[];
 } {
-  const newOnes = wallets.filter(
+  const allWallets = wallets.flatMap((config) => config.wallets);
+  const newOnes = allWallets.filter(
     (w) => !existingAddressesSet.has(normalizeAddress(w.address))
   );
   const grouped = groupBy(newOnes, ({ address }) =>
@@ -239,7 +321,7 @@ function AddressImportList({
   activeWallets,
   onSubmit,
 }: {
-  wallets: MaskedBareWallet[];
+  wallets: DerivedWallets;
   activeWallets: Record<string, { active: boolean }>;
   onSubmit: (values: MaskedBareWallet[]) => void;
 }) {
@@ -334,9 +416,9 @@ function AddressImportList({
           <Button
             disabled={values.size === 0}
             onClick={() => {
-              const selectedWallets = wallets.filter((wallet) =>
-                values.has(wallet.address)
-              );
+              const selectedWallets = wallets
+                .flatMap((c) => c.wallets)
+                .filter((wallet) => values.has(wallet.address));
               onSubmit(selectedWallets);
             }}
           >
@@ -352,9 +434,9 @@ function AddressImportList({
         existingAddressesSet={existingAddressesSet}
         dialogRef={moreWalletsDialogRef}
         onSubmit={(values) => {
-          const selectedWallets = wallets.filter((wallet) =>
-            values.has(wallet.address)
-          );
+          const selectedWallets = wallets
+            .flatMap((c) => c.wallets)
+            .filter((wallet) => values.has(wallet.address));
           onSubmit(selectedWallets);
         }}
       />
@@ -366,7 +448,7 @@ export function AddressImportFlow({
   wallets,
   activeWallets,
 }: {
-  wallets: MaskedBareWallet[];
+  wallets: DerivedWallets;
   activeWallets: Record<string, { active: boolean }>;
 }) {
   const [valuesToImport, setValuesToImport] = useState<MaskedBareWallet[]>();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -14,6 +14,7 @@ import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
+import type { DerivedWallets } from './AddressImportFlow';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
 
@@ -62,19 +63,6 @@ function useMnenomicPhraseForLocation({
   }
 }
 
-function mix<T>(arr1: T[], arr2: T[]) {
-  const res: T[] = [];
-  while (arr1.length || arr2.length) {
-    if (arr1.length) {
-      res.push(arr1.shift() as T);
-    }
-    if (arr2.length) {
-      res.push(arr2.shift() as T);
-    }
-  }
-  return res;
-}
-
 const bgStyle = {
   ['--surface-background-color']: 'var(--z-index-0)',
 } as React.CSSProperties;
@@ -83,20 +71,42 @@ export function MnemonicImportView({
 }: {
   locationStateStore: MemoryLocationState;
 }) {
-  const [count] = useState(50);
   const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation({
     locationStateStore,
   });
-  const { data: wallets } = useQuery({
-    queryKey: ['getFirstNMnemonicWallets', phrase, count],
-    queryFn: async () => {
+  const { data: derivedWallets } = useQuery({
+    queryKey: ['getFirstNMnemonicWallets', phrase],
+    queryFn: async (): Promise<DerivedWallets | void> => {
       if (!phrase) {
         return;
       }
-      const n = count;
-      const a = await getFirstNMnemonicWallets({ phrase, n, curve: 'ecdsa' });
-      const b = await getFirstNMnemonicWallets({ phrase, n, curve: 'ed25519' });
-      return mix(a, b);
+
+      const fn = getFirstNMnemonicWallets;
+      const [eth, sol1, sol2, sol3] = await Promise.all([
+        fn({ phrase, n: 50, curve: 'ecdsa' }),
+        /** We want to explore all derivation paths in case there are active addresses */
+        fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaBip44Change' }),
+        fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaBip44' }),
+        fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaDeprecated' }),
+      ]);
+      return [
+        { curve: 'ecdsa' as const, pathType: 'bip44' as const, wallets: eth },
+        {
+          curve: 'ed25519' as const,
+          pathType: 'solanaBip44Change' as const,
+          wallets: sol1,
+        },
+        {
+          curve: 'ed25519' as const,
+          pathType: 'solanaBip44' as const,
+          wallets: sol2,
+        },
+        {
+          curve: 'ed25519' as const,
+          pathType: 'solanaDeprecated' as const,
+          wallets: sol3,
+        },
+      ];
     },
 
     enabled: Boolean(phrase),
@@ -105,10 +115,12 @@ export function MnemonicImportView({
   const { value } = useAddressActivity(
     {
       addresses:
-        wallets?.map((w) => w.address).filter((a) => isEthereumAddress(a)) ||
-        [],
+        derivedWallets
+          ?.flatMap((c) => c.wallets.map((w) => w.address))
+          // TODO: Remove this filter when backend endpoint supports Solana
+          .filter((a) => isEthereumAddress(a)) || [],
     },
-    { enabled: Boolean(wallets), keepStaleData: true }
+    { enabled: Boolean(derivedWallets), keepStaleData: true }
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
@@ -117,14 +129,17 @@ export function MnemonicImportView({
   return (
     <>
       <NavigationTitle title={null} documentTitle="Wallets Ready to Import" />
-      {isLoadingPhrase || shouldWaitForValue || wallets == null ? (
+      {isLoadingPhrase || shouldWaitForValue || derivedWallets == null ? (
         <PageColumn>
           <PageTop />
           <ViewLoading />
           <PageBottom />
         </PageColumn>
       ) : (
-        <AddressImportFlow wallets={wallets} activeWallets={value ?? {}} />
+        <AddressImportFlow
+          wallets={derivedWallets}
+          activeWallets={value ?? {}}
+        />
       )}
     </>
   );
