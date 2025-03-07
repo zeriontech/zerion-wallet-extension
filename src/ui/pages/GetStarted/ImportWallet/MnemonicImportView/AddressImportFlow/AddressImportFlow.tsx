@@ -1,26 +1,33 @@
 import groupBy from 'lodash/groupBy';
-import React from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
+import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
+import { useCurrency } from 'src/modules/currency/useCurrency';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
+import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
+import { PagePaddingInline } from 'src/ui/components/PageColumn/PageColumn';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageTop } from 'src/ui/components/PageTop';
+import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
+import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
+import { NBSP } from 'src/ui/shared/typography';
 import { Button } from 'src/ui/ui-kit/Button';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
-import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
-import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AddressImportMessages } from './AddressImportMessages';
-import { WalletList } from './WalletList';
-import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
-import { PagePaddingInline } from 'src/ui/components/PageColumn/PageColumn';
+import { WalletList, WalletListPresentation } from './WalletList';
 
 export function PortfolioValueDetail({ address }: { address: string }) {
   const { currency } = useCurrency();
@@ -46,30 +53,10 @@ export function PortfolioValueDetail({ address }: { address: string }) {
   );
 }
 
-function AddressImportList({
-  wallets,
-  activeWallets,
-  onSubmit,
-}: {
-  wallets: MaskedBareWallet[];
-  activeWallets: Record<string, { active: boolean }>;
-  onSubmit: (values: MaskedBareWallet[]) => void;
-}) {
-  const grouped = groupBy(wallets, ({ address }) =>
-    activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest'
-  );
-  const { active, rest } = grouped as Record<
-    'active' | 'rest',
-    MaskedBareWallet[] | undefined
-  >;
-  const existingAddresses = useAllExistingMnemonicAddresses();
-  const existingAddressesSet = useMemo(
-    () => new Set(existingAddresses),
-    [existingAddresses]
-  );
-  const [values, setValue] = useState<Set<string>>(() => new Set());
-  const toggleAddress = useCallback((value: string) => {
-    setValue((set) => {
+function useToggledValues<T>(initialValues: Set<T> | (() => Set<T>)) {
+  const [values, setValues] = useState<Set<T>>(initialValues);
+  const toggleValue = useCallback((value: T) => {
+    setValues((set) => {
       const newSet = new Set(set);
       if (newSet.has(value)) {
         newSet.delete(value);
@@ -79,43 +66,253 @@ function AddressImportList({
       }
     });
   }, []);
+  return [values, toggleValue] as const;
+}
+
+function SelectMoreWalletsDialog({
+  dialogRef,
+  wallets,
+  existingAddressesSet,
+  activeWallets,
+  initialValues,
+  onSubmit,
+}: {
+  initialValues: Set<string>;
+  wallets: MaskedBareWallet[] | null;
+  existingAddressesSet: Set<string>;
+  activeWallets: Record<string, { active: boolean }>;
+  dialogRef: React.RefObject<HTMLDialogElementInterface>;
+  onSubmit: (values: Set<string>) => void;
+}) {
+  const grouped = groupBy(wallets, ({ address }) =>
+    activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest'
+  );
+  const { active, rest } = grouped as Record<
+    'active' | 'rest',
+    MaskedBareWallet[] | undefined
+  >;
+  const [values, toggleValue] = useToggledValues(initialValues);
+  return (
+    <BottomSheetDialog
+      ref={dialogRef}
+      height="90vh"
+      containerStyle={{ padding: 0 }}
+      renderWhenOpen={() => (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100%',
+          }}
+        >
+          <div
+            style={{
+              padding: 20,
+              position: 'sticky',
+              top: 0,
+              backgroundColor: 'var(--z-index-0)',
+              zIndex: 1,
+            }}
+          >
+            <DialogTitle
+              title={<UIText kind="headline/h3">Select Another Wallet</UIText>}
+            />
+          </div>
+          <Spacer height={24} />
+
+          {active?.length ? (
+            <WalletList
+              listTitle={
+                <div style={{ paddingInline: 20 }}>Active wallets</div>
+              }
+              wallets={active}
+              renderDetail={(index) => (
+                <PortfolioValueDetail address={active[index].address} />
+              )}
+              existingAddressesSet={existingAddressesSet}
+              values={values}
+              onSelect={toggleValue}
+            />
+          ) : null}
+          {rest ? (
+            <WalletList
+              listTitle={
+                <div style={{ paddingInline: 20 }}>Inactive wallets</div>
+              }
+              initialCount={5}
+              wallets={rest}
+              renderDetail={null}
+              existingAddressesSet={existingAddressesSet}
+              values={values}
+              onSelect={toggleValue}
+            />
+          ) : null}
+
+          <div
+            style={{
+              position: 'sticky',
+              bottom: 0,
+              padding: 20,
+              backgroundColor: 'var(--z-index-0)',
+            }}
+          >
+            <Button
+              disabled={values.size === 0}
+              onClick={() => onSubmit(values)}
+              style={{ width: '100%' }}
+            >
+              Continue{values.size ? ` (${values.size})` : null}
+            </Button>
+          </div>
+        </div>
+      )}
+    />
+  );
+}
+
+function EcosystemTitleHelper({ kind }: { kind: 'solana' | 'ethereum' }) {
+  const config = {
+    solana: { icon: <EcosystemSolanaIcon />, title: 'Solana wallets' },
+    ethereum: {
+      icon: <EcosystemEthereumIcon />,
+      title: 'EVM wallets',
+    },
+  };
+
+  return (
+    <HStack gap={8}>
+      {config[kind].icon}
+      {config[kind].title}
+    </HStack>
+  );
+}
+
+function suggestInitialWallets({
+  wallets,
+  activeWallets,
+  existingAddressesSet,
+}: {
+  wallets: MaskedBareWallet[];
+  activeWallets: Record<string, { active: boolean }>;
+  existingAddressesSet: Set<string>;
+}): {
+  activeCount: number;
+  groups: { ecosystem: 'solana' | 'ethereum'; wallets: MaskedBareWallet[] }[];
+} {
+  const newOnes = wallets.filter(
+    (w) => !existingAddressesSet.has(normalizeAddress(w.address))
+  );
+  const grouped = groupBy(newOnes, ({ address }) =>
+    activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest'
+  );
+  const { active, rest } = grouped as Record<
+    'active' | 'rest',
+    MaskedBareWallet[] | undefined
+  >;
+  if (active?.length) {
+    // display all found active addresses
+    const ethWallets = active.filter((w) => isEthereumAddress(w.address));
+    const solWallets = active.filter((w) => isSolanaAddress(w.address));
+    return {
+      activeCount: active.length,
+      groups: [
+        { ecosystem: 'ethereum', wallets: ethWallets },
+        { ecosystem: 'solana', wallets: solWallets },
+      ],
+    };
+  } else {
+    // display only one eth and one solana address
+    const ethWallet = rest?.find((w) => isEthereumAddress(w.address));
+    const solanaWallet = rest?.find((w) => isSolanaAddress(w.address));
+    return {
+      activeCount: 0,
+      groups: [
+        { ecosystem: 'ethereum', wallets: ethWallet ? [ethWallet] : [] },
+        { ecosystem: 'solana', wallets: solanaWallet ? [solanaWallet] : [] },
+      ],
+    };
+  }
+}
+
+function AddressImportList({
+  wallets,
+  activeWallets,
+  onSubmit,
+}: {
+  wallets: MaskedBareWallet[];
+  activeWallets: Record<string, { active: boolean }>;
+  onSubmit: (values: MaskedBareWallet[]) => void;
+}) {
+  const existingAddresses = useAllExistingMnemonicAddresses();
+  const existingAddressesSet = useMemo(
+    () => new Set(existingAddresses),
+    [existingAddresses]
+  );
+  const suggestedWallets = useMemo(
+    () =>
+      suggestInitialWallets({ wallets, activeWallets, existingAddressesSet }),
+    [activeWallets, existingAddressesSet, wallets]
+  );
+  const [values, toggleAddress] = useToggledValues<string>(() => {
+    return new Set(
+      suggestedWallets.groups.flatMap((group) =>
+        group.wallets.map((w) => w.address)
+      )
+    );
+  });
+  const moreWalletsDialogRef = useRef<HTMLDialogElementInterface>(null);
   return (
     <>
       <PageColumn>
         <PageTop />
-        <VStack gap={8}>
-          <UIText kind="body/regular">
-            We found these wallets associated with your recovery phrase
-          </UIText>
+        <VStack gap={24}>
+          {suggestedWallets.activeCount ? (
+            <UIText kind="headline/h3" style={{ textAlign: 'center' }}>
+              We found{' '}
+              {suggestedWallets.activeCount === 1
+                ? '1 active wallet'
+                : `${suggestedWallets.activeCount} active wallets`}
+            </UIText>
+          ) : (
+            <VStack gap={0} style={{ textAlign: 'center' }}>
+              <UIText kind="headline/h3">
+                We didn’t find any active wallets
+              </UIText>
+              <UIText kind="small/accent" color="var(--neutral-600)">
+                Start with these wallets associated <br /> with your recovery
+                phrase
+              </UIText>
+            </VStack>
+          )}
           <PageFullBleedColumn paddingInline={false}>
             <VStack gap={20}>
-              {active ? (
-                <WalletList
-                  listTitle={
-                    <PagePaddingInline>Active wallets</PagePaddingInline>
-                  }
-                  wallets={active}
-                  renderDetail={(index) => (
-                    <PortfolioValueDetail address={active[index].address} />
-                  )}
-                  existingAddressesSet={existingAddressesSet}
-                  values={values}
-                  onSelect={toggleAddress}
-                />
-              ) : null}
-              {rest ? (
-                <WalletList
-                  listTitle={
-                    <PagePaddingInline>Inactive wallets</PagePaddingInline>
-                  }
-                  wallets={rest}
-                  renderDetail={null}
-                  existingAddressesSet={existingAddressesSet}
-                  values={values}
-                  onSelect={toggleAddress}
-                  initialCount={active?.length ? 0 : 3}
-                />
-              ) : null}
+              {suggestedWallets.groups
+                .filter((group) => group.wallets.length)
+                .map((group) => (
+                  <WalletListPresentation
+                    displayPathIndex={false}
+                    listTitle={
+                      <PagePaddingInline>
+                        <EcosystemTitleHelper kind={group.ecosystem} />
+                      </PagePaddingInline>
+                    }
+                    wallets={group.wallets}
+                    hasMore={false}
+                    onLoadMore={null}
+                    renderDetail={
+                      suggestedWallets.activeCount
+                        ? (index) => (
+                            <PortfolioValueDetail
+                              address={group.wallets[index].address}
+                            />
+                          )
+                        : null
+                    }
+                    existingAddressesSet={existingAddressesSet}
+                    values={values}
+                    onSelect={toggleAddress}
+                  />
+                ))}
             </VStack>
           </PageFullBleedColumn>
         </VStack>
@@ -125,6 +322,15 @@ function AddressImportList({
       <PageStickyFooter lineColor="var(--neutral-300)">
         <Spacer height={8} />
         <VStack style={{ textAlign: 'center' }} gap={8}>
+          <Button
+            kind="ghost"
+            onClick={() => {
+              moreWalletsDialogRef.current?.showModal();
+            }}
+          >
+            <UIText kind="body/accent">Select Another Wallet</UIText>
+          </Button>
+
           <Button
             disabled={values.size === 0}
             onClick={() => {
@@ -139,6 +345,19 @@ function AddressImportList({
         </VStack>
         <PageBottom />
       </PageStickyFooter>
+      <SelectMoreWalletsDialog
+        initialValues={values}
+        wallets={wallets}
+        activeWallets={activeWallets}
+        existingAddressesSet={existingAddressesSet}
+        dialogRef={moreWalletsDialogRef}
+        onSubmit={(values) => {
+          const selectedWallets = wallets.filter((wallet) =>
+            values.has(wallet.address)
+          );
+          onSubmit(selectedWallets);
+        }}
+      />
     </>
   );
 }

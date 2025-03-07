@@ -9,11 +9,13 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
+import { useBackgroundKind } from 'src/ui/components/Background';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
-import { useBackgroundKind } from 'src/ui/components/Background';
 
 function useMnenomicPhraseForLocation({
   locationStateStore,
@@ -73,6 +75,9 @@ function mix<T>(arr1: T[], arr2: T[]) {
   return res;
 }
 
+const bgStyle = {
+  ['--surface-background-color']: 'var(--z-index-0)',
+} as React.CSSProperties;
 export function MnemonicImportView({
   locationStateStore,
 }: {
@@ -98,12 +103,17 @@ export function MnemonicImportView({
     useErrorBoundary: true,
   });
   const { value } = useAddressActivity(
-    { addresses: wallets?.map((w) => w.address) || [] },
+    {
+      addresses:
+        wallets?.map((w) => w.address).filter((a) => isEthereumAddress(a)) ||
+        [],
+    },
     { enabled: Boolean(wallets), keepStaleData: true }
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
   useBackgroundKind({ kind: 'white' });
+  useBodyStyle(bgStyle);
   return (
     <>
       <NavigationTitle title={null} documentTitle="Wallets Ready to Import" />
