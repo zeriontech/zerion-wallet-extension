@@ -193,7 +193,6 @@ function AddressSelectList({
             />
           )}
           renderDetail={null}
-          initialCount={COUNT}
           listTitle={null}
           onSelect={toggleAddress}
           existingAddressesSet={existingAddressesSet}
