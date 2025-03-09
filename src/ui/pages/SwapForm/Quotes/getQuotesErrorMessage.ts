@@ -1,5 +1,5 @@
 import { getError } from 'src/shared/errors/getError';
-import type { QuotesData } from './useQuotes';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 
 const quoteApiErrors: Record<string, string | undefined> = {
   'Cannot process input_amount parameter': 'Adjust amount value',

@@ -110,14 +110,29 @@ export function ActionButtonsRow() {
           />
         </li>
         <li>
-          <ActionButton
-            title="Bridge"
-            icon={<BridgeIcon />}
-            href={`${ZERION_ORIGIN}/bridge?${addWalletParams}`}
-            onClick={performAction}
-            target="_blank"
-            rel="noopener noreferrer"
-          />
+          {process.env.FEATURE_BRIDGE_FORM === 'on' ? (
+            <WithMainnetOnlyWarningDialog<'a'>
+              message="Testnets are not supported in Bridge"
+              render={({ handleClick }) => (
+                <ActionButton
+                  title="Bridge"
+                  as={UnstyledLink}
+                  icon={<BridgeIcon />}
+                  to="/bridge-form"
+                  onClick={handleClick}
+                />
+              )}
+            />
+          ) : (
+            <ActionButton
+              title="Bridge"
+              icon={<BridgeIcon />}
+              href={`${ZERION_ORIGIN}/bridge?${addWalletParams}`}
+              onClick={performAction}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          )}
         </li>
         <li>
           <ActionButton

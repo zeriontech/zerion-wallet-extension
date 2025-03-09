@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Asset } from 'defi-sdk';
-import type { SwapFormView } from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { baseToCommon } from 'src/shared/units/convert';
@@ -10,7 +9,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { animated, useTransition } from '@react-spring/web';
-import type { QuotesData } from './useQuotes';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 
 function getRate({
@@ -20,8 +19,8 @@ function getRate({
   receiveAmountBase,
   chain,
 }: {
-  spendAsset?: Asset;
-  receiveAsset?: Asset;
+  spendAsset: Asset | null;
+  receiveAsset: Asset | null;
   spendAmountBase?: string;
   receiveAmountBase?: string;
   chain?: Chain;
@@ -83,18 +82,19 @@ function SlidingRectangle({
 }
 
 export function RateLine({
-  swapView,
+  spendAsset,
+  receiveAsset,
   quotesData,
 }: {
-  swapView: SwapFormView;
+  spendAsset: Asset | null;
+  receiveAsset: Asset | null;
   quotesData: QuotesData;
 }) {
   const { isLoading, quote, error } = quotesData;
-  const { spendPosition, receivePosition } = swapView;
 
   const rate = getRate({
-    spendAsset: spendPosition?.asset,
-    receiveAsset: receivePosition?.asset,
+    spendAsset,
+    receiveAsset,
     receiveAmountBase: quote?.output_amount_estimation,
     spendAmountBase: quote?.input_amount_estimation,
     chain: quote ? createChain(quote.input_chain) : undefined,
