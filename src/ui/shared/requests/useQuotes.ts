@@ -1,7 +1,6 @@
-import { useSelectorStore, useStore } from '@store-unit/react';
 import { useCallback, useMemo, useState } from 'react';
 import omit from 'lodash/omit';
-import type { SwapFormView } from '@zeriontech/transactions';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { commonToBase } from 'src/shared/units/convert';
 import {
   getAssetImplementationInChain,
@@ -13,7 +12,24 @@ import { isNumeric } from 'src/shared/isNumeric';
 import type { Quote, TransactionDescription } from 'src/shared/types/Quote';
 import { createUrl } from 'src/shared/createUrl';
 import { invariant } from 'src/shared/invariant';
+import type { AddressPosition } from 'defi-sdk';
 import { useEventSource } from './useEventSource';
+
+interface QuotesParams {
+  address: string;
+  slippage: number | null;
+
+  primaryInput?: 'spend' | 'receive';
+  spendChainInput?: string;
+  receiveChainInput?: string | null;
+  spendInput?: string;
+  receiveInput?: string;
+  spendTokenInput?: string;
+  receiveTokenInput?: string;
+
+  spendPosition: AddressPosition | EmptyAddressPosition | null;
+  receivePosition: AddressPosition | EmptyAddressPosition | null;
+}
 
 export interface QuotesData {
   quote: Quote | null;
@@ -33,30 +49,19 @@ export interface QuotesData {
 
 export function useQuotes({
   address,
-  swapView,
-}: {
-  address: string;
-  swapView: SwapFormView;
-}): QuotesData {
+  slippage,
+  primaryInput,
+  spendChainInput,
+  receiveChainInput,
+  spendInput,
+  receiveInput,
+  spendTokenInput,
+  receiveTokenInput,
+  spendPosition,
+  receivePosition,
+}: QuotesParams): QuotesData {
   const [selectedQuote, setQuote] = useState<Quote | null>(null);
 
-  const { spendPosition, receivePosition } = swapView;
-  const {
-    chainInput,
-    primaryInput,
-    spendTokenInput,
-    receiveTokenInput,
-    spendInput,
-    receiveInput,
-  } = useSelectorStore(swapView.store, [
-    'primaryInput',
-    'chainInput',
-    'spendTokenInput',
-    'receiveTokenInput',
-    'spendInput',
-    'receiveInput',
-  ]);
-  const { slippage } = useStore(swapView.store.configuration);
   const [refetchHash, setRefetchHash] = useState(0);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
 
@@ -64,41 +69,60 @@ export function useQuotes({
     const value = primaryInput === 'receive' ? receiveInput : spendInput;
     const position =
       primaryInput === 'receive' ? receivePosition : spendPosition;
+
     if (
       spendTokenInput &&
       receiveTokenInput &&
-      chainInput &&
+      spendChainInput &&
       value &&
       position &&
       spendPosition &&
       receivePosition
     ) {
-      const chain = createChain(chainInput);
+      const spendChain = createChain(spendChainInput);
+      const receiveChain = receiveChainInput
+        ? createChain(receiveChainInput)
+        : null;
+
       const spendAssetExistsOnChain = getAssetImplementationInChain({
         asset: spendPosition.asset,
-        chain,
+        chain: spendChain,
       });
+
       const receiveAssetExistsOnChain = getAssetImplementationInChain({
         asset: receivePosition.asset,
-        chain,
+        chain: receiveChain ?? spendChain,
       });
+
       if (!spendAssetExistsOnChain || !receiveAssetExistsOnChain) {
         return;
       }
+
       if (!isNumeric(value) || Number(value) === 0) {
         return;
       }
+
+      const chain =
+        primaryInput === 'receive' && receiveChain ? receiveChain : spendChain;
+
       const valueBase = commonToBase(
         value,
         getDecimals({ asset: position.asset, chain })
       ).toFixed();
+
       const searchParams = new URLSearchParams({
         from: address,
         input_token: spendTokenInput,
         output_token: receiveTokenInput,
-        input_chain: chainInput,
-        slippage: String(Number(slippage) * 100),
+        input_chain: spendChainInput,
       });
+      if (receiveChainInput) {
+        searchParams.append('output_chain', receiveChainInput);
+      }
+      if (slippage) {
+        const slippagePercent = String(Number(slippage) * 100);
+        searchParams.append('slippage', slippagePercent);
+      }
       if (primaryInput === 'receive') {
         searchParams.append('output_amount', valueBase);
       } else {
@@ -123,7 +147,8 @@ export function useQuotes({
     spendPosition,
     spendTokenInput,
     receiveTokenInput,
-    chainInput,
+    spendChainInput,
+    receiveChainInput,
     address,
     slippage,
   ]);
