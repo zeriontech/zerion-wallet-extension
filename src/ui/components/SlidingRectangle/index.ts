@@ -1,0 +1,1 @@
+export { SlidingRectangle } from './SlidingRectangle';

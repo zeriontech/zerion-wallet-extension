@@ -1,5 +1,3 @@
-import { useSelectorStore } from '@store-unit/react';
-import type { SwapFormView } from '@zeriontech/transactions';
 import BigNumber from 'bignumber.js';
 import React from 'react';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
@@ -7,21 +5,25 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { isNumeric } from 'src/shared/isNumeric';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { exceedsPriceImpactThreshold } from '../../shared/price-impact';
+import { exceedsPriceImpactThreshold } from 'src/ui/pages/SwapForm/shared/price-impact';
+import type { Asset } from 'defi-sdk';
 
 export function FiatInputValue({
-  swapView,
   name,
+  primaryInput,
+  spendInput,
+  spendAsset,
+  receiveInput,
+  receiveAsset,
 }: {
-  swapView: SwapFormView;
   name: 'spendInput' | 'receiveInput';
+  primaryInput?: 'spend' | 'receive';
+  spendInput?: string;
+  spendAsset: Asset | null;
+  receiveInput?: string;
+  receiveAsset: Asset | null;
 }) {
   const { currency } = useCurrency();
-  const { receiveAsset, spendAsset } = swapView;
-  const { primaryInput, spendInput, receiveInput } = useSelectorStore(
-    swapView.store,
-    ['primaryInput', 'receiveInput', 'spendInput']
-  );
 
   const asset = name === 'receiveInput' ? receiveAsset : spendAsset;
   const oppositeAsset = asset === receiveAsset ? spendAsset : receiveAsset;
