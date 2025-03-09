@@ -1,5 +1,4 @@
 import React from 'react';
-import type { SwapFormState } from '@zeriontech/transactions';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -12,16 +11,17 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
+import type { BridgeFormState } from '../shared/types';
 
 export function SuccessState({
-  swapFormState,
+  formState,
   spendPosition,
   receivePosition,
   hash,
   onDone,
   gasbackValue,
 }: {
-  swapFormState: SwapFormState;
+  formState: BridgeFormState;
   spendPosition: BareAddressPosition;
   receivePosition: BareAddressPosition;
   hash: string;
@@ -29,10 +29,13 @@ export function SuccessState({
   onDone: () => void;
 }) {
   const { networks } = useNetworks();
-  const { chainInput, spendInput, receiveInput } = swapFormState;
+
+  const { spendInput, spendChainInput, receiveInput, receiveChainInput } =
+    formState;
+
   invariant(
-    chainInput && spendInput && receiveInput,
-    'Required Form values are missing'
+    spendChainInput && receiveChainInput && spendInput && receiveInput,
+    'Required form values are missing'
   );
 
   const actionStatus = useActionStatusByHash(hash);
@@ -46,36 +49,40 @@ export function SuccessState({
     return <ViewLoading />;
   }
 
-  const chain = createChain(chainInput);
-  const chainName = networks.getChainName(chain);
-  const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
+  const spendChain = createChain(spendChainInput);
+  const spendChainName = networks.getChainName(spendChain);
+  const spendChainIconUrl = networks.getNetworkByName(spendChain)?.icon_url;
+
+  const receiveChain = createChain(receiveChainInput);
+  const receiveChainName = networks.getChainName(receiveChain);
+  const receiveChainIconUrl = networks.getNetworkByName(receiveChain)?.icon_url;
 
   return (
     <>
-      <NavigationTitle urlBar="none" title="Swap Success" />
+      <NavigationTitle urlBar="none" title="Bridge Success" />
       <SuccessStateLoader
         startItem={
           <SuccessStateToken
             iconUrl={spendPosition.asset.icon_url}
             symbol={spendPosition.asset.symbol}
-            chainName={chainName}
-            chainIconUrl={chainIconUrl}
+            chainName={spendChainName}
+            chainIconUrl={spendChainIconUrl}
           />
         }
         endItem={
           <SuccessStateToken
             iconUrl={receivePosition.asset.icon_url}
             symbol={receivePosition.asset.symbol}
-            chainName={chainName}
-            chainIconUrl={chainIconUrl}
+            chainName={receiveChainName}
+            chainIconUrl={receiveChainIconUrl}
           />
         }
         status={actionStatus}
-        pendingTitle="Swapping"
-        failedTitle="Swap failed"
-        dropppedTitle="Swap cancelled"
+        pendingTitle="Transferring"
+        failedTitle="Transfer failed"
+        dropppedTitle="Transfer cancelled"
         explorerUrl={
-          hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
+          hash ? networks.getExplorerTxUrlByName(spendChain, hash) : undefined
         }
         confirmedContent={
           gasbackValue && FEATURE_GASBACK ? (

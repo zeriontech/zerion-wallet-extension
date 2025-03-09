@@ -1,11 +1,9 @@
 import React from 'react';
 import type { SendFormState, SendFormView } from '@zeriontech/transactions';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { invariant } from 'src/shared/invariant';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { SuccessStateToken } from 'src/ui/shared/forms/SuccessState/SuccessStateToken';
@@ -14,34 +12,7 @@ import { SuccessStateAddress } from 'src/ui/shared/forms/SuccessState/SuccessSta
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { SuccessStateNft } from 'src/ui/shared/forms/SuccessState/SuccessStateNft';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-
-export function GasbackDecorated({ value }: { value: number }) {
-  return (
-    <HStack
-      gap={8}
-      justifyContent="space-between"
-      alignItems="center"
-      style={{
-        padding: '8px 12px',
-        borderRadius: 12,
-        background:
-          'linear-gradient(90deg, rgba(160, 36, 239, 0.20) 0%, rgba(253, 187, 108, 0.20) 100%)',
-      }}
-    >
-      <UIText kind="small/accent">Gasback</UIText>
-      <UIText
-        kind="small/accent"
-        style={{
-          background: 'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}
-      >
-        {new Intl.NumberFormat('en').format(value)}
-      </UIText>
-    </HStack>
-  );
-}
+import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 
 export interface SendFormSnapshot {
   state: SendFormState;
