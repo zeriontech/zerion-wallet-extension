@@ -21,6 +21,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import type { BareAddressPosition } from '../BareAddressPosition';
 import { GasbackDecorated } from '../../SendForm/SuccessState/SuccessState';
 
@@ -91,7 +92,7 @@ export function SuccessState({
   const { chainInput, spendInput, receiveInput } = swapFormState;
   invariant(
     chainInput && spendInput && receiveInput,
-    'Required Form values are missing'
+    'Required form values are missing'
   );
   const trail = useTrail(4, {
     config: { tension: 400 },
@@ -117,6 +118,7 @@ export function SuccessState({
   const chainName = networks.getChainName(chain);
   return (
     <PageColumn>
+      <NavigationTitle title={null} documentTitle="Swap" />
       <Spacer height={paddingTop} />
       <animated.div style={trail[0]}>
         <CheckIcon

@@ -29,9 +29,9 @@ export function MarketAssetSelect({
   addressPositions: BareAddressPosition[];
   onChange: AssetSelectProps['onChange'];
 }) {
-  // We need to save a selected item locally, because the SwapForm
+  // We need to save a selected item locally, because the parent component (SwapForm or BridgeForm)
   // takes time to query the newly selected position if it is not among address positions,
-  // which results in a UI flicker. But storing an intermediary state, we avoid that flicker
+  // which results in a UI flicker. By storing an intermediary state, we avoid that flicker
   const [savedSelectedItem, setCurrentSelectedItem] = useState(selectedItem);
   const { currency } = useCurrency();
 
