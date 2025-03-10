@@ -1,5 +1,4 @@
 import type { ActionAsset } from 'defi-sdk';
-import { isTruthy } from 'is-truthy-ts';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -7,6 +6,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { getDecimals } from 'src/modules/networks/asset';
 import type { Quote } from 'src/shared/types/Quote';
 import { baseToCommon } from 'src/shared/units/convert';
+import { assetQuantityToValue, toMaybeArr } from './helpers';
 
 interface AnalyticsTransactionData {
   action_type: string;
@@ -23,28 +23,23 @@ interface AnalyticsTransactionData {
   output_chain?: string;
 }
 
-interface AssetQuantity {
+interface ActionAssetQuantity {
   asset: ActionAsset;
   quantity: string | null;
 }
 
-function assetQuantityToValue(
-  assetWithQuantity: AssetQuantity,
+function actionAssetQuantityToValue(
+  assetWithQuantity: ActionAssetQuantity,
   chain: Chain
 ): number {
   const { asset: actionAsset, quantity } = assetWithQuantity;
   const asset = getFungibleAsset(actionAsset);
-  if (asset && 'implementations' in asset && asset.price && quantity !== null) {
-    return baseToCommon(quantity, getDecimals({ asset, chain }))
-      .times(asset.price.value)
-      .toNumber();
-  }
-  return 0;
+  return assetQuantityToValue({ asset, quantity }, chain);
 }
 
 function createPriceAdder(chain: Chain) {
-  return (total: number, assetQuantity: AssetQuantity) => {
-    total += assetQuantityToValue(assetQuantity, chain);
+  return (total: number, assetQuantity: ActionAssetQuantity) => {
+    total += actionAssetQuantityToValue(assetQuantity, chain);
     return total;
   };
 }
@@ -71,12 +66,6 @@ function getAssetName({ asset }: { asset: ActionAsset }) {
 
 function getAssetAddress({ asset }: { asset: ActionAsset }) {
   return getFungibleAsset(asset)?.asset_code;
-}
-
-function toMaybeArr<T>(
-  arr: (T | null | undefined)[] | null | undefined
-): T[] | undefined {
-  return arr?.length ? arr.filter(isTruthy) : undefined;
 }
 
 export function addressActionToAnalytics({
@@ -114,7 +103,7 @@ export function addressActionToAnalytics({
     const output_chain = quote.output_chain;
     const zerion_fee_usd_amount =
       feeAmount && asset
-        ? assetQuantityToValue({ quantity: feeAmount, asset }, chain)
+        ? actionAssetQuantityToValue({ quantity: feeAmount, asset }, chain)
         : undefined;
 
     return {

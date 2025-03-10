@@ -93,7 +93,11 @@ import {
   broadcastTransactionPatched,
   checkEip712Tx,
 } from 'src/modules/ethereum/account-abstraction/zksync-patch';
-import type { DaylightEventParams, ScreenViewParams } from '../events';
+import type {
+  DaylightEventParams,
+  FormQuoteReceivedParams,
+  ScreenViewParams,
+} from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
@@ -1497,6 +1501,14 @@ export class Wallet {
     // walletPort.request('sendEvent', { event_name, params }).
     this.verifyInternalOrigin(context);
     emitter.emit('screenView', params);
+  }
+
+  async formQuoteReceived({
+    context,
+    params,
+  }: WalletMethodParams<FormQuoteReceivedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('formQuoteReceived', params);
   }
 
   async daylightAction({

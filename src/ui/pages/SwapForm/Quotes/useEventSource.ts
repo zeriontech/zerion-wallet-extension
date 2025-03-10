@@ -160,13 +160,6 @@ export function useEventSource<T>(
     store.current?.close();
     keyRef.current = key;
   }
-  // useEffect(() => {
-  //   const currentStore = store.current;
-  //   return () => {
-  //     currentStore?.clear();
-  //     currentStore?.close();
-  //   };
-  // }, [key]);
 
   useEffect(() => {
     if (!store.current) {
