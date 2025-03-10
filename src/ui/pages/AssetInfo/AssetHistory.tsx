@@ -23,6 +23,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import { createChain } from 'src/modules/networks/Chain';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { ActionDetailedView } from '../History/ActionDetailedView';
 import * as styles from './styles.module.css';
 
@@ -208,6 +209,7 @@ export function AssetHistory({
   const { currency } = useCurrency();
   const {
     value,
+    // TODO: this flag doesn't work, needs to be fixed
     isFetching: actionsAreLoading,
     hasNext,
     fetchMore,
@@ -230,7 +232,7 @@ export function AssetHistory({
   }
 
   return (
-    <VStack gap={8}>
+    <VStack gap={8} style={{ opacity: actionsAreLoading ? 0.8 : 1 }}>
       <VStack gap={4}>
         <UIText kind="headline/h3">History</UIText>
         <VStack gap={0}>
@@ -255,7 +257,10 @@ export function AssetHistory({
             ['--button-background-hover' as string]: 'var(--neutral-300)',
           }}
         >
-          More Transactions
+          <HStack gap={8} alignItems="center" justifyContent="center">
+            <UIText kind="body/accent">More Transactions</UIText>
+            {actionsAreLoading ? <CircleSpinner /> : null}
+          </HStack>
         </Button>
       ) : null}
     </VStack>

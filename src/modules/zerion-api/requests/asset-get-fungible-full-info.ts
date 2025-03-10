@@ -39,7 +39,7 @@ export interface AssetResource {
 export interface AssetFullInfo {
   extra: {
     createdAt: string;
-    description: string;
+    description: string | null;
     holders: null;
     liquidity: null;
     top10: null;
@@ -60,9 +60,8 @@ export async function assetGetFungibleFullInfo(
     fungibleId: payload.fungibleId,
     currency: payload.currency,
   });
-  const endpoint = `asset/get-fungible-full-info/v1?${params}`;
   return ZerionHttpClient.get<Response>({
-    endpoint,
+    endpoint: `asset/get-fungible-full-info/v1?${params}`,
     ...options,
   });
 

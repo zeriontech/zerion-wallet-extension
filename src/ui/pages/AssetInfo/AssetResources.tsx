@@ -3,7 +3,10 @@ import React, { useMemo, useRef } from 'react';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import type { AssetFullInfo } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import type {
+  AssetFullInfo,
+  AssetResource,
+} from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { middleTruncate } from 'src/ui/shared/middleTruncate';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -19,6 +22,9 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import CheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
+import XIcon from 'jsx:src/ui/assets/x-logo.svg';
+import WarpcastIcon from 'jsx:src/ui/assets/warpcast-logo.svg';
+import DexscreenerIcon from 'jsx:src/ui/assets/dexscreener-logo.svg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 
 function AssetImplementationButton({
@@ -206,6 +212,39 @@ function AssetImplementationsDialog({
   );
 }
 
+function ResourseButton({
+  resource,
+  icon,
+}: {
+  resource: AssetResource;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Button
+      key={resource.name}
+      as={UnstyledAnchor}
+      rel="noopenner noreferrer"
+      target="_blank"
+      kind="regular"
+      size={36}
+      href={resource.url}
+      style={{
+        padding: 6,
+        border: '2px solid var(--neutral-200)',
+        ['--button-background' as string]: 'var(--white)',
+        ['--button-background-hover' as string]: 'var(--neutral-200)',
+      }}
+      aria-label={resource.displayableName}
+    >
+      {icon}
+    </Button>
+  );
+}
+
+const TWITTER_ID = 'twitter';
+const WARPCAST_ID = 'warpcast';
+const DEXSCREENER_ID = 'dexscreener';
+
 export function AssetResources({
   assetFullInfo,
 }: {
@@ -232,30 +271,40 @@ export function AssetResources({
     );
   }, [implementations]);
 
+  const resourcesById = useMemo(() => {
+    return assetFullInfo.extra.relevantResources.reduce((acc, resource) => {
+      acc[resource.name] = resource;
+      return acc;
+    }, {} as Record<string, AssetResource>);
+  }, [assetFullInfo.extra.relevantResources]);
+
   return (
     <>
       <HStack gap={8} justifyContent="space-between">
         <HStack gap={8}>
-          {assetFullInfo.extra.relevantResources.slice(0, 3).map((resource) => (
-            <Button
-              key={resource.name}
-              as={UnstyledAnchor}
-              rel="noopenner noreferrer"
-              target="_blank"
-              kind="regular"
-              size={36}
-              href={resource.url}
-              style={{
-                padding: 6,
-                border: '2px solid var(--neutral-200)',
-                ['--button-background' as string]: 'var(--white)',
-                ['--button-background-hover' as string]: 'var(--neutral-200)',
-              }}
-              aria-label={resource.displayableName}
-            >
-              <img src={resource.iconUrl} width={20} height={20} />
-            </Button>
-          ))}
+          {resourcesById[TWITTER_ID] ? (
+            <ResourseButton
+              resource={resourcesById[TWITTER_ID]}
+              icon={<XIcon style={{ width: 20, height: 20 }} />}
+            />
+          ) : null}
+          {resourcesById[WARPCAST_ID] ? (
+            <ResourseButton
+              resource={resourcesById[WARPCAST_ID]}
+              icon={<WarpcastIcon style={{ width: 20, height: 20 }} />}
+            />
+          ) : null}
+          <ResourseButton
+            resource={
+              resourcesById[DEXSCREENER_ID] || {
+                name: DEXSCREENER_ID,
+                displayableName: 'Dexscreener',
+                iconUrl: '',
+                url: `https://dexscreener.com/search?q=${assetFullInfo.fungible.symbol}`,
+              }
+            }
+            icon={<DexscreenerIcon style={{ width: 20, height: 20 }} />}
+          />
         </HStack>
         <HStack gap={4}>
           {mainImplementation ? (
