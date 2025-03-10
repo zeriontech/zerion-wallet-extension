@@ -1,5 +1,6 @@
 import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
+import type { SwapFormView } from '@zeriontech/transactions';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { Chain } from 'src/modules/networks/Chain';
 import type {
@@ -9,6 +10,7 @@ import type {
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
+import type { Quote } from 'src/shared/types/Quote';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -20,6 +22,12 @@ export interface ScreenViewParams {
   previous: string | null;
   address: string | null;
   screenSize: string;
+}
+
+export interface FormQuoteReceivedParams {
+  quote: Quote;
+  formView: SwapFormView;
+  scope: 'Swap' | 'Bridge';
 }
 
 export interface DaylightEventParams {
@@ -79,4 +87,5 @@ export const emitter = createNanoEvents<{
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
+  formQuoteReceived: (data: FormQuoteReceivedParams) => void;
 }>();

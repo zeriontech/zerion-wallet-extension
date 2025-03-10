@@ -1,11 +1,13 @@
-import type BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 
 const PRICE_IMPACT_WARNING_THRESHOLD = -0.05;
 
 export function exceedsPriceImpactThreshold({
   relativeChange,
 }: {
-  relativeChange: BigNumber;
+  relativeChange: BigNumber | number;
 }) {
-  return relativeChange.isLessThan(PRICE_IMPACT_WARNING_THRESHOLD);
+  return new BigNumber(relativeChange).isLessThan(
+    PRICE_IMPACT_WARNING_THRESHOLD
+  );
 }

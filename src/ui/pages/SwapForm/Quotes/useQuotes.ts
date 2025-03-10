@@ -1,5 +1,5 @@
 import { useSelectorStore, useStore } from '@store-unit/react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import omit from 'lodash/omit';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { commonToBase } from 'src/shared/units/convert';
@@ -13,6 +13,7 @@ import { isNumeric } from 'src/shared/isNumeric';
 import type { Quote, TransactionDescription } from 'src/shared/types/Quote';
 import { createUrl } from 'src/shared/createUrl';
 import { invariant } from 'src/shared/invariant';
+import { walletPort } from 'src/ui/shared/channels';
 import { useEventSource } from './useEventSource';
 
 export interface QuotesData {
@@ -164,6 +165,19 @@ export function useQuotes({
       return null;
     }
   }, [quote?.transaction]);
+
+  // Using ref here to call useEffect only on quote change
+  const swapViewRef = useRef(swapView);
+  swapViewRef.current = swapView;
+  useEffect(() => {
+    if (quote && done) {
+      walletPort.request('formQuoteReceived', {
+        quote,
+        formView: swapViewRef.current,
+        scope: 'Swap',
+      });
+    }
+  }, [quote, done]);
 
   return {
     quote,
