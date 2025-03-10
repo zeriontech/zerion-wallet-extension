@@ -1,15 +1,23 @@
 import BigNumber from 'bignumber.js';
-import type { SwapFormView } from '@zeriontech/transactions';
+import type {
+  CustomConfiguration,
+  SwapFormView,
+} from '@zeriontech/transactions';
 import { createChain } from 'src/modules/networks/Chain';
 import type { Quote } from 'src/shared/types/Quote';
 import { exceedsPriceImpactThreshold } from 'src/ui/pages/SwapForm/shared/price-impact';
 import { assetQuantityToValue, toMaybeArr } from './helpers';
 
+export type FormViewForAnalytics = Pick<
+  SwapFormView,
+  'spendAsset' | 'receiveAsset' | 'spendPosition'
+> & { configuration: CustomConfiguration };
+
 export function formViewToAnalytics({
   formView,
   quote,
 }: {
-  formView: SwapFormView;
+  formView: FormViewForAnalytics;
   quote: Quote;
 }) {
   const zerion_fee_percentage = quote.protocol_fee;
@@ -36,7 +44,7 @@ export function formViewToAnalytics({
   ).gt(quote.input_amount_estimation);
 
   const isPriceImpactWarning = exceedsPriceImpactThreshold({
-    relativeChange: (usdAmountSend - usdAmountReceived) / usdAmountReceived,
+    relativeChange: (usdAmountReceived - usdAmountSend) / usdAmountReceived,
   });
 
   return {
@@ -56,7 +64,7 @@ export function formViewToAnalytics({
     zerion_fee_usd_amount,
     input_chain: quote.input_chain,
     output_chain: quote.output_chain ?? quote.input_chain,
-    slippage: formView.store.configuration.getState().slippage,
+    slippage: formView.configuration.slippage,
     contract_type: quote.contract_metadata?.name,
     enough_balance,
     enough_allowance: Boolean(quote.transaction),

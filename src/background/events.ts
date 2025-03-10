@@ -1,6 +1,5 @@
 import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
-import type { SwapFormView } from '@zeriontech/transactions';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { Chain } from 'src/modules/networks/Chain';
 import type {
@@ -11,6 +10,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import type { Quote } from 'src/shared/types/Quote';
+import type { FormViewForAnalytics } from 'src/shared/analytics/shared/formViewToAnalytics';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -26,7 +26,7 @@ export interface ScreenViewParams {
 
 export interface FormQuoteReceivedParams {
   quote: Quote;
-  formView: SwapFormView;
+  formView: FormViewForAnalytics;
   scope: 'Swap' | 'Bridge';
 }
 

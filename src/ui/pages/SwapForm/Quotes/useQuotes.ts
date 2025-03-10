@@ -169,10 +169,17 @@ export function useQuotes({
   const swapViewRef = useRef(swapView);
   swapViewRef.current = swapView;
   useEffect(() => {
-    if (quote && done) {
+    if (quote && done && swapViewRef.current) {
+      const { spendAsset, receiveAsset, spendPosition, store } =
+        swapViewRef.current;
       walletPort.request('formQuoteReceived', {
         quote,
-        formView: swapViewRef.current,
+        formView: {
+          spendAsset,
+          receiveAsset,
+          spendPosition,
+          configuration: store.configuration.getState(),
+        },
         scope: 'Swap',
       });
     }
