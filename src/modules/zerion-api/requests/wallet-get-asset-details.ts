@@ -8,7 +8,6 @@ export interface Params {
   addresses: string[];
   currency: string;
   groupBy: ('by-wallet' | 'by-app')[];
-  addPnl?: boolean;
 }
 
 interface NetworkShortInfo {
@@ -48,16 +47,6 @@ export interface WalletAssetDetails {
     convertedQuantity: number;
     percentageAllocation: number;
   }[];
-  pnl: {
-    realizedPnl: number;
-    unrealizedPnl: number;
-    totalPnl: number;
-    relativeRealizedPnl: number;
-    relativeUnrealizedPnl: number;
-    relativeTotalPnl: number;
-    averageBuyPrice: number;
-    bought: number;
-  } | null;
   totalValue: number;
   totalConvertedQuantity: number;
 }
