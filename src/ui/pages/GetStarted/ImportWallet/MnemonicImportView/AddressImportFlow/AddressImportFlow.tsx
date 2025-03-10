@@ -2,6 +2,7 @@ import groupBy from 'lodash/groupBy';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
+import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
@@ -27,6 +28,10 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
+import {
+  SegmentedControlGroup,
+  SegmentedControlRadio,
+} from 'src/ui/ui-kit/SegmentedControl';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList, WalletListPresentation } from './WalletList';
 
@@ -35,6 +40,37 @@ export type DerivedWallets = Array<{
   pathType: DerivationPathType;
   wallets: MaskedBareWallet[];
 }>;
+
+function DecoratedSettingsSelect({
+  select,
+}: {
+  select: (style: React.CSSProperties) => React.ReactNode;
+}) {
+  return (
+    <div style={{ position: 'relative', justifySelf: 'end', padding: 1 }}>
+      {select({
+        position: 'absolute',
+        inset: 0,
+        borderRadius: 999,
+        border: 'none',
+      })}
+      <div
+        style={{
+          pointerEvents: 'none',
+          position: 'relative',
+          backgroundColor: 'var(--neutral-300)',
+          borderRadius: 999,
+          paddingBlock: 6,
+          paddingInline: 12,
+        }}
+      >
+        <SettingsSlidersIcon
+          style={{ display: 'block', width: 20, height: 20 }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function PortfolioValueDetail({ address }: { address: string }) {
   const { currency } = useCurrency();
@@ -103,7 +139,8 @@ function SelectMoreWalletsDialog({
     }, {} as { [key: string]: Grouped });
   }, [activeWallets, wallets]);
 
-  const [curve, setCurve] = useState<'ecdsa' | 'ed25519'>('ecdsa');
+  type CurveValue = 'ecdsa' | 'ed25519';
+  const [curve, setCurve] = useState<CurveValue>('ecdsa');
   const ethPathType = 'bip44';
   type SolanaPathType =
     | 'solanaBip44Change'
@@ -163,40 +200,54 @@ function SelectMoreWalletsDialog({
                 gap: 12,
               }}
             >
-              <label>
-                <input
-                  type="radio"
+              <SegmentedControlGroup kind="secondary">
+                <SegmentedControlRadio
                   name="curve"
                   value="ecdsa"
                   checked={curve === 'ecdsa'}
-                  onChange={() => setCurve('ecdsa')}
-                />{' '}
-                EVM
-              </label>
-              <label>
-                <input
-                  type="radio"
+                  onChange={(event) =>
+                    setCurve(event.currentTarget.value as CurveValue)
+                  }
+                >
+                  <HStack gap={8} alignItems="center">
+                    <EcosystemEthereumIcon />
+                    <span>EVM</span>
+                  </HStack>
+                </SegmentedControlRadio>
+                <SegmentedControlRadio
                   name="curve"
                   value="ed25519"
                   checked={curve === 'ed25519'}
-                  onChange={() => setCurve('ed25519')}
-                />{' '}
-                Solana
-              </label>
+                  onChange={(event) =>
+                    setCurve(event.currentTarget.value as CurveValue)
+                  }
+                >
+                  <HStack gap={8} alignItems="center">
+                    <EcosystemSolanaIcon />
+                    <span>Solana</span>
+                  </HStack>
+                </SegmentedControlRadio>
+              </SegmentedControlGroup>
             </div>
             {curve === 'ed25519' ? (
-              <select
-                style={{ justifySelf: 'end' }}
-                name="solPathType"
-                value={solPathType}
-                onChange={(event) =>
-                  setSolPathType(event.currentTarget.value as SolanaPathType)
-                }
-              >
-                <option value="solanaBip44Change">Bip44Change</option>
-                <option value="solanaBip44">Bip44</option>
-                <option value="solanaDeprecated">Deprecated</option>
-              </select>
+              <DecoratedSettingsSelect
+                select={(style) => (
+                  <select
+                    style={style}
+                    name="solPathType"
+                    value={solPathType}
+                    onChange={(event) =>
+                      setSolPathType(
+                        event.currentTarget.value as SolanaPathType
+                      )
+                    }
+                  >
+                    <option value="solanaBip44Change">Bip44Change</option>
+                    <option value="solanaBip44">Bip44</option>
+                    <option value="solanaDeprecated">Deprecated</option>
+                  </select>
+                )}
+              />
             ) : null}
           </div>
           <Spacer height={24} />
