@@ -61,8 +61,8 @@ export function formViewToAnalytics({
     enough_balance,
     enough_allowance: Boolean(quote.transaction),
     warning_was_shown: isPriceImpactWarning,
-    // TODO after new asset endpoint merge: fdv_asset_sent
-    // TODO after new asset endpoint merge: fdv_asset_received
+    // TODO after new asset endpoint is merged: fdv_asset_sent
+    // TODO after new asset endpoint is merged: fdv_asset_received
     // TODO after bridge form is merged: bridge_fee_usd_amount
     // TODO after new validation for fields is merged: output_amount_color
   };

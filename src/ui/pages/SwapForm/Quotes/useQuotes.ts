@@ -166,7 +166,6 @@ export function useQuotes({
     }
   }, [quote?.transaction]);
 
-  // Using ref here to call useEffect only on quote change
   const swapViewRef = useRef(swapView);
   swapViewRef.current = swapView;
   useEffect(() => {
