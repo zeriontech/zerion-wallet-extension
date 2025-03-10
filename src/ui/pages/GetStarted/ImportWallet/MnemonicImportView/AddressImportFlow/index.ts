@@ -1,1 +1,1 @@
-export { AddressImportFlow } from './AddressImportFlow';
+export { AddressImportFlow, type DerivedWallets } from './AddressImportFlow';

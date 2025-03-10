@@ -9,12 +9,12 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
-import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
+import { inferIndexFromDerivationPath } from 'src/shared/wallet/derivation-paths';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 
-interface Props {
+interface BaseProps {
   wallets: MaskedBareWallet[];
   existingAddressesSet?: Set<string>;
   listTitle: React.ReactNode;
@@ -22,13 +22,17 @@ interface Props {
   renderMedia?: (index: number) => React.ReactNode;
   values: Set<string>;
   onSelect: (value: string) => void;
-  initialCount?: number;
   derivationPathType?: DerivationPathType;
+  displayPathIndex?: boolean;
   hasMore?: boolean;
   isLoadingMore?: boolean;
-  onLoadMore: () => void;
+  onLoadMore: null | (() => void);
   showMoreText?: string;
   paddingInline?: React.CSSProperties['paddingInline'];
+}
+
+interface Props extends BaseProps {
+  initialCount?: number;
 }
 
 export function WalletListPresentation({
@@ -39,13 +43,14 @@ export function WalletListPresentation({
   renderMedia,
   values,
   onSelect,
-  derivationPathType = 'bip44',
+  // derivationPathType = 'bip44',
   hasMore = false,
   isLoadingMore = false,
+  displayPathIndex = true,
   onLoadMore,
   showMoreText = 'Show More',
   paddingInline = 8,
-}: Props) {
+}: BaseProps) {
   return (
     <VStack gap={2}>
       {listTitle ? <UIText kind="small/accent">{listTitle}</UIText> : null}
@@ -69,22 +74,23 @@ export function WalletListPresentation({
                   alignItems="center"
                   justifyContent="space-between"
                   style={{
-                    gridTemplateColumns: 'minmax(min-content, 18px) 1fr auto',
+                    gridTemplateColumns: displayPathIndex
+                      ? 'minmax(min-content, 18px) 1fr auto'
+                      : undefined,
                   }}
                 >
-                  <UIText
-                    kind="body/regular"
-                    color="var(--neutral-500)"
-                    title={`Derivation path: ${wallet.mnemonic?.path}`}
-                    style={{ cursor: 'help' }}
-                  >
-                    {wallet.mnemonic
-                      ? getIndexFromPath(
-                          wallet.mnemonic.path,
-                          derivationPathType
-                        )
-                      : null}
-                  </UIText>
+                  {displayPathIndex ? (
+                    <UIText
+                      kind="body/regular"
+                      color="var(--neutral-500)"
+                      title={`Derivation path: ${wallet.mnemonic?.path}`}
+                      style={{ cursor: 'help' }}
+                    >
+                      {wallet.mnemonic
+                        ? inferIndexFromDerivationPath(wallet.mnemonic.path)
+                        : null}
+                    </UIText>
+                  ) : null}
                   {renderMedia ? (
                     renderMedia(index)
                   ) : (
@@ -133,7 +139,7 @@ export function WalletListPresentation({
                     pad: false,
                     component: (
                       <SurfaceItemButton
-                        onClick={onLoadMore}
+                        onClick={() => onLoadMore?.()}
                         disabled={isLoadingMore}
                       >
                         <UIText kind="body/regular" color="var(--primary)">
