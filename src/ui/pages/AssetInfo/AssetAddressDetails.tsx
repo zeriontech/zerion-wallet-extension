@@ -34,6 +34,8 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import * as styles from 'src/ui/style/helpers.module.css';
+import { useAssetAddressPnl } from 'src/modules/zerion-api/hooks/useAssetAddressPnl';
+import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { AssetHeader } from './AssetHeader';
 
 function Line() {
@@ -43,6 +45,19 @@ function Line() {
         width: '100%',
         height: 2,
         backgroundColor: 'var(--neutral-200)',
+      }}
+    />
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div
+      style={{
+        width: 100,
+        height: 24,
+        backgroundColor: 'var(--neutral-200)',
+        borderRadius: 12,
       }}
     />
   );
@@ -125,19 +140,25 @@ function AssetDetailsTitle({
 
 function StatLine({
   title,
+  isLoading,
   value,
   valueColor,
 }: {
   title: string;
+  isLoading?: boolean;
   value: string;
   valueColor?: string;
 }) {
   return (
     <HStack gap={16} justifyContent="space-between" alignItems="center">
       <UIText kind="body/regular">{title}</UIText>
-      <UIText kind="body/accent" color={valueColor}>
-        {value}
-      </UIText>
+      {isLoading ? (
+        <LoadingSkeleton />
+      ) : (
+        <UIText kind="body/accent" color={valueColor}>
+          {value}
+        </UIText>
+      )}
     </HStack>
   );
 }
@@ -145,9 +166,13 @@ function StatLine({
 function AssetStats({
   assetFullInfo,
   walletAssetDetails,
+  assetAddressPnlIsLoading,
+  assetAddressPnl,
 }: {
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
+  assetAddressPnlIsLoading: boolean;
+  assetAddressPnl: AssetAddressPnl | null;
 }) {
   const { currency } = useCurrency();
   const [showNetworkDistribution, setShowNetworkDistribution] = useState(false);
@@ -170,55 +195,54 @@ function AssetStats({
       />
       <StatLine
         title="Total PnL"
-        value={`${getSign(
-          walletAssetDetails.pnl?.totalPnl
-        )}${formatCurrencyValue(
-          Math.abs(walletAssetDetails.pnl?.totalPnl || 0),
+        value={`${getSign(assetAddressPnl?.totalPnl)}${formatCurrencyValue(
+          Math.abs(assetAddressPnl?.totalPnl || 0),
           'en',
           currency
         )}`}
-        valueColor={getColor(walletAssetDetails.pnl?.totalPnl)}
+        valueColor={getColor(assetAddressPnl?.totalPnl)}
+        isLoading={assetAddressPnlIsLoading}
       />
       <StatLine
         title="Realised PnL"
-        value={`${getSign(
-          walletAssetDetails.pnl?.realizedPnl
-        )}${formatCurrencyValue(
-          Math.abs(walletAssetDetails.pnl?.realizedPnl || 0),
+        value={`${getSign(assetAddressPnl?.realizedPnl)}${formatCurrencyValue(
+          Math.abs(assetAddressPnl?.realizedPnl || 0),
           'en',
           currency
         )}`}
-        valueColor={getColor(walletAssetDetails.pnl?.realizedPnl)}
+        valueColor={getColor(assetAddressPnl?.realizedPnl)}
+        isLoading={assetAddressPnlIsLoading}
       />
       <StatLine
         title="Unrealised PnL"
-        value={`${getSign(
-          walletAssetDetails.pnl?.unrealizedPnl
-        )}${formatCurrencyValue(
-          Math.abs(walletAssetDetails.pnl?.unrealizedPnl || 0),
+        value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatCurrencyValue(
+          Math.abs(assetAddressPnl?.unrealizedPnl || 0),
           'en',
           currency
         )} (${formatPercent(
-          Math.abs(walletAssetDetails.pnl?.relativeUnrealizedPnl || 0),
+          Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0),
           'en'
         )}%)`}
-        valueColor={getColor(walletAssetDetails.pnl?.relativeUnrealizedPnl)}
+        valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
+        isLoading={assetAddressPnlIsLoading}
       />
       <StatLine
         title="Invested"
         value={formatCurrencyValue(
-          walletAssetDetails.pnl?.bought || 0,
+          assetAddressPnl?.bought || 0,
           'en',
           currency
         )}
+        isLoading={assetAddressPnlIsLoading}
       />
       <StatLine
         title="Average Cost"
         value={formatCurrencyValue(
-          walletAssetDetails.pnl?.averageBuyPrice || 0,
+          assetAddressPnl?.averageBuyPrice || 0,
           'en',
           currency
         )}
+        isLoading={assetAddressPnlIsLoading}
       />
       <VStack gap={0}>
         <UnstyledButton
@@ -377,7 +401,13 @@ function AssetAppDistribution({
                     (
                     {formatTokenValue(
                       app.convertedQuantity,
-                      assetFullInfo.fungible.symbol
+                      assetFullInfo.fungible.symbol,
+                      {
+                        notation:
+                          app.convertedQuantity > 100000
+                            ? 'compact'
+                            : undefined,
+                      }
                     )}
                     )
                   </UIText>
@@ -458,7 +488,9 @@ function AssetDescription({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
     <VStack gap={12}>
       <UIText kind="headline/h3">About {assetFullInfo.fungible.name}</UIText>
       <VStack gap={8}>
-        <TextPreview text={assetFullInfo.extra.description} />
+        {assetFullInfo.extra.description ? (
+          <TextPreview text={assetFullInfo.extra.description} />
+        ) : null}
         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
           {assetFullInfo.extra.relevantResources.map((resource) => (
             <TextAnchor
@@ -486,10 +518,14 @@ function AssetAddressDetailsDialog({
   address,
   assetFullInfo,
   walletAssetDetails,
+  assetAddressPnlIsLoading,
+  assetAddressPnl,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
+  assetAddressPnlIsLoading: boolean;
+  assetAddressPnl: AssetAddressPnl | null;
 }) {
   return (
     <VStack
@@ -508,6 +544,8 @@ function AssetAddressDetailsDialog({
         <AssetStats
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletAssetDetails}
+          assetAddressPnl={assetAddressPnl}
+          assetAddressPnlIsLoading={assetAddressPnlIsLoading}
         />
         <Line />
         <AssetAppDistribution
@@ -534,11 +572,16 @@ export function AssetAddressStats({
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
+  const { data: pnlData, isLoading } = useAssetAddressPnl({
+    addresses: [address],
+    fungibleId: assetFullInfo.fungible.id,
+    currency,
+  });
   const asset = assetFullInfo.fungible;
 
   const isWatchedAddress = isReadonlyAccount(wallet);
 
-  const unrealizedGainRaw = walletAssetDetails.pnl?.unrealizedPnl || 0;
+  const unrealizedGainRaw = pnlData?.data.unrealizedPnl || 0;
   const unrealizedGainFormatted = `${getSign(
     unrealizedGainRaw
   )}${formatCurrencyValue(
@@ -613,7 +656,7 @@ export function AssetAddressStats({
           </UnstyledLink>
           {walletAssetDetails.totalValue === 0 ? (
             <>
-              {walletAssetDetails.pnl?.bought === 0 ? null : (
+              {pnlData?.data.bought === 0 ? null : (
                 <UIText kind="headline/h2" color="var(--neutral-500)">
                   {formatCurrencyValue(0, 'en', currency)}
                 </UIText>
@@ -646,24 +689,32 @@ export function AssetAddressStats({
                   <UIText kind="caption/regular" color="var(--neutral-500)">
                     Unrealised PnL
                   </UIText>
-                  <UIText
-                    kind="body/accent"
-                    color={getColor(unrealizedGainRaw)}
-                  >
-                    {unrealizedGainFormatted}
-                  </UIText>
+                  {isLoading ? (
+                    <LoadingSkeleton />
+                  ) : (
+                    <UIText
+                      kind="body/accent"
+                      color={getColor(unrealizedGainRaw)}
+                    >
+                      {unrealizedGainFormatted}
+                    </UIText>
+                  )}
                 </VStack>
                 <VStack gap={4}>
                   <UIText kind="caption/regular" color="var(--neutral-500)">
                     Invested
                   </UIText>
-                  <UIText kind="body/accent">
-                    {formatCurrencyValue(
-                      walletAssetDetails.pnl?.bought || 0,
-                      'en',
-                      currency
-                    )}
-                  </UIText>
+                  {isLoading ? (
+                    <LoadingSkeleton />
+                  ) : (
+                    <UIText kind="body/accent">
+                      {formatCurrencyValue(
+                        pnlData?.data.bought || 0,
+                        'en',
+                        currency
+                      )}
+                    </UIText>
+                  )}
                 </VStack>
               </HStack>
               <Button
@@ -717,6 +768,8 @@ export function AssetAddressStats({
               address={wallet.address}
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}
+              assetAddressPnl={pnlData?.data || null}
+              assetAddressPnlIsLoading={isLoading}
             />
           </>
         )}

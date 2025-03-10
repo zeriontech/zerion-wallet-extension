@@ -19,6 +19,7 @@ import { assetGetFungibleFullInfo } from './requests/asset-get-fungible-full-inf
 import { assetGetChart } from './requests/asset-get-chart';
 import { walletGetPnL } from './requests/wallet-get-pnl';
 import { walletGetAssetDetails } from './requests/wallet-get-asset-details';
+import { assetGetFungiblePnl } from './requests/asset-get-fungible-pnl';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -40,6 +41,7 @@ export const ZerionApiBare = {
   claimRetro,
   assetGetFungibleFullInfo,
   assetGetChart,
+  assetGetFungiblePnl,
   walletGetPnL,
   walletGetAssetDetails,
 };

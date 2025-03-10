@@ -27,6 +27,8 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
 import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
@@ -104,7 +106,6 @@ export function AssetPage() {
       currency,
       groupBy: ['by-app'],
       addresses: [singleAddressNormalized],
-      addPnl: true,
     },
     { enabled: ready }
   );
@@ -134,6 +135,15 @@ export function AssetPage() {
     ).chain;
   }, [walletData]);
 
+  const { data: chartData } = useAssetChart({
+    fungibleId: asset_code,
+    currency,
+    addresses: [],
+    period: '1d',
+  });
+
+  console.log(chartData);
+
   const bestChainForPurchase = useMemo(() => {
     const avaliableChains = Object.keys(
       data?.data.fungible.implementations || {}
@@ -156,14 +166,22 @@ export function AssetPage() {
     return (
       <>
         <NavigationTitle title={null} documentTitle={`${asset_code} - info`} />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <CircleSpinner />
+        </div>
       </>
     );
   }
 
   const asset = data.data.fungible;
   const isWatchedAddress = isReadonlyAccount(wallet);
-  const isEmptyBalance =
-    walletData?.data.totalValue === 0 && walletData?.data.pnl?.bought === 0;
+  const isEmptyBalance = walletData?.data.totalValue === 0;
 
   const chainForSwap = isEmptyBalance
     ? bestChainForPurchase
@@ -229,7 +247,7 @@ export function AssetPage() {
                   as={UnstyledLink}
                   kind="primary"
                   size={48}
-                  to={`/send-form?tokenAssetCode=${asset_code}`}
+                  to={`/send-form?tokenAssetCode=${asset_code}&tokenChain=${chainWithTheBiggestBalance}`}
                   style={{ padding: 14 }}
                   aria-label="Send Token"
                 >
