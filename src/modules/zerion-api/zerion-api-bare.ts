@@ -16,8 +16,6 @@ import { checkReferral } from './requests/check-referral';
 import { referWallet } from './requests/refer-wallet';
 import { claimRetro } from './requests/claim-retro';
 import { assetGetFungibleFullInfo } from './requests/asset-get-fungible-full-info';
-import { assetGetChart } from './requests/asset-get-chart';
-import { walletGetPnL } from './requests/wallet-get-pnl';
 import { walletGetAssetDetails } from './requests/wallet-get-asset-details';
 import { assetGetFungiblePnl } from './requests/asset-get-fungible-pnl';
 
@@ -40,9 +38,7 @@ export const ZerionApiBare = {
   referWallet,
   claimRetro,
   assetGetFungibleFullInfo,
-  assetGetChart,
   assetGetFungiblePnl,
-  walletGetPnL,
   walletGetAssetDetails,
 };
 
