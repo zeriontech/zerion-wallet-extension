@@ -26,13 +26,12 @@ import XIcon from 'jsx:src/ui/assets/x-logo.svg';
 import WarpcastIcon from 'jsx:src/ui/assets/warpcast-logo.svg';
 import DexscreenerIcon from 'jsx:src/ui/assets/dexscreener-logo.svg';
 
-function AssetImplementationButton({
-  network,
-  address,
+function MainImplementationButton({
+  implementation,
 }: {
-  network: NetworkConfig;
-  address: string | null;
+  implementation: { address: string | null; network: NetworkConfig };
 }) {
+  const { address, network } = implementation;
   const { handleCopy, isSuccess } = useCopyToClipboard({
     text: address || 'null',
   });
@@ -310,12 +309,9 @@ export function AssetResources({
         </HStack>
         <HStack gap={4}>
           {mainImplementation ? (
-            <AssetImplementationButton
-              address={mainImplementation.address}
-              network={mainImplementation.network}
-            />
+            <MainImplementationButton implementation={mainImplementation} />
           ) : null}
-          {implementations.length > 1 ? (
+          {implementations.length ? (
             <Button
               kind="regular"
               size={36}
