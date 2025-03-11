@@ -3,7 +3,10 @@ import { useAddressActions } from 'defi-sdk';
 import React, { useCallback, useMemo, useRef } from 'react';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import type {
+  Asset,
+  AssetFullInfo,
+} from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
@@ -26,6 +29,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { ActionDetailedView } from '../History/ActionDetailedView';
 import * as styles from './styles.module.css';
+import { AssetDescription } from './AssetAddressDetails';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
   year: 'numeric',
@@ -197,12 +201,12 @@ function AssetHistoryItem({
 
 export function AssetHistory({
   assetId,
-  asset,
   address,
+  assetFullInfo,
 }: {
   assetId: string;
   address: string;
-  asset?: Asset;
+  assetFullInfo?: AssetFullInfo;
 }) {
   const { networks } = useNetworks();
   const { singleAddressNormalized, ready } = useAddressParams();
@@ -227,8 +231,14 @@ export function AssetHistory({
     }
   );
 
-  if (!value?.length || !asset || !networks) {
+  const asset = assetFullInfo?.fungible;
+
+  if (actionsAreLoading || !asset || !networks) {
     return null;
+  }
+
+  if (!value?.length) {
+    return <AssetDescription assetFullInfo={assetFullInfo} />;
   }
 
   return (
