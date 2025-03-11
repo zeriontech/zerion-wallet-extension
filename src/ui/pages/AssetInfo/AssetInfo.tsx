@@ -242,6 +242,7 @@ export function AssetInfo() {
                 >
                   <SendIcon style={{ width: 20, height: 20 }} />
                 </Button>
+                {/* TODO: Implement UnstyledLink after bridge form is implemented */}
                 {SHOW_BRIDGE_BUTTON ? (
                   <Button
                     kind="primary"
