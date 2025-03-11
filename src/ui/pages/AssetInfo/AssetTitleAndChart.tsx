@@ -8,7 +8,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
-import { minus } from 'src/ui/shared/typography';
+import { getColor, getSign } from './helpers';
 
 export function AssetTitleAndChart({ asset }: { asset: Asset }) {
   const { currency } = useCurrency();
@@ -57,20 +57,10 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
         </UIText>
         <UIText
           kind="body/accent"
-          color={
-            asset.meta.relativeChange1d > 0
-              ? 'var(--positive-500)'
-              : asset.meta.relativeChange1d < 0
-              ? 'var(--negative-500)'
-              : 'var(--neutral-500)'
-          }
+          color={getColor(asset.meta.relativeChange1d)}
           style={{ paddingBottom: 4 }}
         >
-          {asset.meta.relativeChange1d > 0
-            ? '+'
-            : asset.meta.relativeChange1d < 0
-            ? minus
-            : ''}
+          {getSign(asset.meta.relativeChange1d)}
           {formatPercent(Math.abs(asset.meta.relativeChange1d * 100), 'en')}%
         </UIText>
       </HStack>
