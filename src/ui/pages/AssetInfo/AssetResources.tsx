@@ -336,12 +336,14 @@ export function AssetResources({
         containerStyle={{ backgroundColor: 'var(--white)', padding: 0 }}
         renderWhenOpen={() => (
           <>
-            <div
+            <HStack
+              gap={0}
+              alignItems="center"
               style={{
                 position: 'sticky',
                 top: 0,
-                zIndex: 1,
-                padding: 16,
+                padding: '16px 8px 0',
+                gridTemplateColumns: '36px 1fr 36px',
                 backdropFilter: 'blur(8px)',
               }}
             >
@@ -349,14 +351,7 @@ export function AssetResources({
                 kind="ghost"
                 value="cancel"
                 size={36}
-                style={{
-                  width: 36,
-                  padding: 8,
-                  position: 'absolute',
-                  top: 16,
-                  left: 8,
-                  zIndex: 2,
-                }}
+                style={{ width: 36, padding: 8 }}
                 onClick={() => dialogRef.current?.close()}
               >
                 <ArrowLeftIcon style={{ width: 20, height: 20 }} />
@@ -364,7 +359,7 @@ export function AssetResources({
               <UIText kind="body/accent" style={{ justifySelf: 'center' }}>
                 Explorers
               </UIText>
-            </div>
+            </HStack>
             <AssetImplementationsDialog implementations={implementations} />
           </>
         )}
