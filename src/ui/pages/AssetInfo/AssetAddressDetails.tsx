@@ -8,7 +8,7 @@ import {
   formatCurrencyToParts,
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
-import { middot, minus } from 'src/ui/shared/typography';
+import { middot } from 'src/ui/shared/typography';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import EyeIcon from 'jsx:src/ui/assets/eye.svg';
@@ -37,6 +37,7 @@ import * as styles from 'src/ui/style/helpers.module.css';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { AssetHeader } from './AssetHeader';
+import { getColor, getSign } from './helpers';
 
 function Line() {
   return (
@@ -64,18 +65,6 @@ function LoadingSkeleton() {
 }
 
 const DEFAULT_APP_ID = 'wallet';
-
-function getColor(value?: number) {
-  return !value
-    ? 'var(--black)'
-    : value > 0
-    ? 'var(--positive-500)'
-    : 'var(--negative-500)';
-}
-
-function getSign(value?: number) {
-  return !value ? '' : value > 0 ? '+' : minus;
-}
 
 function AssetDetailsTitle({
   address,
