@@ -132,6 +132,7 @@ function CopyAddressButton({ address }: { address: string }) {
       style={{
         ['--parent-content-color' as string]: 'var(--neutral-400)',
         ['--parent-hovered-content-color' as string]: 'var(--neutral-700)',
+        display: 'flex',
       }}
     >
       {isSuccess ? (
@@ -200,6 +201,7 @@ function AssetImplementationsDialog({
                   ['--parent-content-color' as string]: 'var(--neutral-400)',
                   ['--parent-hovered-content-color' as string]:
                     'var(--neutral-700)',
+                  display: 'flex',
                 }}
               >
                 <LinkIcon className="content-hover" />
