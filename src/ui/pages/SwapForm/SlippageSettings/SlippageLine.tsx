@@ -27,8 +27,10 @@ export function SlippageLine({
     ['slippage']
   );
 
-  const { default: defaultSlippagePercent } = getSlippageOptions(chain);
-  const slippage = userSlippage ?? defaultSlippagePercent / 100;
+  const { slippage } = getSlippageOptions({
+    chain,
+    userSlippage,
+  });
 
   const price = swapView.receiveAsset?.price?.value || 0;
   const fiatValue = new BigNumber(receiveInput || 0)

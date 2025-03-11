@@ -41,10 +41,6 @@ function Radio({
   );
 }
 
-function toPercents(value: number) {
-  return value * 100;
-}
-
 function fromPercents(value: number) {
   return value / 100;
 }
@@ -147,14 +143,12 @@ export function SlippageSettings({
   onConfigurationChange: (value: CustomConfiguration) => void;
 }) {
   const { slippage: userSlippage } = configuration;
-  const { default: defaultSlippagePercent, options: slippageOptions } =
-    getSlippageOptions(chain);
+  const { slippagePercent, options: slippageOptions } = getSlippageOptions({
+    chain,
+    userSlippage,
+  });
 
-  const slippage = String(
-    userSlippage ? toPercents(userSlippage) : defaultSlippagePercent
-  );
-
-  const [percentValue, setPercentValue] = useState(slippage);
+  const [percentValue, setPercentValue] = useState(String(slippagePercent));
   const [isCustomValue, setIsCustomValue] = useState(
     () => !slippageOptions.includes(Number(percentValue))
   );
@@ -249,7 +243,7 @@ export function SlippageSettings({
           type="button"
           onClick={() => {
             setIsCustomValue(false);
-            setPercentValue(String(defaultSlippagePercent));
+            setPercentValue(String(slippagePercent));
           }}
         >
           Reset

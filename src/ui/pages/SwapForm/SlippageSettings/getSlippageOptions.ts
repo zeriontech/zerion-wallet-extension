@@ -21,6 +21,27 @@ const SLIPPAGE_BY_CHAIN: SlippageConfig = {
   },
 };
 
-export function getSlippageOptions(chain: Chain) {
-  return SLIPPAGE_BY_CHAIN[chain.toString()] ?? DEFAULT_SLIPPAGE_OPTIONS;
+function toPercents(value: number) {
+  return value * 100;
+}
+
+function fromPercents(value: number) {
+  return value / 100;
+}
+
+export function getSlippageOptions({
+  chain,
+  userSlippage,
+}: {
+  chain: Chain;
+  userSlippage: number | null;
+}) {
+  const options =
+    SLIPPAGE_BY_CHAIN[chain.toString()] ?? DEFAULT_SLIPPAGE_OPTIONS;
+
+  const slippagePercent =
+    userSlippage != null ? toPercents(userSlippage) : options.default;
+  const slippage = fromPercents(slippagePercent);
+
+  return { ...options, slippage, slippagePercent };
 }

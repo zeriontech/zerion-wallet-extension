@@ -32,10 +32,6 @@ export interface QuotesData {
   refetch: () => void;
 }
 
-function toPercents(value: number) {
-  return value * 100;
-}
-
 export function useQuotes({
   address,
   swapView,
@@ -99,17 +95,14 @@ export function useQuotes({
         getDecimals({ asset: position.asset, chain })
       ).toFixed();
 
-      const { default: defaultSlippagePercent } = getSlippageOptions(chain);
-      const slippagePercent = String(
-        userSlippage ? toPercents(userSlippage) : defaultSlippagePercent
-      );
+      const { slippagePercent } = getSlippageOptions({ chain, userSlippage });
 
       const searchParams = new URLSearchParams({
         from: address,
         input_token: spendTokenInput,
         output_token: receiveTokenInput,
         input_chain: chainInput,
-        slippage: slippagePercent,
+        slippage: String(slippagePercent),
       });
       if (primaryInput === 'receive') {
         searchParams.append('output_amount', valueBase);
