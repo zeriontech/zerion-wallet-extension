@@ -1,0 +1,67 @@
+.container {
+  animation: appear 150ms ease-in-out;
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.dots div {
+  animation: jump 2s infinite;
+  transform-origin: 50% 100%;
+}
+
+.dots div:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dots div:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dots div:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes jump {
+  0%,
+  20%,
+  40%,
+  50%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  30% {
+    transform: translateY(-4px) scale(0.95, 1.15);
+  }
+  45% {
+    transform: translateY(0) scale(1.05, 0.95);
+  }
+}
+
+.title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transition: 0.3s ease-in-out;
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  white-space: nowrap;
+}
+
+.title.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, calc(-50% + 20px));
+}
+
+.title.gone {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, calc(-50% - 20px));
+}

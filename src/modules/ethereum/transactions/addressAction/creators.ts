@@ -22,6 +22,7 @@ import {
   type TransactionAction,
 } from '../describeTransaction';
 import type { ChainId } from '../ChainId';
+import type { ClientTransactionStatus } from './addressActionMain';
 import { ZERO_HASH, type LocalAddressAction } from './addressActionMain';
 
 export async function createActionContent(
@@ -120,13 +121,25 @@ function createActionLabel(
   };
 }
 
+export function transactionReceiptToActionStatus(
+  transactionObject: Pick<TransactionObject, 'receipt' | 'dropped'>
+): ClientTransactionStatus {
+  return transactionObject.receipt
+    ? transactionObject.receipt.status === 1
+      ? 'confirmed'
+      : 'failed'
+    : transactionObject.dropped
+    ? 'dropped'
+    : 'pending';
+}
+
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
   currency: string,
   client: Client
 ): Promise<LocalAddressAction> {
-  const { transaction, hash, receipt, timestamp, dropped } = transactionObject;
+  const { transaction, hash, timestamp } = transactionObject;
   let chain: Chain | null;
   const chainId = normalizeChainId(transaction.chainId);
   const networks = await loadNetworkByChainId(chainId);
@@ -161,13 +174,7 @@ export async function pendingTransactionToAddressAction(
         : // It's okay to fallback to a stringified chainId because this is
           // only a representational object
           valueToHex(transaction.chainId),
-      status: receipt
-        ? receipt.status === 1
-          ? 'confirmed'
-          : 'failed'
-        : dropped
-        ? 'dropped'
-        : 'pending',
+      status: transactionReceiptToActionStatus(transactionObject),
       fee: null,
       nonce: Number(transaction.nonce) || 0,
       sponsored: false,
