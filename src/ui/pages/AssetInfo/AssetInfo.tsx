@@ -82,7 +82,7 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
   );
 }
 
-export function AssetPage() {
+export function AssetInfo() {
   const { asset_code } = useParams();
   useBackgroundKind({ kind: 'white' });
   invariant(asset_code, 'Asset Code is required');
