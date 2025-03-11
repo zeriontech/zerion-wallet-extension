@@ -161,15 +161,9 @@ export function AssetInfo() {
     return (
       <>
         <NavigationTitle title={null} documentTitle={`${asset_code} - info`} />
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+        <PageColumn style={{ alignItems: 'center', justifyContent: 'center' }}>
           <CircleSpinner />
-        </div>
+        </PageColumn>
       </>
     );
   }
