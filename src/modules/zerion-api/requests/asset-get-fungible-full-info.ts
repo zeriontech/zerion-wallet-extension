@@ -64,14 +64,4 @@ export async function assetGetFungibleFullInfo(
     endpoint: `asset/get-fungible-full-info/v1?${params}`,
     ...options,
   });
-
-  // return ZerionHttpClient.post<Response>({
-  //   endpoint: '/asset/get-chart/v1',
-  //   body: JSON.stringify({
-  //     ...payload,
-  //     addresses: ['0x015FccD4ED178d3b3663157718C6aC8B3BFC1Eb7'],
-  //     period: '1d',
-  //   }),
-  //   ...options,
-  // });
 }

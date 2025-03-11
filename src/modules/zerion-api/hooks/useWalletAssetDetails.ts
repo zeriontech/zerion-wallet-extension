@@ -19,5 +19,6 @@ export function useWalletAssetDetails(
     queryFn: () => ZerionAPI.walletGetAssetDetails(params, { source }),
     suspense,
     enabled,
+    staleTime: 20000,
   });
 }
