@@ -73,7 +73,6 @@ import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { isNumeric } from 'src/shared/isNumeric';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { getNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
-import { NetworkSelect } from '../Networks/NetworkSelect';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -92,6 +91,7 @@ import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
 import { SuccessState } from './SuccessState';
+import { LabeledNetworkSelect } from './LabeledNetworkSelect';
 
 const rootNode = getRootDomNode();
 
@@ -126,6 +126,57 @@ function FormHint({
     message = getQuotesErrorMessage(quotesData);
   }
   return render(message);
+}
+
+function BridgeNetworksSelect({
+  sourceChain,
+  destinationChain,
+  onChangeSourceChain,
+  onChangeDestinationChain,
+  onReverse,
+  filterSourceChainPredicate,
+  filterDestinationChainPredicate,
+}: {
+  sourceChain: string;
+  destinationChain: string;
+  onChangeSourceChain: (value: string) => void;
+  onChangeDestinationChain: (value: string) => void;
+  onReverse: () => void;
+  filterSourceChainPredicate?: (network: NetworkConfig) => boolean;
+  filterDestinationChainPredicate?: (network: NetworkConfig) => boolean;
+}) {
+  const { networks } = useNetworks();
+  const supportsBridging = useCallback(
+    (network: NetworkConfig) =>
+      networks?.supports('bridging', createChain(network.id)) || false,
+    [networks]
+  );
+
+  return (
+    <>
+      <LabeledNetworkSelect
+        label="From"
+        value={sourceChain}
+        onChange={onChangeSourceChain}
+        dialogRootNode={rootNode}
+        filterPredicate={(network) =>
+          supportsBridging(network) &&
+          (filterSourceChainPredicate?.(network) ?? true)
+        }
+      />
+      <ReverseButton onClick={onReverse} />
+      <LabeledNetworkSelect
+        label="To"
+        value={destinationChain}
+        onChange={onChangeDestinationChain}
+        dialogRootNode={rootNode}
+        filterPredicate={(network) =>
+          supportsBridging(network) &&
+          (filterDestinationChainPredicate?.(network) ?? true)
+        }
+      />
+    </>
+  );
 }
 
 function BridgeFormComponent() {
@@ -579,8 +630,6 @@ function BridgeFormComponent() {
 
   const positionDistribution =
     portfolioDecomposition?.positionsChainsDistribution ?? {};
-  const networkSupportsBridging = (network: NetworkConfig) =>
-    networks?.supports('bridging', createChain(network.id)) || false;
 
   if (isSuccess) {
     invariant(
@@ -770,32 +819,26 @@ function BridgeFormComponent() {
             alignItems="center"
             style={{ gridTemplateColumns: '1fr 32px 1fr' }}
           >
-            <NetworkSelect
-              value={spendChainInput ?? ''}
-              onChange={(value) =>
+            <BridgeNetworksSelect
+              sourceChain={spendChainInput ?? ''}
+              destinationChain={receiveChainInput ?? ''}
+              filterSourceChainPredicate={(network: NetworkConfig) =>
+                network.id === NetworkId.Ethereum ||
+                network.id in positionDistribution
+              }
+              onChangeSourceChain={(value) =>
                 setUserFormState((state) => ({
                   ...state,
                   spendChainInput: value,
                 }))
               }
-              dialogRootNode={rootNode}
-              filterPredicate={(network) =>
-                networkSupportsBridging(network) &&
-                (network.id === NetworkId.Ethereum ||
-                  network.id in positionDistribution)
-              }
-            />
-            <ReverseButton onClick={reverseChains} />
-            <NetworkSelect
-              value={receiveChainInput ?? ''}
-              onChange={(value) =>
+              onChangeDestinationChain={(value) =>
                 setUserFormState((state) => ({
                   ...state,
                   receiveChainInput: value,
                 }))
               }
-              dialogRootNode={rootNode}
-              filterPredicate={networkSupportsBridging}
+              onReverse={reverseChains}
             />
           </HStack>
           <VStack gap={4}>
