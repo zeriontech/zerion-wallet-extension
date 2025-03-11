@@ -8,6 +8,7 @@ import { equal } from 'src/modules/fast-deep-equal';
 import { Theme, themeStore } from 'src/ui/features/appearance';
 import { useStore } from '@store-unit/react';
 
+const CHART_HEIGHT = 170;
 const CHART_ANIMATION_DURATION = 500;
 const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
   type: 'scatter',
@@ -23,7 +24,7 @@ const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
       show: {
         animations: {
           y: {
-            from: 200,
+            from: CHART_HEIGHT,
           },
           colors: {
             type: 'color',
@@ -186,6 +187,25 @@ function updateChartPoints({
   }
 }
 
+function getSortedRangeIndexes({
+  startRangeIndex,
+  endRangeIndex,
+}: {
+  startRangeIndex: number | null;
+  endRangeIndex: number | null;
+}) {
+  if (startRangeIndex === null) {
+    return { startRangeIndex, endRangeIndex };
+  }
+  if (endRangeIndex === null) {
+    return { startRangeIndex: endRangeIndex, endRangeIndex: startRangeIndex };
+  }
+  if (startRangeIndex > endRangeIndex) {
+    return { startRangeIndex: endRangeIndex, endRangeIndex: startRangeIndex };
+  }
+  return { startRangeIndex, endRangeIndex };
+}
+
 export function AssetChart({
   chartPoints,
   onRangeSelect,
@@ -195,15 +215,15 @@ export function AssetChart({
     startRangeIndex,
     endRangeIndex,
   }: {
-    startRangeIndex?: number;
-    endRangeIndex: number;
+    startRangeIndex: number | null;
+    endRangeIndex: number | null;
   }) => void;
 }) {
   const { currency } = useCurrency();
   const { theme } = useStore(themeStore);
   const chartPointsRef = useRef<[number, number][]>([]);
-  const endRangeIndexRef = useRef<number>(Infinity);
-  const startRangeIndexRef = useRef<number>(Infinity);
+  const endRangeIndexRef = useRef<number | null>(null);
+  const startRangeIndexRef = useRef<number | null>(null);
   const startRangeXRef = useRef<number | null>(null);
   const onRangeSelectEvent = useEvent(onRangeSelect);
 
@@ -237,28 +257,32 @@ export function AssetChart({
             hidden: true,
             segment: {
               borderColor: (ctx) => {
-                const endValue =
-                  chartPointsRef.current[endRangeIndexRef.current]?.[1] ??
-                  chartPointsRef.current.at(-1)?.[1];
-                const startValue =
-                  chartPointsRef.current[startRangeIndexRef.current]?.[1] ??
-                  chartPointsRef.current[0]?.[1];
-                const isPositive = endValue >= startValue;
+                const { startRangeIndex, endRangeIndex } =
+                  getSortedRangeIndexes({
+                    startRangeIndex: startRangeIndexRef.current,
+                    endRangeIndex: endRangeIndexRef.current,
+                  });
 
-                const shouldHightlight =
-                  (startRangeIndexRef.current === Infinity &&
-                    endRangeIndexRef.current !== Infinity &&
-                    ctx.p1DataIndex > endRangeIndexRef.current) ||
-                  (startRangeIndexRef.current !== Infinity &&
-                    endRangeIndexRef.current !== Infinity &&
-                    (startRangeIndexRef.current - ctx.p1DataIndex) *
-                      (ctx.p1DataIndex - endRangeIndexRef.current) <
-                      0);
+                const endValue =
+                  chartPointsRef.current.at(endRangeIndex ?? -1)?.[1] || 0;
+                const startValue =
+                  chartPointsRef.current[startRangeIndex ?? 0]?.[1] || 0;
+
+                const afterSinglePoint =
+                  startRangeIndex === null &&
+                  endRangeIndex != null &&
+                  ctx.p1DataIndex > endRangeIndex;
+                const insideTheRange =
+                  startRangeIndex !== null &&
+                  endRangeIndex != null &&
+                  (startRangeIndex - ctx.p1DataIndex) *
+                    (ctx.p1DataIndex - endRangeIndex) <
+                    0;
 
                 return getChartColor({
                   theme,
-                  isPositive,
-                  isHighlighted: shouldHightlight,
+                  isPositive: endValue >= startValue,
+                  isHighlighted: afterSinglePoint || insideTheRange,
                 });
               },
             },
@@ -268,11 +292,13 @@ export function AssetChart({
       options: {
         ...DEFAULT_CONFIG.options,
         onHover: (_, chartElement, chart) => {
-          endRangeIndexRef.current = chartElement[0]?.index ?? Infinity;
-          onRangeSelectEvent({
-            endRangeIndex: endRangeIndexRef.current,
-            startRangeIndex: startRangeIndexRef.current,
-          });
+          endRangeIndexRef.current = chartElement[0]?.index ?? null;
+          onRangeSelectEvent(
+            getSortedRangeIndexes({
+              endRangeIndex: endRangeIndexRef.current,
+              startRangeIndex: startRangeIndexRef.current,
+            })
+          );
           chart.update();
         },
       },
@@ -282,13 +308,15 @@ export function AssetChart({
           afterEvent(chart, args) {
             const event = args.event;
             if (event.type === 'mouseout') {
-              endRangeIndexRef.current = Infinity;
-              startRangeIndexRef.current = Infinity;
+              endRangeIndexRef.current = null;
+              startRangeIndexRef.current = null;
               startRangeXRef.current = null;
-              onRangeSelectEvent({
-                endRangeIndex: endRangeIndexRef.current,
-                startRangeIndex: startRangeIndexRef.current,
-              });
+              onRangeSelectEvent(
+                getSortedRangeIndexes({
+                  endRangeIndex: endRangeIndexRef.current,
+                  startRangeIndex: startRangeIndexRef.current,
+                })
+              );
               chart.update();
             }
           },
@@ -304,19 +332,19 @@ export function AssetChart({
             }
 
             const { x, y } = activeElement.element.tooltipPosition(false);
+            const { data } = chart.data.datasets[0];
+            const { startRangeIndex, endRangeIndex } = getSortedRangeIndexes({
+              startRangeIndex: startRangeIndexRef.current,
+              endRangeIndex: activeElement.index,
+            });
             const endRangeValue =
-              (chart.data.datasets[0].data[activeElement.index] as Point)?.y ||
-              0;
+              (data.at(endRangeIndex ?? -1) as Point)?.y || 0;
             const startRangeValue =
-              (
-                (chart.data.datasets[0].data[startRangeIndexRef.current] ||
-                  chart.data.datasets[0].data[0]) as Point
-              )?.y || 0;
-            const isPositive = endRangeValue >= startRangeValue;
+              (data[startRangeIndex ?? 0] as Point)?.y || 0;
 
             const color = getChartColor({
               theme,
-              isPositive,
+              isPositive: endRangeValue >= startRangeValue,
               isHighlighted: false,
             });
 
@@ -363,11 +391,11 @@ export function AssetChart({
           beforeEvent: (chart, args) => {
             if (args.event.type === 'mousedown') {
               startRangeIndexRef.current =
-                chart.getActiveElements()[0]?.index ?? Infinity;
+                chart.getActiveElements()[0]?.index ?? null;
               startRangeXRef.current = args.event.x;
             }
             if (args.event.type === 'mouseup') {
-              startRangeIndexRef.current = Infinity;
+              startRangeIndexRef.current = null;
               startRangeXRef.current = null;
             }
           },
@@ -419,7 +447,7 @@ export function AssetChart({
   }
 
   return (
-    <div style={{ position: 'relative', height: 200 }}>
+    <div style={{ position: 'relative', height: CHART_HEIGHT }}>
       {maxChartPointValue != null ? (
         <UIText
           kind="caption/regular"

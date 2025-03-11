@@ -60,20 +60,30 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
 
   const handleRangeSelect = useCallback(
     ({
-      startRangeIndex = 0,
+      startRangeIndex,
       endRangeIndex,
     }: {
-      startRangeIndex?: number;
-      endRangeIndex: number;
+      startRangeIndex: number | null;
+      endRangeIndex: number | null;
     }) => {
       const startTimestamp =
-        chartPoints[startRangeIndex]?.[0] ?? chartPoints[0]?.[0];
-      const startPoint =
-        chartPoints[startRangeIndex]?.[1] ?? chartPoints[0]?.[1];
-      const value = chartPoints[endRangeIndex]?.[1] ?? asset.meta.price;
-      const timestamp = chartPoints[endRangeIndex]?.[0] ?? 0;
-      const localPriceChange = startPoint
-        ? ((value - startPoint) / startPoint) * 100
+        startRangeIndex != null
+          ? chartPoints[startRangeIndex]?.[0]
+          : chartPoints[0]?.[0];
+      const startValue =
+        startRangeIndex != null
+          ? chartPoints[startRangeIndex]?.[1]
+          : chartPoints[0]?.[1];
+
+      const value =
+        endRangeIndex != null
+          ? chartPoints[endRangeIndex]?.[1]
+          : asset.meta.price;
+      const timestamp =
+        endRangeIndex != null ? chartPoints[endRangeIndex]?.[0] : 0;
+
+      const localPriceChange = startValue
+        ? ((value - startValue) / startValue) * 100
         : 0;
       if (
         priceElementRef.current &&
@@ -110,7 +120,7 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
   );
 
   useEffect(() => {
-    handleRangeSelect({ endRangeIndex: chartPoints.length - 1 });
+    handleRangeSelect({ endRangeIndex: null, startRangeIndex: null });
   }, [chartPoints, handleRangeSelect]);
 
   return (
