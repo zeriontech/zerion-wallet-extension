@@ -173,9 +173,9 @@ function AssetHistoryItem({
             <Button
               kind="ghost"
               value="cancel"
-              size={40}
+              size={36}
               style={{
-                width: 40,
+                width: 36,
                 padding: 8,
                 position: 'absolute',
                 top: 16,
@@ -183,7 +183,7 @@ function AssetHistoryItem({
               }}
               onClick={handleDialogDismiss}
             >
-              <ArrowLeftIcon />
+              <ArrowLeftIcon style={{ width: 20, height: 20 }} />
             </Button>
             <ActionDetailedView
               action={action}
