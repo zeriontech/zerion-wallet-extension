@@ -741,12 +741,15 @@ export function AssetAddressStats({
         containerStyle={{ backgroundColor: 'var(--white)', padding: 0 }}
         renderWhenOpen={() => (
           <>
-            <div
+            <HStack
+              gap={0}
+              alignItems="center"
               style={{
                 position: 'sticky',
                 top: 0,
+                padding: '16px 8px 0',
                 zIndex: 1,
-                padding: 16,
+                gridTemplateColumns: '36px 1fr 36px',
                 backdropFilter: 'blur(8px)',
               }}
             >
@@ -754,20 +757,13 @@ export function AssetAddressStats({
                 kind="ghost"
                 value="cancel"
                 size={36}
-                style={{
-                  width: 36,
-                  padding: 8,
-                  position: 'absolute',
-                  top: 16,
-                  left: 8,
-                  zIndex: 2,
-                }}
+                style={{ width: 36, padding: 8 }}
                 onClick={() => dialogRef.current?.close()}
               >
                 <ArrowLeftIcon style={{ width: 20, height: 20 }} />
               </Button>
               <AssetHeader asset={asset} />
-            </div>
+            </HStack>
             <AssetAddressDetailsDialog
               address={wallet.address}
               assetFullInfo={assetFullInfo}
