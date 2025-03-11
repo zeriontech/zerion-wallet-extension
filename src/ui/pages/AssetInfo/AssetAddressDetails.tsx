@@ -483,7 +483,11 @@ const TextPreview = ({ text }: { text: string }) => {
   );
 };
 
-function AssetDescription({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
+export function AssetDescription({
+  assetFullInfo,
+}: {
+  assetFullInfo: AssetFullInfo;
+}) {
   return (
     <VStack gap={12}>
       <UIText kind="headline/h3">About {assetFullInfo.fungible.name}</UIText>
@@ -600,7 +604,8 @@ export function AssetAddressStats({
         style={{
           position: 'relative',
           border: '2px solid var(--neutral-200)',
-          borderRadius: 14,
+          borderRadius: 16,
+          overflow: 'hidden',
         }}
       >
         {isWatchedAddress ? (
@@ -610,8 +615,7 @@ export function AssetAddressStats({
             justifyContent="center"
             style={{
               backgroundColor: 'var(--neutral-200)',
-              borderRadius: '16px 16px 0 0',
-              padding: '4px 8px 6px',
+              padding: '3px 0 5px',
             }}
           >
             <EyeIcon
@@ -622,7 +626,7 @@ export function AssetAddressStats({
             </UIText>
           </HStack>
         ) : null}
-        <VStack gap={12} style={{ padding: 16 }}>
+        <VStack gap={12} style={{ padding: 14 }}>
           <UnstyledLink
             to="/wallet-select"
             title="Change Wallet"
@@ -684,7 +688,13 @@ export function AssetAddressStats({
                   )}
                 </UIText>
               </VStack>
-              <HStack gap={12} style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <HStack
+                gap={12}
+                style={{
+                  gridTemplateColumns: 'minmax(max-content, 1fr) 1fr',
+                }}
+                alignItems="start"
+              >
                 <VStack gap={4}>
                   <UIText kind="caption/regular" color="var(--neutral-500)">
                     Unrealised PnL
@@ -693,7 +703,7 @@ export function AssetAddressStats({
                     <LoadingSkeleton />
                   ) : (
                     <UIText
-                      kind="body/accent"
+                      kind="headline/h3"
                       color={getColor(unrealizedGainRaw)}
                     >
                       {unrealizedGainFormatted}
@@ -707,7 +717,7 @@ export function AssetAddressStats({
                   {isLoading ? (
                     <LoadingSkeleton />
                   ) : (
-                    <UIText kind="body/accent">
+                    <UIText kind="headline/h3">
                       {formatCurrencyValue(
                         pnlData?.data.bought || 0,
                         'en',

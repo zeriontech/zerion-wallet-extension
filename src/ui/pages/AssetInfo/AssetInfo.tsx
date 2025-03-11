@@ -28,7 +28,6 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
 import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
@@ -89,7 +88,11 @@ export function AssetPage() {
   invariant(asset_code, 'Asset Code is required');
 
   const { currency } = useCurrency();
-  const { data } = useAssetFullInfo({ currency, fungibleId: asset_code });
+  const { data: assetFullInfoData } = useAssetFullInfo({
+    currency,
+    fungibleId: asset_code,
+  });
+  const assetFullInfo = assetFullInfoData?.data;
   const { ready, singleAddress, singleAddressNormalized } = useAddressParams();
   const { data: portfolioData } = useWalletPortfolio(
     {
@@ -135,18 +138,9 @@ export function AssetPage() {
     ).chain;
   }, [walletData]);
 
-  const { data: chartData } = useAssetChart({
-    fungibleId: asset_code,
-    currency,
-    addresses: [],
-    period: '1d',
-  });
-
-  console.log(chartData);
-
   const bestChainForPurchase = useMemo(() => {
     const avaliableChains = Object.keys(
-      data?.data.fungible.implementations || {}
+      assetFullInfo?.fungible.implementations || {}
     );
     const chainPortfolioDistribution =
       portfolioData?.data?.positionsChainsDistribution;
@@ -160,9 +154,9 @@ export function AssetPage() {
           : acc,
       avaliableChains[0]
     );
-  }, [portfolioData, data]);
+  }, [portfolioData, assetFullInfo]);
 
-  if (!data?.data.fungible || !wallet || !walletData) {
+  if (!assetFullInfo?.fungible || !wallet || !walletData) {
     return (
       <>
         <NavigationTitle title={null} documentTitle={`${asset_code} - info`} />
@@ -179,7 +173,6 @@ export function AssetPage() {
     );
   }
 
-  const asset = data.data.fungible;
   const isWatchedAddress = isReadonlyAccount(wallet);
   const isEmptyBalance = walletData?.data.totalValue === 0;
 
@@ -190,29 +183,29 @@ export function AssetPage() {
   return (
     <PageColumn>
       <NavigationTitle
-        title={<AssetPageHeader asset={asset} />}
-        documentTitle={`${asset.name} - info`}
+        title={<AssetPageHeader asset={assetFullInfo.fungible} />}
+        documentTitle={`${assetFullInfo.fungible.name} - info`}
       />
       <PageTop />
       <VStack
         gap={24}
         style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
       >
-        <AssetTitleAndChart asset={asset} />
-        <AssetGlobalStats assetFullInfo={data.data} />
+        <AssetTitleAndChart asset={assetFullInfo.fungible} />
+        <AssetGlobalStats assetFullInfo={assetFullInfo} />
         <AssetAddressStats
           address={singleAddressNormalized}
           wallet={wallet}
-          assetFullInfo={data.data}
+          assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
         />
-        <AssetResources assetFullInfo={data.data} />
+        <AssetResources assetFullInfo={assetFullInfo} />
         <AssetHistory
           assetId={asset_code}
-          asset={asset}
+          assetFullInfo={assetFullInfo}
           address={singleAddressNormalized}
         />
-        <ReportAssetLink asset={asset} />
+        <ReportAssetLink asset={assetFullInfo.fungible} />
       </VStack>
       {isWatchedAddress ? null : (
         <StickyBottomPanel
