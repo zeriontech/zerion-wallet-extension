@@ -15,7 +15,7 @@ export function useWalletAssetDetails(
   } = {}
 ) {
   return useQuery({
-    queryKey: ['walletGetPnL', params, source],
+    queryKey: ['walletGetAssetDetails', params, source],
     queryFn: () => ZerionAPI.walletGetAssetDetails(params, { source }),
     suspense,
     enabled,
