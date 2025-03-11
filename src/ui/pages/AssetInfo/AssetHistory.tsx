@@ -124,11 +124,6 @@ function AssetHistoryItem({
 
   const actionTitle = `${actionType} at ${formattedPrice}`;
   const actionDatetime = dateFormatter.format(new Date(action.datetime));
-  const balanceColor = isIncoming
-    ? 'var(--positive-500)'
-    : action.type.value === 'trade'
-    ? 'var(--negative-500)'
-    : 'currentColor';
   const actionBalance = `${isIncoming ? '+' : minus}${formatTokenValue(
     normalizedQuantity,
     asset.symbol,
@@ -158,7 +153,10 @@ function AssetHistoryItem({
             </UIText>
           </VStack>
           <VStack gap={0} style={{ justifyItems: 'end' }}>
-            <UIText kind="body/regular" color={balanceColor}>
+            <UIText
+              kind="body/regular"
+              color={isIncoming ? 'var(--positive-500)' : 'currentColor'}
+            >
               {actionBalance}
             </UIText>
             <UIText kind="small/regular" color="var(--neutral-500)">
