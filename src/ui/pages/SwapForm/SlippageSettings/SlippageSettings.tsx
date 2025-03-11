@@ -143,7 +143,11 @@ export function SlippageSettings({
   onConfigurationChange: (value: CustomConfiguration) => void;
 }) {
   const { slippage: userSlippage } = configuration;
-  const { slippagePercent, options: slippageOptions } = getSlippageOptions({
+  const {
+    slippagePercent,
+    default: defaultSlippagePercent,
+    options: slippageOptions,
+  } = getSlippageOptions({
     chain,
     userSlippage,
   });
@@ -243,7 +247,7 @@ export function SlippageSettings({
           type="button"
           onClick={() => {
             setIsCustomValue(false);
-            setPercentValue(String(slippagePercent));
+            setPercentValue(String(defaultSlippagePercent));
           }}
         >
           Reset
