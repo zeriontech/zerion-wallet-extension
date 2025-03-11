@@ -1,16 +1,19 @@
 import omit from 'lodash/omit';
-import type { Account } from 'src/background/account/Account';
+import { LoginActivity, type Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
 import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
+import { estimateSessionExpiry } from 'src/background/user-activity';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
   isPrivateKeyContainer,
 } from '../types/validators';
 import { getError } from '../errors/getError';
+import { runtimeStore } from '../core/runtime-store';
+import { productionVersion } from '../packageVersion';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -329,6 +332,51 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('eip6963SupportDetected', ({ origin }) => {
     eip6963Dapps.add(origin);
+  });
+
+  emitter.on('backgroundScriptInitialized', async () => {
+    // We want to check whether background script got restarted in a way
+    // that has led to an unexpected logout.
+    // The browser restart is considered an expected logout.
+    const { startupEvent, installedEvent } = runtimeStore.getState();
+
+    const isIntentionalBrowserRestart = Boolean(startupEvent);
+
+    const likelyReason = installedEvent
+      ? installedEvent.reason
+      : isIntentionalBrowserRestart
+      ? 'browser restart'
+      : 're-enabled by user';
+
+    if (isIntentionalBrowserRestart) {
+      return;
+    }
+    const hasExistingUser = await account.hasExistingUser();
+    const didNotOnboardYet = !hasExistingUser;
+    const isAuthenticated = account.isAuthenticated();
+    const { loggedInAt } = await LoginActivity.getState();
+    const didLogoutIntentionally = loggedInAt == null;
+
+    if (didNotOnboardYet || isAuthenticated || didLogoutIntentionally) {
+      return;
+    }
+
+    const sessionExpiry = await estimateSessionExpiry();
+
+    /** We want to use this only if it differs from current version */
+    const prevVersion = installedEvent?.previousVersion;
+    const fromVersion =
+      prevVersion && prevVersion !== productionVersion ? prevVersion : null;
+
+    const params = createParams({
+      request_name: 'background_script_reloaded',
+      time_to_expiry: sessionExpiry.timeToExpiry,
+      is_update_from_version: fromVersion,
+      likely_reason: likelyReason,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    const event = 'General: Background Script Reloaded';
+    mixpanelTrack(account, event, mixpanelParams);
   });
 
   dnaServiceEmitter.on('registerError', async (error, action) => {

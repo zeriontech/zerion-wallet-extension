@@ -1,4 +1,4 @@
-import * as browserStorage from 'src/background/webapis/storage';
+import { BrowserStorage } from 'src/background/webapis/storage';
 import { Store } from 'store-unit';
 
 export enum Loglevel {
@@ -11,12 +11,12 @@ const loglevelState = new Store<{ level: Loglevel }>({ level: Loglevel.none });
 
 const STORAGE_KEY = 'LOGLEVEL';
 
-browserStorage.get<Loglevel>(STORAGE_KEY).then((v) => {
+BrowserStorage.get<Loglevel>(STORAGE_KEY).then((v) => {
   loglevelState.setState({ level: v ?? Loglevel.none });
 });
 
 loglevelState.on('change', (state) => {
-  browserStorage.set(STORAGE_KEY, state.level);
+  BrowserStorage.set(STORAGE_KEY, state.level);
 });
 
 async function setLoglevel(flag: Loglevel) {

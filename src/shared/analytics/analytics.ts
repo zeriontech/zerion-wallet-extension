@@ -17,6 +17,7 @@ type MetabaseEvent =
   | 'loader_screen_view'
   | 'eip_6963_support'
   | 'add_wallet'
+  | 'background_script_reloaded'
   | 'hold_to_sign_prerefence';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };

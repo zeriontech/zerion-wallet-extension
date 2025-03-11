@@ -7,6 +7,7 @@ import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
 import { UrlContextParam } from 'src/shared/types/UrlContext';
 import { initializeSidepanel } from 'src/shared/sidepanel/initialize.background';
+import { runtimeStore } from 'src/shared/core/runtime-store';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -124,9 +125,15 @@ browser.alarms.onAlarm.addListener(ContentScriptManager.handleAlarm);
 browser.alarms.onAlarm.addListener(TransactionService.handleAlarm);
 
 console.time('bg initialize'); // eslint-disable-line no-console
+
+browser.runtime.onStartup.addListener(() => {
+  runtimeStore.handleStartupEvent();
+});
+
 initialize().then((values) => {
-  const { account, accountPublicRPC, dnaService, notificationWindow } = values;
   console.timeEnd('bg initialize'); // eslint-disable-line no-console
+  const { account, accountPublicRPC, dnaService, notificationWindow } = values;
+  emitter.emit('backgroundScriptInitialized');
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
   const memoryCacheRPC = new MemoryCacheRPC();
@@ -202,7 +209,8 @@ initialize().then((values) => {
   userActivity.expireSessionIfNeeded();
 });
 
-browser.runtime.onInstalled.addListener(({ reason }) => {
+browser.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
+  runtimeStore.handleInstalledEvent({ reason, previousVersion });
   if (reason === 'install') {
     userLifecycleStore.handleRuntimeInstalledEvent();
     openOnboarding();

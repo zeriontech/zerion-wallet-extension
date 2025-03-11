@@ -1,4 +1,4 @@
-import { get } from 'src/background/webapis/storage';
+import { BrowserStorage } from 'src/background/webapis/storage';
 import { dataToModel } from 'src/modules/ethereum/transactions/model';
 import type { StoredTransactions } from 'src/modules/ethereum/transactions/types';
 import { Store } from 'store-unit';
@@ -11,9 +11,8 @@ class LocalTransactionsStore extends Store<StoredTransactions> {
   }
 
   async init() {
-    const transactions: StoredTransactions | undefined = await get(
-      'transactions'
-    );
+    const transactions: StoredTransactions | undefined =
+      await BrowserStorage.get('transactions');
     if (transactions) {
       this.setState(dataToModel(transactions));
     }

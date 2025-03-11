@@ -1,29 +1,30 @@
 import browser from 'webextension-polyfill';
-import { get, set } from 'src/background/webapis/storage';
+import { BrowserStorage } from 'src/background/webapis/storage';
 
 const STORAGE_VERSION = 0.3;
 
 async function getCurrentVersion() {
-  const saved = await get<number | string>('STORAGE_VERSION');
+  const saved = await BrowserStorage.get<number | string>('STORAGE_VERSION');
   return saved ?? 'no-version';
 }
 
 const upgrades: Record<string | number, () => Promise<void>> = {
   'no-version': async () => {
-    await set('STORAGE_VERSION', 'no-version');
+    await BrowserStorage.set('STORAGE_VERSION', 'no-version');
     // A strategy to wait for some event is possible here,
     // e.g. we could wait for an update to STORAGE_VERSION storage key
     // and then continue
   },
 };
 
-const checkExisingData = async () => Boolean(await get('currentUser'));
+const checkExisingData = async () =>
+  Boolean(await BrowserStorage.get('currentUser'));
 
 export async function prepareStorage() {
   const hasSomeData = await checkExisingData();
   const storageVersion = await getCurrentVersion();
   if (!hasSomeData) {
-    set('STORAGE_VERSION', STORAGE_VERSION);
+    BrowserStorage.set('STORAGE_VERSION', STORAGE_VERSION);
     return;
   } else if (storageVersion !== STORAGE_VERSION) {
     if (storageVersion in upgrades) {
@@ -53,5 +54,5 @@ export async function checkVersion() {
 
 export async function eraseAndUpdateToLatestVersion() {
   await browser.storage.local.clear();
-  await set('STORAGE_VERSION', STORAGE_VERSION);
+  await BrowserStorage.set('STORAGE_VERSION', STORAGE_VERSION);
 }

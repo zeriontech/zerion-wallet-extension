@@ -3,7 +3,7 @@ import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import { createSalt, createCryptoKey } from 'src/modules/crypto';
 import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
-import * as browserStorage from 'src/background/webapis/storage';
+import { BrowserStorage, SessionStorage } from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
 import { currentUserKey } from 'src/shared/getCurrentUser';
@@ -34,6 +34,21 @@ class EventEmitter<Events extends EventsMap> {
 
 type AccountEvents = { reset: () => void; authenticated: () => void };
 
+export class LoginActivity {
+  static async recordLogin() {
+    await BrowserStorage.set('loggedInAt', Date.now());
+  }
+
+  static async recordLogout() {
+    await BrowserStorage.set('loggedInAt', null);
+  }
+
+  static async getState() {
+    const loggedInAt = await BrowserStorage.get<number | null>('loggedInAt');
+    return { loggedInAt };
+  }
+}
+
 interface Credentials {
   encryptionKey: string;
 }
@@ -46,27 +61,29 @@ export class Account extends EventEmitter<AccountEvents> {
   isPendingNewUser: boolean;
 
   private static async writeCurrentUser(user: User) {
-    await browserStorage.set(currentUserKey, user);
-  }
-
-  private static async writeCredentials(credentials: Credentials) {
-    await browserStorage.set(credentialsKey, credentials);
-  }
-
-  private static async readCredentials() {
-    return await browserStorage.get<Credentials>(credentialsKey);
-  }
-
-  private static async removeCredentials() {
-    return await browserStorage.remove(credentialsKey);
+    await BrowserStorage.set(currentUserKey, user);
   }
 
   static async readCurrentUser() {
-    return browserStorage.get<User>(currentUserKey);
+    return BrowserStorage.get<User>(currentUserKey);
   }
 
   private static async removeCurrentUser() {
-    await browserStorage.remove(currentUserKey);
+    await BrowserStorage.remove(currentUserKey);
+  }
+
+  private static async writeCredentials(credentials: Credentials) {
+    await SessionStorage.set(credentialsKey, credentials);
+    await LoginActivity.recordLogin();
+  }
+
+  private static async readCredentials() {
+    return await SessionStorage.get<Credentials>(credentialsKey);
+  }
+
+  private static async removeCredentials() {
+    await SessionStorage.remove(credentialsKey);
+    await LoginActivity.recordLogout();
   }
 
   static async ensureUserAndWallet() {
@@ -150,6 +167,16 @@ export class Account extends EventEmitter<AccountEvents> {
       throw new Error('Incorrect password');
     }
     await this.setUser(user, { password }, { isNewUser: false });
+  }
+
+  isAuthenticated(): boolean {
+    return this.getUser() != null;
+  }
+
+  /** Method to check that user exists, meaning onboarding has been completed */
+  async hasExistingUser(): Promise<boolean> {
+    const user = await Account.readCurrentUser();
+    return Boolean(user);
   }
 
   async setUser(
@@ -261,7 +288,7 @@ export class AccountPublicRPC {
   }
 
   async isAuthenticated() {
-    return this.account.getUser() != null;
+    return this.account.isAuthenticated();
   }
 
   async getExistingUser(): Promise<PublicUser | null> {

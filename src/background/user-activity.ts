@@ -1,17 +1,17 @@
 import browser from 'webextension-polyfill';
-import * as browserStorage from 'src/background/webapis/storage';
+import { BrowserStorage } from 'src/background/webapis/storage';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { emitter } from './events';
 import { globalPreferences } from './Wallet/GlobalPreferences';
 
 export function trackLastActive() {
   emitter.on('userActivity', () => {
-    browserStorage.set('lastActive', Date.now());
+    BrowserStorage.set('lastActive', Date.now());
   });
 }
 
 async function getLastActive() {
-  return await browserStorage.get<number>('lastActive');
+  return await BrowserStorage.get<number>('lastActive');
 }
 
 export function scheduleAlarms() {
@@ -34,13 +34,24 @@ async function getIdleTimeout() {
   return preferences.autoLockTimeout;
 }
 
-export async function expireSessionIfNeeded() {
+export async function estimateSessionExpiry(): Promise<{
+  autoLockTimeout: number | 'none';
+  shouldExpire: boolean;
+  timeToExpiry: number;
+}> {
   const lastActive = await getLastActive();
   const autoLockTimeout = await getIdleTimeout();
-  if (autoLockTimeout === 'none') {
-    return;
+  if (autoLockTimeout !== 'none' && lastActive != null) {
+    const timeToExpiry = autoLockTimeout - (Date.now() - lastActive);
+    return { autoLockTimeout, shouldExpire: timeToExpiry < 0, timeToExpiry };
+  } else {
+    return { autoLockTimeout, shouldExpire: false, timeToExpiry: Infinity };
   }
-  if (lastActive && Date.now() - lastActive > autoLockTimeout) {
+}
+
+export async function expireSessionIfNeeded() {
+  const { shouldExpire } = await estimateSessionExpiry();
+  if (shouldExpire) {
     emitter.emit('sessionExpired');
   }
 }
