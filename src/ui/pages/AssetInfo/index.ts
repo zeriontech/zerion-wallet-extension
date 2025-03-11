@@ -1,1 +1,1 @@
-export { AssetPage } from './AssetInfo';
+export { AssetInfo } from './AssetInfo';
