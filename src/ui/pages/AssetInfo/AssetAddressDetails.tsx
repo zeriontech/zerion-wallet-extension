@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -33,11 +33,11 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import * as styles from 'src/ui/style/helpers.module.css';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { AssetHeader } from './AssetHeader';
 import { getColor, getSign } from './helpers';
+import { TextPreview } from './TextPreview';
 
 function Line() {
   return (
@@ -410,67 +410,6 @@ function AssetAppDistribution({
     </VStack>
   );
 }
-
-/**
- * Took this component from Web App
- * https://github.com/zeriontech/pulse-frontend/blob/master/src/z/dumb/TextPreview/index.tsx
- */
-const TextPreview = ({ text }: { text: string }) => {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [isClamped, setIsClamped] = useState<false | true | undefined>(
-    undefined
-  );
-  // on Safari line-camp works correctly only with inline elements inside
-  const paragraphs = text.split(/(\r?\n|\r)+/g);
-  const markup: React.ReactNode[] = [];
-  paragraphs.forEach((block, index, array) => {
-    markup.push(<span key={index}>{block}</span>);
-    markup.push(<br key={array.length + index} />);
-  });
-
-  useEffect(() => {
-    if (ref.current) {
-      if (ref.current.scrollHeight > ref.current.clientHeight) {
-        setIsClamped(true);
-      }
-    }
-  }, []);
-
-  return (
-    <div>
-      <UIText
-        as="p"
-        kind="body/regular"
-        style={
-          isClamped ?? true
-            ? {
-                display: '-webkit-box',
-                WebkitLineClamp: 4,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                wordBreak: 'break-word',
-              }
-            : { wordBreak: 'break-word' }
-        }
-        ref={ref}
-      >
-        {markup}
-      </UIText>
-      {isClamped && (
-        <UnstyledButton
-          onClick={() => setIsClamped(false)}
-          style={{ color: 'var(--primary)' }}
-          className={styles.hoverUnderline}
-        >
-          <UIText style={{ cursor: 'pointer' }} kind="body/regular">
-            See more
-          </UIText>
-        </UnstyledButton>
-      )}
-    </div>
-  );
-};
 
 export function AssetDescription({
   assetFullInfo,
