@@ -140,24 +140,6 @@ export function AssetInfo() {
     ).chain;
   }, [walletData]);
 
-  const bestChainForPurchase = useMemo(() => {
-    const avaliableChains = Object.keys(
-      assetFullInfo?.fungible.implementations || {}
-    );
-    const chainPortfolioDistribution =
-      portfolioData?.data?.positionsChainsDistribution;
-    if (!chainPortfolioDistribution || !avaliableChains.length) {
-      return NetworkId.Zero;
-    }
-    return avaliableChains.reduce(
-      (acc, chain) =>
-        chainPortfolioDistribution[chain] > chainPortfolioDistribution[acc]
-          ? chain
-          : acc,
-      avaliableChains[0]
-    );
-  }, [portfolioData, assetFullInfo]);
-
   if (!assetFullInfo?.fungible || !wallet || !walletData) {
     return (
       <>
@@ -173,7 +155,7 @@ export function AssetInfo() {
   const isEmptyBalance = walletData?.data.totalValue === 0;
 
   const chainForSwap = isEmptyBalance
-    ? bestChainForPurchase
+    ? assetFullInfo.extra.mainChain
     : chainWithTheBiggestBalance;
 
   return (
