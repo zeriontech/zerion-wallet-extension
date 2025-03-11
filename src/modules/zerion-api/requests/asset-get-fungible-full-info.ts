@@ -45,6 +45,7 @@ export interface AssetFullInfo {
     top10: null;
     volume24h: null;
     relevantResources: AssetResource[];
+    mainChain: string;
   };
   fungible: Asset;
 }

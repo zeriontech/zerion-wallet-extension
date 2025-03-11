@@ -25,7 +25,6 @@ import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import XIcon from 'jsx:src/ui/assets/x-logo.svg';
 import WarpcastIcon from 'jsx:src/ui/assets/warpcast-logo.svg';
 import DexscreenerIcon from 'jsx:src/ui/assets/dexscreener-logo.svg';
-import { NetworkId } from 'src/modules/networks/NetworkId';
 
 function AssetImplementationButton({
   network,
@@ -268,10 +267,11 @@ export function AssetResources({
   const mainImplementation = useMemo(() => {
     return (
       implementations.find(
-        (implementation) => implementation.network.id === NetworkId.Ethereum
+        (implementation) =>
+          implementation.network.id === assetFullInfo.extra.mainChain
       ) || implementations[0]
     );
-  }, [implementations]);
+  }, [implementations, assetFullInfo.extra.mainChain]);
 
   const resourcesById = useMemo(() => {
     return assetFullInfo.extra.relevantResources.reduce((acc, resource) => {
