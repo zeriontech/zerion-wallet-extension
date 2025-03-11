@@ -88,10 +88,10 @@ export function AssetPage() {
   invariant(asset_code, 'Asset Code is required');
 
   const { currency } = useCurrency();
-  const { data: assetFullInfoData } = useAssetFullInfo({
-    currency,
-    fungibleId: asset_code,
-  });
+  const { data: assetFullInfoData } = useAssetFullInfo(
+    { currency, fungibleId: asset_code },
+    { source: useHttpClientSource() }
+  );
   const assetFullInfo = assetFullInfoData?.data;
   const { ready, singleAddress, singleAddressNormalized } = useAddressParams();
   const { data: portfolioData } = useWalletPortfolio(
@@ -110,6 +110,7 @@ export function AssetPage() {
       groupBy: ['by-app'],
       addresses: [singleAddressNormalized],
     },
+    { source: useHttpClientSource() },
     { enabled: ready }
   );
 

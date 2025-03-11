@@ -34,7 +34,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import * as styles from 'src/ui/style/helpers.module.css';
-import { useAssetAddressPnl } from 'src/modules/zerion-api/hooks/useAssetAddressPnl';
+import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { AssetHeader } from './AssetHeader';
 
@@ -576,11 +576,14 @@ export function AssetAddressStats({
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
-  const { data: pnlData, isLoading } = useAssetAddressPnl({
-    addresses: [address],
-    fungibleId: assetFullInfo.fungible.id,
-    currency,
-  });
+  const { data: pnlData, isLoading } = useWalletAssetPnl(
+    {
+      addresses: [address],
+      fungibleId: assetFullInfo.fungible.id,
+      currency,
+    },
+    { source: useHttpClientSource() }
+  );
   const asset = assetFullInfo.fungible;
 
   const isWatchedAddress = isReadonlyAccount(wallet);
@@ -658,7 +661,7 @@ export function AssetAddressStats({
               />
             </HStack>
           </UnstyledLink>
-          {walletAssetDetails.totalValue === 0 ? (
+          {walletAssetDetails.totalConvertedQuantity === 0 ? (
             <>
               {pnlData?.data.bought === 0 ? null : (
                 <UIText kind="headline/h2" color="var(--neutral-500)">
@@ -688,45 +691,47 @@ export function AssetAddressStats({
                   )}
                 </UIText>
               </VStack>
-              <HStack
-                gap={12}
-                style={{
-                  gridTemplateColumns: 'minmax(max-content, 1fr) 1fr',
-                }}
-                alignItems="start"
-              >
-                <VStack gap={4}>
-                  <UIText kind="caption/regular" color="var(--neutral-500)">
-                    Unrealised PnL
-                  </UIText>
-                  {isLoading ? (
-                    <LoadingSkeleton />
-                  ) : (
-                    <UIText
-                      kind="headline/h3"
-                      color={getColor(unrealizedGainRaw)}
-                    >
-                      {unrealizedGainFormatted}
+              {walletAssetDetails.totalValue ? (
+                <HStack
+                  gap={12}
+                  style={{
+                    gridTemplateColumns: 'minmax(max-content, 1fr) 1fr',
+                  }}
+                  alignItems="start"
+                >
+                  <VStack gap={4}>
+                    <UIText kind="caption/regular" color="var(--neutral-500)">
+                      Unrealised PnL
                     </UIText>
-                  )}
-                </VStack>
-                <VStack gap={4}>
-                  <UIText kind="caption/regular" color="var(--neutral-500)">
-                    Invested
-                  </UIText>
-                  {isLoading ? (
-                    <LoadingSkeleton />
-                  ) : (
-                    <UIText kind="headline/h3">
-                      {formatCurrencyValue(
-                        pnlData?.data.bought || 0,
-                        'en',
-                        currency
-                      )}
+                    {isLoading ? (
+                      <LoadingSkeleton />
+                    ) : (
+                      <UIText
+                        kind="headline/h3"
+                        color={getColor(unrealizedGainRaw)}
+                      >
+                        {unrealizedGainFormatted}
+                      </UIText>
+                    )}
+                  </VStack>
+                  <VStack gap={4}>
+                    <UIText kind="caption/regular" color="var(--neutral-500)">
+                      Invested
                     </UIText>
-                  )}
-                </VStack>
-              </HStack>
+                    {isLoading ? (
+                      <LoadingSkeleton />
+                    ) : (
+                      <UIText kind="headline/h3">
+                        {formatCurrencyValue(
+                          pnlData?.data.bought || 0,
+                          'en',
+                          currency
+                        )}
+                      </UIText>
+                    )}
+                  </VStack>
+                </HStack>
+              ) : null}
               <Button
                 kind="neutral"
                 size={48}
