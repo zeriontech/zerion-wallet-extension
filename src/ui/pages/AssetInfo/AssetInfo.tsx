@@ -37,6 +37,7 @@ import { AssetResources } from './AssetResources';
 import { AssetHeader } from './AssetHeader';
 
 const SCROLL_THRESHOLD = 80;
+const SHOW_BRIDGE_BUTTON = false; // TODO: make true after bridge is implemented
 
 function AssetPageHeader({ asset }: { asset: Asset }) {
   const [showTokenInfoInHeader, setShowTokenInfoInHeader] = useState(false);
@@ -241,14 +242,16 @@ export function AssetInfo() {
                 >
                   <SendIcon style={{ width: 20, height: 20 }} />
                 </Button>
-                <Button
-                  kind="primary"
-                  size={48}
-                  style={{ padding: 14 }}
-                  aria-label="Bridge Token"
-                >
-                  <BridgeIcon style={{ width: 20, height: 20 }} />
-                </Button>
+                {SHOW_BRIDGE_BUTTON ? (
+                  <Button
+                    kind="primary"
+                    size={48}
+                    style={{ padding: 14 }}
+                    aria-label="Bridge Token"
+                  >
+                    <BridgeIcon style={{ width: 20, height: 20 }} />
+                  </Button>
+                ) : null}
               </>
             )}
           </HStack>
