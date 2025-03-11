@@ -8,22 +8,36 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import type { Chain } from 'src/modules/networks/Chain';
+import { getSlippageOptions } from './getSlippageOptions';
 
 const HIGH_SLIPPAGE_THRESHOLD = 0.01; // 1%
 
-export function SlippageLine({ swapView }: { swapView: SwapFormView }) {
+export function SlippageLine({
+  chain,
+  swapView,
+}: {
+  chain: Chain;
+  swapView: SwapFormView;
+}) {
   const { currency } = useCurrency();
   const { receiveInput } = useSelectorStore(swapView.store, ['receiveInput']);
-  const { slippage } = useSelectorStore(swapView.store.configuration, [
-    'slippage',
-  ]);
+  const { slippage: userSlippage } = useSelectorStore(
+    swapView.store.configuration,
+    ['slippage']
+  );
+
+  const { slippage } = getSlippageOptions({
+    chain,
+    userSlippage,
+  });
 
   const price = swapView.receiveAsset?.price?.value || 0;
   const fiatValue = new BigNumber(receiveInput || 0)
     .times(price)
     .times(1 - slippage);
 
-  return slippage >= HIGH_SLIPPAGE_THRESHOLD ? (
+  return slippage > HIGH_SLIPPAGE_THRESHOLD ? (
     <VStack gap={8}>
       <HStack gap={8} justifyContent="space-between">
         <UIText kind="small/regular" color="var(--neutral-700)">

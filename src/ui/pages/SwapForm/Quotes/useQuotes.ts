@@ -13,6 +13,7 @@ import { isNumeric } from 'src/shared/isNumeric';
 import type { Quote, TransactionDescription } from 'src/shared/types/Quote';
 import { createUrl } from 'src/shared/createUrl';
 import { invariant } from 'src/shared/invariant';
+import { getSlippageOptions } from '../SlippageSettings/getSlippageOptions';
 import { useEventSource } from './useEventSource';
 
 export interface QuotesData {
@@ -56,7 +57,8 @@ export function useQuotes({
     'spendInput',
     'receiveInput',
   ]);
-  const { slippage } = useStore(swapView.store.configuration);
+  const { slippage: userSlippage } = useStore(swapView.store.configuration);
+
   const [refetchHash, setRefetchHash] = useState(0);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
 
@@ -92,12 +94,15 @@ export function useQuotes({
         value,
         getDecimals({ asset: position.asset, chain })
       ).toFixed();
+
+      const { slippagePercent } = getSlippageOptions({ chain, userSlippage });
+
       const searchParams = new URLSearchParams({
         from: address,
         input_token: spendTokenInput,
         output_token: receiveTokenInput,
         input_chain: chainInput,
-        slippage: String(Number(slippage) * 100),
+        slippage: String(slippagePercent),
       });
       if (primaryInput === 'receive') {
         searchParams.append('output_amount', valueBase);
@@ -125,7 +130,7 @@ export function useQuotes({
     receiveTokenInput,
     chainInput,
     address,
-    slippage,
+    userSlippage,
   ]);
 
   const { value, isLoading, error, done } = useEventSource<Quote[]>(

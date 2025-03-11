@@ -620,28 +620,32 @@ export function SwapFormComponent() {
         ref={slippageDialogRef}
         height="360px"
         containerStyle={{ display: 'flex', flexDirection: 'column' }}
-        renderWhenOpen={() => (
-          <>
-            <DialogTitle
-              alignTitle="start"
-              closeKind="icon"
-              title={<UIText kind="headline/h3">Slippage</UIText>}
-            />
-            <Spacer height={24} />
-            <StoreWatcher
-              store={swapView.store.configuration}
-              render={(configuration) => (
-                <SlippageSettings
-                  configuration={configuration}
-                  onConfigurationChange={(value) => {
-                    swapView.store.configuration.setState(value);
-                    slippageDialogRef.current?.close();
-                  }}
-                />
-              )}
-            />
-          </>
-        )}
+        renderWhenOpen={() => {
+          invariant(chain, 'Chain must be defined');
+          return (
+            <>
+              <DialogTitle
+                alignTitle="start"
+                closeKind="icon"
+                title={<UIText kind="headline/h3">Slippage</UIText>}
+              />
+              <Spacer height={24} />
+              <StoreWatcher
+                store={swapView.store.configuration}
+                render={(configuration) => (
+                  <SlippageSettings
+                    chain={chain}
+                    configuration={configuration}
+                    onConfigurationChange={(value) => {
+                      swapView.store.configuration.setState(value);
+                      slippageDialogRef.current?.close();
+                    }}
+                  />
+                )}
+              />
+            </>
+          );
+        }}
       />
 
       <BottomSheetDialog
@@ -804,7 +808,7 @@ export function SwapFormComponent() {
           }
         >
           <RateLine swapView={swapView} quotesData={quotesData} />
-          <SlippageLine swapView={swapView} />
+          {chain ? <SlippageLine chain={chain} swapView={swapView} /> : null}
           {currentTransaction && chain && currentTransaction.gasLimit ? (
             <React.Suspense
               fallback={

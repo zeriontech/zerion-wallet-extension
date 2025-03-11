@@ -6,7 +6,7 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
 
 export const DEFAULT_CONFIGURATION: CustomConfiguration = {
-  slippage: 0.005,
+  slippage: null,
   nonce: null,
   networkFee: {
     speed: 'fast',
