@@ -4,26 +4,27 @@ import type {
   ComponentPropsWithoutRef,
   ElementType,
 } from 'react';
+import cn from 'classnames';
+import * as styles from './styles.module.css';
 
 const FrameElement = <As extends ElementType = 'div'>(
   {
     as,
-    style,
+    className,
+    interactiveStyles = false,
     ...props
-  }: { as?: As } & ComponentPropsWithoutRef<As> & {
+  }: { as?: As; interactiveStyles?: boolean } & ComponentPropsWithoutRef<As> & {
       ref?: ComponentPropsWithRef<As>['ref'];
     },
   ref: React.Ref<ComponentPropsWithRef<As>['ref']>
 ) => {
   return React.createElement(as || 'div', {
     ref,
-    style: {
-      backgroundColor: 'var(--frame-background-color)',
-      border: '2px solid var(--frame-border-color, var(--neutral-200))',
-      borderRadius: 16,
-      padding: 8,
-      ...style,
-    },
+    className: cn(
+      className,
+      styles.frame,
+      interactiveStyles ? styles.interactive : null
+    ),
     ...props,
   });
 };

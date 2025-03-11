@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
@@ -8,7 +8,6 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Media } from 'src/ui/ui-kit/Media';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -54,9 +53,12 @@ import { invariant } from 'src/shared/invariant';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { emitter } from 'src/ui/shared/events';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
+import type { PopoverToastHandle } from './PopoverToast';
+import { PopoverToast } from './PopoverToast';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
@@ -323,20 +325,50 @@ function ToggleSettingLine({
 }) {
   return (
     <HStack gap={4} justifyContent="space-between" style={{ padding: 12 }}>
-      <Media
-        image={null}
-        text={<UIText kind="body/accent">{text}</UIText>}
-        vGap={0}
-        detailText={
-          detailText ? (
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {detailText}
-            </UIText>
-          ) : null
-        }
-      />
+      <VStack gap={0}>
+        <UIText kind="body/accent">{text}</UIText>
+        {detailText ? (
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            {detailText}
+          </UIText>
+        ) : null}
+      </VStack>
       <Toggle checked={checked} onChange={onChange} />
     </HStack>
+  );
+}
+
+function ClearPendingTransactionsLine() {
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const { mutate: clearPendingTransactions, ...mutation } = useMutation({
+    mutationFn: async () => {
+      await new Promise((r) => setTimeout(r, 500)); // artificial delay
+      toastRef.current?.removeToast();
+      return walletPort.request('clearPendingTransactions');
+    },
+    onSuccess: () => {
+      toastRef.current?.showToast();
+    },
+  });
+  return (
+    <>
+      <PopoverToast ref={toastRef}>Pending transactions cleared</PopoverToast>
+
+      <Frame
+        as={UnstyledButton}
+        interactiveStyles={true}
+        onClick={() => clearPendingTransactions()}
+        disabled={mutation.isLoading}
+        style={{ padding: 20, textAlign: 'start' }}
+      >
+        <VStack gap={0}>
+          <UIText kind="body/accent">Clear Pending Transactions</UIText>
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            This can fix stuck transactions
+          </UIText>
+        </VStack>
+      </Frame>
+    </>
   );
 }
 
@@ -411,6 +443,7 @@ function DeveloperTools() {
             }
           />
         </Frame>
+        <ClearPendingTransactionsLine />
       </VStack>
       <PageBottom />
     </PageColumn>

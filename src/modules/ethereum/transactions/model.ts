@@ -5,8 +5,12 @@ export function dataToModel(transactions: StoredTransactions) {
   return sortBy(transactions, (item) => item.timestamp ?? Infinity).reverse();
 }
 
+export function isPendingTransaction(item: TransactionObject): boolean {
+  return !item.receipt && !item.dropped;
+}
+
 export function getPendingTransactions(transactions: StoredTransactions) {
-  return transactions.filter((t) => !t.receipt && !t.dropped);
+  return transactions.filter((t) => isPendingTransaction(t));
 }
 
 export function getTransactionStatus(

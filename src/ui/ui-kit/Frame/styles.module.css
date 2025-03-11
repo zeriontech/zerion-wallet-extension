@@ -1,0 +1,16 @@
+.frame {
+  background-color: var(--frame-background-color);
+  border: 2px solid var(--frame-border-color, var(--neutral-200));
+  border-radius: 16px;
+  padding: 6px;
+}
+
+@media (hover: hover) {
+  .interactive:enabled:hover {
+    background-color: var(--neutral-100);
+  }
+}
+
+.interactive:disabled {
+  opacity: 0.6;
+}
