@@ -5,6 +5,8 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { equal } from 'src/modules/fast-deep-equal';
+import { Theme, themeStore } from 'src/ui/features/appearance';
+import { useStore } from '@store-unit/react';
 
 const CHART_ANIMATION_DURATION = 500;
 const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
@@ -20,6 +22,9 @@ const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
     transitions: {
       show: {
         animations: {
+          y: {
+            from: 200,
+          },
           colors: {
             type: 'color',
             from: 'transparent',
@@ -73,7 +78,6 @@ const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
       line: {
         borderWidth: 2,
         cubicInterpolationMode: 'monotone',
-        borderColor: 'green',
         spanGaps: true,
       },
     },
@@ -82,6 +86,32 @@ const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
 
 function toScatterData(points: [number, number][]) {
   return points.map(([x, y]) => ({ x, y }));
+}
+
+function getChartColor({
+  theme,
+  isPositive,
+  isHighlighted,
+}: {
+  theme: Theme;
+  isPositive: boolean;
+  isHighlighted: boolean;
+}) {
+  return isPositive
+    ? theme === Theme.light
+      ? isHighlighted
+        ? '#99dbb4'
+        : '#01a643'
+      : isHighlighted
+      ? '#2d4435'
+      : '#4fbf67'
+    : theme === Theme.light
+    ? isHighlighted
+      ? '#ffd0c9'
+      : '#ff4a4a'
+    : isHighlighted
+    ? '#8a393b'
+    : '#ff5c5c';
 }
 
 function getYLimits(points: [number, number][]) {
@@ -99,29 +129,44 @@ function updateChartPoints({
   chart,
   prevPoints,
   nextPoints,
+  theme,
 }: {
   chart: Chart;
   prevPoints: [number, number][];
   nextPoints: [number, number][];
+  theme: Theme;
 }) {
   const { min: prevYMin, max: prevYMax } = getYLimits(prevPoints);
   const { min: nextYMin, max: nextYMax } = getYLimits(nextPoints);
 
   chart.data.datasets[0].data = toScatterData(nextPoints);
-  chart.data.datasets[1] = {
-    data: toScatterData(prevPoints),
-    borderColor:
-      prevPoints[0]?.[1] <= (prevPoints.at(-1)?.[1] || 0) ? 'green' : 'red',
-  };
-  chart.options.scales = {
-    x: {
-      display: false,
-      min: prevPoints[0]?.[0],
-      max: prevPoints.at(-1)?.[0],
-    },
-    y: { display: false, min: prevYMin, max: prevYMax },
-  };
-  chart.update('none');
+
+  if (prevPoints.length) {
+    chart.data.datasets[1] = {
+      data: toScatterData(prevPoints),
+      borderColor: getChartColor({
+        theme,
+        isPositive: prevPoints[0]?.[1] <= (prevPoints.at(-1)?.[1] || 0),
+        isHighlighted: false,
+      }),
+    };
+    chart.options.scales = {
+      x: {
+        display: false,
+        min: prevPoints[0]?.[0],
+        max: prevPoints.at(-1)?.[0],
+      },
+      y: { display: false, min: prevYMin, max: prevYMax },
+    };
+    chart.update('none');
+    chart.options.animation = {
+      onComplete: () => {
+        chart.data.datasets.pop();
+        chart.options.animation = undefined;
+        chart.update('none');
+      },
+    };
+  }
 
   chart.options.scales = {
     x: {
@@ -131,30 +176,36 @@ function updateChartPoints({
     },
     y: { display: false, min: nextYMin, max: nextYMax },
   };
-  chart.options.animation = {
-    onComplete: () => {
-      chart.data.datasets.pop();
-      chart.options.animation = undefined;
-      chart.update('none');
-    },
-  };
-  chart.update();
-  chart.hide(1);
+
+  if (prevPoints.length) {
+    chart.update();
+    chart.hide(1);
+  } else {
+    chart.update('none');
+    chart.show(0);
+  }
 }
 
 export function AssetChart({
   chartPoints,
-  onActiveElementChange,
+  onRangeSelect,
 }: {
   chartPoints: [number, number][];
-  onActiveElementChange: (index: number) => void;
+  onRangeSelect: ({
+    startRangeIndex,
+    endRangeIndex,
+  }: {
+    startRangeIndex?: number;
+    endRangeIndex: number;
+  }) => void;
 }) {
   const { currency } = useCurrency();
+  const { theme } = useStore(themeStore);
   const chartPointsRef = useRef<[number, number][]>([]);
-  const activeElementIndexRef = useRef<number>(Infinity);
-  const clickedElementIndexRef = useRef<number>(Infinity);
-  const clickedElementXRef = useRef<number | null>(null);
-  const onActiveElementChangeEvent = useEvent(onActiveElementChange);
+  const endRangeIndexRef = useRef<number>(Infinity);
+  const startRangeIndexRef = useRef<number>(Infinity);
+  const startRangeXRef = useRef<number | null>(null);
+  const onRangeSelectEvent = useEvent(onRangeSelect);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -183,29 +234,32 @@ export function AssetChart({
         datasets: [
           {
             data: [],
+            hidden: true,
             segment: {
               borderColor: (ctx) => {
-                const isPositive =
-                  (chartPointsRef.current[activeElementIndexRef.current]?.[1] ??
-                    chartPointsRef.current.at(-1)?.[1]) >=
+                const endValue =
+                  chartPointsRef.current[endRangeIndexRef.current]?.[1] ??
+                  chartPointsRef.current.at(-1)?.[1];
+                const startValue =
+                  chartPointsRef.current[startRangeIndexRef.current]?.[1] ??
                   chartPointsRef.current[0]?.[1];
+                const isPositive = endValue >= startValue;
+
                 const shouldHightlight =
-                  (clickedElementIndexRef.current === Infinity &&
-                    activeElementIndexRef.current !== Infinity &&
-                    ctx.p1DataIndex > activeElementIndexRef.current) ||
-                  (clickedElementIndexRef.current !== Infinity &&
-                    activeElementIndexRef.current !== Infinity &&
-                    (clickedElementIndexRef.current - ctx.p1DataIndex) *
-                      (ctx.p1DataIndex - activeElementIndexRef.current) <
+                  (startRangeIndexRef.current === Infinity &&
+                    endRangeIndexRef.current !== Infinity &&
+                    ctx.p1DataIndex > endRangeIndexRef.current) ||
+                  (startRangeIndexRef.current !== Infinity &&
+                    endRangeIndexRef.current !== Infinity &&
+                    (startRangeIndexRef.current - ctx.p1DataIndex) *
+                      (ctx.p1DataIndex - endRangeIndexRef.current) <
                       0);
 
-                return shouldHightlight
-                  ? isPositive
-                    ? 'rgba(100, 255, 100, 0.5)'
-                    : 'rgba(255, 0, 0, 0.5)'
-                  : isPositive
-                  ? 'green'
-                  : 'red';
+                return getChartColor({
+                  theme,
+                  isPositive,
+                  isHighlighted: shouldHightlight,
+                });
               },
             },
           },
@@ -214,8 +268,11 @@ export function AssetChart({
       options: {
         ...DEFAULT_CONFIG.options,
         onHover: (_, chartElement, chart) => {
-          activeElementIndexRef.current = chartElement[0]?.index ?? Infinity;
-          onActiveElementChangeEvent(activeElementIndexRef.current);
+          endRangeIndexRef.current = chartElement[0]?.index ?? Infinity;
+          onRangeSelectEvent({
+            endRangeIndex: endRangeIndexRef.current,
+            startRangeIndex: startRangeIndexRef.current,
+          });
           chart.update();
         },
       },
@@ -225,10 +282,13 @@ export function AssetChart({
           afterEvent(chart, args) {
             const event = args.event;
             if (event.type === 'mouseout') {
-              activeElementIndexRef.current = Infinity;
-              clickedElementIndexRef.current = Infinity;
-              clickedElementXRef.current = null;
-              onActiveElementChangeEvent(activeElementIndexRef.current);
+              endRangeIndexRef.current = Infinity;
+              startRangeIndexRef.current = Infinity;
+              startRangeXRef.current = null;
+              onRangeSelectEvent({
+                endRangeIndex: endRangeIndexRef.current,
+                startRangeIndex: startRangeIndexRef.current,
+              });
               chart.update();
             }
           },
@@ -244,16 +304,26 @@ export function AssetChart({
             }
 
             const { x, y } = activeElement.element.tooltipPosition(false);
-            const isPositive =
-              (chart.data.datasets[0].data[activeElement.index] as Point).y >=
-              chartPointsRef.current[0]?.[1];
+            const endRangeValue =
+              (chart.data.datasets[0].data[activeElement.index] as Point)?.y ||
+              0;
+            const startRangeValue =
+              (
+                (chart.data.datasets[0].data[startRangeIndexRef.current] ||
+                  chart.data.datasets[0].data[0]) as Point
+              )?.y || 0;
+            const isPositive = endRangeValue >= startRangeValue;
 
-            const color = isPositive ? 'green' : 'red';
+            const color = getChartColor({
+              theme,
+              isPositive,
+              isHighlighted: false,
+            });
 
             ctx.save();
             ctx.setLineDash([5, 5]);
 
-            if (clickedElementXRef.current == null) {
+            if (startRangeXRef.current == null) {
               // Draw vertical line
               ctx.beginPath();
               ctx.moveTo(x, 8);
@@ -292,24 +362,24 @@ export function AssetChart({
           id: 'rangeSelectPlugin',
           beforeEvent: (chart, args) => {
             if (args.event.type === 'mousedown') {
-              clickedElementIndexRef.current =
+              startRangeIndexRef.current =
                 chart.getActiveElements()[0]?.index ?? Infinity;
-              clickedElementXRef.current = args.event.x;
+              startRangeXRef.current = args.event.x;
             }
             if (args.event.type === 'mouseup') {
-              clickedElementIndexRef.current = Infinity;
-              clickedElementXRef.current = null;
+              startRangeIndexRef.current = Infinity;
+              startRangeXRef.current = null;
             }
           },
           afterDraw: (chart) => {
             const activeElement = chart.getActiveElements()?.[0];
             const { ctx } = chart;
 
-            if (!activeElement || !ctx || !clickedElementXRef.current) {
+            if (!activeElement || !ctx || !startRangeXRef.current) {
               return;
             }
 
-            const clickedX = clickedElementXRef.current;
+            const clickedX = startRangeXRef.current;
             const { x } = activeElement.element.tooltipPosition(false);
 
             ctx.save();
@@ -321,7 +391,10 @@ export function AssetChart({
             ctx.lineTo(x, chart.height);
             ctx.lineTo(x, 0);
             ctx.closePath();
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillStyle =
+              theme === Theme.light
+                ? 'rgba(0, 0, 0, 0.1)'
+                : 'rgba(255, 255, 255, 0.1)';
             ctx.fill();
 
             ctx.restore();
@@ -333,13 +406,14 @@ export function AssetChart({
     return () => {
       chartRef.current?.destroy();
     };
-  }, [onActiveElementChangeEvent]);
+  }, [onRangeSelectEvent, theme]);
 
   if (!equal(chartPointsRef.current, chartPoints) && chartRef.current) {
     updateChartPoints({
       chart: chartRef.current,
       prevPoints: chartPointsRef.current,
       nextPoints: chartPoints,
+      theme,
     });
     chartPointsRef.current = [...chartPoints];
   }
