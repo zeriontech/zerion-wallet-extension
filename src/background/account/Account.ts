@@ -3,7 +3,11 @@ import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import { createSalt, createCryptoKey } from 'src/modules/crypto';
 import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
-import { BrowserStorage, SessionStorage } from 'src/background/webapis/storage';
+import {
+  BrowserStorage,
+  SessionStorage,
+  clearStorageArtefacts,
+} from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
 import { currentUserKey } from 'src/shared/getCurrentUser';
@@ -12,6 +16,7 @@ import { payloadId } from '@walletconnect/jsonrpc-utils';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
+import { globalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
@@ -73,17 +78,45 @@ export class Account extends EventEmitter<AccountEvents> {
   }
 
   private static async writeCredentials(credentials: Credentials) {
-    await SessionStorage.set(credentialsKey, credentials);
+    const preferences = await globalPreferences.getPreferences();
+    if (preferences.autoLockTimeout === 'none') {
+      await BrowserStorage.set(credentialsKey, credentials);
+    } else {
+      await SessionStorage.set(credentialsKey, credentials);
+    }
     await LoginActivity.recordLogin();
   }
 
   private static async readCredentials() {
-    return await SessionStorage.get<Credentials>(credentialsKey);
+    return (
+      (await SessionStorage.get<Credentials>(credentialsKey)) ||
+      (await BrowserStorage.get<Credentials>(credentialsKey))
+    );
   }
 
   private static async removeCredentials() {
+    await BrowserStorage.remove(credentialsKey);
     await SessionStorage.remove(credentialsKey);
     await LoginActivity.recordLogout();
+    await clearStorageArtefacts();
+  }
+
+  /** Migrates credentials from storage.local to storage.session if needed */
+  static async migrateCredentialsIfNeeded() {
+    type AnyStorage = typeof BrowserStorage | typeof SessionStorage;
+    async function move(params: { from: AnyStorage; to: AnyStorage }) {
+      const credentials = await params.from.get<Credentials>(credentialsKey);
+      if (credentials) {
+        await params.to.set(credentialsKey, credentials);
+        await params.from.remove(credentialsKey);
+      }
+    }
+    const preferences = await globalPreferences.getPreferences();
+    if (preferences.autoLockTimeout === 'none') {
+      await move({ from: SessionStorage, to: BrowserStorage });
+    } else {
+      await move({ from: BrowserStorage, to: SessionStorage });
+    }
   }
 
   static async ensureUserAndWallet() {
@@ -119,6 +152,11 @@ export class Account extends EventEmitter<AccountEvents> {
     this.on('authenticated', () => {
       if (this.encryptionKey) {
         Account.writeCredentials({ encryptionKey: this.encryptionKey });
+      }
+    });
+    globalPreferences.on('change', (prevState, newState) => {
+      if (newState.autoLockTimeout !== prevState.autoLockTimeout) {
+        Account.migrateCredentialsIfNeeded();
       }
     });
   }
