@@ -21,7 +21,7 @@ import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-char
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { getColor, getSign } from './helpers';
-import { AssetChart } from './AssetChart';
+import { AssetChart } from './AssetChart/AssetChart';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
 const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
