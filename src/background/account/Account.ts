@@ -80,9 +80,15 @@ export class Account extends EventEmitter<AccountEvents> {
   private static async writeCredentials(credentials: Credentials) {
     const preferences = await globalPreferences.getPreferences();
     if (preferences.autoLockTimeout === 'none') {
-      await BrowserStorage.set(credentialsKey, credentials);
+      await Promise.all([
+        BrowserStorage.set(credentialsKey, credentials),
+        SessionStorage.remove(credentialsKey), // make sure other storage doesn't have a duplicate
+      ]);
     } else {
-      await SessionStorage.set(credentialsKey, credentials);
+      await Promise.all([
+        SessionStorage.set(credentialsKey, credentials),
+        BrowserStorage.remove(credentialsKey), // make sure other storage doesn't have a duplicate
+      ]);
     }
     await LoginActivity.recordLogin();
   }
