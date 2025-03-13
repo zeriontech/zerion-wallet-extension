@@ -165,20 +165,27 @@ function AssetStats({
   const [showNetworkDistribution, setShowNetworkDistribution] = useState(false);
 
   const return24h =
-    assetFullInfo.fungible.meta.relativeChange1d *
-    assetFullInfo.fungible.meta.price;
+    assetFullInfo.fungible.meta.relativeChange1d != null &&
+    assetFullInfo.fungible.meta.price != null
+      ? assetFullInfo.fungible.meta.relativeChange1d *
+        assetFullInfo.fungible.meta.price
+      : null;
   const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
 
   return (
     <VStack gap={16}>
       <StatLine
         title="24-hour Return"
-        value={`${getSign(return24h)}${formatCurrencyValue(
-          Math.abs(return24h || 0),
-          'en',
-          currency
-        )} (${formatPercent(Math.abs(relativeReturn24h || 0), 'en')}%)`}
-        valueColor={getColor(return24h)}
+        value={
+          return24h != null
+            ? `${getSign(return24h)}${formatCurrencyValue(
+                Math.abs(return24h || 0),
+                'en',
+                currency
+              )} (${formatPercent(Math.abs(relativeReturn24h || 0), 'en')}%)`
+            : 'N/A'
+        }
+        valueColor={return24h != null ? getColor(return24h) : undefined}
       />
       <StatLine
         title="Total PnL"
@@ -465,13 +472,15 @@ export function AssetAddressStats({
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
+  const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
   const { data: pnlData, isLoading } = useWalletAssetPnl(
     {
       addresses: [address],
       fungibleId: assetFullInfo.fungible.id,
       currency,
     },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
+    { enabled: !isUntrackedAsset }
   );
   const asset = assetFullInfo.fungible;
 
@@ -564,14 +573,21 @@ export function AssetAddressStats({
           ) : (
             <VStack gap={12}>
               <VStack gap={4}>
-                <UIText kind="headline/h1">
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(
-                      walletAssetDetails.totalValue,
-                      'en',
-                      currency
-                    )}
-                  />
+                <UIText
+                  kind="headline/h1"
+                  color={isUntrackedAsset ? 'var(--neutral-500)' : undefined}
+                >
+                  {isUntrackedAsset ? (
+                    'N/A'
+                  ) : (
+                    <NeutralDecimals
+                      parts={formatCurrencyToParts(
+                        walletAssetDetails.totalValue,
+                        'en',
+                        currency
+                      )}
+                    />
+                  )}
                 </UIText>
                 <UIText kind="small/regular" color="var(--neutral-500)">
                   {formatTokenValue(

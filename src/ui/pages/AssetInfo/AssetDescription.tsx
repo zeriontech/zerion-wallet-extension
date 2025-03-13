@@ -6,7 +6,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import * as styles from 'src/ui/style/helpers.module.css';
+import * as helperStyles from 'src/ui/style/helpers.module.css';
 
 /**
  * Took this component from Web App
@@ -34,7 +34,7 @@ const TextPreview = ({ text }: { text: string }) => {
   }, []);
 
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
       <UIText
         as="p"
         kind="body/regular"
@@ -57,8 +57,16 @@ const TextPreview = ({ text }: { text: string }) => {
       {isClamped && (
         <UnstyledButton
           onClick={() => setIsClamped(false)}
-          style={{ color: 'var(--primary)' }}
-          className={styles.hoverUnderline}
+          style={{
+            color: 'var(--primary)',
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            background:
+              'linear-gradient(90deg, transparent 0%, var(--background) 30%)',
+            paddingLeft: 40,
+          }}
+          className={helperStyles.hoverUnderline}
         >
           <UIText style={{ cursor: 'pointer' }} kind="body/regular">
             See more
@@ -74,6 +82,14 @@ export function AssetDescription({
 }: {
   assetFullInfo: AssetFullInfo;
 }) {
+  const hasNoDescription =
+    !assetFullInfo.extra.description &&
+    !assetFullInfo.extra.relevantResources.length;
+
+  if (hasNoDescription) {
+    return null;
+  }
+
   return (
     <VStack gap={12}>
       <UIText kind="headline/h3">About {assetFullInfo.fungible.name}</UIText>
