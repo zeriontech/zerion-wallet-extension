@@ -17,15 +17,15 @@ export interface Asset {
   verified: boolean;
   implementations: Record<string, { address: string | null; decimals: number }>;
   meta: {
-    circulatingSupply: number;
-    fullyDilutedValuation: number;
-    marketCap: number;
-    price: number;
-    relativeChange1d: number;
-    relativeChange30d: number;
-    relativeChange90d: number;
-    relativeChange365d: number;
-    totalSupply: number;
+    circulatingSupply: number | null;
+    fullyDilutedValuation: number | null;
+    marketCap: number | null;
+    price: number | null;
+    relativeChange1d: number | null;
+    relativeChange30d: number | null;
+    relativeChange90d: number | null;
+    relativeChange365d: number | null;
+    totalSupply: number | null;
   };
 }
 
