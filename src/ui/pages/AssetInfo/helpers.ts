@@ -1,6 +1,6 @@
 import { minus } from 'src/ui/shared/typography';
 
-export function getColor(value?: number) {
+export function getColor(value?: number | null) {
   return !value
     ? 'var(--black)'
     : value > 0

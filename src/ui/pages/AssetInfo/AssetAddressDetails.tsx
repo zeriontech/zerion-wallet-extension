@@ -8,7 +8,7 @@ import {
   formatCurrencyToParts,
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
-import { middot } from 'src/ui/shared/typography';
+import { middot, noValueDash } from 'src/ui/shared/typography';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import EyeIcon from 'jsx:src/ui/assets/eye.svg';
@@ -34,8 +34,11 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
-import { AssetHeader } from './AssetHeader';
+import { usePremiumStatus } from 'src/ui/features/premium/usePremiumStatus';
+import { PREMIUM_LANDING_LINK } from 'src/ui/features/premium/links';
+import { PREMIUM_GRADIENT_TEXT_STYLE } from 'src/ui/features/premium/constants';
 import { getColor, getSign } from './helpers';
+import { AssetHeader } from './AssetHeader';
 
 function Line() {
   return (
@@ -155,11 +158,13 @@ function AssetStats({
   walletAssetDetails,
   assetAddressPnlIsLoading,
   assetAddressPnl,
+  showPremiumWall,
 }: {
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
   assetAddressPnlIsLoading: boolean;
   assetAddressPnl: AssetAddressPnl | null;
+  showPremiumWall: boolean;
 }) {
   const { currency } = useCurrency();
   const [showNetworkDistribution, setShowNetworkDistribution] = useState(false);
@@ -187,57 +192,66 @@ function AssetStats({
         }
         valueColor={return24h != null ? getColor(return24h) : undefined}
       />
-      <StatLine
-        title="Total PnL"
-        value={`${getSign(assetAddressPnl?.totalPnl)}${formatCurrencyValue(
-          Math.abs(assetAddressPnl?.totalPnl || 0),
-          'en',
-          currency
-        )}`}
-        valueColor={getColor(assetAddressPnl?.totalPnl)}
-        isLoading={assetAddressPnlIsLoading}
-      />
-      <StatLine
-        title="Realised PnL"
-        value={`${getSign(assetAddressPnl?.realizedPnl)}${formatCurrencyValue(
-          Math.abs(assetAddressPnl?.realizedPnl || 0),
-          'en',
-          currency
-        )}`}
-        valueColor={getColor(assetAddressPnl?.realizedPnl)}
-        isLoading={assetAddressPnlIsLoading}
-      />
-      <StatLine
-        title="Unrealised PnL"
-        value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatCurrencyValue(
-          Math.abs(assetAddressPnl?.unrealizedPnl || 0),
-          'en',
-          currency
-        )} (${formatPercent(
-          Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0),
-          'en'
-        )}%)`}
-        valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
-        isLoading={assetAddressPnlIsLoading}
-      />
-      <StatLine
-        title="Invested"
-        value={formatCurrencyValue(
-          assetAddressPnl?.bought || 0,
-          'en',
-          currency
-        )}
-        isLoading={assetAddressPnlIsLoading}
-      />
-      <StatLine
-        title="Average Cost"
-        value={formatCurrencyValue(
-          assetAddressPnl?.averageBuyPrice || 0,
-          'en',
-          currency
-        )}
-        isLoading={assetAddressPnlIsLoading}
-      />
+      {showPremiumWall ? null : (
+        <>
+          <StatLine
+            title="Total PnL"
+            value={`${getSign(assetAddressPnl?.totalPnl)}${formatCurrencyValue(
+              Math.abs(assetAddressPnl?.totalPnl || 0),
+              'en',
+              currency
+            )}`}
+            valueColor={getColor(assetAddressPnl?.totalPnl)}
+            isLoading={assetAddressPnlIsLoading}
+          />
+
+          <StatLine
+            title="Realised PnL"
+            value={`${getSign(
+              assetAddressPnl?.realizedPnl
+            )}${formatCurrencyValue(
+              Math.abs(assetAddressPnl?.realizedPnl || 0),
+              'en',
+              currency
+            )}`}
+            valueColor={getColor(assetAddressPnl?.realizedPnl)}
+            isLoading={assetAddressPnlIsLoading}
+          />
+          <StatLine
+            title="Unrealised PnL"
+            value={`${getSign(
+              assetAddressPnl?.unrealizedPnl
+            )}${formatCurrencyValue(
+              Math.abs(assetAddressPnl?.unrealizedPnl || 0),
+              'en',
+              currency
+            )} (${formatPercent(
+              Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0),
+              'en'
+            )}%)`}
+            valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
+            isLoading={assetAddressPnlIsLoading}
+          />
+          <StatLine
+            title="Invested"
+            value={formatCurrencyValue(
+              assetAddressPnl?.bought || 0,
+              'en',
+              currency
+            )}
+            isLoading={assetAddressPnlIsLoading}
+          />
+          <StatLine
+            title="Average Cost"
+            value={formatCurrencyValue(
+              assetAddressPnl?.averageBuyPrice || 0,
+              'en',
+              currency
+            )}
+            isLoading={assetAddressPnlIsLoading}
+          />
+        </>
+      )}
       <VStack gap={0}>
         <UnstyledButton
           className="parent-hover"
@@ -422,12 +436,14 @@ function AssetAddressDetailsDialog({
   walletAssetDetails,
   assetAddressPnlIsLoading,
   assetAddressPnl,
+  showPremiumWall,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
   assetAddressPnlIsLoading: boolean;
   assetAddressPnl: AssetAddressPnl | null;
+  showPremiumWall: boolean;
 }) {
   return (
     <VStack
@@ -448,6 +464,7 @@ function AssetAddressDetailsDialog({
           walletAssetDetails={walletAssetDetails}
           assetAddressPnl={assetAddressPnl}
           assetAddressPnlIsLoading={assetAddressPnlIsLoading}
+          showPremiumWall={showPremiumWall}
         />
         <Line />
         <AssetAppDistribution
@@ -473,6 +490,13 @@ export function AssetAddressStats({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
+  const {
+    globalPremium,
+    premiumAddressesSet,
+    isLoading: premiumIsLoading,
+  } = usePremiumStatus();
+  const isPremium = globalPremium || premiumAddressesSet.has(wallet.address);
+  const showPremiumWall = !isPremium && !premiumIsLoading;
   const { data: pnlData, isLoading } = useWalletAssetPnl(
     {
       addresses: [address],
@@ -480,8 +504,9 @@ export function AssetAddressStats({
       currency,
     },
     { source: useHttpClientSource() },
-    { enabled: !isUntrackedAsset }
+    { enabled: !isUntrackedAsset && isPremium }
   );
+  const pnlIsLoading = premiumIsLoading || (isPremium && isLoading);
   const asset = assetFullInfo.fungible;
 
   const isWatchedAddress = isReadonlyAccount(wallet);
@@ -497,6 +522,13 @@ export function AssetAddressStats({
     Math.abs(unrealizedGainRaw / walletAssetDetails.totalValue),
     'en'
   )}%)`;
+
+  const return24h =
+    assetFullInfo.fungible.meta.relativeChange1d != null &&
+    assetFullInfo.fungible.meta.price != null
+      ? assetFullInfo.fungible.meta.relativeChange1d *
+        assetFullInfo.fungible.meta.price
+      : null;
 
   return (
     <>
@@ -608,8 +640,21 @@ export function AssetAddressStats({
                     <UIText kind="caption/regular" color="var(--neutral-500)">
                       Unrealised PnL
                     </UIText>
-                    {isLoading ? (
+                    {pnlIsLoading ? (
                       <LoadingSkeleton />
+                    ) : showPremiumWall ? (
+                      <UnstyledAnchor
+                        href={PREMIUM_LANDING_LINK}
+                        target="_blank"
+                        rel="noopenner noreferrer"
+                      >
+                        <UIText
+                          kind="headline/h3"
+                          style={PREMIUM_GRADIENT_TEXT_STYLE}
+                        >
+                          Buy Premium
+                        </UIText>
+                      </UnstyledAnchor>
                     ) : (
                       <UIText
                         kind="headline/h3"
@@ -621,17 +666,31 @@ export function AssetAddressStats({
                   </VStack>
                   <VStack gap={4}>
                     <UIText kind="caption/regular" color="var(--neutral-500)">
-                      Invested
+                      {pnlIsLoading
+                        ? noValueDash
+                        : isPremium
+                        ? 'Invested'
+                        : '24h Return'}
                     </UIText>
-                    {isLoading ? (
+                    {pnlIsLoading ? (
                       <LoadingSkeleton />
-                    ) : (
+                    ) : isPremium ? (
                       <UIText kind="headline/h3">
                         {formatCurrencyValue(
                           pnlData?.data.bought || 0,
                           'en',
                           currency
                         )}
+                      </UIText>
+                    ) : (
+                      <UIText kind="headline/h3" color={getColor(return24h)}>
+                        {return24h != null
+                          ? `${getSign(return24h)}${formatCurrencyValue(
+                              Math.abs(return24h || 0),
+                              'en',
+                              currency
+                            )}`
+                          : 'N/A'}
                       </UIText>
                     )}
                   </VStack>
@@ -685,7 +744,8 @@ export function AssetAddressStats({
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}
               assetAddressPnl={pnlData?.data || null}
-              assetAddressPnlIsLoading={isLoading}
+              assetAddressPnlIsLoading={pnlIsLoading}
+              showPremiumWall={showPremiumWall}
             />
           </>
         )}
