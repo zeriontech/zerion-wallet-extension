@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { walletPort } from 'src/ui/shared/channels';
+import { urlContext } from 'src/shared/UrlContext';
 
 export function useScreenViewChange() {
   const { pathname } = useLocation();
@@ -19,6 +20,7 @@ export function useScreenViewChange() {
         address,
         previous: previousPathname.current,
         screenSize: `${window.screen.width}x${window.screen.height}`,
+        windowType: urlContext.windowType,
       });
     },
     onSuccess() {
