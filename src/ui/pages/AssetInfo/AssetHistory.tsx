@@ -29,7 +29,6 @@ import { createChain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { ActionDetailedView } from '../History/ActionDetailedView';
 import * as styles from './styles.module.css';
-import { AssetDescription } from './AssetAddressDetails';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
   year: 'numeric',
@@ -231,12 +230,8 @@ export function AssetHistory({
 
   const asset = assetFullInfo?.fungible;
 
-  if (actionsAreLoading || !asset || !networks) {
+  if (actionsAreLoading || !asset || !networks || !value?.length) {
     return null;
-  }
-
-  if (!value?.length) {
-    return <AssetDescription assetFullInfo={assetFullInfo} />;
   }
 
   return (

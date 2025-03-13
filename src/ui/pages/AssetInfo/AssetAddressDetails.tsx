@@ -32,12 +32,10 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { AssetHeader } from './AssetHeader';
 import { getColor, getSign } from './helpers';
-import { TextPreview } from './TextPreview';
 
 function Line() {
   return (
@@ -411,41 +409,6 @@ function AssetAppDistribution({
   );
 }
 
-export function AssetDescription({
-  assetFullInfo,
-}: {
-  assetFullInfo: AssetFullInfo;
-}) {
-  return (
-    <VStack gap={12}>
-      <UIText kind="headline/h3">About {assetFullInfo.fungible.name}</UIText>
-      <VStack gap={8}>
-        {assetFullInfo.extra.description ? (
-          <TextPreview text={assetFullInfo.extra.description} />
-        ) : null}
-        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {assetFullInfo.extra.relevantResources.map((resource) => (
-            <TextAnchor
-              key={resource.name}
-              href={resource.url}
-              target="_blank"
-              rel="noreferrer noopenner"
-              style={{ marginRight: 16, color: 'var(--primary)' }}
-            >
-              <HStack gap={4} alignItems="center">
-                <UIText kind="body/regular" color="var(--primary)">
-                  {resource.displayableName}
-                </UIText>
-                <LinkIcon style={{ width: 16, height: 16 }} />
-              </HStack>
-            </TextAnchor>
-          ))}
-        </div>
-      </VStack>
-    </VStack>
-  );
-}
-
 function AssetAddressDetailsDialog({
   address,
   assetFullInfo,
@@ -484,8 +447,6 @@ function AssetAddressDetailsDialog({
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletAssetDetails}
         />
-        <Line />
-        <AssetDescription assetFullInfo={assetFullInfo} />
       </VStack>
     </VStack>
   );

@@ -35,6 +35,7 @@ import { AssetGlobalStats } from './AssetGlobalStats';
 import { AssetTitleAndChart } from './AssetTitleAndChart';
 import { AssetResources } from './AssetResources';
 import { AssetHeader } from './AssetHeader';
+import { AssetDescription } from './AssetDescription';
 
 const SCROLL_THRESHOLD = 80;
 const SHOW_BRIDGE_BUTTON = false; // TODO: make true after bridge is implemented
@@ -178,6 +179,7 @@ export function AssetInfo() {
           walletAssetDetails={walletData.data}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
+        <AssetDescription assetFullInfo={assetFullInfo} />
         <AssetHistory
           assetId={asset_code}
           assetFullInfo={assetFullInfo}
