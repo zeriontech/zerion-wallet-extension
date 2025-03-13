@@ -93,6 +93,7 @@ function trackAppEvents({ account }: { account: Account }) {
       screen_name: data.pathname,
       previous_screen_name: data.previous,
       screen_size: data.screenSize,
+      window_type: data.windowType,
     });
     sendToMetabase('screen_view', params);
     const portfolio = await getOwnedWalletsPortolio(account);

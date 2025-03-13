@@ -9,6 +9,7 @@ import type {
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
+import type { WindowType } from 'src/shared/types/UrlContext';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -20,6 +21,7 @@ export interface ScreenViewParams {
   previous: string | null;
   address: string | null;
   screenSize: string;
+  windowType: WindowType;
 }
 
 export interface DaylightEventParams {
