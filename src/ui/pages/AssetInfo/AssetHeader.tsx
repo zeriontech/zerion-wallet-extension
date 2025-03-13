@@ -29,8 +29,14 @@ export function AssetHeader({
         title={asset.name}
       />
       <UIText kind="body/accent">
-        {asset.symbol} {emDash}{' '}
-        {formatCurrencyValue(asset.meta.price || 0, 'en', currency)}
+        {asset.symbol}
+        {asset.meta.price != null
+          ? ` ${emDash} ${formatCurrencyValue(
+              asset.meta.price || 0,
+              'en',
+              currency
+            )}`
+          : null}
       </UIText>
     </HStack>
   );

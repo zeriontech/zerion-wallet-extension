@@ -82,6 +82,7 @@ function AssetDetailsTitle({
     },
     { source: useHttpClientSource() }
   );
+  const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
 
   const totalEquityPercentage = portfolioData?.data.totalValue
     ? (walletAssetDetails.totalValue / portfolioData.data.totalValue) * 100
@@ -105,14 +106,21 @@ function AssetDetailsTitle({
         ) : null}
       </HStack>
       <VStack gap={4}>
-        <UIText kind="headline/h1">
-          <NeutralDecimals
-            parts={formatCurrencyToParts(
-              walletAssetDetails.totalValue,
-              'en',
-              currency
-            )}
-          />
+        <UIText
+          kind="headline/h1"
+          color={isUntrackedAsset ? 'var(--neutral-500)' : undefined}
+        >
+          {isUntrackedAsset ? (
+            'N/A'
+          ) : (
+            <NeutralDecimals
+              parts={formatCurrencyToParts(
+                walletAssetDetails.totalValue,
+                'en',
+                currency
+              )}
+            />
+          )}
         </UIText>
         <UIText kind="small/regular" color="var(--neutral-500)">
           {formatTokenValue(
@@ -164,6 +172,7 @@ function AssetStats({
   const { currency } = useCurrency();
   const [showNetworkDistribution, setShowNetworkDistribution] = useState(false);
 
+  const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
   const return24h =
     assetFullInfo.fungible.meta.relativeChange1d != null &&
     assetFullInfo.fungible.meta.price != null
@@ -171,6 +180,10 @@ function AssetStats({
         assetFullInfo.fungible.meta.price
       : null;
   const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
+
+  if (isUntrackedAsset) {
+    return null;
+  }
 
   return (
     <VStack gap={16}>
@@ -335,6 +348,7 @@ function AssetAppDistribution({
   walletAssetDetails: WalletAssetDetails;
 }) {
   const { currency } = useCurrency();
+  const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
 
   return (
     <VStack gap={16}>
@@ -386,25 +400,46 @@ function AssetAppDistribution({
                   ) : (
                     <ChainsIcon style={{ width: 16, height: 16 }} />
                   )}
-                  <UIText kind="body/accent">
-                    <NeutralDecimals
-                      parts={formatCurrencyToParts(app.value, 'en', currency)}
-                    />
-                  </UIText>
-                  <UIText kind="body/regular" color="var(--neutral-500)">
-                    (
-                    {formatTokenValue(
-                      app.convertedQuantity,
-                      assetFullInfo.fungible.symbol,
-                      {
-                        notation:
-                          app.convertedQuantity > 100000
-                            ? 'compact'
-                            : undefined,
-                      }
-                    )}
-                    )
-                  </UIText>
+                  {isUntrackedAsset ? (
+                    <UIText kind="body/accent">
+                      {formatTokenValue(
+                        app.convertedQuantity,
+                        assetFullInfo.fungible.symbol,
+                        {
+                          notation:
+                            app.convertedQuantity > 100000
+                              ? 'compact'
+                              : undefined,
+                        }
+                      )}
+                    </UIText>
+                  ) : (
+                    <>
+                      <UIText kind="body/accent">
+                        <NeutralDecimals
+                          parts={formatCurrencyToParts(
+                            app.value,
+                            'en',
+                            currency
+                          )}
+                        />
+                      </UIText>
+                      <UIText kind="body/regular" color="var(--neutral-500)">
+                        (
+                        {formatTokenValue(
+                          app.convertedQuantity,
+                          assetFullInfo.fungible.symbol,
+                          {
+                            notation:
+                              app.convertedQuantity > 100000
+                                ? 'compact'
+                                : undefined,
+                          }
+                        )}
+                        )
+                      </UIText>
+                    </>
+                  )}
                 </HStack>
               </VStack>
             </HStack>
