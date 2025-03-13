@@ -37,3 +37,13 @@ export class SessionStorage {
     await browser.storage.session.clear();
   }
 }
+
+/**
+ * This function helps to force-clear storage snapshots in /Local Extension Settings/
+ * from the file system
+ */
+export async function clearStorageArtefacts() {
+  const everything = await browser.storage.local.get(null);
+  await browser.storage.local.clear(); // this removes local extension files
+  await browser.storage.local.set(everything); // store everything back
+}
