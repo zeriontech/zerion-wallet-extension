@@ -598,7 +598,9 @@ export function AssetAddressStats({
             <>
               {pnlData?.data.bought === 0 ? null : (
                 <UIText kind="headline/h2" color="var(--neutral-500)">
-                  {formatCurrencyValue(0, 'en', currency)}
+                  {isUntrackedAsset
+                    ? 'N/A'
+                    : formatCurrencyValue(0, 'en', currency)}
                 </UIText>
               )}
               <UIText kind="small/regular" color="var(--neutral-500)">
@@ -672,17 +674,20 @@ export function AssetAddressStats({
                   </VStack>
                 </HStack>
               ) : null}
-              <Button
-                kind="neutral"
-                size={48}
-                onClick={() => dialogRef.current?.showModal()}
-                style={{
-                  ['--button-background' as string]: 'var(--neutral-200)',
-                  ['--button-background-hover' as string]: 'var(--neutral-300)',
-                }}
-              >
-                <UIText kind="body/accent"> More Details</UIText>
-              </Button>
+              {isUntrackedAsset ? null : (
+                <Button
+                  kind="neutral"
+                  size={48}
+                  onClick={() => dialogRef.current?.showModal()}
+                  style={{
+                    ['--button-background' as string]: 'var(--neutral-200)',
+                    ['--button-background-hover' as string]:
+                      'var(--neutral-300)',
+                  }}
+                >
+                  <UIText kind="body/accent"> More Details</UIText>
+                </Button>
+              )}
             </VStack>
           )}
         </VStack>
