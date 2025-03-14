@@ -13,7 +13,7 @@ interface MigrationToken {
   id: string;
   premium: {
     expirationTime: string | null;
-    plan: 'Single' | 'Bundle';
+    plan: 'Single' | 'Bundle' | 'Restricted' | 'Bundle (Child)';
     features: {
       feeWaiver: boolean;
       csv: boolean;

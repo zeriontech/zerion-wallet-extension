@@ -69,6 +69,14 @@
   /* Extra stuff, to be finalized with design */
   --background: var(--neutral-100);
   --z-index-1-inverted: var(--neutral-100);
+
+  --premium-gradient: linear-gradient(
+    81deg,
+    #cd657f 7.13%,
+    #8a6df1 34.59%,
+    #71a1f3 62.04%,
+    #3bb1ed 90.33%
+  );
 }
 
 .theme-dark {
