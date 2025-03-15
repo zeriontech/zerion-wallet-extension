@@ -4,6 +4,7 @@ import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
 import { invariant } from 'src/shared/invariant';
 import { createUrl } from 'src/shared/createUrl';
+import { emitter } from 'src/ui/shared/events';
 
 export type NetworksSource = 'mainnet' | 'testnet';
 
@@ -52,15 +53,46 @@ const resolveUrl = (input: UrlInput): string | URL => {
   }
 };
 
+function refreshPageForCloudflareChallengeIfNeeded(response: Response) {
+  if (response.headers.get('cf-mitigated') === 'challenge') {
+    emitter.emit('openTurnstile');
+  }
+}
+
 export class ZerionHttpClient {
   static get<T>(options: GetOptions & Options) {
     const url = resolveUrl(options);
-    return ky.get(url, { headers: createHeaders(options) }).json<T>();
+    return ky
+      .get(url, {
+        headers: createHeaders(options),
+        credentials: 'include',
+        hooks: {
+          afterResponse: [
+            (_, __, response) => {
+              refreshPageForCloudflareChallengeIfNeeded(response);
+            },
+          ],
+        },
+      })
+      .json<T>();
   }
 
   static post<T>(options: PostOptions & Options) {
     const url = resolveUrl(options);
     const { body } = options;
-    return ky.post(url, { body, headers: createHeaders(options) }).json<T>();
+    return ky
+      .post(url, {
+        body,
+        headers: createHeaders(options),
+        credentials: 'include',
+        hooks: {
+          afterResponse: [
+            (_, __, response) => {
+              refreshPageForCloudflareChallengeIfNeeded(response);
+            },
+          ],
+        },
+      })
+      .json<T>();
   }
 }
