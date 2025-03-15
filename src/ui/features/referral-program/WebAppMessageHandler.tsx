@@ -2,11 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import { emitter } from 'src/ui/shared/events';
 import { saveReferrerData } from './shared/storage';
 
-const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
+const ZERION_WEB_APP_URL = new URL('https://beta.zerion.io');
 
-type WebAppCallbackMethod = 'set-referral-code';
+type WebAppCallbackMethod = 'set-referral-code' | 'set-turnstile-token';
 
 interface WebAppMessage {
   method: WebAppCallbackMethod;
@@ -33,10 +34,14 @@ export function WebAppMessageHandler({
   pathname,
   callbackName,
   callbackFn,
+  hidden,
+  style,
 }: {
   pathname: string;
   callbackName: WebAppCallbackMethod;
   callbackFn: (params?: unknown) => Promise<void>;
+  hidden?: boolean;
+  style?: React.CSSProperties;
 }) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const iframeUrl = new URL(pathname, ZERION_WEB_APP_URL);
@@ -61,7 +66,8 @@ export function WebAppMessageHandler({
       sandbox="allow-same-origin allow-scripts"
       ref={iframeRef}
       src={iframeUrl.toString()}
-      hidden={true}
+      hidden={hidden}
+      style={style}
     />
   );
 }
@@ -95,6 +101,27 @@ export function ReferralProgramHandler() {
       pathname="/referral/get-code"
       callbackName="set-referral-code"
       callbackFn={setReferralCode}
+      hidden={true}
+    />
+  );
+}
+
+async function logTurnstileToken(params: unknown) {
+  invariant(
+    isObj(params) && typeof params.token === 'string',
+    'Got invalid payload from set-referral-code web app message'
+  );
+  emitter.emit('closeTurnstile');
+}
+
+export function TurnstileTokenHandler() {
+  return (
+    <WebAppMessageHandler
+      pathname="/turnstile"
+      callbackName="set-turnstile-token"
+      callbackFn={logTurnstileToken}
+      hidden={false}
+      style={{ width: 300, height: 100 }}
     />
   );
 }
