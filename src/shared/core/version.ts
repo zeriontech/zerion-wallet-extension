@@ -36,7 +36,7 @@ export async function prepareStorage() {
   const hasSomeData = await checkExisingData();
   const storageVersion = await getCurrentVersion();
   if (!hasSomeData) {
-    BrowserStorage.set('STORAGE_VERSION', STORAGE_VERSION);
+    await BrowserStorage.set('STORAGE_VERSION', STORAGE_VERSION);
     return;
   } else if (storageVersion !== STORAGE_VERSION) {
     let next: null | number | string = storageVersion;
@@ -52,7 +52,7 @@ export async function checkVersion() {
     checkExisingData(),
     getCurrentVersion(),
   ]);
-  if (hasSomeData && storageVersion !== STORAGE_VERSION) {
+  if (hasSomeData && storageVersion === 'no-version') {
     return {
       storageVersion: {
         mismatch: true,
