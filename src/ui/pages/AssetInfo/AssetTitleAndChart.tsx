@@ -83,7 +83,7 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
         endRangeIndex != null ? chartPoints[endRangeIndex]?.[0] : 0;
 
       const localPriceChange = startValue
-        ? ((value - startValue) / startValue) * 100
+        ? (((value || 0) - startValue) / startValue) * 100
         : 0;
       if (
         priceElementRef.current &&
@@ -91,7 +91,7 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
         dateElementRef.current
       ) {
         priceElementRef.current.innerHTML = formatPriceValue(
-          value,
+          value || 0,
           'en',
           currency
         );
