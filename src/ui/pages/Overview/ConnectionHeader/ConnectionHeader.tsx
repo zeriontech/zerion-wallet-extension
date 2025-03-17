@@ -168,8 +168,8 @@ export function ConnectionHeader() {
 
   useEffect(() => {
     return emitter.on('closeTurnstile', () => {
-      setShowTurnstileDialog(false);
-      turnstileDialogRef.current?.close();
+      // setShowTurnstileDialog(false);
+      // turnstileDialogRef.current?.close();
     });
   }, []);
 
@@ -220,6 +220,7 @@ export function ConnectionHeader() {
               gridTemplateColumns: isConnectableSite ? 'auto 1fr' : '1fr',
             }}
           >
+            <Button onClick={() => emitter.emit('openTurnstile')}>TT</Button>
             {isConnectableSite ? (
               <Button
                 kind="neutral"
