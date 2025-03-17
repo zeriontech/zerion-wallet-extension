@@ -50,7 +50,7 @@ class PhishingDefence {
   }
 
   async checkDapp(
-    url?: string
+    url?: string | null
   ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
     if (url === INTERNAL_ORIGIN) {
       return {
@@ -97,6 +97,9 @@ class PhishingDefence {
       };
     }
     const origin = url ? this.getSafeOrigin(url) : null;
+    if (origin && this.websiteStatus[origin] === 'error') {
+      await this.checkDapp(url);
+    }
     const result = {
       status: (origin && this.websiteStatus[origin]) || 'unknown',
       isWhitelisted: origin ? this.whitelistedWebsites.has(origin) : false,
