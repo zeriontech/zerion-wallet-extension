@@ -313,8 +313,6 @@ function BridgeFormComponent() {
     receiveInput,
     spendTokenInput,
     receiveTokenInput,
-    receiverAddressInput: _rai,
-    showReceiverAddressInput: _srai,
   } = formState;
 
   const spendChain = spendChainInput ? createChain(spendChainInput) : null;
