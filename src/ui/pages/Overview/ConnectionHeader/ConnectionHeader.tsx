@@ -26,7 +26,6 @@ import {
 } from 'src/modules/networks/useNetworks';
 import { usePreferences } from 'src/ui/features/preferences';
 import { capitalize } from 'capitalize-ts';
-import { TurnstileTokenHandler } from 'src/ui/features/referral-program/WebAppMessageHandler';
 import { emitter } from 'src/ui/shared/events';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
@@ -107,18 +106,11 @@ export function ConnectionHeader() {
   const { isPaused, globalPreferences } = usePausedData();
   const showPausedHeader = isPaused && globalPreferences;
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
-  const [showTurnstileDialog, setShowTurnstileDialog] = useState(false);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const turnstileDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const handleDialogDismiss = useCallback(() => {
     dialogRef.current?.close();
     setShowConnectionDialog(false);
-  }, []);
-
-  const handleTurnstileDialogDismiss = useCallback(() => {
-    turnstileDialogRef.current?.close();
-    setShowTurnstileDialog(false);
   }, []);
 
   const { data: tabData } = useQuery({
@@ -159,20 +151,6 @@ export function ConnectionHeader() {
     });
   }, [isHidden]);
 
-  useEffect(() => {
-    return emitter.on('openTurnstile', () => {
-      setShowTurnstileDialog(true);
-      turnstileDialogRef.current?.showModal();
-    });
-  }, []);
-
-  useEffect(() => {
-    return emitter.on('closeTurnstile', () => {
-      // setShowTurnstileDialog(false);
-      // turnstileDialogRef.current?.close();
-    });
-  }, []);
-
   if (isHidden) {
     return null;
   }
@@ -196,14 +174,6 @@ export function ConnectionHeader() {
             />
           </>
         ) : null}
-      </BottomSheetDialog>
-      <BottomSheetDialog
-        ref={turnstileDialogRef}
-        height="fit-content"
-        onClosed={handleTurnstileDialogDismiss}
-        containerStyle={{ backgroundColor: 'var(--z-index-0)' }}
-      >
-        {showTurnstileDialog ? <TurnstileTokenHandler /> : null}
       </BottomSheetDialog>
       <HStack
         gap={8}

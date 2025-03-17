@@ -1,3 +1,4 @@
+import type { Options as KyOptions } from 'ky';
 import { securityCheckUrl } from './requests/security-check-url';
 import { registerAddresses } from './requests/register-wallets';
 import {
@@ -21,6 +22,7 @@ import { assetGetFungiblePnl } from './requests/asset-get-fungible-pnl';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
+  getKyOptions(): KyOptions;
 }
 
 export const ZerionApiBare = {
@@ -42,4 +44,4 @@ export const ZerionApiBare = {
   walletGetAssetDetails,
 };
 
-export type ZerionApiClient = typeof ZerionApiBare;
+export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;

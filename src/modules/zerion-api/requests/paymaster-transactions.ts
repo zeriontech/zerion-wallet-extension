@@ -5,6 +5,7 @@ import { GAS_PER_PUBDATA_BYTE_DEFAULT } from 'src/modules/ethereum/account-abstr
 import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
 import { ZerionHttpClient } from '../shared';
 import type { ClientOptions } from '../shared';
+import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ResponseBody } from './ResponseBody';
 
 type HexString = string;
@@ -43,6 +44,7 @@ type PaymasterEligibilityResponse = ResponseBody<{
 }>;
 
 export function paymasterCheckEligibility(
+  this: ZerionApiContext,
   tx: PaymasterEligibilityParamsAdapted,
   options?: ClientOptions
 ) {
@@ -68,12 +70,16 @@ export function paymasterCheckEligibility(
       gasPerPubdataByte,
     },
   };
+  const kyOptions = this.getKyOptions();
   const endpoint = '/paymaster/check-eligibility/v2';
-  return ZerionHttpClient.post<PaymasterEligibilityResponse>({
-    endpoint,
-    body: JSON.stringify(params),
-    ...options,
-  });
+  return ZerionHttpClient.post<PaymasterEligibilityResponse>(
+    {
+      endpoint,
+      body: JSON.stringify(params),
+      ...options,
+    },
+    kyOptions
+  );
 }
 
 interface PaymasterParamsRequest {
@@ -100,6 +106,7 @@ type PaymasterParamsResponse = ResponseBody<{
 }>;
 
 export function getPaymasterParams(
+  this: ZerionApiContext,
   requestAdapted: {
     transaction: PartiallyOptional<
       PaymasterParamsRequest['transaction'],
@@ -123,10 +130,14 @@ export function getPaymasterParams(
       maxPriorityFee: transaction.maxPriorityFee,
     },
   };
+  const kyOptions = this.getKyOptions();
   const endpoint = '/paymaster/get-params/v2';
-  return ZerionHttpClient.post<PaymasterParamsResponse>({
-    endpoint,
-    body: JSON.stringify(params),
-    ...options,
-  });
+  return ZerionHttpClient.post<PaymasterParamsResponse>(
+    {
+      endpoint,
+      body: JSON.stringify(params),
+      ...options,
+    },
+    kyOptions
+  );
 }

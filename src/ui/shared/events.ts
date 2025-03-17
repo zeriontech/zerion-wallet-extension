@@ -21,7 +21,6 @@ export const emitter = createNanoEvents<{
   'sidepanel/activeTabUpdated': () => void;
   buttonClicked: (data: ButtonClickedParams) => void;
   openTurnstile: () => void;
-  closeTurnstile: () => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

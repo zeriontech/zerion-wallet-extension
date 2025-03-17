@@ -76,13 +76,17 @@ export async function walletGetPositions(
 ) {
   const firstAddress = params.addresses[0];
   const provider = await this.getAddressProviderHeader(firstAddress);
+  const kyOptions = this.getKyOptions();
   const endpoint = 'wallet/get-positions/v1';
-  return ZerionHttpClient.post<WalletGetPositionsResponse>({
-    endpoint,
-    body: JSON.stringify(params),
-    headers: { 'Zerion-Wallet-Provider': provider },
-    ...options,
-  });
+  return ZerionHttpClient.post<WalletGetPositionsResponse>(
+    {
+      endpoint,
+      body: JSON.stringify(params),
+      headers: { 'Zerion-Wallet-Provider': provider },
+      ...options,
+    },
+    kyOptions
+  );
 }
 
 function convertAddressPositionDapp(
