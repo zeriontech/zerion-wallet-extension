@@ -2,8 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { emitter } from 'src/ui/shared/events';
-import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { saveReferrerData } from './shared/storage';
 
 const ZERION_WEB_APP_URL = new URL('https://beta.zerion.io');
@@ -40,7 +38,7 @@ export function WebAppMessageHandler({
 }: {
   pathname: string;
   callbackName: WebAppCallbackMethod;
-  callbackFn: (params?: unknown) => Promise<void>;
+  callbackFn: (params?: unknown) => void | Promise<void>;
   hidden?: boolean;
   style?: React.CSSProperties;
 }) {
@@ -103,33 +101,6 @@ export function ReferralProgramHandler() {
       callbackName="set-referral-code"
       callbackFn={setReferralCode}
       hidden={true}
-    />
-  );
-}
-
-async function logTurnstileToken(params: unknown) {
-  invariant(
-    isObj(params) && typeof params.token === 'string',
-    'Got invalid payload from set-referral-code web app message'
-  );
-  emitter.emit('closeTurnstile');
-}
-
-export function TurnstileTokenHandler() {
-  const { innerWidth } = useWindowSizeStore();
-  const turnstileWidgetHeight = 65;
-  const turnstileWidgetWidth = innerWidth - 32;
-  return (
-    <WebAppMessageHandler
-      pathname="/turnstile"
-      callbackName="set-turnstile-token"
-      callbackFn={logTurnstileToken}
-      hidden={false}
-      style={{
-        width: turnstileWidgetWidth,
-        height: turnstileWidgetHeight,
-        border: 'none',
-      }}
     />
   );
 }
