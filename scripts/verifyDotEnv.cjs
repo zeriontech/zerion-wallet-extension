@@ -23,6 +23,12 @@ function parseEnvFile(contents) {
   return result;
 }
 
+function printError(message) {
+  const reset = '\x1b[0m';
+  const red = '\x1b[31m';
+  console.error(`${red}%s${reset}`, message); // eslint-disable-line no-console
+}
+
 function verifyDotEnv() {
   const root = process.cwd();
   const dotEnvPath = path.resolve(root, '.env');
@@ -41,9 +47,16 @@ function verifyDotEnv() {
 
   for (const key in env) {
     if (key in envExample === false) {
-      throw new Error(
+      printError(
         `Unexpected env key: ${key}. Please add it to .env.example if you wish to use it. Otherwise it might not get picked up by a CD system.`
       );
+      process.exit(1);
+    }
+  }
+  for (const key in envExample) {
+    if (key in env === false) {
+      printError(`Env key not found: ${key}. It may be required in runtime`);
+      process.exit(1);
     }
   }
 }
