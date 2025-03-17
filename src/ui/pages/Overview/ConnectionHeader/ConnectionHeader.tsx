@@ -26,7 +26,6 @@ import {
 } from 'src/modules/networks/useNetworks';
 import { usePreferences } from 'src/ui/features/preferences';
 import { capitalize } from 'capitalize-ts';
-import { emitter } from 'src/ui/shared/events';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
@@ -190,7 +189,6 @@ export function ConnectionHeader() {
               gridTemplateColumns: isConnectableSite ? 'auto 1fr' : '1fr',
             }}
           >
-            <Button onClick={() => emitter.emit('openTurnstile')}>TT</Button>
             {isConnectableSite ? (
               <Button
                 kind="neutral"
