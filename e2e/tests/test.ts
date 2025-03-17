@@ -131,7 +131,7 @@ interface Fixtures {
 }
 
 // Allows quick toggling between headless/headed mode in dev env
-const RUN_HEADED_IN_DEV = false;
+const RUN_HEADED_IN_DEV = true;
 
 export function createExtensionTest(testConfig?: Config) {
   return baseTest.extend<TestContext & Fixtures & Options>({

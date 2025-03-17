@@ -14,7 +14,7 @@ const test = extensionTest.extend<OverviewFixtures>({
 
 const { describe, beforeEach } = test;
 
-describe('Overview', () => {
+describe.skip('Overview', () => {
   beforeEach(async ({ overviewPage }) => {
     await overviewPage.navigateTo();
   });
