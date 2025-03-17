@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  checkVersion,
-  eraseAndUpdateToLatestVersion,
-} from 'src/shared/core/version';
+import { checkVersion } from 'src/shared/core/version/version.client';
+import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version/shared';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
