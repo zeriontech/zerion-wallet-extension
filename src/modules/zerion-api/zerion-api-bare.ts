@@ -1,3 +1,4 @@
+import type { Options as KyOptions } from 'ky';
 import { securityCheckUrl } from './requests/security-check-url';
 import { registerAddresses } from './requests/register-wallets';
 import {
@@ -18,6 +19,7 @@ import { claimRetro } from './requests/claim-retro';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
+  getKyOptions(): KyOptions;
 }
 
 export const ZerionApiBare = {
@@ -36,4 +38,4 @@ export const ZerionApiBare = {
   claimRetro,
 };
 
-export type ZerionApiClient = typeof ZerionApiBare;
+export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;

@@ -1,10 +1,9 @@
-import ky from 'ky';
+import ky, { type Options as KyOptions } from 'ky';
 import { platform } from 'src/shared/analytics/platform';
 import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
 import { invariant } from 'src/shared/invariant';
 import { createUrl } from 'src/shared/createUrl';
-import { emitter } from 'src/ui/shared/events';
 
 export type NetworksSource = 'mainnet' | 'testnet';
 
@@ -53,31 +52,19 @@ const resolveUrl = (input: UrlInput): string | URL => {
   }
 };
 
-function refreshPageForCloudflareChallengeIfNeeded(response: Response) {
-  if (response.headers.get('cf-mitigated') === 'challenge') {
-    emitter.emit('openTurnstile');
-  }
-}
-
 export class ZerionHttpClient {
-  static get<T>(options: GetOptions & Options) {
+  static get<T>(options: GetOptions & Options, kyOptions: KyOptions) {
     const url = resolveUrl(options);
     return ky
       .get(url, {
         headers: createHeaders(options),
         credentials: 'include',
-        hooks: {
-          afterResponse: [
-            (_, __, response) => {
-              refreshPageForCloudflareChallengeIfNeeded(response);
-            },
-          ],
-        },
+        ...kyOptions,
       })
       .json<T>();
   }
 
-  static post<T>(options: PostOptions & Options) {
+  static post<T>(options: PostOptions & Options, kyOptions: KyOptions) {
     const url = resolveUrl(options);
     const { body } = options;
     return ky
@@ -85,13 +72,7 @@ export class ZerionHttpClient {
         body,
         headers: createHeaders(options),
         credentials: 'include',
-        hooks: {
-          afterResponse: [
-            (_, __, response) => {
-              refreshPageForCloudflareChallengeIfNeeded(response);
-            },
-          ],
-        },
+        ...kyOptions,
       })
       .json<T>();
   }
