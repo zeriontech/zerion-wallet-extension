@@ -13,7 +13,7 @@ export interface Params {
 }
 
 export interface AssetChart {
-  points: { timestamp: string; value: number; extra: null }[];
+  points: { timestamp: number; value: number; extra: null }[];
 }
 
 type Response = ResponseBody<AssetChart>;
