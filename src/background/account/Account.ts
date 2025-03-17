@@ -9,7 +9,7 @@ import {
   clearStorageArtefacts,
 } from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
-import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version';
+import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version/shared';
 import { currentUserKey } from 'src/shared/getCurrentUser';
 import type { PublicUser, User } from 'src/shared/types/User';
 import { payloadId } from '@walletconnect/jsonrpc-utils';

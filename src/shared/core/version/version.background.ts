@@ -1,16 +1,9 @@
-import browser from 'webextension-polyfill';
 import {
   BrowserStorage,
   clearStorageArtefacts,
 } from 'src/background/webapis/storage';
 import { Account } from 'src/background/account/Account';
-
-const STORAGE_VERSION = 0.4;
-
-async function getCurrentVersion() {
-  const saved = await BrowserStorage.get<number | string>('STORAGE_VERSION');
-  return saved ?? 'no-version';
-}
+import { STORAGE_VERSION, checkExisingData, getCurrentVersion } from './shared';
 
 const upgrades: Record<string | number, () => Promise<null | number>> = {
   'no-version': async () => {
@@ -29,9 +22,6 @@ const upgrades: Record<string | number, () => Promise<null | number>> = {
   },
 };
 
-const checkExisingData = async () =>
-  Boolean(await BrowserStorage.get('currentUser'));
-
 export async function prepareStorage() {
   const hasSomeData = await checkExisingData();
   const storageVersion = await getCurrentVersion();
@@ -45,26 +35,4 @@ export async function prepareStorage() {
     }
   }
   return 'ok';
-}
-
-export async function checkVersion() {
-  const [hasSomeData, storageVersion] = await Promise.all([
-    checkExisingData(),
-    getCurrentVersion(),
-  ]);
-  if (hasSomeData && storageVersion === 'no-version') {
-    return {
-      storageVersion: {
-        mismatch: true,
-        // action: storageVersion === 'no-version' ? 'clear-storage' : undefined,
-        action: 'clear-storage',
-      },
-    };
-  }
-  return null;
-}
-
-export async function eraseAndUpdateToLatestVersion() {
-  await browser.storage.local.clear();
-  await BrowserStorage.set('STORAGE_VERSION', STORAGE_VERSION);
 }

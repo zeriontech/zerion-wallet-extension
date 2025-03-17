@@ -1,4 +1,4 @@
-import { prepareStorage } from 'src/shared/core/version';
+import { prepareStorage } from 'src/shared/core/version/version.background';
 import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
