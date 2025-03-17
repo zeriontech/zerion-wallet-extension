@@ -91,6 +91,7 @@ export function URLBar() {
         opacity: pathname !== pathnameRef.current ? 0 : 1,
         paddingTop: 16,
         paddingInline: 8,
+        paddingBottom: 'var(--url-bar-padding-bottom, 0)',
         display: 'grid',
         alignItems: 'center',
         gridTemplateColumns: '36px 1fr 40px',
@@ -137,17 +138,21 @@ export function URLBar() {
           return (
             <>
               {automaticTitle ? <DocumentTitle title={automaticTitle} /> : null}
-              <UIText
-                kind="body/accent"
-                style={{
-                  textAlign: 'center',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {text}
-              </UIText>
+              {typeof text === 'string' ? (
+                <UIText
+                  kind="body/accent"
+                  style={{
+                    textAlign: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {text}
+                </UIText>
+              ) : (
+                text
+              )}
             </>
           );
         }}
