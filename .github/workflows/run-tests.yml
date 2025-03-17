@@ -29,7 +29,6 @@ jobs:
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
           SOCIAL_API_URL: ${{ github.event.inputs.SOCIAL_API_URL || 'https://social.zerion.io/' }}
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
-          FEATURE_SEND_FORM: on
           FEATURE_FOOTER_BUG_BUTTON: off
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
         run: |
