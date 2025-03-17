@@ -3,6 +3,7 @@ import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { emitter } from 'src/ui/shared/events';
+import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { saveReferrerData } from './shared/storage';
 
 const ZERION_WEB_APP_URL = new URL('https://beta.zerion.io');
@@ -115,13 +116,20 @@ async function logTurnstileToken(params: unknown) {
 }
 
 export function TurnstileTokenHandler() {
+  const { innerWidth } = useWindowSizeStore();
+  const turnstileWidgetHeight = 65;
+  const turnstileWidgetWidth = innerWidth - 32;
   return (
     <WebAppMessageHandler
       pathname="/turnstile"
       callbackName="set-turnstile-token"
       callbackFn={logTurnstileToken}
       hidden={false}
-      style={{ width: 300, height: 100 }}
+      style={{
+        width: turnstileWidgetWidth,
+        height: turnstileWidgetHeight,
+        border: 'none',
+      }}
     />
   );
 }
