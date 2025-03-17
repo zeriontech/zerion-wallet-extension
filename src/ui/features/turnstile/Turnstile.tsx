@@ -5,6 +5,7 @@ import { emitter } from 'src/ui/shared/events';
 import { isObj } from 'src/shared/isObj';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { WebAppMessageHandler } from '../referral-program/WebAppMessageHandler';
 
 export function TurnstileTokenHandler() {
@@ -28,6 +29,7 @@ export function TurnstileTokenHandler() {
     );
     setShowDialog(false);
     dialogRef.current?.close();
+    queryClient.refetchQueries();
   }, []);
 
   return (
