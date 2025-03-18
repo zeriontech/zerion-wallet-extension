@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
+import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
+import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import DownloadIcon from 'jsx:src/ui/assets/download.svg';
 import ConnectIcon from 'jsx:src/ui/assets/technology-connect.svg';
 import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
@@ -21,7 +23,10 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { ItemLink as SurfaceItemLink } from 'src/ui/ui-kit/SurfaceList/SurfaceList';
+import {
+  ItemLink as SurfaceItemLink,
+  SurfaceList,
+} from 'src/ui/ui-kit/SurfaceList/SurfaceList';
 import * as surfaceListStyles from 'src/ui/ui-kit/SurfaceList/styles.module.css';
 import {
   useBackgroundKind,
@@ -31,6 +36,11 @@ import { openHref } from 'src/ui/shared/openUrl';
 import { AddReadonlyAddress } from './AddReadonlyAddress';
 import { GenerateWallet } from './GenerateWallet';
 import { ImportWallet } from './ImportWallet';
+import { PageTop } from 'src/ui/components/PageTop';
+import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
+import { SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
+import { useToggledValues } from 'src/ui/components/useToggledValues';
 
 function createNextHref(path: string, beforePath: string | null) {
   return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;
@@ -322,11 +332,99 @@ We do not cross-associate wallet addresses or have a way to know that these wall
   );
 }
 
+function NewWalletGroup() {
+  const title = 'Create New Wallet';
+  useBackgroundKind(whiteBackgroundKind);
+  const [values, toggleValue] = useToggledValues(
+    () => new Set(['solana', 'evm'])
+  );
+  return (
+    <PageColumn>
+      <NavigationTitle title={null} documentTitle={title} />
+      <PageTop />
+
+      <VStack gap={4} style={{ textAlign: 'center' }}>
+        <UIText kind="headline/h3">{title}</UIText>
+        <UIText kind="small/accent" color="var(--neutral-600)">
+          You can update this selection later
+          <br />
+          in Manage Wallets
+        </UIText>
+      </VStack>
+
+      <Spacer height={24} />
+      <PageFullBleedColumn paddingInline={false}>
+        <SurfaceList
+          gap={10}
+          style={{ backgroundColor: 'var(--z-index-0)' }}
+          items={[
+            {
+              key: 'ethereum',
+              pad: false,
+              isInteractive: true,
+              component: (
+                <SurfaceItemButton onClick={() => toggleValue('evm')}>
+                  <HStack
+                    gap={12}
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <HStack gap={12} alignItems="center">
+                      <EcosystemEthereumIcon
+                        style={{ width: 44, height: 44 }}
+                      />
+                      <UIText kind="body/regular">EVM wallet</UIText>
+                    </HStack>
+                    <span>
+                      <AnimatedCheckmark
+                        checked={values.has('evm')}
+                        checkedColor="var(--primary)"
+                      />
+                    </span>
+                  </HStack>
+                </SurfaceItemButton>
+              ),
+            },
+            {
+              key: 'solana',
+              pad: false,
+              isInteractive: true,
+              component: (
+                <SurfaceItemButton onClick={() => toggleValue('solana')}>
+                  <HStack
+                    gap={12}
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <HStack gap={12} alignItems="center">
+                      <EcosystemSolanaIcon style={{ width: 44, height: 44 }} />
+                      <UIText kind="body/regular">Solana wallet</UIText>
+                    </HStack>
+                    <span>
+                      <AnimatedCheckmark
+                        checked={values.has('solana')}
+                        checkedColor="var(--primary)"
+                      />
+                    </span>
+                  </HStack>
+                </SurfaceItemButton>
+              ),
+            },
+          ]}
+        />
+      </PageFullBleedColumn>
+      <Button style={{ marginTop: 'auto' }}>Continue</Button>
+      <PageBottom />
+    </PageColumn>
+  );
+}
+
 export function GetStarted() {
   return (
     <Routes>
       <Route path="/" element={<Options />} />
-      <Route path="/new" element={<GenerateWallet />} />
+      <Route path="/new" element={<NewWalletGroup />} />
+      <Route path="/new/generate" element={<GenerateWallet />} />
       <Route path="/import/*" element={<ImportWallet />} />
       <Route path="/wallet-group-select" element={<WalletGroupSelect />} />
       <Route path="/existing-select" element={<ExistingWalletOptions />} />

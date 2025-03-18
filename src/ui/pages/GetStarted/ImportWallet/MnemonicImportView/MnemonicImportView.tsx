@@ -11,7 +11,6 @@ import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import type { DerivedWallets } from './AddressImportFlow';
@@ -83,7 +82,7 @@ export function MnemonicImportView({
 
       const fn = getFirstNMnemonicWallets;
       const [eth, sol1, sol2, sol3] = await Promise.all([
-        fn({ phrase, n: 50, curve: 'ecdsa' }),
+        fn({ phrase, n: 40, curve: 'ecdsa' }),
         /** We want to explore all derivation paths in case there are active addresses */
         fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaBip44Change' }),
         fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaBip44' }),
@@ -112,14 +111,10 @@ export function MnemonicImportView({
     enabled: Boolean(phrase),
     useErrorBoundary: true,
   });
+  const addressesToCheck =
+    derivedWallets?.flatMap((c) => c.wallets.map((w) => w.address)) || [];
   const { value } = useAddressActivity(
-    {
-      addresses:
-        derivedWallets
-          ?.flatMap((c) => c.wallets.map((w) => w.address))
-          // TODO: Remove this filter when backend endpoint supports Solana
-          .filter((a) => isEthereumAddress(a)) || [],
-    },
+    { addresses: addressesToCheck },
     { enabled: Boolean(derivedWallets), keepStaleData: true }
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
