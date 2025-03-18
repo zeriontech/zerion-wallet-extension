@@ -32,6 +32,7 @@ import {
   SegmentedControlGroup,
   SegmentedControlRadio,
 } from 'src/ui/ui-kit/SegmentedControl';
+import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList, WalletListPresentation } from './WalletList';
 
@@ -94,22 +95,6 @@ export function PortfolioValueDetail({ address }: { address: string }) {
       />
     </UIText>
   );
-}
-
-function useToggledValues<T>(initialValues: Set<T> | (() => Set<T>)) {
-  const [values, setValues] = useState<Set<T>>(initialValues);
-  const toggleValue = useCallback((value: T) => {
-    setValues((set) => {
-      const newSet = new Set(set);
-      if (newSet.has(value)) {
-        newSet.delete(value);
-        return newSet;
-      } else {
-        return newSet.add(value);
-      }
-    });
-  }, []);
-  return [values, toggleValue] as const;
 }
 
 function SelectMoreWalletsDialog({
@@ -423,6 +408,7 @@ function AddressImportList({
                 .filter((group) => group.wallets.length)
                 .map((group) => (
                   <WalletListPresentation
+                    key={group.ecosystem}
                     displayPathIndex={false}
                     listTitle={
                       <PagePaddingInline>
