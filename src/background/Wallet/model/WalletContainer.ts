@@ -8,13 +8,18 @@ import { encrypt } from 'src/modules/crypto';
 import { invariant } from 'src/shared/invariant';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
-import { restoreBareWallet, walletToObject } from 'src/shared/wallet/create';
+import {
+  generateWalletsForEcosystems,
+  restoreBareWallet,
+  walletToObject,
+} from 'src/shared/wallet/create';
 import {
   decryptMnemonic,
   seedPhraseToHash,
 } from 'src/shared/wallet/encryption';
+import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
 import { SeedType } from './SeedType';
-import type { BareWallet } from './BareWallet';
+import type { BareWallet, BareMnemonicWallet } from './BareWallet';
 
 interface PlainWalletContainer {
   seedType: SeedType;
@@ -89,8 +94,6 @@ abstract class WalletContainerImpl implements SignerContainer {
 const MISSING_MNEMONIC =
   'Mnemonic Container is expected to have a wallet with a mnemonic';
 
-type BareMnemonicWallet = PartiallyRequired<BareWallet, 'mnemonic'>;
-
 function isMnemonicBareWallet(
   x: BareWallet | BareMnemonicWallet
 ): x is BareMnemonicWallet {
@@ -105,6 +108,11 @@ function assertMnemonicWallets(
   }
 }
 
+type MnemonicSeed = PartiallyOptional<
+  BareMnemonicWallet,
+  'name' | 'address' | 'privateKey'
+>;
+
 export class MnemonicWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
   seedType = SeedType.mnemonic;
@@ -113,13 +121,15 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
   static async create({
     wallets,
     credentials,
+    ecosystems,
   }: {
-    wallets?: BareMnemonicWallet[];
+    wallets?: MnemonicSeed[];
     credentials: SessionCredentials;
+    ecosystems?: Set<'evm' | 'solana' | string>;
   }): Promise<MnemonicWalletContainer> {
     const initial = wallets?.length
       ? wallets
-      : [restoreBareWallet({}) as BareMnemonicWallet];
+      : generateWalletsForEcosystems(ecosystems ?? new Set(['evm']));
     const phrase = initial[0].mnemonic?.phrase;
     invariant(phrase, MISSING_MNEMONIC);
     const seedHash = await seedPhraseToHash(phrase);
@@ -201,7 +211,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     return decryptMnemonic(phrase, credentials);
   }
 
-  constructor(wallets: BareMnemonicWallet[], seedHash: string) {
+  constructor(wallets: MnemonicSeed[], seedHash: string) {
     super();
     this.seedHash = seedHash;
     if (!wallets.length) {

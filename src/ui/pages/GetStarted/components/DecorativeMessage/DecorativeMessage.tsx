@@ -152,11 +152,11 @@ export function WithConfetti({
 }
 
 export function DecorativeMessageDone({
-  address,
+  addresses,
   messageKind = 'new',
   confettiOriginY = 0.75,
 }: {
-  address: string;
+  addresses: string[];
   messageKind?: 'import' | 'new';
   confettiOriginY?: number;
 }) {
@@ -186,14 +186,22 @@ export function DecorativeMessageDone({
                 backgroundColor: 'var(--z-index-1)',
               }}
             >
-              <HStack gap={12} alignItems="center">
-                <WalletAvatar address={address} size={44} borderRadius={4} />
-                <div>
-                  <UIText kind="body/regular" title={address}>
-                    {truncateAddress(address, 8)}
-                  </UIText>
-                </div>
-              </HStack>
+              <VStack gap={12}>
+                {addresses.map((address) => (
+                  <HStack key={address} gap={12} alignItems="center">
+                    <WalletAvatar
+                      address={address}
+                      size={44}
+                      borderRadius={4}
+                    />
+                    <div>
+                      <UIText kind="body/regular" title={address}>
+                        {truncateAddress(address, 8)}
+                      </UIText>
+                    </div>
+                  </HStack>
+                ))}
+              </VStack>
             </Surface>
           </VStack>
         }

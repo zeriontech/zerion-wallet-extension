@@ -323,17 +323,20 @@ export class Wallet {
   // TODO: For now, I prefix methods with "ui" which return wallet data and are supposed to be called
   // from the UI (extension popup) thread. It's maybe better to refactor them
   // into a separate isolated class
-  async uiGenerateMnemonic() {
+  async uiGenerateMnemonic({
+    params: { ecosystems },
+  }: WalletMethodParams<{ ecosystems: ('evm' | 'solana' | string)[] }>) {
     this.ensureActiveSession(this.userCredentials);
     const walletContainer = await MnemonicWalletContainer.create({
       credentials: this.userCredentials,
+      ecosystems: new Set(ecosystems),
     });
     this.pendingWallet = {
       origin: WalletOrigin.extension,
       groupId: null,
       walletContainer,
     };
-    return maskWallet(walletContainer.getFirstWallet());
+    return walletContainer.wallets.map((wallet) => maskWallet(wallet));
   }
 
   async uiImportPrivateKey({
