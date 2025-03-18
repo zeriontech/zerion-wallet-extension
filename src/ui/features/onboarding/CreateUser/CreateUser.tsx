@@ -35,7 +35,9 @@ export function CreateUser() {
       if (password) {
         await accountPublicRPCPort.request('createUser', { password });
       }
-      await walletPort.request('uiGenerateMnemonic');
+      await walletPort.request('uiGenerateMnemonic', {
+        ecosystems: ['ethereum'],
+      });
     },
     onSuccess: () => {
       zeroizeAfterSubmission();

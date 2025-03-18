@@ -4,14 +4,23 @@ import * as bip39 from 'bip39';
 /** TODO: replace with @noble/ed25519 ? */
 import { derivePath } from 'ed25519-hd-key';
 import type { BareWallet } from 'src/shared/types/BareWallet';
+import type { BareMnemonicWallet } from 'src/background/Wallet/model/BareWallet';
 
+export function fromSolanaKeypair(opts: {
+  mnemonic: null;
+  keypair: Keypair;
+}): BareWallet;
+export function fromSolanaKeypair(opts: {
+  mnemonic: { phrase: string; path: string };
+  keypair: Keypair;
+}): BareMnemonicWallet;
 export function fromSolanaKeypair({
   mnemonic,
   keypair,
 }: {
   mnemonic: null | { phrase: string; path: string };
   keypair: Keypair;
-}): BareWallet {
+}): BareWallet | BareMnemonicWallet {
   return {
     mnemonic,
     address: keypair.publicKey.toBase58(),

@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Link, Route, Routes, useSearchParams } from 'react-router-dom';
+import {
+  Link,
+  Route,
+  Routes,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import DownloadIcon from 'jsx:src/ui/assets/download.svg';
@@ -33,14 +39,14 @@ import {
   whiteBackgroundKind,
 } from 'src/ui/components/Background/Background';
 import { openHref } from 'src/ui/shared/openUrl';
-import { AddReadonlyAddress } from './AddReadonlyAddress';
-import { GenerateWallet } from './GenerateWallet';
-import { ImportWallet } from './ImportWallet';
 import { PageTop } from 'src/ui/components/PageTop';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { useToggledValues } from 'src/ui/components/useToggledValues';
+import { AddReadonlyAddress } from './AddReadonlyAddress';
+import { GenerateWallet } from './GenerateWallet';
+import { ImportWallet } from './ImportWallet';
 
 function createNextHref(path: string, beforePath: string | null) {
   return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;
@@ -336,8 +342,9 @@ function NewWalletGroup() {
   const title = 'Create New Wallet';
   useBackgroundKind(whiteBackgroundKind);
   const [values, toggleValue] = useToggledValues(
-    () => new Set(['solana', 'evm'])
+    () => new Set(['evm', 'solana'])
   );
+  const navigate = useNavigate();
   return (
     <PageColumn>
       <NavigationTitle title={null} documentTitle={title} />
@@ -413,7 +420,18 @@ function NewWalletGroup() {
           ]}
         />
       </PageFullBleedColumn>
-      <Button style={{ marginTop: 'auto' }}>Continue</Button>
+      <Button
+        style={{ marginTop: 'auto' }}
+        disabled={values.size === 0}
+        onClick={() => {
+          const params = new URLSearchParams(
+            Array.from(values).map((value) => ['ecosystems', value])
+          );
+          navigate(`/get-started/new/generate?${params}`);
+        }}
+      >
+        Continue{values.size ? ` (${values.size})` : null}
+      </Button>
       <PageBottom />
     </PageColumn>
   );
