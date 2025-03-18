@@ -18,6 +18,7 @@ import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
 import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { emitter } from 'src/ui/shared/events';
 import { getColor, getSign } from './helpers';
 import { AssetChart } from './AssetChart/AssetChart';
 
@@ -40,7 +41,11 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
   const priceChangeElementRef = useRef<HTMLDivElement>(null);
   const dateElementRef = useRef<HTMLDivElement>(null);
   const [period, setPeriod] = useState<ChartPeriod>('1d');
-  const { data: chartData, isFetching } = useAssetChart({
+  const {
+    data: chartData,
+    isFetching,
+    isError,
+  } = useAssetChart({
     addresses: [],
     currency,
     fungibleId: asset.id,
@@ -88,11 +93,9 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
         priceChangeElementRef.current &&
         dateElementRef.current
       ) {
-        priceElementRef.current.innerHTML = formatPriceValue(
-          value || 0,
-          'en',
-          currency
-        );
+        const priceValue = formatPriceValue(value || 0, 'en', currency);
+        priceElementRef.current.innerHTML = priceValue;
+        emitter.emit('assetPriceSelected', priceValue);
         priceChangeElementRef.current.style.setProperty(
           'color',
           getColor(localPriceChange)
@@ -173,31 +176,40 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
           </VStack>
         )}
       </VStack>
-      <AssetChart chartPoints={chartPoints} onRangeSelect={handleRangeSelect} />
-      <HStack gap={8} justifyContent="space-between">
-        {CHART_TYPE_OPTIONS.map((type) => (
-          <Button
-            key={type}
-            kind="neutral"
-            size={32}
-            style={{
-              width: 44,
-              padding: '0 8px',
-              ['--button-background' as string]:
-                type === period ? 'var(--neutral-200)' : 'var(--white)',
-              ['--button-background-hover' as string]:
-                type === period ? 'var(--neutral-300)' : 'var(--neutral-100)',
-            }}
-            onClick={() => setPeriod(type)}
-          >
-            {type === period && isFetching ? (
-              <CircleSpinner style={{ marginInline: 'auto' }} />
-            ) : (
-              CHART_TYPE_LABELS[type]
-            )}
-          </Button>
-        ))}
-      </HStack>
+      {isUntrackedAsset || isError ? null : (
+        <>
+          <AssetChart
+            chartPoints={chartPoints}
+            onRangeSelect={handleRangeSelect}
+          />
+          <HStack gap={8} justifyContent="space-between">
+            {CHART_TYPE_OPTIONS.map((type) => (
+              <Button
+                key={type}
+                kind="neutral"
+                size={32}
+                style={{
+                  width: 44,
+                  padding: '0 8px',
+                  ['--button-background' as string]:
+                    type === period ? 'var(--neutral-200)' : 'var(--white)',
+                  ['--button-background-hover' as string]:
+                    type === period
+                      ? 'var(--neutral-300)'
+                      : 'var(--neutral-100)',
+                }}
+                onClick={() => setPeriod(type)}
+              >
+                {type === period && isFetching ? (
+                  <CircleSpinner style={{ marginInline: 'auto' }} />
+                ) : (
+                  CHART_TYPE_LABELS[type]
+                )}
+              </Button>
+            ))}
+          </HStack>
+        </>
+      )}
     </VStack>
   );
 }

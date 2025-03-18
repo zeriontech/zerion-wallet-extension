@@ -69,7 +69,14 @@ export function AssetInfo() {
   const { asset_code } = useParams();
   useBackgroundKind({ kind: 'white' });
   useBodyStyle(
-    useMemo(() => ({ ['--url-bar-padding-bottom' as string]: '16px' }), [])
+    useMemo(
+      () => ({
+        ['--url-bar-padding-bottom' as string]: '16px',
+        ['--url-bar-background' as string]: 'transparent',
+        ['--url-bar-backdrop-filter' as string]: 'blur(5px)',
+      }),
+      []
+    )
   );
   invariant(asset_code, 'Asset Code is required');
   const navigationType = useNavigationType();
