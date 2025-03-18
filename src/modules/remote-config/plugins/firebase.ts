@@ -10,6 +10,7 @@ const defaultConfig: RemoteConfig = {
   extension_uninstall_link: '',
   extension_loyalty_enabled: true,
   loyalty_config: {},
+  zerion_fee_learn_more_link: '',
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [

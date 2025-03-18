@@ -78,9 +78,7 @@ import {
   applyConfiguration,
 } from '../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { useApproveHandler } from '../SwapForm/shared/useApproveHandler';
-import { RateLine } from '../SwapForm/Quotes';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
-import { ProtocolFeeLine } from '../SwapForm/shared/ProtocolFeeLine';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -92,6 +90,8 @@ import { SpendTokenField } from './fieldsets/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
 import { SuccessState } from './SuccessState';
 import { LabeledNetworkSelect } from './LabeledNetworkSelect';
+import { BridgeLine } from './BridgeLine';
+import { ZerionFeeLine } from './ZerionFeeLine';
 
 const rootNode = getRootDomNode();
 
@@ -367,6 +367,8 @@ function BridgeFormComponent() {
     refetch: refetchQuotes,
   } = quotesData;
 
+  const selectedQuote = quote;
+
   const reverseChains = useCallback(
     () =>
       setUserFormState((state) => ({
@@ -383,18 +385,18 @@ function BridgeFormComponent() {
   ) => setUserFormState((state) => ({ ...state, [key]: value }));
 
   useEffect(() => {
-    if (!quote) {
+    if (!selectedQuote) {
       const opposite = 'receiveInput';
       handleChange(opposite, '');
     } else if (spendChain && receivePosition) {
-      const value = quote.output_amount_estimation || 0;
+      const value = selectedQuote.output_amount_estimation || 0;
       const decimals = getDecimals({
         asset: receivePosition.asset,
         chain: spendChain,
       });
       handleChange('receiveInput', baseToCommon(value, decimals).toFixed());
     }
-  }, [quote, receivePosition, spendChain]);
+  }, [selectedQuote, receivePosition, spendChain]);
 
   const snapshotRef = useRef<BridgeFormState | null>(null);
   const onBeforeSubmit = () => {
@@ -441,9 +443,11 @@ function BridgeFormComponent() {
     chain: spendChain,
     spendAmountBase,
     allowanceQuantityBase,
-    spender: quote?.token_spender ?? null,
+    spender: selectedQuote?.token_spender ?? null,
     contractAddress: spendTokenContractAddress,
-    enabled: quotesData.done && Boolean(quote && !quote.enough_allowance),
+    enabled:
+      quotesData.done &&
+      Boolean(selectedQuote && !selectedQuote.enough_allowance),
     keepPreviousData: false,
   });
 
@@ -500,7 +504,7 @@ function BridgeFormComponent() {
       invariant(spendChain, 'Spend chain must be defined to sign the tx');
       invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
       invariant(spendPosition, 'Spend position must be defined');
-      invariant(quote, 'Cannot submit transaction without a quote');
+      invariant(selectedQuote, 'Cannot submit transaction without a quote');
 
       const txResponse = await approveTxBtnRef.current.sendTransaction({
         transaction,
@@ -511,7 +515,7 @@ function BridgeFormComponent() {
         addressAction: createApproveAddressAction({
           transaction: { ...transaction, from: address },
           asset: spendPosition.asset,
-          quantity: quote.input_amount_estimation,
+          quantity: selectedQuote.input_amount_estimation,
           chain: spendChain,
         }),
       });
@@ -549,7 +553,7 @@ function BridgeFormComponent() {
       if (!gasPrices) {
         throw new Error('Unknown gas price');
       }
-      invariant(quote, 'Cannot submit transaction without a quote');
+      invariant(selectedQuote, 'Cannot submit transaction without a quote');
       invariant(bridgeTransaction, 'No transaction in quote');
       const transaction = configureTransactionToBeSigned(bridgeTransaction);
       const feeValueCommon = feeValueCommonRef.current || null;
@@ -568,10 +572,10 @@ function BridgeFormComponent() {
         addressAction: createSendAddressAction({
           transaction,
           asset: spendPosition.asset,
-          quantity: quote.input_amount_estimation,
+          quantity: selectedQuote.input_amount_estimation,
           chain: spendChain,
         }),
-        quote,
+        quote: selectedQuote,
       });
       return txResponse.hash;
     },
@@ -862,7 +866,7 @@ function BridgeFormComponent() {
         <VStack
           gap={8}
           style={
-            quotesData.quote || quotesData.isLoading || quotesData.error
+            selectedQuote || quotesData.isLoading || quotesData.error
               ? {
                   borderRadius: 12,
                   border: '2px solid var(--neutral-200)',
@@ -871,11 +875,14 @@ function BridgeFormComponent() {
               : undefined
           }
         >
-          <RateLine
-            spendAsset={spendAsset}
-            receiveAsset={receiveAsset}
-            quotesData={quotesData}
-          />
+          {spendChain && receiveChain && spendAsset && receiveAsset ? (
+            <BridgeLine
+              spendChain={spendChain}
+              quotesData={quotesData}
+              quote={selectedQuote}
+            />
+          ) : null}
+          {selectedQuote ? <ZerionFeeLine quote={selectedQuote} /> : null}
           {currentTransaction && spendChain && currentTransaction.gasLimit ? (
             <React.Suspense
               fallback={
@@ -900,7 +907,6 @@ function BridgeFormComponent() {
             </React.Suspense>
           ) : null}
         </VStack>
-        {quote ? <ProtocolFeeLine quote={quote} /> : null}
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
         <HiddenValidationInput
@@ -996,7 +1002,8 @@ function BridgeFormComponent() {
                         isLoading ||
                         quotesData.isLoading ||
                         Boolean(
-                          (quote && !bridgeTransaction) || quotesData.error
+                          (selectedQuote && !bridgeTransaction) ||
+                            quotesData.error
                         )
                       }
                       holdToSign={false}
