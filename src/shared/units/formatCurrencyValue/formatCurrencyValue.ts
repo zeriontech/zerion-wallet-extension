@@ -8,6 +8,8 @@ const getCurrencyFormatter = memoize((locale, currency, config = {}) => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
     ...config,
   });
 });
@@ -17,6 +19,7 @@ const getSmallPriceCurrencyFormatter = memoize(
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
+      minimumFractionDigits: 2,
       maximumSignificantDigits: 3,
       maximumFractionDigits: 20,
       ...config,
