@@ -8,8 +8,6 @@ const getCurrencyFormatter = memoize((locale, currency, config = {}) => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
     ...config,
   });
 });
@@ -36,7 +34,7 @@ export function formatCurrencyValue(
   const number = value instanceof BigNumber ? value.toNumber() : Number(value);
   const sign = number < 0 ? typographicMinus : '';
   const absValue = Math.abs(number);
-  const isSmallValue = absValue < 1;
+  const isSmallValue = absValue < 0.99;
 
   const config = CURRENCIES[currency] as CurrencyConfig | undefined;
   const numberFormatOptions = resolveOptions(number, config || null, opts);
