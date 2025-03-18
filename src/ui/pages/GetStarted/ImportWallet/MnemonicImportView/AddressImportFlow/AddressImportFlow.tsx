@@ -1,5 +1,5 @@
 import groupBy from 'lodash/groupBy';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
