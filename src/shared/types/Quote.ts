@@ -42,5 +42,8 @@ export interface Quote {
   marketplace_fee: number;
   protocol_fee: number;
   protocol_fee_amount: string;
+  bridge_fee_asset_id: string | null;
+  bridge_fee_taken_on_top: boolean | null;
+  bridge_fee_amount: string;
   transaction: TransactionDescription | null;
 }
