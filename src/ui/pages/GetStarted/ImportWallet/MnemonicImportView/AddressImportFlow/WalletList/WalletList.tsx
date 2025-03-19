@@ -169,7 +169,7 @@ export function WalletList({
     <WalletListPresentation
       wallets={wallets.slice(0, count)}
       hasMore={count < wallets.length}
-      onLoadMore={() => setCount((count) => count + 3)}
+      onLoadMore={() => setCount((count) => count + 7)}
       showMoreText={count === 0 ? 'Show' : undefined}
       {...props}
     />

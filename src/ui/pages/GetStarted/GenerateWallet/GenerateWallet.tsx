@@ -18,6 +18,7 @@ import { focusNode } from 'src/ui/shared/focusNode';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
 import { invariant } from 'src/shared/invariant';
+import { assertKnownEcosystems } from 'src/shared/wallet/shared';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
@@ -31,7 +32,8 @@ enum Step {
 function GenerateWalletView() {
   const [params] = useSearchParams();
   const ecosystems = params.getAll('ecosystems');
-  invariant(ecosystems.length, 'Must provide ecosystems get-param');
+  invariant(ecosystems.length > 0, 'Must provide ecosystems get-param');
+  assertKnownEcosystems(ecosystems);
   const [steps, setSteps] = useState(() => new Set<Step>());
   const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
 
