@@ -24,16 +24,21 @@ import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import {
+  EmptyAddressPosition,
   NetworkId,
   getChainWithMostAssetValue,
+  useSearchParamsState,
 } from '@zeriontech/transactions';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { useQuotes } from 'src/ui/shared/requests/useQuotes';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { baseToCommon, commonToBase } from 'src/shared/units/convert';
-import { getAddress, getDecimals } from 'src/modules/networks/asset';
+import {
+  getAddress,
+  getBaseQuantity,
+  getCommonQuantity,
+} from 'src/modules/networks/asset';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { AddressPosition } from 'defi-sdk';
@@ -72,7 +77,7 @@ import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput
 import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { isNumeric } from 'src/shared/isNumeric';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { getNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
+import type { Networks } from 'src/modules/networks/Networks';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -102,7 +107,7 @@ function FormHint({
   render,
 }: {
   spendInput?: string;
-  spendPosition: AddressPosition | null;
+  spendPosition: AddressPosition | EmptyAddressPosition | null;
   quotesData: QuotesData;
   render: (message: string | null) => React.ReactNode;
 }) {
@@ -126,6 +131,52 @@ function FormHint({
     message = getQuotesErrorMessage(quotesData);
   }
   return render(message);
+}
+
+function getDefaultFormValues({
+  networks,
+  positions,
+}: {
+  networks: Networks | null;
+  positions: AddressPosition[] | null;
+}) {
+  const bridgeablePositions =
+    networks && positions
+      ? positions.filter((position) =>
+          networks.supports('bridging', createChain(position.chain))
+        )
+      : null;
+
+  const spendChainInput = bridgeablePositions
+    ? getChainWithMostAssetValue(bridgeablePositions) ?? NetworkId.Ethereum
+    : NetworkId.Ethereum;
+
+  const receiveChainInput =
+    spendChainInput === NetworkId.Zero ? NetworkId.Ethereum : NetworkId.Zero;
+
+  return {
+    spendChainInput,
+    receiveChainInput,
+  };
+}
+
+function getDefaultTokens({
+  availableSpendPositions,
+  availableReceivePositions,
+  spendTokens,
+  receiveTokens,
+}: {
+  availableSpendPositions?: AddressPosition[];
+  availableReceivePositions?: AddressPosition[];
+  spendTokens?: string[];
+  receiveTokens?: string[];
+}) {
+  const defaultSpendToken =
+    availableSpendPositions?.[0]?.asset.asset_code || spendTokens?.[0];
+  const defaultReceiveToken =
+    availableReceivePositions?.[0]?.asset.asset_code || receiveTokens?.[0];
+
+  return { defaultSpendToken, defaultReceiveToken };
 }
 
 function BridgeNetworksSelect({
@@ -202,13 +253,6 @@ function BridgeFormComponent() {
     useErrorBoundary: true,
   });
 
-  const { data: positionsResponse } = useHttpAddressPositions(
-    { addresses: [address], currency },
-    { source: useHttpClientSource() },
-    { refetchInterval: usePositionsRefetchInterval(20000) }
-  );
-  const positions = positionsResponse?.data ?? null;
-
   const { data: portfolioResponse } = useWalletPortfolio(
     { addresses: [address], currency },
     { source: useHttpClientSource() },
@@ -222,31 +266,52 @@ function BridgeFormComponent() {
 
   const { networks } = useNetworks(addressChains);
 
-  const defaultSpendNetworkId = useMemo(
-    () =>
-      positions
-        ? getChainWithMostAssetValue(positions) ?? NetworkId.Ethereum
-        : NetworkId.Ethereum,
-    [positions]
+  const { data: positionsResponse } = useHttpAddressPositions(
+    { addresses: [address], currency },
+    { source: useHttpClientSource() },
+    { refetchInterval: usePositionsRefetchInterval(20000) }
   );
-  const defaultReceiveNetworkId =
-    defaultSpendNetworkId === NetworkId.Zero
-      ? NetworkId.Ethereum
-      : NetworkId.Zero;
 
-  const defaultSpendChain = createChain(defaultSpendNetworkId);
-  const defaultReceiveChain = createChain(defaultReceiveNetworkId);
+  const positions = positionsResponse?.data ?? null;
+
+  const defaultFormValues = getDefaultFormValues({ networks, positions });
+  const [userFormState, setUserFormState] = useSearchParamsState(
+    useMemo(
+      () => [
+        'spendChainInput',
+        'receiveChainInput',
+        'spendTokenInput',
+        'receiveTokenInput',
+        'spendInput',
+        'receiveInput',
+
+        'receiverAddressInput',
+        'showReceiverAddressInput',
+      ],
+      []
+    )
+  );
+
+  const { spendChainInput, receiveChainInput } = {
+    ...defaultFormValues,
+    ...userFormState,
+  };
+
+  const spendChain = spendChainInput ? createChain(spendChainInput) : null;
+  const receiveChain = receiveChainInput
+    ? createChain(receiveChainInput)
+    : null;
 
   const { data: spendTokens } = useBridgeTokens({
-    inputChain: defaultSpendChain,
-    outputChain: defaultReceiveChain,
+    inputChain: spendChain,
+    outputChain: receiveChain,
     direction: 'input',
     enabled: true,
   });
 
   const { data: receiveTokens } = useBridgeTokens({
-    inputChain: defaultSpendChain,
-    outputChain: defaultReceiveChain,
+    inputChain: spendChain,
+    outputChain: receiveChain,
     direction: 'output',
     enabled: true,
   });
@@ -256,9 +321,9 @@ function BridgeFormComponent() {
       getAvailablePositions({
         positions,
         supportedTokens: spendTokens,
-        chain: defaultSpendChain,
+        chain: spendChain,
       }),
-    [positions, defaultSpendChain, spendTokens]
+    [positions, spendChain, spendTokens]
   );
 
   const availableReceivePositions = useMemo(
@@ -266,59 +331,33 @@ function BridgeFormComponent() {
       getAvailablePositions({
         positions,
         supportedTokens: receiveTokens,
-        chain: defaultReceiveChain,
+        chain: receiveChain,
       }),
-    [positions, defaultReceiveChain, receiveTokens]
+    [positions, receiveChain, receiveTokens]
   );
 
-  const { data: spendChainNativeAsset } = useQuery({
-    queryKey: ['getNativeAsset', defaultSpendChain, currency],
-    queryFn: () => getNativeAsset({ chain: defaultSpendChain, currency }),
-    staleTime: Infinity,
-    suspense: true,
-  });
-  const { data: receiveChainNativeAsset } = useQuery({
-    queryKey: ['getNativeAsset', defaultReceiveChain, currency],
-    queryFn: () => getNativeAsset({ chain: defaultReceiveChain, currency }),
-    staleTime: Infinity,
-    suspense: true,
+  const { defaultSpendToken, defaultReceiveToken } = getDefaultTokens({
+    availableSpendPositions: availableSpendPositions?.sorted,
+    availableReceivePositions: availableReceivePositions?.sorted,
+    spendTokens,
+    receiveTokens,
   });
 
-  const defaultSpendToken =
-    availableSpendPositions?.sorted[0].asset.asset_code ??
-    spendChainNativeAsset?.asset_code;
-
-  const defaultReceiveToken =
-    availableReceivePositions?.sorted[0].asset.asset_code ??
-    receiveChainNativeAsset?.asset_code;
-
-  const [defaultFormState, _setDefaultFormState] = useState<BridgeFormState>({
-    spendChainInput: defaultSpendChain.toString(),
-    receiveChainInput: defaultReceiveChain.toString(),
+  const [initialFormState, setInitialFormState] = useState<BridgeFormState>({
     spendTokenInput: defaultSpendToken,
     receiveTokenInput: defaultReceiveToken,
-  });
-
-  const [userFormState, setUserFormState] = useState<BridgeFormState>({
     receiverAddressInput: null,
     showReceiverAddressInput: false,
   });
 
-  const formState = { ...defaultFormState, ...userFormState };
+  const finalFormState = {
+    ...defaultFormValues,
+    ...initialFormState,
+    ...userFormState,
+  };
 
-  const {
-    spendChainInput,
-    receiveChainInput,
-    spendInput,
-    receiveInput,
-    spendTokenInput,
-    receiveTokenInput,
-  } = formState;
-
-  const spendChain = spendChainInput ? createChain(spendChainInput) : null;
-  const receiveChain = receiveChainInput
-    ? createChain(receiveChainInput)
-    : null;
+  const { spendTokenInput, receiveTokenInput, spendInput, receiveInput } =
+    finalFormState;
 
   const spendAssetQuery = useAssetsPrices(
     { asset_codes: [spendTokenInput].filter(isTruthy), currency },
@@ -336,14 +375,39 @@ function BridgeFormComponent() {
     ? receiveAssetQuery.value?.[receiveTokenInput] ?? null
     : null;
 
-  const spendPosition =
-    spendTokenInput && availableSpendPositions
-      ? availableSpendPositions.map[spendTokenInput]
-      : null;
-  const receivePosition =
-    receiveTokenInput && availableReceivePositions
-      ? availableReceivePositions.map[receiveTokenInput]
-      : null;
+  const spendPosition = useMemo(() => {
+    if (!spendChain || !spendTokenInput) {
+      return null;
+    }
+    if (availableSpendPositions?.map[spendTokenInput]) {
+      return availableSpendPositions.map[spendTokenInput];
+    } else if (spendAsset) {
+      return new EmptyAddressPosition({ asset: spendAsset, chain: spendChain });
+    } else {
+      return null;
+    }
+  }, [availableSpendPositions, spendAsset, spendTokenInput, spendChain]);
+
+  const receivePosition = useMemo(() => {
+    if (!receiveChain || !receiveTokenInput) {
+      return null;
+    }
+    if (availableReceivePositions?.map[receiveTokenInput]) {
+      return availableReceivePositions.map[receiveTokenInput];
+    } else if (receiveAsset) {
+      return new EmptyAddressPosition({
+        asset: receiveAsset,
+        chain: receiveChain,
+      });
+    } else {
+      return null;
+    }
+  }, [
+    availableReceivePositions,
+    receiveAsset,
+    receiveTokenInput,
+    receiveChain,
+  ]);
 
   const quotesData = useQuotes({
     address,
@@ -359,7 +423,13 @@ function BridgeFormComponent() {
     receivePosition,
   });
 
-  // TODO: useEffect to update defaultSpendToken, defaultReceiveToken on chain change
+  useEffect(() => {
+    setInitialFormState((state) => ({
+      ...state,
+      spendTokenInput: defaultSpendToken,
+      receiveTokenInput: defaultReceiveToken,
+    }));
+  }, [defaultSpendToken, defaultReceiveToken]);
 
   const {
     transaction: bridgeTransaction,
@@ -379,28 +449,29 @@ function BridgeFormComponent() {
     [setUserFormState, receiveChainInput, spendChainInput]
   );
 
-  const handleChange = <K extends keyof BridgeFormState>(
-    key: K,
-    value?: BridgeFormState[K]
-  ) => setUserFormState((state) => ({ ...state, [key]: value }));
+  const handleChange = useCallback(
+    <K extends keyof BridgeFormState>(key: K, value?: BridgeFormState[K]) =>
+      setUserFormState((state) => ({ ...state, [key]: value })),
+    [setUserFormState]
+  );
 
   useEffect(() => {
     if (!selectedQuote) {
       const opposite = 'receiveInput';
       handleChange(opposite, '');
     } else if (spendChain && receivePosition) {
-      const value = selectedQuote.output_amount_estimation || 0;
-      const decimals = getDecimals({
+      const valueCommon = getCommonQuantity({
+        baseQuantity: selectedQuote.output_amount_estimation || 0,
         asset: receivePosition.asset,
         chain: spendChain,
       });
-      handleChange('receiveInput', baseToCommon(value, decimals).toFixed());
+      handleChange('receiveInput', valueCommon.toFixed());
     }
-  }, [selectedQuote, receivePosition, spendChain]);
+  }, [handleChange, selectedQuote, receivePosition, spendChain]);
 
   const snapshotRef = useRef<BridgeFormState | null>(null);
   const onBeforeSubmit = () => {
-    snapshotRef.current = formState;
+    snapshotRef.current = finalFormState;
   };
 
   const feeValueCommonRef = useRef<string | null>(
@@ -415,10 +486,11 @@ function BridgeFormComponent() {
   const spendAmountBase = useMemo(
     () =>
       spendInput && spendPosition && spendChain
-        ? commonToBase(
-            spendInput,
-            getDecimals({ asset: spendPosition.asset, chain: spendChain })
-          ).toFixed()
+        ? getBaseQuantity({
+            commonQuantity: spendInput,
+            asset: spendPosition.asset,
+            chain: spendChain,
+          }).toFixed()
         : null,
     [spendChain, spendInput, spendPosition]
   );

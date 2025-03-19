@@ -1,3 +1,4 @@
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import React, { useId, useRef } from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -36,7 +37,7 @@ export function SpendTokenField({
   spendInput?: string;
   spendChain: Chain | null;
   spendAsset: Asset | null;
-  spendPosition: AddressPosition | null;
+  spendPosition: AddressPosition | EmptyAddressPosition | null;
   availableSpendPositions: AddressPosition[];
   receiveInput?: string;
   receiveAsset: Asset | null;

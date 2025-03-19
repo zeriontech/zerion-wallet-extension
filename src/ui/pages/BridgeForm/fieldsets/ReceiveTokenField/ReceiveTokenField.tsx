@@ -14,6 +14,7 @@ import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import { MarketAssetSelect } from 'src/ui/pages/SwapForm/fieldsets/ReceiveTokenField/MarketAssetSelect';
 import { FiatInputValue } from 'src/ui/components/FiatInputValue';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
 
 export function ReceiveTokenField({
   receiveInput,
@@ -29,7 +30,7 @@ export function ReceiveTokenField({
   receiveInput?: string;
   receiveChain: Chain | null;
   receiveAsset: Asset | null;
-  receivePosition: AddressPosition | null;
+  receivePosition: AddressPosition | EmptyAddressPosition | null;
   availableReceivePositions: AddressPosition[];
   spendInput?: string;
   spendAsset: Asset | null;
