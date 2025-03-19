@@ -181,6 +181,11 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
           <AssetChart
             chartPoints={chartPoints}
             onRangeSelect={handleRangeSelect}
+            style={{
+              position: 'relative',
+              left: -16,
+              width: 'calc(100% + 32px)',
+            }}
           />
           <HStack gap={8} justifyContent="space-between">
             {CHART_TYPE_OPTIONS.map((type) => (
@@ -203,7 +208,9 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
                 {type === period && isFetching ? (
                   <CircleSpinner style={{ marginInline: 'auto' }} />
                 ) : (
-                  CHART_TYPE_LABELS[type]
+                  <UIText kind="caption/accent" color="var(--neutral-700)">
+                    {CHART_TYPE_LABELS[type]}
+                  </UIText>
                 )}
               </Button>
             ))}

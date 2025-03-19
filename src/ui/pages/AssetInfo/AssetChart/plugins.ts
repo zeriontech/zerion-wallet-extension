@@ -51,13 +51,13 @@ export function drawCrossPlugin({
       }
 
       // Draw horizontal line
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(chart.width, y);
-      ctx.strokeStyle = 'grey';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.closePath();
+      // ctx.beginPath();
+      // ctx.moveTo(0, y);
+      // ctx.lineTo(chart.width, y);
+      // ctx.strokeStyle = 'grey';
+      // ctx.lineWidth = 1;
+      // ctx.stroke();
+      // ctx.closePath();
 
       ctx.setLineDash([]);
 
