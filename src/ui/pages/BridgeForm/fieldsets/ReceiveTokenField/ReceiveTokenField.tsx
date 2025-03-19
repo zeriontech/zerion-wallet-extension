@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useMemo, useRef } from 'react';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import {
   formatTokenValue,
@@ -13,8 +13,9 @@ import { NBSP } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import { MarketAssetSelect } from 'src/ui/pages/SwapForm/fieldsets/ReceiveTokenField/MarketAssetSelect';
-import { FiatInputValue } from 'src/ui/components/FiatInputValue';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
+import { ReceiveFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
+import { calculatePriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
 
 export function ReceiveTokenField({
   receiveInput,
@@ -53,6 +54,17 @@ export function ReceiveTokenField({
       tokenValueInputRef.current?.setValue('');
     }
   }, [receiveInput]);
+
+  const priceImpact = useMemo(
+    () =>
+      calculatePriceImpact({
+        inputValue: spendInput ?? null,
+        outputValue: receiveInput ?? null,
+        inputAsset: spendAsset,
+        outputAsset: receiveAsset,
+      }),
+    [receiveAsset, receiveInput, spendAsset, spendInput]
+  );
 
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -124,13 +136,13 @@ export function ReceiveTokenField({
           </div>
         }
         endDescription={
-          <FiatInputValue
-            name="receiveInput"
+          <ReceiveFiatInputValue
             primaryInput="spend"
             spendInput={spendInput}
             spendAsset={spendAsset}
             receiveInput={receiveInput}
             receiveAsset={receiveAsset}
+            priceImpact={priceImpact}
           />
         }
       />

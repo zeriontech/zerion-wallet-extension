@@ -14,14 +14,17 @@ import { createChain } from 'src/modules/networks/Chain';
 import { NBSP } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
-import { FiatInputValue } from 'src/ui/components/FiatInputValue';
+import { ReceiveFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
+import type { PriceImpact } from '../../shared/price-impact';
 import { MarketAssetSelect } from './MarketAssetSelect';
 
 export function ReceiveTokenField({
   swapView,
+  priceImpact,
   readOnly,
 }: {
   swapView: SwapFormView;
+  priceImpact: PriceImpact | null;
   readOnly: boolean;
 }) {
   const { receivePosition, receiveAssetQuery, spendAsset, receiveAsset } =
@@ -61,6 +64,7 @@ export function ReceiveTokenField({
         ? 'Enter a positive amount'
         : '',
   });
+
   return (
     <>
       <FormFieldset
@@ -134,13 +138,13 @@ export function ReceiveTokenField({
           </div>
         }
         endDescription={
-          <FiatInputValue
-            name="receiveInput"
+          <ReceiveFiatInputValue
             primaryInput={primaryInput}
             spendInput={spendInput}
             spendAsset={spendAsset}
             receiveInput={receiveInput}
             receiveAsset={receiveAsset}
+            priceImpact={priceImpact}
           />
         }
       />

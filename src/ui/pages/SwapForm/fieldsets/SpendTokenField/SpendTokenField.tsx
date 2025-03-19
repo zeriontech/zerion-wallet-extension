@@ -22,7 +22,7 @@ import {
   QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
-import { FiatInputValue } from 'src/ui/components/FiatInputValue';
+import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
 
 export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
   const { spendPosition, spendAssetQuery, spendAsset, receiveAsset } = swapView;
@@ -184,8 +184,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
           </div>
         }
         endDescription={
-          <FiatInputValue
-            name="spendInput"
+          <SpendFiatInputValue
             primaryInput={primaryInput}
             spendInput={spendInput}
             spendAsset={spendAsset}
