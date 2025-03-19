@@ -73,22 +73,25 @@ export function MnemonicImportView({
   const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation({
     locationStateStore,
   });
-  const { data: derivedWallets } = useQuery({
+  const { data } = useQuery({
     queryKey: ['getFirstNMnemonicWallets', phrase],
-    queryFn: async (): Promise<DerivedWallets | void> => {
+    queryFn: async (): Promise<{
+      derivedWallets: DerivedWallets;
+      addressesToCheck: string[];
+    } | void> => {
       if (!phrase) {
         return;
       }
 
       const fn = getFirstNMnemonicWallets;
       const [eth, sol1, sol2, sol3] = await Promise.all([
-        fn({ phrase, n: 40, curve: 'ecdsa' }),
+        fn({ phrase, n: 30, curve: 'ecdsa' }),
         /** We want to explore all derivation paths in case there are active addresses */
-        fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaBip44Change' }),
-        fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaBip44' }),
-        fn({ phrase, n: 20, curve: 'ed25519', pathType: 'solanaDeprecated' }),
+        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44Change' }),
+        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44' }),
+        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaDeprecated' }),
       ]);
-      return [
+      const derivedWallets = [
         { curve: 'ecdsa' as const, pathType: 'bip44' as const, wallets: eth },
         {
           curve: 'ed25519' as const,
@@ -106,16 +109,22 @@ export function MnemonicImportView({
           wallets: sol3,
         },
       ];
+      const WALLETS_TO_CHECK_PER_PATH = 10; // this number is small to reduce load on backend
+      return {
+        derivedWallets,
+        addressesToCheck: derivedWallets.flatMap((config) =>
+          config.wallets
+            .slice(0, WALLETS_TO_CHECK_PER_PATH)
+            .map((w) => w.address)
+        ),
+      };
     },
-
     enabled: Boolean(phrase),
     useErrorBoundary: true,
   });
-  const addressesToCheck =
-    derivedWallets?.flatMap((c) => c.wallets.map((w) => w.address)) || [];
   const { value } = useAddressActivity(
-    { addresses: addressesToCheck },
-    { enabled: Boolean(derivedWallets), keepStaleData: true }
+    { addresses: data?.addressesToCheck || [] },
+    { enabled: Boolean(data?.addressesToCheck), keepStaleData: true }
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
@@ -124,7 +133,7 @@ export function MnemonicImportView({
   return (
     <>
       <NavigationTitle title={null} documentTitle="Wallets Ready to Import" />
-      {isLoadingPhrase || shouldWaitForValue || derivedWallets == null ? (
+      {isLoadingPhrase || shouldWaitForValue || data == null ? (
         <PageColumn>
           <PageTop />
           <ViewLoading />
@@ -132,7 +141,7 @@ export function MnemonicImportView({
         </PageColumn>
       ) : (
         <AddressImportFlow
-          wallets={derivedWallets}
+          wallets={data.derivedWallets}
           activeWallets={value ?? {}}
         />
       )}

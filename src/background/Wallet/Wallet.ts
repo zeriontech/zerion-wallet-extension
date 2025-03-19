@@ -104,6 +104,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import type { SolTransactionResponse } from 'src/modules/solana/transactions/SolTransactionResponse';
 import { SOLANA_RPC_URL } from 'src/env/config';
 import { SolanaTransactionLegacy } from 'src/modules/solana/SolTransaction';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -325,11 +326,11 @@ export class Wallet {
   // into a separate isolated class
   async uiGenerateMnemonic({
     params: { ecosystems },
-  }: WalletMethodParams<{ ecosystems: ('evm' | 'solana' | string)[] }>) {
+  }: WalletMethodParams<{ ecosystems: BlockchainType[] }>) {
     this.ensureActiveSession(this.userCredentials);
     const walletContainer = await MnemonicWalletContainer.create({
       credentials: this.userCredentials,
-      ecosystems: new Set(ecosystems),
+      ecosystems: ecosystems,
     });
     this.pendingWallet = {
       origin: WalletOrigin.extension,

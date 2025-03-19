@@ -10,6 +10,8 @@ import type { BareMnemonicWallet } from 'src/background/Wallet/model/BareWallet'
 import type { BareWallet } from '../types/BareWallet';
 import { invariant } from '../invariant';
 import { getAccountPath, isSolanaPath } from './derivation-paths';
+import { blockchainTypes, type BlockchainType } from './classifiers';
+import { assertKnownEcosystems } from './shared';
 
 export function walletToObject(
   wallet: EthersV5Wallet | BareWallet
@@ -78,16 +80,6 @@ export function restoreBareWallet(
   }
 }
 
-function assertKnownEcosystems(
-  set: Set<string>
-): asserts set is Set<'evm' | 'solana'> {
-  const arr = Array.from(set);
-  invariant(
-    arr.every((value) => value === 'evm' || value === 'solana'),
-    `Unknown ecosystem parameter: ${arr}`
-  );
-}
-
 function seedToSolanaWallet(phrase: string): BareMnemonicWallet {
   const mnemonic = {
     phrase,
@@ -98,17 +90,17 @@ function seedToSolanaWallet(phrase: string): BareMnemonicWallet {
 }
 
 export function generateWalletsForEcosystems(
-  ecosystemsSet: Set<'evm' | 'solana' | string>
+  ecosystems: BlockchainType[]
 ): BareMnemonicWallet[] {
-  invariant(ecosystemsSet.size > 0, 'Must provide at least one ecosystem');
-  assertKnownEcosystems(ecosystemsSet);
+  invariant(ecosystems.length > 0, 'Must provide at least one ecosystem');
+  assertKnownEcosystems(ecosystems);
   const seedWallet = EthersV5Wallet.createRandom();
   const result: BareMnemonicWallet[] = [];
 
-  const toPriority = (value: string) => ['evm', 'solana'].indexOf(value);
-  const ecosystems = sortBy(Array.from(ecosystemsSet), toPriority); // priority sorting
+  const toPriority = (value: BlockchainType) => blockchainTypes.indexOf(value);
+  const sorted = sortBy(ecosystems, toPriority); // priority sorting
 
-  for (const ecosystem of ecosystems) {
+  for (const ecosystem of sorted) {
     if (ecosystem === 'evm') {
       result.push(fromEthersWallet(seedWallet));
     } else if (ecosystem === 'solana') {

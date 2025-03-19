@@ -18,6 +18,7 @@ import {
   seedPhraseToHash,
 } from 'src/shared/wallet/encryption';
 import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { SeedType } from './SeedType';
 import type { BareWallet, BareMnemonicWallet } from './BareWallet';
 
@@ -125,11 +126,11 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
   }: {
     wallets?: MnemonicSeed[];
     credentials: SessionCredentials;
-    ecosystems?: Set<'evm' | 'solana' | string>;
+    ecosystems?: BlockchainType[];
   }): Promise<MnemonicWalletContainer> {
     const initial = wallets?.length
       ? wallets
-      : generateWalletsForEcosystems(ecosystems ?? new Set(['evm']));
+      : generateWalletsForEcosystems(ecosystems ?? ['evm']);
     const phrase = initial[0].mnemonic?.phrase;
     invariant(phrase, MISSING_MNEMONIC);
     const seedHash = await seedPhraseToHash(phrase);
