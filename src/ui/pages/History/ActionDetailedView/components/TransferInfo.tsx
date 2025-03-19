@@ -30,12 +30,10 @@ const ICON_SIZE = 36;
 export function ApprovalInfo({
   singleTransfer,
   actionType,
-  address,
   chain,
 }: {
   singleTransfer: { asset: ActionAsset; quantity: string };
   actionType: ActionType;
-  address?: string;
   chain: Chain;
 }) {
   const fungible = getFungibleAsset(singleTransfer.asset);
@@ -76,11 +74,7 @@ export function ApprovalInfo({
             kind="headline/h3"
             style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
-            <AssetLink
-              asset={fungible}
-              address={address}
-              title={fungible.name}
-            />
+            <AssetLink asset={fungible} title={fungible.name} />
           </UIText>
         }
         detailText={
@@ -111,12 +105,10 @@ export function ApprovalInfo({
 
 function FungibleTransfer({
   transfer,
-  address,
   direction,
   chain,
 }: {
   transfer: ActionTransfer;
-  address?: string;
   direction: Direction;
   chain: Chain;
 }) {
@@ -167,7 +159,7 @@ function FungibleTransfer({
               {direction === 'incoming' ? '+' : minus}
               {formatTokenValue(balance, '')}
             </span>
-            <AssetLink asset={fungible} address={address} />
+            <AssetLink asset={fungible} />
           </HStack>
         </UIText>
       }
@@ -292,7 +284,6 @@ export function TransferInfo({
               <FungibleTransfer
                 key={index}
                 transfer={transfer}
-                address={address}
                 direction={direction}
                 chain={chain}
               />

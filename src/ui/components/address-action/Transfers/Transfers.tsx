@@ -24,7 +24,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { animated, useSpring } from '@react-spring/web';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { AssetLink } from '../../AssetLink';
+import { AssetAnchor } from '../../AssetLink';
 import { NFTLink } from '../../NFTLink';
 
 function TransferItemFungible({
@@ -85,7 +85,7 @@ function TransferItemFungible({
             sign={direction === 'in' ? '+' : minus}
             commonQuantity={commonQuantity}
           />{' '}
-          <AssetLink asset={fungible} address={address} />
+          <AssetAnchor asset={fungible} address={address} />
         </UIText>
       }
       detailText={
