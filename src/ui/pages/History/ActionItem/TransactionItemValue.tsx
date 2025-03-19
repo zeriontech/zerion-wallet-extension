@@ -36,7 +36,6 @@ function HistoryTokenValue({
   asset,
   chain,
   direction,
-  address,
   withLink,
 }: {
   actionType: ActionType;
@@ -44,7 +43,6 @@ function HistoryTokenValue({
   asset: Asset;
   chain: Chain;
   direction: Direction;
-  address?: string;
   withLink: boolean;
 }) {
   const sign = getSign(value, direction);
@@ -77,7 +75,7 @@ function HistoryTokenValue({
         <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
       ) : null}
       {withLink ? (
-        <AssetLink asset={asset} address={address} />
+        <AssetLink asset={asset} />
       ) : (
         asset.symbol?.toUpperCase() || asset.name
       )}
@@ -167,7 +165,6 @@ export function HistoryItemValue({
   ) : fungibleAsset ? (
     <HistoryTokenValue
       actionType={actionType}
-      address={address}
       asset={fungibleAsset}
       chain={chain}
       value={transfers[0].quantity}
