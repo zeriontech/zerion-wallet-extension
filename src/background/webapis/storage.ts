@@ -43,7 +43,8 @@ export class SessionStorage {
  * from the file system
  */
 export async function clearStorageArtefacts() {
-  const everything = await browser.storage.local.get(null);
-  await browser.storage.local.clear(); // this removes local extension files
-  await browser.storage.local.set(everything); // store everything back
+  // TODO: Investigate if we can perform this safely
+  // const everything = await browser.storage.local.get(null);
+  // await browser.storage.local.clear(); // this removes local extension files
+  // await browser.storage.local.set(everything); // store everything back
 }
