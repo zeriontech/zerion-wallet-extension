@@ -3,8 +3,36 @@ import React from 'react';
 import { usePreferences } from 'src/ui/features/preferences';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
 
 export function AssetLink({
+  asset,
+  title,
+}: {
+  asset: Pick<Asset, 'symbol' | 'name' | 'asset_code'>;
+  title?: string;
+}) {
+  const { preferences } = usePreferences();
+  const content = title || asset.symbol || asset.name;
+  if (preferences?.testnetMode?.on) {
+    return content;
+  }
+  return (
+    <TextLink
+      to={`/asset/${asset.asset_code}`}
+      style={{
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        outlineOffset: -1, // make focus ring visible despite overflow: hidden
+      }}
+    >
+      {content}
+    </TextLink>
+  );
+}
+
+export function AssetAnchor({
   asset,
   title,
   address,

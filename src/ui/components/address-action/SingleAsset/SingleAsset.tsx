@@ -1,5 +1,5 @@
 import type { ActionType, AddressAction, Asset } from 'defi-sdk';
-import { NFTAsset } from 'defi-sdk';
+import type { NFTAsset } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
@@ -17,7 +17,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { AssetQuantity } from '../../AssetQuantity';
-import { AssetLink } from '../../AssetLink';
+import { AssetAnchor } from '../../AssetLink';
 
 function AssetAllowance({
   baseQuantity,
@@ -94,7 +94,7 @@ function FungibleAsset({
                 ) : (
                   <AssetQuantity commonQuantity={commonQuantity} />
                 )}{' '}
-                <AssetLink asset={fungible} address={address} />
+                <AssetAnchor asset={fungible} address={address} />
               </UIText>
               {elementEnd}
             </HStack>
