@@ -132,7 +132,7 @@ function getSegmentColor({
   const insideTheRange =
     startRangeIndex !== null &&
     endRangeIndex != null &&
-    (startRangeIndex - ctx.p1DataIndex) * (ctx.p1DataIndex - endRangeIndex) < 0;
+    (startRangeIndex - ctx.p0DataIndex) * (ctx.p1DataIndex - endRangeIndex) < 0;
 
   return getChartColor({
     theme,
