@@ -144,6 +144,7 @@ function getSegmentColor({
 export function AssetChart({
   chartPoints,
   onRangeSelect,
+  style,
 }: {
   chartPoints: [number, number][];
   onRangeSelect: ({
@@ -153,6 +154,7 @@ export function AssetChart({
     startRangeIndex: number | null;
     endRangeIndex: number | null;
   }) => void;
+  style?: React.CSSProperties;
 }) {
   const { currency } = useCurrency();
   const { theme } = useStore(themeStore);
@@ -274,12 +276,12 @@ export function AssetChart({
   }
 
   return (
-    <div style={{ position: 'relative', height: CHART_HEIGHT }}>
+    <div style={{ position: 'relative', height: CHART_HEIGHT, ...style }}>
       {maxChartPointValue != null ? (
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
-          style={{ position: 'absolute', top: -14, right: 0 }}
+          style={{ position: 'absolute', top: -16, right: 0 }}
         >
           {formatCurrencyValue(maxChartPointValue, 'en', currency)}
         </UIText>
@@ -288,7 +290,7 @@ export function AssetChart({
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
-          style={{ position: 'absolute', bottom: -14, right: 0 }}
+          style={{ position: 'absolute', bottom: -16, right: 0 }}
         >
           {formatCurrencyValue(minChartPointValue, 'en', currency)}
         </UIText>
