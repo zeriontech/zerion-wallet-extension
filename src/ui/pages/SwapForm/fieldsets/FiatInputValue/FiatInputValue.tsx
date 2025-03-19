@@ -7,7 +7,7 @@ import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { isNumeric } from 'src/shared/isNumeric';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { exceedsPriceImpactThreshold } from '../../shared/price-impact';
+import { PriceImpact, getPriceImpact } from '../../shared/price-impact';
 
 export function FiatInputValue({
   swapView,
@@ -55,9 +55,9 @@ export function FiatInputValue({
     ? `${diff.isLessThan(0) ? '' : '+'}${formatPercent(diff.times(100), 'en')}%`
     : null;
 
-  const isPriceImpactWarning = diff
-    ? exceedsPriceImpactThreshold({ relativeChange: diff })
-    : false;
+  const priceImpact = diff ? getPriceImpact({ relativeChange: diff }) : false;
+  const isPriceImpactWarning =
+    priceImpact === PriceImpact.Medium || priceImpact === PriceImpact.High;
 
   return (
     <UIText
