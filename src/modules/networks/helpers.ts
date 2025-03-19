@@ -60,8 +60,9 @@ export function toAddEthereumChainParameter(
     | 'icon_url'
     | 'explorer_tx_url'
     | 'hidden'
-  > &
-    Pick<NetworkConfig, 'specification' | 'standard'>
+    | 'specification'
+    | 'standard'
+  >
 ): AddEthereumChainParameter {
   return {
     rpcUrls: item.rpc_url_user
