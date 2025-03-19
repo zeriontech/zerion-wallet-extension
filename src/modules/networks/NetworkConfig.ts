@@ -49,20 +49,4 @@ export type NetworkConfig = NetworkSpecification & {
    * User-defined rpc url that has priority over rpc_url_internal
    */
   rpc_url_user?: string;
-
-  // deprecated territory, use this only at your own risk
-  /** @deprecated */
-  evm_id?: number | null;
-  /** @deprecated */
-  node_urls?: string[];
-  /** @deprecated */
-  base_asset_id?: string;
-  /** @deprecated */
-  block_explorer_urls?: string[];
-  /** @deprecated */
-  chain: string;
-  /** @deprecated */
-  external_id: string;
-  /** @deprecated */
-  supports_bridge: boolean;
 };
