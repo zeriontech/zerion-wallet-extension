@@ -14,7 +14,6 @@ export function toNetworkConfig(
   return {
     supports_sending: true,
     supports_trading: false,
-    supports_bridge: false,
     supports_bridging: false,
     supports_actions: false,
     supports_nft_positions: false,
@@ -22,9 +21,7 @@ export function toNetworkConfig(
     supports_sponsored_transactions: false,
     supports_simulations: false,
     name: value.chainName,
-    external_id: value.chainId,
     id,
-    chain: id,
     explorer_home_url: value.blockExplorerUrls?.[0] || null,
     explorer_address_url: null,
     explorer_name: null,
@@ -61,11 +58,10 @@ export function toAddEthereumChainParameter(
     | 'native_asset'
     | 'name'
     | 'icon_url'
-    | 'external_id'
     | 'explorer_tx_url'
     | 'hidden'
   > &
-    Partial<Pick<NetworkConfig, 'specification' | 'standard'>>
+    Pick<NetworkConfig, 'specification' | 'standard'>
 ): AddEthereumChainParameter {
   return {
     rpcUrls: item.rpc_url_user
@@ -80,8 +76,7 @@ export function toAddEthereumChainParameter(
       decimals: (item.native_asset?.decimals || NaN) as 18,
       name: item.native_asset?.name || '<unknown>',
     },
-    // deprecated field is being used for chainConfigStore's migration
-    chainId: Networks.getChainId(item) || item.external_id,
+    chainId: Networks.getChainId(item),
     chainName: item.name,
     blockExplorerUrls: item.explorer_tx_url ? [item.explorer_tx_url] : [],
     iconUrls: [item.icon_url],
