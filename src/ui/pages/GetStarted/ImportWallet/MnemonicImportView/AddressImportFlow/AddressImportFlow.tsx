@@ -3,6 +3,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
+import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
@@ -33,6 +34,7 @@ import {
   SegmentedControlRadio,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { useToggledValues } from 'src/ui/components/useToggledValues';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList, WalletListPresentation } from './WalletList';
 
@@ -97,6 +99,35 @@ export function PortfolioValueDetail({ address }: { address: string }) {
   );
 }
 
+function InactiveWalletsHint() {
+  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+  return (
+    <>
+      <UnstyledButton
+        onClick={() => dialogRef.current?.showModal()}
+        style={{ verticalAlign: 'middle' }}
+      >
+        <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
+        <BottomSheetDialog ref={dialogRef} height="min-content">
+          <DialogTitle
+            alignTitle="start"
+            title={<UIText kind="headline/h3">Inactive Wallets</UIText>}
+          />
+          <Spacer height={8} />
+          <UIText kind="small/regular" style={{ textAlign: 'start' }}>
+            The wallets that have zero balance or no transactions on the
+            supported chains.
+          </UIText>
+          <Spacer height={24} />
+          <form method="dialog">
+            <Button>Close</Button>
+          </form>
+        </BottomSheetDialog>
+      </UnstyledButton>
+    </>
+  );
+}
+
 function SelectMoreWalletsDialog({
   dialogRef,
   wallets,
@@ -158,112 +189,121 @@ function SelectMoreWalletsDialog({
         >
           <div
             style={{
-              padding: 20,
               position: 'sticky',
               top: 0,
-              backgroundColor: 'var(--z-index-0)',
               zIndex: 1,
+              backgroundColor: 'var(--z-index-0)',
+              paddingBottom: 12,
+              borderBottom: '1px solid var(--neutral-200)',
             }}
           >
-            <DialogTitle
-              title={<UIText kind="headline/h3">Select Another Wallet</UIText>}
-            />
-          </div>
-          <Spacer height={8} />
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 3fr 1fr',
-              paddingInline: 20,
-            }}
-          >
+            <div style={{ padding: 20 }}>
+              <DialogTitle
+                title={
+                  <UIText kind="headline/h3">Select Another Wallet</UIText>
+                }
+              />
+            </div>
+            <Spacer height={8} />
             <div
               style={{
-                placeSelf: 'center',
-                gridColumnStart: 2,
-                display: 'flex',
-                gap: 12,
+                display: 'grid',
+                gridTemplateColumns: '1fr 3fr 1fr',
+                paddingInline: 20,
               }}
             >
-              <SegmentedControlGroup kind="secondary">
-                <SegmentedControlRadio
-                  name="curve"
-                  value="ecdsa"
-                  checked={curve === 'ecdsa'}
-                  onChange={(event) =>
-                    setCurve(event.currentTarget.value as CurveValue)
-                  }
-                >
-                  <HStack gap={8} alignItems="center">
-                    <EcosystemEthereumIcon />
-                    <span>EVM</span>
-                  </HStack>
-                </SegmentedControlRadio>
-                <SegmentedControlRadio
-                  name="curve"
-                  value="ed25519"
-                  checked={curve === 'ed25519'}
-                  onChange={(event) =>
-                    setCurve(event.currentTarget.value as CurveValue)
-                  }
-                >
-                  <HStack gap={8} alignItems="center">
-                    <EcosystemSolanaIcon />
-                    <span>Solana</span>
-                  </HStack>
-                </SegmentedControlRadio>
-              </SegmentedControlGroup>
-            </div>
-            {curve === 'ed25519' ? (
-              <DecoratedSettingsSelect
-                select={(style) => (
-                  <select
-                    style={style}
-                    name="solPathType"
-                    value={solPathType}
+              <div
+                style={{
+                  placeSelf: 'center',
+                  gridColumnStart: 2,
+                  display: 'flex',
+                  gap: 12,
+                }}
+              >
+                <SegmentedControlGroup kind="secondary">
+                  <SegmentedControlRadio
+                    name="curve"
+                    value="ecdsa"
+                    checked={curve === 'ecdsa'}
                     onChange={(event) =>
-                      setSolPathType(
-                        event.currentTarget.value as SolanaPathType
-                      )
+                      setCurve(event.currentTarget.value as CurveValue)
                     }
                   >
-                    <option value="solanaBip44Change">Bip44Change</option>
-                    <option value="solanaBip44">Bip44</option>
-                    <option value="solanaDeprecated">Deprecated</option>
-                  </select>
-                )}
-              />
-            ) : null}
+                    <HStack gap={8} alignItems="center">
+                      <EcosystemEthereumIcon />
+                      <span>EVM</span>
+                    </HStack>
+                  </SegmentedControlRadio>
+                  <SegmentedControlRadio
+                    name="curve"
+                    value="ed25519"
+                    checked={curve === 'ed25519'}
+                    onChange={(event) =>
+                      setCurve(event.currentTarget.value as CurveValue)
+                    }
+                  >
+                    <HStack gap={8} alignItems="center">
+                      <EcosystemSolanaIcon />
+                      <span>Solana</span>
+                    </HStack>
+                  </SegmentedControlRadio>
+                </SegmentedControlGroup>
+              </div>
+              {curve === 'ed25519' ? (
+                <DecoratedSettingsSelect
+                  select={(style) => (
+                    <select
+                      style={style}
+                      name="solPathType"
+                      value={solPathType}
+                      onChange={(event) =>
+                        setSolPathType(
+                          event.currentTarget.value as SolanaPathType
+                        )
+                      }
+                    >
+                      <option value="solanaBip44Change">Bip44Change</option>
+                      <option value="solanaBip44">Bip44</option>
+                      <option value="solanaDeprecated">Deprecated</option>
+                    </select>
+                  )}
+                />
+              ) : null}
+            </div>
           </div>
           <Spacer height={24} />
 
-          {active?.length ? (
-            <WalletList
-              listTitle={
-                <div style={{ paddingInline: 20 }}>Active wallets</div>
-              }
-              wallets={active}
-              renderDetail={(index) => (
-                <PortfolioValueDetail address={active[index].address} />
-              )}
-              existingAddressesSet={existingAddressesSet}
-              values={values}
-              onSelect={toggleValue}
-            />
-          ) : null}
-          {rest ? (
-            <WalletList
-              listTitle={
-                <div style={{ paddingInline: 20 }}>Inactive wallets</div>
-              }
-              initialCount={5}
-              wallets={rest}
-              renderDetail={null}
-              existingAddressesSet={existingAddressesSet}
-              values={values}
-              onSelect={toggleValue}
-            />
-          ) : null}
+          <div style={{ paddingInline: 4 }}>
+            {active?.length ? (
+              <WalletList
+                listTitle={
+                  <div style={{ paddingInline: 16 }}>Active wallets</div>
+                }
+                wallets={active}
+                renderDetail={(index) => (
+                  <PortfolioValueDetail address={active[index].address} />
+                )}
+                existingAddressesSet={existingAddressesSet}
+                values={values}
+                onSelect={toggleValue}
+              />
+            ) : null}
+            {rest ? (
+              <WalletList
+                listTitle={
+                  <div style={{ paddingInline: 16 }}>
+                    Inactive wallets <InactiveWalletsHint />
+                  </div>
+                }
+                initialCount={15}
+                wallets={rest}
+                renderDetail={null}
+                existingAddressesSet={existingAddressesSet}
+                values={values}
+                onSelect={toggleValue}
+              />
+            ) : null}
+          </div>
 
           <div
             style={{
@@ -271,6 +311,7 @@ function SelectMoreWalletsDialog({
               bottom: 0,
               padding: 20,
               backgroundColor: 'var(--z-index-0)',
+              borderTop: '1px solid var(--neutral-200)',
             }}
           >
             <Button
