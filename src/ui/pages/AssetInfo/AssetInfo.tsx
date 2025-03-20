@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -65,6 +65,12 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
 
 export function AssetInfo() {
   const { asset_code } = useParams();
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    if (navigationType === NavigationType.Push) {
+      window.scrollTo(0, 0);
+    }
+  }, [navigationType]);
   useBackgroundKind({ kind: 'white' });
   useBodyStyle(
     useMemo(

@@ -130,7 +130,7 @@ export function URLBar() {
             text = null;
           } else {
             if (children.length) {
-              text = children;
+              text = children[0];
             } else {
               automaticTitle = titleFromPathname(pathname);
               text = automaticTitle;
@@ -152,7 +152,7 @@ export function URLBar() {
                   {text}
                 </UIText>
               ) : (
-                text
+                <div>{children}</div>
               )}
             </>
           );
