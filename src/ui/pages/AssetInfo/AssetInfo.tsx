@@ -67,6 +67,12 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
 
 export function AssetInfo() {
   const { asset_code } = useParams();
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    if (navigationType === NavigationType.Push) {
+      window.scrollTo(0, 0);
+    }
+  }, [navigationType]);
   useBackgroundKind({ kind: 'white' });
   useBodyStyle(
     useMemo(
