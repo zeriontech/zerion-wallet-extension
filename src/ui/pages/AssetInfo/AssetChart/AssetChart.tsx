@@ -280,7 +280,7 @@ export function AssetChart({
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
-          style={{ position: 'absolute', top: -16, right: 0 }}
+          style={{ position: 'absolute', top: -16, right: 8 }}
         >
           {formatCurrencyValue(maxChartPointValue, 'en', currency)}
         </UIText>
@@ -289,7 +289,7 @@ export function AssetChart({
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
-          style={{ position: 'absolute', bottom: -16, right: 0 }}
+          style={{ position: 'absolute', bottom: -16, right: 8 }}
         >
           {formatCurrencyValue(minChartPointValue, 'en', currency)}
         </UIText>
