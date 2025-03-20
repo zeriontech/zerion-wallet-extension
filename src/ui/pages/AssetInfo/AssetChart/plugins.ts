@@ -4,11 +4,9 @@ import { getChartColor, getSortedRangeIndexes } from './helpers';
 
 export function drawCrossPlugin({
   getStartRangeIndex,
-  getStartRangeX,
   getTheme,
 }: {
   getStartRangeIndex: () => number | null;
-  getStartRangeX: () => number | null;
   getTheme: () => Theme;
 }): Plugin<'scatter'> {
   return {
@@ -37,18 +35,18 @@ export function drawCrossPlugin({
       });
 
       ctx.save();
-      ctx.setLineDash([5, 5]);
+      // ctx.setLineDash([5, 5]);
 
-      if (getStartRangeX() == null) {
-        // Draw vertical line
-        ctx.beginPath();
-        ctx.moveTo(x, 8);
-        ctx.lineTo(x, chart.height - 2);
-        ctx.strokeStyle = 'grey';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.closePath();
-      }
+      // if (getStartRangeX() == null) {
+      // Draw vertical line
+      //   ctx.beginPath();
+      //   ctx.moveTo(x, 8);
+      //   ctx.lineTo(x, chart.height - 2);
+      //   ctx.strokeStyle = 'grey';
+      //   ctx.lineWidth = 1;
+      //   ctx.stroke();
+      //   ctx.closePath();
+      // }
 
       // Draw horizontal line
       // ctx.beginPath();
@@ -59,7 +57,7 @@ export function drawCrossPlugin({
       // ctx.stroke();
       // ctx.closePath();
 
-      ctx.setLineDash([]);
+      // ctx.setLineDash([]);
 
       // Draw circle
       ctx.beginPath();
