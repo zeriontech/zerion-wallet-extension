@@ -250,7 +250,6 @@ export function AssetChart({
         },
         drawCrossPlugin({
           getStartRangeIndex: () => startRangeIndexRef.current,
-          getStartRangeX: () => startRangeXRef.current,
           getTheme: () => themeRef.current,
         }),
         drawRangePlugin({
