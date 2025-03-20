@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -13,7 +13,6 @@ import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
 import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import FlagIcon from 'jsx:src/ui/assets/flag.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { PageTop } from 'src/ui/components/PageTop';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
@@ -28,7 +27,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import * as styles from './styles.module.css';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -37,27 +36,7 @@ import { AssetResources } from './AssetResources';
 import { AssetHeader } from './AssetHeader';
 import { AssetDescription } from './AssetDescription';
 
-const SCROLL_THRESHOLD = 80;
 const SHOW_BRIDGE_BUTTON = false; // TODO: make true after bridge is implemented
-
-function AssetPageHeader({ asset }: { asset: Asset }) {
-  const [showTokenInfoInHeader, setShowTokenInfoInHeader] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () =>
-      setShowTokenInfoInHeader(window.scrollY < SCROLL_THRESHOLD);
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  return showTokenInfoInHeader ? null : (
-    <AssetHeader asset={asset} className={styles.assetHeaderContent} />
-  );
-}
 
 function ReportAssetLink({ asset }: { asset: Asset }) {
   return (
@@ -86,7 +65,23 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
 
 export function AssetInfo() {
   const { asset_code } = useParams();
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    if (navigationType === NavigationType.Push) {
+      window.scrollTo(0, 0);
+    }
+  }, [navigationType]);
   useBackgroundKind({ kind: 'white' });
+  useBodyStyle(
+    useMemo(
+      () => ({
+        ['--url-bar-padding-bottom' as string]: '16px',
+        ['--url-bar-background' as string]: 'transparent',
+        ['--url-bar-backdrop-filter' as string]: 'blur(5px)',
+      }),
+      []
+    )
+  );
   invariant(asset_code, 'Asset Code is required');
 
   const { currency } = useCurrency();
@@ -162,10 +157,9 @@ export function AssetInfo() {
   return (
     <PageColumn>
       <NavigationTitle
-        title={<AssetPageHeader asset={assetFullInfo.fungible} />}
+        title={<AssetHeader asset={assetFullInfo.fungible} />}
         documentTitle={`${assetFullInfo.fungible.name} - info`}
       />
-      <PageTop />
       <VStack
         gap={24}
         style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
