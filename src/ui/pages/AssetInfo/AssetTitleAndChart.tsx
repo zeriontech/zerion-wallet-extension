@@ -169,7 +169,7 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
               ) : null}
             </HStack>
             <UIText
-              kind="small/accent"
+              kind="caption/regular"
               color="var(--neutral-500)"
               ref={dateElementRef}
             />
