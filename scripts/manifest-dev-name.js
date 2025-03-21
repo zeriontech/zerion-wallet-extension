@@ -13,12 +13,6 @@ async function updateDevName() {
         ...manifest,
         name: 'Zerion Test',
         description: 'Zerion Test description',
-        icons: {
-          16: 'images/logo-icon-dev-128.png',
-          32: 'images/logo-icon-dev-128.png',
-          48: 'images/logo-icon-dev-128.png',
-          128: 'images/logo-icon-dev-128.png',
-        },
       },
       null,
       2
