@@ -90,12 +90,16 @@ export function ReceiveFiatInputValue({
     ? getPriceImpactPercentage(priceImpact)
     : null;
 
+  const showPercentageChange =
+    priceImpactPercentage &&
+    (priceImpact?.kind === 'zero' || priceImpact?.kind === 'loss');
+
   return (
     <FiatInputValue
       name="receiveInput"
       swapView={swapView}
       percentageChange={
-        isSignificantLoss && priceImpactPercentage ? (
+        showPercentageChange ? (
           <PercentChange
             value={priceImpactPercentage}
             locale="en"
