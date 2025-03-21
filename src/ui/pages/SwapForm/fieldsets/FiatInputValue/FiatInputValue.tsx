@@ -103,13 +103,11 @@ export function ReceiveFiatInputValue({
           <PercentChange
             value={priceImpactPercentage}
             locale="en"
-            render={(change) => {
-              return (
-                <UIText kind="small/regular" color="var(--negative-500)">
-                  {`(${change.formatted})`}
-                </UIText>
-              );
-            }}
+            render={(change) => (
+              <UIText kind="small/regular" color="var(--negative-500)">
+                {`(${change.formatted})`}
+              </UIText>
+            )}
           />
         ) : null
       }
