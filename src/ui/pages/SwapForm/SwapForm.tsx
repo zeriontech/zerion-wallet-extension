@@ -17,6 +17,7 @@ import React, {
   useState,
 } from 'react';
 import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
+import WarningIcon from 'jsx:src/ui/assets/warning.svg';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -107,6 +108,9 @@ import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
 import { SlippageSettings } from './SlippageSettings';
 import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
+import type { PriceImpact } from './shared/price-impact';
+import { calculatePriceImpact } from './shared/price-impact';
+import { PriceImpactLine } from './shared/PriceImpactLine';
 
 const rootNode = getRootDomNode();
 
@@ -133,11 +137,13 @@ function useTxEligibility(
 function FormHint({
   swapView,
   quotesData,
+  priceImpact,
   render,
 }: {
   swapView: SwapFormView;
   quotesData: QuotesData;
-  render: (message: string | null) => React.ReactNode;
+  priceImpact: PriceImpact | null;
+  render: (message: React.ReactNode | null) => React.ReactNode;
 }) {
   const { spendPosition } = swapView;
   const { spendInput, receiveInput, primaryInput } = useSelectorStore(
@@ -154,17 +160,31 @@ function FormHint({
     : null;
   const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
 
-  let message: string | null = null;
+  const isHighPriceImpact =
+    priceImpact?.kind === 'loss' && priceImpact.level === 'high';
+
+  let hint: React.ReactNode | null = null;
   if (exceedsBalance) {
-    message = 'Insufficient balance';
+    hint = 'Insufficient balance';
   } else if (valueMissing) {
-    message = 'Enter amount';
+    hint = 'Enter amount';
   } else if (invalidValue) {
-    message = 'Incorrect amount';
+    hint = 'Incorrect amount';
   } else if (quotesData.error) {
-    message = getQuotesErrorMessage(quotesData);
+    hint = getQuotesErrorMessage(quotesData);
+  } else if (isHighPriceImpact) {
+    hint = (
+      <HStack gap={8} alignItems="center" justifyContent="center">
+        <WarningIcon
+          style={{ width: 20, height: 20 }}
+          color="var(--negative-500)"
+        />
+        <UIText kind="body/accent">Swap Anyway</UIText>
+      </HStack>
+    );
   }
-  return render(message);
+
+  return render(hint);
 }
 
 export function SwapFormComponent() {
@@ -221,10 +241,13 @@ export function SwapFormComponent() {
     DEFAULT_CONFIGURATION,
   });
 
-  const { primaryInput, chainInput, spendInput } = useSelectorStore(
-    swapView.store,
-    ['chainInput', 'spendInput', 'primaryInput']
-  );
+  const { primaryInput, chainInput, spendInput, receiveInput } =
+    useSelectorStore(swapView.store, [
+      'chainInput',
+      'spendInput',
+      'receiveInput',
+      'primaryInput',
+    ]);
   const chain = chainInput ? createChain(chainInput) : null;
   const { spendPosition, receivePosition, handleChange } = swapView;
 
@@ -260,6 +283,25 @@ export function SwapFormComponent() {
     receivePosition,
     spendPosition,
   ]);
+
+  const { receiveAsset, spendAsset } = swapView;
+
+  const priceImpact = useMemo(() => {
+    const inputValue =
+      (primaryInput === 'receive' ? spendInput : receiveInput) || null;
+    const outputValue =
+      (primaryInput === 'receive' ? receiveInput : spendInput) || null;
+
+    const inputAsset = primaryInput === 'receive' ? spendAsset : receiveAsset;
+    const outputAsset = primaryInput === 'receive' ? receiveAsset : spendAsset;
+
+    return calculatePriceImpact({
+      inputValue,
+      outputValue,
+      inputAsset,
+      outputAsset,
+    });
+  }, [primaryInput, receiveAsset, receiveInput, spendAsset, spendInput]);
 
   const snapshotRef = useRef<SwapFormState | null>(null);
   const onBeforeSubmit = () => {
@@ -788,7 +830,11 @@ export function SwapFormComponent() {
             </div>
             <div className={styles.arcParent}>
               <TopArc />
-              <ReceiveTokenField swapView={swapView} readOnly={!isPremium} />
+              <ReceiveTokenField
+                swapView={swapView}
+                priceImpact={priceImpact}
+                readOnly={!isPremium}
+              />
             </div>
           </VStack>
         </VStack>
@@ -840,7 +886,12 @@ export function SwapFormComponent() {
             </React.Suspense>
           ) : null}
         </VStack>
-        {quote ? <ProtocolFeeLine quote={quote} /> : null}
+        <VStack gap={16}>
+          {quote ? <ProtocolFeeLine quote={quote} /> : null}
+          {priceImpact && !isApproveMode ? (
+            <PriceImpactLine priceImpact={priceImpact} />
+          ) : null}
+        </VStack>
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
         <HiddenValidationInput
@@ -923,6 +974,7 @@ export function SwapFormComponent() {
               {wallet ? (
                 <FormHint
                   quotesData={quotesData}
+                  priceImpact={priceImpact}
                   swapView={swapView}
                   render={(hint) => (
                     <SignTransactionButton
