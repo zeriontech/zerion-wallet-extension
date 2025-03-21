@@ -163,17 +163,17 @@ function FormHint({
   const isHighPriceImpact =
     priceImpact?.kind === 'loss' && priceImpact.level === 'high';
 
-  let message: React.ReactNode | null = null;
+  let hint: React.ReactNode | null = null;
   if (exceedsBalance) {
-    message = 'Insufficient balance';
+    hint = 'Insufficient balance';
   } else if (valueMissing) {
-    message = 'Enter amount';
+    hint = 'Enter amount';
   } else if (invalidValue) {
-    message = 'Incorrect amount';
+    hint = 'Incorrect amount';
   } else if (quotesData.error) {
-    message = getQuotesErrorMessage(quotesData);
+    hint = getQuotesErrorMessage(quotesData);
   } else if (isHighPriceImpact) {
-    message = (
+    hint = (
       <HStack gap={8} alignItems="center" justifyContent="center">
         <WarningIcon
           style={{ width: 20, height: 20 }}
@@ -184,7 +184,7 @@ function FormHint({
     );
   }
 
-  return render(message);
+  return render(hint);
 }
 
 export function SwapFormComponent() {
