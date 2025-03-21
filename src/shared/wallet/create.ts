@@ -10,7 +10,7 @@ import type { BareMnemonicWallet } from 'src/background/Wallet/model/BareWallet'
 import type { BareWallet } from '../types/BareWallet';
 import { invariant } from '../invariant';
 import { getAccountPath, isSolanaPath } from './derivation-paths';
-import { blockchainTypes, type BlockchainType } from './classifiers';
+import { BLOCKCHAIN_TYPES, type BlockchainType } from './classifiers';
 import { assertKnownEcosystems } from './shared';
 
 export function walletToObject(
@@ -97,7 +97,7 @@ export function generateWalletsForEcosystems(
   const seedWallet = EthersV5Wallet.createRandom();
   const result: BareMnemonicWallet[] = [];
 
-  const toPriority = (value: BlockchainType) => blockchainTypes.indexOf(value);
+  const toPriority = (value: BlockchainType) => BLOCKCHAIN_TYPES.indexOf(value);
   const sorted = sortBy(ecosystems, toPriority); // priority sorting
 
   for (const ecosystem of sorted) {

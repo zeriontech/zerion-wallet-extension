@@ -1,7 +1,7 @@
 import { invariant } from '../invariant';
-import { blockchainTypes, type BlockchainType } from './classifiers';
+import { BLOCKCHAIN_TYPES, type BlockchainType } from './classifiers';
 
-const supportedTypes = new Set<BlockchainType>(blockchainTypes);
+const supportedTypes = new Set<BlockchainType>(BLOCKCHAIN_TYPES);
 
 function isSubsetOf<T>(a: Set<T>, b: unknown[]): b is T[] {
   return b.every((item) => a.has(item as T));

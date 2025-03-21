@@ -27,8 +27,11 @@ import {
 } from 'src/shared/types/validators';
 import { openHref } from 'src/ui/shared/openUrl';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
+import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
+import { BLOCKCHAIN_TYPES } from 'src/shared/wallet/classifiers';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
+import { groupByEcosystem } from './shared/groupByEcosystem';
 
 function FlatAddressList({
   walletGroups,
@@ -71,6 +74,37 @@ function FlatAddressList({
   );
 }
 
+function WalletGroupItem({ group }: { group: WalletGroup }) {
+  const { wallets } = group.walletContainer;
+  const byEcosystem = useMemo(() => groupByEcosystem(wallets), [wallets]);
+  return (
+    <HStack gap={4} justifyContent="space-between" alignItems="center">
+      <VStack gap={20}>
+        <UIText kind="small/accent" style={{ overflowWrap: 'break-word' }}>
+          {getGroupDisplayName(group.name)}
+        </UIText>
+        {BLOCKCHAIN_TYPES.filter(
+          (blockchainType) => blockchainType in byEcosystem
+        ).map((blockchainType) => {
+          const wallets = byEcosystem[blockchainType];
+          return (
+            <VStack key={blockchainType} gap={8}>
+              <BlockchainTitleHelper kind={blockchainType} />
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                {wallets.map((wallet) => (
+                  <AddressBadge key={wallet.address} wallet={wallet} />
+                ))}
+              </div>
+            </VStack>
+          );
+        })}
+        <BackupInfoNote group={group} />
+      </VStack>
+      <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
+    </HStack>
+  );
+}
+
 function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
   return (
     <VStack gap={8}>
@@ -83,25 +117,7 @@ function MnemonicList({ walletGroups }: { walletGroups: WalletGroup[] }) {
           key: group.id,
           separatorTop: true,
           to: `/wallets/groups/${group.id}`,
-          component: (
-            <HStack gap={4} justifyContent="space-between" alignItems="center">
-              <VStack gap={8}>
-                <UIText
-                  kind="small/accent"
-                  style={{ overflowWrap: 'break-word' }}
-                >
-                  {getGroupDisplayName(group.name)}
-                </UIText>
-                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  {group.walletContainer.wallets.map((wallet) => (
-                    <AddressBadge key={wallet.address} wallet={wallet} />
-                  ))}
-                </div>
-                <BackupInfoNote group={group} />
-              </VStack>
-              <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
-            </HStack>
-          ),
+          component: <WalletGroupItem group={group} />,
         }))}
       />
     </VStack>

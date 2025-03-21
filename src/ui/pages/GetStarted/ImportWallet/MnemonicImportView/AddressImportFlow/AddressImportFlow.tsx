@@ -35,6 +35,8 @@ import {
 } from 'src/ui/ui-kit/SegmentedControl';
 import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList, WalletListPresentation } from './WalletList';
 
@@ -328,23 +330,6 @@ function SelectMoreWalletsDialog({
   );
 }
 
-function EcosystemTitleHelper({ kind }: { kind: 'solana' | 'ethereum' }) {
-  const config = {
-    solana: { icon: <EcosystemSolanaIcon />, title: 'Solana wallets' },
-    ethereum: {
-      icon: <EcosystemEthereumIcon />,
-      title: 'EVM wallets',
-    },
-  };
-
-  return (
-    <HStack gap={8}>
-      {config[kind].icon}
-      {config[kind].title}
-    </HStack>
-  );
-}
-
 function suggestInitialWallets({
   wallets,
   activeWallets,
@@ -355,7 +340,7 @@ function suggestInitialWallets({
   existingAddressesSet: Set<string>;
 }): {
   activeCount: number;
-  groups: { ecosystem: 'solana' | 'ethereum'; wallets: MaskedBareWallet[] }[];
+  groups: { ecosystem: BlockchainType; wallets: MaskedBareWallet[] }[];
 } {
   const allWallets = wallets.flatMap((config) => config.wallets);
   const newOnes = allWallets.filter(
@@ -375,7 +360,7 @@ function suggestInitialWallets({
     return {
       activeCount: active.length,
       groups: [
-        { ecosystem: 'ethereum', wallets: ethWallets },
+        { ecosystem: 'evm', wallets: ethWallets },
         { ecosystem: 'solana', wallets: solWallets },
       ],
     };
@@ -386,7 +371,7 @@ function suggestInitialWallets({
     return {
       activeCount: 0,
       groups: [
-        { ecosystem: 'ethereum', wallets: ethWallet ? [ethWallet] : [] },
+        { ecosystem: 'evm', wallets: ethWallet ? [ethWallet] : [] },
         { ecosystem: 'solana', wallets: solanaWallet ? [solanaWallet] : [] },
       ],
     };
@@ -453,7 +438,7 @@ function AddressImportList({
                     displayPathIndex={false}
                     listTitle={
                       <PagePaddingInline>
-                        <EcosystemTitleHelper kind={group.ecosystem} />
+                        <BlockchainTitleHelper kind={group.ecosystem} />
                       </PagePaddingInline>
                     }
                     wallets={group.wallets}

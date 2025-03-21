@@ -1,8 +1,8 @@
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from '../isEthereumAddress';
 
-export const blockchainTypes = ['evm', 'solana'] as const;
-export type BlockchainType = (typeof blockchainTypes)[number];
+export const BLOCKCHAIN_TYPES = ['evm', 'solana'] as const;
+export type BlockchainType = (typeof BLOCKCHAIN_TYPES)[number];
 
 export function getAddressType(address: string): BlockchainType {
   if (isEthereumAddress(address)) {
