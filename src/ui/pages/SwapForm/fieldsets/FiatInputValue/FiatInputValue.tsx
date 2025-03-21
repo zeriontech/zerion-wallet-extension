@@ -10,7 +10,6 @@ import { PercentChange } from 'src/ui/components/PercentChange';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import {
   getPriceImpactPercentage,
-  isSignificantValueLoss,
   type PriceImpact,
 } from '../../shared/price-impact';
 
@@ -83,11 +82,11 @@ export function ReceiveFiatInputValue({
   swapView: SwapFormView;
   priceImpact: PriceImpact | null;
 }) {
-  const isSignificantLoss = priceImpact
-    ? isSignificantValueLoss(priceImpact)
-    : false;
+  const isSignificantLoss =
+    priceImpact?.kind === 'loss' &&
+    (priceImpact.level === 'medium' || priceImpact.level === 'high');
 
-  const percentageValue = priceImpact
+  const priceImpactPercentage = priceImpact
     ? getPriceImpactPercentage(priceImpact)
     : null;
 
@@ -96,9 +95,9 @@ export function ReceiveFiatInputValue({
       name="receiveInput"
       swapView={swapView}
       percentageChange={
-        isSignificantLoss && percentageValue ? (
+        isSignificantLoss && priceImpactPercentage ? (
           <PercentChange
-            value={percentageValue}
+            value={priceImpactPercentage}
             locale="en"
             render={(change) => {
               return (
