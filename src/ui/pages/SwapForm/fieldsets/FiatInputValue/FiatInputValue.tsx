@@ -6,12 +6,18 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { isNumeric } from 'src/shared/isNumeric';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import type { PriceImpact } from '../../shared/price-impact';
+import { PercentChange } from 'src/ui/components/PercentChange';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import {
+  getPriceImpactPercentage,
+  isSignificantValueLoss,
+  type PriceImpact,
+} from '../../shared/price-impact';
 
 interface FiatInputValueProps {
   name: 'spendInput' | 'receiveInput';
   swapView: SwapFormView;
-  percentageChangeText: React.ReactNode | null;
+  percentageChange: React.ReactNode | null;
   color?: string;
   style?: React.CSSProperties;
   title?: string;
@@ -20,7 +26,7 @@ interface FiatInputValueProps {
 export function FiatInputValue({
   name,
   swapView,
-  percentageChangeText,
+  percentageChange,
   color,
   style,
   title,
@@ -49,10 +55,13 @@ export function FiatInputValue({
   );
 
   return (
-    <UIText kind="small/regular" color={color} style={style} title={title}>
-      {isPrimaryInput ? null : '≈'}
-      {formatCurrencyValue(fiatValue, 'en', currency)} {percentageChangeText}
-    </UIText>
+    <HStack gap={4}>
+      <UIText kind="small/regular" color={color} style={style} title={title}>
+        {isPrimaryInput ? null : '≈'}
+        {formatCurrencyValue(fiatValue, 'en', currency)}
+      </UIText>
+      {percentageChange}
+    </HStack>
   );
 }
 
@@ -61,16 +70,9 @@ export function SpendFiatInputValue({ swapView }: { swapView: SwapFormView }) {
     <FiatInputValue
       name="spendInput"
       swapView={swapView}
-      percentageChangeText={null}
+      percentageChange={null}
       color="var(--neutral-600)"
     />
-  );
-}
-
-function isSignificantPriceImpact(priceImpact: PriceImpact | null) {
-  return (
-    priceImpact?.kind === 'loss' &&
-    (priceImpact.level === 'medium' || priceImpact.level === 'high')
   );
 }
 
@@ -81,23 +83,37 @@ export function ReceiveFiatInputValue({
   swapView: SwapFormView;
   priceImpact: PriceImpact | null;
 }) {
-  const isPriceImpactWarning = isSignificantPriceImpact(priceImpact);
+  const isSignificantLoss = priceImpact
+    ? isSignificantValueLoss(priceImpact)
+    : false;
+
+  const percentageValue = priceImpact
+    ? getPriceImpactPercentage(priceImpact)
+    : null;
 
   return (
     <FiatInputValue
       name="receiveInput"
       swapView={swapView}
-      percentageChangeText={
-        priceImpact?.kind === 'loss' || priceImpact?.kind === 'profit'
-          ? `(${priceImpact.percentage})`
-          : null
+      percentageChange={
+        isSignificantLoss && percentageValue ? (
+          <PercentChange
+            value={percentageValue}
+            locale="en"
+            render={(change) => {
+              return (
+                <UIText kind="small/regular" color="var(--negative-500)">
+                  {`(${change.formatted})`}
+                </UIText>
+              );
+            }}
+          />
+        ) : null
       }
-      color={
-        isPriceImpactWarning ? 'var(--negative-500)' : 'var(--neutral-600)'
-      }
-      style={isPriceImpactWarning ? { cursor: 'help' } : undefined}
+      color={isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'}
+      style={isSignificantLoss ? { cursor: 'help' } : undefined}
       title={
-        priceImpact?.kind === 'loss'
+        isSignificantLoss
           ? 'The exchange rate is lower than the market rate. Lack of liquidity affects the exchange rate. Try a lower amount.'
           : undefined
       }
