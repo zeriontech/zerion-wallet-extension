@@ -1,7 +1,6 @@
 import type { Asset } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { isNumeric } from 'src/shared/isNumeric';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 
 const LOW_LOSS_RATIO = -0.05;
 const HIGH_LOSS_RATIO = -0.15;
@@ -12,8 +11,7 @@ export type PriceImpact =
   | { kind: 'n/a' }
   | {
       kind: 'profit';
-      ratio: BigNumber;
-      percentage: string;
+      ratio: number;
     }
   | {
       kind: 'zero';
@@ -21,18 +19,10 @@ export type PriceImpact =
   | {
       kind: 'loss';
       level: PriceImpactLevel;
-      ratio: BigNumber;
-      percentage: string;
+      ratio: number;
     };
 
-function toPercentage(ratio: BigNumber) {
-  return `${ratio.isLessThan(0) ? '' : '+'}${formatPercent(
-    ratio.times(100),
-    'en'
-  )}%`;
-}
-
-function ratioToPriceImpact(ratio: BigNumber | null): PriceImpact {
+function ratioToPriceImpact(ratio: number | null): PriceImpact {
   // x > 0 => profit
   // x = 0 => no impact
   // -0.05 <= x < 0 => low loss
@@ -41,24 +31,21 @@ function ratioToPriceImpact(ratio: BigNumber | null): PriceImpact {
 
   if (ratio == null) {
     return { kind: 'n/a' };
-  } else if (ratio.isGreaterThan(0)) {
-    return { kind: 'profit', ratio, percentage: toPercentage(ratio) };
-  } else if (ratio.isZero()) {
+  } else if (ratio > 0) {
+    return { kind: 'profit', ratio };
+  } else if (ratio === 0) {
     return { kind: 'zero' };
+  } else if (ratio >= LOW_LOSS_RATIO) {
+    return { kind: 'loss', level: 'low', ratio };
+  } else if (ratio >= HIGH_LOSS_RATIO) {
+    return { kind: 'loss', level: 'medium', ratio };
   } else {
-    const percentage = toPercentage(ratio);
-    if (ratio.isGreaterThanOrEqualTo(LOW_LOSS_RATIO)) {
-      return { kind: 'loss', level: 'low', ratio, percentage };
-    } else if (ratio.isGreaterThanOrEqualTo(HIGH_LOSS_RATIO)) {
-      return { kind: 'loss', level: 'medium', ratio, percentage };
-    } else {
-      return { kind: 'loss', level: 'high', ratio, percentage };
-    }
+    return { kind: 'loss', level: 'high', ratio };
   }
 }
 
-function toFiatValue(value: string | null, asset: Asset | null) {
-  return new BigNumber(value || 0).times(asset?.price?.value || 0);
+function toFiatValue(value: string | null, price: number) {
+  return new BigNumber(value || 0).times(price);
 }
 
 export function calculatePriceImpact({
@@ -75,10 +62,32 @@ export function calculatePriceImpact({
   if (inputValue == null || !isNumeric(inputValue)) {
     return null;
   }
-  const inputFiatValue = toFiatValue(inputValue, inputAsset);
-  const outputFiatValue = toFiatValue(outputValue, outputAsset);
+
+  if (!inputAsset?.price || !outputAsset?.price) {
+    return null;
+  }
+
+  const inputFiatValue = toFiatValue(inputValue, inputAsset.price.value);
+  const outputFiatValue = toFiatValue(outputValue, outputAsset.price.value);
+
   const ratio = outputFiatValue.isGreaterThan(0)
-    ? inputFiatValue.minus(outputFiatValue).div(outputFiatValue)
+    ? inputFiatValue.minus(outputFiatValue).div(outputFiatValue).toNumber()
     : null;
+
   return ratioToPriceImpact(ratio);
+}
+
+export function getPriceImpactPercentage(priceImpact: PriceImpact) {
+  return priceImpact.kind === 'zero'
+    ? 0
+    : priceImpact.kind === 'loss' || priceImpact.kind === 'profit'
+    ? priceImpact.ratio * 100
+    : null;
+}
+
+export function isSignificantValueLoss(priceImpact: PriceImpact) {
+  return (
+    priceImpact.kind === 'loss' &&
+    (priceImpact.level === 'medium' || priceImpact.level === 'high')
+  );
 }

@@ -8,7 +8,6 @@ import {
   formatCurrencyToParts,
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -68,6 +67,7 @@ import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { emitter } from 'src/ui/shared/events';
+import { PercentChange } from 'src/ui/components/PercentChange';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -88,24 +88,6 @@ import {
 import { ConnectionHeader } from './ConnectionHeader';
 import { BackupReminder } from './BackupReminder';
 import { Banners } from './Banners';
-
-interface ChangeInfo {
-  isPositive: boolean;
-  isNegative: boolean;
-  isNonNegative: boolean;
-  isZero: boolean;
-  formatted: string;
-}
-
-function formatPercentChange(value: number, locale: string): ChangeInfo {
-  return {
-    isPositive: value > 0,
-    isNonNegative: value >= 0,
-    isNegative: value < 0,
-    isZero: value === 0,
-    formatted: `${formatPercent(value, locale)}%`,
-  };
-}
 
 function PendingTransactionsIndicator() {
   const pendingTxs = usePendingTransactions();
@@ -168,21 +150,6 @@ function TestnetworkGuard({
     return renderGuard({ testnetModeEnabled });
   }
   return children;
-}
-
-function PercentChange({
-  value,
-  locale,
-  render,
-}: {
-  value?: number;
-  locale: string;
-  render: (changeInfo: ChangeInfo) => JSX.Element;
-}): JSX.Element | null {
-  if (value == null) {
-    return null;
-  }
-  return render(formatPercentChange(value, locale));
 }
 
 function CurrentAccountControls() {
