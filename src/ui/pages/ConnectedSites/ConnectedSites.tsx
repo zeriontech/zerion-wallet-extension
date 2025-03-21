@@ -129,11 +129,12 @@ function ConnectedSitesList({
                         <AddressBadge
                           key={wallet.address}
                           wallet={wallet}
+                          size={16}
                           style={{
-                            padding: 0,
                             backgroundColor: 'transparent',
                             minWidth: index > 1 ? 0 : undefined,
                           }}
+                          captionStyle={{ padding: 0 }}
                         />
                       ))}
                     </div>
