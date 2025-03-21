@@ -7,10 +7,14 @@ import { WalletAvatar } from '../WalletAvatar';
 
 export function AddressBadge({
   wallet,
+  size = 20,
   style,
+  captionStyle,
 }: {
+  size?: number;
   wallet: ExternallyOwnedAccount;
   style?: React.CSSProperties;
+  captionStyle?: React.CSSProperties;
 }) {
   return (
     <HStack
@@ -18,16 +22,21 @@ export function AddressBadge({
       gap={4}
       style={{
         backgroundColor: 'var(--neutral-100)',
-        padding: '2px 4px',
         borderRadius: 4,
         display: 'inline-flex',
         ...style,
       }}
     >
-      <WalletAvatar address={wallet.address} size={14} borderRadius={4} />
+      <WalletAvatar address={wallet.address} size={size} borderRadius={4} />
       <UIText
         kind="caption/regular"
-        style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          paddingBlock: 2,
+          paddingInlineEnd: 4,
+          ...captionStyle,
+        }}
       >
         <WalletDisplayName wallet={wallet} maxCharacters={16} padding={4} />
       </UIText>
