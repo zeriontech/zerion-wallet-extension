@@ -174,8 +174,11 @@ function FormHint({
     message = getQuotesErrorMessage(quotesData);
   } else if (isHighPriceImpact) {
     message = (
-      <HStack gap={8} justifyContent="center">
-        <WarningIcon color="var(--negative-500)" />
+      <HStack gap={8} alignItems="center" justifyContent="center">
+        <WarningIcon
+          style={{ width: 20, height: 20 }}
+          color="var(--negative-500)"
+        />
         <UIText kind="body/accent">Swap Anyway</UIText>
       </HStack>
     );
