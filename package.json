@@ -15,7 +15,8 @@
     "lint": "eslint . --cache --fix --ext .ts,.tsx,.js",
     "format": "prettier --loglevel warn --write \"**/*.{ts,tsx,css,md}\"",
     "prepare": "husky install",
-    "postversion": "node ./scripts/manifest-version.js"
+    "postversion": "node ./scripts/manifest-version.js",
+    "update-dev-name": "node ./scripts/manifest-dev-name.js"
   },
   "alias": {
     "src": "./src",
