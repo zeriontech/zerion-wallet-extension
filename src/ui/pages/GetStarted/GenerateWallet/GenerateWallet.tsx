@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
@@ -16,6 +17,8 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
+import { invariant } from 'src/shared/invariant';
+import { assertKnownEcosystems } from 'src/shared/wallet/shared';
 import {
   DecorativeMessage,
   DecorativeMessageDone,
@@ -27,6 +30,10 @@ enum Step {
 }
 
 function GenerateWalletView() {
+  const [params] = useSearchParams();
+  const ecosystems = params.getAll('ecosystems');
+  invariant(ecosystems.length > 0, 'Must provide ecosystems get-param');
+  assertKnownEcosystems(ecosystems);
   const [steps, setSteps] = useState(() => new Set<Step>());
   const addStep = (step: Step) => setSteps((steps) => new Set(steps).add(step));
 
@@ -34,14 +41,15 @@ function GenerateWalletView() {
 
   const {
     mutate: generateMnemonicWallet,
-    data,
+    data: generatedWallets,
     isLoading,
     status,
+    isSuccess,
   } = useMutation({
     mutationFn: async () => {
       addStep(Step.loading);
       await new Promise((r) => setTimeout(r, 1000));
-      return walletPort.request('uiGenerateMnemonic');
+      return walletPort.request('uiGenerateMnemonic', { ecosystems });
     },
     useErrorBoundary: true,
     onSuccess() {
@@ -64,13 +72,12 @@ function GenerateWalletView() {
     },
   });
 
-  const address = data?.address;
   useEffect(() => {
-    if (address) {
+    if (generatedWallets) {
       // NOTE: Make sure "finalize" is idempotent
-      finalize(address);
+      finalize(generatedWallets[0].address);
     }
-  }, [address, finalize]);
+  }, [generatedWallets, finalize]);
 
   return (
     <PageColumn>
@@ -101,15 +108,15 @@ function GenerateWalletView() {
               }
             />
           ) : null}
-          {data?.address ? (
+          {generatedWallets ? (
             <DecorativeMessageDone
-              address={data.address}
+              addresses={generatedWallets.map((wallet) => wallet.address)}
               confettiOriginY={0.87}
             />
           ) : null}
         </VStack>
       </VStack>
-      {data ? null : (
+      {isSuccess ? null : (
         <Button
           style={{ marginTop: 'auto' }}
           disabled={isLoading}
@@ -120,7 +127,7 @@ function GenerateWalletView() {
           {isLoading ? 'Generating...' : 'Generate new Wallet'}
         </Button>
       )}
-      {data ? (
+      {isSuccess ? (
         <VStack gap={4} style={{ marginTop: 'auto' }}>
           {finalizeMutation.isError ? (
             <UIText
