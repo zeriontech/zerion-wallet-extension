@@ -83,7 +83,7 @@ jobs:
           filename: dist/manifest.json
           folderId: ${{ secrets.GDRIVE_SHARED_FOLDER_ID }}
           overwrite: 'true'
-          # mirrorDirectoryStructure: 'true'
+          mirrorDirectoryStructure: 'true'
 
       - name: Save PR number
         if: ${{ success() }}
