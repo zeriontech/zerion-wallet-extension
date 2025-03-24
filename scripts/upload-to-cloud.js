@@ -146,14 +146,21 @@ async function uploadDirectory(
       })()
     )
   );
+  return folderId;
 }
 
 async function uploadToGoogleDrive() {
   const auth = await authorize();
   console.log('Authorized');
   const folderName = GIT_BRANCH_NAME.split('/')[1];
-  await uploadDirectory(auth, FOLDER_ID, DIST_FOLDER, folderName);
+  const folderId = await uploadDirectory(
+    auth,
+    FOLDER_ID,
+    DIST_FOLDER,
+    folderName
+  );
   console.log('Done!');
+  return folderId;
 }
 
-uploadToGoogleDrive();
+console.log(await uploadToGoogleDrive());
