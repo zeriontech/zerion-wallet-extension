@@ -3,6 +3,8 @@ const fs = require('fs/promises');
 const path = require('path');
 const manifest = require('../dist/manifest.json');
 
+const GIT_BRANCH_NAME = process.env.GIT_BRANCH_NAME;
+
 const dist = path.__dirname(__dirname, '../dist');
 
 async function updateDevName() {
@@ -11,8 +13,8 @@ async function updateDevName() {
     JSON.stringify(
       {
         ...manifest,
-        name: 'Zerion Test',
-        description: 'Zerion Test description',
+        name: 'Zerion Test Build',
+        description: `For the branch: ${GIT_BRANCH_NAME}`,
       },
       null,
       2

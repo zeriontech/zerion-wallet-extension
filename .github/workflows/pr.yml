@@ -74,9 +74,12 @@ jobs:
         run: |
           npm install
           npm run build:production
-          npm run update-dev-manifest
 
-          
+      - name: Update Dev Manifest file
+        env:
+          GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: npm run update-dev-manifest
+
       - name: Upload to Google Drive
         env:
           GDRIVE_SHARED_FOLDER_CREDENTIALS: ${{ secrets.GDRIVE_SHARED_FOLDER_CREDENTIALS }}
