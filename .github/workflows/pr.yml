@@ -101,7 +101,7 @@ jobs:
             const { data: comments } = await github.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: github.event.number,
+              issue_number: ${{ github.event.inputs.PR_NUMBER || github.event.number }},
             });
             const comment = comments.find(c => c.body.startsWith(":link:"));
             const repo = { owner: context.repo.owner, repo: context.repo.repo };
