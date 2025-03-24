@@ -49,11 +49,12 @@ export function FiatInputValue({
     return null;
   }
 
-  const fiatValue = new BigNumber(inputValue || 0).times(
-    asset?.price?.value || 0
-  );
+  const assetPrice = asset?.price?.value;
+  const fiatValue = assetPrice
+    ? new BigNumber(inputValue || 0).times(assetPrice)
+    : null;
 
-  return (
+  return fiatValue ? (
     <HStack gap={4}>
       <UIText kind="small/regular" color={color} style={style} title={title}>
         {isPrimaryInput ? null : '≈'}
@@ -61,7 +62,7 @@ export function FiatInputValue({
       </UIText>
       {percentageChange}
     </HStack>
-  );
+  ) : null;
 }
 
 export function SpendFiatInputValue({ swapView }: { swapView: SwapFormView }) {
