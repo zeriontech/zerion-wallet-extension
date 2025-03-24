@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const manifest = require('../dist/manifest.json');
 
-const dist = path.join(__dirname, '../dist');
+const dist = path.resolve(__dirname, '../dist');
 
 async function updateDevName() {
   const filesInDirectory = fs.readdirSync(dist);
