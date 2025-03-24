@@ -24,7 +24,7 @@ export function InviteFriendsBanner({ onDismiss }: { onDismiss?(): void }) {
           <Spacer height={4} />
           <VStack gap={4}>
             <UIText kind="headline/h3" color="var(--always-black)">
-              Invite Friends 123
+              Invite Friends
             </UIText>
             <UIText kind="small/regular" color="var(--always-black)">
               Earn XP & Gift Free Premium
