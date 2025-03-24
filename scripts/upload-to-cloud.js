@@ -160,7 +160,7 @@ async function uploadToGoogleDrive() {
     folderName
   );
   console.log('Done!');
-  return folderId;
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `drive_folder_id=${folderId}\n`);
 }
 
-console.log(await uploadToGoogleDrive());
+uploadToGoogleDrive();

@@ -87,8 +87,7 @@ jobs:
           GDRIVE_SHARED_FOLDER_ID: ${{ secrets.GDRIVE_SHARED_FOLDER_ID }}
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: |
-          RESULT=$(npm run upload-build-to-cloud)
-          echo "drive_folder_id=$RESULT" >> $GITHUB_OUTPUT
+          npm run upload-build-to-cloud
 
       - name: Attach Build Link to PR
         if: ${{ success() }}
