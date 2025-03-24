@@ -16,7 +16,8 @@
     "format": "prettier --loglevel warn --write \"**/*.{ts,tsx,css,md}\"",
     "prepare": "husky install",
     "postversion": "node ./scripts/manifest-version.js",
-    "update-dev-name": "node ./scripts/manifest-dev-name.js"
+    "update-dev-name": "node ./scripts/manifest-dev-name.js",
+    "upload-build-to-cloud": "node ./scripts/upload-to-cloud.js"
   },
   "alias": {
     "src": "./src",
@@ -119,6 +120,7 @@
     "downshift": "^7.6.0",
     "ethers": "^6.13.4",
     "events": "^3.3.0",
+    "googleapis": "^148.0.0",
     "immer": "^10.0.2",
     "is-truthy-ts": "^1.0.1",
     "ky": "^0.33.3",
