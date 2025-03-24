@@ -89,55 +89,22 @@ jobs:
         run: |
           npm run upload-build-to-cloud
 
-      - name: Attach Build Link to PR
-        if: ${{ success() }}
-        uses: actions/github-script@v3
-        with:
-          script: |
-            const drive_folder_id = "${{ steps.upload-to-google-drive.outputs.drive_folder_id }}";
-            const google_drive_url = `https://drive.google.com/drive/folders/${drive_folder_id}`;
-            const message = `:link: <a href='${google_drive_url}'>Google Drive Link</a>`;
-            const pr_number = ${{ github.event.inputs.PR_NUMBER || github.event.number }}
-
-            const { data: comments } = await github.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pr_number,
-            });
-            const comment = comments.find(c => c.body.startsWith(":link:"));
-            const repo = { owner: context.repo.owner, repo: context.repo.repo };
-
-            const formatDate = date =>
-              new Intl.DateTimeFormat('en', {
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-              }).format(date);
-
-            const updateComment = ({ comment_id, body }) =>
-              github.issues.updateComment({ ...repo, comment_id, body });
-            const createComment = ({ issue_number, body }) =>
-              github.issues.createComment({ ...repo, issue_number, body });
-
-            if (comment) {
-              const body = `${message} [updated at ${formatDate(new Date())} UTC]`;
-              updateComment({ comment_id: comment.id, body });
-            } else {
-              createComment({ issue_number: pr_number, body: message });
-            }
-
-      - name: Save PR number
+      - name: Save PR number and Google Drive folder ID
         if: ${{ success() }}
         env:
           PR_NUMBER: ${{ github.event.inputs.PR_NUMBER || github.event.number }}
+          GD_FOLDER_ID: ${{ steps.upload-to-google-drive.outputs.drive_folder_id }}
         run: |
           mkdir -p ./pr
           echo $PR_NUMBER > ./pr/pr_number
+          echo $GD_FOLDER_ID > ./pr/gd_folder_id
       - uses: actions/upload-artifact@v4
         with:
           name: pr_number
+          path: pr/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gd_folder_id
           path: pr/
 
       - name: Compress build artifacts
