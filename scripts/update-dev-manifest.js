@@ -13,6 +13,10 @@ async function updateDevName() {
         ...manifest,
         name: 'Zerion Test',
         description: 'Zerion Test description',
+        action: {
+          ...manifest.action,
+          default_icon: manifest.action.dev_icon,
+        },
       },
       null,
       2

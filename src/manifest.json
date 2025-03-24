@@ -19,6 +19,12 @@
       "48": "images/logo-icon-48.png",
       "128": "images/logo-icon-128.png"
     },
+    "dev_icon": {
+      "16": "images/logo-icon-dev-128.png",
+      "32": "images/logo-icon-dev-128.png",
+      "48": "images/logo-icon-dev-128.png",
+      "128": "images/logo-icon-dev-128.png"
+    },
     "default_title": "Zerion",
     "default_popup": "ui/popup.html"
   },
