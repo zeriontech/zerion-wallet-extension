@@ -36,7 +36,8 @@ async function updateDevName() {
       },
       null,
       2
-    )
+    ),
+    () => {}
   );
 }
 
