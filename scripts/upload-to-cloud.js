@@ -8,6 +8,7 @@ const DIST_FOLDER = path.resolve(__dirname, '../dist');
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
 const FOLDER_ID = process.env.GDRIVE_SHARED_FOLDER_ID;
 const ENCODED_CREDENTIALS = process.env.GDRIVE_SHARED_FOLDER_CREDENTIALS;
+const GIT_BRANCH_NAME = process.env.GIT_BRANCH_NAME;
 
 const apikeys = JSON.parse(
   Buffer.from(ENCODED_CREDENTIALS, 'base64').toString()
@@ -150,7 +151,8 @@ async function uploadDirectory(
 async function uploadToGoogleDrive() {
   const auth = await authorize();
   console.log('Authorized');
-  await uploadDirectory(auth, FOLDER_ID, DIST_FOLDER, 'Zerion Test 7');
+  const folderName = GIT_BRANCH_NAME.split('/')[1];
+  await uploadDirectory(auth, FOLDER_ID, DIST_FOLDER, folderName);
   console.log('Done!');
 }
 

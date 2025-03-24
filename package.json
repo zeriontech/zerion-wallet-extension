@@ -16,7 +16,7 @@
     "format": "prettier --loglevel warn --write \"**/*.{ts,tsx,css,md}\"",
     "prepare": "husky install",
     "postversion": "node ./scripts/manifest-version.js",
-    "update-dev-name": "node ./scripts/manifest-dev-name.js",
+    "update-dev-manifest": "node ./scripts/update-dev-manifest.js",
     "upload-build-to-cloud": "node ./scripts/upload-to-cloud.js"
   },
   "alias": {
