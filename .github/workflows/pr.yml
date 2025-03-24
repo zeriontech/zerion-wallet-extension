@@ -188,7 +188,7 @@ jobs:
             const pr_number = ${{ github.event.inputs.PR_NUMBER || github.event.number }}
             const gd_folder_id = ${{ steps.upload-to-google-drive.outputs.drive_folder_id }};
             const google_drive_url = `https://drive.google.com/drive/folders/${gd_folder_id}`;
-            const message = `:link: <a href='${google_drive_url}'>Google Drive Link</a>`;`;
+            const message = `:link: <a href='${google_drive_url}'>Google Drive Link</a>`;
 
             const { data: comments } = await github.issues.listComments({
               owner: context.repo.owner,
