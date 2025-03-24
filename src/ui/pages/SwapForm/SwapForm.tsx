@@ -161,8 +161,8 @@ function FormHint({
     : null;
   const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
 
-  const isHighPriceImpact =
-    priceImpact?.kind === 'loss' && priceImpact.level === 'high';
+  const showPriceImpactWarning =
+    priceImpact?.kind === 'loss' && priceImpact.level === 'medium';
 
   let hint: React.ReactNode | null = null;
   if (exceedsBalance) {
@@ -173,7 +173,7 @@ function FormHint({
     hint = 'Incorrect amount';
   } else if (quotesData.error) {
     hint = getQuotesErrorMessage(quotesData);
-  } else if (isHighPriceImpact) {
+  } else if (showPriceImpactWarning) {
     hint = (
       <HStack gap={8} alignItems="center" justifyContent="center">
         <WarningIcon

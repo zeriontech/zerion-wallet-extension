@@ -6,7 +6,7 @@ export function PercentChange({
   locale,
   render,
 }: {
-  value?: number;
+  value: number | null;
   locale: string;
   render: (changeInfo: PercentChangeInfo) => JSX.Element;
 }): JSX.Element | null {

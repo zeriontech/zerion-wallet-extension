@@ -91,7 +91,7 @@ export function ReceiveFiatInputValue({
     : null;
 
   const showPercentageChange =
-    priceImpactPercentage &&
+    Boolean(priceImpactPercentage) &&
     (priceImpact?.kind === 'zero' || priceImpact?.kind === 'loss');
 
   return (
