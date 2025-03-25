@@ -75,12 +75,17 @@ jobs:
           npm install
           npm run build:production
 
+      - name: Update Dev Manifest file
+        env:
+          GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: npm run update-dev-manifest
+
       - name: Create branch in another repository and copy files
         env:
           REPO_TOKEN: ${{ secrets.QA_REPOSITORY_PAT }}
         run: |
           TARGET_REPO="github.com/zeriontech/zerion-wallet-extension-qa.git"
-          BRANCH_NAME="pr-${{ github.head_ref || github.ref_name }}"
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
 
           git config --global user.email "zerts@zerion.io"
           git config --global user.name "QA Bot"
@@ -93,7 +98,7 @@ jobs:
           git checkout "$BRANCH_NAME" || git checkout -b "$BRANCH_NAME"
 
           # Copy files from the dist directory
-          cp -r ../dist/* .
+          cp -r ../dist/* ./extension-build
 
           # Commit and push changes
           git add .
