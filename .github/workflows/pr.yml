@@ -105,7 +105,7 @@ jobs:
 
           # Commit and push changes
           git add .
-          git commit -m "Add build artifacts for PR #${{ github.event.pull_request.number }}"
+          git commit -m "PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}"
           git push origin "$BRANCH_NAME"
 
       - name: Save PR number
