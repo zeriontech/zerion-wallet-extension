@@ -219,7 +219,7 @@ export function SwapFormComponent() {
     asset_code: null,
     getNativeAssetId: async (chain) => {
       const networksStore = await getNetworksStore();
-      const networks = await networksStore.load();
+      const networks = await networksStore.load({ chains: [chain.toString()] });
       return networks.getNetworkByName(chain)?.native_asset?.id || null;
     },
     supportedChains,
