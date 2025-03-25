@@ -105,6 +105,10 @@ jobs:
 
           # Commit and push changes
           git add .
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes to commit."
+            exit 0
+          fi
           git commit -m "PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}"
           git push origin "$BRANCH_NAME"
 
