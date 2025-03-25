@@ -98,7 +98,7 @@ jobs:
           git checkout "$BRANCH_NAME" || git checkout -b "$BRANCH_NAME"
 
           # Copy files from the dist directory
-          mkdir extension-build
+          mkdir -p extension-build
           cp -r ../dist/* ./extension-build
 
           # Commit and push changes
