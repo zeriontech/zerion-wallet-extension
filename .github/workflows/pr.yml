@@ -75,6 +75,28 @@ jobs:
           npm install
           npm run build:production
 
+      - name: Create branch in another repository and copy files
+        env:
+          REPO_TOKEN: ${{ secrets.QA_REPOSITORY_PAT }}
+        run: |
+          TARGET_REPO="github.com/zeriontech/zerion-wallet-extension-qa.git"
+          BRANCH_NAME="pr-${{ github.head_ref || github.ref_name }}"
+
+          # Clone the target repository
+          git clone "https://${REPO_TOKEN}@${TARGET_REPO}" qa-repository
+          cd qa-repository
+
+          # Create or switch to the new branch
+          git checkout "$BRANCH_NAME" || git checkout -b "$BRANCH_NAME"
+
+          # Copy files from the dist directory
+          cp -r ../dist/* .
+
+          # Commit and push changes
+          git add .
+          git commit -m "Add build artifacts for PR #${{ github.event.pull_request.number }}"
+          git push origin "$BRANCH_NAME"
+
       - name: Save PR number
         if: ${{ success() }}
         env:
