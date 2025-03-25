@@ -76,11 +76,13 @@ jobs:
           npm run build:production
 
       - name: Update Dev Manifest file
+        if: ${{ success() }}
         env:
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: npm run update-dev-manifest
 
       - name: Create branch in another repository and copy files
+        if: ${{ success() }}
         env:
           REPO_TOKEN: ${{ secrets.QA_REPOSITORY_PAT }}
         run: |
