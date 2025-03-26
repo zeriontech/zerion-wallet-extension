@@ -613,6 +613,7 @@ function AssetSelectComponent({
                 textAlign: 'start',
                 fontSize:
                   selectedItem.asset.symbol.length > 8 ? '0.8em' : undefined,
+                opacity: isLoading ? 0.6 : 1,
               }}
             >
               {selectedItem.asset.symbol}

@@ -23,7 +23,6 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { getNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { createChain } from 'src/modules/networks/Chain';
 import { PageTop } from 'src/ui/components/PageTop';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -82,6 +81,7 @@ import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transaction
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -107,6 +107,7 @@ import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
 import { SlippageSettings } from './SlippageSettings';
 import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
+import { getPopularTokens } from './shared/getPopularTokens';
 
 const rootNode = getRootDomNode();
 
@@ -216,9 +217,14 @@ export function SwapFormComponent() {
     client,
     positions,
     asset_code: null,
-    getNativeAsset: ({ chain }) => getNativeAsset({ chain, currency }),
+    getNativeAssetId: async (chain) => {
+      const networksStore = await getNetworksStore();
+      const networks = await networksStore.load({ chains: [chain.toString()] });
+      return networks.getNetworkByName(chain)?.native_asset?.id || null;
+    },
     supportedChains,
     DEFAULT_CONFIGURATION,
+    getPopularTokens,
   });
 
   const { primaryInput, chainInput, spendInput } = useSelectorStore(

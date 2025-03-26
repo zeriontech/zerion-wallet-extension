@@ -24,7 +24,7 @@ export function ReceiveTokenField({
   swapView: SwapFormView;
   readOnly: boolean;
 }) {
-  const { receivePosition } = swapView;
+  const { receivePosition, receiveAssetQuery } = swapView;
   const { primaryInput, receiveInput, chainInput } = useSelectorStore(
     swapView.store,
     ['primaryInput', 'receiveInput', 'chainInput']
@@ -75,6 +75,7 @@ export function ReceiveTokenField({
                   )
                 }
                 addressPositions={swapView.availablePositions}
+                isLoading={receiveAssetQuery.isLoading}
               />
             ) : null}
           </div>
