@@ -105,7 +105,14 @@ export function ReceiveFiatInputValue({
             value={priceImpactPercentage}
             locale="en"
             render={(change) => (
-              <UIText kind="small/regular" color="var(--negative-500)">
+              <UIText
+                kind="small/regular"
+                color={
+                  isSignificantLoss
+                    ? 'var(--negative-500)'
+                    : 'var(--neutral-600)'
+                }
+              >
                 {`(${change.formatted})`}
               </UIText>
             )}
