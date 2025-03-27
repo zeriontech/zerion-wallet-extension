@@ -26,10 +26,8 @@ const TextPreview = ({ text }: { text: string }) => {
   });
 
   useEffect(() => {
-    if (ref.current) {
-      if (ref.current.scrollHeight > ref.current.clientHeight) {
-        setIsClamped(true);
-      }
+    if (ref.current && ref.current.scrollHeight > ref.current.clientHeight) {
+      setIsClamped(true);
     }
   }, []);
 

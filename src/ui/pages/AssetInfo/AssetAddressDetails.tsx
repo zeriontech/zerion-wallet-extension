@@ -252,14 +252,13 @@ function AssetStats({
         isLoading={assetAddressPnlIsLoading}
       />
       <VStack gap={0}>
-        <UnstyledButton
+        <div
           className="parent-hover"
           style={{
             position: 'relative',
             ['--parent-hovered-content-background-color' as string]:
               'var(--neutral-200)',
           }}
-          onClick={() => setShowNetworkDistribution((prev) => !prev)}
         >
           <div
             className="content-hover"
@@ -269,29 +268,34 @@ function AssetStats({
               borderRadius: 12,
             }}
           />
-          <HStack
-            gap={12}
-            alignItems="center"
-            justifyContent="space-between"
-            style={{ position: 'relative' }}
+          <UnstyledButton
+            style={{ position: 'relative', width: '100%' }}
+            onClick={() => setShowNetworkDistribution((prev) => !prev)}
           >
-            <HStack gap={8} alignItems="center">
-              <ChainsIcon style={{ width: 16, height: 16 }} />
-              <UIText kind="body/regular">Network Distribution</UIText>
+            <HStack
+              gap={12}
+              alignItems="center"
+              justifyContent="space-between"
+              style={{ position: 'relative' }}
+            >
+              <HStack gap={8} alignItems="center">
+                <ChainsIcon style={{ width: 16, height: 16 }} />
+                <UIText kind="body/regular">Network Distribution</UIText>
+              </HStack>
+              <ArrowDownIcon
+                style={{
+                  width: 24,
+                  height: 24,
+                  transformOrigin: 'center',
+                  transitionDuration: '0.2s',
+                  transform: showNetworkDistribution
+                    ? 'rotate(180deg)'
+                    : 'rotate(0deg)',
+                }}
+              />
             </HStack>
-            <ArrowDownIcon
-              style={{
-                width: 24,
-                height: 24,
-                transformOrigin: 'center',
-                transitionDuration: '0.2s',
-                transform: showNetworkDistribution
-                  ? 'rotate(180deg)'
-                  : 'rotate(0deg)',
-              }}
-            />
-          </HStack>
-        </UnstyledButton>
+          </UnstyledButton>
+        </div>
         <div
           style={{
             overflow: 'hidden',

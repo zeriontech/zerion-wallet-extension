@@ -230,7 +230,7 @@ export function AssetHistory({
 
   const asset = assetFullInfo?.fungible;
 
-  if (actionsAreLoading || !asset || !networks || !value?.length) {
+  if (!asset || !networks || !value?.length) {
     return null;
   }
 
@@ -241,7 +241,7 @@ export function AssetHistory({
         <VStack gap={0}>
           {value.map((action) => (
             <AssetHistoryItem
-              key={action.id}
+              key={action.transaction.hash}
               address={address}
               networks={networks}
               asset={asset}

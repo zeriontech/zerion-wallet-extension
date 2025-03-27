@@ -36,10 +36,12 @@ function AssetStatsChip({
   );
 }
 
-const numberFormatter = Intl.NumberFormat('en', {
+const FORMATTING_OPTIONS: Intl.NumberFormatOptions = {
   notation: 'compact',
   maximumFractionDigits: 1,
-});
+};
+
+const numberFormatter = Intl.NumberFormat('en', FORMATTING_OPTIONS);
 
 export function AssetGlobalStats({
   assetFullInfo,
@@ -67,10 +69,7 @@ export function AssetGlobalStats({
             assetFullInfo.fungible.meta.fullyDilutedValuation,
             'en',
             currency,
-            {
-              notation: 'compact',
-              maximumFractionDigits: 1,
-            }
+            FORMATTING_OPTIONS
           )}
         />
       ) : null}
@@ -82,10 +81,7 @@ export function AssetGlobalStats({
             assetFullInfo.fungible.meta.marketCap,
             'en',
             currency,
-            {
-              notation: 'compact',
-              maximumFractionDigits: 1,
-            }
+            FORMATTING_OPTIONS
           )}
         />
       ) : null}
@@ -97,10 +93,7 @@ export function AssetGlobalStats({
             assetFullInfo.extra.volume24h,
             'en',
             currency,
-            {
-              notation: 'compact',
-              maximumFractionDigits: 1,
-            }
+            FORMATTING_OPTIONS
           )}
         />
       ) : null}
@@ -126,10 +119,7 @@ export function AssetGlobalStats({
             assetFullInfo.extra.liquidity,
             'en',
             currency,
-            {
-              notation: 'compact',
-              maximumFractionDigits: 1,
-            }
+            FORMATTING_OPTIONS
           )}
         />
       ) : null}

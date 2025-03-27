@@ -12,6 +12,22 @@ const getCurrencyFormatter = memoize((locale, currency, config = {}) => {
   });
 });
 
+const getSmallPriceCurrencyFormatter = memoize(
+  (locale, currency, config = {}) => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumSignificantDigits: 3,
+      maximumFractionDigits: 20,
+      ...config,
+    });
+  }
+);
+
+// ~1$ values should be formatted as regular currency values
+const SMALL_VALUE_THRESHOLD = 0.99;
+
 export function formatCurrencyValue(
   value: BigNumber.Value,
   locale: string,
@@ -21,10 +37,13 @@ export function formatCurrencyValue(
   const number = value instanceof BigNumber ? value.toNumber() : Number(value);
   const sign = number < 0 ? typographicMinus : '';
   const absValue = Math.abs(number);
+  const isSmallValue = absValue < SMALL_VALUE_THRESHOLD;
 
   const config = CURRENCIES[currency] as CurrencyConfig | undefined;
   const numberFormatOptions = resolveOptions(number, config || null, opts);
-  const formatter = getCurrencyFormatter(locale, currency, numberFormatOptions);
+  const formatter = isSmallValue
+    ? getSmallPriceCurrencyFormatter(locale, currency, numberFormatOptions)
+    : getCurrencyFormatter(locale, currency, numberFormatOptions);
 
   const modifyParts = config?.modifyParts;
   if (modifyParts) {
