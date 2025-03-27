@@ -27,6 +27,7 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import { createChain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { ActionDetailedView } from '../History/ActionDetailedView';
 import * as styles from './styles.module.css';
 
@@ -105,7 +106,7 @@ function AssetHistoryItem({
       : action.type.display_value;
 
   const formattedPrice = transfer.price
-    ? formatCurrencyValue(transfer.price, 'en', currency)
+    ? formatPriceValue(transfer.price, 'en', currency)
     : noValueDash;
 
   const normalizedQuantity = baseToCommon(

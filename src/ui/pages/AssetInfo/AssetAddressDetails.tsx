@@ -34,6 +34,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
+import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { AssetHeader } from './AssetHeader';
 import { getColor, getSign } from './helpers';
 
@@ -244,7 +245,7 @@ function AssetStats({
       />
       <StatLine
         title="Average Cost"
-        value={formatCurrencyValue(
+        value={formatPriceValue(
           assetAddressPnl?.averageBuyPrice || 0,
           'en',
           currency

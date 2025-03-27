@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { emDash } from 'src/ui/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
@@ -31,7 +31,7 @@ export function AssetHeader({
       <UIText kind="body/accent">
         {asset.symbol}
         {asset.meta.price != null
-          ? ` ${emDash} ${formatCurrencyValue(
+          ? ` ${emDash} ${formatPriceValue(
               asset.meta.price || 0,
               'en',
               currency

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
@@ -9,6 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { getColor, getSign } from './helpers';
 
 const REQUEST_TOKEN_LINK = 'https://zerion.io/request-token';
@@ -74,7 +74,7 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
       ) : (
         <HStack gap={8} alignItems="end">
           <UIText kind="headline/hero">
-            {formatCurrencyValue(asset.meta.price ?? 0, 'en', currency)}
+            {formatPriceValue(asset.meta.price ?? 0, 'en', currency)}
           </UIText>
           {asset.meta.relativeChange1d != null ? (
             <UIText
