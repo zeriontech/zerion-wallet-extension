@@ -24,11 +24,14 @@ export function ReceiveTokenField({
   swapView: SwapFormView;
   readOnly: boolean;
 }) {
-  const { receivePosition, receiveAssetQuery } = swapView;
-  const { primaryInput, receiveInput, chainInput } = useSelectorStore(
-    swapView.store,
-    ['primaryInput', 'receiveInput', 'chainInput']
-  );
+  const { receivePosition, receiveAssetQuery, spendAsset, receiveAsset } =
+    swapView;
+  const { primaryInput, spendInput, receiveInput, chainInput } =
+    useSelectorStore(swapView.store, [
+      'primaryInput',
+      'receiveInput',
+      'chainInput',
+    ]);
   const chain = chainInput ? createChain(chainInput) : null;
 
   const positionBalanceCommon = receivePosition
