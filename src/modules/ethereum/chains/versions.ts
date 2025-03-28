@@ -1,5 +1,7 @@
 import type { Upgrades } from 'src/shared/type-utils/versions';
-import { toAddEthereumChainParameter } from 'src/modules/networks/helpers';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { Networks } from 'src/modules/networks/Networks';
+import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import type {
   ChainConfig,
   ChainConfigV1,
@@ -14,20 +16,53 @@ function maybeLocalChainId(id?: string | null) {
   return !id || id.length === 21; // nanoid() standard length
 }
 
+/**
+ * legacy version of toAddEthereumChainParameter from src/modules/networks/helpers.ts
+ * supports old external_id field from NetworkConfigStoredV0
+ */
+export function toAddEthereumChainParameterLegacy(
+  item: Pick<
+    NetworkConfig,
+    | 'rpc_url_user'
+    | 'rpc_url_internal'
+    | 'rpc_url_public'
+    | 'native_asset'
+    | 'name'
+    | 'icon_url'
+    | 'explorer_tx_url'
+    | 'hidden'
+  > &
+    Partial<Pick<NetworkConfig, 'specification' | 'standard'>> & {
+      external_id: string;
+    }
+): AddEthereumChainParameter {
+  return {
+    rpcUrls: item.rpc_url_user
+      ? [item.rpc_url_user]
+      : item.rpc_url_internal
+      ? [item.rpc_url_internal]
+      : item.rpc_url_public?.length
+      ? item.rpc_url_public
+      : [],
+    nativeCurrency: {
+      symbol: item.native_asset?.symbol || '<unknown>',
+      decimals: (item.native_asset?.decimals || NaN) as 18,
+      name: item.native_asset?.name || '<unknown>',
+    },
+    // deprecated field is being used for chainConfigStore's migration
+    chainId: Networks.getChainId(item) || item.external_id,
+    chainName: item.name,
+    blockExplorerUrls: item.explorer_tx_url ? [item.explorer_tx_url] : [],
+    iconUrls: [item.icon_url],
+    hidden: item.hidden,
+  };
+}
+
 export const upgrades: Upgrades<PossibleEntry> = {
   2: (entry) => {
     const ethereumChainConfigs: EthereumChainConfig[] = [];
     for (const { value, ...config } of entry.ethereumChains || []) {
-      const chainConfig = toAddEthereumChainParameter({
-        ...value,
-        standard: 'eip155',
-        specification: {
-          eip155: {
-            eip1559: false,
-            id: parseInt(value.external_id, 16),
-          },
-        },
-      });
+      const chainConfig = toAddEthereumChainParameterLegacy(value);
       const id = maybeLocalChainId(value.id)
         ? toCustomNetworkId(value.external_id)
         : value.id;
