@@ -264,7 +264,11 @@ function WalletGroupSelect() {
       <Spacer height={8} />
       <UIText kind="headline/h2">
         {title}{' '}
-        <span title="Each group contains wallets that are associated with same recovery phrase, stored locally on your device. Zerion does not have access to this data. We do not cross-associate wallet addresses or have a way to know that these wallets are grouped.">
+        <span
+          title="Each group contains wallets that are associated with same recovery phrase, stored locally on your device. Zerion does not have access to this data.
+
+We do not cross-associate wallet addresses or have a way to know that these wallets are grouped."
+        >
           <InfoIcon
             role="presentation"
             style={{
