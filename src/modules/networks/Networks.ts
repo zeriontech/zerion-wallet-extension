@@ -4,7 +4,6 @@ import { capitalize } from 'capitalize-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { invariant } from 'src/shared/invariant';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
@@ -80,17 +79,14 @@ export class Networks {
   static getChainId(
     network: Partial<Pick<NetworkConfig, 'standard' | 'specification'>>
   ) {
-    let chainId: ChainId | null = null;
     if ('standard' in network && network.specification) {
       if (network.standard === 'eip155') {
-        chainId = normalizeChainId(network.specification.eip155.id);
+        return normalizeChainId(network.specification.eip155.id);
       }
     }
-    invariant(
-      chainId,
+    throw new Error(
       'NetworkConfig must have the "standard" configuration with the chain id'
     );
-    return chainId;
   }
 
   constructor({
