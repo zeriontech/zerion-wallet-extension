@@ -67,4 +67,4 @@ This command will build the extension in development mode. The output files are 
 
 ## Contact Us
 
-Got questions, feedback, or need help? Chat with us here: https://help.zerion.io
+Got questions, feedback, or need help? Chat with us here: <https://help.zerion.io>
