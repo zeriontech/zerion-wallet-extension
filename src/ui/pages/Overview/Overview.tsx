@@ -67,7 +67,7 @@ import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { emitter } from 'src/ui/shared/events';
-import { PercentChange } from 'src/ui/components/PercentChange';
+import { formatPercentChange } from 'src/shared/units/formatPercent/formatPercentChange';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { WalletAvatar } from '../../components/WalletAvatar';
@@ -358,6 +358,15 @@ function OverviewComponent() {
   );
   const walletPortfolio = data?.data;
 
+  const percentageChangeValue = walletPortfolio?.change24h.relative;
+  const percentageChange = useMemo(
+    () =>
+      percentageChangeValue
+        ? formatPercentChange(percentageChangeValue, 'en')
+        : null,
+    [percentageChangeValue]
+  );
+
   const offsetValuesState = useStore(offsetValues);
 
   const handleTabChange = (to: string) => {
@@ -562,34 +571,27 @@ function OverviewComponent() {
                 NBSP
               )}
             </UIText>
-            {walletPortfolio?.change24h.relative ? (
-              <PercentChange
-                value={walletPortfolio.change24h.relative}
-                locale="en"
-                render={(change) => {
-                  const sign = change.isPositive ? '+' : '';
-                  return (
-                    <UIText
-                      kind="small/regular"
-                      color={
-                        change.isNonNegative
-                          ? 'var(--positive-500)'
-                          : 'var(--negative-500)'
-                      }
-                    >
-                      {`${sign}${change.formatted}`}{' '}
-                      {walletPortfolio?.change24h.absolute
-                        ? `(${formatCurrencyValue(
-                            Math.abs(walletPortfolio.change24h.absolute),
-                            'en',
-                            currency
-                          )})`
-                        : ''}{' '}
-                      Today
-                    </UIText>
-                  );
-                }}
-              />
+            {percentageChange ? (
+              <UIText
+                kind="small/regular"
+                color={
+                  percentageChange.isNonNegative
+                    ? 'var(--positive-500)'
+                    : 'var(--negative-500)'
+                }
+              >
+                {`${percentageChange.isPositive ? '+' : ''}${
+                  percentageChange.formatted
+                }`}{' '}
+                {walletPortfolio?.change24h.absolute
+                  ? `(${formatCurrencyValue(
+                      Math.abs(walletPortfolio.change24h.absolute),
+                      'en',
+                      currency
+                    )})`
+                  : ''}{' '}
+                Today
+              </UIText>
             ) : (
               <UIText kind="small/regular">{NBSP}</UIText>
             )}

@@ -1,13 +1,13 @@
 import { useSelectorStore } from '@store-unit/react';
 import type { SwapFormView } from '@zeriontech/transactions';
 import BigNumber from 'bignumber.js';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { isNumeric } from 'src/shared/isNumeric';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { PercentChange } from 'src/ui/components/PercentChange';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { formatPercentChange } from 'src/shared/units/formatPercent/formatPercentChange';
 import {
   getPriceImpactPercentage,
   type PriceImpact,
@@ -91,8 +91,16 @@ export function ReceiveFiatInputValue({
     ? getPriceImpactPercentage(priceImpact)
     : null;
 
+  const percentageChange = useMemo(
+    () =>
+      priceImpactPercentage
+        ? formatPercentChange(priceImpactPercentage, 'en')
+        : null,
+    [priceImpactPercentage]
+  );
+
   const showPercentageChange =
-    Boolean(priceImpactPercentage) &&
+    Boolean(percentageChange) &&
     (priceImpact?.kind === 'zero' || priceImpact?.kind === 'loss');
 
   return (
@@ -101,22 +109,14 @@ export function ReceiveFiatInputValue({
       swapView={swapView}
       percentageChange={
         showPercentageChange ? (
-          <PercentChange
-            value={priceImpactPercentage}
-            locale="en"
-            render={(change) => (
-              <UIText
-                kind="small/regular"
-                color={
-                  isSignificantLoss
-                    ? 'var(--negative-500)'
-                    : 'var(--neutral-600)'
-                }
-              >
-                {`(${change.formatted})`}
-              </UIText>
-            )}
-          />
+          <UIText
+            kind="small/regular"
+            color={
+              isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'
+            }
+          >
+            {`(${percentageChange?.formatted})`}
+          </UIText>
         ) : null
       }
       color={isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'}

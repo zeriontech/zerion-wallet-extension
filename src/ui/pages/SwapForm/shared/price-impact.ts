@@ -78,9 +78,11 @@ export function calculatePriceImpact({
 }
 
 export function getPriceImpactPercentage(priceImpact: PriceImpact) {
-  return priceImpact.kind === 'zero'
-    ? 0
-    : priceImpact.kind === 'loss' || priceImpact.kind === 'profit'
-    ? priceImpact.ratio * 100
-    : null;
+  if (priceImpact.kind === 'zero') {
+    return 0;
+  } else if (priceImpact.kind === 'loss' || priceImpact.kind === 'profit') {
+    return priceImpact.ratio * 100;
+  } else {
+    return null;
+  }
 }
