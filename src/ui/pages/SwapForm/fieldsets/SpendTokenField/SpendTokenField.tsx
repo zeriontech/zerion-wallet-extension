@@ -25,14 +25,13 @@ import {
 import { FiatInputValue } from 'src/ui/components/FiatInputValue';
 
 export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
-  const { spendPosition, spendAssetQuery } = swapView;
+  const { spendPosition, spendAssetQuery, spendAsset, receiveAsset } = swapView;
   const { primaryInput, spendInput, receiveInput, chainInput } =
     useSelectorStore(swapView.store, [
       'primaryInput',
       'spendInput',
       'chainInput',
     ]);
-  const { receiveAsset, spendAsset } = swapView;
 
   const chain = chainInput ? createChain(chainInput) : null;
 
