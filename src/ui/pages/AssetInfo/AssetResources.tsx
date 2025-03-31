@@ -7,7 +7,6 @@ import type {
   AssetFullInfo,
   AssetResource,
 } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { middleTruncate } from 'src/ui/shared/middleTruncate';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -25,6 +24,7 @@ import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import XIcon from 'jsx:src/ui/assets/x-logo.svg';
 import WarpcastIcon from 'jsx:src/ui/assets/warpcast-logo.svg';
 import DexscreenerIcon from 'jsx:src/ui/assets/dexscreener-logo.svg';
+import { truncateAddress } from 'src/ui/shared/truncateAddress';
 
 function MainImplementationButton({
   implementation,
@@ -96,13 +96,7 @@ function MainImplementationButton({
             width={24}
             height={24}
           />
-          <UIText kind="small/accent">
-            {middleTruncate({
-              value: address,
-              leadingLettersCount: 5,
-              trailingLettersCount: 4,
-            })}
-          </UIText>
+          <UIText kind="small/accent">{truncateAddress(address, 4)}</UIText>
         </HStack>
         {isSuccess ? (
           <CheckIcon
@@ -157,62 +151,68 @@ function AssetImplementationsDialog({
       }}
     >
       <VStack gap={0}>
-        {implementations.map(({ address, network }) => (
-          <HStack
-            key={network.id}
-            gap={24}
-            justifyContent="space-between"
-            alignItems="center"
-            style={{ paddingBlock: 12 }}
-          >
-            <HStack gap={12} alignItems="center">
-              <img
-                src={network.icon_url}
-                alt={network.name}
-                width={36}
-                height={36}
-              />
-              <VStack gap={0}>
-                <UIText kind="body/accent">{network.name}</UIText>
-                {address ? (
-                  <UIText kind="small/regular" color="var(--neutral-500)">
-                    {middleTruncate({ value: address })}
-                  </UIText>
+        {implementations.map(({ address, network }) => {
+          const explorerHref =
+            address && networks
+              ? networks.getExplorerTokenUrlByName(
+                  createChain(network.id),
+                  address
+                )
+              : network.explorer_home_url || '';
+          return (
+            <HStack
+              key={network.id}
+              gap={24}
+              justifyContent="space-between"
+              alignItems="center"
+              style={{ paddingBlock: 12 }}
+            >
+              <HStack gap={12} alignItems="center">
+                <img
+                  src={network.icon_url}
+                  alt={network.name}
+                  width={36}
+                  height={36}
+                />
+                <VStack gap={0}>
+                  <UIText kind="body/accent">{network.name}</UIText>
+                  {address ? (
+                    <UIText kind="small/regular" color="var(--neutral-500)">
+                      {truncateAddress(address, 4)}
+                    </UIText>
+                  ) : null}
+                </VStack>
+              </HStack>
+              <HStack gap={0}>
+                {address ? <CopyAddressButton address={address} /> : null}
+                {explorerHref ? (
+                  <UnstyledAnchor
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    title="Open token in explorer"
+                    href={explorerHref}
+                    className="parent-hover"
+                    style={{
+                      ['--parent-content-color' as string]:
+                        'var(--neutral-400)',
+                      ['--parent-hovered-content-color' as string]:
+                        'var(--neutral-700)',
+                      display: 'flex',
+                    }}
+                  >
+                    <LinkIcon className="content-hover" />
+                  </UnstyledAnchor>
                 ) : null}
-              </VStack>
+              </HStack>
             </HStack>
-            <HStack gap={0}>
-              {address ? <CopyAddressButton address={address} /> : null}
-              <UnstyledAnchor
-                rel="noopener noreferrer"
-                target="_blank"
-                href={
-                  address && networks
-                    ? networks.getExplorerTokenUrlByName(
-                        createChain(network.id),
-                        address
-                      )
-                    : network.explorer_home_url || ''
-                }
-                className="parent-hover"
-                style={{
-                  ['--parent-content-color' as string]: 'var(--neutral-400)',
-                  ['--parent-hovered-content-color' as string]:
-                    'var(--neutral-700)',
-                  display: 'flex',
-                }}
-              >
-                <LinkIcon className="content-hover" />
-              </UnstyledAnchor>
-            </HStack>
-          </HStack>
-        ))}
+          );
+        })}
       </VStack>
     </VStack>
   );
 }
 
-function ResourseButton({
+function ResourceButton({
   resource,
   icon,
 }: {
@@ -234,7 +234,7 @@ function ResourseButton({
         ['--button-background' as string]: 'var(--white)',
         ['--button-background-hover' as string]: 'var(--neutral-200)',
       }}
-      aria-label={resource.displayableName}
+      title={`Open token on ${resource.displayableName}`}
     >
       {icon}
     </Button>
@@ -268,7 +268,7 @@ export function AssetResources({
       implementations.find(
         (implementation) =>
           implementation.network.id === assetFullInfo.extra.mainChain
-      ) || implementations[0]
+      ) || implementations.at(0)
     );
   }, [implementations, assetFullInfo.extra.mainChain]);
 
@@ -284,18 +284,18 @@ export function AssetResources({
       <HStack gap={8} justifyContent="space-between">
         <HStack gap={8}>
           {resourcesById[TWITTER_ID] ? (
-            <ResourseButton
+            <ResourceButton
               resource={resourcesById[TWITTER_ID]}
               icon={<XIcon style={{ width: 20, height: 20 }} />}
             />
           ) : null}
           {resourcesById[WARPCAST_ID] ? (
-            <ResourseButton
+            <ResourceButton
               resource={resourcesById[WARPCAST_ID]}
               icon={<WarpcastIcon style={{ width: 20, height: 20 }} />}
             />
           ) : null}
-          <ResourseButton
+          <ResourceButton
             resource={
               resourcesById[DEXSCREENER_ID] || {
                 name: DEXSCREENER_ID,
@@ -343,15 +343,20 @@ export function AssetResources({
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <Button
-                kind="ghost"
-                value="cancel"
-                size={36}
-                style={{ width: 36, padding: 8 }}
-                onClick={() => dialogRef.current?.close()}
+              <form
+                method="dialog"
+                onSubmit={(event) => event.stopPropagation()}
               >
-                <ArrowLeftIcon style={{ width: 20, height: 20 }} />
-              </Button>
+                <Button
+                  kind="ghost"
+                  value="cancel"
+                  size={36}
+                  style={{ width: 36, padding: 8 }}
+                  onClick={() => dialogRef.current?.close()}
+                >
+                  <ArrowLeftIcon style={{ width: 20, height: 20 }} />
+                </Button>
+              </form>
               <UIText kind="body/accent" style={{ justifySelf: 'center' }}>
                 Explorers
               </UIText>

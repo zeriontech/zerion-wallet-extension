@@ -51,16 +51,7 @@ function Line() {
 }
 
 function LoadingSkeleton() {
-  return (
-    <div
-      style={{
-        width: 100,
-        height: 24,
-        backgroundColor: 'var(--neutral-200)',
-        borderRadius: 12,
-      }}
-    />
-  );
+  return <div style={{ width: 100, height: 24 }} />;
 }
 
 const DEFAULT_APP_ID = 'wallet';
@@ -161,17 +152,14 @@ function StatLine({
 
 function AssetStats({
   assetFullInfo,
-  walletAssetDetails,
   assetAddressPnlIsLoading,
   assetAddressPnl,
 }: {
   assetFullInfo: AssetFullInfo;
-  walletAssetDetails: WalletAssetDetails;
   assetAddressPnlIsLoading: boolean;
   assetAddressPnl: AssetAddressPnl | null;
 }) {
   const { currency } = useCurrency();
-  const [showNetworkDistribution, setShowNetworkDistribution] = useState(false);
 
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
   const return24h =
@@ -192,45 +180,54 @@ function AssetStats({
         title="24-hour Return"
         value={
           return24h != null
-            ? `${getSign(return24h)}${formatCurrencyValue(
+            ? `${getSign(return24h)}${formatPercent(
+                Math.abs(relativeReturn24h || 0),
+                'en'
+              )}% (${formatCurrencyValue(
                 Math.abs(return24h || 0),
                 'en',
                 currency
-              )} (${formatPercent(Math.abs(relativeReturn24h || 0), 'en')}%)`
+              )})`
             : 'N/A'
         }
         valueColor={return24h != null ? getColor(return24h) : undefined}
       />
       <StatLine
         title="Total PnL"
-        value={`${getSign(assetAddressPnl?.totalPnl)}${formatCurrencyValue(
+        value={`${getSign(assetAddressPnl?.totalPnl)}${formatPercent(
+          assetAddressPnl?.relativeTotalPnl || 0,
+          'en'
+        )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.totalPnl || 0),
           'en',
           currency
-        )}`}
+        )})`}
         valueColor={getColor(assetAddressPnl?.totalPnl)}
         isLoading={assetAddressPnlIsLoading}
       />
       <StatLine
         title="Realised PnL"
-        value={`${getSign(assetAddressPnl?.realizedPnl)}${formatCurrencyValue(
+        value={`${getSign(assetAddressPnl?.realizedPnl)}${formatPercent(
+          assetAddressPnl?.relativeRealizedPnl || 0,
+          'en'
+        )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.realizedPnl || 0),
           'en',
           currency
-        )}`}
+        )})`}
         valueColor={getColor(assetAddressPnl?.realizedPnl)}
         isLoading={assetAddressPnlIsLoading}
       />
       <StatLine
         title="Unrealised PnL"
-        value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatCurrencyValue(
+        value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatPercent(
+          Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0),
+          'en'
+        )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.unrealizedPnl || 0),
           'en',
           currency
-        )} (${formatPercent(
-          Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0),
-          'en'
-        )}%)`}
+        )})`}
         valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
         isLoading={assetAddressPnlIsLoading}
       />
@@ -252,95 +249,109 @@ function AssetStats({
         )}
         isLoading={assetAddressPnlIsLoading}
       />
-      <VStack gap={0}>
+    </VStack>
+  );
+}
+
+function AssetNetworkDistribution({
+  walletAssetDetails,
+}: {
+  walletAssetDetails: WalletAssetDetails;
+}) {
+  const { currency } = useCurrency();
+  const [showNetworkDistribution, setShowNetworkDistribution] = useState(false);
+
+  return (
+    <VStack gap={0}>
+      <div
+        className="parent-hover"
+        style={{
+          position: 'relative',
+          display: 'flex',
+          ['--parent-hovered-content-background-color' as string]:
+            'var(--neutral-200)',
+        }}
+      >
         <div
-          className="parent-hover"
+          className="content-hover"
           style={{
-            position: 'relative',
-            ['--parent-hovered-content-background-color' as string]:
-              'var(--neutral-200)',
+            position: 'absolute',
+            inset: '-8px -12px',
+            borderRadius: 12,
           }}
+        />
+        <UnstyledButton
+          style={{ position: 'relative', width: '100%' }}
+          onClick={() => setShowNetworkDistribution((prev) => !prev)}
         >
-          <div
-            className="content-hover"
-            style={{
-              position: 'absolute',
-              inset: '-8px -12px',
-              borderRadius: 12,
-            }}
-          />
-          <UnstyledButton
-            style={{ position: 'relative', width: '100%' }}
-            onClick={() => setShowNetworkDistribution((prev) => !prev)}
+          <HStack
+            gap={12}
+            alignItems="center"
+            justifyContent="space-between"
+            style={{ position: 'relative' }}
           >
-            <HStack
-              gap={12}
-              alignItems="center"
-              justifyContent="space-between"
-              style={{ position: 'relative' }}
-            >
-              <HStack gap={8} alignItems="center">
-                <ChainsIcon style={{ width: 16, height: 16 }} />
-                <UIText kind="body/regular">Network Distribution</UIText>
-              </HStack>
-              <ArrowDownIcon
-                style={{
-                  width: 24,
-                  height: 24,
-                  transformOrigin: 'center',
-                  transitionDuration: '0.2s',
-                  transform: showNetworkDistribution
-                    ? 'rotate(180deg)'
-                    : 'rotate(0deg)',
-                }}
-              />
+            <HStack gap={8} alignItems="center">
+              <ChainsIcon style={{ width: 24, height: 24 }} />
+              <UIText kind="body/accent">Network Distribution</UIText>
             </HStack>
-          </UnstyledButton>
-        </div>
-        <div
-          style={{
-            overflow: 'hidden',
-            maxHeight: showNetworkDistribution
-              ? walletAssetDetails.chainsDistribution.length * 40
-              : 0,
-            transition: 'max-height 0.3s ease-in-out',
-          }}
-        >
-          <VStack gap={16} style={{ paddingTop: 16 }}>
-            {walletAssetDetails.chainsDistribution.map(
-              ({ chain, percentageAllocation, value }) => (
-                <HStack
-                  key={chain.id}
-                  gap={12}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <HStack gap={8} alignItems="center">
-                    <img
-                      src={chain.iconUrl}
-                      alt={chain.name}
-                      width={16}
-                      height={16}
-                    />
-                    <HStack gap={4} alignItems="center">
-                      <UIText kind="body/regular">{chain.name}</UIText>
-                      <UIText kind="caption/regular" color="var(--neutral-500)">
-                        {`${middot} ${formatPercent(
-                          percentageAllocation,
-                          'en'
-                        )}%`}
-                      </UIText>
-                    </HStack>
+            <ArrowDownIcon
+              style={{
+                width: 24,
+                height: 24,
+                transformOrigin: 'center',
+                transitionDuration: '0.2s',
+                transform: showNetworkDistribution
+                  ? 'rotate(0deg)'
+                  : 'rotate(90deg)',
+              }}
+            />
+          </HStack>
+        </UnstyledButton>
+      </div>
+
+      <div
+        style={{
+          overflow: 'hidden',
+          maxHeight: showNetworkDistribution
+            ? walletAssetDetails.chainsDistribution.length * 40
+            : 0,
+          transition: 'max-height 0.3s ease-in-out',
+        }}
+      >
+        <VStack gap={16} style={{ paddingTop: 16 }}>
+          {walletAssetDetails.chainsDistribution.map(
+            ({ chain, percentageAllocation, value }) => (
+              <HStack
+                key={chain.id}
+                gap={12}
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <HStack gap={8} alignItems="center">
+                  <img
+                    src={chain.iconUrl}
+                    alt={chain.name}
+                    width={16}
+                    height={16}
+                  />
+                  <HStack gap={4} alignItems="center">
+                    <UIText kind="body/regular">{chain.name}</UIText>
+                    <UIText kind="caption/regular" color="var(--neutral-500)">
+                      {`${middot} ${formatPercent(
+                        percentageAllocation,
+                        'en'
+                      )}%`}
+                    </UIText>
                   </HStack>
-                  <UIText kind="body/accent">
-                    {formatCurrencyValue(value, 'en', currency)}
-                  </UIText>
                 </HStack>
-              )
-            )}
-          </VStack>
-        </div>
-      </VStack>
+                <UIText kind="body/accent">
+                  {formatCurrencyValue(value, 'en', currency)}
+                </UIText>
+              </HStack>
+            )
+          )}
+        </VStack>
+      </div>
     </VStack>
   );
 }
@@ -456,7 +467,7 @@ function AssetAppDistribution({
   );
 }
 
-function AssetAddressDetailsDialog({
+function AssetImplementationsDialogContent({
   address,
   assetFullInfo,
   walletAssetDetails,
@@ -485,10 +496,11 @@ function AssetAddressDetailsDialog({
         />
         <AssetStats
           assetFullInfo={assetFullInfo}
-          walletAssetDetails={walletAssetDetails}
           assetAddressPnl={assetAddressPnl}
           assetAddressPnlIsLoading={assetAddressPnlIsLoading}
         />
+        <Line />
+        <AssetNetworkDistribution walletAssetDetails={walletAssetDetails} />
         <Line />
         <AssetAppDistribution
           assetFullInfo={assetFullInfo}
@@ -527,16 +539,10 @@ export function AssetAddressStats({
   const isWatchedAddress = isReadonlyAccount(wallet);
 
   const unrealizedGainRaw = pnlData?.data.unrealizedPnl || 0;
-  const unrealizedGainFormatted = `${getSign(
-    unrealizedGainRaw
-  )}${formatCurrencyValue(
-    Math.abs(unrealizedGainRaw),
-    'en',
-    currency
-  )} (${formatPercent(
+  const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
     Math.abs(unrealizedGainRaw / walletAssetDetails.totalValue),
     'en'
-  )}%)`;
+  )}% (${formatCurrencyValue(Math.abs(unrealizedGainRaw), 'en', currency)})`;
 
   return (
     <>
@@ -725,7 +731,7 @@ export function AssetAddressStats({
               </Button>
               <AssetHeader asset={asset} />
             </HStack>
-            <AssetAddressDetailsDialog
+            <AssetImplementationsDialogContent
               address={wallet.address}
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}

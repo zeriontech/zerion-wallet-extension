@@ -20,15 +20,14 @@
 
 .historyItem {
   position: relative;
+  padding-inline: 12px;
+  margin-inline: 4px;
 }
 
 @media (hover: hover) {
   .historyItem:hover .historyItemBackdrop {
     position: absolute;
-    top: 4px;
-    right: -12px;
-    bottom: 4px;
-    left: -12px;
+    inset: 0 0 0 0;
     background-color: var(--neutral-200);
     border-radius: 12px;
   }

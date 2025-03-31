@@ -18,12 +18,12 @@ interface NetworkShortInfo {
 }
 
 export interface WalletAssetDetails {
-  chainsDistribution: {
+  chainsDistribution: Array<{
     chain: NetworkShortInfo;
     value: number;
     percentageAllocation: number;
-  }[];
-  wallets: {
+  }>;
+  wallets: Array<{
     wallet: {
       name: string;
       iconUrl: string;
@@ -34,8 +34,8 @@ export interface WalletAssetDetails {
     value: number;
     convertedQuantity: number;
     percentageAllocation: number;
-  }[];
-  apps: {
+  }>;
+  apps: Array<{
     app: {
       id: string;
       name: string;
@@ -46,7 +46,7 @@ export interface WalletAssetDetails {
     value: number;
     convertedQuantity: number;
     percentageAllocation: number;
-  }[];
+  }>;
   totalValue: number;
   totalConvertedQuantity: number;
 }

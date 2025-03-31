@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -28,6 +28,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
@@ -86,25 +87,25 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
 
 export function AssetInfo() {
   const { asset_code } = useParams();
+  invariant(asset_code, 'Asset Code is required');
   const navigationType = useNavigationType();
   useEffect(() => {
     if (navigationType === NavigationType.Push) {
       window.scrollTo(0, 0);
     }
   }, [navigationType]);
-  useBackgroundKind({ kind: 'white' });
-  invariant(asset_code, 'Asset Code is required');
+  useBackgroundKind(whiteBackgroundKind);
 
   const { currency } = useCurrency();
-  const { data: assetFullInfoData } = useAssetFullInfo(
+  const { data: assetFullInfoData, isLoading } = useAssetFullInfo(
     { currency, fungibleId: asset_code },
     { source: useHttpClientSource() }
   );
   const assetFullInfo = assetFullInfoData?.data;
-  const { ready, singleAddress, singleAddressNormalized } = useAddressParams();
+  const { ready, params } = useAddressParams();
   const { data: portfolioData } = useWalletPortfolio(
     {
-      addresses: [singleAddressNormalized],
+      addresses: [params.address],
       currency,
       nftPriceType: 'not_included',
     },
@@ -116,38 +117,23 @@ export function AssetInfo() {
       assetId: asset_code,
       currency,
       groupBy: ['by-app'],
-      addresses: [singleAddressNormalized],
+      addresses: [params.address],
     },
     { source: useHttpClientSource() },
     { enabled: ready }
   );
 
   const { data: wallet } = useQuery({
-    queryKey: ['wallet/uiGetWalletByAddress', singleAddress, null],
-    queryFn: () =>
-      walletPort.request('uiGetWalletByAddress', {
-        address: singleAddress,
-        groupId: null,
-      }),
-    suspense: false,
-    enabled: ready,
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => {
+      return walletPort.request('uiGetCurrentWallet');
+    },
   });
 
-  const chainWithTheBiggestBalance = useMemo(() => {
-    const chainData = walletData?.data?.chainsDistribution;
-    if (!chainData) {
-      return NetworkId.Zero;
-    }
-    return chainData.reduce(
-      (acc, chain) =>
-        chain.value > acc.value
-          ? { value: chain.value, chain: chain.chain.id }
-          : acc,
-      { value: chainData[0].value ?? 0, chain: chainData[0].chain.id }
-    ).chain;
-  }, [walletData]);
+  const chainWithTheBiggestBalance =
+    walletData?.data?.chainsDistribution.at(0)?.chain.id || NetworkId.Zero;
 
-  if (!assetFullInfo?.fungible || !wallet || !walletData) {
+  if (isLoading || !wallet || !walletData) {
     return (
       <>
         <NavigationTitle title={null} documentTitle={`${asset_code} - info`} />
@@ -157,6 +143,8 @@ export function AssetInfo() {
       </>
     );
   }
+
+  invariant(assetFullInfo?.fungible, 'Fungible asset info is missing');
 
   const isWatchedAddress = isReadonlyAccount(wallet);
   const isEmptyBalance = walletData?.data.totalValue === 0;
@@ -179,7 +167,7 @@ export function AssetInfo() {
         <AssetTitleAndChart asset={assetFullInfo.fungible} />
         <AssetGlobalStats assetFullInfo={assetFullInfo} />
         <AssetAddressStats
-          address={singleAddressNormalized}
+          address={params.address}
           wallet={wallet}
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
@@ -189,7 +177,7 @@ export function AssetInfo() {
         <AssetHistory
           assetId={asset_code}
           assetFullInfo={assetFullInfo}
-          address={singleAddressNormalized}
+          address={params.address}
         />
         <ReportAssetLink asset={assetFullInfo.fungible} />
       </VStack>

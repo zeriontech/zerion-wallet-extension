@@ -7,14 +7,12 @@ import type {
   Asset,
   AssetFullInfo,
 } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -28,6 +26,7 @@ import { baseToCommon } from 'src/shared/units/convert';
 import { createChain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { ActionDetailedView } from '../History/ActionDetailedView';
 import * as styles from './styles.module.css';
 
@@ -135,10 +134,6 @@ function AssetHistoryItem({
 
   return (
     <>
-      <KeyboardShortcut
-        combination="backspace"
-        onKeyDown={handleDialogDismiss}
-      />
       <UnstyledButton onClick={handleDialogOpen} className={styles.historyItem}>
         <div className={styles.historyItemBackdrop} />
         <HStack
@@ -207,7 +202,6 @@ export function AssetHistory({
   assetFullInfo?: AssetFullInfo;
 }) {
   const { networks } = useNetworks();
-  const { singleAddressNormalized, ready } = useAddressParams();
   const { currency } = useCurrency();
   const {
     value,
@@ -217,7 +211,7 @@ export function AssetHistory({
     fetchMore,
   } = useAddressActions(
     {
-      address: singleAddressNormalized,
+      address,
       currency,
       actions_fungible_ids: [assetId],
     },
@@ -225,7 +219,6 @@ export function AssetHistory({
       limit: 10,
       listenForUpdates: true,
       paginatedCacheMode: 'first-page',
-      enabled: ready,
     }
   );
 
@@ -239,17 +232,19 @@ export function AssetHistory({
     <VStack gap={8} style={{ opacity: actionsAreLoading ? 0.8 : 1 }}>
       <VStack gap={4}>
         <UIText kind="headline/h3">History</UIText>
-        <VStack gap={0}>
-          {value.map((action) => (
-            <AssetHistoryItem
-              key={action.transaction.hash}
-              address={address}
-              networks={networks}
-              asset={asset}
-              action={action}
-            />
-          ))}
-        </VStack>
+        <PageFullBleedColumn paddingInline={false}>
+          <VStack gap={0}>
+            {value.map((action) => (
+              <AssetHistoryItem
+                key={action.transaction.hash}
+                address={address}
+                networks={networks}
+                asset={asset}
+                action={action}
+              />
+            ))}
+          </VStack>
+        </PageFullBleedColumn>
       </VStack>
       {hasNext ? (
         <Button
