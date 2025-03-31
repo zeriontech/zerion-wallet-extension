@@ -9,7 +9,7 @@ const walletPort = new PortMessageChannel({
 
 export async function verifySandbox() {
   /**
-   * We expect to be in an isolated sandbox enviroment
+   * We expect to be in an isolated sandbox environment
    * To verify this, we try to query our own background script
    * It is EXPECTED to reject the request.
    * If it resolves successfully, we MUST halt the script
