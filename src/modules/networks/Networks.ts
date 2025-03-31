@@ -77,21 +77,16 @@ export class Networks {
   private visitedChains: Set<string>;
 
   static getChainId(
-    network: Partial<
-      Pick<NetworkConfig, 'standard' | 'specification' | 'external_id'>
-    >
+    network: Partial<Pick<NetworkConfig, 'standard' | 'specification'>>
   ) {
     if ('standard' in network && network.specification) {
-      return network.standard === 'eip155'
-        ? normalizeChainId(network.specification.eip155.id)
-        : null;
-    } else if (network.external_id) {
-      return normalizeChainId(network.external_id);
-    } else {
-      throw new Error(
-        'NetworkConfig must have either the "standard" property or "external_id"'
-      );
+      if (network.standard === 'eip155') {
+        return normalizeChainId(network.specification.eip155.id);
+      }
     }
+    throw new Error(
+      'NetworkConfig must have the "standard" configuration with the chain id'
+    );
   }
 
   constructor({
