@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -34,8 +35,11 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import type { ResponseBody } from 'src/modules/zerion-api/requests/ResponseBody';
 import { AssetHeader } from './AssetHeader';
 import { getColor, getSign } from './helpers';
+
+type AssetAddressPnlQuery = UseQueryResult<ResponseBody<AssetAddressPnl>>;
 
 function Line() {
   return (
@@ -151,14 +155,14 @@ function StatLine({
 
 function AssetStats({
   assetFullInfo,
-  assetAddressPnlIsLoading,
-  assetAddressPnl,
+  assetAddressPnlQuery,
 }: {
   assetFullInfo: AssetFullInfo;
-  assetAddressPnlIsLoading: boolean;
-  assetAddressPnl: AssetAddressPnl | null;
+  assetAddressPnlQuery: AssetAddressPnlQuery;
 }) {
   const { currency } = useCurrency();
+  const { data, isLoading } = assetAddressPnlQuery;
+  const assetAddressPnl = data?.data;
 
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
   const return24h =
@@ -194,7 +198,7 @@ function AssetStats({
       <StatLine
         title="Total PnL"
         value={`${getSign(assetAddressPnl?.totalPnl)}${formatPercent(
-          assetAddressPnl?.relativeTotalPnl || 0,
+          Math.abs(assetAddressPnl?.relativeTotalPnl || 0),
           'en'
         )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.totalPnl || 0),
@@ -202,12 +206,12 @@ function AssetStats({
           currency
         )})`}
         valueColor={getColor(assetAddressPnl?.totalPnl)}
-        isLoading={assetAddressPnlIsLoading}
+        isLoading={isLoading}
       />
       <StatLine
         title="Realised PnL"
         value={`${getSign(assetAddressPnl?.realizedPnl)}${formatPercent(
-          assetAddressPnl?.relativeRealizedPnl || 0,
+          Math.abs(assetAddressPnl?.relativeRealizedPnl || 0),
           'en'
         )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.realizedPnl || 0),
@@ -215,7 +219,7 @@ function AssetStats({
           currency
         )})`}
         valueColor={getColor(assetAddressPnl?.realizedPnl)}
-        isLoading={assetAddressPnlIsLoading}
+        isLoading={isLoading}
       />
       <StatLine
         title="Unrealised PnL"
@@ -228,7 +232,7 @@ function AssetStats({
           currency
         )})`}
         valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
-        isLoading={assetAddressPnlIsLoading}
+        isLoading={isLoading}
       />
       <StatLine
         title="Invested"
@@ -237,7 +241,7 @@ function AssetStats({
           'en',
           currency
         )}
-        isLoading={assetAddressPnlIsLoading}
+        isLoading={isLoading}
       />
       <StatLine
         title="Average Cost"
@@ -246,7 +250,7 @@ function AssetStats({
           'en',
           currency
         )}
-        isLoading={assetAddressPnlIsLoading}
+        isLoading={isLoading}
       />
     </VStack>
   );
@@ -470,14 +474,12 @@ function AssetImplementationsDialogContent({
   address,
   assetFullInfo,
   walletAssetDetails,
-  assetAddressPnlIsLoading,
-  assetAddressPnl,
+  assetAddressPnlQuery,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
-  assetAddressPnlIsLoading: boolean;
-  assetAddressPnl: AssetAddressPnl | null;
+  assetAddressPnlQuery: AssetAddressPnlQuery;
 }) {
   return (
     <VStack
@@ -495,8 +497,7 @@ function AssetImplementationsDialogContent({
         />
         <AssetStats
           assetFullInfo={assetFullInfo}
-          assetAddressPnl={assetAddressPnl}
-          assetAddressPnlIsLoading={assetAddressPnlIsLoading}
+          assetAddressPnlQuery={assetAddressPnlQuery}
         />
         <Line />
         <AssetNetworkDistribution walletAssetDetails={walletAssetDetails} />
@@ -515,15 +516,13 @@ export function AssetAddressStats({
   assetFullInfo,
   wallet,
   walletAssetDetails,
-  assetAddressPnl,
-  assetAddressPnlIsLoading,
+  assetAddressPnlQuery,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   wallet: ExternallyOwnedAccount;
   walletAssetDetails: WalletAssetDetails;
-  assetAddressPnl: AssetAddressPnl | null;
-  assetAddressPnlIsLoading: boolean;
+  assetAddressPnlQuery: AssetAddressPnlQuery;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
@@ -532,7 +531,7 @@ export function AssetAddressStats({
 
   const isWatchedAddress = isReadonlyAccount(wallet);
 
-  const unrealizedGainRaw = assetAddressPnl?.unrealizedPnl || 0;
+  const unrealizedGainRaw = assetAddressPnlQuery.data?.data.unrealizedPnl || 0;
   const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
     Math.abs(unrealizedGainRaw / walletAssetDetails.totalValue),
     'en'
@@ -601,7 +600,7 @@ export function AssetAddressStats({
           </UnstyledLink>
           {walletAssetDetails.totalConvertedQuantity === 0 ? (
             <>
-              {assetAddressPnl?.bought === 0 ? null : (
+              {assetAddressPnlQuery.data?.data.bought === 0 ? null : (
                 <UIText kind="headline/h2" color="var(--neutral-500)">
                   {isUntrackedAsset
                     ? 'N/A'
@@ -650,7 +649,7 @@ export function AssetAddressStats({
                     <UIText kind="caption/regular" color="var(--neutral-500)">
                       Unrealised PnL
                     </UIText>
-                    {assetAddressPnlIsLoading ? (
+                    {assetAddressPnlQuery.isLoading ? (
                       <LoadingSkeleton />
                     ) : (
                       <UIText
@@ -665,12 +664,12 @@ export function AssetAddressStats({
                     <UIText kind="caption/regular" color="var(--neutral-500)">
                       Invested
                     </UIText>
-                    {assetAddressPnlIsLoading ? (
+                    {assetAddressPnlQuery.isLoading ? (
                       <LoadingSkeleton />
                     ) : (
                       <UIText kind="headline/h3">
                         {formatCurrencyValue(
-                          assetAddressPnl?.bought || 0,
+                          assetAddressPnlQuery.data?.data.bought || 0,
                           'en',
                           currency
                         )}
@@ -733,8 +732,7 @@ export function AssetAddressStats({
               address={wallet.address}
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}
-              assetAddressPnl={assetAddressPnl}
-              assetAddressPnlIsLoading={assetAddressPnlIsLoading}
+              assetAddressPnlQuery={assetAddressPnlQuery}
             />
           </>
         )}

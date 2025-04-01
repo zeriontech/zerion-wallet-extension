@@ -124,16 +124,15 @@ export function AssetInfo() {
     { enabled: ready }
   );
 
-  const { data: assetAddressPnlData, isLoading: assetAddressPnlIsLoading } =
-    useWalletAssetPnl(
-      {
-        addresses: [params.address],
-        fungibleId: asset_code,
-        currency,
-      },
-      { source: useHttpClientSource() },
-      { enabled: ready }
-    );
+  const assetAddressPnlQuery = useWalletAssetPnl(
+    {
+      addresses: [params.address],
+      fungibleId: asset_code,
+      currency,
+    },
+    { source: useHttpClientSource() },
+    { enabled: ready }
+  );
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -183,8 +182,7 @@ export function AssetInfo() {
           wallet={wallet}
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
-          assetAddressPnl={assetAddressPnlData?.data || null}
-          assetAddressPnlIsLoading={assetAddressPnlIsLoading}
+          assetAddressPnlQuery={assetAddressPnlQuery}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />
