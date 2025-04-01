@@ -714,15 +714,19 @@ export function AssetAddressStats({
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <Button
-                kind="ghost"
-                value="cancel"
-                size={36}
-                style={{ width: 36, padding: 8 }}
-                onClick={() => dialogRef.current?.close()}
+              <form
+                method="dialog"
+                onSubmit={(event) => event.stopPropagation()}
               >
-                <ArrowLeftIcon style={{ width: 20, height: 20 }} />
-              </Button>
+                <Button
+                  kind="ghost"
+                  value="cancel"
+                  size={36}
+                  style={{ width: 36, padding: 8 }}
+                >
+                  <ArrowLeftIcon style={{ width: 20, height: 20 }} />
+                </Button>
+              </form>
               <AssetHeader asset={asset} />
             </HStack>
             <AssetImplementationsDialogContent

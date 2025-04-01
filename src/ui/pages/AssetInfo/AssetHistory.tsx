@@ -56,10 +56,6 @@ function AssetHistoryItem({
     dialogRef.current?.showModal();
   }, []);
 
-  const handleDialogDismiss = useCallback(() => {
-    dialogRef.current?.close();
-  }, []);
-
   const { transfer, isIncoming } = useMemo(() => {
     const incomingTransfers = action.content?.transfers?.incoming?.filter(
       (item) => getFungibleAsset(item.asset)?.id === asset.id
@@ -165,21 +161,22 @@ function AssetHistoryItem({
         containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
         renderWhenOpen={() => (
           <>
-            <Button
-              kind="ghost"
-              value="cancel"
-              size={36}
-              style={{
-                width: 36,
-                padding: 8,
-                position: 'absolute',
-                top: 16,
-                left: 8,
-              }}
-              onClick={handleDialogDismiss}
-            >
-              <ArrowLeftIcon style={{ width: 20, height: 20 }} />
-            </Button>
+            <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+              <Button
+                kind="ghost"
+                value="cancel"
+                size={36}
+                style={{
+                  width: 36,
+                  padding: 8,
+                  position: 'absolute',
+                  top: 16,
+                  left: 8,
+                }}
+              >
+                <ArrowLeftIcon style={{ width: 20, height: 20 }} />
+              </Button>
+            </form>
             <ActionDetailedView
               action={action}
               networks={networks}
