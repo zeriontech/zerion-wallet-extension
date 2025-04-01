@@ -32,7 +32,6 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { AssetHeader } from './AssetHeader';
@@ -516,29 +515,24 @@ export function AssetAddressStats({
   assetFullInfo,
   wallet,
   walletAssetDetails,
+  assetAddressPnl,
+  assetAddressPnlIsLoading,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   wallet: ExternallyOwnedAccount;
   walletAssetDetails: WalletAssetDetails;
+  assetAddressPnl: AssetAddressPnl | null;
+  assetAddressPnlIsLoading: boolean;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
-  const { data: pnlData, isLoading } = useWalletAssetPnl(
-    {
-      addresses: [address],
-      fungibleId: assetFullInfo.fungible.id,
-      currency,
-    },
-    { source: useHttpClientSource() },
-    { enabled: !isUntrackedAsset }
-  );
   const asset = assetFullInfo.fungible;
 
   const isWatchedAddress = isReadonlyAccount(wallet);
 
-  const unrealizedGainRaw = pnlData?.data.unrealizedPnl || 0;
+  const unrealizedGainRaw = assetAddressPnl?.unrealizedPnl || 0;
   const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
     Math.abs(unrealizedGainRaw / walletAssetDetails.totalValue),
     'en'
@@ -607,7 +601,7 @@ export function AssetAddressStats({
           </UnstyledLink>
           {walletAssetDetails.totalConvertedQuantity === 0 ? (
             <>
-              {pnlData?.data.bought === 0 ? null : (
+              {assetAddressPnl?.bought === 0 ? null : (
                 <UIText kind="headline/h2" color="var(--neutral-500)">
                   {isUntrackedAsset
                     ? 'N/A'
@@ -656,7 +650,7 @@ export function AssetAddressStats({
                     <UIText kind="caption/regular" color="var(--neutral-500)">
                       Unrealised PnL
                     </UIText>
-                    {isLoading ? (
+                    {assetAddressPnlIsLoading ? (
                       <LoadingSkeleton />
                     ) : (
                       <UIText
@@ -671,12 +665,12 @@ export function AssetAddressStats({
                     <UIText kind="caption/regular" color="var(--neutral-500)">
                       Invested
                     </UIText>
-                    {isLoading ? (
+                    {assetAddressPnlIsLoading ? (
                       <LoadingSkeleton />
                     ) : (
                       <UIText kind="headline/h3">
                         {formatCurrencyValue(
-                          pnlData?.data.bought || 0,
+                          assetAddressPnl?.bought || 0,
                           'en',
                           currency
                         )}
@@ -735,8 +729,8 @@ export function AssetAddressStats({
               address={wallet.address}
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}
-              assetAddressPnl={pnlData?.data || null}
-              assetAddressPnlIsLoading={isLoading}
+              assetAddressPnl={assetAddressPnl}
+              assetAddressPnlIsLoading={assetAddressPnlIsLoading}
             />
           </>
         )}

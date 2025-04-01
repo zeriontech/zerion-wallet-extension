@@ -136,7 +136,7 @@ function CopyAddressButton({ address }: { address: string }) {
   );
 }
 
-function AssetImplementationsDialog({
+function AssetImplementationsDialogContent({
   implementations,
 }: {
   implementations: { address: string | null; network: NetworkConfig }[];
@@ -158,7 +158,7 @@ function AssetImplementationsDialog({
                   createChain(network.id),
                   address
                 )
-              : network.explorer_home_url || '';
+              : network.explorer_home_url;
           return (
             <HStack
               key={network.id}
@@ -352,7 +352,6 @@ export function AssetResources({
                   value="cancel"
                   size={36}
                   style={{ width: 36, padding: 8 }}
-                  onClick={() => dialogRef.current?.close()}
                 >
                   <ArrowLeftIcon style={{ width: 20, height: 20 }} />
                 </Button>
@@ -361,7 +360,9 @@ export function AssetResources({
                 Explorers
               </UIText>
             </HStack>
-            <AssetImplementationsDialog implementations={implementations} />
+            <AssetImplementationsDialogContent
+              implementations={implementations}
+            />
           </>
         )}
       />

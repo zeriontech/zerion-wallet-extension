@@ -29,6 +29,7 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
 import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
@@ -123,6 +124,17 @@ export function AssetInfo() {
     { enabled: ready }
   );
 
+  const { data: assetAddressPnlData, isLoading: assetAddressPnlIsLoading } =
+    useWalletAssetPnl(
+      {
+        addresses: [params.address],
+        fungibleId: asset_code,
+        currency,
+      },
+      { source: useHttpClientSource() },
+      { enabled: ready }
+    );
+
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
@@ -171,6 +183,8 @@ export function AssetInfo() {
           wallet={wallet}
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
+          assetAddressPnl={assetAddressPnlData?.data || null}
+          assetAddressPnlIsLoading={assetAddressPnlIsLoading}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />
