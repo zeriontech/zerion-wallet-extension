@@ -316,13 +316,13 @@ function AssetNetworkDistribution({
         style={{
           overflow: 'hidden',
           maxHeight: showNetworkDistribution
-            ? walletAssetDetails.chainsDistribution.length * 40
+            ? (walletAssetDetails.chainsDistribution?.length || 0) * 40
             : 0,
           transition: 'max-height 0.3s ease-in-out',
         }}
       >
         <VStack gap={16} style={{ paddingTop: 16 }}>
-          {walletAssetDetails.chainsDistribution.map(
+          {walletAssetDetails.chainsDistribution?.map(
             ({ chain, percentageAllocation, value }) => (
               <HStack
                 key={chain.id}
@@ -371,7 +371,7 @@ function AssetAppDistribution({
 
   return (
     <VStack gap={16}>
-      {walletAssetDetails.apps.map((app) => (
+      {walletAssetDetails.apps?.map((app) => (
         <UnstyledAnchor
           key={app.app.id}
           href={app.app.url || ''}

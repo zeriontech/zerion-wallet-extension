@@ -142,7 +142,7 @@ export function AssetInfo() {
   });
 
   const chainWithTheBiggestBalance =
-    walletData?.data?.chainsDistribution.at(0)?.chain.id || NetworkId.Zero;
+    walletData?.data?.chainsDistribution?.at(0)?.chain.id || NetworkId.Zero;
 
   if (isLoading || !wallet || !walletData) {
     return (

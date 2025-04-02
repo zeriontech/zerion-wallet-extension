@@ -22,7 +22,7 @@ export interface WalletAssetDetails {
     chain: NetworkShortInfo;
     value: number;
     percentageAllocation: number;
-  }>;
+  }> | null;
   wallets: Array<{
     wallet: {
       name: string;
@@ -46,7 +46,7 @@ export interface WalletAssetDetails {
     value: number;
     convertedQuantity: number;
     percentageAllocation: number;
-  }>;
+  }> | null;
   totalValue: number;
   totalConvertedQuantity: number;
 }
