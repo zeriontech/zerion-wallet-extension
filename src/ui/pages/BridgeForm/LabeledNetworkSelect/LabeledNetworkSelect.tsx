@@ -31,7 +31,7 @@ function NetworksDisclosureButton({
   );
 
   if (!networks || !network) {
-    return <Spacer height={46} />;
+    return <Spacer height={50} />;
   }
 
   return (
