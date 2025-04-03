@@ -49,8 +49,8 @@ jobs:
       contents: write
     steps:
       - name: Install Deps and Build
-        uses: ./.github/actions/build.yml
-        
+        uses: ./.github/actions/build
+
       - name: Save PR number
         if: ${{ success() }}
         env:
