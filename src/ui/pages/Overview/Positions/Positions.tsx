@@ -14,7 +14,11 @@ import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
-import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import {
+  SurfaceItemAnchor,
+  SurfaceItemLink,
+  SurfaceList,
+} from 'src/ui/ui-kit/SurfaceList';
 import {
   DEFAULT_NAME,
   DEFAULT_PROTOCOL_ID,
@@ -53,6 +57,7 @@ import { EmptyView } from 'src/ui/components/EmptyView';
 import { invariant } from 'src/shared/invariant';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
+import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
@@ -60,6 +65,8 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
+import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -427,10 +434,12 @@ function ProtocolHeading({
 
 function PositionList({
   items,
+  address,
   moveGasPositionToFront,
   dappChain,
 }: {
   items: AddressPosition[];
+  address: string | null;
   moveGasPositionToFront: boolean;
   dappChain: string | null;
 }) {
@@ -448,6 +457,10 @@ function PositionList({
         return set;
       }),
     []
+  );
+  const { preferences } = usePreferences();
+  const { data: assetPageEnabled } = useRemoteConfigValue(
+    'extension_asset_page_enabled'
   );
 
   const groupType = PositionsGroupType.platform;
@@ -502,6 +515,7 @@ function PositionList({
           }
           let namePositionCounter = 0;
           for (const position of nameIndex[name]) {
+            const showAsLink = !preferences?.testnetMode?.on;
             const itemContent = (
               <AddressPositionItem
                 position={position}
@@ -516,15 +530,33 @@ function PositionList({
             items.push({
               key: position.id,
               separatorLeadingInset: position.parent_id ? 26 : 0,
-              pad: false,
-              style: { padding: 0 },
-              component: (
+              pad: !assetPageEnabled && !showAsLink,
+              style:
+                assetPageEnabled || showAsLink ? { padding: 0 } : undefined,
+              // NODE: Don't link to web in testnet mode
+              // TODO: remove this conditional when we have Asset Page 100% enabled in extension
+              component: assetPageEnabled ? (
                 <SurfaceItemLink
                   to={`/asset/${position.asset.id}`}
                   decorationStyle={{ borderRadius: 16 }}
                 >
                   {itemContent}
                 </SurfaceItemLink>
+              ) : showAsLink ? (
+                <SurfaceItemAnchor
+                  onClick={openHrefInTabIfSidepanel}
+                  href={`https://app.zerion.io/tokens/${
+                    position.asset.symbol
+                  }-${position.asset.asset_code}${
+                    address ? `?address=${address}` : ''
+                  }`}
+                  target="_blank"
+                  decorationStyle={{ borderRadius: 16 }}
+                >
+                  {itemContent}
+                </SurfaceItemAnchor>
+              ) : (
+                itemContent
               ),
             });
             namePositionCounter++;
@@ -696,6 +728,7 @@ function MultiChainPositions({
       <PositionList
         items={items}
         dappChain={dappChain}
+        address={address}
         {...positionListProps}
       />
     </VStack>
@@ -768,6 +801,7 @@ function RawChainPositions({
         />
       </div>
       <PositionList
+        address={address}
         items={addressPositions}
         dappChain={dappChain}
         {...positionListProps}
