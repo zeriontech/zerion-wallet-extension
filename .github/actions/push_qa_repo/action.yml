@@ -44,3 +44,4 @@ runs:
         fi
         git commit -m "$COMMIT_MESSAGE"
         git push origin "$BRANCH_NAME"
+      shell: bash
