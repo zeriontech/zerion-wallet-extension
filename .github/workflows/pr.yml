@@ -56,8 +56,13 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install Deps and Build
+      - name: Setup Env Vars
         uses: ./.github/actions/build
+
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build:production
 
       - name: Save PR number
         if: ${{ success() }}
