@@ -1,13 +1,8 @@
 name: Install dependencies and build
 
-on:
-  workflow_call:
-
-jobs:
-  build_pull_request:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+runs:
+  using: "composite"
+  steps:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

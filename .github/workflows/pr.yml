@@ -43,15 +43,14 @@ on:
         required: false
 
 jobs:
-  build_pull_request_2:
-    uses: ./.github/workflows/build.yml
-
   build_pull_request:
-    needs: build_pull_request_2
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - name: Install Deps and Build
+        uses: ./.github/actions/build.yml
+        
       - name: Save PR number
         if: ${{ success() }}
         env:
