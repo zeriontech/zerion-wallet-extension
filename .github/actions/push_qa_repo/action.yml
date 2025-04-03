@@ -1,0 +1,46 @@
+name: 'Push build to QA repository'
+
+inputs:
+  branch_name: 
+    description: 'Branch name to push to'
+    required: true
+  commit_message: 
+    description: 'Commit message for the push'
+    required: true
+  pat_token:
+    description: "QA repository PAT token"
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Create branch in another repository and copy files
+      env:
+        REPO_TOKEN: ${{ inputs.pat_token }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        COMMIT_MESSAGE: ${{ inputs.commit_message }}
+      run: |
+        TARGET_REPO="github.com/zeriontech/zerion-wallet-extension-qa.git"
+        BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+
+        git config --global user.email "zerts@zerion.io"
+        git config --global user.name "QA Bot"
+
+        # Clone the target repository
+        git clone "https://${REPO_TOKEN}@${TARGET_REPO}" qa-repository
+        cd qa-repository
+
+        # Create or switch to the new branch
+        git checkout "$BRANCH_NAME" || git checkout -b "$BRANCH_NAME"
+
+        # Copy files from the dist directory
+        mkdir -p extension-build
+        cp -r ../dist/* ./extension-build
+
+        # Commit and push changes
+        git add .
+        if [ -z "$(git status --porcelain)" ]; then
+          echo "No changes to commit."
+          exit 0
+        fi
+        git commit -m "$COMMIT_MESSAGE"
+        git push origin "$BRANCH_NAME"
