@@ -69,7 +69,7 @@ jobs:
         if: ${{ success() }}
         env:
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        run: node ../scripts/update-dev-manifest.js
+        run: node ./scripts/update-dev-manifest.js
 
       - name: Create branch in another repository and copy files
         if: ${{ success() }}
