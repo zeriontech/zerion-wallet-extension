@@ -61,5 +61,5 @@ export function getYLimits(points: [number, number][]) {
   if (minLimit && maxLimit / minLimit < 1.02) {
     return { min: minLimit - diff * 5, max: maxLimit + diff * 5 };
   }
-  return { min: minLimit - diff / 50, max: maxLimit + diff / 50 };
+  return { min: minLimit, max: maxLimit };
 }

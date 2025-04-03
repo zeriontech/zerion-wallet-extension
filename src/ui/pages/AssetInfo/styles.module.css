@@ -83,7 +83,6 @@
   transform-origin: center;
   animation-duration: 1ms;
   animation-fill-mode: both;
-  animation-timing-function: ease-in-out;
 }
 
 .headerItem.headerIcon {
