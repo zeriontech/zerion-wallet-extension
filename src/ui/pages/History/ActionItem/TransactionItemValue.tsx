@@ -167,6 +167,7 @@ export function HistoryItemValue({
   ) : fungibleAsset ? (
     <HistoryTokenValue
       actionType={actionType}
+      address={address}
       asset={fungibleAsset}
       chain={chain}
       value={transfers[0].quantity}
