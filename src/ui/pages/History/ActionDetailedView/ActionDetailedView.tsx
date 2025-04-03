@@ -91,6 +91,7 @@ export function ActionDetailedView({
             <ApprovalInfo
               actionType={action.type.value}
               singleTransfer={action.content.single_asset}
+              address={address}
               chain={chain}
             />
           ) : null}
@@ -101,9 +102,9 @@ export function ActionDetailedView({
           <ExplorerInfo action={action} networks={networks} />
           <VStack gap={20}>
             <CollectionLine action={action} />
-            <RateLine action={action} />
+            <RateLine action={action} address={address} />
             <SenderReceiverLine action={action} />
-            <FeeLine action={action} networks={networks} />
+            <FeeLine action={action} networks={networks} address={address} />
           </VStack>
         </VStack>
       </Surface>

@@ -13,9 +13,11 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 
 export function FeeLine({
   action,
+  address,
   networks,
 }: {
   action: AddressAction;
+  address?: string;
   networks: Networks;
 }) {
   const { fee, chain, sponsored } = action.transaction;
@@ -64,6 +66,7 @@ export function FeeLine({
                   name: nativeAsset.name,
                   symbol: nativeAsset.symbol,
                 }}
+                address={address}
               />
             ) : (
               nativeAsset.symbol?.toUpperCase()

@@ -7,7 +7,13 @@ import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset'
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { AssetLink } from 'src/ui/components/AssetLink';
 
-export function RateLine({ action }: { action: AddressAction }) {
+export function RateLine({
+  action,
+  address,
+}: {
+  action: AddressAction;
+  address?: string;
+}) {
   const rate = useMemo(() => {
     const { content } = action;
     const type = action.type.value;
@@ -59,10 +65,10 @@ export function RateLine({ action }: { action: AddressAction }) {
       <UIText kind="small/accent" style={{ justifySelf: 'end' }}>
         <HStack gap={4}>
           <span>1</span>
-          <AssetLink asset={rate.asset1} />
+          <AssetLink asset={rate.asset1} address={address} />
           <span>=</span>
           <span>{formatTokenValue(ratio, '')}</span>
-          <AssetLink asset={rate.asset2} />
+          <AssetLink asset={rate.asset2} address={address} />
         </HStack>
       </UIText>
     </HStack>

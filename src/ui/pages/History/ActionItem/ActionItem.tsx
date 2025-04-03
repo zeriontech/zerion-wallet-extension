@@ -277,6 +277,7 @@ function ActionItemBackend({
                   maybeSingleAsset.name ||
                   maybeSingleAsset.symbol?.toUpperCase()
                 }
+                address={address}
               />
             ) : incomingTransfers?.length && chain ? (
               <HistoryItemValue
@@ -380,11 +381,19 @@ function ActionItemLocal({
 }) {
   const asset = getActionAsset(action);
 
+  const { params, ready } = useAddressParams();
+
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const handleDialogOpen = useCallback(() => {
     dialogRef.current?.showModal();
   }, []);
+
+  if (!ready) {
+    return null;
+  }
+
+  const address = 'address' in params ? params.address : undefined;
 
   const isMintingDna = checkIsDnaMint(action);
 
@@ -475,6 +484,7 @@ function ActionItemLocal({
                   ? asset.name || asset.symbol?.toUpperCase()
                   : undefined
               }
+              address={address}
             />
           ) : null}
         </UIText>
