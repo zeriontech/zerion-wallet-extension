@@ -1,4 +1,4 @@
-export interface BridgeFormState {
+export type BridgeFormState = {
   spendChainInput?: string;
   receiveChainInput?: string;
 
@@ -7,7 +7,4 @@ export interface BridgeFormState {
 
   spendTokenInput?: string;
   receiveTokenInput?: string;
-
-  receiverAddressInput?: string | null;
-  showReceiverAddressInput?: boolean;
-}
+};

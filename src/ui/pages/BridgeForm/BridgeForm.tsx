@@ -78,6 +78,7 @@ import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { isNumeric } from 'src/shared/isNumeric';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import type { Networks } from 'src/modules/networks/Networks';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -243,7 +244,7 @@ function BridgeNetworksSelect({
 }
 
 function BridgeFormComponent() {
-  useBackgroundKind({ kind: 'white' });
+  useBackgroundKind(whiteBackgroundKind);
 
   const { singleAddress: address, ready } = useAddressParams();
   const { currency } = useCurrency();
@@ -278,27 +279,31 @@ function BridgeFormComponent() {
     () => getDefaultFormValues({ networks, positions }),
     [networks, positions]
   );
-  const [userFormState, setUserFormState] = useSearchParamsState(
-    useMemo(
-      () => [
-        'spendChainInput',
-        'receiveChainInput',
-        'spendTokenInput',
-        'receiveTokenInput',
-        'spendInput',
-        'receiveInput',
+  const [userFormState, setUserFormState] =
+    useSearchParamsState<BridgeFormState>(
+      useMemo(
+        () => [
+          'spendChainInput',
+          'receiveChainInput',
+          'spendTokenInput',
+          'receiveTokenInput',
+          'spendInput',
+          'receiveInput',
+        ],
+        []
+      )
+    );
 
-        'receiverAddressInput',
-        'showReceiverAddressInput',
-      ],
-      []
-    )
-  );
+  // const { spendChainInput, receiveChainInput } = {
+  //   ...defaultFormValues,
+  //   ...userFormState,
+  // };
+  //
 
-  const { spendChainInput, receiveChainInput } = {
-    ...defaultFormValues,
-    ...userFormState,
-  };
+  const spendChainInput =
+    userFormState.spendChainInput || defaultFormValues.spendChainInput;
+  const receiveChainInput =
+    userFormState.receiveChainInput || defaultFormValues.receiveChainInput;
 
   const spendChain = spendChainInput ? createChain(spendChainInput) : null;
   const receiveChain = receiveChainInput
@@ -309,14 +314,12 @@ function BridgeFormComponent() {
     inputChain: spendChain,
     outputChain: receiveChain,
     direction: 'input',
-    enabled: true,
   });
 
   const { data: receiveTokens } = useBridgeTokens({
     inputChain: spendChain,
     outputChain: receiveChain,
     direction: 'output',
-    enabled: true,
   });
 
   const availableSpendPositions = useMemo(
@@ -349,8 +352,6 @@ function BridgeFormComponent() {
   const [initialFormState, setInitialFormState] = useState<BridgeFormState>({
     spendTokenInput: defaultSpendToken,
     receiveTokenInput: defaultReceiveToken,
-    receiverAddressInput: null,
-    showReceiverAddressInput: false,
   });
 
   const finalFormState = {

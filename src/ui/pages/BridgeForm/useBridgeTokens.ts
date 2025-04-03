@@ -26,7 +26,7 @@ interface ParsedHttpError {
   }[];
 }
 
-export class TransactionsApiError extends HTTPError {
+class TransactionsApiError extends HTTPError {
   static interpretError(parsedError: ParsedHttpError) {
     if (parsedError.detail && parsedError.detail.length > 0) {
       const [{ msg }] = parsedError.detail;
@@ -76,9 +76,9 @@ export function useBridgeTokens({
   inputChain,
   outputChain,
   direction,
-  enabled,
+  enabled = true,
 }: Params & {
-  enabled: boolean;
+  enabled?: boolean;
 }) {
   return useQuery({
     queryKey: ['bridge/assets', inputChain, outputChain, direction],
