@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Setup Env Vars
+      - name: Setup Env Variables
         run: |
           cat .github/workflows/.workflow_env >> $GITHUB_ENV
 
