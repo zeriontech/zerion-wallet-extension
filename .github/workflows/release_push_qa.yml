@@ -19,11 +19,20 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Setup Env Variables
-        run: |
-          cat .github/workflows/release_env >> $GITHUB_ENV
-
       - name: Install dependencies and build
+        env:
+          DEFI_SDK_API_URL: wss://api-v4.zerion.io/
+          DEFI_SDK_TESTNET_API_URL: wss://api-testnet.zerion.io/
+          ZERION_API_URL: https://zpi.zerion.io/
+          ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
+          PROXY_URL: https://proxy.zerion.io/
+          DEFI_SDK_TRANSACTIONS_API_URL: https://transactions.zerion.io
+          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
+          SOCIAL_API_URL: https://social.zerion.io/
+          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          FEATURE_FOOTER_BUG_BUTTON: off
+          MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
+          FEATURE_LOYALTY_FLOW: on
         run: |
           npm install
           npm run build:production
