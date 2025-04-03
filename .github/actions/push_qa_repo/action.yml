@@ -9,6 +9,7 @@ inputs:
     required: true
   pat_token:
     description: "QA repository PAT token"
+    required: true
     
 runs:
   using: "composite"
