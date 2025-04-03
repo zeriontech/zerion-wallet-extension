@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup Env Variables
         run: |
-          cat .github/workflows/.workflow_env >> $GITHUB_ENV
+          cat .github/workflows/pr_env >> $GITHUB_ENV
 
       - name: Install dependencies and build
         run: |

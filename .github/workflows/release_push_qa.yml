@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup Env Variables
+        run: |
+          cat .github/workflows/release_env >> $GITHUB_ENV
+
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build:production
+
+      - name: Push Build to QA Repository
+        if: ${{ success() }}
+        uses: ./.github/actions/push_qa_repo
+        with:
+          branch_name: 'release-${{ github.ref_name }}'
+          commit_message: 'release-candidate-${{ github.ref_name }}'
+          pat_token: ${{ secrets.QA_REPOSITORY_PAT }}

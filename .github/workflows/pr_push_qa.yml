@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup Env Variables
         run: |
-          cat .github/workflows/.workflow_env >> $GITHUB_ENV
+          cat .github/workflows/pr_env >> $GITHUB_ENV
 
       - name: Install dependencies and build
         run: |
@@ -71,7 +71,7 @@ jobs:
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: node ./scripts/update-dev-manifest.js
 
-      - name: Create branch in another repository and copy files
+      - name: Push Build to QA Repository
         if: ${{ success() }}
         uses: ./.github/actions/push_qa_repo
         with:
