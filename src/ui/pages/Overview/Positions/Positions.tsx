@@ -751,7 +751,6 @@ function RawChainPositions({
   dappChain: string | null;
   filterChain: string | null;
   onChainChange: (value: string | null) => void;
-  address: string | null;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
   invariant(
