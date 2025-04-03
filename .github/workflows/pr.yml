@@ -43,75 +43,14 @@ on:
         required: false
 
 jobs:
+  build_pull_request_2:
+    uses: ./.github/workflows/build.yml
+
   build_pull_request:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-
-      - name: Install dependencies and build
-        env:
-          DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
-          DEFI_SDK_TESTNET_API_URL: ${{ github.event.inputs.DEFI_SDK_TESTNET_API_URL || 'wss://api-testnet.zerion.io/' }}
-          ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
-          ZERION_TESTNET_API_URL: ${{ github.event.inputs.ZERION_TESTNET_API_URL || 'https://zpi-testnet.zerion.io/' }}
-          BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
-          PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
-          DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
-          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
-          SOCIAL_API_URL: ${{ github.event.inputs.SOCIAL_API_URL || 'https://social.zerion.io/' }}
-          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
-          FEATURE_FOOTER_BUG_BUTTON: off
-          MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
-          FEATURE_LOYALTY_FLOW: on
-        run: |
-          npm install
-          npm run build:production
-
-      - name: Update Dev Manifest file
-        if: ${{ success() }}
-        env:
-          GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        run: npm run update-dev-manifest
-
-      - name: Create branch in another repository and copy files
-        if: ${{ success() }}
-        env:
-          REPO_TOKEN: ${{ secrets.QA_REPOSITORY_PAT }}
-        run: |
-          TARGET_REPO="github.com/zeriontech/zerion-wallet-extension-qa.git"
-          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
-
-          git config --global user.email "zerts@zerion.io"
-          git config --global user.name "QA Bot"
-
-          # Clone the target repository
-          git clone "https://${REPO_TOKEN}@${TARGET_REPO}" qa-repository
-          cd qa-repository
-
-          # Create or switch to the new branch
-          git checkout "$BRANCH_NAME" || git checkout -b "$BRANCH_NAME"
-
-          # Copy files from the dist directory
-          mkdir -p extension-build
-          cp -r ../dist/* ./extension-build
-
-          # Commit and push changes
-          git add .
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "No changes to commit."
-            exit 0
-          fi
-          git commit -m "PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}"
-          git push origin "$BRANCH_NAME"
-
       - name: Save PR number
         if: ${{ success() }}
         env:
