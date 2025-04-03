@@ -67,13 +67,14 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
 
 export function AssetInfo() {
   const { asset_code } = useParams();
+  invariant(asset_code, 'Asset Code is required');
   const navigationType = useNavigationType();
   useEffect(() => {
     if (navigationType === NavigationType.Push) {
       window.scrollTo(0, 0);
     }
   }, [navigationType]);
-  useBackgroundKind({ kind: 'white' });
+  useBackgroundKind(whiteBackgroundKind);
   useBodyStyle(
     useMemo(
       () => ({
@@ -84,14 +85,6 @@ export function AssetInfo() {
       []
     )
   );
-  invariant(asset_code, 'Asset Code is required');
-  const navigationType = useNavigationType();
-  useEffect(() => {
-    if (navigationType === NavigationType.Push) {
-      window.scrollTo(0, 0);
-    }
-  }, [navigationType]);
-  useBackgroundKind(whiteBackgroundKind);
 
   const { currency } = useCurrency();
   const { data: assetFullInfoData, isLoading } = useAssetFullInfo(
