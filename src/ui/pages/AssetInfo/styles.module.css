@@ -1,0 +1,34 @@
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  1% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.assetHeaderContent {
+  animation: appear 150ms ease-in-out;
+  animation-fill-mode: both;
+}
+
+.historyItem {
+  position: relative;
+  padding-inline: 12px;
+  margin-inline: 4px;
+}
+
+@media (hover: hover) {
+  .historyItem:hover .historyItemBackdrop {
+    position: absolute;
+    inset: 0 0 0 0;
+    background-color: var(--neutral-200);
+    border-radius: 12px;
+  }
+}

@@ -1,1 +1,1 @@
-export { AssetLink } from './AssetLink';
+export { AssetLink, AssetAnchor } from './AssetLink';
