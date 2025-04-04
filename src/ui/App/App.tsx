@@ -81,6 +81,7 @@ import { BackupPage } from '../pages/Backup/Backup';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
+import { TurnstileTokenHandler } from '../features/turnstile';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -504,6 +505,7 @@ export function App({ initialView, inspect }: AppProps) {
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
+              <TurnstileTokenHandler />
               <ProgrammaticNavigationHelper />
               <ThemeDecoration />
               {inspect && !isProd ? (
