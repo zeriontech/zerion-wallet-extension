@@ -11,6 +11,7 @@ const defaultConfig: RemoteConfig = {
   extension_loyalty_enabled: true,
   extension_asset_page_enabled: false,
   loyalty_config: {},
+  fee_comparison_config: [],
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
@@ -19,6 +20,7 @@ const knownKeys: (keyof RemoteConfig)[] = [
   'extension_loyalty_enabled',
   'extension_asset_page_enabled',
   'loyalty_config',
+  'fee_comparison_config',
 ];
 
 export async function fetchRemoteConfig<T extends keyof RemoteConfig>(

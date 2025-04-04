@@ -25,7 +25,7 @@ export interface QuotesData {
         chainId: string;
         gasLimit: string;
       });
-  setQuote: (quote: Quote) => void;
+  setQuote: (quote: Quote | null) => void;
   isLoading: boolean;
   done: boolean;
   error: Error | null;
