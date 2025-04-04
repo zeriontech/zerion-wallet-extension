@@ -22,14 +22,18 @@ import {
   QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
-import { FiatInputValue } from '../FiatInputValue';
+import { FiatInputValue } from 'src/ui/components/FiatInputValue';
 
 export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
-  const { spendPosition, spendAssetQuery } = swapView;
-  const { primaryInput, spendInput, chainInput } = useSelectorStore(
-    swapView.store,
-    ['primaryInput', 'spendInput', 'chainInput']
-  );
+  const { spendPosition, spendAssetQuery, spendAsset, receiveAsset } = swapView;
+  const { primaryInput, spendInput, receiveInput, chainInput } =
+    useSelectorStore(swapView.store, [
+      'primaryInput',
+      'spendInput',
+      'receiveInput',
+      'chainInput',
+    ]);
+
   const chain = chainInput ? createChain(chainInput) : null;
 
   const positionBalanceCommon = spendPosition
@@ -180,7 +184,14 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
           </div>
         }
         endDescription={
-          <FiatInputValue swapView={swapView} name="spendInput" />
+          <FiatInputValue
+            name="spendInput"
+            primaryInput={primaryInput}
+            spendInput={spendInput}
+            spendAsset={spendAsset}
+            receiveInput={receiveInput}
+            receiveAsset={receiveAsset}
+          />
         }
       />
     </>

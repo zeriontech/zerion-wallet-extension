@@ -1,6 +1,4 @@
 import React, { useEffect, useId, useRef } from 'react';
-import type { SwapFormView } from '@zeriontech/transactions';
-import { useSelectorStore } from '@store-unit/react';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import {
   formatTokenValue,
@@ -10,31 +8,35 @@ import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
-import { createChain } from 'src/modules/networks/Chain';
+import type { Chain } from 'src/modules/networks/Chain';
 import { NBSP } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
-import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
+import type { AddressPosition, Asset } from 'defi-sdk';
+import { MarketAssetSelect } from 'src/ui/pages/SwapForm/fieldsets/ReceiveTokenField/MarketAssetSelect';
 import { FiatInputValue } from 'src/ui/components/FiatInputValue';
-import { MarketAssetSelect } from './MarketAssetSelect';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
 
 export function ReceiveTokenField({
-  swapView,
-  readOnly,
+  receiveInput,
+  receiveChain,
+  receiveAsset,
+  receivePosition,
+  availableReceivePositions,
+  spendInput,
+  spendAsset,
+  onChangeAmount,
+  onChangeToken,
 }: {
-  swapView: SwapFormView;
-  readOnly: boolean;
+  receiveInput?: string;
+  receiveChain: Chain | null;
+  receiveAsset: Asset | null;
+  receivePosition: AddressPosition | EmptyAddressPosition | null;
+  availableReceivePositions: AddressPosition[];
+  spendInput?: string;
+  spendAsset: Asset | null;
+  onChangeAmount: (value: string) => void;
+  onChangeToken: (value: string) => void;
 }) {
-  const { receivePosition, receiveAssetQuery, spendAsset, receiveAsset } =
-    swapView;
-  const { primaryInput, spendInput, receiveInput, chainInput } =
-    useSelectorStore(swapView.store, [
-      'primaryInput',
-      'spendInput',
-      'receiveInput',
-      'chainInput',
-    ]);
-  const chain = chainInput ? createChain(chainInput) : null;
-
   const positionBalanceCommon = receivePosition
     ? getPositionBalance(receivePosition)
     : null;
@@ -42,25 +44,19 @@ export function ReceiveTokenField({
   const tokenValueInputRef = useRef<InputHandle | null>(null);
 
   useEffect(() => {
-    if (primaryInput === 'spend' && receiveInput) {
-      /* formatted value must be a valid input value, e.g. 123456.67 and not 123,456.67 */
+    if (receiveInput) {
+      // formatted value must be a valid input value,
+      // e.g. 123456.67 and not 123,456.67
       const formatted = roundTokenValue(receiveInput);
       tokenValueInputRef.current?.setValue(formatted);
-    } else if (primaryInput === 'spend') {
+    } else {
       tokenValueInputRef.current?.setValue('');
     }
-  }, [primaryInput, receiveInput]);
+  }, [receiveInput]);
 
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  useCustomValidity({
-    ref: inputRef,
-    customValidity:
-      primaryInput === 'receive' && receiveInput && Number(receiveInput) <= 0
-        ? 'Enter a positive amount'
-        : '',
-  });
   return (
     <>
       <FormFieldset
@@ -68,18 +64,14 @@ export function ReceiveTokenField({
         inputSelector={`#${CSS.escape(inputId)}`}
         startInput={
           <div>
-            {chain ? (
+            {receiveChain ? (
               <MarketAssetSelect
-                chain={chain}
+                chain={receiveChain}
                 selectedItem={receivePosition}
                 onChange={(position) =>
-                  swapView.store.handleTokenChange(
-                    'receiveTokenInput',
-                    position.asset.asset_code
-                  )
+                  onChangeToken(position.asset.asset_code)
                 }
-                addressPositions={swapView.availablePositions}
-                isLoading={receiveAssetQuery.isLoading}
+                addressPositions={availableReceivePositions}
               />
             ) : null}
           </div>
@@ -89,17 +81,15 @@ export function ReceiveTokenField({
             ref={tokenValueInputRef}
             delay={300}
             value={receiveInput ?? ''}
-            onChange={(value) => {
-              swapView.store.handleAmountChange('receive', value);
-            }}
+            onChange={(value) => onChangeAmount(value)}
             render={({ value, handleChange }) => (
               <UnstyledInput
-                readOnly={readOnly}
+                readOnly={true}
                 ref={inputRef}
                 style={{
                   textAlign: 'end',
                   textOverflow: 'ellipsis',
-                  cursor: readOnly ? 'default' : undefined,
+                  cursor: 'default',
                 }}
                 id={inputId}
                 inputMode="decimal"
@@ -110,7 +100,7 @@ export function ReceiveTokenField({
                   handleChange(event.currentTarget.value.replace(',', '.'))
                 }
                 pattern={FLOAT_INPUT_PATTERN}
-                required={primaryInput === 'receive'}
+                required={false}
               />
             )}
           />
@@ -136,7 +126,7 @@ export function ReceiveTokenField({
         endDescription={
           <FiatInputValue
             name="receiveInput"
-            primaryInput={primaryInput}
+            primaryInput="spend"
             spendInput={spendInput}
             spendAsset={spendAsset}
             receiveInput={receiveInput}

@@ -82,6 +82,8 @@ import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
+import { useQuotes } from 'src/ui/shared/requests/useQuotes';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -92,8 +94,6 @@ import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMe
 import { SpendTokenField } from './fieldsets/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
 import { RateLine } from './Quotes';
-import type { QuotesData } from './Quotes/useQuotes';
-import { useQuotes } from './Quotes/useQuotes';
 import { SuccessState } from './SuccessState';
 import * as styles from './styles.module.css';
 import { ApproveHintLine } from './ApproveHintLine';
@@ -198,18 +198,14 @@ export function SwapFormComponent() {
   );
 
   const { networks } = useNetworks(addressChains);
-  const { supportedChains } = useMemo(() => {
-    const allItems = networks?.getNetworks() || [];
-    const itemsForTrading = networks
-      ? allItems.filter((network) =>
+  const supportedChains = useMemo(() => {
+    const allNetworks = networks?.getNetworks() || [];
+    const networksForTrading = networks
+      ? allNetworks.filter((network) =>
           networks.supports('trading', createChain(network.id))
         )
       : [];
-    return {
-      supportedChains: itemsForTrading.map((network) =>
-        createChain(network.id)
-      ),
-    };
+    return networksForTrading.map((network) => createChain(network.id));
   }, [networks]);
 
   const swapView = useSwapForm({
@@ -227,17 +223,43 @@ export function SwapFormComponent() {
     getPopularTokens,
   });
 
-  const { primaryInput, chainInput, spendInput } = useSelectorStore(
-    swapView.store,
-    ['chainInput', 'spendInput', 'primaryInput']
-  );
+  const {
+    primaryInput,
+    chainInput,
+    spendInput,
+    receiveInput,
+    spendTokenInput,
+    receiveTokenInput,
+  } = useSelectorStore(swapView.store, [
+    'primaryInput',
+    'chainInput',
+    'spendInput',
+    'receiveInput',
+    'spendTokenInput',
+    'receiveTokenInput',
+  ]);
   const chain = chainInput ? createChain(chainInput) : null;
   const { spendPosition, receivePosition, handleChange } = swapView;
-
   const network = chain ? networks?.getNetworkByName(chain) : null;
 
   const formRef = useRef<HTMLFormElement | null>(null);
-  const quotesData = useQuotes({ address, swapView });
+
+  const { slippage: userSlippage } = useStore(swapView.store.configuration);
+
+  const quotesData = useQuotes({
+    address,
+    userSlippage,
+    primaryInput,
+    spendChainInput: chainInput,
+    receiveChainInput: null,
+    spendInput,
+    receiveInput,
+    spendTokenInput,
+    receiveTokenInput,
+    spendPosition,
+    receivePosition,
+  });
+
   const {
     transaction: swapTransaction,
     quote,
@@ -297,7 +319,7 @@ export function SwapFormComponent() {
 
   useEffect(() => setAllowanceQuantityBase(spendAmountBase), [spendAmountBase]);
 
-  const contractAddress =
+  const spendTokenContractAddress =
     spendPosition && chain
       ? getAddress({ asset: spendPosition.asset, chain }) ?? null
       : null;
@@ -312,7 +334,7 @@ export function SwapFormComponent() {
     spendAmountBase,
     allowanceQuantityBase,
     spender: quote?.token_spender ?? null,
-    contractAddress,
+    contractAddress: spendTokenContractAddress,
     enabled: quotesData.done && Boolean(quote && !quote.enough_allowance),
     keepPreviousData: false,
   });
@@ -813,7 +835,11 @@ export function SwapFormComponent() {
               : undefined
           }
         >
-          <RateLine swapView={swapView} quotesData={quotesData} />
+          <RateLine
+            spendAsset={swapView.spendPosition?.asset ?? null}
+            receiveAsset={swapView.receivePosition?.asset ?? null}
+            quotesData={quotesData}
+          />
           {chain ? <SlippageLine chain={chain} swapView={swapView} /> : null}
           {currentTransaction && chain && currentTransaction.gasLimit ? (
             <React.Suspense
