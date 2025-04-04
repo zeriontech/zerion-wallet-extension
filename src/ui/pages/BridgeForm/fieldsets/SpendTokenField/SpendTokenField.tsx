@@ -1,7 +1,8 @@
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import type { AddressPosition, Asset } from 'defi-sdk';
-import React, { useId, useRef } from 'react';
+import React, { useId, useMemo, useRef } from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
+import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { FiatInputValue } from 'src/ui/components/FiatInputValue';
 import {
@@ -21,6 +22,7 @@ import {
   DebouncedInput,
   type InputHandle,
 } from 'src/ui/ui-kit/Input/DebouncedInput';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 
 export function SpendTokenField({
@@ -44,6 +46,15 @@ export function SpendTokenField({
   onChangeAmount: (value: string) => void;
   onChangeToken: (value: string) => void;
 }) {
+  const { networks } = useNetworks(
+    spendChain ? [spendChain.toString()] : undefined
+  );
+
+  const spendChainName = useMemo(
+    () => (spendChain && networks ? networks.getChainName(spendChain) : null),
+    [networks, spendChain]
+  );
+
   const positionBalanceCommon = spendPosition
     ? getPositionBalance(spendPosition)
     : null;
@@ -110,51 +121,39 @@ export function SpendTokenField({
               noItemsMessage="No positions found"
             />
           ) : (
-            <div
-              style={{
-                height: 24 /* height of AssetSelect */,
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <svg
-                viewBox="0 0 20 20"
-                style={{
-                  display: 'block',
-                  width: 20,
-                  height: 20,
-                }}
-              >
-                <circle r="10" cx="10" cy="10" fill="var(--neutral-300)" />
-              </svg>
-            </div>
+            <UIText kind="small/accent" style={{ whiteSpace: 'nowrap' }}>
+              No available positions{' '}
+              {spendChainName ? `on ${spendChainName}` : null}
+            </UIText>
           )}
         </div>
       }
       endInput={
-        <DebouncedInput
-          ref={tokenValueInputRef}
-          delay={300}
-          value={spendInput ?? ''}
-          onChange={(value) => onChangeAmount(value)}
-          render={({ value, handleChange }) => (
-            <UnstyledInput
-              autoFocus={true}
-              id={inputId}
-              ref={inputRef}
-              style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
-              inputMode="decimal"
-              name="spendInput"
-              value={value}
-              placeholder="0"
-              onChange={(event) =>
-                handleChange(event.currentTarget.value.replace(',', '.'))
-              }
-              pattern={FLOAT_INPUT_PATTERN}
-              required={true}
-            />
-          )}
-        />
+        spendPosition ? (
+          <DebouncedInput
+            ref={tokenValueInputRef}
+            delay={300}
+            value={spendInput ?? ''}
+            onChange={(value) => onChangeAmount(value)}
+            render={({ value, handleChange }) => (
+              <UnstyledInput
+                autoFocus={true}
+                id={inputId}
+                ref={inputRef}
+                style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
+                inputMode="decimal"
+                name="spendInput"
+                value={value}
+                placeholder="0"
+                onChange={(event) =>
+                  handleChange(event.currentTarget.value.replace(',', '.'))
+                }
+                pattern={FLOAT_INPUT_PATTERN}
+                required={true}
+              />
+            )}
+          />
+        ) : null
       }
       startDescription={
         <div style={{ color: 'var(--neutral-600)' }}>
@@ -165,14 +164,16 @@ export function SpendTokenField({
         </div>
       }
       endDescription={
-        <FiatInputValue
-          name="spendInput"
-          primaryInput="spend"
-          spendInput={spendInput}
-          spendAsset={spendAsset}
-          receiveInput={receiveInput}
-          receiveAsset={receiveAsset}
-        />
+        spendPosition ? (
+          <FiatInputValue
+            name="spendInput"
+            primaryInput="spend"
+            spendInput={spendInput}
+            spendAsset={spendAsset}
+            receiveInput={receiveInput}
+            receiveAsset={receiveAsset}
+          />
+        ) : null
       }
     />
   );

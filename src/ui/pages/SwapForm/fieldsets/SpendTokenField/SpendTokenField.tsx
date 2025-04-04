@@ -30,6 +30,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
     useSelectorStore(swapView.store, [
       'primaryInput',
       'spendInput',
+      'receiveInput',
       'chainInput',
     ]);
 

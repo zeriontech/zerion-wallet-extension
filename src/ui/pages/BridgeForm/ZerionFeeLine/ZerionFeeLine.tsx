@@ -23,28 +23,30 @@ export function ZerionFeeLine({ quote }: { quote: Quote | null }) {
     'zerion_fee_learn_more_link',
   ]);
 
-  return isConfigLoading ? null : (
+  return (
     <HStack gap={12} justifyContent="space-between" alignItems="center">
       <HStack gap={4} alignItems="center">
         <UIText kind="small/regular" color="var(--neutral-700)">
           Zerion Fee
         </UIText>
-        <UnstyledAnchor
-          title="Applies to all Multichain transactions. Zerion Premium DNA holders get discounts. Click to learn more."
-          href={config?.zerion_fee_learn_more_link}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <QuestionIcon
-            role="decoration"
-            style={{
-              width: 20,
-              height: 20,
-              display: 'block',
-              color: 'var(--neutral-600)',
-            }}
-          />
-        </UnstyledAnchor>
+        {isConfigLoading ? null : (
+          <UnstyledAnchor
+            title="Applies to all Multichain transactions. Zerion Premium DNA holders get discounts. Click to learn more."
+            href={config?.zerion_fee_learn_more_link}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <QuestionIcon
+              role="decoration"
+              style={{
+                width: 20,
+                height: 20,
+                display: 'block',
+                color: 'var(--neutral-600)',
+              }}
+            />
+          </UnstyledAnchor>
+        )}
       </HStack>
       {!quote ? null : protocolFeePercent ? (
         <UIText kind="small/accent">

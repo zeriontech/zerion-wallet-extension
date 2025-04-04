@@ -17,7 +17,7 @@ import { useEventSource } from './useEventSource';
 
 interface QuotesParams {
   address: string;
-  slippage: number | null;
+  userSlippage: number | null;
 
   primaryInput?: 'spend' | 'receive';
   spendChainInput?: string;
@@ -49,7 +49,7 @@ export interface QuotesData {
 
 export function useQuotes({
   address,
-  slippage,
+  userSlippage,
   primaryInput,
   spendChainInput,
   receiveChainInput,
@@ -112,7 +112,7 @@ export function useQuotes({
 
       const { slippagePercent } = getSlippageOptions({
         chain,
-        userSlippage: slippage,
+        userSlippage,
       });
 
       const searchParams = new URLSearchParams({
@@ -148,7 +148,7 @@ export function useQuotes({
     spendChainInput,
     receiveChainInput,
     address,
-    slippage,
+    userSlippage,
   ]);
 
   const { value, isLoading, error, done } = useEventSource<Quote[]>(

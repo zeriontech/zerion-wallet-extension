@@ -29,6 +29,7 @@ export function ReceiveTokenField({
   const { primaryInput, spendInput, receiveInput, chainInput } =
     useSelectorStore(swapView.store, [
       'primaryInput',
+      'spendInput',
       'receiveInput',
       'chainInput',
     ]);

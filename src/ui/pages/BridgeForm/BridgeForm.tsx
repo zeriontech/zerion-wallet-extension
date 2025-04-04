@@ -205,7 +205,11 @@ function BridgeNetworksSelect({
   );
 
   return (
-    <>
+    <HStack
+      gap={8}
+      alignItems="center"
+      style={{ gridTemplateColumns: '1fr 32px 1fr' }}
+    >
       <LabeledNetworkSelect
         label="From"
         value={sourceChain}
@@ -239,7 +243,7 @@ function BridgeNetworksSelect({
           (filterDestinationChainPredicate?.(network) ?? true)
         }
       />
-    </>
+    </HStack>
   );
 }
 
@@ -294,12 +298,6 @@ function BridgeFormComponent() {
       )
     );
 
-  // const { spendChainInput, receiveChainInput } = {
-  //   ...defaultFormValues,
-  //   ...userFormState,
-  // };
-  //
-
   const spendChainInput =
     userFormState.spendChainInput || defaultFormValues.spendChainInput;
   const receiveChainInput =
@@ -349,19 +347,18 @@ function BridgeFormComponent() {
     receiveTokens,
   });
 
-  const [initialFormState, setInitialFormState] = useState<BridgeFormState>({
-    spendTokenInput: defaultSpendToken,
-    receiveTokenInput: defaultReceiveToken,
-  });
-
-  const finalFormState = {
-    ...defaultFormValues,
-    ...initialFormState,
-    ...userFormState,
-  };
+  const formState = useMemo(
+    () => ({
+      ...defaultFormValues,
+      spendTokenInput: defaultSpendToken,
+      receiveTokenInput: defaultReceiveToken,
+      ...userFormState,
+    }),
+    [defaultFormValues, defaultReceiveToken, defaultSpendToken, userFormState]
+  );
 
   const { spendTokenInput, receiveTokenInput, spendInput, receiveInput } =
-    finalFormState;
+    formState;
 
   const spendAssetQuery = useAssetsPrices(
     { asset_codes: [spendTokenInput].filter(isTruthy), currency },
@@ -380,10 +377,10 @@ function BridgeFormComponent() {
     : null;
 
   const spendPosition = useMemo(() => {
-    if (!spendChain || !spendTokenInput) {
+    if (!spendChain || !spendAsset) {
       return null;
     }
-    if (availableSpendPositions?.map[spendTokenInput]) {
+    if (spendTokenInput && availableSpendPositions?.map[spendTokenInput]) {
       return availableSpendPositions.map[spendTokenInput];
     } else if (spendAsset) {
       return new EmptyAddressPosition({ asset: spendAsset, chain: spendChain });
@@ -393,10 +390,13 @@ function BridgeFormComponent() {
   }, [availableSpendPositions, spendAsset, spendTokenInput, spendChain]);
 
   const receivePosition = useMemo(() => {
-    if (!receiveChain || !receiveTokenInput) {
+    if (!receiveChain || !receiveAsset) {
       return null;
     }
-    if (availableReceivePositions?.map[receiveTokenInput]) {
+    if (
+      receiveTokenInput &&
+      availableReceivePositions?.map[receiveTokenInput]
+    ) {
       return availableReceivePositions.map[receiveTokenInput];
     } else if (receiveAsset) {
       return new EmptyAddressPosition({
@@ -415,7 +415,7 @@ function BridgeFormComponent() {
 
   const quotesData = useQuotes({
     address,
-    slippage: null,
+    userSlippage: null,
     primaryInput: 'spend',
     spendChainInput,
     receiveChainInput,
@@ -426,14 +426,6 @@ function BridgeFormComponent() {
     spendPosition,
     receivePosition,
   });
-
-  useEffect(() => {
-    setInitialFormState((state) => ({
-      ...state,
-      spendTokenInput: defaultSpendToken,
-      receiveTokenInput: defaultReceiveToken,
-    }));
-  }, [defaultSpendToken, defaultReceiveToken]);
 
   const {
     transaction: bridgeTransaction,
@@ -461,8 +453,7 @@ function BridgeFormComponent() {
 
   useEffect(() => {
     if (!selectedQuote) {
-      const opposite = 'receiveInput';
-      handleChange(opposite, '');
+      handleChange('receiveInput', '');
     } else if (spendChain && receivePosition) {
       const valueCommon = getCommonQuantity({
         baseQuantity: selectedQuote.output_amount_estimation || 0,
@@ -475,7 +466,7 @@ function BridgeFormComponent() {
 
   const snapshotRef = useRef<BridgeFormState | null>(null);
   const onBeforeSubmit = () => {
-    snapshotRef.current = finalFormState;
+    snapshotRef.current = formState;
   };
 
   const feeValueCommonRef = useRef<string | null>(
@@ -880,27 +871,21 @@ function BridgeFormComponent() {
         }}
       >
         <VStack gap={16}>
-          <HStack
-            gap={8}
-            alignItems="center"
-            style={{ gridTemplateColumns: '1fr 32px 1fr' }}
-          >
-            <BridgeNetworksSelect
-              sourceChain={spendChainInput ?? ''}
-              destinationChain={receiveChainInput ?? ''}
-              filterSourceChainPredicate={(network: NetworkConfig) =>
-                network.id === NetworkId.Ethereum ||
-                network.id in positionDistribution
-              }
-              onChangeSourceChain={(value) =>
-                handleChange('spendChainInput', value)
-              }
-              onChangeDestinationChain={(value) =>
-                handleChange('receiveChainInput', value)
-              }
-              onReverseChains={reverseChains}
-            />
-          </HStack>
+          <BridgeNetworksSelect
+            sourceChain={spendChainInput ?? ''}
+            destinationChain={receiveChainInput ?? ''}
+            filterSourceChainPredicate={(network: NetworkConfig) =>
+              network.id === NetworkId.Ethereum ||
+              network.id in positionDistribution
+            }
+            onChangeSourceChain={(value) =>
+              handleChange('spendChainInput', value)
+            }
+            onChangeDestinationChain={(value) =>
+              handleChange('receiveChainInput', value)
+            }
+            onReverseChains={reverseChains}
+          />
           <VStack gap={4}>
             <SpendTokenField
               spendInput={spendInput}

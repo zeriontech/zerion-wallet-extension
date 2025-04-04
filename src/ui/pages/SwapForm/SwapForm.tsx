@@ -244,11 +244,11 @@ export function SwapFormComponent() {
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const { slippage } = useStore(swapView.store.configuration);
+  const { slippage: userSlippage } = useStore(swapView.store.configuration);
 
   const quotesData = useQuotes({
     address,
-    slippage,
+    userSlippage,
     primaryInput,
     spendChainInput: chainInput,
     receiveChainInput: null,
