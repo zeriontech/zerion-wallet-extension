@@ -186,9 +186,7 @@ export function NonceLine({
       ) : null}
 
       <HStack gap={8} justifyContent="space-between">
-        <UIText kind="small/regular" color="var(--neutral-700)">
-          Nonce
-        </UIText>
+        <UIText kind="small/regular">Nonce</UIText>
         <UnstyledButton
           type="button"
           title={sourceTitle}

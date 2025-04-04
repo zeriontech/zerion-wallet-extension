@@ -5,6 +5,7 @@ export interface RemoteConfig {
   extension_uninstall_link: string;
   extension_loyalty_enabled: boolean;
   extension_asset_page_enabled: boolean;
+  fee_comparison_config: Array<{ imgSrc: string; title: string; fee: number }>;
   loyalty_config: Partial<{
     referrerXpPercent: number;
     gasbackValue: number;
