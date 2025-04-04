@@ -103,11 +103,11 @@ import {
   ReverseButton,
   TopArc,
 } from './reverse/reverse-button-helpers';
-import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
 import { SlippageSettings } from './SlippageSettings';
 import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
 import { getPopularTokens } from './shared/getPopularTokens';
+import { FeeLine } from './Quotes/FeeLine';
 
 const rootNode = getRootDomNode();
 
@@ -845,8 +845,8 @@ export function SwapFormComponent() {
               />
             </React.Suspense>
           ) : null}
+          <FeeLine fee={quote?.protocol_fee} />
         </VStack>
-        {quote ? <ProtocolFeeLine quote={quote} /> : null}
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
         <HiddenValidationInput
