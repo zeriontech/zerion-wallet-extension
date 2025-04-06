@@ -71,6 +71,7 @@ jobs:
           FEATURE_FOOTER_BUG_BUTTON: off
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           FEATURE_LOYALTY_FLOW: on
+          FEATURE_BRIDGE_FORM: on
         run: |
           npm install
           npm run build:production
@@ -86,5 +87,5 @@ jobs:
         uses: ./.github/actions/push_qa_repo
         with:
           branch_name: ${{ github.head_ref || github.ref_name }}
-          commit_message: "PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}"
+          commit_message: 'PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}'
           pat_token: ${{ secrets.QA_REPOSITORY_PAT }}
