@@ -15,7 +15,7 @@ async function updateDevName(manifestDir) {
         ...manifest,
         name: 'Zerion Test Build',
         description: `For the branch: ${GIT_BRANCH_NAME}`,
-        icon: {
+        icons: {
           64: './logo-icon-qa.png',
         },
         action: {
