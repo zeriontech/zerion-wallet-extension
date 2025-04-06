@@ -81,7 +81,7 @@ jobs:
         env:
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: |
-          cp ./src/images/icon-logo-qa.png ./dist
+          cp ./src/images/logo-icon-qa.png ./dist
           node ./scripts/update-dev-manifest.js
 
       - name: Push Build to QA Repository
