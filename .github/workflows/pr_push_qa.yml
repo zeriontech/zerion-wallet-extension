@@ -56,6 +56,13 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Replace icon with QA icon
+        run: |
+          cp ./src/images/logo-icon-qa.png ./src/images/logo-icon-16.png
+          cp ./src/images/logo-icon-qa.png ./src/images/logo-icon-32.png
+          cp ./src/images/logo-icon-qa.png ./src/images/logo-icon-48.png
+          cp ./src/images/logo-icon-qa.png ./src/images/logo-icon-128.png
+
       - name: Install dependencies and build
         env:
           DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
@@ -75,19 +82,16 @@ jobs:
           npm install
           npm run build:production
 
-
       - name: Update Dev Manifest file
         if: ${{ success() }}
         env:
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        run: |
-          cp ./src/images/logo-icon-qa.png ./dist
-          node ./scripts/update-dev-manifest.js
+        run: node ./scripts/update-dev-manifest.js
 
       - name: Push Build to QA Repository
         if: ${{ success() }}
         uses: ./.github/actions/push_qa_repo
         with:
           branch_name: ${{ github.head_ref || github.ref_name }}
-          commit_message: "PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}"
+          commit_message: 'PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}'
           pat_token: ${{ secrets.QA_REPOSITORY_PAT }}
