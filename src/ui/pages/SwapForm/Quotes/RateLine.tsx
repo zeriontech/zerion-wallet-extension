@@ -255,13 +255,9 @@ export function RateLine({
           ref={feeDescriptionDialogRef}
           height="fit-content"
           containerStyle={{ paddingTop: 16 }}
-          renderWhenOpen={() => (
-            <FeeDescription
-              userFeeTier={userFeeTier}
-              fee={quote.protocol_fee}
-            />
-          )}
-        />
+        >
+          <FeeDescription userFeeTier={userFeeTier} fee={quote.protocol_fee} />
+        </BottomSheetDialog>
       ) : null}
       {quotes?.length && receivePosition ? (
         <BottomSheetDialog
