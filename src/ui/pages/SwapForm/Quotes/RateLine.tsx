@@ -163,6 +163,7 @@ export function RateLine({
           <UIText kind="small/regular">Rate</UIText>
           {userFeeTier ? (
             <UnstyledButton
+              title="Zerion fees description"
               onClick={() => feeDescriptionDialogRef.current?.showModal()}
             >
               <QuestionHintIcon
@@ -185,6 +186,7 @@ export function RateLine({
           ) : quote ? (
             <UnstyledButton
               style={{ display: 'flex' }}
+              title="Select quote"
               onClick={() => quotesDialogRef.current?.showModal()}
             >
               <HStack
