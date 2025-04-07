@@ -181,7 +181,7 @@ export function QuoteList({
   receiveAsset,
   configuration,
 }: {
-  userFeeTier: FeeTier;
+  userFeeTier: FeeTier | null;
   quotes: Quote[];
   selectedQuote: Quote | null;
   onChange: (quoteId: string | null) => void;
