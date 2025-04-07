@@ -26,6 +26,7 @@ import type { CustomConfiguration } from '@zeriontech/transactions';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { useTransactionFee } from '../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import { FeeDescription } from './FeeDescription';
+import type { FeeTier } from './FeeTeir';
 
 function QuoteNetworkFee({
   transaction,
@@ -172,7 +173,7 @@ function Quote({
 }
 
 export function QuoteList({
-  userPremiumTier,
+  userFeeTier,
   quotes,
   selectedQuote,
   onChange,
@@ -180,7 +181,7 @@ export function QuoteList({
   receiveAsset,
   configuration,
 }: {
-  userPremiumTier: 'regular' | 'premium' | 'og';
+  userFeeTier: FeeTier;
   quotes: Quote[];
   selectedQuote: Quote | null;
   onChange: (quoteId: string | null) => void;
@@ -235,7 +236,7 @@ export function QuoteList({
           </div>
         </VStack>
 
-        {userPremiumTier === 'premium' ? (
+        {userFeeTier === 'premium' ? (
           <UIText kind="caption/regular" color="var(--neutral-500)">
             Our platform fee is the{' '}
             <UnstyledButton
@@ -246,7 +247,7 @@ export function QuoteList({
             </UnstyledButton>{' '}
             and already included — keeping your swaps fast, safe, and secure.
           </UIText>
-        ) : userPremiumTier === 'regular' && quotes.length ? (
+        ) : userFeeTier === 'regular' && quotes.length ? (
           <UIText kind="caption/regular" color="var(--neutral-500)">
             Our platform fee ({formatPercent(quotes[0].protocol_fee, 'en')}%) is
             already included — keeping your swaps fast, safe, and secure.
@@ -275,14 +276,14 @@ export function QuoteList({
           </HStack>
         </form>
       </VStack>
-      {userPremiumTier === 'premium' && quotes.length ? (
+      {userFeeTier === 'premium' && quotes.length ? (
         <BottomSheetDialog
           ref={feeDescriptionDialogRef}
           height="fit-content"
           containerStyle={{ paddingTop: 16 }}
           renderWhenOpen={() => (
             <FeeDescription
-              userPremiumTier="premium"
+              userFeeTier="premium"
               fee={quotes[0].protocol_fee}
             />
           )}

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import type { Asset } from 'defi-sdk';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -15,10 +15,12 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import type { QuotesData } from './useQuotes';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
+import type { FeeTier } from './FeeTeir';
 
 function getRate({
   spendAsset,
@@ -104,13 +106,23 @@ export function RateLine({
   const { isLoading, quote, error, quotes } = quotesData;
   const { spendPosition, receivePosition } = swapView;
 
-  const userPremiumTier = !quote
+  // TODO: replace with Premium Status for the wallet when implemented
+  const { data: firebaseData } = useFirebaseConfig(['fee_comparison_config']);
+  const zerionPremiumFee = useMemo(() => {
+    firebaseData?.fee_comparison_config.find((item) =>
+      item.title.includes('Zerion')
+    )?.fee ?? null;
+  }, [firebaseData]);
+
+  const userFeeTier: FeeTier | null = !quote
     ? null
     : !quote.protocol_fee
     ? 'og'
-    : quote.protocol_fee === 0.4
-    ? 'premium'
-    : 'regular';
+    : zerionPremiumFee != null
+    ? quote.protocol_fee === zerionPremiumFee
+      ? 'premium'
+      : 'regular'
+    : null;
 
   const rate = getRate({
     spendAsset: spendPosition?.asset,
@@ -149,7 +161,7 @@ export function RateLine({
       >
         <HStack gap={4} alignItems="center">
           <UIText kind="small/regular">Rate</UIText>
-          {userPremiumTier ? (
+          {userFeeTier ? (
             <UnstyledButton
               onClick={() => feeDescriptionDialogRef.current?.showModal()}
             >
@@ -235,20 +247,20 @@ export function RateLine({
           ) : null}
         </span>
       </HStack>
-      {userPremiumTier && quote ? (
+      {userFeeTier && quote ? (
         <BottomSheetDialog
           ref={feeDescriptionDialogRef}
           height="fit-content"
           containerStyle={{ paddingTop: 16 }}
           renderWhenOpen={() => (
             <FeeDescription
-              userPremiumTier={userPremiumTier}
+              userFeeTier={userFeeTier}
               fee={quote.protocol_fee}
             />
           )}
         />
       ) : null}
-      {userPremiumTier && quotes?.length && receivePosition ? (
+      {userFeeTier && quotes?.length && receivePosition ? (
         <BottomSheetDialog
           ref={qoutesDialogRef}
           height="fit-content"
@@ -259,7 +271,7 @@ export function RateLine({
                 <QuoteList
                   quotes={quotes}
                   selectedQuote={quote}
-                  userPremiumTier={userPremiumTier}
+                  userFeeTier={userFeeTier}
                   onChange={handleQuoteChange}
                   onReset={() => quotesData.setQuote(null)}
                   receiveAsset={receivePosition.asset}

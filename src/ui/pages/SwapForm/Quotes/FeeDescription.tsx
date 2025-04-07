@@ -10,12 +10,13 @@ import { Frame } from 'src/ui/ui-kit/Frame';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import * as styles from './styles.module.css';
+import type { FeeTier } from './FeeTeir';
 
 export function FeeDescription({
-  userPremiumTier,
+  userFeeTier,
   fee,
 }: {
-  userPremiumTier: 'regular' | 'premium' | 'og';
+  userFeeTier: FeeTier;
   fee: number;
 }) {
   const { data, isLoading } = useFirebaseConfig(['fee_comparison_config']);
@@ -29,12 +30,12 @@ export function FeeDescription({
           <UIText kind="headline/h3">Best Available Rate</UIText>
         </HStack>
         <VStack gap={24}>
-          {userPremiumTier === 'og' ? (
+          {userFeeTier === 'og' ? (
             <UIText kind="body/regular">
               We compare multiple sources and give you the best deal available.
             </UIText>
           ) : null}
-          {userPremiumTier === 'regular' ? (
+          {userFeeTier === 'regular' ? (
             <UIText kind="body/regular">
               We compare multiple sources and give you the best deal available.
               <br />
@@ -43,7 +44,7 @@ export function FeeDescription({
               — keeping your swaps fast, safe, and secure.
             </UIText>
           ) : null}
-          {userPremiumTier === 'premium' ? (
+          {userFeeTier === 'premium' ? (
             <VStack gap={16}>
               <UIText kind="body/regular">
                 We compare multiple sources and give you the best deal
