@@ -29,6 +29,8 @@ import { FeeDescription } from './FeeDescription';
 import type { FeeTier } from './FeeTeir';
 import * as styles from './styles.module.css';
 
+const QUOTE_GRIP_TEMPLATE_COLUMNS = '1fr 1fr 40px';
+
 function QuoteNetworkFee({
   transaction,
   chain,
@@ -86,7 +88,7 @@ function Quote({
     <HStack
       gap={0}
       alignItems="center"
-      style={{ gridTemplateColumns: '1fr 1fr 40px' }}
+      style={{ gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS }}
     >
       <VStack gap={0} style={{ justifyItems: 'start' }}>
         <UIText kind="small/accent">
@@ -171,7 +173,10 @@ export function QuoteList({
           </HStack>
 
           <VStack gap={8}>
-            <HStack gap={0} style={{ gridTemplateColumns: '1fr 1fr 40px' }}>
+            <HStack
+              gap={0}
+              style={{ gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS }}
+            >
               <UIText kind="small/accent" color="var(--neutral-500)">
                 Min. Received
               </UIText>
