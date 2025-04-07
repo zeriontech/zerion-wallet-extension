@@ -1,5 +1,5 @@
 import { useSelectorStore, useStore } from '@store-unit/react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import omit from 'lodash/omit';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { commonToBase } from 'src/shared/units/convert';
@@ -156,6 +156,11 @@ export function useQuotes({
       },
     }
   );
+
+  // Reset quote when any of the params change
+  useEffect(() => {
+    setQuote(null);
+  }, [url]);
 
   const quote = selectedQuote || (value?.[0] ?? null);
   const transaction = useMemo(() => {

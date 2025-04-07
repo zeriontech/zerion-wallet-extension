@@ -138,10 +138,6 @@ export function RateLine({
     [quotesData]
   );
 
-  const handleQuoteReset = useCallback(() => {
-    quotesData.setQuote(null);
-  }, [quotesData]);
-
   return (
     <>
       <HStack
@@ -265,7 +261,7 @@ export function RateLine({
                   selectedQuote={quote}
                   userPremiumTier={userPremiumTier}
                   onChange={handleQuoteChange}
-                  onReset={handleQuoteReset}
+                  onReset={() => quotesData.setQuote(null)}
                   receiveAsset={receivePosition.asset}
                   configuration={configuration}
                 />
