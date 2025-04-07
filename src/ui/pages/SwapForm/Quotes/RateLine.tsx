@@ -140,6 +140,7 @@ export function RateLine({
 
   const handleQuoteChange = useCallback(
     (quoteId: string | null) => {
+      quotesDialogRef.current?.close();
       const selectedQuote = quoteId
         ? quotesData.quotes?.find((q) => q.contract_metadata?.id === quoteId)
         : null;

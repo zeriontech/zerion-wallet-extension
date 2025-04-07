@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import type { Asset } from 'defi-sdk';
 import omit from 'lodash/omit';
 import { Quote } from 'src/shared/types/Quote';
@@ -27,6 +27,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { useTransactionFee } from '../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import { FeeDescription } from './FeeDescription';
 import type { FeeTier } from './FeeTeir';
+import * as styles from './styles.module.css';
 
 function QuoteNetworkFee({
   transaction,
@@ -66,14 +67,10 @@ function QuoteNetworkFee({
 
 function Quote({
   quote,
-  selected,
-  bestRate,
   receiveAsset,
   configuration,
 }: {
   quote: Quote;
-  selected: boolean;
-  bestRate: boolean;
   receiveAsset: Asset;
   configuration: CustomConfiguration;
 }) {
@@ -89,40 +86,10 @@ function Quote({
     <HStack
       gap={0}
       alignItems="center"
-      style={{
-        gridTemplateColumns: '1fr 1fr 40px',
-        padding: selected ? 11 : 10,
-        border: selected
-          ? '1px solid var(--primary)'
-          : '2px solid var(--neutral-100)',
-        borderRadius: 12,
-        position: 'relative',
-      }}
+      style={{ gridTemplateColumns: '1fr 1fr 40px' }}
     >
-      {bestRate ? (
-        <UIText
-          kind="caption/accent"
-          style={{
-            color: 'var(--white)',
-            backgroundColor: selected ? 'var(--primary)' : 'var(--black)',
-            padding: '2px 8px',
-            borderRadius: 4,
-            position: 'absolute',
-            top: selected ? -7 : -8,
-            right: selected ? -1 : -2,
-            fontSize: '8px',
-            lineHeight: '12px',
-            letterSpacing: '0.2px',
-          }}
-        >
-          BEST RATE
-        </UIText>
-      ) : null}
       <VStack gap={0} style={{ justifyItems: 'start' }}>
-        <UIText
-          kind="small/accent"
-          color={selected ? 'var(--primary)' : 'var(--black)'}
-        >
+        <UIText kind="small/accent">
           {formatCurrencyValue(
             receiveAsset.price?.value ? receiveAmount : 'N/A',
             'en',
@@ -130,11 +97,7 @@ function Quote({
           )}
         </UIText>
         {quote.enough_allowance ? (
-          <HStack
-            gap={4}
-            alignItems="center"
-            style={{ color: selected ? 'var(--primary)' : 'var(--black)' }}
-          >
+          <HStack gap={4} alignItems="center">
             <TickIcon />
             <UIText kind="caption/regular" style={{ whiteSpace: 'nowrap' }}>
               Approved for {quote.contract_metadata?.name}
@@ -143,10 +106,7 @@ function Quote({
         ) : null}
       </VStack>
       <VStack gap={0} style={{ justifyItems: 'start' }}>
-        <UIText
-          kind="small/accent"
-          color={selected ? 'var(--primary)' : 'var(--black)'}
-        >
+        <UIText kind="small/accent">
           {quote.transaction ? (
             <React.Suspense fallback={<CircleSpinner />}>
               <QuoteNetworkFee
@@ -189,9 +149,6 @@ export function QuoteList({
   receiveAsset: Asset;
   configuration: CustomConfiguration;
 }) {
-  const [selectedQuoteId, setSelectedQuoteId] = useState(
-    selectedQuote?.contract_metadata?.id ?? null
-  );
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
@@ -199,83 +156,100 @@ export function QuoteList({
   return (
     <>
       <DialogCloseButton style={{ position: 'absolute', top: 8, right: 8 }} />
-      <VStack gap={16}>
-        <HStack gap={8} alignItems="center">
-          <ShieldIcon style={{ color: 'var(--positive-500)' }} />
-          <UIText kind="headline/h3">Best Available Rate</UIText>
-        </HStack>
-
-        <VStack gap={8}>
-          <HStack gap={0} style={{ gridTemplateColumns: '1fr 1fr 40px' }}>
-            <UIText kind="small/accent" color="var(--neutral-500)">
-              Min. Received
-            </UIText>
-            <UIText kind="small/accent" color="var(--neutral-500)">
-              Network fee
-            </UIText>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const quoteId = formData.get('quoteId') as string | null;
+          onChange(quoteId);
+        }}
+      >
+        <VStack gap={16}>
+          <HStack gap={8} alignItems="center">
+            <ShieldIcon style={{ color: 'var(--positive-500)' }} />
+            <UIText kind="headline/h3">Best Available Rate</UIText>
           </HStack>
-          <div style={{ maxHeight: 350, overflowY: 'auto', paddingTop: 8 }}>
-            <VStack gap={8}>
-              {quotes.map((quote, index) => (
-                <UnstyledButton
-                  onClick={() =>
-                    setSelectedQuoteId(quote.contract_metadata?.id || null)
-                  }
-                >
-                  <Quote
-                    key={quote.contract_metadata?.id}
-                    quote={quote}
-                    selected={quote.contract_metadata?.id === selectedQuoteId}
-                    bestRate={index === 0}
-                    receiveAsset={receiveAsset}
-                    configuration={configuration}
-                  />
-                </UnstyledButton>
-              ))}
-            </VStack>
-          </div>
-        </VStack>
 
-        {userFeeTier === 'premium' ? (
-          <UIText kind="caption/regular" color="var(--neutral-500)">
-            Our platform fee is the{' '}
-            <UnstyledButton
-              style={{ color: 'var(--primary)' }}
-              onClick={() => feeDescriptionDialogRef.current?.showModal()}
-            >
-              lowest among top wallets
-            </UnstyledButton>{' '}
-            and already included — keeping your swaps fast, safe, and secure.
-          </UIText>
-        ) : userFeeTier === 'regular' && quotes.length ? (
-          <UIText kind="caption/regular" color="var(--neutral-500)">
-            Our platform fee ({formatPercent(quotes[0].protocol_fee, 'en')}%) is
-            already included — keeping your swaps fast, safe, and secure.
-          </UIText>
-        ) : null}
-        <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+          <VStack gap={8}>
+            <HStack gap={0} style={{ gridTemplateColumns: '1fr 1fr 40px' }}>
+              <UIText kind="small/accent" color="var(--neutral-500)">
+                Min. Received
+              </UIText>
+              <UIText kind="small/accent" color="var(--neutral-500)">
+                Network fee
+              </UIText>
+            </HStack>
+            <div style={{ maxHeight: 350, overflowY: 'auto', paddingTop: 8 }}>
+              <VStack gap={8}>
+                {quotes.map((quote, index) => {
+                  const isSelected =
+                    selectedQuote?.contract_metadata?.id ===
+                    quote.contract_metadata?.id;
+                  return (
+                    <label className={styles.radio}>
+                      <input
+                        autoFocus={isSelected}
+                        type="radio"
+                        name="quoteId"
+                        value={quote.contract_metadata?.id}
+                        defaultChecked={isSelected}
+                      />
+                      {index === 0 ? (
+                        <span className={styles.bestRateBadge}>BEST RATE</span>
+                      ) : null}
+                      <Quote
+                        key={quote.contract_metadata?.id}
+                        quote={quote}
+                        receiveAsset={receiveAsset}
+                        configuration={configuration}
+                      />
+                    </label>
+                  );
+                })}
+              </VStack>
+            </div>
+          </VStack>
+
+          {userFeeTier === 'premium' ? (
+            <UIText kind="caption/regular" color="var(--neutral-500)">
+              Our platform fee is the{' '}
+              <UnstyledButton
+                type="button"
+                style={{ color: 'var(--primary)' }}
+                title="Zerion fees description"
+                onClick={() => feeDescriptionDialogRef.current?.showModal()}
+              >
+                lowest among top wallets
+              </UnstyledButton>{' '}
+              and already included — keeping your swaps fast, safe, and secure.
+            </UIText>
+          ) : userFeeTier === 'regular' && quotes.length ? (
+            <UIText kind="caption/regular" color="var(--neutral-500)">
+              Our platform fee ({formatPercent(quotes[0].protocol_fee, 'en')}%)
+              is already included — keeping your swaps fast, safe, and secure.
+            </UIText>
+          ) : null}
           <HStack
             gap={16}
             style={{ paddingTop: 16, gridTemplateColumns: '1fr 1fr' }}
           >
-            <Button
-              kind="neutral"
-              size={44}
-              onClick={onReset}
-              value={DialogButtonValue.cancel}
-            >
-              Reset
-            </Button>
-            <Button
-              kind="primary"
-              size={44}
-              onClick={() => onChange(selectedQuoteId)}
-            >
+            <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+              <Button
+                kind="neutral"
+                size={44}
+                onClick={onReset}
+                value={DialogButtonValue.cancel}
+                style={{ width: '100%' }}
+              >
+                Reset
+              </Button>
+            </form>
+            <Button kind="primary" size={44}>
               Save
             </Button>
           </HStack>
-        </form>
-      </VStack>
+        </VStack>
+      </form>
       {userFeeTier === 'premium' && quotes.length ? (
         <BottomSheetDialog
           ref={feeDescriptionDialogRef}
