@@ -19,11 +19,12 @@ export function FeeDescription({
   userFeeTier: FeeTier;
   fee: number;
 }) {
-  const { data, isLoading } = useFirebaseConfig(['fee_comparison_config']);
+  const { data, isLoading } = useFirebaseConfig(['fee_comparison_config'], {
+    enabled: userFeeTier === 'premium',
+  });
 
   return (
     <>
-      <DialogCloseButton style={{ position: 'absolute', top: 8, right: 8 }} />
       <VStack gap={16}>
         <HStack gap={8} alignItems="center">
           <ShieldIcon style={{ color: 'var(--positive-500)' }} />
@@ -104,6 +105,7 @@ export function FeeDescription({
           </form>
         </VStack>
       </VStack>
+      <DialogCloseButton style={{ position: 'absolute', top: 8, right: 8 }} />
     </>
   );
 }

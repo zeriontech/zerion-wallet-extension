@@ -255,13 +255,9 @@ export function QuoteList({
           ref={feeDescriptionDialogRef}
           height="fit-content"
           containerStyle={{ paddingTop: 16 }}
-          renderWhenOpen={() => (
-            <FeeDescription
-              userFeeTier="premium"
-              fee={quotes[0].protocol_fee}
-            />
-          )}
-        />
+        >
+          <FeeDescription userFeeTier="premium" fee={quotes[0].protocol_fee} />
+        </BottomSheetDialog>
       ) : null}
     </>
   );
