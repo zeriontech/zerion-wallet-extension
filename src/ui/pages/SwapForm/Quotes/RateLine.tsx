@@ -106,13 +106,13 @@ export function RateLine({
   const { isLoading, quote, error, quotes } = quotesData;
   const { spendPosition, receivePosition } = swapView;
 
-  // TODO: replace with Premium Status for the wallet when implemented
   const { data: firebaseData } = useFirebaseConfig(['fee_comparison_config']);
   const zerionPremiumFee = useMemo(() => {
-    firebaseData?.fee_comparison_config.find((item) =>
-      item.title.includes('Zerion')
-    )?.fee ?? null;
-  }, [firebaseData]);
+    return (
+      firebaseData?.fee_comparison_config.find((item) => item.isZerionFee)
+        ?.fee ?? null
+    );
+  }, [firebaseData?.fee_comparison_config]);
 
   const userFeeTier: FeeTier | null = !quote
     ? null
@@ -260,7 +260,7 @@ export function RateLine({
           )}
         />
       ) : null}
-      {userFeeTier && quotes?.length && receivePosition ? (
+      {quotes?.length && receivePosition ? (
         <BottomSheetDialog
           ref={qoutesDialogRef}
           height="fit-content"
