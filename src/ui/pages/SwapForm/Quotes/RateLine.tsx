@@ -101,7 +101,7 @@ export function RateLine({
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
-  const qoutesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const quotesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const { isLoading, quote, error, quotes } = quotesData;
   const { spendPosition, receivePosition } = swapView;
@@ -185,7 +185,7 @@ export function RateLine({
           ) : quote ? (
             <UnstyledButton
               style={{ display: 'flex' }}
-              onClick={() => qoutesDialogRef.current?.showModal()}
+              onClick={() => quotesDialogRef.current?.showModal()}
             >
               <HStack
                 // in design it's 4, but design has circle images
@@ -262,7 +262,7 @@ export function RateLine({
       ) : null}
       {quotes?.length && receivePosition ? (
         <BottomSheetDialog
-          ref={qoutesDialogRef}
+          ref={quotesDialogRef}
           height="fit-content"
           renderWhenOpen={() => (
             <StoreWatcher
