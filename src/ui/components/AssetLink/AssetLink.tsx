@@ -1,6 +1,6 @@
 import type { Asset } from 'defi-sdk';
 import React from 'react';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { usePreferences } from 'src/ui/features/preferences';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
@@ -51,14 +51,14 @@ export function AssetLink({
   address?: string;
 }) {
   const { preferences } = usePreferences();
-  const { data: assetPageEnabled, isLoading } = useRemoteConfigValue(
-    'extension_asset_page_enabled'
-  );
+  const { data: firebaseConfig, isLoading } = useFirebaseConfig([
+    'extension_asset_page_enabled',
+  ]);
   const content = title || asset.symbol || asset.name;
   if (preferences?.testnetMode?.on) {
     return content;
   }
-  if (isLoading || !assetPageEnabled) {
+  if (isLoading || !firebaseConfig?.extension_asset_page_enabled) {
     return <AssetAnchor asset={asset} title={title} address={address} />;
   }
   return (
