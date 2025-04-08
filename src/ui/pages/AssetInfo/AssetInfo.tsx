@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -30,7 +30,6 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
-import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -39,27 +38,7 @@ import { AssetResources } from './AssetResources';
 import { AssetHeader } from './AssetHeader';
 import { AssetDescription } from './AssetDescription';
 
-const SCROLL_THRESHOLD = 80;
 const SHOW_BRIDGE_BUTTON = false; // TODO: make true after bridge is implemented
-
-function AssetPageHeader({ asset }: { asset: Asset }) {
-  const [showTokenInfoInHeader, setShowTokenInfoInHeader] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () =>
-      setShowTokenInfoInHeader(window.scrollY < SCROLL_THRESHOLD);
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  return showTokenInfoInHeader ? null : (
-    <AssetHeader asset={asset} className={styles.assetHeaderContent} />
-  );
-}
 
 function ReportAssetLink({ asset }: { asset: Asset }) {
   return (
@@ -167,7 +146,7 @@ export function AssetInfo() {
   return (
     <PageColumn>
       <NavigationTitle
-        title={<AssetPageHeader asset={assetFullInfo.fungible} />}
+        title={<AssetHeader asset={assetFullInfo.fungible} />}
         documentTitle={`${assetFullInfo.fungible.name} - info`}
       />
       <PageTop />
