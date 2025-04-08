@@ -15,7 +15,7 @@ import {
   getYLimits,
 } from './helpers';
 import { CHART_HEIGHT, DEFAULT_CONFIG } from './config';
-import { drawCrossPlugin, drawRangePlugin } from './plugins';
+import { drawDotPlugin, drawRangePlugin } from './plugins';
 
 /**
  * Chart update animation algorithm:
@@ -248,7 +248,7 @@ export function AssetChart({
             }
           },
         },
-        drawCrossPlugin({
+        drawDotPlugin({
           getStartRangeIndex: () => startRangeIndexRef.current,
           getTheme: () => themeRef.current,
         }),
