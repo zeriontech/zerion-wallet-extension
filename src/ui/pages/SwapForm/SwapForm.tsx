@@ -82,6 +82,7 @@ import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import { localActionsStore } from 'src/ui/transactions/local-actions-store';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -227,10 +228,13 @@ export function SwapFormComponent() {
     getPopularTokens,
   });
 
-  const { primaryInput, chainInput, spendInput } = useSelectorStore(
-    swapView.store,
-    ['chainInput', 'spendInput', 'primaryInput']
-  );
+  const { primaryInput, chainInput, spendInput, receiveInput } =
+    useSelectorStore(swapView.store, [
+      'chainInput',
+      'spendInput',
+      'primaryInput',
+      'receiveInput',
+    ]);
   const chain = chainInput ? createChain(chainInput) : null;
   const { spendPosition, receivePosition, handleChange } = swapView;
 
@@ -506,6 +510,24 @@ export function SwapFormComponent() {
       onBeforeSubmit();
       return 'sendTransaction';
     },
+    onSuccess: (hash) => {
+      if (
+        chain &&
+        spendInput &&
+        receiveInput &&
+        spendPosition &&
+        receivePosition
+      ) {
+        localActionsStore.saveAction(hash, {
+          kind: 'swap',
+          chain: chain.toString(),
+          receiveInput: receiveInput,
+          spendInput: spendInput,
+          spendTokenId: spendPosition.asset.id,
+          receiveTokenId: receivePosition.asset.id,
+        });
+      }
+    },
   });
 
   const resetMutationIfNotLoading = useEvent(() => {
@@ -568,6 +590,13 @@ export function SwapFormComponent() {
         receivePosition={receivePosition}
         swapFormState={snapshotRef.current}
         gasbackValue={gasbackValueRef.current}
+        onRetry={() => {
+          reset();
+          refetchNonce();
+          snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
+        }}
         onDone={() => {
           reset();
           snapshotRef.current = null;

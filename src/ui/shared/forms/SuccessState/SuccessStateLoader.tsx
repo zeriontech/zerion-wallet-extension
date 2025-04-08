@@ -181,6 +181,7 @@ export function SuccessStateLoader({
   explorerUrl,
   error,
   confirmedContent,
+  secondaryAction,
   onDone,
 }: {
   startItem: React.ReactNode;
@@ -193,6 +194,7 @@ export function SuccessStateLoader({
   explorerUrl?: string;
   error?: string;
   confirmedContent?: React.ReactNode;
+  secondaryAction?: React.ReactNode;
   onDone?: () => void;
 }) {
   const showLongWaitNotice = useRenderDelay(5000);
@@ -309,9 +311,12 @@ export function SuccessStateLoader({
             </UIText>
           ) : null}
         </VStack>
-        <Button kind="regular" style={{ width: '100%' }} onClick={onDone}>
-          Done
-        </Button>
+        <VStack gap={4}>
+          {secondaryAction}
+          <Button kind="regular" style={{ width: '100%' }} onClick={onDone}>
+            Done
+          </Button>
+        </VStack>
         <Spacer height={24} />
       </VStack>
     </PageColumn>

@@ -7,12 +7,23 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { createChain } from 'src/modules/networks/Chain';
 import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
+import { useStore } from '@store-unit/react';
+import type { LocalAction } from 'src/ui/transactions/local-actions-store';
+import {
+  LocalActionsStore,
+  localActionsStore,
+} from 'src/ui/transactions/local-actions-store';
+import { Button } from 'src/ui/ui-kit/Button';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import RetryIcon from 'jsx:src/ui/assets/actions/swap.svg';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { ApprovalInfo, TransferInfo } from './components/TransferInfo';
 import { CollectionLine } from './components/CollectionLine';
 import { RateLine } from './components/RateLine';
 import { SenderReceiverLine } from './components/SenderReceiverLine';
 import { FeeLine } from './components/FeeLine';
 import { ExplorerInfo } from './components/ExplorerInfo';
+import { LocalActionView } from './components/LocalActionView';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
   year: 'numeric',
@@ -31,6 +42,7 @@ export function ActionDetailedView({
   address?: string;
   networks: Networks;
 }) {
+  const { localActions } = useStore(localActionsStore);
   const chain = useMemo(() => createChain(action.transaction.chain), [action]);
 
   const actionDate = useMemo(() => {
@@ -48,6 +60,16 @@ export function ActionDetailedView({
     outgoingTransfers?.length ||
     incomingTransfers?.length ||
     action.content?.single_asset;
+
+  const localAction = localActions[action.transaction.hash] as
+    | LocalAction
+    | undefined;
+  const showLocalAction = isFailed && localAction?.kind === 'swap';
+
+  const swapAgainLink =
+    !isFailed && localAction?.kind === 'swap'
+      ? LocalActionsStore.getActionLink(localAction)
+      : null;
 
   return (
     <VStack
@@ -95,8 +117,17 @@ export function ActionDetailedView({
               chain={chain}
             />
           ) : null}
+          {swapAgainLink ? (
+            <Button kind="primary" as={UnstyledLink} to={swapAgainLink}>
+              <HStack gap={8} alignItems="center">
+                <RetryIcon />
+                <UIText kind="small/accent">Swap Again</UIText>
+              </HStack>
+            </Button>
+          ) : null}
         </VStack>
       ) : null}
+      {showLocalAction ? <LocalActionView localAction={localAction} /> : null}
       <Surface padding={16}>
         <VStack gap={24}>
           <ExplorerInfo action={action} networks={networks} />
