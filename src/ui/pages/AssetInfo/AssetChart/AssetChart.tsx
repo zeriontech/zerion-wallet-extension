@@ -3,11 +3,11 @@ import { useStore } from '@store-unit/react';
 import Chart, { type ScriptableLineSegmentContext } from 'chart.js/auto';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useEvent } from 'src/ui/shared/useEvent';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { Theme } from 'src/ui/features/appearance';
 import { themeStore } from 'src/ui/features/appearance';
+import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import {
   getSortedRangeIndexes,
   toScatterData,
@@ -282,7 +282,7 @@ export function AssetChart({
           color="var(--neutral-500)"
           style={{ position: 'absolute', top: -16, right: 8 }}
         >
-          {formatCurrencyValue(maxChartPointValue, 'en', currency)}
+          {formatPriceValue(maxChartPointValue, 'en', currency)}
         </UIText>
       ) : null}
       {minChartPointValue != null ? (
@@ -291,7 +291,7 @@ export function AssetChart({
           color="var(--neutral-500)"
           style={{ position: 'absolute', bottom: -16, right: 8 }}
         >
-          {formatCurrencyValue(minChartPointValue, 'en', currency)}
+          {formatPriceValue(minChartPointValue, 'en', currency)}
         </UIText>
       ) : null}
       <canvas ref={canvasRef} />
