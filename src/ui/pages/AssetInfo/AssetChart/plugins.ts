@@ -2,7 +2,7 @@ import type { Plugin, Point } from 'chart.js/auto';
 import { Theme } from 'src/ui/features/appearance';
 import { getChartColor, getSortedRangeIndexes } from './helpers';
 
-export function drawCrossPlugin({
+export function drawDotPlugin({
   getStartRangeIndex,
   getTheme,
 }: {
@@ -10,7 +10,7 @@ export function drawCrossPlugin({
   getTheme: () => Theme;
 }): Plugin<'scatter'> {
   return {
-    id: 'drawCross',
+    id: 'drawDot',
     afterDraw: (chart) => {
       const activeElement = chart.getActiveElements()?.[0];
       const { ctx } = chart;
@@ -35,31 +35,7 @@ export function drawCrossPlugin({
       });
 
       ctx.save();
-      // ctx.setLineDash([5, 5]);
 
-      // if (getStartRangeX() == null) {
-      // Draw vertical line
-      //   ctx.beginPath();
-      //   ctx.moveTo(x, 8);
-      //   ctx.lineTo(x, chart.height - 2);
-      //   ctx.strokeStyle = 'grey';
-      //   ctx.lineWidth = 1;
-      //   ctx.stroke();
-      //   ctx.closePath();
-      // }
-
-      // Draw horizontal line
-      // ctx.beginPath();
-      // ctx.moveTo(0, y);
-      // ctx.lineTo(chart.width, y);
-      // ctx.strokeStyle = 'grey';
-      // ctx.lineWidth = 1;
-      // ctx.stroke();
-      // ctx.closePath();
-
-      // ctx.setLineDash([]);
-
-      // Draw circle
       ctx.beginPath();
       ctx.arc(x, y, 6, 0, 2 * Math.PI);
       ctx.fillStyle = color;
