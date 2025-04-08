@@ -69,6 +69,7 @@ export function CreateAccount() {
             if (!password) {
               return;
             }
+            // eslint-disable-next-line security/detect-possible-timing-attacks -- Locally known values are compared, so a timing attack does not make sense
             if (repeatedPassword !== password) {
               setFormError({
                 type: 'confirmPassword',

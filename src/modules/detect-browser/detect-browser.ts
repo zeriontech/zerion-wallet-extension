@@ -4,9 +4,9 @@ export function detectBrowser(string: string) {
    * or unusual browsers; extension can only be run in Chrome anyway right now
    */
   const patterns = {
-    firefox: /(Firefox)\/((\w+|\.)+)/,
-    chrome: /(Chrome)\/((\w|\.)+)/,
-    safari: /(Safari)\/((\w|\.)+)/,
+    firefox: /(Firefox)\/((?:\w|\.)+)/,
+    chrome: /(Chrome)\/((?:\w|\.)+)/,
+    safari: /(Safari)\/((?:\w|\.)+)/,
   };
   const match =
     string.match(patterns.firefox) ||
