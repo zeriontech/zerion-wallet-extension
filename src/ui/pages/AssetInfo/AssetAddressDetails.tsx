@@ -67,7 +67,7 @@ function AssetHeader({
       <UIText kind="body/accent">
         {asset.symbol}
         {asset.meta.price != null
-          ? ` ${emDash} ${formatCurrencyValue(
+          ? ` ${emDash} ${formatPriceValue(
               asset.meta.price || 0,
               'en',
               currency
