@@ -16,7 +16,7 @@ export interface PopoverToastHandle {
 }
 
 function PopoverToastComponent(
-  props: React.HTMLAttributes<HTMLDivElement>,
+  { style = {}, ...props }: React.HTMLAttributes<HTMLDivElement>,
   ref: React.Ref<PopoverToastHandle>
 ) {
   const [popoverSupported] = useState(() => supportsPopover());
@@ -53,6 +53,7 @@ function PopoverToastComponent(
         color: 'var(--white)',
         marginBottom: 0,
         bottom: 'calc(20px + var(--technical-panel-bottom-height, 0px))',
+        ...style,
       }}
       {...props}
     />
