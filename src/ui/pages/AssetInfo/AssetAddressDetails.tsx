@@ -9,12 +9,15 @@ import {
   formatCurrencyToParts,
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
-import { middot } from 'src/ui/shared/typography';
+import { emDash, middot } from 'src/ui/shared/typography';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import EyeIcon from 'jsx:src/ui/assets/eye.svg';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
-import type { AssetFullInfo } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import type {
+  Asset,
+  AssetFullInfo,
+} from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletAssetDetails } from 'src/modules/zerion-api/requests/wallet-get-asset-details';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
@@ -36,10 +39,44 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import type { ResponseBody } from 'src/modules/zerion-api/requests/ResponseBody';
-import { AssetHeader } from './AssetHeader';
 import { getColor, getSign } from './helpers';
 
 type AssetAddressPnlQuery = UseQueryResult<ResponseBody<AssetAddressPnl>>;
+
+function AssetHeader({
+  asset,
+  className,
+}: {
+  asset: Asset;
+  className?: string;
+}) {
+  const { currency } = useCurrency();
+  return (
+    <HStack
+      gap={8}
+      alignItems="center"
+      justifyContent="center"
+      className={className}
+    >
+      <TokenIcon
+        src={asset.iconUrl}
+        symbol={asset.symbol}
+        size={20}
+        title={asset.name}
+      />
+      <UIText kind="body/accent">
+        {asset.symbol}
+        {asset.meta.price != null
+          ? ` ${emDash} ${formatCurrencyValue(
+              asset.meta.price || 0,
+              'en',
+              currency
+            )}`
+          : null}
+      </UIText>
+    </HStack>
+  );
+}
 
 function Line() {
   return (
