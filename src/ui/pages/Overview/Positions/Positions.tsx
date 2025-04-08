@@ -14,7 +14,11 @@ import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
-import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
+import {
+  SurfaceItemAnchor,
+  SurfaceItemLink,
+  SurfaceList,
+} from 'src/ui/ui-kit/SurfaceList';
 import {
   DEFAULT_NAME,
   DEFAULT_PROTOCOL_ID,
@@ -51,7 +55,6 @@ import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPosi
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { invariant } from 'src/shared/invariant';
-import { SurfaceItemAnchor } from 'src/ui/ui-kit/SurfaceList';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
 import { usePreferences } from 'src/ui/features/preferences';
@@ -63,6 +66,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -455,6 +459,9 @@ function PositionList({
     []
   );
   const { preferences } = usePreferences();
+  const { data: firebaseConfig } = useFirebaseConfig([
+    'extension_asset_page_enabled',
+  ]);
 
   const groupType = PositionsGroupType.platform;
   const preparedPositions = usePreparedPositions({
@@ -465,6 +472,10 @@ function PositionList({
   });
   const offsetValuesState = useStore(offsetValues);
   const { currency } = useCurrency();
+
+  const assetPageEnabled = Boolean(
+    firebaseConfig?.extension_asset_page_enabled
+  );
 
   return (
     <VStack gap={24}>
@@ -523,11 +534,19 @@ function PositionList({
             items.push({
               key: position.id,
               separatorLeadingInset: position.parent_id ? 26 : 0,
-              pad: !showAsLink,
-              style: showAsLink ? { padding: 0 } : undefined,
+              pad: !assetPageEnabled && !showAsLink,
+              style:
+                assetPageEnabled || showAsLink ? { padding: 0 } : undefined,
               // NODE: Don't link to web in testnet mode
-              // TODO: remove this conditional when we have Asset Page in extension
-              component: showAsLink ? (
+              // TODO: remove this conditional when we have Asset Page 100% enabled in extension
+              component: assetPageEnabled ? (
+                <SurfaceItemLink
+                  to={`/asset/${position.asset.id}`}
+                  decorationStyle={{ borderRadius: 16 }}
+                >
+                  {itemContent}
+                </SurfaceItemLink>
+              ) : showAsLink ? (
                 <SurfaceItemAnchor
                   onClick={openHrefInTabIfSidepanel}
                   href={`https://app.zerion.io/tokens/${
