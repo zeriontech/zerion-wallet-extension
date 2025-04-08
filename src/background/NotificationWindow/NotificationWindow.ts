@@ -396,7 +396,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
         browserWindow = await browser.windows.get(windowId);
       }
     } catch (error) {
-      console.warn(`No window found for id ${windowId}`);
+      console.warn(`No window found for id ${windowId}`); // eslint-disable-line no-console
       browserWindow = null;
     }
     // NOTE: Only use sidepanel if request comes from the currently active tab

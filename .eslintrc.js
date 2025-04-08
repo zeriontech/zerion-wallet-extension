@@ -1,11 +1,12 @@
 const confusingBrowserGlobals = require('confusing-browser-globals');
 
 module.exports = {
-  extends: ['eslint:recommended'],
+  extends: ['eslint:recommended', 'plugin:security/recommended-legacy'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'react-hooks', 'import', '@tanstack/query'],
   env: { browser: true },
   rules: {
+    'security/detect-object-injection': 'off', // too many false positives, maybe investigate later
     'no-console': 'warn',
     quotes: ['error', 'single', { avoidEscape: true }],
     'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks

@@ -271,7 +271,7 @@ $\
    * Parses a Sign-In with Ethereum Message (EIP-4361) object from string.
    */
   public static parse(rawMessage: string) {
-    const regExp = new RegExp(SiweMessage.PATTERN, 'g');
+    const regExp = new RegExp(SiweMessage.PATTERN, 'g'); // eslint-disable-line security/detect-non-literal-regexp -- SiweMessage.PATTERN is a local value
     const match = regExp.exec(rawMessage);
     return match?.groups ? new SiweMessage(rawMessage, match.groups) : null;
   }

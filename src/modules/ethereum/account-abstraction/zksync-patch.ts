@@ -82,6 +82,7 @@ export async function broadcastTransactionPatched(
   });
 
   const tx = zksTypes.Transaction.from(parseEip712Patched(signedTx));
+  // eslint-disable-next-line security/detect-possible-timing-attacks -- Not a secret value
   if (tx.hash !== hash) {
     throw new Error('The returned hash did not match!');
   }
