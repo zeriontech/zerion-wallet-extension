@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -12,6 +12,7 @@ import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
 import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import FlagIcon from 'jsx:src/ui/assets/flag.svg';
+import ShareIcon from 'jsx:src/ui/assets/share.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageTop } from 'src/ui/components/PageTop';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
@@ -30,6 +31,10 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
+import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -62,6 +67,34 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
         <UIText kind="small/accent">Report Asset</UIText>
       </HStack>
     </UnstyledAnchor>
+  );
+}
+
+function ShareAssetLink({ asset }: { asset: Asset }) {
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const { handleCopy } = useCopyToClipboard({
+    text: `https://app.zerion.io/tokens/${asset.symbol}-${asset.id}`,
+    onSuccess: () => toastRef.current?.showToast(),
+  });
+
+  return (
+    <>
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Link Copied to Clipboard
+      </PopoverToast>
+      <UnstyledButton
+        onClick={handleCopy}
+        title="Copy Link"
+        aria-label="Copy Link"
+      >
+        <ShareIcon />
+      </UnstyledButton>
+    </>
   );
 }
 
@@ -148,6 +181,7 @@ export function AssetInfo() {
       <NavigationTitle
         title={<AssetHeader asset={assetFullInfo.fungible} />}
         documentTitle={`${assetFullInfo.fungible.name} - info`}
+        elementEnd={<ShareAssetLink asset={assetFullInfo.fungible} />}
       />
       <PageTop />
       <VStack
