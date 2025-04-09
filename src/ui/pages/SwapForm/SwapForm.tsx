@@ -436,22 +436,20 @@ export function SwapFormComponent() {
     onMutate: () => 'sendTransaction',
   });
 
+  const refetchFormQueries = useEvent(() => {
+    refetchAllowanceQuery();
+    refetchQuotes();
+    refetchNonce();
+  });
+
   const approveTxStatus = useTransactionStatus(approveHash ?? null);
   useEffect(() => {
     if (approveTxStatus === 'confirmed') {
-      refetchAllowanceQuery();
-      refetchQuotes();
-      refetchNonce();
+      refetchFormQueries();
     } else if (approveTxStatus === 'failed' || approveTxStatus === 'dropped') {
       resetApproveMutation();
     }
-  }, [
-    approveTxStatus,
-    refetchAllowanceQuery,
-    refetchNonce,
-    refetchQuotes,
-    resetApproveMutation,
-  ]);
+  }, [approveTxStatus, refetchFormQueries, resetApproveMutation]);
 
   const {
     mutate: sendTransaction,
@@ -600,7 +598,7 @@ export function SwapFormComponent() {
         gasbackValue={gasbackValueRef.current}
         onRetry={() => {
           reset();
-          refetchNonce();
+          refetchFormQueries();
           snapshotRef.current = null;
           feeValueCommonRef.current = null;
           gasbackValueRef.current = null;
