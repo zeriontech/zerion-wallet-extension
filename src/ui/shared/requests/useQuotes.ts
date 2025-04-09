@@ -16,20 +16,20 @@ import { useEventSource } from './useEventSource';
 export type QuoteSortType = 'amount' | 'time';
 
 interface QuotesParams {
+  from?: string;
+  to?: string | null;
   inputAssetId: string;
   outputAssetId: string;
   inputChain: Chain;
   outputChain: Chain | null;
   inputAmount?: string;
   outputAmount?: string;
-  from?: string;
   slippage?: string;
   gasPrice?: string;
   priorityFee?: string;
   maxFee?: string;
   sourceId?: string;
   sort: QuoteSortType;
-  to?: string;
 }
 
 function getQuotesSearchParams(params: QuotesParams): URLSearchParams {
@@ -50,6 +50,9 @@ function getQuotesSearchParams(params: QuotesParams): URLSearchParams {
   }
   if (params.from) {
     searchParams.append('from', params.from);
+  }
+  if (params.to) {
+    searchParams.append('to', params.to);
   }
   if (params.gasPrice) {
     searchParams.append('gas_price', params.gasPrice);
@@ -76,7 +79,8 @@ function getQuotesSearchParams(params: QuotesParams): URLSearchParams {
 
 function getQuotesStreamUrl({
   primaryInput,
-  address,
+  from,
+  to,
   slippage,
   amountCommon,
   inputChain,
@@ -88,7 +92,8 @@ function getQuotesStreamUrl({
   sort,
 }: {
   primaryInput: 'spend' | 'receive';
-  address: string;
+  from: string;
+  to: string | null;
   slippage: string;
   amountCommon: string;
   inputChain: Chain;
@@ -110,7 +115,8 @@ function getQuotesStreamUrl({
   }).toFixed();
 
   const searchParams = getQuotesSearchParams({
-    from: address,
+    from,
+    to,
     inputChain,
     outputChain,
     inputAssetId,
@@ -151,7 +157,8 @@ export interface QuotesData {
 }
 
 export function useQuotes({
-  address,
+  from,
+  to,
   userSlippage,
   primaryInput,
   spendChainInput,
@@ -165,7 +172,8 @@ export function useQuotes({
   sortType,
 }: {
   primaryInput: 'spend' | 'receive';
-  address: string;
+  from: string;
+  to?: string | null;
   userSlippage: number | null;
   spendChainInput?: string;
   receiveChainInput?: string | null;
@@ -219,7 +227,8 @@ export function useQuotes({
 
       return getQuotesStreamUrl({
         primaryInput,
-        address,
+        from,
+        to: to ?? null,
         slippage: String(slippagePercent),
         amountCommon: amount,
         inputChain,
@@ -234,7 +243,8 @@ export function useQuotes({
 
     return null;
   }, [
-    address,
+    from,
+    to,
     primaryInput,
     receiveChainInput,
     receiveInput,

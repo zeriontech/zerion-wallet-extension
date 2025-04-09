@@ -412,6 +412,7 @@ function SendFormComponent() {
               />
               <AddressInputWrapper
                 name="addressInputValue"
+                title={null}
                 value={addressInputValue ?? ''}
                 required={true}
                 resolvedAddress={to ?? null}

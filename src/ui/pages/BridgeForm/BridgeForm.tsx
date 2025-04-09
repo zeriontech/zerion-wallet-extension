@@ -120,6 +120,7 @@ function useSortedQuotes(params: Parameters<typeof useQuotes>[0]) {
     quotesByTime: useQuotes({ ...params, sortType: 'time' }),
   };
 }
+import { ReceiverAddressField } from './ReceiverAddressField';
 
 const rootNode = getRootDomNode();
 
@@ -315,6 +316,9 @@ function BridgeFormComponent() {
           'receiveTokenInput',
           'spendInput',
           'receiveInput',
+          'receiverAddressInput',
+          'showReceiverAddressInput',
+          'to',
         ],
         []
       )
@@ -372,6 +376,7 @@ function BridgeFormComponent() {
   const formState = useMemo(
     () => ({
       ...defaultFormValues,
+      to: null,
       spendTokenInput: defaultSpendToken,
       receiveTokenInput: defaultReceiveToken,
       ...userFormState,
@@ -379,8 +384,15 @@ function BridgeFormComponent() {
     [defaultFormValues, defaultReceiveToken, defaultSpendToken, userFormState]
   );
 
-  const { spendTokenInput, receiveTokenInput, spendInput, receiveInput } =
-    formState;
+  const {
+    spendTokenInput,
+    receiveTokenInput,
+    spendInput,
+    receiveInput,
+    to,
+    receiverAddressInput,
+    showReceiverAddressInput,
+  } = formState;
 
   const spendAssetQuery = useAssetsPrices(
     { asset_codes: [spendTokenInput].filter(isTruthy), currency },
@@ -439,7 +451,8 @@ function BridgeFormComponent() {
   const [quoteSortType, setQuoteSortType] = useState<QuoteSortType>('amount');
 
   const { quotesByAmount, quotesByTime } = useSortedQuotes({
-    address,
+    from: address,
+    to: showReceiverAddressInput ? to : null,
     userSlippage: null,
     primaryInput: 'spend',
     spendChainInput,
@@ -599,7 +612,7 @@ function BridgeFormComponent() {
   const nonce = userNonce ?? networkNonce ?? undefined;
   const gas = txToCheck ? getGas(txToCheck) : null;
 
-  const network = spendChain ? networks?.getNetworkByName(spendChain) : null;
+  const network = spendChain ? networks?.getByNetworkId(spendChain) : null;
 
   const eligibilityParams:
     | null
@@ -1046,6 +1059,16 @@ function BridgeFormComponent() {
               onChangeToken={(value) =>
                 handleChange('receiveTokenInput', value)
               }
+            />
+            <ReceiverAddressField
+              to={to}
+              receiverAddressInput={receiverAddressInput ?? null}
+              onChange={(value) => handleChange('receiverAddressInput', value)}
+              showAddressInput={Boolean(showReceiverAddressInput)}
+              onShowInputChange={(value) =>
+                handleChange('showReceiverAddressInput', value)
+              }
+              onResolvedChange={(value) => handleChange('to', value)}
             />
           </VStack>
         </VStack>

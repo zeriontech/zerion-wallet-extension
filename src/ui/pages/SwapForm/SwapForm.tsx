@@ -245,7 +245,7 @@ export function SwapFormComponent() {
   const { slippage: userSlippage } = useStore(swapView.store.configuration);
 
   const quotesData = useQuotes({
-    address,
+    from: address,
     userSlippage,
     primaryInput: primaryInput ?? 'spend',
     spendChainInput: chainInput,
