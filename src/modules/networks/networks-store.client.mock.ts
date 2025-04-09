@@ -30,7 +30,7 @@ export const ETHEREUM_CHAIN_SOURCES: EthereumChainConfig[] = [
   {
     created: 1715170014372,
     id: 'arbitrum',
-    origin: 'chrome-extension://klghhnkeealcohjjanjjdaeeggmfmlpl',
+    origin: 'moz-extension://klghhnkeealcohjjanjjdaeeggmfmlpl',
     previousIds: null,
     updated: 1715170014372,
     value: {

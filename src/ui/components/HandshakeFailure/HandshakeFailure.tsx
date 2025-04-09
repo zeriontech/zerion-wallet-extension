@@ -11,10 +11,15 @@ hideURLBarFor('/handshake-failure');
 
 export function HandshakeFailure() {
   useEffect(() => {
+    if (!('serviceWorker' in navigator)) {
+      // Service workers are not supported in some browsers
+      // (e.g. Firefox), so we don't need to do anything.
+      return;
+    }
     // Unregister serviceWorker on UI close. Currently, the only way
     // to get unstuck with the oudated SW
     let registration: ServiceWorkerRegistration | undefined = undefined;
-    navigator.serviceWorker.getRegistration().then((r) => {
+    navigator.serviceWorker?.getRegistration().then((r) => {
       registration = r;
     });
     const unregister = () => registration?.unregister();

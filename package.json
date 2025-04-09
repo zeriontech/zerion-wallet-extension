@@ -8,6 +8,7 @@
     "start:app": "parcel watch src/manifest.json src/ui/hardware-wallet/ledger.html --no-hmr --no-content-hash --no-autoinstall",
     "build": "echo \"Please run 'npm run build:production' instead\" && exit 1",
     "build:production": "node scripts/build.js",
+    "build:firefox": "node scripts/build-firefox.js",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --pretty --watch",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",

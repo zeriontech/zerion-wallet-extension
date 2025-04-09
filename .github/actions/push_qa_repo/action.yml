@@ -10,6 +10,9 @@ inputs:
   pat_token:
     description: "QA repository PAT token"
     required: true
+  build_folder:
+    description: "Path to the build directory"
+    required: true
     
 runs:
   using: "composite"
@@ -19,6 +22,7 @@ runs:
         REPO_TOKEN: ${{ inputs.pat_token }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        BUILD_FOLDER: ${{ inputs.build_folder }}
       run: |
         TARGET_REPO="github.com/zeriontech/zerion-wallet-extension-qa.git"
         BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
@@ -33,11 +37,14 @@ runs:
         # Create or switch to the new branch
         git checkout "$BRANCH_NAME" || git checkout -b "$BRANCH_NAME"
 
-        # Copy files from the dist directory
-        mkdir -p extension-build
-        cp -r ../dist/* ./extension-build
+        # Pull the latest changes from the remote branch if it exists
+        if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+          git pull origin "$BRANCH_NAME"
+        fi
 
-        # Commit and push changes
+        # Copy files from the dist directory
+          mkdir -p "$BUILD_FOLDER"
+          cp -r ../dist/* "$BUILD_FOLDER"   # Commit and push changes
         git add .
         if [ -z "$(git status --porcelain)" ]; then
           echo "No changes to commit."

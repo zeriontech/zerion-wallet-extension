@@ -33,3 +33,5 @@ export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;
+export const PLATFORM = process.env.PLATFORM;
+invariant(PLATFORM, 'PLATFORM is required in env');

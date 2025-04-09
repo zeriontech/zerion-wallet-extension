@@ -26,9 +26,14 @@ if (process.env.NODE_ENV === 'development') {
   console.time('UI render effect'); // eslint-disable-line no-console
 }
 
-async function registerServiceWorker() {
+async function registerServiceWorkerIfNeeded() {
+  if (!('serviceWorker' in navigator)) {
+    // Service workers are not supported in some browsers
+    // (e.g. Firefox), so we don't need to do anything.
+    return;
+  }
   /** Seems to be recommended when clients always expect a service worker */
-  const registration = await navigator.serviceWorker.getRegistration();
+  const registration = await navigator.serviceWorker?.getRegistration();
   if (registration) {
     // We can try calling an update method here, but I'm not sure
     // it does anything useful. I'll comment it out for now as an experiment.
@@ -36,7 +41,7 @@ async function registerServiceWorker() {
   } else {
     const { background } = browser.runtime.getManifest();
     if (background && 'service_worker' in background) {
-      await navigator.serviceWorker.register(background.service_worker);
+      await navigator.serviceWorker?.register(background.service_worker);
     }
   }
 }
@@ -68,7 +73,7 @@ async function initializeUI({
   const innerIsFirstLoad = isFirstLoad;
   isFirstLoad = false;
   try {
-    await registerServiceWorker();
+    await registerServiceWorkerIfNeeded();
     initializeChannels();
     await maybeOpenOnboarding();
     if (innerIsFirstLoad) {
@@ -76,9 +81,13 @@ async function initializeUI({
     } else {
       queryClient.clear();
     }
+    console.log('Query client cleared'); // eslint-disable-line no-console
     await getPreferences(); // seed queryClient. TODO before merge: do we need this?
+    console.log('Preferences loaded'); // eslint-disable-line no-console
     await configureUIClient();
+    console.log('UI client configured'); // eslint-disable-line no-console
     initializeClientAnalytics();
+    console.log('UI initialized'); // eslint-disable-line no-console
     renderApp({ initialView, inspect });
   } catch (error) {
     if (error instanceof OnboardingInterrupt) {
