@@ -42,6 +42,11 @@ on:
         description: 'Pull request to attach the build to, e.g. 468'
         required: false
 
+# only one job with this group can run at a time to avoid conflicts during pushing to the QA repository
+concurrency:
+  group: push-qa-build
+  cancel-in-progress: true
+
 jobs:
   build_pull_request:
     runs-on: ubuntu-latest
@@ -91,12 +96,11 @@ jobs:
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: node ./scripts/update-dev-manifest.js
 
-
       - name: Push Build to QA Repository
         if: ${{ success() }}
         uses: ./.github/actions/push_qa_repo
         with:
           branch_name: ${{ github.head_ref || github.ref_name }}
-          commit_message: "PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}"
+          commit_message: 'PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}'
           pat_token: ${{ secrets.QA_REPOSITORY_PAT }}
           build_folder: firefox-build
