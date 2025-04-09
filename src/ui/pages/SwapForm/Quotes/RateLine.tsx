@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import type { Asset } from 'defi-sdk';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -138,19 +138,6 @@ export function RateLine({
   const gap = shouldCircleProtocolImages ? 4 : 8;
   const protocolBorderRadius = shouldCircleProtocolImages ? '50%' : undefined;
 
-  const handleQuoteChange = useCallback(
-    (quoteId: string | null) => {
-      quotesDialogRef.current?.close();
-      const selectedQuote = quoteId
-        ? quotesData.quotes?.find((q) => q.contract_metadata?.id === quoteId)
-        : null;
-      if (selectedQuote) {
-        quotesData.setQuote(selectedQuote);
-      }
-    },
-    [quotesData]
-  );
-
   return (
     <>
       <HStack
@@ -271,8 +258,11 @@ export function RateLine({
                   quotes={quotes}
                   selectedQuote={quote}
                   userFeeTier={userFeeTier}
-                  onChange={handleQuoteChange}
-                  onReset={() => quotesData.setQuote(null)}
+                  onChange={(quoteId) => {
+                    quotesDialogRef.current?.close();
+                    quotesData.setQuoteId(quoteId);
+                  }}
+                  onReset={() => quotesData.setQuoteId(null)}
                   receiveAsset={receivePosition.asset}
                   configuration={configuration}
                 />

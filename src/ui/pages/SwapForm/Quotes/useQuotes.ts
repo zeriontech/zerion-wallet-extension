@@ -25,7 +25,7 @@ export interface QuotesData {
         chainId: string;
         gasLimit: string;
       });
-  setQuote: (quote: Quote | null) => void;
+  setQuoteId: (quoteId: string | null) => void;
   isLoading: boolean;
   done: boolean;
   error: Error | null;
@@ -39,7 +39,7 @@ export function useQuotes({
   address: string;
   swapView: SwapFormView;
 }): QuotesData {
-  const [selectedQuote, setQuote] = useState<Quote | null>(null);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
 
   const { spendPosition, receivePosition } = swapView;
   const {
@@ -159,8 +159,19 @@ export function useQuotes({
 
   // Reset quote when any of the params change
   useEffect(() => {
-    setQuote(null);
+    setSelectedQuoteId(null);
   }, [url]);
+
+  const selectedQuote = useMemo(() => {
+    if (selectedQuoteId) {
+      return (
+        value?.find(
+          (quote) => quote.contract_metadata?.id === selectedQuoteId
+        ) ?? null
+      );
+    }
+    return null;
+  }, [selectedQuoteId, value]);
 
   const quote = selectedQuote || (value?.[0] ?? null);
   const transaction = useMemo(() => {
@@ -177,7 +188,7 @@ export function useQuotes({
 
   return {
     quote,
-    setQuote,
+    setQuoteId: setSelectedQuoteId,
     transaction,
     quotes: value,
     isLoading,
