@@ -10,14 +10,19 @@ import { SuccessStateLoader } from 'src/ui/shared/forms/SuccessState/SuccessStat
 import { SuccessStateToken } from 'src/ui/shared/forms/SuccessState/SuccessStateToken';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { GasbackDecorated } from '../../SendForm/SuccessState/SuccessState';
+import RetryIcon from 'jsx:src/ui/assets/actions/swap.svg';
+import { Button } from 'src/ui/ui-kit/Button';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import type { BareAddressPosition } from '../BareAddressPosition';
+import { GasbackDecorated } from '../../SendForm/SuccessState/SuccessState';
 
 export function SuccessState({
   swapFormState,
   spendPosition,
   receivePosition,
   hash,
+  onRetry,
   onDone,
   gasbackValue,
 }: {
@@ -26,6 +31,7 @@ export function SuccessState({
   receivePosition: BareAddressPosition;
   hash: string;
   gasbackValue: number | null;
+  onRetry: () => void;
   onDone: () => void;
 }) {
   const { networks } = useNetworks();
@@ -80,6 +86,16 @@ export function SuccessState({
         confirmedContent={
           gasbackValue && FEATURE_GASBACK ? (
             <GasbackDecorated value={gasbackValue} />
+          ) : null
+        }
+        secondaryAction={
+          actionStatus === 'failed' || actionStatus === 'dropped' ? (
+            <Button kind="primary" onClick={onRetry}>
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                <RetryIcon />
+                <UIText kind="small/accent">Try Again</UIText>
+              </HStack>
+            </Button>
           ) : null
         }
         onDone={onDone}

@@ -13,6 +13,7 @@ import { RateLine } from './components/RateLine';
 import { SenderReceiverLine } from './components/SenderReceiverLine';
 import { FeeLine } from './components/FeeLine';
 import { ExplorerInfo } from './components/ExplorerInfo';
+import { LocalActionView } from './components/LocalActionView';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
   year: 'numeric',
@@ -97,6 +98,11 @@ export function ActionDetailedView({
           ) : null}
         </VStack>
       ) : null}
+      <LocalActionView
+        localActionKey={action.transaction.hash}
+        showTransferInfo={isFailed}
+        status={action.transaction.status}
+      />
       <Surface padding={16}>
         <VStack gap={24}>
           <ExplorerInfo action={action} networks={networks} />

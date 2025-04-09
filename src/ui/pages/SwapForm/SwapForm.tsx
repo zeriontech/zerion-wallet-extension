@@ -82,6 +82,7 @@ import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import { localActionsStore } from 'src/ui/transactions/local-actions-store';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -303,7 +304,10 @@ export function SwapFormComponent() {
       : null;
   const {
     enough_allowance,
-    allowanceQuery: { refetch: refetchAllowanceQuery },
+    allowanceQuery: {
+      refetch: refetchAllowanceQuery,
+      remove: removeAllowanceQuery,
+    },
     approvalTransactionQuery: { isFetching: approvalTransactionIsFetching },
     approvalTransaction,
   } = useApproveHandler({
@@ -447,8 +451,8 @@ export function SwapFormComponent() {
   }, [
     approveTxStatus,
     refetchAllowanceQuery,
-    refetchNonce,
     refetchQuotes,
+    refetchNonce,
     resetApproveMutation,
   ]);
 
@@ -505,6 +509,35 @@ export function SwapFormComponent() {
     onMutate: () => {
       onBeforeSubmit();
       return 'sendTransaction';
+    },
+    onSuccess: (hash) => {
+      if (!snapshotRef.current) {
+        return;
+      }
+      const {
+        chainInput,
+        receiveInput,
+        spendInput,
+        receiveTokenInput,
+        spendTokenInput,
+      } = snapshotRef.current;
+      if (
+        !chainInput ||
+        !spendInput ||
+        !receiveInput ||
+        !spendTokenInput ||
+        !receiveTokenInput
+      ) {
+        return;
+      }
+      localActionsStore.saveAction(hash, {
+        kind: 'swap',
+        chain: chainInput,
+        receiveInput,
+        spendInput,
+        spendTokenId: spendTokenInput,
+        receiveTokenId: receiveTokenInput,
+      });
     },
   });
 
@@ -568,6 +601,15 @@ export function SwapFormComponent() {
         receivePosition={receivePosition}
         swapFormState={snapshotRef.current}
         gasbackValue={gasbackValueRef.current}
+        onRetry={() => {
+          reset();
+          removeAllowanceQuery();
+          refetchNonce();
+          refetchQuotes();
+          snapshotRef.current = null;
+          feeValueCommonRef.current = null;
+          gasbackValueRef.current = null;
+        }}
         onDone={() => {
           reset();
           snapshotRef.current = null;
