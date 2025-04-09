@@ -306,6 +306,7 @@ export class Wallet {
       newCredentials,
     });
     this.userCredentials = newCredentials;
+    // TODO: we need "updateWalletStore" to re-encrypt the record even if it's not changed
     await this.updateWalletStore(this.record);
     this.setExpirationForSeedPhraseEncryptionKey(1000 * 120);
   }
