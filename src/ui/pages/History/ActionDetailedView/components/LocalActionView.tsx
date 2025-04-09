@@ -1,6 +1,10 @@
 import React, { useMemo } from 'react';
+import type { ActionTransfers } from 'defi-sdk';
+import { useAssetsPrices } from 'defi-sdk';
+import { useStore } from '@store-unit/react';
 import type { SwapLocalAction } from 'src/ui/transactions/local-actions-store';
 import {
+  localActionsStore,
   LocalActionsStore,
   type LocalAction,
 } from 'src/ui/transactions/local-actions-store';
@@ -11,17 +15,20 @@ import RetryIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { createChain } from 'src/modules/networks/Chain';
-import type { ActionTransfers } from 'defi-sdk';
-import { useAssetsPrices } from 'defi-sdk';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { commonToBase } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
+import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
 import { TransferInfo } from './TransferInfo';
 
 function SwapLocalActionView({
   localAction,
+  showTransferInfo,
+  status,
 }: {
   localAction: SwapLocalAction;
+  showTransferInfo?: boolean;
+  status: ClientTransactionStatus;
 }) {
   const link = LocalActionsStore.getActionLink(localAction);
   const chain = createChain(localAction.chain);
@@ -62,33 +69,41 @@ function SwapLocalActionView({
     };
   }, [value, chain, localAction]);
 
+  const isFailed = status === 'failed' || status === 'dropped';
+
   if (isLoading) {
     return null;
   }
 
   return (
-    <VStack gap={4}>
-      {transfers.outgoing ? (
-        <TransferInfo
-          chain={chain}
-          direction="outgoing"
-          title="Send"
-          transfers={transfers.outgoing}
-        />
-      ) : null}
-      {transfers.incoming ? (
-        <TransferInfo
-          chain={chain}
-          direction="incoming"
-          title="Receive"
-          transfers={transfers.incoming}
-        />
+    <VStack gap={12}>
+      {showTransferInfo ? (
+        <VStack gap={4}>
+          {transfers.outgoing ? (
+            <TransferInfo
+              chain={chain}
+              direction="outgoing"
+              title="Send"
+              transfers={transfers.outgoing}
+            />
+          ) : null}
+          {transfers.incoming ? (
+            <TransferInfo
+              chain={chain}
+              direction="incoming"
+              title="Receive"
+              transfers={transfers.incoming}
+            />
+          ) : null}
+        </VStack>
       ) : null}
       {link ? (
         <Button kind="primary" as={UnstyledLink} to={link}>
           <HStack gap={8} alignItems="center">
             <RetryIcon />
-            <UIText kind="small/accent">Try Again</UIText>
+            <UIText kind="small/accent">
+              {isFailed ? 'Try Again' : 'Swap Again'}
+            </UIText>
           </HStack>
         </Button>
       ) : null}
@@ -96,9 +111,27 @@ function SwapLocalActionView({
   );
 }
 
-export function LocalActionView({ localAction }: { localAction: LocalAction }) {
-  if (localAction.kind === 'swap') {
-    return <SwapLocalActionView localAction={localAction} />;
+export function LocalActionView({
+  localActionKey,
+  showTransferInfo,
+  status,
+}: {
+  localActionKey: string;
+  showTransferInfo?: boolean;
+  status: ClientTransactionStatus;
+}) {
+  const { localActions } = useStore(localActionsStore);
+
+  const localAction = localActions[localActionKey] as LocalAction | undefined;
+
+  if (localAction?.kind === 'swap') {
+    return (
+      <SwapLocalActionView
+        localAction={localAction}
+        status={status}
+        showTransferInfo={showTransferInfo}
+      />
+    );
   }
   return null;
 }
