@@ -1,4 +1,4 @@
-name: Build and push QA build
+name: Build and push Firefox QA build
 
 on:
   pull_request:
@@ -60,8 +60,8 @@ jobs:
         with:
           node-version: '20.x'
 
-        # Because of the logic about changing the icon during the active/disabled icon setup, we can't only change the icon in the manifest
-        # So the alternative way to do this is to replace the files with the icon in the workflow
+      # Because of the logic about changing the icon during the active/disabled icon setup, we can't only change the icon in the manifest
+      # So the alternative way to do this is to replace the files with the icon in the workflow
       - name: Replace icon with QA icon
         run: |
           cp ./src/images/logo-icon-qa.png ./src/images/logo-icon-16.png
@@ -84,10 +84,10 @@ jobs:
           FEATURE_FOOTER_BUG_BUTTON: off
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           FEATURE_LOYALTY_FLOW: on
-          PLATFORM: chrome
+          PLATFORM: firefox
         run: |
           npm install
-          npm run build:production
+          npm run build:firefox
 
       - name: Update Dev Manifest file
         if: ${{ success() }}
@@ -102,4 +102,4 @@ jobs:
           branch_name: ${{ github.head_ref || github.ref_name }}
           commit_message: 'PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}'
           pat_token: ${{ secrets.QA_REPOSITORY_PAT }}
-          build_folder: extension-build
+          build_folder: firefox-build
