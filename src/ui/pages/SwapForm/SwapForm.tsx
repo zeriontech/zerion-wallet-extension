@@ -228,13 +228,10 @@ export function SwapFormComponent() {
     getPopularTokens,
   });
 
-  const { primaryInput, chainInput, spendInput, receiveInput } =
-    useSelectorStore(swapView.store, [
-      'chainInput',
-      'spendInput',
-      'primaryInput',
-      'receiveInput',
-    ]);
+  const { primaryInput, chainInput, spendInput } = useSelectorStore(
+    swapView.store,
+    ['chainInput', 'spendInput', 'primaryInput']
+  );
   const chain = chainInput ? createChain(chainInput) : null;
   const { spendPosition, receivePosition, handleChange } = swapView;
 
@@ -511,22 +508,33 @@ export function SwapFormComponent() {
       return 'sendTransaction';
     },
     onSuccess: (hash) => {
-      if (
-        chain &&
-        spendInput &&
-        receiveInput &&
-        spendPosition &&
-        receivePosition
-      ) {
-        localActionsStore.saveAction(hash, {
-          kind: 'swap',
-          chain: chain.toString(),
-          receiveInput: receiveInput,
-          spendInput: spendInput,
-          spendTokenId: spendPosition.asset.id,
-          receiveTokenId: receivePosition.asset.id,
-        });
+      if (!snapshotRef.current) {
+        return;
       }
+      const {
+        chainInput,
+        receiveInput,
+        spendInput,
+        receiveTokenInput,
+        spendTokenInput,
+      } = snapshotRef.current;
+      if (
+        !chainInput ||
+        !spendInput ||
+        !receiveInput ||
+        !spendTokenInput ||
+        !receiveTokenInput
+      ) {
+        return;
+      }
+      localActionsStore.saveAction(hash, {
+        kind: 'swap',
+        chain: chainInput,
+        receiveInput,
+        spendInput,
+        spendTokenId: spendTokenInput,
+        receiveTokenId: receiveTokenInput,
+      });
     },
   });
 
