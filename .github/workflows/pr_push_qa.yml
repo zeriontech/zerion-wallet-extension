@@ -56,6 +56,8 @@ jobs:
         with:
           node-version: '20.x'
 
+        # Because of the logic about changing the icon during the active/disabled icon setup, we can't only change the icon in the manifest
+        # So the alternative way to do this is to replace the files with the icon in the workflow
       - name: Replace icon with QA icon
         run: |
           cp ./src/images/logo-icon-qa.png ./src/images/logo-icon-16.png
