@@ -37,12 +37,12 @@ export function ZerionFeeLine({ quote }: { quote: Quote | null }) {
             target="_blank"
           >
             <QuestionIcon
-              role="decoration"
+              role="presentation"
               style={{
                 width: 20,
                 height: 20,
                 display: 'block',
-                color: 'var(--neutral-600)',
+                color: 'var(--neutral-500)',
               }}
             />
           </UnstyledAnchor>

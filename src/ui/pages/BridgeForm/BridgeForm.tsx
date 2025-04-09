@@ -31,8 +31,6 @@ import {
   getChainWithMostAssetValue,
   useSearchParamsState,
 } from '@zeriontech/transactions';
-import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { useQuotes } from 'src/ui/shared/requests/useQuotes';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -85,6 +83,8 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
+import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -433,13 +433,16 @@ function BridgeFormComponent() {
     receivePosition,
   });
 
-  const {
-    transaction: bridgeTransaction,
-    quote,
-    refetch: refetchQuotes,
-  } = quotesData;
+  const { refetch: refetchQuotes } = quotesData;
 
-  const selectedQuote = quote;
+  const defaultQuote = quotesData.quotes?.[0] ?? null;
+  // TODO: add support for quote selection, useState
+  const selectedQuote = defaultQuote;
+
+  const bridgeTransaction = useMemo(
+    () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
+    [selectedQuote]
+  );
 
   const reverseChains = useCallback(
     () =>
@@ -767,6 +770,7 @@ function BridgeFormComponent() {
     return (
       <SuccessState
         hash={transactionHash}
+        explorer={selectedQuote?.contract_metadata?.explorer ?? null}
         spendPosition={spendPosition}
         receivePosition={receivePosition}
         formState={snapshotRef.current}

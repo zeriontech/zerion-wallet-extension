@@ -40,8 +40,8 @@ export function GasbackHint() {
         <QuestionHintIcon
           role="presentation"
           style={{
-            width: 16,
-            height: 16,
+            width: 20,
+            height: 20,
             color: 'var(--neutral-500)',
             display: 'block',
           }}

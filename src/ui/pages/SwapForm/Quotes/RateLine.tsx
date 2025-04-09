@@ -8,8 +8,9 @@ import { getDecimals } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { SlidingRectangle } from 'src/ui/components/SlidingRectangle';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
+import type { Quote } from 'src/shared/types/Quote';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 
 function getRate({
@@ -66,19 +67,21 @@ export function RateLine({
   spendAsset,
   receiveAsset,
   quotesData,
+  selectedQuote,
 }: {
   spendAsset: Asset | null;
   receiveAsset: Asset | null;
   quotesData: QuotesData;
+  selectedQuote: Quote | null;
 }) {
-  const { isLoading, quote, error } = quotesData;
+  const { isLoading, error } = quotesData;
 
   const rate = getRate({
     spendAsset,
     receiveAsset,
-    receiveAmountBase: quote?.output_amount_estimation,
-    spendAmountBase: quote?.input_amount_estimation,
-    chain: quote ? createChain(quote.input_chain) : undefined,
+    receiveAmountBase: selectedQuote?.output_amount_estimation,
+    spendAmountBase: selectedQuote?.input_amount_estimation,
+    chain: selectedQuote ? createChain(selectedQuote.input_chain) : undefined,
   });
 
   // If we decide to _not_ circle the images,
@@ -92,18 +95,19 @@ export function RateLine({
       gap={8}
       justifyContent="space-between"
       style={{
-        visibility: !isLoading && !quote && !error ? 'hidden' : undefined,
+        visibility:
+          !isLoading && !selectedQuote && !error ? 'hidden' : undefined,
       }}
     >
       <UIText kind="small/regular" color="var(--neutral-700)">
         Rate
       </UIText>
       <span>
-        {isLoading && !quote ? (
+        {isLoading && !selectedQuote ? (
           <span style={{ color: 'var(--neutral-500)' }}>
             Fetching offers...
           </span>
-        ) : quote ? (
+        ) : selectedQuote ? (
           <HStack
             // in design it's 4, but design has circle images
             gap={gap}
@@ -113,7 +117,7 @@ export function RateLine({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {quote.contract_metadata?.icon_url ? (
+            {selectedQuote.contract_metadata?.icon_url ? (
               <div
                 style={{
                   position: 'relative',
@@ -124,10 +128,10 @@ export function RateLine({
               >
                 <SlidingRectangle
                   size={20}
-                  src={quote.contract_metadata.icon_url}
+                  src={selectedQuote.contract_metadata.icon_url}
                   render={(src, index) => (
                     <img
-                      title={quote.contract_metadata?.name}
+                      title={selectedQuote.contract_metadata?.name}
                       style={{
                         position: 'absolute',
                         left: 0,
@@ -139,7 +143,7 @@ export function RateLine({
                       }}
                       src={src}
                       // The alt here may be from a sibling image, but hopefully it doesn't matter
-                      alt={`${quote.contract_metadata?.name} logo`}
+                      alt={`${selectedQuote.contract_metadata?.name} logo`}
                     />
                   )}
                 />
@@ -151,7 +155,7 @@ export function RateLine({
                 rate.rightAsset.symbol
               )}`
             ) : (
-              <span>{quote.contract_metadata?.name ?? 'unknown'}</span>
+              <span>{selectedQuote.contract_metadata?.name ?? 'unknown'}</span>
             )}
           </HStack>
         ) : error ? (

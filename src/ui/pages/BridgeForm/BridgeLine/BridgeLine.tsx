@@ -6,12 +6,12 @@ import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Quote } from 'src/shared/types/Quote';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { SlidingRectangle } from 'src/ui/components/SlidingRectangle';
-import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { noValueDash } from 'src/ui/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuotesErrorMessage } from '../../SwapForm/Quotes/getQuotesErrorMessage';
 
 function getFeePriceValue({
@@ -126,8 +126,8 @@ export function BridgeLine({
 
             <HStack gap={4} alignItems="center">
               <UIText color="var(--primary)" kind="small/accent">
-                {quote?.estimated_seconds
-                  ? `~${formatSeconds(Number(quote.estimated_seconds))}`
+                {quote?.seconds_estimation
+                  ? `~${formatSeconds(Number(quote.seconds_estimation))}`
                   : noValueDash}
               </UIText>
               <UIText color="var(--primary)" kind="small/accent">

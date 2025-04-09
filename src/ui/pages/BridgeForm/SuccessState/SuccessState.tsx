@@ -11,6 +11,7 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
+import type { ContractMetadata } from 'src/shared/types/Quote';
 import type { BridgeFormState } from '../shared/types';
 
 export function SuccessState({
@@ -18,6 +19,7 @@ export function SuccessState({
   spendPosition,
   receivePosition,
   hash,
+  explorer,
   onDone,
   gasbackValue,
 }: {
@@ -25,6 +27,7 @@ export function SuccessState({
   spendPosition: BareAddressPosition;
   receivePosition: BareAddressPosition;
   hash: string;
+  explorer: ContractMetadata['explorer'] | null;
   gasbackValue: number | null;
   onDone: () => void;
 }) {
@@ -57,6 +60,11 @@ export function SuccessState({
   const receiveChainName = networks.getChainName(receiveChain);
   const receiveChainIconUrl = networks.getNetworkByName(receiveChain)?.icon_url;
 
+  const explorerFallbackUrl = hash
+    ? networks.getExplorerTxUrlByName(spendChain, hash)
+    : undefined;
+  const explorerUrl = explorer?.tx_url.replace('{HASH}', hash);
+
   return (
     <>
       <NavigationTitle urlBar="none" title="Bridge Success" />
@@ -81,9 +89,7 @@ export function SuccessState({
         pendingTitle="Transferring"
         failedTitle="Transfer failed"
         dropppedTitle="Transfer cancelled"
-        explorerUrl={
-          hash ? networks.getExplorerTxUrlByName(spendChain, hash) : undefined
-        }
+        explorerUrl={explorerUrl ?? explorerFallbackUrl}
         confirmedContent={
           gasbackValue && FEATURE_GASBACK ? (
             <GasbackDecorated value={gasbackValue} />

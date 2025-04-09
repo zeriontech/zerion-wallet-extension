@@ -79,9 +79,9 @@ import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
-import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { useQuotes } from 'src/ui/shared/requests/useQuotes';
 import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
+import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -227,7 +227,7 @@ export function SwapFormComponent() {
   const quotesData = useQuotes({
     address,
     userSlippage,
-    primaryInput,
+    primaryInput: primaryInput ?? 'spend',
     spendChainInput: chainInput,
     receiveChainInput: null,
     spendInput,
@@ -238,23 +238,28 @@ export function SwapFormComponent() {
     receivePosition,
   });
 
-  const {
-    transaction: swapTransaction,
-    quote,
-    refetch: refetchQuotes,
-  } = quotesData;
+  const { refetch: refetchQuotes } = quotesData;
+
+  const defaultQuote = quotesData.quotes?.[0] ?? null;
+  // TODO: add support for quote selection, useState
+  const selectedQuote = defaultQuote;
+
+  const swapTransaction = useMemo(
+    () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
+    [selectedQuote]
+  );
 
   useEffect(() => {
-    if (!quote) {
+    if (!selectedQuote) {
       const opposite =
         primaryInput === 'receive' ? 'spendInput' : 'receiveInput';
       handleChange(opposite, '');
     } else if (primaryInput === 'spend' && chain && receivePosition) {
-      const value = quote.output_amount_estimation || 0;
+      const value = selectedQuote.output_amount_estimation || 0;
       const decimals = getDecimals({ asset: receivePosition.asset, chain });
       handleChange('receiveInput', baseToCommon(value, decimals).toFixed());
     } else if (primaryInput === 'receive' && chain && spendPosition) {
-      const value = quote.input_amount_estimation || 0;
+      const value = selectedQuote.input_amount_estimation || 0;
       const decimals = getDecimals({ asset: spendPosition.asset, chain });
       handleChange('spendInput', baseToCommon(value, decimals).toFixed());
     }
@@ -262,7 +267,7 @@ export function SwapFormComponent() {
     chain,
     handleChange,
     primaryInput,
-    quote,
+    selectedQuote,
     receivePosition,
     spendPosition,
   ]);
@@ -311,9 +316,11 @@ export function SwapFormComponent() {
     chain,
     spendAmountBase,
     allowanceQuantityBase,
-    spender: quote?.token_spender ?? null,
+    spender: selectedQuote?.token_spender ?? null,
     contractAddress: spendTokenContractAddress,
-    enabled: quotesData.done && Boolean(quote && !quote.enough_allowance),
+    enabled:
+      quotesData.done &&
+      Boolean(selectedQuote && !selectedQuote.enough_allowance),
     keepPreviousData: false,
   });
 
@@ -415,7 +422,7 @@ export function SwapFormComponent() {
       invariant(chain, 'Chain must be defined to sign the tx');
       invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
       invariant(spendPosition, 'Spend position must be defined');
-      invariant(quote, 'Cannot submit transaction without a quote');
+      invariant(selectedQuote, 'Cannot submit transaction without a quote');
 
       const txResponse = await approveTxBtnRef.current.sendTransaction({
         transaction,
@@ -426,7 +433,7 @@ export function SwapFormComponent() {
         addressAction: createApproveAddressAction({
           transaction: { ...transaction, from: address },
           asset: spendPosition.asset,
-          quantity: quote.input_amount_estimation,
+          quantity: selectedQuote.input_amount_estimation,
           chain,
         }),
       });
@@ -464,7 +471,7 @@ export function SwapFormComponent() {
       if (!gasPrices) {
         throw new Error('Unknown gas price');
       }
-      invariant(quote, 'Cannot submit transaction without a quote');
+      invariant(selectedQuote, 'Cannot submit transaction without a quote');
       invariant(swapTransaction, 'No transaction in quote');
       let transaction = configureTransactionToBeSigned(swapTransaction);
       if (paymasterEligible) {
@@ -480,8 +487,8 @@ export function SwapFormComponent() {
         'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      const spendValue = quote.input_amount_estimation;
-      const receiveValue = quote.output_amount_estimation;
+      const spendValue = selectedQuote.input_amount_estimation;
+      const receiveValue = selectedQuote.output_amount_estimation;
       const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction,
         chain: chain.toString(),
@@ -494,7 +501,7 @@ export function SwapFormComponent() {
           incoming: [{ asset: receivePosition.asset, quantity: receiveValue }],
           chain,
         }),
-        quote,
+        quote: selectedQuote,
       });
       return txResponse.hash;
     },
@@ -804,7 +811,7 @@ export function SwapFormComponent() {
         <VStack
           gap={8}
           style={
-            quotesData.quote || quotesData.isLoading || quotesData.error
+            selectedQuote || quotesData.isLoading || quotesData.error
               ? {
                   borderRadius: 12,
                   border: '2px solid var(--neutral-200)',
@@ -817,6 +824,7 @@ export function SwapFormComponent() {
             spendAsset={swapView.spendPosition?.asset ?? null}
             receiveAsset={swapView.receivePosition?.asset ?? null}
             quotesData={quotesData}
+            selectedQuote={selectedQuote}
           />
           {chain ? <SlippageLine chain={chain} swapView={swapView} /> : null}
           {currentTransaction && chain && currentTransaction.gasLimit ? (
@@ -850,7 +858,7 @@ export function SwapFormComponent() {
             </React.Suspense>
           ) : null}
         </VStack>
-        {quote ? <ProtocolFeeLine quote={quote} /> : null}
+        {selectedQuote ? <ProtocolFeeLine quote={selectedQuote} /> : null}
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
         <HiddenValidationInput
@@ -943,7 +951,10 @@ export function SwapFormComponent() {
                       disabled={
                         isLoading ||
                         quotesData.isLoading ||
-                        Boolean((quote && !swapTransaction) || quotesData.error)
+                        Boolean(
+                          (selectedQuote && !swapTransaction) ||
+                            quotesData.error
+                        )
                       }
                       holdToSign={false}
                     >
