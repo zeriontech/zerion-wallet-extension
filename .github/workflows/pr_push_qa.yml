@@ -45,7 +45,6 @@ on:
 # only one job with this group can run at a time to avoid conflicts during pushing to the QA repository
 concurrency:
   group: push-qa-build
-  cancel-in-progress: true
 
 jobs:
   build_pull_request:
