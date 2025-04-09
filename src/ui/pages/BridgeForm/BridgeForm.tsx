@@ -104,6 +104,7 @@ import { SuccessState } from './SuccessState';
 import { LabeledNetworkSelect } from './LabeledNetworkSelect';
 import { BridgeLine } from './BridgeLine';
 import { ZerionFeeLine } from './ZerionFeeLine';
+import { ReceiverAddressField } from './ReceiverAddressField';
 
 const rootNode = getRootDomNode();
 
@@ -299,6 +300,8 @@ function BridgeFormComponent() {
           'receiveTokenInput',
           'spendInput',
           'receiveInput',
+          'receiverAddressInput',
+          'showReceiverAddressInput',
         ],
         []
       )
@@ -356,6 +359,7 @@ function BridgeFormComponent() {
   const formState = useMemo(
     () => ({
       ...defaultFormValues,
+      to: null,
       spendTokenInput: defaultSpendToken,
       receiveTokenInput: defaultReceiveToken,
       ...userFormState,
@@ -363,8 +367,15 @@ function BridgeFormComponent() {
     [defaultFormValues, defaultReceiveToken, defaultSpendToken, userFormState]
   );
 
-  const { spendTokenInput, receiveTokenInput, spendInput, receiveInput } =
-    formState;
+  const {
+    spendTokenInput,
+    receiveTokenInput,
+    spendInput,
+    receiveInput,
+    to,
+    receiverAddressInput,
+    showReceiverAddressInput,
+  } = formState;
 
   const spendAssetQuery = useAssetsPrices(
     { asset_codes: [spendTokenInput].filter(isTruthy), currency },
@@ -987,6 +998,16 @@ function BridgeFormComponent() {
               }
             />
           </VStack>
+          <ReceiverAddressField
+            to={to}
+            receiverAddressInput={receiverAddressInput ?? null}
+            onChange={(value) => handleChange('receiverAddressInput', value)}
+            showAddressInput={Boolean(showReceiverAddressInput)}
+            onShowInputChange={(value) =>
+              handleChange('showReceiverAddressInput', value)
+            }
+            onResolvedChange={(value) => handleChange('to', value)}
+          />
         </VStack>
       </form>
 

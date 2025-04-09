@@ -16,20 +16,20 @@ import { useEventSource } from './useEventSource';
 type QuoteSortType = 'amount' | 'time';
 
 interface QuotesParams {
+  from?: string;
+  to?: string;
   inputAssetId: string;
   outputAssetId: string;
   inputChain: Chain;
   outputChain: Chain | null;
   inputAmount?: string;
   outputAmount?: string;
-  from?: string;
   slippage?: string;
   gasPrice?: string;
   priorityFee?: string;
   maxFee?: string;
   sourceId?: string;
   sort?: QuoteSortType;
-  to?: string;
 }
 
 function getQuotesSearchParams(params: QuotesParams): URLSearchParams {
