@@ -8,6 +8,7 @@ export type BridgeFormState = {
   spendTokenInput?: string;
   receiveTokenInput?: string;
 
+  to: string | null;
   receiverAddressInput?: string | null;
   showReceiverAddressInput?: boolean;
 };
