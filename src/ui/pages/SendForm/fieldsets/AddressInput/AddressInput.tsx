@@ -211,6 +211,7 @@ function SectionTitle({
 }
 
 export function AddressInput({
+  fieldsetTitle,
   value,
   autoFocus,
   resolvedAddress,
@@ -219,6 +220,7 @@ export function AddressInput({
   items: allItems,
   ...inputProps
 }: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
+  fieldsetTitle: React.ReactNode;
   value: string;
   autoFocus?: boolean;
   resolvedAddress: string | null;
@@ -321,7 +323,7 @@ export function AddressInput({
   return (
     <div style={{ position: 'relative' }}>
       <FormFieldset
-        title="Recipient"
+        title={fieldsetTitle}
         startInput={
           <HStack
             gap={8}
@@ -481,6 +483,7 @@ export function AddressInput({
 export function AddressInputWrapper(
   props: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
     autoFocus?: boolean;
+    fieldsetTitle: React.ReactNode;
     value: string;
     resolvedAddress: string | null;
     onChange(value: string): void;
@@ -538,7 +541,7 @@ export function AddressInputWrapper(
   if (isLoading) {
     return (
       <FormFieldset
-        title="Recipient"
+        title={props.fieldsetTitle}
         startInput={
           <div
             style={{
