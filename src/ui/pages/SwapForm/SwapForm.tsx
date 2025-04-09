@@ -603,8 +603,8 @@ export function SwapFormComponent() {
         gasbackValue={gasbackValueRef.current}
         onRetry={() => {
           reset();
-          refetchNonce();
           removeAllowanceQuery();
+          refetchNonce();
           refetchQuotes();
           snapshotRef.current = null;
           feeValueCommonRef.current = null;
