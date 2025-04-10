@@ -294,6 +294,25 @@ export class Wallet {
     await this.syncWithWalletStore();
   }
 
+  async assignNewCredentials({
+    params: { credentials, newCredentials },
+  }: PublicMethodParams<{
+    credentials: SessionCredentials;
+    newCredentials: SessionCredentials;
+  }>) {
+    this.ensureRecord(this.record);
+    this.record = await Model.reEncryptRecord(this.record, {
+      credentials,
+      newCredentials,
+    });
+    this.userCredentials = newCredentials;
+
+    const { encryptionKey } = this.userCredentials;
+    await this.walletStore.encryptAndSave(this.id, encryptionKey, this.record);
+
+    this.setExpirationForSeedPhraseEncryptionKey(1000 * 120);
+  }
+
   async resetCredentials() {
     this.userCredentials = null;
   }

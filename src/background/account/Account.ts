@@ -13,16 +13,50 @@ import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version/shared';
 import { currentUserKey } from 'src/shared/getCurrentUser';
 import type { PublicUser, User } from 'src/shared/types/User';
 import { payloadId } from '@walletconnect/jsonrpc-utils';
+import { invariant } from 'src/shared/invariant';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
 import { globalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
+import { isSessionCredentials } from './Credentials';
 
 const TEMPORARY_ID = 'temporary';
 
 async function sha256({ password, salt }: { password: string; salt: string }) {
   return await getSHA256HexDigest(`${salt}:${password}`);
+}
+
+async function deriveUserKeys({
+  user,
+  credentials,
+}: {
+  user: User;
+  credentials: { password: string } | { encryptionKey: string };
+}) {
+  let encryptionKey: string | null = null;
+  let seedPhraseEncryptionKey: string | null = null;
+  let seedPhraseEncryptionKey_deprecated: CryptoKey | null = null;
+  if ('password' in credentials) {
+    const { password } = credentials;
+    const [key1, key2, key3] = await Promise.all([
+      sha256({ salt: user.id, password }),
+      sha256({ salt: user.salt, password }),
+      createCryptoKey(password, user.salt),
+    ]);
+    encryptionKey = key1;
+    seedPhraseEncryptionKey = key2;
+    seedPhraseEncryptionKey_deprecated = key3;
+  } else {
+    encryptionKey = credentials.encryptionKey;
+  }
+
+  return {
+    id: user.id,
+    encryptionKey,
+    seedPhraseEncryptionKey,
+    seedPhraseEncryptionKey_deprecated,
+  };
 }
 
 class EventEmitter<Events extends EventsMap> {
@@ -133,15 +167,25 @@ export class Account extends EventEmitter<AccountEvents> {
     }
   }
 
-  static async createUser(password: string): Promise<User> {
+  static validatePassword(password: string) {
     const validity = validate({ password });
     if (!validity.valid) {
       throw new Error(validity.message);
     }
+  }
+
+  static async createUser(password: string): Promise<User> {
+    Account.validatePassword(password);
     const id = nanoid(36); // use longer id than default (21)
     const salt = createSalt(); // used to encrypt seed phrases
     const record = { id, salt /* passwordHash: hash */ };
     return record;
+  }
+
+  /** Updates salt */
+  static async updateUser(user: User): Promise<User> {
+    const salt = createSalt(); // used to encrypt seed phrases
+    return { id: user.id, salt };
   }
 
   constructor({
@@ -156,6 +200,7 @@ export class Account extends EventEmitter<AccountEvents> {
     this.notificationWindow = notificationWindow;
     this.wallet = new Wallet(TEMPORARY_ID, null, this.notificationWindow);
     this.on('authenticated', () => {
+      // TODO: Call Account.writeCurrentUser() here, too?
       if (this.encryptionKey) {
         Account.writeCredentials({ encryptionKey: this.encryptionKey });
       }
@@ -223,39 +268,59 @@ export class Account extends EventEmitter<AccountEvents> {
     return Boolean(user);
   }
 
+  async changePassword({
+    currentPassword,
+    newPassword,
+    user: currentUser,
+  }: {
+    user: User;
+    currentPassword: string;
+    newPassword: string;
+  }) {
+    Account.validatePassword(newPassword);
+    await this.login(currentUser, currentPassword);
+    invariant(this.user, 'User must be set');
+    const updatedUser = await Account.updateUser(this.user);
+    const currentCredentials = await deriveUserKeys({
+      user: currentUser,
+      credentials: { password: currentPassword },
+    });
+    const newCredentials = await deriveUserKeys({
+      user: updatedUser,
+      credentials: { password: newPassword },
+    });
+    if (
+      !isSessionCredentials(currentCredentials) ||
+      !isSessionCredentials(newCredentials)
+    ) {
+      throw new Error('Full credentials are expected');
+    }
+    await this.wallet.assignNewCredentials({
+      id: payloadId(),
+      params: { newCredentials, credentials: currentCredentials },
+    });
+    // Update local state only if the above call was successful
+    this.user = updatedUser;
+    this.encryptionKey = newCredentials.encryptionKey;
+    await Account.writeCurrentUser(this.user);
+    this.emit('authenticated');
+  }
+
   async setUser(
     user: User,
-    credentials: { password: string } | { encryptionKey: string },
+    partialCredentials: { password: string } | { encryptionKey: string },
     { isNewUser = false } = {}
   ) {
     this.user = user;
     this.isPendingNewUser = isNewUser;
-    let seedPhraseEncryptionKey: string | null = null;
-    let seedPhraseEncryptionKey_deprecated: CryptoKey | null = null;
-    if ('password' in credentials) {
-      const { password } = credentials;
-      const [key1, key2, key3] = await Promise.all([
-        sha256({ salt: user.id, password }),
-        sha256({ salt: user.salt, password }),
-        createCryptoKey(password, user.salt),
-      ]);
-      this.encryptionKey = key1;
-      seedPhraseEncryptionKey = key2;
-      seedPhraseEncryptionKey_deprecated = key3;
-    } else {
-      this.encryptionKey = credentials.encryptionKey;
-    }
+    const credentials = await deriveUserKeys({
+      user,
+      credentials: partialCredentials,
+    });
+    this.encryptionKey = credentials.encryptionKey;
     await this.wallet.updateCredentials({
       id: payloadId(),
-      params: {
-        credentials: {
-          id: user.id,
-          encryptionKey: this.encryptionKey,
-          seedPhraseEncryptionKey,
-          seedPhraseEncryptionKey_deprecated,
-        },
-        isNewUser,
-      },
+      params: { credentials, isNewUser },
     });
     if (!this.isPendingNewUser) {
       this.emit('authenticated');
@@ -343,16 +408,21 @@ export class AccountPublicRPC {
     return null;
   }
 
+  async verifyUser(user: PublicUser) {
+    const currentUser = await Account.readCurrentUser();
+    if (!currentUser || currentUser.id !== user.id) {
+      throw new Error(`User ${user.id} not found`);
+    }
+    return currentUser;
+  }
+
   async login({
     params: { user, password },
   }: PublicMethodParams<{
     user: PublicUser;
     password: string;
   }>): Promise<PublicUser | null> {
-    const currentUser = await Account.readCurrentUser();
-    if (!currentUser || currentUser.id !== user.id) {
-      throw new Error(`User ${user.id} not found`);
-    }
+    const currentUser = await this.verifyUser(user);
     const canAuthorize = await this.account.verifyPassword(
       currentUser,
       password
@@ -363,6 +433,21 @@ export class AccountPublicRPC {
     } else {
       throw new Error('Incorrect password');
     }
+  }
+
+  async changePassword({
+    params: { user, currentPassword, newPassword },
+  }: PublicMethodParams<{
+    user: PublicUser;
+    currentPassword: string;
+    newPassword: string;
+  }>) {
+    const currentUser = await this.verifyUser(user);
+    await this.account.changePassword({
+      user: currentUser,
+      currentPassword,
+      newPassword,
+    });
   }
 
   async hasActivePasswordSession() {

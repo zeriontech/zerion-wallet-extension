@@ -41,10 +41,12 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
     return this.lastRecord;
   }
 
-  async save(id: string, encryptionKey: string, record: WalletRecord) {
-    if (this.lastRecord === record) {
-      return;
-    }
+  /** Prefer WalletStore['save'] unless necessary */
+  async encryptAndSave(
+    id: string,
+    encryptionKey: string,
+    record: WalletRecord
+  ) {
     const encryptedRecord = await Model.encryptRecord(encryptionKey, record);
     this.setState((state) =>
       produce(state, (draft) => {
@@ -52,6 +54,13 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
       })
     );
     this.lastRecord = record;
+  }
+
+  async save(id: string, encryptionKey: string, record: WalletRecord) {
+    if (this.lastRecord === record) {
+      return;
+    }
+    await this.encryptAndSave(id, encryptionKey, record);
   }
 
   deleteMany(keys: string[]) {
