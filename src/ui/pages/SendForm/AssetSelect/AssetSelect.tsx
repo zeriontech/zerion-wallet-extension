@@ -41,7 +41,7 @@ import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import type { BareAddressPosition } from '../../SwapForm/BareAddressPosition';
+import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
 import * as styles from './styles.module.css';
 
 function ResultItem({

@@ -1,16 +1,11 @@
-interface Exchange {
-  icon_url: string | null;
-  share: number;
-}
-
-interface ExchangeWithName extends Exchange {
-  name: string;
-}
-
-interface ContractMetadata {
+export interface ContractMetadata {
   id: string;
   name: string;
   icon_url: string;
+  explorer: {
+    name: string;
+    tx_url: string;
+  };
 }
 
 export interface TransactionDescription {
@@ -23,24 +18,48 @@ export interface TransactionDescription {
 }
 
 export interface Quote {
-  input_amount_estimation: string;
-  input_token_address: string;
-  input_chain: string;
-  output_amount_estimation: string;
-  output_token_address: string;
-  output_chain: string;
-  guaranteed_output_amount: string;
-  token_spender: string;
-  exchanges: ExchangeWithName[] | null;
   contract_metadata: ContractMetadata | null;
-  gas_estimation: string | null;
+  slippage_type?: 'normal' | 'zero-slippage';
+
+  input_chain: string;
+  input_asset_id: string;
+  input_token_address: string;
+  input_token_id: string | null;
+  input_amount_estimation: string;
+  input_amount_max: string;
+
+  output_chain: string;
+  output_asset_id: string;
+  output_token_address: string;
+  output_token_id: string | null;
+  output_amount_estimation: string;
+
+  guaranteed_output_amount: string;
+  output_amount_min: string;
+
+  token_spender: string;
+
+  gas_estimation: number | null;
+  seconds_estimation: number | null;
+
+  transaction: TransactionDescription | null;
+
   enough_allowance?: boolean;
   enough_balance: boolean;
-  slippage_type?: 'normal' | 'zero-slippage';
-  estimated_seconds?: string | null;
+
   base_protocol_fee: number;
-  marketplace_fee: number;
+
   protocol_fee: number;
   protocol_fee_amount: string;
-  transaction: TransactionDescription | null;
+  protocol_fee_asset_id: string | null;
+  protocol_fee_asset_address: string | null;
+  protocol_fee_taken_on_top: boolean | null;
+
+  marketplace_fee: number;
+  marketplace_fee_amount: number;
+
+  bridge_fee_asset_id: string | null;
+  bridge_fee_asset_address: string | null;
+  bridge_fee_taken_on_top: boolean | null;
+  bridge_fee_amount: string;
 }

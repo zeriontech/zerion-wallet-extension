@@ -82,6 +82,7 @@ import { AssetInfo } from '../pages/AssetInfo';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
+import { BridgeForm } from '../pages/BridgeForm';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -396,6 +397,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
+            path="/bridge-form/*"
+            element={
+              <RequireAuth>
+                <BridgeForm />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/invite/*"
             element={
               <RequireAuth>
@@ -436,6 +445,7 @@ initializeApperance();
 dayjs.extend(relativeTime);
 registerPersistentRoute('/send-form');
 registerPersistentRoute('/swap-form');
+registerPersistentRoute('/bridge-form');
 
 function GlobalKeyboardShortcuts() {
   const isDialog = urlContext.windowType === 'dialog';

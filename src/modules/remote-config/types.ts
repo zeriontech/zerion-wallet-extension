@@ -10,4 +10,5 @@ export interface RemoteConfig {
     gasbackValue: number;
     rewardIconLevel: number;
   }>;
+  zerion_fee_learn_more_link: string;
 }

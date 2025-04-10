@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Asset } from 'defi-sdk';
-import type { SwapFormView } from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { baseToCommon } from 'src/shared/units/convert';
@@ -9,8 +8,9 @@ import { getDecimals } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { animated, useTransition } from '@react-spring/web';
-import type { QuotesData } from './useQuotes';
+import { SlidingRectangle } from 'src/ui/components/SlidingRectangle';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
+import type { Quote } from 'src/shared/types/Quote';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 
 function getRate({
@@ -20,8 +20,8 @@ function getRate({
   receiveAmountBase,
   chain,
 }: {
-  spendAsset?: Asset;
-  receiveAsset?: Asset;
+  spendAsset: Asset | null;
+  receiveAsset: Asset | null;
   spendAmountBase?: string;
   receiveAmountBase?: string;
   chain?: Chain;
@@ -63,41 +63,25 @@ function getRate({
   };
 }
 
-function SlidingRectangle({
-  src,
-  size,
-  render,
-}: {
-  size: number;
-  src: string;
-  render: (src: string, index: number) => React.ReactNode;
-}) {
-  const transitions = useTransition([src], {
-    from: { y: size * 0.666, opacity: 0 },
-    enter: { y: 0, opacity: 1 },
-    leave: { y: 0 - size * 0.666, opacity: 0 },
-  });
-  return transitions((style, value, _x, index) => (
-    <animated.div style={style}>{render(value, index)}</animated.div>
-  ));
-}
-
 export function RateLine({
-  swapView,
+  spendAsset,
+  receiveAsset,
   quotesData,
+  selectedQuote,
 }: {
-  swapView: SwapFormView;
+  spendAsset: Asset | null;
+  receiveAsset: Asset | null;
   quotesData: QuotesData;
+  selectedQuote: Quote | null;
 }) {
-  const { isLoading, quote, error } = quotesData;
-  const { spendPosition, receivePosition } = swapView;
+  const { isLoading, error } = quotesData;
 
   const rate = getRate({
-    spendAsset: spendPosition?.asset,
-    receiveAsset: receivePosition?.asset,
-    receiveAmountBase: quote?.output_amount_estimation,
-    spendAmountBase: quote?.input_amount_estimation,
-    chain: quote ? createChain(quote.input_chain) : undefined,
+    spendAsset,
+    receiveAsset,
+    receiveAmountBase: selectedQuote?.output_amount_estimation,
+    spendAmountBase: selectedQuote?.input_amount_estimation,
+    chain: selectedQuote ? createChain(selectedQuote.input_chain) : undefined,
   });
 
   // If we decide to _not_ circle the images,
@@ -111,18 +95,19 @@ export function RateLine({
       gap={8}
       justifyContent="space-between"
       style={{
-        visibility: !isLoading && !quote && !error ? 'hidden' : undefined,
+        visibility:
+          !isLoading && !selectedQuote && !error ? 'hidden' : undefined,
       }}
     >
       <UIText kind="small/regular" color="var(--neutral-700)">
         Rate
       </UIText>
       <span>
-        {isLoading && !quote ? (
+        {isLoading && !selectedQuote ? (
           <span style={{ color: 'var(--neutral-500)' }}>
             Fetching offers...
           </span>
-        ) : quote ? (
+        ) : selectedQuote ? (
           <HStack
             // in design it's 4, but design has circle images
             gap={gap}
@@ -132,7 +117,7 @@ export function RateLine({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {quote.contract_metadata?.icon_url ? (
+            {selectedQuote.contract_metadata?.icon_url ? (
               <div
                 style={{
                   position: 'relative',
@@ -143,10 +128,10 @@ export function RateLine({
               >
                 <SlidingRectangle
                   size={20}
-                  src={quote.contract_metadata.icon_url}
+                  src={selectedQuote.contract_metadata.icon_url}
                   render={(src, index) => (
                     <img
-                      title={quote.contract_metadata?.name}
+                      title={selectedQuote.contract_metadata?.name}
                       style={{
                         position: 'absolute',
                         left: 0,
@@ -158,7 +143,7 @@ export function RateLine({
                       }}
                       src={src}
                       // The alt here may be from a sibling image, but hopefully it doesn't matter
-                      alt={`${quote.contract_metadata?.name} logo`}
+                      alt={`${selectedQuote.contract_metadata?.name} logo`}
                     />
                   )}
                 />
@@ -170,7 +155,7 @@ export function RateLine({
                 rate.rightAsset.symbol
               )}`
             ) : (
-              <span>{quote.contract_metadata?.name ?? 'unknown'}</span>
+              <span>{selectedQuote.contract_metadata?.name ?? 'unknown'}</span>
             )}
           </HStack>
         ) : error ? (
