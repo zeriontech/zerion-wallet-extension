@@ -99,7 +99,8 @@ export class Networks {
     visitedChains: string[];
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
-    this.networks = injectChainConfigs(networks, ethereumChainConfigs);
+    const evmNetworks = networks.filter((n) => n.standard === 'eip155');
+    this.networks = injectChainConfigs(evmNetworks, ethereumChainConfigs);
     this.collection = toCollection(
       this.networks,
       (network) => network.id,
