@@ -133,7 +133,7 @@ export class Account extends EventEmitter<AccountEvents> {
     }
   }
 
-  static async createUser(password: string): User {
+  static async createUser(password: string): Promise<User> {
     const validity = validate({ password });
     if (!validity.valid) {
       throw new Error(validity.message);
