@@ -117,12 +117,12 @@ function ChangePassword() {
           </label>
           <label style={{ all: 'unset' }}>
             <VStack gap={4}>
-              <UIText kind="body/regular">Confirm password</UIText>
+              <UIText kind="body/regular">Confirm new password</UIText>
               <VStack gap={4}>
                 <CustomValidityInput
                   type="password"
                   name="confirmPassword"
-                  placeholder="enter the password again"
+                  placeholder="Enter the new password again"
                   required={true}
                   customValidity={
                     formData?.get('confirmPassword') === ''
