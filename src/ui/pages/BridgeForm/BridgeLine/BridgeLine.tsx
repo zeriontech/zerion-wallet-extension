@@ -97,7 +97,6 @@ export function BridgeLine({
                   position: 'relative',
                   width: 20,
                   height: 20,
-                  // overflow: 'hidden',
                 }}
               >
                 <SlidingRectangle
