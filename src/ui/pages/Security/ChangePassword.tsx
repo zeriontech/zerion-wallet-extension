@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { getError } from 'src/shared/errors/getError';
@@ -16,6 +16,17 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ChangePasswordSuccess } from './ChangePasswordSuccess';
+
+function CustomValidityInput({
+  customValidity,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { customValidity: string }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useLayoutEffect(() => {
+    ref.current?.setCustomValidity(customValidity);
+  }, [customValidity]);
+  return <Input {...props} ref={ref} />;
+}
 
 function ChangePassword() {
   useBackgroundKind(whiteBackgroundKind);
@@ -44,6 +55,7 @@ function ChangePassword() {
       navigate('./success');
     },
   });
+  const [formData, setFormData] = useState<FormData | null>(null);
   const submitError = changePasswordMutation.isError
     ? getError(changePasswordMutation.error)
     : null;
@@ -54,6 +66,10 @@ function ChangePassword() {
       <PageHeading>Change Password</PageHeading>
       <PageTop />
       <form
+        onChange={(event) => {
+          const fd = new FormData(event.currentTarget);
+          setFormData(fd);
+        }}
         onSubmit={(event) => {
           event.preventDefault();
           const fd = new FormData(event.currentTarget);
@@ -95,6 +111,27 @@ function ChangePassword() {
                   name="newPassword"
                   placeholder="Set new or verify existing one"
                   required={true}
+                />
+              </VStack>
+            </VStack>
+          </label>
+          <label style={{ all: 'unset' }}>
+            <VStack gap={4}>
+              <UIText kind="body/regular">Confirm password</UIText>
+              <VStack gap={4}>
+                <CustomValidityInput
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="enter the password again"
+                  required={true}
+                  customValidity={
+                    formData?.get('confirmPassword') === ''
+                      ? ''
+                      : formData?.get('confirmPassword') !==
+                        formData?.get('newPassword')
+                      ? 'Passwords do not match'
+                      : ''
+                  }
                 />
               </VStack>
             </VStack>
