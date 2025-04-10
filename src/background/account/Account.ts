@@ -133,7 +133,7 @@ export class Account extends EventEmitter<AccountEvents> {
     }
   }
 
-  static createUser(password: string): User {
+  static async createUser(password: string): User {
     const validity = validate({ password });
     if (!validity.valid) {
       throw new Error(validity.message);
@@ -372,7 +372,7 @@ export class AccountPublicRPC {
   async createUser({
     params: { password },
   }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {
-    const user = Account.createUser(password);
+    const user = await Account.createUser(password);
     await this.account.setUser(user, { password }, { isNewUser: true });
     return { id: user.id };
   }
