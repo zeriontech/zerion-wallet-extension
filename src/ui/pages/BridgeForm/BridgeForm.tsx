@@ -433,7 +433,7 @@ function BridgeFormComponent() {
 
   const quotesData = useQuotes({
     from: address,
-    to,
+    to: showReceiverAddressInput ? to : null,
     userSlippage: null,
     primaryInput: 'spend',
     spendChainInput,
