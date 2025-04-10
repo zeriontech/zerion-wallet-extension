@@ -29,7 +29,6 @@ interface QuotesParams {
   maxFee?: string;
   sourceId?: string;
   sort?: QuoteSortType;
-  refetchHash?: number;
   to?: string;
 }
 
@@ -216,10 +215,7 @@ export function useQuotes({
 
       const chain =
         primaryInput === 'receive' && outputChain ? outputChain : inputChain;
-      const { slippagePercent } = getSlippageOptions({
-        chain,
-        userSlippage,
-      });
+      const { slippagePercent } = getSlippageOptions({ chain, userSlippage });
 
       return getQuotesStreamUrl({
         primaryInput,
