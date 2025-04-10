@@ -26,7 +26,7 @@ import type { CustomConfiguration } from '@zeriontech/transactions';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { useTransactionFee } from '../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import { FeeDescription } from './FeeDescription';
-import type { FeeTier } from './FeeTeir';
+import type { FeeTier } from './FeeTier';
 import * as styles from './styles.module.css';
 
 const QUOTE_GRIP_TEMPLATE_COLUMNS = '1fr 1fr 40px';

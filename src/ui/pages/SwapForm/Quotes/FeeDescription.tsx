@@ -10,7 +10,7 @@ import { Frame } from 'src/ui/ui-kit/Frame';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import * as styles from './styles.module.css';
-import type { FeeTier } from './FeeTeir';
+import type { FeeTier } from './FeeTier';
 
 export function FeeDescription({
   userFeeTier,

@@ -20,7 +20,7 @@ import type { QuotesData } from './useQuotes';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
-import type { FeeTier } from './FeeTeir';
+import type { FeeTier } from './FeeTier';
 
 function getRate({
   spendAsset,
