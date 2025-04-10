@@ -302,6 +302,7 @@ function BridgeFormComponent() {
           'receiveInput',
           'receiverAddressInput',
           'showReceiverAddressInput',
+          'to',
         ],
         []
       )
@@ -431,7 +432,8 @@ function BridgeFormComponent() {
   ]);
 
   const quotesData = useQuotes({
-    address,
+    from: address,
+    to,
     userSlippage: null,
     primaryInput: 'spend',
     spendChainInput,
@@ -997,17 +999,17 @@ function BridgeFormComponent() {
                 handleChange('receiveTokenInput', value)
               }
             />
+            <ReceiverAddressField
+              to={to}
+              receiverAddressInput={receiverAddressInput ?? null}
+              onChange={(value) => handleChange('receiverAddressInput', value)}
+              showAddressInput={Boolean(showReceiverAddressInput)}
+              onShowInputChange={(value) =>
+                handleChange('showReceiverAddressInput', value)
+              }
+              onResolvedChange={(value) => handleChange('to', value)}
+            />
           </VStack>
-          <ReceiverAddressField
-            to={to}
-            receiverAddressInput={receiverAddressInput ?? null}
-            onChange={(value) => handleChange('receiverAddressInput', value)}
-            showAddressInput={Boolean(showReceiverAddressInput)}
-            onShowInputChange={(value) =>
-              handleChange('showReceiverAddressInput', value)
-            }
-            onResolvedChange={(value) => handleChange('to', value)}
-          />
         </VStack>
       </form>
 
