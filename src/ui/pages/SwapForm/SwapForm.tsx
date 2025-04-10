@@ -103,7 +103,6 @@ import {
   ReverseButton,
   TopArc,
 } from './reverse/reverse-button-helpers';
-import { ProtocolFeeLine } from './shared/ProtocolFeeLine';
 import { SlippageSettings } from './SlippageSettings';
 import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
@@ -845,8 +844,13 @@ export function SwapFormComponent() {
               />
             </React.Suspense>
           ) : null}
+          {quote?.protocol_fee === 0 ? (
+            <HStack gap={8} justifyContent="space-between">
+              <UIText kind="small/regular">Zerion Fee</UIText>
+              <UIText kind="small/accent">Free</UIText>
+            </HStack>
+          ) : null}
         </VStack>
-        {quote ? <ProtocolFeeLine quote={quote} /> : null}
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
         <HiddenValidationInput
