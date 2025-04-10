@@ -18,6 +18,7 @@ import { claimRetro } from './requests/claim-retro';
 import { assetGetFungibleFullInfo } from './requests/asset-get-fungible-full-info';
 import { walletGetAssetDetails } from './requests/wallet-get-asset-details';
 import { assetGetFungiblePnl } from './requests/asset-get-fungible-pnl';
+import { assetGetChart } from './requests/asset-get-chart';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -40,6 +41,7 @@ export const ZerionApiBare = {
   assetGetFungibleFullInfo,
   assetGetFungiblePnl,
   walletGetAssetDetails,
+  assetGetChart,
 };
 
 export type ZerionApiClient = typeof ZerionApiBare;
