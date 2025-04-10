@@ -463,15 +463,15 @@ function BridgeFormComponent() {
   useEffect(() => {
     if (!selectedQuote) {
       handleChange('receiveInput', '');
-    } else if (spendChain && receivePosition) {
+    } else if (receiveChain && receivePosition) {
       const valueCommon = getCommonQuantity({
         baseQuantity: selectedQuote.output_amount_estimation || 0,
         asset: receivePosition.asset,
-        chain: spendChain,
+        chain: receiveChain,
       });
       handleChange('receiveInput', valueCommon.toFixed());
     }
-  }, [handleChange, selectedQuote, receivePosition, spendChain]);
+  }, [handleChange, selectedQuote, receivePosition, receiveChain]);
 
   const snapshotRef = useRef<BridgeFormState | null>(null);
   const onBeforeSubmit = () => {
