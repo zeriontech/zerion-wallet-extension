@@ -13,7 +13,7 @@ function backendUrl(url: string | undefined, backend_env: string | undefined) {
   }
 }
 
-export const BACKEND_ENV = process.env.BACKEND_ENV;
+export const BACKEND_ENV = 'staging'; // process.env.BACKEND_ENV;
 invariant(process.env.DEFI_SDK_API_TOKEN, 'DEFI_SDK_API_TOKEN is required in env');
 export const DEFI_SDK_API_TOKEN = process.env.DEFI_SDK_API_TOKEN;
 invariant(process.env.DEFI_SDK_API_URL, 'DEFI_SDK_API_URL is required in env');
@@ -26,6 +26,9 @@ invariant(process.env.ZERION_TESTNET_API_URL, 'ZERION_TESTNET_API_URL is require
 export const ZERION_TESTNET_API_URL = backendUrl(process.env.ZERION_TESTNET_API_URL, BACKEND_ENV);
 invariant(process.env.DEFI_SDK_TRANSACTIONS_API_URL, 'DEFI_SDK_TRANSACTIONS_API_URL is required in env');
 export const DEFI_SDK_TRANSACTIONS_API_URL = backendUrl(process.env.DEFI_SDK_TRANSACTIONS_API_URL, BACKEND_ENV);
+
+invariant(process.env.SOLANA_RPC_URL, 'SOLANA_RPC_URL is required in env');
+export const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL;
 
 invariant(process.env.PROXY_URL, 'PROXY_URL is required in env');
 export const PROXY_URL = process.env.PROXY_URL;

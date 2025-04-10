@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -9,8 +9,11 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
+import { useBackgroundKind } from 'src/ui/components/Background';
+import { useBodyStyle } from 'src/ui/components/Background/Background';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
+import type { DerivedWallets } from './AddressImportFlow';
 import { AddressImportFlow } from './AddressImportFlow';
 import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
 
@@ -59,39 +62,88 @@ function useMnenomicPhraseForLocation({
   }
 }
 
+const bgStyle = {
+  ['--surface-background-color']: 'var(--z-index-0)',
+} as React.CSSProperties;
 export function MnemonicImportView({
   locationStateStore,
 }: {
   locationStateStore: MemoryLocationState;
 }) {
-  const [count] = useState(100);
   const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation({
     locationStateStore,
   });
-  const { data: wallets } = useQuery({
-    queryKey: ['getFirstNMnemonicWallets', phrase, count],
-    queryFn: async () =>
-      phrase ? getFirstNMnemonicWallets({ phrase, n: count }) : undefined,
+  const { data } = useQuery({
+    queryKey: ['getFirstNMnemonicWallets', phrase],
+    queryFn: async (): Promise<{
+      derivedWallets: DerivedWallets;
+      addressesToCheck: string[];
+    } | void> => {
+      if (!phrase) {
+        return;
+      }
+
+      const fn = getFirstNMnemonicWallets;
+      const [eth, sol1, sol2, sol3] = await Promise.all([
+        fn({ phrase, n: 30, curve: 'ecdsa' }),
+        /** We want to explore all derivation paths in case there are active addresses */
+        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44Change' }),
+        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44' }),
+        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaDeprecated' }),
+      ]);
+      const derivedWallets = [
+        { curve: 'ecdsa' as const, pathType: 'bip44' as const, wallets: eth },
+        {
+          curve: 'ed25519' as const,
+          pathType: 'solanaBip44Change' as const,
+          wallets: sol1,
+        },
+        {
+          curve: 'ed25519' as const,
+          pathType: 'solanaBip44' as const,
+          wallets: sol2,
+        },
+        {
+          curve: 'ed25519' as const,
+          pathType: 'solanaDeprecated' as const,
+          wallets: sol3,
+        },
+      ];
+      const WALLETS_TO_CHECK_PER_PATH = 10; // this number is small to reduce load on backend
+      return {
+        derivedWallets,
+        addressesToCheck: derivedWallets.flatMap((config) =>
+          config.wallets
+            .slice(0, WALLETS_TO_CHECK_PER_PATH)
+            .map((w) => w.address)
+        ),
+      };
+    },
     enabled: Boolean(phrase),
     useErrorBoundary: true,
   });
   const { value } = useAddressActivity(
-    { addresses: wallets?.map((w) => w.address) || [] },
-    { enabled: Boolean(wallets), keepStaleData: true }
+    { addresses: data?.addressesToCheck || [] },
+    { enabled: Boolean(data?.addressesToCheck), keepStaleData: true }
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
+  useBackgroundKind({ kind: 'white' });
+  useBodyStyle(bgStyle);
   return (
     <>
-      <NavigationTitle title="Wallets Ready to Import" />
-      {isLoadingPhrase || shouldWaitForValue || wallets == null ? (
+      <NavigationTitle title={null} documentTitle="Wallets Ready to Import" />
+      {isLoadingPhrase || shouldWaitForValue || data == null ? (
         <PageColumn>
           <PageTop />
           <ViewLoading />
           <PageBottom />
         </PageColumn>
       ) : (
-        <AddressImportFlow wallets={wallets} activeWallets={value ?? {}} />
+        <AddressImportFlow
+          wallets={data.derivedWallets}
+          activeWallets={value ?? {}}
+        />
       )}
     </>
   );
