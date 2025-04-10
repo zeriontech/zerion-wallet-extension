@@ -107,7 +107,6 @@ import { SlippageSettings } from './SlippageSettings';
 import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
 import { getPopularTokens } from './shared/getPopularTokens';
-import { FeeLine } from './Quotes/FeeLine';
 
 const rootNode = getRootDomNode();
 
@@ -845,7 +844,12 @@ export function SwapFormComponent() {
               />
             </React.Suspense>
           ) : null}
-          <FeeLine fee={quote?.protocol_fee} />
+          {quote?.protocol_fee === 0 ? (
+            <HStack gap={8} justifyContent="space-between">
+              <UIText kind="small/regular">Zerion Fee</UIText>
+              <UIText kind="small/accent">Free</UIText>
+            </HStack>
+          ) : null}
         </VStack>
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>

@@ -17,8 +17,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { noValueDash } from 'src/ui/shared/typography';
-import { baseToCommon } from 'src/shared/units/convert';
-import { getDecimals } from 'src/modules/networks/asset';
+import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
@@ -79,10 +78,11 @@ function Quote({
   const { currency } = useCurrency();
   const chain = createChain(quote.output_chain);
 
-  const receiveAmount = baseToCommon(
-    quote.output_amount_estimation,
-    getDecimals({ asset: receiveAsset, chain })
-  ).times(receiveAsset.price?.value || 0);
+  const receiveAmount = getCommonQuantity({
+    asset: receiveAsset,
+    chain,
+    baseQuantity: quote.output_amount_estimation,
+  }).times(receiveAsset.price?.value || 0);
 
   return (
     <HStack
