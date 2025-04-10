@@ -70,9 +70,6 @@ function getQuotesSearchParams(params: QuotesParams): URLSearchParams {
   if (params.sort) {
     searchParams.append('sort', params.sort);
   }
-  if (params.refetchHash) {
-    searchParams.append('refetchId', params.refetchHash.toString());
-  }
   if (params.to) {
     searchParams.append('to', params.to);
   }
