@@ -1,6 +1,8 @@
+import type { Options as KyOptions } from 'ky';
 import { isTruthy } from 'is-truthy-ts';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
+import type { ZerionApiContext } from '../zerion-api-bare';
 
 export interface Identity {
   provider: 'ens' | 'lens' | 'ud' | 'unspecified';
@@ -146,13 +148,23 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function getWalletsMeta(
+function getWalletsMetaInternal(
   { identifiers }: Params,
+  kyOptions: KyOptions,
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
   const params = new URLSearchParams({ identifiers: identifiers.join(',') });
   const endpoint = `wallet/get-meta/v1?${params}`;
-  return ZerionHttpClient.get<Response>({ endpoint, ...options });
+  return ZerionHttpClient.get<Response>({ endpoint, ...options }, kyOptions);
+}
+
+export function getWalletsMeta(
+  this: ZerionApiContext,
+  params: Params,
+  options: ClientOptions = CLIENT_DEFAULTS
+) {
+  const kyOptions = this.getKyOptions();
+  return getWalletsMetaInternal(params, kyOptions, options);
 }
 
 function splitIntoChunks<T>(arr: T[], size: number) {
@@ -163,10 +175,16 @@ function splitIntoChunks<T>(arr: T[], size: number) {
   return chunks;
 }
 
-export async function getWalletsMetaByChunks(addresses: string[]) {
+export async function getWalletsMetaByChunks(
+  this: ZerionApiContext,
+  addresses: string[]
+) {
   const chunks = splitIntoChunks(addresses, 10);
+  const kyOptions = this.getKyOptions();
   const results = await Promise.all(
-    chunks.map((chunk) => getWalletsMeta({ identifiers: chunk }))
+    chunks.map((chunk) =>
+      getWalletsMetaInternal({ identifiers: chunk }, kyOptions)
+    )
   );
   return results
     .map((response) => response.data)

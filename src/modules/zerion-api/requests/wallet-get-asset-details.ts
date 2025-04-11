@@ -60,10 +60,14 @@ export async function walletGetAssetDetails(
 ) {
   const firstAddress = params.addresses[0];
   const provider = await this.getAddressProviderHeader(firstAddress);
-  return ZerionHttpClient.post<Response>({
-    endpoint: 'wallet/get-asset-details/v1',
-    body: JSON.stringify(params),
-    headers: { 'Zerion-Wallet-Provider': provider },
-    ...options,
-  });
+  const kyOptions = this.getKyOptions();
+  return ZerionHttpClient.post<Response>(
+    {
+      endpoint: 'wallet/get-asset-details/v1',
+      body: JSON.stringify(params),
+      headers: { 'Zerion-Wallet-Provider': provider },
+      ...options,
+    },
+    kyOptions
+  );
 }
