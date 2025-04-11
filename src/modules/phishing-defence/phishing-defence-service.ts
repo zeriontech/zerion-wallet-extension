@@ -97,6 +97,8 @@ class PhishingDefence {
       };
     }
     const origin = url ? this.getSafeOrigin(url) : null;
+    // we can get the error status if the request was blocked by Cloudflare
+    // to provide the correct data after passing the captcha we need to check the status again
     if (origin && this.websiteStatus[origin] === 'error') {
       await this.checkDapp(url);
     }
