@@ -29,10 +29,14 @@ export async function assetGetFungiblePnl(
 ) {
   const firstAddress = params.addresses[0];
   const provider = await this.getAddressProviderHeader(firstAddress);
-  return ZerionHttpClient.post<Response>({
-    endpoint: 'asset/get-fungible-pnl/v1',
-    body: JSON.stringify(params),
-    headers: { 'Zerion-Wallet-Provider': provider },
-    ...options,
-  });
+  const kyOptions = this.getKyOptions();
+  return ZerionHttpClient.post<Response>(
+    {
+      endpoint: 'asset/get-fungible-pnl/v1',
+      body: JSON.stringify(params),
+      headers: { 'Zerion-Wallet-Provider': provider },
+      ...options,
+    },
+    kyOptions
+  );
 }

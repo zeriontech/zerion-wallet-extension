@@ -8,18 +8,14 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { WebAppMessageHandler } from '../referral-program/WebAppMessageHandler';
 
-export function TurnstileTokenHandler() {
+function TurnstileDialog() {
   const { innerWidth } = useWindowSizeStore();
   const turnstileWidgetHeight = 73;
   const turnstileWidgetWidth = innerWidth - 32;
-  const [showDialog, setShowDialog] = useState(false);
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   useEffect(() => {
-    return emitter.on('openTurnstile', () => {
-      setShowDialog(true);
-      dialogRef.current?.showModal();
-    });
+    dialogRef.current?.showModal();
   }, []);
 
   const handleTurnstileToken = useCallback((params: unknown) => {
@@ -27,7 +23,6 @@ export function TurnstileTokenHandler() {
       isObj(params) && typeof params.token === 'string',
       'Got invalid payload from set-turnstile-token web app message'
     );
-    setShowDialog(false);
     dialogRef.current?.close();
     queryClient.refetchQueries();
   }, []);
@@ -38,8 +33,7 @@ export function TurnstileTokenHandler() {
       height="fit-content"
       closeOnClickOutside={false}
       containerStyle={{ backgroundColor: 'var(--z-index-0)' }}
-    >
-      {showDialog ? (
+      renderWhenOpen={() => (
         <WebAppMessageHandler
           pathname="/turnstile.html"
           callbackName="set-turnstile-token"
@@ -52,7 +46,18 @@ export function TurnstileTokenHandler() {
             colorScheme: 'auto',
           }}
         />
-      ) : null}
-    </BottomSheetDialog>
+      )}
+    />
   );
+}
+
+export function TurnstileTokenHandler() {
+  const [showDialog, setShowDialog] = useState(false);
+  useEffect(() => {
+    return emitter.on('openTurnstile', () => {
+      setShowDialog(true);
+    });
+  }, []);
+
+  return showDialog ? <TurnstileDialog /> : null;
 }
