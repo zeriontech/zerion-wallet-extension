@@ -54,6 +54,9 @@ import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigV
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { emitter } from 'src/ui/shared/events';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { createPasskeyForPassword } from 'src/shared/passkey/passkey.client';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { Input } from 'src/ui/ui-kit/Input';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -115,6 +118,14 @@ function SettingsMain() {
                 <HStack gap={8} alignItems="center">
                   <GlobeIcon />
                   <UIText kind="body/regular">Connected Sites</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+            <FrameListItemLink to="/settings/touch-id">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <LockIcon />
+                  <UIText kind="body/regular">Touch Id</UIText>
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
@@ -479,6 +490,48 @@ function Experiments() {
   );
 }
 
+function TouchId() {
+  const createPasswordMutation = useMutation({
+    mutationFn: async (password: string) => {
+      return createPasskeyForPassword(password);
+    },
+  });
+
+  return (
+    <PageColumn>
+      <NavigationTitle title="TouchId" />
+      <PageTop />
+      <Frame>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            const password = new FormData(event.currentTarget).get(
+              'password'
+            ) as string | undefined;
+            if (!password) {
+              return;
+            }
+            createPasswordMutation.mutate(password);
+          }}
+        >
+          <Input
+            autoFocus={true}
+            type="password"
+            name="password"
+            placeholder="Enter password"
+            required={true}
+          />
+          <Button disabled={createPasswordMutation.isLoading}>
+            Create Passkey
+          </Button>
+        </form>
+        {createPasswordMutation.isLoading ? <CircleSpinner /> : null}
+      </Frame>
+      <PageBottom />
+    </PageColumn>
+  );
+}
+
 export function Settings() {
   return (
     <Routes>
@@ -527,6 +580,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <Experiments />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/touch-id"
+        element={
+          <ViewSuspense>
+            <TouchId />
           </ViewSuspense>
         }
       />

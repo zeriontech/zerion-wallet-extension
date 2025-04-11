@@ -21,7 +21,13 @@ import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
 
-async function sha256({ password, salt }: { password: string; salt: string }) {
+export async function sha256({
+  password,
+  salt,
+}: {
+  password: string;
+  salt: string;
+}) {
   return await getSHA256HexDigest(`${salt}:${password}`);
 }
 
