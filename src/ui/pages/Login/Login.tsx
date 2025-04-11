@@ -28,6 +28,9 @@ import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { getPasswordWithPasskey } from 'src/shared/passkey/passkey.client';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { LayersAnimationLottie } from './LayersAnimationLottie';
 import { type LottieComponentHandle } from './LayersAnimationLottie';
 
@@ -142,6 +145,17 @@ export function Login() {
     },
   });
 
+  const touchIdMutation = useMutation({
+    mutationFn: async () => {
+      return getPasswordWithPasskey();
+    },
+    onSuccess(data) {
+      if (data && user) {
+        loginMutation.mutate({ user, password: data });
+      }
+    },
+  });
+
   useBodyStyle(useMemo(() => ({ backgroundColor: 'var(--white)' }), []));
   if (isLoading) {
     return null;
@@ -203,9 +217,17 @@ export function Login() {
               </UIText>
             ) : null}
           </VStack>
-          <Button form={formId} disabled={loginMutation.isLoading}>
-            {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
-          </Button>
+          <VStack gap={8}>
+            <Button form={formId} disabled={loginMutation.isLoading}>
+              {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
+            </Button>
+            <Button type="button" onClick={() => touchIdMutation.mutate()}>
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                {touchIdMutation.isLoading ? <CircleSpinner /> : null}
+                <UIText kind="small/accent">Use Touch Id</UIText>
+              </HStack>
+            </Button>
+          </VStack>
         </VStack>
       </form>
       <Spacer height={24} />
