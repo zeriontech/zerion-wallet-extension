@@ -522,7 +522,7 @@ function TouchId() {
             required={true}
           />
           <Button disabled={createPasswordMutation.isLoading}>
-            Create Passkey 1
+            Create Passkey
           </Button>
         </form>
         {createPasswordMutation.isLoading ? <CircleSpinner /> : null}
