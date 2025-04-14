@@ -43,8 +43,6 @@ import { AssetResources } from './AssetResources';
 import { AssetHeader } from './AssetHeader';
 import { AssetDescription } from './AssetDescription';
 
-const SHOW_BRIDGE_BUTTON = false; // TODO: make true after bridge is implemented
-
 function ReportAssetLink({ asset }: { asset: Asset }) {
   return (
     <UnstyledAnchor
@@ -245,10 +243,11 @@ export function AssetInfo() {
                 >
                   <SendIcon style={{ width: 20, height: 20 }} />
                 </Button>
-                {/* TODO: Implement UnstyledLink after bridge form is implemented */}
-                {SHOW_BRIDGE_BUTTON ? (
+                {process.env.FEATURE_BRIDGE_FORM === 'on' ? (
                   <Button
                     kind="primary"
+                    as={UnstyledLink}
+                    to={`/bridge-form?spendTokenInput=${asset_code}&spendChainInput=${chainWithTheBiggestBalance}`}
                     size={48}
                     style={{ padding: 14 }}
                     aria-label="Bridge Token"

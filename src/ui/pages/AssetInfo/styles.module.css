@@ -13,12 +13,21 @@
   }
 }
 
-@keyframes iconTransition {
+@keyframes iconWrapperTransition {
   from {
-    transform: scale(1) translateX(0);
+    transform: translateX(0);
   }
   to {
-    transform: scale(0.5) translateX(var(--asset-header-icon-offset, 0px));
+    transform: translateX(var(--asset-header-icon-offset, 0px));
+  }
+}
+
+@keyframes iconTransition {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0.5);
   }
 }
 
@@ -85,8 +94,13 @@
   animation-fill-mode: both;
 }
 
+.headerItem.headerIconWrapper {
+  animation-name: iconWrapperTransition;
+}
+
 .headerItem.headerIcon {
   animation-name: iconTransition;
+  transform-origin: 0 50%;
 }
 
 .headerItem.dissapearItem {

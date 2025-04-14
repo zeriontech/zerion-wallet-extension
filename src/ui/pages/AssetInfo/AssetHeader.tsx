@@ -22,10 +22,12 @@ export function AssetHeader({ asset }: { asset: Asset }) {
   const dashPlaceholderElementRef = useRef<HTMLDivElement>(null);
   const pricePlaceholderElementRef = useRef<HTMLDivElement>(null);
 
-  const [iconOffset, setIconOffset] = useState(0);
-  const [symbolOffset, setSymbolOffset] = useState(0);
-  const [dashOffset, setDashOffset] = useState(0);
-  const [priceOffset, setPriceOffset] = useState(0);
+  const [offsets, setOffsets] = useState({
+    iconOffset: 0,
+    symbolOffset: 0,
+    dashOffset: 0,
+    priceOffset: 0,
+  });
 
   useEffect(() => {
     return emitter.on('assetPriceSelected', (formattedPrice) => {
@@ -43,7 +45,10 @@ export function AssetHeader({ asset }: { asset: Asset }) {
     ) {
       const iconWidth = 20;
       const gapWidth = 4;
-      const panelWidth = innerWidth - 92;
+      const panelInlinePadding = 46;
+      const iconInitialOffset = 8;
+      const symbolInitialOffset = 56;
+      const panelWidth = innerWidth - panelInlinePadding * 2;
       const symbolWidth = symbolPlaceholderElementRef.current.offsetWidth;
       const dashWidth = dashPlaceholderElementRef.current.offsetWidth;
       const priceWidth = pricePlaceholderElementRef.current.offsetWidth;
@@ -51,20 +56,21 @@ export function AssetHeader({ asset }: { asset: Asset }) {
         iconWidth + symbolWidth + dashWidth + priceWidth + 4 * gapWidth;
 
       const startOffset = (panelWidth - contentWidth) / 2;
-      setIconOffset((startOffset - iconWidth) * 2);
-      setSymbolOffset(startOffset + iconWidth + 2 * gapWidth - 56);
-      setDashOffset(
-        startOffset + iconWidth + 2 * gapWidth + symbolWidth + gapWidth
-      );
-      setPriceOffset(
-        startOffset +
+      setOffsets({
+        iconOffset: startOffset - iconInitialOffset,
+        symbolOffset:
+          startOffset + iconWidth + 2 * gapWidth - symbolInitialOffset,
+        dashOffset:
+          startOffset + iconWidth + 2 * gapWidth + symbolWidth + gapWidth,
+        priceOffset:
+          startOffset +
           iconWidth +
           2 * gapWidth +
           symbolWidth +
           gapWidth +
           dashWidth +
-          gapWidth
-      );
+          gapWidth,
+      });
     }
   }, [innerWidth]);
 
@@ -75,20 +81,22 @@ export function AssetHeader({ asset }: { asset: Asset }) {
       style={{
         paddingLeft: 8,
         position: 'relative',
-        ['--asset-header-icon-offset' as string]: `${iconOffset}px`,
-        ['--asset-header-symbol-offset' as string]: `${symbolOffset}px`,
-        ['--asset-header-dash-offset' as string]: `${dashOffset}px`,
-        ['--asset-header-price-offset' as string]: `${priceOffset}px`,
+        ['--asset-header-icon-offset' as string]: `${offsets.iconOffset}px`,
+        ['--asset-header-symbol-offset' as string]: `${offsets.symbolOffset}px`,
+        ['--asset-header-dash-offset' as string]: `${offsets.dashOffset}px`,
+        ['--asset-header-price-offset' as string]: `${offsets.priceOffset}px`,
       }}
     >
       <div style={{ position: 'relative' }}>
-        <div className={cn(styles.headerItem, styles.headerIcon)}>
-          <TokenIcon
-            src={asset.iconUrl}
-            symbol={asset.symbol}
-            size={40}
-            title={asset.name}
-          />
+        <div className={cn(styles.headerItem, styles.headerIconWrapper)}>
+          <div className={cn(styles.headerItem, styles.headerIcon)}>
+            <TokenIcon
+              src={asset.iconUrl}
+              symbol={asset.symbol}
+              size={40}
+              title={asset.name}
+            />
+          </div>
         </div>
         {asset.new ? (
           <UIText
