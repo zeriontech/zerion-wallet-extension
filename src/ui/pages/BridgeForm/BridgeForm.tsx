@@ -632,6 +632,7 @@ function BridgeFormComponent() {
 
       const txResponse = await approveTxBtnRef.current.sendTransaction({
         transaction,
+        solTransaction: undefined,
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
@@ -643,7 +644,8 @@ function BridgeFormComponent() {
           chain: spendChain,
         }),
       });
-      return txResponse.hash;
+      invariant(txResponse.ethereum?.hash);
+      return txResponse.ethereum.hash;
     },
     onMutate: () => 'sendTransaction',
   });
@@ -698,6 +700,7 @@ function BridgeFormComponent() {
 
       const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction,
+        solTransaction: undefined,
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
@@ -710,7 +713,8 @@ function BridgeFormComponent() {
         }),
         quote: selectedQuote,
       });
-      return txResponse.hash;
+      invariant(txResponse.ethereum?.hash);
+      return txResponse.ethereum.hash;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
