@@ -1066,8 +1066,6 @@ function SolSendTransaction() {
             </Button>
             {preferences ? (
               <SignTransactionButton
-                // TODO: set loading state when {sendTransactionMutation.isLoading}
-                // (important for paymaster flow)
                 wallet={wallet}
                 ref={sendTxBtnRef}
                 onClick={() => sendTransaction()}

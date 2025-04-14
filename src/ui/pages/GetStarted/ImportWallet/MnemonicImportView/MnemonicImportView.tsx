@@ -10,7 +10,10 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { useBackgroundKind } from 'src/ui/components/Background';
-import { useBodyStyle } from 'src/ui/components/Background/Background';
+import {
+  useBodyStyle,
+  whiteBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
@@ -93,7 +96,7 @@ export function MnemonicImportView({
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
-  useBackgroundKind({ kind: 'white' });
+  useBackgroundKind(whiteBackgroundKind);
   useBodyStyle(bgStyle);
   return (
     <>

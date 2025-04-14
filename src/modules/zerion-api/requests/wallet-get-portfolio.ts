@@ -48,6 +48,7 @@ export async function walletGetPortfolio(
   params: Params,
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
+  // TODO: remove this filter when backend supports solana
   const addresses = params.addresses.filter((addr) => isEthereumAddress(addr));
   invariant(addresses.length > 0, 'Addresses param is empty');
   const firstAddress = addresses[0];

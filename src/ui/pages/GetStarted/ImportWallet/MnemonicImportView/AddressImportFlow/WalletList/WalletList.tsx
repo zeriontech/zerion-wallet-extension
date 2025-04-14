@@ -8,7 +8,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import { inferIndexFromDerivationPath } from 'src/shared/wallet/derivation-paths';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -22,7 +21,6 @@ interface BaseProps {
   renderMedia?: (index: number) => React.ReactNode;
   values: Set<string>;
   onSelect: (value: string) => void;
-  derivationPathType?: DerivationPathType;
   displayPathIndex?: boolean;
   hasMore?: boolean;
   isLoadingMore?: boolean;
@@ -43,7 +41,6 @@ export function WalletListPresentation({
   renderMedia,
   values,
   onSelect,
-  // derivationPathType = 'bip44',
   hasMore = false,
   isLoadingMore = false,
   displayPathIndex = true,

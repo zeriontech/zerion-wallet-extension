@@ -248,7 +248,10 @@ function ExistingWalletOptions() {
             ></Media>
           </AngleRightRow>
         </TemporaryListItem>
-        <TemporaryListItem to={importLedgerHref} onClick={openHref}>
+        <TemporaryListItem
+          to={importLedgerHref}
+          onClick={(event) => openHref(event, { windowType: 'tab' })}
+        >
           <AngleRightRow>
             <Media
               gap={12}

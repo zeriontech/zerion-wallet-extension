@@ -1943,10 +1943,7 @@ class PublicController {
       invariant(!currentAddress || addrIsSolana, 'addresss is not solana');
     }
     if (currentAddress)
-      if (
-        currentAddress &&
-        this.wallet.allowedOrigin(context, currentAddress)
-      ) {
+      if (this.wallet.allowedOrigin(context, currentAddress)) {
         const { origin } = context;
         emitter.emit('requestAccountsResolved', {
           origin,
