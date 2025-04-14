@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useStore } from '@store-unit/react';
-import Chart, { type ScriptableLineSegmentContext } from 'chart.js/auto';
+import ChartJS, { type ScriptableLineSegmentContext } from 'chart.js/auto';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -39,7 +39,7 @@ function updateChartPoints({
   nextPoints,
   theme,
 }: {
-  chart: Chart;
+  chart: ChartJS;
   prevPoints: [number, number][];
   nextPoints: [number, number][];
   theme: Theme;
@@ -141,7 +141,7 @@ function getSegmentColor({
   });
 }
 
-export function AssetChart({
+export function Chart({
   chartPoints,
   onRangeSelect,
   style,
@@ -166,7 +166,7 @@ export function AssetChart({
   const startRangeXRef = useRef<number | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<Chart | null>(null);
+  const chartRef = useRef<ChartJS | null>(null);
   const themeRef = useRef<Theme>(theme);
   themeRef.current = theme;
 
@@ -188,7 +188,7 @@ export function AssetChart({
       return;
     }
 
-    chartRef.current = new Chart(ctx, {
+    chartRef.current = new ChartJS(ctx, {
       ...DEFAULT_CONFIG,
       data: {
         datasets: [
