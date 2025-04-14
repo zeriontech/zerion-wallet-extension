@@ -5,8 +5,6 @@ import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { isSolanaAddress } from 'src/modules/solana/shared';
-import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
@@ -28,23 +26,16 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import {
   SegmentedControlGroup,
   SegmentedControlRadio,
 } from 'src/ui/ui-kit/SegmentedControl';
 import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
+import { suggestInitialWallets, type DerivedWallets } from '../helpers';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList, WalletListPresentation } from './WalletList';
-
-export type DerivedWallets = Array<{
-  curve: 'ecdsa' | 'ed25519';
-  pathType: DerivationPathType;
-  wallets: MaskedBareWallet[];
-}>;
 
 function DecoratedSettingsSelect({
   select,
@@ -130,7 +121,7 @@ function InactiveWalletsHint() {
   );
 }
 
-function SelectMoreWalletsDialog({
+export function SelectMoreWalletsDialog({
   dialogRef,
   wallets,
   existingAddressesSet,
@@ -328,54 +319,6 @@ function SelectMoreWalletsDialog({
       )}
     />
   );
-}
-
-function suggestInitialWallets({
-  wallets,
-  activeWallets,
-  existingAddressesSet,
-}: {
-  wallets: DerivedWallets;
-  activeWallets: Record<string, { active: boolean }>;
-  existingAddressesSet: Set<string>;
-}): {
-  activeCount: number;
-  groups: { ecosystem: BlockchainType; wallets: MaskedBareWallet[] }[];
-} {
-  const allWallets = wallets.flatMap((config) => config.wallets);
-  const newOnes = allWallets.filter(
-    (w) => !existingAddressesSet.has(normalizeAddress(w.address))
-  );
-  const grouped = groupBy(newOnes, ({ address }) =>
-    activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest'
-  );
-  const { active, rest } = grouped as Record<
-    'active' | 'rest',
-    MaskedBareWallet[] | undefined
-  >;
-  if (active?.length) {
-    // display all found active addresses
-    const ethWallets = active.filter((w) => isEthereumAddress(w.address));
-    const solWallets = active.filter((w) => isSolanaAddress(w.address));
-    return {
-      activeCount: active.length,
-      groups: [
-        { ecosystem: 'evm', wallets: ethWallets },
-        { ecosystem: 'solana', wallets: solWallets },
-      ],
-    };
-  } else {
-    // display only one eth and one solana address
-    const ethWallet = rest?.find((w) => isEthereumAddress(w.address));
-    const solanaWallet = rest?.find((w) => isSolanaAddress(w.address));
-    return {
-      activeCount: 0,
-      groups: [
-        { ecosystem: 'evm', wallets: ethWallet ? [ethWallet] : [] },
-        { ecosystem: 'solana', wallets: solanaWallet ? [solanaWallet] : [] },
-      ],
-    };
-  }
 }
 
 function AddressImportList({

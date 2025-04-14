@@ -13,9 +13,9 @@ import { useBackgroundKind } from 'src/ui/components/Background';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
-import type { DerivedWallets } from './AddressImportFlow';
 import { AddressImportFlow } from './AddressImportFlow';
-import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
+import type { DerivedWallets } from './helpers';
+import { prepareWalletsToImport } from './helpers';
 
 function useMnenomicPhraseForLocation({
   locationStateStore,
@@ -74,7 +74,7 @@ export function MnemonicImportView({
     locationStateStore,
   });
   const { data } = useQuery({
-    queryKey: ['getFirstNMnemonicWallets', phrase],
+    queryKey: ['prepareWalletsToImport', phrase],
     queryFn: async (): Promise<{
       derivedWallets: DerivedWallets;
       addressesToCheck: string[];
@@ -82,42 +82,7 @@ export function MnemonicImportView({
       if (!phrase) {
         return;
       }
-
-      const fn = getFirstNMnemonicWallets;
-      const [eth, sol1, sol2, sol3] = await Promise.all([
-        fn({ phrase, n: 30, curve: 'ecdsa' }),
-        /** We want to explore all derivation paths in case there are active addresses */
-        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44Change' }),
-        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44' }),
-        fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaDeprecated' }),
-      ]);
-      const derivedWallets = [
-        { curve: 'ecdsa' as const, pathType: 'bip44' as const, wallets: eth },
-        {
-          curve: 'ed25519' as const,
-          pathType: 'solanaBip44Change' as const,
-          wallets: sol1,
-        },
-        {
-          curve: 'ed25519' as const,
-          pathType: 'solanaBip44' as const,
-          wallets: sol2,
-        },
-        {
-          curve: 'ed25519' as const,
-          pathType: 'solanaDeprecated' as const,
-          wallets: sol3,
-        },
-      ];
-      const WALLETS_TO_CHECK_PER_PATH = 10; // this number is small to reduce load on backend
-      return {
-        derivedWallets,
-        addressesToCheck: derivedWallets.flatMap((config) =>
-          config.wallets
-            .slice(0, WALLETS_TO_CHECK_PER_PATH)
-            .map((w) => w.address)
-        ),
-      };
+      return prepareWalletsToImport(phrase);
     },
     enabled: Boolean(phrase),
     useErrorBoundary: true,

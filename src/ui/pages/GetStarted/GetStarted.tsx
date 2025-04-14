@@ -9,7 +9,7 @@ import {
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import DownloadIcon from 'jsx:src/ui/assets/download.svg';
-import ConnectIcon from 'jsx:src/ui/assets/technology-connect.svg';
+import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
@@ -44,9 +44,14 @@ import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { useToggledValues } from 'src/ui/components/useToggledValues';
-import { AddReadonlyAddress } from './AddReadonlyAddress';
-import { GenerateWallet } from './GenerateWallet';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { Media } from 'src/ui/ui-kit/Media';
 import { ImportWallet } from './ImportWallet';
+import { GenerateWallet } from './GenerateWallet';
+import { AddReadonlyAddress } from './AddReadonlyAddress';
 
 function createNextHref(path: string, beforePath: string | null) {
   return beforePath ? `${beforePath}?next=${encodeURIComponent(path)}` : path;
@@ -97,13 +102,16 @@ function NewWalletOption({
   );
 }
 
-function SpaceZone({ children }: React.PropsWithChildren) {
+function SpaceZone({
+  children,
+  backgroundColor = 'var(--neutral-300)',
+}: React.PropsWithChildren<{ backgroundColor?: string }>) {
   return (
     <div
       style={{
         borderRadius: 8,
         padding: 6,
-        backgroundColor: 'var(--neutral-300)',
+        backgroundColor,
         display: 'grid',
       }}
     >
@@ -222,32 +230,62 @@ function ExistingWalletOptions() {
       <VStack gap={8}>
         <TemporaryListItem to={importHref}>
           <AngleRightRow>
-            <HStack gap={8} alignItems="center">
-              <SpaceZone>
-                <DownloadIcon />
-              </SpaceZone>
-              <UIText kind="body/accent">Import Wallet</UIText>
-            </HStack>
+            <Media
+              gap={12}
+              vGap={0}
+              alignItems="start"
+              image={
+                <SpaceZone backgroundColor="var(--positive-500)">
+                  <DownloadIcon style={{ color: 'var(--always-white)' }} />
+                </SpaceZone>
+              }
+              text={<UIText kind="body/accent">Import Wallet</UIText>}
+              detailText={
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  Add an existing wallet using a recovery phrase or private key.
+                </UIText>
+              }
+            ></Media>
           </AngleRightRow>
         </TemporaryListItem>
         <TemporaryListItem to={importLedgerHref} onClick={openHref}>
           <AngleRightRow>
-            <HStack gap={8} alignItems="center">
-              <SpaceZone>
-                <ConnectIcon />
-              </SpaceZone>
-              <UIText kind="body/accent">Connect Ledger</UIText>
-            </HStack>
+            <Media
+              gap={12}
+              vGap={0}
+              alignItems="start"
+              image={
+                <SpaceZone backgroundColor="var(--black)">
+                  <LedgerIcon style={{ color: 'var(--white)' }} />
+                </SpaceZone>
+              }
+              text={<UIText kind="body/accent">Connect Ledger</UIText>}
+              detailText={
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  Use your hardware wallet with Zerion.
+                </UIText>
+              }
+            ></Media>
           </AngleRightRow>
         </TemporaryListItem>
         <TemporaryListItem to={addReadonlyHref}>
           <AngleRightRow>
-            <HStack gap={8} alignItems="center">
-              <SpaceZone>
-                <VisibleIcon />
-              </SpaceZone>
-              <UIText kind="body/accent">Watch Address</UIText>
-            </HStack>
+            <Media
+              gap={12}
+              vGap={0}
+              alignItems="start"
+              image={
+                <SpaceZone backgroundColor="#29BFEF">
+                  <VisibleIcon style={{ color: '#D4F2FC' }} />
+                </SpaceZone>
+              }
+              text={<UIText kind="body/accent">Watch Address</UIText>}
+              detailText={
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  Follow any wallets to track their onchain activities.
+                </UIText>
+              }
+            ></Media>
           </AngleRightRow>
         </TemporaryListItem>
       </VStack>
@@ -268,6 +306,7 @@ function WalletGroupSelect() {
   );
   useBackgroundKind(whiteBackgroundKind);
   const title = 'Select Backup';
+  const dialogRef = useRef<HTMLDialogElementInterface>(null);
   if (isLoading) {
     return null;
   }
@@ -280,11 +319,12 @@ function WalletGroupSelect() {
       <Spacer height={8} />
       <UIText kind="headline/h2">
         {title}{' '}
-        <span
-          title="Each group contains wallets that are associated with same recovery phrase, stored locally on your device. Zerion does not have access to this data.
+        <UnstyledButton onClick={() => dialogRef.current?.showModal()}>
+          <span
+            title="Each group contains wallets that are associated with same recovery phrase, stored locally on your device. Zerion does not have access to this data.
 
-We do not cross-associate wallet addresses or have a way to know that these wallets are grouped."
-        >
+  We do not cross-associate wallet addresses or have a way to know that these wallets are grouped."
+          ></span>
           <InfoIcon
             role="presentation"
             style={{
@@ -294,7 +334,34 @@ We do not cross-associate wallet addresses or have a way to know that these wall
               color: 'var(--neutral-500)',
             }}
           />
-        </span>
+        </UnstyledButton>
+        <BottomSheetDialog ref={dialogRef} height="min-content">
+          <DialogTitle
+            alignTitle="start"
+            title={
+              <UIText kind="headline/h3">
+                Wallets Are Grouped by Recovery Phrase
+              </UIText>
+            }
+          />
+          <Spacer height={24} />
+          <UIText kind="body/regular" style={{ textAlign: 'start' }}>
+            Each group contains wallets that are associated with same recovery
+            phrase.
+            <br />
+            <br />
+            Your recovery phrase is stored locally on your device. Zerion does
+            not have access to this data.
+            <br />
+            <br />
+            We do not cross-associate wallet addresses or have a way to know
+            that these wallets are grouped.
+          </UIText>
+          <Spacer height={32} />
+          <form method="dialog">
+            <Button style={{ width: '100%' }}>Close</Button>
+          </form>
+        </BottomSheetDialog>
       </UIText>
       <Spacer height={16} />
       <VStack gap={8}>
@@ -326,8 +393,8 @@ We do not cross-associate wallet addresses or have a way to know that these wall
           to={createNextHref('/get-started/new', beforeCreate)}
         >
           <HStack gap={8} alignItems="center">
-            <SpaceZone>
-              <AddCircleIcon />
+            <SpaceZone backgroundColor="var(--actions-default)">
+              <AddCircleIcon style={{ color: 'var(--always-white)' }} />
             </SpaceZone>
             <UIText kind="body/accent">Create New Backup</UIText>
           </HStack>
@@ -362,7 +429,7 @@ function NewWalletGroup() {
       <Spacer height={24} />
       <PageFullBleedColumn paddingInline={false}>
         <SurfaceList
-          gap={10}
+          gap={4}
           style={{ backgroundColor: 'var(--z-index-0)' }}
           items={[
             {
@@ -390,6 +457,37 @@ function NewWalletGroup() {
                     </span>
                   </HStack>
                 </SurfaceItemButton>
+              ),
+            },
+            {
+              key: 'divider',
+              pad: false,
+              isInteractive: false,
+              component: (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1fr',
+                    gap: 12,
+                    alignItems: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      height: 1,
+                      borderBottom: '1px dashed var(--neutral-300)',
+                      width: '100%',
+                    }}
+                  ></div>
+                  <UIText kind="body/regular">And</UIText>
+                  <div
+                    style={{
+                      height: 1,
+                      borderBottom: '1px dashed var(--neutral-300)',
+                      width: '100%',
+                    }}
+                  ></div>
+                </div>
               ),
             },
             {

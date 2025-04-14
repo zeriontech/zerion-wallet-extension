@@ -15,19 +15,78 @@ import dialogIconSrc from 'url:../assets/dialog.png';
 import metamaskIconSrc from 'url:../assets/metamask.png';
 import metamaskInstructionSrc from 'url:../assets/metamask_instruction.png';
 import walletIconSrc from 'url:../assets/wallet2.png';
+import phantomIconSrc from 'url:../assets/phantom-wallet-icon.svg';
 import { SidePanel } from '../shared/SidePanel';
 import * as styles from './styles.module.css';
 
+function PhantomWalletInstructionPanel({
+  show,
+  onDismiss,
+}: {
+  show: boolean;
+  onDismiss: () => void;
+}) {
+  return (
+    <SidePanel show={show} onDismiss={onDismiss}>
+      <VStack gap={20}>
+        <div className={styles.faqIcon}>
+          <img src={phantomIconSrc} style={{ width: 20, height: 20 }} />
+        </div>
+        <VStack gap={16}>
+          <UIText kind="body/accent">
+            Where can I find my recovery phrase or private key?
+          </UIText>
+          <UIText kind="body/regular">
+            1. Open your Phantom wallet extension
+          </UIText>
+
+          <UIText kind="body/regular">
+            2. Click the top-left icon to open the side menu, then tap the
+            pencil icon to manage accounts.
+          </UIText>
+          <div>
+            <img
+              style={{ width: 320 }}
+              src="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/phantom-instruction-screenshot_2x.png"
+              alt="Phantom wallet screenshot"
+            />
+          </div>
+          <UIText kind="body/regular">
+            3. Select the account, then choose to view your recovery phrase or
+            private key.
+          </UIText>
+          <UIText kind="body/regular">
+            4. Copy it and paste in Zerion extension 🎉
+          </UIText>
+          <UIText kind="small/regular" color="var(--neutral-600)">
+            Keys and recovery phrases are saved safely locally and not shared
+            with us.{' '}
+            <TextAnchor
+              style={{ display: 'inline', color: 'var(--primary)' }}
+              href="https://help.zerion.io/en/articles/8186414-how-to-import-an-existing-wallet"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Read more.
+            </TextAnchor>
+          </UIText>
+        </VStack>
+      </VStack>
+    </SidePanel>
+  );
+}
+
 export function SecretKeyFAQ() {
   const { isNarrowView } = useWindowSizeStore();
-  const [showMetamaskPanel, setShowMetamaskPanel] = useState(false);
-  const [showWalletPanel, setShowWalletPanel] = useState(false);
+  const [helpPanel, setHelpPanel] = useState<
+    'metamask' | 'phantom' | 'other' | null
+  >(null);
 
   return (
     <>
       <SidePanel
-        show={showMetamaskPanel}
-        onDismiss={() => setShowMetamaskPanel(false)}
+        show={helpPanel === 'metamask'}
+        onDismiss={() => setHelpPanel(null)}
       >
         <VStack gap={0}>
           <div className={styles.faqIcon}>
@@ -75,9 +134,13 @@ export function SecretKeyFAQ() {
           </UIText>
         </VStack>
       </SidePanel>
+      <PhantomWalletInstructionPanel
+        show={helpPanel === 'phantom'}
+        onDismiss={() => setHelpPanel(null)}
+      />
       <SidePanel
-        show={showWalletPanel}
-        onDismiss={() => setShowWalletPanel(false)}
+        show={helpPanel === 'other'}
+        onDismiss={() => setHelpPanel(null)}
       >
         <VStack gap={20}>
           <div className={styles.faqIcon}>
@@ -132,7 +195,7 @@ export function SecretKeyFAQ() {
           <Stack gap={8} direction={isNarrowView ? 'horizontal' : 'vertical'}>
             <UnstyledButton
               className={styles.faqButton}
-              onClick={() => setShowMetamaskPanel(true)}
+              onClick={() => setHelpPanel('metamask')}
             >
               <HStack gap={8} alignItems="center">
                 <img style={{ width: 20, height: 20 }} src={metamaskIconSrc} />
@@ -148,7 +211,23 @@ export function SecretKeyFAQ() {
             </UnstyledButton>
             <UnstyledButton
               className={styles.faqButton}
-              onClick={() => setShowWalletPanel(true)}
+              onClick={() => setHelpPanel('phantom')}
+            >
+              <HStack gap={8} alignItems="center">
+                <img style={{ width: 20, height: 20 }} src={phantomIconSrc} />
+                <HStack
+                  gap={0}
+                  alignItems="center"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <UIText kind="small/regular">Phantom</UIText>
+                  <RightAngleIcon />
+                </HStack>
+              </HStack>
+            </UnstyledButton>
+            <UnstyledButton
+              className={styles.faqButton}
+              onClick={() => setHelpPanel('other')}
             >
               <HStack gap={8} alignItems="center">
                 <img
@@ -174,20 +253,21 @@ export function SecretKeyFAQ() {
 
 export function PhraseFAQ() {
   const { isNarrowView } = useWindowSizeStore();
-  const [showMetamaskPanel, setShowMetamaskPanel] = useState(false);
-  const [showWalletPanel, setShowWalletPanel] = useState(false);
+  const [helpPanel, setHelpPanel] = useState<
+    'metamask' | 'phantom' | 'other' | null
+  >(null);
 
   return (
     <>
       <SidePanel
-        show={showMetamaskPanel}
-        onDismiss={() => setShowMetamaskPanel(false)}
+        show={helpPanel === 'metamask'}
+        onDismiss={() => setHelpPanel(null)}
       >
         <VStack gap={20}>
           <div className={styles.faqIcon}>
             <img src={metamaskIconSrc} style={{ width: 20, height: 20 }} />
           </div>
-          <VStack gap={8}>
+          <VStack gap={16}>
             <UIText kind="body/accent">
               Where can I find my recovery phrase?
             </UIText>
@@ -210,9 +290,13 @@ export function PhraseFAQ() {
           </VStack>
         </VStack>
       </SidePanel>
+      <PhantomWalletInstructionPanel
+        show={helpPanel === 'phantom'}
+        onDismiss={() => setHelpPanel(null)}
+      />
       <SidePanel
-        show={showWalletPanel}
-        onDismiss={() => setShowWalletPanel(false)}
+        show={helpPanel === 'other'}
+        onDismiss={() => setHelpPanel(null)}
       >
         <VStack gap={20}>
           <div className={styles.faqIcon}>
@@ -255,7 +339,7 @@ export function PhraseFAQ() {
           <Stack gap={8} direction={isNarrowView ? 'horizontal' : 'vertical'}>
             <UnstyledButton
               className={styles.faqButton}
-              onClick={() => setShowMetamaskPanel(true)}
+              onClick={() => setHelpPanel('metamask')}
             >
               <HStack gap={8} alignItems="center">
                 <img style={{ width: 20, height: 20 }} src={metamaskIconSrc} />
@@ -271,7 +355,23 @@ export function PhraseFAQ() {
             </UnstyledButton>
             <UnstyledButton
               className={styles.faqButton}
-              onClick={() => setShowWalletPanel(true)}
+              onClick={() => setHelpPanel('phantom')}
+            >
+              <HStack gap={8} alignItems="center">
+                <img style={{ width: 20, height: 20 }} src={phantomIconSrc} />
+                <HStack
+                  gap={0}
+                  alignItems="center"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <UIText kind="small/regular">Phantom</UIText>
+                  <RightAngleIcon />
+                </HStack>
+              </HStack>
+            </UnstyledButton>
+            <UnstyledButton
+              className={styles.faqButton}
+              onClick={() => setHelpPanel('other')}
             >
               <HStack gap={8} alignItems="center">
                 <img

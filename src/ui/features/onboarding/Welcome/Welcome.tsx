@@ -26,6 +26,7 @@ interface ImportOptionConfig {
   secondaryIconClassName: string;
   to: string;
   title: string;
+  subtitle: string;
   className: string;
 }
 
@@ -35,6 +36,7 @@ function ImportOption({
   secondaryIconClassName,
   to,
   title,
+  subtitle,
   className,
 }: ImportOptionConfig) {
   const { isNarrowView } = useWindowSizeStore();
@@ -50,9 +52,20 @@ function ImportOption({
   return (
     <UnstyledLink to={to} className={styles.link} onMouseEnter={hoverTrigger}>
       <VStack gap={isNarrowView ? 8 : 16} className={className}>
-        <UIText kind="headline/h3" className={styles.title}>
-          {title}
-        </UIText>
+        <VStack gap={4} style={{ textAlign: 'center' }}>
+          <UIText kind="headline/h3" className={styles.title}>
+            {title}
+          </UIText>
+          <UIText
+            kind="small/accent"
+            className={cn(styles.title, styles.subtitle)}
+            style={{
+              color: undefined, // undo default currentColor because we're using css classes here
+            }}
+          >
+            {subtitle}
+          </UIText>
+        </VStack>
         <div
           style={{
             position: 'relative',
@@ -87,6 +100,7 @@ function ImportOption({
 const IMPORT_OPTIONS: ImportOptionConfig[] = [
   {
     title: 'Create New Wallet',
+    subtitle: 'for Ethereum and Solana ecosystem',
     to: '/onboarding/create',
     className: cn(styles.option, styles.create),
     primaryImage: (
@@ -106,6 +120,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
   },
   {
     title: 'Import Existing Wallet',
+    subtitle: 'for Ethereum and Solana ecosystem',
     to: '/onboarding/import',
     className: cn(styles.option, styles.import),
     primaryImage: (
@@ -125,6 +140,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
   },
   {
     title: 'Connect Ledger',
+    subtitle: 'Use your hardware wallet with Zerion',
     to: '/onboarding/hardware',
     className: cn(styles.option, styles.hardware),
     primaryImage: (
