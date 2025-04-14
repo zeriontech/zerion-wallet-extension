@@ -53,13 +53,19 @@ export function getSortedRangeIndexes({
  * For the charts with small value dispersion, we need to show it more flat
  * to avoid the illusion of big price changes
  */
+const FLAT_CHART_MIN_MAX_RATIO = 1.02;
+
 export function getYLimits(points: [number, number][]) {
   const values = points.map(([, value]) => value);
   const minLimit = Math.min(...values);
   const maxLimit = Math.max(...values);
   const diff = maxLimit - minLimit;
-  if (minLimit && maxLimit / minLimit < 1.02) {
-    return { min: minLimit - diff * 5, max: maxLimit + diff * 5 };
+  if (minLimit && maxLimit / minLimit < FLAT_CHART_MIN_MAX_RATIO) {
+    const flatChartYOffset = diff * 5;
+    return {
+      min: minLimit - flatChartYOffset,
+      max: maxLimit + flatChartYOffset,
+    };
   }
   return { min: minLimit, max: maxLimit };
 }
