@@ -271,7 +271,7 @@ export function AssetChart({
       nextPoints: chartPoints,
       theme,
     });
-    chartPointsRef.current = [...chartPoints];
+    chartPointsRef.current = chartPoints;
   }
 
   return (

@@ -121,25 +121,27 @@ export function URLBar() {
       <RenderArea
         name="navigation-bar"
         children={(children) => {
-          let text: React.ReactNode;
+          let maybeText: React.ReactNode;
           // This check is done to work around an unavoidable inconsistent state
           // where this callback function is called first because of pathname change
           // and then later because some <Content /> element was added
           let automaticTitle: null | string = null;
           if (!children.length && pathnameRef.current !== pathname) {
-            text = null;
+            maybeText = null;
           } else {
             if (children.length) {
-              text = children[0];
+              // we want to wrap url content only in case it is a string
+              // in this case it is enough to get only the first element and check its type later
+              maybeText = children[0];
             } else {
               automaticTitle = titleFromPathname(pathname);
-              text = automaticTitle;
+              maybeText = automaticTitle;
             }
           }
           return (
             <>
               {automaticTitle ? <DocumentTitle title={automaticTitle} /> : null}
-              {typeof text === 'string' ? (
+              {typeof maybeText === 'string' ? (
                 <UIText
                   kind="body/accent"
                   style={{
@@ -149,7 +151,7 @@ export function URLBar() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {text}
+                  {maybeText}
                 </UIText>
               ) : (
                 <div>{children}</div>
