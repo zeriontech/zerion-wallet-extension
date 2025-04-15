@@ -40,36 +40,38 @@
   transition: color 200ms ease-in-out;
 }
 
-.createImg {
+.featureImg {
+  position: relative;
   z-index: 2;
+}
+
+.createImg {
   width: 143px;
   height: 113px;
 }
 
 .importImg {
-  z-index: 2;
   width: 149px;
   height: 118px;
 }
 
 .hardwareImg {
-  z-index: 2;
   width: 204px;
 }
 
 .createIcon {
   top: 42px;
-  left: 117px;
+  left: 150px;
 }
 
 .importIcon {
   top: 37px;
-  left: 85px;
+  left: 110px;
 }
 
 .hardwareIcon {
   top: 35px;
-  left: 90px;
+  left: 110px;
 }
 
 .secondaryIcon {

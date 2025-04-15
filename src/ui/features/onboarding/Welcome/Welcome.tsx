@@ -70,8 +70,7 @@ function ImportOption({
           style={{
             position: 'relative',
             width: '100%',
-            display: 'flex',
-            justifyContent: 'center',
+            textAlign: 'center',
             height: isNarrowView ? 110 : 148,
             paddingTop: 35,
             top: isNarrowView ? -35 : 0,
@@ -107,7 +106,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
       <img
         src={CreateImg}
         alt="Create New Wallet"
-        className={styles.createImg}
+        className={cn(styles.featureImg, styles.createImg)}
       />
     ),
     secondaryIcon: (
@@ -127,7 +126,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
       <img
         src={ImportImg}
         alt="Import Existing Wallet"
-        className={styles.importImg}
+        className={cn(styles.featureImg, styles.importImg)}
       />
     ),
     secondaryIcon: (
@@ -147,7 +146,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
       <img
         src={HardwareImg}
         alt="Connect Ledger"
-        className={styles.hardwareImg}
+        className={cn(styles.featureImg, styles.hardwareImg)}
       />
     ),
     secondaryIcon: (
