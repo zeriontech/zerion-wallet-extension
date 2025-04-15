@@ -23,6 +23,7 @@ import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import XIcon from 'jsx:src/ui/assets/x-logo.svg';
 import WarpcastIcon from 'jsx:src/ui/assets/warpcast-logo.svg';
+import ZerionIcon from 'jsx:src/ui/assets/zerion-logo-monochrome.svg';
 import DexscreenerIcon from 'jsx:src/ui/assets/dexscreener-logo.svg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 
@@ -283,6 +284,15 @@ export function AssetResources({
     <>
       <HStack gap={8} justifyContent="space-between">
         <HStack gap={8}>
+          <ResourceButton
+            resource={{
+              name: 'zerion',
+              displayableName: 'Zerion',
+              iconUrl: '',
+              url: `https://app.zerion.io/tokens/${assetFullInfo.fungible.symbol}-${assetFullInfo.fungible.id}`,
+            }}
+            icon={<ZerionIcon style={{ width: 20, height: 20 }} />}
+          />
           {resourcesById[TWITTER_ID] ? (
             <ResourceButton
               resource={resourcesById[TWITTER_ID]}
