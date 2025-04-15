@@ -282,8 +282,12 @@ export function AssetResources({
 
   return (
     <>
-      <HStack gap={8} justifyContent="space-between">
-        <HStack gap={8}>
+      <HStack
+        gap={6}
+        justifyContent="space-between"
+        style={{ gridTemplateColumns: '1fr auto' }}
+      >
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <ResourceButton
             resource={{
               name: 'zerion',
@@ -316,7 +320,7 @@ export function AssetResources({
             }
             icon={<DexscreenerIcon style={{ width: 20, height: 20 }} />}
           />
-        </HStack>
+        </div>
         <HStack gap={4}>
           {mainImplementation ? (
             <MainImplementationButton implementation={mainImplementation} />
