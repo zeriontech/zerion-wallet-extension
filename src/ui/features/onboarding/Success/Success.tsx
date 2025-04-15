@@ -10,9 +10,9 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ZerionIcon from 'jsx:./assets/zerion.svg';
 import PinIcon from 'jsx:./assets/pin.svg';
 import JigsawIcon from 'jsx:./assets/jigsaw.svg';
-import coinImgSrc from 'src/ui/assets/zer_coin.png';
-import sparkImgSrc from 'src/ui/assets/zer_spark.png';
-import starImgSrc from 'src/ui/assets/zer_star.png';
+import coinImgSrc from 'url:src/ui/assets/zer_coin.png';
+import sparkImgSrc from 'url:src/ui/assets/zer_spark.png';
+import starImgSrc from 'url:src/ui/assets/zer_star.png';
 import { useQuery } from '@tanstack/react-query';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
@@ -130,21 +130,22 @@ export function Success() {
 
   const referralCodeWidgetVisible = !referrer;
 
-  const loyaltyProgramWidget = FEATURE_LOYALTY_FLOW  === 'on' ? (
-    referralCodeWidgetVisible ? (
-      <ReferralCodeWidget
-        onSuccess={(pendingReferrer) => {
-          setPendingReferrer(pendingReferrer);
-          fireConfetti();
-        }}
-      />
-    ) : isNarrowView ? null : (
-      <>
-        <Spacer height={32} />
-        <CongratulationsWidget referrer={referrer} />
-      </>
-    )
-  ) : null;
+  const loyaltyProgramWidget =
+    FEATURE_LOYALTY_FLOW === 'on' ? (
+      referralCodeWidgetVisible ? (
+        <ReferralCodeWidget
+          onSuccess={(pendingReferrer) => {
+            setPendingReferrer(pendingReferrer);
+            fireConfetti();
+          }}
+        />
+      ) : isNarrowView ? null : (
+        <>
+          <Spacer height={32} />
+          <CongratulationsWidget referrer={referrer} />
+        </>
+      )
+    ) : null;
 
   return (
     <>

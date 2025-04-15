@@ -2,7 +2,7 @@ import React from 'react';
 import { FillView } from 'src/ui/components/FillView';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import noResultsImg from 'src/ui/assets/no-results@2x.png';
+import noResultsImg from 'url:src/ui/assets/no-results@2x.png';
 
 export function EmptyView({
   emoji = '🥺',

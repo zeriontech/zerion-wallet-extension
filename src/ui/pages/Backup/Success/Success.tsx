@@ -4,9 +4,9 @@ import confetti from 'canvas-confetti';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import coinImgSrc from 'src/ui/assets/zer_coin.png';
-import sparkImgSrc from 'src/ui/assets/zer_spark.png';
-import starImgSrc from 'src/ui/assets/zer_star.png';
+import coinImgSrc from 'url:src/ui/assets/zer_coin.png';
+import sparkImgSrc from 'url:src/ui/assets/zer_spark.png';
+import starImgSrc from 'url:src/ui/assets/zer_star.png';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as styles from './styles.module.css';
 
