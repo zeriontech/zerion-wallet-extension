@@ -79,7 +79,13 @@ function ChooseWalletsToImport({
             </VStack>
           )}
         </VStack>
-        <VStack gap={20} style={{ marginInline: -16 }}>
+        <VStack
+          gap={20}
+          style={{
+            marginInline: -16,
+            ['--surface-background-color' as string]: 'transparent',
+          }}
+        >
           {suggestedWallets.groups
             .filter((group) => group.wallets.length)
             .map((group) => (

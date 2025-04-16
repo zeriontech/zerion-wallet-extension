@@ -5,7 +5,6 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import RightAngleIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { apostrophe } from 'src/ui/shared/typography';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
@@ -13,9 +12,8 @@ import lockIconSrc from 'url:src/ui/assets/lock.png';
 import keyIconSrc from 'url:../assets/key.png';
 import dialogIconSrc from 'url:../assets/dialog.png';
 import metamaskIconSrc from 'url:../assets/metamask.png';
-import metamaskInstructionSrc from 'url:../assets/metamask_instruction.png';
-import walletIconSrc from 'url:../assets/wallet2.png';
 import phantomIconSrc from 'url:../assets/phantom-wallet-icon.svg';
+import walletIconSrc from 'url:../assets/wallet2.png';
 import { SidePanel } from '../shared/SidePanel';
 import * as styles from './styles.module.css';
 
@@ -47,7 +45,7 @@ function PhantomWalletInstructionPanel({
           <div>
             <img
               style={{ width: 320 }}
-              src="https://s3.us-east-1.amazonaws.com/cdn.zerion.io/images/dna-assets/phantom-instruction-screenshot_2x.png"
+              src="https://cdn.zerion.io/images/dna-assets/phantom-instruction-screenshot_2x.png"
               alt="Phantom wallet screenshot"
             />
           </div>
@@ -60,15 +58,7 @@ function PhantomWalletInstructionPanel({
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-600)">
             Keys and recovery phrases are saved safely locally and not shared
-            with us.{' '}
-            <TextAnchor
-              style={{ display: 'inline', color: 'var(--primary)' }}
-              href="https://help.zerion.io/en/articles/8186414-how-to-import-an-existing-wallet"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Read more.
-            </TextAnchor>
+            with us.
           </UIText>
         </VStack>
       </VStack>
@@ -93,45 +83,41 @@ export function SecretKeyFAQ() {
             <img src={metamaskIconSrc} style={{ width: 20, height: 20 }} />
           </div>
           <Spacer height={20} />
-          <UIText kind="body/accent">Where can I find my private key?</UIText>
-          <Spacer height={8} />
-          <UIText kind="body/regular">
-            1. Open the menu from your Metamask browser extension.
-          </UIText>
-          <Spacer height={8} />
-          <img
-            src={metamaskInstructionSrc}
-            style={{ width: 320, height: 269 }}
-          />
-          <Spacer height={16} />
-          <UIText kind="body/regular">
-            2. Select account details and export private key.
-          </UIText>
-          <Spacer height={16} />
-          <UIText kind="body/regular">
-            3. Enter your Metamask password and export your private key.
-          </UIText>
-          <Spacer height={16} />
-          <UIText kind="body/regular">4. Paste in Zerion extension 🎉</UIText>
-          <Spacer height={12} />
-          <UIText kind="small/regular" inline={true} color="var(--neutral-600)">
-            Your key information is saved locally on your device. We cannot
-            store or access it.{' '}
-            <TextAnchor
-              style={{ display: 'inline' }}
-              href="https://help.zerion.io/en/articles/8186414-how-to-import-an-existing-wallet"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <UIText
-                kind="small/regular"
-                color="var(--primary)"
-                style={{ display: 'inline' }}
-              >
-                Find out more.
+          <VStack gap={16}>
+            <div>
+              <UIText kind="body/accent">
+                Where can I find my private key?
               </UIText>
-            </TextAnchor>
-          </UIText>
+              <Spacer height={8} />
+              <UIText kind="body/regular">
+                1. Open your MetaMask extension and look for the menu.
+              </UIText>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                backgroundColor: 'var(--z-index-1-inverted)',
+              }}
+            >
+              <img
+                src="https://cdn.zerion.io/images/dna-assets/metamask-instruction-screenshot_2x.png"
+                style={{ width: 218 }}
+                alt="Metamask wallet screenshot"
+              />
+            </div>
+            <UIText kind="body/regular">
+              2. Select account details and export private key.
+            </UIText>
+            <UIText kind="body/regular">
+              3. Enter MM password and copy private key.
+            </UIText>
+            <UIText kind="body/regular">4. Paste in Zerion extension 🎉</UIText>
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Keys and recovery phrases are saved safely locally and not shared
+              with us.
+            </UIText>
+          </VStack>
         </VStack>
       </SidePanel>
       <PhantomWalletInstructionPanel
@@ -272,21 +258,27 @@ export function PhraseFAQ() {
               Where can I find my recovery phrase?
             </UIText>
             <UIText kind="body/regular">
-              1. Open the menu in your Metamask browser extension and click
-              "Settings"
+              1. Open your MetaMask extension and look for the menu.
             </UIText>
+            <div>
+              <img
+                src="https://placehold.co/640x470"
+                style={{ width: 320 }}
+                alt="Metamask wallet screenshot"
+              />
+            </div>
 
             <UIText kind="body/regular">
-              2. Then choose Security & Privacy.
+              2. Select account details and export recovery phrase.
             </UIText>
             <UIText kind="body/regular">
-              3. Click on the Reveal Secret Recovery Phrase button and enter
-              your wallet{apostrophe}s password.
+              3. Enter MM password and copy recovery phrase.
             </UIText>
-            <UIText kind="body/regular">
-              4. Copy your Recovery Phrase and paste it the Zerion extension.
+            <UIText kind="body/regular">4. Paste in Zerion extension 🎉</UIText>
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Keys and recovery phrases are saved safely locally and not shared
+              with us.
             </UIText>
-            <UIText kind="body/regular">5. Tada 🎉</UIText>
           </VStack>
         </VStack>
       </SidePanel>
@@ -427,9 +419,10 @@ export function SelectWalletsFAQ() {
         </div>
       )}
       <VStack gap={8}>
-        <UIText kind="small/regular">Inactive wallets</UIText>
+        <UIText kind="small/regular">Active wallets</UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">
-          The wallets with zero balance or no transactions on supported chains.
+          Wallets with a transaction history or balance on any chain supported
+          by Zerion.
         </UIText>
       </VStack>
     </VStack>

@@ -187,7 +187,10 @@ export async function getWalletsMetaByChunks(
   this: ZerionApiContext,
   addresses: string[]
 ) {
-  const chunks = splitIntoChunks(addresses, 10);
+  const chunks = splitIntoChunks(
+    addresses.filter((address) => isEthereumAddress(address)), // TODO: Temporary filter, REMOVE when backend supports Solana
+    10
+  );
   const kyOptions = this.getKyOptions();
   const results = await Promise.all(
     chunks.map((chunk) =>

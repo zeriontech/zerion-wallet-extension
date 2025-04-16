@@ -9,7 +9,7 @@ export function BlockchainTitleHelper({ kind }: { kind: BlockchainType }) {
     solana: { icon: <EcosystemSolanaIcon />, title: 'Solana wallets' },
     evm: {
       icon: <EcosystemEthereumIcon />,
-      title: 'EVM wallets',
+      title: 'Ethereum wallets',
     },
   };
 

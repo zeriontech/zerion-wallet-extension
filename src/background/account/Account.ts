@@ -371,7 +371,9 @@ export class AccountPublicRPC {
 
   async createUser({
     params: { password },
-  }: PublicMethodParams<{ password: string }>): Promise<PublicUser> {
+  }: PublicMethodParams<{
+    password: string; // TODO: maybe change to LocallyEncoded type?
+  }>): Promise<PublicUser> {
     const user = await Account.createUser(password);
     await this.account.setUser(user, { password }, { isNewUser: true });
     return { id: user.id };

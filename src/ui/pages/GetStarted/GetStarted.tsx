@@ -49,6 +49,8 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Media } from 'src/ui/ui-kit/Media';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { ellipsis } from 'src/ui/shared/typography';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 import { AddReadonlyAddress } from './AddReadonlyAddress';
@@ -408,11 +410,114 @@ function WalletGroupSelect() {
   );
 }
 
+export function EcosystemOptionsList({
+  values,
+  onValueToggle,
+}: {
+  values: Set<BlockchainType>;
+  onValueToggle: (value: BlockchainType) => void;
+}) {
+  return (
+    <SurfaceList
+      gap={4}
+      style={{ backgroundColor: 'var(--z-index-0)' }}
+      items={[
+        {
+          key: 'ethereum',
+          pad: false,
+          isInteractive: true,
+          component: (
+            <SurfaceItemButton onClick={() => onValueToggle('evm')}>
+              <HStack
+                gap={12}
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <HStack gap={12} alignItems="center">
+                  <EcosystemEthereumIcon style={{ width: 44, height: 44 }} />
+                  <VStack gap={0}>
+                    <UIText kind="body/accent">Ethereum Ecosystem</UIText>
+                    <UIText kind="small/regular" color="var(--neutral-600)">
+                      Base, Optimism, Polygon, Binance{ellipsis}
+                    </UIText>
+                  </VStack>
+                </HStack>
+                <span>
+                  <AnimatedCheckmark
+                    checked={values.has('evm')}
+                    checkedColor="var(--primary)"
+                  />
+                </span>
+              </HStack>
+            </SurfaceItemButton>
+          ),
+        },
+        {
+          key: 'divider',
+          pad: false,
+          isInteractive: false,
+          component: (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto 1fr',
+                gap: 12,
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  height: 1,
+                  borderBottom: '1px dashed var(--neutral-300)',
+                  width: '100%',
+                }}
+              ></div>
+              <UIText kind="body/regular">And</UIText>
+              <div
+                style={{
+                  height: 1,
+                  borderBottom: '1px dashed var(--neutral-300)',
+                  width: '100%',
+                }}
+              ></div>
+            </div>
+          ),
+        },
+        {
+          key: 'solana',
+          pad: false,
+          isInteractive: true,
+          component: (
+            <SurfaceItemButton onClick={() => onValueToggle('solana')}>
+              <HStack
+                gap={12}
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <HStack gap={12} alignItems="center">
+                  <EcosystemSolanaIcon style={{ width: 44, height: 44 }} />
+                  <UIText kind="body/accent">Solana Ecosystem</UIText>
+                </HStack>
+                <span>
+                  <AnimatedCheckmark
+                    checked={values.has('solana')}
+                    checkedColor="var(--primary)"
+                  />
+                </span>
+              </HStack>
+            </SurfaceItemButton>
+          ),
+        },
+      ]}
+    />
+  );
+}
+
 function NewWalletGroup() {
   const title = 'Create New Wallet';
   useBackgroundKind(whiteBackgroundKind);
   const [values, toggleValue] = useToggledValues(
-    () => new Set(['evm', 'solana'])
+    () => new Set<BlockchainType>(['evm', 'solana'])
   );
   const navigate = useNavigate();
   return (
@@ -431,95 +536,7 @@ function NewWalletGroup() {
 
       <Spacer height={24} />
       <PageFullBleedColumn paddingInline={false}>
-        <SurfaceList
-          gap={4}
-          style={{ backgroundColor: 'var(--z-index-0)' }}
-          items={[
-            {
-              key: 'ethereum',
-              pad: false,
-              isInteractive: true,
-              component: (
-                <SurfaceItemButton onClick={() => toggleValue('evm')}>
-                  <HStack
-                    gap={12}
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <HStack gap={12} alignItems="center">
-                      <EcosystemEthereumIcon
-                        style={{ width: 44, height: 44 }}
-                      />
-                      <UIText kind="body/regular">EVM wallet</UIText>
-                    </HStack>
-                    <span>
-                      <AnimatedCheckmark
-                        checked={values.has('evm')}
-                        checkedColor="var(--primary)"
-                      />
-                    </span>
-                  </HStack>
-                </SurfaceItemButton>
-              ),
-            },
-            {
-              key: 'divider',
-              pad: false,
-              isInteractive: false,
-              component: (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto 1fr',
-                    gap: 12,
-                    alignItems: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      height: 1,
-                      borderBottom: '1px dashed var(--neutral-300)',
-                      width: '100%',
-                    }}
-                  ></div>
-                  <UIText kind="body/regular">And</UIText>
-                  <div
-                    style={{
-                      height: 1,
-                      borderBottom: '1px dashed var(--neutral-300)',
-                      width: '100%',
-                    }}
-                  ></div>
-                </div>
-              ),
-            },
-            {
-              key: 'solana',
-              pad: false,
-              isInteractive: true,
-              component: (
-                <SurfaceItemButton onClick={() => toggleValue('solana')}>
-                  <HStack
-                    gap={12}
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <HStack gap={12} alignItems="center">
-                      <EcosystemSolanaIcon style={{ width: 44, height: 44 }} />
-                      <UIText kind="body/regular">Solana wallet</UIText>
-                    </HStack>
-                    <span>
-                      <AnimatedCheckmark
-                        checked={values.has('solana')}
-                        checkedColor="var(--primary)"
-                      />
-                    </span>
-                  </HStack>
-                </SurfaceItemButton>
-              ),
-            },
-          ]}
-        />
+        <EcosystemOptionsList values={values} onValueToggle={toggleValue} />
       </PageFullBleedColumn>
       <Button
         style={{ marginTop: 'auto' }}

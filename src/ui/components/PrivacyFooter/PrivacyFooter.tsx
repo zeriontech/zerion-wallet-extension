@@ -1,7 +1,7 @@
 import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import lockIconSrc from 'jsx:src/ui/assets/lock.png';
+import lockIconSrc from 'url:src/ui/assets/lock.png';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import * as styles from 'src/ui/style/helpers.module.css';
 
