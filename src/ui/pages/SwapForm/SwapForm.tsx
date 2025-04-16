@@ -296,21 +296,13 @@ export function SwapFormComponent() {
   const { receiveAsset, spendAsset } = swapView;
 
   const priceImpact = useMemo(() => {
-    const inputValue =
-      (primaryInput === 'spend' ? spendInput : receiveInput) || null;
-    const outputValue =
-      (primaryInput === 'spend' ? receiveInput : spendInput) || null;
-
-    const inputAsset = primaryInput === 'spend' ? spendAsset : receiveAsset;
-    const outputAsset = primaryInput === 'spend' ? receiveAsset : spendAsset;
-
     return calculatePriceImpact({
-      inputValue,
-      outputValue,
-      inputAsset,
-      outputAsset,
+      inputValue: spendInput || null,
+      outputValue: receiveInput || null,
+      inputAsset: spendAsset,
+      outputAsset: receiveAsset,
     });
-  }, [primaryInput, receiveAsset, receiveInput, spendAsset, spendInput]);
+  }, [receiveAsset, receiveInput, spendAsset, spendInput]);
 
   const snapshotRef = useRef<SwapFormState | null>(null);
   const onBeforeSubmit = () => {
