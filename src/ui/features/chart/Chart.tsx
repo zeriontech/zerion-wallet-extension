@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useStore } from '@store-unit/react';
-import ChartJS, { type ScriptableLineSegmentContext } from 'chart.js/auto';
+import type { InteractionItem, InteractionModeFunction } from 'chart.js/auto';
+import ChartJS, {
+  Interaction,
+  type ScriptableLineSegmentContext,
+} from 'chart.js/auto';
+import { getRelativePosition } from 'chart.js/helpers';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -8,7 +13,6 @@ import { equal } from 'src/modules/fast-deep-equal';
 import { Theme } from 'src/ui/features/appearance';
 import { themeStore } from 'src/ui/features/appearance';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
-import type { AssetChartPointExtra } from 'src/modules/zerion-api/requests/asset-get-chart';
 import {
   getSortedRangeIndexes,
   toScatterData,
@@ -18,6 +22,80 @@ import {
 import { CHART_HEIGHT, DEFAULT_CONFIG } from './config';
 import { drawDotPlugin, drawRangePlugin } from './plugins';
 import { externalTooltip } from './tooltip';
+import type { ChartPoint, ParsedChartPoint } from './types';
+
+declare module 'chart.js' {
+  interface InteractionModeMap {
+    magneticActions: InteractionModeFunction;
+  }
+}
+
+function getDistance(
+  point1: { x: number; y: number },
+  point2: { x: number; y: number }
+) {
+  return Math.sqrt(
+    Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
+  );
+}
+
+Interaction.modes.magneticActions = function (chart, e) {
+  const indexPoints = Interaction.modes.index(chart, e, {
+    axis: 'x',
+    intersect: false,
+  });
+  const activePoint = indexPoints[0];
+
+  if (!activePoint) {
+    return [];
+  }
+
+  const marneticRadius = 4;
+  let closestPointWithExtra: InteractionItem | null = null;
+  const position = getRelativePosition(e, chart);
+
+  Interaction.evaluateInteractionItems(
+    chart,
+    'xy',
+    position,
+    (element, datasetIndex, index) => {
+      if (Math.abs(element.x - position.x) > marneticRadius) {
+        return;
+      }
+      if (
+        'raw' in element &&
+        Boolean((element.raw as ParsedChartPoint)?.extra)
+      ) {
+        if (!closestPointWithExtra) {
+          closestPointWithExtra = {
+            element,
+            datasetIndex,
+            index,
+          };
+        } else if (
+          Math.abs(element.x - position.x) <
+          Math.abs(closestPointWithExtra.element.x - position.x)
+        ) {
+          closestPointWithExtra = {
+            element,
+            datasetIndex,
+            index,
+          };
+        }
+      }
+    }
+  );
+
+  const activePointMagneticRadius = 8;
+  if (
+    !closestPointWithExtra ||
+    getDistance(position, activePoint.element) < activePointMagneticRadius
+  ) {
+    return [activePoint];
+  }
+
+  return [closestPointWithExtra];
+};
 
 /**
  * Chart update animation algorithm:
@@ -42,8 +120,8 @@ function updateChartPoints({
   theme,
 }: {
   chart: ChartJS;
-  prevPoints: [number, number][];
-  nextPoints: [number, number][];
+  prevPoints: ChartPoint[];
+  nextPoints: ChartPoint[];
   theme: Theme;
 }) {
   const { min: prevYMin, max: prevYMax } = getYLimits(prevPoints);
@@ -115,7 +193,7 @@ function getSegmentColor({
   ctx: ScriptableLineSegmentContext;
   startRangeIndex: number | null;
   endRangeIndex: number | null;
-  chartPoints: [number, number][];
+  chartPoints: ChartPoint[];
   theme: Theme;
 }) {
   const { startRangeIndex, endRangeIndex } = getSortedRangeIndexes({
@@ -145,12 +223,10 @@ function getSegmentColor({
 
 export function Chart({
   chartPoints,
-  chartExtraData,
   onRangeSelect,
   style,
 }: {
-  chartPoints: [number, number][];
-  chartExtraData?: AssetChartPointExtra[];
+  chartPoints: ChartPoint[];
   onRangeSelect: ({
     startRangeIndex,
     endRangeIndex,
@@ -164,8 +240,7 @@ export function Chart({
   const { theme } = useStore(themeStore);
   const onRangeSelectEvent = useEvent(onRangeSelect);
 
-  const chartExtraDataRef = useRef<AssetChartPointExtra[]>([]);
-  const chartPointsRef = useRef<[number, number][]>([]);
+  const chartPointsRef = useRef<ChartPoint[]>([]);
   const endRangeIndexRef = useRef<number | null>(null);
   const startRangeIndexRef = useRef<number | null>(null);
   const startRangeXRef = useRef<number | null>(null);
@@ -202,13 +277,13 @@ export function Chart({
             hidden: true,
             pointRadius: (ctx) => {
               const hasDataPoint = Boolean(
-                chartExtraDataRef.current[ctx.dataIndex]
+                (ctx.raw as ParsedChartPoint)?.extra
               );
               return hasDataPoint ? 4 : 0;
             },
             pointHoverRadius: (ctx) => {
               const hasDataPoint = Boolean(
-                chartExtraDataRef.current[ctx.dataIndex]
+                (ctx.raw as ParsedChartPoint)?.extra
               );
               return hasDataPoint ? 8 : 0;
             },
@@ -217,7 +292,7 @@ export function Chart({
             },
             pointBackgroundColor: (ctx) => {
               const isPositive =
-                (chartExtraDataRef.current[ctx.dataIndex]?.total || 0) > 0;
+                ((ctx.raw as ParsedChartPoint)?.extra?.total || 0) > 0;
               return isPositive ? 'green' : 'red';
             },
             pointBorderWidth: 1,
@@ -241,15 +316,15 @@ export function Chart({
         onHover: (_, __, chart) => {
           chart.update();
         },
+        interaction: { mode: 'magneticActions' },
         plugins: {
           ...DEFAULT_CONFIG.options?.plugins,
           tooltip: {
             ...DEFAULT_CONFIG.options?.plugins?.tooltip,
             external: externalTooltip,
             callbacks: {
-              label: (context) => {
-                const { dataIndex } = context;
-                const extraData = chartExtraDataRef.current[dataIndex];
+              label: (ctx) => {
+                const extraData = (ctx.raw as ParsedChartPoint)?.extra;
                 return extraData
                   ? [`${formatPriceValue(extraData.total, 'en', currency)}`]
                   : '';
@@ -295,7 +370,7 @@ export function Chart({
         drawDotPlugin({
           getStartRangeIndex: () => startRangeIndexRef.current,
           getTheme: () => themeRef.current,
-          getChartPointsExtra: () => chartExtraDataRef.current,
+          getChartPoints: () => chartPointsRef.current,
         }),
         drawRangePlugin({
           getStartRangeX: () => startRangeXRef.current,
@@ -309,7 +384,6 @@ export function Chart({
     };
   }, [onRangeSelectEvent, currency]);
 
-  chartExtraDataRef.current = chartExtraData || [];
   if (!equal(chartPointsRef.current, chartPoints) && chartRef.current) {
     updateChartPoints({
       chart: chartRef.current,
