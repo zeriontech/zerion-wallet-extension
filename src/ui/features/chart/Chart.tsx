@@ -5,9 +5,10 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { equal } from 'src/modules/fast-deep-equal';
-import type { Theme } from 'src/ui/features/appearance';
+import { Theme } from 'src/ui/features/appearance';
 import { themeStore } from 'src/ui/features/appearance';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import type { AssetChartPointExtra } from 'src/modules/zerion-api/requests/asset-get-chart';
 import {
   getSortedRangeIndexes,
   toScatterData,
@@ -16,6 +17,7 @@ import {
 } from './helpers';
 import { CHART_HEIGHT, DEFAULT_CONFIG } from './config';
 import { drawDotPlugin, drawRangePlugin } from './plugins';
+import { externalTooltip } from './tooltip';
 
 /**
  * Chart update animation algorithm:
@@ -143,10 +145,12 @@ function getSegmentColor({
 
 export function Chart({
   chartPoints,
+  chartExtraData,
   onRangeSelect,
   style,
 }: {
   chartPoints: [number, number][];
+  chartExtraData?: AssetChartPointExtra[];
   onRangeSelect: ({
     startRangeIndex,
     endRangeIndex,
@@ -160,6 +164,7 @@ export function Chart({
   const { theme } = useStore(themeStore);
   const onRangeSelectEvent = useEvent(onRangeSelect);
 
+  const chartExtraDataRef = useRef<AssetChartPointExtra[]>([]);
   const chartPointsRef = useRef<[number, number][]>([]);
   const endRangeIndexRef = useRef<number | null>(null);
   const startRangeIndexRef = useRef<number | null>(null);
@@ -195,6 +200,29 @@ export function Chart({
           {
             data: [],
             hidden: true,
+            pointRadius: (ctx) => {
+              const hasDataPoint = Boolean(
+                chartExtraDataRef.current[ctx.dataIndex]
+              );
+              return hasDataPoint ? 4 : 0;
+            },
+            pointHoverRadius: (ctx) => {
+              const hasDataPoint = Boolean(
+                chartExtraDataRef.current[ctx.dataIndex]
+              );
+              return hasDataPoint ? 8 : 0;
+            },
+            pointBorderColor: () => {
+              return themeRef.current === Theme.light ? '#ffffff' : '#1c1c1c';
+            },
+            pointBackgroundColor: (ctx) => {
+              const isPositive =
+                (chartExtraDataRef.current[ctx.dataIndex]?.total || 0) > 0;
+              return isPositive ? 'green' : 'red';
+            },
+            pointBorderWidth: 1,
+            pointHoverBorderWidth: 2,
+
             segment: {
               borderColor: (ctx) =>
                 getSegmentColor({
@@ -212,6 +240,22 @@ export function Chart({
         ...DEFAULT_CONFIG.options,
         onHover: (_, __, chart) => {
           chart.update();
+        },
+        plugins: {
+          ...DEFAULT_CONFIG.options?.plugins,
+          tooltip: {
+            ...DEFAULT_CONFIG.options?.plugins?.tooltip,
+            external: externalTooltip,
+            callbacks: {
+              label: (context) => {
+                const { dataIndex } = context;
+                const extraData = chartExtraDataRef.current[dataIndex];
+                return extraData
+                  ? [`${formatPriceValue(extraData.total, 'en', currency)}`]
+                  : '';
+              },
+            },
+          },
         },
       },
       plugins: [
@@ -251,6 +295,7 @@ export function Chart({
         drawDotPlugin({
           getStartRangeIndex: () => startRangeIndexRef.current,
           getTheme: () => themeRef.current,
+          getChartPointsExtra: () => chartExtraDataRef.current,
         }),
         drawRangePlugin({
           getStartRangeX: () => startRangeXRef.current,
@@ -262,8 +307,9 @@ export function Chart({
     return () => {
       chartRef.current?.destroy();
     };
-  }, [onRangeSelectEvent]);
+  }, [onRangeSelectEvent, currency]);
 
+  chartExtraDataRef.current = chartExtraData || [];
   if (!equal(chartPointsRef.current, chartPoints) && chartRef.current) {
     updateChartPoints({
       chart: chartRef.current,

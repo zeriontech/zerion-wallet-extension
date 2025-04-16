@@ -5,9 +5,11 @@ import { getChartColor, getSortedRangeIndexes } from './helpers';
 export function drawDotPlugin({
   getStartRangeIndex,
   getTheme,
+  getChartPointsExtra,
 }: {
   getStartRangeIndex: () => number | null;
   getTheme: () => Theme;
+  getChartPointsExtra: () => unknown[];
 }): Plugin<'scatter'> {
   return {
     id: 'drawDot',
@@ -15,7 +17,11 @@ export function drawDotPlugin({
       const activeElement = chart.getActiveElements()?.[0];
       const { ctx } = chart;
 
-      if (!activeElement || !ctx) {
+      if (
+        !activeElement ||
+        !ctx ||
+        Boolean(getChartPointsExtra()[activeElement.index])
+      ) {
         return;
       }
 

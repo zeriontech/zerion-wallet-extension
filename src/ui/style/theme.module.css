@@ -69,6 +69,7 @@
   /* Extra stuff, to be finalized with design */
   --background: var(--neutral-100);
   --z-index-1-inverted: var(--neutral-100);
+  --background-transparent: rgba(22, 22, 26, 0.9);
 }
 
 .theme-dark {
@@ -140,6 +141,7 @@
   /* Extra stuff, to be finalized with design */
   --background: var(--z-index-0);
   --z-index-1-inverted: var(--white);
+  --background-transparent: rgba(255, 255, 255, 0.9);
 }
 
 .theme-dark :global(.theme-dark-invert) {

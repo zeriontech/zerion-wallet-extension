@@ -61,6 +61,10 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
     );
   }, [chartData]);
 
+  const chartPointsExtra = useMemo(() => {
+    return chartData?.data.points.map(({ extra }) => extra);
+  }, [chartData]);
+
   const handleRangeSelect = useCallback(
     ({
       startRangeIndex,
@@ -180,6 +184,7 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
         <>
           <Chart
             chartPoints={chartPoints}
+            chartExtraData={chartPointsExtra}
             onRangeSelect={handleRangeSelect}
             style={{
               position: 'relative',
