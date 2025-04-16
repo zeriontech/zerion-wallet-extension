@@ -3,7 +3,7 @@ import SidepanelIcon from 'jsx:src/ui/assets/sidepanel.svg';
 import PopupIcon from 'jsx:src/ui/assets/popup.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { urlContext } from 'src/shared/UrlContext';
-import { disableSidePanel, openSidePanel } from '../sidepanel-apis';
+import { openSidePanel } from '../sidepanel-apis';
 import { isSidepanelSupported } from '../sidepanel-support';
 
 function closeIfNotInTab() {
@@ -35,7 +35,10 @@ function SidepanelOptionsButtonComponent() {
             });
             closeIfNotInTab();
           } else {
-            await disableSidePanel();
+            await chrome.sidePanel.setPanelBehavior({
+              openPanelOnActionClick: false,
+            });
+            window.close();
           }
         }}
       >
