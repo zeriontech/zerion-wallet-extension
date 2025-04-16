@@ -15,7 +15,9 @@ export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
 
   const percentageChange = useMemo(
     () =>
-      priceImpactPercentage ? formatPercent(priceImpactPercentage, 'en') : null,
+      priceImpactPercentage
+        ? `${formatPercent(priceImpactPercentage, 'en')}%`
+        : null,
     [priceImpactPercentage]
   );
 

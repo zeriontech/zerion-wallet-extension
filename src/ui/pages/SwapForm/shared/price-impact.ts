@@ -70,9 +70,10 @@ export function calculatePriceImpact({
   const inputFiatValue = toFiatValue(inputValue, inputAsset.price.value);
   const outputFiatValue = toFiatValue(outputValue, outputAsset.price.value);
 
-  const ratio = inputFiatValue.isGreaterThan(0)
-    ? outputFiatValue.minus(inputFiatValue).div(inputFiatValue).toNumber()
-    : null;
+  const ratio =
+    outputFiatValue.isGreaterThan(0) && inputFiatValue.isGreaterThan(0)
+      ? outputFiatValue.minus(inputFiatValue).div(inputFiatValue).toNumber()
+      : null;
 
   return ratioToPriceImpact(ratio);
 }

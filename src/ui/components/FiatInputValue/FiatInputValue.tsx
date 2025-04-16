@@ -98,7 +98,9 @@ export function ReceiveFiatInputValue({
 
   const percentageChange = useMemo(
     () =>
-      priceImpactPercentage ? formatPercent(priceImpactPercentage, 'en') : null,
+      priceImpactPercentage
+        ? `${formatPercent(priceImpactPercentage, 'en')}%`
+        : null,
     [priceImpactPercentage]
   );
 
