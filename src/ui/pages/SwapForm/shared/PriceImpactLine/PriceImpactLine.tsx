@@ -13,7 +13,7 @@ export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
     ? getPriceImpactPercentage(priceImpact)
     : null;
 
-  const percentageChange = useMemo(
+  const priceImpactText = useMemo(
     () =>
       priceImpactPercentage
         ? `${formatPercent(priceImpactPercentage, 'en')}%`
@@ -25,9 +25,9 @@ export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
     <Surface padding={12} style={{ backgroundColor: 'var(--neutral-100)' }}>
       <HStack gap={4} justifyContent="space-between">
         <UIText kind="body/accent">High Price Impact</UIText>
-        {percentageChange ? (
+        {priceImpactText ? (
           <UIText kind="body/regular" color="var(--negative-500)">
-            {percentageChange}
+            {priceImpactText}
           </UIText>
         ) : null}
       </HStack>

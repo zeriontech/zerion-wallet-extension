@@ -896,7 +896,7 @@ export function SwapFormComponent() {
         </VStack>
         <VStack gap={16}>
           {selectedQuote ? <ProtocolFeeLine quote={selectedQuote} /> : null}
-          {priceImpact && !isApproveMode ? (
+          {quotesData.done && priceImpact && !isApproveMode ? (
             <PriceImpactLine priceImpact={priceImpact} />
           ) : null}
         </VStack>
