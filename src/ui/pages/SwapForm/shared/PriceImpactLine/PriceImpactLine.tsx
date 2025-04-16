@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { formatPercentChange } from 'src/shared/units/formatPercent/formatPercentChange';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { getPriceImpactPercentage, type PriceImpact } from '../price-impact';
 
 export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
@@ -15,9 +15,7 @@ export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
 
   const percentageChange = useMemo(
     () =>
-      priceImpactPercentage
-        ? formatPercentChange(priceImpactPercentage, 'en')
-        : null,
+      priceImpactPercentage ? formatPercent(priceImpactPercentage, 'en') : null,
     [priceImpactPercentage]
   );
 
@@ -27,7 +25,7 @@ export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
         <UIText kind="body/accent">High Price Impact</UIText>
         {percentageChange ? (
           <UIText kind="body/regular" color="var(--negative-500)">
-            {percentageChange.formatted}
+            {percentageChange}
           </UIText>
         ) : null}
       </HStack>

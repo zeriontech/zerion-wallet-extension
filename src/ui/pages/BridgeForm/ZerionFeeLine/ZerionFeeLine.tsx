@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import type { Quote } from 'src/shared/types/Quote';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';

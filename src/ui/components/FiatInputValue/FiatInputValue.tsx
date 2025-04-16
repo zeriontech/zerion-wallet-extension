@@ -6,9 +6,9 @@ import { isNumeric } from 'src/shared/isNumeric';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'defi-sdk';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { formatPercentChange } from 'src/shared/units/formatPercent/formatPercentChange';
 import type { PriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
 import { getPriceImpactPercentage } from 'src/ui/pages/SwapForm/shared/price-impact';
+import { formatPercent } from 'src/shared/units/formatPercent';
 
 export function FiatInputValue({
   name,
@@ -98,9 +98,7 @@ export function ReceiveFiatInputValue({
 
   const percentageChange = useMemo(
     () =>
-      priceImpactPercentage
-        ? formatPercentChange(priceImpactPercentage, 'en')
-        : null,
+      priceImpactPercentage ? formatPercent(priceImpactPercentage, 'en') : null,
     [priceImpactPercentage]
   );
 
@@ -113,14 +111,14 @@ export function ReceiveFiatInputValue({
       {...props}
       name="receiveInput"
       percentageChange={
-        showPercentageChange ? (
+        showPercentageChange && percentageChange ? (
           <UIText
             kind="small/regular"
             color={
               isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'
             }
           >
-            {`(${percentageChange?.formatted})`}
+            {`(${percentageChange})`}
           </UIText>
         ) : null
       }

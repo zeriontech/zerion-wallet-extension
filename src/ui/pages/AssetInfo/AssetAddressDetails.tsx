@@ -18,7 +18,7 @@ import type { AssetFullInfo } from 'src/modules/zerion-api/requests/asset-get-fu
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletAssetDetails } from 'src/modules/zerion-api/requests/wallet-get-asset-details';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
