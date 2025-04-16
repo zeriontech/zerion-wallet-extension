@@ -50,10 +50,3 @@ export async function openSidePanel({
     enabled: true,
   });
 }
-
-export async function disableSidePanel() {
-  await chrome.sidePanel.setPanelBehavior({
-    openPanelOnActionClick: false,
-  });
-  window.close();
-}
