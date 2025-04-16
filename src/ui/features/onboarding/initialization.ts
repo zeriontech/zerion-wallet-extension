@@ -3,6 +3,7 @@ import { openOnboarding } from 'src/shared/openOnboarding';
 import { setUrlContext } from 'src/shared/setUrlContext';
 import { urlContext } from 'src/shared/UrlContext';
 import { UrlContextParam } from 'src/shared/types/UrlContext';
+import { disableSidePanel } from 'src/shared/sidepanel/sidepanel-apis';
 import { OnboardingInterrupt } from './errors';
 
 function getAppMode({ hasExistingUser }: { hasExistingUser: boolean }) {
@@ -16,9 +17,13 @@ function getAppMode({ hasExistingUser }: { hasExistingUser: boolean }) {
 export async function maybeOpenOnboarding() {
   const hasExistingUser = Boolean(await getCurrentUser());
   const isPopup = urlContext.windowType === 'popup';
+  const isSidepanel = urlContext.windowType === 'sidepanel';
 
-  if (isPopup && !hasExistingUser) {
+  if ((isPopup || isSidepanel) && !hasExistingUser) {
     openOnboarding();
+    if (isSidepanel) {
+      await disableSidePanel();
+    }
     throw new OnboardingInterrupt();
   }
 
