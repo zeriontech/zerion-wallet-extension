@@ -7,7 +7,10 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'defi-sdk';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { PriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
-import { getPriceImpactPercentage } from 'src/ui/pages/SwapForm/shared/price-impact';
+import {
+  getPriceImpactPercentage,
+  isSignificantValueLoss,
+} from 'src/ui/pages/SwapForm/shared/price-impact';
 import { formatPercent } from 'src/shared/units/formatPercent';
 
 export function FiatInputValue({
@@ -88,9 +91,9 @@ export function ReceiveFiatInputValue({
 }: {
   priceImpact: PriceImpact | null;
 } & FieldInputValueProps) {
-  const isSignificantLoss =
-    priceImpact?.kind === 'loss' &&
-    (priceImpact.level === 'medium' || priceImpact.level === 'high');
+  const isSignificantLoss = priceImpact
+    ? isSignificantValueLoss(priceImpact)
+    : false;
 
   const priceImpactPercentage = priceImpact
     ? getPriceImpactPercentage(priceImpact)

@@ -28,7 +28,7 @@ import {
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
-import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
+import { transactionContextToAnalytics } from './shared/transactionContextToAnalytics';
 import { mixpanelTrack, mixpanelIdentify, mixpanelReset } from './mixpanel';
 import {
   getChainBreakdown,
@@ -135,60 +135,56 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('client_error', params);
   });
 
-  emitter.on(
-    'transactionSent',
-    async ({
+  emitter.on('transactionSent', async (contextParams) => {
+    const {
       transaction,
       initiator,
       feeValueCommon,
-      addressAction,
       quote,
       clientScope,
       chain,
-    }) => {
-      const initiatorURL = new URL(initiator);
-      const { origin, pathname } = initiatorURL;
-      const isInternalOrigin = globalThis.location.origin === origin;
-      const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
-      const addressActionAnalytics = addressActionToAnalytics({
-        addressAction,
-        quote,
-      });
-      const preferences = await account
-        .getCurrentWallet()
-        .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
+    } = contextParams;
 
-      const params = createParams({
-        request_name: 'signed_transaction',
-        screen_name: origin === initiator ? 'Transaction Request' : pathname,
-        wallet_address: transaction.from,
-        /* @deprecated */
-        context: initiatorName,
-        /* @deprecated */
-        type: 'Sign',
-        client_scope: clientScope ?? initiatorName,
-        action_type: addressActionAnalytics?.action_type ?? 'Execute',
-        dapp_domain: isInternalOrigin ? null : origin,
-        chain,
-        gas: transaction.gasLimit.toString(),
-        hash: transaction.hash,
-        asset_amount_sent: [], // TODO
-        gas_price: null, // TODO
-        network_fee: null, // TODO
-        network_fee_value: feeValueCommon,
-        contract_type: quote?.contract_metadata?.name ?? null,
-        hold_sign_button: Boolean(preferences.enableHoldToSignButton),
-        ...addressActionAnalytics,
-      });
-      sendToMetabase('signed_transaction', params);
-      const mixpanelParams = omit(params, [
-        'request_name',
-        'hash',
-        'wallet_address',
-      ]);
-      mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
-    }
-  );
+    const initiatorURL = new URL(initiator);
+    const { origin, pathname } = initiatorURL;
+    const isInternalOrigin = globalThis.location.origin === origin;
+    const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
+
+    const analyticsData = transactionContextToAnalytics(contextParams);
+    const preferences = await account
+      .getCurrentWallet()
+      .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
+
+    const params = createParams({
+      request_name: 'signed_transaction',
+      screen_name: origin === initiator ? 'Transaction Request' : pathname,
+      wallet_address: transaction.from,
+      /* @deprecated */
+      context: initiatorName,
+      /* @deprecated */
+      type: 'Sign',
+      client_scope: clientScope ?? initiatorName,
+      action_type: analyticsData?.action_type ?? 'Execute',
+      dapp_domain: isInternalOrigin ? null : origin,
+      chain,
+      gas: transaction.gasLimit.toString(),
+      hash: transaction.hash,
+      asset_amount_sent: [], // TODO
+      gas_price: null, // TODO
+      network_fee: null, // TODO
+      network_fee_value: feeValueCommon,
+      contract_type: quote?.contract_metadata?.name ?? null,
+      hold_sign_button: Boolean(preferences.enableHoldToSignButton),
+      ...analyticsData,
+    });
+    sendToMetabase('signed_transaction', params);
+    const mixpanelParams = omit(params, [
+      'request_name',
+      'hash',
+      'wallet_address',
+    ]);
+    mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
+  });
 
   async function handleSign({
     type,
