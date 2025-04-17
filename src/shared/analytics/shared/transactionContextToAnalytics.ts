@@ -1,11 +1,10 @@
 import type { ActionAsset } from 'defi-sdk';
 import { isTruthy } from 'is-truthy-ts';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { getDecimals } from 'src/modules/networks/asset';
-import type { Quote } from 'src/shared/types/Quote';
+import type { TransactionContextParams } from 'src/shared/types/SignatureContextParams';
 import { baseToCommon } from 'src/shared/units/convert';
 
 interface AnalyticsTransactionData {
@@ -21,6 +20,8 @@ interface AnalyticsTransactionData {
   zerion_fee_percentage?: number;
   zerion_fee_usd_amount?: number;
   output_chain?: string;
+  warning_was_shown: TransactionContextParams['warningWasShown'];
+  output_amount_color: TransactionContextParams['outputAmountColor'];
 }
 
 interface AssetQuantity {
@@ -79,13 +80,12 @@ function toMaybeArr<T>(
   return arr?.length ? arr.filter(isTruthy) : undefined;
 }
 
-export function addressActionToAnalytics({
+export function transactionContextToAnalytics({
   addressAction,
   quote,
-}: {
-  addressAction: AnyAddressAction | null;
-  quote?: Quote;
-}): AnalyticsTransactionData | null {
+  warningWasShown,
+  outputAmountColor,
+}: TransactionContextParams): AnalyticsTransactionData | null {
   if (!addressAction) {
     return null;
   }
@@ -106,7 +106,10 @@ export function addressActionToAnalytics({
     asset_name_received: toMaybeArr(incoming?.map(getAssetName)),
     asset_address_sent: toMaybeArr(outgoing?.map(getAssetAddress)),
     asset_address_received: toMaybeArr(incoming?.map(getAssetAddress)),
+    warning_was_shown: warningWasShown,
+    output_amount_color: outputAmountColor,
   };
+
   if (quote) {
     const zerion_fee_percentage = quote.protocol_fee;
     const feeAmount = quote.protocol_fee_amount;

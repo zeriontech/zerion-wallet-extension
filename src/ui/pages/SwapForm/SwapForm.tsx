@@ -108,8 +108,12 @@ import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
 import { getPopularTokens } from './shared/getPopularTokens';
 import type { PriceImpact } from './shared/price-impact';
-import { calculatePriceImpact } from './shared/price-impact';
-import { PriceImpactLine } from './shared/PriceImpactLine';
+import {
+  calculatePriceImpact,
+  isHighValueLoss,
+  isSignificantValueLoss,
+} from './shared/price-impact';
+import { PriceImpactWarningLine } from './shared/PriceImpactWarningLine';
 
 const rootNode = getRootDomNode();
 
@@ -139,9 +143,9 @@ function FormHint({
     : null;
   const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
 
-  const showPriceImpactWarning =
-    priceImpact?.kind === 'loss' &&
-    (priceImpact.level === 'medium' || priceImpact.level === 'high');
+  const priceImpactWarningVisible = priceImpact
+    ? isSignificantValueLoss(priceImpact)
+    : false;
 
   let hint: React.ReactNode | null = null;
   if (exceedsBalance) {
@@ -152,7 +156,7 @@ function FormHint({
     hint = 'Incorrect amount';
   } else if (quotesData.error) {
     hint = getQuotesErrorMessage(quotesData);
-  } else if (showPriceImpactWarning) {
+  } else if (priceImpactWarningVisible) {
     hint = (
       <HStack gap={8} alignItems="center" justifyContent="center">
         <WarningIcon
@@ -292,17 +296,6 @@ export function SwapFormComponent() {
     receivePosition,
     spendPosition,
   ]);
-
-  const { receiveAsset, spendAsset } = swapView;
-
-  const priceImpact = useMemo(() => {
-    return calculatePriceImpact({
-      inputValue: spendInput || null,
-      outputValue: receiveInput || null,
-      inputAsset: spendAsset,
-      outputAsset: receiveAsset,
-    });
-  }, [receiveAsset, receiveInput, spendAsset, spendInput]);
 
   const snapshotRef = useRef<SwapFormState | null>(null);
   const onBeforeSubmit = () => {
@@ -475,6 +468,29 @@ export function SwapFormComponent() {
   });
 
   const approveTxStatus = useTransactionStatus(approveHash ?? null);
+  const isApproveMode =
+    approveMutation.isLoading ||
+    (quotesData.done && !enough_allowance) ||
+    approveTxStatus === 'pending';
+
+  const { receiveAsset, spendAsset } = swapView;
+
+  const priceImpact = useMemo(() => {
+    return calculatePriceImpact({
+      inputValue: spendInput || null,
+      outputValue: receiveInput || null,
+      inputAsset: spendAsset,
+      outputAsset: receiveAsset,
+    });
+  }, [receiveAsset, receiveInput, spendAsset, spendInput]);
+
+  const priceImpactWarningVisible = Boolean(
+    quotesData.done &&
+      !isApproveMode &&
+      priceImpact &&
+      isHighValueLoss(priceImpact)
+  );
+
   useEffect(() => {
     if (approveTxStatus === 'confirmed') {
       refetchAllowanceQuery();
@@ -534,6 +550,8 @@ export function SwapFormComponent() {
           chain,
         }),
         quote: selectedQuote,
+        warningWasShown: priceImpactWarningVisible,
+        outputAmountColor: priceImpactWarningVisible ? 'red' : 'grey',
       });
       return txResponse.hash;
     },
@@ -618,10 +636,6 @@ export function SwapFormComponent() {
     );
   }
 
-  const isApproveMode =
-    approveMutation.isLoading ||
-    (quotesData.done && !enough_allowance) ||
-    approveTxStatus === 'pending';
   const showApproveHintLine =
     (quotesData.done && !enough_allowance) || !approveMutation.isIdle;
 
@@ -896,8 +910,8 @@ export function SwapFormComponent() {
         </VStack>
         <VStack gap={16}>
           {selectedQuote ? <ProtocolFeeLine quote={selectedQuote} /> : null}
-          {quotesData.done && priceImpact && !isApproveMode ? (
-            <PriceImpactLine priceImpact={priceImpact} />
+          {priceImpactWarningVisible && priceImpact ? (
+            <PriceImpactWarningLine priceImpact={priceImpact} />
           ) : null}
         </VStack>
       </VStack>
