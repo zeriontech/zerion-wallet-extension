@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import type { NetworkFeeSpeed } from '@zeriontech/transactions';
-import FastSrc from './assets/fast.png';
-import Fast2xSrc from './assets/fast_2x.png';
-import StandardSrc from './assets/standard.png';
-import Standard2xSrc from './assets/standard_2x.png';
-import CustomSrc from './assets/custom.png';
-import Custom2xSrc from './assets/custom_2x.png';
+import FastSrc from 'url:./assets/fast.png';
+import Fast2xSrc from 'url:./assets/fast_2x.png';
+import StandardSrc from 'url:./assets/standard.png';
+import Standard2xSrc from 'url:./assets/standard_2x.png';
+import CustomSrc from 'url:./assets/custom.png';
+import Custom2xSrc from 'url:./assets/custom_2x.png';
 
 function getNetworkSpeedSrc(speed: NetworkFeeSpeed, scale?: '2x') {
   if (speed === 'custom') {

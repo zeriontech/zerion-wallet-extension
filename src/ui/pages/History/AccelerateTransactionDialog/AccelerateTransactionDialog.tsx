@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import RocketOutlineIcon from 'jsx:src/ui/assets/rocket-outline.svg';
-import RocketSrc from 'src/ui/assets/rocket.png';
-import Rocket2xSrc from 'src/ui/assets/rocket@2x.png';
-import CancelEmojiSrc from 'src/ui/assets/cancel-emoji.png';
-import CancelEmoji2xSrc from 'src/ui/assets/cancel-emoji@2x.png';
+import RocketSrc from 'url:src/ui/assets/rocket.png';
+import Rocket2xSrc from 'url:src/ui/assets/rocket@2x.png';
+import CancelEmojiSrc from 'url:src/ui/assets/cancel-emoji.png';
+import CancelEmoji2xSrc from 'url:src/ui/assets/cancel-emoji@2x.png';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';

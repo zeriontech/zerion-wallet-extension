@@ -15,9 +15,9 @@ import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { urlContext } from 'src/shared/UrlContext';
 import { apostrophe } from 'src/ui/shared/typography';
-import CardImg1 from './create_card_1.png';
-import CardImg2 from './create_card_2.png';
-import CardImg3 from './create_card_3.png';
+import CardImg1 from 'url:./create_card_1.png';
+import CardImg2 from 'url:./create_card_2.png';
+import CardImg3 from 'url:./create_card_3.png';
 import * as styles from './styles.module.css';
 
 const MAX_CARD_INDEX = 2;

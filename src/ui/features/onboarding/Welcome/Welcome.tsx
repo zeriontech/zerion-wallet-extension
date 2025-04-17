@@ -12,9 +12,9 @@ import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
-import CreateImg from '../assets/option_create.png';
-import ImportImg from '../assets/option_import.png';
-import HardwareImg from '../assets/option_hardware.png';
+import CreateImg from 'url:../assets/option_create.png';
+import ImportImg from 'url:../assets/option_import.png';
+import HardwareImg from 'url:../assets/option_hardware.png';
 import * as helpersStyles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
 import { ReferralProgramHandler } from '../../referral-program/WebAppMessageHandler';
@@ -179,7 +179,7 @@ function Banner() {
         textAlign: 'center',
         maxHeight: 224,
         backgroundSize: '100% 100%',
-        backgroundImage: `url(${require('../assets/welcome_background.png')})`,
+        backgroundImage: `url(${require('url:../assets/welcome_background.png')})`,
       }}
     >
       <div

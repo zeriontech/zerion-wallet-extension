@@ -43,8 +43,8 @@ export function DecorativeMessage({
         <img
           src={
             ThemeStore.isDark(themeState)
-              ? require('src/ui/assets/system-avatar-dark.svg')
-              : require('src/ui/assets/system-avatar-light.svg')
+              ? require('url:src/ui/assets/system-avatar-dark.svg')
+              : require('url:src/ui/assets/system-avatar-light.svg')
           }
           style={{
             display: 'block',

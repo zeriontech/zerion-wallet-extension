@@ -4,7 +4,7 @@ import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
-import SessionExpiredImg from '../assets/session-expired.png';
+import SessionExpiredImg from 'url:../assets/session-expired.png';
 import * as helperStyles from '../shared/helperStyles.module.css';
 
 export function SessionExpired({ onRestart }: { onRestart: () => void }) {

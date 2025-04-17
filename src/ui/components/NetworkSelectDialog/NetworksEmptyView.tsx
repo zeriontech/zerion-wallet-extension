@@ -3,7 +3,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import noResultsImg from 'src/ui/assets/no-results@2x.png';
+import noResultsImg from 'url:src/ui/assets/no-results@2x.png';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 
 export function ShowTestnetsHint() {
