@@ -8,12 +8,14 @@ export interface Identity {
   handle: string;
 }
 
+export type PremiumPlan = 'Single' | 'Bundle' | 'Restricted' | 'Bundle (Child)';
+
 interface MigrationToken {
   generation: 'G1' | 'OnePointO';
   id: string;
   premium: {
     expirationTime: string | null;
-    plan: 'Single' | 'Bundle';
+    plan: PremiumPlan;
     features: {
       feeWaiver: boolean;
       csv: boolean;
