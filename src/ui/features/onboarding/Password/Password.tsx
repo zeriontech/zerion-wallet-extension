@@ -207,14 +207,16 @@ function ConfirmPasswordForm({
 export function Password({
   title,
   step,
+  defaultValue,
   onSubmit,
 }: {
   title: string;
   step: PasswordStep | null;
+  defaultValue: string | null;
   onSubmit(value: string): void;
 }) {
   const navigate = useNavigate();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(defaultValue || '');
 
   return (
     <>

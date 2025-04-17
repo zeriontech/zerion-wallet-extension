@@ -128,6 +128,7 @@ export function CreateUser() {
             <Password
               title="Create Your Password"
               step={step}
+              defaultValue={password}
               onSubmit={(password) => {
                 handlePasswordSubmit(password);
                 setSearchParams(`view=${ViewParam['select-wallets']}`);

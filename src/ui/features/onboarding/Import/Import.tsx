@@ -205,6 +205,7 @@ function ImportWallet() {
               <Password
                 title="Finally, create your password"
                 step={step}
+                defaultValue={null}
                 onSubmit={handlePasswordSubmit}
               />
             ) : view === 'secret' ? (

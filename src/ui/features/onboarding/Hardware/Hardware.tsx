@@ -133,6 +133,7 @@ export function Hardware() {
             <Password
               title="Finally, create your password"
               step={step}
+              defaultValue={null}
               onSubmit={handlePasswordSubmit}
             />
             {isNarrowView ? null : <RenderArea name="onboarding-faq" />}
