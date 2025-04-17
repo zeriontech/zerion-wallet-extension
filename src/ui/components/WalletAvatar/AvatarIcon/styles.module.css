@@ -11,8 +11,8 @@
 
   /* A trick to "cut" out a circle shape from the element */
   mask-image: radial-gradient(
-    circle var(--circle-radius) at calc(100% - var(--circle-radius) + 2px)
-      calc(100% - var(--circle-radius) + 2px),
+    circle var(--circle-radius) at calc(100% - var(--circle-radius) + 1px)
+      calc(100% - var(--circle-radius) + 1px),
     transparent var(--circle-radius),
     purple 0
   );
@@ -23,7 +23,7 @@
   width: 6px;
   border-radius: 50%;
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: 1px;
+  bottom: 1px;
   background-color: var(--positive-500);
 }

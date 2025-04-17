@@ -1,5 +1,6 @@
 import React from 'react';
-import { useProfileNft } from 'src/ui/shared/wallet/getWalletProfiles';
+import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { AvatarIcon } from './AvatarIcon';
 
 export function WalletAvatar({
@@ -18,7 +19,12 @@ export function WalletAvatar({
   icon?: React.ReactNode;
   onReady?(): void;
 }) {
-  const { data: nft, isLoading } = useProfileNft(address);
+  const { data, isLoading } = useWalletsMetaByChunks({
+    addresses: [normalizeAddress(address)],
+    suspense: false,
+    useErrorBoundary: false,
+  });
+  const isPremium = Boolean(data?.[0]?.membership.premium);
 
   if (isLoading) {
     return (
@@ -34,9 +40,10 @@ export function WalletAvatar({
         active={active}
         address={address}
         size={size}
-        nft={nft}
+        nft={data?.[0]?.nft}
         borderRadius={borderRadius}
         onReady={onReady}
+        highlight={isPremium}
       />
       {icon}
     </div>
