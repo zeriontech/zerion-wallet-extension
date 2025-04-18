@@ -143,7 +143,7 @@ function FormHint({
     : null;
   const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
 
-  const showPriceImpactWarning = priceImpact
+  const priceImpactWarningVisible = priceImpact
     ? isSignificantValueLoss(priceImpact)
     : false;
 
@@ -156,7 +156,7 @@ function FormHint({
     hint = 'Incorrect amount';
   } else if (quotesData.error) {
     hint = getQuotesErrorMessage(quotesData);
-  } else if (showPriceImpactWarning) {
+  } else if (priceImpactWarningVisible) {
     hint = (
       <HStack gap={8} alignItems="center" justifyContent="center">
         <WarningIcon
