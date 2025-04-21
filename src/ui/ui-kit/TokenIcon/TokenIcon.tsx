@@ -14,6 +14,7 @@ type Props = BaseProps & ({ src: string } | { symbol: string });
 export function TokenIcon({ src, symbol, size = 32, style, title }: Props) {
   const fallback = (
     <UIText
+      data-image-src={String(src)} // helper for debugging
       kind="body/regular"
       style={{
         userSelect: 'none',
