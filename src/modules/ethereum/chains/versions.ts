@@ -46,35 +46,51 @@ export function toAddEthereumChainParameterLegacy(
 
 export const upgrades: Upgrades<PossibleEntry> = {
   2: (entry) => {
-    const ethereumChainConfigs: EthereumChainConfig[] = [];
-    for (const { value, ...config } of entry.ethereumChains || []) {
-      const chainConfig = toAddEthereumChainParameterLegacy(value);
-      const id = maybeLocalChainId(value.id)
-        ? toCustomNetworkId(value.external_id)
-        : value.id;
-      ethereumChainConfigs.push({
-        ...config,
-        id,
-        value: chainConfig,
-        previousIds: value.chain !== id ? [value.chain] : null,
-      });
+    try {
+      const ethereumChainConfigs: EthereumChainConfig[] = [];
+      for (const { value, ...config } of entry.ethereumChains || []) {
+        const chainConfig = toAddEthereumChainParameterLegacy(value);
+        const id = maybeLocalChainId(value.id)
+          ? toCustomNetworkId(value.external_id)
+          : value.id;
+        ethereumChainConfigs.push({
+          ...config,
+          id,
+          value: chainConfig,
+          previousIds: value.chain !== id ? [value.chain] : null,
+        });
+      }
+      return {
+        version: 2,
+        ethereumChainConfigs,
+        ethereumChains: entry.ethereumChains,
+      };
+    } catch {
+      return {
+        ...entry,
+        version: 2,
+        ethereumChainConfigs: [],
+      };
     }
-    return {
-      version: 2,
-      ethereumChainConfigs,
-      ethereumChains: entry.ethereumChains,
-    };
   },
   3: (entry) => {
-    return {
-      ...entry,
-      version: 3,
-      ethereumChainConfigs: entry.ethereumChainConfigs.map((config) => {
-        if (config.id) {
-          return config;
-        }
-        return { ...config, id: toCustomNetworkId(config.value.chainId) };
-      }),
-    };
+    try {
+      return {
+        ...entry,
+        version: 3,
+        ethereumChainConfigs: entry.ethereumChainConfigs.map((config) => {
+          if (config.id) {
+            return config;
+          }
+          return { ...config, id: toCustomNetworkId(config.value.chainId) };
+        }),
+      };
+    } catch {
+      return {
+        ...entry,
+        version: 3,
+        ethereumChainConfigs: [],
+      };
+    }
   },
 };
