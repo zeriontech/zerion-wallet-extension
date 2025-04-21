@@ -13,16 +13,19 @@ function TextFallback({
   size,
   style,
   name,
+  src,
 }: {
   size: number;
   name: string | null;
   style?: React.CSSProperties;
+  src: string | null | undefined;
 }) {
   return (
     <UIText
       aria-hidden={true}
       kind="body/regular"
       title={name || undefined}
+      data-image-src={String(src)} // helper for debugging
       style={{
         userSelect: 'none',
         backgroundColor: 'var(--neutral-300)',
@@ -48,11 +51,11 @@ export function NetworkIcon({ src, name, size = 32, style }: Props) {
         alt=""
         style={{ width: '100%', display: 'block', ...style }}
         renderError={() => (
-          <TextFallback name={name} size={size} style={style} />
+          <TextFallback name={name} size={size} style={style} src={src} />
         )}
       />
     </div>
   ) : (
-    <TextFallback name={name} size={size} style={style} />
+    <TextFallback name={name} size={size} style={style} src={src} />
   );
 }
