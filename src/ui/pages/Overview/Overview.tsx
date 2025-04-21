@@ -1,111 +1,93 @@
+import { useStore } from '@store-unit/react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
+import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { RenderArea } from 'react-area';
-import { UIText } from 'src/ui/ui-kit/UIText';
-import { PageColumn } from 'src/ui/components/PageColumn';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
+import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { useCurrency } from 'src/modules/currency/useCurrency';
+import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
+import { createChain } from 'src/modules/networks/Chain';
+import {
+  useMainnetNetwork,
+  useNetworks,
+} from 'src/modules/networks/useNetworks';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
+import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { isReadonlyContainer } from 'src/shared/types/validators';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
 } from 'src/shared/units/formatCurrencyValue';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
-import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
-import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { Button } from 'src/ui/ui-kit/Button';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import {
-  SegmentedControlGroup,
-  SegmentedControlLink,
-} from 'src/ui/ui-kit/SegmentedControl';
-import { PageBottom } from 'src/ui/components/PageBottom';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { walletPort } from 'src/ui/shared/channels';
-import { NBSP } from 'src/ui/shared/typography';
-import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
-import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
-import { CopyButton } from 'src/ui/components/CopyButton';
-import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { VStack } from 'src/ui/ui-kit/VStack';
-import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { useProfileName } from 'src/ui/shared/useProfileName';
+import { CopyButton } from 'src/ui/components/CopyButton';
+import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
+import { EmptyView2 } from 'src/ui/components/EmptyView';
 import {
   CenteredFillViewportView,
   FillView,
 } from 'src/ui/components/FillView/FillView';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
-import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
-import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
-import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { PageColumn } from 'src/ui/components/PageColumn';
+import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
-import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
-import { useStore } from '@store-unit/react';
-import { TextLink } from 'src/ui/ui-kit/TextLink';
-import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
-import { isReadonlyContainer } from 'src/shared/types/validators';
-import { useCurrency } from 'src/modules/currency/useCurrency';
-import { EmptyView2 } from 'src/ui/components/EmptyView';
-import {
-  useMainnetNetwork,
-  useNetworks,
-} from 'src/modules/networks/useNetworks';
-import { createChain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { useEvent } from 'src/ui/shared/useEvent';
-import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
-import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import { XpDropBanner } from 'src/ui/features/xp-drop/components/XpDropBanner';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
-import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { walletPort } from 'src/ui/shared/channels';
 import { emitter } from 'src/ui/shared/events';
-import { HistoryList } from '../History/History';
-import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
+import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
+import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
+import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
+import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
+import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { NBSP } from 'src/ui/shared/typography';
+import { useEvent } from 'src/ui/shared/useEvent';
+import { useProfileName } from 'src/ui/shared/useProfileName';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
+import { Button } from 'src/ui/ui-kit/Button';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
+import {
+  SegmentedControlGroup,
+  SegmentedControlLink,
+} from 'src/ui/ui-kit/SegmentedControl';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
-import { ViewSuspense } from '../../components/ViewSuspense';
-import { NonFungibleTokens } from './NonFungibleTokens';
-import { Positions } from './Positions';
+import { HistoryList } from '../History/History';
+import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { ActionButtonsRow } from './ActionButtonsRow';
-import {
-  TAB_SELECTOR_HEIGHT,
-  getStickyOffset,
-  TABS_OFFSET_METER_ID,
-  TAB_TOP_PADDING,
-  getCurrentTabsOffset,
-  offsetValues,
-  getMinTabContentHeight,
-} from './getTabsOffset';
-import { ConnectionHeader } from './ConnectionHeader';
 import { BackupReminder } from './BackupReminder';
 import { Banners } from './Banners';
-
-interface ChangeInfo {
-  isPositive: boolean;
-  isNegative: boolean;
-  isNonNegative: boolean;
-  isZero: boolean;
-  formatted: string;
-}
-
-function formatPercentChange(value: number, locale: string): ChangeInfo {
-  return {
-    isPositive: value > 0,
-    isNonNegative: value >= 0,
-    isNegative: value < 0,
-    isZero: value === 0,
-    formatted: `${formatPercent(value, locale)}%`,
-  };
-}
+import { ConnectionHeader } from './ConnectionHeader';
+import { NonFungibleTokens } from './NonFungibleTokens';
+import { Positions } from './Positions';
+import {
+  TABS_OFFSET_METER_ID,
+  TAB_SELECTOR_HEIGHT,
+  TAB_TOP_PADDING,
+  getCurrentTabsOffset,
+  getMinTabContentHeight,
+  getStickyOffset,
+  offsetValues,
+} from './getTabsOffset';
 
 function PendingTransactionsIndicator() {
   const pendingTxs = usePendingTransactions();
@@ -168,21 +150,6 @@ function TestnetworkGuard({
     return renderGuard({ testnetModeEnabled });
   }
   return children;
-}
-
-function PercentChange({
-  value,
-  locale,
-  render,
-}: {
-  value?: number;
-  locale: string;
-  render: (changeInfo: ChangeInfo) => JSX.Element;
-}): JSX.Element | null {
-  if (value == null) {
-    return null;
-  }
-  return render(formatPercentChange(value, locale));
 }
 
 function CurrentAccountControls() {
@@ -363,6 +330,24 @@ function ReadonlyMode() {
   );
 }
 
+interface PercentChangeInfo {
+  isPositive: boolean;
+  isNegative: boolean;
+  isNonNegative: boolean;
+  isZero: boolean;
+  formatted: string;
+}
+
+function formatPercentChange(value: number, locale: string): PercentChangeInfo {
+  return {
+    isPositive: value > 0,
+    isNonNegative: value >= 0,
+    isNegative: value < 0,
+    isZero: value === 0,
+    formatted: `${formatPercent(value, locale)}%`,
+  };
+}
+
 function OverviewComponent() {
   useBodyStyle(
     useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
@@ -390,6 +375,15 @@ function OverviewComponent() {
     { enabled: ready, refetchInterval: 40000 }
   );
   const walletPortfolio = data?.data;
+
+  const percentageChangeValue = walletPortfolio?.change24h.relative;
+  const percentageChange = useMemo(
+    () =>
+      percentageChangeValue
+        ? formatPercentChange(percentageChangeValue, 'en')
+        : null,
+    [percentageChangeValue]
+  );
 
   const offsetValuesState = useStore(offsetValues);
 
@@ -595,34 +589,27 @@ function OverviewComponent() {
                 NBSP
               )}
             </UIText>
-            {walletPortfolio?.change24h.relative ? (
-              <PercentChange
-                value={walletPortfolio.change24h.relative}
-                locale="en"
-                render={(change) => {
-                  const sign = change.isPositive ? '+' : '';
-                  return (
-                    <UIText
-                      kind="small/regular"
-                      color={
-                        change.isNonNegative
-                          ? 'var(--positive-500)'
-                          : 'var(--negative-500)'
-                      }
-                    >
-                      {`${sign}${change.formatted}`}{' '}
-                      {walletPortfolio?.change24h.absolute
-                        ? `(${formatCurrencyValue(
-                            Math.abs(walletPortfolio.change24h.absolute),
-                            'en',
-                            currency
-                          )})`
-                        : ''}{' '}
-                      Today
-                    </UIText>
-                  );
-                }}
-              />
+            {percentageChange ? (
+              <UIText
+                kind="small/regular"
+                color={
+                  percentageChange.isNonNegative
+                    ? 'var(--positive-500)'
+                    : 'var(--negative-500)'
+                }
+              >
+                {`${percentageChange.isPositive ? '+' : ''}${
+                  percentageChange.formatted
+                }`}{' '}
+                {walletPortfolio?.change24h.absolute
+                  ? `(${formatCurrencyValue(
+                      Math.abs(walletPortfolio.change24h.absolute),
+                      'en',
+                      currency
+                    )})`
+                  : ''}{' '}
+                Today
+              </UIText>
             ) : (
               <UIText kind="small/regular">{NBSP}</UIText>
             )}

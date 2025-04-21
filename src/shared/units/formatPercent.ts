@@ -1,7 +1,7 @@
 import memoize from 'memoize-one';
 import type BigNumber from 'bignumber.js';
 import { minus } from 'src/ui/shared/typography';
-import { toNumber } from '../toNumber';
+import { toNumber } from './toNumber';
 
 const getFormatterOneDigit = memoize(
   (locale: string) =>

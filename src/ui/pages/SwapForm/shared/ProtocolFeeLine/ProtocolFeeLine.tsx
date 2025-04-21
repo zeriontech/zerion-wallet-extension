@@ -2,7 +2,7 @@ import React from 'react';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import type { Quote } from 'src/shared/types/Quote';
 

@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';

@@ -3,7 +3,7 @@ import type { AddressPosition, Asset } from 'defi-sdk';
 import React, { useId, useRef } from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { FiatInputValue } from 'src/ui/components/FiatInputValue';
+import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
 import {
   getPositionBalance,
   getPositionPartialBalance,
@@ -165,8 +165,7 @@ export function SpendTokenField({
         </div>
       }
       endDescription={
-        <FiatInputValue
-          name="spendInput"
+        <SpendFiatInputValue
           primaryInput="spend"
           spendInput={spendInput}
           spendAsset={spendAsset}

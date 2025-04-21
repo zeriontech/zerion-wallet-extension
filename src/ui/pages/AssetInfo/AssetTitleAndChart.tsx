@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';

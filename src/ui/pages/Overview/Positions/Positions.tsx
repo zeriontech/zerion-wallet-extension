@@ -38,7 +38,7 @@ import {
   getFullPositionsValue,
   positionTypeToStringMap,
 } from 'src/ui/components/Positions/helpers';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
