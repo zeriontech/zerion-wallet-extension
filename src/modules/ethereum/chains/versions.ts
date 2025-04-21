@@ -1,6 +1,5 @@
 import type { Upgrades } from 'src/shared/type-utils/versions';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { Networks } from 'src/modules/networks/Networks';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import type {
   ChainConfig,
@@ -21,20 +20,7 @@ function maybeLocalChainId(id?: string | null) {
  * supports old external_id field from NetworkConfigStoredV0
  */
 export function toAddEthereumChainParameterLegacy(
-  item: Pick<
-    NetworkConfig,
-    | 'rpc_url_user'
-    | 'rpc_url_internal'
-    | 'rpc_url_public'
-    | 'native_asset'
-    | 'name'
-    | 'icon_url'
-    | 'explorer_tx_url'
-    | 'hidden'
-  > &
-    Partial<Pick<NetworkConfig, 'specification' | 'standard'>> & {
-      external_id: string;
-    }
+  item: ChainConfigV1['ethereumChains'][number]['value']
 ): AddEthereumChainParameter {
   return {
     rpcUrls: item.rpc_url_user
@@ -50,7 +36,7 @@ export function toAddEthereumChainParameterLegacy(
       name: item.native_asset?.name || '<unknown>',
     },
     // deprecated field is being used for chainConfigStore's migration
-    chainId: Networks.getChainId(item) || item.external_id,
+    chainId: normalizeChainId(item.external_id),
     chainName: item.name,
     blockExplorerUrls: item.explorer_tx_url ? [item.explorer_tx_url] : [],
     iconUrls: [item.icon_url],

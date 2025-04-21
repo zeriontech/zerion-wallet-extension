@@ -22,6 +22,7 @@ interface NetworkConfigStoredV0 {
   };
   rpc_url_internal: string | null;
   rpc_url_public: string[];
+  rpc_url_user?: string | null;
   supports_bridge: boolean;
   supports_sending: boolean;
   supports_trading: boolean;
