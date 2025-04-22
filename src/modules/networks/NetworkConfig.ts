@@ -28,11 +28,11 @@ export type NetworkConfig = NetworkSpecification & {
   explorer_name: string | null;
   explorer_urls: string[] | null;
   /**
-   * The node URL(s) that we use internally and do not expose to dApps.
+   * The node URL that we use internally and do not expose to dApps.
    */
   rpc_url_internal: string | null;
   /**
-   * The node URL that we expose to dApps.
+   * The node URL(s) that we expose to dApps.
    * We do not want to expose our internal rpc_url to dApps to prevent abuse.
    */
   rpc_url_public: string[] | null;
