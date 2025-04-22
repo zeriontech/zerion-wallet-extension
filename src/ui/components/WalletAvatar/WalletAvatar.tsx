@@ -25,7 +25,7 @@ export function WalletAvatar({
     useErrorBoundary: false,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
-  const isPremium = Boolean(data?.[0]?.membership.premium);
+  const isPremium = Boolean(data?.at(0)?.membership.premium);
 
   if (isLoading) {
     return (
