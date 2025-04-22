@@ -111,23 +111,22 @@ export function ReceiveFiatInputValue({
     Boolean(percentageChange) &&
     (priceImpact?.kind === 'zero' || priceImpact?.kind === 'loss');
 
+  const color = isSignificantLoss
+    ? 'var(--negative-500)'
+    : 'var(--neutral-600)';
+
   return (
     <FiatInputValue
       {...props}
       name="receiveInput"
       percentageChange={
         pecentageChangeVisible && percentageChange ? (
-          <UIText
-            kind="small/regular"
-            color={
-              isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'
-            }
-          >
+          <UIText kind="small/regular" color={color}>
             {`(${percentageChange})`}
           </UIText>
         ) : null
       }
-      color={isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'}
+      color={color}
       style={isSignificantLoss ? { cursor: 'help' } : undefined}
       title={
         isSignificantLoss
