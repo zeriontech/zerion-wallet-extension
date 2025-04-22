@@ -23,6 +23,7 @@ export function WalletAvatar({
     addresses: [normalizeAddress(address)],
     suspense: false,
     useErrorBoundary: false,
+    staleTime: 1000 * 60 * 10, // 10 minutes
   });
   const isPremium = Boolean(data?.[0]?.membership.premium);
 

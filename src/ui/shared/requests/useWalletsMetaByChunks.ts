@@ -9,11 +9,13 @@ export function useWalletsMetaByChunks({
   enabled = true,
   suspense = true,
   useErrorBoundary = true,
+  staleTime,
 }: {
   addresses: string[];
   enabled?: boolean;
   suspense?: boolean;
   useErrorBoundary?: boolean;
+  staleTime?: number;
 }) {
   const query = useQuery({
     enabled: enabled && addresses.length > 0,
@@ -21,6 +23,7 @@ export function useWalletsMetaByChunks({
     queryFn: () => ZerionAPI.getWalletsMetaByChunks(addresses),
     suspense,
     useErrorBoundary,
+    staleTime,
   });
 
   // Update query cache with wallet meta data for each address
