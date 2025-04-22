@@ -34,7 +34,7 @@ export function AvatarIcon({
 
   const strokeWidth = size > 24 ? 2 : 1;
   const imageSize = highlight ? size - strokeWidth * 4 : size;
-  const imageborderRadius = highlight
+  const imageBorderRadius = highlight
     ? borderRadius - strokeWidth * 2
     : borderRadius;
   const padding = highlight ? strokeWidth * 2 : 0;
@@ -59,7 +59,7 @@ export function AvatarIcon({
             style={{
               width: imageSize,
               height: imageSize,
-              borderRadius: imageborderRadius,
+              borderRadius: imageBorderRadius,
               objectFit: 'cover',
             }}
             errorStyle={{ width: imageSize, height: imageSize }}
@@ -72,7 +72,7 @@ export function AvatarIcon({
           <BlockieImg
             address={address}
             size={imageSize}
-            borderRadius={imageborderRadius}
+            borderRadius={imageBorderRadius}
           />
         )}
       </div>
