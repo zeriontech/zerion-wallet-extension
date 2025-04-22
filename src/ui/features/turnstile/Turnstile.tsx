@@ -10,7 +10,7 @@ import { WebAppMessageHandler } from '../referral-program/WebAppMessageHandler';
 
 function TurnstileDialog() {
   const { innerWidth } = useWindowSizeStore();
-  const turnstileWidgetHeight = 73;
+  const turnstileWidgetHeight = 88;
   const turnstileWidgetWidth = innerWidth - 32;
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
@@ -33,21 +33,20 @@ function TurnstileDialog() {
       height="fit-content"
       closeOnClickOutside={false}
       containerStyle={{ backgroundColor: 'var(--z-index-0)' }}
-      renderWhenOpen={() => (
-        <WebAppMessageHandler
-          pathname="/turnstile.html"
-          callbackName="set-turnstile-token"
-          callbackFn={handleTurnstileToken}
-          hidden={false}
-          style={{
-            width: turnstileWidgetWidth,
-            height: turnstileWidgetHeight,
-            border: 'none',
-            colorScheme: 'auto',
-          }}
-        />
-      )}
-    />
+    >
+      <WebAppMessageHandler
+        pathname="/turnstile.html"
+        callbackName="set-turnstile-token"
+        callbackFn={handleTurnstileToken}
+        hidden={false}
+        style={{
+          width: turnstileWidgetWidth,
+          height: turnstileWidgetHeight,
+          border: 'none',
+          colorScheme: 'auto',
+        }}
+      />
+    </BottomSheetDialog>
   );
 }
 
