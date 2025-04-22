@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { formatCurrencyValue } from './formatCurrencyValue';
 
 describe('formatCurrencyValue', () => {

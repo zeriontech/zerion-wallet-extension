@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { truncateAddress } from './truncateAddress';
 import { ellipsis } from './typography';
 

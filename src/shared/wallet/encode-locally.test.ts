@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { unwrapOpaqueType } from '../type-utils/Opaque';
 import { encodeForMasking, decodeMasked } from './encode-locally';
 

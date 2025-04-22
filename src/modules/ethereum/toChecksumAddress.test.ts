@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest';
 import { hasChecksumError } from './toChecksumAddress';
 
 test.only('hasChecksumError', () => {

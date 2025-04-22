@@ -41,7 +41,6 @@ module.exports = {
         '.prettierrc.js',
         'babel.config.js',
         'postcss.config.js',
-        'jest.config.js',
         '*.node.js',
         'webpack.config.js',
         '*.cjs',

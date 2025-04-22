@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest';
 import { baseToCommon, commonToBase } from './convert';
 
 test('baseToCommon', () => {

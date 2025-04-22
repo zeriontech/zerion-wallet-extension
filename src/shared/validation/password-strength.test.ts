@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { estimatePasswordStrengh, Strength } from './password-strength';
 import { PASSWORD_MIN_LENGTH } from './user-input';
 

@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { isClassProperty } from './isClassProperty';
 
 describe('isClassProperty', () => {

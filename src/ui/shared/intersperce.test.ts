@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { intersperce } from './intersperce';
 
 describe('intersperce', () => {

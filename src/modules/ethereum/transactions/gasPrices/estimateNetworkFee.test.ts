@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { estimateNetworkFee } from './estimateNetworkFee';
 import { samples } from './estimateNetworkFee.samples';
 
