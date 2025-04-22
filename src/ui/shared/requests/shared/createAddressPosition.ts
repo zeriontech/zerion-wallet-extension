@@ -35,7 +35,7 @@ export function createAddressPosition({
         network.native_asset?.symbol.toLowerCase() ||
         '<unknown-id>',
       decimals: Number(network.native_asset?.decimals) || NaN,
-      icon_url: network.icon_url,
+      icon_url: network.native_asset?.icon_url || network.icon_url,
       is_verified: false,
       price: null,
       implementations: {

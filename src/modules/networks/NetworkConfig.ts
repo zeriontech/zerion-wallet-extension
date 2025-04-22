@@ -4,6 +4,7 @@ interface NetworkAsset {
   name: string;
   symbol: string;
   decimals: number;
+  icon_url: string | null;
 }
 
 type NetworkSpecification = {
