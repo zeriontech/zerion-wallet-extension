@@ -91,9 +91,9 @@ export function ReceiveFiatInputValue({
 }: {
   priceImpact: PriceImpact | null;
 } & FieldInputValueProps) {
-  const isSignificantLoss = priceImpact
-    ? isSignificantValueLoss(priceImpact)
-    : false;
+  const isSignificantLoss = Boolean(
+    priceImpact && isSignificantValueLoss(priceImpact)
+  );
 
   const priceImpactPercentage = priceImpact
     ? getPriceImpactPercentage(priceImpact)
@@ -107,7 +107,7 @@ export function ReceiveFiatInputValue({
     [priceImpactPercentage]
   );
 
-  const showPercentageChange =
+  const pecentageChangeVisible =
     Boolean(percentageChange) &&
     (priceImpact?.kind === 'zero' || priceImpact?.kind === 'loss');
 
@@ -116,7 +116,7 @@ export function ReceiveFiatInputValue({
       {...props}
       name="receiveInput"
       percentageChange={
-        showPercentageChange && percentageChange ? (
+        pecentageChangeVisible && percentageChange ? (
           <UIText
             kind="small/regular"
             color={

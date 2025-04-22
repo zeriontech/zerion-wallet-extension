@@ -143,9 +143,9 @@ function FormHint({
     : null;
   const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
 
-  const priceImpactWarningVisible = priceImpact
-    ? isSignificantValueLoss(priceImpact)
-    : false;
+  const priceImpactWarningIconVisible = Boolean(
+    priceImpact && isSignificantValueLoss(priceImpact)
+  );
 
   let hint: React.ReactNode | null = null;
   if (exceedsBalance) {
@@ -156,7 +156,7 @@ function FormHint({
     hint = 'Incorrect amount';
   } else if (quotesData.error) {
     hint = getQuotesErrorMessage(quotesData);
-  } else if (priceImpactWarningVisible) {
+  } else if (priceImpactWarningIconVisible) {
     hint = (
       <HStack gap={8} alignItems="center" justifyContent="center">
         <WarningIcon
@@ -461,6 +461,8 @@ export function SwapFormComponent() {
           quantity: selectedQuote.input_amount_estimation,
           chain,
         }),
+        warningWasShown: false,
+        outputAmountColor: 'grey',
       });
       return txResponse.hash;
     },
@@ -507,6 +509,9 @@ export function SwapFormComponent() {
     resetApproveMutation,
   ]);
 
+  const outputAmountColor =
+    priceImpact && isSignificantValueLoss(priceImpact) ? 'red' : 'grey';
+
   const {
     mutate: sendTransaction,
     data: transactionHash,
@@ -551,7 +556,7 @@ export function SwapFormComponent() {
         }),
         quote: selectedQuote,
         warningWasShown: priceImpactWarningVisible,
-        outputAmountColor: priceImpactWarningVisible ? 'red' : 'grey',
+        outputAmountColor,
       });
       return txResponse.hash;
     },

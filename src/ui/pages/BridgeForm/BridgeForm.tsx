@@ -94,10 +94,7 @@ import { TransactionConfiguration } from '../SendTransaction/TransactionConfigur
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
-import {
-  calculatePriceImpact,
-  isHighValueLoss,
-} from '../SwapForm/shared/price-impact';
+import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
 import type { BridgeFormState } from './shared/types';
 import { useBridgeTokens } from './useBridgeTokens';
 import { getAvailablePositions } from './getAvailablePositions';
@@ -683,13 +680,6 @@ function BridgeFormComponent() {
     (quotesData.done && !enough_allowance) ||
     approveTxStatus === 'pending';
 
-  const isHighPriceImpact = Boolean(
-    quotesData.done &&
-      !isApproveMode &&
-      priceImpact &&
-      isHighValueLoss(priceImpact)
-  );
-
   const {
     mutate: sendTransaction,
     data: transactionHash,
@@ -734,8 +724,8 @@ function BridgeFormComponent() {
           chain: spendChain,
         }),
         quote: selectedQuote,
-        warningWasShown: isHighPriceImpact,
-        outputAmountColor: isHighPriceImpact ? 'red' : 'grey',
+        warningWasShown: false,
+        outputAmountColor: 'grey',
       });
       return txResponse.hash;
     },
