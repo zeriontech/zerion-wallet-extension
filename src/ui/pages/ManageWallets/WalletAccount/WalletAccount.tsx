@@ -231,7 +231,7 @@ export function WalletAccount() {
                 <WalletAvatar
                   address={wallet.address}
                   size={44}
-                  borderRadius={4}
+                  borderRadius={12}
                 />
               }
               text={
