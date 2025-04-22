@@ -1,6 +1,5 @@
 import type { Upgrades } from 'src/shared/type-utils/versions';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { Networks } from 'src/modules/networks/Networks';
+import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
 import type {
   ChainConfig,
@@ -21,20 +20,7 @@ function maybeLocalChainId(id?: string | null) {
  * supports old external_id field from NetworkConfigStoredV0
  */
 export function toAddEthereumChainParameterLegacy(
-  item: Pick<
-    NetworkConfig,
-    | 'rpc_url_user'
-    | 'rpc_url_internal'
-    | 'rpc_url_public'
-    | 'native_asset'
-    | 'name'
-    | 'icon_url'
-    | 'explorer_tx_url'
-    | 'hidden'
-  > &
-    Partial<Pick<NetworkConfig, 'specification' | 'standard'>> & {
-      external_id: string;
-    }
+  item: ChainConfigV1['ethereumChains'][number]['value']
 ): AddEthereumChainParameter {
   return {
     rpcUrls: item.rpc_url_user
@@ -50,7 +36,7 @@ export function toAddEthereumChainParameterLegacy(
       name: item.native_asset?.name || '<unknown>',
     },
     // deprecated field is being used for chainConfigStore's migration
-    chainId: Networks.getChainId(item) || item.external_id,
+    chainId: normalizeChainId(item.external_id),
     chainName: item.name,
     blockExplorerUrls: item.explorer_tx_url ? [item.explorer_tx_url] : [],
     iconUrls: [item.icon_url],
@@ -60,35 +46,53 @@ export function toAddEthereumChainParameterLegacy(
 
 export const upgrades: Upgrades<PossibleEntry> = {
   2: (entry) => {
-    const ethereumChainConfigs: EthereumChainConfig[] = [];
-    for (const { value, ...config } of entry.ethereumChains || []) {
-      const chainConfig = toAddEthereumChainParameterLegacy(value);
-      const id = maybeLocalChainId(value.id)
-        ? toCustomNetworkId(value.external_id)
-        : value.id;
-      ethereumChainConfigs.push({
-        ...config,
-        id,
-        value: chainConfig,
-        previousIds: value.chain !== id ? [value.chain] : null,
-      });
+    try {
+      const ethereumChainConfigs: EthereumChainConfig[] = [];
+      for (const { value, ...config } of entry.ethereumChains || []) {
+        const chainConfig = toAddEthereumChainParameterLegacy(value);
+        const id = maybeLocalChainId(value.id)
+          ? toCustomNetworkId(value.external_id)
+          : value.id;
+        ethereumChainConfigs.push({
+          ...config,
+          id,
+          value: chainConfig,
+          previousIds: value.chain !== id ? [value.chain] : null,
+        });
+      }
+      return {
+        version: 2,
+        ethereumChainConfigs,
+        ethereumChains: entry.ethereumChains,
+      };
+    } catch {
+      return {
+        ...entry,
+        [`backup:v${entry.version || 1}`]: entry,
+        version: 2,
+        ethereumChainConfigs: [],
+      };
     }
-    return {
-      version: 2,
-      ethereumChainConfigs,
-      ethereumChains: entry.ethereumChains,
-    };
   },
   3: (entry) => {
-    return {
-      ...entry,
-      version: 3,
-      ethereumChainConfigs: entry.ethereumChainConfigs.map((config) => {
-        if (config.id) {
-          return config;
-        }
-        return { ...config, id: toCustomNetworkId(config.value.chainId) };
-      }),
-    };
+    try {
+      return {
+        ...entry,
+        version: 3,
+        ethereumChainConfigs: entry.ethereumChainConfigs.map((config) => {
+          if (config.id) {
+            return config;
+          }
+          return { ...config, id: toCustomNetworkId(config.value.chainId) };
+        }),
+      };
+    } catch {
+      return {
+        ...entry,
+        [`backup:v${entry.version}`]: entry,
+        version: 3,
+        ethereumChainConfigs: [],
+      };
+    }
   },
 };
