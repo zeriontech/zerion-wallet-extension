@@ -12,7 +12,10 @@ function getPremiumStatus({
   walletsMeta: WalletMeta[];
 }) {
   return walletsMeta.some((meta) => {
-    if (meta.membership.premium?.plan !== 'Restricted') {
+    if (
+      meta.membership.premium &&
+      meta.membership.premium?.plan !== 'Restricted'
+    ) {
       return true;
     }
     if (
@@ -41,6 +44,7 @@ export function usePremiumStatus({ address }: { address?: string }) {
     suspense: false,
     useErrorBoundary: false,
   });
+
   return {
     isPremium: useMemo(
       () =>
