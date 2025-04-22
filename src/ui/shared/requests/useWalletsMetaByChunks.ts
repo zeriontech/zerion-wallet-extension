@@ -28,6 +28,8 @@ export function useWalletsMetaByChunks({
 
   // Update query cache with wallet meta data for each address
   // to make it prefetched for single address requests (e.g. wallet avatar)
+  // useLayoutEffect is used here to add data before UI is updated and isLoading flag from the query unlocks the render
+  // so new components will not request the data again
   useLayoutEffect(() => {
     if ((query.data?.length || 0) <= 1) {
       // No need to update cache if there's only one wallet meta
