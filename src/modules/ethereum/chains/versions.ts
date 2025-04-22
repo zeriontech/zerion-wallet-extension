@@ -68,6 +68,7 @@ export const upgrades: Upgrades<PossibleEntry> = {
     } catch {
       return {
         ...entry,
+        [`backup:v${entry.version || 1}`]: entry,
         version: 2,
         ethereumChainConfigs: [],
       };
@@ -88,6 +89,7 @@ export const upgrades: Upgrades<PossibleEntry> = {
     } catch {
       return {
         ...entry,
+        [`backup:v${entry.version}`]: entry,
         version: 3,
         ethereumChainConfigs: [],
       };
