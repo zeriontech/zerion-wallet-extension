@@ -41,7 +41,7 @@ export function WalletAvatar({
         active={active}
         address={address}
         size={size}
-        nft={data?.[0]?.nft}
+        nft={data?.at(0)?.nft}
         borderRadius={borderRadius}
         onReady={onReady}
         highlight={isPremium}
