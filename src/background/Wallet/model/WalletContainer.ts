@@ -236,7 +236,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     newCredentials: SessionCredentials;
   }) {
     const { mnemonic: encryptedMnemonic } = this.getFirstWallet();
-    invariant(encryptedMnemonic, 'Must be a Mnemonic WalletContainer');
+    invariant(encryptedMnemonic, MISSING_MNEMONIC);
     const phrase = await decryptMnemonic(encryptedMnemonic.phrase, credentials);
     const { seedPhraseEncryptionKey } = newCredentials;
     const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);

@@ -50,7 +50,7 @@ function ChangePassword() {
         newPassword,
       });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       zeroizeAfterSubmission();
       navigate('./success');
     },
