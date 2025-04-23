@@ -15,8 +15,8 @@ import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
+import type { CustomConfiguration } from '@zeriontech/transactions';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
@@ -77,18 +77,22 @@ export function RateLine({
   receiveAsset,
   quotesData,
   selectedQuote,
+  configuration,
+  onQuoteIdChange,
 }: {
   spendAsset: Asset | null;
   receiveAsset: Asset | null;
   quotesData: QuotesData;
   selectedQuote: Quote | null;
+  configuration: CustomConfiguration;
+  onQuoteIdChange: (quoteId: string | null) => void;
 }) {
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
   const quotesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
-  const { isLoading, quote, error, quotes } = quotesData;
+  const { isLoading, error, quotes } = quotesData;
 
   const { data: firebaseData } = useFirebaseConfig(['fee_comparison_config']);
   const zerionPremiumFee = useMemo(() => {
@@ -98,12 +102,12 @@ export function RateLine({
     );
   }, [firebaseData?.fee_comparison_config]);
 
-  const userFeeTier: FeeTier | null = !quote
+  const userFeeTier: FeeTier | null = !selectedQuote
     ? null
-    : !quote.protocol_fee
+    : !selectedQuote.protocol_fee
     ? 'og'
     : zerionPremiumFee != null
-    ? quote.protocol_fee === zerionPremiumFee
+    ? selectedQuote.protocol_fee === zerionPremiumFee
       ? 'premium'
       : 'regular'
     : null;
@@ -128,7 +132,8 @@ export function RateLine({
         gap={8}
         justifyContent="space-between"
         style={{
-          visibility: !isLoading && !quote && !error ? 'hidden' : undefined,
+          visibility:
+            !isLoading && !selectedQuote && !error ? 'hidden' : undefined,
         }}
       >
         <HStack gap={4} alignItems="center">
@@ -151,11 +156,11 @@ export function RateLine({
           ) : null}
         </HStack>
         <span>
-          {isLoading && !quote ? (
+          {isLoading && !selectedQuote ? (
             <span style={{ color: 'var(--neutral-500)' }}>
               Fetching offers...
             </span>
-          ) : quote ? (
+          ) : selectedQuote ? (
             <UnstyledButton
               style={{ display: 'flex' }}
               title="Select quote"
@@ -170,7 +175,7 @@ export function RateLine({
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                {quote.contract_metadata?.icon_url ? (
+                {selectedQuote.contract_metadata?.icon_url ? (
                   <div
                     style={{
                       position: 'relative',
@@ -181,10 +186,10 @@ export function RateLine({
                   >
                     <SlidingRectangle
                       size={20}
-                      src={quote.contract_metadata.icon_url}
+                      src={selectedQuote.contract_metadata.icon_url}
                       render={(src, index) => (
                         <img
-                          title={quote.contract_metadata?.name}
+                          title={selectedQuote.contract_metadata?.name}
                           style={{
                             position: 'absolute',
                             left: 0,
@@ -196,7 +201,7 @@ export function RateLine({
                           }}
                           src={src}
                           // The alt here may be from a sibling image, but hopefully it doesn't matter
-                          alt={`${quote.contract_metadata?.name} logo`}
+                          alt={`${selectedQuote.contract_metadata?.name} logo`}
                         />
                       )}
                     />
@@ -210,7 +215,9 @@ export function RateLine({
                     )}`}
                   </UIText>
                 ) : (
-                  <span>{quote.contract_metadata?.name ?? 'unknown'}</span>
+                  <span>
+                    {selectedQuote.contract_metadata?.name ?? 'unknown'}
+                  </span>
                 )}
               </HStack>
             </UnstyledButton>
@@ -221,36 +228,31 @@ export function RateLine({
           ) : null}
         </span>
       </HStack>
-      {userFeeTier && quote ? (
+      {userFeeTier && selectedQuote ? (
         <BottomSheetDialog
           ref={feeDescriptionDialogRef}
           height="fit-content"
           containerStyle={{ paddingTop: 16 }}
         >
-          <FeeDescription userFeeTier={userFeeTier} fee={quote.protocol_fee} />
+          <FeeDescription
+            userFeeTier={userFeeTier}
+            fee={selectedQuote.protocol_fee}
+          />
         </BottomSheetDialog>
       ) : null}
-      {quotes?.length && receivePosition ? (
+      {quotes?.length && receiveAsset ? (
         <BottomSheetDialog
           ref={quotesDialogRef}
           height="fit-content"
           renderWhenOpen={() => (
-            <StoreWatcher
-              store={swapView.store.configuration}
-              render={(configuration) => (
-                <QuoteList
-                  quotes={quotes}
-                  selectedQuote={quote}
-                  userFeeTier={userFeeTier}
-                  onChange={(quoteId) => {
-                    quotesDialogRef.current?.close();
-                    quotesData.setQuoteId(quoteId);
-                  }}
-                  onReset={() => quotesData.setQuoteId(null)}
-                  receiveAsset={receivePosition.asset}
-                  configuration={configuration}
-                />
-              )}
+            <QuoteList
+              quotes={quotes}
+              selectedQuote={selectedQuote}
+              userFeeTier={userFeeTier}
+              receiveAsset={receiveAsset}
+              configuration={configuration}
+              onChange={onQuoteIdChange}
+              onReset={() => onQuoteIdChange(null)}
             />
           )}
         />

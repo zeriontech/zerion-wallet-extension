@@ -259,10 +259,19 @@ export function SwapFormComponent() {
   });
 
   const { refetch: refetchQuotes } = quotesData;
+  const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
 
-  const defaultQuote = quotesData.quotes?.[0] ?? null;
-  // TODO: add support for quote selection, useState
-  const selectedQuote = defaultQuote;
+  const selectedQuote = useMemo(() => {
+    const userQuote = quotesData.quotes?.find(
+      (quote) => quote.contract_metadata?.id === userQuoteId
+    );
+    const defaultQuote = quotesData.quotes?.[0];
+    return userQuote || defaultQuote || null;
+  }, [userQuoteId, quotesData.quotes]);
+
+  useEffect(() => {
+    setUserQuoteId(null);
+  }, [spendInput, spendTokenInput, receiveTokenInput, chainInput]);
 
   const swapTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
@@ -860,6 +869,8 @@ export function SwapFormComponent() {
             receiveAsset={swapView.receivePosition?.asset ?? null}
             quotesData={quotesData}
             selectedQuote={selectedQuote}
+            onQuoteIdChange={setUserQuoteId}
+            configuration={configuration}
           />
           {chain ? <SlippageLine chain={chain} swapView={swapView} /> : null}
           {currentTransaction && chain && currentTransaction.gasLimit ? (
@@ -892,10 +903,12 @@ export function SwapFormComponent() {
               />
             </React.Suspense>
           ) : null}
-          {quote?.protocol_fee === 0 ? (
+          {selectedQuote?.protocol_fee === 0 ? (
             <HStack gap={8} justifyContent="space-between">
               <UIText kind="small/regular">Zerion Fee</UIText>
-              <UIText kind="small/accent">Free</UIText>
+              <UIText kind="small/accent" className={styles.gradientText}>
+                Free
+              </UIText>
             </HStack>
           ) : null}
         </VStack>

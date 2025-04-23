@@ -5,10 +5,10 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ShieldIcon from 'jsx:src/ui/assets/shield.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import * as styles from './styles.module.css';
 import type { FeeTier } from './FeeTier';
 

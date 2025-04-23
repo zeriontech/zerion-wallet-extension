@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useId, useRef } from 'react';
 import type { Asset } from 'defi-sdk';
 import omit from 'lodash/omit';
 import { Quote } from 'src/shared/types/Quote';
@@ -9,9 +9,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ShieldIcon from 'jsx:src/ui/assets/shield.svg';
 import { Button } from 'src/ui/ui-kit/Button';
-import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { formatPercent } from 'src/shared/units/formatPercent/formatPercent';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
@@ -23,6 +21,8 @@ import { createChain } from 'src/modules/networks/Chain';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { formatPercent } from 'src/shared/units/formatPercent';
+import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { useTransactionFee } from '../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import { FeeDescription } from './FeeDescription';
 import type { FeeTier } from './FeeTier';
@@ -138,19 +138,20 @@ export function QuoteList({
   userFeeTier,
   quotes,
   selectedQuote,
-  onChange,
-  onReset,
   receiveAsset,
   configuration,
+  onChange,
+  onReset,
 }: {
   userFeeTier: FeeTier | null;
   quotes: Quote[];
   selectedQuote: Quote | null;
-  onChange: (quoteId: string | null) => void;
-  onReset: () => void;
   receiveAsset: Asset;
   configuration: CustomConfiguration;
+  onChange: (quoteId: string | null) => void;
+  onReset: () => void;
 }) {
+  const formId = useId();
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
@@ -158,103 +159,109 @@ export function QuoteList({
   return (
     <>
       <DialogCloseButton style={{ position: 'absolute', top: 8, right: 8 }} />
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          const formData = new FormData(event.currentTarget);
-          const quoteId = formData.get('quoteId') as string | null;
-          onChange(quoteId);
-        }}
-      >
-        <VStack gap={16}>
-          <HStack gap={8} alignItems="center">
-            <ShieldIcon style={{ color: 'var(--positive-500)' }} />
-            <UIText kind="headline/h3">Best Available Rate</UIText>
-          </HStack>
 
-          <VStack gap={8}>
-            <HStack
-              gap={0}
-              style={{ gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS }}
-            >
-              <UIText kind="small/accent" color="var(--neutral-500)">
-                Min. Received
-              </UIText>
-              <UIText kind="small/accent" color="var(--neutral-500)">
-                Network fee
-              </UIText>
-            </HStack>
-            <div style={{ maxHeight: 350, overflowY: 'auto', paddingTop: 8 }}>
-              <VStack gap={8}>
-                {quotes.map((quote, index) => {
-                  const isSelected =
-                    selectedQuote?.contract_metadata?.id ===
-                    quote.contract_metadata?.id;
-                  return (
-                    <label className={styles.radio}>
-                      <input
-                        autoFocus={isSelected}
-                        type="radio"
-                        name="quoteId"
-                        value={quote.contract_metadata?.id}
-                        defaultChecked={isSelected}
-                      />
-                      {index === 0 ? (
-                        <span className={styles.bestRateBadge}>BEST RATE</span>
-                      ) : null}
-                      <Quote
-                        key={quote.contract_metadata?.id}
-                        quote={quote}
-                        receiveAsset={receiveAsset}
-                        configuration={configuration}
-                      />
-                    </label>
-                  );
-                })}
-              </VStack>
-            </div>
-          </VStack>
+      <VStack gap={16}>
+        <HStack gap={8} alignItems="center">
+          <ShieldIcon style={{ color: 'var(--positive-500)' }} />
+          <UIText kind="headline/h3">Best Available Rate</UIText>
+        </HStack>
 
-          {userFeeTier === 'premium' ? (
-            <UIText kind="caption/regular" color="var(--neutral-500)">
-              Our platform fee is the{' '}
-              <UnstyledButton
-                type="button"
-                style={{ color: 'var(--primary)' }}
-                title="Zerion fees description"
-                onClick={() => feeDescriptionDialogRef.current?.showModal()}
-              >
-                lowest among top wallets
-              </UnstyledButton>{' '}
-              and already included — keeping your swaps fast, safe, and secure.
-            </UIText>
-          ) : userFeeTier === 'regular' && quotes.length ? (
-            <UIText kind="caption/regular" color="var(--neutral-500)">
-              Our platform fee ({formatPercent(quotes[0].protocol_fee, 'en')}%)
-              is already included — keeping your swaps fast, safe, and secure.
-            </UIText>
-          ) : null}
+        <VStack gap={8}>
           <HStack
-            gap={16}
-            style={{ paddingTop: 16, gridTemplateColumns: '1fr 1fr' }}
+            gap={0}
+            style={{ gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS }}
           >
-            <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-              <Button
-                kind="neutral"
-                size={44}
-                onClick={onReset}
-                value={DialogButtonValue.cancel}
-                style={{ width: '100%' }}
-              >
-                Reset
-              </Button>
-            </form>
-            <Button kind="primary" size={44}>
-              Save
-            </Button>
+            <UIText kind="small/accent" color="var(--neutral-500)">
+              Min. Received
+            </UIText>
+            <UIText kind="small/accent" color="var(--neutral-500)">
+              Network fee
+            </UIText>
           </HStack>
+          <form
+            id={formId}
+            method="dialog"
+            onSubmit={(event) => {
+              event.stopPropagation();
+              const formData = new FormData(event.currentTarget);
+              const quoteId = formData.get('quoteId') as string | null;
+              onChange(quoteId);
+            }}
+            style={{ maxHeight: 350, overflowY: 'auto', paddingTop: 8 }}
+          >
+            <VStack gap={8}>
+              {quotes.map((quote, index) => {
+                const isSelected =
+                  selectedQuote?.contract_metadata?.id ===
+                  quote.contract_metadata?.id;
+                return (
+                  <label
+                    className={styles.radio}
+                    key={quote.contract_metadata?.id}
+                  >
+                    <input
+                      autoFocus={isSelected}
+                      type="radio"
+                      name="quoteId"
+                      value={quote.contract_metadata?.id}
+                      defaultChecked={isSelected}
+                    />
+                    {index === 0 ? (
+                      <span className={styles.bestRateBadge}>BEST RATE</span>
+                    ) : null}
+                    <Quote
+                      key={quote.contract_metadata?.id}
+                      quote={quote}
+                      receiveAsset={receiveAsset}
+                      configuration={configuration}
+                    />
+                  </label>
+                );
+              })}
+            </VStack>
+          </form>
         </VStack>
-      </form>
+
+        {userFeeTier === 'premium' ? (
+          <UIText kind="caption/regular" color="var(--neutral-500)">
+            Our platform fee is the{' '}
+            <UnstyledButton
+              type="button"
+              style={{ color: 'var(--primary)' }}
+              title="Zerion fees description"
+              onClick={() => feeDescriptionDialogRef.current?.showModal()}
+            >
+              lowest among top wallets
+            </UnstyledButton>{' '}
+            and already included — keeping your swaps fast, safe, and secure.
+          </UIText>
+        ) : userFeeTier === 'regular' && quotes.length ? (
+          <UIText kind="caption/regular" color="var(--neutral-500)">
+            Our platform fee ({formatPercent(quotes[0].protocol_fee, 'en')}%) is
+            already included — keeping your swaps fast, safe, and secure.
+          </UIText>
+        ) : null}
+        <HStack
+          gap={16}
+          style={{ paddingTop: 16, gridTemplateColumns: '1fr 1fr' }}
+        >
+          <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+            <Button
+              kind="neutral"
+              size={44}
+              onClick={onReset}
+              value={DialogButtonValue.cancel}
+              style={{ width: '100%' }}
+            >
+              Reset
+            </Button>
+          </form>
+          <Button kind="primary" size={44} form={formId}>
+            Save
+          </Button>
+        </HStack>
+      </VStack>
+
       {userFeeTier === 'premium' && quotes.length ? (
         <BottomSheetDialog
           ref={feeDescriptionDialogRef}
