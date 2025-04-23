@@ -265,6 +265,30 @@ export function SwapFormComponent() {
   // TODO: add support for quote selection, useState
   const selectedQuote = defaultQuote;
 
+  const { receiveAsset, spendAsset } = swapView;
+
+  useEffect(() => {
+    if (selectedQuote && quotesData.done) {
+      walletPort.request('finalQuoteReceived', {
+        quote: selectedQuote,
+        formView: {
+          spendAsset,
+          receiveAsset,
+          spendPosition,
+          configuration: swapView.store.configuration.getState(),
+        },
+        scope: 'Swap',
+      });
+    }
+  }, [
+    selectedQuote,
+    quotesData.done,
+    spendAsset,
+    receiveAsset,
+    spendPosition,
+    swapView.store.configuration,
+  ]);
+
   const swapTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
     [selectedQuote]
@@ -292,8 +316,6 @@ export function SwapFormComponent() {
     receivePosition,
     spendPosition,
   ]);
-
-  const { receiveAsset, spendAsset } = swapView;
 
   const priceImpact = useMemo(() => {
     return calculatePriceImpact({

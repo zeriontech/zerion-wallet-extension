@@ -1,15 +1,17 @@
 import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
+import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { Chain } from 'src/modules/networks/Chain';
+import type { FormViewForAnalytics } from 'src/shared/analytics/shared/formViewToAnalytics';
+import type { Quote } from 'src/shared/types/Quote';
 import type {
   MessageContextParams,
   TransactionContextParams,
 } from 'src/shared/types/SignatureContextParams';
-import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
+import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -22,6 +24,12 @@ export interface ScreenViewParams {
   address: string | null;
   screenSize: string;
   windowType: WindowType;
+}
+
+export interface QuoteReceivedParams {
+  quote: Quote;
+  formView: FormViewForAnalytics;
+  scope: 'Swap' | 'Bridge';
 }
 
 export interface DaylightEventParams {
@@ -82,4 +90,5 @@ export const emitter = createNanoEvents<{
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
+  finalQuoteReceived: (data: QuoteReceivedParams) => void;
 }>();
