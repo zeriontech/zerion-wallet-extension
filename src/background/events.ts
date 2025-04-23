@@ -26,7 +26,7 @@ export interface ScreenViewParams {
   windowType: WindowType;
 }
 
-export interface QuoteReceivedParams {
+export interface FinalQuoteReceivedParams {
   quote: Quote;
   formView: FormViewForAnalytics;
   scope: 'Swap' | 'Bridge';
@@ -90,5 +90,5 @@ export const emitter = createNanoEvents<{
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
-  finalQuoteReceived: (data: QuoteReceivedParams) => void;
+  finalQuoteReceived: (data: FinalQuoteReceivedParams) => void;
 }>();
