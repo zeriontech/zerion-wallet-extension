@@ -1,10 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { AssetFullInfo } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 
@@ -18,7 +15,7 @@ const TextPreview = ({ text }: { text: string }) => {
     undefined
   );
   // on Safari line-camp works correctly only with inline elements inside
-  const paragraphs = text.split(/(\r?\n|\r)+/g);
+  const paragraphs = text.split(/\r?\n|\r/g);
   const markup: React.ReactNode[] = [];
   paragraphs.forEach((block, index, array) => {
     markup.push(<span key={index}>{block}</span>);
@@ -80,9 +77,7 @@ export function AssetDescription({
 }: {
   assetFullInfo: AssetFullInfo;
 }) {
-  const hasNoDescription =
-    !assetFullInfo.extra.description &&
-    !assetFullInfo.extra.relevantResources.length;
+  const hasNoDescription = !assetFullInfo.extra.description;
 
   if (hasNoDescription) {
     return null;
@@ -91,29 +86,9 @@ export function AssetDescription({
   return (
     <VStack gap={12}>
       <UIText kind="headline/h3">About {assetFullInfo.fungible.name}</UIText>
-      <VStack gap={8}>
-        {assetFullInfo.extra.description ? (
-          <TextPreview text={assetFullInfo.extra.description} />
-        ) : null}
-        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {assetFullInfo.extra.relevantResources.map((resource) => (
-            <TextAnchor
-              key={resource.name}
-              href={resource.url}
-              target="_blank"
-              rel="noreferrer noopenner"
-              style={{ marginRight: 16, color: 'var(--primary)' }}
-            >
-              <HStack gap={4} alignItems="center">
-                <UIText kind="body/regular" color="var(--primary)">
-                  {resource.displayableName}
-                </UIText>
-                <LinkIcon style={{ width: 16, height: 16 }} />
-              </HStack>
-            </TextAnchor>
-          ))}
-        </div>
-      </VStack>
+      {assetFullInfo.extra.description ? (
+        <TextPreview text={assetFullInfo.extra.description} />
+      ) : null}
     </VStack>
   );
 }
