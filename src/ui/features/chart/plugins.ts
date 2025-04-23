@@ -1,13 +1,16 @@
 import type { Plugin, Point } from 'chart.js/auto';
 import { Theme } from 'src/ui/features/appearance';
 import { getChartColor, getSortedRangeIndexes } from './helpers';
+import type { ChartPoint } from './types';
 
 export function drawDotPlugin({
   getStartRangeIndex,
   getTheme,
+  getChartPoints,
 }: {
   getStartRangeIndex: () => number | null;
   getTheme: () => Theme;
+  getChartPoints: () => ChartPoint[];
 }): Plugin<'scatter'> {
   return {
     id: 'drawDot',
@@ -15,7 +18,11 @@ export function drawDotPlugin({
       const activeElement = chart.getActiveElements()?.[0];
       const { ctx } = chart;
 
-      if (!activeElement || !ctx) {
+      if (
+        !activeElement ||
+        !ctx ||
+        Boolean(getChartPoints().at(activeElement.index)?.[2])
+      ) {
         return;
       }
 

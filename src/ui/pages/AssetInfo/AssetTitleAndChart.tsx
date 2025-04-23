@@ -20,6 +20,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { emitter } from 'src/ui/shared/events';
 import { Chart } from 'src/ui/features/chart/Chart';
+import type { ChartPoint } from 'src/ui/features/chart/types';
 import { getColor, getSign } from './helpers';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
@@ -52,11 +53,12 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
     period,
   });
 
-  const chartPoints = useMemo<[number, number][]>(() => {
+  const chartPoints = useMemo<ChartPoint[]>(() => {
     return (
       chartData?.data.points.map((item) => [
         item.timestamp * 1000,
         item.value,
+        item.extra,
       ]) || []
     );
   }, [chartData]);

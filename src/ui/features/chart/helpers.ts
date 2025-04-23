@@ -1,7 +1,8 @@
 import { Theme } from 'src/ui/features/appearance';
+import type { ChartPoint } from './types';
 
-export function toScatterData(points: [number, number][]) {
-  return points.map(([x, y]) => ({ x, y }));
+export function toScatterData(points: ChartPoint[]) {
+  return points.map(([x, y, extra]) => ({ x, y, extra }));
 }
 
 export function getChartColor({
@@ -55,7 +56,7 @@ export function getSortedRangeIndexes({
  */
 const FLAT_CHART_MIN_MAX_RATIO = 1.02;
 
-export function getYLimits(points: [number, number][]) {
+export function getYLimits(points: ChartPoint[]) {
   const values = points.map(([, value]) => value);
   const minLimit = Math.min(...values);
   const maxLimit = Math.max(...values);

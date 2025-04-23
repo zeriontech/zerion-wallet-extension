@@ -12,8 +12,14 @@ export interface Params {
   period: ChartPeriod;
 }
 
+export type AssetChartPointExtra = { total: number } | null;
+
 export interface AssetChart {
-  points: { timestamp: number; value: number; extra: null }[];
+  points: {
+    timestamp: number;
+    value: number;
+    extra: AssetChartPointExtra;
+  }[];
 }
 
 type Response = ResponseBody<AssetChart>;
