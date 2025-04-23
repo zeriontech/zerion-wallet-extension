@@ -30,6 +30,7 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
+import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
 import * as styles from './styles.module.css';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
@@ -124,6 +125,11 @@ export function AssetInfo() {
     { enabled: ready }
   );
 
+  const { isPremium, walletsMetaQuery } = usePremiumStatus({
+    address: params.address,
+  });
+  const isPremiumStatusLoading = walletsMetaQuery.isLoading;
+
   const assetAddressPnlQuery = useWalletAssetPnl(
     {
       addresses: [params.address],
@@ -131,7 +137,7 @@ export function AssetInfo() {
       currency,
     },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready && isPremium }
   );
 
   const { data: wallet } = useQuery({
@@ -183,6 +189,8 @@ export function AssetInfo() {
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
           assetAddressPnlQuery={assetAddressPnlQuery}
+          isPremium={isPremium}
+          isPremiumStatusLoading={isPremiumStatusLoading}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />

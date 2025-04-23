@@ -38,7 +38,7 @@ export function usePremiumStatus({ address }: { address?: string }) {
   const normalizedAddress = address ? normalizeAddress(address) : undefined;
   const addresses = useAllSignerOrHwAddresses();
 
-  const metaQuery = useWalletsMetaByChunks({
+  const walletsMetaQuery = useWalletsMetaByChunks({
     addresses: addresses || [],
     enabled: Boolean(addresses?.length),
     suspense: false,
@@ -50,10 +50,10 @@ export function usePremiumStatus({ address }: { address?: string }) {
       () =>
         getPremiumStatus({
           normalizedAddress,
-          walletsMeta: metaQuery.data || [],
+          walletsMeta: walletsMetaQuery.data || [],
         }),
-      [normalizedAddress, metaQuery.data]
+      [normalizedAddress, walletsMetaQuery.data]
     ),
-    query: metaQuery,
+    walletsMetaQuery,
   };
 }
