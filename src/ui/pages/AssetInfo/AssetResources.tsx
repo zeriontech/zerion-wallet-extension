@@ -25,6 +25,7 @@ import XIcon from 'jsx:src/ui/assets/x-logo.svg';
 import WarpcastIcon from 'jsx:src/ui/assets/warpcast-logo.svg';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-logo-monochrome.svg';
 import DexscreenerIcon from 'jsx:src/ui/assets/dexscreener-logo.svg';
+import WebsiteIcon from 'jsx:src/ui/assets/globe.svg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 
 function MainImplementationButton({
@@ -245,6 +246,7 @@ function ResourceButton({
 const TWITTER_ID = 'twitter';
 const WARPCAST_ID = 'warpcast';
 const DEXSCREENER_ID = 'dexscreener';
+const WEBSITE = 'website';
 
 export function AssetResources({
   assetFullInfo,
@@ -307,6 +309,12 @@ export function AssetResources({
             <ResourceButton
               resource={resourcesById[WARPCAST_ID]}
               icon={<WarpcastIcon style={{ width: 20, height: 20 }} />}
+            />
+          ) : null}
+          {resourcesById[WEBSITE] ? (
+            <ResourceButton
+              resource={resourcesById[WEBSITE]}
+              icon={<WebsiteIcon style={{ width: 20, height: 20 }} />}
             />
           ) : null}
           <ResourceButton
