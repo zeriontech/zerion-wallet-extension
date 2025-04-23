@@ -554,6 +554,28 @@ function BridgeFormComponent() {
 
   const [txConfiguration, setTxConfiguration] = useState(DEFAULT_CONFIGURATION);
 
+  useEffect(() => {
+    if (selectedQuote && quotesData.done) {
+      walletPort.request('finalQuoteReceived', {
+        quote: selectedQuote,
+        formView: {
+          spendAsset,
+          receiveAsset,
+          spendPosition,
+          configuration: txConfiguration,
+        },
+        scope: 'Bridge',
+      });
+    }
+  }, [
+    selectedQuote,
+    quotesData.done,
+    spendAsset,
+    receiveAsset,
+    spendPosition,
+    txConfiguration,
+  ]);
+
   const USE_PAYMASTER_FEATURE = true;
 
   const userNonce = txConfiguration.nonce;

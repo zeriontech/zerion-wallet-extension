@@ -265,30 +265,6 @@ export function SwapFormComponent() {
   // TODO: add support for quote selection, useState
   const selectedQuote = defaultQuote;
 
-  const { receiveAsset, spendAsset } = swapView;
-
-  useEffect(() => {
-    if (selectedQuote && quotesData.done) {
-      walletPort.request('finalQuoteReceived', {
-        quote: selectedQuote,
-        formView: {
-          spendAsset,
-          receiveAsset,
-          spendPosition,
-          configuration: swapView.store.configuration.getState(),
-        },
-        scope: 'Swap',
-      });
-    }
-  }, [
-    selectedQuote,
-    quotesData.done,
-    spendAsset,
-    receiveAsset,
-    spendPosition,
-    swapView.store.configuration,
-  ]);
-
   const swapTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
     [selectedQuote]
@@ -316,6 +292,8 @@ export function SwapFormComponent() {
     receivePosition,
     spendPosition,
   ]);
+
+  const { receiveAsset, spendAsset } = swapView;
 
   const priceImpact = useMemo(() => {
     return calculatePriceImpact({
@@ -403,12 +381,36 @@ export function SwapFormComponent() {
     },
   });
 
-  const USE_PAYMASTER_FEATURE = true;
-
   const configuration = useStore(swapView.store.configuration);
+
+  useEffect(() => {
+    if (selectedQuote && quotesData.done) {
+      walletPort.request('finalQuoteReceived', {
+        quote: selectedQuote,
+        formView: {
+          spendAsset,
+          receiveAsset,
+          spendPosition,
+          configuration,
+        },
+        scope: 'Swap',
+      });
+    }
+  }, [
+    selectedQuote,
+    quotesData.done,
+    spendAsset,
+    receiveAsset,
+    spendPosition,
+    configuration,
+  ]);
+
   const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;
   const gas = txToCheck ? getGas(txToCheck) : null;
+
+  const USE_PAYMASTER_FEATURE = true;
+
   const eligibilityParams:
     | null
     | Parameters<ZerionApiClient['paymasterCheckEligibility']>[0] =
