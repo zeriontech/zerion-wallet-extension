@@ -780,7 +780,7 @@ export function AssetAddressStats({
                 </UIText>
               </VStack>
               {isPremiumStatusLoading ? (
-                <Spacer height={48} />
+                <Spacer height={44} />
               ) : isPremium ? (
                 <AssetPremiumAddressShortStats
                   assetAddressPnlQuery={assetAddressPnlQuery}
