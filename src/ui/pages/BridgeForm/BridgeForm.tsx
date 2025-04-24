@@ -577,7 +577,7 @@ function BridgeFormComponent() {
       walletPort.request('finalQuoteReceived', {
         quote: selectedQuote,
         formData,
-        scope: 'Swap',
+        scope: 'Bridge',
       });
       setPrevSelectedQuote(selectedQuote);
     }
