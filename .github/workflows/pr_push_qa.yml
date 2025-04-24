@@ -1,4 +1,4 @@
-name: Build and push QA build
+name: 'QA Build: PR'
 
 on:
   pull_request:
