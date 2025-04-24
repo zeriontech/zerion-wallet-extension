@@ -5,11 +5,14 @@ import type {
 import BigNumber from 'bignumber.js';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import { createChain } from 'src/modules/networks/Chain';
+import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { Quote } from 'src/shared/types/Quote';
 import {
   calculatePriceImpact,
   isHighValueLoss,
 } from 'src/ui/pages/SwapForm/shared/price-impact';
+import { getCommonQuantity } from 'src/modules/networks/asset';
 import { assetQuantityToValue, toMaybeArr } from './helpers';
 
 export interface AnalyticsFormData {
@@ -19,13 +22,41 @@ export interface AnalyticsFormData {
   configuration: CustomConfiguration;
 }
 
-export function formDataToAnalytics({
-  formData: { spendAsset, receiveAsset, spendPosition, configuration },
-  quote,
-}: {
-  formData: AnalyticsFormData;
-  quote: Quote;
-}) {
+async function fetchAssetFullInfo(
+  params: Parameters<typeof ZerionAPI.assetGetFungibleFullInfo>[0]
+) {
+  return backgroundQueryClient.fetchQuery({
+    queryKey: ['ZerionAPI.fetchAssetFullInfo', params],
+    queryFn: () => ZerionAPI.assetGetFungibleFullInfo(params),
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+}
+
+export async function formDataToAnalytics(
+  scope: 'Swap' | 'Bridge',
+  {
+    currency,
+    formData: { spendAsset, receiveAsset, spendPosition, configuration },
+    quote,
+  }: {
+    currency: string;
+    formData: AnalyticsFormData;
+    quote: Quote;
+  }
+) {
+  const spendAssetInfo = await fetchAssetFullInfo({
+    fungibleId: spendAsset.asset_code,
+    currency,
+  });
+  const receiveAssetInfo = await fetchAssetFullInfo({
+    fungibleId: receiveAsset.asset_code,
+    currency,
+  });
+
+  const fdvAssetSent = spendAssetInfo.data.fungible.meta.fullyDilutedValuation;
+  const fdvAssetReceived =
+    receiveAssetInfo.data.fungible.meta.fullyDilutedValuation;
+
   const zerion_fee_percentage = quote.protocol_fee;
   const feeAmount = quote.protocol_fee_amount;
   const inputChain = createChain(quote.input_chain);
@@ -50,6 +81,15 @@ export function formDataToAnalytics({
     quote.input_amount_estimation
   );
 
+  const bridgeFeeAmountInUsd =
+    scope === 'Bridge'
+      ? getCommonQuantity({
+          baseQuantity: quote.bridge_fee_amount,
+          chain: createChain(quote.input_chain),
+          asset: spendAsset,
+        }).times(spendAsset.price?.value || 0)
+      : null;
+
   const priceImpact = calculatePriceImpact({
     inputValue,
     outputValue,
@@ -57,7 +97,8 @@ export function formDataToAnalytics({
     outputAsset: receiveAsset,
   });
 
-  const isHighLoss = priceImpact && isHighValueLoss(priceImpact);
+  const isHighPriceImpact = priceImpact && isHighValueLoss(priceImpact);
+  const outputAmountColor = isHighPriceImpact ? 'red' : 'grey';
 
   return {
     usd_amount_sent: toMaybeArr([usdAmountSend]),
@@ -80,10 +121,10 @@ export function formDataToAnalytics({
     contract_type: quote.contract_metadata?.name,
     enough_balance,
     enough_allowance: Boolean(quote.transaction),
-    warning_was_shown: isHighLoss,
-    // TODO add fdv_asset_sent
-    // TODO add fdv_asset_received
-    // TODO add bridge_fee_usd_amount
-    // TODO after new validation for fields is merged: output_amount_color
+    warning_was_shown: isHighPriceImpact,
+    fdv_asset_sent: fdvAssetSent,
+    fdv_asset_received: fdvAssetReceived,
+    bridge_fee_usd_amount: bridgeFeeAmountInUsd,
+    outputAmountColor,
   };
 }
