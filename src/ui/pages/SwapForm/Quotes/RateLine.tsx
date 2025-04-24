@@ -17,6 +17,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import type { CustomConfiguration } from '@zeriontech/transactions';
+import { emitter } from 'src/ui/shared/events';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
@@ -141,7 +142,14 @@ export function RateLine({
           {userFeeTier ? (
             <UnstyledButton
               title="Zerion fees description"
-              onClick={() => feeDescriptionDialogRef.current?.showModal()}
+              onClick={() => {
+                feeDescriptionDialogRef.current?.showModal();
+                emitter.emit('buttonClicked', {
+                  buttonScope: 'General',
+                  buttonName: 'Rate Tooltip',
+                  pathname: 'Swap',
+                });
+              }}
             >
               <QuestionHintIcon
                 role="decoration"

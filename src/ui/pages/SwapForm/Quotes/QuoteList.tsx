@@ -23,6 +23,7 @@ import type { CustomConfiguration } from '@zeriontech/transactions';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { emitter } from 'src/ui/shared/events';
 import { useTransactionFee } from '../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import { FeeDescription } from './FeeDescription';
 import type { FeeTier } from './FeeTier';
@@ -229,7 +230,14 @@ export function QuoteList({
               type="button"
               style={{ color: 'var(--primary)' }}
               title="Zerion fees description"
-              onClick={() => feeDescriptionDialogRef.current?.showModal()}
+              onClick={() => {
+                feeDescriptionDialogRef.current?.showModal();
+                emitter.emit('buttonClicked', {
+                  buttonScope: 'General',
+                  buttonName: 'Quote List Bottom Description',
+                  pathname: 'Swap',
+                });
+              }}
             >
               lowest among top wallets
             </UnstyledButton>{' '}
