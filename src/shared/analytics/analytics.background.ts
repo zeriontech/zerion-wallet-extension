@@ -34,7 +34,7 @@ import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
-import { formViewToAnalytics } from './shared/formViewToAnalytics';
+import { formDataToAnalytics } from './shared/formDataToAnalytics';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -328,13 +328,13 @@ function trackAppEvents({ account }: { account: Account }) {
     }
   });
 
-  emitter.on('finalQuoteReceived', ({ quote, formView, scope }) => {
+  emitter.on('finalQuoteReceived', ({ quote, formData, scope }) => {
     const params = createParams({
       request_name: 'swap_form_filled_out',
       screen_name: scope === 'Swap' ? 'Swap' : 'Bridge',
       client_scope: scope === 'Swap' ? 'Swap' : 'Bridge',
       action_type: scope === 'Swap' ? 'Trade' : 'Send',
-      ...formViewToAnalytics({ formView, quote }),
+      ...formDataToAnalytics({ formData, quote }),
     });
     // Note that `finalQuoteReceived` is not exactly the same as `swap_form_filled_out` (or "Swap Form Filled Out").
     // However, the analytics task specifically states: "Trigger the event when the client receives the final quote".

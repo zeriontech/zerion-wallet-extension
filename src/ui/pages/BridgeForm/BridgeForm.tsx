@@ -85,6 +85,7 @@ import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
+import type { Quote } from 'src/shared/types/Quote';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -554,21 +555,35 @@ function BridgeFormComponent() {
 
   const [txConfiguration, setTxConfiguration] = useState(DEFAULT_CONFIGURATION);
 
+  const [prevSelectedQuote, setPrevSelectedQuote] = useState<Quote | null>(
+    null
+  );
+
   useEffect(() => {
-    if (selectedQuote && quotesData.done) {
+    if (
+      spendAsset &&
+      spendPosition &&
+      receiveAsset &&
+      selectedQuote &&
+      prevSelectedQuote !== selectedQuote &&
+      quotesData.done
+    ) {
+      const formData = {
+        spendAsset,
+        receiveAsset,
+        spendPosition,
+        configuration: txConfiguration,
+      };
       walletPort.request('finalQuoteReceived', {
         quote: selectedQuote,
-        formView: {
-          spendAsset,
-          receiveAsset,
-          spendPosition,
-          configuration: txConfiguration,
-        },
-        scope: 'Bridge',
+        formData,
+        scope: 'Swap',
       });
+      setPrevSelectedQuote(selectedQuote);
     }
   }, [
     selectedQuote,
+    prevSelectedQuote,
     quotesData.done,
     spendAsset,
     receiveAsset,

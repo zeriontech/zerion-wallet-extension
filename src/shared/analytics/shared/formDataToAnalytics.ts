@@ -1,60 +1,36 @@
 import type {
   CustomConfiguration,
-  SwapFormView,
+  EmptyAddressPosition,
 } from '@zeriontech/transactions';
 import BigNumber from 'bignumber.js';
-import type { Asset } from 'defi-sdk';
-import { isTruthy } from 'is-truthy-ts';
-import type { Chain } from 'src/modules/networks/Chain';
+import type { AddressPosition, Asset } from 'defi-sdk';
 import { createChain } from 'src/modules/networks/Chain';
-import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Quote } from 'src/shared/types/Quote';
 import {
   calculatePriceImpact,
   isHighValueLoss,
 } from 'src/ui/pages/SwapForm/shared/price-impact';
+import { assetQuantityToValue, toMaybeArr } from './helpers';
 
-function toMaybeArr<T>(
-  arr: (T | null | undefined)[] | null | undefined
-): T[] | undefined {
-  return arr?.filter(isTruthy) ?? undefined;
+export interface AnalyticsFormData {
+  spendAsset: Asset;
+  receiveAsset: Asset;
+  spendPosition: AddressPosition | EmptyAddressPosition;
+  configuration: CustomConfiguration;
 }
 
-interface AssetQuantity {
-  asset: Asset | null;
-  quantity: string | null;
-}
-
-function assetQuantityToValue(
-  assetWithQuantity: AssetQuantity,
-  chain: Chain
-): number {
-  const { asset, quantity } = assetWithQuantity;
-  if (asset && 'implementations' in asset && asset.price && quantity !== null) {
-    return getCommonQuantity({ asset, chain, baseQuantity: quantity })
-      .times(asset.price.value)
-      .toNumber();
-  }
-  return 0;
-}
-
-export type FormViewForAnalytics = Pick<
-  SwapFormView,
-  'spendAsset' | 'receiveAsset' | 'spendPosition'
-> & { configuration: CustomConfiguration };
-
-export function formViewToAnalytics({
-  formView,
+export function formDataToAnalytics({
+  formData,
   quote,
 }: {
-  formView: FormViewForAnalytics;
+  formData: AnalyticsFormData;
   quote: Quote;
 }) {
   const zerion_fee_percentage = quote.protocol_fee;
   const feeAmount = quote.protocol_fee_amount;
-  const spendAsset = formView.spendAsset;
+  const spendAsset = formData.spendAsset;
   const inputChain = createChain(quote.input_chain);
-  const receiveAsset = formView.receiveAsset;
+  const receiveAsset = formData.receiveAsset;
   const outputChain = createChain(quote.output_chain);
   const zerion_fee_usd_amount = assetQuantityToValue(
     { quantity: feeAmount, asset: spendAsset },
@@ -73,7 +49,7 @@ export function formViewToAnalytics({
   const outputValue = quote.output_amount_estimation;
 
   const enough_balance = new BigNumber(
-    formView.spendPosition?.quantity || 0
+    formData.spendPosition?.quantity || 0
   ).gt(quote.input_amount_estimation);
 
   const priceImpact = calculatePriceImpact({
@@ -90,10 +66,10 @@ export function formViewToAnalytics({
     usd_amount_received: toMaybeArr([usdAmountReceived]),
     asset_amount_sent: toMaybeArr([quote.input_amount_estimation]),
     asset_amount_received: toMaybeArr([quote.output_amount_estimation]),
-    asset_name_sent: toMaybeArr([formView.spendAsset?.name]),
-    asset_name_received: toMaybeArr([formView.receiveAsset?.name]),
-    asset_address_sent: toMaybeArr([formView.spendAsset?.asset_code]),
-    asset_address_received: toMaybeArr([formView.receiveAsset?.asset_code]),
+    asset_name_sent: toMaybeArr([formData.spendAsset?.name]),
+    asset_name_received: toMaybeArr([formData.receiveAsset?.name]),
+    asset_address_sent: toMaybeArr([formData.spendAsset?.asset_code]),
+    asset_address_received: toMaybeArr([formData.receiveAsset?.asset_code]),
     gas: quote.transaction?.gas,
     network_fee: null, // TODO
     gas_price: null, // TODO
@@ -102,7 +78,7 @@ export function formViewToAnalytics({
     zerion_fee_usd_amount,
     input_chain: quote.input_chain,
     output_chain: quote.output_chain ?? quote.input_chain,
-    slippage: formView.configuration.slippage,
+    slippage: formData.configuration.slippage,
     contract_type: quote.contract_metadata?.name,
     enough_balance,
     enough_allowance: Boolean(quote.transaction),

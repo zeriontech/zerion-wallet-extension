@@ -83,6 +83,7 @@ import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
+import type { Quote } from 'src/shared/types/Quote';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -383,21 +384,35 @@ export function SwapFormComponent() {
 
   const configuration = useStore(swapView.store.configuration);
 
+  const [prevSelectedQuote, setPrevSelectedQuote] = useState<Quote | null>(
+    null
+  );
+
   useEffect(() => {
-    if (selectedQuote && quotesData.done) {
+    if (
+      spendAsset &&
+      spendPosition &&
+      receiveAsset &&
+      selectedQuote &&
+      prevSelectedQuote !== selectedQuote &&
+      quotesData.done
+    ) {
+      const formData = {
+        spendAsset,
+        receiveAsset,
+        spendPosition,
+        configuration,
+      };
       walletPort.request('finalQuoteReceived', {
         quote: selectedQuote,
-        formView: {
-          spendAsset,
-          receiveAsset,
-          spendPosition,
-          configuration,
-        },
+        formData,
         scope: 'Swap',
       });
+      setPrevSelectedQuote(selectedQuote);
     }
   }, [
     selectedQuote,
+    prevSelectedQuote,
     quotesData.done,
     spendAsset,
     receiveAsset,

@@ -4,7 +4,7 @@ import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { FormViewForAnalytics } from 'src/shared/analytics/shared/formViewToAnalytics';
+import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import type { Quote } from 'src/shared/types/Quote';
 import type {
   MessageContextParams,
@@ -28,7 +28,7 @@ export interface ScreenViewParams {
 
 export interface FinalQuoteReceivedParams {
   quote: Quote;
-  formView: FormViewForAnalytics;
+  formData: AnalyticsFormData;
   scope: 'Swap' | 'Bridge';
 }
 
