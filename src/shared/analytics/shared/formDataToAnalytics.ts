@@ -11,6 +11,7 @@ import type { Quote } from 'src/shared/types/Quote';
 import {
   calculatePriceImpact,
   isHighValueLoss,
+  isSignificantValueLoss,
 } from 'src/ui/pages/SwapForm/shared/price-impact';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { assetQuantityToValue, toMaybeArr } from './helpers';
@@ -102,7 +103,8 @@ export async function formDataToAnalytics(
   });
 
   const isHighPriceImpact = priceImpact && isHighValueLoss(priceImpact);
-  const outputAmountColor = isHighPriceImpact ? 'red' : 'grey';
+  const outputAmountColor =
+    priceImpact && isSignificantValueLoss(priceImpact) ? 'red' : 'grey';
 
   return {
     usd_amount_sent: toMaybeArr([usdAmountSend]),
@@ -129,6 +131,6 @@ export async function formDataToAnalytics(
     fdv_asset_sent: fdvAssetSent,
     fdv_asset_received: fdvAssetReceived,
     bridge_fee_usd_amount: bridgeFeeAmountInUsd,
-    outputAmountColor,
+    output_amount_color: outputAmountColor,
   };
 }

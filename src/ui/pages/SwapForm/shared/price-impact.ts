@@ -91,3 +91,10 @@ export function getPriceImpactPercentage(priceImpact: PriceImpact) {
 export function isHighValueLoss(priceImpact: PriceImpact) {
   return priceImpact.kind === 'loss' && priceImpact.level === 'high';
 }
+
+export function isSignificantValueLoss(priceImpact: PriceImpact) {
+  return (
+    priceImpact.kind === 'loss' &&
+    (priceImpact.level === 'medium' || priceImpact.level === 'high')
+  );
+}
