@@ -6,6 +6,7 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
 import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
 import { estimateSessionExpiry } from 'src/background/user-activity';
+import { statsigTrack } from 'src/modules/statsig/shared';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -103,6 +104,7 @@ function trackAppEvents({ account }: { account: Account }) {
       ...getChainBreakdown(portfolio),
     };
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+    statsigTrack('General: Screen Viewed', mixpanelParams);
   });
 
   emitter.on('buttonClicked', (data) => {
@@ -187,6 +189,7 @@ function trackAppEvents({ account }: { account: Account }) {
         'wallet_address',
       ]);
       mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
+      statsigTrack('Transaction: Signed Transaction', mixpanelParams);
     }
   );
 
@@ -328,6 +331,7 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('firstScreenView', () => {
+    statsigTrack('General: Launch first time');
     mixpanelTrack(account, 'General: Launch first time', {});
   });
 
