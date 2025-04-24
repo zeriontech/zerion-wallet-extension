@@ -86,6 +86,8 @@ import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/r
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import type { Quote } from 'src/shared/types/Quote';
+import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
+import type { Nullable } from 'src/shared/type-utils/Nullable';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -474,11 +476,6 @@ function BridgeFormComponent() {
     }
   }, [handleChange, selectedQuote, receivePosition, receiveChain]);
 
-  const snapshotRef = useRef<BridgeFormState | null>(null);
-  const onBeforeSubmit = () => {
-    snapshotRef.current = formState;
-  };
-
   const feeValueCommonRef = useRef<string | null>(
     null
   ); /** for analytics only */
@@ -553,7 +550,20 @@ function BridgeFormComponent() {
     },
   });
 
-  const [txConfiguration, setTxConfiguration] = useState(DEFAULT_CONFIGURATION);
+  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
+
+  const snapshotRef = useRef<BridgeFormState | null>(null);
+  const analyticsFormDataRef = useRef<Nullable<AnalyticsFormData> | null>(null);
+
+  const onBeforeSubmit = () => {
+    snapshotRef.current = formState;
+    analyticsFormDataRef.current = {
+      spendAsset,
+      receiveAsset,
+      spendPosition,
+      configuration,
+    };
+  };
 
   const [prevSelectedQuote, setPrevSelectedQuote] = useState<Quote | null>(
     null
@@ -561,43 +571,26 @@ function BridgeFormComponent() {
 
   useEffect(() => {
     if (
-      spendAsset &&
-      spendPosition &&
-      receiveAsset &&
       selectedQuote &&
       prevSelectedQuote !== selectedQuote &&
-      quotesData.done
+      quotesData.done &&
+      analyticsFormDataRef.current
     ) {
-      const formData = {
-        spendAsset,
-        receiveAsset,
-        spendPosition,
-        configuration: txConfiguration,
-      };
       walletPort.request('finalQuoteReceived', {
         quote: selectedQuote,
-        formData,
+        formData: analyticsFormDataRef.current,
         scope: 'Bridge',
       });
       setPrevSelectedQuote(selectedQuote);
     }
-  }, [
-    selectedQuote,
-    prevSelectedQuote,
-    quotesData.done,
-    spendAsset,
-    receiveAsset,
-    spendPosition,
-    txConfiguration,
-  ]);
+  }, [selectedQuote, prevSelectedQuote, quotesData.done]);
 
-  const USE_PAYMASTER_FEATURE = true;
-
-  const userNonce = txConfiguration.nonce;
+  const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;
   const gas = txToCheck ? getGas(txToCheck) : null;
-
   const network = spendChain ? networks?.getNetworkByName(spendChain) : null;
+
+  const USE_PAYMASTER_FEATURE = true;
 
   const eligibilityParams:
     | null
@@ -630,7 +623,7 @@ function BridgeFormComponent() {
   const configureTransactionToBeSigned = useEvent(
     (tx: IncomingTransactionWithChainId) => {
       invariant(spendChain && networks, 'Not ready to prepare the transaction');
-      let txToSign = applyConfiguration(tx, txConfiguration, gasPrices);
+      let txToSign = applyConfiguration(tx, configuration, gasPrices);
       if (paymasterEligible && txToSign.nonce == null) {
         txToSign = {
           ...txToSign,
@@ -883,7 +876,7 @@ function BridgeFormComponent() {
                 showApplicationLine={true}
                 chain={spendChain}
                 transaction={configureTransactionToBeSigned(currentTransaction)}
-                configuration={txConfiguration}
+                configuration={configuration}
                 localAllowanceQuantityBase={allowanceQuantityBase || undefined}
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
@@ -1066,8 +1059,8 @@ function BridgeFormComponent() {
                 paymasterPossible={paymasterPossible}
                 paymasterWaiting={false}
                 onFeeValueCommonReady={handleFeeValueCommonReady}
-                configuration={txConfiguration}
-                onConfigurationChange={(value) => setTxConfiguration(value)}
+                configuration={configuration}
+                onConfigurationChange={(value) => setConfiguration(value)}
                 gasback={gasbackEstimation}
               />
             </React.Suspense>

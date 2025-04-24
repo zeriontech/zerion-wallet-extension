@@ -15,6 +15,7 @@ import { invariant } from '../invariant';
 import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
 import { productionVersion } from '../packageVersion';
+import type { Nullable } from '../type-utils/Nullable';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -35,6 +36,7 @@ import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
+import type { AnalyticsFormData } from './shared/formDataToAnalytics';
 import { formDataToAnalytics } from './shared/formDataToAnalytics';
 
 function queryWalletProvider(account: Account, address: string) {
@@ -329,16 +331,33 @@ function trackAppEvents({ account }: { account: Account }) {
     }
   });
 
+  function isFormFilledOut(
+    formData: Nullable<AnalyticsFormData>
+  ): formData is AnalyticsFormData {
+    return Boolean(
+      formData.spendAsset &&
+        formData.receiveAsset &&
+        formData.spendPosition &&
+        formData.configuration
+    );
+  }
+
   emitter.on('finalQuoteReceived', async ({ quote, formData, scope }) => {
     invariant(
       scope === 'Swap' || scope === 'Bridge',
       'scope can be either Swap or Bridge'
     );
+
+    if (!isFormFilledOut(formData)) {
+      return;
+    }
+
     const analyticsData = await formDataToAnalytics(scope, {
       formData,
       quote,
       currency: 'usd',
     });
+
     const params = createParams({
       request_name: 'swap_form_filled_out',
       screen_name: scope,

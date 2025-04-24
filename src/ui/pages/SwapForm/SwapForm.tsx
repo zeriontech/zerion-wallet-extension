@@ -84,6 +84,8 @@ import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import type { Quote } from 'src/shared/types/Quote';
+import type { Nullable } from 'src/shared/type-utils/Nullable';
+import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -305,11 +307,6 @@ export function SwapFormComponent() {
     });
   }, [receiveAsset, receiveInput, spendAsset, spendInput]);
 
-  const snapshotRef = useRef<SwapFormState | null>(null);
-  const onBeforeSubmit = () => {
-    snapshotRef.current = swapView.store.getState();
-  };
-
   const feeValueCommonRef = useRef<string | null>(
     null
   ); /** for analytics only */
@@ -384,41 +381,38 @@ export function SwapFormComponent() {
 
   const configuration = useStore(swapView.store.configuration);
 
+  const snapshotRef = useRef<SwapFormState | null>(null);
+  const analyticsFormDataRef = useRef<Nullable<AnalyticsFormData> | null>(null);
+
+  const onBeforeSubmit = () => {
+    snapshotRef.current = swapView.store.getState();
+    analyticsFormDataRef.current = {
+      spendAsset,
+      receiveAsset,
+      spendPosition,
+      configuration,
+    };
+  };
+
   const [prevSelectedQuote, setPrevSelectedQuote] = useState<Quote | null>(
     null
   );
 
   useEffect(() => {
     if (
-      spendAsset &&
-      spendPosition &&
-      receiveAsset &&
       selectedQuote &&
       prevSelectedQuote !== selectedQuote &&
-      quotesData.done
+      quotesData.done &&
+      analyticsFormDataRef.current
     ) {
-      const formData = {
-        spendAsset,
-        receiveAsset,
-        spendPosition,
-        configuration,
-      };
       walletPort.request('finalQuoteReceived', {
         quote: selectedQuote,
-        formData,
-        scope: 'Swap',
+        formData: analyticsFormDataRef.current,
+        scope: 'Bridge',
       });
       setPrevSelectedQuote(selectedQuote);
     }
-  }, [
-    selectedQuote,
-    prevSelectedQuote,
-    quotesData.done,
-    spendAsset,
-    receiveAsset,
-    spendPosition,
-    configuration,
-  ]);
+  }, [selectedQuote, prevSelectedQuote, quotesData.done]);
 
   const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;

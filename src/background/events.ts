@@ -12,6 +12,7 @@ import type {
 } from 'src/shared/types/SignatureContextParams';
 import type { WindowType } from 'src/shared/types/UrlContext';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
+import type { Nullable } from 'src/shared/type-utils/Nullable';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -28,7 +29,7 @@ export interface ScreenViewParams {
 
 export interface FinalQuoteReceivedParams {
   quote: Quote;
-  formData: AnalyticsFormData;
+  formData: Nullable<AnalyticsFormData>;
   scope: 'Swap' | 'Bridge';
 }
 

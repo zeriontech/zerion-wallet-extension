@@ -28,7 +28,11 @@ async function fetchAssetFullInfo(
   return backgroundQueryClient.fetchQuery({
     queryKey: ['ZerionAPI.fetchAssetFullInfo', params],
     queryFn: () => ZerionAPI.assetGetFungibleFullInfo(params),
-    staleTime: 1000 * 60 * 30, // 30 minutes
+    // Here this endpoint is used to fetch FDV (Fully Diluted Valuation) for analytics.
+    // While FDV can change quickly for new tokens, in practice backend/indexing services typically update this data less frequently.
+    // The main purpose of caching here is to reduce redundant requests while the user interacts with the form.
+    // This 30-minute cache should provide a good balance between data freshness and efficiency.
+    staleTime: 1000 * 60 * 30,
   });
 }
 
