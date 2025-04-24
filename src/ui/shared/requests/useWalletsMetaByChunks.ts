@@ -1,4 +1,3 @@
-import { useLayoutEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -17,32 +16,24 @@ export function useWalletsMetaByChunks({
   useErrorBoundary?: boolean;
   staleTime?: number;
 }) {
-  const query = useQuery({
+  return useQuery({
     enabled: enabled && addresses.length > 0,
     queryKey: ['ZerionAPI.getWalletsMetaByChunks', addresses],
-    queryFn: () => ZerionAPI.getWalletsMetaByChunks(addresses),
+    queryFn: async () => {
+      const result = await ZerionAPI.getWalletsMetaByChunks(addresses);
+      if (result.length > 1) {
+        result.forEach((walletMeta) => {
+          const normalizedAddress = normalizeAddress(walletMeta.address);
+          queryClient.setQueryData(
+            ['ZerionAPI.getWalletsMetaByChunks', [normalizedAddress]],
+            [walletMeta]
+          );
+        });
+      }
+      return result;
+    },
     suspense,
     useErrorBoundary,
     staleTime,
   });
-
-  // Update query cache with wallet meta data for each address
-  // to make it prefetched for single address requests (e.g. wallet avatar)
-  // useLayoutEffect is used here to add data before UI is updated and isLoading flag from the query unlocks the render
-  // so new components will not request the data again
-  useLayoutEffect(() => {
-    if ((query.data?.length || 0) <= 1) {
-      // No need to update cache if there's only one wallet meta
-      return;
-    }
-    query.data?.forEach((walletMeta) => {
-      const normalizedAddress = normalizeAddress(walletMeta.address);
-      queryClient.setQueryData(
-        ['ZerionAPI.getWalletsMetaByChunks', [normalizedAddress]],
-        [walletMeta]
-      );
-    });
-  }, [query.data]);
-
-  return query;
 }
