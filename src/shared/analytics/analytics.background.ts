@@ -11,6 +11,7 @@ import {
   isMnemonicContainer,
   isPrivateKeyContainer,
 } from '../types/validators';
+import { invariant } from '../invariant';
 import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
 import { productionVersion } from '../packageVersion';
@@ -329,11 +330,15 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('finalQuoteReceived', ({ quote, formData, scope }) => {
+    invariant(
+      scope === 'Swap' || scope === 'Bridge',
+      'scope can be either Swap or Bridge'
+    );
     const params = createParams({
       request_name: 'swap_form_filled_out',
-      screen_name: scope === 'Swap' ? 'Swap' : 'Bridge',
-      client_scope: scope === 'Swap' ? 'Swap' : 'Bridge',
-      action_type: scope === 'Swap' ? 'Trade' : 'Send',
+      screen_name: scope,
+      client_scope: scope,
+      action_type: scope,
       ...formDataToAnalytics({ formData, quote }),
     });
     // Note that `finalQuoteReceived` is not exactly the same as `swap_form_filled_out` (or "Swap Form Filled Out").

@@ -20,7 +20,7 @@ export interface AnalyticsFormData {
 }
 
 export function formDataToAnalytics({
-  formData,
+  formData: { spendAsset, receiveAsset, spendPosition, configuration },
   quote,
 }: {
   formData: AnalyticsFormData;
@@ -28,9 +28,7 @@ export function formDataToAnalytics({
 }) {
   const zerion_fee_percentage = quote.protocol_fee;
   const feeAmount = quote.protocol_fee_amount;
-  const spendAsset = formData.spendAsset;
   const inputChain = createChain(quote.input_chain);
-  const receiveAsset = formData.receiveAsset;
   const outputChain = createChain(quote.output_chain);
   const zerion_fee_usd_amount = assetQuantityToValue(
     { quantity: feeAmount, asset: spendAsset },
@@ -48,9 +46,9 @@ export function formDataToAnalytics({
   const inputValue = quote.input_amount_estimation;
   const outputValue = quote.output_amount_estimation;
 
-  const enough_balance = new BigNumber(
-    formData.spendPosition?.quantity || 0
-  ).gt(quote.input_amount_estimation);
+  const enough_balance = new BigNumber(spendPosition?.quantity || 0).gt(
+    quote.input_amount_estimation
+  );
 
   const priceImpact = calculatePriceImpact({
     inputValue,
@@ -66,10 +64,10 @@ export function formDataToAnalytics({
     usd_amount_received: toMaybeArr([usdAmountReceived]),
     asset_amount_sent: toMaybeArr([quote.input_amount_estimation]),
     asset_amount_received: toMaybeArr([quote.output_amount_estimation]),
-    asset_name_sent: toMaybeArr([formData.spendAsset?.name]),
-    asset_name_received: toMaybeArr([formData.receiveAsset?.name]),
-    asset_address_sent: toMaybeArr([formData.spendAsset?.asset_code]),
-    asset_address_received: toMaybeArr([formData.receiveAsset?.asset_code]),
+    asset_name_sent: toMaybeArr([spendAsset?.name]),
+    asset_name_received: toMaybeArr([receiveAsset?.name]),
+    asset_address_sent: toMaybeArr([spendAsset?.asset_code]),
+    asset_address_received: toMaybeArr([receiveAsset?.asset_code]),
     gas: quote.transaction?.gas,
     network_fee: null, // TODO
     gas_price: null, // TODO
@@ -78,7 +76,7 @@ export function formDataToAnalytics({
     zerion_fee_usd_amount,
     input_chain: quote.input_chain,
     output_chain: quote.output_chain ?? quote.input_chain,
-    slippage: formData.configuration.slippage,
+    slippage: configuration.slippage,
     contract_type: quote.contract_metadata?.name,
     enough_balance,
     enough_allowance: Boolean(quote.transaction),
