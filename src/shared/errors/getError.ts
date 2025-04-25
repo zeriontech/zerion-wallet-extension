@@ -1,6 +1,6 @@
 import type { JsonRpcError } from '@walletconnect/jsonrpc-utils';
 import { isJsonRpcError, isJsonRpcPayload } from '@walletconnect/jsonrpc-utils';
-import type { ExtendedError } from './errors';
+import { domExceptionPatched, type ExtendedError } from './errors';
 
 function isErrorMessageObject(value: unknown): value is { message: string } {
   return Boolean(value && 'message' in (value as { message?: string }));
@@ -24,12 +24,16 @@ function fromResponse(response: Response) {
   return new Error(message);
 }
 
-export function getError(value: Error | unknown): ExtendedError {
+export function getError(value: Error | unknown): ExtendedError | DOMException {
   // TODO: maybe a better pattern would be to merge
   // type guards and parsers together, where parsers would return null for
   // unrecognized values. Therefore, this function would read as (not final):
   // return fromMessageObject(value) || fromRpcError(value) || fromResponse(value) || fallback;
-  return value instanceof Error
+  return value == null
+    ? new Error('Unknown Error')
+    : value instanceof DOMException
+    ? domExceptionPatched(value)
+    : value instanceof Error
     ? value
     : isErrorMessageObject(value)
     ? fromMessageObject(value)
