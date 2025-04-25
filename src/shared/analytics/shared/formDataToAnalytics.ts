@@ -83,9 +83,6 @@ export async function formDataToAnalytics(
     outputChain
   );
 
-  const inputValue = quote.input_amount_estimation;
-  const outputValue = quote.output_amount_estimation;
-
   const enough_balance = new BigNumber(spendPosition?.quantity || 0).gt(
     quote.input_amount_estimation
   );
@@ -101,17 +98,6 @@ export async function formDataToAnalytics(
         }).times(spendAsset.price?.value || 0)
       : null;
 
-  const priceImpact = calculatePriceImpact({
-    inputValue,
-    outputValue,
-    inputAsset: spendAsset,
-    outputAsset: receiveAsset,
-  });
-
-  const isHighPriceImpact = priceImpact && isHighValueLoss(priceImpact);
-  const outputAmountColor =
-    priceImpact && isSignificantValueLoss(priceImpact) ? 'red' : 'grey';
-
   const assetAmountSent = convertQuantity({
     asset: spendAsset,
     quantity: quote.input_amount_estimation,
@@ -120,6 +106,17 @@ export async function formDataToAnalytics(
     asset: receiveAsset,
     quantity: quote.output_amount_estimation,
   });
+
+  const priceImpact = calculatePriceImpact({
+    inputValue: assetAmountSent,
+    outputValue: assetAmountReceived,
+    inputAsset: spendAsset,
+    outputAsset: receiveAsset,
+  });
+
+  const isHighPriceImpact = priceImpact && isHighValueLoss(priceImpact);
+  const outputAmountColor =
+    priceImpact && isSignificantValueLoss(priceImpact) ? 'red' : 'grey';
 
   return {
     usd_amount_sent: toMaybeArr([usdAmountSend]),
