@@ -334,11 +334,12 @@ function trackAppEvents({ account }: { account: Account }) {
       quote,
       currency: 'usd',
     });
+    const actionType = scope === 'Bridge' ? 'Send' : 'Trade';
     const params = createParams({
       request_name: 'swap_form_filled_out',
       screen_name: scope,
       client_scope: scope,
-      action_type: scope,
+      action_type: actionType,
       ...analyticsData,
     });
     sendToMetabase('swap_form_filled_out', params);
