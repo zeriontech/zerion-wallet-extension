@@ -24,6 +24,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { emitter } from 'src/ui/shared/events';
+import { useLocation } from 'react-router-dom';
 import { useTransactionFee } from '../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import { FeeDescription } from './FeeDescription';
 import type { FeeTier } from './FeeTier';
@@ -153,6 +154,7 @@ export function QuoteList({
   onReset: () => void;
 }) {
   const formId = useId();
+  const { pathname } = useLocation();
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
@@ -235,7 +237,7 @@ export function QuoteList({
                 emitter.emit('buttonClicked', {
                   buttonScope: 'General',
                   buttonName: 'Quote List Bottom Description',
-                  pathname: 'Swap',
+                  pathname,
                 });
               }}
             >

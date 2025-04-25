@@ -18,6 +18,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { emitter } from 'src/ui/shared/events';
+import { useLocation } from 'react-router-dom';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
@@ -88,6 +89,7 @@ export function RateLine({
   configuration: CustomConfiguration;
   onQuoteIdChange: (quoteId: string | null) => void;
 }) {
+  const { pathname } = useLocation();
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
   );
@@ -147,7 +149,7 @@ export function RateLine({
                 emitter.emit('buttonClicked', {
                   buttonScope: 'General',
                   buttonName: 'Rate Tooltip',
-                  pathname: 'Swap',
+                  pathname,
                 });
               }}
             >
