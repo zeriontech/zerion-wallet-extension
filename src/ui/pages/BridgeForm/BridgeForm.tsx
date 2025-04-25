@@ -25,8 +25,7 @@ import { walletPort } from 'src/ui/shared/channels';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import type {
-  CustomConfiguration} from '@zeriontech/transactions';
+import type { CustomConfiguration } from '@zeriontech/transactions';
 import {
   EmptyAddressPosition,
   NetworkId,
@@ -88,7 +87,6 @@ import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/r
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import type { Quote } from 'src/shared/types/Quote';
-import { emitter } from 'src/ui/shared/events';
 import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import {
   DEFAULT_CONFIGURATION,
@@ -430,6 +428,39 @@ function BridgeFormComponent() {
 
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
 
+  const formStateRef = useRef<
+    (Partial<AnalyticsFormData> & { configuration: CustomConfiguration }) | null
+  >(null);
+  formStateRef.current = {
+    spendAsset: spendAsset ?? undefined,
+    receiveAsset: receiveAsset ?? undefined,
+    spendPosition: spendPosition ?? undefined,
+    configuration,
+  };
+
+  const handleQuotesReceived = (quotes: Quote[] | null) => {
+    if (!formStateRef.current) {
+      return;
+    }
+    const { spendAsset, receiveAsset, spendPosition, configuration } =
+      formStateRef.current;
+    const quote = getDefaultQuote(quotes);
+
+    if (spendAsset && receiveAsset && spendPosition && quote) {
+      const formData = {
+        spendAsset,
+        receiveAsset,
+        spendPosition,
+        configuration,
+      };
+      walletPort.request('formFilledOut', {
+        scope: 'Bridge',
+        formData,
+        quote,
+      });
+    }
+  };
+
   const quotesData = useQuotes({
     address,
     userSlippage: null,
@@ -442,47 +473,13 @@ function BridgeFormComponent() {
     receiveTokenInput,
     spendPosition,
     receivePosition,
+    onQuotesReceived: handleQuotesReceived,
   });
 
   const { refetch: refetchQuotes } = quotesData;
 
   // TODO: add support for quote selection, useState
   const selectedQuote = getDefaultQuote(quotesData.quotes);
-
-  const formStateRef = useRef<
-    (Partial<AnalyticsFormData> & { configuration: CustomConfiguration }) | null
-  >(null);
-  formStateRef.current = {
-    spendAsset: spendAsset ?? undefined,
-    receiveAsset: receiveAsset ?? undefined,
-    spendPosition: spendPosition ?? undefined,
-    configuration,
-  };
-
-  useEffect(() => {
-    emitter.on('quotesReceived', (quotes) => {
-      if (!formStateRef.current) {
-        return;
-      }
-      const { spendAsset, receiveAsset, spendPosition, configuration } =
-        formStateRef.current;
-      const quote = getDefaultQuote(quotes);
-
-      if (spendAsset && receiveAsset && spendPosition && quote) {
-        const formData = {
-          spendAsset,
-          receiveAsset,
-          spendPosition,
-          configuration,
-        };
-        walletPort.request('formFilledOut', {
-          scope: 'Bridge',
-          formData,
-          quote,
-        });
-      }
-    });
-  }, [selectedQuote]);
 
   const bridgeTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),

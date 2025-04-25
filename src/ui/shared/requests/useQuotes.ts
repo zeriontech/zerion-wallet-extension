@@ -11,7 +11,6 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { DEFI_SDK_TRANSACTIONS_API_URL } from 'src/env/config';
 import { createUrl } from 'src/shared/createUrl';
 import omit from 'lodash/omit';
-import { emitter } from '../events';
 import { useEventSource } from './useEventSource';
 
 type QuoteSortType = 'amount' | 'time';
@@ -165,6 +164,7 @@ export function useQuotes({
   receiveTokenInput,
   spendPosition,
   receivePosition,
+  onQuotesReceived,
 }: {
   primaryInput: 'spend' | 'receive';
   address: string;
@@ -177,6 +177,7 @@ export function useQuotes({
   receiveTokenInput?: string;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
   receivePosition: AddressPosition | EmptyAddressPosition | null;
+  onQuotesReceived?: (data: Quote[] | null) => void;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
@@ -257,7 +258,7 @@ export function useQuotes({
     `${url ?? 'no-url'}-${refetchHash}`,
     url ?? null,
     {
-      onEnd: (quotes) => emitter.emit('quotesReceived', quotes),
+      onEnd: onQuotesReceived,
     }
   );
 

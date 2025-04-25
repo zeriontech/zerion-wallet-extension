@@ -84,7 +84,6 @@ import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import type { Quote } from 'src/shared/types/Quote';
-import { emitter } from 'src/ui/shared/events';
 import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import {
   DEFAULT_CONFIGURATION,
@@ -252,6 +251,33 @@ export function SwapFormComponent() {
 
   const { slippage: userSlippage } = useStore(swapView.store.configuration);
 
+  const swapViewRef = useRef<SwapFormView | null>(null);
+  swapViewRef.current = swapView;
+
+  const handleQuotesReceived = (quotes: Quote[] | null) => {
+    if (!swapViewRef.current) {
+      return;
+    }
+    const swapView = swapViewRef.current;
+    const { spendAsset, receiveAsset, spendPosition } = swapView;
+    const quote = getDefaultQuote(quotes);
+
+    if (spendAsset && receiveAsset && spendPosition && quote) {
+      const configuration = swapView.store.configuration.getState();
+      const formData: AnalyticsFormData = {
+        spendAsset,
+        receiveAsset,
+        spendPosition,
+        configuration,
+      };
+      walletPort.request('formFilledOut', {
+        scope: 'Swap',
+        formData,
+        quote,
+      });
+    }
+  };
+
   const quotesData = useQuotes({
     address,
     userSlippage,
@@ -264,41 +290,13 @@ export function SwapFormComponent() {
     receiveTokenInput,
     spendPosition,
     receivePosition,
+    onQuotesReceived: handleQuotesReceived,
   });
 
   const { refetch: refetchQuotes } = quotesData;
 
   // TODO: add support for quote selection, useState
   const selectedQuote = getDefaultQuote(quotesData.quotes);
-
-  const swapViewRef = useRef<SwapFormView | null>(null);
-  swapViewRef.current = swapView;
-
-  useEffect(() => {
-    emitter.on('quotesReceived', (quotes) => {
-      if (!swapViewRef.current) {
-        return;
-      }
-      const swapView = swapViewRef.current;
-      const { spendAsset, receiveAsset, spendPosition } = swapView;
-      const quote = getDefaultQuote(quotes);
-
-      if (spendAsset && receiveAsset && spendPosition && quote) {
-        const configuration = swapView.store.configuration.getState();
-        const formData: AnalyticsFormData = {
-          spendAsset,
-          receiveAsset,
-          spendPosition,
-          configuration,
-        };
-        walletPort.request('formFilledOut', {
-          scope: 'Swap',
-          formData,
-          quote,
-        });
-      }
-    });
-  }, []);
 
   const swapTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
