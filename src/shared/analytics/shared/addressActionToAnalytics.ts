@@ -3,10 +3,12 @@ import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset'
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { getDecimals } from 'src/modules/networks/asset';
 import type { Quote } from 'src/shared/types/Quote';
-import { baseToCommon } from 'src/shared/units/convert';
-import { assetQuantityToValue, toMaybeArr } from './helpers';
+import {
+  assetQuantityToValue,
+  createQuantityConverter,
+  toMaybeArr,
+} from './helpers';
 
 interface AnalyticsTransactionData {
   action_type: string;
@@ -44,22 +46,6 @@ function createPriceAdder(chain: Chain) {
   };
 }
 
-function createQuantityConverter(chain: Chain) {
-  return ({
-    asset: actionAsset,
-    quantity,
-  }: {
-    asset: ActionAsset;
-    quantity: string | null;
-  }): string | null => {
-    const asset = getFungibleAsset(actionAsset);
-    if (asset && quantity !== null) {
-      return baseToCommon(quantity, getDecimals({ asset, chain })).toFixed();
-    }
-    return null;
-  };
-}
-
 function getAssetName({ asset }: { asset: ActionAsset }) {
   return getFungibleAsset(asset)?.name;
 }
@@ -79,7 +65,12 @@ export function addressActionToAnalytics({
     return null;
   }
   const chain = createChain(addressAction.transaction.chain);
-  const convertQuantity = createQuantityConverter(chain);
+
+  const quantityConverter = createQuantityConverter(chain);
+  const convertQuantity = ({ asset, quantity }: ActionAssetQuantity) => {
+    const fingibleAsset = getFungibleAsset(asset);
+    return quantityConverter({ asset: fingibleAsset, quantity });
+  };
   const addAssetPrice = createPriceAdder(chain);
 
   const outgoing = addressAction.content?.transfers?.outgoing;

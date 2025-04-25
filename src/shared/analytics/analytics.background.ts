@@ -11,7 +11,6 @@ import {
   isMnemonicContainer,
   isPrivateKeyContainer,
 } from '../types/validators';
-import { invariant } from '../invariant';
 import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
 import { productionVersion } from '../packageVersion';
@@ -329,18 +328,12 @@ function trackAppEvents({ account }: { account: Account }) {
     }
   });
 
-  emitter.on('finalQuoteReceived', async ({ quote, formData, scope }) => {
-    invariant(
-      scope === 'Swap' || scope === 'Bridge',
-      'scope can be either Swap or Bridge'
-    );
-
+  emitter.on('formFilledOut', async ({ scope, formData, quote }) => {
     const analyticsData = await formDataToAnalytics(scope, {
       formData,
       quote,
       currency: 'usd',
     });
-
     const params = createParams({
       request_name: 'swap_form_filled_out',
       screen_name: scope,
@@ -348,8 +341,6 @@ function trackAppEvents({ account }: { account: Account }) {
       action_type: scope,
       ...analyticsData,
     });
-    // Note that `finalQuoteReceived` is not exactly the same as `swap_form_filled_out` (or "Swap Form Filled Out").
-    // However, the analytics task specifically states: "Trigger the event when the client receives the final quote".
     sendToMetabase('swap_form_filled_out', params);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack(account, 'Transaction: Swap Form Filled Out', mixpanelParams);

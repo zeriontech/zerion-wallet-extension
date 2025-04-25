@@ -14,7 +14,11 @@ import {
   isSignificantValueLoss,
 } from 'src/ui/pages/SwapForm/shared/price-impact';
 import { getCommonQuantity } from 'src/modules/networks/asset';
-import { assetQuantityToValue, toMaybeArr } from './helpers';
+import {
+  assetQuantityToValue,
+  createQuantityConverter,
+  toMaybeArr,
+} from './helpers';
 
 export interface AnalyticsFormData {
   spendAsset: Asset;
@@ -86,6 +90,8 @@ export async function formDataToAnalytics(
     quote.input_amount_estimation
   );
 
+  const convertQuantity = createQuantityConverter(inputChain);
+
   const bridgeFeeAmountInUsd =
     scope === 'Bridge'
       ? getCommonQuantity({
@@ -106,11 +112,20 @@ export async function formDataToAnalytics(
   const outputAmountColor =
     priceImpact && isSignificantValueLoss(priceImpact) ? 'red' : 'grey';
 
+  const assetAmountSent = convertQuantity({
+    asset: spendAsset,
+    quantity: quote.input_amount_estimation,
+  });
+  const assetAmountReceived = convertQuantity({
+    asset: receiveAsset,
+    quantity: quote.output_amount_estimation,
+  });
+
   return {
     usd_amount_sent: toMaybeArr([usdAmountSend]),
     usd_amount_received: toMaybeArr([usdAmountReceived]),
-    asset_amount_sent: toMaybeArr([quote.input_amount_estimation]),
-    asset_amount_received: toMaybeArr([quote.output_amount_estimation]),
+    asset_amount_sent: toMaybeArr([assetAmountSent]),
+    asset_amount_received: toMaybeArr([assetAmountReceived]),
     asset_name_sent: toMaybeArr([spendAsset?.name]),
     asset_name_received: toMaybeArr([receiveAsset?.name]),
     asset_address_sent: toMaybeArr([spendAsset?.asset_code]),
@@ -118,7 +133,10 @@ export async function formDataToAnalytics(
     gas: quote.transaction?.gas,
     network_fee: null, // TODO
     gas_price: null, // TODO
-    guaranteed_output_amount: quote.guaranteed_output_amount,
+    guaranteed_output_amount: convertQuantity({
+      asset: receiveAsset,
+      quantity: quote.guaranteed_output_amount,
+    }),
     zerion_fee_percentage,
     zerion_fee_usd_amount,
     input_chain: quote.input_chain,

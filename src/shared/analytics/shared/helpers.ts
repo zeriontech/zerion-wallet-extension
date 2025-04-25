@@ -26,3 +26,11 @@ export function assetQuantityToValue(
   }
   return 0;
 }
+
+export function createQuantityConverter(chain: Chain) {
+  return ({ asset, quantity }: AssetQuantity): string | null => {
+    return asset && quantity
+      ? getCommonQuantity({ baseQuantity: quantity, chain, asset }).toFixed()
+      : null;
+  };
+}

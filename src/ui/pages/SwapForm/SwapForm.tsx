@@ -84,6 +84,8 @@ import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import type { Quote } from 'src/shared/types/Quote';
+import { emitter } from 'src/ui/shared/events';
+import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -111,6 +113,10 @@ import { getPopularTokens } from './shared/getPopularTokens';
 import type { PriceImpact } from './shared/price-impact';
 import { calculatePriceImpact } from './shared/price-impact';
 import { PriceImpactLine } from './shared/PriceImpactLine';
+
+function getDefaultQuote(quotes: Quote[] | null) {
+  return quotes?.[0] ?? null;
+}
 
 const rootNode = getRootDomNode();
 
@@ -262,9 +268,37 @@ export function SwapFormComponent() {
 
   const { refetch: refetchQuotes } = quotesData;
 
-  const defaultQuote = quotesData.quotes?.[0] ?? null;
   // TODO: add support for quote selection, useState
-  const selectedQuote = defaultQuote;
+  const selectedQuote = getDefaultQuote(quotesData.quotes);
+
+  const swapViewRef = useRef<SwapFormView | null>(null);
+  swapViewRef.current = swapView;
+
+  useEffect(() => {
+    emitter.on('quotesReceived', (quotes) => {
+      if (!swapViewRef.current) {
+        return;
+      }
+      const swapView = swapViewRef.current;
+      const { spendAsset, receiveAsset, spendPosition } = swapView;
+      const quote = getDefaultQuote(quotes);
+
+      if (spendAsset && receiveAsset && spendPosition && quote) {
+        const configuration = swapView.store.configuration.getState();
+        const formData: AnalyticsFormData = {
+          spendAsset,
+          receiveAsset,
+          spendPosition,
+          configuration,
+        };
+        walletPort.request('formFilledOut', {
+          scope: 'Swap',
+          formData,
+          quote,
+        });
+      }
+    });
+  }, []);
 
   const swapTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
@@ -384,42 +418,6 @@ export function SwapFormComponent() {
   const onBeforeSubmit = () => {
     snapshotRef.current = swapView.store.getState();
   };
-
-  const [prevSelectedQuote, setPrevSelectedQuote] = useState<Quote | null>(
-    null
-  );
-
-  useEffect(() => {
-    if (
-      selectedQuote &&
-      prevSelectedQuote !== selectedQuote &&
-      quotesData.done &&
-      spendAsset &&
-      receiveAsset &&
-      spendPosition &&
-      configuration
-    ) {
-      walletPort.request('finalQuoteReceived', {
-        quote: selectedQuote,
-        formData: {
-          spendAsset,
-          receiveAsset,
-          spendPosition,
-          configuration,
-        },
-        scope: 'Swap',
-      });
-      setPrevSelectedQuote(selectedQuote);
-    }
-  }, [
-    selectedQuote,
-    prevSelectedQuote,
-    quotesData.done,
-    spendAsset,
-    receiveAsset,
-    spendPosition,
-    configuration,
-  ]);
 
   const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;

@@ -95,7 +95,7 @@ import {
 } from 'src/modules/ethereum/account-abstraction/zksync-patch';
 import type {
   DaylightEventParams,
-  FinalQuoteReceivedParams,
+  FormFilledOutParams,
   ScreenViewParams,
 } from '../events';
 import { emitter } from '../events';
@@ -1504,12 +1504,12 @@ export class Wallet {
     emitter.emit('screenView', params);
   }
 
-  async finalQuoteReceived({
+  async formFilledOut({
     context,
     params,
-  }: WalletMethodParams<FinalQuoteReceivedParams>) {
+  }: WalletMethodParams<FormFilledOutParams>) {
     this.verifyInternalOrigin(context);
-    emitter.emit('finalQuoteReceived', params);
+    emitter.emit('formFilledOut', params);
   }
 
   async daylightAction({

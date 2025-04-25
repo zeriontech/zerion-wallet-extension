@@ -26,10 +26,10 @@ export interface ScreenViewParams {
   windowType: WindowType;
 }
 
-export interface FinalQuoteReceivedParams {
-  quote: Quote;
-  formData: AnalyticsFormData;
+export interface FormFilledOutParams {
   scope: 'Swap' | 'Bridge';
+  formData: AnalyticsFormData;
+  quote: Quote;
 }
 
 export interface DaylightEventParams {
@@ -90,5 +90,5 @@ export const emitter = createNanoEvents<{
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
-  finalQuoteReceived: (data: FinalQuoteReceivedParams) => void;
+  formFilledOut: (data: FormFilledOutParams) => void;
 }>();

@@ -14,6 +14,7 @@ interface Options<T> {
   enabled?: boolean;
   mapResponse?: (response: unknown) => T;
   mergeResponse?(currentValue: T | null, nextValue: T | null): T | null;
+  onEnd?: (value: null | T) => void;
 }
 
 export class EventSourceStore<T> extends Store<EventSourceState<T>> {
@@ -62,8 +63,9 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
       const { mergeResponse } = this.options;
 
       const nextValue = this.mapResponse(JSON.parse(event.data));
+      const done = this.getState().done;
       const value =
-        this.getState().done && mergeResponse
+        done && mergeResponse
           ? mergeResponse(this.getState().value, nextValue)
           : nextValue;
 
@@ -113,6 +115,9 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
       done: true,
       isLoading: false,
     }));
+
+    const { value } = this.getState();
+    this.options.onEnd?.(value);
     this.unlistenAndClose();
   };
 
