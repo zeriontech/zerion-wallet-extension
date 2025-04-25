@@ -98,8 +98,9 @@ export class Account extends EventEmitter<AccountEvents> {
   private notificationWindow: NotificationWindow;
 
   isPendingNewUser: boolean;
+  isWriteLocked = false;
 
-  private static async writeCurrentUser(user: User) {
+  static async writeCurrentUser(user: User) {
     await BrowserStorage.set(currentUserKey, user);
   }
 
@@ -213,13 +214,17 @@ export class Account extends EventEmitter<AccountEvents> {
   }
 
   async initialize() {
-    // Try to automatically login if credentials are found in storage
-    const credentials = await Account.readCredentials();
-    const user = await Account.readCurrentUser();
-    if (user && credentials) {
-      const valid = await this.verifyCredentials(user, credentials);
-      if (valid) {
-        await this.setUser(user, credentials);
+    try {
+      await this.wallet.walletStore.restoreFromAnyBackup();
+    } catch {
+      // Try to automatically login if credentials are found in storage
+      const credentials = await Account.readCredentials();
+      const user = await Account.readCurrentUser();
+      if (user && credentials) {
+        const valid = await this.verifyCredentials(user, credentials);
+        if (valid) {
+          await this.setUser(user, credentials);
+        }
       }
     }
   }
@@ -295,15 +300,25 @@ export class Account extends EventEmitter<AccountEvents> {
     ) {
       throw new Error('Full credentials are expected');
     }
-    await this.wallet.assignNewCredentials({
-      id: payloadId(),
-      params: { newCredentials, credentials: currentCredentials },
-    });
-    // Update local state only if the above call was successful
-    this.user = updatedUser;
-    this.encryptionKey = newCredentials.encryptionKey;
-    await Account.writeCurrentUser(this.user);
-    this.emit('authenticated');
+    await this.logout();
+    const { walletStore } = this.wallet;
+    try {
+      this.isWriteLocked = true;
+      await walletStore.withBackup(currentCredentials.id, async () => {
+        await walletStore.reEncrypt({
+          id: currentCredentials.id,
+          credentials: currentCredentials,
+          newCredentials,
+        });
+        await Account.writeCurrentUser(updatedUser);
+        await this.login(updatedUser, newPassword);
+      });
+    } catch (error) {
+      await this.login(currentUser, currentPassword);
+      throw error;
+    } finally {
+      this.isWriteLocked = false;
+    }
   }
 
   async setUser(
@@ -422,6 +437,7 @@ export class AccountPublicRPC {
     user: PublicUser;
     password: string;
   }>): Promise<PublicUser | null> {
+    invariant(!this.account.isWriteLocked, 'Atomic operation in progress');
     const currentUser = await this.verifyUser(user);
     const canAuthorize = await this.account.verifyPassword(
       currentUser,

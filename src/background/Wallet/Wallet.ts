@@ -190,7 +190,7 @@ export class Wallet {
     this.emitter = createNanoEvents();
 
     this.id = id;
-    this.walletStore = new WalletStore({}, 'wallet');
+    this.walletStore = new WalletStore({});
     this.disposer.add(
       globalPreferences.on('change', (state, prevState) => {
         emitter.emit('globalPreferencesChange', state, prevState);
@@ -239,7 +239,7 @@ export class Wallet {
     if (!this.userCredentials) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    this.walletStore.save(this.id, this.userCredentials.encryptionKey, record);
+    this.walletStore.save(this.id, this.userCredentials, record);
   }
 
   async ready() {
@@ -292,25 +292,6 @@ export class Wallet {
       isNewUser ? 1000 * 1800 : 1000 * 120
     );
     await this.syncWithWalletStore();
-  }
-
-  async assignNewCredentials({
-    params: { credentials, newCredentials },
-  }: PublicMethodParams<{
-    credentials: SessionCredentials;
-    newCredentials: SessionCredentials;
-  }>) {
-    this.ensureRecord(this.record);
-    this.record = await Model.reEncryptRecord(this.record, {
-      credentials,
-      newCredentials,
-    });
-    this.userCredentials = newCredentials;
-
-    const { encryptionKey } = this.userCredentials;
-    await this.walletStore.encryptAndSave(this.id, encryptionKey, this.record);
-
-    this.setExpirationForSeedPhraseEncryptionKey(1000 * 120);
   }
 
   async resetCredentials() {
