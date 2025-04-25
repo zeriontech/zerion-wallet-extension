@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { unwrapOpaqueType } from '../type-utils/Opaque';
 import { encodeForMasking, decodeMasked } from './encode-locally';
 
-describe.only('encode-locally.ts', () => {
+describe('encode-locally.ts', () => {
   test('encodeForMasking', () => {
     const value = 'hello';
     expect(decodeMasked(encodeForMasking(value))).toBe(value);

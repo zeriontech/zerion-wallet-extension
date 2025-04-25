@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import { hasChecksumError } from './toChecksumAddress';
 
-test.only('hasChecksumError', () => {
+test('hasChecksumError', () => {
   const checksummed = '0xbF6875457265C0fD039eD955546E75163Ae63631';
   const lowercased = checksummed.toLowerCase();
   const invalidUppercase = checksummed.toUpperCase();
