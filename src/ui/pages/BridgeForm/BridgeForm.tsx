@@ -86,8 +86,6 @@ import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/r
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import type { Quote } from 'src/shared/types/Quote';
-import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
-import type { Nullable } from 'src/shared/type-utils/Nullable';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -553,16 +551,9 @@ function BridgeFormComponent() {
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
 
   const snapshotRef = useRef<BridgeFormState | null>(null);
-  const analyticsFormDataRef = useRef<Nullable<AnalyticsFormData> | null>(null);
 
   const onBeforeSubmit = () => {
     snapshotRef.current = formState;
-    analyticsFormDataRef.current = {
-      spendAsset,
-      receiveAsset,
-      spendPosition,
-      configuration,
-    };
   };
 
   const [prevSelectedQuote, setPrevSelectedQuote] = useState<Quote | null>(
@@ -574,16 +565,32 @@ function BridgeFormComponent() {
       selectedQuote &&
       prevSelectedQuote !== selectedQuote &&
       quotesData.done &&
-      analyticsFormDataRef.current
+      spendAsset &&
+      receiveAsset &&
+      spendPosition &&
+      configuration
     ) {
       walletPort.request('finalQuoteReceived', {
         quote: selectedQuote,
-        formData: analyticsFormDataRef.current,
+        formData: {
+          spendAsset,
+          receiveAsset,
+          spendPosition,
+          configuration,
+        },
         scope: 'Bridge',
       });
       setPrevSelectedQuote(selectedQuote);
     }
-  }, [selectedQuote, prevSelectedQuote, quotesData.done]);
+  }, [
+    selectedQuote,
+    prevSelectedQuote,
+    quotesData.done,
+    spendAsset,
+    receiveAsset,
+    spendPosition,
+    configuration,
+  ]);
 
   const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;

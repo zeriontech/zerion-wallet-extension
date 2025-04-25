@@ -84,8 +84,6 @@ import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
 import type { Quote } from 'src/shared/types/Quote';
-import type { Nullable } from 'src/shared/type-utils/Nullable';
-import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -382,16 +380,9 @@ export function SwapFormComponent() {
   const configuration = useStore(swapView.store.configuration);
 
   const snapshotRef = useRef<SwapFormState | null>(null);
-  const analyticsFormDataRef = useRef<Nullable<AnalyticsFormData> | null>(null);
 
   const onBeforeSubmit = () => {
     snapshotRef.current = swapView.store.getState();
-    analyticsFormDataRef.current = {
-      spendAsset,
-      receiveAsset,
-      spendPosition,
-      configuration,
-    };
   };
 
   const [prevSelectedQuote, setPrevSelectedQuote] = useState<Quote | null>(
@@ -403,16 +394,32 @@ export function SwapFormComponent() {
       selectedQuote &&
       prevSelectedQuote !== selectedQuote &&
       quotesData.done &&
-      analyticsFormDataRef.current
+      spendAsset &&
+      receiveAsset &&
+      spendPosition &&
+      configuration
     ) {
       walletPort.request('finalQuoteReceived', {
         quote: selectedQuote,
-        formData: analyticsFormDataRef.current,
-        scope: 'Bridge',
+        formData: {
+          spendAsset,
+          receiveAsset,
+          spendPosition,
+          configuration,
+        },
+        scope: 'Swap',
       });
       setPrevSelectedQuote(selectedQuote);
     }
-  }, [selectedQuote, prevSelectedQuote, quotesData.done]);
+  }, [
+    selectedQuote,
+    prevSelectedQuote,
+    quotesData.done,
+    spendAsset,
+    receiveAsset,
+    spendPosition,
+    configuration,
+  ]);
 
   const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;
