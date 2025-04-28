@@ -83,8 +83,12 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
-import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
+import type {
+  QuotesData,
+  QuoteSortType,
+} from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
+import type { Quote } from 'src/shared/types/Quote';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -104,6 +108,11 @@ import { SuccessState } from './SuccessState';
 import { LabeledNetworkSelect } from './LabeledNetworkSelect';
 import { BridgeLine } from './BridgeLine';
 import { ZerionFeeLine } from './ZerionFeeLine';
+import { QuoteList } from './QuoteList';
+
+function getDefaultQuote(quotes: Quote[] | null) {
+  return quotes?.[0] ?? null;
+}
 
 const rootNode = getRootDomNode();
 
@@ -419,6 +428,9 @@ function BridgeFormComponent() {
     receiveChain,
   ]);
 
+  const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
+  const [quoteSortType, setQuoteSortType] = useState<QuoteSortType>('amount');
+
   const quotesData = useQuotes({
     address,
     userSlippage: null,
@@ -431,13 +443,28 @@ function BridgeFormComponent() {
     receiveTokenInput,
     spendPosition,
     receivePosition,
+    sortType: quoteSortType,
   });
 
-  const { refetch: refetchQuotes } = quotesData;
+  const { quotes, refetch: refetchQuotes } = quotesData;
 
-  const defaultQuote = quotesData.quotes?.[0] ?? null;
-  // TODO: add support for quote selection, useState
-  const selectedQuote = defaultQuote;
+  const selectedQuote = useMemo(() => {
+    const userQuote = quotesData.quotes?.find(
+      (quote) => quote.contract_metadata?.id === userQuoteId
+    );
+    const defaultQuote = getDefaultQuote(quotesData.quotes);
+    return userQuote || defaultQuote || null;
+  }, [userQuoteId, quotesData.quotes]);
+
+  useEffect(() => {
+    setUserQuoteId(null);
+  }, [
+    spendInput,
+    spendTokenInput,
+    receiveTokenInput,
+    spendChainInput,
+    receiveChainInput,
+  ]);
 
   const bridgeTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
@@ -745,6 +772,7 @@ function BridgeFormComponent() {
 
   const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const quotesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const { innerHeight } = useWindowSizeStore();
 
@@ -921,6 +949,22 @@ function BridgeFormComponent() {
         }}
       />
 
+      {quotes?.length ? (
+        <BottomSheetDialog
+          ref={quotesDialogRef}
+          height="fit-content"
+          renderWhenOpen={() => (
+            <QuoteList
+              quotes={quotes}
+              selectedQuote={selectedQuote}
+              onQuoteIdChange={setUserQuoteId}
+              sortType={quoteSortType}
+              onChangeSortType={setQuoteSortType}
+            />
+          )}
+        />
+      ) : null}
+
       <form
         id={formId}
         ref={formRef}
@@ -1008,7 +1052,8 @@ function BridgeFormComponent() {
             <BridgeLine
               spendChain={spendChain}
               quotesData={quotesData}
-              quote={selectedQuote}
+              selectedQuote={selectedQuote}
+              onQuoteSelect={() => quotesDialogRef.current?.showModal()}
             />
           ) : null}
           {selectedQuote ? <ZerionFeeLine quote={selectedQuote} /> : null}

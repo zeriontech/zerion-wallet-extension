@@ -1,0 +1,30 @@
+.radio {
+  position: relative;
+  cursor: pointer;
+  border: 2px solid var(--neutral-200);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.radio input[type='radio'] {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.radio:has(input[type='radio']:checked) {
+  border: 1px solid var(--primary);
+  padding: 11px;
+  color: var(--primary);
+}
+
+.radio:has(input[type='radio']:checked) .bestRateBadge {
+  background-color: var(--primary);
+  top: -6px;
+  right: 0px;
+}
