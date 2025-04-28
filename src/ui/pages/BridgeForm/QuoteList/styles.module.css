@@ -1,0 +1,24 @@
+.radio {
+  position: relative;
+  cursor: pointer;
+  border: 1px solid var(--neutral-200);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.radio input[type='radio'] {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.radio:has(input[type='radio']:checked) {
+  border: 1px solid var(--primary);
+  padding: 12px;
+  color: var(--primary);
+}
