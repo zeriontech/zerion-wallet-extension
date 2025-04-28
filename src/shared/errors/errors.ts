@@ -5,35 +5,6 @@ import { STANDARD_ERROR_MAP } from '@walletconnect/jsonrpc-utils';
  * RPC Errors: https://eips.ethereum.org/EIPS/eip-1474#error-codes
  */
 
-export type ExtendedError = Error & { code?: number; data?: string };
-
-/** DOMException can have an empty message, this helper sets message to name */
-export function domExceptionPatched(value: DOMException): DOMException {
-  const result = new DOMException();
-  const message = value.message || value.name;
-  Object.defineProperty(result, 'message', { value: message });
-  Object.defineProperty(result, 'name', { value: value.name });
-  Object.defineProperty(result, 'code', { value: value.code });
-  return result;
-}
-
-export function toEnumerableError(value: Error) {
-  const error =
-    value instanceof DOMException
-      ? new DOMException(value.message)
-      : new Error(value.message);
-  const toDescriptor = <T>(value: T) => ({ value, enumerable: true });
-  Object.defineProperty(error, 'message', toDescriptor(value.message));
-  Object.defineProperty(error, 'name', toDescriptor(value.name));
-  if ('code' in value) {
-    Object.defineProperty(error, 'code', toDescriptor(value.code));
-  }
-  if ('data' in value) {
-    Object.defineProperty(error, 'data', toDescriptor(value.data));
-  }
-  return error;
-}
-
 /** RPC Errors */
 
 export class InvalidParams extends Error {

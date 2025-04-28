@@ -1,5 +1,4 @@
 import { isObj } from 'src/shared/isObj';
-import type { ExtendedError } from './errors';
 import { getError } from './getError';
 
 function tryErrorBody(value: unknown) {
@@ -14,7 +13,7 @@ function tryErrorBody(value: unknown) {
   }
 }
 
-export function getEthersError(value: unknown): ExtendedError {
+export function getEthersError(value: unknown): Error {
   if (value instanceof Error) {
     if ('error' in value && isObj(value.error)) {
       if (value.error.error instanceof Error) {
