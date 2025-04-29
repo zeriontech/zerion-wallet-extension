@@ -6,3 +6,8 @@ export type SubmittedTransactionResponse = OneOf<{
   ethereum: SerializableTransactionResponse;
   solana: SolTransactionResponse;
 }>;
+
+export type SubmittedAllTransactionsResponse = {
+  ethereum: undefined;
+  solana: SolTransactionResponse[];
+};

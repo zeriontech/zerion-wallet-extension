@@ -19,7 +19,10 @@ import {
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { OneOf } from 'src/shared/type-utils/OneOf';
-import type { SubmittedTransactionResponse } from 'src/shared/types/SubmittedTransactionResponse';
+import type {
+  SubmittedAllTransactionsResponse,
+  SubmittedTransactionResponse,
+} from 'src/shared/types/SubmittedTransactionResponse';
 import type { SolTransaction } from 'src/modules/solana/SolTransaction';
 import { solToBase64 } from 'src/modules/solana/transactions/create';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
@@ -27,8 +30,16 @@ import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 type SendTxParams = TransactionContextParams &
   OneOf<{ transaction: IncomingTransaction; solTransaction: SolTransaction }>;
 
+type SignAllTransactionsParams = TransactionContextParams & {
+  transaction: undefined;
+  solTransactions: SolTransaction[];
+};
+
 export interface SendTxBtnHandle {
   sendTransaction(params: SendTxParams): Promise<SubmittedTransactionResponse>;
+  signAllTransactions(
+    params: SignAllTransactionsParams
+  ): Promise<SubmittedAllTransactionsResponse>;
 }
 
 export const SignTransactionButton = React.forwardRef(
@@ -53,7 +64,8 @@ export const SignTransactionButton = React.forwardRef(
     ref: React.Ref<SendTxBtnHandle>
   ) {
     const hardwareSignRef = useRef<SignTransactionHandle | null>(null);
-    const { mutateAsync: sendTransaction, ...sendTxMutation } = useMutation({
+
+    const sendTxMutation = useMutation({
       mutationFn: async ({
         transaction,
         solTransaction,
@@ -89,8 +101,11 @@ export const SignTransactionButton = React.forwardRef(
             default: 'solana_signAndSendTransaction',
             signAndSendTransaction: 'solana_signAndSendTransaction',
             signTransaction: 'solana_signTransaction',
-            signAllTransactions: 'solana_signAllTransactions',
           } as const;
+          invariant(
+            params.method !== 'signAllTransactions',
+            'SignTransactionButton: Use dedicated signAllTransactions method'
+          );
           const methodName = params.method
             ? methodMap[params.method]
             : methodMap.default;
@@ -104,15 +119,41 @@ export const SignTransactionButton = React.forwardRef(
       },
     });
 
-    useImperativeHandle(ref, () => ({ sendTransaction }));
+    const signAllTransactionsMutation = useMutation({
+      mutationFn: async ({
+        transaction,
+        solTransactions,
+        ...params
+      }: SignAllTransactionsParams) => {
+        if (transaction) {
+          throw new Error('Batch signing is supported only for Solana');
+        } else {
+          const transactions = solTransactions.map((tx) => solToBase64(tx));
+          const result = await walletPort.request(
+            'solana_signAllTransactions',
+            { transactions, params }
+          );
+          return { ethereum: undefined, solana: result };
+        }
+      },
+    });
 
-    const isLoading = isLoadingProp || sendTxMutation.isLoading;
-    const isSending = sendTxMutation.isLoading;
+    useImperativeHandle(ref, () => ({
+      sendTransaction: sendTxMutation.mutateAsync,
+      signAllTransactions: signAllTransactionsMutation.mutateAsync,
+    }));
+
+    const activeMutation =
+      [sendTxMutation, signAllTransactionsMutation].find(
+        (x) => x.status !== 'idle'
+      ) || sendTxMutation;
+    const isLoading = isLoadingProp || activeMutation.isLoading;
+    const isSending = activeMutation.isLoading;
 
     // there is a small delay after using a holdable button
     // button should be disabled after successful sign to prevent a duplicating call
     const disabled =
-      isLoading || (holdToSign && sendTxMutation.isSuccess) || disabledAttr;
+      isLoading || (holdToSign && activeMutation.isSuccess) || disabledAttr;
     const title = buttonTitle || 'Confirm';
 
     return isDeviceAccount(wallet) ? (
@@ -122,7 +163,7 @@ export const SignTransactionButton = React.forwardRef(
         isSending={isSending}
         children={children}
         buttonTitle={
-          sendTxMutation.isSuccess
+          activeMutation.isSuccess
             ? 'Sent'
             : isLoadingProp
             ? 'Preparing...'
@@ -155,9 +196,9 @@ export const SignTransactionButton = React.forwardRef(
               }
               submittingText="Sending..."
               onClick={handleClick}
-              success={sendTxMutation.isSuccess}
-              submitting={sendTxMutation.isLoading}
-              error={sendTxMutation.isError}
+              success={activeMutation.isSuccess}
+              submitting={activeMutation.isLoading}
+              error={activeMutation.isError}
               disabled={disabled}
               kind={buttonKind}
               {...buttonProps}

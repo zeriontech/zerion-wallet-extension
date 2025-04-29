@@ -95,10 +95,14 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     return solFromBase64(tx) as T;
   }
 
-  signAllTransactions<T extends Transaction | VersionedTransaction>(
-    _transactions: T[]
+  async signAllTransactions<T extends Transaction | VersionedTransaction>(
+    transactions: T[]
   ): Promise<T[]> {
-    throw new Error('signAllTransactions: Not Implemented');
+    const base64Txs = transactions.map((tx) => solToBase64(tx));
+    const results = await this.connection.send<SolTransactionResponse[]>(
+      formatJsonRpcRequestPatched('sol_signAllTransactions', { base64Txs })
+    );
+    return results.map((result) => solFromBase64(result.tx)) as T[];
   }
 
   async signAndSendTransaction<T extends Transaction | VersionedTransaction>(

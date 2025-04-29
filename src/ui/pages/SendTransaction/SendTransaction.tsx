@@ -88,8 +88,12 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
-import type { SubmittedTransactionResponse } from 'src/shared/types/SubmittedTransactionResponse';
+import type {
+  SubmittedAllTransactionsResponse,
+  SubmittedTransactionResponse,
+} from 'src/shared/types/SubmittedTransactionResponse';
 import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
+import type { SolTransaction } from 'src/modules/solana/SolTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -938,23 +942,59 @@ function SolDefaultView({
   );
 }
 
-function normalizeMethod(value: string | null): 'signTransaction' | undefined {
-  if (value === 'signTransaction') {
-    return value;
+function assertKnownMethodParam(
+  value: string | null
+): asserts value is
+  | 'signTransaction'
+  | 'signAndSendTransaction'
+  | 'signAllTransactions' {
+  invariant(
+    value === 'signTransaction' ||
+      value === 'signAndSendTransaction' ||
+      value === 'signAllTransactions',
+    `Unsupported Solana method ${value}`
+  );
+}
+
+function normalizeTxParams(params: URLSearchParams):
+  | {
+      method: 'signAllTransactions';
+      transactions: SolTransaction[];
+      transaction: undefined;
+    }
+  | {
+      method: 'signTransaction' | 'signAndSendTransaction';
+      transactions: undefined;
+      transaction: SolTransaction;
+    } {
+  const method = params.get('method');
+  assertKnownMethodParam(method);
+  const base64Tx = params.get('transaction');
+  const base64Txs = params.get('transactions');
+  if (method === 'signAllTransactions') {
+    invariant(base64Txs, 'signAllTransactions: transactions param is required');
+    return {
+      method,
+      transaction: undefined,
+      transactions: (JSON.parse(base64Txs) as string[]).map((tx) =>
+        solFromBase64(tx)
+      ),
+    };
+  } else {
+    invariant(base64Tx, 'transaction param is required');
+    return {
+      method,
+      transaction: solFromBase64(base64Tx),
+      transactions: undefined,
+    };
   }
-  return undefined;
 }
 
 function SolSendTransaction() {
   const [params] = useSearchParams();
   const origin = params.get('origin');
   const clientScope = params.get('clientScope');
-  const base64tx = params.get('transaction');
-  invariant(base64tx, 'transaction get-parameter is required for this view');
-  const method = params.get('method');
-  const signOnlyFlow = method === 'signTransaction';
-  const transaction = useMemo(() => solFromBase64(base64tx), [base64tx]);
-  console.log(transaction);
+  const txParams = useMemo(() => normalizeTxParams(params), [params]);
 
   invariant(origin, 'origin get-parameter is required for this view');
 
@@ -971,7 +1011,9 @@ function SolSendTransaction() {
   const navigate = useNavigate();
   const next = params.get('next');
 
-  async function handleSentTransaction(res: SubmittedTransactionResponse) {
+  async function handleSentTransaction(
+    res: SubmittedTransactionResponse | SubmittedAllTransactionsResponse
+  ) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
       await wait(500);
@@ -994,25 +1036,40 @@ function SolSendTransaction() {
     }
   };
 
+  const firstTx = txParams.transaction || txParams.transactions[0];
   const addressAction = useMemo(
-    () => solanaTransactionToAddressAction(transaction, wallet.address),
-    [transaction, wallet.address]
+    () => solanaTransactionToAddressAction(firstTx, wallet.address),
+    [firstTx, wallet.address]
   );
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      return sendTxBtnRef.current.sendTransaction({
-        solTransaction: transaction,
-        // TODO: How to avoid needing to pass this?
-        transaction: undefined,
-        chain: 'solana',
-        feeValueCommon: null,
-        initiator: origin,
-        clientScope: clientScope || 'External Dapp',
-        method: normalizeMethod(method),
-        addressAction,
-      });
+      if (txParams.method === 'signAllTransactions') {
+        return sendTxBtnRef.current.signAllTransactions({
+          solTransactions: txParams.transactions,
+          // TODO: How to avoid needing to pass this?
+          transaction: undefined,
+          chain: 'solana',
+          feeValueCommon: null,
+          initiator: origin,
+          clientScope: clientScope || 'External Dapp',
+          method: txParams.method,
+          addressAction,
+        });
+      } else {
+        return sendTxBtnRef.current.sendTransaction({
+          solTransaction: txParams.transaction,
+          // TODO: How to avoid needing to pass this?
+          transaction: undefined,
+          chain: 'solana',
+          feeValueCommon: null,
+          initiator: origin,
+          clientScope: clientScope || 'External Dapp',
+          method: txParams.method,
+          addressAction,
+        });
+      }
       // throw new Error('to implement');
     },
     onMutate: () => 'sendTransaction',
@@ -1043,7 +1100,7 @@ function SolSendTransaction() {
           />
         ) : null}
         <Spacer height={16} />
-        {signOnlyFlow ? 'Must sign only' : null}
+        <div>method: {txParams.method}</div>
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />
