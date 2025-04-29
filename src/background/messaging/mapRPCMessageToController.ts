@@ -1,6 +1,5 @@
 import type browser from 'webextension-polyfill';
 import type {
-  ErrorResponse,
   JsonRpcPayload,
   JsonRpcResponse,
 } from '@walletconnect/jsonrpc-utils';
@@ -11,7 +10,7 @@ import {
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
-import { domExceptionToError, MethodNotFound } from 'src/shared/errors/errors';
+import { MethodNotFound } from 'src/shared/errors/errors';
 import { getError } from 'src/shared/errors/getError';
 import { SLOW_MODE } from 'src/env/config';
 import { wait } from 'src/shared/wait';
@@ -56,15 +55,8 @@ export function mapRPCMessageToController<T>(
         (result: unknown) => {
           return formatJsonRpcResultForPort(id, result);
         },
-        (error: Error | DOMException | ErrorResponse) => {
-          const normalizedError = formatJsonRpcWalletError(
-            id,
-            error instanceof DOMException
-              ? domExceptionToError(error).message
-              : 'code' in error
-              ? error
-              : getError(error)
-          );
+        (error: unknown) => {
+          const normalizedError = formatJsonRpcWalletError(id, getError(error));
           console.group('Controller error'); // eslint-disable-line no-console
           console.table(normalizedError); // eslint-disable-line no-console
           console.groupEnd(); // eslint-disable-line no-console
