@@ -114,6 +114,13 @@ function getDefaultQuote(quotes: Quote[] | null) {
   return quotes?.[0] ?? null;
 }
 
+function useSortedQuotes(params: Parameters<typeof useQuotes>[0]) {
+  return {
+    quotesByAmount: useQuotes({ ...params, sortType: 'amount' }),
+    quotesByTime: useQuotes({ ...params, sortType: 'time' }),
+  };
+}
+
 const rootNode = getRootDomNode();
 
 function FormHint({
@@ -431,7 +438,7 @@ function BridgeFormComponent() {
   const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
   const [quoteSortType, setQuoteSortType] = useState<QuoteSortType>('amount');
 
-  const quotesData = useQuotes({
+  const { quotesByAmount, quotesByTime } = useSortedQuotes({
     address,
     userSlippage: null,
     primaryInput: 'spend',
@@ -446,15 +453,20 @@ function BridgeFormComponent() {
     sortType: quoteSortType,
   });
 
+  const quotesData = quoteSortType === 'amount' ? quotesByAmount : quotesByTime;
   const { quotes, refetch: refetchQuotes } = quotesData;
 
   const selectedQuote = useMemo(() => {
-    const userQuote = quotesData.quotes?.find(
-      (quote) => quote.contract_metadata?.id === userQuoteId
-    );
-    const defaultQuote = getDefaultQuote(quotesData.quotes);
+    const userQuote =
+      quotesByAmount.quotes?.find(
+        (quote) => quote.contract_metadata?.id === userQuoteId
+      ) ??
+      quotesByTime.quotes?.find(
+        (quote) => quote.contract_metadata?.id === userQuoteId
+      );
+    const defaultQuote = getDefaultQuote(quotes);
     return userQuote || defaultQuote || null;
-  }, [userQuoteId, quotesData.quotes]);
+  }, [userQuoteId, quotesByAmount, quotesByTime, quotes]);
 
   useEffect(() => {
     setUserQuoteId(null);
@@ -579,11 +591,11 @@ function BridgeFormComponent() {
     },
   });
 
-  const [txConfiguration, setTxConfiguration] = useState(DEFAULT_CONFIGURATION);
+  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
 
   const USE_PAYMASTER_FEATURE = true;
 
-  const userNonce = txConfiguration.nonce;
+  const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;
   const gas = txToCheck ? getGas(txToCheck) : null;
 
@@ -620,7 +632,7 @@ function BridgeFormComponent() {
   const configureTransactionToBeSigned = useEvent(
     (tx: IncomingTransactionWithChainId) => {
       invariant(spendChain && networks, 'Not ready to prepare the transaction');
-      let txToSign = applyConfiguration(tx, txConfiguration, gasPrices);
+      let txToSign = applyConfiguration(tx, configuration, gasPrices);
       if (paymasterEligible && txToSign.nonce == null) {
         txToSign = {
           ...txToSign,
@@ -874,7 +886,7 @@ function BridgeFormComponent() {
                 showApplicationLine={true}
                 chain={spendChain}
                 transaction={configureTransactionToBeSigned(currentTransaction)}
-                configuration={txConfiguration}
+                configuration={configuration}
                 localAllowanceQuantityBase={allowanceQuantityBase || undefined}
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
@@ -948,14 +960,16 @@ function BridgeFormComponent() {
           );
         }}
       />
-
-      {quotes?.length ? (
+      {spendChain && receiveChain && spendAsset && receiveAsset ? (
         <BottomSheetDialog
           ref={quotesDialogRef}
           height="fit-content"
           renderWhenOpen={() => (
             <QuoteList
-              quotes={quotes}
+              configuration={configuration}
+              spendChain={spendChain}
+              receiveAsset={receiveAsset}
+              quotes={quotes ?? []}
               selectedQuote={selectedQuote}
               onQuoteIdChange={setUserQuoteId}
               sortType={quoteSortType}
@@ -964,7 +978,6 @@ function BridgeFormComponent() {
           )}
         />
       ) : null}
-
       <form
         id={formId}
         ref={formRef}
@@ -1074,8 +1087,8 @@ function BridgeFormComponent() {
                 paymasterPossible={paymasterPossible}
                 paymasterWaiting={false}
                 onFeeValueCommonReady={handleFeeValueCommonReady}
-                configuration={txConfiguration}
-                onConfigurationChange={(value) => setTxConfiguration(value)}
+                configuration={configuration}
+                onConfigurationChange={(value) => setConfiguration(value)}
                 gasback={gasbackEstimation}
               />
             </React.Suspense>

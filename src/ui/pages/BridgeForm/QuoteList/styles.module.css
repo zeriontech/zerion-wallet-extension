@@ -1,9 +1,9 @@
 .radio {
   position: relative;
   cursor: pointer;
-  border: 2px solid var(--neutral-200);
+  border: 1px solid var(--neutral-200);
   border-radius: 12px;
-  padding: 10px;
+  padding: 12px;
 }
 
 .radio input[type='radio'] {
@@ -19,12 +19,6 @@
 
 .radio:has(input[type='radio']:checked) {
   border: 1px solid var(--primary);
-  padding: 11px;
+  padding: 12px;
   color: var(--primary);
-}
-
-.radio:has(input[type='radio']:checked) .bestRateBadge {
-  background-color: var(--primary);
-  top: -6px;
-  right: 0px;
 }

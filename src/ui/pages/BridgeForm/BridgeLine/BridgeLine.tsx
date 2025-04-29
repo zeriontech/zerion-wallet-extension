@@ -1,8 +1,7 @@
-import { useAssetsPrices, type Asset } from 'defi-sdk';
+import { useAssetsPrices } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Chain } from 'src/modules/networks/Chain';
-import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Quote } from 'src/shared/types/Quote';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
@@ -14,28 +13,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { getQuotesErrorMessage } from '../../SwapForm/Quotes/getQuotesErrorMessage';
-
-function getFeePriceValue({
-  quote,
-  chain,
-  asset,
-}: {
-  quote: Quote;
-  chain: Chain;
-  asset: Asset;
-}) {
-  if (asset.price?.value == null) {
-    return null;
-  }
-
-  const quantity = getCommonQuantity({
-    baseQuantity: quote.bridge_fee_amount,
-    chain,
-    asset,
-  });
-
-  return quantity.times(asset.price.value);
-}
+import { getBridgeFeeValueFiat } from '../shared/getBridgeFeeValueFiat';
 
 export function BridgeLine({
   spendChain,
@@ -61,7 +39,7 @@ export function BridgeLine({
   const feePriceValue = useMemo(
     () =>
       selectedQuote && feeAsset
-        ? getFeePriceValue({
+        ? getBridgeFeeValueFiat({
             quote: selectedQuote,
             chain: spendChain,
             asset: feeAsset,
