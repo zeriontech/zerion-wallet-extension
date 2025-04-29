@@ -6,8 +6,8 @@ export function toChecksumAddress(address: string) {
 
 export function hasChecksumError(address: string) {
   try {
-    // this throws for incorrect mixed-case/uppercase addresses
-    // but resolves for lowercase and checksummed addresses
+    // this throws for incorrect mixed-case addresses
+    // but resolves for lowercase, checksummed and uppercased addresses
     toChecksumAddress(address);
     return false;
   } catch (e) {
