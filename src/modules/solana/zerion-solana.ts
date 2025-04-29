@@ -1,22 +1,23 @@
 import EventEmitter from 'events';
-import { PublicKey } from '@solana/web3.js';
+import type {
+  SolanaSignInInput,
+  SolanaSignInOutput,
+} from '@solana/wallet-standard-features';
 import type {
   SendOptions,
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js';
-import type {
-  SolanaSignInInput,
-  SolanaSignInOutput,
-} from '@solana/wallet-standard-features';
+import { PublicKey } from '@solana/web3.js';
+import type { Ghost } from '@zeriontech/solana-wallet-standard';
 import { formatJsonRpcRequestPatched } from 'src/shared/custom-rpc/formatJsonRpcRequestPatched';
 import { invariant } from 'src/shared/invariant';
-import type { Ghost } from '@zeriontech/solana-wallet-standard';
+import { base64ToUint8Array, uint8ArrayToBase64 } from '../crypto/convert';
 import type { Connection } from '../ethereum/connection';
+import { icon } from './icon';
 import { isSolanaAddress } from './shared';
 import { solFromBase64, solToBase64 } from './transactions/create';
 import type { SolTransactionResponse } from './transactions/SolTransactionResponse';
-import { icon } from './icon';
 
 export class ZerionSolana extends EventEmitter implements Ghost {
   name = 'Zerion';
@@ -75,8 +76,13 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     throw new Error('signIn: Not Implemented');
   }
 
-  signMessage(_message: Uint8Array): Promise<{ signature: Uint8Array }> {
-    throw new Error('signMessage: Not Implemented');
+  async signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }> {
+    const signature = await this.connection.send<string>(
+      formatJsonRpcRequestPatched('sol_signMessage', {
+        messageSerialized: uint8ArrayToBase64(message),
+      })
+    );
+    return { signature: base64ToUint8Array(signature) };
   }
 
   async signTransaction<T extends Transaction | VersionedTransaction>(

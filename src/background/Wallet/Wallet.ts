@@ -100,11 +100,15 @@ import {
   solToBase64,
 } from 'src/modules/solana/transactions/create';
 import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
+import type { Keypair } from '@solana/web3.js';
 import { Connection, PublicKey } from '@solana/web3.js';
 import type { SolTransactionResponse } from 'src/modules/solana/transactions/SolTransactionResponse';
 import { SOLANA_RPC_URL } from 'src/env/config';
 import { SolanaTransactionLegacy } from 'src/modules/solana/SolTransaction';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
+import { solanaSignMessage } from 'src/modules/solana/signing';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -685,6 +689,7 @@ export class Wallet {
     }
   }
 
+  // TODO: when is this helper needed?
   private ensureStringOrigin(
     context: Partial<ChannelContext | PrivateChannelContext> | undefined
   ): asserts context is PartiallyRequired<ChannelContext, 'origin'> {
@@ -1116,6 +1121,15 @@ export class Wallet {
     return new ethers.JsonRpcProvider(nodeUrl);
   }
 
+  private getKeypairByAddress(address: string): Keypair {
+    this.ensureRecord(this.record);
+    invariant(isSolanaAddress(address), 'Keypairs are for solana addresseses');
+    const signerWallet = Model.getSignerWalletByAddress(this.record, address);
+    invariant(signerWallet, `Signer wallet not found for ${address}`);
+
+    return fromSecretKeyToEd25519(signerWallet.privateKey);
+  }
+
   private getOfflineSignerByAddress(address: string) {
     this.ensureRecord(this.record);
     const wallet = Model.getSignerWalletByAddress(this.record, address);
@@ -1308,13 +1322,8 @@ export class Wallet {
       "feePayer doesn't match active address"
     );
 
-    const signerWallet = Model.getSignerWalletByAddress(
-      this.record,
-      currentAddress
-    );
-    invariant(signerWallet, `Signer wallet not found for ${currentAddress}`);
+    const keypair = this.getKeypairByAddress(currentAddress);
 
-    const keypair = fromSecretKeyToEd25519(signerWallet.privateKey);
     if (transaction instanceof SolanaTransactionLegacy) {
       transaction.partialSign(keypair);
     } else {
@@ -1366,6 +1375,30 @@ export class Wallet {
     }>
   ): Promise<SolTransactionResponse> {
     throw new Error('TODO: solana_signAllTransactions Not Implemented');
+  }
+
+  async solana_signMessage({
+    params: { messageHex, ...messageContextParams },
+    context,
+  }: WalletMethodParams<
+    { messageHex: string } & MessageContextParams
+  >): Promise<{ signatureSerialized: string }> {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    const messageUint8 = ethers.getBytes(messageHex);
+    const address = this.ensureCurrentAddress();
+    const keypair = this.getKeypairByAddress(address);
+    const result = solanaSignMessage(messageUint8, keypair);
+    this.registerPersonalSign({
+      params: {
+        address,
+        message: messageUint8,
+        ...messageContextParams,
+      },
+    });
+    return {
+      signatureSerialized: uint8ArrayToBase64(result.signature),
+    };
   }
 
   async sendSignedTransaction({
@@ -1453,7 +1486,7 @@ export class Wallet {
   }: WalletMethodParams<
     {
       address: string;
-      message: string;
+      message: string | ethers.BytesLike;
     } & MessageContextParams
   >) {
     const messageAsUtf8String = toUtf8String(message);
@@ -1922,43 +1955,81 @@ class PublicController {
     });
   }
 
+  async sol_signMessage({
+    id,
+    params: { messageSerialized, clientScope },
+    context,
+  }: PublicMethodParams<{
+    messageSerialized: string;
+    clientScope?: string;
+  }>) {
+    const currentAddress = this.wallet.ensureCurrentAddress();
+    invariant(isSolanaAddress(currentAddress));
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+      throw new OriginNotAllowed();
+    }
+
+    const messageUint8 = base64ToUint8Array(messageSerialized);
+    const searchParams = new URLSearchParams({
+      method: 'signMessage',
+      origin: context.origin,
+      message: ethers.hexlify(messageUint8),
+    });
+    if (clientScope) {
+      searchParams.append('clientScope', clientScope);
+    }
+    return new Promise((resolve, reject) => {
+      this.safeOpenDialogWindow(context.origin, {
+        requestId: `${context.origin}:${id}`,
+        route: '/signMessage',
+        // height: isDeviceWallet ? 800 : undefined,
+        search: `?${searchParams}`,
+        tabId: context.tabId || null,
+        onResolve: (signature: string) => {
+          resolve(signature);
+        },
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+      });
+    });
+  }
+
   async eth_requestAccounts(
     {
       context,
       id,
       params,
     }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>,
-    opts: { ecosystem: 'ethereum' | 'solana' } = { ecosystem: 'ethereum' }
+    opts: { ecosystem: BlockchainType } = { ecosystem: 'evm' }
   ) {
     if (debugValue && process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.log('PublicController: eth_requestAccounts', debugValue);
     }
     const currentAddress = this.wallet.readCurrentAddress();
-    const addrIsEthereum = currentAddress && isEthereumAddress(currentAddress);
-    const addrIsSolana = currentAddress && isSolanaAddress(currentAddress);
-    if (opts.ecosystem === 'ethereum') {
-      invariant(!currentAddress || addrIsEthereum, 'addresss is not ethereum');
-    } else if (opts.ecosystem === 'solana') {
-      invariant(!currentAddress || addrIsSolana, 'addresss is not solana');
-    }
-    if (currentAddress)
-      if (this.wallet.allowedOrigin(context, currentAddress)) {
-        const { origin } = context;
-        emitter.emit('requestAccountsResolved', {
-          origin,
-          address: currentAddress,
-          explicitly: false,
-        });
-        // Some ethereum dapps expect lowercase to be returned, otherwise they crash the moment after connection
-        const result = [
-          addrIsEthereum ? currentAddress.toLowerCase() : currentAddress,
-        ];
-        if (debugValue && process.env.NODE_ENV === 'development') {
-          result.push(String(debugValue));
-        }
-        return result;
+    if (
+      currentAddress &&
+      isMatchForEcosystem(currentAddress, opts.ecosystem) &&
+      this.wallet.allowedOrigin(context, currentAddress)
+    ) {
+      const { origin } = context;
+      emitter.emit('requestAccountsResolved', {
+        origin,
+        address: currentAddress,
+        explicitly: false,
+      });
+      // Some ethereum dapps expect lowercase to be returned, otherwise they crash the moment after connection
+      const result = [
+        isEthereumAddress(currentAddress)
+          ? currentAddress.toLowerCase()
+          : currentAddress,
+      ];
+      if (debugValue && process.env.NODE_ENV === 'development') {
+        result.push(String(debugValue));
       }
+      return result;
+    }
     if (!context?.origin) {
       throw new Error('This method requires origin');
     }
@@ -1981,11 +2052,10 @@ class PublicController {
           invariant(address, 'Invalid arguments: missing address');
           invariant(resolvedOrigin, 'Invalid arguments: missing origin');
           invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
-          if (opts.ecosystem === 'ethereum') {
-            invariant(isEthereumAddress(address), 'Wrong addr for ecosystem');
-          } else if (opts.ecosystem === 'solana') {
-            invariant(isSolanaAddress(address), 'Wrong addr for ecosystem');
-          }
+          invariant(
+            isMatchForEcosystem(address, opts.ecosystem),
+            'Wrong addr for ecosystem'
+          );
           const currentAddress = this.wallet.ensureCurrentAddress();
           if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
             await this.wallet.setCurrentAddress({

@@ -1,4 +1,6 @@
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import { invariant } from '../invariant';
+import { isEthereumAddress } from '../isEthereumAddress';
 import { BLOCKCHAIN_TYPES, type BlockchainType } from './classifiers';
 
 const supportedTypes = new Set<BlockchainType>(BLOCKCHAIN_TYPES);
@@ -14,4 +16,17 @@ export function assertKnownEcosystems(
     isSubsetOf(supportedTypes, values),
     `Invalid ecosystem values: ${values}`
   );
+}
+
+export function isMatchForEcosystem(
+  address: string,
+  ecosystem: BlockchainType
+) {
+  if (ecosystem === 'evm') {
+    return isEthereumAddress(address);
+  } else if (ecosystem === 'solana') {
+    return isSolanaAddress(address);
+  } else {
+    throw new Error(`Unsupported ecosystem param: ${ecosystem}`);
+  }
 }

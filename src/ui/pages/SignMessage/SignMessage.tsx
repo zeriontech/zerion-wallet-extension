@@ -27,6 +27,8 @@ import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { usePreferences } from 'src/ui/features/preferences';
 import { wait } from 'src/shared/wait';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { ethers } from 'ethers';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 
 function MessageRow({ message }: { message: string }) {
@@ -69,14 +71,26 @@ function SignMessageContent({
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
 
-  const { mutate: personalSign, ...personalSignMutation } = useMutation({
+  const { mutate: confirmRequest, ...confirmMutation } = useMutation({
     mutationFn: async () => {
       invariant(signMsgBtnRef.current, 'SignMessageButton not found');
-      return signMsgBtnRef.current.personalSign({
-        params: [message],
-        initiator: origin,
-        clientScope,
-      });
+      if (isSolanaAddress(wallet.address)) {
+        invariant(
+          ethers.isHexString(message),
+          'Solana message is expected to be serialized to hex string'
+        );
+        return signMsgBtnRef.current.signMessage({
+          messageHex: message,
+          initiator: origin,
+          clientScope,
+        });
+      } else {
+        return signMsgBtnRef.current.personalSign({
+          params: [message],
+          initiator: origin,
+          clientScope,
+        });
+      }
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
@@ -154,9 +168,9 @@ function SignMessageContent({
           }}
           gap={8}
         >
-          {personalSignMutation.isError ? (
+          {confirmMutation.isError ? (
             <UIText kind="caption/regular" color="var(--negative-500)">
-              {txErrorToMessage(personalSignMutation.error)}
+              {txErrorToMessage(confirmMutation.error)}
             </UIText>
           ) : null}
 
@@ -179,7 +193,8 @@ function SignMessageContent({
               <SignMessageButton
                 ref={signMsgBtnRef}
                 wallet={wallet}
-                onClick={() => personalSign()}
+                onClick={() => confirmRequest()}
+                disabled={confirmMutation.isLoading}
                 holdToSign={preferences.enableHoldToSignButton}
               />
             ) : null}
