@@ -102,13 +102,12 @@ import {
 import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
 import type { Keypair } from '@solana/web3.js';
 import { Connection, PublicKey } from '@solana/web3.js';
-import type { SolTransactionResponse } from 'src/modules/solana/transactions/SolTransactionResponse';
+import type { SolSignTransactionResult } from 'src/modules/solana/transactions/SolTransactionResponse';
 import { SOLANA_RPC_URL } from 'src/env/config';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
 import {
   getTransactionFeePayer,
-  getTransactionSignature,
   solanaSignAllTransactions,
   solanaSignMessage,
   solanaSignTransaction,
@@ -1306,7 +1305,7 @@ export class Wallet {
   }: WalletMethodParams<{
     transaction: string;
     params: TransactionContextParams;
-  }>): Promise<SolTransactionResponse> {
+  }>): Promise<SolSignTransactionResult> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
@@ -1334,7 +1333,7 @@ export class Wallet {
   }: WalletMethodParams<{
     transactions: string[];
     params: TransactionContextParams;
-  }>): Promise<SolTransactionResponse[]> {
+  }>): Promise<SolSignTransactionResult[]> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
@@ -1360,7 +1359,7 @@ export class Wallet {
   }: WalletMethodParams<{
     transaction: string;
     params: TransactionContextParams;
-  }>): Promise<SolTransactionResponse> {
+  }>): Promise<SolSignTransactionResult> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
@@ -1951,7 +1950,7 @@ class PublicController {
         // height: isDeviceWallet ? 800 : undefined,
         search: `?${searchParams}`,
         tabId: context.tabId || null,
-        onResolve: (result: SolTransactionResponse) => {
+        onResolve: (result: SolSignTransactionResult) => {
           console.log({ result });
           resolve(result);
         },
@@ -1991,7 +1990,7 @@ class PublicController {
         // height: isDeviceWallet ? 800 : undefined,
         search: `?${searchParams}`,
         tabId: context.tabId || null,
-        onResolve: (result: SolTransactionResponse[]) => {
+        onResolve: (result: SolSignTransactionResult[]) => {
           console.log({ result });
           resolve(result);
         },

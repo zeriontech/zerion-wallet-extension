@@ -4,7 +4,7 @@ import bs58 from 'bs58';
 import type { SolTransaction } from './SolTransaction';
 import { SolanaTransactionLegacy } from './SolTransaction';
 import { solToBase64 } from './transactions/create';
-import type { SolTransactionResponse } from './transactions/SolTransactionResponse';
+import type { SolSignTransactionResult } from './transactions/SolTransactionResponse';
 
 export function solanaSignMessage(
   message: Uint8Array,
@@ -54,7 +54,7 @@ export function getTransactionSignature(
 export function solanaSignTransaction(
   transaction: SolTransaction,
   keypair: Keypair
-): SolTransactionResponse {
+): SolSignTransactionResult {
   if (transaction instanceof SolanaTransactionLegacy) {
     transaction.partialSign(keypair);
   } else {
@@ -70,8 +70,8 @@ export function solanaSignTransaction(
 export function solanaSignAllTransactions(
   transactions: SolTransaction[],
   keypair: Keypair
-): SolTransactionResponse[] {
-  const results: SolTransactionResponse[] = [];
+): SolSignTransactionResult[] {
+  const results: SolSignTransactionResult[] = [];
   for (const transaction of transactions) {
     results.push(solanaSignTransaction(transaction, keypair));
   }

@@ -11,4 +11,4 @@ interface SignResult {
   tx: string;
 }
 
-export type SolTransactionResponse = SignAndSendResult | SignResult;
+export type SolSignTransactionResult = SignAndSendResult | SignResult;

@@ -20,8 +20,8 @@ import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { OneOf } from 'src/shared/type-utils/OneOf';
 import type {
-  SubmittedAllTransactionsResponse,
-  SubmittedTransactionResponse,
+  SignAllTransactionsResult,
+  SignTransactionResult,
 } from 'src/shared/types/SubmittedTransactionResponse';
 import type { SolTransaction } from 'src/modules/solana/SolTransaction';
 import { solToBase64 } from 'src/modules/solana/transactions/create';
@@ -36,10 +36,10 @@ type SignAllTransactionsParams = TransactionContextParams & {
 };
 
 export interface SendTxBtnHandle {
-  sendTransaction(params: SendTxParams): Promise<SubmittedTransactionResponse>;
+  sendTransaction(params: SendTxParams): Promise<SignTransactionResult>;
   signAllTransactions(
     params: SignAllTransactionsParams
-  ): Promise<SubmittedAllTransactionsResponse>;
+  ): Promise<SignAllTransactionsResult>;
 }
 
 export const SignTransactionButton = React.forwardRef(

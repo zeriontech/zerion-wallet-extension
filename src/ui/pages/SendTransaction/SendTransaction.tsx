@@ -89,8 +89,8 @@ import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type {
-  SubmittedAllTransactionsResponse,
-  SubmittedTransactionResponse,
+  SignAllTransactionsResult,
+  SignTransactionResult,
 } from 'src/shared/types/SubmittedTransactionResponse';
 import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
 import type { SolTransaction } from 'src/modules/solana/SolTransaction';
@@ -642,7 +642,7 @@ function SendTransactionContent({
   }, []);
 
   const next = params.get('next');
-  async function handleSentTransaction(res: SubmittedTransactionResponse) {
+  async function handleSentTransaction(res: SignTransactionResult) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
       await wait(500);
@@ -1012,7 +1012,7 @@ function SolSendTransaction() {
   const next = params.get('next');
 
   async function handleSentTransaction(
-    res: SubmittedTransactionResponse | SubmittedAllTransactionsResponse
+    res: SignTransactionResult | SignAllTransactionsResult
   ) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
