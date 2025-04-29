@@ -59,6 +59,7 @@ export function SelectDna() {
   const {
     mutate: upgradeDna,
     isLoading,
+    isError,
     error,
   } = useMutation({
     mutationFn: async () => {
@@ -95,7 +96,8 @@ export function SelectDna() {
 
   const showSelect = nfts && nfts.length > 1;
   // don't show User Rejected error
-  const showError = error && getError(error).code !== 4001;
+  const showError =
+    isError && (getError(error) as Error & { code?: number }).code !== 4001;
 
   return (
     <div className={helpersStyles.container} style={{ height: 600 }}>

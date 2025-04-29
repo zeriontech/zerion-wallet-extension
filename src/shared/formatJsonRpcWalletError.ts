@@ -1,5 +1,5 @@
 import { formatJsonRpcError } from '@walletconnect/jsonrpc-utils';
-import { toEnumerableError } from './errors/errors';
+import { toEnumerableError } from './errors/toEnumerableError';
 
 export function formatJsonRpcWalletError(id: number, error: Error) {
   // if (!error || typeof error === 'string' || isReservedErrorCode(error.code)) {
