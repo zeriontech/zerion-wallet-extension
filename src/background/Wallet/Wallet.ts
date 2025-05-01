@@ -1312,9 +1312,9 @@ export class Wallet {
     const currentAddress = this.ensureCurrentAddress();
     // TODO: infer signer address from transaction instead
     invariant(isSolanaAddress(currentAddress), 'Active address is not solana');
-    const { transaction: base64, params: _transactionContextParams } = params;
-    invariant(base64, () => new InvalidParams());
-    const transaction = solFromBase64(base64);
+    const { transaction: txBase64, params: _transactionContextParams } = params;
+    invariant(txBase64, () => new InvalidParams());
+    const transaction = solFromBase64(txBase64);
 
     const feePayer = getTransactionFeePayer(transaction);
     // TODO: infer signer address from transaction instead
@@ -1338,11 +1338,11 @@ export class Wallet {
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
     const currentAddress = this.ensureCurrentAddress();
-    const { transactions: base64Txs, params: _transactionContextParams } =
+    const { transactions: txsBase64, params: _transactionContextParams } =
       params;
-    invariant(base64Txs && Array.isArray(base64Txs), () => new InvalidParams());
-    invariant(base64Txs.length > 0, 'No transactions provided');
-    const transactions = base64Txs.map((tx) => solFromBase64(tx));
+    invariant(txsBase64 && Array.isArray(txsBase64), () => new InvalidParams());
+    invariant(txsBase64.length > 0, 'No transactions provided');
+    const transactions = txsBase64.map((tx) => solFromBase64(tx));
     const feePayer = getTransactionFeePayer(transactions[0]);
     // TODO: infer signer address from transaction instead
     invariant(
@@ -1928,7 +1928,7 @@ class PublicController {
     txBase64: string;
     clientScope?: string;
     method?: 'signAndSendTransaction' | 'signTransaction';
-  }>) {
+  }>): Promise<SolSignTransactionResult> {
     const currentAddress = this.wallet.ensureCurrentAddress();
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
@@ -1963,19 +1963,19 @@ class PublicController {
 
   async sol_signAllTransactions({
     id,
-    params: { base64Txs, clientScope },
+    params: { transactionsBase64, clientScope },
     context,
   }: PublicMethodParams<{
-    base64Txs: string[];
+    transactionsBase64: string[];
     clientScope?: string;
-  }>) {
+  }>): Promise<SolSignTransactionResult[]> {
     const currentAddress = this.wallet.ensureCurrentAddress();
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
     const searchParams = new URLSearchParams({
       origin: context.origin,
-      transactions: JSON.stringify(base64Txs), // JSON.stringify(transaction),
+      transactions: JSON.stringify(transactionsBase64),
       ecosystem: 'solana',
       method: 'signAllTransactions',
     });
@@ -2048,7 +2048,7 @@ class PublicController {
       params,
     }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>,
     opts: { ecosystem: BlockchainType } = { ecosystem: 'evm' }
-  ) {
+  ): Promise<string[]> {
     if (debugValue && process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.log('PublicController: eth_requestAccounts', debugValue);

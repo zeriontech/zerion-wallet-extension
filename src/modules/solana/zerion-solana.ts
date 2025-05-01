@@ -17,7 +17,6 @@ import type { Connection } from '../ethereum/connection';
 import { icon } from './icon';
 import { isSolanaAddress } from './shared';
 import { solFromBase64, solToBase64 } from './transactions/create';
-import type { SolSignTransactionResult } from './transactions/SolTransactionResponse';
 
 export class ZerionSolana extends EventEmitter implements Ghost {
   name = 'Zerion';
@@ -54,10 +53,8 @@ export class ZerionSolana extends EventEmitter implements Ghost {
   }
 
   async connect(): Promise<{ publicKey: PublicKey }> {
-    const result = await this.connection.send(
-      formatJsonRpcRequestPatched('sol_connect', [])
-    );
-    const address = (result as [string])[0];
+    const result = await this.connection.rpcRequest('sol_connect');
+    const address = result.at(0);
     invariant(address, 'No address returned');
     const publicKey = new PublicKey(address);
     this.publicKey = publicKey;
@@ -66,9 +63,7 @@ export class ZerionSolana extends EventEmitter implements Ghost {
   }
 
   async disconnect(): Promise<void> {
-    await this.connection.send(
-      formatJsonRpcRequestPatched('sol_disconnect', [])
-    );
+    await this.connection.rpcRequest('sol_disconnect');
     this.emit('disconnect');
   }
 
@@ -89,18 +84,19 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     transaction: T
   ): Promise<T> {
     const txBase64 = solToBase64(transaction);
-    const { tx } = await this.connection.send<SolSignTransactionResult>(
-      formatJsonRpcRequestPatched('sol_signTransaction', { txBase64 })
-    );
+    const { tx } = await this.connection.rpcRequest('sol_signTransaction', {
+      txBase64,
+    });
     return solFromBase64(tx) as T;
   }
 
   async signAllTransactions<T extends Transaction | VersionedTransaction>(
     transactions: T[]
   ): Promise<T[]> {
-    const base64Txs = transactions.map((tx) => solToBase64(tx));
-    const results = await this.connection.send<SolSignTransactionResult[]>(
-      formatJsonRpcRequestPatched('sol_signAllTransactions', { base64Txs })
+    const transactionsBase64 = transactions.map((tx) => solToBase64(tx));
+    const results = await this.connection.rpcRequest(
+      'sol_signAllTransactions',
+      { transactionsBase64 }
     );
     return results.map((result) => solFromBase64(result.tx)) as T[];
   }
@@ -110,8 +106,9 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     _options?: SendOptions | undefined
   ): Promise<{ signature: string }> {
     const txBase64 = solToBase64(transaction);
-    const { signature } = await this.connection.send<SolSignTransactionResult>(
-      formatJsonRpcRequestPatched('sol_signAndSendTransaction', { txBase64 })
+    const { signature } = await this.connection.rpcRequest(
+      'sol_signAndSendTransaction',
+      { txBase64 }
     );
     invariant(signature, 'signature is expected');
     return { signature };
