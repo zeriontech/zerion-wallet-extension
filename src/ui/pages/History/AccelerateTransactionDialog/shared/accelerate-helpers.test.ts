@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
+import { expect, test } from 'vitest';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { invariant } from 'src/shared/invariant';
 import { isCancelTx } from './accelerate-helpers';

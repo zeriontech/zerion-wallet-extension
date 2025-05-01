@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { ethers } from 'ethers';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';

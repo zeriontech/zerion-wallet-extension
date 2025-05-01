@@ -190,7 +190,7 @@ export class Wallet {
     this.emitter = createNanoEvents();
 
     this.id = id;
-    this.walletStore = new WalletStore({}, 'wallet');
+    this.walletStore = new WalletStore({});
     this.disposer.add(
       globalPreferences.on('change', (state, prevState) => {
         emitter.emit('globalPreferencesChange', state, prevState);
@@ -239,7 +239,7 @@ export class Wallet {
     if (!this.userCredentials) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    this.walletStore.save(this.id, this.userCredentials.encryptionKey, record);
+    this.walletStore.save(this.id, this.userCredentials, record);
   }
 
   async ready() {

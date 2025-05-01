@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { decrypt, encrypt } from './aes';
 
 describe('encrypt function', () => {

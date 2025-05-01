@@ -13,7 +13,10 @@ export function SessionResetHandler() {
     function messageHandler(message: unknown) {
       if (isObj(message) && message.payload === 'session-logout') {
         emitter.emit('sessionLogout');
-        if (pathnameRef.current !== '/login') {
+        if (
+          pathnameRef.current !== '/login' &&
+          !pathnameRef.current.endsWith('/change-password')
+        ) {
           navigate('/login');
         }
       }

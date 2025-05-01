@@ -11,13 +11,15 @@
     "strictPropertyInitialization": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "types": ["chrome", "node", "jest", "@types/dom-navigation"],
+    "types": ["chrome", "node", "@types/dom-navigation"],
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "outDir": "./dist",
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*": ["./src/*"],
+      // workaround for: https://github.com/vitest-dev/vitest/issues/4567
+      "rollup/parseAst": ["./node_modules/rollup/dist/parseAst"]
     },
     "plugins": [{ "name": "typescript-plugin-css-modules" }]
   },
