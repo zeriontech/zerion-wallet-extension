@@ -663,7 +663,7 @@ function PositionList({
 
 function MultiChainPositions({
   address,
-  filterChain,
+  selectedChain: selectedChain,
   dappChain,
   onChainChange,
   renderEmptyView,
@@ -675,7 +675,7 @@ function MultiChainPositions({
   renderEmptyView: () => React.ReactNode;
   renderLoadingView: () => React.ReactNode;
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
   portfolioDecomposition: WalletPortfolio | null;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
@@ -687,7 +687,7 @@ function MultiChainPositions({
   );
   const positions = data?.data;
 
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
 
   const items = useMemo(
     () =>
@@ -718,8 +718,9 @@ function MultiChainPositions({
     <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
+          standard={isSolanaAddress(address) ? 'solana' : 'evm'}
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           onChange={onChainChange}
           value={
             chainTotalValue ? (
@@ -745,7 +746,7 @@ function RawChainPositions({
   renderEmptyView,
   renderLoadingView,
   renderErrorView,
-  filterChain,
+  selectedChain,
   dappChain,
   onChainChange,
   ...positionListProps
@@ -755,16 +756,16 @@ function RawChainPositions({
   renderLoadingView: () => React.ReactNode;
   renderErrorView: (chainName: string) => React.ReactNode;
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
   invariant(
-    filterChain !== NetworkSelectValue.All,
+    selectedChain !== NetworkSelectValue.All,
     'All networks filter should not show custom chain positions'
   );
   const { networks } = useNetworks();
-  const chainValue = filterChain || dappChain;
+  const chainValue = selectedChain || dappChain;
   invariant(
     chainValue,
     'Chain filter should be defined to show custom chain positions'
@@ -791,8 +792,9 @@ function RawChainPositions({
     <VStack gap={8}>
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
+          standard={isSolanaAddress(address) ? 'solana' : 'evm'}
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           onChange={onChainChange}
           showAllNetworksOption={!isSolanaAddress(address)}
           value={
@@ -818,11 +820,11 @@ function RawChainPositions({
 
 export function Positions({
   dappChain,
-  filterChain,
+  selectedChain,
   onChainChange,
 }: {
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
   const { currency } = useCurrency();
@@ -834,7 +836,7 @@ export function Positions({
     { enabled: ready && !addrIsSolana }
   );
   const walletPortfolio = data?.data;
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
   const chain =
     chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
   const positionChains = useMemo(() => {
@@ -876,8 +878,9 @@ export function Positions({
       }}
     >
       <NetworkBalance
+        standard={addrIsSolana ? 'solana' : 'evm'}
         dappChain={dappChain}
-        filterChain={filterChain}
+        selectedChain={selectedChain}
         onChange={onChainChange}
         value={null}
       />
@@ -924,7 +927,7 @@ export function Positions({
       <MultiChainPositions
         address={singleAddressNormalized}
         dappChain={dappChain}
-        filterChain={filterChain}
+        selectedChain={selectedChain}
         moveGasPositionToFront={moveGasPositionToFront}
         onChainChange={onChainChange}
         renderEmptyView={renderEmptyViewForNetwork}
@@ -947,7 +950,7 @@ export function Positions({
         <RawChainPositions
           address={singleAddressNormalized}
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           moveGasPositionToFront={moveGasPositionToFront}
           onChainChange={onChainChange}
           renderEmptyView={renderEmptyViewForNetwork}

@@ -183,16 +183,16 @@ function HistoryEmptyView({
 
 export function HistoryList({
   dappChain,
-  filterChain,
+  selectedChain,
   onChainChange,
 }: {
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
   const offsetValuesState = useStore(offsetValues);
 
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
   const chain =
     chainValue && chainValue !== NetworkSelectValue.All
       ? createChain(chainValue)
@@ -211,7 +211,7 @@ export function HistoryList({
       <VStack gap={8}>
         <NetworkBalance
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           onChange={onChainChange}
           value={null}
         />
@@ -241,7 +241,7 @@ export function HistoryList({
           <ViewLoading kind="network" />
         ) : (
           <HistoryEmptyView
-            hasFilters={Boolean(searchQuery || filterChain)}
+            hasFilters={Boolean(searchQuery || selectedChain)}
             onReset={() => {
               setSearchQuery(undefined);
               onChainChange(null);

@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import type { AddressPosition } from 'defi-sdk';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { SOLANA_RPC_URL } from 'src/env/config';
 import { fetchNativeEvmPosition } from './fetchNativeEvmPosition';
 
 async function getEvmAddressPositions({
@@ -60,9 +59,16 @@ export function useEvmAddressPositions({
   });
 }
 
-async function solanaGetBalance(address: string) {
-  const connection = new Connection(SOLANA_RPC_URL);
-  return await connection.getBalance(new PublicKey(address));
+async function solanaGetBalance({
+  address,
+  rpcUrl,
+}: {
+  address: string;
+  rpcUrl: string;
+}) {
+  const connection = new Connection(rpcUrl);
+  const res = await connection.getBalance(new PublicKey(address));
+  return res;
 }
 
 function createSolPosition(balance: number): AddressPosition {
@@ -95,8 +101,17 @@ function createSolPosition(balance: number): AddressPosition {
   };
 }
 
-async function fetchSolanaAddressPositions(address: string) {
-  const balance = await solanaGetBalance(address);
+async function fetchSolanaAddressPositions({
+  address,
+  chain,
+}: {
+  address: string;
+  chain: Chain;
+}) {
+  const networksStore = await getNetworksStore();
+  const networkConfig = await networksStore.fetchNetworkById(chain.toString());
+  const rpcUrl = Networks.getNetworkRpcUrlInternal(networkConfig);
+  const balance = await solanaGetBalance({ address, rpcUrl });
   const position = createSolPosition(balance);
   return [position];
 }
@@ -120,7 +135,7 @@ export function useAddressPositionFromNode({
       }
       const isSolana = isSolanaAddress(address);
       return isSolana
-        ? fetchSolanaAddressPositions(address)
+        ? fetchSolanaAddressPositions({ address, chain })
         : fetchEvmAddressPositions({ address, chain });
     },
     enabled,

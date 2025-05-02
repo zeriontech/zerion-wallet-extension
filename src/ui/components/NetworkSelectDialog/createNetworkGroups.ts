@@ -3,6 +3,7 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
 import { bringToFront } from 'src/shared/array-mutations';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 
 type ListGroup<T> = {
@@ -33,11 +34,13 @@ function compareNetworks(
 
 export function createGroups({
   networks,
+  standard,
   chainDistribution,
   testnetMode,
   filterPredicate = () => true,
   sortMainNetworksType = 'by_distribution',
 }: {
+  standard: BlockchainType;
   networks: Networks;
   chainDistribution: ChainDistribution | null;
   testnetMode: boolean;
@@ -45,7 +48,7 @@ export function createGroups({
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
   const allNetworks = networks
-    .getDefaultNetworks()
+    .getDefaultNetworks(standard)
     .filter((item) => Boolean(item.is_testnet) === testnetMode)
     .filter(filterPredicate);
   const otherNetworkPredicate = (network: NetworkConfig) => {

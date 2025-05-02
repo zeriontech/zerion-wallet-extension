@@ -4,10 +4,11 @@ import { capitalize } from 'capitalize-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
-import type { NetworkConfig } from './NetworkConfig';
+import type { Eip155Specification, NetworkConfig } from './NetworkConfig';
 import { getAddress } from './asset';
 import { UnsupportedNetwork } from './errors';
 import { injectChainConfig } from './injectChainConfig';
@@ -76,17 +77,22 @@ export class Networks {
   private ethereumChainConfigs: EthereumChainConfig[];
   private visitedChains: Set<string>;
 
-  static getChainId(
-    network: Partial<Pick<NetworkConfig, 'standard' | 'specification'>>
-  ) {
-    if ('standard' in network && network.specification) {
-      if (network.standard === 'eip155') {
-        return normalizeChainId(network.specification.eip155.id);
-      }
+  private solanaNetworks: NetworkConfig[];
+  private evmNetworks: NetworkConfig[];
+
+  static getChainId<T extends Partial<NetworkConfig>>(network: T) {
+    if (Networks.isEip155(network)) {
+      return normalizeChainId(network.specification.eip155.id);
     }
     throw new Error(
       'NetworkConfig must have the "standard" configuration with the chain id'
     );
+  }
+
+  static isEip155<T extends Partial<NetworkConfig>>(
+    network: T
+  ): network is T & Eip155Specification {
+    return network.specification?.eip155 != null;
   }
 
   constructor({
@@ -99,15 +105,18 @@ export class Networks {
     visitedChains: string[];
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
-    const evmNetworks = networks.filter((n) => n.standard === 'eip155');
-    this.networks = injectChainConfigs(evmNetworks, ethereumChainConfigs);
+    this.networks = injectChainConfigs(networks, ethereumChainConfigs);
+    this.evmNetworks = this.networks.filter((n) => n.standard === 'eip155');
+    this.solanaNetworks = this.networks.filter((n) =>
+      n.id.toLowerCase().includes('solana')
+    );
     this.collection = toCollection(
       this.networks,
       (network) => network.id,
       (x) => x
     );
     this.collectionByEvmId = toCollection(
-      this.networks,
+      this.evmNetworks,
       (x) => Networks.getChainId(x),
       (x) => x
     );
@@ -128,7 +137,7 @@ export class Networks {
 
   private toId(chain: Chain) {
     const item = this.getNetworkByName(chain);
-    return item ? Networks.getChainId(item) : null;
+    return item && Networks.isEip155(item) ? Networks.getChainId(item) : null;
   }
 
   isSavedLocallyChain(chain: Chain) {
@@ -153,10 +162,14 @@ export class Networks {
     return this.networks.filter((item) => !item.is_testnet);
   }
 
-  getDefaultNetworks() {
-    return this.networks.filter((item) => {
+  getDefaultNetworks(standard: BlockchainType) {
+    const items =
+      standard === 'solana' ? this.solanaNetworks : this.evmNetworks;
+    const ignorePositionsSupport = standard === 'solana'; // TODO: remove check when backend supports Solana positions
+    return items.filter((item) => {
       const chain = createChain(item.id);
       return (
+        ignorePositionsSupport ||
         this.supports('positions', chain) ||
         this.isSavedLocallyChain(chain) ||
         this.isVisitedChain(chain)
@@ -171,10 +184,6 @@ export class Networks {
         chainConfig,
       ])
     );
-  }
-
-  findEthereumChainById(chainId: ChainId) {
-    return this.collectionByEvmId[chainId];
   }
 
   getChainId(chain: Chain) {

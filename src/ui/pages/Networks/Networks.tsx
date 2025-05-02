@@ -405,6 +405,7 @@ function NetworksView({
       return [];
     }
     return createGroups({
+      standard: 'evm',
       networks,
       chainDistribution,
       testnetMode,

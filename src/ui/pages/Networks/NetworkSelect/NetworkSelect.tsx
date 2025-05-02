@@ -24,6 +24,7 @@ import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 
 async function updateNetworks() {
   const networksStore = await getNetworksStore();
@@ -32,6 +33,7 @@ async function updateNetworks() {
 
 export function NetworkSelect({
   value,
+  standard = 'evm',
   onChange,
   renderButton,
   dialogRootNode,
@@ -39,6 +41,7 @@ export function NetworkSelect({
   showAllNetworksOption,
 }: {
   value: string;
+  standard?: BlockchainType;
   onChange: (value: string) => void;
   renderButton?(params: {
     value: string;
@@ -91,6 +94,7 @@ export function NetworkSelect({
         <NetworkSelectDialog
           filterPredicate={filterPredicate}
           value={value}
+          standard={standard}
           chainDistribution={walletPortfolio ?? null}
           showAllNetworksOption={showAllNetworksOption}
         />
