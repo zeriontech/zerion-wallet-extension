@@ -16,6 +16,8 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
+import { WithGuardDialog } from 'src/ui/components/WithGuardDialog';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -82,6 +84,7 @@ export function ActionButtonsRow() {
       updateTab({ tab: activeTab, url: href });
     }
   };
+  const addressIsSolana = isSolanaAddress(wallet.address);
 
   return (
     <div className={s.containerRoot}>
@@ -94,11 +97,19 @@ export function ActionButtonsRow() {
         }}
       >
         <li>
-          <ActionButton
-            title="Send"
-            as={UnstyledLink}
-            icon={<SendIcon />}
-            to="/send-form"
+          <WithGuardDialog<'a'>
+            isWarning={addressIsSolana}
+            title="Switch to an Ethereum Wallet"
+            message="Sending for Solana is coming soon"
+            render={({ handleClick }) => (
+              <ActionButton
+                title="Send"
+                as={UnstyledLink}
+                icon={<SendIcon />}
+                to="/send-form"
+                onClick={handleClick}
+              />
+            )}
           />
         </li>
         <li>
@@ -111,15 +122,28 @@ export function ActionButtonsRow() {
         </li>
         <li>
           {process.env.FEATURE_BRIDGE_FORM === 'on' ? (
-            <WithMainnetOnlyWarningDialog<'a'>
-              message="Testnets are not supported in Bridge"
-              render={({ handleClick }) => (
-                <ActionButton
-                  title="Bridge"
-                  as={UnstyledLink}
-                  icon={<BridgeIcon />}
-                  to="/bridge-form"
-                  onClick={handleClick}
+            <WithGuardDialog<'a'>
+              isWarning={addressIsSolana}
+              title="Switch to an Ethereum Wallet"
+              message="Bridging for Solana is coming soon"
+              render={({ handleClick: handleClickOuter }) => (
+                <WithMainnetOnlyWarningDialog<'a'>
+                  message="Testnets are not supported in Bridge"
+                  render={({ handleClick }) => (
+                    <ActionButton
+                      title="Bridge"
+                      as={UnstyledLink}
+                      icon={<BridgeIcon />}
+                      to="/bridge-form"
+                      onClick={(event) => {
+                        handleClick(event);
+                        if (!event.defaultPrevented) {
+                          console.log('handleClickOuter');
+                          handleClickOuter(event);
+                        }
+                      }}
+                    />
+                  )}
                 />
               )}
             />
@@ -145,43 +169,65 @@ export function ActionButtonsRow() {
           />
         </li>
         <li>
-          <WithMainnetOnlyWarningDialog<'a'>
-            message="Testnets are not supported in Swap"
-            render={({ handleClick }) => (
-              <>
-                <ActionButton
-                  className={classNames(s.showWhenSmall, s.actionButtonPrimary)}
-                  title="Swap"
-                  as={UnstyledLink}
-                  icon={<SwapIcon />}
-                  to="/swap-form"
-                  onClick={handleClick}
-                />
-                <div className={s.hideWhenSmall}>
-                  <Button
-                    aria-label="Swap"
-                    size={48}
-                    as={UnstyledLink}
-                    onClick={handleClick}
-                    to="/swap-form"
-                    style={{
-                      borderRadius: 24,
-                      width: '100%',
-                      ['--button-background' as string]: 'var(--black)',
-                      ['--button-text' as string]: 'var(--white)',
-                      ['--button-background-hover' as string]:
-                        'var(--neutral-800)',
-                    }}
-                  >
-                    <HStack gap={6} alignItems="center">
-                      <div style={{ display: 'flex' }}>
-                        <SwapIcon />
-                      </div>
-                      <UIText kind="small/accent">Swap</UIText>
-                    </HStack>
-                  </Button>
-                </div>
-              </>
+          <WithGuardDialog<'a'>
+            isWarning={addressIsSolana}
+            title="Switch to an Ethereum Wallet"
+            message="Swapping for Solana is coming soon"
+            render={({ handleClick: handleClickOuter }) => (
+              <WithMainnetOnlyWarningDialog<'a'>
+                message="Testnets are not supported in Swap"
+                render={({ handleClick }) => (
+                  <>
+                    <ActionButton
+                      className={classNames(
+                        s.showWhenSmall,
+                        s.actionButtonPrimary
+                      )}
+                      title="Swap"
+                      as={UnstyledLink}
+                      icon={<SwapIcon />}
+                      to="/swap-form"
+                      onClick={(event) => {
+                        handleClick(event);
+                        if (!event.defaultPrevented) {
+                          console.log('handleClickOuter');
+                          handleClickOuter(event);
+                        }
+                      }}
+                    />
+                    <div className={s.hideWhenSmall}>
+                      <Button
+                        aria-label="Swap"
+                        size={48}
+                        as={UnstyledLink}
+                        onClick={(event) => {
+                          handleClick(event);
+                          if (!event.defaultPrevented) {
+                            console.log('handleClickOuter');
+                            handleClickOuter(event);
+                          }
+                        }}
+                        to="/swap-form"
+                        style={{
+                          borderRadius: 24,
+                          width: '100%',
+                          ['--button-background' as string]: 'var(--black)',
+                          ['--button-text' as string]: 'var(--white)',
+                          ['--button-background-hover' as string]:
+                            'var(--neutral-800)',
+                        }}
+                      >
+                        <HStack gap={6} alignItems="center">
+                          <div style={{ display: 'flex' }}>
+                            <SwapIcon />
+                          </div>
+                          <UIText kind="small/accent">Swap</UIText>
+                        </HStack>
+                      </Button>
+                    </div>
+                  </>
+                )}
+              />
             )}
           />
         </li>
