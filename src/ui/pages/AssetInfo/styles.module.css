@@ -30,7 +30,7 @@
 
 .defaultHeader {
   position: absolute;
-  inset: 0 0 0 0;
+  inset: 0 0 0 8px;
   transition: --progress 0.15s linear;
   opacity: calc(1 - var(--progress));
   transform-origin: 0 0;
