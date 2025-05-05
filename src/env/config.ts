@@ -27,9 +27,6 @@ export const ZERION_TESTNET_API_URL = backendUrl(process.env.ZERION_TESTNET_API_
 invariant(process.env.DEFI_SDK_TRANSACTIONS_API_URL, 'DEFI_SDK_TRANSACTIONS_API_URL is required in env');
 export const DEFI_SDK_TRANSACTIONS_API_URL = backendUrl(process.env.DEFI_SDK_TRANSACTIONS_API_URL, BACKEND_ENV);
 
-invariant(process.env.SOLANA_RPC_URL, 'SOLANA_RPC_URL is required in env');
-export const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL;
-
 invariant(process.env.PROXY_URL, 'PROXY_URL is required in env');
 export const PROXY_URL = process.env.PROXY_URL;
 export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;

@@ -103,7 +103,6 @@ import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
 import type { Keypair } from '@solana/web3.js';
 import { Connection, PublicKey } from '@solana/web3.js';
 import type { SolSignTransactionResult } from 'src/modules/solana/transactions/SolTransactionResponse';
-import { SOLANA_RPC_URL } from 'src/env/config';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
 import {
@@ -1368,7 +1367,10 @@ export class Wallet {
       params,
       context,
     });
-    const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+    const networksStore = getNetworksStore(Model.getPreferences(this.record));
+    const network = await networksStore.fetchNetworkById('solana');
+    const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
+    const connection = new Connection(rpcUrl, 'confirmed');
 
     const transaction = solFromBase64(signed);
 
