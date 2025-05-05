@@ -40,8 +40,12 @@ import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
 import { AssetTitleAndChart } from './AssetTitleAndChart';
 import { AssetResources } from './AssetResources';
-import { AssetHeader } from './AssetHeader';
+import {
+  AssetDefaultHeader,
+  AssetHeader as AssetScrolledHeader,
+} from './AssetHeader';
 import { AssetDescription } from './AssetDescription';
+import * as styles from './styles.module.css';
 
 function ReportAssetLink({ asset }: { asset: Asset }) {
   return (
@@ -177,7 +181,18 @@ export function AssetInfo() {
   return (
     <PageColumn>
       <NavigationTitle
-        title={<AssetHeader asset={assetFullInfo.fungible} />}
+        title={
+          <div className={styles.headerContainer}>
+            <AssetDefaultHeader
+              asset={assetFullInfo.fungible}
+              className={styles.defaultHeader}
+            />
+            <AssetScrolledHeader
+              asset={assetFullInfo.fungible}
+              className={styles.header}
+            />
+          </div>
+        }
         documentTitle={`${assetFullInfo.fungible.name} - info`}
         elementEnd={<ShareAssetLink asset={assetFullInfo.fungible} />}
       />

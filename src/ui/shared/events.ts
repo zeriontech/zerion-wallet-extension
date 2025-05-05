@@ -20,7 +20,6 @@ export const emitter = createNanoEvents<{
   ethereumEvent: () => void;
   'sidepanel/activeTabUpdated': () => void;
   buttonClicked: (data: ButtonClickedParams) => void;
-  assetPriceSelected: (formattedPrice: string) => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

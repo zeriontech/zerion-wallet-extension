@@ -68,6 +68,7 @@ function updateChartPoints({
     };
     chart.update('none');
     chart.options.animation = {
+      duration: 700,
       onComplete: () => {
         chart.data.datasets.pop();
         chart.options.animation = undefined;

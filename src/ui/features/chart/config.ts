@@ -1,7 +1,7 @@
 import type { ChartConfiguration } from 'chart.js/auto';
 
 export const CHART_HEIGHT = 160;
-const CHART_ANIMATION_DURATION = 500;
+export const CHART_ANIMATION_DURATION = 500;
 
 export const DEFAULT_CONFIG: ChartConfiguration<'scatter'> = {
   type: 'scatter',

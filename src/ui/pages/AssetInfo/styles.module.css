@@ -1,3 +1,43 @@
+@property --progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@keyframes headerTransition {
+  to {
+    --progress: 1;
+  }
+}
+
+.headerContainer {
+  position: relative;
+  animation-range: 40px 50px;
+  animation-timeline: scroll();
+  animation-fill-mode: both;
+  animation-name: headerTransition;
+  animation-duration: 1ms;
+}
+
+.header {
+  height: 40px;
+  position: relative;
+  transition: --progress 0.15s linear;
+  opacity: var(--progress);
+  transform: translateY(calc((1 - var(--progress)) * 50%))
+    scale(calc(0.5 + (var(--progress) * 0.5)));
+}
+
+.defaultHeader {
+  position: absolute;
+  inset: 0 0 0 0;
+  transition: --progress 0.15s linear;
+  opacity: calc(1 - var(--progress));
+  transform-origin: 0 0;
+  transform: translateY(calc((var(--progress)) * -100%))
+    scale(calc(1 - (var(--progress) * 0.5)));
+}
+
 .historyItem {
   position: relative;
   padding-inline: 12px;
@@ -11,128 +51,4 @@
     background-color: var(--neutral-200);
     border-radius: 12px;
   }
-}
-
-@keyframes iconWrapperTransition {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(var(--asset-header-icon-offset, 0px));
-  }
-}
-
-@keyframes iconTransition {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(0.5);
-  }
-}
-
-@keyframes dissapear {
-  from {
-    opacity: 1;
-  }
-  50%,
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes appear {
-  from,
-  80% {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes symbolTransition {
-  from {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 16px;
-    letter-spacing: 0.38px;
-    color: var(--neutral-500);
-    transform: translate(0, 0);
-  }
-  to {
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 24px;
-    letter-spacing: 0.25px;
-    color: var(--black);
-    transform: translate(var(--asset-header-symbol-offset, 0px), 8px);
-  }
-}
-
-@keyframes priceTransition {
-  from {
-    font-size: 40px;
-    line-height: 48px;
-    letter-spacing: -0.5px;
-    transform: translate(-28px, 60px);
-  }
-  to {
-    font-size: 16px;
-    line-height: 24px;
-    letter-spacing: 0.25px;
-    transform: translate(var(--asset-header-price-offset, 0px), 0);
-  }
-}
-
-.headerItem {
-  position: relative;
-  animation-range: 0 100px;
-  animation-timeline: scroll();
-  transform-origin: center;
-  animation-duration: 1ms;
-  animation-fill-mode: both;
-}
-
-.headerItem.headerIconWrapper {
-  animation-name: iconWrapperTransition;
-}
-
-.headerItem.headerIcon {
-  animation-name: iconTransition;
-  transform-origin: 0 50%;
-}
-
-.headerItem.dissapearItem {
-  animation-name: dissapear;
-}
-
-.headerItem.symbolItem {
-  animation-name: symbolTransition;
-  transform-origin: 0 0;
-
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 16px;
-  letter-spacing: 0.38px;
-  color: var(--neutral-500);
-}
-
-.headerItem.priceItem {
-  position: absolute;
-  animation-name: priceTransition;
-  transform-origin: 0 0;
-
-  font-size: 40px;
-  font-weight: 500;
-  line-height: 48px;
-  letter-spacing: -0.5px;
-  transform: translate(-28px, 60px);
-}
-
-.headerItem.dashItem {
-  animation-name: appear;
-  position: absolute;
-  opacity: 0;
-  left: var(--asset-header-dash-offset, 0px);
 }

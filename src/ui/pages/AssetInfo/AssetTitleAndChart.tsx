@@ -18,9 +18,9 @@ import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
 import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { emitter } from 'src/ui/shared/events';
 import { Chart } from 'src/ui/features/chart/Chart';
 import { getColor, getSign } from './helpers';
+import { emitter } from './events';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
 const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
@@ -94,13 +94,13 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
         dateElementRef.current
       ) {
         const priceValue = formatPriceValue(value || 0, 'en', currency);
-        priceElementRef.current.innerHTML = priceValue;
+        priceElementRef.current.textContent = priceValue;
         emitter.emit('assetPriceSelected', priceValue);
         priceChangeElementRef.current.style.setProperty(
           'color',
           getColor(localPriceChange)
         );
-        priceChangeElementRef.current.innerHTML = `${getSign(
+        priceChangeElementRef.current.textContent = `${getSign(
           localPriceChange
         )}${formatPercent(Math.abs(localPriceChange), 'en')}%`;
 
@@ -112,9 +112,9 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
             ? `${dayjs(startTimestamp).format('MMM D, YYYY, HH:mm')} → `
             : '';
 
-        dateElementRef.current.innerHTML = timestamp
+        dateElementRef.current.textContent = timestamp
           ? `${initialTimestampFormatted}${activeTimestampFormatted}`
-          : '&nbsp;';
+          : '';
       }
     },
     [chartPoints, currency, asset.meta.price]
@@ -145,33 +145,21 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
         ) : (
           <VStack gap={0}>
             <HStack gap={8} alignItems="end">
-              <UIText
-                kind="headline/hero"
-                ref={priceElementRef}
-                color="transparent"
-              >
-                {formatPriceValue(asset.meta.price || 0, 'en', currency)}
-              </UIText>
+              <UIText kind="headline/hero" ref={priceElementRef} />
               {asset.meta.relativeChange1d != null ? (
                 <UIText
                   kind="body/accent"
                   color={getColor(asset.meta.relativeChange1d)}
                   style={{ paddingBottom: 4 }}
                   ref={priceChangeElementRef}
-                >
-                  {getSign(asset.meta.relativeChange1d)}
-                  {formatPercent(
-                    Math.abs(asset.meta.relativeChange1d * 100),
-                    'en'
-                  )}
-                  %
-                </UIText>
+                />
               ) : null}
             </HStack>
             <UIText
               kind="caption/regular"
               color="var(--neutral-500)"
               ref={dateElementRef}
+              style={{ height: 16 }}
             />
           </VStack>
         )}
