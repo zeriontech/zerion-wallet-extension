@@ -20,7 +20,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Chart } from 'src/ui/components/chart/Chart';
 import { getColor, getSign } from './helpers';
-import { emitter } from './events';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
 const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
@@ -95,7 +94,6 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
       ) {
         const priceValue = formatPriceValue(value || 0, 'en', currency);
         priceElementRef.current.textContent = priceValue;
-        emitter.emit('assetPriceSelected', priceValue);
         priceChangeElementRef.current.style.setProperty(
           'color',
           getColor(localPriceChange)
