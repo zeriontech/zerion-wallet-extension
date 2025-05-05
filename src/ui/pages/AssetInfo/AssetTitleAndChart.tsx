@@ -18,7 +18,7 @@ import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
 import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { Chart } from 'src/ui/features/chart/Chart';
+import { Chart } from 'src/ui/components/chart/Chart';
 import { getColor, getSign } from './helpers';
 import { emitter } from './events';
 
