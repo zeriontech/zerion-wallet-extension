@@ -473,8 +473,9 @@ function PositionList({
   const offsetValuesState = useStore(offsetValues);
   const { currency } = useCurrency();
 
-  const assetPageEnabled =
-    true || Boolean(firebaseConfig?.extension_asset_page_enabled);
+  const assetPageEnabled = Boolean(
+    firebaseConfig?.extension_asset_page_enabled
+  );
 
   return (
     <VStack gap={24}>
