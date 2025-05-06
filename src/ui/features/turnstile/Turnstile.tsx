@@ -17,7 +17,6 @@ function TurnstileDialog() {
 
   useEffect(() => {
     dialogRef.current?.showModal();
-    walletPort.request('cloudflareChallengeIssued');
   }, []);
 
   const handleTurnstileToken = useCallback((params: unknown) => {
@@ -58,6 +57,7 @@ export function TurnstileTokenHandler() {
   useEffect(() => {
     return emitter.on('openTurnstile', () => {
       setShowDialog(true);
+      walletPort.request('cloudflareChallengeIssued');
     });
   }, []);
 

@@ -389,7 +389,15 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('cloudflareChallengeIssued', () => {
-    mixpanelTrack(account, 'General: Cloudflare Challenge Issued', {});
+    const params = createParams({
+      request_name: 'cloudflare_challenge_issued',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(
+      account,
+      'General: Cloudflare Challenge Issued',
+      mixpanelParams
+    );
   });
 }
 
