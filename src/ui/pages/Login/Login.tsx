@@ -222,7 +222,7 @@ export function Login() {
           </Button>
         </VStack>
       </form>
-      <Spacer height={24} />
+      <Spacer height={16} />
       <UIText
         as={UnstyledLink}
         to="/forgot-password"

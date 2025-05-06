@@ -34,6 +34,7 @@ function TouchIdSettings() {
       return accountPublicRPCPort.request('getPasskeyEnabled');
     },
     useErrorBoundary: true,
+    suspense: false,
   });
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
