@@ -3,6 +3,7 @@ import {
   arrayBufferToUtf8,
   base64ToArrayBuffer,
   createSalt,
+  getRandomUint8Array,
   utf8ToUint8Array,
 } from 'src/modules/crypto';
 import { sha256 } from 'src/modules/crypto/sha256';
@@ -14,12 +15,12 @@ export async function setupAccountPasskey(password: string) {
     publicKey: {
       rp: { name: 'Zerion' },
       user: {
-        id: new Uint8Array([79, 252, 83, 72, 214, 7, 89, 26]),
+        id: getRandomUint8Array(8),
         name: 'zerion',
         displayName: 'Zerion Wallet',
       },
       pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-      challenge: new Uint8Array([117, 61, 252, 231, 191, 241]),
+      challenge: getRandomUint8Array(6),
       extensions: {
         prf: {
           eval: {
@@ -62,12 +63,7 @@ export async function getPasswordWithPasskey() {
   const { id: passkeyId, salt } = data;
   const cred = await navigator.credentials.get({
     publicKey: {
-      challenge: new Uint8Array([
-        // must be a cryptographically random number sent from a server
-        0x79, 0x50, 0x68, 0x71, 0xda, 0xee, 0xee, 0xb9, 0x94, 0xc3, 0xc2, 0x15,
-        0x67, 0x65, 0x26, 0x22, 0xe3, 0xf3, 0xab, 0x3b, 0x78, 0x2e, 0xd5, 0x6f,
-        0x81, 0x26, 0xe2, 0xa6, 0x01, 0x7d, 0x74, 0x50,
-      ]),
+      challenge: getRandomUint8Array(32),
       allowCredentials: [
         {
           id: base64ToArrayBuffer(passkeyId),
