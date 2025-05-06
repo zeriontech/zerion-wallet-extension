@@ -179,44 +179,47 @@ export function Login() {
           }
           loginMutation.mutate({ user, password });
         }}
+        style={{ flexGrow: 1, display: 'flex' }}
       >
-        <VStack gap={24}>
-          <UIText
-            as="label"
-            htmlFor={inputId}
-            kind="headline/h1"
-            style={{ textAlign: 'center' }}
-          >
-            Welcome Back!
-          </UIText>
-          <VStack gap={4}>
-            <Input
-              id={inputId}
-              autoFocus={true}
-              type="password"
-              name="password"
-              placeholder="Password"
-              required={true}
-            />
-            {loginMutation.error ? (
-              <UIText kind="caption/regular" color="var(--negative-500)">
-                {(loginMutation.error as Error).message || 'unknown error'}
-              </UIText>
+        <VStack gap={24} style={{ gridTemplateRows: '1fr auto', flexGrow: 1 }}>
+          <VStack gap={24}>
+            <UIText
+              as="label"
+              htmlFor={inputId}
+              kind="headline/h1"
+              style={{ textAlign: 'center' }}
+            >
+              Welcome Back!
+            </UIText>
+            <VStack gap={4}>
+              <Input
+                id={inputId}
+                autoFocus={true}
+                type="password"
+                name="password"
+                placeholder="Password"
+                required={true}
+              />
+              {loginMutation.error ? (
+                <UIText kind="caption/regular" color="var(--negative-500)">
+                  {(loginMutation.error as Error).message || 'unknown error'}
+                </UIText>
+              ) : null}
+            </VStack>
+            {user ? (
+              <TouchIdLogin
+                user={user}
+                onSuccess={() => {
+                  navigate(params.get('next') || '/', {
+                    // If user clicks "back" when we redirect them,
+                    // we should take them to overview, not back to the login view
+                    replace: true,
+                  });
+                }}
+                style={{ justifyItems: 'center' }}
+              />
             ) : null}
           </VStack>
-          {user ? (
-            <TouchIdLogin
-              user={user}
-              onSuccess={() => {
-                navigate(params.get('next') || '/', {
-                  // If user clicks "back" when we redirect them,
-                  // we should take them to overview, not back to the login view
-                  replace: true,
-                });
-              }}
-              style={{ justifyItems: 'center' }}
-            />
-          ) : null}
           <Button form={formId} disabled={loginMutation.isLoading}>
             {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
           </Button>

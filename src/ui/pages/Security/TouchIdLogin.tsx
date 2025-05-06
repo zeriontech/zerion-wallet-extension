@@ -7,7 +7,6 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { getPasswordWithPasskey } from './passkey';
 import * as styles from './styles.module.css';
 
@@ -61,19 +60,20 @@ export function TouchIdLogin({
           <TouchIdIcon />
         )}
       </UnstyledButton>
-      <UIText
-        kind="small/regular"
-        color="var(--white)"
-        className={styles.touchIdPopup}
-      >
-        Unlock with Touch ID
-      </UIText>
+      {loginMutation.isLoading ? null : (
+        <UIText
+          kind="small/regular"
+          color="var(--white)"
+          className={styles.touchIdPopup}
+        >
+          Unlock with Touch ID
+        </UIText>
+      )}
       {loginMutation.error ? (
         <UIText kind="small/regular" color="var(--negative-500)">
           {(loginMutation.error as Error).message || 'unknown error'}
         </UIText>
       ) : null}
-      <Spacer height={16} />
     </VStack>
   );
 }
