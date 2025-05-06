@@ -4,8 +4,7 @@ import { isObj } from 'src/shared/isObj';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { saveReferrerData } from './shared/storage';
 
-// TODO: return app.zerion.io before merge!
-const ZERION_WEB_APP_URL = new URL('https://beta.zerion.io');
+const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
 
 type WebAppCallbackMethod = 'set-referral-code' | 'set-turnstile-token';
 

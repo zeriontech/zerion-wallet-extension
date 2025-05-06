@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { invariant } from 'src/shared/invariant';
-import { emitter } from 'src/ui/shared/events';
 import { isObj } from 'src/shared/isObj';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
+import { walletPort } from 'src/ui/shared/channels';
 import { WebAppMessageHandler } from '../referral-program/WebAppMessageHandler';
+import { emitter } from './events';
 
 function TurnstileDialog() {
   const { innerWidth } = useWindowSizeStore();
@@ -16,6 +17,7 @@ function TurnstileDialog() {
 
   useEffect(() => {
     dialogRef.current?.showModal();
+    walletPort.request('cloudflareChallengeIssued');
   }, []);
 
   const handleTurnstileToken = useCallback((params: unknown) => {
@@ -25,6 +27,7 @@ function TurnstileDialog() {
     );
     dialogRef.current?.close();
     queryClient.refetchQueries();
+    emitter.emit('turnstileClosed');
   }, []);
 
   return (
@@ -55,6 +58,12 @@ export function TurnstileTokenHandler() {
   useEffect(() => {
     return emitter.on('openTurnstile', () => {
       setShowDialog(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    return emitter.on('turnstileClosed', () => {
+      setShowDialog(false);
     });
   }, []);
 
