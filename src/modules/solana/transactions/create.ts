@@ -21,5 +21,3 @@ export function solToBase64(
   const serialized = transaction.serialize({ requireAllSignatures });
   return uint8ArrayToBase64(serialized);
 }
-
-Object.assign(globalThis, { solFromBase64, solToBase64 });

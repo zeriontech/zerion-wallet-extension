@@ -663,7 +663,7 @@ function PositionList({
 
 function MultiChainPositions({
   address,
-  selectedChain: selectedChain,
+  selectedChain,
   dappChain,
   onChainChange,
   renderEmptyView,

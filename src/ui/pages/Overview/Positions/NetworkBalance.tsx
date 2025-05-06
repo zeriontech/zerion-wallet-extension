@@ -160,7 +160,7 @@ export function NetworkBalance({
   const testnetMode = preferences?.testnetMode?.on;
   const networksPredicate = useMemo(() => {
     return standard === 'solana'
-      ? (network: NetworkConfig) => network.id.toLowerCase().includes('solana')
+      ? (network: NetworkConfig) => network.id.toLowerCase().includes('solana') // TODO: update check when backend updates solana network
       : testnetMode
       ? (network: NetworkConfig) => Boolean(network.is_testnet)
       : undefined;

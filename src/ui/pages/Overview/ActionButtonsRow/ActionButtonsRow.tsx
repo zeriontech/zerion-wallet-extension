@@ -138,7 +138,6 @@ export function ActionButtonsRow() {
                       onClick={(event) => {
                         handleClick(event);
                         if (!event.defaultPrevented) {
-                          console.log('handleClickOuter');
                           handleClickOuter(event);
                         }
                       }}
@@ -190,7 +189,6 @@ export function ActionButtonsRow() {
                       onClick={(event) => {
                         handleClick(event);
                         if (!event.defaultPrevented) {
-                          console.log('handleClickOuter');
                           handleClickOuter(event);
                         }
                       }}
@@ -203,7 +201,6 @@ export function ActionButtonsRow() {
                         onClick={(event) => {
                           handleClick(event);
                           if (!event.defaultPrevented) {
-                            console.log('handleClickOuter');
                             handleClickOuter(event);
                           }
                         }}

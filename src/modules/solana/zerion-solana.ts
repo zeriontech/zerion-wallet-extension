@@ -33,13 +33,13 @@ export class ZerionSolana extends EventEmitter implements Ghost {
       'ethereumEvent',
       ({ event, value }: { event: string; value: unknown }) => {
         if (event === 'accountsChanged' && Array.isArray(value)) {
-          const address = value[0];
+          const address = value.at(0) as string | undefined;
           if (address) {
             if (address === this.publicKey?.toBase58()) {
-              // value hasn't changed
+              // value hasn't changed, do not notify
               return;
             } else if (!isSolanaAddress(address)) {
-              return;
+              this.publicKey = null;
             } else {
               this.publicKey = new PublicKey(address);
             }

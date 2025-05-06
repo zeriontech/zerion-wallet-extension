@@ -69,12 +69,9 @@ async function lookup(value: string) {
 
 async function lookupAddressByQuery(query: string) {
   try {
-    const addressIsEthereum = isEthereumAddress(query);
-    const addressIsSolana = isSolanaAddress(query);
     const promises = [lookup(query)];
     if (
-      !addressIsEthereum &&
-      !addressIsSolana &&
+      !isValidAddress(query) &&
       !query.endsWith('.eth') &&
       !query.endsWith('.lens')
     ) {

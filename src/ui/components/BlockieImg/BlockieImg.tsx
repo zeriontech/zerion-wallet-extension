@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import { createIcon } from '@download/blockies';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import { generateSolanaBlockie } from './generateSolanaBlockie';
 
 export function BlockieImg({
@@ -16,13 +16,13 @@ export function BlockieImg({
   const blocksCount = 8;
   const icon = useMemo(
     () =>
-      isEthereumAddress(address)
-        ? createIcon({
+      isSolanaAddress(address)
+        ? generateSolanaBlockie(normalizeAddress(address), size)
+        : createIcon({
             seed: normalizeAddress(address),
             size: blocksCount,
             scale: (size / blocksCount) * window.devicePixelRatio,
-          })
-        : generateSolanaBlockie(normalizeAddress(address), size),
+          }),
     [address, size]
   );
   const ref = useRef<HTMLSpanElement | null>(null);

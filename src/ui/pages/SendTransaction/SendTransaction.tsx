@@ -17,7 +17,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Background } from 'src/ui/components/Background';
+import { Background, useBackgroundKind } from 'src/ui/components/Background';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -94,6 +94,7 @@ import type {
 } from 'src/shared/types/SubmittedTransactionResponse';
 import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
 import type { SolTransaction } from 'src/modules/solana/SolTransaction';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -942,7 +943,7 @@ function SolDefaultView({
   );
 }
 
-function assertKnownMethodParam(
+function assertKnownSolanaMethodParam(
   value: string | null
 ): asserts value is
   | 'signTransaction'
@@ -968,7 +969,7 @@ function normalizeTxParams(params: URLSearchParams):
       transaction: SolTransaction;
     } {
   const method = params.get('method');
-  assertKnownMethodParam(method);
+  assertKnownSolanaMethodParam(method);
   const base64Tx = params.get('transaction');
   const base64Txs = params.get('transactions');
   if (method === 'signAllTransactions') {
@@ -1070,20 +1071,21 @@ function SolSendTransaction() {
           addressAction,
         });
       }
-      // throw new Error('to implement');
     },
     onMutate: () => 'sendTransaction',
     onSuccess: (tx) => handleSentTransaction(tx),
   });
 
   const { networks } = useNetworks();
+
+  useBackgroundKind(whiteBackgroundKind);
+
   if (!networks) {
     return null;
   }
-  console.log({ addressAction });
 
   return (
-    <Background backgroundKind="white">
+    <>
       <NavigationTitle title={null} documentTitle="Send Transaction" />
       <PageColumn
         // different surface color on backgroundKind="white"
@@ -1136,7 +1138,7 @@ function SolSendTransaction() {
         </VStack>
         <PageBottom />
       </PageStickyFooter>
-    </Background>
+    </>
   );
 }
 

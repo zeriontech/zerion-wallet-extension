@@ -56,6 +56,13 @@ function ChooseWalletsToImport({
 
   const moreWalletsDialogRef = useRef<HTMLDialogElementInterface>(null);
 
+  const handleSelect = (selectedValues: Set<string>) => {
+    const selectedWallets = wallets
+      .flatMap((c) => c.wallets)
+      .filter((wallet) => selectedValues.has(wallet.address));
+    onSubmit(selectedWallets);
+  };
+
   return (
     <>
       <VStack gap={32}>
@@ -127,10 +134,7 @@ function ChooseWalletsToImport({
           <Button
             disabled={values.size === 0}
             onClick={() => {
-              const selectedWallets = wallets
-                .flatMap((c) => c.wallets)
-                .filter((wallet) => values.has(wallet.address));
-              onSubmit(selectedWallets);
+              handleSelect(values);
             }}
           >
             Continue{values.size ? ` (${values.size})` : null}
@@ -146,11 +150,8 @@ function ChooseWalletsToImport({
         activeWallets={activeWallets}
         existingAddressesSet={existingAddressesSet}
         dialogRef={moreWalletsDialogRef}
-        onSubmit={(values) => {
-          const selectedWallets = wallets
-            .flatMap((c) => c.wallets)
-            .filter((wallet) => values.has(wallet.address));
-          onSubmit(selectedWallets);
+        onSubmit={(selectedValues) => {
+          handleSelect(selectedValues);
         }}
       />
     </>

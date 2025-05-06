@@ -348,6 +348,13 @@ function AddressImportList({
     );
   });
   const moreWalletsDialogRef = useRef<HTMLDialogElementInterface>(null);
+
+  const handleSelect = (selectedValues: Set<string>) => {
+    const selectedWallets = wallets
+      .flatMap((c) => c.wallets)
+      .filter((wallet) => selectedValues.has(wallet.address));
+    onSubmit(selectedWallets);
+  };
   return (
     <>
       <PageColumn>
@@ -422,10 +429,7 @@ function AddressImportList({
           <Button
             disabled={values.size === 0}
             onClick={() => {
-              const selectedWallets = wallets
-                .flatMap((c) => c.wallets)
-                .filter((wallet) => values.has(wallet.address));
-              onSubmit(selectedWallets);
+              handleSelect(values);
             }}
           >
             Continue{values.size ? ` (${values.size})` : null}
@@ -439,11 +443,8 @@ function AddressImportList({
         activeWallets={activeWallets}
         existingAddressesSet={existingAddressesSet}
         dialogRef={moreWalletsDialogRef}
-        onSubmit={(values) => {
-          const selectedWallets = wallets
-            .flatMap((c) => c.wallets)
-            .filter((wallet) => values.has(wallet.address));
-          onSubmit(selectedWallets);
+        onSubmit={(selectedValues) => {
+          handleSelect(selectedValues);
         }}
       />
     </>

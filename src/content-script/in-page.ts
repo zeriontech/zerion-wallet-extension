@@ -115,6 +115,7 @@ const proxiedProvider = new Proxy(patchedProvider, {
 });
 
 window.ethereum = proxiedProvider;
+// TODO: window.solana = zerionSolana ??
 
 dappDetection.onChange(({ dappIsZerionAware }) => {
   if (dappIsZerionAware) {

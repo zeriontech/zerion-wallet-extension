@@ -97,6 +97,9 @@ export const SignTransactionButton = React.forwardRef(
           }
         } else {
           // solana
+          if (isDeviceAccount(wallet)) {
+            throw new Error('TODO: Support hardware signing for Solana');
+          }
           const methodMap = {
             default: 'solana_signAndSendTransaction',
             signAndSendTransaction: 'solana_signAndSendTransaction',
@@ -128,6 +131,9 @@ export const SignTransactionButton = React.forwardRef(
         if (transaction) {
           throw new Error('Batch signing is supported only for Solana');
         } else {
+          if (isDeviceAccount(wallet)) {
+            throw new Error('TODO: Support hardware signing for Solana');
+          }
           const transactions = solTransactions.map((tx) => solToBase64(tx));
           const result = await walletPort.request(
             'solana_signAllTransactions',
