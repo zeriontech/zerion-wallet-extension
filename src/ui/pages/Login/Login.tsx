@@ -28,6 +28,7 @@ import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { TouchIdLogin } from '../Security/TouchIdLogin';
 import { LayersAnimationLottie } from './LayersAnimationLottie';
 import { type LottieComponentHandle } from './LayersAnimationLottie';
 
@@ -203,6 +204,19 @@ export function Login() {
               </UIText>
             ) : null}
           </VStack>
+          {user ? (
+            <TouchIdLogin
+              user={user}
+              onSuccess={() => {
+                navigate(params.get('next') || '/', {
+                  // If user clicks "back" when we redirect them,
+                  // we should take them to overview, not back to the login view
+                  replace: true,
+                });
+              }}
+              style={{ justifyItems: 'center' }}
+            />
+          ) : null}
           <Button form={formId} disabled={loginMutation.isLoading}>
             {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
           </Button>
