@@ -1,5 +1,7 @@
 import { ethers } from 'ethers';
 import { Provider as ZksProvider } from 'zksync-ethers';
+import type { Keypair } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
@@ -100,17 +102,10 @@ import {
   solToBase64,
 } from 'src/modules/solana/transactions/create';
 import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
-import type { Keypair } from '@solana/web3.js';
-import { Connection, PublicKey } from '@solana/web3.js';
 import type { SolSignTransactionResult } from 'src/modules/solana/transactions/SolTransactionResponse';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
-import {
-  getTransactionFeePayer,
-  solanaSignAllTransactions,
-  solanaSignMessage,
-  solanaSignTransaction,
-} from 'src/modules/solana/signing';
+import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
@@ -137,8 +132,6 @@ import {
   ReadonlyAccountContainer,
 } from './model/AccountContainer';
 import { toPlainTransactionResponse } from './model/ethers-v5-types';
-
-Object.assign(globalThis, { Connection, PublicKey });
 
 async function prepareNonce<
   T extends { nonce?: number | null; from?: string | null }
@@ -1315,7 +1308,7 @@ export class Wallet {
     invariant(txBase64, () => new InvalidParams());
     const transaction = solFromBase64(txBase64);
 
-    const feePayer = getTransactionFeePayer(transaction);
+    const feePayer = SolanaSigning.getTransactionFeePayer(transaction);
     // TODO: infer signer address from transaction instead
     invariant(
       feePayer === currentAddress,
@@ -1323,7 +1316,7 @@ export class Wallet {
     );
 
     const keypair = this.getKeypairByAddress(currentAddress);
-    return solanaSignTransaction(transaction, keypair);
+    return SolanaSigning.signTransaction(transaction, keypair);
   }
 
   async solana_signAllTransactions({
@@ -1342,14 +1335,14 @@ export class Wallet {
     invariant(txsBase64 && Array.isArray(txsBase64), () => new InvalidParams());
     invariant(txsBase64.length > 0, 'No transactions provided');
     const transactions = txsBase64.map((tx) => solFromBase64(tx));
-    const feePayer = getTransactionFeePayer(transactions[0]);
+    const feePayer = SolanaSigning.getTransactionFeePayer(transactions[0]);
     // TODO: infer signer address from transaction instead
     invariant(
       feePayer === currentAddress,
       "feePayer doesn't match active address"
     );
     const keypair = this.getKeypairByAddress(currentAddress);
-    return solanaSignAllTransactions(transactions, keypair);
+    return SolanaSigning.signAllTransactions(transactions, keypair);
   }
 
   async solana_signAndSendTransaction({
@@ -1396,7 +1389,7 @@ export class Wallet {
     const messageUint8 = ethers.getBytes(messageHex);
     const address = this.ensureCurrentAddress();
     const keypair = this.getKeypairByAddress(address);
-    const result = solanaSignMessage(messageUint8, keypair);
+    const result = SolanaSigning.signMessage(messageUint8, keypair);
     this.registerPersonalSign({
       params: {
         address,
@@ -1937,7 +1930,7 @@ class PublicController {
     }
     const searchParams = new URLSearchParams({
       origin: context.origin,
-      transaction: txBase64, // JSON.stringify(transaction),
+      transaction: txBase64,
       ecosystem: 'solana',
       method,
     });
@@ -1953,7 +1946,6 @@ class PublicController {
         search: `?${searchParams}`,
         tabId: context.tabId || null,
         onResolve: (result: SolSignTransactionResult) => {
-          console.log({ result });
           resolve(result);
         },
         onDismiss: () => {
@@ -1993,7 +1985,6 @@ class PublicController {
         search: `?${searchParams}`,
         tabId: context.tabId || null,
         onResolve: (result: SolSignTransactionResult[]) => {
-          console.log({ result });
           resolve(result);
         },
         onDismiss: () => {

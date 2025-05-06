@@ -200,7 +200,7 @@ export class NetworksStore extends Store<State> {
 
   async fetchNetworkById(id: string): Promise<NetworkConfig> {
     const networks = await this.load({ chains: [id] });
-    const network = networks.getNetworkByName(createChain(id));
+    const network = networks.getByNetworkId(createChain(id));
     invariant(network, `Could not load network for id: ${id}`);
     return network;
   }

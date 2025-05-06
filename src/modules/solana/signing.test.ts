@@ -4,11 +4,7 @@ import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import { uint8ArrayToBase64 } from '../crypto';
 import { fromSecretKeyToEd25519 } from './keypairs';
-import {
-  solanaSignAllTransactions,
-  solanaSignMessage,
-  solanaSignTransaction,
-} from './signing';
+import { SolanaSigning } from './signing';
 import { solFromBase64 } from './transactions/create';
 
 const samples = {
@@ -64,7 +60,7 @@ describe.only('Solana signing functions', () => {
     const sample = samples.signMessage;
     const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
     const messageUint8 = ethers.getBytes(sample.messageHex);
-    const result = solanaSignMessage(messageUint8, keypair);
+    const result = SolanaSigning.signMessage(messageUint8, keypair);
     expect(uint8ArrayToBase64(result.signature)).toBe(
       sample.signatureSerialized
     );
@@ -74,7 +70,7 @@ describe.only('Solana signing functions', () => {
     const sample = samples.signTransaction;
     const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
     const transaction = solFromBase64(sample.txBase64);
-    const result = solanaSignTransaction(transaction, keypair);
+    const result = SolanaSigning.signTransaction(transaction, keypair);
 
     expect(result.signature).toBe(sample.signatureBase58);
     expect(result.tx).toBe(sample.txSignedBase64);
@@ -86,7 +82,7 @@ describe.only('Solana signing functions', () => {
     const transactions = sample.transactionsBase64.map((tx) =>
       solFromBase64(tx)
     );
-    const results = solanaSignAllTransactions(transactions, keypair);
+    const results = SolanaSigning.signAllTransactions(transactions, keypair);
 
     expect(results[0].signature).toBe(sample.results[0].signatureBase58);
     expect(results[0].tx).toBe(sample.results[0].txSignedBase64);

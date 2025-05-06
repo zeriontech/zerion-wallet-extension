@@ -6,22 +6,6 @@ import { SolanaTransactionLegacy } from './SolTransaction';
 import { solToBase64 } from './transactions/create';
 import type { SolSignTransactionResult } from './transactions/SolTransactionResponse';
 
-export function solanaSignMessage(
-  message: Uint8Array,
-  keypair: Keypair
-): { signature: Uint8Array } {
-  const signature = nacl.sign.detached(message, keypair.secretKey);
-  return { signature };
-}
-
-export function getTransactionFeePayer(transaction: SolTransaction) {
-  const feePayer =
-    transaction instanceof SolanaTransactionLegacy
-      ? transaction.feePayer?.toBase58()
-      : transaction.message.staticAccountKeys.at(0)?.toBase58();
-  return feePayer;
-}
-
 function getSignatureFromLegacyTransaction(
   transaction: SolanaTransactionLegacy
 ): string | null {
@@ -41,9 +25,7 @@ function getSignatureFromVersionedTransaction(
   return null;
 }
 
-export function getTransactionSignature(
-  transaction: SolTransaction
-): string | null {
+function getTransactionSignature(transaction: SolTransaction): string | null {
   if (transaction instanceof SolanaTransactionLegacy) {
     return getSignatureFromLegacyTransaction(transaction);
   } else {
@@ -51,29 +33,55 @@ export function getTransactionSignature(
   }
 }
 
-export function solanaSignTransaction(
-  transaction: SolTransaction,
-  keypair: Keypair
-): SolSignTransactionResult {
-  if (transaction instanceof SolanaTransactionLegacy) {
-    transaction.partialSign(keypair);
-  } else {
-    transaction.sign([keypair]);
+export class SolanaSigning {
+  static signMessage(
+    message: Uint8Array,
+    keypair: Keypair
+  ): { signature: Uint8Array } {
+    const signature = nacl.sign.detached(message, keypair.secretKey);
+    return { signature };
   }
-  return {
-    signature: getTransactionSignature(transaction),
-    publicKey: keypair.publicKey.toBase58(),
-    tx: solToBase64(transaction),
-  };
-}
 
-export function solanaSignAllTransactions(
-  transactions: SolTransaction[],
-  keypair: Keypair
-): SolSignTransactionResult[] {
-  const results: SolSignTransactionResult[] = [];
-  for (const transaction of transactions) {
-    results.push(solanaSignTransaction(transaction, keypair));
+  static getTransactionFeePayer(transaction: SolTransaction) {
+    const feePayer =
+      transaction instanceof SolanaTransactionLegacy
+        ? transaction.feePayer?.toBase58()
+        : transaction.message.staticAccountKeys.at(0)?.toBase58();
+    return feePayer;
   }
-  return results;
+
+  static getTransactionSignature(transaction: SolTransaction): string | null {
+    if (transaction instanceof SolanaTransactionLegacy) {
+      return getSignatureFromLegacyTransaction(transaction);
+    } else {
+      return getSignatureFromVersionedTransaction(transaction);
+    }
+  }
+
+  static signTransaction(
+    transaction: SolTransaction,
+    keypair: Keypair
+  ): SolSignTransactionResult {
+    if (transaction instanceof SolanaTransactionLegacy) {
+      transaction.partialSign(keypair);
+    } else {
+      transaction.sign([keypair]);
+    }
+    return {
+      signature: getTransactionSignature(transaction),
+      publicKey: keypair.publicKey.toBase58(),
+      tx: solToBase64(transaction),
+    };
+  }
+
+  static signAllTransactions(
+    transactions: SolTransaction[],
+    keypair: Keypair
+  ): SolSignTransactionResult[] {
+    const results: SolSignTransactionResult[] = [];
+    for (const transaction of transactions) {
+      results.push(SolanaSigning.signTransaction(transaction, keypair));
+    }
+    return results;
+  }
 }

@@ -13,7 +13,7 @@ function backendUrl(url: string | undefined, backend_env: string | undefined) {
   }
 }
 
-export const BACKEND_ENV = 'staging'; // process.env.BACKEND_ENV;
+export const BACKEND_ENV = process.env.BACKEND_ENV || undefined; // deliberately fallback to undefined
 invariant(process.env.DEFI_SDK_API_TOKEN, 'DEFI_SDK_API_TOKEN is required in env');
 export const DEFI_SDK_API_TOKEN = process.env.DEFI_SDK_API_TOKEN;
 invariant(process.env.DEFI_SDK_API_URL, 'DEFI_SDK_API_URL is required in env');

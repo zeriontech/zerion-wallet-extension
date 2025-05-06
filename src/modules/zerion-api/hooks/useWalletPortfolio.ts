@@ -12,11 +12,13 @@ export function useWalletPortfolio(
     enabled = true,
     keepPreviousData = false,
     refetchInterval,
+    refetchOnWindowFocus = true,
   }: {
     suspense?: boolean;
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number;
+    refetchOnWindowFocus?: boolean;
   } = {}
 ) {
   return useQuery({
@@ -28,5 +30,6 @@ export function useWalletPortfolio(
     keepPreviousData,
     staleTime: 20000,
     refetchInterval,
+    refetchOnWindowFocus,
   });
 }

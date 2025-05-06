@@ -105,10 +105,11 @@ export class Networks {
     visitedChains: string[];
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
+    // TODO: Filter out solana networks when using SOLANA_FEATURE feature flag
     this.networks = injectChainConfigs(networks, ethereumChainConfigs);
     this.evmNetworks = this.networks.filter((n) => n.standard === 'eip155');
-    this.solanaNetworks = this.networks.filter((n) =>
-      n.id.toLowerCase().includes('solana')
+    this.solanaNetworks = this.networks.filter(
+      (n) => n.id.toLowerCase().includes('solana') // TODO: filter by n['standard'] when backend updates
     );
     this.collection = toCollection(
       this.networks,
@@ -128,15 +129,20 @@ export class Networks {
     return network.name || capitalize(network.id);
   }
 
-  getNetworkByName(chain: Chain) {
+  getByNetworkId(id: Chain) {
     return (
-      this.collection[chain.toString()] ||
-      this.collection[this.networkIdAliases[chain.toString()]]
+      this.collection[id.toString()] ||
+      this.collection[this.networkIdAliases[id.toString()]]
     );
   }
 
+  /** @deprecated, prefer {this.getByNetworkId} */
+  getNetworkByName(chain: Chain) {
+    return this.getByNetworkId(chain);
+  }
+
   private toId(chain: Chain) {
-    const item = this.getNetworkByName(chain);
+    const item = this.getByNetworkId(chain);
     return item && Networks.isEip155(item) ? Networks.getChainId(item) : null;
   }
 
@@ -198,7 +204,7 @@ export class Networks {
   }
 
   getChainName(chain: Chain) {
-    return this.getNetworkByName(chain)?.name || capitalize(String(chain));
+    return this.getByNetworkId(chain)?.name || capitalize(String(chain));
   }
 
   getNetworkById(chainId: ChainId) {
@@ -224,7 +230,7 @@ export class Networks {
   }
 
   getExplorerHomeUrlByName(chain: Chain) {
-    return this.getNetworkByName(chain)?.explorer_home_url;
+    return this.getByNetworkId(chain)?.explorer_home_url;
   }
 
   private getExplorerTxUrl(network: NetworkConfig | undefined, hash: string) {
@@ -240,11 +246,11 @@ export class Networks {
   }
 
   getExplorerTxUrlByName(chain: Chain, hash: string) {
-    return this.getExplorerTxUrl(this.getNetworkByName(chain), hash);
+    return this.getExplorerTxUrl(this.getByNetworkId(chain), hash);
   }
 
   getExplorerAddressUrlByName(chain: Chain, address: string) {
-    return this.getExplorerAddressUrl(this.getNetworkByName(chain), address);
+    return this.getExplorerAddressUrl(this.getByNetworkId(chain), address);
   }
 
   private getExplorerAddressUrl(
@@ -262,11 +268,11 @@ export class Networks {
   }
 
   getExplorerTokenUrlByName(chain: Chain, address: string) {
-    return this.getExplorerTokenUrl(this.getNetworkByName(chain), address);
+    return this.getExplorerTokenUrl(this.getByNetworkId(chain), address);
   }
 
   getExplorerNameByChainName(chain: Chain) {
-    return this.getNetworkByName(chain)?.explorer_name;
+    return this.getByNetworkId(chain)?.explorer_name;
   }
 
   // TODO: this method is not used. Should we remove it?
@@ -292,7 +298,7 @@ export class Networks {
   }
 
   supports(purpose: SupportsFlags, chain: Chain): boolean {
-    const network = this.getNetworkByName(chain);
+    const network = this.getByNetworkId(chain);
     if (!network) {
       return false;
     }
@@ -329,7 +335,7 @@ export class Networks {
   }
 
   getRpcUrlInternal(chain: Chain) {
-    const network = this.getNetworkByName(chain);
+    const network = this.getByNetworkId(chain);
     if (!network) {
       throw new Error(`Cannot find network: ${chain}`);
     }
@@ -348,7 +354,7 @@ export class Networks {
   }
 
   getRpcUrlPublic(chain: Chain) {
-    const network = this.getNetworkByName(chain);
+    const network = this.getByNetworkId(chain);
     if (!network) {
       throw new Error(`Cannot find network: ${chain}`);
     }
