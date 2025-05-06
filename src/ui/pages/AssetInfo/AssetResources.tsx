@@ -23,7 +23,9 @@ import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import XIcon from 'jsx:src/ui/assets/x-logo.svg';
 import WarpcastIcon from 'jsx:src/ui/assets/warpcast-logo.svg';
+import ZerionIcon from 'jsx:src/ui/assets/zerion-logo-monochrome.svg';
 import DexscreenerIcon from 'jsx:src/ui/assets/dexscreener-logo.svg';
+import WebsiteIcon from 'jsx:src/ui/assets/globe.svg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 
 function MainImplementationButton({
@@ -244,6 +246,7 @@ function ResourceButton({
 const TWITTER_ID = 'twitter';
 const WARPCAST_ID = 'warpcast';
 const DEXSCREENER_ID = 'dexscreener';
+const WEBSITE = 'website';
 
 export function AssetResources({
   assetFullInfo,
@@ -281,8 +284,21 @@ export function AssetResources({
 
   return (
     <>
-      <HStack gap={8} justifyContent="space-between">
-        <HStack gap={8}>
+      <HStack
+        gap={6}
+        justifyContent="space-between"
+        style={{ gridTemplateColumns: '1fr auto' }}
+      >
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <ResourceButton
+            resource={{
+              name: 'zerion',
+              displayableName: 'Zerion',
+              iconUrl: '',
+              url: `https://app.zerion.io/tokens/${assetFullInfo.fungible.symbol}-${assetFullInfo.fungible.id}`,
+            }}
+            icon={<ZerionIcon style={{ width: 20, height: 20 }} />}
+          />
           {resourcesById[TWITTER_ID] ? (
             <ResourceButton
               resource={resourcesById[TWITTER_ID]}
@@ -293,6 +309,12 @@ export function AssetResources({
             <ResourceButton
               resource={resourcesById[WARPCAST_ID]}
               icon={<WarpcastIcon style={{ width: 20, height: 20 }} />}
+            />
+          ) : null}
+          {resourcesById[WEBSITE] ? (
+            <ResourceButton
+              resource={resourcesById[WEBSITE]}
+              icon={<WebsiteIcon style={{ width: 20, height: 20 }} />}
             />
           ) : null}
           <ResourceButton
@@ -306,7 +328,7 @@ export function AssetResources({
             }
             icon={<DexscreenerIcon style={{ width: 20, height: 20 }} />}
           />
-        </HStack>
+        </div>
         <HStack gap={4}>
           {mainImplementation ? (
             <MainImplementationButton implementation={mainImplementation} />

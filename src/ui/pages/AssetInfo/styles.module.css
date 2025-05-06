@@ -1,21 +1,41 @@
-@keyframes appear {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  1% {
-    opacity: 0;
-    transform: translateY(5px);
-  }
+@property --progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@keyframes headerTransition {
   to {
-    opacity: 1;
-    transform: translateY(0);
+    --progress: 1;
   }
 }
 
-.assetHeaderContent {
-  animation: appear 150ms ease-in-out;
+.headerContainer {
+  position: relative;
+  animation-range: 40px 50px;
+  animation-timeline: scroll();
   animation-fill-mode: both;
+  animation-name: headerTransition;
+  animation-duration: 1ms;
+}
+
+.header {
+  height: 40px;
+  position: relative;
+  transition: --progress 0.15s linear;
+  opacity: var(--progress);
+  transform: translateY(calc((1 - var(--progress)) * 50%))
+    scale(calc(0.5 + (var(--progress) * 0.5)));
+}
+
+.defaultHeader {
+  position: absolute;
+  inset: 0 0 0 8px;
+  transition: --progress 0.15s linear;
+  opacity: calc(1 - var(--progress));
+  transform-origin: 0 0;
+  transform: translateY(calc((var(--progress)) * -100%))
+    scale(calc(1 - (var(--progress) * 0.5)));
 }
 
 .historyItem {

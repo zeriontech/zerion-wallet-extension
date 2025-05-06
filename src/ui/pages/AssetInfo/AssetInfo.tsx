@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -12,6 +12,7 @@ import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
 import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import FlagIcon from 'jsx:src/ui/assets/flag.svg';
+import ShareIcon from 'jsx:src/ui/assets/share.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageTop } from 'src/ui/components/PageTop';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
@@ -30,36 +31,21 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
-import * as styles from './styles.module.css';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
+import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
 import { AssetTitleAndChart } from './AssetTitleAndChart';
 import { AssetResources } from './AssetResources';
-import { AssetHeader } from './AssetHeader';
+import {
+  AssetDefaultHeader,
+  AssetHeader as AssetScrolledHeader,
+} from './AssetHeader';
 import { AssetDescription } from './AssetDescription';
-
-const SCROLL_THRESHOLD = 80;
-const SHOW_BRIDGE_BUTTON = false; // TODO: make true after bridge is implemented
-
-function AssetPageHeader({ asset }: { asset: Asset }) {
-  const [showTokenInfoInHeader, setShowTokenInfoInHeader] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () =>
-      setShowTokenInfoInHeader(window.scrollY < SCROLL_THRESHOLD);
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  return showTokenInfoInHeader ? null : (
-    <AssetHeader asset={asset} className={styles.assetHeaderContent} />
-  );
-}
+import * as styles from './styles.module.css';
 
 function ReportAssetLink({ asset }: { asset: Asset }) {
   return (
@@ -83,6 +69,34 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
         <UIText kind="small/accent">Report Asset</UIText>
       </HStack>
     </UnstyledAnchor>
+  );
+}
+
+function ShareAssetLink({ asset }: { asset: Asset }) {
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const { handleCopy } = useCopyToClipboard({
+    text: `https://app.zerion.io/tokens/${asset.symbol}-${asset.id}`,
+    onSuccess: () => toastRef.current?.showToast(),
+  });
+
+  return (
+    <>
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Link Copied to Clipboard
+      </PopoverToast>
+      <UnstyledButton
+        onClick={handleCopy}
+        title="Copy Link"
+        aria-label="Copy Link"
+      >
+        <ShareIcon />
+      </UnstyledButton>
+    </>
   );
 }
 
@@ -167,8 +181,20 @@ export function AssetInfo() {
   return (
     <PageColumn>
       <NavigationTitle
-        title={<AssetPageHeader asset={assetFullInfo.fungible} />}
+        title={
+          <div className={styles.headerContainer}>
+            <AssetDefaultHeader
+              asset={assetFullInfo.fungible}
+              className={styles.defaultHeader}
+            />
+            <AssetScrolledHeader
+              asset={assetFullInfo.fungible}
+              className={styles.header}
+            />
+          </div>
+        }
         documentTitle={`${assetFullInfo.fungible.name} - info`}
+        elementEnd={<ShareAssetLink asset={assetFullInfo.fungible} />}
       />
       <PageTop />
       <VStack
@@ -232,10 +258,11 @@ export function AssetInfo() {
                 >
                   <SendIcon style={{ width: 20, height: 20 }} />
                 </Button>
-                {/* TODO: Implement UnstyledLink after bridge form is implemented */}
-                {SHOW_BRIDGE_BUTTON ? (
+                {process.env.FEATURE_BRIDGE_FORM === 'on' ? (
                   <Button
                     kind="primary"
+                    as={UnstyledLink}
+                    to={`/bridge-form?spendTokenInput=${asset_code}&spendChainInput=${chainWithTheBiggestBalance}`}
                     size={48}
                     style={{ padding: 14 }}
                     aria-label="Bridge Token"
