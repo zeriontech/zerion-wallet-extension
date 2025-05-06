@@ -26,7 +26,6 @@ export function TouchIdLogin({
       return accountPublicRPCPort.request('getPasskeyEnabled');
     },
     useErrorBoundary: true,
-    suspense: false,
   });
 
   const loginMutation = useMutation({
@@ -74,7 +73,7 @@ export function TouchIdLogin({
           {(loginMutation.error as Error).message || 'unknown error'}
         </UIText>
       ) : null}
-      <Spacer height={40} />
+      <Spacer height={16} />
     </VStack>
   );
 }
