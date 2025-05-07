@@ -1,4 +1,8 @@
-import { initialize } from '@zeriontech/solana-wallet-standard';
+import {
+  type Ghost,
+  initialize as initializeWalletStandard,
+} from '@zeriontech/solana-wallet-standard';
+import { FEATURE_SOLANA } from 'src/env/config';
 import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
@@ -14,6 +18,7 @@ declare global {
   interface Window {
     ethereum?: EthereumProvider;
     zerionWallet?: EthereumProvider;
+    solana?: Ghost;
   }
 }
 
@@ -33,9 +38,12 @@ if (!walletChannelId) {
 const broadcastChannel = new BroadcastChannel(walletChannelId);
 const connection = new Connection(broadcastChannel);
 const provider = new EthereumProvider(connection);
-const zerionSolana = new ZerionSolana(connection);
-initialize(zerionSolana);
-Object.assign(provider, { solana: zerionSolana });
+if (FEATURE_SOLANA === 'on') {
+  const zerionSolana = new ZerionSolana(connection);
+  initializeWalletStandard(zerionSolana);
+  Object.assign(provider, { solana: zerionSolana });
+  window.solana = zerionSolana;
+}
 
 let isPaused = false;
 
@@ -115,7 +123,6 @@ const proxiedProvider = new Proxy(patchedProvider, {
 });
 
 window.ethereum = proxiedProvider;
-// TODO: window.solana = zerionSolana ??
 
 dappDetection.onChange(({ dappIsZerionAware }) => {
   if (dappIsZerionAware) {
