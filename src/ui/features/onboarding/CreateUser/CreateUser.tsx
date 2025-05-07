@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
+import noop from 'lodash/noop';
 import React, { useCallback, useState } from 'react';
 import { RenderArea } from 'react-area';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -20,6 +21,7 @@ import { Stack } from 'src/ui/ui-kit/Stack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { FEATURE_SOLANA } from 'src/env/config';
 import { Password } from '../Password';
 import { assertPasswordStep } from '../Password/passwordSearchParams';
 import * as helperStyles from '../shared/helperStyles.module.css';
@@ -55,9 +57,13 @@ export function CreateUser() {
     setPassword(value);
   }, []);
 
-  const [values, toggleValue] = useToggledValues(
-    () => new Set<BlockchainType>(['evm', 'solana'])
+  const [values, toggleValueOriginal] = useToggledValues(
+    () =>
+      new Set<BlockchainType>(
+        FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']
+      )
   );
+  const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : noop;
 
   const { mutate: handleSubmit, isLoading } = useMutation({
     mutationFn: async () => {

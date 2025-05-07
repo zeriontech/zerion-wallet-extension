@@ -6,7 +6,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import CreateIcon from 'jsx:../assets/option_secondary_create.svg';
 import ImportIcon from 'jsx:../assets/option_secondary_import.svg';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { FEATURE_LOYALTY_FLOW, FEATURE_SOLANA } from 'src/env/config';
 import HardWareIcon from 'jsx:../assets/option_secondary_hardware.svg';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
@@ -56,15 +56,17 @@ function ImportOption({
           <UIText kind="headline/h3" className={styles.title}>
             {title}
           </UIText>
-          <UIText
-            kind="small/accent"
-            className={cn(styles.title, styles.subtitle)}
-            style={{
-              color: undefined, // undo default currentColor because we're using css classes here
-            }}
-          >
-            {subtitle}
-          </UIText>
+          {FEATURE_SOLANA === 'on' ? (
+            <UIText
+              kind="small/accent"
+              className={cn(styles.title, styles.subtitle)}
+              style={{
+                color: undefined, // undo default currentColor because we're using css classes here
+              }}
+            >
+              {subtitle}
+            </UIText>
+          ) : null}
         </VStack>
         <div
           style={{

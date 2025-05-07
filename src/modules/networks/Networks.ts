@@ -5,6 +5,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { FEATURE_SOLANA } from 'src/env/config';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
@@ -105,8 +106,10 @@ export class Networks {
     visitedChains: string[];
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
-    // TODO: Filter out solana networks when using SOLANA_FEATURE feature flag
     this.networks = injectChainConfigs(networks, ethereumChainConfigs);
+    if (FEATURE_SOLANA !== 'on') {
+      this.networks = this.networks.filter((n) => n.standard === 'eip155');
+    }
     this.evmNetworks = this.networks.filter((n) => n.standard === 'eip155');
     this.solanaNetworks = this.networks.filter(
       (n) => n.id.toLowerCase().includes('solana') // TODO: filter by n['standard'] when backend updates
@@ -273,28 +276,6 @@ export class Networks {
 
   getExplorerNameByChainName(chain: Chain) {
     return this.getByNetworkId(chain)?.explorer_name;
-  }
-
-  // TODO: this method is not used. Should we remove it?
-  getEthereumChainParameter(chainId: ChainId): AddEthereumChainParameter {
-    const network = this.collectionByEvmId[chainId];
-    if (!network || !network.rpc_url_public || !network.native_asset) {
-      throw new UnsupportedNetwork(`Unsupported network id: ${chainId}`);
-    }
-    return {
-      chainId,
-      rpcUrls: network.rpc_url_public,
-      chainName: network.name,
-      nativeCurrency: {
-        name: network.native_asset.name,
-        symbol: network.native_asset.symbol,
-        decimals: network.native_asset.decimals,
-      },
-      iconUrls: [network.icon_url],
-      blockExplorerUrls: network.explorer_home_url
-        ? [network.explorer_home_url]
-        : [],
-    };
   }
 
   supports(purpose: SupportsFlags, chain: Chain): boolean {

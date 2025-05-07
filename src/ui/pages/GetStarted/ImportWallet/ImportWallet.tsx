@@ -22,6 +22,8 @@ import {
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 import { SecretInput } from 'src/ui/components/SecretInput';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
+import { FEATURE_SOLANA } from 'src/env/config';
+import { isSolanaPrivateKey } from 'src/modules/solana/shared';
 import { PrivateKeyImportView } from './PrivateKeyImportView';
 import { MnemonicImportView } from './MnemonicImportView';
 import { MemoryLocationState } from './memoryLocationState';
@@ -49,6 +51,9 @@ export function validate({
       return { valid: false, message: 'Invalid recovery phrase' };
     }
   } else {
+    if (FEATURE_SOLANA !== 'on' && isSolanaPrivateKey(recoveryInput)) {
+      return { valid: false, message: 'Solana support is coming soon' };
+    }
     if (isValidPrivateKey(recoveryInput)) {
       return { valid: true, message: '' };
     } else {

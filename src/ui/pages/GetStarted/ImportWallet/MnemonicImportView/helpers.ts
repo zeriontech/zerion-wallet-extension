@@ -3,6 +3,7 @@ import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { FEATURE_SOLANA } from 'src/env/config';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
@@ -19,12 +20,19 @@ export async function prepareWalletsToImport(phrase: LocallyEncoded): Promise<{
   addressesToCheck: string[];
 } | void> {
   const fn = getFirstNMnemonicWallets;
+  const solanaEnabled = FEATURE_SOLANA === 'on';
   const [eth, sol1, sol2, sol3] = await Promise.all([
     fn({ phrase, n: 30, curve: 'ecdsa' }),
     /** We want to explore all derivation paths in case there are active addresses */
-    fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44Change' }),
-    fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44' }),
-    fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaDeprecated' }),
+    solanaEnabled
+      ? fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44Change' })
+      : Promise.resolve([]),
+    solanaEnabled
+      ? fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaBip44' })
+      : Promise.resolve([]),
+    solanaEnabled
+      ? fn({ phrase, n: 30, curve: 'ed25519', pathType: 'solanaDeprecated' })
+      : Promise.resolve([]),
   ]);
   const derivedWallets = [
     { curve: 'ecdsa' as const, pathType: 'bip44' as const, wallets: eth },

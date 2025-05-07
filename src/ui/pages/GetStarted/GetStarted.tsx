@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+import noop from 'lodash/noop';
 import {
   Link,
   Route,
@@ -14,6 +15,7 @@ import VisibleIcon from 'jsx:src/ui/assets/visible.svg';
 import ZerionSquircle from 'jsx:src/ui/assets/zerion-squircle.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
+import { FEATURE_SOLANA } from 'src/env/config';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isMnemonicContainer } from 'src/shared/types/validators';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
@@ -41,7 +43,6 @@ import {
 import { openHref } from 'src/ui/shared/openUrl';
 import { PageTop } from 'src/ui/components/PageTop';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
-import { SurfaceItemButton } from 'src/ui/ui-kit/SurfaceList';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -417,6 +418,7 @@ export function EcosystemOptionsList({
   values: Set<BlockchainType>;
   onValueToggle: (value: BlockchainType) => void;
 }) {
+  const solanaEnabled = FEATURE_SOLANA === 'on';
   return (
     <SurfaceList
       gap={4}
@@ -425,41 +427,34 @@ export function EcosystemOptionsList({
         {
           key: 'ethereum',
           pad: false,
-          isInteractive: true,
+          onClick: solanaEnabled ? () => onValueToggle('evm') : undefined,
           component: (
-            <SurfaceItemButton onClick={() => onValueToggle('evm')}>
-              <HStack
-                gap={12}
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <HStack gap={12} alignItems="center">
-                  <EcosystemEthereumIcon style={{ width: 44, height: 44 }} />
-                  <VStack gap={0}>
-                    <UIText kind="body/accent">Ethereum Ecosystem</UIText>
-                    <UIText kind="small/regular" color="var(--neutral-600)">
-                      Base, Optimism, Polygon, Binance{ellipsis}
-                    </UIText>
-                  </VStack>
-                </HStack>
-                <span>
-                  <AnimatedCheckmark
-                    checked={values.has('evm')}
-                    checkedColor="var(--primary)"
-                  />
-                </span>
+            <HStack gap={12} justifyContent="space-between" alignItems="center">
+              <HStack gap={12} alignItems="center">
+                <EcosystemEthereumIcon style={{ width: 44, height: 44 }} />
+                <VStack gap={0}>
+                  <UIText kind="body/accent">Ethereum Ecosystem</UIText>
+                  <UIText kind="small/regular" color="var(--neutral-600)">
+                    Base, Optimism, Polygon, Binance{ellipsis}
+                  </UIText>
+                </VStack>
               </HStack>
-            </SurfaceItemButton>
+              <span>
+                <AnimatedCheckmark
+                  checked={values.has('evm')}
+                  checkedColor="var(--primary)"
+                />
+              </span>
+            </HStack>
           ),
         },
         {
           key: 'divider',
           pad: false,
-          isInteractive: false,
           component: (
             <div
               style={{
-                display: 'grid',
+                display: solanaEnabled ? 'grid' : 'none',
                 gridTemplateColumns: '1fr auto 1fr',
                 gap: 12,
                 alignItems: 'center',
@@ -486,26 +481,25 @@ export function EcosystemOptionsList({
         {
           key: 'solana',
           pad: false,
-          isInteractive: true,
+          onClick: () => onValueToggle('solana'),
           component: (
-            <SurfaceItemButton onClick={() => onValueToggle('solana')}>
-              <HStack
-                gap={12}
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <HStack gap={12} alignItems="center">
-                  <EcosystemSolanaIcon style={{ width: 44, height: 44 }} />
-                  <UIText kind="body/accent">Solana Ecosystem</UIText>
-                </HStack>
-                <span>
-                  <AnimatedCheckmark
-                    checked={values.has('solana')}
-                    checkedColor="var(--primary)"
-                  />
-                </span>
+            <HStack
+              style={{ display: solanaEnabled ? 'grid' : 'none' }}
+              gap={12}
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <HStack gap={12} alignItems="center">
+                <EcosystemSolanaIcon style={{ width: 44, height: 44 }} />
+                <UIText kind="body/accent">Solana Ecosystem</UIText>
               </HStack>
-            </SurfaceItemButton>
+              <span>
+                <AnimatedCheckmark
+                  checked={values.has('solana')}
+                  checkedColor="var(--primary)"
+                />
+              </span>
+            </HStack>
           ),
         },
       ]}
@@ -516,9 +510,13 @@ export function EcosystemOptionsList({
 function NewWalletGroup() {
   const title = 'Create New Wallet';
   useBackgroundKind(whiteBackgroundKind);
-  const [values, toggleValue] = useToggledValues(
-    () => new Set<BlockchainType>(['evm', 'solana'])
+  const [values, toggleValueOriginal] = useToggledValues(
+    () =>
+      new Set<BlockchainType>(
+        FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']
+      )
   );
+  const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : noop;
   const navigate = useNavigate();
   return (
     <PageColumn>

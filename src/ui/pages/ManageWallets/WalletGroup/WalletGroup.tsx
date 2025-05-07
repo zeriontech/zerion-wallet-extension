@@ -47,6 +47,7 @@ import { openHrefInTabView } from 'src/ui/shared/openUrl';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { BLOCKCHAIN_TYPES } from 'src/shared/wallet/classifiers';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
+import { FEATURE_SOLANA } from 'src/env/config';
 import { groupByEcosystem } from '../shared/groupByEcosystem';
 
 const strings = {
@@ -262,15 +263,17 @@ function WalletGroupItems({
     if (blockchainType in byEcosystem === false) {
       continue;
     }
-    items.push({
-      key: blockchainType,
-      pad: false,
-      component: (
-        <SurfaceListTitle>
-          <BlockchainTitleHelper kind={blockchainType} />
-        </SurfaceListTitle>
-      ),
-    });
+    if (FEATURE_SOLANA === 'on') {
+      items.push({
+        key: blockchainType,
+        pad: false,
+        component: (
+          <SurfaceListTitle>
+            <BlockchainTitleHelper kind={blockchainType} />
+          </SurfaceListTitle>
+        ),
+      });
+    }
     for (const wallet of byEcosystem[blockchainType]) {
       items.push({
         key: wallet.address,

@@ -113,6 +113,7 @@ function NetworkCreatePage() {
       ? new Set(
           networks
             .getNetworks()
+            .filter((n) => NetworksModule.isEip155(n))
             .map((n) => NetworksModule.getChainId(n))
             .filter(isTruthy)
         )
@@ -227,10 +228,14 @@ function NetworkPage() {
     const set = new Set(
       networks
         ?.getNetworks()
+        .filter((n) => NetworksModule.isEip155(n))
         .map((n) => NetworksModule.getChainId(n))
         .filter(isTruthy)
     );
-    const chainId = network ? NetworksModule.getChainId(network) : null;
+    const chainId =
+      network && NetworksModule.isEip155(network)
+        ? NetworksModule.getChainId(network)
+        : null;
     if (chainId) {
       set.delete(chainId);
     }
@@ -490,7 +495,7 @@ export function Networks() {
   const { data, isLoading: walletPortfolioIsLoading } = useWalletPortfolio(
     { addresses: addresses || [], currency },
     { source: useHttpClientSource() },
-    { enabled: Boolean(addresses?.length) }
+    { enabled: Boolean(addresses?.length), refetchOnWindowFocus: false }
   );
   const walletPortfolio = data?.data;
   const chains = useMemo(
