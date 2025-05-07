@@ -3,6 +3,7 @@ import { Provider as ZksProvider } from 'zksync-ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
+import omit from 'lodash/omit';
 import { isTruthy } from 'is-truthy-ts';
 import type {
   NotificationWindow,
@@ -1203,7 +1204,10 @@ export class Wallet {
           context,
           params: { typedData, ...transactionContextParams },
         });
-        const rawTransaction = serializePaymasterTx({ transaction, signature });
+        const rawTransaction = serializePaymasterTx({
+          transaction: omit(transaction, ['authorizationList']), // authorizationList can't be part of EIP712 transaction
+          signature,
+        });
 
         return await this.sendSignedTransaction({
           context,

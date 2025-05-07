@@ -8,10 +8,7 @@ type AddressStr = string;
  * Represents a tx object that can be received from
  * a dapp, an API response or created manually
  */
-export type IncomingTransaction = Pick<
-  TransactionRequest,
-  'nonce' | 'data' | 'customData' | 'accessList'
-> & {
+export type IncomingTransaction = TransactionRequest & {
   type?: null | string | number;
   to?: null | AddressStr;
   from?: null | AddressStr;

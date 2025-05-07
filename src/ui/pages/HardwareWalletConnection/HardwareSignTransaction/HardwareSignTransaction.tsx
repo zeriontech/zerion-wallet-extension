@@ -21,6 +21,7 @@ import {
   createTypedData,
   serializePaymasterTx,
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
+import omit from 'lodash/omit';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
 async function signRegularOrPaymasterTx({
@@ -37,7 +38,8 @@ async function signRegularOrPaymasterTx({
   const paymasterEligible = Boolean(incomingTx.customData?.paymasterParams);
   const transaction = prepareTransaction(incomingTx);
   if (paymasterEligible) {
-    const typedData = createTypedData(transaction);
+    const eip712Tx = omit(transaction, ['authorizationList']);
+    const typedData = createTypedData(eip712Tx);
 
     const ledgerSignature = await messageHandler.request<string>(
       {
@@ -60,7 +62,10 @@ async function signRegularOrPaymasterTx({
       s.v += 27;
     }
     const signature = ethers.Signature.from(s).serialized;
-    const rawTransaction = serializePaymasterTx({ transaction, signature });
+    const rawTransaction = serializePaymasterTx({
+      transaction: eip712Tx,
+      signature,
+    });
     return { serialized: rawTransaction };
   } else {
     return await messageHandler.request<SignTransactionResult>(
