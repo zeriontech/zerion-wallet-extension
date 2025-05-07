@@ -23,10 +23,13 @@ import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { ToggleSettingLine } from '../Settings/ToggleSettingsLine';
+import type { PopoverToastHandle } from '../Settings/PopoverToast';
+import { PopoverToast } from '../Settings/PopoverToast';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
 import { setupAccountPasskey } from './passkey';
 
 function TouchIdSettings() {
+  const toastRef = useRef<PopoverToastHandle>(null);
   const [userValue, setUserValue] = useState<boolean | null>(null);
   const defaultValueQuery = useQuery({
     queryKey: ['account/getPasskeyEnabled'],
@@ -65,6 +68,7 @@ function TouchIdSettings() {
     },
     onSuccess: () => {
       zeroizeAfterSubmission();
+      toastRef.current?.showToast();
       if (!dialogRef.current) {
         return;
       }
@@ -111,13 +115,11 @@ function TouchIdSettings() {
               <DialogCloseButton
                 style={{ position: 'absolute', top: 8, right: 8 }}
               />
-              <VStack gap={24} style={{ paddingTop: 40 }}>
-                <VStack gap={4}>
-                  <UIText kind="body/accent">
-                    Enter Password to enable login via TouchId
-                  </UIText>
-                  <UIText kind="small/regular" color="var(--neutral-500)">
-                    Login with the password will be available too
+              <VStack gap={24}>
+                <VStack gap={8}>
+                  <UIText kind="headline/h1">Enter Password</UIText>
+                  <UIText kind="body/regular">
+                    Verification is required to enable login via Touch ID
                   </UIText>
                 </VStack>
                 <form
@@ -133,7 +135,7 @@ function TouchIdSettings() {
                   }}
                 >
                   <VStack
-                    gap={16}
+                    gap={32}
                     style={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}
                   >
                     <VStack gap={4}>
@@ -141,7 +143,7 @@ function TouchIdSettings() {
                         autoFocus={true}
                         type="password"
                         name="password"
-                        placeholder="Enter password"
+                        placeholder="Password"
                         required={true}
                       />
                       {setupTouchIdMutation.error ? (
@@ -155,9 +157,15 @@ function TouchIdSettings() {
                       ) : null}
                     </VStack>
                     <Button disabled={setupTouchIdMutation.isLoading}>
-                      {setupTouchIdMutation.isLoading
-                        ? 'Checking...'
-                        : 'Enable Touch Id'}
+                      {setupTouchIdMutation.isLoading ? (
+                        <div
+                          style={{ display: 'flex', justifyContent: 'center' }}
+                        >
+                          <CircleSpinner />
+                        </div>
+                      ) : (
+                        'Enable Touch ID'
+                      )}
                     </Button>
                   </VStack>
                 </form>
@@ -166,6 +174,14 @@ function TouchIdSettings() {
           );
         }}
       />
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Touch ID is enabled.
+      </PopoverToast>
     </>
   );
 }
