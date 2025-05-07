@@ -451,10 +451,11 @@ export function EcosystemOptionsList({
         {
           key: 'divider',
           pad: false,
+          style: solanaEnabled ? undefined : { display: 'none' },
           component: (
             <div
               style={{
-                display: solanaEnabled ? 'grid' : 'none',
+                display: 'grid',
                 gridTemplateColumns: '1fr auto 1fr',
                 gap: 12,
                 alignItems: 'center',
@@ -481,14 +482,10 @@ export function EcosystemOptionsList({
         {
           key: 'solana',
           pad: false,
+          style: solanaEnabled ? undefined : { display: 'none' },
           onClick: () => onValueToggle('solana'),
           component: (
-            <HStack
-              style={{ display: solanaEnabled ? 'grid' : 'none' }}
-              gap={12}
-              justifyContent="space-between"
-              alignItems="center"
-            >
+            <HStack gap={12} justifyContent="space-between" alignItems="center">
               <HStack gap={12} alignItems="center">
                 <EcosystemSolanaIcon style={{ width: 44, height: 44 }} />
                 <UIText kind="body/accent">Solana Ecosystem</UIText>
