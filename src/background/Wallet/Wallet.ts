@@ -1194,18 +1194,17 @@ export class Wallet {
     const paymasterEligible = Boolean(transaction.customData?.paymasterParams);
 
     if (paymasterEligible) {
-      console.log('paymasterEligible', { transaction });
       try {
-        const { chainId } = transaction;
+        const eip712Tx = omit(transaction, ['authorizationList']); // authorizationList can't be part of EIP712 transaction
+        const { chainId } = eip712Tx;
         invariant(chainId, 'ChainId missing from TransactionRequest');
-        const typedData = createTypedData(transaction);
-        console.log('will sign typedData:', { typedData });
+        const typedData = createTypedData(eip712Tx);
         const signature = await this.signTypedData_v4({
           context,
           params: { typedData, ...transactionContextParams },
         });
         const rawTransaction = serializePaymasterTx({
-          transaction: omit(transaction, ['authorizationList']), // authorizationList can't be part of EIP712 transaction
+          transaction: eip712Tx,
           signature,
         });
 
@@ -1214,7 +1213,6 @@ export class Wallet {
           params: { serialized: rawTransaction, ...transactionContextParams },
         });
       } catch (error) {
-        console.log('paymaster tx error', error);
         throw getEthersError(error);
       }
     } else {
