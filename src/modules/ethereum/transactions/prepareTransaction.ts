@@ -74,10 +74,7 @@ export function prepareTransaction(incomingTransaction: IncomingTransactionAA) {
   ) {
     transaction.type = parseInt(incomingTransaction.type);
   }
-  if (
-    incomingTransaction.authorizationList &&
-    incomingTransaction.authorizationList.length
-  ) {
+  if (incomingTransaction.authorizationList?.length) {
     transaction.authorizationList = toSerializableAuthorizationList(
       incomingTransaction.authorizationList
     );
