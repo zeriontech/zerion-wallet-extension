@@ -43,6 +43,7 @@ function TurnstileDialog() {
         hidden={false}
         style={{
           width: turnstileWidgetWidth,
+          maxWidth: 'calc(var(--sheet-dialog-max-width) - 32px)',
           height: turnstileWidgetHeight,
           border: 'none',
           colorScheme: 'auto',
