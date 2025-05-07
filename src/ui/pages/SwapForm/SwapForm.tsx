@@ -83,6 +83,8 @@ import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
+import type { Quote } from 'src/shared/types/Quote';
+import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -110,6 +112,10 @@ import { getPopularTokens } from './shared/getPopularTokens';
 import type { PriceImpact } from './shared/price-impact';
 import { calculatePriceImpact } from './shared/price-impact';
 import { PriceImpactLine } from './shared/PriceImpactLine';
+
+function getDefaultQuote(quotes: Quote[] | null) {
+  return quotes?.[0] ?? null;
+}
 
 const rootNode = getRootDomNode();
 
@@ -245,6 +251,33 @@ export function SwapFormComponent() {
 
   const { slippage: userSlippage } = useStore(swapView.store.configuration);
 
+  const swapViewRef = useRef<SwapFormView | null>(null);
+  swapViewRef.current = swapView;
+
+  const handleQuotesReceived = (quotes: Quote[] | null) => {
+    if (!swapViewRef.current) {
+      return;
+    }
+    const swapView = swapViewRef.current;
+    const { spendAsset, receiveAsset, spendPosition } = swapView;
+    const quote = getDefaultQuote(quotes);
+
+    if (spendAsset && receiveAsset && spendPosition && quote) {
+      const configuration = swapView.store.configuration.getState();
+      const formData: AnalyticsFormData = {
+        spendAsset,
+        receiveAsset,
+        spendPosition,
+        configuration,
+      };
+      walletPort.request('formFilledOut', {
+        scope: 'Swap',
+        formData,
+        quote,
+      });
+    }
+  };
+
   const quotesData = useQuotes({
     address,
     userSlippage,
@@ -257,13 +290,13 @@ export function SwapFormComponent() {
     receiveTokenInput,
     spendPosition,
     receivePosition,
+    onQuotesReceived: handleQuotesReceived,
   });
 
   const { refetch: refetchQuotes } = quotesData;
 
-  const defaultQuote = quotesData.quotes?.[0] ?? null;
   // TODO: add support for quote selection, useState
-  const selectedQuote = defaultQuote;
+  const selectedQuote = getDefaultQuote(quotesData.quotes);
 
   const swapTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
@@ -303,11 +336,6 @@ export function SwapFormComponent() {
       outputAsset: receiveAsset,
     });
   }, [receiveAsset, receiveInput, spendAsset, spendInput]);
-
-  const snapshotRef = useRef<SwapFormState | null>(null);
-  const onBeforeSubmit = () => {
-    snapshotRef.current = swapView.store.getState();
-  };
 
   const feeValueCommonRef = useRef<string | null>(
     null
@@ -381,12 +409,20 @@ export function SwapFormComponent() {
     },
   });
 
-  const USE_PAYMASTER_FEATURE = true;
-
   const configuration = useStore(swapView.store.configuration);
+
+  const snapshotRef = useRef<SwapFormState | null>(null);
+
+  const onBeforeSubmit = () => {
+    snapshotRef.current = swapView.store.getState();
+  };
+
   const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;
   const gas = txToCheck ? getGas(txToCheck) : null;
+
+  const USE_PAYMASTER_FEATURE = true;
+
   const eligibilityParams:
     | null
     | Parameters<ZerionApiClient['paymasterCheckEligibility']>[0] =

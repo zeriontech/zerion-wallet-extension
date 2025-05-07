@@ -164,6 +164,7 @@ export function useQuotes({
   receiveTokenInput,
   spendPosition,
   receivePosition,
+  onQuotesReceived,
 }: {
   primaryInput: 'spend' | 'receive';
   address: string;
@@ -176,6 +177,7 @@ export function useQuotes({
   receiveTokenInput?: string;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
   receivePosition: AddressPosition | EmptyAddressPosition | null;
+  onQuotesReceived?: (data: Quote[] | null) => void;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
@@ -256,23 +258,7 @@ export function useQuotes({
     `${url ?? 'no-url'}-${refetchHash}`,
     url ?? null,
     {
-      mergeResponse: (currentValue, nextValue) => {
-        if (!currentValue) {
-          return nextValue;
-        }
-        if (!nextValue) {
-          return currentValue;
-        }
-        return currentValue.map((item) => {
-          const updatedItem = nextValue.find(
-            (nextItem) =>
-              nextItem.contract_metadata &&
-              item.contract_metadata &&
-              nextItem.contract_metadata.id === item.contract_metadata.id
-          );
-          return updatedItem || item;
-        });
-      },
+      onEnd: onQuotesReceived,
     }
   );
 

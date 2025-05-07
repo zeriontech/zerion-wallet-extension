@@ -34,6 +34,7 @@ import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
+import { formDataToAnalytics } from './shared/formDataToAnalytics';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -325,6 +326,25 @@ function trackAppEvents({ account }: { account: Account }) {
       sendToMetabase('add_wallet', params);
       mixpanelTrack(account, 'Wallet: Wallet Added', { wallet_provider, type });
     }
+  });
+
+  emitter.on('formFilledOut', async ({ scope, formData, quote }) => {
+    const analyticsData = await formDataToAnalytics(scope, {
+      formData,
+      quote,
+      currency: 'usd',
+    });
+    const actionType = scope === 'Bridge' ? 'Send' : 'Trade';
+    const params = createParams({
+      request_name: 'swap_form_filled_out',
+      screen_name: scope,
+      client_scope: scope,
+      action_type: actionType,
+      ...analyticsData,
+    });
+    sendToMetabase('swap_form_filled_out', params);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(account, 'Transaction: Swap Form Filled Out', mixpanelParams);
   });
 
   emitter.on('firstScreenView', () => {

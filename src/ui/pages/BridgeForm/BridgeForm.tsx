@@ -25,6 +25,7 @@ import { walletPort } from 'src/ui/shared/channels';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
+import type { CustomConfiguration } from '@zeriontech/transactions';
 import {
   EmptyAddressPosition,
   NetworkId,
@@ -85,6 +86,8 @@ import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
+import type { Quote } from 'src/shared/types/Quote';
+import type { AnalyticsFormData } from 'src/shared/analytics/shared/formDataToAnalytics';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -104,6 +107,10 @@ import { SuccessState } from './SuccessState';
 import { LabeledNetworkSelect } from './LabeledNetworkSelect';
 import { BridgeLine } from './BridgeLine';
 import { ZerionFeeLine } from './ZerionFeeLine';
+
+function getDefaultQuote(quotes: Quote[] | null) {
+  return quotes?.[0] ?? null;
+}
 
 const rootNode = getRootDomNode();
 
@@ -419,6 +426,41 @@ function BridgeFormComponent() {
     receiveChain,
   ]);
 
+  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
+
+  const formStateRef = useRef<
+    (Partial<AnalyticsFormData> & { configuration: CustomConfiguration }) | null
+  >(null);
+  formStateRef.current = {
+    spendAsset: spendAsset ?? undefined,
+    receiveAsset: receiveAsset ?? undefined,
+    spendPosition: spendPosition ?? undefined,
+    configuration,
+  };
+
+  const handleQuotesReceived = (quotes: Quote[] | null) => {
+    if (!formStateRef.current) {
+      return;
+    }
+    const { spendAsset, receiveAsset, spendPosition, configuration } =
+      formStateRef.current;
+    const quote = getDefaultQuote(quotes);
+
+    if (spendAsset && receiveAsset && spendPosition && quote) {
+      const formData = {
+        spendAsset,
+        receiveAsset,
+        spendPosition,
+        configuration,
+      };
+      walletPort.request('formFilledOut', {
+        scope: 'Bridge',
+        formData,
+        quote,
+      });
+    }
+  };
+
   const quotesData = useQuotes({
     address,
     userSlippage: null,
@@ -431,13 +473,13 @@ function BridgeFormComponent() {
     receiveTokenInput,
     spendPosition,
     receivePosition,
+    onQuotesReceived: handleQuotesReceived,
   });
 
   const { refetch: refetchQuotes } = quotesData;
 
-  const defaultQuote = quotesData.quotes?.[0] ?? null;
   // TODO: add support for quote selection, useState
-  const selectedQuote = defaultQuote;
+  const selectedQuote = getDefaultQuote(quotesData.quotes);
 
   const bridgeTransaction = useMemo(
     () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
@@ -472,11 +514,6 @@ function BridgeFormComponent() {
       handleChange('receiveInput', valueCommon.toFixed());
     }
   }, [handleChange, selectedQuote, receivePosition, receiveChain]);
-
-  const snapshotRef = useRef<BridgeFormState | null>(null);
-  const onBeforeSubmit = () => {
-    snapshotRef.current = formState;
-  };
 
   const feeValueCommonRef = useRef<string | null>(
     null
@@ -552,15 +589,18 @@ function BridgeFormComponent() {
     },
   });
 
-  const [txConfiguration, setTxConfiguration] = useState(DEFAULT_CONFIGURATION);
+  const snapshotRef = useRef<BridgeFormState | null>(null);
 
-  const USE_PAYMASTER_FEATURE = true;
+  const onBeforeSubmit = () => {
+    snapshotRef.current = formState;
+  };
 
-  const userNonce = txConfiguration.nonce;
+  const userNonce = configuration.nonce;
   const nonce = userNonce ?? networkNonce ?? undefined;
   const gas = txToCheck ? getGas(txToCheck) : null;
-
   const network = spendChain ? networks?.getNetworkByName(spendChain) : null;
+
+  const USE_PAYMASTER_FEATURE = true;
 
   const eligibilityParams:
     | null
@@ -593,7 +633,7 @@ function BridgeFormComponent() {
   const configureTransactionToBeSigned = useEvent(
     (tx: IncomingTransactionWithChainId) => {
       invariant(spendChain && networks, 'Not ready to prepare the transaction');
-      let txToSign = applyConfiguration(tx, txConfiguration, gasPrices);
+      let txToSign = applyConfiguration(tx, configuration, gasPrices);
       if (paymasterEligible && txToSign.nonce == null) {
         txToSign = {
           ...txToSign,
@@ -846,7 +886,7 @@ function BridgeFormComponent() {
                 showApplicationLine={true}
                 chain={spendChain}
                 transaction={configureTransactionToBeSigned(currentTransaction)}
-                configuration={txConfiguration}
+                configuration={configuration}
                 localAllowanceQuantityBase={allowanceQuantityBase || undefined}
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
@@ -1029,8 +1069,8 @@ function BridgeFormComponent() {
                 paymasterPossible={paymasterPossible}
                 paymasterWaiting={false}
                 onFeeValueCommonReady={handleFeeValueCommonReady}
-                configuration={txConfiguration}
-                onConfigurationChange={(value) => setTxConfiguration(value)}
+                configuration={configuration}
+                onConfigurationChange={(value) => setConfiguration(value)}
                 gasback={gasbackEstimation}
               />
             </React.Suspense>
