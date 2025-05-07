@@ -3,6 +3,7 @@ import { Provider as ZksProvider } from 'zksync-ethers';
 import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
+import omit from 'lodash/omit';
 import { isTruthy } from 'is-truthy-ts';
 import type {
   NotificationWindow,
@@ -1193,24 +1194,25 @@ export class Wallet {
     const paymasterEligible = Boolean(transaction.customData?.paymasterParams);
 
     if (paymasterEligible) {
-      console.log('paymasterEligible', { transaction });
       try {
-        const { chainId } = transaction;
+        const eip712Tx = omit(transaction, ['authorizationList']); // authorizationList can't be part of EIP712 transaction
+        const { chainId } = eip712Tx;
         invariant(chainId, 'ChainId missing from TransactionRequest');
-        const typedData = createTypedData(transaction);
-        console.log('will sign typedData:', { typedData });
+        const typedData = createTypedData(eip712Tx);
         const signature = await this.signTypedData_v4({
           context,
           params: { typedData, ...transactionContextParams },
         });
-        const rawTransaction = serializePaymasterTx({ transaction, signature });
+        const rawTransaction = serializePaymasterTx({
+          transaction: eip712Tx,
+          signature,
+        });
 
         return await this.sendSignedTransaction({
           context,
           params: { serialized: rawTransaction, ...transactionContextParams },
         });
       } catch (error) {
-        console.log('paymaster tx error', error);
         throw getEthersError(error);
       }
     } else {
