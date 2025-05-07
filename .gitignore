@@ -1,5 +1,7 @@
 node_modules
 dist
+dist-firefox
+manifest.json
 .env
 .eslintcache
 .parcel-cache

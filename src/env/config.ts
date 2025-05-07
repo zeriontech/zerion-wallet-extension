@@ -1,6 +1,8 @@
 import { createUrl } from 'src/shared/createUrl';
 import { invariant } from 'src/shared/invariant';
 
+export type Platform = 'chrome' | 'firefox';
+
 function backendUrl(url: string, backend_env?: string | undefined): string;
 function backendUrl(url: string | undefined, backend_env?: string | undefined): string | undefined;
 function backendUrl(url: string | undefined, backend_env: string | undefined) {
@@ -33,3 +35,5 @@ export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;
+export const PLATFORM = (process.env.PLATFORM || 'chrome') as Platform;
+console.log('PLATFORM', PLATFORM);
