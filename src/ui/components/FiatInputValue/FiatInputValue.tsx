@@ -7,7 +7,10 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'defi-sdk';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { PriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
-import { getPriceImpactPercentage } from 'src/ui/pages/SwapForm/shared/price-impact';
+import {
+  getPriceImpactPercentage,
+  isSignificantValueLoss,
+} from 'src/ui/pages/SwapForm/shared/price-impact';
 import { formatPercent } from 'src/shared/units/formatPercent';
 
 export function FiatInputValue({
@@ -88,9 +91,9 @@ export function ReceiveFiatInputValue({
 }: {
   priceImpact: PriceImpact | null;
 } & FieldInputValueProps) {
-  const isSignificantLoss =
-    priceImpact?.kind === 'loss' &&
-    (priceImpact.level === 'medium' || priceImpact.level === 'high');
+  const isSignificantLoss = Boolean(
+    priceImpact && isSignificantValueLoss(priceImpact)
+  );
 
   const priceImpactPercentage = priceImpact
     ? getPriceImpactPercentage(priceImpact)
@@ -104,27 +107,26 @@ export function ReceiveFiatInputValue({
     [priceImpactPercentage]
   );
 
-  const showPercentageChange =
+  const pecentageChangeVisible =
     Boolean(percentageChange) &&
     (priceImpact?.kind === 'zero' || priceImpact?.kind === 'loss');
+
+  const color = isSignificantLoss
+    ? 'var(--negative-500)'
+    : 'var(--neutral-600)';
 
   return (
     <FiatInputValue
       {...props}
       name="receiveInput"
       percentageChange={
-        showPercentageChange && percentageChange ? (
-          <UIText
-            kind="small/regular"
-            color={
-              isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'
-            }
-          >
+        pecentageChangeVisible && percentageChange ? (
+          <UIText kind="small/regular" color={color}>
             {`(${percentageChange})`}
           </UIText>
         ) : null
       }
-      color={isSignificantLoss ? 'var(--negative-500)' : 'var(--neutral-600)'}
+      color={color}
       style={isSignificantLoss ? { cursor: 'help' } : undefined}
       title={
         isSignificantLoss

@@ -381,6 +381,8 @@ function SendFormComponent() {
           quantity: amount,
           chain,
         }),
+        warningWasShown: false,
+        outputAmountColor: 'grey',
       });
       if (preferences) {
         setPreferences({

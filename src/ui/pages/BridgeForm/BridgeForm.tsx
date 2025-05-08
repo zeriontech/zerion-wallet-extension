@@ -94,6 +94,7 @@ import { TransactionConfiguration } from '../SendTransaction/TransactionConfigur
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
+import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
 import type { BridgeFormState } from './shared/types';
 import { useBridgeTokens } from './useBridgeTokens';
 import { getAvailablePositions } from './getAvailablePositions';
@@ -444,6 +445,15 @@ function BridgeFormComponent() {
     [selectedQuote]
   );
 
+  const priceImpact = useMemo(() => {
+    return calculatePriceImpact({
+      inputValue: spendInput || null,
+      outputValue: receiveInput || null,
+      inputAsset: spendAsset,
+      outputAsset: receiveAsset,
+    });
+  }, [receiveAsset, receiveInput, spendAsset, spendInput]);
+
   const reverseChains = useCallback(
     () =>
       setUserFormState((state) => ({
@@ -665,6 +675,11 @@ function BridgeFormComponent() {
     resetApproveMutation,
   ]);
 
+  const isApproveMode =
+    approveMutation.isLoading ||
+    (quotesData.done && !enough_allowance) ||
+    approveTxStatus === 'pending';
+
   const {
     mutate: sendTransaction,
     data: transactionHash,
@@ -709,6 +724,8 @@ function BridgeFormComponent() {
           chain: spendChain,
         }),
         quote: selectedQuote,
+        warningWasShown: false,
+        outputAmountColor: 'grey',
       });
       return txResponse.hash;
     },
@@ -785,11 +802,6 @@ function BridgeFormComponent() {
       />
     );
   }
-
-  const isApproveMode =
-    approveMutation.isLoading ||
-    (quotesData.done && !enough_allowance) ||
-    approveTxStatus === 'pending';
 
   const showApproveHintLine =
     (quotesData.done && !enough_allowance) || !approveMutation.isIdle;
@@ -981,6 +993,7 @@ function BridgeFormComponent() {
               }
               spendInput={spendInput}
               spendAsset={spendAsset}
+              priceImpact={priceImpact}
               onChangeAmount={(value) => handleChange('receiveInput', value)}
               onChangeToken={(value) =>
                 handleChange('receiveTokenInput', value)

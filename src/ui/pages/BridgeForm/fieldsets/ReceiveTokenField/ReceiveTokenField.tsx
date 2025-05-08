@@ -1,21 +1,21 @@
-import React, { useEffect, useId, useMemo, useRef } from 'react';
-import { getPositionBalance } from 'src/ui/components/Positions/helpers';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
+import type { AddressPosition, Asset } from 'defi-sdk';
+import React, { useEffect, useId, useRef } from 'react';
+import type { Chain } from 'src/modules/networks/Chain';
 import {
   formatTokenValue,
   roundTokenValue,
 } from 'src/shared/units/formatTokenValue';
+import { ReceiveFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
+import { getPositionBalance } from 'src/ui/components/Positions/helpers';
+import { MarketAssetSelect } from 'src/ui/pages/SwapForm/fieldsets/ReceiveTokenField/MarketAssetSelect';
+import type { PriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
+import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { NBSP } from 'src/ui/shared/typography';
+import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
-import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
-import type { Chain } from 'src/modules/networks/Chain';
-import { NBSP } from 'src/ui/shared/typography';
-import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
-import type { AddressPosition, Asset } from 'defi-sdk';
-import { MarketAssetSelect } from 'src/ui/pages/SwapForm/fieldsets/ReceiveTokenField/MarketAssetSelect';
-import type { EmptyAddressPosition } from '@zeriontech/transactions';
-import { ReceiveFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
-import { calculatePriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
 
 export function ReceiveTokenField({
   receiveInput,
@@ -25,6 +25,7 @@ export function ReceiveTokenField({
   availableReceivePositions,
   spendInput,
   spendAsset,
+  priceImpact,
   onChangeAmount,
   onChangeToken,
 }: {
@@ -35,6 +36,7 @@ export function ReceiveTokenField({
   availableReceivePositions: AddressPosition[];
   spendInput?: string;
   spendAsset: Asset | null;
+  priceImpact: PriceImpact | null;
   onChangeAmount: (value: string) => void;
   onChangeToken: (value: string) => void;
 }) {
@@ -54,17 +56,6 @@ export function ReceiveTokenField({
       tokenValueInputRef.current?.setValue('');
     }
   }, [receiveInput]);
-
-  const priceImpact = useMemo(
-    () =>
-      calculatePriceImpact({
-        inputValue: spendInput ?? null,
-        outputValue: receiveInput ?? null,
-        inputAsset: spendAsset,
-        outputAsset: receiveAsset,
-      }),
-    [receiveAsset, receiveInput, spendAsset, spendInput]
-  );
 
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);

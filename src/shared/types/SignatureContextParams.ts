@@ -16,6 +16,8 @@ export interface TransactionContextParams {
   clientScope: ClientScope | null;
   addressAction: AnyAddressAction | null;
   quote?: Quote;
+  warningWasShown?: boolean;
+  outputAmountColor?: 'grey' | 'red';
 }
 
 export interface MessageContextParams {
