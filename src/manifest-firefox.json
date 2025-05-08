@@ -36,12 +36,6 @@
     }
   },
   "background": { "scripts": ["background/index.ts"] },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{3b1ef7d0-6f41-43b3-932f-622b07df2ea7}",
-      "strict_min_version": "115.0"
-    }
-  },
   "content_scripts": [
     {
       "all_frames": true,
