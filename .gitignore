@@ -8,4 +8,4 @@ dist-firefox
 /e2e-report/
 /blob-report/
 /playwright/.cache/
-src/manifest.json
+/src/manifest.json
