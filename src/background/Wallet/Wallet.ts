@@ -94,6 +94,11 @@ import {
   broadcastTransactionPatched,
   checkEip712Tx,
 } from 'src/modules/ethereum/account-abstraction/zksync-patch';
+import {
+  getEncryptedPasswordMeta,
+  getPasswordWithPasskey,
+  saveEncryptedPassword,
+} from 'src/shared/passkey/passkey.background';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -293,6 +298,32 @@ export class Wallet {
       isNewUser ? 1000 * 1800 : 1000 * 120
     );
     await this.syncWithWalletStore();
+  }
+
+  async savePasswordWithPasskey({
+    params,
+  }: PublicMethodParams<{
+    password: string;
+    encryptionKey: string;
+    passkeyId: string;
+    salt: string;
+  }>) {
+    await saveEncryptedPassword({
+      password: params.password,
+      encryptionKey: params.encryptionKey,
+      id: params.passkeyId,
+      salt: params.salt,
+    });
+  }
+
+  async getEncryptedPasswordMeta() {
+    return await getEncryptedPasswordMeta();
+  }
+
+  async getPasswordWithPasskey({
+    params,
+  }: PublicMethodParams<{ encryptionKey: string }>) {
+    return await getPasswordWithPasskey(params.encryptionKey);
   }
 
   async resetCredentials() {
