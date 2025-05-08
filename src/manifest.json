@@ -38,12 +38,9 @@
       }
     }
   },
-  "background": { "scripts": ["background/index.ts"] },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "inbox@zerion.io",
-      "strict_min_version": "115.0"
-    }
+  "background": {
+    "service_worker": "background/index.ts",
+    "type": "module"
   },
   "content_scripts": [
     {
