@@ -1,6 +1,6 @@
 import type { Asset } from 'defi-sdk';
 import React from 'react';
-import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
+import { useStatsigExperiment } from 'src/modules/statsig/statsig.client';
 import { usePreferences } from 'src/ui/features/preferences';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
@@ -51,14 +51,15 @@ export function AssetLink({
   address?: string;
 }) {
   const { preferences } = usePreferences();
-  const { data: firebaseConfig, isLoading } = useFirebaseConfig([
-    'extension_asset_page_enabled',
-  ]);
+  const { data: statsigData } = useStatsigExperiment(
+    'android-revamp_asset_page_version_1'
+  );
+  const assetPageEnabled = statsigData?.group_name === 'Group1';
   const content = title || asset.symbol || asset.name;
   if (preferences?.testnetMode?.on) {
     return content;
   }
-  if (isLoading || !firebaseConfig?.extension_asset_page_enabled) {
+  if (!assetPageEnabled) {
     return <AssetAnchor asset={asset} title={title} address={address} />;
   }
   return (

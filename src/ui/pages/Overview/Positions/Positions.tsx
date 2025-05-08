@@ -66,7 +66,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
-import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
+import { useStatsigExperiment } from 'src/modules/statsig/statsig.client';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -459,9 +459,6 @@ function PositionList({
     []
   );
   const { preferences } = usePreferences();
-  const { data: firebaseConfig } = useFirebaseConfig([
-    'extension_asset_page_enabled',
-  ]);
 
   const groupType = PositionsGroupType.platform;
   const preparedPositions = usePreparedPositions({
@@ -473,9 +470,10 @@ function PositionList({
   const offsetValuesState = useStore(offsetValues);
   const { currency } = useCurrency();
 
-  const assetPageEnabled = Boolean(
-    firebaseConfig?.extension_asset_page_enabled
+  const { data: statsigData } = useStatsigExperiment(
+    'android-revamp_asset_page_version_1'
   );
+  const assetPageEnabled = statsigData?.group_name === 'Group1';
 
   return (
     <VStack gap={24}>

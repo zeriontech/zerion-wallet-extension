@@ -79,6 +79,7 @@ jobs:
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           FEATURE_FOOTER_BUG_BUTTON: off
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
+          STATSIG_API_KEY: ${{ secrets.STATSIG_API_KEY }}
           FEATURE_LOYALTY_FLOW: on
           FEATURE_BRIDGE_FORM: on
         run: |
