@@ -62,7 +62,9 @@ export function WithMainnetOnlyWarningDialog<T extends 'button' | 'a'>({
 }: {
   onClick?: ClickHandler<T>;
   message: React.ReactNode;
-  render: (props: { handleClick: ClickHandler<T> }) => React.ReactNode;
+  render: (props: {
+    handleClick: NonNullable<ClickHandler<T>>;
+  }) => React.ReactNode;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { preferences } = usePreferences();

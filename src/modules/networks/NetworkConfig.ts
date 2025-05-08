@@ -1,3 +1,5 @@
+import { type PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
+
 interface NetworkAsset {
   id: string;
   address: null | string;
@@ -9,14 +11,24 @@ interface NetworkAsset {
 type NetworkSpecification = {
   standard: 'eip155';
   specification: {
-    eip155: {
+    eip155: null | {
       eip1559: boolean;
       id: number;
     };
   };
 };
 
-export type NetworkConfig = NetworkSpecification & {
+export type Eip155Specification = Omit<
+  NetworkSpecification,
+  'specification'
+> & {
+  specification: PartiallyRequired<
+    NetworkSpecification['specification'],
+    'eip155'
+  >;
+};
+
+interface NetworkConfigBase {
   id: string;
   is_testnet?: boolean;
   name: string;
@@ -56,4 +68,7 @@ export type NetworkConfig = NetworkSpecification & {
    * User-defined rpc url that has priority over rpc_url_internal
    */
   rpc_url_user?: string;
-};
+}
+
+export type NetworkConfig = NetworkConfigBase & NetworkSpecification;
+export type NetworkConfigEip155 = NetworkConfigBase & Eip155Specification;

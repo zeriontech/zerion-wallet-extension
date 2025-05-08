@@ -207,14 +207,16 @@ function ConfirmPasswordForm({
 export function Password({
   title,
   step,
+  defaultValue,
   onSubmit,
 }: {
   title: string;
   step: PasswordStep | null;
+  defaultValue: string | null;
   onSubmit(value: string): void;
 }) {
   const navigate = useNavigate();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(defaultValue || '');
 
   return (
     <>
@@ -231,7 +233,7 @@ export function Password({
               This password will unlock Zerion wallet in your browser.
             </UIText>
           </VStack>
-          {step === 'create' ? (
+          {step === PasswordStep.create ? (
             <CreatePasswordForm
               defaultValue={value}
               onSubmit={({ value, stats }) => {
@@ -247,7 +249,7 @@ export function Password({
                 }
               }}
             />
-          ) : step === 'confirm' ? (
+          ) : step === PasswordStep.confirm ? (
             <ConfirmPasswordForm
               password={value}
               onSubmit={() => {

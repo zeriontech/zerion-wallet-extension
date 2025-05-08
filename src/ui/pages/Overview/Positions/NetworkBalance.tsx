@@ -18,6 +18,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { usePreferences } from 'src/ui/features/preferences';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { NBSP } from 'src/ui/shared/typography';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
@@ -110,14 +111,18 @@ function DisclosureButton({
 
 export function NetworkBalance({
   value: totalValue,
-  filterChain,
+  standard = 'evm',
+  selectedChain,
   dappChain,
   onChange,
+  showAllNetworksOption = true,
 }: {
   value: React.ReactNode | null;
-  filterChain: string | null;
+  standard?: BlockchainType;
+  selectedChain: string | null;
   dappChain: string | null;
   onChange(value: string | null): void;
+  showAllNetworksOption?: boolean;
 }) {
   const { networks, isLoading } = useNetworks([dappChain].filter(isTruthy));
   const [showWalletNameContent, setShowWalletNameContent] = useState(false);
@@ -130,13 +135,14 @@ export function NetworkBalance({
     ? networks?.getNetworkByName(createChain(dappChain))
     : null;
 
-  const chain = filterChain || dappChain || NetworkSelectValue.All;
+  const chain = selectedChain || dappChain || NetworkSelectValue.All;
 
-  const isClearableFilter = Boolean(filterChain);
-  const showHelperButton = Boolean(filterChain || dappChain);
+  const isClearableFilter = Boolean(selectedChain);
+  const showHelperButton =
+    standard !== 'solana' && Boolean(selectedChain || dappChain);
   const showAllNetworksHelperButton =
-    (!dappChain && filterChain !== NetworkSelectValue.All) ||
-    (dappChain && (!filterChain || filterChain === dappChain));
+    (!dappChain && selectedChain !== NetworkSelectValue.All) ||
+    (dappChain && (!selectedChain || selectedChain === dappChain));
 
   const hasValue = totalValue != null;
 
@@ -153,10 +159,12 @@ export function NetworkBalance({
 
   const testnetMode = preferences?.testnetMode?.on;
   const networksPredicate = useMemo(() => {
-    return testnetMode
+    return standard === 'solana'
+      ? (network: NetworkConfig) => network.id.toLowerCase().includes('solana') // TODO: update check when backend updates solana network
+      : testnetMode
       ? (network: NetworkConfig) => Boolean(network.is_testnet)
       : undefined;
-  }, [testnetMode]);
+  }, [testnetMode, standard]);
 
   const textKind = 'headline/h3';
 
@@ -200,8 +208,9 @@ export function NetworkBalance({
       >
         <NetworkSelect
           filterPredicate={networksPredicate}
-          showAllNetworksOption={true}
+          showAllNetworksOption={showAllNetworksOption}
           value={chain}
+          standard={standard}
           onChange={(selectedValue) =>
             onChange(selectedValue === dappChain ? null : selectedValue)
           }

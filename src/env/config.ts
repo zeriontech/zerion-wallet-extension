@@ -13,7 +13,7 @@ function backendUrl(url: string | undefined, backend_env: string | undefined) {
   }
 }
 
-export const BACKEND_ENV = process.env.BACKEND_ENV;
+export const BACKEND_ENV = process.env.BACKEND_ENV || undefined; // deliberately fallback to undefined
 invariant(process.env.DEFI_SDK_API_TOKEN, 'DEFI_SDK_API_TOKEN is required in env');
 export const DEFI_SDK_API_TOKEN = process.env.DEFI_SDK_API_TOKEN;
 invariant(process.env.DEFI_SDK_API_URL, 'DEFI_SDK_API_URL is required in env');
@@ -32,4 +32,5 @@ export const PROXY_URL = process.env.PROXY_URL;
 export const SOCIAL_API_URL = process.env.SOCIAL_API_URL;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
+export const FEATURE_SOLANA = process.env.FEATURE_SOLANA === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const SLOW_MODE = false;

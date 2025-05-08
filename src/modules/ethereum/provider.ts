@@ -8,6 +8,7 @@ import { isJsonRpcError } from '@walletconnect/jsonrpc-utils';
 import { formatJsonRpcRequestPatched } from 'src/shared/custom-rpc/formatJsonRpcRequestPatched';
 import { InvalidParams, MethodNotImplemented } from 'src/shared/errors/errors';
 import { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { Connection } from './connection';
 
 function accountsEquals(arr1: string[], arr2: string[]) {
@@ -91,11 +92,15 @@ export class EthereumProvider extends JsonRpcProvider {
           updateChainId(this, value);
         }
         if (event === 'accountsChanged' && Array.isArray(value)) {
-          // it's okay to perform search like this because `this.accounts`
-          // always has at most one element
-          if (accountsEquals(value, this.accounts)) {
+          if (
+            // it's okay to perform search like this because `this.accounts`
+            // always has at most one element
+            accountsEquals(value, this.accounts)
+          ) {
             // Do not emit accountChanged because value hasn't changed
             return;
+          } else if (value.length && !isEthereumAddress(value.at(0))) {
+            this.accounts = [];
           } else {
             this.accounts = value;
           }
@@ -143,7 +148,7 @@ export class EthereumProvider extends JsonRpcProvider {
    * To handle this, make request bound to instance
    */
   public request = async (
-    request: RequestArguments & { id?: number },
+    request: RequestArguments,
     context?: unknown
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> => {

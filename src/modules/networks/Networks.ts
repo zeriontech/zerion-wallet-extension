@@ -4,10 +4,12 @@ import { capitalize } from 'capitalize-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { FEATURE_SOLANA } from 'src/env/config';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
-import type { NetworkConfig } from './NetworkConfig';
+import type { Eip155Specification, NetworkConfig } from './NetworkConfig';
 import { getAddress } from './asset';
 import { UnsupportedNetwork } from './errors';
 import { injectChainConfig } from './injectChainConfig';
@@ -76,17 +78,22 @@ export class Networks {
   private ethereumChainConfigs: EthereumChainConfig[];
   private visitedChains: Set<string>;
 
-  static getChainId(
-    network: Partial<Pick<NetworkConfig, 'standard' | 'specification'>>
-  ) {
-    if ('standard' in network && network.specification) {
-      if (network.standard === 'eip155') {
-        return normalizeChainId(network.specification.eip155.id);
-      }
+  private solanaNetworks: NetworkConfig[];
+  private evmNetworks: NetworkConfig[];
+
+  static getChainId<T extends Partial<NetworkConfig>>(network: T) {
+    if (Networks.isEip155(network)) {
+      return normalizeChainId(network.specification.eip155.id);
     }
     throw new Error(
       'NetworkConfig must have the "standard" configuration with the chain id'
     );
+  }
+
+  static isEip155<T extends Partial<NetworkConfig>>(
+    network: T
+  ): network is T & Eip155Specification {
+    return network.specification?.eip155 != null;
   }
 
   constructor({
@@ -100,13 +107,20 @@ export class Networks {
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
     this.networks = injectChainConfigs(networks, ethereumChainConfigs);
+    if (FEATURE_SOLANA !== 'on') {
+      this.networks = this.networks.filter((n) => n.standard === 'eip155');
+    }
+    this.evmNetworks = this.networks.filter((n) => n.standard === 'eip155');
+    this.solanaNetworks = this.networks.filter(
+      (n) => n.id.toLowerCase().includes('solana') // TODO: filter by n['standard'] when backend updates
+    );
     this.collection = toCollection(
       this.networks,
       (network) => network.id,
       (x) => x
     );
     this.collectionByEvmId = toCollection(
-      this.networks,
+      this.evmNetworks,
       (x) => Networks.getChainId(x),
       (x) => x
     );
@@ -118,16 +132,21 @@ export class Networks {
     return network.name || capitalize(network.id);
   }
 
-  getNetworkByName(chain: Chain) {
+  getByNetworkId(id: Chain) {
     return (
-      this.collection[chain.toString()] ||
-      this.collection[this.networkIdAliases[chain.toString()]]
+      this.collection[id.toString()] ||
+      this.collection[this.networkIdAliases[id.toString()]]
     );
   }
 
+  /** @deprecated, prefer {this.getByNetworkId} */
+  getNetworkByName(chain: Chain) {
+    return this.getByNetworkId(chain);
+  }
+
   private toId(chain: Chain) {
-    const item = this.getNetworkByName(chain);
-    return item ? Networks.getChainId(item) : null;
+    const item = this.getByNetworkId(chain);
+    return item && Networks.isEip155(item) ? Networks.getChainId(item) : null;
   }
 
   isSavedLocallyChain(chain: Chain) {
@@ -152,10 +171,14 @@ export class Networks {
     return this.networks.filter((item) => !item.is_testnet);
   }
 
-  getDefaultNetworks() {
-    return this.networks.filter((item) => {
+  getDefaultNetworks(standard: BlockchainType) {
+    const items =
+      standard === 'solana' ? this.solanaNetworks : this.evmNetworks;
+    const ignorePositionsSupport = standard === 'solana'; // TODO: remove check when backend supports Solana positions
+    return items.filter((item) => {
       const chain = createChain(item.id);
       return (
+        ignorePositionsSupport ||
         this.supports('positions', chain) ||
         this.isSavedLocallyChain(chain) ||
         this.isVisitedChain(chain)
@@ -172,10 +195,6 @@ export class Networks {
     );
   }
 
-  findEthereumChainById(chainId: ChainId) {
-    return this.collectionByEvmId[chainId];
-  }
-
   getChainId(chain: Chain) {
     return this.toId(chain);
   }
@@ -188,7 +207,7 @@ export class Networks {
   }
 
   getChainName(chain: Chain) {
-    return this.getNetworkByName(chain)?.name || capitalize(String(chain));
+    return this.getByNetworkId(chain)?.name || capitalize(String(chain));
   }
 
   getNetworkById(chainId: ChainId) {
@@ -214,7 +233,7 @@ export class Networks {
   }
 
   getExplorerHomeUrlByName(chain: Chain) {
-    return this.getNetworkByName(chain)?.explorer_home_url;
+    return this.getByNetworkId(chain)?.explorer_home_url;
   }
 
   private getExplorerTxUrl(network: NetworkConfig | undefined, hash: string) {
@@ -230,11 +249,11 @@ export class Networks {
   }
 
   getExplorerTxUrlByName(chain: Chain, hash: string) {
-    return this.getExplorerTxUrl(this.getNetworkByName(chain), hash);
+    return this.getExplorerTxUrl(this.getByNetworkId(chain), hash);
   }
 
   getExplorerAddressUrlByName(chain: Chain, address: string) {
-    return this.getExplorerAddressUrl(this.getNetworkByName(chain), address);
+    return this.getExplorerAddressUrl(this.getByNetworkId(chain), address);
   }
 
   private getExplorerAddressUrl(
@@ -252,37 +271,15 @@ export class Networks {
   }
 
   getExplorerTokenUrlByName(chain: Chain, address: string) {
-    return this.getExplorerTokenUrl(this.getNetworkByName(chain), address);
+    return this.getExplorerTokenUrl(this.getByNetworkId(chain), address);
   }
 
   getExplorerNameByChainName(chain: Chain) {
-    return this.getNetworkByName(chain)?.explorer_name;
-  }
-
-  // TODO: this method is not used. Should we remove it?
-  getEthereumChainParameter(chainId: ChainId): AddEthereumChainParameter {
-    const network = this.collectionByEvmId[chainId];
-    if (!network || !network.rpc_url_public || !network.native_asset) {
-      throw new UnsupportedNetwork(`Unsupported network id: ${chainId}`);
-    }
-    return {
-      chainId,
-      rpcUrls: network.rpc_url_public,
-      chainName: network.name,
-      nativeCurrency: {
-        name: network.native_asset.name,
-        symbol: network.native_asset.symbol,
-        decimals: network.native_asset.decimals,
-      },
-      iconUrls: [network.icon_url],
-      blockExplorerUrls: network.explorer_home_url
-        ? [network.explorer_home_url]
-        : [],
-    };
+    return this.getByNetworkId(chain)?.explorer_name;
   }
 
   supports(purpose: SupportsFlags, chain: Chain): boolean {
-    const network = this.getNetworkByName(chain);
+    const network = this.getByNetworkId(chain);
     if (!network) {
       return false;
     }
@@ -319,7 +316,7 @@ export class Networks {
   }
 
   getRpcUrlInternal(chain: Chain) {
-    const network = this.getNetworkByName(chain);
+    const network = this.getByNetworkId(chain);
     if (!network) {
       throw new Error(`Cannot find network: ${chain}`);
     }
@@ -338,7 +335,7 @@ export class Networks {
   }
 
   getRpcUrlPublic(chain: Chain) {
-    const network = this.getNetworkByName(chain);
+    const network = this.getByNetworkId(chain);
     if (!network) {
       throw new Error(`Cannot find network: ${chain}`);
     }

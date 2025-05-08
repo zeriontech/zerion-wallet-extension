@@ -52,7 +52,7 @@ function PrivateKeyImportFlow({
           }
         />
         {address ? (
-          <DecorativeMessageDone messageKind="import" address={address} />
+          <DecorativeMessageDone messageKind="import" addresses={[address]} />
         ) : null}
         {errorMessage ? (
           <UIText kind="small/regular" color="var(--negative-500)">

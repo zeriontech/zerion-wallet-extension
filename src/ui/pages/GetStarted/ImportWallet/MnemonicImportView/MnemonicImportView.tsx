@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -9,10 +9,16 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
+import { useBackgroundKind } from 'src/ui/components/Background';
+import {
+  useBodyStyle,
+  whiteBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
-import { getFirstNMnemonicWallets } from './getFirstNMnemonicWallets';
+import type { DerivedWallets } from './helpers';
+import { prepareWalletsToImport } from './helpers';
 
 function useMnenomicPhraseForLocation({
   locationStateStore,
@@ -59,39 +65,53 @@ function useMnenomicPhraseForLocation({
   }
 }
 
+const bgStyle = {
+  ['--surface-background-color']: 'var(--z-index-0)',
+} as React.CSSProperties;
 export function MnemonicImportView({
   locationStateStore,
 }: {
   locationStateStore: MemoryLocationState;
 }) {
-  const [count] = useState(100);
   const { phrase, isLoading: isLoadingPhrase } = useMnenomicPhraseForLocation({
     locationStateStore,
   });
-  const { data: wallets } = useQuery({
-    queryKey: ['getFirstNMnemonicWallets', phrase, count],
-    queryFn: async () =>
-      phrase ? getFirstNMnemonicWallets({ phrase, n: count }) : undefined,
+  const { data } = useQuery({
+    queryKey: ['prepareWalletsToImport', phrase],
+    queryFn: async (): Promise<{
+      derivedWallets: DerivedWallets;
+      addressesToCheck: string[];
+    } | void> => {
+      if (!phrase) {
+        return;
+      }
+      return prepareWalletsToImport(phrase);
+    },
     enabled: Boolean(phrase),
     useErrorBoundary: true,
   });
   const { value } = useAddressActivity(
-    { addresses: wallets?.map((w) => w.address) || [] },
-    { enabled: Boolean(wallets), keepStaleData: true }
+    { addresses: data?.addressesToCheck || [] },
+    { enabled: Boolean(data?.addressesToCheck), keepStaleData: true }
   );
   const { isStale: isStaleValue } = useStaleTime(value, 3000);
   const shouldWaitForValue = value == null && !isStaleValue;
+  useBackgroundKind(whiteBackgroundKind);
+  useBodyStyle(bgStyle);
   return (
     <>
-      <NavigationTitle title="Wallets Ready to Import" />
-      {isLoadingPhrase || shouldWaitForValue || wallets == null ? (
+      <NavigationTitle title={null} documentTitle="Wallets Ready to Import" />
+      {isLoadingPhrase || shouldWaitForValue || data == null ? (
         <PageColumn>
           <PageTop />
           <ViewLoading />
           <PageBottom />
         </PageColumn>
       ) : (
-        <AddressImportFlow wallets={wallets} activeWallets={value ?? {}} />
+        <AddressImportFlow
+          wallets={data.derivedWallets}
+          activeWallets={value ?? {}}
+        />
       )}
     </>
   );

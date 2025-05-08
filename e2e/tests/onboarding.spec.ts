@@ -58,6 +58,8 @@ describe('Onboarding', () => {
   }) => {
     await welcomePage.createNewWalletLink.click();
     await setPassword(page, 'MyVeryStrongP@ssw0rd');
+    const createButton = page.getByRole('button', { name: /Create/i });
+    await createButton.click();
     await flow.skipBackup();
     await flow.expectSuccess();
   });
@@ -70,6 +72,8 @@ describe('Onboarding', () => {
   }) => {
     await welcomePage.createNewWalletLink.click();
     await setPassword(page, password);
+    const createButton = page.getByRole('button', { name: /Create/i });
+    await createButton.click();
     await flow.backupAndVerify();
     await flow.expectSuccess();
   });
@@ -84,22 +88,7 @@ describe('Onboarding', () => {
     await flow.start();
     const phrase = generateRandomRecoveryPhrase();
     await flow.importRecoveryPhrase(phrase);
-    await flow.selectWallets(1);
-    await setPassword(page, password);
-    await flow.expectSuccess();
-  });
-
-  test('User can import multiple wallets using recovery phrase', async ({
-    page,
-    welcomePage,
-    importRecoveryPhraseFlow: flow,
-    password,
-  }) => {
-    await welcomePage.importExistingWalletLink.click();
-    await flow.start();
-    const phrase = generateRandomRecoveryPhrase();
-    await flow.importRecoveryPhrase(phrase);
-    await flow.selectWallets(9);
+    await page.getByRole('button', { name: /Continue\.*/i }).click();
     await setPassword(page, password);
     await flow.expectSuccess();
   });

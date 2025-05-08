@@ -20,17 +20,18 @@ import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
-import {
-  isEthereumAddress as checkIsEthereumAddress,
-  isEthereumAddress,
-} from 'src/shared/isEthereumAddress';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { getError } from 'src/shared/errors/getError';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { hasChecksumError } from 'src/modules/ethereum/toChecksumAddress';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 
+function isValidAddress(address: string) {
+  return isEthereumAddress(address) || isSolanaAddress(address);
+}
 async function submitReadonlyAddress({ address }: { address: string }) {
   await walletPort.request('uiImportReadonlyAddress', {
     address,
@@ -48,16 +49,11 @@ function getHints(
     return { address: null, domains: null };
   }
 
-  if (isEthereumAddress(query)) {
-    return {
-      address: null,
-      domains: data.data[0]?.identities.map((value) => value.handle) || null,
-    };
+  const domains = data.data[0]?.identities.map((value) => value.handle) || null;
+  if (isValidAddress(query)) {
+    return { address: null, domains };
   } else {
-    return {
-      address: data.data[0]?.address ?? null,
-      domains: data.data[0]?.identities.map((value) => value.handle) || null,
-    };
+    return { address: data.data[0]?.address ?? null, domains };
   }
 }
 
@@ -73,10 +69,9 @@ async function lookup(value: string) {
 
 async function lookupAddressByQuery(query: string) {
   try {
-    const isEthereumAddress = checkIsEthereumAddress(query);
     const promises = [lookup(query)];
     if (
-      !isEthereumAddress &&
+      !isValidAddress(query) &&
       !query.endsWith('.eth') &&
       !query.endsWith('.lens')
     ) {
@@ -112,7 +107,7 @@ export function AddReadonlyAddress() {
 
   const [debouncedValue, setDebouncedValue] = useState('');
   const query = debouncedValue.trim();
-  const isEthereumAddress = checkIsEthereumAddress(query);
+  const isSupportedAddress = isValidAddress(query);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { data, isInitialLoading, isError, error } = useQuery({
@@ -124,12 +119,12 @@ export function AddReadonlyAddress() {
     suspense: false,
   });
 
-  const isDomainResolving = query && isInitialLoading && !isEthereumAddress;
-  const resolveError = isError && !isEthereumAddress;
+  const isDomainResolving = query && isInitialLoading && !isSupportedAddress;
+  const resolveError = isError && !isSupportedAddress;
 
   useCustomValidity({
     ref: inputRef,
-    customValidity: isEthereumAddress
+    customValidity: isSupportedAddress
       ? '' // Form MUST be valid for valid eth address regardless of the getWalletsMeta request state
       : isDomainResolving
       ? 'Wait until address is resolved'
@@ -176,7 +171,7 @@ export function AddReadonlyAddress() {
         <input
           type="hidden"
           name="address"
-          value={isEthereumAddress ? query : hints.address ?? ''}
+          value={isSupportedAddress ? query : hints.address ?? ''}
           required={true}
         />
         <VStack gap={4}>
@@ -220,7 +215,7 @@ export function AddReadonlyAddress() {
               />
             )}
           </ZStack>
-          {isEthereumAddress && hasChecksumError(query) ? (
+          {isSupportedAddress && hasChecksumError(query) ? (
             <UIText kind="caption/regular" color="var(--notice-500)">
               Warning: address might have an error
             </UIText>

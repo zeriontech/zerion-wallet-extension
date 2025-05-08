@@ -25,7 +25,14 @@ type SignTypedDataParams = MessageContextParams & {
   typedData: string | TypedData;
 };
 
+type SolanaSignMessageParams = MessageContextParams & {
+  messageHex: string;
+};
+
 export interface SignMsgBtnHandle {
+  /** Solana signMessage */
+  signMessage(params: SolanaSignMessageParams): Promise<string>;
+  /** Ethereum personalSign */
   personalSign(params: PersonalSignParams): Promise<string>;
   signTypedData_v4: (params: SignTypedDataParams) => Promise<string>;
 }
@@ -49,7 +56,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
 ) {
   const hardwareSignRef = useRef<SignMessageHandle | null>(null);
 
-  const { mutateAsync: personalSign, ...personalSignMutation } = useMutation({
+  const personalSignMutation = useMutation({
     mutationFn: async (params: PersonalSignParams) => {
       if (isDeviceAccount(wallet)) {
         const { params: methodParams, ...messageContextParams } = params;
@@ -71,38 +78,53 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     },
   });
 
-  const { mutateAsync: signTypedData_v4, ...signTypedData_v4Mutation } =
-    useMutation({
-      mutationFn: async (params: SignTypedDataParams) => {
-        if (isDeviceAccount(wallet)) {
-          const { typedData, ...messageContextParams } = params;
-          invariant(
-            hardwareSignRef.current,
-            'HardwareSignMessage must be mounted'
-          );
-          const signature = await hardwareSignRef.current.signTypedData_v4(
-            typedData
-          );
-          walletPort.request('registerTypedDataSign', {
-            typedData,
-            address: wallet.address,
-            ...messageContextParams,
-          });
-          return signature;
-        } else {
-          return await walletPort.request('signTypedData_v4', params);
-        }
-      },
-    });
+  const signTypedData_v4Mutation = useMutation({
+    mutationFn: async (params: SignTypedDataParams) => {
+      if (isDeviceAccount(wallet)) {
+        const { typedData, ...messageContextParams } = params;
+        invariant(
+          hardwareSignRef.current,
+          'HardwareSignMessage must be mounted'
+        );
+        const signature = await hardwareSignRef.current.signTypedData_v4(
+          typedData
+        );
+        walletPort.request('registerTypedDataSign', {
+          typedData,
+          address: wallet.address,
+          ...messageContextParams,
+        });
+        return signature;
+      } else {
+        return await walletPort.request('signTypedData_v4', params);
+      }
+    },
+  });
 
-  useImperativeHandle(ref, () => ({ personalSign, signTypedData_v4 }));
+  const solanaSignMutation = useMutation({
+    mutationFn: async (params: SolanaSignMessageParams) => {
+      if (isDeviceAccount(wallet)) {
+        throw new Error('TODO: Support solana signMessage method for ledger');
+      } else {
+        const result = await walletPort.request('solana_signMessage', params);
+        return result.signatureSerialized;
+      }
+    },
+  });
 
-  const isLoading =
-    personalSignMutation.isLoading || signTypedData_v4Mutation.isLoading;
-  const isSuccess =
-    personalSignMutation.isSuccess || signTypedData_v4Mutation.isSuccess;
-  const isError =
-    personalSignMutation.isError || signTypedData_v4Mutation.isError;
+  useImperativeHandle(ref, () => ({
+    personalSign: personalSignMutation.mutateAsync,
+    signTypedData_v4: signTypedData_v4Mutation.mutateAsync,
+    signMessage: solanaSignMutation.mutateAsync,
+  }));
+
+  const activeMutation =
+    [personalSignMutation, signTypedData_v4Mutation, solanaSignMutation].find(
+      (x) => x.status !== 'idle'
+    ) || personalSignMutation;
+  const isLoading = activeMutation.isLoading;
+  const isSuccess = activeMutation.isSuccess;
+  const isError = activeMutation.isError;
 
   // there is a small delay after using a holdable button
   // button should be disabled after successful sign to prevent a duplicating call

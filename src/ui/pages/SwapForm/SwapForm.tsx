@@ -448,7 +448,7 @@ export function SwapFormComponent() {
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<string> => {
       invariant(approvalTransaction, 'approve transaction is not configured');
       let transaction = configureTransactionToBeSigned(approvalTransaction);
       if (paymasterEligible) {
@@ -466,6 +466,7 @@ export function SwapFormComponent() {
 
       const txResponse = await approveTxBtnRef.current.sendTransaction({
         transaction,
+        solTransaction: undefined,
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
@@ -477,7 +478,8 @@ export function SwapFormComponent() {
           chain,
         }),
       });
-      return txResponse.hash;
+      invariant(txResponse.ethereum?.hash);
+      return txResponse.ethereum.hash;
     },
     onMutate: () => 'sendTransaction',
   });
@@ -507,7 +509,7 @@ export function SwapFormComponent() {
     isSuccess,
     ...sendTransactionMutation
   } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<string> => {
       if (!gasPrices) {
         throw new Error('Unknown gas price');
       }
@@ -531,6 +533,7 @@ export function SwapFormComponent() {
       const receiveValue = selectedQuote.output_amount_estimation;
       const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction,
+        solTransaction: undefined,
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
@@ -543,7 +546,8 @@ export function SwapFormComponent() {
         }),
         quote: selectedQuote,
       });
-      return txResponse.hash;
+      invariant(txResponse.ethereum?.hash);
+      return txResponse.ethereum.hash;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)

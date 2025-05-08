@@ -34,14 +34,22 @@ import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
+import {
+  assertKnownEcosystems,
+  isMatchForEcosystem,
+} from 'src/shared/wallet/shared';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { EmptyView2 } from 'src/ui/components/EmptyView';
 import { WalletList } from '../WalletSelect/WalletList';
 
 function WalletSelectDialog({
   value,
+  ecosystem,
   walletGroups,
   onSelect,
 }: {
   value: string;
+  ecosystem: BlockchainType;
   walletGroups?: WalletGroup[] | null;
   onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
 }) {
@@ -51,6 +59,7 @@ function WalletSelectDialog({
       walletGroups={walletGroups}
       onSelect={onSelect}
       showAddressValues={true}
+      predicate={(item) => isMatchForEcosystem(item.address, ecosystem)}
     />
   ) : (
     <FillView>
@@ -137,12 +146,14 @@ function RequestAccountsPermissions({ originName }: { originName: string }) {
 
 function RequestAccountsView({
   origin,
+  ecosystem,
   wallet,
   walletGroups,
   onConfirm,
   onReject,
 }: {
   origin: string;
+  ecosystem: BlockchainType;
   wallet: ExternallyOwnedAccount;
   walletGroups?: WalletGroup[] | null;
   onConfirm: (value: { address: string; origin: string }) => void;
@@ -169,6 +180,7 @@ function RequestAccountsView({
         <WalletSelectDialog
           value={normalizeAddress(selectedWallet.address)}
           walletGroups={walletGroups}
+          ecosystem={ecosystem}
           onSelect={(wallet) => {
             dialogRef.current?.close();
             setSelectedWallet(wallet);
@@ -260,29 +272,52 @@ function RequestAccountsView({
   );
 }
 
+class NoWalletForEcosystemError extends Error {}
+
 export function RequestAccounts() {
   const [params] = useSearchParams();
   const origin = params.get('origin');
   const windowId = params.get('windowId');
+  const ecosystem = (params.get('ecosystem') || 'evm') as BlockchainType;
+  assertKnownEcosystems([ecosystem]);
 
   invariant(origin, 'origin get-parameter is required');
   invariant(windowId, 'windowId get-parameter is required');
 
-  const walletGroupsQuery = useQuery({
-    queryKey: ['wallet/uiGetWalletGroups'],
-    queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
-  });
-  const {
-    data: wallet,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['wallet/uiGetCurrentWallet'],
-    queryFn: () => {
-      return walletPort.request('uiGetCurrentWallet');
+  const { data, isLoading, isError, error } = useQuery({
+    retry: 1,
+    queryKey: ['prepareRequestAccountsViewData', ecosystem],
+    useErrorBoundary: false,
+    queryFn: async () => {
+      const currentWallet = await walletPort.request('uiGetCurrentWallet');
+      const allWalletGroups = await walletPort.request('uiGetWalletGroups');
+      const walletGroups = allWalletGroups?.filter((group) => {
+        return group.walletContainer.wallets.some((wallet) =>
+          isMatchForEcosystem(wallet.address, ecosystem)
+        );
+      });
+
+      const currentAddress = currentWallet?.address;
+
+      let wallet: typeof currentWallet = null;
+      if (currentAddress && isMatchForEcosystem(currentAddress, ecosystem)) {
+        wallet = currentWallet;
+      } else {
+        wallet =
+          walletGroups
+            ?.at(0)
+            ?.walletContainer.wallets.find((wallet) =>
+              isMatchForEcosystem(wallet.address, ecosystem)
+            ) ?? null;
+      }
+      if (!wallet) {
+        throw new NoWalletForEcosystemError(ecosystem);
+      }
+      return { wallet, walletGroups };
     },
   });
+  const wallet = data?.wallet;
+  const walletGroups = data?.walletGroups;
   const handleConfirm = useCallback(
     (result: { address: string; origin: string }) => {
       windowPort.confirm(windowId, result);
@@ -303,17 +338,32 @@ export function RequestAccounts() {
   });
 
   if (isError) {
-    return <p>Some Error</p>;
+    if (error instanceof NoWalletForEcosystemError) {
+      const messages: Record<BlockchainType, string> = {
+        solana:
+          'You do not have Solana wallets to connect. Please close this window and visit Settings –> Manage Wallets to create a Solana wallet',
+        evm: 'You do not have Ethereum wallets to connect. Please close this window and visit Settings –> Manage Wallets to create an Ethereum wallet',
+      };
+      return (
+        <EmptyView2
+          title="No wallets to connect"
+          message={messages[ecosystem]}
+        />
+      );
+    } else {
+      throw error;
+    }
   }
-  if (isLoading || !wallet || walletGroupsQuery.isLoading) {
+  if (isLoading || !wallet) {
     return null;
   }
   return (
     <>
       <RequestAccountsView
         wallet={wallet}
-        walletGroups={walletGroupsQuery.data}
+        walletGroups={walletGroups}
         origin={origin}
+        ecosystem={ecosystem}
         onConfirm={handleConfirm}
         onReject={handleReject}
       />

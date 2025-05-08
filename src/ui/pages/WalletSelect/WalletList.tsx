@@ -227,6 +227,7 @@ export function WalletList({
   showAddressValues,
   renderItemFooter,
   onSelect,
+  predicate,
 }: {
   walletGroups: WalletGroupInfo[];
   selectedAddress: string;
@@ -239,6 +240,7 @@ export function WalletList({
     wallet: AnyWallet;
   }) => React.ReactNode;
   onSelect(wallet: AnyWallet): void;
+  predicate?: (item: AnyWallet) => boolean;
 }) {
   const items: Item[] = [];
   /**
@@ -249,6 +251,9 @@ export function WalletList({
   const supportsCssAnchor = false; // CSS.supports('anchor-name: --name');
   for (const group of walletGroups) {
     for (const wallet of group.walletContainer.wallets) {
+      if (predicate && !predicate(wallet)) {
+        continue;
+      }
       const key = `${group.id}-${wallet.address}`;
       items.push({
         key,

@@ -166,11 +166,11 @@ function NFTItem({
 
 export function NonFungibleTokens({
   dappChain,
-  filterChain,
+  selectedChain,
   onChainChange,
 }: {
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
   const { currency } = useCurrency();
@@ -182,7 +182,7 @@ export function NonFungibleTokens({
   const { value: nftTotalValue } = useNftsTotalValue(params);
   const { networks } = useNetworks();
 
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
   const isSupportedByBackend =
     chainValue === NetworkSelectValue.All
       ? true
@@ -233,7 +233,7 @@ export function NonFungibleTokens({
     >
       <NetworkBalance
         dappChain={dappChain}
-        filterChain={filterChain}
+        selectedChain={selectedChain}
         onChange={onChainChange}
         value={null}
       />
@@ -314,7 +314,7 @@ export function NonFungibleTokens({
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           onChange={onChainChange}
           value={
             nftChainValue != null ? (

@@ -1,5 +1,6 @@
 import { Store } from 'store-unit';
 import { type Client } from 'defi-sdk';
+import { invariant } from 'src/shared/invariant';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
@@ -7,6 +8,7 @@ import { Networks } from './Networks';
 import { getNetworkByChainId, getNetworks } from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
 import { toNetworkConfig } from './helpers';
+import { createChain } from './Chain';
 
 interface State {
   networks: Networks | null;
@@ -152,7 +154,7 @@ export class NetworksStore extends Store<State> {
     return this.updateNetworks();
   }
 
-  private async fetchNetworkById(chainId: ChainId) {
+  private async fetchNetworkByChainId(chainId: ChainId) {
     if (!this.isReady) {
       await this.load();
     }
@@ -196,12 +198,21 @@ export class NetworksStore extends Store<State> {
     return this.loaderPromises[key];
   }
 
+  async fetchNetworkById(id: string): Promise<NetworkConfig> {
+    const networks = await this.load({ chains: [id] });
+    const network = networks.getByNetworkId(createChain(id));
+    invariant(network, `Could not load network for id: ${id}`);
+    return network;
+  }
+
   async loadNetworksByChainId(chainId: ChainId) {
     const key = `chainId-${chainId}`;
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworkById(chainId).finally(() => {
-        delete this.loaderPromises[key];
-      });
+      this.loaderPromises[key] = this.fetchNetworkByChainId(chainId).finally(
+        () => {
+          delete this.loaderPromises[key];
+        }
+      );
     }
     return this.loaderPromises[key];
   }

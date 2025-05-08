@@ -51,7 +51,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
-import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { useAddressPositionFromNode } from 'src/ui/shared/requests/useEvmAddressPositions';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { invariant } from 'src/shared/invariant';
@@ -67,6 +67,7 @@ import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -662,7 +663,7 @@ function PositionList({
 
 function MultiChainPositions({
   address,
-  filterChain,
+  selectedChain,
   dappChain,
   onChainChange,
   renderEmptyView,
@@ -674,7 +675,7 @@ function MultiChainPositions({
   renderEmptyView: () => React.ReactNode;
   renderLoadingView: () => React.ReactNode;
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
   portfolioDecomposition: WalletPortfolio | null;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
@@ -686,7 +687,7 @@ function MultiChainPositions({
   );
   const positions = data?.data;
 
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
 
   const items = useMemo(
     () =>
@@ -717,8 +718,9 @@ function MultiChainPositions({
     <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
+          standard={isSolanaAddress(address) ? 'solana' : 'evm'}
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           onChange={onChainChange}
           value={
             chainTotalValue ? (
@@ -744,25 +746,26 @@ function RawChainPositions({
   renderEmptyView,
   renderLoadingView,
   renderErrorView,
-  filterChain,
+  selectedChain,
   dappChain,
   onChainChange,
   ...positionListProps
 }: {
+  address: string;
   renderEmptyView: () => React.ReactNode;
   renderLoadingView: () => React.ReactNode;
   renderErrorView: (chainName: string) => React.ReactNode;
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
   invariant(
-    filterChain !== NetworkSelectValue.All,
+    selectedChain !== NetworkSelectValue.All,
     'All networks filter should not show custom chain positions'
   );
   const { networks } = useNetworks();
-  const chainValue = filterChain || dappChain;
+  const chainValue = selectedChain || dappChain;
   invariant(
     chainValue,
     'Chain filter should be defined to show custom chain positions'
@@ -772,7 +775,7 @@ function RawChainPositions({
     data: addressPositions,
     isLoading,
     isError,
-  } = useEvmAddressPositions({ address, chain });
+  } = useAddressPositionFromNode({ address, chain });
   if (isError) {
     return renderErrorView(
       networks?.getChainName(chain) || chainValue
@@ -789,9 +792,11 @@ function RawChainPositions({
     <VStack gap={8}>
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
+          standard={isSolanaAddress(address) ? 'solana' : 'evm'}
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           onChange={onChainChange}
+          showAllNetworksOption={!isSolanaAddress(address)}
           value={
             <NeutralDecimals
               parts={formatCurrencyToParts(
@@ -815,22 +820,23 @@ function RawChainPositions({
 
 export function Positions({
   dappChain,
-  filterChain,
+  selectedChain,
   onChainChange,
 }: {
   dappChain: string | null;
-  filterChain: string | null;
+  selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
   const { currency } = useCurrency();
   const { ready, params, singleAddressNormalized } = useAddressParams();
+  const addrIsSolana = isSolanaAddress(singleAddressNormalized);
   const { data, ...portfolioQuery } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready && !addrIsSolana }
   );
   const walletPortfolio = data?.data;
-  const chainValue = filterChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
   const chain =
     chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
   const positionChains = useMemo(() => {
@@ -843,7 +849,9 @@ export function Positions({
   const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
-  const { networks, isLoading } = useNetworks(positionChains);
+  const { networks, isLoading } = useNetworks(
+    positionChains.length ? positionChains : undefined
+  );
   if (!ready) {
     return (
       <CenteredFillViewportView
@@ -857,7 +865,7 @@ export function Positions({
   }
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
   const isSupportedByBackend =
-    chain == null ? true : networks?.supports('positions', chain);
+    chain == null ? !addrIsSolana : networks?.supports('positions', chain);
 
   const emptyNetworkBalance = (
     <div
@@ -870,8 +878,9 @@ export function Positions({
       }}
     >
       <NetworkBalance
+        standard={addrIsSolana ? 'solana' : 'evm'}
         dappChain={dappChain}
-        filterChain={filterChain}
+        selectedChain={selectedChain}
         onChange={onChainChange}
         value={null}
       />
@@ -918,7 +927,7 @@ export function Positions({
       <MultiChainPositions
         address={singleAddressNormalized}
         dappChain={dappChain}
-        filterChain={filterChain}
+        selectedChain={selectedChain}
         moveGasPositionToFront={moveGasPositionToFront}
         onChainChange={onChainChange}
         renderEmptyView={renderEmptyViewForNetwork}
@@ -927,12 +936,12 @@ export function Positions({
       />
     );
   } else {
-    if (isLoading || portfolioQuery.isLoading) {
+    if (isLoading || portfolioQuery.fetchStatus === 'fetching') {
       return renderLoadingViewForNetwork();
     }
     invariant(networks, `Failed to load network info for ${chain}`);
     const network = chain ? networks.getNetworkByName(chain) : null;
-    if (!network?.id) {
+    if (!network?.id && !addrIsSolana) {
       return renderErrorViewForNetwork(chainValue);
     }
 
@@ -941,7 +950,7 @@ export function Positions({
         <RawChainPositions
           address={singleAddressNormalized}
           dappChain={dappChain}
-          filterChain={filterChain}
+          selectedChain={selectedChain}
           moveGasPositionToFront={moveGasPositionToFront}
           onChainChange={onChainChange}
           renderEmptyView={renderEmptyViewForNetwork}

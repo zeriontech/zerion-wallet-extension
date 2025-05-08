@@ -184,7 +184,6 @@ function AddressSelectList({
       >
         <WalletListPresentation
           values={values}
-          derivationPathType={pathType}
           wallets={wallets}
           renderMedia={(index) => (
             <WalletMediaData
@@ -193,7 +192,6 @@ function AddressSelectList({
             />
           )}
           renderDetail={null}
-          initialCount={COUNT}
           listTitle={null}
           onSelect={toggleAddress}
           existingAddressesSet={existingAddressesSet}

@@ -9,7 +9,6 @@ import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
 } from 'src/modules/ethereum/types/IncomingTransaction';
-import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -18,7 +17,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Background } from 'src/ui/components/Background';
+import { Background, useBackgroundKind } from 'src/ui/components/Background';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -88,6 +87,14 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
+import { solFromBase64 } from 'src/modules/solana/transactions/create';
+import type {
+  SignAllTransactionsResult,
+  SignTransactionResult,
+} from 'src/shared/types/SubmittedTransactionResponse';
+import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
+import type { SolTransaction } from 'src/modules/solana/SolTransaction';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -636,14 +643,15 @@ function SendTransactionContent({
   }, []);
 
   const next = params.get('next');
-  async function handleSentTransaction(tx: SerializableTransactionResponse) {
+  async function handleSentTransaction(res: SignTransactionResult) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
       await wait(500);
     }
     const windowId = params.get('windowId');
     invariant(windowId, 'windowId get-parameter is required');
-    windowPort.confirm(windowId, tx.hash);
+    const result = res.ethereum ? res.ethereum.hash : res.solana.signature;
+    windowPort.confirm(windowId, result);
     if (next) {
       navigate(next);
     }
@@ -666,6 +674,8 @@ function SendTransactionContent({
       const feeValueCommon = feeValueCommonRef.current || null;
       return sendTxBtnRef.current.sendTransaction({
         transaction: tx,
+        // TODO: How to avoid needing to pass this?
+        solTransaction: undefined,
         chain: chain.toString(),
         feeValueCommon,
         initiator: origin,
@@ -818,7 +828,7 @@ function SendTransactionContent({
   );
 }
 
-export function SendTransaction() {
+function EthSendTransaction() {
   const [params] = useSearchParams();
   const { data: wallet, isLoading } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -862,4 +872,281 @@ export function SendTransaction() {
       networks={networks}
     />
   );
+}
+
+function SolDefaultView({
+  addressAction,
+  origin,
+  wallet,
+  networks,
+}: {
+  origin: string;
+  addressAction: AnyAddressAction;
+  wallet: ExternallyOwnedAccount;
+  networks: Networks;
+}) {
+  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
+  return (
+    <>
+      <PageTop />
+      <div style={{ display: 'grid', placeItems: 'center' }}>
+        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
+          {addressAction.type.display_value}
+        </UIText>
+        <UIText kind="small/regular" color="var(--neutral-500)">
+          {origin === INTERNAL_ORIGIN ? (
+            'Zerion'
+          ) : originForHref ? (
+            <TextAnchor
+              // Open URL in a new _window_ so that extension UI stays open and visible
+              onClick={openInNewWindow}
+              href={originForHref.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {originForHref.hostname}
+            </TextAnchor>
+          ) : (
+            'Unknown Initiator'
+          )}
+        </UIText>
+        <Spacer height={8} />
+        <HStack gap={8} alignItems="center">
+          <WalletAvatar
+            address={wallet.address}
+            size={20}
+            active={false}
+            borderRadius={4}
+          />
+          <UIText kind="small/regular">
+            <WalletDisplayName wallet={wallet} />
+          </UIText>
+        </HStack>
+      </div>
+      <Spacer height={24} />
+
+      <VStack gap={16}>
+        <AddressActionDetails
+          recipientAddress={addressAction.label?.display_value.wallet_address}
+          addressAction={addressAction}
+          chain={createChain('solana')}
+          networks={networks}
+          wallet={wallet}
+          actionTransfers={addressAction.content?.transfers}
+          // singleAsset={singleAsset}
+          allowanceQuantityBase={null}
+          showApplicationLine={true}
+          singleAssetElementEnd={null}
+        />
+      </VStack>
+    </>
+  );
+}
+
+function assertKnownSolanaMethodParam(
+  value: string | null
+): asserts value is
+  | 'signTransaction'
+  | 'signAndSendTransaction'
+  | 'signAllTransactions' {
+  invariant(
+    value === 'signTransaction' ||
+      value === 'signAndSendTransaction' ||
+      value === 'signAllTransactions',
+    `Unsupported Solana method ${value}`
+  );
+}
+
+function normalizeTxParams(params: URLSearchParams):
+  | {
+      method: 'signAllTransactions';
+      transactions: SolTransaction[];
+      transaction: undefined;
+    }
+  | {
+      method: 'signTransaction' | 'signAndSendTransaction';
+      transactions: undefined;
+      transaction: SolTransaction;
+    } {
+  const method = params.get('method');
+  assertKnownSolanaMethodParam(method);
+  const base64Tx = params.get('transaction');
+  const base64Txs = params.get('transactions');
+  if (method === 'signAllTransactions') {
+    invariant(base64Txs, 'signAllTransactions: transactions param is required');
+    return {
+      method,
+      transaction: undefined,
+      transactions: (JSON.parse(base64Txs) as string[]).map((tx) =>
+        solFromBase64(tx)
+      ),
+    };
+  } else {
+    invariant(base64Tx, 'transaction param is required');
+    return {
+      method,
+      transaction: solFromBase64(base64Tx),
+      transactions: undefined,
+    };
+  }
+}
+
+function SolSendTransaction() {
+  const [params] = useSearchParams();
+  const origin = params.get('origin');
+  const clientScope = params.get('clientScope');
+  const txParams = useMemo(() => normalizeTxParams(params), [params]);
+
+  invariant(origin, 'origin get-parameter is required for this view');
+
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => walletPort.request('uiGetCurrentWallet'),
+    suspense: true,
+    useErrorBoundary: true,
+  });
+  invariant(wallet, 'Wallet must be available');
+  const { preferences } = usePreferences();
+  const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
+
+  const navigate = useNavigate();
+  const next = params.get('next');
+
+  async function handleSentTransaction(
+    res: SignTransactionResult | SignAllTransactionsResult
+  ) {
+    if (preferences?.enableHoldToSignButton) {
+      // small delay to show success state to the user before closing the popup
+      await wait(500);
+    }
+    const windowId = params.get('windowId');
+    invariant(windowId, 'windowId get-parameter is required');
+    invariant(res.solana, 'Solana response is expected');
+    windowPort.confirm(windowId, res.solana);
+    if (next) {
+      navigate(next);
+    }
+  }
+
+  const handleReject = () => {
+    const windowId = params.get('windowId');
+    invariant(windowId, 'windowId get-parameter is required');
+    windowPort.reject(windowId);
+    if (next) {
+      navigate(next);
+    }
+  };
+
+  const firstTx = txParams.transaction || txParams.transactions[0];
+  const addressAction = useMemo(
+    () => solanaTransactionToAddressAction(firstTx, wallet.address),
+    [firstTx, wallet.address]
+  );
+
+  const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
+    mutationFn: async () => {
+      invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
+      if (txParams.method === 'signAllTransactions') {
+        return sendTxBtnRef.current.signAllTransactions({
+          solTransactions: txParams.transactions,
+          // TODO: How to avoid needing to pass this?
+          transaction: undefined,
+          chain: 'solana',
+          feeValueCommon: null,
+          initiator: origin,
+          clientScope: clientScope || 'External Dapp',
+          method: txParams.method,
+          addressAction,
+        });
+      } else {
+        return sendTxBtnRef.current.sendTransaction({
+          solTransaction: txParams.transaction,
+          // TODO: How to avoid needing to pass this?
+          transaction: undefined,
+          chain: 'solana',
+          feeValueCommon: null,
+          initiator: origin,
+          clientScope: clientScope || 'External Dapp',
+          method: txParams.method,
+          addressAction,
+        });
+      }
+    },
+    onMutate: () => 'sendTransaction',
+    onSuccess: (tx) => handleSentTransaction(tx),
+  });
+
+  const { networks } = useNetworks();
+
+  useBackgroundKind(whiteBackgroundKind);
+
+  if (!networks) {
+    return null;
+  }
+
+  return (
+    <>
+      <NavigationTitle title={null} documentTitle="Send Transaction" />
+      <PageColumn
+        // different surface color on backgroundKind="white"
+        style={{
+          ['--surface-background-color' as string]: 'var(--neutral-100)',
+        }}
+      >
+        {addressAction ? (
+          <SolDefaultView
+            wallet={wallet}
+            addressAction={addressAction}
+            origin={origin}
+            networks={networks}
+          />
+        ) : null}
+        <Spacer height={16} />
+        <div>method: {txParams.method}</div>
+      </PageColumn>
+      <PageStickyFooter>
+        <Spacer height={16} />
+        <VStack style={{ textAlign: 'center' }} gap={8}>
+          {sendTransactionMutation.isError ? (
+            <UIText kind="body/regular" color="var(--negative-500)">
+              {txErrorToMessage(sendTransactionMutation.error)}
+            </UIText>
+          ) : null}
+          <div
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
+          >
+            <Button
+              ref={focusNode}
+              kind="regular"
+              type="button"
+              onClick={handleReject}
+            >
+              Cancel
+            </Button>
+            {preferences ? (
+              <SignTransactionButton
+                wallet={wallet}
+                ref={sendTxBtnRef}
+                onClick={() => sendTransaction()}
+                isLoading={sendTransactionMutation.isLoading}
+                disabled={sendTransactionMutation.isLoading}
+                buttonKind="primary"
+                holdToSign={preferences.enableHoldToSignButton}
+              />
+            ) : null}
+          </div>
+        </VStack>
+        <PageBottom />
+      </PageStickyFooter>
+    </>
+  );
+}
+
+export function SendTransaction() {
+  const [params] = useSearchParams();
+  if (params.get('ecosystem') === 'solana') {
+    return <SolSendTransaction />;
+  } else {
+    return <EthSendTransaction />;
+  }
 }

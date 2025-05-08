@@ -68,6 +68,7 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
@@ -364,8 +365,10 @@ function OverviewComponent() {
   const isReadonlyGroup =
     walletGroup && isReadonlyContainer(walletGroup.walletContainer);
   const [searchParams, setSearchParams] = useSearchParams();
-  const filterChain = searchParams.get('chain') || null;
-  const setFilterChain = useEvent((value: string | null) => {
+  const selectedChain = isSolanaAddress(singleAddress)
+    ? 'solana'
+    : searchParams.get('chain') || null;
+  const setSelectedChain = useEvent((value: string | null) => {
     // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
     setSearchParams(value ? [['chain', value]] : '');
   });
@@ -444,9 +447,9 @@ function OverviewComponent() {
     // so that we do not show unsupported network data
     if (isTestnetModeOnFirstRender.current !== isTestnetMode) {
       isTestnetModeOnFirstRender.current = null; // make it never equal current value
-      setFilterChain(null);
+      setSelectedChain(null);
     }
-  }, [isTestnetMode, setFilterChain]);
+  }, [isTestnetMode, setSelectedChain]);
   const testnetGuardView = (
     <CenteredFillViewportView
       adjustForNavigationBar={true}
@@ -489,7 +492,7 @@ function OverviewComponent() {
    * tabs, but clicking on current tab resets searchParams
    */
   const createTo = (to: string, { end = false } = {}) => {
-    if (!filterChain) {
+    if (!selectedChain) {
       return to;
     }
     const isActiveRoute = end
@@ -498,7 +501,7 @@ function OverviewComponent() {
     if (isActiveRoute) {
       return to;
     } else {
-      return `${to}?chain=${filterChain}`;
+      return `${to}?chain=${selectedChain}`;
     }
   };
 
@@ -727,8 +730,8 @@ function OverviewComponent() {
                       ) : null}
                       <Positions
                         dappChain={dappChain || null}
-                        filterChain={filterChain}
-                        onChainChange={setFilterChain}
+                        selectedChain={selectedChain}
+                        onChainChange={setSelectedChain}
                       />
                     </VStack>
                   </TestnetworkGuard>
@@ -747,8 +750,8 @@ function OverviewComponent() {
                   >
                     <NonFungibleTokens
                       dappChain={dappChain || null}
-                      filterChain={filterChain}
-                      onChainChange={setFilterChain}
+                      selectedChain={selectedChain}
+                      onChainChange={setSelectedChain}
                     />
                   </TestnetworkGuard>
                 </ViewSuspense>
@@ -766,8 +769,8 @@ function OverviewComponent() {
                   >
                     <HistoryList
                       dappChain={dappChain || null}
-                      filterChain={filterChain}
-                      onChainChange={setFilterChain}
+                      selectedChain={selectedChain}
+                      onChainChange={setSelectedChain}
                     />
                   </TestnetworkGuard>
                 </ViewSuspense>

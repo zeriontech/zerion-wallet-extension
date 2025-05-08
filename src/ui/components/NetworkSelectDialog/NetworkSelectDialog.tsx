@@ -33,6 +33,7 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { bringToFront } from 'src/shared/array-mutations';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -355,6 +356,7 @@ function SearchView({
 function AddressNetworkList({
   value,
   networks,
+  standard,
   chainDistribution,
   filterPredicate,
   testnetMode,
@@ -362,6 +364,7 @@ function AddressNetworkList({
 }: {
   value: string;
   networks: Networks;
+  standard: BlockchainType;
   chainDistribution: ChainDistribution | null;
   filterPredicate: (network: NetworkConfig) => boolean;
   testnetMode: boolean;
@@ -377,13 +380,14 @@ function AddressNetworkList({
 
   const groups = useMemo(() => {
     return createGroups({
+      standard,
       networks,
       chainDistribution,
       testnetMode,
       filterPredicate,
       sortMainNetworksType: 'by_distribution',
     });
-  }, [filterPredicate, networks, chainDistribution, testnetMode]);
+  }, [filterPredicate, networks, chainDistribution, testnetMode, standard]);
 
   const {
     selectNext: selectNextNetwork,
@@ -480,12 +484,14 @@ function AddressNetworkList({
 }
 
 export function NetworkSelectDialog({
+  standard,
   value,
   chainDistribution,
   showAllNetworksOption,
   filterPredicate = () => true,
 }: {
   value: string;
+  standard: BlockchainType;
   chainDistribution: ChainDistribution | null;
   showAllNetworksOption?: boolean;
   filterPredicate?: (network: NetworkConfig) => boolean;
@@ -514,6 +520,7 @@ export function NetworkSelectDialog({
     >
       <AddressNetworkList
         filterPredicate={filterPredicate}
+        standard={standard}
         value={value}
         networks={networks}
         chainDistribution={chainDistribution}

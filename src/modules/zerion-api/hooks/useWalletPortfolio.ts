@@ -12,20 +12,24 @@ export function useWalletPortfolio(
     enabled = true,
     keepPreviousData = false,
     refetchInterval,
+    refetchOnWindowFocus = true,
   }: {
     suspense?: boolean;
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number;
+    refetchOnWindowFocus?: boolean;
   } = {}
 ) {
   return useQuery({
     queryKey: persistentQuery(['walletGetPortfolio', params, source]),
     queryFn: () => ZerionAPI.walletGetPortfolio(params, { source }),
+    retry: 0, // if not 0, there are too many rerenders if the queryFn throws synchronously
     suspense,
     enabled,
     keepPreviousData,
     staleTime: 20000,
     refetchInterval,
+    refetchOnWindowFocus,
   });
 }
