@@ -1495,6 +1495,11 @@ export class Wallet {
     emitter.emit('buttonClicked', params);
   }
 
+  async cloudflareChallengeIssued({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('cloudflareChallengeIssued');
+  }
+
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
     // NOTE: maybe consider adding a more generic method, e.g.:
     // walletPort.request('sendEvent', { event_name, params }).

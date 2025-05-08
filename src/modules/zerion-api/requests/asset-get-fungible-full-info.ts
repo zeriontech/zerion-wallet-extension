@@ -57,12 +57,16 @@ export async function assetGetFungibleFullInfo(
   payload: Params,
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
+  const kyOptions = this.getKyOptions();
   const params = new URLSearchParams({
     fungibleId: payload.fungibleId,
     currency: payload.currency,
   });
-  return ZerionHttpClient.get<Response>({
-    endpoint: `asset/get-fungible-full-info/v1?${params}`,
-    ...options,
-  });
+  return ZerionHttpClient.get<Response>(
+    {
+      endpoint: `asset/get-fungible-full-info/v1?${params}`,
+      ...options,
+    },
+    kyOptions
+  );
 }

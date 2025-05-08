@@ -6,7 +6,7 @@ import { saveReferrerData } from './shared/storage';
 
 const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
 
-type WebAppCallbackMethod = 'set-referral-code';
+type WebAppCallbackMethod = 'set-referral-code' | 'set-turnstile-token';
 
 interface WebAppMessage {
   method: WebAppCallbackMethod;
@@ -33,10 +33,14 @@ export function WebAppMessageHandler({
   pathname,
   callbackName,
   callbackFn,
+  hidden,
+  style,
 }: {
   pathname: string;
   callbackName: WebAppCallbackMethod;
-  callbackFn: (params?: unknown) => Promise<void>;
+  callbackFn: (params?: unknown) => void | Promise<void>;
+  hidden?: boolean;
+  style?: React.CSSProperties;
 }) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const iframeUrl = new URL(pathname, ZERION_WEB_APP_URL);
@@ -61,7 +65,8 @@ export function WebAppMessageHandler({
       sandbox="allow-same-origin allow-scripts"
       ref={iframeRef}
       src={iframeUrl.toString()}
-      hidden={true}
+      hidden={hidden}
+      style={style}
     />
   );
 }
@@ -95,6 +100,7 @@ export function ReferralProgramHandler() {
       pathname="/referral/get-code"
       callbackName="set-referral-code"
       callbackFn={setReferralCode}
+      hidden={true}
     />
   );
 }

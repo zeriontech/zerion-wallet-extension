@@ -10,6 +10,8 @@ const context: ZerionApiContext = {
     invariant(wallet, 'Wallet instance is not available at this point');
     return getAddressProviderHeader(wallet, address);
   },
+  getKyOptions: () => ({}),
 };
 
 export const ZerionAPI = Object.assign(context, ZerionApiBare);
+export type ZerionApiBackground = typeof ZerionAPI;

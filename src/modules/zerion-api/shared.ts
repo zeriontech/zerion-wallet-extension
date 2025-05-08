@@ -1,4 +1,4 @@
-import ky from 'ky';
+import ky, { type Options as KyOptions } from 'ky';
 import { platform } from 'src/shared/analytics/platform';
 import { version } from 'src/shared/packageVersion';
 import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
@@ -53,14 +53,27 @@ const resolveUrl = (input: UrlInput): string | URL => {
 };
 
 export class ZerionHttpClient {
-  static get<T>(options: GetOptions & Options) {
+  static get<T>(options: GetOptions & Options, kyOptions: KyOptions) {
     const url = resolveUrl(options);
-    return ky.get(url, { headers: createHeaders(options) }).json<T>();
+    return ky
+      .get(url, {
+        headers: createHeaders(options),
+        credentials: 'include',
+        ...kyOptions,
+      })
+      .json<T>();
   }
 
-  static post<T>(options: PostOptions & Options) {
+  static post<T>(options: PostOptions & Options, kyOptions: KyOptions) {
     const url = resolveUrl(options);
     const { body } = options;
-    return ky.post(url, { body, headers: createHeaders(options) }).json<T>();
+    return ky
+      .post(url, {
+        body,
+        headers: createHeaders(options),
+        credentials: 'include',
+        ...kyOptions,
+      })
+      .json<T>();
   }
 }

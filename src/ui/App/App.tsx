@@ -83,6 +83,7 @@ import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavi
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
 import { BridgeForm } from '../pages/BridgeForm';
+import { TurnstileTokenHandler } from '../features/turnstile';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -523,6 +524,7 @@ export function App({ initialView, inspect }: AppProps) {
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
               <InactivityDetector />
               <SessionResetHandler />
+              <TurnstileTokenHandler />
               <ProgrammaticNavigationHelper />
               <ThemeDecoration />
               {inspect && !isProd ? (

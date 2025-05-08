@@ -387,6 +387,18 @@ function trackAppEvents({ account }: { account: Account }) {
     const params = createParams({ request_name, type, message, action });
     sendToMetabase(request_name, params);
   });
+
+  emitter.on('cloudflareChallengeIssued', () => {
+    const params = createParams({
+      request_name: 'cloudflare_challenge_issued',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(
+      account,
+      'General: Cloudflare Challenge Issued',
+      mixpanelParams
+    );
+  });
 }
 
 export function initialize({ account }: { account: Account }) {
