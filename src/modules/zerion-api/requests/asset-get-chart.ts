@@ -23,9 +23,13 @@ export async function assetGetChart(
   payload: Params,
   options: ClientOptions = CLIENT_DEFAULTS
 ) {
-  return ZerionHttpClient.post<Response>({
-    endpoint: 'asset/get-fungible-chart/v1',
-    body: JSON.stringify(payload),
-    ...options,
-  });
+  const kyOptions = this.getKyOptions();
+  return ZerionHttpClient.post<Response>(
+    {
+      endpoint: 'asset/get-fungible-chart/v1',
+      body: JSON.stringify(payload),
+      ...options,
+    },
+    kyOptions
+  );
 }
