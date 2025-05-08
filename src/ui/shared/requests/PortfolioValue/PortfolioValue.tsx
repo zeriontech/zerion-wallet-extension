@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 export function PortfolioValue({
-  address: addressStr,
+  address,
   enabled = true,
   render,
 }: {
@@ -12,10 +12,9 @@ export function PortfolioValue({
   enabled?: boolean;
   render: (value: ReturnType<typeof useWalletPortfolio>) => JSX.Element;
 }) {
-  const address = useMemo(() => addressStr.toLowerCase(), [addressStr]);
   const { currency } = useCurrency();
   const query = useWalletPortfolio(
-    { addresses: [address], currency },
+    { addresses: [normalizeAddress(address)], currency },
     { source: useHttpClientSource() },
     { enabled }
   );
