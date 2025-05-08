@@ -55,6 +55,7 @@ describe('Get Started', () => {
     }) => {
       await getStartedPage.createNewWalletLink.click();
 
+      await page.getByRole('button', { name: /Continue/i }).click();
       const verifyUserPage = new VerifyUserComponent(page);
       await verifyUserPage.matchesSnapshot();
       await verifyUserPage.unlock(password);
@@ -93,7 +94,7 @@ describe('Get Started', () => {
 
       const mnemonicImportView = new MnemonicImportView(page);
       await mnemonicImportView.matchesSnapshot();
-      await mnemonicImportView.selectWallets(4);
+      await page.getByRole('button', { name: /Continue/i }).click();
 
       const addressImportMessagesView = new AddressImportMessagesView(page);
       await addressImportMessagesView.ready();
@@ -111,6 +112,8 @@ describe('Get Started', () => {
       const walletGroupSelectPage = new WalletGroupSelectPage(page);
       await walletGroupSelectPage.matchesSnapshot();
       await walletGroupSelectPage.createNewBackupLink.click();
+
+      await page.getByRole('button', { name: /Continue/i }).click();
 
       const verifyUserPage = new VerifyUserComponent(page);
       await verifyUserPage.matchesSnapshot();
@@ -169,7 +172,7 @@ describe('Get Started', () => {
 
       const mnemonicImportView = new MnemonicImportView(page);
       await mnemonicImportView.matchesSnapshot();
-      await mnemonicImportView.selectWallets(4);
+      await page.getByRole('button', { name: /Continue\.*/i }).click();
 
       const addressImportMessagesView = new AddressImportMessagesView(page);
       await addressImportMessagesView.ready();

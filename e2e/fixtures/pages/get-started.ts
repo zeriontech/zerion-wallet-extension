@@ -1,6 +1,5 @@
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
-import { selectItems } from 'e2e/fixtures/interactions';
 import { ExtensionPage } from './extension-page';
 
 export class GetStartedPage extends ExtensionPage {
@@ -74,13 +73,13 @@ export class ExistingWalletOptionsPage {
           - text: Add Existing Wallet
         - img
         - text: Add Wallet Choose an option to set up your wallet
-        - link "Import Wallet":
+        - link "Import Wallet Add an existing wallet using a recovery phrase or private key.":
           - img
           - img
-        - link "Connect Ledger":
+        - link "Connect Ledger Use your hardware wallet with Zerion.":
           - img
           - img
-        - link "Watch Address":
+        - link "Watch Address Follow any wallets to track their onchain activities.":
           - img
           - img
     `);
@@ -152,27 +151,18 @@ export class MnemonicImportView {
       - document:
         - navigation:
           - button "Go back"
-          - text: Wallets Ready to Import
-        - text: We found these wallets associated with your recovery phrase Inactive wallets
-        - button /0 0x[\\w\\W]{5}…[\\w\\W]{5}( Already added)?/
-        - button /1 0x[\\w\\W]{5}…[\\w\\W]{5}/:
+        - text: We didn’t find any active wallets Start with these wallets associated with your recovery phrase
+        - img
+        - text: Ethereum wallets
+        - button /0x.+/:
           - img
-        - button /2 0x[\\w\\W]{5}…[\\w\\W]{5}/:
+        - img
+        - text: Solana wallets
+        - button /\\w+/:
           - img
-        - button "Show More"
-        - button "Continue" [disabled]
+        - button "Select Another Wallet"
+        - button "Continue (2)"
     `);
-  }
-
-  async selectWallets(count: number) {
-    await selectItems({
-      items: this.page
-        .getByRole('button', { name: /0x\.*/ })
-        .filter({ hasNotText: /Already added/i }),
-      count,
-      showMoreLocator: this.page.getByRole('button', { name: /Show More/i }),
-      continueLocator: this.page.getByRole('button', { name: /Continue\.*/i }),
-    });
   }
 }
 
@@ -220,13 +210,12 @@ export class AddressImportMessagesView {
       - document:
         - navigation:
           - button "Go back"
-          - text: Wallets Ready to Import
         - img
         - text: ⏳ Checking your wallet history on the blockchain... 🔐 Encrypting your wallet with your password...
         - img
         - text: All done! Your wallets have been imported 🚀
         - img
-        - text: /Congrats! Welcome on board 0x[\\w\\W]{8}…[\\w\\W]{8} 0x[\\w\\W]{8}…[\\w\\W]{8} 0x[\\w\\W]{8}…[\\w\\W]{8} 0x[\\w\\W]{8}…[\\w\\W]{8}/
+        - text: /Congrats! Welcome on board 0x.+ \\w+/
         - link "Finish"
     `);
   }

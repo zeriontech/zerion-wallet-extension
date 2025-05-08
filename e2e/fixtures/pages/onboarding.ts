@@ -7,7 +7,6 @@ import { waitForPage } from 'e2e/utils/wait';
 import { expect } from '@playwright/test';
 import { SeedType } from 'src/shared/SeedType';
 import type { TestWallet } from '../types';
-import { selectItems } from '../interactions';
 
 export async function setPassword(page: Page, password: string) {
   const passwordInput = page.getByPlaceholder(/at least 6 characters/i);
@@ -124,15 +123,6 @@ export class ImportRecoveryPhraseFlow extends OnboardingPage {
     await fillRecoveryPhrase(this.page, phrase);
     await this.page.getByRole('button', { name: /Import Wallet/i }).click();
   }
-
-  async selectWallets(count: number) {
-    await selectItems({
-      items: this.page.getByRole('button', { name: /0x\.*/ }),
-      count,
-      showMoreLocator: this.page.getByRole('button', { name: /Show More/i }),
-      continueLocator: this.page.getByRole('button', { name: /Continue\.*/i }),
-    });
-  }
 }
 
 export class ImportPrivateKeyFlow extends OnboardingPage {
@@ -174,7 +164,7 @@ export async function onboardExistingWallet(
     const flow = new ImportRecoveryPhraseFlow(page);
     await flow.start();
     await flow.importRecoveryPhrase(wallet.recoveryPhrase);
-    await flow.selectWallets(1);
+    await page.getByRole('button', { name: /Continue\.*/i }).click();
     await setPassword(page, password);
     await flow.expectSuccess();
   }
