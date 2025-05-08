@@ -1,6 +1,7 @@
 import React from 'react';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image, Audio, Video } from 'src/ui/ui-kit/MediaFallback';
+import type { WalletMetaMediaContent } from 'src/modules/zerion-api/requests/wallet-get-meta';
 
 export const MediaError = ({
   image = '🖼',
@@ -31,12 +32,24 @@ export const MediaError = ({
   </div>
 );
 
-export interface MediaContentValue {
+interface MediaContentValue {
   image_preview_url?: string;
   image_url?: string | null;
   audio_url?: string | null;
   video_url?: string | null;
   type: 'video' | 'image' | 'audio';
+}
+
+export function convertMediaContent(
+  content: WalletMetaMediaContent
+): MediaContentValue {
+  return {
+    image_preview_url: content.imagePreviewUrl,
+    image_url: content.imageUrl,
+    audio_url: content.audioUrl,
+    video_url: content.videoUrl,
+    type: content.type,
+  };
 }
 
 export function MediaContent({

@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { MediaContent } from 'src/ui/ui-kit/MediaContent';
-import type { WalletProfile } from 'src/ui/shared/wallet/getWalletProfiles';
+import type { WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
+import { GradientBorder } from 'src/ui/features/premium/GradientBorder';
+import { convertMediaContent } from 'src/ui/ui-kit/MediaContent/MediaContent';
 import * as s from './styles.module.css';
 
 export function AvatarIcon({
@@ -11,13 +13,15 @@ export function AvatarIcon({
   nft,
   borderRadius,
   onReady,
+  highlight,
 }: {
   active: boolean;
   address: string;
   size: number;
-  nft?: WalletProfile['nft'];
+  nft?: WalletMeta['nft'];
   borderRadius: number;
   onReady?(): void;
+  highlight?: boolean;
 }) {
   const mediaContent = nft?.metadata?.content;
   const hasMediaContent = Boolean(mediaContent);
@@ -27,20 +31,39 @@ export function AvatarIcon({
       onReady?.();
     }
   }, [hasMediaContent, onReady]);
+
+  const strokeWidth = size > 24 ? 2 : 1;
+  const imageSize = highlight ? size - strokeWidth * 4 : size;
+  const imageBorderRadius = highlight
+    ? borderRadius - strokeWidth * 2
+    : borderRadius;
+  const padding = highlight ? strokeWidth * 2 : 0;
+
   return (
     <div className={s.root}>
-      <div className={active ? s.activeIndicatorClip : undefined}>
+      <div
+        className={active ? s.activeIndicatorClip : undefined}
+        style={{ width: size, height: size, padding }}
+      >
+        {highlight ? (
+          <GradientBorder
+            width={size}
+            height={size}
+            borderRadius={Number(borderRadius)}
+            strokeWidth={strokeWidth}
+          />
+        ) : null}
         {nft?.metadata && mediaContent ? (
           <MediaContent
             className={s.media}
             style={{
-              width: size,
-              height: size,
-              borderRadius,
+              width: imageSize,
+              height: imageSize,
+              borderRadius: imageBorderRadius,
               objectFit: 'cover',
             }}
-            errorStyle={{ width: size, height: size }}
-            content={mediaContent}
+            errorStyle={{ width: imageSize, height: imageSize }}
+            content={convertMediaContent(mediaContent)}
             alt={`${nft.metadata.name} image`}
             forcePreview={size <= 40 || mediaContent.type === 'audio'}
             onReady={onReady}
@@ -48,8 +71,8 @@ export function AvatarIcon({
         ) : (
           <BlockieImg
             address={address}
-            size={size}
-            borderRadius={borderRadius}
+            size={imageSize}
+            borderRadius={imageBorderRadius}
           />
         )}
       </div>

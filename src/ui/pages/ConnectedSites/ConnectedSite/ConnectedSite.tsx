@@ -204,7 +204,7 @@ export function ConnectedSite() {
                                 address={wallet.address}
                                 active={false}
                                 size={32}
-                                borderRadius={4}
+                                borderRadius={8}
                               />
                             }
                             text={

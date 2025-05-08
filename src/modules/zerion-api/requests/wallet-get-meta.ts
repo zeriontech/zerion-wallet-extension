@@ -10,12 +10,14 @@ export interface Identity {
   handle: string;
 }
 
+export type PremiumPlan = 'Single' | 'Bundle' | 'Restricted' | 'Bundle (Child)';
+
 interface MigrationToken {
   generation: 'G1' | 'OnePointO';
   id: string;
   premium: {
     expirationTime: string | null;
-    plan: 'Single' | 'Bundle';
+    plan: PremiumPlan;
     features: {
       feeWaiver: boolean;
       csv: boolean;
@@ -115,6 +117,14 @@ interface AddressMembership {
   xp: XpDistribution;
 }
 
+export interface WalletMetaMediaContent {
+  imagePreviewUrl?: string;
+  imageUrl?: string | null;
+  audioUrl?: string | null;
+  videoUrl?: string | null;
+  type: 'video' | 'image' | 'audio';
+}
+
 export interface WalletMeta {
   address: string;
   nft: {
@@ -123,13 +133,7 @@ export interface WalletMeta {
     tokenId: string;
     metadata: {
       name: string | null;
-      content: {
-        imagePreviewUrl?: string;
-        imageUrl?: string | null;
-        audioUrl?: string | null;
-        videoUrl?: string | null;
-        type: 'video' | 'image' | 'audio';
-      } | null;
+      content: WalletMetaMediaContent | null;
     } | null;
   } | null;
   nftMetaInformation: {

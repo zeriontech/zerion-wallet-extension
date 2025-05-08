@@ -128,7 +128,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
                           address={wallet.address}
                           active={false}
                           size={32}
-                          borderRadius={4}
+                          borderRadius={8}
                         />
                       }
                       text={

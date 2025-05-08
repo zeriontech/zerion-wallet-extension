@@ -53,7 +53,7 @@ function WalletMediaPresentation({
           address={wallet.address}
           active={false}
           size={40}
-          borderRadius={4}
+          borderRadius={12}
         />
       }
       text={walletInfo?.name ?? getWalletDisplayName(wallet)}

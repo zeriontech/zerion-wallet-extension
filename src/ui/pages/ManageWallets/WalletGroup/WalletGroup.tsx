@@ -297,7 +297,7 @@ export function WalletGroup() {
                         <WalletAvatar
                           address={wallet.address}
                           size={44}
-                          borderRadius={4}
+                          borderRadius={12}
                         />
                       }
                       alignItems="center"
