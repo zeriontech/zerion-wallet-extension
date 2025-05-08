@@ -1,0 +1,56 @@
+.gradientText {
+  background: linear-gradient(
+    80deg,
+    #cd657f 7.13%,
+    #8a6df1 34.59%,
+    #71a1f3 62.04%,
+    #3bb1ed 90.33%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.radio {
+  position: relative;
+  cursor: pointer;
+  border: 2px solid var(--neutral-200);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.radio input[type='radio'] {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.radio:has(input[type='radio']:checked) {
+  border: 1px solid var(--primary);
+  padding: 11px;
+  color: var(--primary);
+}
+
+.bestRateBadge {
+  background-color: var(--black);
+  padding: 2px 8px;
+  border-radius: 4px;
+  position: absolute;
+  top: -7px;
+  right: -1px;
+  font-size: 8px;
+  line-height: 12px;
+  letter-spacing: 0.2px;
+  color: var(--white);
+}
+
+.radio:has(input[type='radio']:checked) .bestRateBadge {
+  background-color: var(--primary);
+  top: -6px;
+  right: 0px;
+}

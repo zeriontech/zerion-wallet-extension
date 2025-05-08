@@ -19,7 +19,8 @@ type MetabaseEvent =
   | 'add_wallet'
   | 'background_script_reloaded'
   | 'hold_to_sign_prerefence'
-  | 'cloudflare_challenge_issued';
+  | 'cloudflare_challenge_issued'
+  | 'button_clicked';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

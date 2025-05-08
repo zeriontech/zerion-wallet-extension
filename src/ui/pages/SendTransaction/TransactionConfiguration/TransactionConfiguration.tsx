@@ -130,11 +130,7 @@ function NetworkFeeLine({
         chain={chain}
         chainGasPrices={chainGasPrices}
         networkFeeConfiguration={configuration.networkFee}
-        label={
-          <UIText kind="small/regular" color="var(--neutral-700)">
-            Network Fee
-          </UIText>
-        }
+        label={<UIText kind="small/regular">Network Fee</UIText>}
         displayValueEnd={
           paymasterPossible && !paymasterEligible ? (
             <>
@@ -244,9 +240,7 @@ export function TransactionConfiguration({
           gap={8}
           justifyContent="space-between"
         >
-          <UIText kind="small/regular" color="var(--neutral-700)">
-            Network Fee
-          </UIText>
+          <UIText kind="small/regular">Network Fee</UIText>
           <UIText
             kind="small/accent"
             style={{
@@ -306,7 +300,7 @@ export function TransactionConfiguration({
             justifyContent="space-between"
             aria-hidden={!gasback}
           >
-            <UIText kind="small/regular" color="var(--neutral-700)">
+            <UIText kind="small/regular">
               <HStack gap={4}>
                 <span>Gasback</span>
                 <GasbackHint />

@@ -106,12 +106,14 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('buttonClicked', (data) => {
+    const { buttonName, buttonScope, pathname, walletAddress } = data;
     const params = createParams({
-      request_name: 'screen_view',
-      screen_name: data.pathname,
-      button_name: data.buttonName,
+      request_name: 'button_clicked',
+      screen_name: pathname,
+      button_name: buttonName,
+      wallet_address: walletAddress,
     });
-    const event_name = `${data.buttonScope}: Button Pressed`;
+    const event_name = `${buttonScope}: Button Pressed`;
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack(account, event_name, mixpanelParams);
   });
