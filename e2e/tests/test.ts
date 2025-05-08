@@ -108,7 +108,10 @@ function createBrowserArgs(headless: boolean) {
 }
 
 const getPopupFile = () => {
-  const extensionManifest = require(path.join(extensionPath, '/manifest.json'));
+  const extensionManifest = require(path.join(
+    extensionPath,
+    '/manifest-chrome.json'
+  ));
   return extensionManifest.action.default_popup;
 };
 
