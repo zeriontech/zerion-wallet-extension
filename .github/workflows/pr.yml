@@ -72,7 +72,7 @@ jobs:
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           FEATURE_LOYALTY_FLOW: on
           FEATURE_BRIDGE_FORM: on
-          FEATURE_SOLANA: off
+          FEATURE_SOLANA: on
         run: |
           npm install
           npm run build:production
