@@ -22,9 +22,6 @@
     "default_title": "Zerion",
     "default_popup": "ui/popup.html"
   },
-  "side_panel": {
-    "default_path": "ui/sidepanel.html"
-  },
   "commands": {
     "sidepanel_open_custom": {
       "suggested_key": {
@@ -63,7 +60,6 @@
     "activeTab",
     "alarms",
     "scripting",
-    "sidePanel",
     "storage",
     "unlimitedStorage"
   ],

@@ -6,7 +6,7 @@
     "prestart": "node scripts/verifyDotEnv.cjs",
     "start": "npm-run-all --parallel start:chrome type-check:watch",
     "start:chrome": "cp ./src/manifest-chrome.json ./src/manifest.json && parcel watch src/manifest.json src/ui/hardware-wallet/ledger.html --no-hmr --no-content-hash --no-autoinstall",
-    "start:firefox": "cp ./src/manifest-firefox.json ./src/manifest.json && PLATFORM=firefox parcel watch src/manifest.json src/ui/hardware-wallet/ledger.html --no-hmr --no-content-hash --no-autoinstall --dist-dir dist-firefox",
+    "start:firefox": "cp ./src/manifest-firefox.json ./src/manifest.json && PLATFORM=firefox parcel watch src/manifest.json src/ui/hardware-wallet/ledger.html --no-hmr --no-content-hash --no-autoinstall --dist-dir dist-firefox --cache-dir .parcel-cache-firefox",
     "build": "echo \"Please run 'npm run build:production' instead\" && exit 1",
     "build:production": "node scripts/build.js",
     "type-check": "tsc --noEmit",
