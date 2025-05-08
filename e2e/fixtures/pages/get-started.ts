@@ -156,12 +156,8 @@ export class MnemonicImportView {
         - text: Ethereum wallets
         - button /0x.+/:
           - img
-        - img
-        - text: Solana wallets
-        - button /\\w+/:
-          - img
         - button "Select Another Wallet"
-        - button "Continue (2)"
+        - button
     `);
   }
 }
@@ -215,7 +211,7 @@ export class AddressImportMessagesView {
         - img
         - text: All done! Your wallets have been imported 🚀
         - img
-        - text: /Congrats! Welcome on board 0x.+ \\w+/
+        - text: /Congrats! Welcome on board 0x.+/
         - link "Finish"
     `);
   }
