@@ -19,6 +19,7 @@ import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebase
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { emitter } from 'src/ui/shared/events';
 import { useLocation } from 'react-router-dom';
+import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
@@ -243,12 +244,18 @@ export function RateLine({
           ref={feeDescriptionDialogRef}
           height="fit-content"
           containerStyle={{ paddingTop: 16 }}
-        >
-          <FeeDescription
-            userFeeTier={userFeeTier}
-            fee={selectedQuote.protocol_fee}
-          />
-        </BottomSheetDialog>
+          renderWhenOpen={() => (
+            <>
+              <FeeDescription
+                userFeeTier={userFeeTier}
+                fee={selectedQuote.protocol_fee}
+              />
+              <DialogCloseButton
+                style={{ position: 'absolute', top: 8, right: 8 }}
+              />
+            </>
+          )}
+        />
       ) : null}
       {quotes?.length && receiveAsset ? (
         <BottomSheetDialog

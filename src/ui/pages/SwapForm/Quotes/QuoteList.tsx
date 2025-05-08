@@ -30,8 +30,6 @@ import { FeeDescription } from './FeeDescription';
 import type { FeeTier } from './FeeTier';
 import * as styles from './styles.module.css';
 
-const QUOTE_GRIP_TEMPLATE_COLUMNS = '1fr 1fr 40px';
-
 function QuoteNetworkFee({
   transaction,
   chain,
@@ -57,12 +55,8 @@ function QuoteNetworkFee({
 
   return (
     <span>
-      {transactionFee.costs?.feeValueFiat
-        ? formatCurrencyValue(
-            transactionFee.costs?.feeValueFiat,
-            'en',
-            currency
-          )
+      {transactionFee.costs?.feeValueFiat != null
+        ? formatCurrencyValue(transactionFee.costs.feeValueFiat, 'en', currency)
         : 'N/A'}
     </span>
   );
@@ -90,26 +84,28 @@ function Quote({
     <HStack
       gap={0}
       alignItems="center"
-      style={{ gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS }}
+      style={{ gridTemplateColumns: '1fr 40px' }}
     >
-      <VStack gap={0} style={{ justifyItems: 'start' }}>
-        <UIText kind="small/accent">
-          {formatCurrencyValue(
-            receiveAsset.price?.value ? receiveAmount : 'N/A',
-            'en',
-            currency
-          )}
-        </UIText>
-        {quote.enough_allowance ? (
-          <HStack gap={4} alignItems="center">
-            <TickIcon />
-            <UIText kind="caption/regular" style={{ whiteSpace: 'nowrap' }}>
-              Approved for {quote.contract_metadata?.name}
-            </UIText>
-          </HStack>
-        ) : null}
-      </VStack>
-      <VStack gap={0} style={{ justifyItems: 'start' }}>
+      <HStack
+        gap={0}
+        style={{ gridTemplateColumns: '1fr 1fr' }}
+        alignItems="start"
+      >
+        <VStack gap={0} style={{ justifyItems: 'start' }}>
+          <UIText kind="small/accent">
+            {receiveAsset.price?.value
+              ? formatCurrencyValue(receiveAmount, 'en', currency)
+              : 'N/A'}
+          </UIText>
+          {quote.enough_allowance ? (
+            <HStack gap={4} alignItems="center">
+              <TickIcon />
+              <UIText kind="caption/regular" style={{ whiteSpace: 'nowrap' }}>
+                Approved for {quote.contract_metadata?.name}
+              </UIText>
+            </HStack>
+          ) : null}
+        </VStack>
         <UIText kind="small/accent">
           {quote.transaction ? (
             <React.Suspense fallback={<CircleSpinner />}>
@@ -123,8 +119,7 @@ function Quote({
             noValueDash
           )}
         </UIText>
-        {quote.enough_allowance ? <div style={{ height: 16 }} /> : null}
-      </VStack>
+      </HStack>
       <img
         src={quote.contract_metadata?.icon_url}
         alt={quote.contract_metadata?.name}
@@ -170,10 +165,7 @@ export function QuoteList({
         </HStack>
 
         <VStack gap={8}>
-          <HStack
-            gap={0}
-            style={{ gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS }}
-          >
+          <HStack gap={0} style={{ gridTemplateColumns: '1fr 1fr 40px' }}>
             <UIText kind="small/accent" color="var(--neutral-500)">
               Min. Received
             </UIText>
@@ -279,6 +271,9 @@ export function QuoteList({
           containerStyle={{ paddingTop: 16 }}
         >
           <FeeDescription userFeeTier="premium" fee={quotes[0].protocol_fee} />
+          <DialogCloseButton
+            style={{ position: 'absolute', top: 8, right: 8 }}
+          />
         </BottomSheetDialog>
       ) : null}
     </>
