@@ -78,6 +78,8 @@ jobs:
           PR_NUMBER=${{ github.event.inputs.PR_NUMBER || github.event.number }}
           .github/scripts/set-env-from-pr-labels.sh "$PR_NUMBER"
           unset GH_TOKEN
+          source $GITHUB_ENV
+          echo "FEATURE_SOLANA=$FEATURE_SOLANA"
           npm install
           npm run build:production
 
