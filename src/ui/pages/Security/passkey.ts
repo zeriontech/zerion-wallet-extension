@@ -47,7 +47,7 @@ export async function setupAccountPasskey(password: string) {
     password: arrayBufferToUtf8(prf),
   });
 
-  return accountPublicRPCPort.request('setupEncryptedPassword', {
+  return accountPublicRPCPort.request('setPasskey', {
     password,
     encryptionKey,
     id: passkeyId,
@@ -56,7 +56,7 @@ export async function setupAccountPasskey(password: string) {
 }
 
 export async function getPasswordWithPasskey() {
-  const data = await accountPublicRPCPort.request('getEncryptedPasswordMeta');
+  const data = await accountPublicRPCPort.request('getPasskeyMeta');
   if (!data) {
     throw new Error('No passkey found');
   }
