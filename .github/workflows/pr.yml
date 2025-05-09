@@ -73,6 +73,7 @@ jobs:
           FEATURE_LOYALTY_FLOW: on
           FEATURE_BRIDGE_FORM: on
           FEATURE_SOLANA: off
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PR_NUMBER=${{ github.event.inputs.PR_NUMBER || github.event.number }}
           LABELS=$(gh pr view $PR_NUMBER --json labels -q '.labels[].name')
@@ -84,6 +85,7 @@ jobs:
               echo "Set env var found in PR label: $ENV_NAME=on"
             fi
           done <<< "$LABELS"
+          unset GH_TOKEN
 
       - name: Install dependencies and build
         run: |
