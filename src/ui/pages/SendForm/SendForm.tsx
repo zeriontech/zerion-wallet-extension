@@ -534,6 +534,7 @@ function SendFormComponent() {
                     customValidity={to ? '' : 'Cannot resolve recipient'}
                   />
                   <AddressInputWrapper
+                    title="Recipient"
                     name="addressInputValue"
                     value={addressInputValue ?? ''}
                     required={true}
