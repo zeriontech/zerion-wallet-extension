@@ -13,6 +13,7 @@ import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
 import { dappsWithoutCorrectEIP1193Support } from './dapp-configs';
 import { initializeEIP6963 } from './eip6963';
+import { getWalletChannelId } from './walletChannelId';
 
 declare global {
   interface Window {
@@ -22,13 +23,8 @@ declare global {
   }
 }
 
-const scriptWithId = document.getElementById('zerion-extension-channel');
-if (!scriptWithId) {
-  throw new Error('script with id not found');
-}
+const walletChannelId = getWalletChannelId();
 
-const walletChannelId = scriptWithId.dataset.walletChannelId;
-scriptWithId.remove(); // Remove script to preserve initial DOM shape
 if (!walletChannelId) {
   throw new Error(
     'walletChannelId must be defined as a data attribute on the script tag'
