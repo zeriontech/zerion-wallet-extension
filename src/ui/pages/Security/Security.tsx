@@ -79,7 +79,7 @@ function TouchIdSettings() {
 
   const removeTouchIdMutation = useMutation({
     mutationFn: async () => {
-      await accountPublicRPCPort.request('removeEncryptedPassword');
+      await accountPublicRPCPort.request('removePasskey');
       setUserValue(false);
     },
   });

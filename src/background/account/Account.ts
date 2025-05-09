@@ -15,10 +15,11 @@ import {
 } from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version/shared';
-import { currentUserKey } from 'src/shared/getCurrentUser';
-import type { PublicUser, User } from 'src/shared/types/User';
+import { currentUserKey, getCurrentUser } from 'src/shared/getCurrentUser';
+import type { Passkey, PublicUser, User } from 'src/shared/types/User';
 import { payloadId } from '@walletconnect/jsonrpc-utils';
 import { sha256 } from 'src/modules/crypto/sha256';
+import { produce } from 'immer';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
@@ -38,13 +39,6 @@ class EventEmitter<Events extends EventsMap> {
     return this.emitter.emit(event, ...args);
   }
 }
-
-const encryptedPasswordKey = 'encryptedPassword';
-type EncryptedPassword = {
-  encryptedPassword: string;
-  salt: string;
-  id: string;
-};
 
 type AccountEvents = { reset: () => void; authenticated: () => void };
 
@@ -87,15 +81,31 @@ export class Account extends EventEmitter<AccountEvents> {
   }
 
   async getEncryptedPassword() {
-    return BrowserStorage.get<EncryptedPassword>(encryptedPasswordKey);
+    return (await Account.readCurrentUser())?.passkey ?? null;
   }
 
-  async setEncryptedPassword(encryptedPassword: EncryptedPassword) {
-    await BrowserStorage.set(encryptedPasswordKey, encryptedPassword);
+  async setEncryptedPassword(passkey: Passkey) {
+    const user = await getCurrentUser();
+    if (!user) {
+      throw new Error('No user found');
+    }
+    await Account.writeCurrentUser(
+      produce(user, (draft) => {
+        draft.passkey = passkey;
+      })
+    );
   }
 
   async removeEncryptedPassword() {
-    await BrowserStorage.remove(encryptedPasswordKey);
+    const user = await Account.readCurrentUser();
+    if (!user) {
+      throw new Error('No user found');
+    }
+    await Account.writeCurrentUser(
+      produce(user, (draft) => {
+        draft.passkey = null;
+      })
+    );
   }
 
   private static async writeCredentials(credentials: Credentials) {
@@ -417,7 +427,7 @@ export class AccountPublicRPC {
     await this.account.logout(); // reset account after erasing storage
   }
 
-  async setupEncryptedPassword({
+  async setPasskey({
     params: { encryptionKey, password, salt, id },
   }: PublicMethodParams<{
     encryptionKey: string;
@@ -433,7 +443,7 @@ export class AccountPublicRPC {
     });
   }
 
-  async getEncryptedPasswordMeta() {
+  async getPasskeyMeta() {
     const data = await this.account.getEncryptedPassword();
     if (!data) {
       throw new Error('No passkey found');
@@ -461,7 +471,7 @@ export class AccountPublicRPC {
     return Boolean(data);
   }
 
-  async removeEncryptedPassword() {
+  async removePasskey() {
     return this.account.removeEncryptedPassword();
   }
 }
