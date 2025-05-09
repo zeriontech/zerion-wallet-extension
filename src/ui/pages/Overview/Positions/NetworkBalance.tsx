@@ -138,8 +138,7 @@ export function NetworkBalance({
   const chain = selectedChain || dappChain || NetworkSelectValue.All;
 
   const isClearableFilter = Boolean(selectedChain);
-  const showHelperButton =
-    standard !== 'solana' && Boolean(selectedChain || dappChain);
+  const showHelperButton = Boolean(selectedChain || dappChain);
   const showAllNetworksHelperButton =
     (!dappChain && selectedChain !== NetworkSelectValue.All) ||
     (dappChain && (!selectedChain || selectedChain === dappChain));

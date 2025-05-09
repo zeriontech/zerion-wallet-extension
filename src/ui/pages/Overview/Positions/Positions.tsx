@@ -796,7 +796,7 @@ function RawChainPositions({
           dappChain={dappChain}
           selectedChain={selectedChain}
           onChange={onChainChange}
-          showAllNetworksOption={!isSolanaAddress(address)}
+          showAllNetworksOption={true}
           value={
             <NeutralDecimals
               parts={formatCurrencyToParts(
@@ -864,8 +864,11 @@ export function Positions({
     );
   }
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
+  const OVERRIDE_POSITIONS_SUPPORT = addrIsSolana; // todo: remove when backend updates NetworkConfig for Solana
   const isSupportedByBackend =
-    chain == null ? !addrIsSolana : networks?.supports('positions', chain);
+    chain == null
+      ? true
+      : OVERRIDE_POSITIONS_SUPPORT || networks?.supports('positions', chain);
 
   const emptyNetworkBalance = (
     <div

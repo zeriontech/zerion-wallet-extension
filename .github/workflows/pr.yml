@@ -2,7 +2,7 @@ name: Build pull request
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, labeled]
   workflow_dispatch:
     inputs:
       BACKEND_ENV:
@@ -73,7 +73,12 @@ jobs:
           FEATURE_LOYALTY_FLOW: on
           FEATURE_BRIDGE_FORM: on
           FEATURE_SOLANA: off
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # required for gh-cli which is used in .github/scripts/
         run: |
+          PR_NUMBER=${{ github.event.inputs.PR_NUMBER || github.event.number }}
+          .github/scripts/set-env-from-pr-labels.sh "$PR_NUMBER"
+          unset GH_TOKEN
+          source $GITHUB_ENV
           npm install
           npm run build:production
 
