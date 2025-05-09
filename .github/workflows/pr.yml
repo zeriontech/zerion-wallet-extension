@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Prepare ENV Variables
+      - name: Install dependencies and build
         env:
           DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
           DEFI_SDK_TESTNET_API_URL: ${{ github.event.inputs.DEFI_SDK_TESTNET_API_URL || 'wss://api-testnet.zerion.io/' }}
@@ -73,22 +73,11 @@ jobs:
           FEATURE_LOYALTY_FLOW: on
           FEATURE_BRIDGE_FORM: on
           FEATURE_SOLANA: off
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # required for gh-cli which is used in .github/scripts/
         run: |
           PR_NUMBER=${{ github.event.inputs.PR_NUMBER || github.event.number }}
-          LABELS=$(gh pr view $PR_NUMBER --json labels -q '.labels[].name')
-
-          while read -r line; do
-            if [[ "$line" == ENV_* ]]; then
-              ENV_NAME="${line#ENV_}" # removes ENV_ prefix
-              echo "$ENV_NAME=on" >> $GITHUB_ENV
-              echo "Set env var found in PR label: $ENV_NAME=on"
-            fi
-          done <<< "$LABELS"
+          .github/scripts/set-env-from-pr-labels.sh "$PR_NUMBER"
           unset GH_TOKEN
-
-      - name: Install dependencies and build
-        run: |
           npm install
           npm run build:production
 
