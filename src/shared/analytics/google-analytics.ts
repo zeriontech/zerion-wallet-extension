@@ -22,6 +22,7 @@ if (!GOOGLE_ANALYTICS_MEASUREMENT_ID) {
 const USE_PAYLOAD_VALIDATION_ENDPOINT = false;
 
 type GoogleAnalyticsEvent =
+  | 'first_open'
   | 'page_view'
   | 'signed_message'
   | 'signed_transaction';

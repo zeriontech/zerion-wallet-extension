@@ -344,6 +344,8 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('firstScreenView', () => {
     mixpanelTrack(account, 'General: Launch first time', {});
+    const gaParams = prepareGaParams(account, {});
+    gaCollect('first_open', gaParams);
   });
 
   emitter.on('eip6963SupportDetected', ({ origin }) => {
