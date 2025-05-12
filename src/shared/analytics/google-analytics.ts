@@ -19,6 +19,8 @@ if (!GOOGLE_ANALYTICS_MEASUREMENT_ID) {
   console.warn('GOOGLE_ANALYTICS_MEASUREMENT_ID env var not found');
 }
 
+const USE_PAYLOAD_VALIDATION_ENDPOINT = false;
+
 type GoogleAnalyticsEvent =
   | 'page_view'
   | 'signed_message'
@@ -78,7 +80,12 @@ class GoogleAnalyticsApi {
   ) {
     await this.ready();
 
-    const url = new URL('/mp/collect', this.url);
+    const path =
+      this.debugMode && USE_PAYLOAD_VALIDATION_ENDPOINT
+        ? '/debug/mp/collect'
+        : '/mp/collect';
+    const url = new URL(path, this.url);
+
     if (this.apiSecret) {
       url.searchParams.append('api_secret', this.apiSecret);
     }
@@ -116,7 +123,7 @@ class GoogleAnalyticsApi {
     logTable(Loglevel.info, eventPayload.params, ['index']);
     logToConsole(Loglevel.info, 'groupEnd');
 
-    return this.sendEvent(url.toString(), { json: [payload] });
+    return this.sendEvent(url.toString(), { json: payload });
   }
 
   async sendEvent(url: string, options: Options) {
