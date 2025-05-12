@@ -138,28 +138,40 @@ const googleAnalyticsApi = new GoogleAnalyticsApi({
   sendRequestsOverTheNetwork: process.env.NODE_ENV === 'production',
 });
 
-Object.assign(globalThis, { googleAnalyticsApi });
-
 googleAnalyticsApi.setBaseParams({
   origin: globalThis.location.origin,
   app_version: version,
 });
 
-export async function gaCollect(
-  account: Account,
-  event: GoogleAnalyticsEvent,
-  values: Record<string, unknown>
-) {
-  const userId = account.getUser()?.id;
-  if (!userId) {
-    return;
-  }
-  // Google Analytics does not have a clear definition of a user session.
-  // Hence, we need to define what a user session means within the extension.
-  const sessionId = userId;
+interface GoogleAnalyticsParams {
+  params: Record<string, unknown>;
+  sessionId: string | null;
+}
 
-  googleAnalyticsApi.collect(event, sessionId, {
-    ...values,
-    ...(userId ? { user_id: userId } : null),
-  });
+export function prepareGaParams(
+  account: Account,
+  params: Record<string, unknown>
+): GoogleAnalyticsParams {
+  const userId = account.getUser()?.id;
+  return {
+    params: {
+      ...params,
+      ...(userId ? { user_id: userId } : null),
+    },
+    // Google Analytics does not have a clear definition of a user session.
+    // Hence, we need to define what a user session means within the extension.
+    sessionId: userId || null,
+  };
+}
+
+export async function gaCollect(
+  event: GoogleAnalyticsEvent,
+  { params, sessionId }: GoogleAnalyticsParams
+) {
+  if (!sessionId) {
+    logToConsole(Loglevel.info, 'log', 'Google Analytics: No session id');
+    return null;
+  } else {
+    return googleAnalyticsApi.collect(event, sessionId, params);
+  }
 }
