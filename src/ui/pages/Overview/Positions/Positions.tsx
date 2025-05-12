@@ -475,7 +475,7 @@ function PositionList({
   const { currency } = useCurrency();
 
   const assetPageEnabled = Boolean(
-    firebaseConfig?.extension_asset_page_enabled
+    true || firebaseConfig?.extension_asset_page_enabled
   );
 
   return (
