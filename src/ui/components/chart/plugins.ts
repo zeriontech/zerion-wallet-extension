@@ -1,12 +1,11 @@
-import type { Plugin, Point } from 'chart.js/auto';
+import type { Plugin } from 'chart.js/auto';
 import { Theme } from 'src/ui/features/appearance';
-import { getChartColor, getSortedRangeIndexes } from './helpers';
+import { getChartColor } from './helpers';
+import type { ParsedChartPoint } from './types';
 
 export function drawDotPlugin({
-  getStartRangeIndex,
   getTheme,
 }: {
-  getStartRangeIndex: () => number | null;
   getTheme: () => Theme;
 }): Plugin<'scatter'> {
   return {
@@ -20,26 +19,29 @@ export function drawDotPlugin({
       }
 
       const { x, y } = activeElement.element.tooltipPosition(false);
-      const { data } = chart.data.datasets[0];
-      const { startRangeIndex, endRangeIndex } = getSortedRangeIndexes({
-        startRangeIndex: getStartRangeIndex(),
-        endRangeIndex: activeElement.index,
-      });
-      const endRangeValue = (data.at(endRangeIndex ?? -1) as Point)?.y || 0;
-      const startRangeValue = (data[startRangeIndex ?? 0] as Point)?.y || 0;
 
-      const color = getChartColor({
-        theme: getTheme(),
-        isPositive: endRangeValue >= startRangeValue,
-        isHighlighted: false,
-      });
+      const direction =
+        'raw' in activeElement.element
+          ? (activeElement.element.raw as ParsedChartPoint)?.actions?.total
+              .direction
+          : null;
+      const color =
+        direction === 'in' || direction === 'out'
+          ? getChartColor({
+              isPositive: direction === 'in',
+              theme: getTheme(),
+              isHighlighted: false,
+            })
+          : getTheme() === Theme.light
+          ? '#9c9fa8'
+          : '#70737b';
 
       ctx.save();
 
       ctx.beginPath();
       ctx.arc(x, y, 6, 0, 2 * Math.PI);
       ctx.fillStyle = color;
-      ctx.strokeStyle = 'white';
+      ctx.strokeStyle = getTheme() === Theme.light ? '#fff' : '#16161a';
       ctx.lineWidth = 2;
       ctx.fill();
       ctx.stroke();

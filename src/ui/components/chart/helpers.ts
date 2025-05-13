@@ -1,7 +1,15 @@
 import { Theme } from 'src/ui/features/appearance';
+import { capitalize } from 'capitalize-ts';
+import BigNumber from 'bignumber.js';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import type { AssetChartActions } from 'src/modules/zerion-api/requests/asset-get-chart';
+import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import { minus } from 'src/ui/shared/typography';
+import type { ChartPoint } from './types';
 
-export function toScatterData(points: [number, number][]) {
-  return points.map(([x, y]) => ({ x, y }));
+export function toScatterData(points: ChartPoint[]) {
+  return points.map(([x, y, actions]) => ({ x, y, actions }));
 }
 
 export function getChartColor({
@@ -17,10 +25,10 @@ export function getChartColor({
     ? theme === Theme.light
       ? isHighlighted
         ? '#99dbb4'
-        : '#01a643'
+        : '#1fc260'
       : isHighlighted
       ? '#2d4435'
-      : '#4fbf67'
+      : '#31b566'
     : theme === Theme.light
     ? isHighlighted
       ? '#ffd0c9'
@@ -55,7 +63,7 @@ export function getSortedRangeIndexes({
  */
 const FLAT_CHART_MIN_MAX_RATIO = 1.02;
 
-export function getYLimits(points: [number, number][]) {
+export function getYLimits(points: ChartPoint[]) {
   const values = points.map(([, value]) => value);
   const minLimit = Math.min(...values);
   const maxLimit = Math.max(...values);
@@ -68,4 +76,38 @@ export function getYLimits(points: [number, number][]) {
     };
   }
   return { min: minLimit, max: maxLimit };
+}
+
+export function serializeAssetChartActions({
+  action,
+  asset,
+  currency,
+}: {
+  action: AssetChartActions['total'];
+  asset: Asset;
+  currency: string;
+}) {
+  return JSON.stringify({
+    title: capitalize(action.type || 'total'),
+    balance: `${
+      new BigNumber(action.quantity).isPositive() ? '+' : minus
+    }${formatTokenValue(new BigNumber(action.quantity).abs(), asset.symbol, {
+      notation: new BigNumber(action.quantity).gte(100000)
+        ? 'compact'
+        : undefined,
+    })}`,
+    value: formatPriceValue(Math.abs(action.value), 'en', currency),
+    direction: action.direction,
+  });
+}
+
+export function deserializeAssetChartActions(data: string) {
+  const parsedActions = JSON.parse(data);
+  return {
+    title: parsedActions.title as string,
+    balance: parsedActions.balance as string,
+    value: parsedActions.value as string,
+    direction:
+      parsedActions.direction as AssetChartActions['total']['direction'],
+  };
 }

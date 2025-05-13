@@ -1,21 +1,103 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useStore } from '@store-unit/react';
-import ChartJS, { type ScriptableLineSegmentContext } from 'chart.js/auto';
+import type { InteractionItem, InteractionModeFunction } from 'chart.js/auto';
+import ChartJS, {
+  Interaction,
+  type ScriptableLineSegmentContext,
+} from 'chart.js/auto';
+import { getRelativePosition } from 'chart.js/helpers';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { equal } from 'src/modules/fast-deep-equal';
-import type { Theme } from 'src/ui/features/appearance';
+import { Theme } from 'src/ui/features/appearance';
 import { themeStore } from 'src/ui/features/appearance';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import {
   getSortedRangeIndexes,
   toScatterData,
   getChartColor,
   getYLimits,
+  serializeAssetChartActions,
 } from './helpers';
 import { CHART_HEIGHT, DEFAULT_CONFIG } from './config';
 import { drawDotPlugin, drawRangePlugin } from './plugins';
+import type { ChartPoint, ParsedChartPoint } from './types';
+import { externalTooltip } from './tooltip';
+
+declare module 'chart.js' {
+  interface InteractionModeMap {
+    magneticActions: InteractionModeFunction;
+  }
+}
+
+function getDistance(
+  point1: { x: number; y: number },
+  point2: { x: number; y: number }
+) {
+  return Math.sqrt(
+    Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
+  );
+}
+
+Interaction.modes.magneticActions = function (chart, e) {
+  const indexPoints = Interaction.modes.index(chart, e, {
+    axis: 'x',
+    intersect: false,
+  });
+  const activePoint = indexPoints[0];
+
+  if (!activePoint) {
+    return [];
+  }
+
+  const marneticRadius = 4;
+  let closestPointWithExtra: InteractionItem | null = null;
+  const position = getRelativePosition(e, chart);
+
+  Interaction.evaluateInteractionItems(
+    chart,
+    'xy',
+    position,
+    (element, datasetIndex, index) => {
+      if (Math.abs(element.x - position.x) > marneticRadius) {
+        return;
+      }
+      if (
+        'raw' in element &&
+        Boolean((element.raw as ParsedChartPoint)?.actions)
+      ) {
+        if (!closestPointWithExtra) {
+          closestPointWithExtra = {
+            element,
+            datasetIndex,
+            index,
+          };
+        } else if (
+          Math.abs(element.x - position.x) <
+          Math.abs(closestPointWithExtra.element.x - position.x)
+        ) {
+          closestPointWithExtra = {
+            element,
+            datasetIndex,
+            index,
+          };
+        }
+      }
+    }
+  );
+
+  const activePointMagneticRadius = 8;
+  if (
+    !closestPointWithExtra ||
+    getDistance(position, activePoint.element) < activePointMagneticRadius
+  ) {
+    return [activePoint];
+  }
+
+  return [closestPointWithExtra];
+};
 
 /**
  * Chart update animation algorithm:
@@ -40,8 +122,8 @@ function updateChartPoints({
   theme,
 }: {
   chart: ChartJS;
-  prevPoints: [number, number][];
-  nextPoints: [number, number][];
+  prevPoints: ChartPoint[];
+  nextPoints: ChartPoint[];
   theme: Theme;
 }) {
   const { min: prevYMin, max: prevYMax } = getYLimits(prevPoints);
@@ -114,7 +196,7 @@ function getSegmentColor({
   ctx: ScriptableLineSegmentContext;
   startRangeIndex: number | null;
   endRangeIndex: number | null;
-  chartPoints: [number, number][];
+  chartPoints: ChartPoint[];
   theme: Theme;
 }) {
   const { startRangeIndex, endRangeIndex } = getSortedRangeIndexes({
@@ -143,11 +225,13 @@ function getSegmentColor({
 }
 
 export function Chart({
+  asset,
   chartPoints,
   onRangeSelect,
   style,
 }: {
-  chartPoints: [number, number][];
+  asset: Asset;
+  chartPoints: ChartPoint[];
   onRangeSelect: ({
     startRangeIndex,
     endRangeIndex,
@@ -161,7 +245,7 @@ export function Chart({
   const { theme } = useStore(themeStore);
   const onRangeSelectEvent = useEvent(onRangeSelect);
 
-  const chartPointsRef = useRef<[number, number][]>([]);
+  const chartPointsRef = useRef<ChartPoint[]>([]);
   const endRangeIndexRef = useRef<number | null>(null);
   const startRangeIndexRef = useRef<number | null>(null);
   const startRangeXRef = useRef<number | null>(null);
@@ -170,6 +254,8 @@ export function Chart({
   const chartRef = useRef<ChartJS | null>(null);
   const themeRef = useRef<Theme>(theme);
   themeRef.current = theme;
+  const assetRef = useRef<Asset>(asset);
+  assetRef.current = asset;
 
   const maxChartPointValue = useMemo(() => {
     return chartPoints.length
@@ -182,6 +268,18 @@ export function Chart({
       ? Math.min(...chartPoints.map(([, value]) => value))
       : null;
   }, [chartPoints]);
+
+  const getPointColor = useEvent((isPositive: boolean) => {
+    return getChartColor({
+      theme,
+      isPositive,
+      isHighlighted: false,
+    });
+  });
+
+  const getPointBorderColor = useEvent(() => {
+    return theme === Theme.light ? '#ffffff' : '#16161a';
+  });
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
@@ -196,6 +294,32 @@ export function Chart({
           {
             data: [],
             hidden: true,
+            pointRadius: (ctx) => {
+              const hasDataPoint = Boolean(
+                (ctx.raw as ParsedChartPoint)?.actions
+              );
+              return hasDataPoint ? 4 : 0;
+            },
+            pointHoverRadius: (ctx) => {
+              const hasDataPoint = Boolean(
+                (ctx.raw as ParsedChartPoint)?.actions
+              );
+              return hasDataPoint ? 8 : 0;
+            },
+            pointBorderColor: getPointBorderColor,
+            pointBackgroundColor: (ctx) => {
+              const isPositive =
+                (ctx.raw as ParsedChartPoint)?.actions?.total.direction ===
+                'in';
+              const isNegative =
+                (ctx.raw as ParsedChartPoint)?.actions?.total.direction ===
+                'out';
+              return isPositive || isNegative
+                ? getPointColor(isPositive)
+                : 'grey';
+            },
+            pointBorderWidth: 1,
+            pointHoverBorderWidth: 2,
             segment: {
               borderColor: (ctx) =>
                 getSegmentColor({
@@ -211,8 +335,44 @@ export function Chart({
       },
       options: {
         ...DEFAULT_CONFIG.options,
+        interaction: { mode: 'magneticActions' },
         onHover: (_, __, chart) => {
           chart.update();
+        },
+        plugins: {
+          ...DEFAULT_CONFIG.options?.plugins,
+          tooltip: {
+            ...DEFAULT_CONFIG.options?.plugins?.tooltip,
+            external: externalTooltip,
+            callbacks: {
+              label: (ctx) => {
+                const actions = (ctx.raw as ParsedChartPoint)?.actions;
+                return actions
+                  ? [
+                      serializeAssetChartActions({
+                        action: actions.total,
+                        asset: assetRef.current,
+                        currency,
+                      }),
+                      ...actions.preview.map((action) =>
+                        serializeAssetChartActions({
+                          action,
+                          asset: assetRef.current,
+                          currency,
+                        })
+                      ),
+                    ]
+                  : '';
+              },
+              footer: (ctx) => {
+                const actions = (ctx[0].raw as ParsedChartPoint)?.actions;
+                if (!actions) {
+                  return '';
+                }
+                return `${actions.count}`;
+              },
+            },
+          },
         },
       },
       plugins: [
@@ -250,7 +410,6 @@ export function Chart({
           },
         },
         drawDotPlugin({
-          getStartRangeIndex: () => startRangeIndexRef.current,
           getTheme: () => themeRef.current,
         }),
         drawRangePlugin({
@@ -263,7 +422,7 @@ export function Chart({
     return () => {
       chartRef.current?.destroy();
     };
-  }, [onRangeSelectEvent]);
+  }, [onRangeSelectEvent, currency, getPointColor, getPointBorderColor]);
 
   if (!equal(chartPointsRef.current, chartPoints) && chartRef.current) {
     updateChartPoints({
