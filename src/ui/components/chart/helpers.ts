@@ -5,7 +5,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import type { AssetChartActions } from 'src/modules/zerion-api/requests/asset-get-chart';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { minus } from 'src/ui/shared/typography';
+import { ellipsis, minus } from 'src/ui/shared/typography';
 import type { ChartPoint } from './types';
 
 export function toScatterData(points: ChartPoint[]) {
@@ -78,6 +78,10 @@ export function getYLimits(points: ChartPoint[]) {
   return { min: minLimit, max: maxLimit };
 }
 
+function trimAssetSymbolForTooltip(symbol: string) {
+  return symbol.length > 5 ? `${symbol.slice(0, 5)}${ellipsis}` : symbol;
+}
+
 export function serializeAssetChartActions({
   action,
   asset,
@@ -91,11 +95,15 @@ export function serializeAssetChartActions({
     title: capitalize(action.type || 'total'),
     balance: `${
       new BigNumber(action.quantity).isPositive() ? '+' : minus
-    }${formatTokenValue(new BigNumber(action.quantity).abs(), asset.symbol, {
-      notation: new BigNumber(action.quantity).gte(100000)
-        ? 'compact'
-        : undefined,
-    })}`,
+    }${formatTokenValue(
+      new BigNumber(action.quantity).abs(),
+      trimAssetSymbolForTooltip(asset.symbol),
+      {
+        notation: new BigNumber(action.quantity).gte(100000)
+          ? 'compact'
+          : undefined,
+      }
+    )}`,
     value: formatPriceValue(Math.abs(action.value), 'en', currency),
     direction: action.direction,
   });
