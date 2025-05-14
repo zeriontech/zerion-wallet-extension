@@ -10,7 +10,7 @@ function trimAssetSymbolForTooltip(symbol: string) {
   return symbol.length > 5 ? `${symbol.slice(0, 5)}${ellipsis}` : symbol;
 }
 
-type AssetChartPointExtra = {
+type AssetChartPointAction = {
   title: string;
   balance: string;
   value: string;
@@ -26,7 +26,7 @@ export function serializeAssetChartActions({
   asset: Asset;
   currency: string;
 }) {
-  const data: AssetChartPointExtra = {
+  const data: AssetChartPointAction = {
     title: capitalize(action.type || 'total'),
     balance: `${
       new BigNumber(action.quantity).isPositive() ? '+' : minus
@@ -46,5 +46,5 @@ export function serializeAssetChartActions({
 }
 
 export function deserializeAssetChartActions(data: string) {
-  return JSON.parse(data) as AssetChartPointExtra;
+  return JSON.parse(data) as AssetChartPointAction;
 }
