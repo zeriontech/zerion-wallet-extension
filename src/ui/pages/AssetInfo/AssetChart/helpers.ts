@@ -27,7 +27,7 @@ export function serializeAssetChartActions({
       new BigNumber(action.quantity).abs(),
       trimAssetSymbolForTooltip(asset.symbol),
       {
-        notation: new BigNumber(action.quantity).gte(100000)
+        notation: new BigNumber(action.quantity).abs().gte(100000)
           ? 'compact'
           : undefined,
       }
