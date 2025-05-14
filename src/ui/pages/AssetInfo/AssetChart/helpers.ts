@@ -10,6 +10,13 @@ function trimAssetSymbolForTooltip(symbol: string) {
   return symbol.length > 5 ? `${symbol.slice(0, 5)}${ellipsis}` : symbol;
 }
 
+type AssetChartPointExtra = {
+  title: string;
+  balance: string;
+  value: string;
+  direction: AssetChartActions['total']['direction'];
+};
+
 export function serializeAssetChartActions({
   action,
   asset,
@@ -19,7 +26,7 @@ export function serializeAssetChartActions({
   asset: Asset;
   currency: string;
 }) {
-  return JSON.stringify({
+  const data: AssetChartPointExtra = {
     title: capitalize(action.type || 'total'),
     balance: `${
       new BigNumber(action.quantity).isPositive() ? '+' : minus
@@ -34,16 +41,10 @@ export function serializeAssetChartActions({
     )}`,
     value: formatPriceValue(Math.abs(action.value), 'en', currency),
     direction: action.direction,
-  });
+  };
+  return JSON.stringify(data);
 }
 
 export function deserializeAssetChartActions(data: string) {
-  const parsedActions = JSON.parse(data);
-  return {
-    title: parsedActions.title as string,
-    balance: parsedActions.balance as string,
-    value: parsedActions.value as string,
-    direction:
-      parsedActions.direction as AssetChartActions['total']['direction'],
-  };
+  return JSON.parse(data) as AssetChartPointExtra;
 }
