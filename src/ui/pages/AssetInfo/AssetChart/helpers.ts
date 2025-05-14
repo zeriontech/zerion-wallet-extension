@@ -17,6 +17,8 @@ type AssetChartPointAction = {
   direction: AssetChartActions['total']['direction'];
 };
 
+const SMALL_QUANTITY_THRESHOLD = 0.0000001;
+
 export function serializeAssetChartActions({
   action,
   asset,
@@ -26,12 +28,17 @@ export function serializeAssetChartActions({
   asset: Asset;
   currency: string;
 }) {
+  const isSmallQuantity = new BigNumber(action.quantity)
+    .abs()
+    .lt(SMALL_QUANTITY_THRESHOLD);
   const data: AssetChartPointAction = {
     title: capitalize(action.type || 'total'),
-    balance: `${
-      new BigNumber(action.quantity).isPositive() ? '+' : minus
+    balance: `${new BigNumber(action.quantity).isPositive() ? '+' : minus}${
+      isSmallQuantity ? '<' : ''
     }${formatTokenValue(
-      new BigNumber(action.quantity).abs(),
+      isSmallQuantity
+        ? SMALL_QUANTITY_THRESHOLD
+        : new BigNumber(action.quantity).abs(),
       trimAssetSymbolForTooltip(asset.symbol),
       {
         notation: new BigNumber(action.quantity).abs().gte(100000)
