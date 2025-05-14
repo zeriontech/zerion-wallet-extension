@@ -10,7 +10,6 @@ import {
   type ChartInteraction,
 } from 'src/ui/components/chart/types';
 import { Theme, themeStore } from 'src/ui/features/appearance';
-import { useEvent } from 'src/ui/shared/useEvent';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { serializeAssetChartActions } from './helpers';
 import { externalTooltip } from './tooltip';
@@ -41,27 +40,6 @@ export function AssetChart({
   const assetRef = useRef<Asset>(asset);
   assetRef.current = asset;
 
-  const getPointBorderColor = useEvent(() => {
-    return theme === Theme.light ? '#ffffff' : '#16161a';
-  });
-
-  const getGreyColor = useEvent(() => {
-    return theme === Theme.light ? '#9c9fa8' : '#70737b';
-  });
-
-  const getPointColor = useEvent((pointData: ParsedAssetChartPoint) => {
-    const isPositive = pointData?.extra?.total.direction === 'in';
-    const isNegative = pointData?.extra?.total.direction === 'out';
-
-    return isPositive || isNegative
-      ? getChartColor({
-          theme,
-          isPositive,
-          isHighlighted: false,
-        })
-      : getGreyColor();
-  });
-
   const datasetConfig = useMemo<ChartDatasetConfig>(
     () => ({
       pointRadius: (ctx) => {
@@ -72,14 +50,28 @@ export function AssetChart({
         const hasDataPoint = Boolean((ctx.raw as ParsedAssetChartPoint)?.extra);
         return hasDataPoint ? 8 : 0;
       },
-      pointBorderColor: getPointBorderColor,
+      pointBorderColor: () => {
+        return themeRef.current === Theme.light ? '#ffffff' : '#16161a';
+      },
       pointBackgroundColor: (ctx) => {
-        return getPointColor(ctx.raw as ParsedAssetChartPoint);
+        const pointData = ctx.raw as ParsedAssetChartPoint;
+        const isPositive = pointData?.extra?.total.direction === 'in';
+        const isNegative = pointData?.extra?.total.direction === 'out';
+
+        return isPositive || isNegative
+          ? getChartColor({
+              theme: themeRef.current,
+              isPositive,
+              isHighlighted: false,
+            })
+          : themeRef.current === Theme.light
+          ? '#9c9fa8'
+          : '#70737b';
       },
       pointBorderWidth: 1,
       pointHoverBorderWidth: 2,
     }),
-    [getPointBorderColor, getPointColor]
+    []
   );
 
   const tooltip = useMemo<ChartTooltipOptions>(
