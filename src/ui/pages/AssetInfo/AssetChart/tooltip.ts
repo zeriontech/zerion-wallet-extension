@@ -145,32 +145,31 @@ export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
 
   // Set Text
   if (tooltip.body) {
-    const bodyLines = tooltip.body.map((b) => b.lines);
-    const footerLine = tooltip.footer;
+    const totalAction = tooltip.title[0];
+    const totalActionsCount = Number(tooltip.beforeBody[0]);
+    const previewActions = tooltip.body.map((b) => b.lines)[0];
 
-    if (!bodyLines[0][0]) {
+    if (!totalAction) {
       tooltipEl.style.opacity = '0';
       tooltipEl.style.filter = 'blur(4px)';
       tooltipEl.innerHTML = '';
       return;
     }
 
-    const actionCount = Number(footerLine[0]);
-
-    if (actionCount === 1) {
+    if (totalActionsCount === 1) {
       tooltipEl.replaceChildren(
         getSingleItemTooltip({
-          item: deserializeAssetChartActions(bodyLines[0][0]),
+          item: deserializeAssetChartActions(totalAction),
         })
       );
     } else {
       tooltipEl.replaceChildren(
         getMultipleItemsTooltip({
-          count: actionCount - 2,
-          total: deserializeAssetChartActions(bodyLines[0][0]),
-          items: bodyLines[0]
-            .slice(1)
-            .map((item) => deserializeAssetChartActions(item)),
+          count: totalActionsCount - previewActions.length,
+          total: deserializeAssetChartActions(totalAction),
+          items: previewActions.map((item) =>
+            deserializeAssetChartActions(item)
+          ),
         })
       );
     }

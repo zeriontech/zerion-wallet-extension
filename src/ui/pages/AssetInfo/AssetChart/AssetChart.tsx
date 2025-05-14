@@ -87,31 +87,31 @@ export function AssetChart({
     () => ({
       external: externalTooltip,
       callbacks: {
+        title: (ctx) => {
+          const actions = (ctx[0].raw as ParsedAssetChartPoint)?.extra;
+          return actions
+            ? serializeAssetChartActions({
+                action: actions.total,
+                asset: assetRef.current,
+                currency,
+              })
+            : '';
+        },
+        beforeBody: (ctx) => {
+          const actions = (ctx[0].raw as ParsedAssetChartPoint)?.extra;
+          return actions ? `${actions.count}` : '';
+        },
         label: (ctx) => {
           const actions = (ctx.raw as ParsedAssetChartPoint)?.extra;
           return actions
-            ? [
+            ? actions.preview.map((action) =>
                 serializeAssetChartActions({
-                  action: actions.total,
+                  action,
                   asset: assetRef.current,
                   currency,
-                }),
-                ...actions.preview.map((action) =>
-                  serializeAssetChartActions({
-                    action,
-                    asset: assetRef.current,
-                    currency,
-                  })
-                ),
-              ]
+                })
+              )
             : '';
-        },
-        footer: (ctx) => {
-          const actions = (ctx[0].raw as ParsedAssetChartPoint)?.extra;
-          if (!actions) {
-            return '';
-          }
-          return `${actions.count}`;
         },
       },
     }),
