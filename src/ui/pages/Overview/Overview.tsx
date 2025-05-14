@@ -68,7 +68,7 @@ import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { isSolanaAddress } from 'src/modules/solana/shared';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
@@ -365,13 +365,15 @@ function OverviewComponent() {
   const isReadonlyGroup =
     walletGroup && isReadonlyContainer(walletGroup.walletContainer);
   const [searchParams, setSearchParams] = useSearchParams();
-  const selectedChain = isSolanaAddress(singleAddress)
-    ? 'solana'
-    : searchParams.get('chain') || null;
+  const selectedChain = searchParams.get('chain') || null;
   const setSelectedChain = useEvent((value: string | null) => {
     // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
     setSearchParams(value ? [['chain', value]] : '');
   });
+  const addressType = getAddressType(singleAddress);
+  useEffect(() => {
+    setSelectedChain(null);
+  }, [addressType, setSelectedChain]);
   const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
