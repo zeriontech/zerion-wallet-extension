@@ -68,5 +68,11 @@ export function getYLimits(points: ChartPoint[]) {
       max: maxLimit + flatChartYOffset,
     };
   }
-  return { min: minLimit, max: maxLimit };
+  // Small offset to avoid chart points and active item indicator
+  // be partially hidden by the chart container border
+  const normalChartYOffset = diff * 0.05;
+  return {
+    min: minLimit - normalChartYOffset,
+    max: maxLimit + normalChartYOffset,
+  };
 }
