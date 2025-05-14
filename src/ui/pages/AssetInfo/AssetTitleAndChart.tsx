@@ -15,12 +15,15 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
-import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
+import type {
+  AssetChartActions,
+  ChartPeriod,
+} from 'src/modules/zerion-api/requests/asset-get-chart';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { Chart } from 'src/ui/components/chart/Chart';
 import type { ChartPoint } from 'src/ui/components/chart/types';
 import { getColor, getSign } from './helpers';
+import { AssetChart } from './AssetChart/AssetChart';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
 const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
@@ -58,7 +61,9 @@ export function AssetTitleAndChart({
     period,
   });
 
-  const chartPoints = useMemo<ChartPoint[]>(() => {
+  const chartPoints = useMemo<
+    Array<ChartPoint<AssetChartActions | null>>
+  >(() => {
     return (
       chartData?.data.points.map((item) => [
         item.timestamp * 1000,
@@ -172,15 +177,10 @@ export function AssetTitleAndChart({
       </VStack>
       {isUntrackedAsset || isError ? null : (
         <>
-          <Chart
+          <AssetChart
             asset={asset}
             chartPoints={chartPoints}
             onRangeSelect={handleRangeSelect}
-            style={{
-              position: 'relative',
-              left: -16,
-              width: 'calc(100% + 32px)',
-            }}
           />
           <HStack gap={8} justifyContent="space-between">
             {CHART_TYPE_OPTIONS.map((type) => (
