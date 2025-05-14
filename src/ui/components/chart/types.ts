@@ -2,11 +2,7 @@ import type { ChartConfiguration, Plugin } from 'chart.js/auto';
 
 export type ChartPoint<T = unknown> = [number, number, T];
 export type ParsedChartPoint<T = unknown> =
-  | {
-      x: number;
-      y: number;
-      extra: T;
-    }
+  | { x: number; y: number; extra: T }
   | undefined;
 
 export type ChartTooltipOptions = NonNullable<
