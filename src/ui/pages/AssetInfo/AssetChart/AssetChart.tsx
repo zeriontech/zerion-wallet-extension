@@ -45,6 +45,10 @@ export function AssetChart({
     return theme === Theme.light ? '#ffffff' : '#16161a';
   });
 
+  const getGreyColor = useEvent(() => {
+    return theme === Theme.light ? '#9c9fa8' : '#70737b';
+  });
+
   const getPointColor = useEvent((isPositive: boolean) => {
     return getChartColor({
       theme,
@@ -69,12 +73,14 @@ export function AssetChart({
           (ctx.raw as ParsedAssetChartPoint)?.extra?.total.direction === 'in';
         const isNegative =
           (ctx.raw as ParsedAssetChartPoint)?.extra?.total.direction === 'out';
-        return isPositive || isNegative ? getPointColor(isPositive) : 'grey';
+        return isPositive || isNegative
+          ? getPointColor(isPositive)
+          : getGreyColor();
       },
       pointBorderWidth: 1,
       pointHoverBorderWidth: 2,
     }),
-    [getPointBorderColor, getPointColor]
+    [getPointBorderColor, getPointColor, getGreyColor]
   );
 
   const tooltip = useMemo<ChartTooltipOptions>(
@@ -113,11 +119,7 @@ export function AssetChart({
   );
 
   const plugins = useMemo<ChartPlugins>(
-    () => [
-      drawDotPlugin({
-        getTheme: () => themeRef.current,
-      }),
-    ],
+    () => [drawDotPlugin({ getTheme: () => themeRef.current })],
     []
   );
 
