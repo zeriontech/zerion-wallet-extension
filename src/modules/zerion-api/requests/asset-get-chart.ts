@@ -26,11 +26,11 @@ export type AssetChartActions = {
 };
 
 export interface AssetChart {
-  points: {
+  points: Array<{
     timestamp: number;
     value: number;
     actions: AssetChartActions | null;
-  }[];
+  }>;
 }
 
 type Response = ResponseBody<AssetChart>;

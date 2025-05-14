@@ -131,11 +131,18 @@ const getMultipleItemsTooltip = ({
   );
 };
 
+/*
+  External tooltip takes the data from the tooltip callbacks.
+  Special format of data serialisation is used to pass all the data to the tooltip.
+
+  - title: total action data
+  - beforeBody: total actions count
+  - body: preview actions data
+*/
+
 export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
-  // Tooltip Element
   const tooltipEl = getOrCreateTooltip(chart);
 
-  // Hide if no tooltip
   if (tooltip.opacity === 0) {
     tooltipEl.style.opacity = '0';
     tooltipEl.style.filter = 'blur(4px)';
@@ -143,7 +150,6 @@ export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
     return;
   }
 
-  // Set Text
   if (tooltip.body) {
     const totalAction = tooltip.title[0];
     const totalActionsCount = Number(tooltip.beforeBody[0]);
@@ -181,7 +187,6 @@ export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
   const inTheMiddle =
     chart.width * 0.3 < tooltip.caretX && tooltip.caretX < chart.width * 0.7;
 
-  // Display, position, and set styles for font
   tooltipEl.style.opacity = '1';
   tooltipEl.style.left = positionX + tooltip.caretX + 'px';
   tooltipEl.style.top = positionY + tooltip.caretY + 'px';
