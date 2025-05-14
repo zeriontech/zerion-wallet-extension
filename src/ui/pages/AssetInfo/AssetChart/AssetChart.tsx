@@ -49,12 +49,17 @@ export function AssetChart({
     return theme === Theme.light ? '#9c9fa8' : '#70737b';
   });
 
-  const getPointColor = useEvent((isPositive: boolean) => {
-    return getChartColor({
-      theme,
-      isPositive,
-      isHighlighted: false,
-    });
+  const getPointColor = useEvent((pointData: ParsedAssetChartPoint) => {
+    const isPositive = pointData?.extra?.total.direction === 'in';
+    const isNegative = pointData?.extra?.total.direction === 'out';
+
+    return isPositive || isNegative
+      ? getChartColor({
+          theme,
+          isPositive,
+          isHighlighted: false,
+        })
+      : getGreyColor();
   });
 
   const datasetConfig = useMemo<ChartDatasetConfig>(
@@ -69,18 +74,12 @@ export function AssetChart({
       },
       pointBorderColor: getPointBorderColor,
       pointBackgroundColor: (ctx) => {
-        const isPositive =
-          (ctx.raw as ParsedAssetChartPoint)?.extra?.total.direction === 'in';
-        const isNegative =
-          (ctx.raw as ParsedAssetChartPoint)?.extra?.total.direction === 'out';
-        return isPositive || isNegative
-          ? getPointColor(isPositive)
-          : getGreyColor();
+        return getPointColor(ctx.raw as ParsedAssetChartPoint);
       },
       pointBorderWidth: 1,
       pointHoverBorderWidth: 2,
     }),
-    [getPointBorderColor, getPointColor, getGreyColor]
+    [getPointBorderColor, getPointColor]
   );
 
   const tooltip = useMemo<ChartTooltipOptions>(
