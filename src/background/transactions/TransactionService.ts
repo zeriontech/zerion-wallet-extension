@@ -55,9 +55,9 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
   }
 
   bulkDeleteTransactionsById(ids: string[]) {
-    const hashesSet = new Set(ids);
+    const idsSet = new Set(ids);
     this.setState((state) =>
-      state.filter((item) => !hashesSet.has(item.hash ?? item.signature))
+      state.filter((item) => !idsSet.has(item.hash ?? item.signature))
     );
   }
 
