@@ -136,6 +136,27 @@ export function toPlainTransactionResponse(
   };
 }
 
+export function txPlainToEthersV5TransactionResponse(
+  value: SerializableTransactionResponse
+): EthersV5TransactionResponse {
+  return {
+    chainId: EthersV5BigNumber.from(value.chainId),
+    data: value.data,
+    from: value.from,
+    gasLimit: value.gasLimit,
+    hash: value.hash,
+    nonce: value.nonce,
+    value: value.value,
+    blockHash: value.blockHash ?? undefined,
+    blockNumber: value.blockNumber ?? undefined,
+    gasPrice: value.gasPrice ?? undefined,
+    maxFeePerGas: value.maxFeePerGas ?? undefined,
+    maxPriorityFeePerGas: value.maxPriorityFeePerGas ?? undefined,
+    to: value.to ?? undefined,
+    type: value.type,
+  };
+}
+
 export function toEthersV5TransactionResponse(
   /**
    * Can't trust TransactionResponse type because ethers@v6 is buggy:

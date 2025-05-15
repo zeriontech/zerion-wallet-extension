@@ -1,12 +1,12 @@
-import type { ethers } from 'ethers';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
+import type { SerializableTransactionResponse } from '../ethereum/types/TransactionResponsePlain';
 import { getDefiSdkClient } from './background';
 
 const namespace = 'transaction';
 const scope = 'register';
 
 export async function registerTransaction(
-  transaction: ethers.TransactionResponse,
+  transaction: SerializableTransactionResponse,
   chain: string,
   mode: 'default' | 'testnet'
 ) {

@@ -1,5 +1,6 @@
 import type { AddressParams } from 'defi-sdk';
 import type { TransactionObject } from 'src/modules/ethereum/transactions/types';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 interface MultipleAddressesParam {
   addresses: string[];
@@ -16,13 +17,15 @@ export function filterAddressTransactions(
   transactions: TransactionObject[]
 ) {
   return transactions.filter((tx) => {
-    if (!tx.transaction.from) {
+    const txFromRaw = tx.transaction ? tx.transaction.from : tx.publicKey;
+    if (!txFromRaw) {
       return false;
     }
+    const txFrom = normalizeAddress(txFromRaw);
     if (isMultipleAddressesParam(addressParams)) {
-      return addressParams.addresses.includes(tx.transaction.from);
+      return addressParams.addresses.includes(txFrom);
     } else {
-      return tx.transaction.from?.toLowerCase() === addressParams.address;
+      return txFrom === normalizeAddress(addressParams.address);
     }
   });
 }

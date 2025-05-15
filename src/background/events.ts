@@ -1,4 +1,3 @@
-import type { ethers } from 'ethers';
 import { createNanoEvents } from 'nanoevents';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -10,11 +9,10 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { ButtonClickedParams } from 'src/shared/types/button-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
-
-type TransactionResponse = ethers.TransactionResponse;
 
 export interface ScreenViewParams {
   pathname: string;
@@ -42,10 +40,8 @@ export const emitter = createNanoEvents<{
   }) => void;
   switchChainError: (chainId: ChainId, origin: string, error: unknown) => void;
   transactionSent: (
-    data: {
-      transaction: TransactionResponse;
-      mode: 'default' | 'testnet';
-    } & TransactionContextParams
+    result: SignTransactionResult,
+    context: { mode: 'default' | 'testnet' } & TransactionContextParams
   ) => void;
   typedDataSigned: (
     data: { typedData: TypedData; address: string } & MessageContextParams

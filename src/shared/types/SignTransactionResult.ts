@@ -3,11 +3,6 @@ import type { SolSignTransactionResult } from 'src/modules/solana/transactions/S
 import type { OneOf } from '../type-utils/OneOf';
 
 export type SignTransactionResult = OneOf<{
-  ethereum: SerializableTransactionResponse;
-  solana: SolSignTransactionResult;
+  evm: SerializableTransactionResponse;
+  solana: SolSignTransactionResult | SolSignTransactionResult[];
 }>;
-
-export type SignAllTransactionsResult = {
-  ethereum: undefined;
-  solana: SolSignTransactionResult[];
-};

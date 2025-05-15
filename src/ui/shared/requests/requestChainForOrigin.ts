@@ -4,9 +4,7 @@ import { walletPort } from 'src/ui/shared/channels';
 export function requestChainForOrigin(tabOrigin?: string) {
   return tabOrigin
     ? walletPort
-        .request('requestChainForOrigin', {
-          origin: tabOrigin,
-        })
+        .request('requestChainForOrigin', { origin: tabOrigin })
         .then((chain) => createChain(chain))
     : null;
 }

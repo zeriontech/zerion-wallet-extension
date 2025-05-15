@@ -24,7 +24,7 @@ export function useShowDnaMintBanner(address: string) {
       ) &&
       !localTransactions.some(
         (item) =>
-          normalizeAddress(item.transaction.to || '') ===
+          normalizeAddress(item.transaction?.to || '') ===
           DNA_NFT_COLLECTION_ADDRESS
       ),
     [value, localTransactions]

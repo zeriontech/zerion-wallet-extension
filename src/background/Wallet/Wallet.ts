@@ -214,9 +214,12 @@ export class Wallet {
       this.walletStore.on('change', this.notifyExternalStores.bind(this))
     );
     this.disposer.add(
-      emitter.on('transactionSent', ({ chain, clientScope, transaction }) => {
-        if (clientScope === 'Swap') {
-          this.setLastSwapChainByAddress({ address: transaction.from, chain });
+      emitter.on('transactionSent', (result, { chain, clientScope }) => {
+        if (result.evm && clientScope === 'Swap') {
+          this.setLastSwapChainByAddress({
+            address: result.evm.from,
+            chain,
+          });
         }
       })
     );
@@ -1217,7 +1220,7 @@ export class Wallet {
       initiator,
     });
 
-    const { mode } = await this.assertNetworkMode(chainId);
+    const { mode } = await this.assertNetworkMode({ chainId });
 
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const networks = await networksStore.loadNetworksByChainId(chainId);
@@ -1262,11 +1265,11 @@ export class Wallet {
         const safeTx = removeSignature(transactionResponse);
 
         const safeTxPlain = toPlainTransactionResponse(safeTx);
-        emitter.emit('transactionSent', {
-          transaction: transactionResponse,
-          mode,
-          ...transactionContextParams,
-        });
+        emitter.emit(
+          'transactionSent',
+          { evm: safeTxPlain },
+          { mode, ...transactionContextParams }
+        );
         return safeTxPlain;
       } catch (error) {
         throw getEthersError(error);
@@ -1297,6 +1300,8 @@ export class Wallet {
   }: WalletMethodParams<{
     transaction: string;
     params: TransactionContextParams;
+    /** Whether to emit 'transactionSent' event */
+    silent?: boolean;
   }>): Promise<SolSignTransactionResult> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
@@ -1304,7 +1309,11 @@ export class Wallet {
     const currentAddress = this.ensureCurrentAddress();
     // TODO: infer signer address from transaction instead
     invariant(isSolanaAddress(currentAddress), 'Active address is not solana');
-    const { transaction: txBase64, params: _transactionContextParams } = params;
+    const {
+      transaction: txBase64,
+      params: transactionContextParams,
+      silent = false,
+    } = params;
     invariant(txBase64, () => new InvalidParams());
     const transaction = solFromBase64(txBase64);
 
@@ -1316,7 +1325,18 @@ export class Wallet {
     );
 
     const keypair = this.getKeypairByAddress(currentAddress);
-    return SolanaSigning.signTransaction(transaction, keypair);
+    const result = SolanaSigning.signTransaction(transaction, keypair);
+    const { mode } = await this.assertNetworkMode({
+      id: createChain('solana'),
+    }); // MUST assert even if result is not used
+    if (!silent) {
+      emitter.emit(
+        'transactionSent',
+        { solana: result },
+        { mode, ...transactionContextParams }
+      );
+    }
+    return result;
   }
 
   async solana_signAllTransactions({
@@ -1330,10 +1350,13 @@ export class Wallet {
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
     const currentAddress = this.ensureCurrentAddress();
-    const { transactions: txsBase64, params: _transactionContextParams } =
+    const { transactions: txsBase64, params: transactionContextParams } =
       params;
     invariant(txsBase64 && Array.isArray(txsBase64), () => new InvalidParams());
     invariant(txsBase64.length > 0, 'No transactions provided');
+    const { mode } = await this.assertNetworkMode({
+      id: createChain('solana'),
+    }); // MUST assert even if result is not used
     const transactions = txsBase64.map((tx) => solFromBase64(tx));
     const feePayer = SolanaSigning.getTransactionFeePayer(transactions[0]);
     // TODO: infer signer address from transaction instead
@@ -1342,7 +1365,17 @@ export class Wallet {
       "feePayer doesn't match active address"
     );
     const keypair = this.getKeypairByAddress(currentAddress);
-    return SolanaSigning.signAllTransactions(transactions, keypair);
+    const results = SolanaSigning.signAllTransactions(transactions, keypair);
+
+    results.forEach((result) => {
+      emitter.emit(
+        'transactionSent',
+        { solana: result },
+        { mode, ...transactionContextParams }
+      );
+    });
+
+    return results;
   }
 
   async solana_signAndSendTransaction({
@@ -1357,9 +1390,12 @@ export class Wallet {
     this.ensureRecord(this.record);
 
     const { tx: signed, publicKey } = await this.solana_signTransaction({
-      params,
+      params: { ...params, silent: true },
       context,
     });
+    const { mode } = await this.assertNetworkMode({
+      id: createChain('solana'),
+    }); // MUST assert even if result is not used
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const network = await networksStore.fetchNetworkById('solana');
     const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
@@ -1370,12 +1406,13 @@ export class Wallet {
     const signature = await connection.sendRawTransaction(
       transaction.serialize()
     );
-    // TODO: emit 'transactionSent'
-    return {
-      signature,
-      publicKey,
-      tx: solToBase64(transaction),
-    };
+    const result = { signature, publicKey, tx: solToBase64(transaction) };
+    emitter.emit(
+      'transactionSent',
+      { solana: result },
+      { mode, ...params.params }
+    );
+    return result;
   }
 
   async solana_signMessage({
@@ -1416,7 +1453,7 @@ export class Wallet {
     const networks = await networksStore.load({ chains: [chain] });
     const chainId = networks.getChainId(createChain(chain));
     invariant(chainId, 'Chain id should exist for send signed transaction');
-    const { mode } = await this.assertNetworkMode(chainId); // MUST assert even if result is not used
+    const { mode } = await this.assertNetworkMode({ chainId }); // MUST assert even if result is not used
     try {
       const isEip712Tx = checkEip712Tx(serialized);
       let transactionResponse: ethers.TransactionResponse;
@@ -1432,11 +1469,11 @@ export class Wallet {
       }
       const safeTx = removeSignature(transactionResponse);
       const safeTxPlain = toPlainTransactionResponse(safeTx);
-      emitter.emit('transactionSent', {
-        transaction: transactionResponse,
-        mode,
-        ...transactionContextParams,
-      });
+      emitter.emit(
+        'transactionSent',
+        { evm: safeTxPlain },
+        { mode, ...transactionContextParams }
+      );
       return safeTxPlain;
     } catch (error) {
       throw getEthersError(error);
@@ -1713,7 +1750,9 @@ export class Wallet {
   }
 
   private async checkTestnetMode(
-    chainId: ChainId
+    options:
+      | { chainId: ChainId; id?: undefined }
+      | { id: Chain; chainId?: undefined }
   ): Promise<
     | { violation: true; network: NetworkConfig; mode: 'testnet' | 'default' }
     | { violation: false; network: null; mode: 'testnet' | 'default' }
@@ -1721,11 +1760,22 @@ export class Wallet {
     const preferences = await this.getPreferences({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
-    const network = await fetchNetworkByChainId({
-      preferences,
-      chainId,
-      apiEnv: 'testnet-first',
-    });
+    let network: NetworkConfig | null;
+    if (options.chainId) {
+      network = await fetchNetworkByChainId({
+        preferences,
+        chainId: options.chainId,
+        apiEnv: 'testnet-first',
+      });
+    } else if (options.id) {
+      network = await fetchNetworkById({
+        preferences,
+        networkId: options.id,
+        apiEnv: 'testnet-first',
+      });
+    } else {
+      throw new Error('Invalid options object');
+    }
     const mode = preferences.testnetMode?.on ? 'testnet' : 'default';
     if (!network) {
       return { violation: false, network: null, mode };
@@ -1738,19 +1788,23 @@ export class Wallet {
   }
 
   /** Signing mainnet transactions must not be allowed in testnet mode */
-  private async assertNetworkMode(chainId: ChainId) {
-    const result = await this.checkTestnetMode(chainId);
+  private async assertNetworkMode(
+    options: Parameters<typeof this.checkTestnetMode>[0]
+  ) {
+    const result = await this.checkTestnetMode(options);
     const { violation } = result;
     if (violation) {
       throw new Error(
-        `Testnet Mode violation: ${chainId} is a mainnet. Turn off Testnet Mode before continuing`
+        `Testnet Mode violation: ${result.network.name} is a mainnet. Turn off Testnet Mode before continuing`
       );
     }
     return result;
   }
 
   async ensureTestnetModeForChainId(chainId: ChainId, tabId: number | null) {
-    const { violation, network, mode } = await this.checkTestnetMode(chainId);
+    const { violation, network, mode } = await this.checkTestnetMode({
+      chainId,
+    });
     if (violation && mode === 'testnet') {
       // Warn user that we're switching to mainnet from testmode
       return new Promise<void>((resolve, reject) => {
@@ -1796,6 +1850,12 @@ export class Wallet {
     await this.ensureTestnetModeForChainId(chainId, tabId);
   }
 
+  async getRpcUrlSolana() {
+    const networksStore = getNetworksStore(Model.getPreferences(this.record));
+    const network = await networksStore.fetchNetworkById('solana');
+    const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
+    return rpcUrl;
+  }
   async getRpcUrlByChainId({
     chainId,
     type,

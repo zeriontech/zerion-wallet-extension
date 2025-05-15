@@ -6,6 +6,10 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
 import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
 import { estimateSessionExpiry } from 'src/background/user-activity';
+import {
+  ensureSolanaResult,
+  getTxSender,
+} from 'src/modules/shared/transactions/helpers';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -139,15 +143,10 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on(
     'transactionSent',
-    async ({
-      transaction,
-      initiator,
-      feeValueCommon,
-      addressAction,
-      quote,
-      clientScope,
-      chain,
-    }) => {
+    async (
+      result,
+      { initiator, feeValueCommon, addressAction, quote, clientScope, chain }
+    ) => {
       const initiatorURL = new URL(initiator);
       const { origin, pathname } = initiatorURL;
       const isInternalOrigin = globalThis.location.origin === origin;
@@ -163,7 +162,7 @@ function trackAppEvents({ account }: { account: Account }) {
       const params = createParams({
         request_name: 'signed_transaction',
         screen_name: origin === initiator ? 'Transaction Request' : pathname,
-        wallet_address: transaction.from,
+        wallet_address: getTxSender(result), // transaction.from,
         /* @deprecated */
         context: initiatorName,
         /* @deprecated */
@@ -172,8 +171,9 @@ function trackAppEvents({ account }: { account: Account }) {
         action_type: addressActionAnalytics?.action_type ?? 'Execute',
         dapp_domain: isInternalOrigin ? null : origin,
         chain,
-        gas: transaction.gasLimit.toString(),
-        hash: transaction.hash,
+        gas: result.evm ? result.evm.gasLimit.toString() : null,
+        /** Current requirement by analytics: send solana signatures as `hash` */
+        hash: result.evm?.hash ?? ensureSolanaResult(result).signature,
         asset_amount_sent: [], // TODO
         gas_price: null, // TODO
         network_fee: null, // TODO

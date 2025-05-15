@@ -324,12 +324,16 @@ export class DnaService {
         });
       }
     });
-    emitter.on('transactionSent', (data) => {
-      this.registerTransaction({
-        address: data.transaction.from,
-        hash: data.transaction.hash,
-        chain: data.chain,
-      });
+    emitter.on('transactionSent', (data, { chain }) => {
+      if (data.evm) {
+        this.registerTransaction({
+          address: data.evm.from,
+          hash: data.evm.hash,
+          chain,
+        });
+      } else if (data.solana) {
+        // TODO: Upgrade DNA for Solana transactions?...
+      }
     });
   }
 }

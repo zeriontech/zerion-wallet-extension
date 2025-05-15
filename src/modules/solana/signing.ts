@@ -1,6 +1,7 @@
 import type { Keypair, VersionedTransaction } from '@solana/web3.js';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
+import { invariant } from 'src/shared/invariant';
 import type { SolTransaction } from './SolTransaction';
 import { SolanaTransactionLegacy } from './SolTransaction';
 import { solToBase64 } from './transactions/create';
@@ -67,8 +68,11 @@ export class SolanaSigning {
     } else {
       transaction.sign([keypair]);
     }
+    const signature = getTransactionSignature(transaction);
+    invariant(signature, 'Could not resolve signature of a signed tranasction');
+
     return {
-      signature: getTransactionSignature(transaction),
+      signature,
       publicKey: keypair.publicKey.toBase58(),
       tx: solToBase64(transaction),
     };

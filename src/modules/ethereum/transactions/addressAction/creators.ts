@@ -11,6 +11,9 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { v5ToPlainTransactionResponse } from 'src/background/Wallet/model/ethers-v5-types';
+import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
+import { invariant } from 'src/shared/invariant';
+import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
@@ -133,12 +136,13 @@ export function transactionReceiptToActionStatus(
     : 'pending';
 }
 
-export async function pendingTransactionToAddressAction(
+async function pendingEvmTxToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
   currency: string,
   client: Client
 ): Promise<LocalAddressAction> {
+  invariant(transactionObject.hash, 'Must be evm tx');
   const { transaction, hash, timestamp } = transactionObject;
   let chain: Chain | null;
   const chainId = normalizeChainId(transaction.chainId);
@@ -191,6 +195,60 @@ export async function pendingTransactionToAddressAction(
     local: true,
     relatedTransaction: transactionObject.relatedTransactionHash,
   };
+}
+
+function solanaTransactionObjectToStatus(
+  transactionObject: TransactionObject
+): ClientTransactionStatus {
+  invariant(transactionObject.signature, 'Must be solana tx');
+  if (transactionObject.dropped) {
+    return 'dropped';
+  } else if (transactionObject.signatureStatus == null) {
+    return 'pending';
+  } else if (transactionObject.signatureStatus.err) {
+    return 'failed';
+  } else {
+    return 'confirmed';
+  }
+}
+
+function pendingSolanaTxToAddressAction(
+  transactionObject: TransactionObject
+): LocalAddressAction {
+  invariant(transactionObject.signature, 'Must be solana tx');
+  const tx = solFromBase64(transactionObject.solanaBase64);
+  const addressAction = solanaTransactionToAddressAction(
+    tx,
+    transactionObject.publicKey
+  );
+  return {
+    ...addressAction,
+    local: true,
+    transaction: {
+      ...addressAction.transaction,
+      status: solanaTransactionObjectToStatus(transactionObject),
+    },
+  };
+}
+
+export async function pendingTransactionToAddressAction(
+  transactionObject: TransactionObject,
+  loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
+  currency: string,
+  client: Client
+): Promise<LocalAddressAction> {
+  if (transactionObject.hash) {
+    return pendingEvmTxToAddressAction(
+      transactionObject,
+      loadNetworkByChainId,
+      currency,
+      client
+    );
+  } else if (transactionObject.signature) {
+    return pendingSolanaTxToAddressAction(transactionObject);
+  } else {
+    throw new Error('Unexpected TransactionObject');
+  }
 }
 
 export async function incomingTxToIncomingAddressAction(
