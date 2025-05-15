@@ -85,9 +85,14 @@ export function addressActionToAnalytics({
 }: {
   addressAction: AnyAddressAction | null;
   quote?: Quote;
-}): AnalyticsTransactionData | null {
+}): AnalyticsTransactionData {
   if (!addressAction) {
-    return null;
+    return {
+      action_type: 'Execute',
+      asset_amount_sent: [],
+      usd_amount_received: null,
+      usd_amount_sent: null,
+    };
   }
   const chain = createChain(addressAction.transaction.chain);
   const convertQuantity = createQuantityConverter(chain);
@@ -97,7 +102,7 @@ export function addressActionToAnalytics({
   const incoming = addressAction.content?.transfers?.incoming;
 
   const value = {
-    action_type: addressAction.type.display_value,
+    action_type: addressAction.type.display_value || 'Execute',
     usd_amount_sent: outgoing?.reduce(addAssetPrice, 0) ?? null,
     usd_amount_received: incoming?.reduce(addAssetPrice, 0) ?? null,
     asset_amount_sent: toMaybeArr(outgoing?.map(convertQuantity)),

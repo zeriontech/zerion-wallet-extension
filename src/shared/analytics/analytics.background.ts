@@ -38,6 +38,7 @@ import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
+import { omitNullParams } from './shared/omitNullParams';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -168,19 +169,17 @@ function trackAppEvents({ account }: { account: Account }) {
         /* @deprecated */
         type: 'Sign',
         client_scope: clientScope ?? initiatorName,
-        action_type: addressActionAnalytics?.action_type ?? 'Execute',
         dapp_domain: isInternalOrigin ? null : origin,
         chain,
         gas: result.evm ? result.evm.gasLimit.toString() : null,
         /** Current requirement by analytics: send solana signatures as `hash` */
         hash: result.evm?.hash ?? ensureSolanaResult(result).signature,
-        asset_amount_sent: [], // TODO
         gas_price: null, // TODO
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
         contract_type: quote?.contract_metadata?.name ?? null,
         hold_sign_button: Boolean(preferences.enableHoldToSignButton),
-        ...addressActionAnalytics,
+        ...omitNullParams(addressActionAnalytics),
       });
       sendToMetabase('signed_transaction', params);
       const mixpanelParams = omit(params, [

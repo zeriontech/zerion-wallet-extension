@@ -1367,11 +1367,16 @@ export class Wallet {
     const keypair = this.getKeypairByAddress(currentAddress);
     const results = SolanaSigning.signAllTransactions(transactions, keypair);
 
-    results.forEach((result) => {
+    results.forEach((result, index) => {
+      const contextParamsCopy = { ...transactionContextParams };
+      if (index > 0) {
+        /** TODO: Temporarily assume that addressAction describes only first tx */
+        contextParamsCopy.addressAction = null;
+      }
       emitter.emit(
         'transactionSent',
         { solana: result },
-        { mode, ...transactionContextParams }
+        { mode, ...contextParamsCopy }
       );
     });
 
@@ -1856,6 +1861,7 @@ export class Wallet {
     const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
     return rpcUrl;
   }
+
   async getRpcUrlByChainId({
     chainId,
     type,
