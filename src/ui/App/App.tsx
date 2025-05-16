@@ -57,7 +57,7 @@ import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
-import { useScreenViewChange } from '../shared/useScreenViewChange';
+import { ScreenViewChangeTracker } from '../shared/useScreenViewChange';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
@@ -199,8 +199,6 @@ function MaybeTestModeDecoration() {
 }
 
 function Views({ initialRoute }: { initialRoute?: string }) {
-  useScreenViewChange();
-
   const isPopup = urlContext.windowType === 'popup';
   return (
     <RouteResolver>
@@ -522,6 +520,7 @@ export function App({ initialView, inspect }: AppProps) {
           <DesignTheme bodyClassList={bodyClassList} />
           <Router>
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
+              <ScreenViewChangeTracker />
               <InactivityDetector />
               <SessionResetHandler />
               <TurnstileTokenHandler />
