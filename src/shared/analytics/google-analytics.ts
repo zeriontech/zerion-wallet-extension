@@ -60,6 +60,8 @@ class GoogleAnalyticsApi {
     this.sendRequestsOverTheNetwork = sendRequestsOverTheNetwork;
 
     this.isReady = false;
+    this.baseParams = null;
+    this.deviceId = null;
     this.readyPromise = resolveDeviceId().then((value) => {
       this.deviceId = value;
       this.isReady = true;
