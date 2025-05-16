@@ -1,5 +1,6 @@
 import omit from 'lodash/omit';
 import { LoginActivity, type Account } from 'src/background/account/Account';
+import type { ScreenViewParams } from 'src/background/events';
 import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
@@ -71,6 +72,33 @@ function trackAppEvents({ account }: { account: Account }) {
     return createBaseParams(params);
   };
 
+  const trackScreenView = async ({
+    data,
+    metabaseEventName,
+    mixpanelEventName,
+  }: {
+    data: ScreenViewParams;
+    metabaseEventName: 'screen_view' | 'app_opened';
+    mixpanelEventName: 'General: Screen Viewed' | 'General: App Opened';
+  }) => {
+    const metabaseParams = createParams({
+      request_name: metabaseEventName,
+      wallet_address: data.address,
+      screen_name: data.pathname,
+      previous_screen_name: data.previous,
+      screen_size: data.screenSize,
+      window_type: data.windowType,
+    });
+    sendToMetabase(metabaseEventName, metabaseParams);
+    const portfolio = await getOwnedWalletsPortolio(account);
+    const mixpanelParams: Record<string, unknown> = {
+      ...omit(metabaseParams, ['request_name', 'wallet_address']),
+      total_balance: portfolio?.total_value ?? 0,
+      ...getChainBreakdown(portfolio),
+    };
+    mixpanelTrack(account, mixpanelEventName, mixpanelParams);
+  };
+
   emitter.on('requestAccountsResolved', ({ origin, address, explicitly }) => {
     if (!explicitly) {
       return;
@@ -86,24 +114,20 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(account, 'DApp: DApp Connection', mixpanelParams);
   });
 
-  emitter.on('screenView', async (data) => {
-    const params = createParams({
-      request_name: 'screen_view',
-      wallet_address: data.address,
-      screen_name: data.pathname,
-      previous_screen_name: data.previous,
-      screen_size: data.screenSize,
-      window_type: data.windowType,
-    });
-    sendToMetabase('screen_view', params);
-    const portfolio = await getOwnedWalletsPortolio(account);
-    const mixpanelParams: Record<string, unknown> = {
-      ...omit(params, ['request_name', 'wallet_address']),
-      total_balance: portfolio?.total_value ?? 0,
-      ...getChainBreakdown(portfolio),
-    };
-    mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
-  });
+  emitter.on('screenView', (data) =>
+    trackScreenView({
+      data,
+      mixpanelEventName: 'General: Screen Viewed',
+      metabaseEventName: 'screen_view',
+    })
+  );
+  emitter.on('appOpened', (data) =>
+    trackScreenView({
+      data,
+      mixpanelEventName: 'General: App Opened',
+      metabaseEventName: 'app_opened',
+    })
+  );
 
   emitter.on('buttonClicked', (data) => {
     const { buttonName, buttonScope, pathname, walletAddress } = data;

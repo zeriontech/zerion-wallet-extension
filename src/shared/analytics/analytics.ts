@@ -5,6 +5,7 @@ import { detectBrowser } from 'src/modules/detect-browser/detect-browser';
 
 type MetabaseEvent =
   | 'screen_view'
+  | 'app_opened'
   | 'dapp_connection'
   | 'signed_message'
   | 'signed_transaction'

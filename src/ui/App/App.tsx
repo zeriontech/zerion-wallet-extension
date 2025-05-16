@@ -57,7 +57,7 @@ import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
-import { useScreenViewChange } from '../shared/useScreenViewChange';
+import { ScreenViewChangeTracker } from '../shared/useScreenViewChange';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { SignInWithEthereum } from '../pages/SignInWithEthereum';
@@ -199,8 +199,6 @@ function MaybeTestModeDecoration() {
 }
 
 function Views({ initialRoute }: { initialRoute?: string }) {
-  useScreenViewChange();
-
   const isPopup = urlContext.windowType === 'popup';
   return (
     <RouteResolver>
@@ -208,6 +206,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
         <URLBar />
         {isPopup ? <RouteRestoration initialRoute={initialRoute} /> : null}
         <Routes>
+          <ScreenViewChangeTracker />
           {initialRoute ? (
             <Route path="/" element={<Navigate to={initialRoute} />} />
           ) : null}

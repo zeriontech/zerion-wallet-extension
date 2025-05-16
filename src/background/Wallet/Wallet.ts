@@ -1655,6 +1655,11 @@ export class Wallet {
     emitter.emit('screenView', params);
   }
 
+  async appOpened({ context, params }: WalletMethodParams<ScreenViewParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('appOpened', params);
+  }
+
   async daylightAction({
     context,
     params,

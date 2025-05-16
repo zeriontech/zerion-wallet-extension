@@ -63,6 +63,7 @@ export const emitter = createNanoEvents<{
     explicitly: boolean;
   }) => void;
   screenView: (data: ScreenViewParams) => void;
+  appOpened: (data: ScreenViewParams) => void;
   firstScreenView: (timestamp: number) => void;
   daylightAction: (data: DaylightEventParams) => void;
   walletCreated: (wallet: {
