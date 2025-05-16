@@ -28,6 +28,14 @@ export function useScreenViewChange() {
 
   const didTrackAppOpened = useRef(false);
   useEffect(() => {
+    if (pathname === '/') {
+      return;
+    }
+    trackScreenView({
+      event: 'screenView',
+      pathname,
+      previousPathname: previousPathname.current,
+    });
     if (!didTrackAppOpened.current) {
       trackScreenView({
         event: 'appOpened',
@@ -36,17 +44,7 @@ export function useScreenViewChange() {
       });
       didTrackAppOpened.current = true;
     }
-  }, [pathname]);
-
-  useEffect(() => {
-    if (pathname !== '/') {
-      trackScreenView({
-        event: 'screenView',
-        pathname,
-        previousPathname: previousPathname.current,
-      });
-      previousPathname.current = pathname;
-    }
+    previousPathname.current = pathname;
   }, [pathname]);
 }
 
