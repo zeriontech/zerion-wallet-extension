@@ -76,3 +76,13 @@ export function getYLimits(points: ChartPoint[]) {
     max: maxLimit + normalChartYOffset,
   };
 }
+
+export function getXLimits(points: ChartPoint[]) {
+  const firstPoint = points.at(0)?.[0] || 0;
+  const lastPoint = points.at(-1)?.[0] || 0;
+  const diff = lastPoint - firstPoint;
+  return {
+    min: firstPoint,
+    max: lastPoint + diff * 0.05,
+  };
+}

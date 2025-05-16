@@ -187,13 +187,16 @@ export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
   const inTheMiddle =
     chart.width * 0.3 < tooltip.caretX && tooltip.caretX < chart.width * 0.7;
 
+  const wideTooltip = tooltipEl.clientWidth > chart.width * 0.4;
+
   tooltipEl.style.opacity = '1';
   tooltipEl.style.left = positionX + tooltip.caretX + 'px';
   tooltipEl.style.top = positionY + tooltip.caretY + 'px';
   tooltipEl.style.filter = 'blur(0px)';
-  tooltipEl.style.transform = inTheMiddle
-    ? 'translate(-50%, 8px)'
-    : inRightHalf
-    ? 'translate(calc(-100% - 8px), -8px)'
-    : 'translate(8px, -8px)';
+  tooltipEl.style.transform =
+    inTheMiddle && wideTooltip
+      ? 'translate(-50%, 8px)'
+      : inRightHalf
+      ? 'translate(calc(-100% - 8px), -8px)'
+      : 'translate(8px, -8px)';
 };

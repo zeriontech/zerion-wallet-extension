@@ -29,7 +29,7 @@ Interaction.modes.magneticActions = function (chart, e) {
     return [];
   }
 
-  const marneticRadius = 4;
+  const magneticRadius = 4;
   let closestPointWithExtra: InteractionItem | null = null;
   const position = getRelativePosition(e, chart);
 
@@ -38,7 +38,7 @@ Interaction.modes.magneticActions = function (chart, e) {
     'xy',
     position,
     (element, datasetIndex, index) => {
-      if (Math.abs(element.x - position.x) > marneticRadius) {
+      if (Math.abs(element.x - position.x) > magneticRadius) {
         return;
       }
       if (

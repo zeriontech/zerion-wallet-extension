@@ -13,7 +13,11 @@ import { Theme, themeStore } from 'src/ui/features/appearance';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { serializeAssetChartActions } from './helpers';
 import { externalTooltip } from './tooltip';
-import { drawDotPlugin } from './plugins';
+import {
+  drawCapPointPlugin,
+  drawDotPlugin,
+  drawVerticalLinePlugin,
+} from './plugins';
 import type { AssetChartPoint, ParsedAssetChartPoint } from './types';
 import './interaction';
 
@@ -110,7 +114,11 @@ export function AssetChart({
   );
 
   const plugins = useMemo<ChartPlugins>(
-    () => [drawDotPlugin({ getTheme: () => themeRef.current })],
+    () => [
+      drawDotPlugin({ getTheme: () => themeRef.current }),
+      drawVerticalLinePlugin({ getTheme: () => themeRef.current }),
+      drawCapPointPlugin({ getTheme: () => themeRef.current }),
+    ],
     []
   );
 

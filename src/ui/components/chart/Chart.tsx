@@ -10,6 +10,7 @@ import {
   toScatterData,
   getChartColor,
   getYLimits,
+  getXLimits,
 } from './helpers';
 import { CHART_HEIGHT, DEFAULT_CONFIG } from './config';
 import { drawRangePlugin } from './plugins';
@@ -51,6 +52,9 @@ function updateChartPoints<T>({
   const { min: prevYMin, max: prevYMax } = getYLimits(prevPoints);
   const { min: nextYMin, max: nextYMax } = getYLimits(nextPoints);
 
+  const { min: prevXMin, max: prevXMax } = getXLimits(prevPoints);
+  const { min: nextXMin, max: nextXMax } = getXLimits(nextPoints);
+
   chart.data.datasets[0].data = toScatterData(nextPoints);
 
   if (prevPoints.length) {
@@ -58,16 +62,13 @@ function updateChartPoints<T>({
       data: toScatterData(prevPoints),
       borderColor: getChartColor({
         theme,
-        isPositive: prevPoints[0]?.[1] <= (prevPoints.at(-1)?.[1] || 0),
+        isPositive:
+          (prevPoints.at(0)?.[1] || 0) <= (prevPoints.at(-1)?.[1] || 0),
         isHighlighted: false,
       }),
     };
     chart.options.scales = {
-      x: {
-        display: false,
-        min: prevPoints[0]?.[0],
-        max: prevPoints.at(-1)?.[0],
-      },
+      x: { display: false, min: prevXMin, max: prevXMax },
       y: { display: false, min: prevYMin, max: prevYMax },
     };
     chart.update('none');
@@ -82,11 +83,7 @@ function updateChartPoints<T>({
   }
 
   chart.options.scales = {
-    x: {
-      display: false,
-      min: nextPoints[0]?.[0],
-      max: nextPoints.at(-1)?.[0],
-    },
+    x: { display: false, min: nextXMin, max: nextXMax },
     y: { display: false, min: nextYMin, max: nextYMax },
   };
 
@@ -127,7 +124,7 @@ function getSegmentColor<T>({
   });
 
   const endValue = chartPoints.at(endRangeIndex ?? -1)?.[1] || 0;
-  const startValue = chartPoints[startRangeIndex ?? 0]?.[1] || 0;
+  const startValue = chartPoints.at(startRangeIndex ?? 0)?.[1] || 0;
 
   const afterActivePoint =
     startRangeIndex === null &&
@@ -150,10 +147,10 @@ export function Chart<T>({
   chartPoints,
   onRangeSelect,
   style,
-  datasetConfig = {},
-  tooltip = {},
-  plugins = [],
-  interaction = {},
+  datasetConfig,
+  tooltip,
+  plugins,
+  interaction,
   theme,
   currency,
 }: {
@@ -276,7 +273,7 @@ export function Chart<T>({
           getStartRangeX: () => startRangeXRef.current,
           getTheme: () => themeRef.current,
         }),
-        ...plugins,
+        ...(plugins || []),
       ],
     });
 
