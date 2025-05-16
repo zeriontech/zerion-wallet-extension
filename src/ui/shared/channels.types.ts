@@ -20,6 +20,9 @@ export type ExtractChannelMethods<T> = {
     : never;
 };
 
+// Helper type to correctly extract parameter types (handles unions in params)
+type ExtractParams<T> = T extends (params: infer P) => any ? P : never;
+
 /**
  * Turns methods into an rpc-like "request" signature:
  * type X = RPCApi<{ fn1(params: { a: string } ): Promise<number> }>
@@ -28,11 +31,10 @@ export type ExtractChannelMethods<T> = {
  */
 export type RPCApi<T> = {
   request<K extends keyof T>(
-    ...args: T[K] extends () => Promise<infer _>
-      ? [method: K]
-      : T[K] extends (params: infer P) => Promise<infer _>
-      ? [method: K, params: P]
-      : never
+    method: K,
+    ...args: T[K] extends () => Promise<any>
+      ? []
+      : [params: ExtractParams<T[K]>]
   ): T[K] extends (...args: any[]) => Promise<infer R> ? Promise<R> : never;
 };
 

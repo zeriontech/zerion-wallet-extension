@@ -5,12 +5,12 @@ import { baseToCommon } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';
 import { getDecimals } from 'src/modules/networks/asset';
 import { isTruthy } from 'is-truthy-ts';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useNetworkConfig } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import { useEvmNativeAddressPosition } from './useEvmNativeAddressPosition';
+import { useAddressPositionFromRpcNode } from './useAddressPositionsFromNode';
 import { useNativeAssetId } from './useNativeAsset';
 
 function useNativeAddressPosition({
@@ -77,16 +77,14 @@ export function useNativeBalance({
   isLoading: boolean;
   data: { valueCommon: BigNumber | null; position: AddressPosition | null };
 } {
-  const { networks } = useNetworks();
-  const isSupportedByBackend = networks
-    ? networks.supports('positions', chain)
-    : null;
+  const { data: network } = useNetworkConfig(chain.toString(), { suspense });
+  const isSupportedByBackend = network?.supports_positions;
   const nativeAddressPosition = useNativeAddressPosition({
     address,
     chain,
     enabled: isSupportedByBackend === true,
   });
-  const evmNativeAddressPosition = useEvmNativeAddressPosition({
+  const positionFromRpcNodeQuery = useAddressPositionFromRpcNode({
     address,
     chain,
     enabled: isSupportedByBackend === false,
@@ -95,10 +93,10 @@ export function useNativeBalance({
   });
 
   const isLoading =
-    nativeAddressPosition.isLoading || evmNativeAddressPosition.isLoading;
+    nativeAddressPosition.isLoading || positionFromRpcNodeQuery.isLoading;
   const isSuccess =
-    nativeAddressPosition.isSuccess || evmNativeAddressPosition.isSuccess;
-  const position = nativeAddressPosition.data || evmNativeAddressPosition.data;
+    nativeAddressPosition.isSuccess || positionFromRpcNodeQuery.isSuccess;
+  const position = nativeAddressPosition.data || positionFromRpcNodeQuery.data;
   return useMemo(() => {
     if (!position?.quantity) {
       if (isSuccess) {

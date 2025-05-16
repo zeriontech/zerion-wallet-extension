@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import type { QueryKeyHashFunction } from '@tanstack/react-query';
 import { useQuery, hashQueryKey } from '@tanstack/react-query';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { emitter } from 'src/ui/shared/events';
@@ -23,16 +24,20 @@ function useNetworksStore() {
     : mainNetworksStore;
 }
 
+const queryKeyHashFn: QueryKeyHashFunction<
+  (string | string[] | NetworksStore | null | undefined)[]
+> = (queryKey) => {
+  const stringifiable = queryKey.map((x) =>
+    x instanceof NetworksStore ? x.toString() : x
+  );
+  return hashQueryKey(stringifiable);
+};
+
 export function useNetworks(chains?: string[]) {
   const networksStore = useNetworksStore();
   const { data: networks = null, ...query } = useQuery({
     queryKey: ['loadNetworks', chains, networksStore],
-    queryKeyHashFn: (queryKey) => {
-      const stringifiable = queryKey.map((x) =>
-        x instanceof NetworksStore ? x.toString() : x
-      );
-      return hashQueryKey(stringifiable);
-    },
+    queryKeyHashFn,
     queryFn: () => {
       invariant(networksStore, 'Enable query when networks store is ready');
       return networksStore.load(chains ? { chains } : undefined);
@@ -68,6 +73,28 @@ export function useNetworks(chains?: string[]) {
       [networksStore]
     ),
   };
+}
+
+export function useNetworkConfig(
+  id: string,
+  {
+    staleTime = 1000 * 60 * 5,
+    suspense = false,
+    enabled = true,
+  }: { staleTime?: number; suspense?: boolean; enabled?: boolean } = {}
+) {
+  const networksStore = useNetworksStore();
+  return useQuery({
+    queryKey: ['fetchNetworkById', id, networksStore],
+    queryKeyHashFn,
+    queryFn: () => {
+      invariant(networksStore, 'Enable query when networks store is ready');
+      return networksStore.fetchNetworkById(id);
+    },
+    staleTime,
+    suspense,
+    enabled: Boolean(networksStore && enabled),
+  });
 }
 
 /**

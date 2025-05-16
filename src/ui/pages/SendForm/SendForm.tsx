@@ -80,7 +80,7 @@ import { TokenTransferInput } from './fieldsets/TokenTransferInput';
 import { AddressInputWrapper } from './fieldsets/AddressInput';
 import { updateRecentAddresses } from './fieldsets/AddressInput/updateRecentAddresses';
 import { SendTransactionConfirmation } from './SendTransactionConfirmation';
-import { useAddressBackendOrEvmPositions } from './shared/useAddressBackendOrEvmPositions';
+import { useAddressPositionsFromBackendOrNode } from './shared/useAddressPositionsFromBackendOrNode';
 import { NftTransferInput } from './fieldsets/NftTransferInput';
 
 function StoreWatcherByKeys<T extends Record<string, unknown>>({
@@ -119,7 +119,7 @@ function SendFormComponent() {
     string | undefined
   >(undefined);
 
-  const { data: positions } = useAddressBackendOrEvmPositions({
+  const { data: positions } = useAddressPositionsFromBackendOrNode({
     address,
     currency,
     chain: chainForAddressPositions

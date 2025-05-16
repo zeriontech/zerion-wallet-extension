@@ -3,10 +3,10 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
-import { useEvmAddressPositions } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { useAddressPositionsFromNode } from 'src/ui/shared/requests/useAddressPositionsFromNode';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 
-export function useAddressBackendOrEvmPositions({
+export function useAddressPositionsFromBackendOrNode({
   address,
   currency,
   chain,
@@ -29,11 +29,12 @@ export function useAddressBackendOrEvmPositions({
   );
   const addressPositions = data?.data;
 
-  const evmQuery = useEvmAddressPositions({
+  const evmQuery = useAddressPositionsFromNode({
     address,
     chain: chain as Chain,
     suspense: false,
     enabled: isSupportedByBackend != null && !isSupportedByBackend,
+    staleTime: 1000 * 20,
   });
 
   return isSupportedByBackend || isSupportedByBackend == null

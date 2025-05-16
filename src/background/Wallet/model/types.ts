@@ -66,7 +66,9 @@ interface PublicPreferences {
 
 export interface Permission {
   addresses: Address[];
+  /** implies evm chain */
   chain?: string;
+  solanaChain?: string;
 }
 
 // Previous versions are used to perform migrations ("upgrades")

@@ -85,15 +85,25 @@ export class Networks {
     if (Networks.isEip155(network)) {
       return normalizeChainId(network.specification.eip155.id);
     }
-    throw new Error(
-      'NetworkConfig must have the "standard" configuration with the chain id'
-    );
+    throw new Error(`Network is not eip-155: ${network.id}`);
   }
 
   static isEip155<T extends Partial<NetworkConfig>>(
     network: T
   ): network is T & Eip155Specification {
     return network.specification?.eip155 != null;
+  }
+
+  static getEcosystem(network: NetworkConfig): BlockchainType {
+    if (Networks.isEip155(network)) {
+      return 'evm';
+    } else if (network.id === 'solana') {
+      return 'solana';
+    } else {
+      throw new Error(
+        `Cannot infer ecosystem of ${network.id} (${network.name})`
+      );
+    }
   }
 
   constructor({

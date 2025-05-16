@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import {
+  isJsonRpcError,
   isJsonRpcPayload,
   isJsonRpcResponse,
   isJsonRpcResult,
@@ -43,6 +44,12 @@ export class PortMessageChannel {
     });
     this.emitter.on('message', (response) => {
       if (isJsonRpcPayload(response)) {
+        if (isJsonRpcError(response)) {
+          console.group('Port method error'); // eslint-disable-line no-console
+          console.table(this.pendingRequests.get(response.id)); // eslint-disable-line no-console
+          console.table(response); // eslint-disable-line no-console
+          console.groupEnd(); // eslint-disable-line no-console
+        }
         this.pendingRequests.delete(response.id);
       }
     });

@@ -51,7 +51,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
-import { useAddressPositionFromNode } from 'src/ui/shared/requests/useEvmAddressPositions';
+import { useAddressPositionsFromNode } from 'src/ui/shared/requests/useAddressPositionsFromNode';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { invariant } from 'src/shared/invariant';
@@ -775,7 +775,12 @@ function RawChainPositions({
     data: addressPositions,
     isLoading,
     isError,
-  } = useAddressPositionFromNode({ address, chain });
+  } = useAddressPositionsFromNode({
+    address,
+    chain,
+    suspense: false,
+    staleTime: 1000 * 20,
+  });
   if (isError) {
     return renderErrorView(
       networks?.getChainName(chain) || chainValue
