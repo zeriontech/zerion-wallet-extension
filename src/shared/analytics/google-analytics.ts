@@ -28,8 +28,8 @@ type GoogleAnalyticsEvent =
   | 'signed_transaction';
 
 class GoogleAnalyticsApi {
-  baseParams?: Record<string, unknown>;
-  deviceId?: string;
+  baseParams: null | Record<string, unknown>;
+  deviceId: null | string;
   url: string;
   apiSecret: string | null;
   measurementId: string | null;
