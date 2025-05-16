@@ -33,8 +33,6 @@ export function useScreenViewChange() {
         event: 'appOpened',
         pathname,
         previousPathname: previousPathname.current,
-      }).then(() => {
-        previousPathname.current = pathname;
       });
       didTrackAppOpened.current = true;
     }
@@ -46,9 +44,8 @@ export function useScreenViewChange() {
         event: 'screenView',
         pathname,
         previousPathname: previousPathname.current,
-      }).then(() => {
-        previousPathname.current = pathname;
       });
+      previousPathname.current = pathname;
     }
   }, [pathname]);
 }
