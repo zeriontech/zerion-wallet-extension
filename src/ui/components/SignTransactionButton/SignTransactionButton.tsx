@@ -19,10 +19,7 @@ import {
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { OneOf } from 'src/shared/type-utils/OneOf';
-import type {
-  SignAllTransactionsResult,
-  SignTransactionResult,
-} from 'src/shared/types/SubmittedTransactionResponse';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { SolTransaction } from 'src/modules/solana/SolTransaction';
 import { solToBase64 } from 'src/modules/solana/transactions/create';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
@@ -39,7 +36,7 @@ export interface SendTxBtnHandle {
   sendTransaction(params: SendTxParams): Promise<SignTransactionResult>;
   signAllTransactions(
     params: SignAllTransactionsParams
-  ): Promise<SignAllTransactionsResult>;
+  ): Promise<SignTransactionResult>;
 }
 
 export const SignTransactionButton = React.forwardRef(
@@ -70,7 +67,7 @@ export const SignTransactionButton = React.forwardRef(
         transaction,
         solTransaction,
         ...params
-      }: SendTxParams) => {
+      }: SendTxParams): Promise<SignTransactionResult> => {
         if (transaction) {
           // ethereum flow
           if (isDeviceAccount(wallet)) {
@@ -87,13 +84,13 @@ export const SignTransactionButton = React.forwardRef(
               serialized: signedTx,
               ...params,
             });
-            return { ethereum: result };
+            return { evm: result };
           } else {
             const result = await walletPort.request('signAndSendTransaction', [
               transaction,
               params,
             ]);
-            return { ethereum: result };
+            return { evm: result };
           }
         } else {
           // solana

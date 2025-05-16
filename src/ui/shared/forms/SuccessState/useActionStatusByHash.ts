@@ -7,7 +7,7 @@ import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/
 export function useActionStatusByHash(hash: string) {
   const localActions = useStore(localTransactionsStore);
   const localStatus = useMemo(() => {
-    const action = localActions.find((item) => item.transaction.hash === hash);
+    const action = localActions.find((item) => item.transaction?.hash === hash);
     return action ? transactionReceiptToActionStatus(action) : null;
   }, [localActions, hash]);
 

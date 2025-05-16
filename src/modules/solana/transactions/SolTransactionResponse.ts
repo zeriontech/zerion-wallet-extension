@@ -1,5 +1,5 @@
 interface SignResult {
-  signature: string | null;
+  signature: string;
   publicKey: string;
   tx: string;
 }

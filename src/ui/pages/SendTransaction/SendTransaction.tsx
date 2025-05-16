@@ -88,10 +88,7 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
-import type {
-  SignAllTransactionsResult,
-  SignTransactionResult,
-} from 'src/shared/types/SubmittedTransactionResponse';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
 import type { SolTransaction } from 'src/modules/solana/SolTransaction';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
@@ -650,8 +647,8 @@ function SendTransactionContent({
     }
     const windowId = params.get('windowId');
     invariant(windowId, 'windowId get-parameter is required');
-    const result = res.ethereum ? res.ethereum.hash : res.solana.signature;
-    windowPort.confirm(windowId, result);
+    invariant(res.evm, 'Ethereum response is expected');
+    windowPort.confirm(windowId, res.evm.hash);
     if (next) {
       navigate(next);
     }
@@ -1012,9 +1009,7 @@ function SolSendTransaction() {
   const navigate = useNavigate();
   const next = params.get('next');
 
-  async function handleSentTransaction(
-    res: SignTransactionResult | SignAllTransactionsResult
-  ) {
+  async function handleSentTransaction(res: SignTransactionResult) {
     if (preferences?.enableHoldToSignButton) {
       // small delay to show success state to the user before closing the popup
       await wait(500);

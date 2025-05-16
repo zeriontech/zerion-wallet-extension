@@ -22,11 +22,13 @@ import { getLatestNonceKnownByBackend } from 'src/modules/ethereum/transactions/
 import type { Wallet } from 'src/shared/types/Wallet';
 import { invariant } from 'src/shared/invariant';
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
+import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { emitter } from '../events';
 import { INTERNAL_SYMBOL_CONTEXT } from '../Wallet/Wallet';
 import {
   toEthersV5Receipt,
-  toEthersV5TransactionResponse,
+  txPlainToEthersV5TransactionResponse,
 } from '../Wallet/model/ethers-v5-types';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
@@ -39,7 +41,7 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
   upsertTransaction(value: TransactionObject) {
     this.setState((state) =>
       produce(state, (draft) => {
-        upsert(draft, value, (x) => x.hash);
+        upsert(draft, value, (x) => x.hash ?? x.signature);
       })
     );
   }
@@ -48,9 +50,15 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
     return this.getState().find((item) => item.hash === hash);
   }
 
-  bulkDeleteTransactionsByHash(hashes: string[]) {
-    const hashesSet = new Set(hashes);
-    this.setState((state) => state.filter((item) => !hashesSet.has(item.hash)));
+  getBySignature(signature: string) {
+    return this.getState().find((item) => item.signature === signature);
+  }
+
+  bulkDeleteTransactionsById(ids: string[]) {
+    const idsSet = new Set(ids);
+    this.setState((state) =>
+      state.filter((item) => !idsSet.has(item.hash ?? item.signature))
+    );
   }
 
   clearPendingTransactions() {
@@ -59,12 +67,24 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
 }
 
 function toPollingObj(value: TransactionObject): PollingTx {
-  return {
-    hash: value.hash,
-    chainId: normalizeChainId(value.transaction.chainId),
-    nonce: value.transaction.nonce,
-    from: value.transaction.from,
-  };
+  if (value.transaction) {
+    return {
+      standard: 'evm',
+      hash: value.hash,
+      chainId: normalizeChainId(value.transaction.chainId),
+      nonce: value.transaction.nonce,
+      from: value.transaction.from,
+    };
+  } else if (value.solanaBase64) {
+    return {
+      standard: 'solana',
+      from: value.publicKey,
+      signature: value.signature,
+      timestamp: value.timestamp,
+    };
+  } else {
+    throw new Error('Invalud TransactionObject');
+  }
 }
 
 interface Options {
@@ -123,6 +143,15 @@ export class TransactionService {
         const wallet = this.options.getWallet();
         return wallet.getRpcUrlByChainId({ chainId, type: 'internal' });
       },
+      getRpcUrlSolana: async () => {
+        invariant(this.options, "Options aren't expected to become null");
+        const wallet = this.options.getWallet();
+        try {
+          return wallet.getRpcUrlSolana();
+        } catch {
+          return null;
+        }
+      },
     });
     this.transactionsPoller.add(pending.map(toPollingObj));
     this.addListeners();
@@ -162,17 +191,23 @@ export class TransactionService {
     const transactions = await this.transactionsStore.getSavedState();
     const candidates = transactions.filter((item) => {
       return (
+        item.hash &&
         normalizeAddress(item.transaction.from) === normalizeAddress(address) &&
         normalizeChainId(item.transaction.chainId) === chainId &&
         item.transaction.nonce <= fromNonce
       );
     });
-    this.transactionsStore.bulkDeleteTransactionsByHash(
-      candidates.map((item) => item.hash)
+    this.transactionsStore.bulkDeleteTransactionsById(
+      candidates.map((item) => item.hash ?? item.signature)
     );
   }
 
-  /** Finds local transactions which our backend is aware of and removes them */
+  /**
+   * Finds local transactions which our backend is aware of and removes them.
+   * This makes sense for EVM transaction which are ordered by NONCE.
+   * For Solana, there's no explicit order (only belonging to a particular "recentBlockHash")
+   * So we cannot determine "stale" transactions based on order
+   */
   private async performPurgeCheck() {
     const transactions = await this.transactionsStore.getSavedState();
 
@@ -181,6 +216,9 @@ export class TransactionService {
     const map = new Map<Key, { hash: string; timestamp: number }>();
 
     for (const item of transactions) {
+      if (!item.hash) {
+        return; // Do not handle Solana items
+      }
       const chainId = normalizeChainId(item.transaction.chainId);
       const key = `${item.transaction.from}:${chainId}` as const;
       map.set(key, { hash: item.hash, timestamp: item.timestamp });
@@ -225,42 +263,66 @@ export class TransactionService {
     return this.transactionsStore;
   }
 
+  static toTransactionObject(
+    result: SignTransactionResult,
+    { initiator }: { initiator: string }
+  ): TransactionObject {
+    const timestamp = Date.now();
+    if (result.evm) {
+      return {
+        transaction: txPlainToEthersV5TransactionResponse(result.evm),
+        hash: result.evm.hash,
+        initiator,
+        timestamp,
+      };
+    } else if (result.solana) {
+      const solResult = ensureSolanaResult(result);
+      return {
+        solanaBase64: solResult.tx,
+        signature: solResult.signature,
+        publicKey: solResult.publicKey,
+        signatureStatus: null,
+        initiator,
+        timestamp,
+      };
+    } else {
+      throw new Error('Unexpected result type');
+    }
+  }
+
   addListeners() {
-    emitter.on(
-      'transactionSent',
-      ({ transaction, initiator, addressAction }) => {
-        const newItem: TransactionObject = {
-          transaction: toEthersV5TransactionResponse(transaction),
-          hash: transaction.hash,
-          initiator,
-          timestamp: Date.now(),
-        };
-        if (
-          addressAction &&
-          isLocalAddressAction(addressAction) &&
-          addressAction.relatedTransaction
-        ) {
-          newItem.relatedTransactionHash = addressAction.relatedTransaction;
-        }
-        this.transactionsPoller.add([toPollingObj(newItem)]);
-
-        this.transactionsStore.setState((state) =>
-          produce(state, (draft) => {
-            draft.push(newItem);
-          })
-        );
-        this.startPurgeInterval();
-        this.schedulePurgeCheck();
+    emitter.on('transactionSent', (result, { initiator, addressAction }) => {
+      const newItem = TransactionService.toTransactionObject(result, {
+        initiator,
+      });
+      if (
+        addressAction &&
+        isLocalAddressAction(addressAction) &&
+        addressAction.relatedTransaction
+      ) {
+        newItem.relatedTransactionHash = addressAction.relatedTransaction;
       }
-    );
+      this.transactionsPoller.add([toPollingObj(newItem)]);
 
-    emitter.on('transactionSent', async ({ transaction, chain, mode }) => {
-      registerTransaction(transaction, chain, mode);
+      this.transactionsStore.setState((state) =>
+        produce(state, (draft) => {
+          draft.push(newItem);
+        })
+      );
+      this.startPurgeInterval();
+      this.schedulePurgeCheck();
     });
 
-    this.transactionsPoller.emitter.on('mined', (receipt) => {
+    emitter.on('transactionSent', async (result, { chain, mode }) => {
+      if (result.evm) {
+        registerTransaction(result.evm, chain, mode);
+      }
+    });
+
+    this.transactionsPoller.emitter.on('evm:mined', (receipt) => {
       const item = this.transactionsStore.getByHash(receipt.hash);
       if (item) {
+        invariant(item.hash, 'Item must be evm');
         this.transactionsStore.upsertTransaction({
           ...item,
           receipt: toEthersV5Receipt(receipt),
@@ -276,8 +338,25 @@ export class TransactionService {
         }
       }
     });
-    this.transactionsPoller.emitter.on('dropped', (hash) => {
+    this.transactionsPoller.emitter.on(
+      'solana:mined',
+      (signature, signatureStatus) => {
+        const item = this.transactionsStore.getBySignature(signature);
+        if (item) {
+          invariant(item.signature, 'Item must be solana');
+          this.transactionsStore.upsertTransaction({
+            ...item,
+            signatureStatus,
+          });
+        }
+      }
+    );
+    this.transactionsPoller.emitter.on('evm:dropped', (hash) => {
       const item = this.transactionsStore.getByHash(hash);
+      this.markAsDropped(item);
+    });
+    this.transactionsPoller.emitter.on('solana:dropped', (signature) => {
+      const item = this.transactionsStore.getBySignature(signature);
       this.markAsDropped(item);
     });
   }

@@ -113,8 +113,8 @@ function CancelTxContent({
         feeValueCommon,
         addressAction: createCancelAddressAction(addressAction, tx),
       });
-      invariant(txResponse.ethereum?.hash);
-      return txResponse.ethereum?.hash;
+      invariant(txResponse.evm?.hash);
+      return txResponse.evm?.hash;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
