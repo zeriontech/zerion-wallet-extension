@@ -8,6 +8,7 @@ import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
 import { UrlContextParam } from 'src/shared/types/UrlContext';
 import { initializeSidepanel } from 'src/shared/sidepanel/initialize.background';
 import { runtimeStore } from 'src/shared/core/runtime-store';
+import { ORIGIN_PROTOCOL } from 'src/shared/originProtocol';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -61,7 +62,7 @@ function isOnboardingMode(port: RuntimePort) {
 
 function verifyPort(port: RuntimePort) {
   const protocol = port.sender?.url ? new URL(port.sender.url).protocol : null;
-  if (protocol === 'chrome-extension:') {
+  if (protocol === ORIGIN_PROTOCOL) {
     return true;
   } else {
     // the only non-extension (meaning, content-script) port

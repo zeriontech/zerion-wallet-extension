@@ -2,7 +2,8 @@
 const fs = require('fs/promises');
 const path = require('path');
 const { version } = require('../package.json');
-const manifest = require('../src/manifest.json');
+const manifestChrome = require('../src/manifest-chrome.json');
+const manifestFirefox = require('../src/manifest-firefox.json');
 const { execAsync } = require('./execAsync');
 
 const src = path.join(__dirname, '../src');
@@ -14,17 +15,30 @@ function toManifestVersion(version) {
 
 async function syncVersion() {
   await fs.writeFile(
-    path.join(src, 'manifest.json'),
+    path.join(src, 'manifest-chrome.json'),
     JSON.stringify(
       {
-        ...manifest,
+        ...manifestChrome,
         version: toManifestVersion(version),
       },
       null,
       2
     )
   );
-  await execAsync('./node_modules/.bin/prettier --write src/manifest.json');
+  await fs.writeFile(
+    path.join(src, 'manifest-firefox.json'),
+    JSON.stringify(
+      {
+        ...manifestFirefox,
+        version: toManifestVersion(version),
+      },
+      null,
+      2
+    )
+  );
+  
+  await execAsync('./node_modules/.bin/prettier --write src/manifest-chrome.json');
+  await execAsync('./node_modules/.bin/prettier --write src/manifest-firefox.json');
 
   /** Add changes to previous commit, which is a commit made by `npm run version` */
   const tag = `v${version}`;
