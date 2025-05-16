@@ -63,11 +63,13 @@
     0px 8px 28px rgba(22, 22, 26, 0.08);
   --elevation-300: 0px 24px 48px -16px rgba(21, 21, 31, 0.24),
     0px 4px 8px -2px rgba(21, 21, 31, 0.08);
+
   --deprecated--bl16ap8: 0px 8px 16px rgba(21, 21, 31, 0.12);
   --deprecated--bl8ap8: 0px 4px 8px rgba(21, 21, 31, 0.08);
 
   /* Extra stuff, to be finalized with design */
   --background: var(--neutral-100);
+  --background-transparent: rgba(22, 22, 26, 0.9);
   --z-index-1-inverted: var(--neutral-100);
 }
 
@@ -140,6 +142,7 @@
   /* Extra stuff, to be finalized with design */
   --background: var(--z-index-0);
   --z-index-1-inverted: var(--white);
+  --background-transparent: rgba(255, 255, 255, 0.9);
 }
 
 .theme-dark :global(.theme-dark-invert) {

@@ -1,7 +1,8 @@
 import { Theme } from 'src/ui/features/appearance';
+import type { ChartPoint } from './types';
 
-export function toScatterData(points: [number, number][]) {
-  return points.map(([x, y]) => ({ x, y }));
+export function toScatterData<T>(points: ChartPoint<T>[]) {
+  return points.map(([x, y, extra]) => ({ x, y, extra }));
 }
 
 export function getChartColor({
@@ -17,10 +18,10 @@ export function getChartColor({
     ? theme === Theme.light
       ? isHighlighted
         ? '#99dbb4'
-        : '#01a643'
+        : '#1fc260'
       : isHighlighted
       ? '#2d4435'
-      : '#4fbf67'
+      : '#31b566'
     : theme === Theme.light
     ? isHighlighted
       ? '#ffd0c9'
@@ -55,7 +56,7 @@ export function getSortedRangeIndexes({
  */
 const FLAT_CHART_MIN_MAX_RATIO = 1.02;
 
-export function getYLimits(points: [number, number][]) {
+export function getYLimits(points: ChartPoint[]) {
   const values = points.map(([, value]) => value);
   const minLimit = Math.min(...values);
   const maxLimit = Math.max(...values);
@@ -67,5 +68,21 @@ export function getYLimits(points: [number, number][]) {
       max: maxLimit + flatChartYOffset,
     };
   }
-  return { min: minLimit, max: maxLimit };
+  // Small offset to avoid chart points and active item indicator
+  // be partially hidden by the chart container border
+  const normalChartYOffset = diff * 0.05;
+  return {
+    min: minLimit - normalChartYOffset,
+    max: maxLimit + normalChartYOffset,
+  };
+}
+
+export function getXLimits(points: ChartPoint[]) {
+  const firstPoint = points.at(0)?.[0] || 0;
+  const lastPoint = points.at(-1)?.[0] || 0;
+  const diff = lastPoint - firstPoint;
+  return {
+    min: firstPoint,
+    max: lastPoint + diff * 0.05,
+  };
 }
