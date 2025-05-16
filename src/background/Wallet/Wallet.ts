@@ -107,6 +107,7 @@ import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
 import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1017,14 +1018,17 @@ export class Wallet {
   }
 
   async switchChainForOrigin({
-    params: { chain, origin },
+    params: { evmChain, solanaChain, origin },
     context,
-  }: WalletMethodParams<{ chain: string; origin: string }>) {
+  }: WalletMethodParams<
+    AtLeastOneOf<{ evmChain: string; solanaChain: string }> & { origin: string }
+  >) {
     this.verifyInternalOrigin(context);
     this.setChainForOrigin({
-      chain: createChain(chain),
+      evmChain: evmChain ? createChain(evmChain) : undefined,
+      solanaChain: solanaChain ? createChain(solanaChain) : undefined,
       origin,
-    });
+    } as Parameters<Wallet['setChainForOrigin']>[0]);
   }
 
   async uiChainSelected({
@@ -1036,48 +1040,59 @@ export class Wallet {
   }
 
   /** @deprecated */
-  getChainId() {
-    throw new Error(
-      'Wallet.getChainId is deprecated. Use Wallet.getChainIdForOrigin'
-    );
-  }
-
-  /** @deprecated */
   async requestChainId({ context: _context }: PublicMethodParams) {
     throw new Error('requestChainId is deprecated');
   }
 
-  async getChainIdForOrigin({ origin }: { origin: string }) {
-    const fallbackChainId = '0x1' as ChainId;
+  private async getNetworkForOrigin({
+    origin,
+    standard,
+  }: {
+    origin: string;
+    standard: BlockchainType;
+  }) {
     if (!this.record) {
-      return fallbackChainId;
+      return null;
     }
-    const chain = Model.getChainForOrigin(this.record, { origin });
+    const chain = Model.getChainForOrigin(this.record, { origin, standard });
+    if (!chain) {
+      return null;
+    }
     const preferences = Model.getPreferences(this.record);
     const network = await fetchNetworkById({
       networkId: chain,
       preferences,
       apiEnv: 'testnet-first',
     });
-    const chainId = network ? Networks.getChainId(network) : null;
-    return chainId || fallbackChainId;
+    return network;
+  }
+
+  async getChainIdForOrigin({ origin }: { origin: string }) {
+    const network = await this.getNetworkForOrigin({ origin, standard: 'evm' });
+    if (network) {
+      return Networks.getChainId(network);
+    } else {
+      const currentAddress = this.readCurrentAddress();
+      if (currentAddress && isSolanaAddress(currentAddress)) {
+        throw new Error('Solana does not support chainId');
+      }
+      const fallbackChainId = '0x1' as ChainId;
+      return fallbackChainId;
+    }
   }
 
   async requestChainForOrigin({
-    params: { origin },
+    params: { origin, standard },
     context,
-  }: WalletMethodParams<{ origin: string }>) {
+  }: WalletMethodParams<{ origin: string; standard: BlockchainType }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    const fallbackChain = NetworkId.Ethereum;
-    const chain = Model.getChainForOrigin(this.record, { origin });
-    const preferences = Model.getPreferences(this.record);
-    const network = await fetchNetworkById({
-      networkId: chain,
-      preferences,
-      apiEnv: 'testnet-first',
-    });
-    return network?.id || fallbackChain;
+    const network = await this.getNetworkForOrigin({ origin, standard });
+    if (network) {
+      return network.id;
+    } else {
+      return standard === 'solana' ? NetworkId.Solana : NetworkId.Ethereum;
+    }
   }
 
   /** @deprecated */
@@ -1085,11 +1100,19 @@ export class Wallet {
     throw new Error('setChainId is deprecated. Use setChainForOrigin instead');
   }
 
-  setChainForOrigin({ chain, origin }: { chain: Chain; origin: string }) {
+  setChainForOrigin(
+    params: Parameters<(typeof Model)['setChainForOrigin']>[1]
+  ) {
     this.ensureRecord(this.record);
-    this.record = Model.setChainForOrigin(this.record, { chain, origin });
+    this.record = Model.setChainForOrigin(this.record, params);
     this.updateWalletStore(this.record);
-    this.emitter.emit('chainChanged', chain, origin);
+    if (params.evmChain) {
+      // TODO: Is it a good idea to split into explicit 'evm:chainChanged' and 'solana:chainChanged' events?
+      this.emitter.emit('chainChanged', params.evmChain, params.origin);
+    }
+    if (params.solanaChain) {
+      this.emitter.emit('chainChanged', params.solanaChain, params.origin);
+    }
   }
 
   /** A helper for interpretation in UI */
@@ -1601,7 +1624,7 @@ export class Wallet {
     affectedPermissions.forEach(({ origin }) => {
       // TODO: remove chain for origin in case new chain is not set
       this.setChainForOrigin({
-        chain: createChain(NetworkId.Ethereum),
+        evmChain: createChain(NetworkId.Ethereum),
         origin,
       });
     });
@@ -2445,7 +2468,7 @@ class PublicController {
           search: `?origin=${origin}&chainId=${chainId}`,
           tabId: context.tabId || null,
           onResolve: () => {
-            this.wallet.setChainForOrigin({ chain, origin });
+            this.wallet.setChainForOrigin({ evmChain: chain, origin });
             this.wallet.addVisitedEthereumChainInternal(chain);
             setTimeout(() => resolve(null));
           },
@@ -2465,7 +2488,7 @@ class PublicController {
     try {
       const chain = networks.getChainById(chainId);
       // Switch immediately and return success
-      this.wallet.setChainForOrigin({ chain, origin });
+      this.wallet.setChainForOrigin({ evmChain: chain, origin });
       this.wallet.addVisitedEthereumChainInternal(chain);
       // return null in next tick to give provider enough time to change chainId property
       return new Promise((resolve) => {

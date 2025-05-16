@@ -57,6 +57,7 @@ import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { usePreferences } from 'src/ui/features/preferences';
 import { wait } from 'src/shared/wait';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -449,8 +450,9 @@ function SignTypedDataContent({
   };
 
   const { data: chain } = useQuery({
-    queryKey: ['requestChainForOrigin', origin],
-    queryFn: () => requestChainForOrigin(origin),
+    queryKey: ['requestChainForOrigin', origin, wallet.address],
+    queryFn: () =>
+      requestChainForOrigin(origin, getAddressType(wallet.address)),
     useErrorBoundary: true,
     suspense: true,
   });
