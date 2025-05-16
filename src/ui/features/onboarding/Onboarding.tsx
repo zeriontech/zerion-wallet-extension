@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { ScreenViewChangeTracker } from 'src/ui/shared/useScreenViewChange';
 import { Success } from './Success';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
@@ -24,7 +23,6 @@ export function Onboarding() {
 
   return (
     <Routes>
-      <ScreenViewChangeTracker />
       <Route
         path="/onboarding"
         element={

@@ -206,7 +206,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
         <URLBar />
         {isPopup ? <RouteRestoration initialRoute={initialRoute} /> : null}
         <Routes>
-          <ScreenViewChangeTracker />
           {initialRoute ? (
             <Route path="/" element={<Navigate to={initialRoute} />} />
           ) : null}
@@ -521,6 +520,7 @@ export function App({ initialView, inspect }: AppProps) {
           <DesignTheme bodyClassList={bodyClassList} />
           <Router>
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
+              <ScreenViewChangeTracker />
               <InactivityDetector />
               <SessionResetHandler />
               <TurnstileTokenHandler />
