@@ -1,5 +1,4 @@
 import React from 'react';
-import type { SendFormState, SendFormView } from '@zeriontech/transactions';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -13,29 +12,42 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { SuccessStateNft } from 'src/ui/shared/forms/SuccessState/SuccessStateNft';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
+import type { AddressPosition } from 'defi-sdk';
+import type { SendFormState } from '../SendForm';
+import { useCurrentPosition } from '../shared/useCurrentPosition';
+import type { NftId } from '../shared/useNftPosition';
+import { useNftPosition } from '../shared/useNftPosition';
 
 export interface SendFormSnapshot {
   state: SendFormState;
-  tokenItem: SendFormView['tokenItem'];
-  nftItem: SendFormView['nftItem'];
 }
 
 export function SuccessState({
+  address,
   sendFormSnapshot,
+  positions,
   gasbackValue,
   hash,
   onDone,
 }: {
+  address: string;
   sendFormSnapshot: SendFormSnapshot;
+  positions: AddressPosition[];
   gasbackValue: number | null;
   hash: string;
   onDone: () => void;
 }) {
   const { networks } = useNetworks();
-  const { tokenItem, nftItem, state } = sendFormSnapshot;
-  const { type, tokenChain, nftChain, to } = state;
-  const currentChain = type === 'token' ? tokenChain : nftChain;
-  invariant(to && currentChain, 'Required Form values are missing');
+  const { state: formState } = sendFormSnapshot;
+  const tokenItem = useCurrentPosition(formState, positions);
+  const { type, tokenChain, to, nftId } = formState;
+  const chain = tokenChain ? createChain(tokenChain) : null;
+  invariant(to && chain, 'Required Form values are missing');
+  const { value: nftItem } = useNftPosition({
+    address,
+    nftId: (nftId as NftId) ?? null,
+    chain,
+  });
 
   const actionStatus = useActionStatusByHash(hash);
 
@@ -47,7 +59,6 @@ export function SuccessState({
     return <ViewLoading />;
   }
 
-  const chain = createChain(currentChain);
   const chainName = networks.getChainName(chain);
   const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
 

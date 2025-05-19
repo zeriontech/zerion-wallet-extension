@@ -1,4 +1,5 @@
 import type { AddressPosition } from 'defi-sdk';
+import { useMemo } from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -16,6 +17,7 @@ export function useAddressPositionsFromBackendOrNode({
   chain: Chain | null;
 }): { data: AddressPosition[] | null | undefined; isLoading: boolean } {
   const { networks } = useNetworks();
+  const hasChain = Boolean(chain);
   const isSupportedByBackend =
     chain && networks ? networks.supports('positions', chain) : null;
   const { data, isLoading } = useHttpAddressPositions(
@@ -23,21 +25,28 @@ export function useAddressPositionsFromBackendOrNode({
     { source: useHttpClientSource() },
     {
       // we query positions for all chains, so we can do it even before the "supported" check is ready
-      enabled: isSupportedByBackend == null || isSupportedByBackend,
+      enabled: hasChain && isSupportedByBackend === true,
       refetchInterval: usePositionsRefetchInterval(20000),
     }
   );
-  const addressPositions = data?.data;
+  const addressPositions = useMemo(
+    () =>
+      data?.data?.filter(
+        (position) =>
+          position.type === 'asset' && position.chain === chain?.toString()
+      ),
+    [chain, data?.data]
+  );
 
   const evmQuery = useAddressPositionsFromNode({
     address,
     chain: chain as Chain,
     suspense: false,
-    enabled: isSupportedByBackend != null && !isSupportedByBackend,
+    enabled: hasChain && isSupportedByBackend === false,
     staleTime: 1000 * 20,
   });
 
-  return isSupportedByBackend || isSupportedByBackend == null
-    ? { data: addressPositions, isLoading }
-    : { data: evmQuery.data, isLoading: evmQuery.isLoading };
+  return isSupportedByBackend === false
+    ? { data: evmQuery.data, isLoading: evmQuery.isLoading }
+    : { data: addressPositions, isLoading };
 }

@@ -296,12 +296,18 @@ export class Networks {
     return network[`supports_${purpose}`];
   }
 
+  static isNativeAsset(asset: Asset, network: NetworkConfig) {
+    if (network.native_asset) {
+      const address = getAddress({ asset, chain: createChain(network.id) });
+      return address === network.native_asset.address;
+    } else {
+      return false;
+    }
+  }
+
   isNativeAsset(asset: Asset, chainId: ChainId): boolean {
     const network = this.getNetworkById(chainId);
-    return network.native_asset
-      ? getAddress({ asset, chain: createChain(network.id) }) ===
-          network.native_asset.address
-      : false;
+    return Networks.isNativeAsset(asset, network);
   }
 
   isNativeAddress(address: string | null, chainId: ChainId): boolean {

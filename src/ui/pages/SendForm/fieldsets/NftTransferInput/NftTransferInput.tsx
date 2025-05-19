@@ -1,10 +1,8 @@
 import React, { useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'classnames';
-import type { AddressNFT } from 'defi-sdk';
-import type { SendFormView } from '@zeriontech/transactions';
+import { type AddressNFT } from 'defi-sdk';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
-import { useSelectorStore } from '@store-unit/react';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import DownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import ErrorIcon from 'jsx:src/ui/assets/warning.svg';
@@ -37,21 +35,9 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import type { NftId } from '../../shared/useNftPosition';
+import { createNftId, useNftPosition } from '../../shared/useNftPosition';
 import * as styles from './styles.module.css';
-
-function parseNftId(id: string) {
-  const [contract_address, token_id] = id.split(':');
-  return { contract_address, token_id };
-}
-function createNftId({
-  contract_address,
-  token_id,
-}: {
-  contract_address: string;
-  token_id: string;
-}) {
-  return `${contract_address}:${token_id}`;
-}
 
 const rootNode = getRootDomNode();
 
@@ -321,18 +307,26 @@ function NFTSelect({
 }
 
 export function NftTransferInput({
-  sendView,
   address,
+  value: nftAmount,
+  onChange,
+  nftId,
+  onNftIdChange,
+  networkId: nftChain,
 }: {
-  sendView: SendFormView;
   address: string;
+  value: string;
+  onChange: (value: string) => void;
+  nftId: string | null;
+  onNftIdChange: (id: string) => void;
+  networkId: string | null;
 }) {
-  const { nftItem } = sendView;
-  const { nftAmount, nftChain } = useSelectorStore(sendView.store, [
-    'nftAmount',
-    'nftChain',
-  ]);
   const chain = nftChain ? createChain(nftChain) : null; // TODO: update useSendForm to calculate default nft chain (using NFT Portfolio Decomposition)
+  const { value: nftItem } = useNftPosition({
+    address,
+    nftId: nftId as NftId,
+    chain: nftChain ? createChain(nftChain) : null,
+  });
 
   const currentItem = nftItem;
   const itemBalance = currentItem?.amount;
@@ -383,14 +377,7 @@ export function NftTransferInput({
                   address={address}
                   chain={chain}
                   value={currentItem}
-                  onChange={(id) => {
-                    const { contract_address, token_id } = parseNftId(id);
-                    sendView.handleChange(
-                      'nftContractAddress',
-                      contract_address
-                    );
-                    sendView.handleChange('nftId', token_id);
-                  }}
+                  onChange={(id) => onNftIdChange(id as NftId)}
                   detail={
                     currentItem ? (
                       <UIText kind="small/regular" color="var(--neutral-600)">
@@ -406,7 +393,7 @@ export function NftTransferInput({
                           onClick={() => {
                             invariant(itemBalance, 'Position quantity unknown');
                             const value = itemBalance.toFixed();
-                            sendView.handleChange('nftAmount', value);
+                            onChange(value);
                             valueInputRef.current?.setValue(value);
                           }}
                         >
@@ -425,9 +412,7 @@ export function NftTransferInput({
             ref={valueInputRef}
             delay={200}
             value={nftAmount ?? ''}
-            onChange={(value) => {
-              sendView.handleChange('nftAmount', value);
-            }}
+            onChange={onChange}
             render={({ value, handleChange }) => (
               <UnstyledInput
                 id={inputId}
@@ -442,7 +427,7 @@ export function NftTransferInput({
                 placeholder="0"
                 inputMode="numeric"
                 onChange={(event) => handleChange(event.target.value)}
-                pattern="\d"
+                pattern="\d+"
                 required={true}
               />
             )}

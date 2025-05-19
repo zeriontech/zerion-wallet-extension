@@ -41,6 +41,7 @@ export function TransactionConfirmationView({
   configuration: CustomConfiguration;
   paymasterEligible: boolean;
   paymasterPossible: boolean;
+  /** TODO: @deprecate */
   eligibilityQuery: EligibilityQuery;
   localAllowanceQuantityBase?: string;
   onOpenAllowanceForm?: () => void;
