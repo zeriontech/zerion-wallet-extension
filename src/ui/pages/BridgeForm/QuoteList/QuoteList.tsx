@@ -26,7 +26,7 @@ import { useTransactionFee } from '../../SendTransaction/TransactionConfiguratio
 import { getBridgeFeeValueFiat } from '../shared/getBridgeFeeValueFiat';
 import * as styles from './styles.module.css';
 
-const QUOTE_GRIP_TEMPLATE_COLUMNS = '30px 2fr 3fr 2fr 3fr';
+const QUOTE_GRID_TEMPLATE_COLUMNS = '30px 2fr 3fr 2fr 3fr';
 
 function GasFee({
   transaction,
@@ -128,7 +128,7 @@ function QuoteListItem({
     <HStack
       gap={4}
       alignItems="center"
-      style={{ gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS }}
+      style={{ gridTemplateColumns: QUOTE_GRID_TEMPLATE_COLUMNS }}
     >
       <img
         src={quote.contract_metadata?.icon_url}
@@ -218,7 +218,7 @@ export function QuoteList({
             style={{
               textAlign: 'center',
               padding: '0 12px',
-              gridTemplateColumns: QUOTE_GRIP_TEMPLATE_COLUMNS,
+              gridTemplateColumns: QUOTE_GRID_TEMPLATE_COLUMNS,
             }}
           >
             <div aria-hidden={true} />

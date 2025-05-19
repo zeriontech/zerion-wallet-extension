@@ -111,7 +111,7 @@ import { ZerionFeeLine } from './ZerionFeeLine';
 import { QuoteList } from './QuoteList';
 
 function getDefaultQuote(quotes: Quote[] | null) {
-  return quotes?.[0] ?? null;
+  return quotes?.at(0) ?? null;
 }
 
 function useSortedQuotes(params: Parameters<typeof useQuotes>[0]) {

@@ -111,7 +111,7 @@ export function BridgeLine({
               ) : null}
 
               <HStack gap={4} alignItems="center">
-                <UIText kind="small/accent">
+                <UIText kind="small/accent" color="var(--primary)">
                   {selectedQuote?.seconds_estimation
                     ? `~${formatSeconds(
                         Number(selectedQuote.seconds_estimation)
@@ -121,7 +121,7 @@ export function BridgeLine({
                 <UIText kind="small/accent">·</UIText>
                 {feeAsset && feePriceValue ? (
                   <HStack gap={4} alignItems="center">
-                    <UIText kind="small/accent">
+                    <UIText kind="small/accent" color="var(--primary)">
                       {formatCurrencyValue(feePriceValue, 'en', currency)}
                     </UIText>
                     <UIText kind="small/accent">·</UIText>
