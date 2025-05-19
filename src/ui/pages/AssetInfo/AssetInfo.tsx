@@ -201,7 +201,10 @@ export function AssetInfo() {
         gap={24}
         style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
       >
-        <AssetTitleAndChart asset={assetFullInfo.fungible} />
+        <AssetTitleAndChart
+          asset={assetFullInfo.fungible}
+          address={params.address}
+        />
         <AssetGlobalStats assetFullInfo={assetFullInfo} />
         <AssetAddressStats
           address={params.address}

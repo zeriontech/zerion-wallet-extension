@@ -18,8 +18,9 @@ import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
 import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { Chart } from 'src/ui/components/chart/Chart';
 import { getColor, getSign } from './helpers';
+import { AssetChart } from './AssetChart/AssetChart';
+import type { AssetChartPoint } from './AssetChart/types';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
 const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
@@ -33,7 +34,13 @@ const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
 
 const REQUEST_TOKEN_LINK = 'https://zerion.io/request-token';
 
-export function AssetTitleAndChart({ asset }: { asset: Asset }) {
+export function AssetTitleAndChart({
+  asset,
+  address,
+}: {
+  asset: Asset;
+  address: string;
+}) {
   const { currency } = useCurrency();
   const isUntrackedAsset = asset.meta.price == null;
   const priceElementRef = useRef<HTMLDivElement>(null);
@@ -45,17 +52,18 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
     isFetching,
     isError,
   } = useAssetChart({
-    addresses: [],
+    addresses: [address],
     currency,
     fungibleId: asset.id,
     period,
   });
 
-  const chartPoints = useMemo<[number, number][]>(() => {
+  const chartPoints = useMemo<AssetChartPoint[]>(() => {
     return (
       chartData?.data.points.map((item) => [
         item.timestamp * 1000,
         item.value,
+        item.actions,
       ]) || []
     );
   }, [chartData]);
@@ -164,14 +172,10 @@ export function AssetTitleAndChart({ asset }: { asset: Asset }) {
       </VStack>
       {isUntrackedAsset || isError ? null : (
         <>
-          <Chart
+          <AssetChart
+            asset={asset}
             chartPoints={chartPoints}
             onRangeSelect={handleRangeSelect}
-            style={{
-              position: 'relative',
-              left: -16,
-              width: 'calc(100% + 32px)',
-            }}
           />
           <HStack gap={8} justifyContent="space-between">
             {CHART_TYPE_OPTIONS.map((type) => (

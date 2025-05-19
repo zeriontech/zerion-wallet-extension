@@ -1,21 +1,26 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { useStore } from '@store-unit/react';
 import ChartJS, { type ScriptableLineSegmentContext } from 'chart.js/auto';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useEvent } from 'src/ui/shared/useEvent';
-import { useCurrency } from 'src/modules/currency/useCurrency';
 import { equal } from 'src/modules/fast-deep-equal';
-import type { Theme } from 'src/ui/features/appearance';
-import { themeStore } from 'src/ui/features/appearance';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import type { Theme } from 'src/ui/features/appearance';
 import {
   getSortedRangeIndexes,
   toScatterData,
   getChartColor,
   getYLimits,
+  getXLimits,
 } from './helpers';
 import { CHART_HEIGHT, DEFAULT_CONFIG } from './config';
-import { drawDotPlugin, drawRangePlugin } from './plugins';
+import { drawRangePlugin } from './plugins';
+import type {
+  ChartPoint,
+  ChartDatasetConfig,
+  ChartTooltipOptions,
+  ChartPlugins,
+  ChartInteraction,
+} from './types';
 
 /**
  * Chart update animation algorithm:
@@ -33,19 +38,22 @@ import { drawDotPlugin, drawRangePlugin } from './plugins';
  * 2. Update the chart scales without animation
  * 3. Show the chart with animation
  */
-function updateChartPoints({
+function updateChartPoints<T>({
   chart,
   prevPoints,
   nextPoints,
   theme,
 }: {
   chart: ChartJS;
-  prevPoints: [number, number][];
-  nextPoints: [number, number][];
+  prevPoints: ChartPoint<T>[];
+  nextPoints: ChartPoint<T>[];
   theme: Theme;
 }) {
   const { min: prevYMin, max: prevYMax } = getYLimits(prevPoints);
   const { min: nextYMin, max: nextYMax } = getYLimits(nextPoints);
+
+  const { min: prevXMin, max: prevXMax } = getXLimits(prevPoints);
+  const { min: nextXMin, max: nextXMax } = getXLimits(nextPoints);
 
   chart.data.datasets[0].data = toScatterData(nextPoints);
 
@@ -54,16 +62,13 @@ function updateChartPoints({
       data: toScatterData(prevPoints),
       borderColor: getChartColor({
         theme,
-        isPositive: prevPoints[0]?.[1] <= (prevPoints.at(-1)?.[1] || 0),
+        isPositive:
+          (prevPoints.at(0)?.[1] || 0) <= (prevPoints.at(-1)?.[1] || 0),
         isHighlighted: false,
       }),
     };
     chart.options.scales = {
-      x: {
-        display: false,
-        min: prevPoints[0]?.[0],
-        max: prevPoints.at(-1)?.[0],
-      },
+      x: { display: false, min: prevXMin, max: prevXMax },
       y: { display: false, min: prevYMin, max: prevYMax },
     };
     chart.update('none');
@@ -78,11 +83,7 @@ function updateChartPoints({
   }
 
   chart.options.scales = {
-    x: {
-      display: false,
-      min: nextPoints[0]?.[0],
-      max: nextPoints.at(-1)?.[0],
-    },
+    x: { display: false, min: nextXMin, max: nextXMax },
     y: { display: false, min: nextYMin, max: nextYMax },
   };
 
@@ -104,7 +105,7 @@ function updateChartPoints({
  * 3. The range is selected
  * - We need to highlight the segment inside the range
  */
-function getSegmentColor({
+function getSegmentColor<T>({
   ctx,
   startRangeIndex: startRangeIndexRaw,
   endRangeIndex: endRangeIndexRaw,
@@ -114,7 +115,7 @@ function getSegmentColor({
   ctx: ScriptableLineSegmentContext;
   startRangeIndex: number | null;
   endRangeIndex: number | null;
-  chartPoints: [number, number][];
+  chartPoints: ChartPoint<T>[];
   theme: Theme;
 }) {
   const { startRangeIndex, endRangeIndex } = getSortedRangeIndexes({
@@ -123,7 +124,7 @@ function getSegmentColor({
   });
 
   const endValue = chartPoints.at(endRangeIndex ?? -1)?.[1] || 0;
-  const startValue = chartPoints[startRangeIndex ?? 0]?.[1] || 0;
+  const startValue = chartPoints.at(startRangeIndex ?? 0)?.[1] || 0;
 
   const afterActivePoint =
     startRangeIndex === null &&
@@ -142,12 +143,18 @@ function getSegmentColor({
   });
 }
 
-export function Chart({
+export function Chart<T>({
   chartPoints,
   onRangeSelect,
   style,
+  datasetConfig,
+  tooltip,
+  plugins,
+  interaction,
+  theme,
+  currency,
 }: {
-  chartPoints: [number, number][];
+  chartPoints: ChartPoint<T>[];
   onRangeSelect: ({
     startRangeIndex,
     endRangeIndex,
@@ -156,12 +163,16 @@ export function Chart({
     endRangeIndex: number | null;
   }) => void;
   style?: React.CSSProperties;
+  datasetConfig?: ChartDatasetConfig;
+  tooltip?: ChartTooltipOptions;
+  plugins?: ChartPlugins;
+  interaction?: ChartInteraction;
+  theme: Theme;
+  currency: string;
 }) {
-  const { currency } = useCurrency();
-  const { theme } = useStore(themeStore);
   const onRangeSelectEvent = useEvent(onRangeSelect);
 
-  const chartPointsRef = useRef<[number, number][]>([]);
+  const chartPointsRef = useRef<ChartPoint<T>[]>([]);
   const endRangeIndexRef = useRef<number | null>(null);
   const startRangeIndexRef = useRef<number | null>(null);
   const startRangeXRef = useRef<number | null>(null);
@@ -206,13 +217,22 @@ export function Chart({
                   theme: themeRef.current,
                 }),
             },
+            ...datasetConfig,
           },
         ],
       },
       options: {
         ...DEFAULT_CONFIG.options,
+        interaction,
         onHover: (_, __, chart) => {
           chart.update();
+        },
+        plugins: {
+          ...DEFAULT_CONFIG.options?.plugins,
+          tooltip: {
+            ...DEFAULT_CONFIG.options?.plugins?.tooltip,
+            ...tooltip,
+          },
         },
       },
       plugins: [
@@ -249,21 +269,18 @@ export function Chart({
             }
           },
         },
-        drawDotPlugin({
-          getStartRangeIndex: () => startRangeIndexRef.current,
-          getTheme: () => themeRef.current,
-        }),
         drawRangePlugin({
           getStartRangeX: () => startRangeXRef.current,
           getTheme: () => themeRef.current,
         }),
+        ...(plugins || []),
       ],
     });
 
     return () => {
       chartRef.current?.destroy();
     };
-  }, [onRangeSelectEvent]);
+  }, [onRangeSelectEvent, datasetConfig, plugins, tooltip, interaction]);
 
   if (!equal(chartPointsRef.current, chartPoints) && chartRef.current) {
     updateChartPoints({

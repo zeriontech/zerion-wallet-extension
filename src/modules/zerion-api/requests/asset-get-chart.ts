@@ -12,8 +12,25 @@ export interface Params {
   period: ChartPeriod;
 }
 
+type AssetChartAction = {
+  type: 'sell' | 'buy' | null;
+  direction: 'in' | 'out' | null;
+  quantity: string;
+  value: number;
+};
+
+export type AssetChartActions = {
+  count: number;
+  total: AssetChartAction;
+  preview: AssetChartAction[];
+};
+
 export interface AssetChart {
-  points: { timestamp: number; value: number; extra: null }[];
+  points: Array<{
+    timestamp: number;
+    value: number;
+    actions: AssetChartActions | null;
+  }>;
 }
 
 type Response = ResponseBody<AssetChart>;
