@@ -129,10 +129,10 @@ export function ConnectionHeader() {
 
   const { data: siteChain, ...chainQuery } = useQuery({
     queryKey: ['requestChainForOrigin', activeTabOrigin, address],
-    queryFn: async () =>
-      activeTabOrigin
-        ? requestChainForOrigin(activeTabOrigin, getAddressType(address))
-        : null,
+    queryFn: async () => {
+      invariant(activeTabOrigin, 'activeTabOrigin param missing');
+      return requestChainForOrigin(activeTabOrigin, getAddressType(address));
+    },
     enabled: Boolean(activeTabOrigin),
     useErrorBoundary: true,
     suspense: false,

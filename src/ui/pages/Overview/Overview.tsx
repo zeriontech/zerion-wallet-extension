@@ -69,6 +69,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { invariant } from 'src/shared/invariant';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
@@ -413,9 +414,7 @@ function OverviewComponent() {
   const { data: siteChain } = useQuery({
     queryKey: ['requestChainForOrigin', activeTabOrigin, address],
     queryFn: async () => {
-      if (!activeTabOrigin) {
-        return null;
-      }
+      invariant(activeTabOrigin, 'activeTabOrigin param missing');
       return requestChainForOrigin(activeTabOrigin, getAddressType(address));
     },
     enabled: Boolean(activeTabOrigin),
