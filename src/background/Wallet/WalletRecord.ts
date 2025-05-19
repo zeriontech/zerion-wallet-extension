@@ -8,7 +8,6 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
-import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { WalletAbility } from 'src/shared/types/Daylight';
 import {
   isEncryptedMnemonic,
@@ -29,6 +28,8 @@ import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import { isSolanaAddress } from 'src/modules/solana/shared';
+import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { emitter } from '../events';
 import type {
@@ -743,7 +744,13 @@ export class WalletRecordModel {
 
   static setChainForOrigin(
     record: WalletRecord,
-    { chain, origin }: { chain: Chain; origin: string }
+    {
+      evmChain,
+      solanaChain,
+      origin,
+    }: AtLeastOneOf<{ evmChain: Chain; solanaChain: Chain }> & {
+      origin: string;
+    }
   ) {
     return produce(record, (draft) => {
       if (!draft.permissions[origin]) {
@@ -752,16 +759,26 @@ export class WalletRecordModel {
         // chain for an entry that doesn't exist yet
         draft.permissions[origin] = { addresses: [] };
       }
-      draft.permissions[origin].chain = chain.toString();
+      if (evmChain) {
+        draft.permissions[origin].chain = evmChain.toString();
+      }
+      if (solanaChain) {
+        draft.permissions[origin].solanaChain = solanaChain.toString();
+      }
     });
   }
 
   static getChainForOrigin(
     record: WalletRecord,
-    { origin }: { origin: string }
-  ): Chain {
-    const chain = record.permissions[origin]?.chain;
-    return createChain(chain || NetworkId.Ethereum);
+    { origin, standard }: { origin: string; standard: BlockchainType }
+  ): Chain | null {
+    let value: string | null = null;
+    if (standard === 'solana') {
+      value = record.permissions[origin]?.solanaChain ?? null;
+    } else {
+      value = record.permissions[origin]?.chain ?? null;
+    }
+    return value ? createChain(value) : null;
   }
 
   static getPermissionsByChain(

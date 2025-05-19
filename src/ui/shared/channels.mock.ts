@@ -131,8 +131,6 @@ class WalletPortMock {
       return Promise.resolve(testWallet.address);
     } else if (method === 'signAndSendTransaction') {
       return Promise.resolve({ hash: '0x12345' });
-    } else if (method === 'getChainId') {
-      return Promise.resolve(this.state.chainId);
     } else if (method === 'switchChainForOrigin') {
       const networks = await networksStore.load();
       this.state.chainId = networks.getChainId(

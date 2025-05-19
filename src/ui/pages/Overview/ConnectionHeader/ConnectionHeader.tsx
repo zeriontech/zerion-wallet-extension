@@ -26,6 +26,11 @@ import {
 } from 'src/modules/networks/useNetworks';
 import { usePreferences } from 'src/ui/features/preferences';
 import { capitalize } from 'capitalize-ts';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { getAddressType } from 'src/shared/wallet/classifiers';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import { Networks } from 'src/modules/networks/Networks';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
@@ -119,22 +124,36 @@ export function ConnectionHeader() {
   });
   const activeTabOrigin = tabData?.tabOrigin;
   const activeTabHostname = tabData?.url.hostname;
-  const { singleAddressNormalized } = useAddressParams();
-  const { data: isConnected } = useIsConnectedToActiveTab(
-    singleAddressNormalized
-  );
+  const { singleAddressNormalized: address } = useAddressParams();
+  const { data: isConnected } = useIsConnectedToActiveTab(address);
 
   const { data: siteChain, ...chainQuery } = useQuery({
-    queryKey: ['requestChainForOrigin', activeTabOrigin],
-    queryFn: () => requestChainForOrigin(activeTabOrigin),
+    queryKey: ['requestChainForOrigin', activeTabOrigin, address],
+    queryFn: async () => {
+      invariant(activeTabOrigin, 'activeTabOrigin param missing');
+      return requestChainForOrigin(activeTabOrigin, getAddressType(address));
+    },
     enabled: Boolean(activeTabOrigin),
     useErrorBoundary: true,
     suspense: false,
   });
 
   const switchChainMutation = useMutation({
-    mutationFn: ({ chain, origin }: { chain: string; origin: string }) =>
-      walletPort.request('switchChainForOrigin', { chain, origin }),
+    mutationFn: ({ chain, origin }: { chain: string; origin: string }) => {
+      if (isSolanaAddress(address)) {
+        return walletPort.request('switchChainForOrigin', {
+          solanaChain: chain,
+          origin,
+        });
+      } else if (isEthereumAddress(address)) {
+        return walletPort.request('switchChainForOrigin', {
+          evmChain: chain,
+          origin,
+        });
+      } else {
+        throw new Error('Cannot determine current address type');
+      }
+    },
     useErrorBoundary: true,
     onSuccess: () => chainQuery.refetch(),
   });
@@ -252,7 +271,14 @@ export function ConnectionHeader() {
                 </VStack>
                 {siteChain ? (
                   <NetworkSelect
+                    standard={getAddressType(address)}
                     value={siteChain.toString()}
+                    filterPredicate={(network) =>
+                      isMatchForEcosystem(
+                        address,
+                        Networks.getEcosystem(network)
+                      )
+                    }
                     onChange={(value) => {
                       switchChainMutation.mutate({
                         chain: value,

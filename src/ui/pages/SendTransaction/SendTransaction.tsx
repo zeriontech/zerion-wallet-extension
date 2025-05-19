@@ -202,6 +202,7 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
     queryFn: async () => {
       const currentChain = await walletPort.request('requestChainForOrigin', {
         origin,
+        standard: 'evm',
       });
       return resolveChain(transaction, createChain(currentChain));
     },

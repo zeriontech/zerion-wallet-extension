@@ -69,6 +69,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { invariant } from 'src/shared/invariant';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
@@ -355,12 +356,16 @@ function OverviewComponent() {
   );
   const { currency } = useCurrency();
   const location = useLocation();
-  const { singleAddress, params, ready, singleAddressNormalized } =
-    useAddressParams();
-  useProfileName({ address: singleAddress, name: null });
+  const {
+    singleAddress: address,
+    params,
+    ready,
+    singleAddressNormalized,
+  } = useAddressParams();
+  useProfileName({ address, name: null });
   const { data: walletGroup } = useQuery({
-    queryKey: ['getWalletGroupByAddress', singleAddress],
-    queryFn: () => getWalletGroupByAddress(singleAddress),
+    queryKey: ['getWalletGroupByAddress', address],
+    queryFn: () => getWalletGroupByAddress(address),
   });
   const isReadonlyGroup =
     walletGroup && isReadonlyContainer(walletGroup.walletContainer);
@@ -370,7 +375,7 @@ function OverviewComponent() {
     // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
     setSearchParams(value ? [['chain', value]] : '');
   });
-  const addressType = getAddressType(singleAddress);
+  const addressType = getAddressType(address);
   useEffect(() => {
     setSelectedChain(null);
   }, [addressType, setSelectedChain]);
@@ -407,8 +412,11 @@ function OverviewComponent() {
   });
   const activeTabOrigin = tabData?.tabOrigin;
   const { data: siteChain } = useQuery({
-    queryKey: ['requestChainForOrigin', activeTabOrigin],
-    queryFn: () => requestChainForOrigin(activeTabOrigin),
+    queryKey: ['requestChainForOrigin', activeTabOrigin, address],
+    queryFn: async () => {
+      invariant(activeTabOrigin, 'activeTabOrigin param missing');
+      return requestChainForOrigin(activeTabOrigin, getAddressType(address));
+    },
     enabled: Boolean(activeTabOrigin),
     useErrorBoundary: true,
     suspense: false,
@@ -566,12 +574,12 @@ function OverviewComponent() {
         <HStack gap={12} alignItems="center">
           {!isLoadingPortfolio ? (
             <WalletAvatar
-              address={singleAddress}
+              address={address}
               size={64}
               borderRadius={12}
               icon={
                 <WalletSourceIcon
-                  address={singleAddress}
+                  address={address}
                   groupId={null}
                   style={{ width: 24, height: 24 }}
                   borderRadius={8}
