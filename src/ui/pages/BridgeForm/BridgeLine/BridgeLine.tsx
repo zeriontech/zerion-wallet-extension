@@ -118,13 +118,17 @@ export function BridgeLine({
                       )}`
                     : noValueDash}
                 </UIText>
-                <UIText kind="small/accent">·</UIText>
+                <UIText kind="small/accent" color="var(--primary)">
+                  ·
+                </UIText>
                 {feeAsset && feePriceValue ? (
                   <HStack gap={4} alignItems="center">
                     <UIText kind="small/accent" color="var(--primary)">
                       {formatCurrencyValue(feePriceValue, 'en', currency)}
                     </UIText>
-                    <UIText kind="small/accent">·</UIText>
+                    <UIText kind="small/accent" color="var(--primary)">
+                      ·
+                    </UIText>
                     <TokenIcon
                       size={16}
                       src={feeAsset.icon_url}
