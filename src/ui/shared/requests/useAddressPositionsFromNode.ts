@@ -22,7 +22,7 @@ export function useAddressPositionFromRpcNode({
     suspense,
     staleTime,
     queryKey: persistentQuery([
-      'eth_getBalance/nativeAddressEvmPosition',
+      'fetchAddressPositionFromRpcNode',
       address,
       chain,
     ]),

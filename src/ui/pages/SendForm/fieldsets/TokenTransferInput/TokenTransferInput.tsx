@@ -1,6 +1,6 @@
 import React, { useId, useRef } from 'react';
-import type { SendFormView } from '@zeriontech/transactions';
-import { useSelectorStore } from '@store-unit/react';
+import type { AddressPosition } from 'defi-sdk';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import {
   getPositionBalance,
   getPositionPartialBalance,
@@ -25,13 +25,16 @@ import {
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { AssetSelect } from '../../AssetSelect';
 
-function FiatInputValue({ sendView }: { sendView: SendFormView }) {
-  const { tokenItem } = sendView;
+function FiatInputValue({
+  position: tokenItem,
+  type,
+  value: inputValue,
+}: {
+  position: AddressPosition | EmptyAddressPosition | null;
+  value: string;
+  type: 'nft' | 'token';
+}) {
   const { currency } = useCurrency();
-  const { type, tokenValue: inputValue } = useSelectorStore(sendView.store, [
-    'type',
-    'tokenValue',
-  ]);
 
   if (type === 'nft') {
     return null;
@@ -53,19 +56,32 @@ function FiatInputValue({ sendView }: { sendView: SendFormView }) {
   );
 }
 
-export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
-  const { tokenItem } = sendView;
-  const { tokenValue, tokenChain } = useSelectorStore(sendView.store, [
-    'tokenValue',
-    'tokenChain',
-  ]);
-  const chain = tokenChain ? createChain(tokenChain) : null;
-
-  const positionBalanceCommon = tokenItem
-    ? getPositionBalance(tokenItem)
+export function TokenTransferInput<
+  T extends AddressPosition | EmptyAddressPosition
+>({
+  type,
+  value,
+  onChange,
+  items,
+  currentItem,
+  tokenAssetCode: _,
+  tokenChain,
+  onAssetCodeChange,
+}: {
+  type: 'nft' | 'token';
+  value: string;
+  onChange: (value: string) => void;
+  items: Array<T>;
+  currentItem: T | null;
+  tokenAssetCode: string | null;
+  tokenChain: string | null;
+  onAssetCodeChange: (value: string) => void;
+}) {
+  const positionBalanceCommon = currentItem
+    ? getPositionBalance(currentItem)
     : null;
 
-  const exceedsBalance = Number(tokenValue) > Number(positionBalanceCommon);
+  const exceedsBalance = Number(value) > Number(positionBalanceCommon);
   const tokenValueInputRef = useRef<InputHandle | null>(null);
 
   const inputId = useId();
@@ -75,27 +91,28 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
     ref: inputRef,
     customValidity: exceedsBalance
       ? 'Insufficient balance'
-      : tokenValue && Number(tokenValue) < 0
+      : value && Number(value) < 0
       ? 'Enter a positive amount'
       : '',
   });
 
+  const chain = tokenChain ? createChain(tokenChain) : null;
   return (
     <>
       <FormFieldset
         title="Asset"
         endTitle={
-          tokenItem && positionBalanceCommon ? (
+          currentItem && positionBalanceCommon ? (
             <HStack gap={16} alignItems="center">
               {QUICK_AMOUNTS.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
                   onClick={() => {
                     const value = getPositionPartialBalance(
-                      tokenItem,
+                      currentItem,
                       factor
                     ).toFixed();
-                    sendView.handleChange('tokenValue', value);
+                    onChange(value);
                     tokenValueInputRef.current?.setValue(value);
                     inputRef.current?.focus();
                   }}
@@ -109,18 +126,15 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
         inputSelector={`#${CSS.escape(inputId)}`}
         startInput={
           <div>
-            {tokenItem ? (
+            {currentItem ? (
               <AssetSelect
                 dialogTitle="Send"
-                items={sendView.availablePositions ?? []}
+                items={items}
                 onChange={(position) =>
-                  sendView.handleChange(
-                    'tokenAssetCode',
-                    position.asset.asset_code
-                  )
+                  onAssetCodeChange(position.asset.asset_code)
                 }
                 chain={chain}
-                selectedItem={tokenItem}
+                selectedItem={currentItem}
                 noItemsMessage="No positions found"
               />
             ) : (
@@ -149,10 +163,8 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
           <DebouncedInput
             ref={tokenValueInputRef}
             delay={300}
-            value={tokenValue ?? ''}
-            onChange={(value) => {
-              sendView.handleChange('tokenValue', value);
-            }}
+            value={value ?? ''}
+            onChange={onChange}
             render={({ value, handleChange }) => (
               <UnstyledInput
                 id={inputId}
@@ -179,7 +191,9 @@ export function TokenTransferInput({ sendView }: { sendView: SendFormView }) {
               : 'n/a'}
           </div>
         }
-        endDescription={<FiatInputValue sendView={sendView} />}
+        endDescription={
+          <FiatInputValue position={currentItem} type={type} value={value} />
+        }
       />
     </>
   );

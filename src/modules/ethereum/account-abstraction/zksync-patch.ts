@@ -6,6 +6,7 @@ import {
   utils as zksUtils,
   types as zksTypes,
 } from 'zksync-ethers';
+import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 /**
  * Patches runtime implementation of buggy `EIP712Signer.getSignInput`;
@@ -62,6 +63,10 @@ export function parseEip712Patched(rawTx: string) {
 export function checkEip712Tx(serialized: string) {
   const payload = ethers.getBytes(serialized);
   return payload[0] === zksUtils.EIP712_TX_TYPE;
+}
+
+export function isEip712Transaction<T extends IncomingTransaction>(tx: T) {
+  return tx.type === zksUtils.EIP712_TX_TYPE;
 }
 
 /**

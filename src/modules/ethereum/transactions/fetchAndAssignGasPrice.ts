@@ -1,6 +1,7 @@
 import { produce } from 'immer';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import omit from 'lodash/omit';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
@@ -19,12 +20,12 @@ function add10Percent(value: number) {
   return Math.round(value * 1.1); // result must be an integer
 }
 
-export async function estimateGas(
-  transaction: IncomingTransaction,
-  networks: Networks
+export async function estimateGasForNetwork<T extends IncomingTransaction>(
+  transaction: T,
+  network: NetworkConfig
 ) {
   const chainIdHex = resolveChainId(transaction);
-  const rpcUrl = networks.getRpcUrlInternal(networks.getChainById(chainIdHex));
+  const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
   const { result } = await sendRpcRequest<string>(rpcUrl, {
     method: 'eth_estimateGas',
     params: [
@@ -36,6 +37,15 @@ export async function estimateGas(
     ],
   });
   return add10Percent(parseInt(result));
+}
+
+export async function estimateGas(
+  transaction: IncomingTransaction,
+  networks: Networks
+) {
+  const chainIdHex = resolveChainId(transaction);
+  const network = networks.getNetworkById(chainIdHex);
+  return estimateGasForNetwork(transaction, network);
 }
 
 async function fetchGasPriceForTransaction(

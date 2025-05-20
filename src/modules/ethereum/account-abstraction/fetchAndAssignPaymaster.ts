@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { utils as zksUtils } from 'zksync-ethers';
 import { invariant } from 'src/shared/invariant';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -96,6 +97,7 @@ export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
     apiClient,
   });
   if (eligible && paymasterParams) {
+    txCopy.type = zksUtils.EIP712_TX_TYPE;
     txCopy.customData = { paymasterParams, gasPerPubdata: gasPerPubdataByte };
     return txCopy;
   } else {
