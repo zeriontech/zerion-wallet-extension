@@ -54,6 +54,11 @@ export function AssetChart({
         const hasDataPoint = Boolean((ctx.raw as ParsedAssetChartPoint)?.extra);
         return hasDataPoint ? 8 : 0;
       },
+      animations: {
+        radius: {
+          duration: 200,
+        },
+      },
       pointBorderColor: () => {
         return themeRef.current === Theme.light ? '#ffffff' : '#16161a';
       },
@@ -86,7 +91,16 @@ export function AssetChart({
           const actions = (ctx[0].raw as ParsedAssetChartPoint)?.extra;
           return actions
             ? serializeAssetChartActions({
-                action: actions.total,
+                action: {
+                  ...actions.total,
+                  // we need to color the tooltip based on the action value sign, not direction field
+                  direction:
+                    actions.total.value > 0
+                      ? 'in'
+                      : actions.total.value < 0
+                      ? 'out'
+                      : null,
+                },
                 asset: assetRef.current,
                 currency,
               })
