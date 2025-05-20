@@ -211,20 +211,26 @@ function SectionTitle({
 }
 
 export function AddressInput({
+  title,
+  endTitle,
   value,
   autoFocus,
   resolvedAddress,
   onChange,
   onResolvedChange,
   items: allItems,
+  fieldsetStyle,
   ...inputProps
-}: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'title' | 'onChange'> & {
+  title: React.ReactNode;
+  endTitle?: React.ReactNode;
   value: string;
   autoFocus?: boolean;
   resolvedAddress: string | null;
   onChange(value: string): void;
   onResolvedChange(value: string | null): void;
   items: Item[];
+  fieldsetStyle?: React.CSSProperties;
 }) {
   const onResolvedChangeRef = useRef(onResolvedChange);
   onResolvedChangeRef.current = onResolvedChange;
@@ -321,7 +327,9 @@ export function AddressInput({
   return (
     <div style={{ position: 'relative' }}>
       <FormFieldset
-        title="Recipient"
+        style={fieldsetStyle}
+        title={title}
+        endTitle={endTitle}
         startInput={
           <HStack
             gap={8}
@@ -479,7 +487,13 @@ export function AddressInput({
 }
 
 export function AddressInputWrapper(
-  props: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
+  props: Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'title' | 'onChange'
+  > & {
+    fieldsetStyle?: React.CSSProperties;
+    title: React.ReactNode;
+    endTitle?: React.ReactNode;
     autoFocus?: boolean;
     value: string;
     resolvedAddress: string | null;
@@ -538,7 +552,9 @@ export function AddressInputWrapper(
   if (isLoading) {
     return (
       <FormFieldset
-        title="Recipient"
+        style={props.fieldsetStyle}
+        title={props.title}
+        endTitle={props.endTitle}
         startInput={
           <div
             style={{

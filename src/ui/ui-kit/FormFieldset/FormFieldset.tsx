@@ -66,12 +66,16 @@ export const FormFieldset = React.forwardRef<
         }}
       >
         <VStack gap={4} style={{ width: '100%' }}>
-          <HStack gap={8} justifyContent="space-between" alignItems="center">
-            <UIText kind="small/regular" as="label" ref={labelRef}>
-              {title}
-            </UIText>
-            {endTitle ? <UIText kind="small/regular">{endTitle}</UIText> : null}
-          </HStack>
+          {title || endTitle ? (
+            <HStack gap={8} justifyContent="space-between" alignItems="center">
+              <UIText kind="small/regular" as="label" ref={labelRef}>
+                {title}
+              </UIText>
+              {endTitle ? (
+                <UIText kind="small/regular">{endTitle}</UIText>
+              ) : null}
+            </HStack>
+          ) : null}
           <HStack
             gap={8}
             justifyContent="space-between"
