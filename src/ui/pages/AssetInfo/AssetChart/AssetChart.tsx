@@ -93,7 +93,7 @@ export function AssetChart({
             ? serializeAssetChartActions({
                 action: {
                   ...actions.total,
-                  // we need to color the tooltip based on the action value sign, not direction field
+                  // we need to color total string based on the value sign, not direction field
                   direction:
                     actions.total.value > 0
                       ? 'in'
