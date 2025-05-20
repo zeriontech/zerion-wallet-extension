@@ -26,7 +26,7 @@ import { useTransactionFee } from '../../SendTransaction/TransactionConfiguratio
 import { getBridgeFeeValueFiat } from '../shared/getBridgeFeeValueFiat';
 import * as styles from './styles.module.css';
 
-const QUOTE_GRID_TEMPLATE_COLUMNS = '30px 2fr 3fr 2fr 3fr';
+const QUOTE_GRID_TEMPLATE_COLUMNS = '30px 3fr 3fr 2fr 2fr';
 
 function GasFee({
   transaction,
