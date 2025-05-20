@@ -4,7 +4,7 @@ import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Brand } from 'src/shared/type-utils/Brand';
 
-export type NftId = Brand<string, 'NftId'>;
+export type NftId = Brand<`${string}:${string}`, 'NftId'>;
 
 export function parseNftId(id: NftId | string) {
   const [contract_address, token_id] = id.split(':');
@@ -42,9 +42,6 @@ export function useNftPosition({
       token_id: nftIdParams?.token_id || '',
       currency,
     },
-    {
-      client,
-      enabled: hasParams,
-    }
+    { client, enabled: hasParams }
   );
 }

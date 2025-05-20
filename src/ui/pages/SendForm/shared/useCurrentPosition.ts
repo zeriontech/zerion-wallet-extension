@@ -8,7 +8,7 @@ import { useNetworkConfig } from 'src/modules/networks/useNetworks';
 import { EmptyAddressPosition } from '@zeriontech/transactions';
 import { createChain } from 'src/modules/networks/Chain';
 import { createAddressPosition } from 'src/ui/shared/requests/shared/createAddressPosition';
-import type { SendFormState } from '../SendForm';
+import type { SendFormState } from './SendFormState';
 
 export function useCurrentPosition(
   formState: SendFormState,

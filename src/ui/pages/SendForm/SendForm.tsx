@@ -3,10 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import type { AddressPosition } from 'defi-sdk';
 import { Client } from 'defi-sdk';
-import type {
-  CustomConfiguration,
-  NetworkFeeSpeed,
-} from '@zeriontech/transactions';
 import {
   getChainWithMostAssetValue,
   sortPositionsByValue,
@@ -57,7 +53,6 @@ import { isSolanaAddress } from 'src/modules/solana/shared';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { commonToBase } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
-import { isNumeric } from 'src/shared/isNumeric';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
@@ -71,21 +66,15 @@ import { NftTransferInput } from './fieldsets/NftTransferInput';
 import { TokenTransferInput } from './fieldsets/TokenTransferInput/TokenTransferInput';
 import { useCurrentPosition } from './shared/useCurrentPosition';
 import { prepareSendData } from './shared/prepareSendData';
+import type { SendFormState } from './shared/SendFormState';
+import { fromConfiguration, toConfiguration } from './shared/helpers';
 
 const rootNode = getRootDomNode();
-
-function urlSearchParamsToObj(params: URLSearchParams): Record<string, string> {
-  const obj = {} as Record<string, string>;
-  for (const [key, value] of params.entries()) {
-    obj[key] = value;
-  }
-  return obj;
-}
 
 function useSearchParamsObj<T extends Record<string, string | undefined>>() {
   const [searchParams, setSearchParams] = useSearchParams();
   const value = useMemo(() => {
-    return urlSearchParamsToObj(searchParams) as Partial<T>;
+    return Object.fromEntries(searchParams) as Partial<T>;
   }, [searchParams]);
   // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
   const setSearchParamsStable = useEvent(setSearchParams);
@@ -93,7 +82,7 @@ function useSearchParamsObj<T extends Record<string, string | undefined>>() {
     (setStateAction: (value: T) => T) => {
       setSearchParamsStable(
         (current) => {
-          const value = setStateAction(urlSearchParamsToObj(current) as T);
+          const value = setStateAction(Object.fromEntries(current) as T);
           for (const key of current.keys()) {
             current.delete(key);
           }
@@ -113,28 +102,6 @@ function useSearchParamsObj<T extends Record<string, string | undefined>>() {
   return [value, setValue] as const;
 }
 
-export type SendFormState = {
-  type: 'token' | 'nft';
-  nftAmount: string;
-  /** stores currently typed in address value even if it's not a valid addres */
-  addressInputValue?: string;
-  /**
-   * stores resolved valid recipient address derived from addressInputValue
-   * @see SendFormState.addressInputValue
-   */
-  to?: string;
-  tokenValue?: string;
-  tokenChain?: string;
-  tokenAssetCode?: string;
-  nftId?: string;
-  gasLimit?: string;
-  networkFeeSpeed?: NetworkFeeSpeed;
-  maxFee?: string;
-  priorityFee?: string;
-  gasPrice?: string;
-  nonce?: string;
-};
-
 function getDefaultChain(address: string, positions: AddressPosition[]) {
   const chain = getChainWithMostAssetValue(positions ?? []);
   if (chain) {
@@ -148,6 +115,7 @@ const sendFormDefaultState: SendFormState = {
   type: 'token' as const,
   nftAmount: '1',
 };
+
 function prepareDefaultValues({
   address,
   positions,
@@ -158,48 +126,6 @@ function prepareDefaultValues({
   return {
     ...sendFormDefaultState,
     tokenChain: getDefaultChain(address, positions ?? []),
-  };
-}
-
-export function toConfiguration(formState: SendFormState): CustomConfiguration {
-  const safeToNumber = (value: string | undefined) => {
-    if (value && isNumeric(value)) {
-      return Number(value);
-    } else {
-      return null;
-    }
-  };
-  const { maxFee, priorityFee, nonce } = formState;
-  return {
-    networkFee: {
-      speed: formState.networkFeeSpeed || 'fast',
-      custom1559GasPrice:
-        maxFee && isNumeric(maxFee) && priorityFee && isNumeric(priorityFee)
-          ? { maxFee: Number(maxFee), priorityFee: Number(priorityFee) }
-          : null,
-      customClassicGasPrice: safeToNumber(formState.gasPrice),
-      gasLimit: formState.gasLimit || null,
-    },
-    slippage: null,
-    nonce: nonce && isNumeric(nonce) ? nonce : null,
-  };
-}
-
-function fromConfiguration(
-  configuration: CustomConfiguration
-): Partial<SendFormState> {
-  const toString = (value: number | undefined | null) => {
-    return value == null ? '' : BigInt(value || 0).toString();
-  };
-  return {
-    networkFeeSpeed: configuration.networkFee.speed,
-    maxFee: toString(configuration.networkFee.custom1559GasPrice?.maxFee),
-    priorityFee: toString(
-      configuration.networkFee.custom1559GasPrice?.priorityFee
-    ),
-    gasLimit: configuration.networkFee.gasLimit || undefined,
-    gasPrice: toString(configuration.networkFee.customClassicGasPrice),
-    nonce: configuration.nonce?.toString(),
   };
 }
 

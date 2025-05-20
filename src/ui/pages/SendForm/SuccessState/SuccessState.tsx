@@ -13,10 +13,10 @@ import { SuccessStateNft } from 'src/ui/shared/forms/SuccessState/SuccessStateNf
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { AddressPosition } from 'defi-sdk';
-import type { SendFormState } from '../SendForm';
 import { useCurrentPosition } from '../shared/useCurrentPosition';
 import type { NftId } from '../shared/useNftPosition';
 import { useNftPosition } from '../shared/useNftPosition';
+import type { SendFormState } from '../shared/SendFormState';
 
 export interface SendFormSnapshot {
   state: SendFormState;
@@ -60,7 +60,7 @@ export function SuccessState({
   }
 
   const chainName = networks.getChainName(chain);
-  const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
+  const chainIconUrl = networks.getByNetworkId(chain)?.icon_url;
 
   return (
     <>

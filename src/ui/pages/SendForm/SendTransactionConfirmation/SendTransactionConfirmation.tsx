@@ -5,8 +5,8 @@ import { walletPort } from 'src/ui/shared/channels';
 import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { createChain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
-import type { SendFormState } from '../SendForm';
-import { toConfiguration } from '../SendForm';
+import type { SendFormState } from '../shared/SendFormState';
+import { toConfiguration } from '../shared/helpers';
 
 export function SendTransactionConfirmation({
   transaction,

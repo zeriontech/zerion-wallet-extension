@@ -20,7 +20,6 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { Networks } from 'src/modules/networks/Networks';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
-import type { BackendSourceParams } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { assertProp } from 'src/shared/assert-property';
 import { invariant } from 'src/shared/invariant';
@@ -30,12 +29,12 @@ import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { commonToBase } from 'src/shared/units/convert';
 import { valueToHex } from 'src/shared/units/valueToHex';
-import { getPreferences } from 'src/ui/features/preferences/usePreferences';
 import { queryGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
 import { applyConfiguration } from '../../SendTransaction/TransactionConfiguration/applyConfiguration';
-import type { SendFormState } from '../SendForm';
-import { toConfiguration } from '../SendForm';
 import { parseNftId } from './useNftPosition';
+import type { SendFormState } from './SendFormState';
+import { toConfiguration } from './helpers';
 
 async function getNftPosition(
   client: Client,
@@ -81,11 +80,6 @@ async function applyConfigurationAsync<T extends IncomingTransaction>({
   const chainGasPrices = await queryGasPrices(chain);
   const configuration = toConfiguration(formState);
   return applyConfiguration(transaction, configuration, chainGasPrices);
-}
-
-async function getHttpClientSource(): Promise<BackendSourceParams['source']> {
-  const preferences = await getPreferences();
-  return preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 }
 
 async function getEligibility(tx: IncomingTransaction) {
@@ -175,7 +169,7 @@ export async function prepareSendData(
       }
       invariant(
         position?.asset.asset_code === tokenAssetCode,
-        'Position must mach formState.tokenAssetCode'
+        'Position must match formState.tokenAssetCode'
       );
       invariant(
         getAssetImplementationInChain({ asset: position.asset, chain }),
