@@ -58,9 +58,7 @@ export function BridgeLine({
           !isLoading && !selectedQuote && !error ? 'hidden' : undefined,
       }}
     >
-      <UIText kind="small/regular" color="var(--neutral-700)">
-        Bridge
-      </UIText>
+      <UIText kind="small/regular">Bridge</UIText>
       <span>
         {isLoading && !selectedQuote ? (
           <span style={{ color: 'var(--neutral-500)' }}>
