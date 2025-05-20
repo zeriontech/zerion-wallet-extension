@@ -13,7 +13,7 @@ import { createUrl } from 'src/shared/createUrl';
 import omit from 'lodash/omit';
 import { useEventSource } from './useEventSource';
 
-type QuoteSortType = 'amount' | 'time';
+export type QuoteSortType = 'amount' | 'time';
 
 interface QuotesParams {
   inputAssetId: string;
@@ -28,7 +28,7 @@ interface QuotesParams {
   priorityFee?: string;
   maxFee?: string;
   sourceId?: string;
-  sort?: QuoteSortType;
+  sort: QuoteSortType;
   to?: string;
 }
 
@@ -66,9 +66,7 @@ function getQuotesSearchParams(params: QuotesParams): URLSearchParams {
   if (params.outputChain) {
     searchParams.append('output_chain', params.outputChain.toString());
   }
-  if (params.sort) {
-    searchParams.append('sort', params.sort);
-  }
+  searchParams.append('sort', params.sort);
   if (params.to) {
     searchParams.append('to', params.to);
   }
@@ -164,6 +162,7 @@ export function useQuotes({
   receiveTokenInput,
   spendPosition,
   receivePosition,
+  sortType,
 }: {
   primaryInput: 'spend' | 'receive';
   address: string;
@@ -176,6 +175,7 @@ export function useQuotes({
   receiveTokenInput?: string;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
   receivePosition: AddressPosition | EmptyAddressPosition | null;
+  sortType: QuoteSortType;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
@@ -228,7 +228,7 @@ export function useQuotes({
         outputAssetId: receiveTokenInput,
         inputPosition: spendPosition,
         outputPosition: receivePosition,
-        sort: 'amount',
+        sort: sortType,
       });
     }
 
@@ -245,6 +245,7 @@ export function useQuotes({
     spendPosition,
     spendTokenInput,
     userSlippage,
+    sortType,
   ]);
 
   const {

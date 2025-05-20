@@ -256,6 +256,7 @@ export function SwapFormComponent() {
     receiveTokenInput,
     spendPosition,
     receivePosition,
+    sortType: 'amount',
   });
 
   const { refetch: refetchQuotes } = quotesData;
