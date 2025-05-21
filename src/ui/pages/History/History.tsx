@@ -26,6 +26,7 @@ import {
   getGrownTabMaxHeight,
   offsetValues,
 } from 'src/ui/pages/Overview/getTabsOffset';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -190,6 +191,7 @@ export function HistoryList({
   selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
+  const { params } = useAddressParams();
   const offsetValuesState = useStore(offsetValues);
 
   const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
@@ -210,6 +212,7 @@ export function HistoryList({
     <div style={{ paddingInline: 16 }}>
       <VStack gap={8}>
         <NetworkBalance
+          standard={getAddressType(params.address)}
           dappChain={dappChain}
           selectedChain={selectedChain}
           onChange={onChainChange}

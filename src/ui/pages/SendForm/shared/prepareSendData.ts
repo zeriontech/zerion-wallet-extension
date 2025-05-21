@@ -27,7 +27,7 @@ import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isNumeric } from 'src/shared/isNumeric';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
-import { commonToBase } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { queryGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
@@ -35,6 +35,9 @@ import { solToBase64 } from 'src/modules/solana/transactions/create';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { SOL_ASSET } from 'src/modules/solana/transactions/parseSolanaTransaction';
+import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import { applyConfiguration } from '../../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { parseNftId } from './useNftPosition';
 import type { SendFormState } from './SendFormState';
@@ -71,6 +74,25 @@ async function getNftPosition(
     }),
     rejectAfterDelay(20000, 'addressNftPosition'),
   ]);
+}
+
+function createNetworkFee(
+  fee: number,
+  network: NetworkConfig
+): null | NetworkFeeType {
+  if (!network.native_asset) {
+    return null;
+  }
+  return {
+    free: false,
+    amount: {
+      quantity: baseToCommon(fee, network.native_asset?.decimals).toFixed(),
+      value: null,
+      usdValue: null,
+    },
+    // TODO: Fetch real asset from backend so that we have fiat price
+    fungible: network.standard === 'solana' ? SOL_ASSET.fungible : null,
+  };
 }
 
 async function applyConfigurationAsync<T extends IncomingTransaction>({
@@ -121,6 +143,7 @@ type SendSubmitData = (
   paymasterEligibility: null | Awaited<
     ReturnType<typeof adjustedCheckEligibility>
   >;
+  networkFee: null | NetworkFeeType;
 };
 
 export async function prepareSendData(
@@ -134,6 +157,7 @@ export async function prepareSendData(
     paymasterPossible: false,
     paymasterEligibility: null,
     transaction: null,
+    networkFee: null,
   };
   const {
     type,
@@ -238,6 +262,7 @@ export async function prepareSendData(
       paymasterPossible: network.supports_sponsored_transactions,
       paymasterEligibility: eligibility,
       transaction: { evm: tx },
+      networkFee: null, // TODO: Currently calculated in UI, calculate here instead
     };
   } else {
     if (type === 'nft') {
@@ -247,11 +272,17 @@ export async function prepareSendData(
     if (!tokenValue || !tokenAssetCode || !tokenChain || !position) {
       return EMPTY_SEND_DATA;
     }
-    const tx = await buildSolanaTransfer(from, formState, position, network);
+    const { tx, fee } = await buildSolanaTransfer(
+      from,
+      formState,
+      position,
+      network
+    );
     return {
       networkId: chain,
       paymasterPossible: false,
       paymasterEligibility: null,
+      networkFee: fee != null ? createNetworkFee(fee, network) : null,
       transaction: { solana: solToBase64(tx) },
     };
   }

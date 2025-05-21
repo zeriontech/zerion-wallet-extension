@@ -19,6 +19,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { NBSP } from 'src/ui/shared/typography';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { Networks } from 'src/modules/networks/Networks';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
@@ -158,11 +159,14 @@ export function NetworkBalance({
 
   const testnetMode = preferences?.testnetMode?.on;
   const networksPredicate = useMemo(() => {
-    return standard === 'solana'
-      ? (network: NetworkConfig) => network.id.toLowerCase().includes('solana') // TODO: update check when backend updates solana network
-      : testnetMode
-      ? (network: NetworkConfig) => Boolean(network.is_testnet)
-      : undefined;
+    return (network: NetworkConfig) => {
+      if (testnetMode) {
+        const isTestnet = Boolean(network.is_testnet);
+        return isTestnet && Networks.predicate(standard, network);
+      } else {
+        return Networks.predicate(standard, network);
+      }
+    };
   }, [testnetMode, standard]);
 
   const textKind = 'headline/h3';

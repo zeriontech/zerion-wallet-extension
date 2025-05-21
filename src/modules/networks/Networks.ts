@@ -106,6 +106,16 @@ export class Networks {
     }
   }
 
+  static predicate(standard: BlockchainType | null, network: NetworkConfig) {
+    if (standard === 'solana') {
+      return network.standard === 'solana';
+    } else if (standard === 'evm') {
+      return network.standard === 'eip155';
+    } else {
+      return true;
+    }
+  }
+
   constructor({
     networks,
     ethereumChainConfigs,

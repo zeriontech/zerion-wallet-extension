@@ -57,9 +57,11 @@ import { useEvent } from 'src/ui/shared/useEvent';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { Networks } from 'src/modules/networks/Networks';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
+import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { SuccessState } from './SuccessState';
 import { AddressInputWrapper } from './fieldsets/AddressInput';
 import { updateRecentAddresses } from './fieldsets/AddressInput/updateRecentAddresses';
@@ -225,7 +227,6 @@ function SendFormComponent() {
   const paymasterEligible = Boolean(
     sendData?.paymasterEligibility?.data.eligible
   );
-  console.log({ isError: sendDataQuery.isError, error: sendDataQuery.error });
 
   const feeValueCommonRef = useRef<string | null>(
     null
@@ -328,6 +329,8 @@ function SendFormComponent() {
     );
   }
 
+  const addressType = getAddressType(address);
+
   return (
     <PageColumn>
       <NavigationTitle
@@ -385,7 +388,7 @@ function SendFormComponent() {
           <div style={{ display: 'flex' }}>
             {type === 'token' ? (
               <NetworkSelect
-                standard={getAddressType(address)}
+                standard={addressType}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
@@ -393,18 +396,24 @@ function SendFormComponent() {
                 dialogRootNode={rootNode}
                 filterPredicate={(network) => {
                   const isTestMode = Boolean(preferences?.testnetMode?.on);
-                  return isTestMode === Boolean(network.is_testnet);
+                  return (
+                    isTestMode === Boolean(network.is_testnet) &&
+                    Networks.predicate(addressType, network)
+                  );
                 }}
               />
             ) : (
               <NetworkSelect
-                standard={getAddressType(address)}
+                standard={addressType}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
                 }}
                 dialogRootNode={rootNode}
-                filterPredicate={(network) => network.supports_nft_positions}
+                filterPredicate={(network) =>
+                  network.supports_nft_positions &&
+                  Networks.predicate(addressType, network)
+                }
               />
             )}
           </div>
@@ -500,6 +509,21 @@ function SendFormComponent() {
               gasback={gasbackEstimation}
             />
           </React.Suspense>
+        ) : addressType === 'solana' ? (
+          <div style={{ display: 'grid' }}>
+            {sendData?.transaction?.solana && sendData.networkFee ? (
+              <NetworkFeeLineInfo
+                networkFee={sendData.networkFee}
+                isLoading={
+                  sendDataQuery.isFetching || sendDataQuery.isPreviousData
+                }
+              />
+            ) : sendDataQuery.isLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'end' }}>
+                <CircleSpinner />
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </ErrorBoundary>
       <>

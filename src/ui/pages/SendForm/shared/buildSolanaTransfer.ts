@@ -1,10 +1,9 @@
-import type {
-  TransactionInstruction} from '@solana/web3.js';
+import type { TransactionInstruction } from '@solana/web3.js';
 import {
   Connection,
   PublicKey,
   Transaction,
-  SystemProgram
+  SystemProgram,
 } from '@solana/web3.js';
 import {
   getAssociatedTokenAddress,
@@ -27,7 +26,7 @@ export async function buildSolanaTransfer(
   formState: SendFormState,
   position: AddressPosition | EmptyAddressPosition,
   network: NetworkConfig
-): Promise<Transaction> {
+): Promise<{ tx: Transaction; fee: number | null }> {
   invariant(formState.to, 'Recipient address is missing');
   invariant(formState.tokenAssetCode, 'Token mint address is missing');
   invariant(formState.tokenValue, 'Token amount is missing');
@@ -100,6 +99,7 @@ export async function buildSolanaTransfer(
 
     tx.add(...instructions);
   }
+  const fee = await tx.getEstimatedFee(connection);
 
-  return tx;
+  return { tx, fee };
 }

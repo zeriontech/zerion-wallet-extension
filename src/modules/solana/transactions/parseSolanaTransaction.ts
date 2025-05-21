@@ -19,7 +19,7 @@ function parseLamports(ix: TransactionInstruction): number {
   return Number(ix.data.readBigUInt64LE(4));
 }
 
-const SOL_ASSET = {
+export const SOL_ASSET = {
   fungible: {
     id: 'sol',
     asset_code: '11111111111111111111111111111111',
@@ -110,7 +110,7 @@ export function parseSolanaTransaction(
     type: { value: 'execute', display_value: 'Execute' },
     transaction: {
       chain: 'solana',
-      hash: tx.signatures?.[0]?.toString() ?? '',
+      hash: SolanaSigning.getTransactionSignature(tx) ?? '<signature>',
       status: 'confirmed',
       nonce: 0,
       sponsored: false,
