@@ -16,6 +16,7 @@ export function useScreenViewChange() {
     mutationFn: async (pathname: string) => {
       const address = await walletPort.request('getCurrentAddress');
       return walletPort.request('screenView', {
+        title: document.title,
         pathname,
         address,
         previous: previousPathname.current,

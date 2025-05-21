@@ -15,6 +15,7 @@ import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
 
 export interface ScreenViewParams {
+  title: string;
   pathname: string;
   previous: string | null;
   address: string | null;

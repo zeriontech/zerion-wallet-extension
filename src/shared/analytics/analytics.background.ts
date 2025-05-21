@@ -39,6 +39,7 @@ import {
   getOwnedWalletsPortolio,
 } from './shared/mixpanel-data-helpers';
 import { omitNullParams } from './shared/omitNullParams';
+import { gaCollect, prepareGaParams } from './google-analytics';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -108,6 +109,14 @@ function trackAppEvents({ account }: { account: Account }) {
       ...getChainBreakdown(portfolio),
     };
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+  });
+
+  emitter.on('screenView', async (params) => {
+    const gaParams = prepareGaParams(account, {
+      page_title: params.title,
+      page_location: params.pathname,
+    });
+    gaCollect('page_view', gaParams);
   });
 
   emitter.on('buttonClicked', (data) => {
@@ -182,6 +191,8 @@ function trackAppEvents({ account }: { account: Account }) {
         ...omitNullParams(addressActionAnalytics),
       });
       sendToMetabase('signed_transaction', params);
+      const gaParams = prepareGaParams(account, params);
+      gaCollect('signed_transaction', gaParams);
       const mixpanelParams = omit(params, [
         'request_name',
         'hash',
@@ -242,6 +253,8 @@ function trackAppEvents({ account }: { account: Account }) {
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
     });
     sendToMetabase('signed_message', params);
+    const gaParams = prepareGaParams(account, params);
+    gaCollect('signed_message', gaParams);
     const mixpanelParams = omit(params, [
       'request_name',
       'wallet_address',
@@ -330,6 +343,8 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on('firstScreenView', () => {
     mixpanelTrack(account, 'General: Launch first time', {});
+    const gaParams = prepareGaParams(account, {});
+    gaCollect('first_open', gaParams);
   });
 
   emitter.on('eip6963SupportDetected', ({ origin }) => {

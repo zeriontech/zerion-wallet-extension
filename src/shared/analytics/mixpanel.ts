@@ -1,13 +1,12 @@
-import { produce } from 'immer';
 import ky from 'ky';
 import type { Options } from 'ky';
 import type { Account } from 'src/background/account/Account';
-import { PersistentStore } from 'src/modules/persistent-store';
 import { version } from 'src/shared/packageVersion';
 import { MIXPANEL_TOKEN_PUBLIC } from 'src/env/config';
-import { invariant } from '../invariant';
 import { Loglevel, logTable, logToConsole } from '../logger';
 import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
+import { deviceIdStore } from './shared/DeviceIdStore';
+import { omitNullParams } from './shared/omitNullParams';
 
 const mixPanelToken = MIXPANEL_TOKEN_PUBLIC;
 
@@ -15,38 +14,6 @@ if (!mixPanelToken) {
   // eslint-disable-next-line no-console
   console.warn('MIXPANEL_TOKEN_PUBLIC env var not found.');
 }
-
-class DeviceIdStore extends PersistentStore<string | undefined> {
-  constructor() {
-    super(undefined, 'deviceUUID');
-    this.ready().then(() => {
-      const value = this.getState();
-      if (!value) {
-        this.setState(crypto.randomUUID());
-      }
-    });
-  }
-
-  async getSavedState() {
-    const value = await super.getSavedState();
-    invariant(value, 'value must be generated upon initialization');
-    return value;
-  }
-}
-
-function omitNullParams<T extends Record<string, unknown>>(
-  params: T
-): Partial<T> {
-  return produce(params, (draft) => {
-    for (const key in draft) {
-      if (draft[key] == null) {
-        delete draft[key];
-      }
-    }
-  });
-}
-
-const deviceIdStore = new DeviceIdStore();
 
 class MixpanelApi {
   /**
