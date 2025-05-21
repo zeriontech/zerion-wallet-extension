@@ -81,9 +81,6 @@ jobs:
           .github/scripts/set-env-from-pr-labels.sh "$PR_NUMBER"
           unset GH_TOKEN
           source $GITHUB_ENV
-          len1=${#GOOGLE_ANALYTICS_MEASUREMENT_ID}
-          len2=${#GOOGLE_ANALYTICS_API_SECRET}
-          echo "GOOGLE_ vars $len1 $len2"
           npm install
           npm run build:production
 
