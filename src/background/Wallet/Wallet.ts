@@ -108,6 +108,7 @@ import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
 import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1321,7 +1322,7 @@ export class Wallet {
     params,
     context,
   }: WalletMethodParams<{
-    transaction: string;
+    transaction: StringBase64;
     params: TransactionContextParams;
     /** Whether to emit 'transactionSent' event */
     silent?: boolean;
@@ -1366,7 +1367,7 @@ export class Wallet {
     params,
     context,
   }: WalletMethodParams<{
-    transactions: string[];
+    transactions: StringBase64[];
     params: TransactionContextParams;
   }>): Promise<SolSignTransactionResult[]> {
     this.verifyInternalOrigin(context);
@@ -1410,7 +1411,7 @@ export class Wallet {
     params,
     context,
   }: WalletMethodParams<{
-    transaction: string;
+    transaction: StringBase64;
     params: TransactionContextParams;
   }>): Promise<SolSignTransactionResult> {
     this.verifyInternalOrigin(context);

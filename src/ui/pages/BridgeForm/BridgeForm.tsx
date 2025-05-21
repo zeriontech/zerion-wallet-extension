@@ -670,8 +670,7 @@ function BridgeFormComponent() {
       invariant(selectedQuote, 'Cannot submit transaction without a quote');
 
       const txResponse = await approveTxBtnRef.current.sendTransaction({
-        transaction,
-        solTransaction: undefined,
+        transaction: { evm: transaction },
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
@@ -738,8 +737,7 @@ function BridgeFormComponent() {
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
 
       const txResponse = await sendTxBtnRef.current.sendTransaction({
-        transaction,
-        solTransaction: undefined,
+        transaction: { evm: transaction },
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
@@ -889,7 +887,9 @@ function BridgeFormComponent() {
                 wallet={wallet}
                 showApplicationLine={true}
                 chain={spendChain}
-                transaction={configureTransactionToBeSigned(currentTransaction)}
+                transaction={{
+                  evm: configureTransactionToBeSigned(currentTransaction),
+                }}
                 configuration={configuration}
                 localAllowanceQuantityBase={allowanceQuantityBase || undefined}
                 onOpenAllowanceForm={() =>

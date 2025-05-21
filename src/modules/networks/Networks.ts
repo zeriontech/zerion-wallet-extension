@@ -173,6 +173,10 @@ export class Networks {
     return this.networks;
   }
 
+  getEvmNetworks() {
+    return this.evmNetworks;
+  }
+
   getNetworksCollection() {
     return this.collection;
   }

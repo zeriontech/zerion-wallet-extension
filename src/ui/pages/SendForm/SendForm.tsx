@@ -54,6 +54,9 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { commonToBase } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { useEvent } from 'src/ui/shared/useEvent';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -217,10 +220,12 @@ function SendFormComponent() {
     },
     queryFn: () => prepareSendData(address, currentPosition, formState, client),
     staleTime: 20000,
+    retry: 1,
   });
   const paymasterEligible = Boolean(
     sendData?.paymasterEligibility?.data.eligible
   );
+  console.log({ isError: sendDataQuery.isError, error: sendDataQuery.error });
 
   const feeValueCommonRef = useRef<string | null>(
     null
@@ -250,46 +255,42 @@ function SendFormComponent() {
   };
 
   const sendTxMutation = useMutation({
-    mutationFn: async (): Promise<string> => {
+    mutationFn: async (): Promise<SignTransactionResult> => {
       invariant(sendData?.transaction, 'Send Form parameters missing');
       invariant(currentPosition, 'Current asset position is undefined');
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(signTxBtnRef.current, 'SignTransactionButton not found');
 
-      if (sendData.transaction.evm) {
-        const chain = sendData.networkId;
-        const valueInBaseUnits = commonToBase(
-          tokenValue,
-          getDecimals({ asset: currentPosition.asset, chain })
-        ).toFixed();
-        const txResponse = await signTxBtnRef.current.sendTransaction({
-          transaction: sendData.transaction.evm,
-          solTransaction: undefined,
-          chain: sendData.networkId.toString(),
-          initiator: INTERNAL_ORIGIN,
-          clientScope: 'Send',
-          feeValueCommon,
-          addressAction: createSendAddressAction({
-            transaction: sendData.transaction.evm,
-            asset: currentPosition.asset,
-            quantity: valueInBaseUnits,
-            chain,
-          }),
+      const chain = sendData.networkId;
+      const valueInBaseUnits = commonToBase(
+        tokenValue,
+        getDecimals({ asset: currentPosition.asset, chain })
+      ).toFixed();
+      const txResponse = await signTxBtnRef.current.sendTransaction({
+        transaction: sendData.transaction,
+        chain: sendData.networkId.toString(),
+        initiator: INTERNAL_ORIGIN,
+        clientScope: 'Send',
+        feeValueCommon,
+        addressAction: sendData.transaction.evm
+          ? createSendAddressAction({
+              transaction: sendData.transaction.evm,
+              asset: currentPosition.asset,
+              quantity: valueInBaseUnits,
+              chain,
+            })
+          : null,
+      });
+      if (preferences) {
+        setPreferences({
+          recentAddresses: updateRecentAddresses(
+            to,
+            preferences.recentAddresses
+          ),
         });
-        if (preferences) {
-          setPreferences({
-            recentAddresses: updateRecentAddresses(
-              to,
-              preferences.recentAddresses
-            ),
-          });
-        }
-        invariant(txResponse.evm?.hash);
-        return txResponse.evm.hash;
-      } else {
-        throw new Error('TODO: Support Solana');
       }
+      return txResponse;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
@@ -303,15 +304,15 @@ function SendFormComponent() {
 
   const navigate = useNavigate();
   if (sendTxMutation.isSuccess) {
-    const hash = sendTxMutation.data;
-    invariant(hash, 'Missing Form State View values');
+    const result = sendTxMutation.data;
+    invariant(result, 'Missing Form State View values');
     invariant(
       snapshotRef.current,
       'State snapshot must be taken before submit'
     );
     return (
       <SuccessState
-        hash={hash}
+        hash={result.evm?.hash ?? ensureSolanaResult(result).signature}
         address={address}
         sendFormSnapshot={snapshotRef.current}
         gasbackValue={gasbackValueRef.current}
@@ -384,6 +385,7 @@ function SendFormComponent() {
           <div style={{ display: 'flex' }}>
             {type === 'token' ? (
               <NetworkSelect
+                standard={getAddressType(address)}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
@@ -396,6 +398,7 @@ function SendFormComponent() {
               />
             ) : (
               <NetworkSelect
+                standard={getAddressType(address)}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
@@ -505,17 +508,13 @@ function SendFormComponent() {
           height={innerHeight >= 750 ? '70vh' : '90vh'}
           containerStyle={{ display: 'flex', flexDirection: 'column' }}
           renderWhenOpen={() => {
-            invariant(chain, 'Chain must be defined');
-            invariant(
-              sendData?.transaction?.evm,
-              'Transaction must be configured'
-            );
+            invariant(sendData?.transaction, 'Transaction must be configured');
             return (
               <>
                 <DisableTestnetShortcuts />
                 <ViewLoadingSuspense>
                   <SendTransactionConfirmation
-                    transaction={sendData.transaction.evm}
+                    transaction={sendData.transaction}
                     formState={formState}
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={sendData.paymasterPossible}

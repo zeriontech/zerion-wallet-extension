@@ -3,6 +3,7 @@ import type {
   EthersV5TransactionReceiptStripped,
   EthersV5TransactionResponse,
 } from 'src/background/Wallet/model/ethers-v5-types';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
 
 type CombineUnion<A, B> =
   | ({ [P in keyof A]: A[P] } & { [K in keyof B]?: undefined })
@@ -47,7 +48,7 @@ type SignatureStatus = {
 type SolanaObject = {
   signature: string;
   publicKey: string;
-  solanaBase64: string;
+  solanaBase64: StringBase64;
   signatureStatus: SignatureStatus | null;
 };
 

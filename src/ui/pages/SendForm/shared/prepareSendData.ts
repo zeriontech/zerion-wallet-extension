@@ -31,10 +31,15 @@ import { commonToBase } from 'src/shared/units/convert';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { queryGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
+import { solToBase64 } from 'src/modules/solana/transactions/create';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { applyConfiguration } from '../../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { parseNftId } from './useNftPosition';
 import type { SendFormState } from './SendFormState';
 import { toConfiguration } from './helpers';
+import { buildSolanaTransfer } from './buildSolanaTransfer';
 
 async function getNftPosition(
   client: Client,
@@ -107,10 +112,9 @@ type SendSubmitData = (
     }
   | {
       networkId: Chain;
-      transaction: {
-        evm?: PartiallyRequired<IncomingTransaction, 'chainId' | 'from'> | null;
-        solana?: string | null;
-      };
+      transaction: MultichainTransaction<
+        PartiallyRequired<IncomingTransaction, 'chainId' | 'from'>
+      >;
     }
 ) & {
   paymasterPossible: boolean;
@@ -144,10 +148,13 @@ export async function prepareSendData(
   if (!from || !to || !tokenChain) {
     return EMPTY_SEND_DATA;
   }
+  if (!isMatchForEcosystem(from, getAddressType(to))) {
+    throw new Error('Cannot send between Ethereum and Solana wallets');
+  }
+  const networksStore = await getNetworksStore();
+  const network = await networksStore.fetchNetworkById(tokenChain);
+  const chain = createChain(network.id);
   if (isEthereumAddress(from)) {
-    const networksStore = await getNetworksStore();
-    const network = await networksStore.fetchNetworkById(tokenChain);
-    const chain = createChain(network.id);
     const chainId = Networks.getChainId(network);
 
     let tx: IncomingTransaction;
@@ -233,11 +240,19 @@ export async function prepareSendData(
       transaction: { evm: tx },
     };
   } else {
+    if (type === 'nft') {
+      return EMPTY_SEND_DATA;
+    }
+    const { tokenValue, tokenAssetCode, tokenChain } = formState;
+    if (!tokenValue || !tokenAssetCode || !tokenChain || !position) {
+      return EMPTY_SEND_DATA;
+    }
+    const tx = await buildSolanaTransfer(from, formState, position, network);
     return {
-      networkId: null,
+      networkId: chain,
       paymasterPossible: false,
       paymasterEligibility: null,
-      transaction: null,
+      transaction: { solana: solToBase64(tx) },
     };
   }
 }
