@@ -1036,7 +1036,6 @@ function BridgeFormComponent() {
           <VStack gap={4}>
             <SpendTokenField
               spendInput={spendInput}
-              spendChain={spendChain}
               spendAsset={spendAsset}
               spendPosition={spendPosition}
               availableSpendPositions={availableSpendPositions?.sorted ?? []}

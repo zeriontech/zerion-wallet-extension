@@ -1,7 +1,7 @@
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import type { AddressPosition, Asset } from 'defi-sdk';
 import React, { useId, useMemo, useRef } from 'react';
-import type { Chain } from 'src/modules/networks/Chain';
+import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
@@ -26,7 +26,6 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 
 export function SpendTokenField({
   spendInput,
-  spendChain,
   spendAsset,
   spendPosition,
   availableSpendPositions,
@@ -37,7 +36,6 @@ export function SpendTokenField({
   network,
 }: {
   spendInput?: string;
-  spendChain: Chain | null;
   spendAsset: Asset | null;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
   availableSpendPositions: AddressPosition[];
@@ -73,6 +71,8 @@ export function SpendTokenField({
     }
     return getQuickAmounts(spendPosition.asset, network);
   }, [spendPosition, network]);
+
+  const spendChain = network ? createChain(network.id) : null;
 
   return (
     <FormFieldset
