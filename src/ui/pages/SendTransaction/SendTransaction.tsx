@@ -1078,7 +1078,6 @@ function SolSendTransaction() {
           />
         ) : null}
         <Spacer height={16} />
-        <div>method: {txParams.method}</div>
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />
