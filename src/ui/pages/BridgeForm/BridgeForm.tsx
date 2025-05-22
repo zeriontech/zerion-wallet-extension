@@ -56,7 +56,7 @@ import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
   createApproveAddressAction,
-  createSendAddressAction,
+  createBridgeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -757,10 +757,20 @@ function BridgeFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
         feeValueCommon,
-        addressAction: createSendAddressAction({
+        addressAction: createBridgeAddressAction({
           transaction,
-          asset: spendPosition.asset,
-          quantity: selectedQuote.input_amount_estimation,
+          outgoing: [
+            {
+              asset: spendPosition.asset,
+              quantity: selectedQuote.input_amount_estimation,
+            },
+          ],
+          incoming: [
+            {
+              asset: receivePosition.asset,
+              quantity: selectedQuote.output_amount_estimation,
+            },
+          ],
           chain: spendChain,
         }),
         quote: selectedQuote,
