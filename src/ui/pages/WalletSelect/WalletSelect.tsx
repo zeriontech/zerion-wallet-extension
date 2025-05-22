@@ -33,6 +33,8 @@ import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
+import { useStaleTime } from 'src/ui/shared/useStaleTime';
+import { ViewLoading } from 'src/ui/components/ViewLoading';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -111,6 +113,7 @@ export function WalletSelect() {
     useWalletsMetaByChunks({
       addresses: ownedAddresses,
       useErrorBoundary: false,
+      suspense: false,
     });
 
   const ownedAddressesCount = ownedAddresses.length;
@@ -133,10 +136,12 @@ export function WalletSelect() {
     },
   });
 
-  const isLoading = isLoadingWalletGroups || isLoadingWalletsMeta;
+  const isLoadingForTooLong = useStaleTime(isLoadingWalletsMeta, 4000).isStale;
+  const waitForWalletsMeta = isLoadingWalletsMeta && !isLoadingForTooLong;
+  const isLoading = isLoadingWalletGroups || waitForWalletsMeta;
 
   if (isLoading) {
-    return null;
+    return <ViewLoading kind="network" />;
   }
 
   const title = (
