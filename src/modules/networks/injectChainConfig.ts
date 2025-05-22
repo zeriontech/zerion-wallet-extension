@@ -23,6 +23,7 @@ export function injectChainConfig(
       address: networkConfig.native_asset?.address || null,
       decimals: chainConfig.nativeCurrency.decimals,
       symbol: chainConfig.nativeCurrency.symbol,
+      icon_url: null,
       id:
         networkConfig.native_asset?.id ||
         chainConfig.nativeCurrency.symbol.toLowerCase(),
