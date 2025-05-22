@@ -1044,6 +1044,7 @@ function BridgeFormComponent() {
               receiveAsset={receiveAsset}
               onChangeAmount={(value) => handleChange('spendInput', value)}
               onChangeToken={(value) => handleChange('spendTokenInput', value)}
+              network={network}
             />
             <ReceiveTokenField
               receiveInput={receiveInput}

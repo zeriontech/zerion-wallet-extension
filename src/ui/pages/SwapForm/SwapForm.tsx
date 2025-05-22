@@ -838,7 +838,7 @@ export function SwapFormComponent() {
           <VStack gap={4} style={{ position: 'relative' }}>
             <div style={{ position: 'relative' }}>
               <div className={styles.arcParent}>
-                <SpendTokenField swapView={swapView} />
+                <SpendTokenField swapView={swapView} network={network} />
                 <BottomArc />
               </div>
               <ReverseButton onClick={() => swapView.store.reverseTokens()} />
