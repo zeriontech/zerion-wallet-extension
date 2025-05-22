@@ -121,6 +121,42 @@ export function createSendAddressAction({
 
 type AssetQuantity = { asset: Asset; quantity: string };
 
+export function createBridgeAddressAction({
+  transaction,
+  outgoing,
+  incoming,
+  chain,
+}: {
+  transaction: IncomingTransactionWithFrom;
+  outgoing: AssetQuantity[];
+  incoming: AssetQuantity[];
+  chain: Chain;
+}): LocalAddressAction {
+  return {
+    id: nanoid(),
+    datetime: new Date().toISOString(),
+    address: transaction.from,
+    type: { display_value: 'Bridge', value: 'send' },
+    label: null,
+    transaction: toActionTx(transaction, chain),
+    content: {
+      transfers: {
+        outgoing: outgoing.map(({ asset, quantity }) => ({
+          asset: { fungible: asset },
+          quantity,
+          price: asset.price?.value ?? null,
+        })),
+        incoming: incoming.map(({ asset, quantity }) => ({
+          asset: { fungible: asset },
+          quantity,
+          price: asset.price?.value ?? null,
+        })),
+      },
+    },
+    local: true,
+  };
+}
+
 export function createTradeAddressAction({
   transaction,
   outgoing,
