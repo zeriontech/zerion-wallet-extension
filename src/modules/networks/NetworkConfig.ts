@@ -9,9 +9,10 @@ interface NetworkAsset {
 }
 
 type NetworkSpecification = {
-  standard: 'eip155';
+  standard: 'eip155' | 'solana';
   specification: {
-    eip155: null | {
+    solana?: null | object;
+    eip155?: null | {
       eip1559: boolean;
       id: number;
     };

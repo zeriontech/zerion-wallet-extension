@@ -34,6 +34,7 @@ import {
 } from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -232,6 +233,7 @@ export function NonFungibleTokens({
       }}
     >
       <NetworkBalance
+        standard={getAddressType(params.address)}
         dappChain={dappChain}
         selectedChain={selectedChain}
         onChange={onChainChange}

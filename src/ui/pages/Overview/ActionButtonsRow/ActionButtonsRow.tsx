@@ -97,19 +97,11 @@ export function ActionButtonsRow() {
         }}
       >
         <li>
-          <WithGuardDialog<'a'>
-            isWarning={addressIsSolana}
-            title="Switch to an Ethereum Wallet"
-            message="Sending for Solana is coming soon"
-            render={({ handleClick }) => (
-              <ActionButton
-                title="Send"
-                as={UnstyledLink}
-                icon={<SendIcon />}
-                to="/send-form"
-                onClick={handleClick}
-              />
-            )}
+          <ActionButton
+            title="Send"
+            as={UnstyledLink}
+            icon={<SendIcon />}
+            to="/send-form"
           />
         </li>
         <li>

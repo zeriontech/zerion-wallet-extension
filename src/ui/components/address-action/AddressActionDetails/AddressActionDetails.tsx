@@ -1,31 +1,32 @@
 import React from 'react';
-import type { Chain } from 'src/modules/networks/Chain';
+import { createChain, type Chain } from 'src/modules/networks/Chain';
 import type { ActionTransfers, AddressAction } from 'defi-sdk';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { RecipientLine } from '../RecipientLine';
 import { ApplicationLine } from '../ApplicationLine';
 import { Transfers } from '../Transfers';
 import { SingleAsset } from '../SingleAsset';
 
 export function AddressActionDetails({
+  address,
   recipientAddress,
   addressAction,
   chain,
   networks,
-  wallet,
   actionTransfers,
   singleAsset,
   allowanceQuantityBase,
   showApplicationLine,
   singleAssetElementEnd,
 }: {
+  address: string;
   recipientAddress?: string;
   addressAction?: Pick<AnyAddressAction, 'label' | 'type'>;
   chain: Chain;
   networks: Networks;
-  wallet: ExternallyOwnedAccount;
   actionTransfers?: ActionTransfers;
   singleAsset?: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase: string | null;
@@ -58,14 +59,14 @@ export function AddressActionDetails({
       {actionTransfers?.outgoing?.length ||
       actionTransfers?.incoming?.length ? (
         <Transfers
-          address={wallet.address}
+          address={address}
           chain={chain}
           transfers={actionTransfers}
         />
       ) : null}
       {singleAsset && addressAction ? (
         <SingleAsset
-          address={wallet.address}
+          address={address}
           chain={chain}
           actionType={addressAction.type.value}
           singleAsset={singleAsset}
@@ -74,5 +75,48 @@ export function AddressActionDetails({
         />
       ) : null}
     </>
+  );
+}
+
+/**
+ * TODO: Temporary helper, later the whole AddressActionDetails
+ * must be refactored to take as few params as possible
+ * and to derivce as much data as possible from `addressAction`
+ */
+export function AddressActionComponent({
+  address,
+  addressAction,
+  showApplicationLine,
+  vGap = 16,
+}: {
+  address: string;
+  addressAction: AnyAddressAction;
+  showApplicationLine: boolean;
+  vGap?: number;
+}) {
+  const recipientAddress = addressAction.label?.display_value.wallet_address;
+  const actionTransfers = addressAction.content?.transfers;
+  const singleAsset = addressAction.content?.single_asset;
+  const { networks } = useNetworks();
+
+  if (!networks) {
+    return null;
+  }
+
+  return (
+    <VStack gap={vGap}>
+      <AddressActionDetails
+        address={address}
+        recipientAddress={recipientAddress}
+        addressAction={addressAction}
+        chain={createChain(addressAction.transaction.chain)}
+        networks={networks}
+        actionTransfers={actionTransfers}
+        singleAsset={singleAsset}
+        allowanceQuantityBase={null}
+        showApplicationLine={showApplicationLine}
+        singleAssetElementEnd={null}
+      />
+    </VStack>
   );
 }

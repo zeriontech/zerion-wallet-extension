@@ -68,6 +68,7 @@ import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRef
 import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { isSolanaAddress } from 'src/modules/solana/shared';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -718,7 +719,7 @@ function MultiChainPositions({
     <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
-          standard={isSolanaAddress(address) ? 'solana' : 'evm'}
+          standard={getAddressType(address)}
           dappChain={dappChain}
           selectedChain={selectedChain}
           onChange={onChainChange}
@@ -797,7 +798,7 @@ function RawChainPositions({
     <VStack gap={8}>
       <div style={{ paddingInline: 16 }}>
         <NetworkBalance
-          standard={isSolanaAddress(address) ? 'solana' : 'evm'}
+          standard={getAddressType(address)}
           dappChain={dappChain}
           selectedChain={selectedChain}
           onChange={onChainChange}

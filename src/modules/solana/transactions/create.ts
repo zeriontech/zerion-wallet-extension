@@ -4,8 +4,9 @@ import {
   uint8ArrayToBase64,
 } from 'src/modules/crypto/convert';
 import type { SolTransaction } from 'src/modules/solana/SolTransaction';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
 
-export function solFromBase64(base64: string): SolTransaction {
+export function solFromBase64(base64: StringBase64): SolTransaction {
   const typedArray = base64ToUint8Array(base64);
   try {
     return Transaction.from(typedArray);
@@ -15,9 +16,9 @@ export function solFromBase64(base64: string): SolTransaction {
 }
 
 export function solToBase64(
-  transaction: SolTransaction | VersionedTransaction,
+  transaction: SolTransaction,
   { requireAllSignatures } = { requireAllSignatures: false }
-): string {
+): StringBase64 {
   const serialized = transaction.serialize({ requireAllSignatures });
-  return uint8ArrayToBase64(serialized);
+  return uint8ArrayToBase64(serialized) as StringBase64;
 }

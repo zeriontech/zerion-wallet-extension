@@ -11,7 +11,7 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import { UnsupportedNetwork } from 'src/modules/networks/errors';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { v5ToPlainTransactionResponse } from 'src/background/Wallet/model/ethers-v5-types';
-import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
+import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import { invariant } from 'src/shared/invariant';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type {
@@ -25,7 +25,7 @@ import {
   type TransactionAction,
 } from '../describeTransaction';
 import type { ChainId } from '../ChainId';
-import type { ClientTransactionStatus } from './addressActionMain';
+import { getTransactionObjectStatus } from '../getTransactionObjectStatus';
 import { ZERO_HASH, type LocalAddressAction } from './addressActionMain';
 
 export async function createActionContent(
@@ -124,18 +124,6 @@ function createActionLabel(
   };
 }
 
-export function transactionReceiptToActionStatus(
-  transactionObject: Pick<TransactionObject, 'receipt' | 'dropped'>
-): ClientTransactionStatus {
-  return transactionObject.receipt
-    ? transactionObject.receipt.status === 1
-      ? 'confirmed'
-      : 'failed'
-    : transactionObject.dropped
-    ? 'dropped'
-    : 'pending';
-}
-
 async function pendingEvmTxToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
@@ -178,7 +166,7 @@ async function pendingEvmTxToAddressAction(
         : // It's okay to fallback to a stringified chainId because this is
           // only a representational object
           valueToHex(transaction.chainId),
-      status: transactionReceiptToActionStatus(transactionObject),
+      status: getTransactionObjectStatus(transactionObject),
       fee: null,
       nonce: Number(transaction.nonce) || 0,
       sponsored: false,
@@ -197,36 +185,19 @@ async function pendingEvmTxToAddressAction(
   };
 }
 
-function solanaTransactionObjectToStatus(
-  transactionObject: TransactionObject
-): ClientTransactionStatus {
-  invariant(transactionObject.signature, 'Must be solana tx');
-  if (transactionObject.dropped) {
-    return 'dropped';
-  } else if (transactionObject.signatureStatus == null) {
-    return 'pending';
-  } else if (transactionObject.signatureStatus.err) {
-    return 'failed';
-  } else {
-    return 'confirmed';
-  }
-}
-
 function pendingSolanaTxToAddressAction(
   transactionObject: TransactionObject
 ): LocalAddressAction {
   invariant(transactionObject.signature, 'Must be solana tx');
   const tx = solFromBase64(transactionObject.solanaBase64);
-  const addressAction = solanaTransactionToAddressAction(
-    tx,
-    transactionObject.publicKey
-  );
+  const addressAction = parseSolanaTransaction(transactionObject.publicKey, tx);
   return {
     ...addressAction,
+    datetime: new Date(transactionObject.timestamp).toISOString(),
     local: true,
     transaction: {
       ...addressAction.transaction,
-      status: solanaTransactionObjectToStatus(transactionObject),
+      status: getTransactionObjectStatus(transactionObject),
     },
   };
 }

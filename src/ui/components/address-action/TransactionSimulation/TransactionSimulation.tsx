@@ -113,11 +113,11 @@ export function TransactionSimulation({
   return (
     <VStack gap={vGap}>
       <AddressActionDetails
+        address={wallet.address}
         recipientAddress={recipientAddress}
         addressAction={addressAction}
         chain={chain}
         networks={networks}
-        wallet={wallet}
         actionTransfers={actionTransfers}
         singleAsset={singleAsset}
         allowanceQuantityBase={allowanceQuantityBase || null}

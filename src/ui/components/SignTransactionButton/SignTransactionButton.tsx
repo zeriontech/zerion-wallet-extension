@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
 import React, { useImperativeHandle, useRef } from 'react';
-import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { createChain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
@@ -18,18 +17,17 @@ import {
 } from 'src/ui/ui-kit/Button';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import type { OneOf } from 'src/shared/type-utils/OneOf';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
-import type { SolTransaction } from 'src/modules/solana/SolTransaction';
-import { solToBase64 } from 'src/modules/solana/transactions/create';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
-type SendTxParams = TransactionContextParams &
-  OneOf<{ transaction: IncomingTransaction; solTransaction: SolTransaction }>;
+type SendTxParams = TransactionContextParams & {
+  transaction: MultichainTransaction;
+};
 
 type SignAllTransactionsParams = TransactionContextParams & {
-  transaction: undefined;
-  solTransactions: SolTransaction[];
+  transaction: { solana: StringBase64[] };
 };
 
 export interface SendTxBtnHandle {
@@ -65,10 +63,9 @@ export const SignTransactionButton = React.forwardRef(
     const sendTxMutation = useMutation({
       mutationFn: async ({
         transaction,
-        solTransaction,
         ...params
       }: SendTxParams): Promise<SignTransactionResult> => {
-        if (transaction) {
+        if (transaction.evm) {
           // ethereum flow
           if (isDeviceAccount(wallet)) {
             invariant(
@@ -76,7 +73,7 @@ export const SignTransactionButton = React.forwardRef(
               'HardwareSignTransaction must be mounted'
             );
             const signedTx = await hardwareSignRef.current.signTransaction({
-              transaction,
+              transaction: transaction.evm,
               chain: createChain(params.chain),
               address: wallet.address,
             });
@@ -87,7 +84,7 @@ export const SignTransactionButton = React.forwardRef(
             return { evm: result };
           } else {
             const result = await walletPort.request('signAndSendTransaction', [
-              transaction,
+              transaction.evm,
               params,
             ]);
             return { evm: result };
@@ -111,7 +108,7 @@ export const SignTransactionButton = React.forwardRef(
             : methodMap.default;
 
           const result = await walletPort.request(methodName, {
-            transaction: solToBase64(solTransaction),
+            transaction: transaction.solana,
             params,
           });
           return { solana: result };
@@ -121,23 +118,17 @@ export const SignTransactionButton = React.forwardRef(
 
     const signAllTransactionsMutation = useMutation({
       mutationFn: async ({
-        transaction,
-        solTransactions,
+        transaction: { solana },
         ...params
       }: SignAllTransactionsParams) => {
-        if (transaction) {
-          throw new Error('Batch signing is supported only for Solana');
-        } else {
-          if (isDeviceAccount(wallet)) {
-            throw new Error('TODO: Support hardware signing for Solana');
-          }
-          const transactions = solTransactions.map((tx) => solToBase64(tx));
-          const result = await walletPort.request(
-            'solana_signAllTransactions',
-            { transactions, params }
-          );
-          return { ethereum: undefined, solana: result };
+        if (isDeviceAccount(wallet)) {
+          throw new Error('TODO: Support hardware signing for Solana');
         }
+        const result = await walletPort.request('solana_signAllTransactions', {
+          transactions: solana,
+          params,
+        });
+        return { solana: result };
       },
     });
 

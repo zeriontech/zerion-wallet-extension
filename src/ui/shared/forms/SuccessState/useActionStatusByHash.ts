@@ -1,14 +1,16 @@
 import { useMemo, useRef } from 'react';
 import { useStore } from '@store-unit/react';
-import { transactionReceiptToActionStatus } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { localTransactionsStore } from 'src/ui/transactions/transactions-store';
 import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
+import { getTransactionObjectStatus } from 'src/modules/ethereum/transactions/getTransactionObjectStatus';
 
 export function useActionStatusByHash(hash: string) {
   const localActions = useStore(localTransactionsStore);
   const localStatus = useMemo(() => {
-    const action = localActions.find((item) => item.transaction?.hash === hash);
-    return action ? transactionReceiptToActionStatus(action) : null;
+    const action = localActions.find(
+      (item) => item.transaction?.hash === hash || item.signature === hash
+    );
+    return action ? getTransactionObjectStatus(action) : null;
   }, [localActions, hash]);
 
   /**

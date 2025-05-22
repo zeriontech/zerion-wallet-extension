@@ -26,14 +26,6 @@ function getSignatureFromVersionedTransaction(
   return null;
 }
 
-function getTransactionSignature(transaction: SolTransaction): string | null {
-  if (transaction instanceof SolanaTransactionLegacy) {
-    return getSignatureFromLegacyTransaction(transaction);
-  } else {
-    return getSignatureFromVersionedTransaction(transaction);
-  }
-}
-
 export class SolanaSigning {
   static signMessage(
     message: Uint8Array,
@@ -68,7 +60,7 @@ export class SolanaSigning {
     } else {
       transaction.sign([keypair]);
     }
-    const signature = getTransactionSignature(transaction);
+    const signature = SolanaSigning.getTransactionSignature(transaction);
     invariant(signature, 'Could not resolve signature of a signed tranasction');
 
     return {

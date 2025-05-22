@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -15,9 +14,13 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { solFromBase64 } from 'src/modules/solana/transactions/create';
+import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
+import { AddressActionComponent } from '../AddressActionDetails/AddressActionDetails';
 
 export function TransactionConfirmationView({
   title,
@@ -36,7 +39,7 @@ export function TransactionConfirmationView({
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
   showApplicationLine: boolean;
-  transaction: IncomingTransactionWithChainId;
+  transaction: MultichainTransaction;
   chain: Chain;
   configuration: CustomConfiguration;
   paymasterEligible: boolean;
@@ -96,14 +99,25 @@ export function TransactionConfirmationView({
         method="dialog"
         style={{ display: 'flex', flexDirection: 'column' }}
       >
-        <TransactionSimulation
-          showApplicationLine={showApplicationLine}
-          localAllowanceQuantityBase={localAllowanceQuantityBase}
-          onOpenAllowanceForm={onOpenAllowanceForm}
-          address={wallet.address}
-          transaction={transaction}
-          txInterpretQuery={txInterpretQuery}
-        />
+        {transaction.evm ? (
+          <TransactionSimulation
+            showApplicationLine={showApplicationLine}
+            localAllowanceQuantityBase={localAllowanceQuantityBase}
+            onOpenAllowanceForm={onOpenAllowanceForm}
+            address={wallet.address}
+            transaction={transaction.evm}
+            txInterpretQuery={txInterpretQuery}
+          />
+        ) : (
+          <AddressActionComponent
+            address={wallet.address}
+            showApplicationLine={true}
+            addressAction={parseSolanaTransaction(
+              wallet.address,
+              solFromBase64(transaction.solana)
+            )}
+          />
+        )}
         <Spacer height={20} />
         <React.Suspense
           fallback={
@@ -112,22 +126,24 @@ export function TransactionConfirmationView({
             </div>
           }
         >
-          <TransactionConfiguration
-            transaction={transaction}
-            from={wallet.address}
-            chain={chain}
-            configuration={configuration}
-            onConfigurationChange={null}
-            onFeeValueCommonReady={null}
-            paymasterEligible={paymasterEligible}
-            paymasterPossible={paymasterPossible}
-            paymasterWaiting={false}
-            gasback={
-              txInterpretQuery.data?.action?.transaction.gasback != null
-                ? { value: txInterpretQuery.data?.action.transaction.gasback }
-                : null
-            }
-          />
+          {transaction.evm ? (
+            <TransactionConfiguration
+              transaction={transaction.evm}
+              from={wallet.address}
+              chain={chain}
+              configuration={configuration}
+              onConfigurationChange={null}
+              onFeeValueCommonReady={null}
+              paymasterEligible={paymasterEligible}
+              paymasterPossible={paymasterPossible}
+              paymasterWaiting={false}
+              gasback={
+                txInterpretQuery.data?.action?.transaction.gasback != null
+                  ? { value: txInterpretQuery.data?.action.transaction.gasback }
+                  : null
+              }
+            />
+          ) : null}
         </React.Suspense>
         <Spacer height={20} />
         <HStack

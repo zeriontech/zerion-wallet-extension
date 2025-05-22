@@ -24,8 +24,12 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { NonceLine } from '../NonceLine';
+import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { useCurrency } from 'src/modules/currency/useCurrency';
 import { NetworkFee } from '../NetworkFee';
+import { NonceLine } from '../NonceLine';
 import { useTransactionFee } from './useTransactionFee';
 
 export function GasbackHint() {
@@ -66,6 +70,41 @@ export function GasbackHint() {
         />
       </PortalToRootNode>
     </>
+  );
+}
+
+/** A simplified version of NetworkFeeLine */
+export function NetworkFeeLineInfo({
+  label,
+  networkFee,
+  isLoading,
+}: {
+  label?: React.ReactNode;
+  networkFee: NetworkFeeType;
+  isLoading: boolean;
+}) {
+  const { currency } = useCurrency();
+  return (
+    <HStack gap={8} justifyContent="space-between">
+      {label !== undefined ? (
+        label
+      ) : (
+        <UIText kind="small/regular">Network Fee</UIText>
+      )}
+
+      <UIText kind="small/accent">
+        <HStack gap={8} alignItems="center">
+          {isLoading ? <CircleSpinner /> : null}
+
+          {networkFee.amount.value != null
+            ? formatCurrencyValue(networkFee.amount.value, 'en', currency)
+            : formatTokenValue(
+                networkFee.amount.quantity,
+                networkFee.fungible?.symbol
+              )}
+        </HStack>
+      </UIText>
+    </HStack>
   );
 }
 

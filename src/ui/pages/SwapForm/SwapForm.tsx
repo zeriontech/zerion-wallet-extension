@@ -466,7 +466,7 @@ export function SwapFormComponent() {
       invariant(selectedQuote, 'Cannot submit transaction without a quote');
 
       const txResponse = await approveTxBtnRef.current.sendTransaction({
-        transaction,
+        transaction: { evm: transaction },
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
@@ -532,8 +532,7 @@ export function SwapFormComponent() {
       const spendValue = selectedQuote.input_amount_estimation;
       const receiveValue = selectedQuote.output_amount_estimation;
       const txResponse = await sendTxBtnRef.current.sendTransaction({
-        transaction,
-        solTransaction: undefined,
+        transaction: { evm: transaction },
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
@@ -730,7 +729,9 @@ export function SwapFormComponent() {
                 wallet={wallet}
                 showApplicationLine={true}
                 chain={chain}
-                transaction={configureTransactionToBeSigned(currentTransaction)}
+                transaction={{
+                  evm: configureTransactionToBeSigned(currentTransaction),
+                }}
                 configuration={swapView.store.configuration.getState()}
                 localAllowanceQuantityBase={allowanceQuantityBase || undefined}
                 onOpenAllowanceForm={() =>

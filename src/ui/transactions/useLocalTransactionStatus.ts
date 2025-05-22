@@ -1,6 +1,6 @@
 import { useStore } from '@store-unit/react';
 import { useMemo } from 'react';
-import { getTransactionStatus } from 'src/modules/ethereum/transactions/model';
+import { getTransactionObjectStatus } from 'src/modules/ethereum/transactions/getTransactionObjectStatus';
 import { localTransactionsStore } from './transactions-store';
 
 export function useTransactionStatus(hash: string | null) {
@@ -8,7 +8,7 @@ export function useTransactionStatus(hash: string | null) {
   return useMemo(() => {
     if (hash) {
       const tx = transactions.find((tx) => tx.hash === hash);
-      return tx ? getTransactionStatus(tx) : null;
+      return tx ? getTransactionObjectStatus(tx) : null;
     } else {
       return null;
     }
