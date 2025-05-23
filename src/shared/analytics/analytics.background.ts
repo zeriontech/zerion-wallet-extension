@@ -18,6 +18,7 @@ import {
 import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
 import { productionVersion } from '../packageVersion';
+import type { TransactionContextParams } from '../types/SignatureContextParams';
 import {
   createParams as createBaseParams,
   sendToMetabase,
@@ -75,6 +76,73 @@ function trackAppEvents({ account }: { account: Account }) {
       }
     }
     return createBaseParams(params);
+  };
+
+  const trackSignedTransaction = async ({
+    signSuccess,
+    errorMessage,
+    addressAction,
+    quote,
+    clientScope,
+    chain,
+    initiator,
+    feeValueCommon,
+    hash,
+    walletAddress,
+    gas,
+  }: {
+    hash?: string;
+    walletAddress?: string;
+    gas?: string | null;
+    signSuccess: boolean;
+    errorMessage?: string | null;
+  } & TransactionContextParams) => {
+    const initiatorURL = new URL(initiator);
+    const { origin, pathname } = initiatorURL;
+    const isInternalOrigin = globalThis.location.origin === origin;
+    const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
+    const addressActionAnalytics = addressActionToAnalytics({
+      addressAction,
+      quote,
+    });
+    const preferences = await account
+      .getCurrentWallet()
+      .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
+    const errorMessageData = errorMessage
+      ? { transaction_error_message: errorMessage }
+      : {};
+
+    const params = createParams({
+      request_name: 'signed_transaction',
+      screen_name: origin === initiator ? 'Transaction Request' : pathname,
+      wallet_address: walletAddress,
+      /* @deprecated */
+      context: initiatorName,
+      /* @deprecated */
+      type: 'Sign',
+      client_scope: clientScope ?? initiatorName,
+      dapp_domain: isInternalOrigin ? null : origin,
+      chain,
+      gas,
+      hash,
+      gas_price: null, // TODO
+      network_fee: null, // TODO
+      network_fee_value: feeValueCommon,
+      contract_type: quote?.contract_metadata?.name ?? null,
+      hold_sign_button: Boolean(preferences.enableHoldToSignButton),
+      transaction_success: signSuccess,
+      ...errorMessageData,
+      ...omitNullParams(addressActionAnalytics),
+    });
+    sendToMetabase('signed_transaction', params);
+    const gaParams = prepareGaParams(account, params);
+    gaCollect('signed_transaction', gaParams);
+    const mixpanelParams = omit(params, [
+      'request_name',
+      'hash',
+      'wallet_address',
+    ]);
+    mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
   };
 
   emitter.on('requestAccountsResolved', ({ origin, address, explicitly }) => {
@@ -157,48 +225,44 @@ function trackAppEvents({ account }: { account: Account }) {
       result,
       { initiator, feeValueCommon, addressAction, quote, clientScope, chain }
     ) => {
-      const initiatorURL = new URL(initiator);
-      const { origin, pathname } = initiatorURL;
-      const isInternalOrigin = globalThis.location.origin === origin;
-      const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
-      const addressActionAnalytics = addressActionToAnalytics({
-        addressAction,
-        quote,
-      });
-      const preferences = await account
-        .getCurrentWallet()
-        .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
-
-      const params = createParams({
-        request_name: 'signed_transaction',
-        screen_name: origin === initiator ? 'Transaction Request' : pathname,
-        wallet_address: getTxSender(result), // transaction.from,
-        /* @deprecated */
-        context: initiatorName,
-        /* @deprecated */
-        type: 'Sign',
-        client_scope: clientScope ?? initiatorName,
-        dapp_domain: isInternalOrigin ? null : origin,
-        chain,
-        gas: result.evm ? result.evm.gasLimit.toString() : null,
+      return trackSignedTransaction({
         /** Current requirement by analytics: send solana signatures as `hash` */
         hash: result.evm?.hash ?? ensureSolanaResult(result).signature,
-        gas_price: null, // TODO
-        network_fee: null, // TODO
-        network_fee_value: feeValueCommon,
-        contract_type: quote?.contract_metadata?.name ?? null,
-        hold_sign_button: Boolean(preferences.enableHoldToSignButton),
-        ...omitNullParams(addressActionAnalytics),
+        walletAddress: getTxSender(result), // transaction.from,
+        gas: result.evm ? result.evm.gasLimit.toString() : null,
+        addressAction,
+        quote,
+        clientScope,
+        chain,
+        initiator,
+        feeValueCommon,
+        signSuccess: true,
       });
-      sendToMetabase('signed_transaction', params);
-      const gaParams = prepareGaParams(account, params);
-      gaCollect('signed_transaction', gaParams);
-      const mixpanelParams = omit(params, [
-        'request_name',
-        'hash',
-        'wallet_address',
-      ]);
-      mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
+    }
+  );
+
+  emitter.on(
+    'transactionSendFailed',
+    async ({
+      addressAction,
+      quote,
+      clientScope,
+      chain,
+      initiator,
+      feeValueCommon,
+      message,
+    }) => {
+      return trackSignedTransaction({
+        walletAddress: addressAction?.address,
+        addressAction,
+        quote,
+        clientScope,
+        chain,
+        initiator,
+        feeValueCommon,
+        signSuccess: false,
+        errorMessage: message,
+      });
     }
   );
 

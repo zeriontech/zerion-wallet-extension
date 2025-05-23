@@ -108,6 +108,7 @@ import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
 import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
+import { getError } from 'src/shared/errors/getError';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1295,7 +1296,12 @@ export class Wallet {
         );
         return safeTxPlain;
       } catch (error) {
-        throw getEthersError(error);
+        const parsedError = getEthersError(error);
+        emitter.emit('transactionSendFailed', {
+          message: getError(parsedError).message,
+          ...transactionContextParams,
+        });
+        throw parsedError;
       }
     }
   }
@@ -1504,7 +1510,12 @@ export class Wallet {
       );
       return safeTxPlain;
     } catch (error) {
-      throw getEthersError(error);
+      const parsedError = getEthersError(error);
+      emitter.emit('transactionSendFailed', {
+        message: getError(parsedError).message,
+        ...transactionContextParams,
+      });
+      throw parsedError;
     }
   }
 
