@@ -78,8 +78,8 @@ function trackAppEvents({ account }: { account: Account }) {
     return createBaseParams(params);
   };
 
-  const trackSignedTransaction = async ({
-    signSuccess,
+  const trackSentTransaction = async ({
+    isSuccess,
     errorMessage,
     addressAction,
     quote,
@@ -94,7 +94,7 @@ function trackAppEvents({ account }: { account: Account }) {
     hash?: string;
     walletAddress?: string;
     gas?: string | null;
-    signSuccess: boolean;
+    isSuccess: boolean;
     errorMessage?: string | null;
   } & TransactionContextParams) => {
     const initiatorURL = new URL(initiator);
@@ -130,7 +130,7 @@ function trackAppEvents({ account }: { account: Account }) {
       network_fee_value: feeValueCommon,
       contract_type: quote?.contract_metadata?.name ?? null,
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
-      transaction_success: signSuccess,
+      transaction_success: isSuccess,
       ...errorMessageData,
       ...omitNullParams(addressActionAnalytics),
     });
@@ -225,7 +225,7 @@ function trackAppEvents({ account }: { account: Account }) {
       result,
       { initiator, feeValueCommon, addressAction, quote, clientScope, chain }
     ) => {
-      return trackSignedTransaction({
+      return trackSentTransaction({
         /** Current requirement by analytics: send solana signatures as `hash` */
         hash: result.evm?.hash ?? ensureSolanaResult(result).signature,
         walletAddress: getTxSender(result), // transaction.from,
@@ -236,7 +236,7 @@ function trackAppEvents({ account }: { account: Account }) {
         chain,
         initiator,
         feeValueCommon,
-        signSuccess: true,
+        isSuccess: true,
       });
     }
   );
@@ -252,7 +252,7 @@ function trackAppEvents({ account }: { account: Account }) {
       feeValueCommon,
       message,
     }) => {
-      return trackSignedTransaction({
+      return trackSentTransaction({
         walletAddress: addressAction?.address,
         addressAction,
         quote,
@@ -260,7 +260,7 @@ function trackAppEvents({ account }: { account: Account }) {
         chain,
         initiator,
         feeValueCommon,
-        signSuccess: false,
+        isSuccess: false,
         errorMessage: message,
       });
     }
