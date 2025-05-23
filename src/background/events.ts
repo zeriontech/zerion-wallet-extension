@@ -44,6 +44,9 @@ export const emitter = createNanoEvents<{
     result: SignTransactionResult,
     context: { mode: 'default' | 'testnet' } & TransactionContextParams
   ) => void;
+  transactionSendFailed: (
+    context: { message: string | null } & TransactionContextParams
+  ) => void;
   typedDataSigned: (
     data: { typedData: TypedData; address: string } & MessageContextParams
   ) => void;
