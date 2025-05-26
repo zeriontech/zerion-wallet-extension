@@ -32,7 +32,7 @@ export function TransactionConfirmationView({
   paymasterEligible,
   paymasterPossible,
   eligibilityQuery,
-  localAllowanceQuantityBase,
+  customAllowanceValueBase,
   onOpenAllowanceForm,
   onGasbackReady,
 }: {
@@ -46,7 +46,7 @@ export function TransactionConfirmationView({
   paymasterPossible: boolean;
   /** TODO: @deprecate */
   eligibilityQuery: EligibilityQuery;
-  localAllowanceQuantityBase?: string;
+  customAllowanceValueBase?: string;
   onOpenAllowanceForm?: () => void;
   onGasbackReady: null | ((value: number) => void);
 }) {
@@ -102,7 +102,7 @@ export function TransactionConfirmationView({
         {transaction.evm ? (
           <TransactionSimulation
             showApplicationLine={showApplicationLine}
-            localAllowanceQuantityBase={localAllowanceQuantityBase}
+            customAllowanceValueBase={customAllowanceValueBase}
             onOpenAllowanceForm={onOpenAllowanceForm}
             address={wallet.address}
             transaction={transaction.evm}

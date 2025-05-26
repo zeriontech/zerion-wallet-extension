@@ -17,7 +17,8 @@ export type SendFormState = {
   gasLimit?: string;
   networkFeeSpeed?: NetworkFeeSpeed;
   maxFee?: string;
-  priorityFee?: string;
+  maxPriorityFee?: string;
   gasPrice?: string;
   nonce?: string;
+  slippage?: never;
 };

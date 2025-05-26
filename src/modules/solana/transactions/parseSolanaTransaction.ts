@@ -5,6 +5,7 @@ import type {
 } from '@solana/web3.js';
 import { SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import type { AddressAction } from 'defi-sdk';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { SolanaSigning } from '../signing';
 
 function isSystemTransfer(ix: TransactionInstruction): boolean {
@@ -37,6 +38,33 @@ export const SOL_ASSET = {
         address: '11111111111111111111111111111111',
         decimals: 9,
       },
+    },
+  },
+};
+
+export const SOL_ASSET_FUNGIBLE: Fungible = {
+  id: '11111111111111111111111111111111',
+  name: 'Solana',
+  symbol: 'SOL',
+  iconUrl:
+    'https://token-icons.s3.amazonaws.com/11111111111111111111111111111111.png',
+  verified: true,
+  meta: {
+    circulatingSupply: null,
+    fullyDilutedValuation: null,
+    marketCap: null,
+    price: null,
+    relativeChange1d: null,
+    relativeChange30d: null,
+    relativeChange365d: null,
+    relativeChange90d: null,
+    totalSupply: null,
+  },
+  new: false,
+  implementations: {
+    solana: {
+      address: '11111111111111111111111111111111',
+      decimals: 9,
     },
   },
 };

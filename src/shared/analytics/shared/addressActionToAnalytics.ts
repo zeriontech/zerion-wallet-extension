@@ -5,7 +5,7 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { getDecimals } from 'src/modules/networks/asset';
-import type { Quote } from 'src/shared/types/Quote';
+import type { Quote2, QuoteLegacy } from 'src/shared/types/Quote';
 import { baseToCommon } from 'src/shared/units/convert';
 
 interface AnalyticsTransactionData {
@@ -82,9 +82,11 @@ function toMaybeArr<T>(
 export function addressActionToAnalytics({
   addressAction,
   quote,
+  outputChain,
 }: {
   addressAction: AnyAddressAction | null;
-  quote?: Quote;
+  quote?: QuoteLegacy | Quote2;
+  outputChain: string | null;
 }): AnalyticsTransactionData {
   if (!addressAction) {
     return {
@@ -113,10 +115,15 @@ export function addressActionToAnalytics({
     asset_address_received: toMaybeArr(incoming?.map(getAssetAddress)),
   };
   if (quote) {
-    const zerion_fee_percentage = quote.protocol_fee;
-    const feeAmount = quote.protocol_fee_amount;
+    const zerion_fee_percentage =
+      'protocolFee' in quote
+        ? quote.protocolFee.percentage
+        : quote.protocol_fee;
+    const feeAmount =
+      'protocolFee' in quote
+        ? quote.protocolFee.amount.quantity
+        : quote.protocol_fee_amount;
     const asset = incoming?.[0]?.asset;
-    const output_chain = quote.output_chain;
     const zerion_fee_usd_amount =
       feeAmount && asset
         ? assetQuantityToValue({ quantity: feeAmount, asset }, chain)
@@ -126,7 +133,7 @@ export function addressActionToAnalytics({
       ...value,
       zerion_fee_percentage,
       zerion_fee_usd_amount,
-      output_chain,
+      output_chain: outputChain ?? undefined,
     };
   } else {
     return value;

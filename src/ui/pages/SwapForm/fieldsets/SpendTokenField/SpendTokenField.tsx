@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
-import type { SwapFormView } from '@zeriontech/transactions';
-import { useSelectorStore } from '@store-unit/react';
+import type { AddressPosition } from 'defi-sdk';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import {
   getPositionBalance,
   getPositionPartialBalance,
@@ -23,35 +23,44 @@ import {
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
+import type { SwapFormState } from '../../shared/SwapFormState';
 
-export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
-  const { spendPosition, spendAssetQuery, spendAsset, receiveAsset } = swapView;
-  const { primaryInput, spendInput, receiveInput, chainInput } =
-    useSelectorStore(swapView.store, [
-      'primaryInput',
-      'spendInput',
-      'receiveInput',
-      'chainInput',
-    ]);
+export function SpendTokenField({
+  formState,
+  spendPosition,
+  receivePosition,
+  positions,
+  onChange,
+  outputAmount,
+}: {
+  formState: SwapFormState;
+  onChange: (key: keyof SwapFormState, value: string) => void;
+  spendPosition: AddressPosition | EmptyAddressPosition | null;
+  receivePosition: AddressPosition | EmptyAddressPosition | null;
+  positions: AddressPosition[];
+  outputAmount: string | null;
+}) {
+  const { inputAmount } = formState;
+  const primaryInput = 'spend' as 'spend' | 'receive';
 
-  const chain = chainInput ? createChain(chainInput) : null;
+  const chain = formState.inputChain ? createChain(formState.inputChain) : null;
 
   const positionBalanceCommon = spendPosition
     ? getPositionBalance(spendPosition)
     : null;
 
-  const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
+  const exceedsBalance = Number(inputAmount) > Number(positionBalanceCommon);
   const tokenValueInputRef = useRef<InputHandle | null>(null);
 
   useEffect(() => {
-    if (primaryInput === 'receive' && spendInput) {
+    if (primaryInput === 'receive' && inputAmount) {
       /* formatted value must be a valid input value, e.g. 123456.67 and not 123,456.67 */
-      const formatted = roundTokenValue(spendInput);
+      const formatted = roundTokenValue(inputAmount);
       tokenValueInputRef.current?.setValue(formatted);
     } else if (primaryInput === 'receive') {
       tokenValueInputRef.current?.setValue('');
     }
-  }, [primaryInput, spendInput]);
+  }, [primaryInput, inputAmount]);
 
   const primaryInputRef = useRef(primaryInput);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -60,7 +69,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
     ref: inputRef,
     customValidity: exceedsBalance
       ? 'Insufficient balance'
-      : spendInput && Number(spendInput) <= 0
+      : inputAmount && Number(inputAmount) <= 0
       ? 'Enter a positive amount'
       : '',
   });
@@ -70,10 +79,10 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
       // Detected change of primaryInput from 'receive' to 'spend',
       // We must set the store value to the formatted value so that
       // the /swap/quote/stream request is made with the value that the user sees
-      swapView.store.handleChange('spendInput', inputRef.current?.value ?? '');
+      onChange('inputAmount', inputRef.current?.value ?? '');
     }
     primaryInputRef.current = primaryInput;
-  }, [primaryInput, spendInput, swapView.store]);
+  }, [primaryInput, inputAmount, onChange]);
 
   const inputId = useId();
   return (
@@ -91,7 +100,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                       spendPosition,
                       factor
                     ).toFixed();
-                    swapView.store.handleAmountChange('spend', value);
+                    onChange('inputAmount', value);
                     tokenValueInputRef.current?.setValue(value);
                     if (inputRef.current) {
                       inputRef.current.value = value;
@@ -114,17 +123,14 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
             {spendPosition ? (
               <AssetSelect
                 dialogTitle="Pay With"
-                items={swapView.availablePositions}
+                items={positions}
                 onChange={(position) =>
-                  swapView.store.handleTokenChange(
-                    'spendTokenInput',
-                    position.asset.asset_code
-                  )
+                  onChange('inputFungibleId', position.asset.id)
                 }
                 chain={chain}
                 selectedItem={spendPosition}
                 noItemsMessage="No positions found"
-                isLoading={spendAssetQuery.isLoading}
+                isLoading={false}
               />
             ) : (
               <div
@@ -152,9 +158,9 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
           <DebouncedInput
             ref={tokenValueInputRef}
             delay={300}
-            value={spendInput ?? ''}
+            value={inputAmount ?? ''}
             onChange={(value) => {
-              swapView.store.handleAmountChange('spend', value);
+              onChange('inputAmount', value);
             }}
             render={({ value, handleChange }) => (
               <UnstyledInput
@@ -163,7 +169,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
                 ref={inputRef}
                 style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
                 inputMode="decimal"
-                name="spendInput"
+                name="inputAmount"
                 value={value}
                 placeholder="0"
                 onChange={(event) =>
@@ -186,10 +192,10 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
         endDescription={
           <SpendFiatInputValue
             primaryInput={primaryInput}
-            spendInput={spendInput}
-            spendAsset={spendAsset}
-            receiveInput={receiveInput}
-            receiveAsset={receiveAsset}
+            spendInput={inputAmount}
+            spendAsset={spendPosition?.asset ?? null}
+            receiveInput={outputAmount ?? ''}
+            receiveAsset={receivePosition?.asset ?? null}
           />
         }
       />

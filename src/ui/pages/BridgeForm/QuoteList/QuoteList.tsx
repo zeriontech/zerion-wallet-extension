@@ -5,7 +5,7 @@ import React, { useId, useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { createChain, type Chain } from 'src/modules/networks/Chain';
-import type { Quote } from 'src/shared/types/Quote';
+import type { QuoteLegacy } from 'src/shared/types/Quote';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
@@ -33,7 +33,7 @@ function GasFee({
   chain,
   configuration,
 }: {
-  transaction: NonNullable<Quote['transaction']>;
+  transaction: NonNullable<QuoteLegacy['transaction']>;
   chain: Chain;
   configuration: CustomConfiguration;
 }) {
@@ -56,7 +56,7 @@ function GasFee({
     : 'N/A';
 }
 
-function BridgeFee({ chain, quote }: { chain: Chain; quote: Quote }) {
+function BridgeFee({ chain, quote }: { chain: Chain; quote: QuoteLegacy }) {
   const { currency } = useCurrency();
 
   const { value: feeAssetValue } = useAssetsPrices({
@@ -111,7 +111,7 @@ function QuoteListItem({
   configuration: CustomConfiguration;
   spendChain: Chain;
   receiveAsset: Asset;
-  quote: Quote;
+  quote: QuoteLegacy;
 }) {
   const { currency } = useCurrency();
   const chain = createChain(quote.output_chain);
@@ -182,8 +182,8 @@ export function QuoteList({
   configuration: CustomConfiguration;
   spendChain: Chain;
   receiveAsset: Asset;
-  quotes: Quote[];
-  selectedQuote: Quote | null;
+  quotes: QuoteLegacy[];
+  selectedQuote: QuoteLegacy | null;
   onQuoteIdChange: (quoteId: string | null) => void;
   sortType: QuoteSortType;
   onChangeSortType: (sortType: QuoteSortType) => void;

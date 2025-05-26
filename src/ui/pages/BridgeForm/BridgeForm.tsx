@@ -87,8 +87,8 @@ import type {
   QuotesData,
   QuoteSortType,
 } from 'src/ui/shared/requests/useQuotes';
-import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
-import type { Quote } from 'src/shared/types/Quote';
+import { getQuoteTx, useQuotesLegacy } from 'src/ui/shared/requests/useQuotes';
+import type { QuoteLegacy } from 'src/shared/types/Quote';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
@@ -110,14 +110,14 @@ import { BridgeLine } from './BridgeLine';
 import { ZerionFeeLine } from './ZerionFeeLine';
 import { QuoteList } from './QuoteList';
 
-function getDefaultQuote(quotes: Quote[] | null) {
+function getDefaultQuote(quotes: QuoteLegacy[] | null) {
   return quotes?.at(0) ?? null;
 }
 
-function useSortedQuotes(params: Parameters<typeof useQuotes>[0]) {
+function useSortedQuotes(params: Parameters<typeof useQuotesLegacy>[0]) {
   return {
-    quotesByAmount: useQuotes({ ...params, sortType: 'amount' }),
-    quotesByTime: useQuotes({ ...params, sortType: 'time' }),
+    quotesByAmount: useQuotesLegacy({ ...params, sortType: 'amount' }),
+    quotesByTime: useQuotesLegacy({ ...params, sortType: 'time' }),
   };
 }
 import { ReceiverAddressField } from './ReceiverAddressField';
@@ -132,7 +132,7 @@ function FormHint({
 }: {
   spendInput?: string;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
-  quotesData: QuotesData;
+  quotesData: QuotesData<QuoteLegacy>;
   render: (message: string | null) => React.ReactNode;
 }) {
   const value = spendInput;
@@ -591,13 +591,13 @@ function BridgeFormComponent() {
     suspense: false,
     queryKey: ['uiGetBestKnownTransactionCount', address, spendChain, networks],
     queryFn: async () => {
-      if (!spendChain || !networks) {
+      const network = spendChain ? networks?.getByNetworkId(spendChain) : null;
+      if (!network) {
         return null;
       }
       const result = await uiGetBestKnownTransactionCount({
         address,
-        chain: spendChain,
-        networks,
+        network,
         defaultBlock: 'pending',
       });
       return result.value;
@@ -762,6 +762,7 @@ function BridgeFormComponent() {
           chain: spendChain,
         }),
         quote: selectedQuote,
+        outputChain: selectedQuote.output_chain,
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;
@@ -904,7 +905,7 @@ function BridgeFormComponent() {
                   evm: configureTransactionToBeSigned(currentTransaction),
                 }}
                 configuration={configuration}
-                localAllowanceQuantityBase={allowanceQuantityBase || undefined}
+                customAllowanceValueBase={allowanceQuantityBase || undefined}
                 onOpenAllowanceForm={() =>
                   allowanceDialogRef.current?.showModal()
                 }

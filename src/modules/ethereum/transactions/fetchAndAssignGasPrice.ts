@@ -3,7 +3,6 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import omit from 'lodash/omit';
 import { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
-import { createChain } from 'src/modules/networks/Chain';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
@@ -55,8 +54,7 @@ async function fetchGasPriceForTransaction(
 ): Promise<ChainGasPrice> {
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
-  const chain = createChain(network.id);
-  return fetchGasPrice({ chain, networks, source, apiClient });
+  return fetchGasPrice({ network, source, apiClient });
 }
 
 export function hasGasEstimation(transaction: IncomingTransaction) {

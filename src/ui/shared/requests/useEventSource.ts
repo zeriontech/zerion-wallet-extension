@@ -1,6 +1,7 @@
 import { useStore } from '@store-unit/react';
 import { useEffect, useRef } from 'react';
 import { Store } from 'store-unit';
+import { EventSource } from 'eventsource'; // supports passing custom headers
 
 interface EventSourceState<T> {
   value: null | T;
@@ -14,6 +15,22 @@ interface Options<T> {
   enabled?: boolean;
   mapResponse?: (response: unknown) => T;
   mergeResponse?(currentValue: T | null, nextValue: T | null): T | null;
+  headers?: HeadersInit;
+}
+
+function createEventSource(url: string | URL, headers?: HeadersInit) {
+  return new EventSource(
+    url,
+    headers
+      ? {
+          fetch: (input, init) =>
+            fetch(input, {
+              ...init,
+              headers: { ...init.headers, ...headers },
+            }),
+        }
+      : undefined
+  );
 }
 
 export class EventSourceStore<T> extends Store<EventSourceState<T>> {
@@ -49,7 +66,7 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
     this.source = null;
     this.url = url;
     this.options = options || {};
-    this.subscribe(url ? new EventSource(url) : null);
+    this.subscribe(url ? createEventSource(url, this.options.headers) : null);
   }
 
   mapResponse(response: T) {
@@ -129,7 +146,9 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
     this.url = url;
     this.unlistenAndClose();
     this.options = options || {};
-    this.subscribe(this.url ? new EventSource(this.url) : null);
+    this.subscribe(
+      this.url ? createEventSource(this.url, this.options.headers) : null
+    );
   }
 
   clear() {

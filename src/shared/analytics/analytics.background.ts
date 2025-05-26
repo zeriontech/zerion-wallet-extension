@@ -155,7 +155,15 @@ function trackAppEvents({ account }: { account: Account }) {
     'transactionSent',
     async (
       result,
-      { initiator, feeValueCommon, addressAction, quote, clientScope, chain }
+      {
+        initiator,
+        feeValueCommon,
+        addressAction,
+        quote,
+        clientScope,
+        chain,
+        outputChain,
+      }
     ) => {
       const initiatorURL = new URL(initiator);
       const { origin, pathname } = initiatorURL;
@@ -164,6 +172,7 @@ function trackAppEvents({ account }: { account: Account }) {
       const addressActionAnalytics = addressActionToAnalytics({
         addressAction,
         quote,
+        outputChain: outputChain ?? null,
       });
       const preferences = await account
         .getCurrentWallet()
@@ -186,7 +195,11 @@ function trackAppEvents({ account }: { account: Account }) {
         gas_price: null, // TODO
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
-        contract_type: quote?.contract_metadata?.name ?? null,
+        contract_type: quote
+          ? ('contract_metadata' in quote
+              ? quote.contract_metadata?.name
+              : quote.contractMetadata.name) ?? null
+          : null,
         hold_sign_button: Boolean(preferences.enableHoldToSignButton),
         ...omitNullParams(addressActionAnalytics),
       });

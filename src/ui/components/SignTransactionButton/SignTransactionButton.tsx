@@ -63,7 +63,7 @@ export const SignTransactionButton = React.forwardRef(
     const sendTxMutation = useMutation({
       mutationFn: async ({
         transaction,
-        ...params
+        ...txContext
       }: SendTxParams): Promise<SignTransactionResult> => {
         if (transaction.evm) {
           // ethereum flow
@@ -74,18 +74,18 @@ export const SignTransactionButton = React.forwardRef(
             );
             const signedTx = await hardwareSignRef.current.signTransaction({
               transaction: transaction.evm,
-              chain: createChain(params.chain),
+              chain: createChain(txContext.chain),
               address: wallet.address,
             });
             const result = await walletPort.request('sendSignedTransaction', {
               serialized: signedTx,
-              ...params,
+              txContext,
             });
             return { evm: result };
           } else {
             const result = await walletPort.request('signAndSendTransaction', [
               transaction.evm,
-              params,
+              txContext,
             ]);
             return { evm: result };
           }
@@ -100,16 +100,16 @@ export const SignTransactionButton = React.forwardRef(
             signTransaction: 'solana_signTransaction',
           } as const;
           invariant(
-            params.method !== 'signAllTransactions',
+            txContext.method !== 'signAllTransactions',
             'SignTransactionButton: Use dedicated signAllTransactions method'
           );
-          const methodName = params.method
-            ? methodMap[params.method]
+          const methodName = txContext.method
+            ? methodMap[txContext.method]
             : methodMap.default;
 
           const result = await walletPort.request(methodName, {
             transaction: transaction.solana,
-            params,
+            params: txContext,
           });
           return { solana: result };
         }

@@ -80,8 +80,8 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
 
   const signTypedData_v4Mutation = useMutation({
     mutationFn: async (params: SignTypedDataParams) => {
+      const { typedData, ...typedDataContext } = params;
       if (isDeviceAccount(wallet)) {
-        const { typedData, ...messageContextParams } = params;
         invariant(
           hardwareSignRef.current,
           'HardwareSignMessage must be mounted'
@@ -92,11 +92,14 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         walletPort.request('registerTypedDataSign', {
           typedData,
           address: wallet.address,
-          ...messageContextParams,
+          ...typedDataContext,
         });
         return signature;
       } else {
-        return await walletPort.request('signTypedData_v4', params);
+        return await walletPort.request('signTypedData_v4', {
+          typedData,
+          typedDataContext,
+        });
       }
     },
   });

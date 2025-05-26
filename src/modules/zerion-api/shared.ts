@@ -26,7 +26,7 @@ export type ClientOptions = Options & BackendSourceParams;
 
 export const CLIENT_DEFAULTS: ClientOptions = { source: 'mainnet' };
 
-function createHeaders(options: Options) {
+export function createHeaders(options: Options) {
   return {
     'X-Request-Id': crypto.randomUUID(),
     'Zerion-Client-Type': platform,

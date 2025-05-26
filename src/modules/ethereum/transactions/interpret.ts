@@ -20,12 +20,19 @@ export function interpretTransaction({
   client?: Client;
   currency: string;
 }): Promise<InterpretResponse> {
-  const gas = getGas(transaction);
   return Promise.race([
     rejectAfterDelay(10000, 'interpret transaction'),
     new Promise<InterpretResponse>((resolve) => {
       let value: InterpretResponse | null = null;
 
+      const normalizedTx = { ...transaction };
+      const gas = getGas(transaction);
+      if (gas != null) {
+        normalizedTx.gas = valueToHex(gas);
+      }
+      if (normalizedTx.value != null) {
+        normalizedTx.value = valueToHex(normalizedTx.value);
+      }
       const unsubscribe = client.subscribe<
         InterpretResponse,
         'interpret',
@@ -39,18 +46,7 @@ export function interpretTransaction({
             address,
             chain_id: transaction.chainId,
             currency,
-            transaction: {
-              from: transaction.from,
-              to: transaction.to,
-              nonce: transaction.nonce,
-              chainId: transaction.chainId,
-              gas: gas != null ? valueToHex(gas) : null,
-              gasPrice: transaction.gasPrice,
-              maxFee: transaction.maxFeePerGas,
-              maxPriorityFee: transaction.maxPriorityFeePerGas,
-              value: transaction.value ? valueToHex(transaction.value) : '0x0',
-              data: transaction.data,
-            },
+            transaction: normalizedTx,
             domain: origin,
           },
         },

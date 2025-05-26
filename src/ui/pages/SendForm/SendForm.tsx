@@ -1,12 +1,9 @@
 import React, { useCallback, useId, useMemo, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import type { AddressPosition } from 'defi-sdk';
 import { Client } from 'defi-sdk';
-import {
-  getChainWithMostAssetValue,
-  sortPositionsByValue,
-} from '@zeriontech/transactions';
+import { sortPositionsByValue } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -49,15 +46,14 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import { isSolanaAddress } from 'src/modules/solana/shared';
-import { NetworkId } from 'src/modules/networks/NetworkId';
 import { commonToBase } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
-import { useEvent } from 'src/ui/shared/useEvent';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { Networks } from 'src/modules/networks/Networks';
+import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
+import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -75,46 +71,6 @@ import type { SendFormState } from './shared/SendFormState';
 import { fromConfiguration, toConfiguration } from './shared/helpers';
 
 const rootNode = getRootDomNode();
-
-function useSearchParamsObj<T extends Record<string, string | undefined>>() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const value = useMemo(() => {
-    return Object.fromEntries(searchParams) as Partial<T>;
-  }, [searchParams]);
-  // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
-  const setSearchParamsStable = useEvent(setSearchParams);
-  const setValue = useCallback(
-    (setStateAction: (value: T) => T) => {
-      setSearchParamsStable(
-        (current) => {
-          const value = setStateAction(Object.fromEntries(current) as T);
-          for (const key of current.keys()) {
-            current.delete(key);
-          }
-          for (const key in value) {
-            const newVal = value[key as keyof typeof value];
-            if (newVal) {
-              current.set(key, newVal);
-            }
-          }
-          return current;
-        },
-        { replace: true }
-      );
-    },
-    [setSearchParamsStable]
-  );
-  return [value, setValue] as const;
-}
-
-function getDefaultChain(address: string, positions: AddressPosition[]) {
-  const chain = getChainWithMostAssetValue(positions ?? []);
-  if (chain) {
-    return chain;
-  } else {
-    return isSolanaAddress(address) ? NetworkId.Solana : NetworkId.Ethereum;
-  }
-}
 
 const sendFormDefaultState: SendFormState = {
   type: 'token' as const,
@@ -504,7 +460,7 @@ function SendFormComponent() {
               onFeeValueCommonReady={handleFeeValueCommonReady}
               configuration={configuration}
               onConfigurationChange={(value) => {
-                const partial = fromConfiguration(value);
+                const { slippage: _, ...partial } = fromConfiguration(value);
                 setUserFormState((state) => ({ ...state, ...partial }));
               }}
               gasback={gasbackEstimation}

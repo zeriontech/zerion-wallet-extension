@@ -24,7 +24,6 @@ export function useAddressPositionsFromBackendOrNode({
     { addresses: [address], currency },
     { source: useHttpClientSource() },
     {
-      // we query positions for all chains, so we can do it even before the "supported" check is ready
       enabled: hasChain && isSupportedByBackend === true,
       refetchInterval: usePositionsRefetchInterval(20000),
     }

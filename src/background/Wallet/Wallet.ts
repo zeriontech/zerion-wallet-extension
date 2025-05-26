@@ -109,6 +109,7 @@ import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
+import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -137,12 +138,11 @@ import { toPlainTransactionResponse } from './model/ethers-v5-types';
 
 async function prepareNonce<
   T extends { nonce?: number | null; from?: string | null }
->(transaction: T, networks: Networks, chain: string) {
+>(transaction: T, network: NetworkConfig) {
   if (transaction.nonce == null) {
     invariant(transaction.from, '"from" field is missing from transaction');
     const txCount = await backgroundGetBestKnownTransactionCount({
-      networks,
-      chain: createChain(chain),
+      network,
       address: transaction.from,
       defaultBlock: 'pending',
     });
@@ -981,15 +981,11 @@ export class Wallet {
     const networks = await networksStore.load({ chains: [chain] });
     const chainId = networks.getChainId(createChain(chain));
     invariant(chainId, 'Chain id should exist for approve transaction');
-    const provider = await this.getProvider(chainId);
-    const abi = [
-      'function approve(address, uint256) public returns (bool success)',
-    ];
-    const contract = new ethers.Contract(contractAddress, abi, provider);
-    const tx = await contract.approve.populateTransaction(
-      spender,
-      allowanceQuantityBase
-    );
+    const tx = await createApprovalTransaction({
+      contractAddress,
+      spenderAddress: spender,
+      amountBase: allowanceQuantityBase,
+    });
     return { ...tx, chainId };
   }
 
@@ -1074,10 +1070,14 @@ export class Wallet {
       return Networks.getChainId(network);
     } else {
       const currentAddress = this.readCurrentAddress();
-      if (currentAddress && isSolanaAddress(currentAddress)) {
-        throw new Error('Solana does not support chainId');
-      }
       const fallbackChainId = '0x1' as ChainId;
+      if (currentAddress && isSolanaAddress(currentAddress)) {
+        // TODO: What's the correct return value in this case? Can we avoid this?
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Solana does not support chainId (requested by ${origin})`
+        );
+      }
       return fallbackChainId;
     }
   }
@@ -1215,12 +1215,13 @@ export class Wallet {
 
   private async sendTransaction({
     transaction: incomingTransaction,
+    txContext,
     context,
-    ...transactionContextParams
   }: {
     transaction: IncomingTransactionAA;
+    txContext: TransactionContextParams;
     context: Partial<ChannelContext> | undefined;
-  } & TransactionContextParams): Promise<SerializableTransactionResponse> {
+  }): Promise<SerializableTransactionResponse> {
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
       throw new Error(
@@ -1228,7 +1229,7 @@ export class Wallet {
       );
     }
     const currentAddress = this.ensureCurrentAddress();
-    const { initiator, chain } = transactionContextParams;
+    const { initiator } = txContext;
     if (
       normalizeAddress(incomingTransaction.from) !==
       normalizeAddress(currentAddress)
@@ -1248,12 +1249,13 @@ export class Wallet {
 
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const networks = await networksStore.loadNetworksByChainId(chainId);
+    const network = networks.getNetworkById(chainId);
     const prepared = prepareTransaction(incomingTransaction);
     const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
       source: mode === 'testnet' ? 'testnet' : 'mainnet',
       apiClient: ZerionAPI,
     });
-    const transaction = await prepareNonce(txWithFee, networks, chain);
+    const transaction = await prepareNonce(txWithFee, network);
 
     const paymasterEligible = Boolean(transaction.customData?.paymasterParams);
 
@@ -1265,7 +1267,7 @@ export class Wallet {
         const typedData = createTypedData(eip712Tx);
         const signature = await this.signTypedData_v4({
           context,
-          params: { typedData, ...transactionContextParams },
+          params: { typedData, typedDataContext: txContext },
         });
         const rawTransaction = serializePaymasterTx({
           transaction: eip712Tx,
@@ -1274,7 +1276,7 @@ export class Wallet {
 
         return await this.sendSignedTransaction({
           context,
-          params: { serialized: rawTransaction, ...transactionContextParams },
+          params: { serialized: rawTransaction, txContext },
         });
       } catch (error) {
         throw getEthersError(error);
@@ -1292,7 +1294,7 @@ export class Wallet {
         emitter.emit(
           'transactionSent',
           { evm: safeTxPlain },
-          { mode, ...transactionContextParams }
+          { mode, ...txContext }
         );
         return safeTxPlain;
       } catch (error) {
@@ -1314,7 +1316,7 @@ export class Wallet {
     return this.sendTransaction({
       transaction,
       context,
-      ...transactionContextParams,
+      txContext: transactionContextParams,
     });
   }
 
@@ -1471,13 +1473,14 @@ export class Wallet {
   async sendSignedTransaction({
     params,
     context,
-  }: WalletMethodParams<
-    { serialized: string } & TransactionContextParams
-  >): Promise<SerializableTransactionResponse> {
+  }: WalletMethodParams<{
+    serialized: string;
+    txContext: TransactionContextParams;
+  }>): Promise<SerializableTransactionResponse> {
     this.verifyInternalOrigin(context);
     this.ensureStringOrigin(context);
-    const { serialized, ...transactionContextParams } = params;
-    const { chain } = transactionContextParams;
+    const { serialized, txContext } = params;
+    const { chain } = txContext;
     const networksStore = getNetworksStore(Model.getPreferences(this.record));
     const networks = await networksStore.load({ chains: [chain] });
     const chainId = networks.getChainId(createChain(chain));
@@ -1501,7 +1504,7 @@ export class Wallet {
       emitter.emit(
         'transactionSent',
         { evm: safeTxPlain },
-        { mode, ...transactionContextParams }
+        { mode, ...txContext }
       );
       return safeTxPlain;
     } catch (error) {
@@ -1526,11 +1529,12 @@ export class Wallet {
   }
 
   async signTypedData_v4({
-    params: { typedData: rawTypedData, ...messageContextParams },
+    params: { typedData: rawTypedData, typedDataContext: messageContextParams },
     context,
-  }: WalletMethodParams<
-    { typedData: TypedData | string } & MessageContextParams
-  >) {
+  }: WalletMethodParams<{
+    typedData: TypedData | string;
+    typedDataContext: MessageContextParams;
+  }>) {
     this.verifyInternalOrigin(context);
     if (!rawTypedData) {
       throw new InvalidParams();

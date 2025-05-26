@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
-import type { Chain } from 'src/modules/networks/Chain';
+import { type Chain } from 'src/modules/networks/Chain';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import {
   getPreferences,
   usePreferences,
 } from 'src/ui/features/preferences/usePreferences';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
+import { useNetworkConfig } from 'src/modules/networks/useNetworks';
 import { queryClient } from './queryClient';
 
 const QUERY_NAME = 'defi-sdk/gasPrices';
@@ -18,8 +19,8 @@ export async function queryGasPrices(chain: Chain) {
     queryKey: [QUERY_NAME, chain, source],
     queryFn: async () => {
       const networksStore = await getNetworksStore();
-      const networks = await networksStore.load({ chains: [chain.toString()] });
-      return fetchGasPrice({ chain, networks, source, apiClient: ZerionAPI });
+      const network = await networksStore.fetchNetworkById(chain.toString());
+      return fetchGasPrice({ network, source, apiClient: ZerionAPI });
     },
     staleTime: 10000,
   });
@@ -28,18 +29,17 @@ export async function queryGasPrices(chain: Chain) {
 export function useGasPrices(chain: Chain | null, { suspense = false } = {}) {
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
+  const { data: network } = useNetworkConfig(chain?.toString() ?? null);
   return useQuery({
-    queryKey: [QUERY_NAME, chain, source],
+    queryKey: [QUERY_NAME, source, network],
     queryFn: async () => {
-      if (!chain) {
+      if (!network) {
         return null;
       }
-      const networksStore = await getNetworksStore();
-      const networks = await networksStore.load({ chains: [chain.toString()] });
-      return fetchGasPrice({ chain, networks, source, apiClient: ZerionAPI });
+      return fetchGasPrice({ network, source, apiClient: ZerionAPI });
     },
     useErrorBoundary: true,
-    enabled: Boolean(chain),
+    enabled: Boolean(network && network.standard === 'eip155'),
     suspense,
     staleTime: 10000,
   });

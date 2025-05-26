@@ -1,13 +1,16 @@
-import { useSelectorStore, useStore } from '@store-unit/react';
 import {
   Navigate,
   useNavigate,
   useNavigationType,
   useSearchParams,
 } from 'react-router-dom';
-import { client, useAddressMembership } from 'defi-sdk';
-import type { SwapFormState, SwapFormView } from '@zeriontech/transactions';
-import { useSwapForm } from '@zeriontech/transactions';
+import type { AddressPosition } from 'defi-sdk';
+import { client, useAssetsPrices } from 'defi-sdk';
+import { isTruthy } from 'is-truthy-ts';
+import {
+  EmptyAddressPosition,
+  sortPositionsByValue,
+} from '@zeriontech/transactions';
 import React, {
   useCallback,
   useEffect,
@@ -23,7 +26,8 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import { useNetworkConfig } from 'src/modules/networks/useNetworks';
+import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { PageTop } from 'src/ui/components/PageTop';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -31,16 +35,13 @@ import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { StoreWatcher } from 'src/ui/shared/StoreWatcher';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { baseToCommon, commonToBase } from 'src/shared/units/convert';
-import { getAddress, getDecimals } from 'src/modules/networks/asset';
+import { commonToBase } from 'src/shared/units/convert';
+import { getDecimals } from 'src/modules/networks/asset';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { walletPort } from 'src/ui/shared/channels';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
@@ -51,7 +52,6 @@ import { TransactionConfirmationView } from 'src/ui/components/address-action/Tr
 import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
-import { isPremiumMembership } from 'src/ui/shared/requests/premium/isPremiumMembership';
 import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
@@ -68,35 +68,40 @@ import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import BigNumber from 'bignumber.js';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import {
+  queryHttpAddressPositions,
+  useHttpAddressPositions,
+} from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { getGas } from 'src/modules/ethereum/transactions/getGas';
-import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
-import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
-import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { getQuoteTx, useQuotes } from 'src/ui/shared/requests/useQuotes';
+import { useQuotes2 } from 'src/ui/shared/requests/useQuotes';
+import { getAddressType } from 'src/shared/wallet/classifiers';
+import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
+import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
+import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
+import type { Quote2 } from 'src/shared/types/Quote';
 import {
-  DEFAULT_CONFIGURATION,
-  applyConfiguration,
-} from '../SendTransaction/TransactionConfiguration/applyConfiguration';
+  toIncomingTransaction,
+  toMultichainTransaction,
+} from 'src/shared/types/Quote';
+import { modifyApproveAmount } from 'src/modules/ethereum/transactions/appovals';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
-import { SpendTokenField } from './fieldsets/SpendTokenField';
-import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
+import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
+import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { RateLine } from './Quotes';
-import { SuccessState } from './SuccessState';
 import * as styles from './styles.module.css';
 import { ApproveHintLine } from './ApproveHintLine';
-import { useApproveHandler } from './shared/useApproveHandler';
 import {
   BottomArc,
   ReverseButton,
@@ -109,34 +114,35 @@ import { getPopularTokens } from './shared/getPopularTokens';
 import type { PriceImpact } from './shared/price-impact';
 import { calculatePriceImpact } from './shared/price-impact';
 import { PriceImpactLine } from './shared/PriceImpactLine';
+import { SpendTokenField } from './fieldsets/SpendTokenField/SpendTokenField';
+import { ReceiveTokenField } from './fieldsets/ReceiveTokenField/ReceiveTokenField';
+import { SuccessState } from './SuccessState/SuccessState';
+import type { SwapFormState } from './shared/SwapFormState';
 
 const rootNode = getRootDomNode();
 
 function FormHint({
-  swapView,
+  formState,
+  inputPosition,
   quotesData,
   priceImpact,
   render,
 }: {
-  swapView: SwapFormView;
-  quotesData: QuotesData;
+  formState: SwapFormState;
+  inputPosition: AddressPosition | EmptyAddressPosition | null;
+  quotesData: QuotesData<Quote2>;
   priceImpact: PriceImpact | null;
   render: (message: React.ReactNode | null) => React.ReactNode;
 }) {
-  const { spendPosition } = swapView;
-  const { spendInput, receiveInput, primaryInput } = useSelectorStore(
-    swapView.store,
-    ['spendInput', 'receiveInput', 'primaryInput']
-  );
+  const { inputAmount } = formState;
 
-  const value = primaryInput === 'spend' ? spendInput : receiveInput;
-  const invalidValue = value && !isNumeric(value);
-  const valueMissing = !value || Number(value) === 0;
+  const invalidValue = inputAmount && !isNumeric(inputAmount);
+  const valueMissing = !inputAmount || Number(inputAmount) === 0;
 
-  const positionBalanceCommon = spendPosition
-    ? getPositionBalance(spendPosition)
+  const positionBalanceCommon = inputPosition
+    ? getPositionBalance(inputPosition)
     : null;
-  const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
+  const exceedsBalance = Number(inputAmount) > Number(positionBalanceCommon);
 
   const showPriceImpactWarning =
     priceImpact?.kind === 'loss' &&
@@ -166,10 +172,158 @@ function FormHint({
   return render(hint);
 }
 
-export function SwapFormComponent() {
-  useBackgroundKind({ kind: 'white' });
-  const { singleAddress: address, ready } = useAddressParams();
+function getDefaultState({
+  address,
+  positions,
+}: {
+  address: string;
+  positions: AddressPosition[] | null;
+}): SwapFormState {
+  return { inputChain: getDefaultChain(address, positions ?? []) };
+}
+
+async function queryPopularTokens(chain: Chain) {
+  return queryClient.fetchQuery({
+    queryKey: ['getPopularTokens', chain],
+    queryFn: () => getPopularTokens(chain),
+    staleTime: Infinity,
+  });
+}
+
+/**
+ * This value must be used until `prepareDefaultState` resolves
+ * so that `formState` object has stable order of keys. This is important
+ * for useQuotes helper which internally serializes formState into a URL string
+ * and makes refetches when this url changes
+ */
+const EMPTY_DEFAULT_STATE = {
+  inputChain: undefined,
+  inputFungibleId: undefined,
+  outputFungibleId: undefined,
+};
+async function prepareDefaultState({
+  address,
+  userStateInputChain,
+  currency,
+}: {
+  address: string;
+  userStateInputChain: string | null;
+  currency: string;
+}): Promise<SwapFormState> {
+  const source = await getHttpClientSource();
+  const { data: allPositions } = await queryHttpAddressPositions(
+    { addresses: [address], currency },
+    { source }
+  );
+  const networksStore = await getNetworksStore();
+  const inputChain =
+    userStateInputChain || getDefaultChain(address, allPositions ?? []);
+  const [network, popularTokens] = await Promise.all([
+    networksStore.fetchNetworkById(inputChain),
+    // TODO: this request takes and additional 0.5-1s for initial form load,
+    // but it's very unimportant. We can make popular tokens an optional param of
+    // prepareDefaultState and query it separately in the SwapForm component and pass it here.
+    // This may lead to an additional flicker, but only in a certain case, and to an overall faster
+    // form load
+    queryPopularTokens(createChain(inputChain)).catch(() => {
+      // we don't care a lot about these
+      return [];
+    }),
+  ]);
+
+  const positions = allPositions
+    .filter((p) => p.chain === inputChain)
+    .filter((p) => p.type === 'asset');
+  const sorted = sortPositionsByValue(positions);
+  const nativeAssetId = network.native_asset?.id;
+  const defaultInputFungibleId = sorted.at(0)?.asset.id || nativeAssetId;
+  const popularToken =
+    popularTokens.find((id) => id !== nativeAssetId) ?? 'USDC'; // todo
+  const defaultOutputFungibleId =
+    defaultInputFungibleId === nativeAssetId ? popularToken : nativeAssetId;
+  return {
+    inputChain,
+    inputFungibleId: defaultInputFungibleId,
+    outputFungibleId: defaultOutputFungibleId,
+  };
+}
+
+function usePosition({
+  assetId,
+  positions,
+  chain,
+}: {
+  assetId: string | null;
+  positions: AddressPosition[] | null;
+  chain: Chain | null;
+}) {
   const { currency } = useCurrency();
+  const assetsPrices = useAssetsPrices(
+    { asset_codes: [assetId].filter(isTruthy), currency },
+    { client, enabled: Boolean(assetId) }
+  );
+
+  const asset = assetsPrices.value?.[assetId ?? ''] ?? null;
+
+  const maybePosition = useMemo(
+    () =>
+      positions?.find(
+        (p) => p.asset.id === assetId && p.chain === chain?.toString()
+      ) ?? null,
+    [assetId, positions, chain]
+  );
+
+  return useMemo(() => {
+    if (maybePosition) {
+      return maybePosition;
+    } else if (asset && chain) {
+      return new EmptyAddressPosition({ asset, chain });
+    } else {
+      return null;
+    }
+  }, [asset, chain, maybePosition]);
+}
+
+type HandleChangeFunction = <K extends keyof SwapFormState>(
+  key: K,
+  value: SwapFormState[K]
+) => void;
+
+function reverseTokens(state: SwapFormState) {
+  const { outputFungibleId, inputFungibleId } = state;
+  const newState: SwapFormState = {};
+  if (outputFungibleId) {
+    newState.inputFungibleId = outputFungibleId;
+  }
+  if (inputFungibleId) {
+    newState.outputFungibleId = inputFungibleId;
+  }
+  return newState;
+}
+
+function changeAssetId<K extends keyof SwapFormState>(
+  state: SwapFormState,
+  key: K,
+  value: SwapFormState[K]
+) {
+  const isSameAsOpposite =
+    (key === 'inputFungibleId' && value === state.outputFungibleId) ||
+    (key === 'outputFungibleId' && value === state.inputFungibleId);
+  if (isSameAsOpposite) {
+    const newState = reverseTokens(state);
+    newState[key] = value;
+    return newState;
+  } else {
+    return { [key]: value };
+  }
+}
+
+function SwapFormComponent() {
+  useBackgroundKind({ kind: 'white' });
+  const { singleAddress: address, singleAddressNormalized } =
+    useAddressParams();
+  const { currency } = useCurrency();
+  const { innerHeight } = useWindowSizeStore();
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -177,376 +331,252 @@ export function SwapFormComponent() {
     useErrorBoundary: true,
   });
 
-  const { data: positionsResponse } = useHttpAddressPositions(
-    { addresses: [address], currency },
+  const [userFormState, setUserFormState] = useSearchParamsObj<SwapFormState>();
+
+  const refetchInterval = usePositionsRefetchInterval(20000);
+  const httpAddressPositionsQuery = useHttpAddressPositions(
+    { addresses: [singleAddressNormalized], currency },
     { source: useHttpClientSource() },
-    { refetchInterval: usePositionsRefetchInterval(20000) }
+    { refetchInterval }
   );
-  const positions = positionsResponse?.data ?? null;
+  /** All backend-known positions across all _supported_ chains */
+  const allPositions = httpAddressPositionsQuery.data?.data || null;
 
-  const { data: portfolioResponse } = useWalletPortfolio(
-    { addresses: [address], currency },
-    { source: useHttpClientSource() },
-    { enabled: ready }
-  );
-  const portfolioDecomposition = portfolioResponse?.data;
-  const addressChains = useMemo(
-    () => Object.keys(portfolioDecomposition?.chains || {}),
-    [portfolioDecomposition]
+  const defaultFormValues = useMemo<SwapFormState>(
+    () => getDefaultState({ address, positions: allPositions }),
+    [address, allPositions]
   );
 
-  const { networks } = useNetworks(addressChains);
-  const supportedChains = useMemo(() => {
-    const allNetworks = networks?.getNetworks() || [];
-    const networksForTrading = networks
-      ? allNetworks.filter((network) =>
-          networks.supports('trading', createChain(network.id))
-        )
-      : [];
-    return networksForTrading.map((network) => createChain(network.id));
-  }, [networks]);
+  const preState = useMemo(
+    () => ({ ...defaultFormValues, ...userFormState }),
+    [userFormState, defaultFormValues]
+  );
 
-  const swapView = useSwapForm({
+  const { data: defaultState = EMPTY_DEFAULT_STATE, ...defaultStateQuery } =
+    useQuery({
+      queryKey: [
+        'prepareDefaultSwapState',
+        singleAddressNormalized,
+        currency,
+        userFormState.inputChain,
+      ],
+      queryFn: async () => {
+        const result = await prepareDefaultState({
+          address: singleAddressNormalized,
+          currency,
+          userStateInputChain: userFormState.inputChain ?? null,
+        });
+        return result;
+      },
+      staleTime: Infinity,
+      suspense: false,
+      keepPreviousData: true,
+    });
+
+  const formState: SwapFormState = useMemo(
+    () => ({ ...defaultState, ...preState }),
+    [defaultState, preState]
+  );
+
+  const handleChange = useCallback<HandleChangeFunction>(
+    (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),
+    [setUserFormState]
+  );
+
+  /** Same as handleChange, but reverses tokens if selected asset is same as the opposite one */
+  const handleAssetChange = useEvent<HandleChangeFunction>((key, value) => {
+    setUserFormState((state) => ({
+      ...state,
+      ...changeAssetId(formState, key, value),
+    }));
+  });
+
+  const { inputAmount, inputFungibleId, inputChain, outputFungibleId } =
+    formState;
+
+  const availablePositions = useMemo(() => {
+    const positions = allPositions
+      ?.filter((p) => p.chain === inputChain)
+      .filter((p) => p.type === 'asset');
+    return sortPositionsByValue(positions);
+  }, [allPositions, inputChain]);
+
+  const spendChain = inputChain ? createChain(inputChain) : null;
+  const { data: network } = useNetworkConfig(inputChain ?? null);
+
+  const inputPosition = usePosition({
+    assetId: inputFungibleId ?? null,
+    positions: allPositions,
+    chain: spendChain,
+  });
+  const outputPosition = usePosition({
+    assetId: outputFungibleId ?? null,
+    positions: allPositions,
+    chain: spendChain,
+  });
+
+  const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const slippageDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
+  const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
+
+  const formId = useId();
+
+  const quotesData = useQuotes2({
+    address: singleAddressNormalized,
     currency,
-    client,
-    positions,
-    asset_code: null,
-    getNativeAssetId: async (chain) => {
-      const networksStore = await getNetworksStore();
-      const networks = await networksStore.load({ chains: [chain.toString()] });
-      return networks.getNetworkByName(chain)?.native_asset?.id || null;
-    },
-    supportedChains,
-    DEFAULT_CONFIGURATION,
-    getPopularTokens,
+    formState,
+    enabled: defaultStateQuery.isFetched && !defaultStateQuery.isPreviousData,
   });
-
-  const {
-    primaryInput,
-    chainInput,
-    spendInput,
-    receiveInput,
-    spendTokenInput,
-    receiveTokenInput,
-  } = useSelectorStore(swapView.store, [
-    'primaryInput',
-    'chainInput',
-    'spendInput',
-    'receiveInput',
-    'spendTokenInput',
-    'receiveTokenInput',
-  ]);
-  const chain = chainInput ? createChain(chainInput) : null;
-  const { spendPosition, receivePosition, handleChange } = swapView;
-  const network = chain ? networks?.getNetworkByName(chain) : null;
-
-  const formRef = useRef<HTMLFormElement | null>(null);
-
-  const { slippage: userSlippage } = useStore(swapView.store.configuration);
-
-  const quotesData = useQuotes({
-    from: address,
-    userSlippage,
-    primaryInput: primaryInput ?? 'spend',
-    spendChainInput: chainInput,
-    receiveChainInput: null,
-    spendInput,
-    receiveInput,
-    spendTokenInput,
-    receiveTokenInput,
-    spendPosition,
-    receivePosition,
-    sortType: 'amount',
-  });
-
   const { refetch: refetchQuotes } = quotesData;
+
   const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
+  useEffect(() => {
+    setUserQuoteId(null);
+  }, [inputAmount, inputFungibleId, outputFungibleId, inputChain]);
 
   const selectedQuote = useMemo(() => {
     const userQuote = quotesData.quotes?.find(
-      (quote) => quote.contract_metadata?.id === userQuoteId
+      (quote) => quote.contractMetadata?.id === userQuoteId
     );
     const defaultQuote = quotesData.quotes?.[0];
     return userQuote || defaultQuote || null;
   }, [userQuoteId, quotesData.quotes]);
 
-  useEffect(() => {
-    setUserQuoteId(null);
-  }, [spendInput, spendTokenInput, receiveTokenInput, chainInput]);
-
-  const swapTransaction = useMemo(
-    () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
-    [selectedQuote]
-  );
-
-  useEffect(() => {
-    if (!selectedQuote) {
-      const opposite =
-        primaryInput === 'receive' ? 'spendInput' : 'receiveInput';
-      handleChange(opposite, '');
-    } else if (primaryInput === 'spend' && chain && receivePosition) {
-      const value = selectedQuote.output_amount_estimation || 0;
-      const decimals = getDecimals({ asset: receivePosition.asset, chain });
-      handleChange('receiveInput', baseToCommon(value, decimals).toFixed());
-    } else if (primaryInput === 'receive' && chain && spendPosition) {
-      const value = selectedQuote.input_amount_estimation || 0;
-      const decimals = getDecimals({ asset: spendPosition.asset, chain });
-      handleChange('spendInput', baseToCommon(value, decimals).toFixed());
-    }
-  }, [
-    chain,
-    handleChange,
-    primaryInput,
-    selectedQuote,
-    receivePosition,
-    spendPosition,
-  ]);
-
-  const { receiveAsset, spendAsset } = swapView;
-
-  const priceImpact = useMemo(() => {
-    return calculatePriceImpact({
-      inputValue: spendInput || null,
-      outputValue: receiveInput || null,
-      inputAsset: spendAsset,
-      outputAsset: receiveAsset,
-    });
-  }, [receiveAsset, receiveInput, spendAsset, spendInput]);
-
-  const snapshotRef = useRef<SwapFormState | null>(null);
-  const onBeforeSubmit = () => {
-    snapshotRef.current = swapView.store.getState();
-  };
-
-  const feeValueCommonRef = useRef<string | null>(
-    null
-  ); /** for analytics only */
-  const handleFeeValueCommonReady = useCallback((value: string) => {
-    feeValueCommonRef.current = value;
-  }, []);
-
-  const { data: gasPrices } = useGasPrices(chain);
-
-  const spendAmountBase = useMemo(
-    () =>
-      spendInput && spendPosition && chain
-        ? commonToBase(
-            spendInput,
-            getDecimals({ asset: spendPosition.asset, chain })
-          ).toFixed()
-        : null,
-    [chain, spendInput, spendPosition]
-  );
-
-  const [allowanceQuantityBase, setAllowanceQuantityBase] =
-    useState(spendAmountBase);
-
-  useEffect(() => setAllowanceQuantityBase(spendAmountBase), [spendAmountBase]);
-
-  const spendTokenContractAddress =
-    spendPosition && chain
-      ? getAddress({ asset: spendPosition.asset, chain }) ?? null
-      : null;
-  const {
-    enough_allowance,
-    allowanceQuery: { refetch: refetchAllowanceQuery },
-    approvalTransactionQuery: { isFetching: approvalTransactionIsFetching },
-    approvalTransaction,
-  } = useApproveHandler({
-    address,
-    chain,
-    spendAmountBase,
-    allowanceQuantityBase,
-    spender: selectedQuote?.token_spender ?? null,
-    contractAddress: spendTokenContractAddress,
-    enabled:
-      quotesData.done &&
-      Boolean(selectedQuote && !selectedQuote.enough_allowance),
-    keepPreviousData: false,
-  });
-
-  const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
-  const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
-
-  const txToCheck =
-    quotesData.done && !enough_allowance
-      ? approvalTransaction
-      : swapTransaction;
-
-  const { data: networkNonce, refetch: refetchNonce } = useQuery({
-    suspense: false,
-    queryKey: ['uiGetBestKnownTransactionCount', address, chain, networks],
-    queryFn: async () => {
-      if (!chain || !networks) {
-        return null;
-      }
-      const result = await uiGetBestKnownTransactionCount({
-        address,
-        chain,
-        networks,
-        defaultBlock: 'pending',
-      });
-      return result.value;
-    },
-  });
-
-  const USE_PAYMASTER_FEATURE = true;
-
-  const configuration = useStore(swapView.store.configuration);
-  const userNonce = configuration.nonce;
-  const nonce = userNonce ?? networkNonce ?? undefined;
-  const gas = txToCheck ? getGas(txToCheck) : null;
-  const eligibilityParams:
-    | null
-    | Parameters<ZerionApiClient['paymasterCheckEligibility']>[0] =
-    USE_PAYMASTER_FEATURE && txToCheck && txToCheck.to && nonce != null && gas
-      ? {
-          chainId: txToCheck.chainId,
-          from: address,
-          to: txToCheck.to,
-          value: 'value' in txToCheck ? txToCheck.value : null,
-          data: txToCheck.data,
-          gas,
-          nonce: Number(nonce),
-        }
-      : null;
-  const paymasterPossible =
-    USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
-  const eligibilityQuery = useTxEligibility(eligibilityParams, {
-    enabled: paymasterPossible,
-  });
-
-  const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
-
   const { data: gasbackEstimation } = useGasbackEstimation({
-    paymasterEligible: eligibilityQuery.data?.data.eligible ?? null,
+    paymasterEligible: Boolean(
+      selectedQuote?.transactionSwap?.evm?.customData?.paymasterParams
+    ),
     suppportsSimulations: network?.supports_simulations ?? false,
     supportsSponsoredTransactions: network?.supports_sponsored_transactions,
   });
 
-  const configureTransactionToBeSigned = useEvent(
-    (tx: IncomingTransactionWithChainId) => {
-      invariant(chain && networks, 'Not ready to prepare the transaction');
-      const configuration = swapView.store.configuration.getState();
-      let txToSign = applyConfiguration(tx, configuration, gasPrices);
-      if (paymasterEligible && txToSign.nonce == null) {
-        txToSign = {
-          ...txToSign,
-          nonce: nonce != null ? Number(nonce) : undefined,
-        };
-        invariant(txToSign.nonce, 'Nonce is required for a paymaster tx');
-      }
-      return { ...txToSign, from: address };
-    }
-  );
+  const currentTransaction =
+    selectedQuote?.transactionApprove || selectedQuote?.transactionSwap || null;
 
-  const { preferences } = usePreferences();
-  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
+  const [allowanceBase, setAllowanceBase] = useState<string | null>(null);
+
+  useEffect(() => setAllowanceBase(null), [inputAmount, inputFungibleId]);
 
   const {
     mutate: sendApproveTransaction,
-    data: approveHash,
+    data: approveHash = null,
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
-    mutationFn: async (): Promise<string> => {
-      invariant(approvalTransaction, 'approve transaction is not configured');
-      let transaction = configureTransactionToBeSigned(approvalTransaction);
-      if (paymasterEligible) {
-        transaction = await fetchAndAssignPaymaster(transaction, {
-          source,
-          apiClient: ZerionAPI,
-        });
-      }
-      const feeValueCommon = feeValueCommonRef.current || null;
+    mutationFn: async () => {
+      invariant(
+        selectedQuote?.transactionApprove?.evm,
+        'Approval transaction is not configured'
+      );
 
-      invariant(chain, 'Chain must be defined to sign the tx');
+      invariant(spendChain, 'Chain must be defined to sign the tx');
       invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
-      invariant(spendPosition, 'Spend position must be defined');
-      invariant(selectedQuote, 'Cannot submit transaction without a quote');
+      invariant(inputPosition, 'Spend position must be defined');
+      invariant(formState.inputAmount, 'inputAmount must be set');
+
+      const evmTx = selectedQuote.transactionApprove.evm;
+      const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
+      const approvalTx =
+        allowanceBase && !isPaymasterTx
+          ? await modifyApproveAmount(evmTx, allowanceBase)
+          : evmTx;
+
+      const inputAmountBase = commonToBase(
+        formState.inputAmount,
+        getDecimals({ asset: inputPosition.asset, chain: spendChain })
+      ).toFixed();
 
       const txResponse = await approveTxBtnRef.current.sendTransaction({
-        transaction: { evm: transaction },
-        chain: chain.toString(),
+        transaction: { evm: toIncomingTransaction(approvalTx) },
+        chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
-        feeValueCommon,
-        addressAction: createApproveAddressAction({
-          transaction: { ...transaction, from: address },
-          asset: spendPosition.asset,
-          quantity: selectedQuote.input_amount_estimation,
-          chain,
-        }),
+        feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
+        addressAction: selectedQuote.transactionApprove.evm
+          ? createApproveAddressAction({
+              transaction: toIncomingTransaction(
+                selectedQuote.transactionApprove.evm
+              ),
+              asset: inputPosition.asset,
+              quantity: inputAmountBase,
+              chain: spendChain,
+            })
+          : null,
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;
     },
-    onMutate: () => 'sendTransaction',
   });
 
-  const approveTxStatus = useTransactionStatus(approveHash ?? null);
+  const approveTxStatus = useTransactionStatus(approveHash);
   useEffect(() => {
     if (approveTxStatus === 'confirmed') {
-      refetchAllowanceQuery();
       refetchQuotes();
-      refetchNonce();
     } else if (approveTxStatus === 'failed' || approveTxStatus === 'dropped') {
       resetApproveMutation();
     }
-  }, [
-    approveTxStatus,
-    refetchAllowanceQuery,
-    refetchNonce,
-    refetchQuotes,
-    resetApproveMutation,
-  ]);
+  }, [resetApproveMutation, approveTxStatus, refetchQuotes]);
 
-  const {
-    mutate: sendTransaction,
-    data: transactionHash,
-    isLoading,
-    reset,
-    isSuccess,
-    ...sendTransactionMutation
-  } = useMutation({
-    mutationFn: async (): Promise<string> => {
-      if (!gasPrices) {
-        throw new Error('Unknown gas price');
-      }
-      invariant(selectedQuote, 'Cannot submit transaction without a quote');
-      invariant(swapTransaction, 'No transaction in quote');
-      let transaction = configureTransactionToBeSigned(swapTransaction);
-      if (paymasterEligible) {
-        transaction = await fetchAndAssignPaymaster(transaction, {
-          source,
-          apiClient: ZerionAPI,
-        });
-      }
-      const feeValueCommon = feeValueCommonRef.current || null;
-      invariant(chain, 'Chain must be defined to sign the tx');
+  const isApproveMode =
+    approveMutation.isLoading ||
+    selectedQuote?.transactionApprove ||
+    approveTxStatus === 'pending';
+  const showApproveHintLine =
+    Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
+
+  const snapshotRef = useRef<{ state: SwapFormState } | null>(null);
+  const onBeforeSubmit = () => {
+    snapshotRef.current = { state: { ...formState } };
+  };
+  const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
+    mutationFn: async (): Promise<SignTransactionResult> => {
       invariant(
-        spendPosition && receivePosition,
+        selectedQuote?.transactionSwap,
+        'Cannot submit transaction without a quote'
+      );
+      const { inputAmount } = formState;
+      invariant(spendChain, 'Chain must be defined to sign the tx');
+      invariant(inputAmount, 'inputAmount must be set');
+      invariant(
+        inputPosition && outputPosition,
         'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      const spendValue = selectedQuote.input_amount_estimation;
-      const receiveValue = selectedQuote.output_amount_estimation;
+      const inputAmountBase = commonToBase(
+        inputAmount,
+        getDecimals({ asset: inputPosition.asset, chain: spendChain })
+      ).toFixed();
+      const outputAmountBase = commonToBase(
+        selectedQuote.outputAmount.quantity,
+        getDecimals({ asset: outputPosition.asset, chain: spendChain })
+      ).toFixed();
       const txResponse = await sendTxBtnRef.current.sendTransaction({
-        transaction: { evm: transaction },
-        chain: chain.toString(),
+        transaction: toMultichainTransaction(selectedQuote.transactionSwap),
+        chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
-        feeValueCommon,
-        addressAction: createTradeAddressAction({
-          transaction,
-          outgoing: [{ asset: spendPosition.asset, quantity: spendValue }],
-          incoming: [{ asset: receivePosition.asset, quantity: receiveValue }],
-          chain,
-        }),
+        feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
+        addressAction: selectedQuote.transactionSwap.evm
+          ? createTradeAddressAction({
+              transaction: toIncomingTransaction(
+                selectedQuote.transactionSwap.evm
+              ),
+              outgoing: [
+                { asset: inputPosition.asset, quantity: inputAmountBase },
+              ],
+              incoming: [
+                { asset: outputPosition.asset, quantity: outputAmountBase },
+              ],
+              chain: spendChain,
+            })
+          : null,
         quote: selectedQuote,
+        outputChain: inputChain ?? null,
       });
-      invariant(txResponse.evm?.hash);
-      return txResponse.evm.hash;
+      return txResponse;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
@@ -558,53 +588,28 @@ export function SwapFormComponent() {
     },
   });
 
-  const resetMutationIfNotLoading = useEvent(() => {
-    if (!isLoading) {
-      reset();
-    }
-  });
+  const outputAmount = selectedQuote?.outputAmount.quantity || null;
 
-  useEffect(() => {
-    swapView.store.on('change', (state, prevState) => {
-      const keys = [
-        'chainInput',
-        'spendInput',
-        'spendTokenInput',
-        'receiveTokenInput',
-      ] as const;
-      if (keys.some((key) => state[key] !== prevState[key])) {
-        resetMutationIfNotLoading();
-        resetApproveMutation();
-      }
+  const priceImpact = useMemo(() => {
+    return calculatePriceImpact({
+      inputValue: inputAmount || null,
+      outputValue: outputAmount || null,
+      inputAsset: inputPosition?.asset ?? null,
+      outputAsset: outputPosition?.asset ?? null,
     });
-  }, [resetApproveMutation, resetMutationIfNotLoading, swapView.store]);
-
-  const formId = useId();
-
-  const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const slippageDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-
-  const { value: premiumValue } = useAddressMembership({ address });
-  const isPremium = isPremiumMembership(premiumValue);
-  useEffect(() => {
-    if (!isPremium) {
-      handleChange('primaryInput', 'spend');
-    }
-  }, [handleChange, isPremium]);
-
-  const { innerHeight } = useWindowSizeStore();
-
-  const navigate = useNavigate();
+  }, [inputAmount, inputPosition?.asset, outputAmount, outputPosition?.asset]);
 
   const gasbackValueRef = useRef<number | null>(null);
   const handleGasbackReady = useCallback((value: number) => {
     gasbackValueRef.current = value;
   }, []);
 
-  if (isSuccess) {
+  const navigate = useNavigate();
+
+  if (sendTransactionMutation.isSuccess) {
+    const result = sendTransactionMutation.data;
     invariant(
-      spendPosition && receivePosition && transactionHash,
+      inputPosition && outputPosition && result,
       'Missing Form State View values'
     );
     invariant(
@@ -613,32 +618,20 @@ export function SwapFormComponent() {
     );
     return (
       <SuccessState
-        hash={transactionHash}
-        spendPosition={spendPosition}
-        receivePosition={receivePosition}
-        swapFormState={snapshotRef.current}
+        hash={result.evm?.hash ?? ensureSolanaResult(result).signature}
+        inputPosition={inputPosition}
+        outputPosition={outputPosition}
+        swapFormState={snapshotRef.current.state}
         gasbackValue={gasbackValueRef.current}
         onDone={() => {
-          reset();
+          sendTransactionMutation.reset();
           snapshotRef.current = null;
-          feeValueCommonRef.current = null;
           gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
     );
   }
-
-  const isApproveMode =
-    approveMutation.isLoading ||
-    (quotesData.done && !enough_allowance) ||
-    approveTxStatus === 'pending';
-  const showApproveHintLine =
-    (quotesData.done && !enough_allowance) || !approveMutation.isIdle;
-
-  const currentTransaction = isApproveMode
-    ? approvalTransaction
-    : swapTransaction;
 
   return (
     <PageColumn>
@@ -677,7 +670,7 @@ export function SwapFormComponent() {
         height="360px"
         containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => {
-          invariant(chain, 'Chain must be defined');
+          invariant(spendChain, 'Chain must be defined');
           return (
             <>
               <DialogTitle
@@ -686,18 +679,14 @@ export function SwapFormComponent() {
                 title={<UIText kind="headline/h3">Slippage</UIText>}
               />
               <Spacer height={24} />
-              <StoreWatcher
-                store={swapView.store.configuration}
-                render={(configuration) => (
-                  <SlippageSettings
-                    chain={chain}
-                    configuration={configuration}
-                    onConfigurationChange={(value) => {
-                      swapView.store.configuration.setState(value);
-                      slippageDialogRef.current?.close();
-                    }}
-                  />
-                )}
+              <SlippageSettings
+                chain={spendChain}
+                configuration={toConfiguration(formState)}
+                onConfigurationChange={(value) => {
+                  const partial = fromConfiguration(value);
+                  setUserFormState((state) => ({ ...state, ...partial }));
+                  slippageDialogRef.current?.close();
+                }}
               />
             </>
           );
@@ -706,40 +695,48 @@ export function SwapFormComponent() {
 
       <BottomSheetDialog
         ref={confirmDialogRef}
-        key={currentTransaction === approvalTransaction ? 'approve' : 'swap'}
+        key={selectedQuote?.transactionApprove ? 'approve' : 'swap'}
         height="min-content"
         displayGrid={true}
         style={{ minHeight: innerHeight >= 750 ? '70vh' : '90vh' }}
         containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => {
-          invariant(
-            currentTransaction,
-            'Transaction must be defined to confirm'
-          );
+          invariant(currentTransaction, 'Tx must be defined to confirm');
           invariant(wallet, 'Current wallet not found');
-          invariant(chain, 'Chain must be defined');
+          invariant(spendChain, 'Chain must be defined');
+
           return (
             <ViewLoadingSuspense>
               <TransactionConfirmationView
-                title={
-                  currentTransaction === approvalTransaction
-                    ? 'Approve'
-                    : 'Trade'
-                }
+                title={selectedQuote?.transactionApprove ? 'Approve' : 'Trade'}
                 wallet={wallet}
                 showApplicationLine={true}
-                chain={chain}
-                transaction={{
-                  evm: configureTransactionToBeSigned(currentTransaction),
-                }}
-                configuration={swapView.store.configuration.getState()}
-                localAllowanceQuantityBase={allowanceQuantityBase || undefined}
-                onOpenAllowanceForm={() =>
-                  allowanceDialogRef.current?.showModal()
+                chain={spendChain}
+                transaction={toMultichainTransaction(currentTransaction)}
+                configuration={toConfiguration(formState)}
+                customAllowanceValueBase={allowanceBase || undefined}
+                onOpenAllowanceForm={
+                  currentTransaction.evm?.customData?.paymasterParams // support editing allowance only for non-paymaster transactions
+                    ? undefined
+                    : () => allowanceDialogRef.current?.showModal()
                 }
-                paymasterEligible={paymasterEligible}
-                paymasterPossible={paymasterPossible}
-                eligibilityQuery={eligibilityQuery}
+                paymasterEligible={Boolean(
+                  currentTransaction.evm?.customData?.paymasterParams
+                )}
+                paymasterPossible={Boolean(
+                  network?.supports_sponsored_transactions
+                )}
+                eligibilityQuery={{
+                  isError: false,
+                  status: 'success',
+                  data: {
+                    data: {
+                      eligible: Boolean(
+                        currentTransaction.evm?.customData?.paymasterParams
+                      ),
+                    },
+                  },
+                }}
                 onGasbackReady={handleGasbackReady}
               />
             </ViewLoadingSuspense>
@@ -751,21 +748,22 @@ export function SwapFormComponent() {
         ref={allowanceDialogRef}
         height="min-content"
         renderWhenOpen={() => {
-          invariant(chain, 'Chain must be defined');
+          invariant(spendChain, 'Chain must be defined');
+          invariant(inputAmount, 'inputAmount must be defined');
           invariant(
-            spendPosition?.asset,
+            inputPosition?.asset,
             'Spend position asset must be defined'
           );
           invariant(
-            spendPosition?.quantity,
+            inputPosition?.quantity,
             'Spend position quantity must be defined'
           );
-          invariant(
-            allowanceQuantityBase,
-            'Allowance quantity must be defined'
-          );
-          const value = new BigNumber(allowanceQuantityBase);
-          const positionBalanceCommon = getPositionBalance(spendPosition);
+
+          const asset = inputPosition.asset;
+          const decimals = getDecimals({ asset, chain: spendChain });
+          const spendAmountBase = commonToBase(inputAmount, decimals).toFixed();
+          const value = new BigNumber(allowanceBase || spendAmountBase);
+          const positionBalanceCommon = getPositionBalance(inputPosition);
           return (
             <ViewLoadingSuspense>
               <>
@@ -785,14 +783,14 @@ export function SwapFormComponent() {
                   }}
                 >
                   <AllowanceForm
-                    asset={spendPosition.asset}
-                    chain={chain}
+                    asset={inputPosition.asset}
+                    chain={spendChain}
                     address={address}
                     balance={positionBalanceCommon}
                     requestedAllowanceQuantityBase={UNLIMITED_APPROVAL_AMOUNT}
                     value={value}
                     onSubmit={(quantity) => {
-                      setAllowanceQuantityBase(quantity);
+                      setAllowanceBase(quantity);
                       allowanceDialogRef.current?.close();
                     }}
                   />
@@ -805,7 +803,6 @@ export function SwapFormComponent() {
 
       <form
         id={formId}
-        ref={formRef}
         onSubmit={(event) => {
           event.preventDefault();
 
@@ -827,29 +824,47 @@ export function SwapFormComponent() {
       >
         <VStack gap={16}>
           <NetworkSelect
-            value={chainInput ?? ''}
+            standard={getAddressType(address)}
+            value={formState.inputChain ?? ''}
             onChange={(value) => {
-              swapView.handleChange('chainInput', value);
+              handleChange('inputChain', value);
             }}
             dialogRootNode={rootNode}
-            filterPredicate={(network) =>
-              networks?.supports('trading', createChain(network.id)) || false
-            }
+            filterPredicate={(network) => network.supports_trading}
           />
           <VStack gap={4} style={{ position: 'relative' }}>
             <div style={{ position: 'relative' }}>
               <div className={styles.arcParent}>
-                <SpendTokenField swapView={swapView} />
+                <SpendTokenField
+                  formState={formState}
+                  onChange={handleAssetChange}
+                  outputAmount={outputAmount}
+                  positions={availablePositions}
+                  spendPosition={inputPosition}
+                  receivePosition={outputPosition}
+                />
                 <BottomArc />
               </div>
-              <ReverseButton onClick={() => swapView.store.reverseTokens()} />
+              <ReverseButton
+                onClick={() =>
+                  setUserFormState((state) => ({
+                    ...state,
+                    ...reverseTokens(formState),
+                  }))
+                }
+              />
             </div>
             <div className={styles.arcParent}>
               <TopArc />
               <ReceiveTokenField
-                swapView={swapView}
+                formState={formState}
+                onChange={handleAssetChange}
+                outputAmount={outputAmount}
+                positions={availablePositions}
+                spendPosition={inputPosition}
+                receivePosition={outputPosition}
                 priceImpact={priceImpact}
-                readOnly={!isPremium}
+                readOnly={true}
               />
             </div>
           </VStack>
@@ -870,15 +885,21 @@ export function SwapFormComponent() {
           }
         >
           <RateLine
-            spendAsset={swapView.spendPosition?.asset ?? null}
-            receiveAsset={swapView.receivePosition?.asset ?? null}
             quotesData={quotesData}
             selectedQuote={selectedQuote}
             onQuoteIdChange={setUserQuoteId}
-            configuration={configuration}
           />
-          {chain ? <SlippageLine chain={chain} swapView={swapView} /> : null}
-          {currentTransaction && chain && currentTransaction.gasLimit ? (
+          {spendChain ? (
+            <SlippageLine
+              formState={formState}
+              receiveAsset={outputPosition?.asset ?? null}
+              chain={spendChain}
+              outputAmount={selectedQuote?.outputAmount.quantity ?? null}
+            />
+          ) : null}
+          {isEthereumAddress(address) &&
+          currentTransaction?.evm &&
+          spendChain ? (
             <React.Suspense
               fallback={
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -886,29 +907,36 @@ export function SwapFormComponent() {
                 </div>
               }
             >
-              <StoreWatcher
-                store={swapView.store.configuration}
-                render={(configuration) => (
-                  <TransactionConfiguration
-                    keepPreviousData={true}
-                    transaction={currentTransaction}
-                    from={address}
-                    chain={chain}
-                    paymasterEligible={paymasterEligible}
-                    paymasterPossible={paymasterPossible}
-                    paymasterWaiting={false}
-                    onFeeValueCommonReady={handleFeeValueCommonReady}
-                    configuration={configuration}
-                    onConfigurationChange={(value) =>
-                      swapView.store.configuration.setState(value)
-                    }
-                    gasback={gasbackEstimation}
-                  />
+              <TransactionConfiguration
+                keepPreviousData={true}
+                transaction={toIncomingTransaction(currentTransaction.evm)}
+                from={address}
+                chain={spendChain}
+                paymasterEligible={Boolean(
+                  currentTransaction.evm.customData?.paymasterParams
                 )}
+                paymasterPossible={Boolean(
+                  network?.supports_sponsored_transactions
+                )}
+                paymasterWaiting={false}
+                onFeeValueCommonReady={null}
+                configuration={toConfiguration(formState)}
+                onConfigurationChange={(value) => {
+                  const partial = fromConfiguration(value);
+                  setUserFormState((state) => ({ ...state, ...partial }));
+                }}
+                gasback={gasbackEstimation}
               />
             </React.Suspense>
           ) : null}
-          {selectedQuote?.protocol_fee === 0 ? (
+
+          {isSolanaAddress(address) && selectedQuote?.networkFee ? (
+            <NetworkFeeLineInfo
+              networkFee={selectedQuote.networkFee}
+              isLoading={quotesData.isPreviousData}
+            />
+          ) : null}
+          {selectedQuote?.protocolFee.percentage === 0 ? (
             <HStack gap={8} justifyContent="space-between">
               <UIText kind="small/regular">Zerion Fee</UIText>
               <UIText kind="small/accent" className={styles.gradientText}>
@@ -934,7 +962,11 @@ export function SwapFormComponent() {
       <VStack gap={16} style={{ marginTop: 'auto' }}>
         <AnimatedAppear display={showApproveHintLine}>
           <HStack gap={12} alignItems="center">
-            <ApproveHintLine approved={enough_allowance} actionName="Swap" />
+            <ApproveHintLine
+              // or {approveTxStatus === 'confirmed'} ?
+              approved={Boolean(selectedQuote?.transactionSwap)}
+              actionName="Swap"
+            />
             {approveMutation.isLoading || approveTxStatus === 'pending' ? (
               <CircleSpinner />
             ) : null}
@@ -974,13 +1006,11 @@ export function SwapFormComponent() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    approvalTransactionIsFetching ||
-                    approveMutation.isLoading ||
-                    approveTxStatus === 'pending'
+                    approveMutation.isLoading || approveTxStatus === 'pending'
                   }
                   holdToSign={false}
                 >
-                  Approve {spendPosition?.asset.symbol ?? null}
+                  Approve {inputPosition?.asset.symbol ?? null}
                 </SignTransactionButton>
               ) : null}
             </VStack>
@@ -1003,7 +1033,8 @@ export function SwapFormComponent() {
                 <FormHint
                   quotesData={quotesData}
                   priceImpact={priceImpact}
-                  swapView={swapView}
+                  formState={formState}
+                  inputPosition={inputPosition}
                   render={(hint) => (
                     <SignTransactionButton
                       ref={sendTxBtnRef}
@@ -1011,10 +1042,10 @@ export function SwapFormComponent() {
                       wallet={wallet}
                       style={{ marginTop: 'auto' }}
                       disabled={
-                        isLoading ||
+                        sendTransactionMutation.isLoading ||
                         quotesData.isLoading ||
                         Boolean(
-                          (selectedQuote && !swapTransaction) ||
+                          (selectedQuote && !selectedQuote.transactionSwap) ||
                             quotesData.error
                         )
                       }
@@ -1031,7 +1062,7 @@ export function SwapFormComponent() {
                         {hint ||
                           (quotesData.isLoading
                             ? 'Fetching offers'
-                            : isLoading
+                            : sendTransactionMutation.isLoading
                             ? 'Sending...'
                             : 'Swap')}
                       </span>

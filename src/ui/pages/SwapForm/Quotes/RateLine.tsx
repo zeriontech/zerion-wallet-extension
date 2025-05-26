@@ -1,22 +1,15 @@
 import React, { useMemo, useRef } from 'react';
-import type { Asset } from 'defi-sdk';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { baseToCommon } from 'src/shared/units/convert';
-import BigNumber from 'bignumber.js';
-import { getDecimals } from 'src/modules/networks/asset';
-import type { Chain } from 'src/modules/networks/Chain';
-import { createChain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { SlidingRectangle } from 'src/ui/components/SlidingRectangle';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import type { Quote } from 'src/shared/types/Quote';
+import type { Quote2 } from 'src/shared/types/Quote';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
-import type { CustomConfiguration } from '@zeriontech/transactions';
 import { emitter } from 'src/ui/shared/events';
 import { useLocation } from 'react-router-dom';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
@@ -25,69 +18,13 @@ import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
 import type { FeeTier } from './FeeTier';
 
-function getRate({
-  spendAsset,
-  receiveAsset,
-  spendAmountBase,
-  receiveAmountBase,
-  chain,
-}: {
-  spendAsset: Asset | null;
-  receiveAsset: Asset | null;
-  spendAmountBase?: string;
-  receiveAmountBase?: string;
-  chain?: Chain;
-}) {
-  if (
-    !spendAsset ||
-    !receiveAsset ||
-    !spendAmountBase ||
-    !receiveAmountBase ||
-    !chain
-  ) {
-    return null;
-  }
-  // - stable coin on the right side
-  // - bigger coin on the left side
-  const shouldReverse =
-    !spendAsset?.price || !receiveAsset?.price
-      ? false
-      : spendAsset.type === 'stablecoin' && receiveAsset.type !== 'stablecoin'
-      ? true
-      : receiveAsset.type === 'stablecoin'
-      ? false
-      : spendAsset.price.value < receiveAsset.price.value
-      ? true
-      : false;
-  const assets = [spendAsset, receiveAsset];
-  const values = [spendAmountBase, receiveAmountBase];
-  const [leftAsset, rightAsset] = shouldReverse ? assets.reverse() : assets;
-  const [leftValue, rightValue] = shouldReverse ? values.reverse() : values;
-  const leftDecimals = getDecimals({ asset: leftAsset, chain });
-  const leftValueCommon = baseToCommon(leftValue, leftDecimals);
-  const rightDecimals = getDecimals({ asset: rightAsset, chain });
-  const rightValueCommon = baseToCommon(rightValue, rightDecimals);
-  const rate = new BigNumber(rightValueCommon).div(leftValueCommon);
-  return {
-    leftAsset,
-    rightAsset,
-    value: rate,
-  };
-}
-
 export function RateLine({
-  spendAsset,
-  receiveAsset,
   quotesData,
   selectedQuote,
-  configuration,
   onQuoteIdChange,
 }: {
-  spendAsset: Asset | null;
-  receiveAsset: Asset | null;
-  quotesData: QuotesData;
-  selectedQuote: Quote | null;
-  configuration: CustomConfiguration;
+  quotesData: QuotesData<Quote2>;
+  selectedQuote: Quote2 | null;
   onQuoteIdChange: (quoteId: string | null) => void;
 }) {
   const { pathname } = useLocation();
@@ -108,21 +45,13 @@ export function RateLine({
 
   const userFeeTier: FeeTier | null = !selectedQuote
     ? null
-    : !selectedQuote.protocol_fee
+    : !selectedQuote.protocolFee.percentage
     ? 'og'
     : zerionPremiumFee != null
-    ? selectedQuote.protocol_fee === zerionPremiumFee
+    ? selectedQuote.protocolFee.percentage === zerionPremiumFee
       ? 'premium'
       : 'regular'
     : null;
-
-  const rate = getRate({
-    spendAsset,
-    receiveAsset,
-    receiveAmountBase: selectedQuote?.output_amount_estimation,
-    spendAmountBase: selectedQuote?.input_amount_estimation,
-    chain: selectedQuote ? createChain(selectedQuote.input_chain) : undefined,
-  });
 
   // If we decide to _not_ circle the images,
   // the gap in the parent HStack needs to be larger
@@ -186,7 +115,7 @@ export function RateLine({
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                {selectedQuote.contract_metadata?.icon_url ? (
+                {selectedQuote.contractMetadata?.iconUrl ? (
                   <div
                     style={{
                       position: 'relative',
@@ -197,10 +126,10 @@ export function RateLine({
                   >
                     <SlidingRectangle
                       size={20}
-                      src={selectedQuote.contract_metadata.icon_url}
+                      src={selectedQuote.contractMetadata.iconUrl}
                       render={(src, index) => (
                         <img
-                          title={selectedQuote.contract_metadata?.name}
+                          title={selectedQuote.contractMetadata?.name}
                           style={{
                             position: 'absolute',
                             left: 0,
@@ -212,22 +141,24 @@ export function RateLine({
                           }}
                           src={src}
                           // The alt here may be from a sibling image, but hopefully it doesn't matter
-                          alt={`${selectedQuote.contract_metadata?.name} logo`}
+                          alt={`${selectedQuote.contractMetadata?.name} logo`}
                         />
                       )}
                     />
                   </div>
                 ) : null}
-                {rate ? (
+                {selectedQuote.rate ? (
                   <UIText kind="small/accent" color="var(--primary)">
-                    {`1 ${rate.leftAsset.symbol} = ${formatTokenValue(
-                      rate.value,
-                      rate.rightAsset.symbol
+                    {`${selectedQuote.rate[0].value} ${
+                      selectedQuote.rate[0].symbol
+                    } = ${formatTokenValue(
+                      selectedQuote.rate[1].value,
+                      selectedQuote.rate[1].symbol
                     )}`}
                   </UIText>
                 ) : (
                   <span>
-                    {selectedQuote.contract_metadata?.name ?? 'unknown'}
+                    {selectedQuote.contractMetadata?.name ?? 'unknown'}
                   </span>
                 )}
               </HStack>
@@ -248,7 +179,7 @@ export function RateLine({
             <>
               <FeeDescription
                 userFeeTier={userFeeTier}
-                fee={selectedQuote.protocol_fee}
+                fee={selectedQuote.protocolFee.percentage}
               />
               <DialogCloseButton
                 style={{ position: 'absolute', top: 8, right: 8 }}
@@ -257,7 +188,7 @@ export function RateLine({
           )}
         />
       ) : null}
-      {quotes?.length && receiveAsset ? (
+      {quotes?.length ? (
         <BottomSheetDialog
           ref={quotesDialogRef}
           height="fit-content"
@@ -266,8 +197,6 @@ export function RateLine({
               quotes={quotes}
               selectedQuote={selectedQuote}
               userFeeTier={userFeeTier}
-              receiveAsset={receiveAsset}
-              configuration={configuration}
               onChange={onQuoteIdChange}
               onReset={() => onQuoteIdChange(null)}
             />

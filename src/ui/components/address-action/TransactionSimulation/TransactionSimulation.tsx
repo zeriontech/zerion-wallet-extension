@@ -23,7 +23,7 @@ export function TransactionSimulation({
   address,
   transaction,
   txInterpretQuery,
-  localAllowanceQuantityBase,
+  customAllowanceValueBase,
   showApplicationLine,
   onOpenAllowanceForm,
 }: {
@@ -31,7 +31,7 @@ export function TransactionSimulation({
   address: string;
   transaction: IncomingTransactionWithChainId;
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
-  localAllowanceQuantityBase?: string;
+  customAllowanceValueBase?: string;
   showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
 }) {
@@ -55,6 +55,7 @@ export function TransactionSimulation({
           chain,
         })
       : null;
+  console.log({ transactionAction, transaction });
 
   const client = useDefiSdkClient();
   const { data: localAddressAction } = useQuery({
@@ -106,9 +107,8 @@ export function TransactionSimulation({
 
   // TODO: what if network doesn't support simulations (txInterpretQuery is idle or isError),
   // but this is an approval tx? Can there be a bug?
-  const allowanceQuantityBase = txInterpretQuery.isFetching
-    ? localAllowanceQuantityBase
-    : addressAction.content?.single_asset?.quantity;
+  const allowanceQuantityBase =
+    customAllowanceValueBase || addressAction.content?.single_asset?.quantity;
 
   return (
     <VStack gap={vGap}>

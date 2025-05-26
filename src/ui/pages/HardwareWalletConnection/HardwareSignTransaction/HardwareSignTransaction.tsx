@@ -14,7 +14,8 @@ import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { TextPulse } from 'src/ui/components/TextPulse';
 import {
@@ -96,26 +97,23 @@ export interface SignTransactionHandle {
 async function prepareForSignByLedger({
   transaction,
   address,
-  chain,
-  networks,
+  network,
 }: {
   transaction: IncomingTransaction;
   address: string;
-  chain: Chain;
-  networks: Networks;
+  network: NetworkConfig;
 }) {
   const value = { ...transaction };
   if (value.nonce == null) {
     const { value: nonce } = await uiGetBestKnownTransactionCount({
       address,
-      chain,
-      networks,
+      network,
       defaultBlock: 'pending',
     });
     value.nonce = nonce;
   }
   if (!value.chainId) {
-    const chainId = networks.getChainId(chain);
+    const chainId = Networks.getChainId(network);
     invariant(chainId, 'Unable to find chainId for transaction');
     value.chainId = chainId;
   }
@@ -151,14 +149,11 @@ export const HardwareSignTransaction = React.forwardRef(
         chain,
       }: SignTransactionParams): Promise<string> => {
         const networksStore = await getNetworksStore();
-        const networks = await networksStore.load({
-          chains: [chain.toString()],
-        });
+        const network = await networksStore.fetchNetworkById(chain.toString());
         const txForLedger = await prepareForSignByLedger({
           transaction,
           address,
-          chain,
-          networks,
+          network,
         });
         const normalizedTransaction = prepareTransaction(txForLedger);
         invariant(iframeRef.current, 'Ledger iframe not found');
