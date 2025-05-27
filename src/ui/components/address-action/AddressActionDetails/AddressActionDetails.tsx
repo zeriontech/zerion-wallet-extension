@@ -81,7 +81,7 @@ export function AddressActionDetails({
 /**
  * TODO: Temporary helper, later the whole AddressActionDetails
  * must be refactored to take as few params as possible
- * and to derivce as much data as possible from `addressAction`
+ * and to derive as much data as possible from `addressAction`
  */
 export function AddressActionComponent({
   address,

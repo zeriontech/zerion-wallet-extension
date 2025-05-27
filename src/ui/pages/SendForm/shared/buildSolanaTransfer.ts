@@ -68,8 +68,6 @@ export async function buildSolanaTransfer(
 
     const toTokenAccountInfo = await connection.getAccountInfo(toTokenAccount);
 
-    console.log({ toTokenAccountInfo });
-
     const mintInfo = await getMint(connection, mint);
 
     const { decimals } = mintInfo;
