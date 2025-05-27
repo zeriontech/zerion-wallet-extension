@@ -76,7 +76,7 @@ export function useNetworks(chains?: string[]) {
 }
 
 export function useNetworkConfig(
-  id: string,
+  id: string | null,
   {
     staleTime = 1000 * 60 * 5,
     suspense = false,
@@ -89,11 +89,12 @@ export function useNetworkConfig(
     queryKeyHashFn,
     queryFn: () => {
       invariant(networksStore, 'Enable query when networks store is ready');
+      invariant(id, 'network id must be provided');
       return networksStore.fetchNetworkById(id);
     },
     staleTime,
     suspense,
-    enabled: Boolean(networksStore && enabled),
+    enabled: Boolean(networksStore && id && enabled),
   });
 }
 

@@ -26,8 +26,9 @@ import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigV
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
 import { useTransactionFee } from './useTransactionFee';
@@ -97,7 +98,12 @@ export function NetworkFeeLineInfo({
           {isLoading ? <CircleSpinner /> : null}
 
           {networkFee.amount.value != null
-            ? formatCurrencyValue(networkFee.amount.value, 'en', currency)
+            ? formatCurrencyValueExtra(
+                networkFee.amount.value,
+                'en',
+                currency,
+                { zeroRoundingFallback: 0.01 }
+              )
             : formatTokenValue(
                 networkFee.amount.quantity,
                 networkFee.fungible?.symbol
@@ -309,7 +315,7 @@ export function TransactionConfiguration({
           />
         </div>
       )}
-      {preferences?.configurableNonce ? (
+      {preferences?.configurableNonce && isEthereumAddress(from) ? (
         <div style={{ ['viewTransitionName' as string]: `nonce-line-${id}` }}>
           <NonceLine
             userNonce={configuration.nonce}

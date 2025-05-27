@@ -1,4 +1,4 @@
-import type { Asset } from 'defi-sdk';
+import type { Fungible } from './Fungible';
 
 export interface NetworkFeeType {
   free: boolean;
@@ -7,7 +7,7 @@ export interface NetworkFeeType {
     quantity: string;
     /** @description Amount in fiat units */
     value: number | null;
-    usdValue: null;
+    usdValue: number | null;
   };
-  fungible: null | Asset; // TODO: Change to Asset type from zpi (camelCased properties)
+  fungible: null | Fungible;
 }

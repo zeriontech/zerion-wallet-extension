@@ -1,5 +1,4 @@
 import React from 'react';
-import type { SwapFormState } from '@zeriontech/transactions';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -12,28 +11,26 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
+import type { SwapFormState } from '../shared/SwapFormState';
 
 export function SuccessState({
   swapFormState,
-  spendPosition,
-  receivePosition,
+  inputPosition,
+  outputPosition,
   hash,
   onDone,
   gasbackValue,
 }: {
   swapFormState: SwapFormState;
-  spendPosition: BareAddressPosition;
-  receivePosition: BareAddressPosition;
+  inputPosition: BareAddressPosition;
+  outputPosition: BareAddressPosition;
   hash: string;
   gasbackValue: number | null;
   onDone: () => void;
 }) {
   const { networks } = useNetworks();
-  const { chainInput, spendInput, receiveInput } = swapFormState;
-  invariant(
-    chainInput && spendInput && receiveInput,
-    'Required Form values are missing'
-  );
+  const { inputChain } = swapFormState;
+  invariant(inputChain, 'Required Form values are missing');
 
   const actionStatus = useActionStatusByHash(hash);
 
@@ -46,9 +43,9 @@ export function SuccessState({
     return <ViewLoading />;
   }
 
-  const chain = createChain(chainInput);
+  const chain = createChain(inputChain);
   const chainName = networks.getChainName(chain);
-  const chainIconUrl = networks.getNetworkByName(chain)?.icon_url;
+  const chainIconUrl = networks.getByNetworkId(chain)?.icon_url;
 
   return (
     <>
@@ -56,16 +53,16 @@ export function SuccessState({
       <SuccessStateLoader
         startItem={
           <SuccessStateToken
-            iconUrl={spendPosition.asset.icon_url}
-            symbol={spendPosition.asset.symbol}
+            iconUrl={inputPosition.asset.icon_url}
+            symbol={inputPosition.asset.symbol}
             chainName={chainName}
             chainIconUrl={chainIconUrl}
           />
         }
         endItem={
           <SuccessStateToken
-            iconUrl={receivePosition.asset.icon_url}
-            symbol={receivePosition.asset.symbol}
+            iconUrl={outputPosition.asset.icon_url}
+            symbol={outputPosition.asset.symbol}
             chainName={chainName}
             chainIconUrl={chainIconUrl}
           />

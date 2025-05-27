@@ -1,6 +1,8 @@
 import { useStore } from '@store-unit/react';
 import { useEffect, useRef } from 'react';
 import { Store } from 'store-unit';
+import { EventSource, type ErrorEvent } from 'eventsource'; // supports passing custom headers
+import { getError } from 'get-error';
 
 interface EventSourceState<T> {
   value: null | T;
@@ -14,6 +16,32 @@ interface Options<T> {
   enabled?: boolean;
   mapResponse?: (response: unknown) => T;
   mergeResponse?(currentValue: T | null, nextValue: T | null): T | null;
+  headers?: HeadersInit;
+}
+
+function createEventSource(url: string | URL, headers?: HeadersInit) {
+  return new EventSource(
+    url,
+    headers
+      ? {
+          fetch: (input, init) =>
+            fetch(input, {
+              ...init,
+              headers: { ...init.headers, ...headers },
+            }),
+        }
+      : undefined
+  );
+}
+
+function eventToMessage(event: ErrorEvent) {
+  return event.code === 500
+    ? 'Internal Server Error'
+    : event.code === 503
+    ? 'Service Unavailable'
+    : event.code === 404
+    ? 'Request Error' // temporary message while backend responds 404 for invalid params
+    : event.message || 'Server Error';
 }
 
 export class EventSourceStore<T> extends Store<EventSourceState<T>> {
@@ -49,7 +77,7 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
     this.source = null;
     this.url = url;
     this.options = options || {};
-    this.subscribe(url ? new EventSource(url) : null);
+    this.subscribe(url ? createEventSource(url, this.options.headers) : null);
   }
 
   mapResponse(response: T) {
@@ -77,28 +105,30 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
       if (error instanceof SyntaxError) {
         this.handleError({
           ...event,
-          data: new Error("Couldn't parse API response"),
+          message: "Couldn't parse API response",
         });
       } else {
-        this.handleError({ ...event, data: error });
+        this.handleError({ ...event, message: getError(error).message });
       }
     }
   };
 
-  handleError = (event: MessageEvent) => {
+  handleError = (event: ErrorEvent) => {
     this.setState((state) => ({
       ...state,
-      error: new Error(event.data || 'An unexpected error has occurred'),
+      error: new Error(eventToMessage(event)),
       isLoading: false,
       isError: true,
     }));
     this.unlistenAndClose();
   };
 
-  handleException = (event: MessageEvent) => {
+  handleException = (event: ErrorEvent | MessageEvent) => {
     this.setState((state) => ({
       ...state,
-      error: new Error(event.data || 'An unexpected error has occurred'),
+      error: new Error(
+        'data' in event && event.data ? event.data : eventToMessage(event)
+      ),
       isLoading: false,
       isError: true,
     }));
@@ -129,7 +159,9 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
     this.url = url;
     this.unlistenAndClose();
     this.options = options || {};
-    this.subscribe(this.url ? new EventSource(this.url) : null);
+    this.subscribe(
+      this.url ? createEventSource(this.url, this.options.headers) : null
+    );
   }
 
   clear() {

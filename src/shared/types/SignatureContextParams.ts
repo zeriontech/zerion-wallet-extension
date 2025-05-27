@@ -1,5 +1,5 @@
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { Quote } from './Quote';
+import type { Quote2, QuoteLegacy } from './Quote';
 
 type ClientScope =
   | string
@@ -9,7 +9,7 @@ type ClientScope =
   | 'Zerion DNA'
   | 'External Dapp';
 
-export interface TransactionContextParams {
+export type TransactionContextParams = {
   chain: string; // Cannot use type {Chain} because it's not serializable and this object is being sent between Ports
   feeValueCommon: string | null;
   initiator: string;
@@ -27,8 +27,13 @@ export interface TransactionContextParams {
    *     TODO
    */
   method?: 'signTransaction' | 'signAndSendTransaction' | 'signAllTransactions';
-  quote?: Quote;
-}
+} & (
+  | { quote?: undefined; outputChain?: undefined }
+  | {
+      quote: Quote2 | QuoteLegacy;
+      outputChain: string | null; // NetworkId
+    }
+);
 
 export interface MessageContextParams {
   initiator: string;

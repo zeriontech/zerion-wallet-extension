@@ -144,11 +144,10 @@ export function NonceLine({
     queryKey: ['getTransactionCount', from, chain],
     queryFn: async () => {
       const networksStore = await getNetworksStore();
-      const networks = await networksStore.load({ chains: [chain.toString()] });
+      const network = await networksStore.fetchNetworkById(chain.toString());
       return uiGetBestKnownTransactionCount({
         address: from,
-        chain,
-        networks,
+        network,
         defaultBlock: 'pending',
       });
     },

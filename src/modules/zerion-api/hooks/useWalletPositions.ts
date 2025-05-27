@@ -1,11 +1,33 @@
 import { useQuery } from '@tanstack/react-query';
 import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { ZerionAPI } from '../zerion-api.client';
 import {
   toAddressPositions,
   type Params as WalletGetPositionsParams,
 } from '../requests/wallet-get-positions';
 import type { BackendSourceParams } from '../shared';
+
+const QUERY_KEY = 'walletGetPositions';
+const STALE_TIME = 20000;
+const queryFn = async (
+  params: WalletGetPositionsParams,
+  clientParams: BackendSourceParams
+) => {
+  const response = await ZerionAPI.walletGetPositions(params, clientParams);
+  return toAddressPositions(response);
+};
+
+export function queryHttpAddressPositions(
+  params: WalletGetPositionsParams,
+  clientParams: BackendSourceParams
+) {
+  return queryClient.fetchQuery({
+    queryKey: persistentQuery([QUERY_KEY, params, clientParams]),
+    queryFn: () => queryFn(params, clientParams),
+    staleTime: STALE_TIME,
+  });
+}
 
 /**
  * NOTE:
@@ -15,7 +37,7 @@ import type { BackendSourceParams } from '../shared';
  */
 export function useHttpAddressPositions(
   params: WalletGetPositionsParams,
-  { source }: BackendSourceParams,
+  clientParams: BackendSourceParams,
   {
     suspense = false,
     enabled = true,
@@ -29,17 +51,12 @@ export function useHttpAddressPositions(
   } = {}
 ) {
   return useQuery({
-    queryKey: persistentQuery(['walletGetPositions', params, source]),
-    queryFn: async () => {
-      const response = await ZerionAPI.walletGetPositions(params, {
-        source,
-      });
-      return toAddressPositions(response);
-    },
+    queryKey: persistentQuery([QUERY_KEY, params, clientParams]),
+    queryFn: () => queryFn(params, clientParams),
     suspense,
     enabled,
     keepPreviousData,
-    staleTime: 20000,
+    staleTime: STALE_TIME,
     refetchInterval,
   });
 }

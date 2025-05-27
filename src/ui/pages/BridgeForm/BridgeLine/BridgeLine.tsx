@@ -2,7 +2,7 @@ import { useAssetsPrices } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { Quote } from 'src/shared/types/Quote';
+import type { QuoteLegacy } from 'src/shared/types/Quote';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { SlidingRectangle } from 'src/ui/components/SlidingRectangle';
@@ -22,8 +22,8 @@ export function BridgeLine({
   onQuoteSelect,
 }: {
   spendChain: Chain;
-  quotesData: QuotesData;
-  selectedQuote: Quote | null;
+  quotesData: QuotesData<QuoteLegacy>;
+  selectedQuote: QuoteLegacy | null;
   onQuoteSelect: () => void;
 }) {
   const { isLoading, error } = quotesData;

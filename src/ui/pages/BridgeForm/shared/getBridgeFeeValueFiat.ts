@@ -1,14 +1,14 @@
 import type { Asset } from 'defi-sdk';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
-import type { Quote } from 'src/shared/types/Quote';
+import type { QuoteLegacy } from 'src/shared/types/Quote';
 
 export function getBridgeFeeValueFiat({
   quote,
   chain,
   asset,
 }: {
-  quote: Quote;
+  quote: QuoteLegacy;
   chain: Chain;
   asset: Asset;
 }) {

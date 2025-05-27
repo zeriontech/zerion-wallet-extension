@@ -1,5 +1,4 @@
-import { useSelectorStore } from '@store-unit/react';
-import type { SwapFormView } from '@zeriontech/transactions';
+import { type Asset } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -9,31 +8,31 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { Chain } from 'src/modules/networks/Chain';
+import type { SwapFormState } from '../shared/SwapFormState';
 import { getSlippageOptions } from './getSlippageOptions';
 
 const HIGH_SLIPPAGE_THRESHOLD = 0.01; // 1%
 
 export function SlippageLine({
   chain,
-  swapView,
+  formState,
+  receiveAsset,
+  outputAmount,
 }: {
   chain: Chain;
-  swapView: SwapFormView;
+  formState: SwapFormState;
+  receiveAsset: Asset | null;
+  outputAmount: string | null;
 }) {
   const { currency } = useCurrency();
-  const { receiveInput } = useSelectorStore(swapView.store, ['receiveInput']);
-  const { slippage: userSlippage } = useSelectorStore(
-    swapView.store.configuration,
-    ['slippage']
-  );
 
   const { slippage } = getSlippageOptions({
     chain,
-    userSlippage,
+    userSlippage: formState.slippage ? Number(formState.slippage) : null,
   });
 
-  const price = swapView.receiveAsset?.price?.value || 0;
-  const fiatValue = new BigNumber(receiveInput || 0)
+  const price = receiveAsset?.price?.value || 0;
+  const fiatValue = new BigNumber(outputAmount || 0)
     .times(price)
     .times(1 - slippage);
 
@@ -45,7 +44,7 @@ export function SlippageLine({
           {formatPercent(slippage * 100, 'en')}%
         </UIText>
       </HStack>
-      {receiveInput && price ? (
+      {outputAmount && price ? (
         <HStack gap={8} justifyContent="space-between">
           <UIText kind="small/regular">Minimum Received</UIText>
           <UIText kind="small/accent">

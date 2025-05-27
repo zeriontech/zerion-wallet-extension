@@ -107,6 +107,7 @@ export function useInterpretTxBasedOnEligibility({
   return useQuery({
     suspense: false,
     keepPreviousData,
+    refetchOnWindowFocus: false,
     enabled: Boolean(transaction.evm),
     queryKey: [
       'interpretSignature',

@@ -147,10 +147,11 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
   }
 
   if (requireNonce && tx.nonce == null) {
+    const network = networks.getByNetworkId(chain);
+    invariant(network, `Network not found for ${chain.toString}`);
     const { value: nonce } = await uiGetBestKnownTransactionCount({
       address: tx.from || from,
-      chain,
-      networks,
+      network,
       defaultBlock: 'pending',
     });
     tx = { ...tx, nonce };

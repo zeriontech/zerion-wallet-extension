@@ -140,10 +140,7 @@ function describeMulticall(
   return createExecuteAction(transaction, context);
 }
 
-function describeApprove(
-  transaction: IncomingTransaction,
-  context: DescriberContext
-): TransactionAction | null {
+export function parseApprove<T extends IncomingTransaction>(transaction: T) {
   const match = matchSelectors(transaction, [selectors.approve]);
   if (!match) {
     return null;
@@ -154,15 +151,28 @@ function describeApprove(
     args
   );
   const contractAddress = transaction.to || '0x';
-  const network = context.networks.getNetworkByName(context.chain);
   return {
-    type: 'approve',
+    type: 'approve' as const,
     contractAddress,
     spenderAddress,
     amount: amountToString(amount as number | bigint),
     isNativeAsset: true,
-    chain: context.chain,
     assetAddress: contractAddress,
+  };
+}
+
+function describeApprove(
+  transaction: IncomingTransaction,
+  context: DescriberContext
+): TransactionAction | null {
+  const result = parseApprove(transaction);
+  if (!result) {
+    return null;
+  }
+  const network = context.networks.getByNetworkId(context.chain);
+  return {
+    ...result,
+    chain: context.chain,
     assetId: network?.native_asset?.id || null,
   };
 }

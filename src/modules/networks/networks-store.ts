@@ -154,7 +154,7 @@ export class NetworksStore extends Store<State> {
     return this.updateNetworks();
   }
 
-  private async fetchNetworkByChainId(chainId: ChainId) {
+  async #fetchNetworkByChainId(chainId: ChainId) {
     if (!this.isReady) {
       await this.load();
     }
@@ -208,13 +208,20 @@ export class NetworksStore extends Store<State> {
   async loadNetworksByChainId(chainId: ChainId) {
     const key = `chainId-${chainId}`;
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworkByChainId(chainId).finally(
+      this.loaderPromises[key] = this.#fetchNetworkByChainId(chainId).finally(
         () => {
           delete this.loaderPromises[key];
         }
       );
     }
     return this.loaderPromises[key];
+  }
+
+  async fetchNetworkByChainId(chainId: ChainId): Promise<NetworkConfig> {
+    const networks = await this.loadNetworksByChainId(chainId);
+    const network = networks.getNetworkById(chainId);
+    invariant(network, `Could not load network for chainId: ${chainId}`);
+    return network;
   }
 
   async update() {

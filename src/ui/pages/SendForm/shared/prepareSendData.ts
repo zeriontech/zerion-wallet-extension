@@ -36,7 +36,7 @@ import type { MultichainTransaction } from 'src/shared/types/MultichainTransacti
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { SOL_ASSET } from 'src/modules/solana/transactions/parseSolanaTransaction';
+import { SOL_ASSET_FUNGIBLE } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import { applyConfiguration } from '../../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { parseNftId } from './useNftPosition';
@@ -91,7 +91,7 @@ function createNetworkFee(
       usdValue: null,
     },
     // TODO: Fetch real asset from backend so that we have fiat price
-    fungible: network.standard === 'solana' ? SOL_ASSET.fungible : null,
+    fungible: network.standard === 'solana' ? SOL_ASSET_FUNGIBLE : null,
   };
 }
 
@@ -234,11 +234,9 @@ export async function prepareSendData(
     }
     let nonce = formState.nonce;
     if (network.supports_sponsored_transactions && nonce == null) {
-      const networks = await networksStore.load();
       const { value: latestNonce } = await uiGetBestKnownTransactionCount({
         address: from,
-        chain,
-        networks,
+        network,
         defaultBlock: 'pending',
       });
       nonce = String(latestNonce);

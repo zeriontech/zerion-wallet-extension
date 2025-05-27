@@ -160,63 +160,47 @@ export function ActionButtonsRow() {
           />
         </li>
         <li>
-          <WithGuardDialog<'a'>
-            isWarning={addressIsSolana}
-            title="Switch to an Ethereum Wallet"
-            message="Swapping for Solana is coming soon"
-            render={({ handleClick: handleClickOuter }) => (
-              <WithMainnetOnlyWarningDialog<'a'>
-                message="Testnets are not supported in Swap"
-                render={({ handleClick }) => (
-                  <>
-                    <ActionButton
-                      className={classNames(
-                        s.showWhenSmall,
-                        s.actionButtonPrimary
-                      )}
-                      title="Swap"
-                      as={UnstyledLink}
-                      icon={<SwapIcon />}
-                      to="/swap-form"
-                      onClick={(event) => {
-                        handleClick(event);
-                        if (!event.defaultPrevented) {
-                          handleClickOuter(event);
-                        }
-                      }}
-                    />
-                    <div className={s.hideWhenSmall}>
-                      <Button
-                        aria-label="Swap"
-                        size={48}
-                        as={UnstyledLink}
-                        onClick={(event) => {
-                          handleClick(event);
-                          if (!event.defaultPrevented) {
-                            handleClickOuter(event);
-                          }
-                        }}
-                        to="/swap-form"
-                        style={{
-                          borderRadius: 24,
-                          width: '100%',
-                          ['--button-background' as string]: 'var(--black)',
-                          ['--button-text' as string]: 'var(--white)',
-                          ['--button-background-hover' as string]:
-                            'var(--neutral-800)',
-                        }}
-                      >
-                        <HStack gap={6} alignItems="center">
-                          <div style={{ display: 'flex' }}>
-                            <SwapIcon />
-                          </div>
-                          <UIText kind="small/accent">Swap</UIText>
-                        </HStack>
-                      </Button>
-                    </div>
-                  </>
-                )}
-              />
+          <WithMainnetOnlyWarningDialog<'a'>
+            message="Testnets are not supported in Swap"
+            render={({ handleClick }) => (
+              <>
+                <ActionButton
+                  className={classNames(s.showWhenSmall, s.actionButtonPrimary)}
+                  title="Swap"
+                  as={UnstyledLink}
+                  icon={<SwapIcon />}
+                  to="/swap-form"
+                  onClick={(event) => {
+                    handleClick(event);
+                  }}
+                />
+                <div className={s.hideWhenSmall}>
+                  <Button
+                    aria-label="Swap"
+                    size={48}
+                    as={UnstyledLink}
+                    onClick={(event) => {
+                      handleClick(event);
+                    }}
+                    to="/swap-form"
+                    style={{
+                      borderRadius: 24,
+                      width: '100%',
+                      ['--button-background' as string]: 'var(--black)',
+                      ['--button-text' as string]: 'var(--white)',
+                      ['--button-background-hover' as string]:
+                        'var(--neutral-800)',
+                    }}
+                  >
+                    <HStack gap={6} alignItems="center">
+                      <div style={{ display: 'flex' }}>
+                        <SwapIcon />
+                      </div>
+                      <UIText kind="small/accent">Swap</UIText>
+                    </HStack>
+                  </Button>
+                </div>
+              </>
             )}
           />
         </li>

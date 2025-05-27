@@ -1,39 +1,70 @@
 import { isNumeric } from 'src/shared/isNumeric';
 import type { CustomConfiguration } from '@zeriontech/transactions';
+import { gweiToWei, weiToGwei } from 'src/shared/units/formatGasPrice';
+import type { SwapFormState } from '../../SwapForm/shared/SwapFormState';
 import type { SendFormState } from './SendFormState';
 
-export function toConfiguration(formState: SendFormState): CustomConfiguration {
-  const { maxFee, priorityFee, nonce, gasPrice } = formState;
+type NetworkFeeSubset = Pick<
+  SwapFormState | SendFormState,
+  | 'maxFee'
+  | 'maxPriorityFee'
+  | 'nonce'
+  | 'gasPrice'
+  | 'gasLimit'
+  | 'slippage'
+  | 'networkFeeSpeed'
+>;
+
+export function toConfiguration(
+  formState: NetworkFeeSubset
+): CustomConfiguration {
+  const { maxFee, maxPriorityFee, nonce, gasPrice, slippage } = formState;
   return {
     networkFee: {
       speed: formState.networkFeeSpeed || 'fast',
       custom1559GasPrice:
-        maxFee && isNumeric(maxFee) && priorityFee && isNumeric(priorityFee)
-          ? { maxFee: Number(maxFee), priorityFee: Number(priorityFee) }
+        maxFee &&
+        isNumeric(maxFee) &&
+        maxPriorityFee &&
+        isNumeric(maxPriorityFee)
+          ? {
+              // TODO: Do not convert. When other forms update to the new Swap API,
+              // remove conversion in NetworkFeeDialog and here
+              maxFee: gweiToWei(maxFee),
+              priorityFee: gweiToWei(maxPriorityFee),
+            }
           : null,
       customClassicGasPrice:
-        gasPrice && isNumeric(gasPrice) ? Number(gasPrice) : null,
+        gasPrice && isNumeric(gasPrice) ? gweiToWei(gasPrice) : null,
       gasLimit: formState.gasLimit || null,
     },
-    slippage: null,
+    slippage: slippage && isNumeric(slippage) ? Number(slippage) : null,
     nonce: nonce && isNumeric(nonce) ? nonce : null,
   };
 }
 
 export function fromConfiguration(
   configuration: CustomConfiguration
-): Partial<SendFormState> {
-  const toString = (value: number | undefined | null) => {
-    return value == null ? '' : BigInt(value || 0).toString();
+): NetworkFeeSubset {
+  const toGwei = (value: number | undefined | null) => {
+    return value == null ? '' : String(weiToGwei(value));
   };
   return {
-    networkFeeSpeed: configuration.networkFee.speed,
-    maxFee: toString(configuration.networkFee.custom1559GasPrice?.maxFee),
-    priorityFee: toString(
+    networkFeeSpeed:
+      configuration.networkFee.speed === 'fast'
+        ? undefined
+        : configuration.networkFee.speed,
+    maxFee: toGwei(configuration.networkFee.custom1559GasPrice?.maxFee),
+    maxPriorityFee: toGwei(
       configuration.networkFee.custom1559GasPrice?.priorityFee
     ),
     gasLimit: configuration.networkFee.gasLimit || undefined,
-    gasPrice: toString(configuration.networkFee.customClassicGasPrice),
-    nonce: configuration.nonce?.toString(),
+    gasPrice: toGwei(configuration.networkFee.customClassicGasPrice),
+    nonce: configuration.nonce
+      ? BigInt(configuration.nonce).toString()
+      : undefined,
+    slippage: configuration.slippage
+      ? String(configuration.slippage)
+      : undefined,
   };
 }
