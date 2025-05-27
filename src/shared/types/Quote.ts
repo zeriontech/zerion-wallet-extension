@@ -170,8 +170,20 @@ export type TransactionEVM = {
 export function toIncomingTransaction(
   tx: TransactionEVM
 ): PartiallyRequired<IncomingTransaction, 'from' | 'chainId'> {
-  const { type, nonce, ...rest } = tx;
-  const partial = { type: parseInt(type), nonce: parseInt(nonce) };
+  const { type, nonce, gas, gasPrice, maxFee, maxPriorityFee, ...rest } = tx;
+  const partial: IncomingTransaction = {
+    type: parseInt(type),
+    nonce: parseInt(nonce),
+  };
+  if (gas) {
+    partial.gasLimit = gas;
+  }
+  if (maxFee != null || maxPriorityFee != null) {
+    partial.maxPriorityFeePerGas = maxPriorityFee;
+    partial.maxFeePerGas = maxFee;
+  } else if (gasPrice != null) {
+    partial.gasPrice = gasPrice;
+  }
   return {
     ...partial,
     ...rest,
