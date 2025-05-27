@@ -1036,7 +1036,6 @@ function BridgeFormComponent() {
           <VStack gap={4}>
             <SpendTokenField
               spendInput={spendInput}
-              spendChain={spendChain}
               spendAsset={spendAsset}
               spendPosition={spendPosition}
               availableSpendPositions={availableSpendPositions?.sorted ?? []}
@@ -1044,6 +1043,7 @@ function BridgeFormComponent() {
               receiveAsset={receiveAsset}
               onChangeAmount={(value) => handleChange('spendInput', value)}
               onChangeToken={(value) => handleChange('spendTokenInput', value)}
+              network={network}
             />
             <ReceiveTokenField
               receiveInput={receiveInput}

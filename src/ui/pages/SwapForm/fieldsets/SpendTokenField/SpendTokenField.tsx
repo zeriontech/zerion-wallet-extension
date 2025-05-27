@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useMemo, useRef } from 'react';
 import type { SwapFormView } from '@zeriontech/transactions';
 import { useSelectorStore } from '@store-unit/react';
 import {
@@ -19,12 +19,19 @@ import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import {
-  QUICK_AMOUNTS,
+  getQuickAmounts,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 
-export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
+export function SpendTokenField({
+  swapView,
+  network,
+}: {
+  swapView: SwapFormView;
+  network?: NetworkConfig | null;
+}) {
   const { spendPosition, spendAssetQuery, spendAsset, receiveAsset } = swapView;
   const { primaryInput, spendInput, receiveInput, chainInput } =
     useSelectorStore(swapView.store, [
@@ -75,6 +82,13 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
     primaryInputRef.current = primaryInput;
   }, [primaryInput, spendInput, swapView.store]);
 
+  const quickAmounts = useMemo(() => {
+    if (!spendPosition || !network) {
+      return [];
+    }
+    return getQuickAmounts(spendPosition.asset, network);
+  }, [spendPosition, network]);
+
   const inputId = useId();
   return (
     <>
@@ -83,7 +97,7 @@ export function SpendTokenField({ swapView }: { swapView: SwapFormView }) {
         endTitle={
           spendPosition && positionBalanceCommon ? (
             <HStack gap={16} alignItems="center">
-              {QUICK_AMOUNTS.map(({ factor, title }) => (
+              {quickAmounts.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
                   onClick={() => {

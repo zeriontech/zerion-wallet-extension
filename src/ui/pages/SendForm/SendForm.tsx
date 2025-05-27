@@ -444,6 +444,7 @@ function SendFormComponent() {
                 onAssetCodeChange={(value) =>
                   handleChange('tokenAssetCode', value)
                 }
+                network={network}
               />
             ) : type === 'nft' ? (
               <NftTransferInput
