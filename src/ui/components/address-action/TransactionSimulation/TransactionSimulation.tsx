@@ -4,65 +4,36 @@ import { hashQueryKey, useQuery } from '@tanstack/react-query';
 import { RenderArea } from 'react-area';
 import { Client } from 'defi-sdk';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
-import { invariant } from 'src/shared/invariant';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
-import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
-import { AddressActionDetails } from '../AddressActionDetails';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
+import { solFromBase64 } from 'src/modules/solana/transactions/create';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import type { Chain } from 'src/modules/networks/Chain';
 import { InterpretationState } from '../../InterpretationState';
+import { AddressActionDetails } from '../AddressActionDetails';
 
-export function TransactionSimulation({
-  vGap = 16,
+function useLocalAddressAction({
   address,
+  chain,
   transaction,
-  txInterpretQuery,
-  customAllowanceValueBase,
-  showApplicationLine,
-  onOpenAllowanceForm,
 }: {
-  vGap?: number;
   address: string;
-  transaction: IncomingTransactionWithChainId;
-  txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
-  customAllowanceValueBase?: string;
-  showApplicationLine: boolean;
-  onOpenAllowanceForm?: () => void;
+  chain: Chain;
+  transaction: MultichainTransaction;
 }) {
-  const { networks } = useNetworks();
   const { currency } = useCurrency();
-  invariant(transaction.chainId, 'transaction must have a chainId value');
-  const chain = networks?.getChainById(normalizeChainId(transaction.chainId));
-
-  // TODO: "wallet" must not be used here,
-  // instead, a sender address must be taken from AddressAction
-  const { data: wallet } = useQuery({
-    queryKey: ['wallet/uiGetCurrentWallet'],
-    queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
-  });
-
-  const transactionAction =
-    transaction && networks && chain
-      ? describeTransaction(transaction, {
-          networks,
-          chain,
-        })
-      : null;
-
   const client = useDefiSdkClient();
-  const { data: localAddressAction } = useQuery({
+  return useQuery({
     queryKey: [
       'incomingTxToIncomingAddressAction',
       transaction,
-      transactionAction,
-      networks,
       address,
       currency,
       client,
@@ -71,33 +42,66 @@ export function TransactionSimulation({
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
     },
-    queryFn: () => {
-      return transaction && networks && transactionAction
-        ? incomingTxToIncomingAddressAction(
-            {
-              transaction: { ...transaction, from: address },
-              hash: '',
-              timestamp: 0,
-            },
-            transactionAction,
-            networks,
-            currency,
-            client
-          )
-        : null;
+    queryFn: async () => {
+      if (typeof transaction.solana === 'string') {
+        return parseSolanaTransaction(
+          address,
+          solFromBase64(transaction.solana)
+        );
+      } else {
+        const tx = transaction.evm;
+        const networksStore = await getNetworksStore();
+        const networks = await networksStore.load({
+          chains: [chain.toString()],
+        });
+        const transactionAction = describeTransaction(tx, { networks, chain });
+        return incomingTxToIncomingAddressAction(
+          { transaction: { ...tx, from: address }, hash: '', timestamp: 0 },
+          transactionAction,
+          networks,
+          currency,
+          client
+        );
+      }
     },
     staleTime: Infinity,
     keepPreviousData: true,
-    enabled:
-      Boolean(transaction) && Boolean(networks) && Boolean(transactionAction),
     useErrorBoundary: true,
+  });
+}
+
+export function TransactionSimulation({
+  vGap = 16,
+  address,
+  transaction,
+  chain,
+  txInterpretQuery,
+  customAllowanceValueBase,
+  showApplicationLine,
+  onOpenAllowanceForm,
+}: {
+  vGap?: number;
+  address: string;
+  transaction: MultichainTransaction;
+  chain: Chain;
+  txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
+  customAllowanceValueBase?: string;
+  showApplicationLine: boolean;
+  onOpenAllowanceForm?: () => void;
+}) {
+  const { networks } = useNetworks();
+
+  const { data: localAddressAction } = useLocalAddressAction({
+    address,
+    transaction,
+    chain,
   });
 
   const interpretation = txInterpretQuery.data;
 
   const interpretAddressAction = interpretation?.action;
   const addressAction = interpretAddressAction || localAddressAction;
-  if (!addressAction || !chain || !networks || !wallet) {
+  if (!addressAction || !networks) {
     return <p>loading...</p>;
   }
   const recipientAddress = addressAction.label?.display_value.wallet_address;
@@ -112,7 +116,7 @@ export function TransactionSimulation({
   return (
     <VStack gap={vGap}>
       <AddressActionDetails
-        address={wallet.address}
+        address={address}
         recipientAddress={recipientAddress}
         addressAction={addressAction}
         chain={chain}

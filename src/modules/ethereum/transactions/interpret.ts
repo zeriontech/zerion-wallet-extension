@@ -1,8 +1,10 @@
 import { type Client, client as defaultClient } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { valueToHex } from 'src/shared/units/valueToHex';
+import { type MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import type { Chain } from 'src/modules/networks/Chain';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { TypedData } from '../message-signing/TypedData';
-import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import type { InterpretResponse } from './types';
 import { getGas } from './getGas';
 import type { ChainId } from './ChainId';
@@ -10,12 +12,14 @@ import type { ChainId } from './ChainId';
 export function interpretTransaction({
   address,
   transaction,
+  chain,
   origin,
   client = defaultClient,
   currency,
 }: {
   address: string;
-  transaction: IncomingTransactionWithChainId;
+  transaction: MultichainTransaction;
+  chain: Chain;
   origin: string;
   client?: Client;
   currency: string;
@@ -25,13 +29,17 @@ export function interpretTransaction({
     new Promise<InterpretResponse>((resolve) => {
       let value: InterpretResponse | null = null;
 
-      const normalizedTx = { ...transaction };
-      const gas = getGas(transaction);
-      if (gas != null) {
-        normalizedTx.gas = valueToHex(gas);
-      }
-      if (normalizedTx.value != null) {
-        normalizedTx.value = valueToHex(normalizedTx.value);
+      const transactionEvm = transaction.evm;
+      let normalizedTx: typeof transaction.evm | null = null;
+      if (transactionEvm) {
+        normalizedTx = { ...transactionEvm };
+        const gas = getGas(transactionEvm);
+        if (gas != null) {
+          normalizedTx.gas = valueToHex(gas);
+        }
+        if (normalizedTx.value != null) {
+          normalizedTx.value = valueToHex(normalizedTx.value);
+        }
       }
       const unsubscribe = client.subscribe<
         InterpretResponse,
@@ -43,10 +51,11 @@ export function interpretTransaction({
         body: {
           scope: ['transaction'],
           payload: {
-            address,
-            chain_id: transaction.chainId,
+            address: normalizeAddress(address),
+            chain: chain.toString(),
             currency,
-            transaction: normalizedTx,
+            transaction: normalizedTx || undefined,
+            solanaTransaction: transaction.solana || undefined,
             domain: origin,
           },
         },

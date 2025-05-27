@@ -610,7 +610,9 @@ function SendTransactionContent({
         }
       );
       return interpretTxBasedOnEligibility({
-        transaction: configuredTx,
+        address: singleAddress,
+        chain,
+        transaction: { evm: configuredTx },
         eligibilityQueryData: eligibilityQuery.data?.data.eligible,
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,

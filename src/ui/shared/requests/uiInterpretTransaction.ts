@@ -3,9 +3,7 @@ import {
   interpretSignature,
   interpretTransaction,
 } from 'src/modules/ethereum/transactions/interpret';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
-import { invariant } from 'src/shared/invariant';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import {
   getPreferences,
@@ -18,6 +16,7 @@ import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import type { Chain } from 'src/modules/networks/Chain';
 import { walletPort } from '../channels';
 
 /**
@@ -25,14 +24,18 @@ import { walletPort } from '../channels';
  * or a regular transaction otherwise
  */
 export async function interpretTxBasedOnEligibility({
+  address,
   transaction,
+  chain,
   eligibilityQueryData,
   eligibilityQueryStatus,
   currency,
   origin,
   client,
 }: {
-  transaction: IncomingTransactionWithChainId;
+  address: string;
+  transaction: MultichainTransaction;
+  chain: Chain;
   eligibilityQueryData: boolean | undefined;
   eligibilityQueryStatus: 'error' | 'success' | 'loading';
   currency: string;
@@ -42,31 +45,31 @@ export async function interpretTxBasedOnEligibility({
   const preferences = await getPreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const networksStore = await getNetworksStore();
-  const networks = await networksStore.loadNetworksByChainId(
-    normalizeChainId(transaction.chainId)
-  );
-  const chain = networks.getChainById(normalizeChainId(transaction.chainId));
-  const network = chain ? networks?.getNetworkByName(chain) || null : null;
-  invariant(network, `Unidentified network: ${transaction.chainId}`);
+  const network = await networksStore.fetchNetworkById(chain.toString());
   if (!network.supports_simulations) {
     return null;
   }
   const shouldDoRegularInterpret =
     !network.supports_sponsored_transactions ||
     eligibilityQueryData === false ||
-    eligibilityQueryStatus === 'error';
+    eligibilityQueryStatus === 'error' ||
+    transaction.solana;
 
-  invariant(transaction.from, 'transaction must have a from value');
   if (shouldDoRegularInterpret) {
     return interpretTransaction({
-      address: transaction.from,
+      address,
       transaction,
+      chain,
       origin,
       currency,
       client,
     });
-  } else if (network.supports_sponsored_transactions && eligibilityQueryData) {
-    const toSign = await fetchAndAssignPaymaster(transaction, {
+  } else if (
+    network.supports_sponsored_transactions &&
+    eligibilityQueryData &&
+    transaction.evm
+  ) {
+    const toSign = await fetchAndAssignPaymaster(transaction.evm, {
       source,
       apiClient: ZerionAPI,
     });
@@ -74,7 +77,7 @@ export async function interpretTxBasedOnEligibility({
       transaction: toSign,
     });
     return interpretSignature({
-      address: transaction.from,
+      address,
       chainId: normalizeChainId(toSign.chainId),
       typedData,
       currency,
@@ -87,10 +90,14 @@ export async function interpretTxBasedOnEligibility({
 }
 
 export function useInterpretTxBasedOnEligibility({
+  address,
+  chain,
   transaction,
   eligibilityQuery,
   origin,
 }: {
+  address: string;
+  chain: Chain;
   transaction: MultichainTransaction;
   eligibilityQuery: EligibilityQuery;
   origin: string;
@@ -108,12 +115,13 @@ export function useInterpretTxBasedOnEligibility({
     suspense: false,
     keepPreviousData,
     refetchOnWindowFocus: false,
-    enabled: Boolean(transaction.evm),
     queryKey: [
-      'interpretSignature',
+      'interpretTransaction',
       client,
       currency,
       transaction,
+      address,
+      chain,
       source,
       origin,
       eligibilityQuery.data?.data.eligible,
@@ -124,9 +132,10 @@ export function useInterpretTxBasedOnEligibility({
       return hashQueryKey(key);
     },
     queryFn: () => {
-      invariant(transaction.evm, 'Interpret currently expects only evm txs');
       return interpretTxBasedOnEligibility({
-        transaction: transaction.evm,
+        address,
+        chain,
+        transaction,
         eligibilityQueryData: eligibilityQuery.data?.data.eligible,
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,
