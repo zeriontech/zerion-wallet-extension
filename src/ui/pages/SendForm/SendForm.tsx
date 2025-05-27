@@ -54,9 +54,14 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { commonToBase } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { useEvent } from 'src/ui/shared/useEvent';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
+import { getAddressType } from 'src/shared/wallet/classifiers';
+import { Networks } from 'src/modules/networks/Networks';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
+import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { SuccessState } from './SuccessState';
 import { AddressInputWrapper } from './fieldsets/AddressInput';
 import { updateRecentAddresses } from './fieldsets/AddressInput/updateRecentAddresses';
@@ -217,6 +222,7 @@ function SendFormComponent() {
     },
     queryFn: () => prepareSendData(address, currentPosition, formState, client),
     staleTime: 20000,
+    retry: 1,
   });
   const paymasterEligible = Boolean(
     sendData?.paymasterEligibility?.data.eligible
@@ -250,46 +256,42 @@ function SendFormComponent() {
   };
 
   const sendTxMutation = useMutation({
-    mutationFn: async (): Promise<string> => {
+    mutationFn: async (): Promise<SignTransactionResult> => {
       invariant(sendData?.transaction, 'Send Form parameters missing');
       invariant(currentPosition, 'Current asset position is undefined');
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(signTxBtnRef.current, 'SignTransactionButton not found');
 
-      if (sendData.transaction.evm) {
-        const chain = sendData.networkId;
-        const valueInBaseUnits = commonToBase(
-          tokenValue,
-          getDecimals({ asset: currentPosition.asset, chain })
-        ).toFixed();
-        const txResponse = await signTxBtnRef.current.sendTransaction({
-          transaction: sendData.transaction.evm,
-          solTransaction: undefined,
-          chain: sendData.networkId.toString(),
-          initiator: INTERNAL_ORIGIN,
-          clientScope: 'Send',
-          feeValueCommon,
-          addressAction: createSendAddressAction({
-            transaction: sendData.transaction.evm,
-            asset: currentPosition.asset,
-            quantity: valueInBaseUnits,
-            chain,
-          }),
+      const chain = sendData.networkId;
+      const valueInBaseUnits = commonToBase(
+        tokenValue,
+        getDecimals({ asset: currentPosition.asset, chain })
+      ).toFixed();
+      const txResponse = await signTxBtnRef.current.sendTransaction({
+        transaction: sendData.transaction,
+        chain: sendData.networkId.toString(),
+        initiator: INTERNAL_ORIGIN,
+        clientScope: 'Send',
+        feeValueCommon,
+        addressAction: sendData.transaction.evm
+          ? createSendAddressAction({
+              transaction: sendData.transaction.evm,
+              asset: currentPosition.asset,
+              quantity: valueInBaseUnits,
+              chain,
+            })
+          : null,
+      });
+      if (preferences) {
+        setPreferences({
+          recentAddresses: updateRecentAddresses(
+            to,
+            preferences.recentAddresses
+          ),
         });
-        if (preferences) {
-          setPreferences({
-            recentAddresses: updateRecentAddresses(
-              to,
-              preferences.recentAddresses
-            ),
-          });
-        }
-        invariant(txResponse.evm?.hash);
-        return txResponse.evm.hash;
-      } else {
-        throw new Error('TODO: Support Solana');
       }
+      return txResponse;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
@@ -303,15 +305,15 @@ function SendFormComponent() {
 
   const navigate = useNavigate();
   if (sendTxMutation.isSuccess) {
-    const hash = sendTxMutation.data;
-    invariant(hash, 'Missing Form State View values');
+    const result = sendTxMutation.data;
+    invariant(result, 'Missing Form State View values');
     invariant(
       snapshotRef.current,
       'State snapshot must be taken before submit'
     );
     return (
       <SuccessState
-        hash={hash}
+        hash={result.evm?.hash ?? ensureSolanaResult(result).signature}
         address={address}
         sendFormSnapshot={snapshotRef.current}
         gasbackValue={gasbackValueRef.current}
@@ -326,6 +328,8 @@ function SendFormComponent() {
       />
     );
   }
+
+  const addressType = getAddressType(address);
 
   return (
     <PageColumn>
@@ -384,6 +388,7 @@ function SendFormComponent() {
           <div style={{ display: 'flex' }}>
             {type === 'token' ? (
               <NetworkSelect
+                standard={addressType}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
@@ -391,17 +396,24 @@ function SendFormComponent() {
                 dialogRootNode={rootNode}
                 filterPredicate={(network) => {
                   const isTestMode = Boolean(preferences?.testnetMode?.on);
-                  return isTestMode === Boolean(network.is_testnet);
+                  return (
+                    isTestMode === Boolean(network.is_testnet) &&
+                    Networks.predicate(addressType, network)
+                  );
                 }}
               />
             ) : (
               <NetworkSelect
+                standard={addressType}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
                 }}
                 dialogRootNode={rootNode}
-                filterPredicate={(network) => network.supports_nft_positions}
+                filterPredicate={(network) =>
+                  network.supports_nft_positions &&
+                  Networks.predicate(addressType, network)
+                }
               />
             )}
           </div>
@@ -498,6 +510,21 @@ function SendFormComponent() {
               gasback={gasbackEstimation}
             />
           </React.Suspense>
+        ) : addressType === 'solana' ? (
+          <div style={{ display: 'grid' }}>
+            {sendData?.transaction?.solana && sendData.networkFee ? (
+              <NetworkFeeLineInfo
+                networkFee={sendData.networkFee}
+                isLoading={
+                  sendDataQuery.isFetching || sendDataQuery.isPreviousData
+                }
+              />
+            ) : sendDataQuery.isLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'end' }}>
+                <CircleSpinner />
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </ErrorBoundary>
       <>
@@ -506,17 +533,13 @@ function SendFormComponent() {
           height={innerHeight >= 750 ? '70vh' : '90vh'}
           containerStyle={{ display: 'flex', flexDirection: 'column' }}
           renderWhenOpen={() => {
-            invariant(chain, 'Chain must be defined');
-            invariant(
-              sendData?.transaction?.evm,
-              'Transaction must be configured'
-            );
+            invariant(sendData?.transaction, 'Transaction must be configured');
             return (
               <>
                 <DisableTestnetShortcuts />
                 <ViewLoadingSuspense>
                   <SendTransactionConfirmation
-                    transaction={sendData.transaction.evm}
+                    transaction={sendData.transaction}
                     formState={formState}
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={sendData.paymasterPossible}

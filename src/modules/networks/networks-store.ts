@@ -159,7 +159,7 @@ export class NetworksStore extends Store<State> {
       await this.load();
     }
     const shouldUpdateNetworksInfo = this.getState()
-      .networks?.getNetworks()
+      .networks?.getEvmNetworks()
       .every((network) => Networks.getChainId(network) !== chainId);
     const existingNetworks = this.getState().networks;
     if (!shouldUpdateNetworksInfo && existingNetworks) {

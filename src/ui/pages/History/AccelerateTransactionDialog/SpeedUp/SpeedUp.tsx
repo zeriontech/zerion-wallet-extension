@@ -22,6 +22,7 @@ import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { usePreferences } from 'src/ui/features/preferences';
 import { wait } from 'src/shared/wait';
+import { assertProp } from 'src/shared/assert-property';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
@@ -99,9 +100,9 @@ export function SpeedUp({
         { ...configuration, nonce: String(nonce) },
         acceleratedGasPrices
       );
+      assertProp(tx, 'chainId');
       const txResponse = await signTxBtnRef.current.sendTransaction({
-        transaction: tx,
-        solTransaction: undefined,
+        transaction: { evm: tx },
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Speed Up',

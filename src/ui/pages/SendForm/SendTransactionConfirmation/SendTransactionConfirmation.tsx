@@ -2,9 +2,9 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TransactionConfirmationView } from 'src/ui/components/address-action/TransactionConfirmationView';
 import { walletPort } from 'src/ui/shared/channels';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { createChain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { SendFormState } from '../shared/SendFormState';
 import { toConfiguration } from '../shared/helpers';
 
@@ -15,7 +15,7 @@ export function SendTransactionConfirmation({
   onGasbackReady,
   formState,
 }: {
-  transaction: Partial<IncomingTransactionWithChainId>;
+  transaction: MultichainTransaction;
   formState: SendFormState;
   paymasterEligible: boolean;
   paymasterPossible: boolean;
@@ -33,7 +33,6 @@ export function SendTransactionConfirmation({
   if (!wallet || !transaction) {
     return null;
   }
-  invariant(transaction.chainId, 'transaction must have a chainId');
 
   return (
     <TransactionConfirmationView
@@ -41,14 +40,18 @@ export function SendTransactionConfirmation({
       wallet={wallet}
       showApplicationLine={false}
       chain={chain}
-      transaction={transaction as IncomingTransactionWithChainId}
+      transaction={transaction}
       configuration={toConfiguration(formState)}
       paymasterEligible={paymasterEligible}
       paymasterPossible={paymasterPossible}
       eligibilityQuery={{
         isError: false,
         status: 'success',
-        data: { data: { eligible: Boolean(transaction.customData) } },
+        data: {
+          data: {
+            eligible: Boolean(transaction.evm?.customData?.paymasterParams),
+          },
+        },
       }}
       onGasbackReady={onGasbackReady}
     />

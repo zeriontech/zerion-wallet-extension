@@ -89,9 +89,10 @@ import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
-import { solanaTransactionToAddressAction } from 'src/modules/solana/transactions/describeTransaction';
-import type { SolTransaction } from 'src/modules/solana/SolTransaction';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
+import { AddressActionComponent } from 'src/ui/components/address-action/AddressActionDetails/AddressActionDetails';
+import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -366,11 +367,11 @@ function TransactionDefaultView({
       <Spacer height={24} />
       <VStack gap={16}>
         <AddressActionDetails
+          address={wallet.address}
           recipientAddress={recipientAddress}
           addressAction={addressAction}
           chain={chain}
           networks={networks}
-          wallet={wallet}
           actionTransfers={actionTransfers}
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase}
@@ -525,7 +526,7 @@ function SendTransactionContent({
 
   const USE_PAYMASTER_FEATURE = true;
 
-  const network = networks.getNetworkByName(chain) || null;
+  const network = networks.getByNetworkId(chain) || null;
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
   const paymasterPossible =
@@ -671,9 +672,7 @@ function SendTransactionContent({
       }
       const feeValueCommon = feeValueCommonRef.current || null;
       return sendTxBtnRef.current.sendTransaction({
-        transaction: tx,
-        // TODO: How to avoid needing to pass this?
-        solTransaction: undefined,
+        transaction: { evm: tx },
         chain: chain.toString(),
         feeValueCommon,
         initiator: origin,
@@ -876,12 +875,10 @@ function SolDefaultView({
   addressAction,
   origin,
   wallet,
-  networks,
 }: {
   origin: string;
   addressAction: AnyAddressAction;
   wallet: ExternallyOwnedAccount;
-  networks: Networks;
 }) {
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
   return (
@@ -924,17 +921,10 @@ function SolDefaultView({
       <Spacer height={24} />
 
       <VStack gap={16}>
-        <AddressActionDetails
-          recipientAddress={addressAction.label?.display_value.wallet_address}
+        <AddressActionComponent
+          address={wallet.address}
           addressAction={addressAction}
-          chain={createChain('solana')}
-          networks={networks}
-          wallet={wallet}
-          actionTransfers={addressAction.content?.transfers}
-          // singleAsset={singleAsset}
-          allowanceQuantityBase={null}
           showApplicationLine={true}
-          singleAssetElementEnd={null}
         />
       </VStack>
     </>
@@ -958,13 +948,13 @@ function assertKnownSolanaMethodParam(
 function normalizeTxParams(params: URLSearchParams):
   | {
       method: 'signAllTransactions';
-      transactions: SolTransaction[];
+      transactions: StringBase64[];
       transaction: undefined;
     }
   | {
       method: 'signTransaction' | 'signAndSendTransaction';
       transactions: undefined;
-      transaction: SolTransaction;
+      transaction: StringBase64;
     } {
   const method = params.get('method');
   assertKnownSolanaMethodParam(method);
@@ -975,15 +965,13 @@ function normalizeTxParams(params: URLSearchParams):
     return {
       method,
       transaction: undefined,
-      transactions: (JSON.parse(base64Txs) as string[]).map((tx) =>
-        solFromBase64(tx)
-      ),
+      transactions: JSON.parse(base64Txs) as StringBase64[],
     };
   } else {
     invariant(base64Tx, 'transaction param is required');
     return {
       method,
-      transaction: solFromBase64(base64Tx),
+      transaction: base64Tx as StringBase64,
       transactions: undefined,
     };
   }
@@ -1033,9 +1021,12 @@ function SolSendTransaction() {
     }
   };
 
-  const firstTx = txParams.transaction || txParams.transactions[0];
+  const firstTx =
+    txParams.method === 'signAllTransactions'
+      ? txParams.transactions[0]
+      : txParams.transaction;
   const addressAction = useMemo(
-    () => solanaTransactionToAddressAction(firstTx, wallet.address),
+    () => parseSolanaTransaction(wallet.address, solFromBase64(firstTx)),
     [firstTx, wallet.address]
   );
 
@@ -1044,9 +1035,7 @@ function SolSendTransaction() {
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
       if (txParams.method === 'signAllTransactions') {
         return sendTxBtnRef.current.signAllTransactions({
-          solTransactions: txParams.transactions,
-          // TODO: How to avoid needing to pass this?
-          transaction: undefined,
+          transaction: { solana: txParams.transactions },
           chain: 'solana',
           feeValueCommon: null,
           initiator: origin,
@@ -1056,9 +1045,7 @@ function SolSendTransaction() {
         });
       } else {
         return sendTxBtnRef.current.sendTransaction({
-          solTransaction: txParams.transaction,
-          // TODO: How to avoid needing to pass this?
-          transaction: undefined,
+          transaction: { solana: txParams.transaction },
           chain: 'solana',
           feeValueCommon: null,
           initiator: origin,
@@ -1072,13 +1059,7 @@ function SolSendTransaction() {
     onSuccess: (tx) => handleSentTransaction(tx),
   });
 
-  const { networks } = useNetworks();
-
   useBackgroundKind(whiteBackgroundKind);
-
-  if (!networks) {
-    return null;
-  }
 
   return (
     <>
@@ -1094,11 +1075,9 @@ function SolSendTransaction() {
             wallet={wallet}
             addressAction={addressAction}
             origin={origin}
-            networks={networks}
           />
         ) : null}
         <Spacer height={16} />
-        <div>method: {txParams.method}</div>
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />

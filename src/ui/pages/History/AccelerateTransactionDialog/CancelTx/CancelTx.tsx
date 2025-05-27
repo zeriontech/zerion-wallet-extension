@@ -105,8 +105,7 @@ function CancelTxContent({
         acceleratedGasPrices
       );
       const txResponse = await signTxBtnRef.current.sendTransaction({
-        transaction: tx,
-        solTransaction: undefined,
+        transaction: { evm: tx },
         chain: chain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Cancel',

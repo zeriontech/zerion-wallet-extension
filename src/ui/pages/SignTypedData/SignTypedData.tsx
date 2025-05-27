@@ -281,12 +281,12 @@ function TypedDataDefaultView({
       <VStack gap={16}>
         {addressAction ? (
           <AddressActionDetails
+            address={wallet.address}
             recipientAddress={recipientAddress}
             addressAction={addressAction}
             chain={chain}
             networks={networks}
             actionTransfers={addressAction?.content?.transfers}
-            wallet={wallet}
             singleAsset={addressAction?.content?.single_asset}
             allowanceQuantityBase={allowanceQuantityBase || null}
             showApplicationLine={true}

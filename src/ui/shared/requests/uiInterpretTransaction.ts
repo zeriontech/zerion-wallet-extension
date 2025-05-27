@@ -17,6 +17,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { walletPort } from '../channels';
 
 /**
@@ -90,7 +91,7 @@ export function useInterpretTxBasedOnEligibility({
   eligibilityQuery,
   origin,
 }: {
-  transaction: IncomingTransactionWithChainId;
+  transaction: MultichainTransaction;
   eligibilityQuery: EligibilityQuery;
   origin: string;
 }) {
@@ -106,6 +107,7 @@ export function useInterpretTxBasedOnEligibility({
   return useQuery({
     suspense: false,
     keepPreviousData,
+    enabled: Boolean(transaction.evm),
     queryKey: [
       'interpretSignature',
       client,
@@ -120,14 +122,16 @@ export function useInterpretTxBasedOnEligibility({
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
     },
-    queryFn: () =>
-      interpretTxBasedOnEligibility({
-        transaction,
+    queryFn: () => {
+      invariant(transaction.evm, 'Interpret currently expects only evm txs');
+      return interpretTxBasedOnEligibility({
+        transaction: transaction.evm,
         eligibilityQueryData: eligibilityQuery.data?.data.eligible,
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,
         origin,
         client,
-      }),
+      });
+    },
   });
 }
