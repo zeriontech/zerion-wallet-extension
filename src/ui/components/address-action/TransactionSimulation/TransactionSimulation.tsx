@@ -55,7 +55,6 @@ export function TransactionSimulation({
           chain,
         })
       : null;
-  console.log({ transactionAction, transaction });
 
   const client = useDefiSdkClient();
   const { data: localAddressAction } = useQuery({

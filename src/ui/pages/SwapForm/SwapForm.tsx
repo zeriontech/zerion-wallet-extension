@@ -240,8 +240,9 @@ async function prepareDefaultState({
   const sorted = sortPositionsByValue(positions);
   const nativeAssetId = network.native_asset?.id;
   const defaultInputFungibleId = sorted.at(0)?.asset.id || nativeAssetId;
+  const USDC_BACKEND_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
   const popularToken =
-    popularTokens.find((id) => id !== nativeAssetId) ?? 'USDC'; // todo
+    popularTokens.find((id) => id !== nativeAssetId) ?? USDC_BACKEND_ID; // todo
   const defaultOutputFungibleId =
     defaultInputFungibleId === nativeAssetId ? popularToken : nativeAssetId;
   return {
