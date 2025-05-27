@@ -94,11 +94,14 @@ import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import { Networks } from 'src/modules/networks/Networks';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
+import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
 import { RateLine } from './Quotes';
 import * as styles from './styles.module.css';
 import { ApproveHintLine } from './ApproveHintLine';
@@ -424,11 +427,18 @@ function SwapFormComponent() {
 
   const formId = useId();
 
+  const inputChainAddressMatch =
+    network && isMatchForEcosystem(address, Networks.getEcosystem(network));
+  const inputChainAddressMismatch = network && !inputChainAddressMatch;
+
   const quotesData = useQuotes2({
     address: singleAddressNormalized,
     currency,
     formState,
-    enabled: defaultStateQuery.isFetched && !defaultStateQuery.isPreviousData,
+    enabled:
+      defaultStateQuery.isFetched &&
+      !defaultStateQuery.isPreviousData &&
+      inputChainAddressMatch,
   });
   const { refetch: refetchQuotes } = quotesData;
 
@@ -884,6 +894,13 @@ function SwapFormComponent() {
               : undefined
           }
         >
+          {inputChainAddressMismatch ? (
+            <UIText kind="small/regular" color="var(--notice-600)">
+              {getAddressType(address) === 'evm'
+                ? 'Please swich to an Ethereum network'
+                : 'Please switch to a Solana network'}
+            </UIText>
+          ) : null}
           <RateLine
             quotesData={quotesData}
             selectedQuote={selectedQuote}
@@ -945,6 +962,12 @@ function SwapFormComponent() {
             </HStack>
           ) : null}
         </VStack>
+        {selectedQuote?.error?.message ? (
+          <TransactionWarning
+            title="Warning"
+            message={selectedQuote?.error?.message}
+          />
+        ) : null}
         {quotesData.done && priceImpact && !isApproveMode ? (
           <PriceImpactLine priceImpact={priceImpact} />
         ) : null}
