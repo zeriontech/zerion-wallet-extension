@@ -14,10 +14,9 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { invariant } from 'src/shared/invariant';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -58,6 +57,9 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { usePreferences } from 'src/ui/features/preferences';
 import { wait } from 'src/shared/wait';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
@@ -146,7 +148,7 @@ function TypedDataDefaultView({
 
   const title =
     addressAction?.type.display_value ||
-    (isPermit(typedData) ? 'Permit' : 'Signature Request');
+    (isPermit(typedData) ? 'Permit' : 'Sign Message');
 
   const typedDataFormatted = useMemo(
     () => JSON.stringify(JSON.parse(typedDataRaw), null, 2),
@@ -247,83 +249,97 @@ function TypedDataDefaultView({
   return (
     <>
       <PageTop />
-      <div style={{ display: 'grid', placeItems: 'center' }}>
-        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-          {title}
-        </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {originForHref ? (
-            <TextAnchor
-              href={originForHref.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {originForHref.hostname}
-            </TextAnchor>
-          ) : (
-            'Unknown Initiator'
-          )}
-        </UIText>
-        <Spacer height={8} />
-        <HStack gap={8} alignItems="center">
-          <WalletAvatar
-            address={wallet.address}
-            size={20}
-            active={false}
-            borderRadius={4}
-          />
-          <UIText kind="small/regular">
-            <WalletDisplayName wallet={wallet} />
-          </UIText>
-        </HStack>
-      </div>
-      <Spacer height={24} />
-      <VStack gap={16}>
-        {addressAction ? (
-          <AddressActionDetails
-            address={wallet.address}
-            recipientAddress={recipientAddress}
-            addressAction={addressAction}
-            chain={chain}
-            networks={networks}
-            actionTransfers={addressAction?.content?.transfers}
-            singleAsset={addressAction?.content?.single_asset}
-            allowanceQuantityBase={allowanceQuantityBase || null}
-            showApplicationLine={true}
-            singleAssetElementEnd={
-              allowanceQuantityBase &&
-              addressAction.type.value === 'approve' ? (
-                <UIText
-                  as={TextLink}
-                  kind="small/accent"
-                  style={{ color: 'var(--primary)' }}
-                  to={allowanceViewHref}
-                >
-                  Edit
-                </UIText>
-              ) : null
-            }
-          />
-        ) : null}
-        {showRawTypedData ? (
-          <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
-        ) : null}
-        <HStack
+      <VStack gap={8}>
+        <VStack
           gap={8}
           style={{
-            gridTemplateColumns: interpretation?.input ? '1fr 1fr' : '1fr',
+            justifyItems: 'center',
+            paddingBlock: 24,
+            border: '1px solid var(--neutral-300)',
+            backgroundColor: '#ffffff40', // todo: use theme color
+            backdropFilter: 'blur(16px)',
+            borderRadius: 12,
           }}
         >
-          <InterpretationState
-            interpretation={interpretation}
-            interpretQuery={interpretQuery}
+          <SiteFaviconImg
+            size={64}
+            style={{ borderRadius: 16 }}
+            url={origin}
+            alt={`Logo for ${origin}`}
           />
-          {interpretation?.input ? (
-            <Button kind="regular" onClick={onOpenAdvancedView} size={36}>
-              Advanced View
-            </Button>
+          <UIText kind="headline/h2">{title}</UIText>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            {originForHref ? (
+              <TextAnchor
+                href={originForHref.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {originForHref.hostname}
+              </TextAnchor>
+            ) : (
+              'Unknown Initiator'
+            )}
+          </UIText>
+          <HStack gap={8} alignItems="center">
+            <WalletAvatar
+              address={wallet.address}
+              size={20}
+              active={false}
+              borderRadius={6}
+            />
+            <UIText kind="small/regular">
+              <WalletDisplayName wallet={wallet} />
+            </UIText>
+          </HStack>
+        </VStack>
+        <VStack gap={16}>
+          {addressAction ? (
+            <AddressActionDetails
+              address={wallet.address}
+              recipientAddress={recipientAddress}
+              addressAction={addressAction}
+              chain={chain}
+              networks={networks}
+              actionTransfers={addressAction?.content?.transfers}
+              singleAsset={addressAction?.content?.single_asset}
+              allowanceQuantityBase={allowanceQuantityBase || null}
+              showApplicationLine={true}
+              singleAssetElementEnd={
+                allowanceQuantityBase &&
+                addressAction.type.value === 'approve' ? (
+                  <UIText
+                    as={TextLink}
+                    kind="small/accent"
+                    style={{ color: 'var(--primary)' }}
+                    to={allowanceViewHref}
+                  >
+                    Edit
+                  </UIText>
+                ) : null
+              }
+            />
           ) : null}
-        </HStack>
+          {showRawTypedData ? (
+            <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
+          ) : null}
+          <HStack
+            gap={8}
+            style={{
+              gridTemplateColumns: interpretation?.input ? '1fr 1fr' : '1fr',
+            }}
+          >
+            <InterpretationState
+              interpretation={interpretation}
+              interpretQuery={interpretQuery}
+            />
+            {interpretation?.input ? (
+              <Button kind="regular" onClick={onOpenAdvancedView} size={36}>
+                Advanced View
+              </Button>
+            ) : null}
+          </HStack>
+        </VStack>
       </VStack>
       <Spacer height={16} />
       <Content name="sign-transaction-footer">
@@ -412,6 +428,7 @@ function SignTypedDataContent({
   typedDataRaw: string;
   wallet: ExternallyOwnedAccount;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
   const [params] = useSearchParams();
   const { currency } = useCurrency();
 
@@ -499,14 +516,9 @@ function SignTypedDataContent({
   }
 
   return (
-    <Background backgroundKind="white">
+    <>
       <NavigationTitle title={null} documentTitle="Sign Typed Data" />
-      <PageColumn
-        // different surface color on backgroundKind="white"
-        style={{
-          ['--surface-background-color' as string]: 'var(--neutral-100)',
-        }}
-      >
+      <PageColumn>
         {view === View.default ? (
           <TypedDataDefaultView
             origin={origin}
@@ -557,7 +569,7 @@ function SignTypedDataContent({
         <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
-    </Background>
+    </>
   );
 }
 
