@@ -3,6 +3,7 @@ import { useSelect } from 'downshift';
 import cn from 'classnames';
 import { useMutation } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import comingSoonImgSrc from 'url:src/ui/assets/coming-soon@2x.png';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -22,6 +23,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { useStore } from '@store-unit/react';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import { getGrownTabMaxHeight, offsetValues } from '../Overview/getTabsOffset';
 import { useWalletAbilities } from './daylight';
 import type { StatusFilterParams } from './daylight';
@@ -376,8 +378,7 @@ function AbilityCard({
   );
 }
 
-export function Feed() {
-  const { singleAddress } = useAddressParams();
+function FeedComponent({ address }: { address: string }) {
   const [statusFilter, setStatusFilter] = useNavigationState<FeedStatus>(
     'status',
     'open'
@@ -401,7 +402,7 @@ export function Feed() {
     isFetchingNextPage,
     isPreviousData,
   } = useWalletAbilities({
-    address: singleAddress,
+    address,
     params: useMemo(
       () => ({
         type: getAbilityTypeParams(typeFilter),
@@ -418,7 +419,7 @@ export function Feed() {
       ) {
         walletPort.request('daylightAction', {
           event_name: 'Perks: Empty List Shown',
-          address: singleAddress,
+          address,
         });
       }
       // we want to fetch next page imidiatelly
@@ -435,7 +436,7 @@ export function Feed() {
       if (filteredAbilities.length < ABILITIES_PER_PAGE / 2) {
         fetchNextPage({
           cancelRefetch: false,
-          pageParam: { link: lastPage.links.next, address: singleAddress },
+          pageParam: { link: lastPage.links.next, address },
         });
       }
     },
@@ -505,7 +506,7 @@ export function Feed() {
                 ability={ability}
                 onMark={refetch}
                 filter={statusFilter}
-                address={singleAddress}
+                address={address}
                 status={
                   feedData?.completedSet.has(ability.uid)
                     ? 'completed'
@@ -557,4 +558,27 @@ export function Feed() {
       ) : null}
     </>
   );
+}
+
+export function Feed() {
+  const { singleAddress } = useAddressParams();
+  const offsetValuesState = useStore(offsetValues);
+
+  if (isSolanaAddress(singleAddress)) {
+    return (
+      <CenteredFillViewportView
+        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+      >
+        <VStack
+          gap={16}
+          style={{ padding: 20, textAlign: 'center', placeItems: 'center' }}
+        >
+          <img style={{ width: 80 }} src={comingSoonImgSrc} alt="" />
+          <UIText kind="body/accent">Perks coming soon</UIText>
+        </VStack>
+      </CenteredFillViewportView>
+    );
+  }
+
+  return <FeedComponent address={singleAddress} />;
 }
