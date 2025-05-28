@@ -1,1 +1,0 @@
-export { SiweError } from './SiweError';

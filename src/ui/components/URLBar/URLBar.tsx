@@ -35,7 +35,6 @@ const URLBarBlacklist = new Set([
   '/sendTransaction',
   '/signMessage',
   '/signTypedData',
-  '/siwe',
   '/invite',
   '/requestAccounts',
   '/testnetModeGuard',
