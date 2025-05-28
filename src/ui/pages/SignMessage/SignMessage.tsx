@@ -123,7 +123,7 @@ function SignMessageContent({
         Copied to Clipboard
       </PopoverToast>
       <BottomSheetDialog ref={dialogRef} height="fit-content">
-        <VStack gap={32}>
+        <VStack gap={24}>
           <VStack
             gap={0}
             style={{
