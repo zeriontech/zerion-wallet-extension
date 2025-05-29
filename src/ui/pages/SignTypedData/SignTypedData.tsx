@@ -246,7 +246,7 @@ function TypedDataDefaultView({
             justifyItems: 'center',
             paddingBlock: 24,
             border: '1px solid var(--neutral-300)',
-            backgroundColor: '#ffffff40', // todo: use theme color
+            backgroundColor: 'var(--light-background-transparent)',
             backdropFilter: 'blur(16px)',
             borderRadius: 12,
           }}

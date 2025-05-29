@@ -212,9 +212,9 @@ function RequestAccountsView({
             gap={8}
             style={{
               justifyItems: 'center',
-              paddingBlock: 24,
+              padding: 24,
               border: '1px solid var(--neutral-300)',
-              backgroundColor: '#ffffff40', // todo: use theme color
+              backgroundColor: 'var(--light-background-transparent)',
               backdropFilter: 'blur(16px)',
               borderRadius: 12,
             }}
@@ -225,7 +225,12 @@ function RequestAccountsView({
               url={origin}
               alt={`Logo for ${origin}`}
             />
-            <UIText kind="headline/h2">{originName}</UIText>
+            <UIText
+              kind="headline/h2"
+              style={{ maxWidth: '100%', overflowWrap: 'anywhere' }}
+            >
+              {originName}
+            </UIText>
             <UnstyledButton
               onClick={() =>
                 connectionDescriptionDialogRef.current?.showModal()

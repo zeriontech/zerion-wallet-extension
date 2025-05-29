@@ -71,6 +71,7 @@
   --background: var(--neutral-100);
   --background-transparent: rgba(22, 22, 26, 0.9);
   --z-index-1-inverted: var(--neutral-100);
+  --light-background-transparent: #ffffff40;
 }
 
 .theme-dark {
@@ -143,6 +144,7 @@
   --background: var(--z-index-0);
   --z-index-1-inverted: var(--white);
   --background-transparent: rgba(255, 255, 255, 0.9);
+  --light-background-transparent: #16161a40;
 }
 
 .theme-dark :global(.theme-dark-invert) {
