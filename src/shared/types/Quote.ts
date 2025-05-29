@@ -197,7 +197,7 @@ type TransactionMultichain = {
   solana: null | TransactionSolana;
 };
 
-type ContractMetadata2 = {
+export type ContractMetadata2 = {
   /**
    * @description ID of liquidity source, may be used as `source_id` parameter
    * @example defi-sdk

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import ky, { HTTPError } from 'ky';
 import type { Chain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
@@ -42,7 +41,11 @@ class TransactionsApiError extends HTTPError {
   }
 }
 
-async function getBridgeTokens({ inputChain, outputChain, direction }: Params) {
+export async function getBridgeTokens({
+  inputChain,
+  outputChain,
+  direction,
+}: Params) {
   invariant(inputChain, 'inputChain should exist');
   invariant(outputChain, 'outputChain should exist');
 
@@ -70,21 +73,4 @@ async function getBridgeTokens({ inputChain, outputChain, direction }: Params) {
     }
     throw error;
   }
-}
-
-export function useBridgeTokens({
-  inputChain,
-  outputChain,
-  direction,
-  enabled = true,
-}: Params & {
-  enabled?: boolean;
-}) {
-  return useQuery({
-    queryKey: ['bridge/assets', inputChain, outputChain, direction],
-    queryFn: () => getBridgeTokens({ inputChain, outputChain, direction }),
-    suspense: false,
-    retry: false,
-    enabled: enabled && Boolean(inputChain) && Boolean(outputChain),
-  });
 }

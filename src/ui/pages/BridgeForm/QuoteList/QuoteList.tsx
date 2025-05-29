@@ -1,19 +1,9 @@
-import type { CustomConfiguration } from '@zeriontech/transactions';
-import { useAssetsPrices, type Asset } from 'defi-sdk';
-import omit from 'lodash/omit';
-import React, { useId, useMemo } from 'react';
-import { useCurrency } from 'src/modules/currency/useCurrency';
-import { getCommonQuantity } from 'src/modules/networks/asset';
-import { createChain, type Chain } from 'src/modules/networks/Chain';
-import type { QuoteLegacy } from 'src/shared/types/Quote';
+import React, { useId } from 'react';
+import type { Quote2 } from 'src/shared/types/Quote';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
-import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import type { QuoteSortType } from 'src/ui/shared/requests/useQuotes';
 import { noValueDash } from 'src/ui/shared/typography';
 import { Button } from 'src/ui/ui-kit/Button';
-import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import {
@@ -22,75 +12,52 @@ import {
 } from 'src/ui/ui-kit/SegmentedControl';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useTransactionFee } from '../../SendTransaction/TransactionConfiguration/useTransactionFee';
-import { getBridgeFeeValueFiat } from '../shared/getBridgeFeeValueFiat';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import type { BridgeFormState } from '../types';
 import * as styles from './styles.module.css';
 
 const QUOTE_GRID_TEMPLATE_COLUMNS = '30px 3fr 3fr 2fr 2fr';
 
-function GasFee({
-  transaction,
-  chain,
-  configuration,
-}: {
-  transaction: NonNullable<QuoteLegacy['transaction']>;
-  chain: Chain;
-  configuration: CustomConfiguration;
-}) {
-  const { currency } = useCurrency();
-  const { data: chainGasPrices = null } = useGasPrices(chain);
-  const transactionFee = useTransactionFee({
-    address: transaction.from,
-    transaction: {
-      ...omit(transaction, ['chain_id']),
-      chainId: transaction.chain_id,
-    },
-    chain,
-    onFeeValueCommonReady: null,
-    networkFeeConfiguration: configuration.networkFee,
-    chainGasPrices,
-  });
-
-  return transactionFee.costs?.feeValueFiat
-    ? formatCurrencyValue(transactionFee.costs?.feeValueFiat, 'en', currency)
-    : 'N/A';
+function QuoteNetworkFee({ quote }: { quote: Quote2 }) {
+  const { networkFee } = quote;
+  return (
+    <span>
+      {networkFee?.amount.value != null
+        ? formatCurrencyValue(
+            networkFee.amount.value,
+            'en',
+            networkFee.amount.currency
+          )
+        : networkFee?.amount.quantity
+        ? formatTokenValue(
+            networkFee.amount.quantity,
+            networkFee.fungible?.symbol ?? ''
+          )
+        : 'N/A'}
+    </span>
+  );
 }
 
-function BridgeFee({ chain, quote }: { chain: Chain; quote: QuoteLegacy }) {
-  const { currency } = useCurrency();
+function BridgeFee({ quote }: { quote: Quote2 }) {
+  const feeAsset = quote.bridgeFee?.fungible;
+  const feeAmount = quote.bridgeFee?.amount;
 
-  const { value: feeAssetValue } = useAssetsPrices({
-    asset_codes: [quote.bridge_fee_asset_id || ''],
-    currency,
-  });
-
-  const feeAssetId = quote.bridge_fee_asset_id;
-  const feeAsset = feeAssetId ? feeAssetValue?.[feeAssetId] : undefined;
-  const feePriceValue = useMemo(
-    () =>
-      feeAsset
-        ? getBridgeFeeValueFiat({
-            quote,
-            chain,
-            asset: feeAsset,
-          })
-        : null,
-    [feeAsset, quote, chain]
-  );
-
-  return feeAsset && feePriceValue ? (
-    <HStack gap={4} alignItems="center" justifyContent="center">
-      <UIText kind="small/regular">
-        {formatPriceValue(feePriceValue, 'en', currency)}
+  return feeAsset && feeAmount?.usdValue ? (
+    <HStack gap={4} alignItems="center">
+      <UIText kind="small/accent" color="var(--primary)">
+        {formatCurrencyValue(feeAmount.usdValue, 'en', feeAmount.currency)}
       </UIText>
-      <UIText kind="small/regular">·</UIText>
-      <UIText kind="small/regular">{feeAsset.symbol}</UIText>
+      <UIText kind="small/accent" color="var(--primary)">
+        ·
+      </UIText>
+      <TokenIcon size={16} src={feeAsset.iconUrl} symbol={feeAsset.symbol} />
     </HStack>
   ) : (
     <UIText
-      kind="small/regular"
+      kind="small/accent"
       style={{
-        textAlign: 'center',
         background:
           'linear-gradient(113deg, #20DBE7 6.71%, #4B7AEF 58.69%, #BC29EF 102.67%)',
         WebkitBackgroundClip: 'text',
@@ -102,27 +69,8 @@ function BridgeFee({ chain, quote }: { chain: Chain; quote: QuoteLegacy }) {
   );
 }
 
-function QuoteListItem({
-  configuration,
-  spendChain,
-  receiveAsset,
-  quote,
-}: {
-  configuration: CustomConfiguration;
-  spendChain: Chain;
-  receiveAsset: Asset;
-  quote: QuoteLegacy;
-}) {
-  const { currency } = useCurrency();
-  const chain = createChain(quote.output_chain);
-
-  const receiveAmount = receiveAsset.price?.value
-    ? getCommonQuantity({
-        asset: receiveAsset,
-        chain,
-        baseQuantity: quote.output_amount_estimation,
-      }).times(receiveAsset.price.value)
-    : null;
+function QuoteComponent({ quote }: { quote: Quote2 }) {
+  const { outputAmount } = quote;
 
   return (
     <HStack
@@ -131,62 +79,46 @@ function QuoteListItem({
       style={{ gridTemplateColumns: QUOTE_GRID_TEMPLATE_COLUMNS }}
     >
       <img
-        src={quote.contract_metadata?.icon_url}
-        alt={quote.contract_metadata?.name}
+        src={quote.contractMetadata?.iconUrl}
+        alt={quote.contractMetadata?.name}
         width={20}
         height={20}
-        title={quote.contract_metadata?.name}
+        title={quote.contractMetadata?.name}
       />
       <UIText kind="small/regular" style={{ textAlign: 'center' }}>
-        {receiveAmount
-          ? formatCurrencyValue(receiveAmount, 'en', currency)
+        {outputAmount.value != null
+          ? formatCurrencyValue(outputAmount.value, 'en', outputAmount.currency)
           : 'N/A'}
       </UIText>
-      <BridgeFee chain={spendChain} quote={quote} />
+      <BridgeFee quote={quote} />
       <UIText kind="small/regular" style={{ textAlign: 'center' }}>
-        {quote.transaction ? (
-          <React.Suspense
-            fallback={
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <CircleSpinner />
-              </div>
-            }
-          >
-            <GasFee
-              chain={chain}
-              transaction={quote.transaction}
-              configuration={configuration}
-            />
-          </React.Suspense>
+        {quote.transactionSwap ? (
+          <QuoteNetworkFee quote={quote} />
         ) : (
           noValueDash
         )}
       </UIText>
       <UIText kind="small/regular" style={{ textAlign: 'right' }}>
-        ~{formatSeconds(Number(quote.seconds_estimation))}
+        ~{formatSeconds(Number(quote.time))}
       </UIText>
     </HStack>
   );
 }
 
 export function QuoteList({
-  configuration,
-  spendChain,
-  receiveAsset,
   quotes,
   selectedQuote,
-  onQuoteIdChange,
+  onChange,
+  onReset,
   sortType,
-  onChangeSortType,
+  onSortTypeChange,
 }: {
-  configuration: CustomConfiguration;
-  spendChain: Chain;
-  receiveAsset: Asset;
-  quotes: QuoteLegacy[];
-  selectedQuote: QuoteLegacy | null;
-  onQuoteIdChange: (quoteId: string | null) => void;
-  sortType: QuoteSortType;
-  onChangeSortType: (sortType: QuoteSortType) => void;
+  quotes: Quote2[];
+  selectedQuote: Quote2 | null;
+  onChange: (quoteId: string | null) => void;
+  onReset: () => void;
+  sortType: BridgeFormState['sort'];
+  onSortTypeChange: (sortType: BridgeFormState['sort']) => void;
 }) {
   const formId = useId();
 
@@ -198,16 +130,16 @@ export function QuoteList({
           <SegmentedControlRadio
             name="sortType"
             value="amount"
-            checked={sortType === 'amount'}
-            onChange={() => onChangeSortType('amount')}
+            checked={sortType === '1'}
+            onChange={() => onSortTypeChange('1')}
           >
             Max Received
           </SegmentedControlRadio>
           <SegmentedControlRadio
             name="sortType"
             value="time"
-            checked={sortType === 'time'}
-            onChange={() => onChangeSortType('time')}
+            checked={sortType === '2'}
+            onChange={() => onSortTypeChange('2')}
           >
             Fastest Transfer
           </SegmentedControlRadio>
@@ -247,7 +179,7 @@ export function QuoteList({
               const formData = new FormData(event.currentTarget);
               const quoteId = formData.get('quoteId') as string | null;
               if (quoteId || !selectedQuote) {
-                onQuoteIdChange(quoteId);
+                onChange(quoteId);
               }
             }}
             style={{ maxHeight: 350, overflowY: 'auto' }}
@@ -255,36 +187,46 @@ export function QuoteList({
             <VStack gap={12}>
               {quotes.map((quote) => {
                 const isSelected =
-                  selectedQuote?.contract_metadata?.id ===
-                  quote.contract_metadata?.id;
+                  selectedQuote?.contractMetadata?.id ===
+                  quote.contractMetadata?.id;
                 return (
                   <label
                     className={styles.radio}
-                    key={quote.contract_metadata?.id}
+                    key={quote.contractMetadata?.id}
                   >
                     <input
                       autoFocus={isSelected}
                       type="radio"
                       name="quoteId"
-                      value={quote.contract_metadata?.id}
+                      value={quote.contractMetadata?.id}
                       defaultChecked={isSelected}
                     />
-                    <QuoteListItem
-                      key={quote.contract_metadata?.id}
-                      configuration={configuration}
-                      receiveAsset={receiveAsset}
-                      spendChain={spendChain}
-                      quote={quote}
-                    />
+                    <QuoteComponent quote={quote} />
                   </label>
                 );
               })}
             </VStack>
           </form>
         </VStack>
-        <Button kind="primary" size={48} form={formId}>
-          Save
-        </Button>
+        <HStack
+          gap={16}
+          style={{ paddingTop: 16, gridTemplateColumns: '1fr 1fr' }}
+        >
+          <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+            <Button
+              kind="neutral"
+              size={44}
+              onClick={onReset}
+              value={DialogButtonValue.cancel}
+              style={{ width: '100%' }}
+            >
+              Reset
+            </Button>
+          </form>
+          <Button kind="primary" size={44} form={formId}>
+            Save
+          </Button>
+        </HStack>
       </VStack>
     </>
   );

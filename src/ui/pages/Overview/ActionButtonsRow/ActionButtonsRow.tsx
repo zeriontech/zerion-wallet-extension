@@ -16,8 +16,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
-import { WithGuardDialog } from 'src/ui/components/WithGuardDialog';
-import { isSolanaAddress } from 'src/modules/solana/shared';
 import * as s from './styles.module.css';
 
 function ActionButton<As extends ElementType = 'a'>({
@@ -84,7 +82,6 @@ export function ActionButtonsRow() {
       updateTab({ tab: activeTab, url: href });
     }
   };
-  const addressIsSolana = isSolanaAddress(wallet.address);
 
   return (
     <div className={s.containerRoot}>
@@ -113,41 +110,20 @@ export function ActionButtonsRow() {
           />
         </li>
         <li>
-          {process.env.FEATURE_BRIDGE_FORM === 'on' ? (
-            <WithGuardDialog<'a'>
-              isWarning={addressIsSolana}
-              title="Switch to an Ethereum Wallet"
-              message="Bridging for Solana is coming soon"
-              render={({ handleClick: handleClickOuter }) => (
-                <WithMainnetOnlyWarningDialog<'a'>
-                  message="Testnets are not supported in Bridge"
-                  render={({ handleClick }) => (
-                    <ActionButton
-                      title="Bridge"
-                      as={UnstyledLink}
-                      icon={<BridgeIcon />}
-                      to="/bridge-form"
-                      onClick={(event) => {
-                        handleClick(event);
-                        if (!event.defaultPrevented) {
-                          handleClickOuter(event);
-                        }
-                      }}
-                    />
-                  )}
-                />
-              )}
-            />
-          ) : (
-            <ActionButton
-              title="Bridge"
-              icon={<BridgeIcon />}
-              href={`${ZERION_ORIGIN}/bridge?${addWalletParams}`}
-              onClick={performAction}
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          )}
+          <WithMainnetOnlyWarningDialog<'a'>
+            message="Testnets are not supported in Bridge"
+            render={({ handleClick }) => (
+              <ActionButton
+                title="Bridge"
+                as={UnstyledLink}
+                icon={<BridgeIcon />}
+                to="/bridge-form"
+                onClick={(event) => {
+                  handleClick(event);
+                }}
+              />
+            )}
+          />
         </li>
         <li>
           <ActionButton

@@ -5,12 +5,8 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import type { AddressPosition } from 'defi-sdk';
-import { client, useAssetsPrices } from 'defi-sdk';
-import { isTruthy } from 'is-truthy-ts';
-import {
-  EmptyAddressPosition,
-  sortPositionsByValue,
-} from '@zeriontech/transactions';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
+import { sortPositionsByValue } from '@zeriontech/transactions';
 import React, {
   useCallback,
   useEffect,
@@ -121,6 +117,7 @@ import { SpendTokenField } from './fieldsets/SpendTokenField/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField/ReceiveTokenField';
 import { SuccessState } from './SuccessState/SuccessState';
 import type { SwapFormState } from './shared/SwapFormState';
+import { usePosition } from './shared/usePosition';
 
 const rootNode = getRootDomNode();
 
@@ -250,42 +247,6 @@ async function prepareDefaultState({
     inputFungibleId: defaultInputFungibleId,
     outputFungibleId: defaultOutputFungibleId,
   };
-}
-
-function usePosition({
-  assetId,
-  positions,
-  chain,
-}: {
-  assetId: string | null;
-  positions: AddressPosition[] | null;
-  chain: Chain | null;
-}) {
-  const { currency } = useCurrency();
-  const assetsPrices = useAssetsPrices(
-    { asset_codes: [assetId].filter(isTruthy), currency },
-    { client, enabled: Boolean(assetId) }
-  );
-
-  const asset = assetsPrices.value?.[assetId ?? ''] ?? null;
-
-  const maybePosition = useMemo(
-    () =>
-      positions?.find(
-        (p) => p.asset.id === assetId && p.chain === chain?.toString()
-      ) ?? null,
-    [assetId, positions, chain]
-  );
-
-  return useMemo(() => {
-    if (maybePosition) {
-      return maybePosition;
-    } else if (asset && chain) {
-      return new EmptyAddressPosition({ asset, chain });
-    } else {
-      return null;
-    }
-  }, [asset, chain, maybePosition]);
 }
 
 type HandleChangeFunction = <K extends keyof SwapFormState>(
