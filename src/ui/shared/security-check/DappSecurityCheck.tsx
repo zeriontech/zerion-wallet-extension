@@ -9,6 +9,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckmarkIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
+import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
 import {
   SecurityStatusButton,
   type SecurityButtonKind,
@@ -33,7 +34,51 @@ const SECURITY_STATUS_BUTTON_KIND: Record<
   ok: 'ok',
 };
 
-function SecurityCheckDialogContent() {
+function SecurityCheckDialogContent({ status }: { status: 'ok' | 'error' }) {
+  if (status === 'error') {
+    return (
+      <VStack
+        gap={32}
+        style={{
+          padding: '16px 16px 24px',
+          position: 'relative',
+          background:
+            'linear-gradient(111deg, var(--primary-100) 0%, var(--primary-200) 100%)',
+        }}
+      >
+        <WarningIcon
+          style={{
+            position: 'absolute',
+            top: -50,
+            right: -70,
+            width: 200,
+            height: 200,
+            opacity: 0.1,
+            color: 'var(--primary-400)',
+          }}
+        />
+        <VStack gap={16} style={{ position: 'relative' }}>
+          <UIText kind="headline/h3">
+            Transaction simulation found no security risks
+          </UIText>
+
+          <UIText kind="body/regular">
+            This contract is open source and audited
+          </UIText>
+        </VStack>
+        <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+          <Button
+            value={DialogButtonValue.cancel}
+            kind="primary"
+            style={{ width: '100%' }}
+          >
+            Close
+          </Button>
+        </form>
+      </VStack>
+    );
+  }
+
   return (
     <VStack
       gap={32}
@@ -47,10 +92,10 @@ function SecurityCheckDialogContent() {
       <ShieldIcon
         style={{
           position: 'absolute',
-          top: -32,
-          right: -24,
-          width: 160,
-          height: 160,
+          top: -100,
+          right: -90,
+          width: 300,
+          height: 300,
           opacity: 0.1,
           color: 'var(--positive-400)',
         }}
@@ -116,17 +161,23 @@ export function DappSecurityCheck({
 
   return (
     <>
-      <BottomSheetDialog
-        ref={dialogRef}
-        height="fit-content"
-        containerStyle={{ padding: 0, overflow: 'hidden' }}
-      >
-        <SecurityCheckDialogContent />
-      </BottomSheetDialog>
+      {status === 'ok' || status === 'error' ? (
+        <BottomSheetDialog
+          ref={dialogRef}
+          height="fit-content"
+          containerStyle={{ padding: 0, overflow: 'hidden' }}
+        >
+          <SecurityCheckDialogContent status={status} />
+        </BottomSheetDialog>
+      ) : null}
       <SecurityStatusButton
         kind={SECURITY_STATUS_BUTTON_KIND[status]}
         title={SECURITY_STATUS_TO_TITLE[status]}
-        onClick={isLoading ? undefined : () => dialogRef.current?.showModal()}
+        onClick={
+          status === 'ok' || status === 'error'
+            ? () => dialogRef.current?.showModal()
+            : undefined
+        }
         size="big"
       />
     </>
