@@ -4,11 +4,9 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { noValueDash } from 'src/ui/shared/typography';
 import type { Networks } from 'src/modules/networks/Networks';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
-import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import type { Chain } from 'src/modules/networks/Chain';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -24,8 +22,10 @@ import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { valueToHex } from 'src/shared/units/valueToHex';
-import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
-import { PageBottom } from 'src/ui/components/PageBottom';
+import { ApplicationLine } from 'src/ui/components/address-action/ApplicationLine';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 
 function maybeHexValue(value?: BigNumberish | null): string | null {
   return value ? valueToHex(value) : null;
@@ -50,7 +50,6 @@ function AddressLine({
         <UIText kind="small/regular" color="var(--neutral-500)">
           {label}
         </UIText>
-        <Spacer height={4} />
         <UIText kind="body/regular" color="var(--black)" title={address}>
           {explorerUrl ? (
             <TextAnchor
@@ -72,7 +71,7 @@ function AddressLine({
   );
 }
 
-export function TransactionDetails({
+function TransactionDetails({
   networks,
   chain,
   transaction,
@@ -96,14 +95,13 @@ export function TransactionDetails({
   );
 
   return (
-    <VStack gap={24}>
+    <VStack gap={8}>
       {functionName ? (
         <>
           <Surface padding={16}>
             <UIText kind="small/regular" color="var(--neutral-500)">
               Function
             </UIText>
-            <Spacer height={4} />
             <UIText kind="body/accent" color="var(--black)">
               {functionName}
             </UIText>
@@ -179,7 +177,6 @@ export function TransactionDetails({
                   <UIText kind="small/regular" color="var(--neutral-500)">
                     {address}
                   </UIText>
-                  <Spacer height={4} />
                   {storageKeys.map((storageKey) => (
                     <UIText
                       key={storageKey}
@@ -204,58 +201,67 @@ export function TransactionAdvancedView({
   chain,
   transaction,
   interpretation,
+  addressAction,
+  onCopyData,
 }: {
   networks: Networks;
   chain: Chain;
   transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
+  addressAction: AnyAddressAction;
+  onCopyData?: () => void;
 }) {
   const transactionFormatted = useMemo(
     () => JSON.stringify(transaction, null, 2),
     [transaction]
   );
 
-  const { handleCopy: handleCopyRawData, isSuccess: didCopyRawData } =
-    useCopyToClipboard({ text: transactionFormatted });
+  const { handleCopy } = useCopyToClipboard({
+    text: transactionFormatted,
+    onSuccess: onCopyData,
+  });
 
   return (
     <>
       <PageTop />
-      {transaction ? (
-        <TransactionDetails
-          networks={networks}
-          chain={chain}
-          transaction={transaction}
-          interpretation={interpretation}
-        />
-      ) : null}
-      <Spacer height={8} />
-      <PageStickyFooter
+      <VStack
+        gap={8}
         style={{
-          marginInline: 'calc(-1 * var(--column-padding-inline))',
+          ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        <Spacer height={8} />
+        <ApplicationLine
+          action={addressAction}
+          chain={chain}
+          networks={networks}
+        />
+        {transaction ? (
+          <TransactionDetails
+            networks={networks}
+            chain={chain}
+            transaction={transaction}
+            interpretation={interpretation}
+          />
+        ) : null}
+      </VStack>
+      <Spacer height={24} />
+      <form
+        method="dialog"
+        onSubmit={(event) => event.stopPropagation()}
+        style={{ marginTop: 'auto' }}
+      >
         <Button
-          type="button"
+          value={DialogButtonValue.cancel}
           kind="primary"
-          size={44}
-          style={{ padding: '10px 20px' }}
-          onClick={handleCopyRawData}
+          style={{ width: '100%' }}
+          onClick={handleCopy}
         >
-          <HStack gap={12} alignItems="center" justifyContent="center">
-            <UIText kind="body/accent">
-              {didCopyRawData ? 'Copied' : 'Copy Raw Data'}
-            </UIText>
-            {React.createElement(didCopyRawData ? CheckIcon : CopyIcon, {
-              display: 'block',
-              width: 24,
-              height: 24,
-            })}
+          <HStack gap={8} alignItems="center" justifyContent="center">
+            <span>Copy Raw Data</span>
+            <CopyIcon />
           </HStack>
         </Button>
-        <PageBottom />
-      </PageStickyFooter>
+      </form>
     </>
   );
 }

@@ -99,6 +99,8 @@ import {
 import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import type { PopoverToastHandle } from '../Settings/PopoverToast';
+import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -536,6 +538,7 @@ function SendTransactionContent({
   const { preferences } = usePreferences();
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const { data: chainGasPrices, ...gasPricesQuery } = useGasPrices(chain);
+  const toastRef = useRef<PopoverToastHandle>(null);
 
   const transactionAction = describeTransaction(populatedTransaction, {
     networks,
@@ -755,6 +758,14 @@ function SendTransactionContent({
 
   return (
     <>
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Copied to Clipboard
+      </PopoverToast>
       <NavigationTitle title={null} documentTitle="Send Transaction" />
       <PageColumn>
         {view === View.default ? (
@@ -785,13 +796,18 @@ function SendTransactionContent({
           containerStyle={{ paddingBottom: 0 }}
           renderWhenOpen={() => (
             <>
-              <DialogTitle title="Advanced View" closeKind="icon" />
+              <DialogTitle
+                title={<UIText kind="body/accent">Details</UIText>}
+                closeKind="icon"
+              />
               <TransactionAdvancedView
                 networks={networks}
                 chain={chain}
                 interpretation={interpretQuery.data}
                 // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
                 transaction={incomingTransaction}
+                addressAction={addressAction}
+                onCopyData={() => toastRef.current?.showToast()}
               />
             </>
           )}
