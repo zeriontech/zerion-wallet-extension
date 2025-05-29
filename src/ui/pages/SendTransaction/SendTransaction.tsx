@@ -17,7 +17,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Background, useBackgroundKind } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -95,6 +95,9 @@ import {
   hasCriticalWarning,
   InterpretationSecurityCheck,
 } from 'src/ui/shared/security-check/InterpertationSecurityCheck';
+import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -333,73 +336,109 @@ function TransactionDefaultView({
   return (
     <>
       <PageTop />
-      <div style={{ display: 'grid', placeItems: 'center' }}>
-        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-          {addressAction.type.display_value}
-        </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {origin === INTERNAL_ORIGIN ? (
-            'Zerion'
-          ) : originForHref ? (
-            <TextAnchor
-              // Open URL in a new _window_ so that extension UI stays open and visible
-              onClick={openInNewWindow}
-              href={originForHref.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {originForHref.hostname}
-            </TextAnchor>
-          ) : (
-            'Unknown Initiator'
-          )}
-        </UIText>
-        <Spacer height={8} />
-        <HStack gap={8} alignItems="center">
-          <WalletAvatar
-            address={wallet.address}
-            size={20}
-            active={false}
-            borderRadius={4}
+      <VStack gap={8}>
+        <VStack
+          gap={8}
+          style={{
+            justifyItems: 'center',
+            paddingBlock: 24,
+            border: '1px solid var(--neutral-300)',
+            backgroundColor: '#ffffff40', // todo: use theme color
+            backdropFilter: 'blur(16px)',
+            borderRadius: 12,
+          }}
+        >
+          <SiteFaviconImg
+            size={64}
+            style={{ borderRadius: 16 }}
+            url={origin}
+            alt={`Logo for ${origin}`}
           />
-          <UIText kind="small/regular">
-            <WalletDisplayName wallet={wallet} />
-          </UIText>
-        </HStack>
-      </div>
-      <Spacer height={24} />
-      <VStack gap={16}>
-        <AddressActionDetails
-          address={wallet.address}
-          recipientAddress={recipientAddress}
-          addressAction={addressAction}
-          chain={chain}
-          networks={networks}
-          actionTransfers={actionTransfers}
-          singleAsset={singleAsset}
-          allowanceQuantityBase={allowanceQuantityBase}
-          showApplicationLine={true}
-          singleAssetElementEnd={
-            allowanceQuantityBase && addressAction.type.value === 'approve' ? (
-              <UIText
-                as={TextLink}
-                kind="small/accent"
-                style={{ color: 'var(--primary)' }}
-                to={allowanceViewHref}
+          <UIText kind="headline/h2">{addressAction.type.display_value}</UIText>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            {origin === INTERNAL_ORIGIN ? (
+              'Zerion'
+            ) : originForHref ? (
+              <TextAnchor
+                href={originForHref.href}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                Edit
-              </UIText>
-            ) : null
-          }
-        />
+                {originForHref.hostname}
+              </TextAnchor>
+            ) : (
+              'Unknown Initiator'
+            )}
+          </UIText>
+          <HStack gap={8} alignItems="center">
+            <WalletAvatar
+              address={wallet.address}
+              size={20}
+              active={false}
+              borderRadius={6}
+            />
+            <UIText kind="small/regular">
+              <WalletDisplayName wallet={wallet} />
+            </UIText>
+          </HStack>
+        </VStack>
+        <VStack
+          gap={4}
+          style={{
+            ['--surface-background-color' as string]: 'var(--neutral-100)',
+          }}
+        >
+          <AddressActionDetails
+            address={wallet.address}
+            recipientAddress={recipientAddress}
+            addressAction={addressAction}
+            chain={chain}
+            networks={networks}
+            actionTransfers={actionTransfers}
+            singleAsset={singleAsset}
+            allowanceQuantityBase={allowanceQuantityBase}
+            showApplicationLine={true}
+            singleAssetElementEnd={
+              allowanceQuantityBase &&
+              addressAction.type.value === 'approve' ? (
+                <UIText
+                  as={TextLink}
+                  kind="small/accent"
+                  style={{ color: 'var(--primary)' }}
+                  to={allowanceViewHref}
+                >
+                  Edit
+                </UIText>
+              ) : null
+            }
+          />
+        </VStack>
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
             interpretation={interpretation}
             interpretQuery={interpretQuery}
             size="small"
           />
-          <Button kind="regular" size={36} onClick={onOpenAdvancedView}>
-            Advanced View
+          <Button
+            kind="regular"
+            onClick={onOpenAdvancedView}
+            size={44}
+            className="parent-hover"
+            style={{
+              textAlign: 'start',
+              borderRadius: 100,
+              ['--parent-content-color' as string]: 'var(--neutral-500)',
+              ['--parent-hovered-content-color' as string]: 'var(--black)',
+            }}
+          >
+            <HStack gap={0} alignItems="center" justifyContent="center">
+              <ScrollIcon />
+              <span>Details</span>
+              <ArrowDownIcon
+                className="content-hover"
+                style={{ width: 24, height: 24 }}
+              />
+            </HStack>
           </Button>
         </HStack>
       </VStack>
@@ -488,6 +527,7 @@ function SendTransactionContent({
   chain: Chain;
   networks: Networks;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
   const [params] = useSearchParams();
   const { currency } = useCurrency();
   const navigate = useNavigate();
@@ -713,14 +753,9 @@ function SendTransactionContent({
   };
 
   return (
-    <Background backgroundKind="white">
+    <>
       <NavigationTitle title={null} documentTitle="Send Transaction" />
-      <PageColumn
-        // different surface color on backgroundKind="white"
-        style={{
-          ['--surface-background-color' as string]: 'var(--neutral-100)',
-        }}
-      >
+      <PageColumn>
         {view === View.default ? (
           <TransactionDefaultView
             networks={networks}
@@ -825,7 +860,7 @@ function SendTransactionContent({
         </VStack>
         <PageBottom />
       </PageStickyFooter>
-    </Background>
+    </>
   );
 }
 
