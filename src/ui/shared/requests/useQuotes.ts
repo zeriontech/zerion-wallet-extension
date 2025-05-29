@@ -10,7 +10,6 @@ import { getBaseQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { DEFI_SDK_TRANSACTIONS_API_URL, ZERION_API_URL } from 'src/env/config';
 import { createUrl } from 'src/shared/createUrl';
-import omit from 'lodash/omit';
 import type { SwapFormState } from 'src/ui/pages/SwapForm/shared/SwapFormState';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
@@ -19,7 +18,7 @@ import { weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { useGasPrices } from './useGasPrices';
 import { useEventSource } from './useEventSource';
 
-export type QuoteSortType = 'amount' | 'time';
+type QuoteSortType = 'amount' | 'time';
 
 interface QuotesParams {
   from?: string;
@@ -142,16 +141,6 @@ function getQuotesStreamUrl({
     pathname: '/v2/swap/stream',
     searchParams,
   }).toString();
-}
-
-export function getQuoteTx(quote: QuoteLegacy) {
-  return quote.transaction
-    ? {
-        ...omit(quote.transaction, ['chain_id', 'gas']),
-        chainId: quote.transaction.chain_id,
-        gasLimit: String(quote.transaction.gas),
-      }
-    : null;
 }
 
 export interface QuotesData<T> {
