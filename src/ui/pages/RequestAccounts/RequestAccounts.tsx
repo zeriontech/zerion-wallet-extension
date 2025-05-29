@@ -39,7 +39,10 @@ import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { usePhishingDefenceStatus } from 'src/ui/components/PhishingDefence/usePhishingDefenceStatus';
-import { SecurityCheck } from 'src/ui/shared/security-check/DappSecurityCheck';
+import {
+  SecurityStatusBackground,
+  DappSecurityCheck,
+} from 'src/ui/shared/security-check';
 import { WalletList } from '../WalletSelect/WalletList';
 
 const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
@@ -153,6 +156,7 @@ function RequestAccountsView({
 
   return (
     <>
+      <SecurityStatusBackground />
       <NavigationTitle title={null} documentTitle="Connect Wallet" />
       <CenteredDialog
         ref={walletSelectDialogRef}
@@ -270,7 +274,7 @@ function RequestAccountsView({
               />
             </HStack>
           </UnstyledButton>
-          <SecurityCheck
+          <DappSecurityCheck
             status={securityQuery.data?.status}
             isLoading={securityQuery.isLoading}
           />

@@ -61,7 +61,8 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import {
   hasCriticalWarning,
   InterpretationSecurityCheck,
-} from 'src/ui/shared/security-check/InterpertationSecurityCheck';
+  SecurityStatusBackground,
+} from 'src/ui/shared/security-check';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { PopoverToast } from '../Settings/PopoverToast';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
@@ -193,6 +194,7 @@ function TypedDataDefaultView({
 
   return (
     <>
+      <SecurityStatusBackground />
       <PopoverToast
         ref={toastRef}
         style={{

@@ -27,7 +27,10 @@ import { ethers } from 'ethers';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { usePhishingDefenceStatus } from 'src/ui/components/PhishingDefence/usePhishingDefenceStatus';
-import { SecurityCheck } from 'src/ui/shared/security-check/DappSecurityCheck';
+import {
+  DappSecurityCheck,
+  SecurityStatusBackground,
+} from 'src/ui/shared/security-check';
 import SignatureIcon from 'jsx:src/ui/assets/signature.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
@@ -114,6 +117,7 @@ function SignMessageContent({
 
   return (
     <>
+      <SecurityStatusBackground />
       <PopoverToast
         ref={toastRef}
         style={{
@@ -253,7 +257,7 @@ function SignMessageContent({
               />
             </HStack>
           </UnstyledButton>
-          <SecurityCheck
+          <DappSecurityCheck
             status={securityQuery.data?.status}
             isLoading={securityQuery.isLoading}
           />

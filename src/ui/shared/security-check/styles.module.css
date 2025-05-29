@@ -27,34 +27,31 @@
   }
   to {
     opacity: 1;
-    transform: translateY(-75%) scale(1);
+    transform: translateY(-65%) scale(1);
   }
 }
 
 @keyframes subtlePulse {
   0% {
     opacity: 1;
-    transform: translateY(-75%) scale(1);
+    transform: translateY(-65%) scale(1);
   }
   50% {
     opacity: 0.85;
-    transform: translateY(-75%) scale(1.1);
+    transform: translateY(-65%) scale(1.1);
   }
   100% {
     opacity: 1;
-    transform: translateY(-75%) scale(1);
+    transform: translateY(-65%) scale(1);
   }
 }
 
 .backgroundGradientContainer {
-  z-index: -1;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: absolute;
+  inset: 0 0 0 0;
   display: flex;
   justify-content: center;
+  overflow: hidden;
 }
 
 .backgroundGradient {
@@ -63,9 +60,9 @@
   height: 600px;
   position: relative;
   background: radial-gradient(
-    circle at 50% 50%,
+    ellipse at 50% 50%,
     var(--security-gradient-background-color) 0%,
-    transparent 45%
+    transparent 50%
   );
   animation: appear 2s cubic-bezier(0.34, 1.56, 0.64, 1) both,
     subtlePulse 2s ease-in-out 2s infinite;
