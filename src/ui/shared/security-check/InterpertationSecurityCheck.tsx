@@ -95,14 +95,12 @@ function InterpretationDescritionDialog({
 export function InterpretationSecurityCheck({
   interpretQuery,
   interpretation,
-  size,
 }: {
   interpretation: InterpretResponse | null | undefined;
   interpretQuery: {
     isInitialLoading: boolean;
     isError: boolean;
   };
-  size: 'small' | 'big';
 }) {
   const loadingDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const errorDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -135,7 +133,7 @@ export function InterpretationSecurityCheck({
       <div style={{ position: 'relative' }}>
         <SecurityStatusButton
           kind={securityButtonKind}
-          size={size}
+          size="small"
           onClick={
             mode === 'loading'
               ? () => loadingDialogRef.current?.showModal()
@@ -147,7 +145,7 @@ export function InterpretationSecurityCheck({
             warningSeverity
               ? 'Risks Found'
               : mode === 'loading'
-              ? null
+              ? 'Simulating...'
               : mode === 'success'
               ? 'No Risks Found'
               : 'Unverified'

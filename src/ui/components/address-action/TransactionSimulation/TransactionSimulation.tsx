@@ -138,7 +138,6 @@ export function TransactionSimulation({
       <InterpretationSecurityCheck
         interpretation={interpretation}
         interpretQuery={txInterpretQuery}
-        size="big"
       />
       <RenderArea name="transaction-warning-section" />
     </VStack>

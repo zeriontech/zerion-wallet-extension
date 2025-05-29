@@ -419,7 +419,6 @@ function TransactionDefaultView({
           <InterpretationSecurityCheck
             interpretation={interpretation}
             interpretQuery={interpretQuery}
-            size="small"
           />
           <Button
             kind="regular"
