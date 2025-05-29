@@ -94,7 +94,8 @@ import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSol
 import {
   hasCriticalWarning,
   InterpretationSecurityCheck,
-} from 'src/ui/shared/security-check/InterpertationSecurityCheck';
+  SecurityStatusBackground,
+} from 'src/ui/shared/security-check';
 import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
@@ -335,6 +336,7 @@ function TransactionDefaultView({
 
   return (
     <>
+      <SecurityStatusBackground />
       <PageTop />
       <VStack gap={8}>
         <VStack

@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
+import { createNanoEvents } from 'nanoevents';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
 import ShieldWarningIcon from 'jsx:src/ui/assets/shield-warning.svg';
 import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import * as styles from './styles.module.css';
 
 export type SecurityButtonKind =
@@ -19,32 +20,32 @@ export type SecurityButtonKind =
 
 const SECURITY_COLORS: Record<
   SecurityButtonKind,
-  { primary: string; secondary: string; icon?: string }
+  { primary: string; secondary: string; accent?: string }
 > = {
   warning: {
     primary: 'var(--notice-500)',
     secondary: 'var(--notice-100)',
-    icon: 'var(--notice-500)',
+    accent: 'var(--notice-500)',
   },
   loading: {
     primary: 'var(--neutral-600)',
     secondary: 'var(--neutral-100)',
-    icon: 'var(--black)',
+    accent: 'var(--black)',
   },
   unknown: {
     primary: 'var(--neutral-600)',
     secondary: 'var(--neutral-100)',
-    icon: 'var(--primary)',
+    accent: 'var(--primary)',
   },
   danger: {
     primary: 'var(--negative-500)',
     secondary: 'var(--negative-200)',
-    icon: 'var(--negative-500)',
+    accent: 'var(--negative-500)',
   },
   ok: {
     primary: 'var(--positive-500)',
     secondary: 'var(--positive-100)',
-    icon: 'var(--positive-500)',
+    accent: 'var(--positive-500)',
   },
 };
 
@@ -86,14 +87,41 @@ function SecurityCheckIcon({
       }}
     >
       {kind === 'ok' ? (
-        <ShieldIcon style={{ color: SECURITY_COLORS[kind].icon }} />
+        <ShieldIcon style={{ color: SECURITY_COLORS[kind].accent }} />
       ) : kind === 'unknown' ? (
-        <WarningIcon style={{ color: SECURITY_COLORS[kind].icon }} />
+        <WarningIcon style={{ color: SECURITY_COLORS[kind].accent }} />
       ) : (
-        <ShieldWarningIcon style={{ color: SECURITY_COLORS[kind].icon }} />
+        <ShieldWarningIcon style={{ color: SECURITY_COLORS[kind].accent }} />
       )}
     </div>
   );
+}
+
+const emitter = createNanoEvents<{
+  securityStatusChange: (kind: SecurityButtonKind) => void;
+}>();
+
+export function SecurityStatusBackground() {
+  const [kind, setKind] = useState<SecurityButtonKind | undefined>(undefined);
+  const render = useRenderDelay(100);
+
+  useEffect(() => {
+    return emitter.on('securityStatusChange', (newKind) => {
+      setKind(newKind);
+    });
+  }, []);
+
+  return kind && render ? (
+    <div className={styles.backgroundGradientContainer}>
+      <div
+        className={styles.backgroundGradient}
+        style={{
+          ['--security-gradient-background-color' as string]:
+            SECURITY_COLORS[kind].accent,
+        }}
+      />
+    </div>
+  ) : null;
 }
 
 export function SecurityStatusButton({
@@ -119,23 +147,17 @@ export function SecurityStatusButton({
     },
   });
 
+  useEffect(() => {
+    if (kind !== 'loading') {
+      emitter.emit('securityStatusChange', kind);
+    }
+  }, [kind]);
+
   return (
     <>
-      <DelayedRender delay={100}>
-        {isLoading ? null : (
-          <div className={styles.backgroundGradientContainer}>
-            <div
-              className={styles.backgroundGradient}
-              style={{
-                ['--security-gradient-background-color' as string]:
-                  SECURITY_COLORS[kind].primary,
-              }}
-            />
-          </div>
-        )}
-      </DelayedRender>
       <animated.div style={style}>
         <UnstyledButton
+          type="button"
           style={{ width: '100%', height: size === 'big' ? 52 : 44 }}
           disabled={!onClick}
           onClick={onClick}

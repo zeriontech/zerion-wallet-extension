@@ -102,7 +102,7 @@ function SecurityCheckDialogContent() {
   );
 }
 
-export function SecurityCheck({
+export function DappSecurityCheck({
   status: rawStatus,
   isLoading: statusIsLoading,
 }: {
