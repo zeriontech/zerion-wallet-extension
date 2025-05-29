@@ -62,9 +62,7 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
-import { InterpretationState } from 'src/ui/components/InterpretationState';
 import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
-import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
@@ -93,6 +91,10 @@ import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { AddressActionComponent } from 'src/ui/components/address-action/AddressActionDetails/AddressActionDetails';
 import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
+import {
+  hasCriticalWarning,
+  InterpretationSecurityCheck,
+} from 'src/ui/shared/security-check/InterpertationSecurityCheck';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -391,9 +393,10 @@ function TransactionDefaultView({
           }
         />
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <InterpretationState
+          <InterpretationSecurityCheck
             interpretation={interpretation}
             interpretQuery={interpretQuery}
+            size="small"
           />
           <Button kind="regular" size={36} onClick={onOpenAdvancedView}>
             Advanced View

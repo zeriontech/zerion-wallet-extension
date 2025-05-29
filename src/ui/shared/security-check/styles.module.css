@@ -17,8 +17,8 @@
 .loadingShield div {
   background: conic-gradient(var(--black), var(--white));
   animation: rotate 1s linear infinite;
-  width: 40px;
-  height: 40px;
+  width: 200%;
+  height: 200%;
   flex-shrink: 0;
 }
 

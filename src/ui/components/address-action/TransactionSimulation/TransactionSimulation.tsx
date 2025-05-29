@@ -15,8 +15,8 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
+import { InterpretationSecurityCheck } from 'src/ui/shared/security-check/InterpertationSecurityCheck';
 import { AddressActionDetails } from '../AddressActionDetails';
-import { InterpretationState } from '../../InterpretationState';
 
 export function TransactionSimulation({
   vGap = 16,
@@ -135,9 +135,10 @@ export function TransactionSimulation({
           ) : null
         }
       />
-      <InterpretationState
+      <InterpretationSecurityCheck
         interpretation={interpretation}
         interpretQuery={txInterpretQuery}
+        size="big"
       />
       <RenderArea name="transaction-warning-section" />
     </VStack>

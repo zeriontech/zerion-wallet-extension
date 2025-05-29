@@ -27,7 +27,7 @@ import { ethers } from 'ethers';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { usePhishingDefenceStatus } from 'src/ui/components/PhishingDefence/usePhishingDefenceStatus';
-import { SecurityCheck } from 'src/ui/shared/dapp-interaction/SecurityCheck';
+import { SecurityCheck } from 'src/ui/shared/security-check/DappSecurityCheck';
 import SignatureIcon from 'jsx:src/ui/assets/signature.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
