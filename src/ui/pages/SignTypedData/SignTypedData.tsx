@@ -43,8 +43,6 @@ import {
   DialogTitle,
 } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
-import { InterpretationState } from 'src/ui/components/InterpretationState';
-import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -60,6 +58,10 @@ import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
+import {
+  hasCriticalWarning,
+  InterpretationSecurityCheck,
+} from 'src/ui/shared/security-check/InterpertationSecurityCheck';
 import { PopoverToast } from '../Settings/PopoverToast';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -362,9 +364,10 @@ function TypedDataDefaultView({
               gridTemplateColumns: showRawTypedData ? '1fr' : '1fr 1fr',
             }}
           >
-            <InterpretationState
+            <InterpretationSecurityCheck
               interpretation={interpretation}
               interpretQuery={interpretQuery}
+              size={showRawTypedData ? 'big' : 'small'}
             />
             {showRawTypedData ? null : (
               <Button

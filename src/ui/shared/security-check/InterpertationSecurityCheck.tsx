@@ -1,25 +1,22 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Content } from 'react-area';
 import type {
   InterpretResponse,
   WarningSeverity,
 } from 'src/modules/ethereum/transactions/types';
+import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
+import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
 import { Button } from 'src/ui/ui-kit/Button';
-import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { ZStack } from 'src/ui/ui-kit/ZStack';
-import { VStack } from 'src/ui/ui-kit/VStack';
-import { Spacer } from 'src/ui/ui-kit/Spacer';
-import ValidationErrorIcon from 'jsx:src/ui/assets/validation-error.svg';
-import ShieldIcon from 'jsx:src/ui/assets/shield.svg';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
-import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
-import { DelayedRender } from '../DelayedRender';
-import { PortalToRootNode } from '../PortalToRootNode';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { ZStack } from 'src/ui/ui-kit/ZStack';
+import type { SecurityButtonKind } from './SecurityStatusButton';
+import { SecurityStatusButton } from './SecurityStatusButton';
 
 const WarningSeverityPriority: Record<WarningSeverity, number> = {
   Gray: 0,
@@ -54,33 +51,6 @@ export function hasCriticalWarning(
   }
   const severity = getMostSevereWarning(warnings)?.severity;
   return severity === 'Red' || severity === 'Orange';
-}
-
-function LoadingText({ children }: React.PropsWithChildren) {
-  const [tick, setTick] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | number>(0);
-  useEffect(() => {
-    intervalRef.current = setInterval(
-      () => setTick((current) => (current + 1) % 4),
-      500
-    );
-    return () => {
-      clearInterval(intervalRef.current);
-    };
-  }, []);
-  return (
-    <span>
-      {children}
-      {Array.from({ length: 3 }, (_, i) => (
-        <span
-          key={`${tick}-${i}`}
-          style={{ color: i < tick ? 'undefined' : 'transparent' }}
-        >
-          .
-        </span>
-      ))}
-    </span>
-  );
 }
 
 type InterpretationMode = 'loading' | 'error' | 'success';
@@ -122,20 +92,21 @@ function InterpretationDescritionDialog({
   );
 }
 
-export function InterpretationState({
+export function InterpretationSecurityCheck({
   interpretQuery,
   interpretation,
+  size,
 }: {
   interpretation: InterpretResponse | null | undefined;
   interpretQuery: {
     isInitialLoading: boolean;
     isError: boolean;
   };
+  size: 'small' | 'big';
 }) {
   const loadingDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const errorDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const successDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const warningDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const mode: InterpretationMode = interpretQuery.isInitialLoading
     ? 'loading'
     : interpretQuery.isError
@@ -148,132 +119,63 @@ export function InterpretationState({
   );
   const warningSeverity = mostSevereWarning?.severity;
 
-  const hasShowMoreButton = Boolean(
-    (interpretation?.warnings.length || 0) > 1 || mostSevereWarning?.details
-  );
+  const securityButtonKind: SecurityButtonKind =
+    warningSeverity === 'Red'
+      ? 'danger'
+      : warningSeverity === 'Orange' || warningSeverity === 'Yellow'
+      ? 'warning'
+      : mode === 'loading'
+      ? 'loading'
+      : mode === 'success'
+      ? 'ok'
+      : 'unknown';
 
   return (
     <>
-      {warningSeverity === 'Red' ||
-      warningSeverity === 'Orange' ||
-      warningSeverity === 'Yellow' ? (
-        <Button
-          kind={warningSeverity === 'Yellow' ? 'warning' : 'danger'}
-          size={36}
-          type="button"
-          disabled={!hasShowMoreButton}
-          style={{
-            ['--button-disabled-background' as string]:
-              warningSeverity === 'Yellow'
-                ? 'var(--notice-100)'
-                : 'var(--negative-100)',
-          }}
-          onClick={() => {
-            if (hasShowMoreButton) {
-              warningDialogRef.current?.showModal();
-            }
-          }}
-        >
-          <HStack gap={4} alignItems="center" justifyContent="center">
-            <ValidationErrorIcon
-              style={{
-                color:
-                  warningSeverity === 'Yellow'
-                    ? 'var(--notice-500)'
-                    : 'var(--negative-500)',
-                width: 20,
-                height: 20,
-              }}
-            />
-            {warningSeverity === 'Yellow' ? 'Unverified' : 'Risk'}
-          </HStack>
-        </Button>
-      ) : mode === 'loading' ? (
-        <VStack gap={0}>
-          <Button
-            kind="regular"
-            size={36}
-            type="button"
-            style={{ position: 'relative' }}
-            onClick={() => loadingDialogRef.current?.showModal()}
+      <div style={{ position: 'relative' }}>
+        <SecurityStatusButton
+          kind={securityButtonKind}
+          size={size}
+          onClick={
+            mode === 'loading'
+              ? () => loadingDialogRef.current?.showModal()
+              : mode === 'success'
+              ? () => successDialogRef.current?.showModal()
+              : undefined
+          }
+          title={
+            warningSeverity
+              ? 'Risks Found'
+              : mode === 'loading'
+              ? null
+              : mode === 'success'
+              ? 'No Risks Found'
+              : 'Unverified'
+          }
+        />
+        {mode === 'loading' ? (
+          <ZStack
+            hideLowerElements={true}
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              whiteSpace: 'nowrap',
+              textAlign: 'left',
+            }}
           >
-            <HStack gap={8} alignItems="center" justifyContent="center">
-              <CircleSpinner />
-              <LoadingText>Simulating</LoadingText>
-            </HStack>
-            <ZStack
-              hideLowerElements={true}
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 8px)',
-                whiteSpace: 'nowrap',
-                textAlign: 'left',
-              }}
-            >
-              <DelayedRender delay={11000}>
-                <span style={{ color: 'var(--black)' }}>
-                  (Going to give up soon...)
-                </span>
-              </DelayedRender>
-              <DelayedRender delay={6000}>
-                <span style={{ color: 'var(--black)' }}>
-                  (Request is taking longer than usual...)
-                </span>
-              </DelayedRender>
-            </ZStack>
-          </Button>
-          <DelayedRender delay={6000}>
-            <Spacer height={20} />
-          </DelayedRender>
-        </VStack>
-      ) : mode === 'error' ? (
-        <Button
-          kind="warning"
-          size={36}
-          type="button"
-          onClick={() => errorDialogRef.current?.showModal()}
-        >
-          <HStack gap={4} alignItems="center" justifyContent="center">
-            <ValidationErrorIcon
-              style={{ color: 'var(--notice-500)', width: 20, height: 20 }}
-            />
-            <span>Unverified</span>
-          </HStack>
-        </Button>
-      ) : warningSeverity ? (
-        <Button
-          kind="regular"
-          size={36}
-          type="button"
-          disabled={!hasShowMoreButton}
-          onClick={() => {
-            if (hasShowMoreButton) {
-              warningDialogRef.current?.showModal();
-            }
-          }}
-        >
-          <HStack gap={4} alignItems="center" justifyContent="center">
-            <ValidationErrorIcon
-              style={{ color: 'var(--notice-500)', width: 20, height: 20 }}
-            />
-            <span>Unverified</span>
-          </HStack>
-        </Button>
-      ) : mode === 'success' ? (
-        <Button
-          kind="regular"
-          size={36}
-          type="button"
-          onClick={() => successDialogRef.current?.showModal()}
-        >
-          <HStack gap={4} alignItems="center" justifyContent="center">
-            <ShieldIcon
-              style={{ color: 'var(--positive-500)', width: 20, height: 20 }}
-            />
-            <span>Verified</span>
-          </HStack>
-        </Button>
-      ) : null}
+            <DelayedRender delay={11000}>
+              <span style={{ color: 'var(--black)' }}>
+                (Going to give up soon...)
+              </span>
+            </DelayedRender>
+            <DelayedRender delay={6000}>
+              <span style={{ color: 'var(--black)' }}>
+                (Request is taking longer than usual...)
+              </span>
+            </DelayedRender>
+          </ZStack>
+        ) : null}
+      </div>
 
       <PortalToRootNode>
         <BottomSheetDialog ref={loadingDialogRef} height="fit-content">
@@ -290,7 +192,7 @@ export function InterpretationState({
           <InterpretationDescritionDialog mode="success" />
         </BottomSheetDialog>
       </PortalToRootNode>
-      <PortalToRootNode>
+      {/* <PortalToRootNode>
         <BottomSheetDialog
           height="fit-content"
           ref={warningDialogRef}
@@ -325,7 +227,7 @@ export function InterpretationState({
             </>
           )}
         />
-      </PortalToRootNode>
+      </PortalToRootNode> */}
       <Content name="transaction-warning-section">
         {mostSevereWarning ? (
           <TransactionWarning
@@ -351,20 +253,6 @@ export function InterpretationState({
                 : warningSeverity === 'Yellow'
                 ? 'warning'
                 : 'info'
-            }
-            footer={
-              hasShowMoreButton ? (
-                <Button
-                  onClick={() => warningDialogRef.current?.showModal()}
-                  kind="text-primary"
-                  style={{
-                    ['--button-text' as string]: 'var(--primary)',
-                    ['--button-text-hover' as string]: 'var(--primary-600)',
-                  }}
-                >
-                  Read more
-                </Button>
-              ) : null
             }
           />
         ) : mode === 'error' ? (

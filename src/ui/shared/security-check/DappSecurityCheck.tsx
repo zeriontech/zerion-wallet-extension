@@ -1,45 +1,18 @@
-import { animated, useSpring } from '@react-spring/web';
 import React, { useRef } from 'react';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckmarkIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
-import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import * as styles from './styles.module.css';
-
-const SECURITY_COLORS: Record<
-  DappSecurityStatus,
-  { primary: string; secondary: string }
-> = {
-  error: {
-    primary: 'var(--neutral-600)',
-    secondary: 'var(--neutral-100)',
-  },
-  loading: {
-    primary: 'var(--neutral-600)',
-    secondary: 'var(--neutral-100)',
-  },
-  unknown: {
-    primary: 'var(--neutral-600)',
-    secondary: 'var(--neutral-100)',
-  },
-  phishing: {
-    primary: 'var(--negative-500)',
-    secondary: 'var(--negative-200)',
-  },
-  ok: {
-    primary: 'var(--positive-500)',
-    secondary: 'var(--positive-100)',
-  },
-};
+import {
+  SecurityStatusButton,
+  type SecurityButtonKind,
+} from './SecurityStatusButton';
 
 const SECURITY_STATUS_TO_TITLE: Record<DappSecurityStatus, string> = {
   error: 'Security Checks Unavailliable',
@@ -49,40 +22,16 @@ const SECURITY_STATUS_TO_TITLE: Record<DappSecurityStatus, string> = {
   ok: 'No Risks Found',
 };
 
-function SecurityCheckIcon({ status }: { status: DappSecurityStatus }) {
-  if (status === 'loading') {
-    return (
-      <div
-        style={{
-          width: 36,
-          height: 36,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div className={styles.loadingShield}>
-          <div />
-        </div>
-      </div>
-    );
-  }
-  if (status === 'ok') {
-    return (
-      <div
-        style={{
-          width: 36,
-          height: 36,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <ShieldIcon style={{ color: 'var(--positive-500)' }} />
-      </div>
-    );
-  }
-}
+const SECURITY_STATUS_BUTTON_KIND: Record<
+  DappSecurityStatus,
+  SecurityButtonKind
+> = {
+  error: 'unknown',
+  loading: 'loading',
+  unknown: 'unknown',
+  phishing: 'danger',
+  ok: 'ok',
+};
 
 function SecurityCheckDialogContent() {
   return (
@@ -165,25 +114,8 @@ export function SecurityCheck({
   const isLoading = statusIsLoading || rawStatus === 'loading';
   const status = isLoading ? 'loading' : rawStatus || 'unknown';
 
-  const style = useSpring({
-    from: { transform: 'scale(1)' },
-    to: { transform: isLoading ? 'scale(0.8)' : 'scale(1)' },
-    config: {
-      duration: isLoading ? 5000 : undefined,
-      tension: isLoading ? 100 : 200,
-      friction: isLoading ? 50 : 10,
-    },
-  });
-
   return (
     <>
-      <DelayedRender delay={100}>
-        {isLoading ? null : (
-          <div className={styles.backgroundGradientContainer}>
-            <div className={styles.backgroundGradient} />
-          </div>
-        )}
-      </DelayedRender>
       <BottomSheetDialog
         ref={dialogRef}
         height="fit-content"
@@ -191,44 +123,12 @@ export function SecurityCheck({
       >
         <SecurityCheckDialogContent />
       </BottomSheetDialog>
-      <animated.div style={style}>
-        <UnstyledButton
-          style={{ width: '100%' }}
-          disabled={isLoading}
-          onClick={() => dialogRef.current?.showModal()}
-        >
-          <HStack
-            gap={16}
-            justifyContent="space-between"
-            alignItems="center"
-            style={{
-              backgroundColor: SECURITY_COLORS[status].secondary,
-              padding: '8px 12px',
-              borderRadius: 100,
-            }}
-          >
-            <HStack gap={12} alignItems="center">
-              <SecurityCheckIcon status={status} />
-              <UIText
-                kind="body/accent"
-                color={SECURITY_COLORS[status].primary}
-                style={{ textAlign: 'start' }}
-              >
-                {SECURITY_STATUS_TO_TITLE[status]}
-              </UIText>
-            </HStack>
-            {isLoading ? null : (
-              <ArrowDownIcon
-                style={{
-                  width: 24,
-                  height: 24,
-                  color: SECURITY_COLORS[status].primary,
-                }}
-              />
-            )}
-          </HStack>
-        </UnstyledButton>
-      </animated.div>
+      <SecurityStatusButton
+        kind={SECURITY_STATUS_BUTTON_KIND[status]}
+        title={SECURITY_STATUS_TO_TITLE[status]}
+        onClick={isLoading ? undefined : () => dialogRef.current?.showModal()}
+        size="big"
+      />
     </>
   );
 }

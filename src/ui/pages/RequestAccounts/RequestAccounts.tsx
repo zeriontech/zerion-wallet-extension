@@ -39,7 +39,7 @@ import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { usePhishingDefenceStatus } from 'src/ui/components/PhishingDefence/usePhishingDefenceStatus';
-import { SecurityCheck } from 'src/ui/shared/dapp-interaction/SecurityCheck';
+import { SecurityCheck } from 'src/ui/shared/security-check/DappSecurityCheck';
 import { WalletList } from '../WalletSelect/WalletList';
 
 const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
