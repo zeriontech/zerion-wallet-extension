@@ -26,6 +26,7 @@ import { ApplicationLine } from 'src/ui/components/address-action/ApplicationLin
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { PageBottom } from 'src/ui/components/PageBottom';
 
 function maybeHexValue(value?: BigNumberish | null): string | null {
   return value ? valueToHex(value) : null;
@@ -262,6 +263,7 @@ export function TransactionAdvancedView({
           </HStack>
         </Button>
       </form>
+      <PageBottom />
     </>
   );
 }
