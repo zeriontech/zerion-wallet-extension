@@ -33,14 +33,12 @@ export function TransactionSimulation({
   transaction,
   txInterpretQuery,
   customAllowanceValueBase,
-  showApplicationLine,
   onOpenAllowanceForm,
 }: {
   address: string;
   transaction: IncomingTransactionWithChainId;
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   customAllowanceValueBase?: string;
-  showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
 }) {
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -161,7 +159,7 @@ export function TransactionSimulation({
           actionTransfers={actionTransfers}
           singleAsset={singleAsset}
           allowanceQuantityBase={allowanceQuantityBase || null}
-          showApplicationLine={showApplicationLine}
+          showApplicationLine={false}
           singleAssetElementEnd={
             allowanceQuantityBase && onOpenAllowanceForm ? (
               <UIText kind="small/accent" color="var(--primary)">

@@ -6,7 +6,7 @@ type Kind = 'danger' | 'warning' | 'info';
 const BORDER_COLOR: Record<Kind, string> = {
   danger: 'var(--negative-300)',
   warning: 'var(--notice-300)',
-  info: 'var(--neutral-500)',
+  info: 'var(--neutral-300)',
 };
 const BACKGROUND_GRADIENT: Record<Kind, string> = {
   danger:
