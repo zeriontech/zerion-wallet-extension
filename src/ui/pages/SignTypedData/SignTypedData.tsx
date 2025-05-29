@@ -560,7 +560,11 @@ function SignTypedDataContent({
   return (
     <>
       <NavigationTitle title={null} documentTitle="Sign Typed Data" />
-      <PageColumn>
+      <PageColumn
+        style={{
+          ['--surface-background-color' as string]: 'var(--neutral-100)',
+        }}
+      >
         {view === View.default ? (
           <TypedDataDefaultView
             origin={origin}
