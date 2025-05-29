@@ -10,13 +10,16 @@ import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarn
 import { Button } from 'src/ui/ui-kit/Button';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
-import type { SecurityButtonKind } from './SecurityStatusButton';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import CheckmarkIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
+import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
 import { SecurityStatusButton } from './SecurityStatusButton';
+import type { SecurityButtonKind } from './SecurityStatusButton';
 
 const WarningSeverityPriority: Record<WarningSeverity, number> = {
   Gray: 0,
@@ -54,41 +57,153 @@ export function hasCriticalWarning(
 }
 
 type InterpretationMode = 'loading' | 'error' | 'success';
-const MODE_TO_TITLE: Record<InterpretationMode, string> = {
-  loading: 'Transaction Analysis',
-  error: 'Transaction Analysis Failed',
-  success: 'Transaction Verified',
-};
-const MODE_TO_DESCRIPTION: Record<InterpretationMode, string> = {
-  loading:
-    'We simulate your transaction behavior to preview the exact outcome, identify risks, and protect your funds before signing and executing onchain.',
-  error:
-    'We were unable to simulate the transaction or complete all security checks. Please proceed with caution.',
-  success:
-    'Our transaction simulation found no security issues. However, it is always crucial to double-check and proceed with caution.',
-};
 
 function InterpretationDescritionDialog({
   mode,
 }: {
   mode: InterpretationMode;
 }) {
-  return (
-    <>
-      <DialogCloseButton style={{ position: 'absolute', top: 8, right: 8 }} />
-      <VStack gap={16}>
-        <UIText kind="headline/h3">{MODE_TO_TITLE[mode]}</UIText>
-        <UIText kind="small/regular">{MODE_TO_DESCRIPTION[mode]}</UIText>
-        <UIText kind="small/regular">
-          Security checks are powered by Blockaid.
-        </UIText>
+  if (mode === 'loading') {
+    return (
+      <VStack
+        gap={32}
+        style={{
+          padding: '16px 16px 24px',
+          position: 'relative',
+          background:
+            'linear-gradient(111deg, var(--neutral-100) 0%, var(--neutral-200) 100%)',
+        }}
+      >
+        <VStack gap={16} style={{ position: 'relative' }}>
+          <UIText kind="headline/h3">
+            Transaction simulation found no security risks
+          </UIText>
+
+          <UIText kind="body/regular">
+            This contract is open source and audited
+          </UIText>
+        </VStack>
         <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-          <Button style={{ width: '100%' }} value={DialogButtonValue.cancel}>
+          <Button
+            value={DialogButtonValue.cancel}
+            kind="primary"
+            style={{ width: '100%' }}
+          >
             Close
           </Button>
         </form>
       </VStack>
-    </>
+    );
+  }
+  if (mode === 'error') {
+    return (
+      <VStack
+        gap={32}
+        style={{
+          padding: '16px 16px 24px',
+          position: 'relative',
+          background:
+            'linear-gradient(111deg, var(--primary-100) 0%, var(--primary-200) 100%)',
+        }}
+      >
+        <WarningIcon
+          style={{
+            position: 'absolute',
+            top: -50,
+            right: -70,
+            width: 200,
+            height: 200,
+            opacity: 0.1,
+            color: 'var(--primary-400)',
+          }}
+        />
+        <VStack gap={16} style={{ position: 'relative' }}>
+          <UIText kind="headline/h3">
+            Transaction simulation found no security risks
+          </UIText>
+
+          <UIText kind="body/regular">
+            This contract is open source and audited
+          </UIText>
+        </VStack>
+        <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+          <Button
+            value={DialogButtonValue.cancel}
+            kind="primary"
+            style={{ width: '100%' }}
+          >
+            Close
+          </Button>
+        </form>
+      </VStack>
+    );
+  }
+
+  return (
+    <VStack
+      gap={32}
+      style={{
+        padding: '16px 16px 24px',
+        position: 'relative',
+        background:
+          'linear-gradient(111deg, var(--positive-100) 0%, var(--positive-200) 100%)',
+      }}
+    >
+      <ShieldIcon
+        style={{
+          position: 'absolute',
+          top: -100,
+          right: -90,
+          width: 300,
+          height: 300,
+          opacity: 0.1,
+          color: 'var(--positive-400)',
+        }}
+      />
+      <VStack gap={16} style={{ position: 'relative' }}>
+        <UIText kind="headline/h3">
+          Transaction simulation found no security risks
+        </UIText>
+        <HStack gap={12} alignItems="center">
+          <CheckmarkIcon
+            style={{
+              color: 'var(--positive-500)',
+              ['--check-color' as string]: 'var(--positive-100)',
+            }}
+          />
+          <UIText kind="body/regular">
+            This contract is open source and audited
+          </UIText>
+        </HStack>
+        <HStack gap={12} alignItems="center">
+          <CheckmarkIcon
+            style={{
+              color: 'var(--positive-500)',
+              ['--check-color' as string]: 'var(--positive-100)',
+            }}
+          />
+          <UIText kind="body/regular">The website is verified</UIText>
+        </HStack>
+        <HStack gap={12} alignItems="center">
+          <CheckmarkIcon
+            style={{
+              color: 'var(--positive-500)',
+              ['--check-color' as string]: 'var(--positive-100)',
+            }}
+          />
+          <UIText kind="body/regular">Tokens involved are not honeypots</UIText>
+        </HStack>
+      </VStack>
+      <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+        <Button
+          value={DialogButtonValue.cancel}
+          kind="primary"
+          style={{ width: '100%' }}
+        >
+          Close
+        </Button>
+      </form>
+    </VStack>
   );
 }
 
@@ -184,17 +299,29 @@ export function InterpretationSecurityCheck({
       </div>
 
       <PortalToRootNode>
-        <BottomSheetDialog ref={loadingDialogRef} height="fit-content">
+        <BottomSheetDialog
+          ref={loadingDialogRef}
+          height="fit-content"
+          containerStyle={{ padding: 0, overflow: 'hidden' }}
+        >
           <InterpretationDescritionDialog mode="loading" />
         </BottomSheetDialog>
       </PortalToRootNode>
       <PortalToRootNode>
-        <BottomSheetDialog ref={errorDialogRef} height="fit-content">
+        <BottomSheetDialog
+          ref={errorDialogRef}
+          height="fit-content"
+          containerStyle={{ padding: 0, overflow: 'hidden' }}
+        >
           <InterpretationDescritionDialog mode="error" />
         </BottomSheetDialog>
       </PortalToRootNode>
       <PortalToRootNode>
-        <BottomSheetDialog ref={successDialogRef} height="fit-content">
+        <BottomSheetDialog
+          ref={successDialogRef}
+          height="fit-content"
+          containerStyle={{ padding: 0, overflow: 'hidden' }}
+        >
           <InterpretationDescritionDialog mode="success" />
         </BottomSheetDialog>
       </PortalToRootNode>
