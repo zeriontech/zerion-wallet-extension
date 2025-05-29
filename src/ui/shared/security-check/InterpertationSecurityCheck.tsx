@@ -141,8 +141,7 @@ export function InterpretationSecurityCheck({
               ? () => loadingDialogRef.current?.showModal()
               : mode === 'error'
               ? () => errorDialogRef.current?.showModal()
-              : mode === 'success' &&
-                (!warningSeverity || warningSeverity === 'Gray')
+              : mode === 'success' && !warningSeverity
               ? () => successDialogRef.current?.showModal()
               : undefined
           }

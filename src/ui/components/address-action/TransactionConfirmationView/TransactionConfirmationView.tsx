@@ -27,7 +27,6 @@ import { AddressActionComponent } from '../AddressActionDetails/AddressActionDet
 export function TransactionConfirmationView({
   title,
   wallet,
-  showApplicationLine,
   transaction,
   chain,
   configuration,
@@ -40,7 +39,6 @@ export function TransactionConfirmationView({
 }: {
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
-  showApplicationLine: boolean;
   transaction: MultichainTransaction;
   chain: Chain;
   configuration: CustomConfiguration;
@@ -113,7 +111,6 @@ export function TransactionConfirmationView({
         >
           {transaction.evm ? (
             <TransactionSimulation
-              showApplicationLine={showApplicationLine}
               customAllowanceValueBase={customAllowanceValueBase}
               onOpenAllowanceForm={onOpenAllowanceForm}
               address={wallet.address}

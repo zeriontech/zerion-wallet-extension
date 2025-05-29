@@ -899,7 +899,6 @@ function BridgeFormComponent() {
                     : 'Bridge'
                 }
                 wallet={wallet}
-                showApplicationLine={true}
                 chain={spendChain}
                 transaction={{
                   evm: configureTransactionToBeSigned(currentTransaction),
