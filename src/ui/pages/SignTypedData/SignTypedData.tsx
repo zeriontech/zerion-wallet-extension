@@ -62,6 +62,7 @@ import {
   hasCriticalWarning,
   InterpretationSecurityCheck,
 } from 'src/ui/shared/security-check/InterpertationSecurityCheck';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { PopoverToast } from '../Settings/PopoverToast';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -256,7 +257,9 @@ function TypedDataDefaultView({
           />
           <UIText kind="headline/h2">{title}</UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
-            {originForHref ? (
+            {origin === INTERNAL_ORIGIN ? (
+              'Zerion'
+            ) : originForHref ? (
               <TextAnchor
                 href={originForHref.href}
                 target="_blank"
@@ -282,30 +285,32 @@ function TypedDataDefaultView({
         </VStack>
         <VStack gap={16}>
           {addressAction ? (
-            <AddressActionDetails
-              address={wallet.address}
-              recipientAddress={recipientAddress}
-              addressAction={addressAction}
-              chain={chain}
-              networks={networks}
-              actionTransfers={addressAction?.content?.transfers}
-              singleAsset={addressAction?.content?.single_asset}
-              allowanceQuantityBase={allowanceQuantityBase || null}
-              showApplicationLine={true}
-              singleAssetElementEnd={
-                allowanceQuantityBase &&
-                addressAction.type.value === 'approve' ? (
-                  <UIText
-                    as={TextLink}
-                    kind="small/accent"
-                    style={{ color: 'var(--primary)' }}
-                    to={allowanceViewHref}
-                  >
-                    Edit
-                  </UIText>
-                ) : null
-              }
-            />
+            <VStack gap={4}>
+              <AddressActionDetails
+                address={wallet.address}
+                recipientAddress={recipientAddress}
+                addressAction={addressAction}
+                chain={chain}
+                networks={networks}
+                actionTransfers={addressAction?.content?.transfers}
+                singleAsset={addressAction?.content?.single_asset}
+                allowanceQuantityBase={allowanceQuantityBase || null}
+                showApplicationLine={true}
+                singleAssetElementEnd={
+                  allowanceQuantityBase &&
+                  addressAction.type.value === 'approve' ? (
+                    <UIText
+                      as={TextLink}
+                      kind="small/accent"
+                      style={{ color: 'var(--primary)' }}
+                      to={allowanceViewHref}
+                    >
+                      Edit
+                    </UIText>
+                  ) : null
+                }
+              />
+            </VStack>
           ) : null}
           {showRawTypedData ? (
             <UnstyledButton

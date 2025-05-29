@@ -66,7 +66,10 @@ function SecurityCheckIcon({
           justifyContent: 'center',
         }}
       >
-        <div className={styles.loadingShield}>
+        <div
+          className={styles.loadingShield}
+          style={{ width: iconSize, height: iconSize }}
+        >
           <div />
         </div>
       </div>
@@ -121,7 +124,13 @@ export function SecurityStatusButton({
       <DelayedRender delay={100}>
         {isLoading ? null : (
           <div className={styles.backgroundGradientContainer}>
-            <div className={styles.backgroundGradient} />
+            <div
+              className={styles.backgroundGradient}
+              style={{
+                ['--security-gradient-background-color' as string]:
+                  SECURITY_COLORS[kind].primary,
+              }}
+            />
           </div>
         )}
       </DelayedRender>
@@ -141,7 +150,7 @@ export function SecurityStatusButton({
               borderRadius: 100,
             }}
           >
-            <HStack gap={12} alignItems="center">
+            <HStack gap={size === 'big' ? 12 : 0} alignItems="center">
               <SecurityCheckIcon
                 kind={kind}
                 iconSize={size === 'big' ? 32 : 28}
