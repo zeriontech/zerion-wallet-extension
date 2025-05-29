@@ -17,8 +17,8 @@ import { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInter
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import { SecurityStatusBackground } from 'src/ui/shared/security-check';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -83,56 +83,8 @@ export function TransactionConfirmationView({
           position: 'relative',
         }}
       >
-        {transaction.evm ? (
-          <TransactionSimulation
-            showApplicationLine={showApplicationLine}
-            customAllowanceValueBase={customAllowanceValueBase}
-            onOpenAllowanceForm={onOpenAllowanceForm}
-            address={wallet.address}
-            transaction={transaction.evm}
-            txInterpretQuery={txInterpretQuery}
-          />
-        ) : (
-          <AddressActionComponent
-            address={wallet.address}
-            showApplicationLine={true}
-            addressAction={parseSolanaTransaction(
-              wallet.address,
-              solFromBase64(transaction.solana)
-            )}
-          />
-        )}
-        <Spacer height={20} />
-        <React.Suspense
-          fallback={
-            <div style={{ display: 'flex', justifyContent: 'end' }}>
-              <CircleSpinner />
-            </div>
-          }
-        >
-          {transaction.evm ? (
-            <TransactionConfiguration
-              transaction={transaction.evm}
-              from={wallet.address}
-              chain={chain}
-              configuration={configuration}
-              onConfigurationChange={null}
-              onFeeValueCommonReady={null}
-              paymasterEligible={paymasterEligible}
-              paymasterPossible={paymasterPossible}
-              paymasterWaiting={false}
-              gasback={
-                txInterpretQuery.data?.action?.transaction.gasback != null
-                  ? { value: txInterpretQuery.data?.action.transaction.gasback }
-                  : null
-              }
-            />
-          ) : null}
-        </React.Suspense>
-        <Spacer height={20} />
-        <HStack
-          gap={12}
-          justifyContent="center"
+        <VStack
+          gap={8}
           style={{
             justifyItems: 'center',
             paddingBlock: 24,
@@ -162,12 +114,12 @@ export function TransactionConfirmationView({
           {transaction.evm ? (
             <TransactionSimulation
               showApplicationLine={showApplicationLine}
-              localAllowanceQuantityBase={localAllowanceQuantityBase}
+              customAllowanceValueBase={customAllowanceValueBase}
               onOpenAllowanceForm={onOpenAllowanceForm}
               address={wallet.address}
               transaction={transaction.evm}
               txInterpretQuery={txInterpretQuery}
-              vGap={8}
+              vGap={4}
             />
           ) : (
             <AddressActionComponent
@@ -179,7 +131,7 @@ export function TransactionConfirmationView({
               )}
             />
           )}
-          <Spacer height={8} />
+          <Spacer height={20} />
           <React.Suspense
             fallback={
               <div

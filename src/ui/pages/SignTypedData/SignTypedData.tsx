@@ -374,7 +374,6 @@ function TypedDataDefaultView({
             <InterpretationSecurityCheck
               interpretation={interpretation}
               interpretQuery={interpretQuery}
-              size={showRawTypedData ? 'big' : 'small'}
             />
             {showRawTypedData ? null : (
               <Button

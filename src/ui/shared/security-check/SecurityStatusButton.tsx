@@ -164,7 +164,7 @@ export function SecurityStatusButton({
         >
           <HStack
             gap={0}
-            justifyContent="space-between"
+            justifyContent={size === 'big' ? 'space-between' : 'center'}
             alignItems="center"
             style={{
               backgroundColor: SECURITY_COLORS[kind].secondary,
