@@ -119,7 +119,6 @@ export function TransactionConfirmationView({
               address={wallet.address}
               transaction={transaction.evm}
               txInterpretQuery={txInterpretQuery}
-              vGap={4}
             />
           ) : (
             <AddressActionComponent
