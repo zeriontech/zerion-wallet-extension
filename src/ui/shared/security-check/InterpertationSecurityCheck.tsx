@@ -36,11 +36,11 @@ function warningComparator(
   );
 }
 
-function getMostSevereWarning(warnings?: InterpretResponse['warnings']) {
+function sortWarnings(warnings?: InterpretResponse['warnings']) {
   if (!warnings) {
     return null;
   }
-  return warnings.sort(warningComparator)[0];
+  return warnings.sort(warningComparator);
 }
 
 export function hasCriticalWarning(
@@ -49,7 +49,7 @@ export function hasCriticalWarning(
   if (!warnings) {
     return false;
   }
-  const severity = getMostSevereWarning(warnings)?.severity;
+  const severity = sortWarnings(warnings)?.at(0)?.severity;
   return severity === 'Red' || severity === 'Orange';
 }
 
@@ -111,17 +111,19 @@ export function InterpretationSecurityCheck({
     ? 'error'
     : 'success';
 
-  const mostSevereWarning = useMemo(
-    () => getMostSevereWarning(interpretation?.warnings),
+  const warnings = useMemo(
+    () => sortWarnings(interpretation?.warnings),
     [interpretation]
   );
-  const warningSeverity = mostSevereWarning?.severity;
+  const warningSeverity = warnings?.at(0)?.severity;
 
   const securityButtonKind: SecurityButtonKind =
-    warningSeverity === 'Red'
+    warningSeverity === 'Red' || warningSeverity === 'Orange'
       ? 'danger'
-      : warningSeverity === 'Orange' || warningSeverity === 'Yellow'
+      : warningSeverity === 'Yellow'
       ? 'warning'
+      : warningSeverity === 'Gray'
+      ? 'unknown'
       : mode === 'loading'
       ? 'loading'
       : mode === 'success'
@@ -137,13 +139,20 @@ export function InterpretationSecurityCheck({
           onClick={
             mode === 'loading'
               ? () => loadingDialogRef.current?.showModal()
-              : mode === 'success'
+              : mode === 'error'
+              ? () => errorDialogRef.current?.showModal()
+              : mode === 'success' &&
+                (!warningSeverity || warningSeverity === 'Gray')
               ? () => successDialogRef.current?.showModal()
               : undefined
           }
           title={
-            warningSeverity
+            warningSeverity === 'Red' ||
+            warningSeverity === 'Orange' ||
+            warningSeverity === 'Yellow'
               ? 'Risks Found'
+              : warningSeverity === 'Gray'
+              ? 'Pay Attention'
               : mode === 'loading'
               ? 'Simulating...'
               : mode === 'success'
@@ -190,75 +199,40 @@ export function InterpretationSecurityCheck({
           <InterpretationDescritionDialog mode="success" />
         </BottomSheetDialog>
       </PortalToRootNode>
-      {/* <PortalToRootNode>
-        <BottomSheetDialog
-          height="fit-content"
-          ref={warningDialogRef}
-          renderWhenOpen={() => (
-            <>
-              <DialogCloseButton
-                style={{ position: 'absolute', top: 8, right: 8 }}
-              />
-              <VStack gap={16}>
-                <UIText kind="headline/h3">Verification Details</UIText>
-                {interpretation?.warnings
-                  .sort(warningComparator)
-                  .map((warning, index) => (
-                    <VStack gap={0} key={index}>
-                      <UIText kind="body/accent">{warning.title}</UIText>
-                      <UIText kind="body/regular">{warning.details}</UIText>
-                    </VStack>
-                  ))}
-                <form
-                  method="dialog"
-                  onSubmit={(event) => event.stopPropagation()}
-                >
-                  <Button
-                    style={{ width: '100%' }}
-                    value={DialogButtonValue.cancel}
-                    aria-label="Close"
-                  >
-                    Close
-                  </Button>
-                </form>
-              </VStack>
-            </>
-          )}
-        />
-      </PortalToRootNode> */}
       <Content name="transaction-warning-section">
-        {mostSevereWarning ? (
-          <TransactionWarning
-            title={mostSevereWarning.title}
-            message={
-              <div
-                style={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 5,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  width: '100%',
-                }}
-                title={mostSevereWarning.description}
-              >
-                {mostSevereWarning.description}
-              </div>
-            }
-            kind={
-              warningSeverity === 'Red' || warningSeverity === 'Orange'
-                ? 'danger'
-                : warningSeverity === 'Yellow'
-                ? 'warning'
-                : 'info'
-            }
-          />
+        {warnings?.length ? (
+          <VStack gap={8}>
+            {warnings.map((warning) => (
+              <TransactionWarning
+                key={warning.title}
+                title={warning.title}
+                message={
+                  <div
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 5,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      width: '100%',
+                    }}
+                    title={warning.description}
+                  >
+                    {warning.description}
+                  </div>
+                }
+                kind={
+                  warningSeverity === 'Red' || warningSeverity === 'Orange'
+                    ? 'danger'
+                    : warningSeverity === 'Yellow'
+                    ? 'warning'
+                    : 'info'
+                }
+              />
+            ))}
+          </VStack>
         ) : mode === 'error' ? (
-          <TransactionWarning
-            message="We were unable to simulate the transaction or complete all security checks. Please proceed with caution. "
-            kind="warning"
-            style={{ paddingInline: 15 }}
-          />
+          <TransactionWarning message="We were unable to simulate the transaction or complete all security checks. Please proceed with caution. " />
         ) : null}
       </Content>
     </>
