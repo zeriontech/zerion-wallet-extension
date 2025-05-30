@@ -91,6 +91,7 @@ import type { SignTransactionResult } from 'src/shared/types/SignTransactionResu
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -99,6 +100,8 @@ import { getPopularTokens } from '../SwapForm/shared/getPopularTokens';
 import { usePosition } from '../SwapForm/shared/usePosition';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
+import type { PopoverToastHandle } from '../Settings/PopoverToast';
+import { PopoverToast } from '../Settings/PopoverToast';
 import type { BridgeFormState } from './types';
 import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
@@ -311,6 +314,7 @@ function changeChain<K extends keyof BridgeFormState>(
 }
 
 function BridgeNetworksSelect({
+  address,
   sourceChain,
   destinationChain,
   onChangeSourceChain,
@@ -319,6 +323,7 @@ function BridgeNetworksSelect({
   filterSourceChainPredicate,
   filterDestinationChainPredicate,
 }: {
+  address: string;
   sourceChain: string;
   destinationChain: string;
   onChangeSourceChain: (value: string) => void;
@@ -341,7 +346,7 @@ function BridgeNetworksSelect({
       style={{ gridTemplateColumns: '1fr 32px 1fr' }}
     >
       <LabeledNetworkSelect
-        standart="all"
+        standart={getAddressType(address)}
         label="From"
         value={sourceChain}
         onChange={(value) => {
@@ -382,6 +387,7 @@ function BridgeNetworksSelect({
 function BridgeFormComponent() {
   useBackgroundKind(whiteBackgroundKind);
 
+  const toastRef = useRef<PopoverToastHandle>(null);
   const { singleAddress: address, singleAddressNormalized } =
     useAddressParams();
   const { currency } = useCurrency();
@@ -774,7 +780,6 @@ function BridgeFormComponent() {
           </UnstyledLink>
         }
       />
-
       <BottomSheetDialog
         ref={confirmDialogRef}
         key={selectedQuote?.transactionApprove ? 'approve' : 'swap'}
@@ -907,7 +912,19 @@ function BridgeFormComponent() {
         }}
       >
         <VStack gap={16}>
+          <PopoverToast
+            ref={toastRef}
+            style={{
+              bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+            }}
+          >
+            <div style={{ maxWidth: 300, textAlign: 'center' }}>
+              It is not possible to reverse chains when bridging between the
+              Solana and Ethereum ecosystems
+            </div>
+          </PopoverToast>
           <BridgeNetworksSelect
+            address={address}
             sourceChain={inputChain ?? ''}
             destinationChain={outputChain ?? ''}
             filterSourceChainPredicate={(network: NetworkConfig) =>
@@ -920,10 +937,12 @@ function BridgeFormComponent() {
               handleChainChange('outputChain', value)
             }
             onReverseChains={() =>
-              setUserFormState((state) => ({
-                ...state,
-                ...reverseChains(formState),
-              }))
+              bridgeInsideEcosystem
+                ? setUserFormState((state) => ({
+                    ...state,
+                    ...reverseChains(formState),
+                  }))
+                : toastRef.current?.showToast()
             }
           />
           <VStack gap={4}>

@@ -88,6 +88,7 @@ export function LabeledNetworkSelect({
   return (
     <NetworkSelect
       standard={standart}
+      showEcosystemHint={true}
       value={value}
       onChange={onChange}
       dialogRootNode={dialogRootNode}

@@ -423,18 +423,45 @@ export function AddressInput({
               type="button"
               disabled={!resolvedAddress}
               onDoubleClick={handleCopy}
+              style={{ width: '100%' }}
             >
-              <UIText
-                kind="caption/regular"
-                color="var(--neutral-500)"
-                title={resolvedAddress ?? undefined}
-              >
-                {resolvedAddress
-                  ? isEthereumAddress(resolvedAddress)
-                    ? resolvedAddress
-                    : truncateAddress(resolvedAddress, 16)
-                  : '0x0000...'}
-              </UIText>
+              {resolvedAddress ? (
+                <HStack
+                  gap={0}
+                  justifyContent="start"
+                  style={{
+                    gridTemplateColumns: 'auto minmax(min-content, 1fr)',
+                  }}
+                >
+                  <UIText
+                    kind="caption/regular"
+                    color="var(--neutral-500)"
+                    title={resolvedAddress ?? undefined}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {resolvedAddress.slice(0, -6)}
+                  </UIText>
+                  <UIText
+                    kind="caption/regular"
+                    color="var(--neutral-500)"
+                    title={resolvedAddress ?? undefined}
+                  >
+                    {resolvedAddress.slice(-6)}
+                  </UIText>
+                </HStack>
+              ) : (
+                <UIText
+                  kind="caption/regular"
+                  color="var(--neutral-500)"
+                  title={resolvedAddress ?? undefined}
+                >
+                  '0x0000...
+                </UIText>
+              )}
             </UnstyledButton>
           }
         />

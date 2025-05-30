@@ -39,6 +39,7 @@ export function NetworkSelect({
   dialogRootNode,
   filterPredicate,
   showAllNetworksOption,
+  showEcosystemHint,
 }: {
   value: string;
   standard?: BlockchainType | 'all';
@@ -52,6 +53,7 @@ export function NetworkSelect({
   dialogRootNode?: HTMLElement;
   filterPredicate?: (network: NetworkConfig) => boolean;
   showAllNetworksOption?: boolean;
+  showEcosystemHint: boolean;
 }) {
   const { params } = useAddressParams();
   const { currency } = useCurrency();
@@ -97,6 +99,7 @@ export function NetworkSelect({
           standard={standard}
           chainDistribution={walletPortfolio ?? null}
           showAllNetworksOption={showAllNetworksOption}
+          showEcosystemHint={showEcosystemHint}
         />
       )}
     />
