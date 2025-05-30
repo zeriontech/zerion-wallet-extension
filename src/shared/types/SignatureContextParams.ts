@@ -1,5 +1,5 @@
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { Quote2, QuoteLegacy } from './Quote';
+import type { Quote2 } from './Quote';
 
 type ClientScope =
   | string
@@ -30,7 +30,7 @@ export type TransactionContextParams = {
 } & (
   | { quote?: undefined; outputChain?: undefined }
   | {
-      quote: Quote2 | QuoteLegacy;
+      quote: Quote2;
       outputChain: string | null; // NetworkId
     }
 );
