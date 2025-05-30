@@ -158,7 +158,11 @@ export function SecurityStatusButton({
       <animated.div style={style}>
         <UnstyledButton
           type="button"
-          style={{ width: '100%', height: size === 'big' ? 52 : 44 }}
+          style={{
+            width: '100%',
+            height: size === 'big' ? 52 : 44,
+            whiteSpace: 'nowrap',
+          }}
           disabled={!onClick}
           onClick={onClick}
         >
