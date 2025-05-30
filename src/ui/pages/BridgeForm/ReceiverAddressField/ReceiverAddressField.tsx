@@ -74,6 +74,8 @@ export function ReceiverAddressField({
               onChange={onChange}
               onResolvedChange={onResolvedChange}
               filterAddressPredicate={filterAddressPredicate}
+              iconSize={24}
+              borderRadius={6}
             />
           </>
         ) : null}

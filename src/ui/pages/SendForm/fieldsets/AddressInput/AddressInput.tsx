@@ -226,6 +226,8 @@ export function AddressInput({
   onResolvedChange,
   items: allItems,
   fieldsetStyle,
+  iconSize,
+  borderRadius = 6,
   ...inputProps
 }: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'title' | 'onChange'> & {
   title: React.ReactNode;
@@ -237,6 +239,8 @@ export function AddressInput({
   onResolvedChange(value: string | null): void;
   items: Item[];
   fieldsetStyle?: React.CSSProperties;
+  iconSize: number;
+  borderRadius?: number;
 }) {
   const onResolvedChangeRef = useRef(onResolvedChange);
   onResolvedChangeRef.current = onResolvedChange;
@@ -361,15 +365,15 @@ export function AddressInput({
                 {resolvedAddress ? (
                   <WalletAvatar
                     address={resolvedAddress}
-                    size={24}
-                    borderRadius={6}
+                    size={iconSize}
+                    borderRadius={borderRadius}
                   />
                 ) : (
                   <div
                     style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 6,
+                      width: iconSize,
+                      height: iconSize,
+                      borderRadius,
                       backgroundColor: 'var(--neutral-400)',
                       display: 'flex',
                       alignItems: 'center',
@@ -537,6 +541,8 @@ export function AddressInputWrapper({
   onChange(value: string): void;
   onResolvedChange(value: string | null): void;
   filterAddressPredicate?: (address: string) => boolean;
+  iconSize: number;
+  borderRadius?: number;
 }) {
   const { data: walletGroups, isLoading } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
