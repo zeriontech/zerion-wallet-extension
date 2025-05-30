@@ -40,7 +40,7 @@ export function createGroups({
   filterPredicate = () => true,
   sortMainNetworksType = 'by_distribution',
 }: {
-  standard: BlockchainType;
+  standard: BlockchainType | 'all';
   networks: Networks;
   chainDistribution: ChainDistribution | null;
   testnetMode: boolean;

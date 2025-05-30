@@ -195,9 +195,13 @@ export class Networks {
     return this.networks.filter((item) => !item.is_testnet);
   }
 
-  getDefaultNetworks(standard: BlockchainType) {
+  getDefaultNetworks(standard: BlockchainType | 'all') {
     const items =
-      standard === 'solana' ? this.solanaNetworks : this.evmNetworks;
+      standard === 'solana'
+        ? this.solanaNetworks
+        : standard === 'evm'
+        ? this.evmNetworks
+        : this.networks;
     const ignorePositionsSupport = standard === 'solana'; // TODO: remove check when backend supports Solana positions
     return items.filter((item) => {
       const chain = createChain(item.id);

@@ -499,6 +499,7 @@ export function AddressInputWrapper(
     resolvedAddress: string | null;
     onChange(value: string): void;
     onResolvedChange(value: string | null): void;
+    filterAddressPredicate?: (address: string) => boolean;
   }
 ) {
   const { data: walletGroups, isLoading } = useQuery({
@@ -545,9 +546,13 @@ export function AddressInputWrapper(
     );
   }, [preferences?.recentAddresses, savedNamesMap]);
 
+  const { filterAddressPredicate } = props;
+
   const addresses = useMemo(() => {
-    return [...recentWallets, ...savedWallets];
-  }, [savedWallets, recentWallets]);
+    return [...recentWallets, ...savedWallets].filter(
+      (wallet) => filterAddressPredicate?.(wallet.address) ?? true
+    );
+  }, [savedWallets, recentWallets, filterAddressPredicate]);
 
   if (isLoading) {
     return (

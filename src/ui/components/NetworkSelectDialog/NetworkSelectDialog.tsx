@@ -364,7 +364,7 @@ function AddressNetworkList({
 }: {
   value: string;
   networks: Networks;
-  standard: BlockchainType;
+  standard: BlockchainType | 'all';
   chainDistribution: ChainDistribution | null;
   filterPredicate: (network: NetworkConfig) => boolean;
   testnetMode: boolean;
@@ -491,7 +491,7 @@ export function NetworkSelectDialog({
   filterPredicate = () => true,
 }: {
   value: string;
-  standard: BlockchainType;
+  standard: BlockchainType | 'all';
   chainDistribution: ChainDistribution | null;
   showAllNetworksOption?: boolean;
   filterPredicate?: (network: NetworkConfig) => boolean;

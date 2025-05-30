@@ -89,14 +89,16 @@ import { modifyApproveAmount } from 'src/modules/ethereum/transactions/appovals'
 import { commonToBase } from 'src/shared/units/convert';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
 import { getPopularTokens } from '../SwapForm/shared/getPopularTokens';
 import { usePosition } from '../SwapForm/shared/usePosition';
-import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
-import { toConfiguration } from '../SendForm/shared/helpers';
+import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
+import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import type { BridgeFormState } from './types';
 import { getBridgeTokens } from './getBridgeTokens';
 import { ReverseButton } from './ReverseButton';
@@ -124,24 +126,30 @@ function useSortedQuotes(params: Parameters<typeof useQuotes2>[0]) {
 const rootNode = getRootDomNode();
 
 function FormHint({
-  spendInput,
-  spendPosition,
+  formState,
+  inputPosition,
   quotesData,
   render,
+  inputNetwork,
+  inputChainAddressMatch,
+  outputChainAddressMatch,
 }: {
-  spendInput?: string;
-  spendPosition: AddressPosition | EmptyAddressPosition | null;
+  formState: BridgeFormState;
+  inputPosition: AddressPosition | EmptyAddressPosition | null;
   quotesData: QuotesData<Quote2>;
   render: (message: string | null) => React.ReactNode;
+  inputNetwork?: NetworkConfig | null;
+  inputChainAddressMatch: boolean;
+  outputChainAddressMatch: boolean;
 }) {
-  const value = spendInput;
+  const value = formState.inputAmount;
   const invalidValue = value && !isNumeric(value);
   const valueMissing = !value || Number(value) === 0;
 
-  const positionBalanceCommon = spendPosition
-    ? getPositionBalance(spendPosition)
+  const positionBalanceCommon = inputPosition
+    ? getPositionBalance(inputPosition)
     : null;
-  const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
+  const exceedsBalance = Number(value) > Number(positionBalanceCommon);
 
   let message: string | null = null;
   if (exceedsBalance) {
@@ -152,6 +160,14 @@ function FormHint({
     message = 'Incorrect amount';
   } else if (quotesData.error) {
     message = getQuotesErrorMessage(quotesData);
+  } else if (!outputChainAddressMatch) {
+    message = formState.to ? '' : 'Add Recipient Address';
+  } else if (!inputChainAddressMatch) {
+    message = !inputNetwork
+      ? 'Loading networks...'
+      : Networks.getEcosystem(inputNetwork) === 'solana'
+      ? 'Please switch to an Ethereum "From" network'
+      : 'Please switch to a Solana "From" network';
   }
   return render(message);
 }
@@ -220,11 +236,12 @@ async function queryPopularTokens(chain: Chain) {
  * for useQuotes helper which internally serializes formState into a URL string
  * and makes refetches when this url changes
  */
-const EMPTY_DEFAULT_STATE = {
+const EMPTY_DEFAULT_STATE: BridgeFormState = {
   inputChain: undefined,
   outputChain: undefined,
   inputFungibleId: undefined,
   outputFungibleId: undefined,
+  showReceiverAddressInput: 'off',
   sort: '1' as const,
 };
 
@@ -381,6 +398,7 @@ function BridgeNetworksSelect({
       style={{ gridTemplateColumns: '1fr 32px 1fr' }}
     >
       <LabeledNetworkSelect
+        standart="all"
         label="From"
         value={sourceChain}
         onChange={(value) => {
@@ -398,6 +416,7 @@ function BridgeNetworksSelect({
       />
       <ReverseButton onClick={onReverseChains} />
       <LabeledNetworkSelect
+        standart="all"
         label="To"
         value={destinationChain}
         onChange={(value) => {
@@ -511,9 +530,25 @@ function BridgeFormComponent() {
     return sortPositionsByValue(positions);
   }, [allPositions, inputChain, inputChainTokensQuery.data]);
 
+  const outputChainTokensQuery = useBridgeTokens({
+    inputChain: inputChain ? createChain(inputChain) : null,
+    outputChain: outputChain ? createChain(outputChain) : null,
+    direction: 'output',
+  });
+
+  const availableReceivePositions = useMemo(() => {
+    const outputChainTokensSet = new Set(outputChainTokensQuery.data ?? []);
+    const positions = allPositions
+      ?.filter((p) => p.chain === outputChain)
+      .filter((p) => p.type === 'asset')
+      .filter((token) => outputChainTokensSet.has(token.asset.asset_code));
+    return sortPositionsByValue(positions);
+  }, [allPositions, outputChain, outputChainTokensQuery.data]);
+
   const spendChain = inputChain ? createChain(inputChain) : null;
   const receiveChain = outputChain ? createChain(outputChain) : null;
   const { data: inputNetwork } = useNetworkConfig(inputChain ?? null);
+  const { data: outputNetwork } = useNetworkConfig(outputChain ?? null);
 
   const inputPosition = usePosition({
     assetId: inputFungibleId ?? null,
@@ -528,17 +563,30 @@ function BridgeFormComponent() {
 
   const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const slippageDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
   const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
   const formId = useId();
 
-  const inputChainAddressMatch =
+  const inputChainAddressMatch = Boolean(
     inputNetwork &&
-    isMatchForEcosystem(address, Networks.getEcosystem(inputNetwork));
-  const inputChainAddressMismatch = inputNetwork && !inputChainAddressMatch;
+      isMatchForEcosystem(address, Networks.getEcosystem(inputNetwork))
+  );
+
+  const bridgeInsideEcosystem =
+    inputNetwork &&
+    outputNetwork &&
+    Networks.getEcosystem(inputNetwork) ===
+      Networks.getEcosystem(outputNetwork);
+
+  const outputChainAddressMatch = Boolean(
+    bridgeInsideEcosystem
+      ? isMatchForEcosystem(to ?? address, Networks.getEcosystem(outputNetwork))
+      : to &&
+          outputNetwork &&
+          isMatchForEcosystem(to, Networks.getEcosystem(outputNetwork))
+  );
 
   const { quotesByAmount, quotesByTime } = useSortedQuotes({
     address: singleAddressNormalized,
@@ -551,7 +599,7 @@ function BridgeFormComponent() {
   });
 
   const quotesData = sort === '1' ? quotesByAmount : quotesByTime;
-  const { quotes, refetch: refetchQuotes } = quotesData;
+  const { refetch: refetchQuotes } = quotesData;
 
   const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
   useEffect(() => {
@@ -731,15 +779,6 @@ function BridgeFormComponent() {
     },
   });
 
-  const priceImpact = useMemo(() => {
-    return calculatePriceImpact({
-      inputValue: inputAmount || null,
-      outputValue: outputAmount || null,
-      inputAsset: inputPosition?.asset ?? null,
-      outputAsset: outputPosition?.asset ?? null,
-    });
-  }, [inputAmount, inputPosition?.asset, outputAmount, outputPosition?.asset]);
-
   const gasbackValueRef = useRef<number | null>(null);
   const handleGasbackReady = useCallback((value: number) => {
     gasbackValueRef.current = value;
@@ -749,6 +788,14 @@ function BridgeFormComponent() {
 
   const formRef = useRef<HTMLFormElement | null>(null);
   const { innerHeight } = useWindowSizeStore();
+
+  const outputEcosystem = outputNetwork && Networks.getEcosystem(outputNetwork);
+  const addressFilterPredicate = useCallback(
+    (value: string) => {
+      return !outputEcosystem || isMatchForEcosystem(value, outputEcosystem);
+    },
+    [outputEcosystem]
+  );
 
   if (sendTransactionMutation.isSuccess) {
     const result = sendTransactionMutation.data;
@@ -938,9 +985,11 @@ function BridgeFormComponent() {
             filterSourceChainPredicate={(network: NetworkConfig) =>
               isMatchForEcosystem(address, Networks.getEcosystem(network))
             }
-            onChangeSourceChain={(value) => handleChange('inputChain', value)}
+            onChangeSourceChain={(value) =>
+              handleChainChange('inputChain', value)
+            }
             onChangeDestinationChain={(value) =>
-              handleChange('outputChain', value)
+              handleChainChange('outputChain', value)
             }
             onReverseChains={() =>
               setUserFormState((state) => ({
@@ -953,35 +1002,48 @@ function BridgeFormComponent() {
             <SpendTokenField
               spendInput={inputAmount}
               spendChain={spendChain}
-              spendAsset={spendAsset}
-              spendPosition={spendPosition}
-              availableSpendPositions={availableSpendPositions?.sorted ?? []}
-              receiveInput={receiveInput}
-              receiveAsset={receiveAsset}
+              spendPosition={inputPosition}
+              availableSpendPositions={availableSpendPositions ?? []}
+              receiveInput={outputAmount ?? undefined}
+              receiveAsset={outputPosition?.asset ?? null}
               onChangeAmount={(value) => handleChange('inputAmount', value)}
               onChangeToken={(value) => handleChange('inputFungibleId', value)}
             />
             <ReceiveTokenField
-              receiveInput={receiveInput}
+              receiveInput={outputAmount ?? undefined}
               receiveChain={receiveChain}
-              receiveAsset={receiveAsset}
-              receivePosition={receivePosition}
-              availableReceivePositions={
-                availableReceivePositions?.sorted ?? []
-              }
-              spendInput={spendInput}
-              spendAsset={spendAsset}
+              receivePosition={outputPosition}
+              availableReceivePositions={availableReceivePositions ?? []}
+              spendInput={inputAmount ?? undefined}
+              spendAsset={inputPosition?.asset ?? null}
               onChangeToken={(value) => handleChange('outputFungibleId', value)}
             />
             <ReceiverAddressField
-              to={to}
+              title={
+                !outputNetwork
+                  ? 'Recipient Address'
+                  : Networks.getEcosystem(outputNetwork) === 'evm'
+                  ? 'Ethereum Recipient Address'
+                  : 'Solana Recipient Address'
+              }
+              to={to ?? null}
               receiverAddressInput={receiverAddressInput ?? null}
-              onChange={(value) => handleChange('receiverAddressInput', value)}
-              showAddressInput={Boolean(showReceiverAddressInput)}
+              onChange={(value) =>
+                handleChange('receiverAddressInput', value ?? undefined)
+              }
+              showAddressInput={showReceiverAddressInput === 'on'}
               onShowInputChange={(value) =>
-                handleChange('showReceiverAddressInput', value)
+                // Changing visibility of the input should reset the input value
+                // to align with the visual language of the input
+                setUserFormState((state) => ({
+                  ...state,
+                  showReceiverAddressInput: value ? 'on' : 'off',
+                  to: undefined,
+                  receiverAddressInput: undefined,
+                }))
               }
               onResolvedChange={(value) => handleChange('to', value)}
+              filterAddressPredicate={addressFilterPredicate}
             />
           </VStack>
         </VStack>
@@ -1009,7 +1071,9 @@ function BridgeFormComponent() {
             onQuoteIdChange={(quoteId) => setUserQuoteId(quoteId)}
           />
           {selectedQuote ? <ZerionFeeLine quote={selectedQuote} /> : null}
-          {currentTransaction && spendChain && currentTransaction.gasLimit ? (
+          {isEthereumAddress(address) &&
+          currentTransaction?.evm &&
+          spendChain ? (
             <React.Suspense
               fallback={
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -1019,18 +1083,32 @@ function BridgeFormComponent() {
             >
               <TransactionConfiguration
                 keepPreviousData={true}
-                transaction={currentTransaction}
+                transaction={toIncomingTransaction(currentTransaction.evm)}
                 from={address}
                 chain={spendChain}
-                paymasterEligible={paymasterEligible}
-                paymasterPossible={paymasterPossible}
+                paymasterEligible={Boolean(
+                  currentTransaction.evm.customData?.paymasterParams
+                )}
+                paymasterPossible={Boolean(
+                  inputNetwork?.supports_sponsored_transactions
+                )}
                 paymasterWaiting={false}
-                onFeeValueCommonReady={handleFeeValueCommonReady}
-                configuration={configuration}
-                onConfigurationChange={(value) => setConfiguration(value)}
+                onFeeValueCommonReady={null}
+                configuration={toConfiguration(formState)}
+                onConfigurationChange={(value) => {
+                  const partial = fromConfiguration(value);
+                  setUserFormState((state) => ({ ...state, ...partial }));
+                }}
                 gasback={gasbackEstimation}
               />
             </React.Suspense>
+          ) : null}
+
+          {isSolanaAddress(address) && selectedQuote?.networkFee ? (
+            <NetworkFeeLineInfo
+              networkFee={selectedQuote.networkFee}
+              isLoading={quotesData.isPreviousData}
+            />
           ) : null}
         </VStack>
       </VStack>
@@ -1117,9 +1195,12 @@ function BridgeFormComponent() {
               </UIText>
               {wallet ? (
                 <FormHint
-                  priceImpact={priceImpact}
+                  formState={formState}
                   inputPosition={inputPosition}
                   quotesData={quotesData}
+                  inputNetwork={inputNetwork}
+                  inputChainAddressMatch={inputChainAddressMatch}
+                  outputChainAddressMatch={outputChainAddressMatch}
                   render={(hint) => (
                     <SignTransactionButton
                       ref={sendTxBtnRef}
@@ -1129,6 +1210,8 @@ function BridgeFormComponent() {
                       disabled={
                         sendTransactionMutation.isLoading ||
                         quotesData.isLoading ||
+                        !inputChainAddressMatch ||
+                        !outputChainAddressMatch ||
                         Boolean(
                           (selectedQuote && !selectedQuote.transactionSwap) ||
                             quotesData.error

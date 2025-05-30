@@ -859,7 +859,7 @@ function SwapFormComponent() {
           {inputChainAddressMismatch ? (
             <UIText kind="small/regular" color="var(--notice-600)">
               {getAddressType(address) === 'evm'
-                ? 'Please swich to an Ethereum network'
+                ? 'Please switch to an Ethereum network'
                 : 'Please switch to a Solana network'}
             </UIText>
           ) : null}
