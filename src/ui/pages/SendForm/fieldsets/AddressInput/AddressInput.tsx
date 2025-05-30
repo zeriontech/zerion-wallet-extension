@@ -48,8 +48,11 @@ function matches(query: string | null, item: Item, domainInfo?: string[]) {
   }
   const value = query.toLowerCase();
   return (
-    normalizedContains(item.address.toLowerCase(), value) ||
-    normalizedContains(truncateAddress(item.address.toLowerCase(), 4), value) ||
+    normalizedContains(normalizeAddress(item.address), value) ||
+    normalizedContains(
+      truncateAddress(normalizeAddress(item.address), 4),
+      value
+    ) ||
     (item.name && normalizedContains(item.name.toLowerCase(), value)) ||
     (domainInfo &&
       domainInfo.some((domain) =>
@@ -245,7 +248,7 @@ export function AddressInput({
     );
   }, [allItems, value, domainNames, showAllItems]);
 
-  const normalizedValue = value.trim().toLowerCase();
+  const normalizedValue = normalizeAddress(value.trim());
   const { data: resolvedValue, isLoading } = useQuery({
     queryKey: ['resolveAddressInput', normalizedValue, domainNames],
     queryFn: () => {
@@ -258,7 +261,7 @@ export function AddressInput({
       const existingAddress = allItems.find(
         (item) =>
           item.name?.toLowerCase() === normalizedValue ||
-          truncateAddress(item.address.toLowerCase(), 4) === normalizedValue
+          truncateAddress(normalizeAddress(item.address), 4) === normalizedValue
       )?.address;
       if (existingAddress) {
         return existingAddress;
@@ -340,15 +343,15 @@ export function AddressInput({
               {resolvedAddress ? (
                 <WalletAvatar
                   address={resolvedAddress}
-                  size={44}
-                  borderRadius={12}
+                  size={24}
+                  borderRadius={6}
                 />
               ) : (
                 <div
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
+                    width: 24,
+                    height: 24,
+                    borderRadius: 6,
                     backgroundColor: 'var(--neutral-400)',
                     display: 'flex',
                     alignItems: 'center',
@@ -394,8 +397,16 @@ export function AddressInput({
           </UnstyledButton>
         }
         startDescription={
-          <UIText kind="caption/regular" color="var(--neutral-500)">
-            {resolvedAddress || '0x0000...'}
+          <UIText
+            kind="caption/regular"
+            color="var(--neutral-500)"
+            title={resolvedAddress ?? undefined}
+          >
+            {resolvedAddress
+              ? isEthereumAddress(resolvedAddress)
+                ? resolvedAddress
+                : truncateAddress(resolvedAddress, 16)
+              : '0x0000...'}
           </UIText>
         }
       />
@@ -559,9 +570,9 @@ export function AddressInputWrapper({
         startInput={
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
+              width: 24,
+              height: 24,
+              borderRadius: 6,
               backgroundColor: 'var(--neutral-400)',
               display: 'flex',
               alignItems: 'center',
