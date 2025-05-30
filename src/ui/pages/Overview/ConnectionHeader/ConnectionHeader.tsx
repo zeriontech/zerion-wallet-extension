@@ -272,7 +272,7 @@ export function ConnectionHeader() {
                 {siteChain ? (
                   <NetworkSelect
                     standard={getAddressType(address)}
-                    showEcosystemHint={false}
+                    showEcosystemHint={true}
                     value={siteChain.toString()}
                     filterPredicate={(network) =>
                       isMatchForEcosystem(

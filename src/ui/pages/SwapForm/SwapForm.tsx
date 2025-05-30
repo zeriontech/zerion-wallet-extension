@@ -797,7 +797,7 @@ function SwapFormComponent() {
         <VStack gap={16}>
           <NetworkSelect
             standard={getAddressType(address)}
-            showEcosystemHint={false}
+            showEcosystemHint={true}
             value={formState.inputChain ?? ''}
             onChange={(value) => {
               handleChange('inputChain', value);

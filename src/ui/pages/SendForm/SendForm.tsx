@@ -345,7 +345,7 @@ function SendFormComponent() {
             {type === 'token' ? (
               <NetworkSelect
                 standard={addressType}
-                showEcosystemHint={false}
+                showEcosystemHint={true}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
