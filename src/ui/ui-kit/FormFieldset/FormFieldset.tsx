@@ -92,9 +92,11 @@ export const FormFieldset = React.forwardRef<
               <UIText kind="small/regular" color="var(--neutral-600)">
                 {startDescription}
               </UIText>
-              <UIText kind="small/regular" color="var(--neutral-600)">
-                {endDescription}
-              </UIText>
+              {endDescription ? (
+                <UIText kind="small/regular" color="var(--neutral-600)">
+                  {endDescription}
+                </UIText>
+              ) : null}
             </HStack>
           ) : null}
         </VStack>

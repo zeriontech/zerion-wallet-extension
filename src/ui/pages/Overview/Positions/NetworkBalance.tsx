@@ -211,6 +211,7 @@ export function NetworkBalance({
       >
         <NetworkSelect
           filterPredicate={networksPredicate}
+          showEcosystemHint={false}
           showAllNetworksOption={showAllNetworksOption}
           value={chain}
           standard={standard}

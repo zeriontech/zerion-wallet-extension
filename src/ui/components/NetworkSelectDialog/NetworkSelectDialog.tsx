@@ -34,6 +34,8 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { bringToFront } from 'src/shared/array-mutations';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
+import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -361,6 +363,7 @@ function AddressNetworkList({
   filterPredicate,
   testnetMode,
   showAllNetworksOption,
+  showEcosystemHint,
 }: {
   value: string;
   networks: Networks;
@@ -369,6 +372,7 @@ function AddressNetworkList({
   filterPredicate: (network: NetworkConfig) => boolean;
   testnetMode: boolean;
   showAllNetworksOption?: boolean;
+  showEcosystemHint: boolean;
 }) {
   const searchRef = useRef<HTMLInputElement | null>(null);
   const [searchValue, setSearchValue] = useState('');
@@ -397,6 +401,10 @@ function AddressNetworkList({
     itemClassName: LIST_ITEM_CLASS,
     searchRef,
   });
+
+  const networksCount = useMemo(() => {
+    return groups.reduce((count, group) => count + group.items.length, 0);
+  }, [groups]);
 
   return (
     <>
@@ -442,24 +450,53 @@ function AddressNetworkList({
       </div>
       <PageColumn>
         <Spacer height={8} />
-        <SearchInput
-          ref={searchRef}
-          onKeyDown={(event) => {
-            if (event.key === 'ArrowDown') {
-              selectNextNetwork();
-            }
-          }}
-          autoFocus={true}
-          boxHeight={40}
-          type="search"
-          placeholder="Search"
-          value={searchValue}
-          onChange={(event) => {
-            debouncedSetSearchParams(event.currentTarget.value);
-            setSearchValue(event.currentTarget.value);
-          }}
-        />
-        <Spacer height={16} />
+        {standard !== 'all' && showEcosystemHint ? (
+          <>
+            <HStack
+              gap={12}
+              alignItems="center"
+              style={{
+                padding: '8px 36px 8px 12px',
+                borderRadius: 16,
+                backgroundColor: 'var(--neutral-100)',
+              }}
+            >
+              {standard === 'evm' ? (
+                <EcosystemSolanaIcon style={{ width: 36, height: 36 }} />
+              ) : (
+                <EcosystemEthereumIcon style={{ width: 36, height: 36 }} />
+              )}
+              <UIText kind="small/regular">
+                {standard === 'evm'
+                  ? 'To use the Solana ecosystem, choose Solana wallet.'
+                  : 'To use the Ethereum ecosystem, choose Ethereum wallet.'}
+              </UIText>
+            </HStack>
+            <Spacer height={8} />
+          </>
+        ) : null}
+        {networksCount > 2 ? (
+          <>
+            <SearchInput
+              ref={searchRef}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowDown') {
+                  selectNextNetwork();
+                }
+              }}
+              autoFocus={true}
+              boxHeight={40}
+              type="search"
+              placeholder="Search"
+              value={searchValue}
+              onChange={(event) => {
+                debouncedSetSearchParams(event.currentTarget.value);
+                setSearchValue(event.currentTarget.value);
+              }}
+            />
+            <Spacer height={16} />
+          </>
+        ) : null}
         {query ? (
           <SearchView
             value={value}
@@ -489,12 +526,14 @@ export function NetworkSelectDialog({
   chainDistribution,
   showAllNetworksOption,
   filterPredicate = () => true,
+  showEcosystemHint,
 }: {
   value: string;
   standard: BlockchainType | 'all';
   chainDistribution: ChainDistribution | null;
   showAllNetworksOption?: boolean;
   filterPredicate?: (network: NetworkConfig) => boolean;
+  showEcosystemHint: boolean;
 }) {
   const chains = useMemo(
     () => Object.keys(chainDistribution?.chains || {}),
@@ -526,6 +565,7 @@ export function NetworkSelectDialog({
         chainDistribution={chainDistribution}
         showAllNetworksOption={showAllNetworksOption}
         testnetMode={Boolean(preferences?.testnetMode?.on)}
+        showEcosystemHint={showEcosystemHint}
       />
     </div>
   );
