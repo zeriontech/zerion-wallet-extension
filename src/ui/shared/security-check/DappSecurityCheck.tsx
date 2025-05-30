@@ -10,6 +10,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import CheckmarkIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
 import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
+import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
 import {
   SecurityStatusButton,
   type SecurityButtonKind,
@@ -171,16 +172,37 @@ export function DappSecurityCheck({
           <SecurityCheckDialogContent status={status} />
         </BottomSheetDialog>
       ) : null}
-      <SecurityStatusButton
-        kind={SECURITY_STATUS_BUTTON_KIND[status]}
-        title={SECURITY_STATUS_TO_TITLE[status]}
-        onClick={
-          status === 'ok' || status === 'error'
-            ? () => dialogRef.current?.showModal()
-            : undefined
-        }
-        size="big"
-      />
+      <VStack gap={8}>
+        <SecurityStatusButton
+          kind={SECURITY_STATUS_BUTTON_KIND[status]}
+          title={SECURITY_STATUS_TO_TITLE[status]}
+          onClick={
+            status === 'ok' || status === 'error'
+              ? () => dialogRef.current?.showModal()
+              : undefined
+          }
+          size="big"
+        />
+        {status === 'phishing' ? (
+          <TransactionWarning
+            title="Potential risks:"
+            kind="danger"
+            message={
+              <ul style={{ marginBlock: 0, paddingInline: '1em' }}>
+                <li>
+                  <UIText kind="body/regular">Theft of recovery phrase</UIText>
+                </li>
+                <li>
+                  <UIText kind="body/regular">Phishing attacks</UIText>
+                </li>
+                <li>
+                  <UIText kind="body/regular">Fake tokens or scams</UIText>
+                </li>
+              </ul>
+            }
+          />
+        ) : null}
+      </VStack>
     </>
   );
 }
