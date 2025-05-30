@@ -195,11 +195,7 @@ function trackAppEvents({ account }: { account: Account }) {
         gas_price: null, // TODO
         network_fee: null, // TODO
         network_fee_value: feeValueCommon,
-        contract_type: quote
-          ? ('contract_metadata' in quote
-              ? quote.contract_metadata?.name
-              : quote.contractMetadata.name) ?? null
-          : null,
+        contract_type: quote ? quote.contractMetadata.name ?? null : null,
         hold_sign_button: Boolean(preferences.enableHoldToSignButton),
         ...omitNullParams(addressActionAnalytics),
       });
