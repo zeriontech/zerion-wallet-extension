@@ -386,6 +386,8 @@ function SendFormComponent() {
                 resolvedAddress={to ?? null}
                 onChange={(value) => handleChange('addressInputValue', value)}
                 onResolvedChange={(value) => handleChange('to', value ?? '')}
+                iconSize={44}
+                borderRadius={12}
               />
             </>
             {type === 'token' ? (
