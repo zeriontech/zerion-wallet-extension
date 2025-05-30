@@ -1,0 +1,70 @@
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingShield {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  mask: url('./shield-mask.svg') center/contain no-repeat;
+  -webkit-mask: url('./shield-mask.svg') center/contain no-repeat;
+}
+
+.loadingShield div {
+  background: conic-gradient(var(--black), var(--white));
+  animation: rotate 1s linear infinite;
+  width: 200%;
+  height: 200%;
+  flex-shrink: 0;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(100px) scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-65%) scale(1);
+  }
+}
+
+@keyframes subtlePulse {
+  0% {
+    opacity: 1;
+    transform: translateY(-65%) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateY(-65%) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-65%) scale(1);
+  }
+}
+
+.backgroundGradientContainer {
+  position: absolute;
+  inset: 0 0 0 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.backgroundGradient {
+  flex-shrink: 0;
+  width: 1000px;
+  height: 600px;
+  position: relative;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    var(--security-gradient-background-color) 0%,
+    transparent 50%
+  );
+  animation: appear 2s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    subtlePulse 2s ease-in-out 2s infinite;
+}

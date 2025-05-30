@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { hashQueryKey, useQuery } from '@tanstack/react-query';
 import { RenderArea } from 'react-area';
@@ -15,26 +15,35 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
+import { InterpretationSecurityCheck } from 'src/ui/shared/security-check/InterpertationSecurityCheck';
+import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { TransactionAdvancedView } from 'src/ui/pages/SendTransaction/TransactionAdvancedView';
+import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
+import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
+import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { Button } from 'src/ui/ui-kit/Button';
 import { AddressActionDetails } from '../AddressActionDetails';
-import { InterpretationState } from '../../InterpretationState';
 
 export function TransactionSimulation({
-  vGap = 16,
   address,
   transaction,
   txInterpretQuery,
   customAllowanceValueBase,
-  showApplicationLine,
   onOpenAllowanceForm,
 }: {
-  vGap?: number;
   address: string;
   transaction: IncomingTransactionWithChainId;
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   customAllowanceValueBase?: string;
-  showApplicationLine: boolean;
   onOpenAllowanceForm?: () => void;
 }) {
+  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const toastRef = useRef<PopoverToastHandle>(null);
+
   const { networks } = useNetworks();
   const { currency } = useCurrency();
   invariant(transaction.chainId, 'transaction must have a chainId value');
@@ -110,36 +119,91 @@ export function TransactionSimulation({
     customAllowanceValueBase || addressAction.content?.single_asset?.quantity;
 
   return (
-    <VStack gap={vGap}>
-      <AddressActionDetails
-        address={wallet.address}
-        recipientAddress={recipientAddress}
-        addressAction={addressAction}
-        chain={chain}
-        networks={networks}
-        actionTransfers={actionTransfers}
-        singleAsset={singleAsset}
-        allowanceQuantityBase={allowanceQuantityBase || null}
-        showApplicationLine={showApplicationLine}
-        singleAssetElementEnd={
-          allowanceQuantityBase && onOpenAllowanceForm ? (
-            <UIText kind="small/accent" color="var(--primary)">
-              <UnstyledButton
-                type="button"
-                className="hover:underline"
-                onClick={onOpenAllowanceForm}
-              >
-                Edit
-              </UnstyledButton>
-            </UIText>
-          ) : null
-        }
+    <>
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Copied to Clipboard
+      </PopoverToast>
+      <CenteredDialog
+        ref={advancedDialogRef}
+        containerStyle={{ paddingBottom: 0 }}
+        renderWhenOpen={() => (
+          <>
+            <DialogTitle
+              title={<UIText kind="body/accent">Details</UIText>}
+              closeKind="icon"
+            />
+            <TransactionAdvancedView
+              networks={networks}
+              chain={chain}
+              interpretation={interpretation}
+              // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
+              transaction={transaction}
+              addressAction={addressAction}
+              onCopyData={() => toastRef.current?.showToast()}
+            />
+          </>
+        )}
       />
-      <InterpretationState
-        interpretation={interpretation}
-        interpretQuery={txInterpretQuery}
-      />
-      <RenderArea name="transaction-warning-section" />
-    </VStack>
+      <VStack gap={8}>
+        <AddressActionDetails
+          address={wallet.address}
+          recipientAddress={recipientAddress}
+          addressAction={addressAction}
+          chain={chain}
+          networks={networks}
+          actionTransfers={actionTransfers}
+          singleAsset={singleAsset}
+          allowanceQuantityBase={allowanceQuantityBase || null}
+          showApplicationLine={false}
+          singleAssetElementEnd={
+            allowanceQuantityBase && onOpenAllowanceForm ? (
+              <UIText kind="small/accent" color="var(--primary)">
+                <UnstyledButton
+                  type="button"
+                  className="hover:underline"
+                  onClick={onOpenAllowanceForm}
+                >
+                  Edit
+                </UnstyledButton>
+              </UIText>
+            ) : null
+          }
+        />
+        <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <InterpretationSecurityCheck
+            interpretation={interpretation}
+            interpretQuery={txInterpretQuery}
+          />
+          <Button
+            type="button"
+            kind="regular"
+            onClick={() => advancedDialogRef.current?.showModal()}
+            size={44}
+            className="parent-hover"
+            style={{
+              textAlign: 'start',
+              borderRadius: 100,
+              ['--parent-content-color' as string]: 'var(--neutral-500)',
+              ['--parent-hovered-content-color' as string]: 'var(--black)',
+            }}
+          >
+            <HStack gap={0} alignItems="center" justifyContent="center">
+              <ScrollIcon />
+              <span>Details</span>
+              <ArrowDownIcon
+                className="content-hover"
+                style={{ width: 24, height: 24 }}
+              />
+            </HStack>
+          </Button>
+        </HStack>
+        <RenderArea name="transaction-warning-section" />
+      </VStack>
+    </>
   );
 }

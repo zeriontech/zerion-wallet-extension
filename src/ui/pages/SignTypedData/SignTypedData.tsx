@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -13,15 +7,12 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { Surface } from 'src/ui/ui-kit/Surface';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { invariant } from 'src/shared/invariant';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import {
@@ -44,46 +35,39 @@ import { produce } from 'immer';
 import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import {
+  DialogButtonValue,
+  DialogTitle,
+} from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
-import { InterpretationState } from 'src/ui/components/InterpretationState';
-import { hasCriticalWarning } from 'src/ui/components/InterpretationState/InterpretationState';
 import type { SignMsgBtnHandle } from 'src/ui/components/SignMessageButton';
 import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { usePreferences } from 'src/ui/features/preferences';
 import { wait } from 'src/shared/wait';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import CopyIcon from 'jsx:src/ui/assets/copy.svg';
+import {
+  hasCriticalWarning,
+  InterpretationSecurityCheck,
+  SecurityStatusBackground,
+} from 'src/ui/shared/security-check';
+import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { PopoverToast } from '../Settings/PopoverToast';
+import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
-
-const TypedDataRow = React.forwardRef(
-  ({ data }: { data: string }, ref: React.Ref<HTMLDivElement>) => {
-    return (
-      <Surface
-        padding={16}
-        style={{
-          border: '2px solid var(--neutral-200)',
-          maxHeight: 256,
-          overflowY: 'auto',
-          ['--surface-background-color' as string]: 'var(--white)',
-        }}
-      >
-        <UIText
-          kind="small/regular"
-          style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }}
-        >
-          {data}
-        </UIText>
-        <div ref={ref} style={{ display: 'hidden' }} />
-      </Surface>
-    );
-  }
-);
 
 enum View {
   default = 'default',
@@ -138,6 +122,8 @@ function TypedDataDefaultView({
   onReject: () => void;
   onOpenAdvancedView: () => void;
 }) {
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const [params] = useSearchParams();
   const { preferences } = usePreferences();
 
@@ -146,7 +132,7 @@ function TypedDataDefaultView({
 
   const title =
     addressAction?.type.display_value ||
-    (isPermit(typedData) ? 'Permit' : 'Signature Request');
+    (isPermit(typedData) ? 'Permit' : 'Sign Message');
 
   const typedDataFormatted = useMemo(
     () => JSON.stringify(JSON.parse(typedDataRaw), null, 2),
@@ -195,139 +181,229 @@ function TypedDataDefaultView({
     }
   );
 
-  const footerContentRef = useRef<HTMLDivElement | null>(null);
-  const [seenSigningData, setSeenSigningData] = useState(true);
-  const typedDataRowRef = useRef<HTMLDivElement | null>(null);
-  const onTypedDataRowRefSet = useCallback((node: HTMLDivElement | null) => {
-    if (!node || !footerContentRef?.current) {
-      return;
-    }
-    const footerHeight = footerContentRef.current.getBoundingClientRect().top;
-    const rootMargin =
-      window.innerHeight + BUG_REPORT_BUTTON_HEIGHT - footerHeight;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setSeenSigningData(true);
-          observer.disconnect();
-        } else {
-          setSeenSigningData(false);
-        }
-      },
-      { rootMargin: `-${rootMargin}px` }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  const disposables = useRef<Array<() => void>>([]);
-  useEffect(() => {
-    disposables.current.forEach((l) => l());
-  }, []);
-
-  const setTypedDataRow = (node: HTMLDivElement | null) => {
-    typedDataRowRef.current = node;
-    const unlisten = onTypedDataRowRefSet(node);
-    if (unlisten) {
-      disposables.current.push(unlisten);
-    }
-  };
-
-  const scrollSigningData = () =>
-    typedDataRowRef?.current?.scrollIntoView({ behavior: 'smooth' });
-
   const interpretationHasCriticalWarning = hasCriticalWarning(
     interpretation?.warnings
   );
 
   const showRawTypedData = !addressAction;
 
-  const shouldScrollBeforeSigning = !seenSigningData && showRawTypedData;
+  const { handleCopy } = useCopyToClipboard({
+    text: typedDataFormatted,
+    onSuccess: () => toastRef.current?.showToast(),
+  });
 
   return (
     <>
-      <PageTop />
-      <div style={{ display: 'grid', placeItems: 'center' }}>
-        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-          {title}
-        </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {originForHref ? (
-            <TextAnchor
-              href={originForHref.href}
-              target="_blank"
-              rel="noopener noreferrer"
+      <SecurityStatusBackground />
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Copied to Clipboard
+      </PopoverToast>
+      <BottomSheetDialog ref={dialogRef} height="fit-content">
+        <VStack gap={24}>
+          <VStack
+            gap={0}
+            style={{
+              backgroundColor: 'var(--neutral-100)',
+              borderRadius: 12,
+              padding: '12px 16px',
+            }}
+          >
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Data
+            </UIText>
+            <UIText
+              kind="body/regular"
+              style={{ maxHeight: '80vh', overflowY: 'auto' }}
             >
-              {originForHref.hostname}
-            </TextAnchor>
-          ) : (
-            'Unknown Initiator'
-          )}
-        </UIText>
-        <Spacer height={8} />
-        <HStack gap={8} alignItems="center">
-          <WalletAvatar
-            address={wallet.address}
-            size={20}
-            active={false}
-            borderRadius={4}
-          />
-          <UIText kind="small/regular">
-            <WalletDisplayName wallet={wallet} />
-          </UIText>
-        </HStack>
-      </div>
-      <Spacer height={24} />
-      <VStack gap={16}>
-        {addressAction ? (
-          <AddressActionDetails
-            address={wallet.address}
-            recipientAddress={recipientAddress}
-            addressAction={addressAction}
-            chain={chain}
-            networks={networks}
-            actionTransfers={addressAction?.content?.transfers}
-            singleAsset={addressAction?.content?.single_asset}
-            allowanceQuantityBase={allowanceQuantityBase || null}
-            showApplicationLine={true}
-            singleAssetElementEnd={
-              allowanceQuantityBase &&
-              addressAction.type.value === 'approve' ? (
-                <UIText
-                  as={TextLink}
-                  kind="small/accent"
-                  style={{ color: 'var(--primary)' }}
-                  to={allowanceViewHref}
-                >
-                  Edit
-                </UIText>
-              ) : null
-            }
-          />
-        ) : null}
-        {showRawTypedData ? (
-          <TypedDataRow ref={setTypedDataRow} data={typedDataFormatted} />
-        ) : null}
-        <HStack
+              {typedDataFormatted}
+            </UIText>
+          </VStack>
+          <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+            <Button
+              value={DialogButtonValue.cancel}
+              kind="primary"
+              style={{ width: '100%' }}
+              onClick={handleCopy}
+            >
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                <span>Copy Raw Data</span>
+                <CopyIcon />
+              </HStack>
+            </Button>
+          </form>
+        </VStack>
+      </BottomSheetDialog>
+      <PageTop />
+      <VStack gap={8}>
+        <VStack
           gap={8}
           style={{
-            gridTemplateColumns: interpretation?.input ? '1fr 1fr' : '1fr',
+            justifyItems: 'center',
+            paddingBlock: 24,
+            border: '1px solid var(--neutral-300)',
+            backgroundColor: 'var(--light-background-transparent)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: 12,
           }}
         >
-          <InterpretationState
-            interpretation={interpretation}
-            interpretQuery={interpretQuery}
+          <SiteFaviconImg
+            size={64}
+            style={{ borderRadius: 16 }}
+            url={origin}
+            alt={`Logo for ${origin}`}
           />
-          {interpretation?.input ? (
-            <Button kind="regular" onClick={onOpenAdvancedView} size={36}>
-              Advanced View
-            </Button>
+          <UIText kind="headline/h2">{title}</UIText>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            {origin === INTERNAL_ORIGIN ? (
+              'Zerion'
+            ) : originForHref ? (
+              <TextAnchor
+                href={originForHref.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {originForHref.hostname}
+              </TextAnchor>
+            ) : (
+              'Unknown Initiator'
+            )}
+          </UIText>
+          <HStack gap={8} alignItems="center">
+            <WalletAvatar
+              address={wallet.address}
+              size={20}
+              active={false}
+              borderRadius={6}
+            />
+            <UIText kind="small/regular">
+              <WalletDisplayName wallet={wallet} />
+            </UIText>
+          </HStack>
+        </VStack>
+        <VStack gap={16}>
+          {addressAction ? (
+            <VStack gap={4}>
+              <AddressActionDetails
+                address={wallet.address}
+                recipientAddress={recipientAddress}
+                addressAction={addressAction}
+                chain={chain}
+                networks={networks}
+                actionTransfers={addressAction?.content?.transfers}
+                singleAsset={addressAction?.content?.single_asset}
+                allowanceQuantityBase={allowanceQuantityBase || null}
+                showApplicationLine={true}
+                singleAssetElementEnd={
+                  allowanceQuantityBase &&
+                  addressAction.type.value === 'approve' ? (
+                    <UIText
+                      as={TextLink}
+                      kind="small/accent"
+                      style={{ color: 'var(--primary)' }}
+                      to={allowanceViewHref}
+                    >
+                      Edit
+                    </UIText>
+                  ) : null
+                }
+              />
+            </VStack>
           ) : null}
-        </HStack>
+          {showRawTypedData ? (
+            <UnstyledButton
+              onClick={() => dialogRef.current?.showModal()}
+              className="parent-hover"
+              style={{
+                textAlign: 'start',
+                padding: '12px 12px 0',
+                backgroundColor: 'var(--neutral-100)',
+                borderRadius: 12,
+                ['--parent-content-color' as string]: 'var(--neutral-500)',
+                ['--parent-hovered-content-color' as string]: 'var(--black)',
+              }}
+            >
+              <HStack gap={16} justifyContent="space-between">
+                <HStack gap={8}>
+                  <ScrollIcon />
+                  <VStack gap={0} style={{ position: 'relative' }}>
+                    <UIText kind="small/regular" color="var(--neutral-600)">
+                      Data
+                    </UIText>
+                    <UIText
+                      kind="body/accent"
+                      style={{
+                        position: 'relative',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        minHeight: 48,
+                      }}
+                    >
+                      {typedDataFormatted}
+                    </UIText>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: '0 0 0 0',
+                        pointerEvents: 'none',
+                        background:
+                          'linear-gradient(180deg, transparent 50%, var(--neutral-100) 100%)',
+                      }}
+                    />
+                  </VStack>
+                </HStack>
+                <ArrowDownIcon
+                  className="content-hover"
+                  style={{ width: 24, height: 24, alignSelf: 'center' }}
+                />
+              </HStack>
+            </UnstyledButton>
+          ) : null}
+          <HStack
+            gap={8}
+            style={{
+              gridTemplateColumns: showRawTypedData ? '1fr' : '1fr 1fr',
+            }}
+          >
+            <InterpretationSecurityCheck
+              interpretation={interpretation}
+              interpretQuery={interpretQuery}
+            />
+            {showRawTypedData ? null : (
+              <Button
+                kind="regular"
+                onClick={onOpenAdvancedView}
+                size={44}
+                className="parent-hover"
+                style={{
+                  textAlign: 'start',
+                  borderRadius: 100,
+                  ['--parent-content-color' as string]: 'var(--neutral-500)',
+                  ['--parent-hovered-content-color' as string]: 'var(--black)',
+                }}
+              >
+                <HStack gap={0} alignItems="center" justifyContent="center">
+                  <ScrollIcon />
+                  <span>Details</span>
+                  <ArrowDownIcon
+                    className="content-hover"
+                    style={{ width: 24, height: 24 }}
+                  />
+                </HStack>
+              </Button>
+            )}
+          </HStack>
+        </VStack>
       </VStack>
       <Spacer height={16} />
       <Content name="sign-transaction-footer">
-        <div ref={footerContentRef}>
+        <div>
           <VStack
             style={{
               textAlign: 'center',
@@ -362,11 +438,7 @@ function TypedDataDefaultView({
                   wallet={wallet}
                   ref={signMsgBtnRef}
                   onClick={() => {
-                    if (shouldScrollBeforeSigning) {
-                      scrollSigningData();
-                    } else {
-                      signTypedData_v4();
-                    }
+                    signTypedData_v4();
                   }}
                   buttonKind={
                     interpretationHasCriticalWarning ? 'danger' : 'primary'
@@ -376,21 +448,7 @@ function TypedDataDefaultView({
                       ? 'Proceed Anyway'
                       : undefined
                   }
-                  children={
-                    shouldScrollBeforeSigning ? (
-                      <HStack
-                        gap={8}
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <span>Scroll</span>
-                        <ArrowDownIcon style={{ width: 24, height: 24 }} />
-                      </HStack>
-                    ) : null
-                  }
-                  holdToSign={
-                    preferences.enableHoldToSignButton && seenSigningData
-                  }
+                  holdToSign={preferences.enableHoldToSignButton}
                 />
               ) : null}
             </div>
@@ -412,6 +470,7 @@ function SignTypedDataContent({
   typedDataRaw: string;
   wallet: ExternallyOwnedAccount;
 }) {
+  useBackgroundKind(whiteBackgroundKind);
   const [params] = useSearchParams();
   const { currency } = useCurrency();
 
@@ -499,10 +558,9 @@ function SignTypedDataContent({
   }
 
   return (
-    <Background backgroundKind="white">
+    <>
       <NavigationTitle title={null} documentTitle="Sign Typed Data" />
       <PageColumn
-        // different surface color on backgroundKind="white"
         style={{
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
@@ -531,7 +589,7 @@ function SignTypedDataContent({
           renderWhenOpen={() => (
             <>
               <DialogTitle
-                title={<UIText kind="body/accent">Advanced View</UIText>}
+                title={<UIText kind="body/accent">Details</UIText>}
                 closeKind="icon"
               />
               {interpretation?.input ? (
@@ -557,7 +615,7 @@ function SignTypedDataContent({
         <RenderArea name="sign-transaction-footer" />
         <PageBottom />
       </PageStickyFooter>
-    </Background>
+    </>
   );
 }
 

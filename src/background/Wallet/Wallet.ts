@@ -55,7 +55,6 @@ import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { isSiweLike } from 'src/modules/ethereum/message-signing/SIWE';
 import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
@@ -2402,8 +2401,6 @@ class PublicController {
       throw new OriginNotAllowed();
     }
 
-    const route = isSiweLike(message) ? '/siwe' : '/signMessage';
-
     const currentWallet = await this.wallet.uiGetCurrentWallet({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
@@ -2419,7 +2416,7 @@ class PublicController {
     return new Promise((resolve, reject) => {
       this.safeOpenDialogWindow(context.origin, {
         requestId: `${context.origin}:${id}`,
-        route,
+        route: '/signMessage',
         height: isDeviceWallet ? 800 : undefined,
         search: `?${searchParams}`,
         tabId: context.tabId || null,

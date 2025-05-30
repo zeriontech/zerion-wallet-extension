@@ -9,7 +9,7 @@ export function TypedDataAdvancedView({ data }: { data: InterpretInput }) {
   return (
     <>
       <PageTop />
-      <Surface padding={16}>
+      <Surface padding={16} style={{ backgroundColor: 'var(--neutral-100)' }}>
         <VStack gap={16}>
           {data.sections.flatMap(({ blocks }, index) =>
             blocks.map(({ name, value }) => (

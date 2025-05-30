@@ -721,7 +721,6 @@ function SwapFormComponent() {
               <TransactionConfirmationView
                 title={selectedQuote?.transactionApprove ? 'Approve' : 'Trade'}
                 wallet={wallet}
-                showApplicationLine={true}
                 chain={spendChain}
                 transaction={toMultichainTransaction(currentTransaction)}
                 configuration={toConfiguration(formState)}
