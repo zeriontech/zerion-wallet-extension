@@ -14,7 +14,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import type { BridgeFormState } from '../types';
 import * as styles from './styles.module.css';
 
@@ -52,7 +51,9 @@ function BridgeFee({ quote }: { quote: Quote2 }) {
       <UIText kind="small/accent" color="var(--primary)">
         ·
       </UIText>
-      <TokenIcon size={16} src={feeAsset.iconUrl} symbol={feeAsset.symbol} />
+      <UIText kind="small/accent" color="var(--primary)">
+        {feeAsset.symbol}
+      </UIText>
     </HStack>
   ) : (
     <UIText

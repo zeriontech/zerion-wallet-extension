@@ -486,22 +486,20 @@ export function AddressInput({
   );
 }
 
-export function AddressInputWrapper(
-  props: Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    'title' | 'onChange'
-  > & {
-    fieldsetStyle?: React.CSSProperties;
-    title: React.ReactNode;
-    endTitle?: React.ReactNode;
-    autoFocus?: boolean;
-    value: string;
-    resolvedAddress: string | null;
-    onChange(value: string): void;
-    onResolvedChange(value: string | null): void;
-    filterAddressPredicate?: (address: string) => boolean;
-  }
-) {
+export function AddressInputWrapper({
+  filterAddressPredicate,
+  ...props
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'title' | 'onChange'> & {
+  fieldsetStyle?: React.CSSProperties;
+  title: React.ReactNode;
+  endTitle?: React.ReactNode;
+  autoFocus?: boolean;
+  value: string;
+  resolvedAddress: string | null;
+  onChange(value: string): void;
+  onResolvedChange(value: string | null): void;
+  filterAddressPredicate?: (address: string) => boolean;
+}) {
   const { data: walletGroups, isLoading } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
@@ -545,8 +543,6 @@ export function AddressInputWrapper(
       }) || []
     );
   }, [preferences?.recentAddresses, savedNamesMap]);
-
-  const { filterAddressPredicate } = props;
 
   const addresses = useMemo(() => {
     return [...recentWallets, ...savedWallets].filter(

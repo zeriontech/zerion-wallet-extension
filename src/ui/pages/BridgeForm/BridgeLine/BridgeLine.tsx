@@ -98,9 +98,7 @@ export function BridgeLine({
                 <HStack gap={4} alignItems="center">
                   <UIText kind="small/accent" color="var(--primary)">
                     {selectedQuote?.time
-                      ? `~${formatSeconds(
-                          Number(selectedQuote.contractMetadata)
-                        )}`
+                      ? `~${formatSeconds(Number(selectedQuote.time))}`
                       : noValueDash}
                   </UIText>
                   <UIText kind="small/accent" color="var(--primary)">
