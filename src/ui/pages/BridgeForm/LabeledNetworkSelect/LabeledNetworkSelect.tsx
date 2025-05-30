@@ -10,6 +10,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import DownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import * as styles from './styles.module.css';
 
@@ -68,6 +69,7 @@ function NetworksDisclosureButton({
 }
 
 export function LabeledNetworkSelect({
+  standart,
   label,
   value,
   onChange,
@@ -75,6 +77,7 @@ export function LabeledNetworkSelect({
   filterPredicate,
   showAllNetworksOption,
 }: {
+  standart: BlockchainType | 'all';
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -84,6 +87,8 @@ export function LabeledNetworkSelect({
 }) {
   return (
     <NetworkSelect
+      standard={standart}
+      showEcosystemHint={true}
       value={value}
       onChange={onChange}
       dialogRootNode={dialogRootNode}

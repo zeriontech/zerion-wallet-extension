@@ -345,6 +345,7 @@ function SendFormComponent() {
             {type === 'token' ? (
               <NetworkSelect
                 standard={addressType}
+                showEcosystemHint={true}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
@@ -361,6 +362,7 @@ function SendFormComponent() {
             ) : (
               <NetworkSelect
                 standard={addressType}
+                showEcosystemHint={true}
                 value={tokenChain ?? ''}
                 onChange={(value) => {
                   handleChange('tokenChain', value);
@@ -386,6 +388,8 @@ function SendFormComponent() {
                 resolvedAddress={to ?? null}
                 onChange={(value) => handleChange('addressInputValue', value)}
                 onResolvedChange={(value) => handleChange('to', value ?? '')}
+                iconSize={44}
+                borderRadius={12}
               />
             </>
             {type === 'token' ? (

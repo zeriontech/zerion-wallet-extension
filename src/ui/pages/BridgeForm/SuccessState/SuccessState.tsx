@@ -11,33 +11,32 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
-import type { ContractMetadata } from 'src/shared/types/Quote';
-import type { BridgeFormState } from '../shared/types';
+import type { ContractMetadata2 } from 'src/shared/types/Quote';
+import type { BridgeFormState } from '../types';
 
 export function SuccessState({
   formState,
-  spendPosition,
-  receivePosition,
+  inputPosition,
+  outputPosition,
   hash,
   explorer,
   onDone,
   gasbackValue,
 }: {
   formState: BridgeFormState;
-  spendPosition: BareAddressPosition;
-  receivePosition: BareAddressPosition;
+  inputPosition: BareAddressPosition;
+  outputPosition: BareAddressPosition;
   hash: string;
-  explorer: ContractMetadata['explorer'] | null;
+  explorer: ContractMetadata2['explorer'] | null;
   gasbackValue: number | null;
   onDone: () => void;
 }) {
   const { networks } = useNetworks();
 
-  const { spendInput, spendChainInput, receiveInput, receiveChainInput } =
-    formState;
+  const { inputAmount, inputChain, outputChain } = formState;
 
   invariant(
-    spendChainInput && receiveChainInput && spendInput && receiveInput,
+    inputChain && outputChain && inputAmount,
     'Required form values are missing'
   );
 
@@ -52,18 +51,18 @@ export function SuccessState({
     return <ViewLoading />;
   }
 
-  const spendChain = createChain(spendChainInput);
+  const spendChain = createChain(inputChain);
   const spendChainName = networks.getChainName(spendChain);
-  const spendChainIconUrl = networks.getNetworkByName(spendChain)?.icon_url;
+  const spendChainIconUrl = networks.getByNetworkId(spendChain)?.icon_url;
 
-  const receiveChain = createChain(receiveChainInput);
+  const receiveChain = createChain(outputChain);
   const receiveChainName = networks.getChainName(receiveChain);
-  const receiveChainIconUrl = networks.getNetworkByName(receiveChain)?.icon_url;
+  const receiveChainIconUrl = networks.getByNetworkId(receiveChain)?.icon_url;
 
   const explorerFallbackUrl = hash
     ? networks.getExplorerTxUrlByName(spendChain, hash)
     : undefined;
-  const explorerUrl = explorer?.tx_url.replace('{HASH}', hash);
+  const explorerUrl = explorer?.txUrl.replace('{HASH}', hash);
 
   return (
     <>
@@ -71,16 +70,16 @@ export function SuccessState({
       <SuccessStateLoader
         startItem={
           <SuccessStateToken
-            iconUrl={spendPosition.asset.icon_url}
-            symbol={spendPosition.asset.symbol}
+            iconUrl={inputPosition.asset.icon_url}
+            symbol={inputPosition.asset.symbol}
             chainName={spendChainName}
             chainIconUrl={spendChainIconUrl}
           />
         }
         endItem={
           <SuccessStateToken
-            iconUrl={receivePosition.asset.icon_url}
-            symbol={receivePosition.asset.symbol}
+            iconUrl={outputPosition.asset.icon_url}
+            symbol={outputPosition.asset.symbol}
             chainName={receiveChainName}
             chainIconUrl={receiveChainIconUrl}
           />
