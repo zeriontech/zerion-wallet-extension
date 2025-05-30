@@ -100,7 +100,6 @@ import { usePosition } from '../SwapForm/shared/usePosition';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import type { BridgeFormState } from './types';
-import { getBridgeTokens } from './getBridgeTokens';
 import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
@@ -188,40 +187,6 @@ function getDefaultState({
   };
 }
 
-function queryBridgeTokens({
-  inputChain,
-  outputChain,
-  direction,
-}: {
-  inputChain: Chain;
-  outputChain: Chain;
-  direction: 'input' | 'output';
-}) {
-  return queryClient.fetchQuery({
-    queryKey: ['getBridgeTokens', inputChain, outputChain, direction],
-    queryFn: () => getBridgeTokens({ inputChain, outputChain, direction }),
-    staleTime: Infinity,
-  });
-}
-
-function useBridgeTokens({
-  inputChain,
-  outputChain,
-  direction,
-}: {
-  inputChain: Chain | null;
-  outputChain: Chain | null;
-  direction: 'input' | 'output';
-}) {
-  return useQuery({
-    queryKey: ['getBridgeTokens', inputChain, outputChain, direction],
-    queryFn: () => getBridgeTokens({ inputChain, outputChain, direction }),
-    staleTime: Infinity,
-    suspense: false,
-    enabled: Boolean(inputChain && outputChain),
-  });
-}
-
 async function queryPopularTokens(chain: Chain) {
   return queryClient.fetchQuery({
     queryKey: ['getPopularTokens', chain],
@@ -270,36 +235,16 @@ async function prepareDefaultState({
   const inputChain = userStateInputChain ?? defaultInputChain ?? NetworkId.Zero;
   const outputChain =
     userStateOutputChain ?? defaultOutputChain ?? NetworkId.Ethereum;
-  const [
-    inputNetwork,
-    outputNetwork,
-    inputTokens,
-    outputTokens,
-    popularOutputChainTokens,
-  ] = await Promise.all([
-    networksStore.fetchNetworkById(inputChain),
-    networksStore.fetchNetworkById(outputChain),
-    queryBridgeTokens({
-      inputChain: createChain(inputChain),
-      outputChain: createChain(outputChain),
-      direction: 'input',
-    }).catch(() => []),
-    queryBridgeTokens({
-      inputChain: createChain(inputChain),
-      outputChain: createChain(outputChain),
-      direction: 'output',
-    }).catch(() => []),
-    queryPopularTokens(createChain(inputChain)).catch(() => []),
-  ]);
-
-  const inputTokensSet = new Set(inputTokens);
-  const outputTokensSet = new Set(outputTokens);
+  const [inputNetwork, outputNetwork, popularOutputChainTokens] =
+    await Promise.all([
+      networksStore.fetchNetworkById(inputChain),
+      networksStore.fetchNetworkById(outputChain),
+      queryPopularTokens(createChain(inputChain)).catch(() => []),
+    ]);
 
   const positions =
     allPositions?.filter(
-      (position) =>
-        position.chain === inputChain &&
-        inputTokensSet.has(position.asset.asset_code)
+      (position) => position.chain === inputChain && position.type === 'asset'
     ) ?? [];
 
   const sorted = sortPositionsByValue(positions);
@@ -308,11 +253,9 @@ async function prepareDefaultState({
 
   const USDC_BACKEND_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
   const outputNativeAssetId = outputNetwork.native_asset?.id;
-  const defaultOutputFungibleId =
-    outputNativeAssetId && outputTokensSet.has(outputNativeAssetId)
-      ? outputNativeAssetId
-      : popularOutputChainTokens.find((token) => outputTokensSet.has(token)) ??
-        USDC_BACKEND_ID;
+  const defaultOutputFungibleId = outputNativeAssetId
+    ? outputNativeAssetId
+    : popularOutputChainTokens.at(0) ?? USDC_BACKEND_ID;
 
   return {
     inputChain,
@@ -515,35 +458,19 @@ function BridgeFormComponent() {
     sort,
   } = formState;
 
-  const inputChainTokensQuery = useBridgeTokens({
-    inputChain: inputChain ? createChain(inputChain) : null,
-    outputChain: outputChain ? createChain(outputChain) : null,
-    direction: 'input',
-  });
-
   const availableSpendPositions = useMemo(() => {
-    const inputChainTokensSet = new Set(inputChainTokensQuery.data ?? []);
     const positions = allPositions
       ?.filter((p) => p.chain === inputChain)
-      .filter((p) => p.type === 'asset')
-      .filter((token) => inputChainTokensSet.has(token.asset.asset_code));
+      .filter((p) => p.type === 'asset');
     return sortPositionsByValue(positions);
-  }, [allPositions, inputChain, inputChainTokensQuery.data]);
-
-  const outputChainTokensQuery = useBridgeTokens({
-    inputChain: inputChain ? createChain(inputChain) : null,
-    outputChain: outputChain ? createChain(outputChain) : null,
-    direction: 'output',
-  });
+  }, [allPositions, inputChain]);
 
   const availableReceivePositions = useMemo(() => {
-    const outputChainTokensSet = new Set(outputChainTokensQuery.data ?? []);
     const positions = allPositions
       ?.filter((p) => p.chain === outputChain)
-      .filter((p) => p.type === 'asset')
-      .filter((token) => outputChainTokensSet.has(token.asset.asset_code));
+      .filter((p) => p.type === 'asset');
     return sortPositionsByValue(positions);
-  }, [allPositions, outputChain, outputChainTokensQuery.data]);
+  }, [allPositions, outputChain]);
 
   const spendChain = inputChain ? createChain(inputChain) : null;
   const receiveChain = outputChain ? createChain(outputChain) : null;
@@ -595,7 +522,8 @@ function BridgeFormComponent() {
     enabled:
       defaultStateQuery.isFetched &&
       !defaultStateQuery.isPreviousData &&
-      inputChainAddressMatch,
+      inputChainAddressMatch &&
+      outputChainAddressMatch,
   });
 
   const quotesData = sort === '1' ? quotesByAmount : quotesByTime;
