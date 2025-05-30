@@ -41,7 +41,7 @@ export function NetworkSelect({
   showAllNetworksOption,
 }: {
   value: string;
-  standard?: BlockchainType;
+  standard?: BlockchainType | 'all';
   onChange: (value: string) => void;
   renderButton?(params: {
     value: string;
