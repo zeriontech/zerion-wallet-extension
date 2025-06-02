@@ -919,8 +919,9 @@ function BridgeFormComponent() {
             }}
           >
             <div style={{ maxWidth: 300, textAlign: 'center' }}>
-              It is not possible to reverse chains when bridging between the
-              Solana and Ethereum ecosystems
+              {getAddressType(address) === 'solana'
+                ? 'Switch to your Ethereum wallet to bridge from Ethereum Ecosystem.'
+                : 'Switch to your Solana wallet to bridge from Solana Ecosystem.'}
             </div>
           </PopoverToast>
           <BridgeNetworksSelect

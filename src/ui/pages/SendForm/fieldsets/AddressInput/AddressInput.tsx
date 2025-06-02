@@ -459,7 +459,7 @@ export function AddressInput({
                   color="var(--neutral-500)"
                   title={resolvedAddress ?? undefined}
                 >
-                  '0x0000...
+                  0x0000...
                 </UIText>
               )}
             </UnstyledButton>
