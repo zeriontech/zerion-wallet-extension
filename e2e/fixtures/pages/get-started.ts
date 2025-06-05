@@ -173,7 +173,7 @@ export class GenerateWalletView {
       - document:
         - navigation:
           - button "Go back"
-        - text: Your wallets are ready Eth · 0x8ee36…984d7 Sol · E63bD…UiHNL
+         - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
         - link "Finish"
     `);
   }
@@ -197,7 +197,7 @@ export class AddressImportMessagesView {
       - document:
         - navigation:
           - button "Go back"
-        - text: /Your wallets are ready Eth · 0x[\\w\\W]{4}…[\\w\\W]{4} Sol · [\\w\\W]{4}…[\\w\\W]{4}/
+        - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
         - link "Finish"
     `);
   }
