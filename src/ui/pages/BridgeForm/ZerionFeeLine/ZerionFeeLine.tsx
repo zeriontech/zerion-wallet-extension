@@ -1,15 +1,15 @@
 import React from 'react';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
-import type { QuoteLegacy } from 'src/shared/types/Quote';
+import type { Quote2 } from 'src/shared/types/Quote';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import QuestionIcon from 'jsx:src/ui/assets/question-hint.svg';
 
-export function ZerionFeeLine({ quote }: { quote: QuoteLegacy | null }) {
-  const baseProtocolFee = quote?.base_protocol_fee;
-  const protocolFeePercent = quote?.protocol_fee;
+export function ZerionFeeLine({ quote }: { quote: Quote2 | null }) {
+  const baseProtocolFee = quote?.protocolFee.basePercentage;
+  const protocolFeePercent = quote?.protocolFee.percentage;
   const baseFee =
     baseProtocolFee && baseProtocolFee !== protocolFeePercent
       ? `${formatPercent(baseProtocolFee, 'en')}%`

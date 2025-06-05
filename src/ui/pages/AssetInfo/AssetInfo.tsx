@@ -240,8 +240,8 @@ export function AssetInfo() {
               as={UnstyledLink}
               to={
                 isEmptyBalance
-                  ? `/swap-form?chainInput=${chainForSwap}&receiveTokenInput=${asset_code}`
-                  : `/swap-form?chainInput=${chainForSwap}&spendTokenInput=${asset_code}`
+                  ? `/swap-form?inputChain=${chainForSwap}&outputFungibleId=${asset_code}`
+                  : `/swap-form?inputChain=${chainForSwap}&inputFungibleId=${asset_code}`
               }
             >
               <HStack gap={8} alignItems="center" justifyContent="center">
@@ -261,18 +261,16 @@ export function AssetInfo() {
                 >
                   <SendIcon style={{ width: 20, height: 20 }} />
                 </Button>
-                {process.env.FEATURE_BRIDGE_FORM === 'on' ? (
-                  <Button
-                    kind="primary"
-                    as={UnstyledLink}
-                    to={`/bridge-form?spendTokenInput=${asset_code}&spendChainInput=${chainWithTheBiggestBalance}`}
-                    size={48}
-                    style={{ padding: 14 }}
-                    aria-label="Bridge Token"
-                  >
-                    <BridgeIcon style={{ width: 20, height: 20 }} />
-                  </Button>
-                ) : null}
+                <Button
+                  kind="primary"
+                  as={UnstyledLink}
+                  to={`/bridge-form?inputFungibleId=${asset_code}&inputChain=${chainWithTheBiggestBalance}`}
+                  size={48}
+                  style={{ padding: 14 }}
+                  aria-label="Bridge Token"
+                >
+                  <BridgeIcon style={{ width: 20, height: 20 }} />
+                </Button>
               </>
             )}
           </HStack>

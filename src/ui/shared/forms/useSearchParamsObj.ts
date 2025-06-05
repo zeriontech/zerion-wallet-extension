@@ -27,7 +27,6 @@ export function useSearchParamsObj<
               current.set(key, newVal);
             }
           }
-          console.log(current.toString());
           return new URLSearchParams(current);
         },
         { replace: true }

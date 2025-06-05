@@ -26,7 +26,6 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 export function SpendTokenField({
   spendInput,
   spendChain,
-  spendAsset,
   spendPosition,
   availableSpendPositions,
   receiveInput,
@@ -36,7 +35,6 @@ export function SpendTokenField({
 }: {
   spendInput?: string;
   spendChain: Chain | null;
-  spendAsset: Asset | null;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
   availableSpendPositions: AddressPosition[];
   receiveInput?: string;
@@ -168,7 +166,7 @@ export function SpendTokenField({
         <SpendFiatInputValue
           primaryInput="spend"
           spendInput={spendInput}
-          spendAsset={spendAsset}
+          spendAsset={spendPosition?.asset ?? null}
           receiveInput={receiveInput}
           receiveAsset={receiveAsset}
         />

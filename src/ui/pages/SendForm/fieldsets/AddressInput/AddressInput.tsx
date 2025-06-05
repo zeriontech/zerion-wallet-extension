@@ -34,6 +34,9 @@ import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
+import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 
 type Item = {
   name: string | null;
@@ -48,8 +51,11 @@ function matches(query: string | null, item: Item, domainInfo?: string[]) {
   }
   const value = query.toLowerCase();
   return (
-    normalizedContains(item.address.toLowerCase(), value) ||
-    normalizedContains(truncateAddress(item.address.toLowerCase(), 4), value) ||
+    normalizedContains(normalizeAddress(item.address), value) ||
+    normalizedContains(
+      truncateAddress(normalizeAddress(item.address), 4),
+      value
+    ) ||
     (item.name && normalizedContains(item.name.toLowerCase(), value)) ||
     (domainInfo &&
       domainInfo.some((domain) =>
@@ -220,6 +226,8 @@ export function AddressInput({
   onResolvedChange,
   items: allItems,
   fieldsetStyle,
+  iconSize,
+  borderRadius = 6,
   ...inputProps
 }: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'title' | 'onChange'> & {
   title: React.ReactNode;
@@ -231,6 +239,8 @@ export function AddressInput({
   onResolvedChange(value: string | null): void;
   items: Item[];
   fieldsetStyle?: React.CSSProperties;
+  iconSize: number;
+  borderRadius?: number;
 }) {
   const onResolvedChangeRef = useRef(onResolvedChange);
   onResolvedChangeRef.current = onResolvedChange;
@@ -245,7 +255,7 @@ export function AddressInput({
     );
   }, [allItems, value, domainNames, showAllItems]);
 
-  const normalizedValue = value.trim().toLowerCase();
+  const normalizedValue = normalizeAddress(value.trim());
   const { data: resolvedValue, isLoading } = useQuery({
     queryKey: ['resolveAddressInput', normalizedValue, domainNames],
     queryFn: () => {
@@ -258,7 +268,7 @@ export function AddressInput({
       const existingAddress = allItems.find(
         (item) =>
           item.name?.toLowerCase() === normalizedValue ||
-          truncateAddress(item.address.toLowerCase(), 4) === normalizedValue
+          truncateAddress(normalizeAddress(item.address), 4) === normalizedValue
       )?.address;
       if (existingAddress) {
         return existingAddress;
@@ -324,183 +334,243 @@ export function AddressInput({
     recentAddressesLength !== 0 && recentAddressesLength !== items.length;
   const showMenu = Boolean(isOpen && items.length);
 
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const { handleCopy } = useCopyToClipboard({
+    text: resolvedAddress ?? '',
+    onSuccess: () => toastRef.current?.showToast(),
+  });
+
   return (
-    <div style={{ position: 'relative' }}>
-      <FormFieldset
-        style={fieldsetStyle}
-        title={title}
-        endTitle={endTitle}
-        startInput={
-          <HStack
-            gap={8}
-            alignItems="center"
-            style={{ gridTemplateColumns: 'auto 1fr' }}
-          >
-            <UnstyledButton {...getToggleButtonProps({ type: 'button' })}>
-              {resolvedAddress ? (
-                <WalletAvatar
-                  address={resolvedAddress}
-                  size={44}
-                  borderRadius={12}
+    <>
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Address copied to clipboard
+      </PopoverToast>
+      <div style={{ position: 'relative' }}>
+        <FormFieldset
+          style={fieldsetStyle}
+          title={title}
+          endTitle={endTitle}
+          startInput={
+            <HStack
+              gap={8}
+              alignItems="center"
+              style={{ gridTemplateColumns: 'auto 1fr' }}
+            >
+              <UnstyledButton {...getToggleButtonProps({ type: 'button' })}>
+                {resolvedAddress ? (
+                  <WalletAvatar
+                    address={resolvedAddress}
+                    size={iconSize}
+                    borderRadius={borderRadius}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: iconSize,
+                      height: iconSize,
+                      borderRadius,
+                      backgroundColor: 'var(--neutral-400)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {isLoading ? (
+                      <DelayedRender delay={200}>
+                        <CircleSpinner />
+                      </DelayedRender>
+                    ) : null}
+                  </div>
+                )}
+              </UnstyledButton>
+              <UIText kind="headline/h3">
+                <UnstyledInput
+                  {...getInputProps({
+                    ...inputProps,
+                    // use onChange instead of onInputValueChange for controlled inputs
+                    // https://github.com/downshift-js/downshift/issues/1108#issuecomment-674180157
+                    onChange: (e) => {
+                      setShowAllItems(false);
+                      onChange(e.currentTarget.value ?? '');
+                    },
+                    autoFocus,
+                    placeholder: 'Address, domain or identity',
+                    style: { width: '100%' },
+                  })}
                 />
-              ) : (
-                <div
+              </UIText>
+            </HStack>
+          }
+          endInput={
+            <UnstyledButton
+              {...getToggleButtonProps({
+                type: 'button',
+                style: { display: 'flex' },
+              })}
+            >
+              <PersonIcon
+                style={{ width: 24, height: 24, color: 'var(--neutral-500)' }}
+              />
+            </UnstyledButton>
+          }
+          startDescription={
+            <UnstyledButton
+              type="button"
+              disabled={!resolvedAddress}
+              onDoubleClick={handleCopy}
+              style={{ width: '100%' }}
+            >
+              {resolvedAddress ? (
+                <HStack
+                  gap={0}
+                  justifyContent="start"
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    backgroundColor: 'var(--neutral-400)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    gridTemplateColumns: 'auto minmax(min-content, 1fr)',
                   }}
                 >
-                  {isLoading ? (
-                    <DelayedRender delay={200}>
-                      <CircleSpinner />
-                    </DelayedRender>
-                  ) : null}
-                </div>
+                  <UIText
+                    kind="caption/regular"
+                    color="var(--neutral-500)"
+                    title={resolvedAddress ?? undefined}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {resolvedAddress.slice(0, -6)}
+                  </UIText>
+                  <UIText
+                    kind="caption/regular"
+                    color="var(--neutral-500)"
+                    title={resolvedAddress ?? undefined}
+                  >
+                    {resolvedAddress.slice(-6)}
+                  </UIText>
+                </HStack>
+              ) : (
+                <UIText
+                  kind="caption/regular"
+                  color="var(--neutral-500)"
+                  title={resolvedAddress ?? undefined}
+                >
+                  0x0000...
+                </UIText>
               )}
             </UnstyledButton>
-            <UIText kind="headline/h3">
-              <UnstyledInput
-                {...getInputProps({
-                  ...inputProps,
-                  // use onChange instead of onInputValueChange for controlled inputs
-                  // https://github.com/downshift-js/downshift/issues/1108#issuecomment-674180157
-                  onChange: (e) => {
-                    setShowAllItems(false);
-                    onChange(e.currentTarget.value ?? '');
-                  },
-                  autoFocus,
-                  placeholder: 'Address, domain or identity',
-                  style: { width: '100%' },
-                })}
-              />
-            </UIText>
-          </HStack>
-        }
-        endInput={
-          <UnstyledButton
-            {...getToggleButtonProps({
-              type: 'button',
-              style: { display: 'flex' },
-            })}
-          >
-            <PersonIcon
-              style={{ width: 24, height: 24, color: 'var(--neutral-500)' }}
-            />
-          </UnstyledButton>
-        }
-        startDescription={
-          <UIText kind="caption/regular" color="var(--neutral-500)">
-            {resolvedAddress || '0x0000...'}
-          </UIText>
-        }
-      />
-      <SurfaceList
-        style={{
-          visibility: showMenu ? 'visible' : 'hidden',
-          position: 'absolute',
-          zIndex: 'var(--max-layout-index)',
-          padding: 0,
-          top: 'calc(100% + 4px)',
-          left: 0,
-          right: 0,
-          backgroundColor: 'var(--z-index-1)',
-          boxShadow: 'var(--elevation-200)',
-          maxHeight: '50vh',
-          overflow: 'auto',
-          paddingBlock: 8,
-          ['--column-padding-inline' as string]: 0,
-        }}
-        {...getMenuProps({ ref: menuRef })}
-        items={[
-          showLabels
-            ? {
-                key: 'recent',
+          }
+        />
+        <SurfaceList
+          style={{
+            visibility: showMenu ? 'visible' : 'hidden',
+            position: 'absolute',
+            zIndex: 'var(--max-layout-index)',
+            padding: 0,
+            top: 'calc(100% + 4px)',
+            left: 0,
+            right: 0,
+            backgroundColor: 'var(--z-index-1)',
+            boxShadow: 'var(--elevation-200)',
+            maxHeight: '50vh',
+            overflow: 'auto',
+            paddingBlock: 8,
+            ['--column-padding-inline' as string]: 0,
+          }}
+          {...getMenuProps({ ref: menuRef })}
+          items={[
+            showLabels
+              ? {
+                  key: 'recent',
+                  pad: false,
+                  component: (
+                    <SectionTitle style={{ paddingTop: 0 }}>
+                      Recents
+                    </SectionTitle>
+                  ),
+                }
+              : null,
+            ...items.slice(0, recentAddressesLength).map((item, index) => {
+              return {
+                key: `recent-${item.address}-${item.groupId}`,
+                style: { padding: 0 },
                 pad: false,
                 component: (
-                  <SectionTitle style={{ paddingTop: 0 }}>Recents</SectionTitle>
+                  <SuggestedItem
+                    {...getItemProps({
+                      item,
+                      index,
+                      style: { paddingInline: 8 },
+                    })}
+                    value={value}
+                    item={item}
+                    index={index}
+                    highlighted={highlightedIndex === index}
+                    visible={showMenu}
+                    domainNames={domainNames[item.address]}
+                    getTitle={getTitle}
+                  />
                 ),
-              }
-            : null,
-          ...items.slice(0, recentAddressesLength).map((item, index) => {
-            return {
-              key: `recent-${item.address}-${item.groupId}`,
-              style: { padding: 0 },
-              pad: false,
-              component: (
-                <SuggestedItem
-                  {...getItemProps({
-                    item,
-                    index,
-                    style: { paddingInline: 8 },
-                  })}
-                  value={value}
-                  item={item}
-                  index={index}
-                  highlighted={highlightedIndex === index}
-                  visible={showMenu}
-                  domainNames={domainNames[item.address]}
-                  getTitle={getTitle}
-                />
-              ),
-            };
-          }),
-          showLabels
-            ? {
-                key: 'saved',
+              };
+            }),
+            showLabels
+              ? {
+                  key: 'saved',
+                  pad: false,
+                  component: <SectionTitle>Your wallets</SectionTitle>,
+                }
+              : null,
+            ...items.slice(recentAddressesLength).map((item, internalIndex) => {
+              const index = internalIndex + recentAddressesLength;
+              return {
+                key: `saved-${item.address}-${item.groupId}`,
+                style: { padding: 0 },
                 pad: false,
-                component: <SectionTitle>Your wallets</SectionTitle>,
-              }
-            : null,
-          ...items.slice(recentAddressesLength).map((item, internalIndex) => {
-            const index = internalIndex + recentAddressesLength;
-            return {
-              key: `saved-${item.address}-${item.groupId}`,
-              style: { padding: 0 },
-              pad: false,
-              component: (
-                <SuggestedItem
-                  {...getItemProps({
-                    item,
-                    index,
-                    style: { paddingInline: 8 },
-                  })}
-                  value={value}
-                  item={item}
-                  index={index}
-                  highlighted={highlightedIndex === index}
-                  visible={showMenu}
-                  domainNames={domainNames[item.address]}
-                  getTitle={getTitle}
-                />
-              ),
-            };
-          }),
-        ].filter(isTruthy)}
-      />
-    </div>
+                component: (
+                  <SuggestedItem
+                    {...getItemProps({
+                      item,
+                      index,
+                      style: { paddingInline: 8 },
+                    })}
+                    value={value}
+                    item={item}
+                    index={index}
+                    highlighted={highlightedIndex === index}
+                    visible={showMenu}
+                    domainNames={domainNames[item.address]}
+                    getTitle={getTitle}
+                  />
+                ),
+              };
+            }),
+          ].filter(isTruthy)}
+        />
+      </div>
+    </>
   );
 }
 
-export function AddressInputWrapper(
-  props: Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    'title' | 'onChange'
-  > & {
-    fieldsetStyle?: React.CSSProperties;
-    title: React.ReactNode;
-    endTitle?: React.ReactNode;
-    autoFocus?: boolean;
-    value: string;
-    resolvedAddress: string | null;
-    onChange(value: string): void;
-    onResolvedChange(value: string | null): void;
-  }
-) {
+export function AddressInputWrapper({
+  filterAddressPredicate,
+  ...props
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'title' | 'onChange'> & {
+  fieldsetStyle?: React.CSSProperties;
+  title: React.ReactNode;
+  endTitle?: React.ReactNode;
+  autoFocus?: boolean;
+  value: string;
+  resolvedAddress: string | null;
+  onChange(value: string): void;
+  onResolvedChange(value: string | null): void;
+  filterAddressPredicate?: (address: string) => boolean;
+  iconSize: number;
+  borderRadius?: number;
+}) {
   const { data: walletGroups, isLoading } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
@@ -546,8 +616,10 @@ export function AddressInputWrapper(
   }, [preferences?.recentAddresses, savedNamesMap]);
 
   const addresses = useMemo(() => {
-    return [...recentWallets, ...savedWallets];
-  }, [savedWallets, recentWallets]);
+    return [...recentWallets, ...savedWallets].filter(
+      (wallet) => filterAddressPredicate?.(wallet.address) ?? true
+    );
+  }, [savedWallets, recentWallets, filterAddressPredicate]);
 
   if (isLoading) {
     return (
@@ -558,9 +630,9 @@ export function AddressInputWrapper(
         startInput={
           <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
+              width: 24,
+              height: 24,
+              borderRadius: 6,
               backgroundColor: 'var(--neutral-400)',
               display: 'flex',
               alignItems: 'center',

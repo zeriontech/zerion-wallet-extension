@@ -9,54 +9,45 @@ import React, {
 } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import {
+  useNetworkConfig,
+  useNetworks,
+} from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import {
+  queryHttpAddressPositions,
+  useHttpAddressPositions,
+} from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { usePreferences } from 'src/ui/features/preferences';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { walletPort } from 'src/ui/shared/channels';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import {
-  EmptyAddressPosition,
-  NetworkId,
-  getChainWithMostAssetValue,
-  useSearchParamsState,
-} from '@zeriontech/transactions';
+import type { EmptyAddressPosition } from '@zeriontech/transactions';
+import { NetworkId } from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import {
-  getAddress,
-  getBaseQuantity,
-  getCommonQuantity,
-} from 'src/modules/networks/asset';
+import { getDecimals } from 'src/modules/networks/asset';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { AddressPosition } from 'defi-sdk';
-import { client, useAssetsPrices } from 'defi-sdk';
-import { isTruthy } from 'is-truthy-ts';
 import {
   SignTransactionButton,
   type SendTxBtnHandle,
 } from 'src/ui/components/SignTransactionButton';
-import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { invariant } from 'src/shared/invariant';
-import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
   createApproveAddressAction,
-  createSendAddressAction,
+  createBridgeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -77,30 +68,41 @@ import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput
 import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { isNumeric } from 'src/shared/isNumeric';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import type { Networks } from 'src/modules/networks/Networks';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
-import { getGas } from 'src/modules/ethereum/transactions/getGas';
-import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
-import { useTxEligibility } from 'src/ui/shared/requests/useTxEligibility';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
-import type {
-  QuotesData,
-  QuoteSortType,
-} from 'src/ui/shared/requests/useQuotes';
-import { getQuoteTx, useQuotesLegacy } from 'src/ui/shared/requests/useQuotes';
-import type { QuoteLegacy } from 'src/shared/types/Quote';
+import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
+import { useQuotes2 } from 'src/ui/shared/requests/useQuotes';
+import type { Quote2 } from 'src/shared/types/Quote';
 import {
-  DEFAULT_CONFIGURATION,
-  applyConfiguration,
-} from '../SendTransaction/TransactionConfiguration/applyConfiguration';
-import { useApproveHandler } from '../SwapForm/shared/useApproveHandler';
+  toIncomingTransaction,
+  toMultichainTransaction,
+} from 'src/shared/types/Quote';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
+import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
+import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import { sortPositionsByValue } from 'src/ui/components/Positions/groupPositions';
+import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import { Networks } from 'src/modules/networks/Networks';
+import { modifyApproveAmount } from 'src/modules/ethereum/transactions/appovals';
+import { commonToBase } from 'src/shared/units/convert';
+import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
-import type { BridgeFormState } from './shared/types';
-import { useBridgeTokens } from './useBridgeTokens';
-import { getAvailablePositions } from './getAvailablePositions';
+import { getPopularTokens } from '../SwapForm/shared/getPopularTokens';
+import { usePosition } from '../SwapForm/shared/usePosition';
+import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
+import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
+import type { PopoverToastHandle } from '../Settings/PopoverToast';
+import { PopoverToast } from '../Settings/PopoverToast';
+import type { BridgeFormState } from './types';
 import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField';
@@ -108,41 +110,48 @@ import { SuccessState } from './SuccessState';
 import { LabeledNetworkSelect } from './LabeledNetworkSelect';
 import { BridgeLine } from './BridgeLine';
 import { ZerionFeeLine } from './ZerionFeeLine';
-import { QuoteList } from './QuoteList';
+import { ReceiverAddressField } from './ReceiverAddressField';
 
-function getDefaultQuote(quotes: QuoteLegacy[] | null) {
-  return quotes?.at(0) ?? null;
-}
-
-function useSortedQuotes(params: Parameters<typeof useQuotesLegacy>[0]) {
+function useSortedQuotes(params: Parameters<typeof useQuotes2>[0]) {
   return {
-    quotesByAmount: useQuotesLegacy({ ...params, sortType: 'amount' }),
-    quotesByTime: useQuotesLegacy({ ...params, sortType: 'time' }),
+    quotesByAmount: useQuotes2({
+      ...params,
+      formState: { ...params.formState, sort: '1' },
+    }),
+    quotesByTime: useQuotes2({
+      ...params,
+      formState: { ...params.formState, sort: '2' },
+    }),
   };
 }
-import { ReceiverAddressField } from './ReceiverAddressField';
 
 const rootNode = getRootDomNode();
 
 function FormHint({
-  spendInput,
-  spendPosition,
+  formState,
+  inputPosition,
   quotesData,
   render,
+  inputNetwork,
+  inputChainAddressMatch,
+  outputChainAddressMatch,
 }: {
-  spendInput?: string;
-  spendPosition: AddressPosition | EmptyAddressPosition | null;
-  quotesData: QuotesData<QuoteLegacy>;
+  formState: BridgeFormState;
+  inputPosition: AddressPosition | EmptyAddressPosition | null;
+  quotesData: QuotesData<Quote2>;
   render: (message: string | null) => React.ReactNode;
+  inputNetwork?: NetworkConfig | null;
+  inputChainAddressMatch: boolean;
+  outputChainAddressMatch: boolean;
 }) {
-  const value = spendInput;
+  const value = formState.inputAmount;
   const invalidValue = value && !isNumeric(value);
   const valueMissing = !value || Number(value) === 0;
 
-  const positionBalanceCommon = spendPosition
-    ? getPositionBalance(spendPosition)
+  const positionBalanceCommon = inputPosition
+    ? getPositionBalance(inputPosition)
     : null;
-  const exceedsBalance = Number(spendInput) > Number(positionBalanceCommon);
+  const exceedsBalance = Number(value) > Number(positionBalanceCommon);
 
   let message: string | null = null;
   if (exceedsBalance) {
@@ -153,57 +162,159 @@ function FormHint({
     message = 'Incorrect amount';
   } else if (quotesData.error) {
     message = getQuotesErrorMessage(quotesData);
+  } else if (!outputChainAddressMatch) {
+    message = formState.to ? '' : 'Add Recipient Address';
+  } else if (!inputChainAddressMatch) {
+    message = !inputNetwork
+      ? 'Loading networks...'
+      : Networks.getEcosystem(inputNetwork) === 'solana'
+      ? 'Please switch to an Ethereum "From" network'
+      : 'Please switch to a Solana "From" network';
   }
   return render(message);
 }
 
-function getDefaultFormValues({
-  networks,
+function getDefaultState({
+  address,
   positions,
 }: {
-  networks: Networks | null;
+  address: string;
   positions: AddressPosition[] | null;
 }) {
-  const bridgeablePositions =
-    networks && positions
-      ? positions.filter((position) =>
-          networks.supports('bridging', createChain(position.chain))
-        )
-      : null;
-
-  const spendChainInput = bridgeablePositions
-    ? getChainWithMostAssetValue(bridgeablePositions) ?? NetworkId.Ethereum
-    : NetworkId.Ethereum;
-
-  const receiveChainInput =
-    spendChainInput === NetworkId.Zero ? NetworkId.Ethereum : NetworkId.Zero;
-
+  const inputChain = getDefaultChain(address, positions ?? []);
   return {
-    spendChainInput,
-    receiveChainInput,
+    inputChain,
+    outputChain:
+      inputChain === NetworkId.Zero ? NetworkId.Ethereum : NetworkId.Zero,
+    sort: '1' as const,
   };
 }
 
-function getDefaultTokens({
-  availableSpendPositions,
-  availableReceivePositions,
-  spendTokens,
-  receiveTokens,
-}: {
-  availableSpendPositions?: AddressPosition[];
-  availableReceivePositions?: AddressPosition[];
-  spendTokens?: string[];
-  receiveTokens?: string[];
-}) {
-  const defaultSpendToken =
-    availableSpendPositions?.[0]?.asset.asset_code || spendTokens?.[0];
-  const defaultReceiveToken =
-    availableReceivePositions?.[0]?.asset.asset_code || receiveTokens?.[0];
+async function queryPopularTokens(chain: Chain) {
+  return queryClient.fetchQuery({
+    queryKey: ['getPopularTokens', chain],
+    queryFn: () => getPopularTokens(chain),
+    staleTime: Infinity,
+  });
+}
 
-  return { defaultSpendToken, defaultReceiveToken };
+/**
+ * This value must be used until `prepareDefaultState` resolves
+ * so that `formState` object has stable order of keys. This is important
+ * for useQuotes helper which internally serializes formState into a URL string
+ * and makes refetches when this url changes
+ */
+const EMPTY_DEFAULT_STATE: BridgeFormState = {
+  inputChain: undefined,
+  outputChain: undefined,
+  inputFungibleId: undefined,
+  outputFungibleId: undefined,
+  showReceiverAddressInput: 'off',
+  sort: '1' as const,
+};
+
+async function prepareDefaultState({
+  address,
+  userStateInputChain,
+  userStateOutputChain,
+  currency,
+}: {
+  address: string;
+  userStateInputChain: string | null;
+  userStateOutputChain: string | null;
+  currency: string;
+}): Promise<BridgeFormState> {
+  const source = await getHttpClientSource();
+  const { data: allPositions } = await queryHttpAddressPositions(
+    { addresses: [address], currency },
+    { source }
+  );
+  const networksStore = await getNetworksStore();
+  const { inputChain: defaultInputChain, outputChain: defaultOutputChain } =
+    getDefaultState({
+      address,
+      positions: allPositions ?? [],
+    });
+  const inputChain = userStateInputChain ?? defaultInputChain ?? NetworkId.Zero;
+  const outputChain =
+    userStateOutputChain ?? defaultOutputChain ?? NetworkId.Ethereum;
+  const [inputNetwork, outputNetwork, popularOutputChainTokens] =
+    await Promise.all([
+      networksStore.fetchNetworkById(inputChain),
+      networksStore.fetchNetworkById(outputChain),
+      queryPopularTokens(createChain(inputChain)).catch(() => []),
+    ]);
+
+  const positions =
+    allPositions?.filter(
+      (position) => position.chain === inputChain && position.type === 'asset'
+    ) ?? [];
+
+  const sorted = sortPositionsByValue(positions);
+  const inputNativeAssetId = inputNetwork.native_asset?.id;
+  const defaultInputFungibleId = sorted.at(0)?.asset.id || inputNativeAssetId;
+
+  const USDC_BACKEND_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+  const outputNativeAssetId = outputNetwork.native_asset?.id;
+  const defaultOutputFungibleId = outputNativeAssetId
+    ? outputNativeAssetId
+    : popularOutputChainTokens.at(0) ?? USDC_BACKEND_ID;
+
+  return {
+    inputChain,
+    outputChain,
+    inputFungibleId: defaultInputFungibleId,
+    outputFungibleId: defaultOutputFungibleId,
+  };
+}
+
+type HandleChangeFunction = <K extends keyof BridgeFormState>(
+  key: K,
+  value: BridgeFormState[K]
+) => void;
+
+function reverseChains(state: BridgeFormState, outputAmount?: string) {
+  const { inputChain, outputChain, inputFungibleId, outputFungibleId } = state;
+  const newState: BridgeFormState = {};
+  if (inputChain) {
+    newState.outputChain = inputChain;
+  }
+  if (outputChain) {
+    newState.inputChain = outputChain;
+  }
+  if (inputFungibleId) {
+    newState.outputFungibleId = inputFungibleId;
+  }
+  if (outputFungibleId) {
+    newState.inputFungibleId = outputFungibleId;
+  }
+  if (outputAmount) {
+    newState.inputAmount = outputAmount;
+  }
+  return newState;
+}
+
+function changeChain<K extends keyof BridgeFormState>(
+  state: BridgeFormState,
+  key: K,
+  value: BridgeFormState[K],
+  outputAmount?: string
+) {
+  const isSameAsOpposite =
+    (key === 'inputChain' && value === state.outputChain) ||
+    (key === 'outputChain' && value === state.inputChain);
+
+  if (isSameAsOpposite) {
+    const newState = reverseChains(state, outputAmount);
+    newState[key] = value;
+    return newState;
+  } else {
+    return { [key]: value };
+  }
 }
 
 function BridgeNetworksSelect({
+  address,
   sourceChain,
   destinationChain,
   onChangeSourceChain,
@@ -212,6 +323,7 @@ function BridgeNetworksSelect({
   filterSourceChainPredicate,
   filterDestinationChainPredicate,
 }: {
+  address: string;
   sourceChain: string;
   destinationChain: string;
   onChangeSourceChain: (value: string) => void;
@@ -234,6 +346,7 @@ function BridgeNetworksSelect({
       style={{ gridTemplateColumns: '1fr 32px 1fr' }}
     >
       <LabeledNetworkSelect
+        standart={getAddressType(address)}
         label="From"
         value={sourceChain}
         onChange={(value) => {
@@ -251,6 +364,7 @@ function BridgeNetworksSelect({
       />
       <ReverseButton onClick={onReverseChains} />
       <LabeledNetworkSelect
+        standart="all"
         label="To"
         value={destinationChain}
         onChange={(value) => {
@@ -273,7 +387,9 @@ function BridgeNetworksSelect({
 function BridgeFormComponent() {
   useBackgroundKind(whiteBackgroundKind);
 
-  const { singleAddress: address, ready } = useAddressParams();
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const { singleAddress: address, singleAddressNormalized } =
+    useAddressParams();
   const { currency } = useCurrency();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -281,491 +397,311 @@ function BridgeFormComponent() {
     useErrorBoundary: true,
   });
 
-  const { data: portfolioResponse } = useWalletPortfolio(
-    { addresses: [address], currency },
-    { source: useHttpClientSource() },
-    { enabled: ready }
-  );
-  const portfolioDecomposition = portfolioResponse?.data;
-  const addressChains = useMemo(
-    () => Object.keys(portfolioDecomposition?.chains || {}),
-    [portfolioDecomposition]
-  );
-
-  const { networks } = useNetworks(addressChains);
-
-  const { data: positionsResponse } = useHttpAddressPositions(
-    { addresses: [address], currency },
-    { source: useHttpClientSource() },
-    { refetchInterval: usePositionsRefetchInterval(20000) }
-  );
-
-  const positions = positionsResponse?.data ?? null;
-
-  const defaultFormValues = useMemo(
-    () => getDefaultFormValues({ networks, positions }),
-    [networks, positions]
-  );
   const [userFormState, setUserFormState] =
-    useSearchParamsState<BridgeFormState>(
-      useMemo(
-        () => [
-          'spendChainInput',
-          'receiveChainInput',
-          'spendTokenInput',
-          'receiveTokenInput',
-          'spendInput',
-          'receiveInput',
-          'receiverAddressInput',
-          'showReceiverAddressInput',
-          'to',
-        ],
-        []
-      )
-    );
+    useSearchParamsObj<BridgeFormState>();
 
-  const spendChainInput =
-    userFormState.spendChainInput || defaultFormValues.spendChainInput;
-  const receiveChainInput =
-    userFormState.receiveChainInput || defaultFormValues.receiveChainInput;
+  const refetchInterval = usePositionsRefetchInterval(20000);
+  const httpAddressPositionsQuery = useHttpAddressPositions(
+    { addresses: [singleAddressNormalized], currency },
+    { source: useHttpClientSource() },
+    { refetchInterval }
+  );
+  /** All backend-known positions across all _supported_ chains */
+  const allPositions = httpAddressPositionsQuery.data?.data || null;
 
-  const spendChain = spendChainInput ? createChain(spendChainInput) : null;
-  const receiveChain = receiveChainInput
-    ? createChain(receiveChainInput)
-    : null;
-
-  const { data: spendTokens } = useBridgeTokens({
-    inputChain: spendChain,
-    outputChain: receiveChain,
-    direction: 'input',
-  });
-
-  const { data: receiveTokens } = useBridgeTokens({
-    inputChain: spendChain,
-    outputChain: receiveChain,
-    direction: 'output',
-  });
-
-  const availableSpendPositions = useMemo(
-    () =>
-      getAvailablePositions({
-        positions,
-        supportedTokens: spendTokens,
-        chain: spendChain,
-      }),
-    [positions, spendChain, spendTokens]
+  const defaultFormValues = useMemo<BridgeFormState>(
+    () => getDefaultState({ address, positions: allPositions }),
+    [address, allPositions]
   );
 
-  const availableReceivePositions = useMemo(
-    () =>
-      getAvailablePositions({
-        positions,
-        supportedTokens: receiveTokens,
-        chain: receiveChain,
-      }),
-    [positions, receiveChain, receiveTokens]
+  const preState = useMemo(
+    () => ({ ...defaultFormValues, ...userFormState }),
+    [userFormState, defaultFormValues]
   );
 
-  const { defaultSpendToken, defaultReceiveToken } = getDefaultTokens({
-    availableSpendPositions: availableSpendPositions?.sorted,
-    availableReceivePositions: availableReceivePositions?.sorted,
-    spendTokens,
-    receiveTokens,
-  });
+  const { data: defaultState = EMPTY_DEFAULT_STATE, ...defaultStateQuery } =
+    useQuery({
+      queryKey: [
+        'prepareDefaultSwapState',
+        singleAddressNormalized,
+        currency,
+        userFormState.inputChain,
+        userFormState.outputChain,
+      ],
+      queryFn: async () => {
+        const result = await prepareDefaultState({
+          address: singleAddressNormalized,
+          currency,
+          userStateInputChain: userFormState.inputChain ?? null,
+          userStateOutputChain: userFormState.outputChain ?? null,
+        });
+        return result;
+      },
+      staleTime: Infinity,
+      suspense: false,
+      keepPreviousData: true,
+    });
 
-  const formState = useMemo(
-    () => ({
-      ...defaultFormValues,
-      to: null,
-      spendTokenInput: defaultSpendToken,
-      receiveTokenInput: defaultReceiveToken,
-      ...userFormState,
-    }),
-    [defaultFormValues, defaultReceiveToken, defaultSpendToken, userFormState]
+  const formState: BridgeFormState = useMemo(
+    () => ({ ...defaultState, ...preState }),
+    [defaultState, preState]
   );
 
-  const {
-    spendTokenInput,
-    receiveTokenInput,
-    spendInput,
-    receiveInput,
-    to,
-    receiverAddressInput,
-    showReceiverAddressInput,
-  } = formState;
-
-  const spendAssetQuery = useAssetsPrices(
-    { asset_codes: [spendTokenInput].filter(isTruthy), currency },
-    { keepStaleData: true, client, enabled: Boolean(spendTokenInput) }
-  );
-  const receiveAssetQuery = useAssetsPrices(
-    { asset_codes: [receiveTokenInput].filter(isTruthy), currency },
-    { keepStaleData: true, client, enabled: Boolean(receiveTokenInput) }
-  );
-
-  const spendAsset = spendTokenInput
-    ? spendAssetQuery.value?.[spendTokenInput] ?? null
-    : null;
-  const receiveAsset = receiveTokenInput
-    ? receiveAssetQuery.value?.[receiveTokenInput] ?? null
-    : null;
-
-  const spendPosition = useMemo(() => {
-    if (!spendChain || !spendAsset) {
-      return null;
-    }
-    if (spendTokenInput && availableSpendPositions?.map[spendTokenInput]) {
-      return availableSpendPositions.map[spendTokenInput];
-    } else if (spendAsset) {
-      return new EmptyAddressPosition({ asset: spendAsset, chain: spendChain });
-    } else {
-      return null;
-    }
-  }, [availableSpendPositions, spendAsset, spendTokenInput, spendChain]);
-
-  const receivePosition = useMemo(() => {
-    if (!receiveChain || !receiveAsset) {
-      return null;
-    }
-    if (
-      receiveTokenInput &&
-      availableReceivePositions?.map[receiveTokenInput]
-    ) {
-      return availableReceivePositions.map[receiveTokenInput];
-    } else if (receiveAsset) {
-      return new EmptyAddressPosition({
-        asset: receiveAsset,
-        chain: receiveChain,
-      });
-    } else {
-      return null;
-    }
-  }, [
-    availableReceivePositions,
-    receiveAsset,
-    receiveTokenInput,
-    receiveChain,
-  ]);
-
-  const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
-  const [quoteSortType, setQuoteSortType] = useState<QuoteSortType>('amount');
-
-  const { quotesByAmount, quotesByTime } = useSortedQuotes({
-    from: address,
-    to: showReceiverAddressInput ? to : null,
-    userSlippage: null,
-    primaryInput: 'spend',
-    spendChainInput,
-    receiveChainInput,
-    spendInput,
-    receiveInput,
-    spendTokenInput,
-    receiveTokenInput,
-    spendPosition,
-    receivePosition,
-    sortType: quoteSortType,
-  });
-
-  const quotesData = quoteSortType === 'amount' ? quotesByAmount : quotesByTime;
-  const { quotes, refetch: refetchQuotes } = quotesData;
-
-  const selectedQuote = useMemo(() => {
-    const userQuote =
-      quotesByAmount.quotes?.find(
-        (quote) => quote.contract_metadata?.id === userQuoteId
-      ) ??
-      quotesByTime.quotes?.find(
-        (quote) => quote.contract_metadata?.id === userQuoteId
-      );
-    const defaultQuote = getDefaultQuote(quotes);
-    return userQuote || defaultQuote || null;
-  }, [userQuoteId, quotesByAmount, quotesByTime, quotes]);
-
-  useEffect(() => {
-    setUserQuoteId(null);
-  }, [
-    spendInput,
-    spendTokenInput,
-    receiveTokenInput,
-    spendChainInput,
-    receiveChainInput,
-  ]);
-
-  const bridgeTransaction = useMemo(
-    () => (selectedQuote ? getQuoteTx(selectedQuote) : null),
-    [selectedQuote]
-  );
-
-  const reverseChains = useCallback(
-    () =>
-      setUserFormState((state) => ({
-        ...state,
-        spendChainInput: receiveChainInput,
-        receiveChainInput: spendChainInput,
-      })),
-    [setUserFormState, receiveChainInput, spendChainInput]
-  );
-
-  const handleChange = useCallback(
-    <K extends keyof BridgeFormState>(key: K, value?: BridgeFormState[K]) =>
-      setUserFormState((state) => ({ ...state, [key]: value })),
+  const handleChange = useCallback<HandleChangeFunction>(
+    (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),
     [setUserFormState]
   );
 
+  const {
+    inputAmount,
+    inputFungibleId,
+    inputChain,
+    outputChain,
+    outputFungibleId,
+    to,
+    receiverAddressInput,
+    showReceiverAddressInput,
+    sort,
+  } = formState;
+
+  const availableSpendPositions = useMemo(() => {
+    const positions = allPositions
+      ?.filter((p) => p.chain === inputChain)
+      .filter((p) => p.type === 'asset');
+    return sortPositionsByValue(positions);
+  }, [allPositions, inputChain]);
+
+  const availableReceivePositions = useMemo(() => {
+    const positions = allPositions
+      ?.filter((p) => p.chain === outputChain)
+      .filter((p) => p.type === 'asset');
+    return sortPositionsByValue(positions);
+  }, [allPositions, outputChain]);
+
+  const spendChain = inputChain ? createChain(inputChain) : null;
+  const receiveChain = outputChain ? createChain(outputChain) : null;
+  const { data: inputNetwork } = useNetworkConfig(inputChain ?? null);
+  const { data: outputNetwork } = useNetworkConfig(outputChain ?? null);
+
+  const inputPosition = usePosition({
+    assetId: inputFungibleId ?? null,
+    positions: allPositions,
+    chain: spendChain,
+  });
+  const outputPosition = usePosition({
+    assetId: outputFungibleId ?? null,
+    positions: allPositions,
+    chain: receiveChain,
+  });
+
+  const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
+  const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
+
+  const formId = useId();
+
+  const inputChainAddressMatch = Boolean(
+    inputNetwork &&
+      isMatchForEcosystem(address, Networks.getEcosystem(inputNetwork))
+  );
+
+  const bridgeInsideEcosystem =
+    inputNetwork &&
+    outputNetwork &&
+    Networks.getEcosystem(inputNetwork) ===
+      Networks.getEcosystem(outputNetwork);
+
+  const outputChainAddressMatch = Boolean(
+    bridgeInsideEcosystem
+      ? isMatchForEcosystem(to ?? address, Networks.getEcosystem(outputNetwork))
+      : to &&
+          outputNetwork &&
+          isMatchForEcosystem(to, Networks.getEcosystem(outputNetwork))
+  );
+
+  const { quotesByAmount, quotesByTime } = useSortedQuotes({
+    address: singleAddressNormalized,
+    currency,
+    formState,
+    enabled:
+      defaultStateQuery.isFetched &&
+      !defaultStateQuery.isPreviousData &&
+      inputChainAddressMatch &&
+      outputChainAddressMatch,
+  });
+
+  const quotesData = sort === '1' ? quotesByAmount : quotesByTime;
+  const { refetch: refetchQuotes } = quotesData;
+
+  const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
   useEffect(() => {
-    if (!selectedQuote) {
-      handleChange('receiveInput', '');
-    } else if (receiveChain && receivePosition) {
-      const valueCommon = getCommonQuantity({
-        baseQuantity: selectedQuote.output_amount_estimation || 0,
-        asset: receivePosition.asset,
-        chain: receiveChain,
+    setUserQuoteId(null);
+  }, [
+    inputAmount,
+    inputFungibleId,
+    outputFungibleId,
+    inputChain,
+    outputChain,
+    sort,
+  ]);
+
+  const selectedQuote = useMemo(() => {
+    const userQuote = quotesData.quotes?.find(
+      (quote) => quote.contractMetadata?.id === userQuoteId
+    );
+    const defaultQuote = quotesData.quotes?.[0];
+    return userQuote || defaultQuote || null;
+  }, [userQuoteId, quotesData.quotes]);
+
+  const outputAmount = selectedQuote?.outputAmount.quantity || null;
+
+  /** Same as handleChange, but reverses chains if selected chain is same as the opposite one */
+  const handleChainChange = useEvent<HandleChangeFunction>((key, value) => {
+    setUserFormState((state) => ({
+      ...state,
+      ...changeChain(formState, key, value, outputAmount ?? undefined),
+    }));
+  });
+
+  const { data: gasbackEstimation } = useGasbackEstimation({
+    paymasterEligible: Boolean(
+      selectedQuote?.transactionSwap?.evm?.customData?.paymasterParams
+    ),
+    suppportsSimulations: inputNetwork?.supports_simulations ?? false,
+    supportsSponsoredTransactions:
+      inputNetwork?.supports_sponsored_transactions,
+  });
+
+  const currentTransaction =
+    selectedQuote?.transactionApprove || selectedQuote?.transactionSwap || null;
+
+  const [allowanceBase, setAllowanceBase] = useState<string | null>(null);
+
+  useEffect(
+    () => setAllowanceBase(null),
+    [inputChain, inputAmount, inputFungibleId]
+  );
+
+  const {
+    mutate: sendApproveTransaction,
+    data: approveHash = null,
+    reset: resetApproveMutation,
+    ...approveMutation
+  } = useMutation({
+    mutationFn: async () => {
+      invariant(
+        selectedQuote?.transactionApprove?.evm,
+        'Approval transaction is not configured'
+      );
+
+      invariant(spendChain, 'Chain must be defined to sign the tx');
+      invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
+      invariant(inputPosition, 'Spend position must be defined');
+      invariant(formState.inputAmount, 'inputAmount must be set');
+
+      const evmTx = selectedQuote.transactionApprove.evm;
+      const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
+      const approvalTx =
+        allowanceBase && !isPaymasterTx
+          ? await modifyApproveAmount(evmTx, allowanceBase)
+          : evmTx;
+
+      const inputAmountBase = commonToBase(
+        formState.inputAmount,
+        getDecimals({ asset: inputPosition.asset, chain: spendChain })
+      ).toFixed();
+
+      const txResponse = await approveTxBtnRef.current.sendTransaction({
+        transaction: { evm: toIncomingTransaction(approvalTx) },
+        chain: spendChain.toString(),
+        initiator: INTERNAL_ORIGIN,
+        clientScope: 'Swap',
+        feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
+        addressAction: selectedQuote.transactionApprove.evm
+          ? createApproveAddressAction({
+              transaction: toIncomingTransaction(
+                selectedQuote.transactionApprove.evm
+              ),
+              asset: inputPosition.asset,
+              quantity: inputAmountBase,
+              chain: spendChain,
+            })
+          : null,
       });
-      handleChange('receiveInput', valueCommon.toFixed());
+      invariant(txResponse.evm?.hash);
+      return txResponse.evm.hash;
+    },
+  });
+
+  const approveTxStatus = useTransactionStatus(approveHash);
+  useEffect(() => {
+    if (approveTxStatus === 'confirmed') {
+      refetchQuotes();
+    } else if (approveTxStatus === 'failed' || approveTxStatus === 'dropped') {
+      resetApproveMutation();
     }
-  }, [handleChange, selectedQuote, receivePosition, receiveChain]);
+  }, [resetApproveMutation, approveTxStatus, refetchQuotes]);
+
+  const isApproveMode =
+    approveMutation.isLoading ||
+    selectedQuote?.transactionApprove ||
+    approveTxStatus === 'pending';
+  const showApproveHintLine =
+    Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
 
   const snapshotRef = useRef<BridgeFormState | null>(null);
   const onBeforeSubmit = () => {
     snapshotRef.current = formState;
   };
 
-  const feeValueCommonRef = useRef<string | null>(
-    null
-  ); /** for analytics only */
-  const handleFeeValueCommonReady = useCallback((value: string) => {
-    feeValueCommonRef.current = value;
-  }, []);
-
-  const { data: gasPrices } = useGasPrices(spendChain);
-
-  const spendAmountBase = useMemo(
-    () =>
-      spendInput && spendPosition && spendChain
-        ? getBaseQuantity({
-            commonQuantity: spendInput,
-            asset: spendPosition.asset,
-            chain: spendChain,
-          }).toFixed()
-        : null,
-    [spendChain, spendInput, spendPosition]
-  );
-
-  const [allowanceQuantityBase, setAllowanceQuantityBase] =
-    useState(spendAmountBase);
-
-  useEffect(() => setAllowanceQuantityBase(spendAmountBase), [spendAmountBase]);
-
-  const spendTokenContractAddress =
-    spendPosition && spendChain
-      ? getAddress({ asset: spendPosition.asset, chain: spendChain }) ?? null
-      : null;
-
-  const {
-    enough_allowance,
-    allowanceQuery: { refetch: refetchAllowanceQuery },
-    approvalTransactionQuery: { isFetching: approvalTransactionIsFetching },
-    approvalTransaction,
-  } = useApproveHandler({
-    address,
-    chain: spendChain,
-    spendAmountBase,
-    allowanceQuantityBase,
-    spender: selectedQuote?.token_spender ?? null,
-    contractAddress: spendTokenContractAddress,
-    enabled:
-      quotesData.done &&
-      Boolean(selectedQuote && !selectedQuote.enough_allowance),
-    keepPreviousData: false,
-  });
-
-  const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
-  const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
-
-  const txToCheck =
-    quotesData.done && !enough_allowance
-      ? approvalTransaction
-      : bridgeTransaction;
-
-  const { data: networkNonce, refetch: refetchNonce } = useQuery({
-    suspense: false,
-    queryKey: ['uiGetBestKnownTransactionCount', address, spendChain, networks],
-    queryFn: async () => {
-      const network = spendChain ? networks?.getByNetworkId(spendChain) : null;
-      if (!network) {
-        return null;
-      }
-      const result = await uiGetBestKnownTransactionCount({
-        address,
-        network,
-        defaultBlock: 'pending',
-      });
-      return result.value;
-    },
-  });
-
-  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
-
-  const USE_PAYMASTER_FEATURE = true;
-
-  const userNonce = configuration.nonce;
-  const nonce = userNonce ?? networkNonce ?? undefined;
-  const gas = txToCheck ? getGas(txToCheck) : null;
-
-  const network = spendChain ? networks?.getByNetworkId(spendChain) : null;
-
-  const eligibilityParams:
-    | null
-    | Parameters<ZerionApiClient['paymasterCheckEligibility']>[0] =
-    USE_PAYMASTER_FEATURE && txToCheck && txToCheck.to && nonce != null && gas
-      ? {
-          chainId: txToCheck.chainId,
-          from: address,
-          to: txToCheck.to,
-          value: 'value' in txToCheck ? txToCheck.value : null,
-          data: txToCheck.data,
-          gas,
-          nonce: Number(nonce),
-        }
-      : null;
-  const paymasterPossible =
-    USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
-  const eligibilityQuery = useTxEligibility(eligibilityParams, {
-    enabled: paymasterPossible,
-  });
-
-  const paymasterEligible = Boolean(eligibilityQuery.data?.data.eligible);
-
-  const { data: gasbackEstimation } = useGasbackEstimation({
-    paymasterEligible: eligibilityQuery.data?.data.eligible ?? null,
-    suppportsSimulations: network?.supports_simulations ?? false,
-    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
-  });
-
-  const configureTransactionToBeSigned = useEvent(
-    (tx: IncomingTransactionWithChainId) => {
-      invariant(spendChain && networks, 'Not ready to prepare the transaction');
-      let txToSign = applyConfiguration(tx, configuration, gasPrices);
-      if (paymasterEligible && txToSign.nonce == null) {
-        txToSign = {
-          ...txToSign,
-          nonce: nonce != null ? Number(nonce) : undefined,
-        };
-        invariant(txToSign.nonce, 'Nonce is required for a paymaster tx');
-      }
-      return { ...txToSign, from: address };
-    }
-  );
-
-  const { preferences } = usePreferences();
-  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
-
-  const {
-    mutate: sendApproveTransaction,
-    data: approveHash,
-    reset: resetApproveMutation,
-    ...approveMutation
-  } = useMutation({
-    mutationFn: async () => {
-      invariant(approvalTransaction, 'approve transaction is not configured');
-      let transaction = configureTransactionToBeSigned(approvalTransaction);
-      if (paymasterEligible) {
-        transaction = await fetchAndAssignPaymaster(transaction, {
-          source,
-          apiClient: ZerionAPI,
-        });
-      }
-      const feeValueCommon = feeValueCommonRef.current || null;
-
-      invariant(spendChain, 'Spend chain must be defined to sign the tx');
-      invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
-      invariant(spendPosition, 'Spend position must be defined');
-      invariant(selectedQuote, 'Cannot submit transaction without a quote');
-
-      const txResponse = await approveTxBtnRef.current.sendTransaction({
-        transaction: { evm: transaction },
-        chain: spendChain.toString(),
-        initiator: INTERNAL_ORIGIN,
-        clientScope: 'Bridge',
-        feeValueCommon,
-        addressAction: createApproveAddressAction({
-          transaction: { ...transaction, from: address },
-          asset: spendPosition.asset,
-          quantity: selectedQuote.input_amount_estimation,
-          chain: spendChain,
-        }),
-      });
-      invariant(txResponse.evm?.hash);
-      return txResponse.evm.hash;
-    },
-    onMutate: () => 'sendTransaction',
-  });
-
-  const approveTxStatus = useTransactionStatus(approveHash ?? null);
-  useEffect(() => {
-    if (approveTxStatus === 'confirmed') {
-      refetchAllowanceQuery();
-      refetchQuotes();
-      refetchNonce();
-    } else if (approveTxStatus === 'failed' || approveTxStatus === 'dropped') {
-      resetApproveMutation();
-    }
-  }, [
-    approveTxStatus,
-    refetchAllowanceQuery,
-    refetchNonce,
-    refetchQuotes,
-    resetApproveMutation,
-  ]);
-
-  const {
-    mutate: sendTransaction,
-    data: transactionHash,
-    isLoading,
-    reset,
-    isSuccess,
-    ...sendTransactionMutation
-  } = useMutation({
-    mutationFn: async () => {
-      if (!gasPrices) {
-        throw new Error('Unknown gas price');
-      }
-      invariant(selectedQuote, 'Cannot submit transaction without a quote');
-      invariant(bridgeTransaction, 'No transaction in quote');
-
-      let transaction = configureTransactionToBeSigned(bridgeTransaction);
-      if (paymasterEligible) {
-        transaction = await fetchAndAssignPaymaster(transaction, {
-          source,
-          apiClient: ZerionAPI,
-        });
-      }
-      const feeValueCommon = feeValueCommonRef.current || null;
-
-      invariant(spendChain, 'Spend chain must be defined to sign the tx');
+  const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
+    mutationFn: async (): Promise<SignTransactionResult> => {
       invariant(
-        spendPosition && receivePosition,
-        'Bridge positions must be defined'
+        selectedQuote?.transactionSwap,
+        'Cannot submit transaction without a quote'
+      );
+      const { inputAmount } = formState;
+      invariant(spendChain, 'Chain must be defined to sign the tx');
+      invariant(inputAmount, 'inputAmount must be set');
+      invariant(
+        inputPosition && outputPosition,
+        'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-
+      const inputAmountBase = commonToBase(
+        inputAmount,
+        getDecimals({ asset: inputPosition.asset, chain: spendChain })
+      ).toFixed();
+      const outputAmountBase = commonToBase(
+        selectedQuote.outputAmount.quantity,
+        getDecimals({ asset: outputPosition.asset, chain: spendChain })
+      ).toFixed();
       const txResponse = await sendTxBtnRef.current.sendTransaction({
-        transaction: { evm: transaction },
+        transaction: toMultichainTransaction(selectedQuote.transactionSwap),
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
-        clientScope: 'Bridge',
-        feeValueCommon,
-        addressAction: createSendAddressAction({
-          transaction,
-          asset: spendPosition.asset,
-          quantity: selectedQuote.input_amount_estimation,
-          chain: spendChain,
-        }),
+        clientScope: 'Swap',
+        feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
+        addressAction: selectedQuote.transactionSwap.evm
+          ? createBridgeAddressAction({
+              transaction: toIncomingTransaction(
+                selectedQuote.transactionSwap.evm
+              ),
+              outgoing: [
+                { asset: inputPosition.asset, quantity: inputAmountBase },
+              ],
+              incoming: [
+                { asset: outputPosition.asset, quantity: outputAmountBase },
+              ],
+              chain: spendChain,
+            })
+          : null,
         quote: selectedQuote,
-        outputChain: selectedQuote.output_chain,
+        outputChain: outputChain ?? null,
       });
-      invariant(txResponse.evm?.hash);
-      return txResponse.evm.hash;
+      return txResponse;
     },
     // The value returned by onMutate can be accessed in
     // a global onError handler (src/ui/shared/requests/queryClient.ts)
@@ -777,46 +713,28 @@ function BridgeFormComponent() {
     },
   });
 
-  const resetMutationIfNotLoading = useEvent(() => {
-    if (!isLoading) {
-      reset();
-    }
-  });
-
-  useEffect(() => {
-    resetMutationIfNotLoading();
-    resetApproveMutation();
-  }, [
-    resetApproveMutation,
-    resetMutationIfNotLoading,
-    spendChain,
-    spendInput,
-    spendTokenInput,
-    receiveTokenInput,
-  ]);
-
-  const formId = useId();
-  const formRef = useRef<HTMLFormElement | null>(null);
-
-  const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const quotesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-
-  const { innerHeight } = useWindowSizeStore();
-
-  const navigate = useNavigate();
-
   const gasbackValueRef = useRef<number | null>(null);
   const handleGasbackReady = useCallback((value: number) => {
     gasbackValueRef.current = value;
   }, []);
 
-  const positionDistribution =
-    portfolioDecomposition?.positionsChainsDistribution ?? {};
+  const navigate = useNavigate();
 
-  if (isSuccess) {
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const { innerHeight } = useWindowSizeStore();
+
+  const outputEcosystem = outputNetwork && Networks.getEcosystem(outputNetwork);
+  const addressFilterPredicate = useCallback(
+    (value: string) => {
+      return !outputEcosystem || isMatchForEcosystem(value, outputEcosystem);
+    },
+    [outputEcosystem]
+  );
+
+  if (sendTransactionMutation.isSuccess) {
+    const result = sendTransactionMutation.data;
     invariant(
-      spendPosition && receivePosition && transactionHash,
+      inputPosition && outputPosition && result,
       'Missing Form State View values'
     );
     invariant(
@@ -825,34 +743,21 @@ function BridgeFormComponent() {
     );
     return (
       <SuccessState
-        hash={transactionHash}
-        explorer={selectedQuote?.contract_metadata?.explorer ?? null}
-        spendPosition={spendPosition}
-        receivePosition={receivePosition}
+        hash={result.evm?.hash ?? ensureSolanaResult(result).signature}
+        explorer={selectedQuote?.contractMetadata?.explorer ?? null}
+        inputPosition={inputPosition}
+        outputPosition={outputPosition}
         formState={snapshotRef.current}
         gasbackValue={gasbackValueRef.current}
         onDone={() => {
-          reset();
+          sendTransactionMutation.reset();
           snapshotRef.current = null;
-          feeValueCommonRef.current = null;
           gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
     );
   }
-
-  const isApproveMode =
-    approveMutation.isLoading ||
-    (quotesData.done && !enough_allowance) ||
-    approveTxStatus === 'pending';
-
-  const showApproveHintLine =
-    (quotesData.done && !enough_allowance) || !approveMutation.isIdle;
-
-  const currentTransaction = isApproveMode
-    ? approvalTransaction
-    : bridgeTransaction;
 
   return (
     <PageColumn>
@@ -875,10 +780,9 @@ function BridgeFormComponent() {
           </UnstyledLink>
         }
       />
-
       <BottomSheetDialog
         ref={confirmDialogRef}
-        key={currentTransaction === approvalTransaction ? 'approve' : 'swap'}
+        key={selectedQuote?.transactionApprove ? 'approve' : 'swap'}
         height="min-content"
         displayGrid={true}
         style={{ minHeight: innerHeight >= 750 ? '70vh' : '90vh' }}
@@ -893,27 +797,33 @@ function BridgeFormComponent() {
           return (
             <ViewLoadingSuspense>
               <TransactionConfirmationView
-                title={
-                  currentTransaction === approvalTransaction
-                    ? 'Approve'
-                    : 'Bridge'
-                }
+                title={selectedQuote?.transactionApprove ? 'Approve' : 'Bridge'}
                 wallet={wallet}
                 chain={spendChain}
-                transaction={{
-                  evm: configureTransactionToBeSigned(currentTransaction),
-                }}
-                configuration={configuration}
-                customAllowanceValueBase={allowanceQuantityBase || undefined}
-                onOpenAllowanceForm={() =>
-                  allowanceDialogRef.current?.showModal()
+                transaction={toMultichainTransaction(currentTransaction)}
+                configuration={toConfiguration(formState)}
+                customAllowanceValueBase={allowanceBase || undefined}
+                onOpenAllowanceForm={
+                  currentTransaction.evm?.customData?.paymasterParams // support editing allowance only for non-paymaster transactions
+                    ? undefined
+                    : () => allowanceDialogRef.current?.showModal()
                 }
-                paymasterEligible={paymasterEligible}
-                paymasterPossible={paymasterPossible}
+                paymasterEligible={Boolean(
+                  currentTransaction.evm?.customData?.paymasterParams
+                )}
+                paymasterPossible={Boolean(
+                  inputNetwork?.supports_sponsored_transactions
+                )}
                 eligibilityQuery={{
-                  data: { data: { eligible: false } },
-                  status: 'success',
                   isError: false,
+                  status: 'success',
+                  data: {
+                    data: {
+                      eligible: Boolean(
+                        currentTransaction.evm?.customData?.paymasterParams
+                      ),
+                    },
+                  },
                 }}
                 onGasbackReady={handleGasbackReady}
               />
@@ -927,20 +837,21 @@ function BridgeFormComponent() {
         height="min-content"
         renderWhenOpen={() => {
           invariant(spendChain, 'Spend chain must be defined');
+          invariant(inputAmount, 'inputAmount must be defined');
           invariant(
-            spendPosition?.asset,
+            inputPosition?.asset,
             'Spend position asset must be defined'
           );
           invariant(
-            spendPosition?.quantity,
+            inputPosition?.quantity,
             'Spend position quantity must be defined'
           );
-          invariant(
-            allowanceQuantityBase,
-            'Allowance quantity must be defined'
-          );
-          const value = new BigNumber(allowanceQuantityBase);
-          const positionBalanceCommon = getPositionBalance(spendPosition);
+
+          const asset = inputPosition.asset;
+          const decimals = getDecimals({ asset, chain: spendChain });
+          const spendAmountBase = commonToBase(inputAmount, decimals).toFixed();
+          const value = new BigNumber(allowanceBase || spendAmountBase);
+          const positionBalanceCommon = getPositionBalance(inputPosition);
           return (
             <ViewLoadingSuspense>
               <>
@@ -960,14 +871,14 @@ function BridgeFormComponent() {
                   }}
                 >
                   <AllowanceForm
-                    asset={spendPosition.asset}
+                    asset={inputPosition.asset}
                     chain={spendChain}
                     address={address}
                     balance={positionBalanceCommon}
                     requestedAllowanceQuantityBase={UNLIMITED_APPROVAL_AMOUNT}
                     value={value}
                     onSubmit={(quantity) => {
-                      setAllowanceQuantityBase(quantity);
+                      setAllowanceBase(quantity);
                       allowanceDialogRef.current?.close();
                     }}
                   />
@@ -977,24 +888,6 @@ function BridgeFormComponent() {
           );
         }}
       />
-      {spendChain && receiveChain && spendAsset && receiveAsset ? (
-        <BottomSheetDialog
-          ref={quotesDialogRef}
-          height="fit-content"
-          renderWhenOpen={() => (
-            <QuoteList
-              configuration={configuration}
-              spendChain={spendChain}
-              receiveAsset={receiveAsset}
-              quotes={quotes ?? []}
-              selectedQuote={selectedQuote}
-              onQuoteIdChange={setUserQuoteId}
-              sortType={quoteSortType}
-              onChangeSortType={setQuoteSortType}
-            />
-          )}
-        />
-      ) : null}
       <form
         id={formId}
         ref={formRef}
@@ -1018,57 +911,86 @@ function BridgeFormComponent() {
         }}
       >
         <VStack gap={16}>
+          <PopoverToast
+            ref={toastRef}
+            style={{
+              bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+            }}
+          >
+            <div style={{ maxWidth: 300, textAlign: 'center' }}>
+              {getAddressType(address) === 'solana'
+                ? 'Switch to your Ethereum wallet to bridge from Ethereum Ecosystem.'
+                : 'Switch to your Solana wallet to bridge from Solana Ecosystem.'}
+            </div>
+          </PopoverToast>
           <BridgeNetworksSelect
-            sourceChain={spendChainInput ?? ''}
-            destinationChain={receiveChainInput ?? ''}
+            address={address}
+            sourceChain={inputChain ?? ''}
+            destinationChain={outputChain ?? ''}
             filterSourceChainPredicate={(network: NetworkConfig) =>
-              network.id === NetworkId.Ethereum ||
-              network.id in positionDistribution
+              isMatchForEcosystem(address, Networks.getEcosystem(network))
             }
             onChangeSourceChain={(value) =>
-              handleChange('spendChainInput', value)
+              handleChainChange('inputChain', value)
             }
             onChangeDestinationChain={(value) =>
-              handleChange('receiveChainInput', value)
+              handleChainChange('outputChain', value)
             }
-            onReverseChains={reverseChains}
+            onReverseChains={() =>
+              bridgeInsideEcosystem
+                ? setUserFormState((state) => ({
+                    ...state,
+                    ...reverseChains(formState),
+                  }))
+                : toastRef.current?.showToast()
+            }
           />
           <VStack gap={4}>
             <SpendTokenField
-              spendInput={spendInput}
+              spendInput={inputAmount}
               spendChain={spendChain}
-              spendAsset={spendAsset}
-              spendPosition={spendPosition}
-              availableSpendPositions={availableSpendPositions?.sorted ?? []}
-              receiveInput={receiveInput}
-              receiveAsset={receiveAsset}
-              onChangeAmount={(value) => handleChange('spendInput', value)}
-              onChangeToken={(value) => handleChange('spendTokenInput', value)}
+              spendPosition={inputPosition}
+              availableSpendPositions={availableSpendPositions ?? []}
+              receiveInput={outputAmount ?? undefined}
+              receiveAsset={outputPosition?.asset ?? null}
+              onChangeAmount={(value) => handleChange('inputAmount', value)}
+              onChangeToken={(value) => handleChange('inputFungibleId', value)}
             />
             <ReceiveTokenField
-              receiveInput={receiveInput}
+              receiveInput={outputAmount ?? undefined}
               receiveChain={receiveChain}
-              receiveAsset={receiveAsset}
-              receivePosition={receivePosition}
-              availableReceivePositions={
-                availableReceivePositions?.sorted ?? []
-              }
-              spendInput={spendInput}
-              spendAsset={spendAsset}
-              onChangeAmount={(value) => handleChange('receiveInput', value)}
-              onChangeToken={(value) =>
-                handleChange('receiveTokenInput', value)
-              }
+              receivePosition={outputPosition}
+              availableReceivePositions={availableReceivePositions ?? []}
+              spendInput={inputAmount ?? undefined}
+              spendAsset={inputPosition?.asset ?? null}
+              onChangeToken={(value) => handleChange('outputFungibleId', value)}
             />
             <ReceiverAddressField
-              to={to}
+              title={
+                !outputNetwork
+                  ? 'Recipient Address'
+                  : Networks.getEcosystem(outputNetwork) === 'evm'
+                  ? 'Ethereum Recipient Address'
+                  : 'Solana Recipient Address'
+              }
+              to={to ?? null}
               receiverAddressInput={receiverAddressInput ?? null}
-              onChange={(value) => handleChange('receiverAddressInput', value)}
-              showAddressInput={Boolean(showReceiverAddressInput)}
+              onChange={(value) =>
+                handleChange('receiverAddressInput', value ?? undefined)
+              }
+              showAddressInput={showReceiverAddressInput === 'on'}
               onShowInputChange={(value) =>
-                handleChange('showReceiverAddressInput', value)
+                // Changing visibility of the input should reset the input value
+                // to align with the visual language of the input
+                setUserFormState((state) => ({
+                  ...state,
+                  showReceiverAddressInput: value ? 'on' : 'off',
+                  to: undefined,
+                  receiverAddressInput: undefined,
+                }))
               }
               onResolvedChange={(value) => handleChange('to', value)}
+              filterAddressPredicate={addressFilterPredicate}
             />
           </VStack>
         </VStack>
@@ -1088,16 +1010,17 @@ function BridgeFormComponent() {
               : undefined
           }
         >
-          {spendChain && receiveChain && spendAsset && receiveAsset ? (
-            <BridgeLine
-              spendChain={spendChain}
-              quotesData={quotesData}
-              selectedQuote={selectedQuote}
-              onQuoteSelect={() => quotesDialogRef.current?.showModal()}
-            />
-          ) : null}
+          <BridgeLine
+            quotesData={quotesData}
+            selectedQuote={selectedQuote}
+            sortType={sort}
+            onSortTypeChange={(value) => handleChange('sort', value)}
+            onQuoteIdChange={(quoteId) => setUserQuoteId(quoteId)}
+          />
           {selectedQuote ? <ZerionFeeLine quote={selectedQuote} /> : null}
-          {currentTransaction && spendChain && currentTransaction.gasLimit ? (
+          {isEthereumAddress(address) &&
+          currentTransaction?.evm &&
+          spendChain ? (
             <React.Suspense
               fallback={
                 <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -1107,18 +1030,32 @@ function BridgeFormComponent() {
             >
               <TransactionConfiguration
                 keepPreviousData={true}
-                transaction={currentTransaction}
+                transaction={toIncomingTransaction(currentTransaction.evm)}
                 from={address}
                 chain={spendChain}
-                paymasterEligible={paymasterEligible}
-                paymasterPossible={paymasterPossible}
+                paymasterEligible={Boolean(
+                  currentTransaction.evm.customData?.paymasterParams
+                )}
+                paymasterPossible={Boolean(
+                  inputNetwork?.supports_sponsored_transactions
+                )}
                 paymasterWaiting={false}
-                onFeeValueCommonReady={handleFeeValueCommonReady}
-                configuration={configuration}
-                onConfigurationChange={(value) => setConfiguration(value)}
+                onFeeValueCommonReady={null}
+                configuration={toConfiguration(formState)}
+                onConfigurationChange={(value) => {
+                  const partial = fromConfiguration(value);
+                  setUserFormState((state) => ({ ...state, ...partial }));
+                }}
                 gasback={gasbackEstimation}
               />
             </React.Suspense>
+          ) : null}
+
+          {isSolanaAddress(address) && selectedQuote?.networkFee ? (
+            <NetworkFeeLineInfo
+              networkFee={selectedQuote.networkFee}
+              isLoading={quotesData.isPreviousData}
+            />
           ) : null}
         </VStack>
       </VStack>
@@ -1136,7 +1073,11 @@ function BridgeFormComponent() {
       <VStack gap={16} style={{ marginTop: 'auto' }}>
         <AnimatedAppear display={showApproveHintLine}>
           <HStack gap={12} alignItems="center">
-            <ApproveHintLine approved={enough_allowance} actionName="Bridge" />
+            <ApproveHintLine
+              // or {approveTxStatus === 'confirmed'} ?
+              approved={Boolean(selectedQuote?.transactionSwap)}
+              actionName="Bridge"
+            />
             {approveMutation.isLoading || approveTxStatus === 'pending' ? (
               <CircleSpinner />
             ) : null}
@@ -1176,13 +1117,11 @@ function BridgeFormComponent() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    approvalTransactionIsFetching ||
-                    approveMutation.isLoading ||
-                    approveTxStatus === 'pending'
+                    approveMutation.isLoading || approveTxStatus === 'pending'
                   }
                   holdToSign={false}
                 >
-                  Approve {spendPosition?.asset.symbol ?? null}
+                  Approve {inputPosition?.asset.symbol ?? null}
                 </SignTransactionButton>
               ) : null}
             </VStack>
@@ -1203,9 +1142,12 @@ function BridgeFormComponent() {
               </UIText>
               {wallet ? (
                 <FormHint
-                  spendInput={spendInput}
-                  spendPosition={spendPosition}
+                  formState={formState}
+                  inputPosition={inputPosition}
                   quotesData={quotesData}
+                  inputNetwork={inputNetwork}
+                  inputChainAddressMatch={inputChainAddressMatch}
+                  outputChainAddressMatch={outputChainAddressMatch}
                   render={(hint) => (
                     <SignTransactionButton
                       ref={sendTxBtnRef}
@@ -1213,10 +1155,12 @@ function BridgeFormComponent() {
                       wallet={wallet}
                       style={{ marginTop: 'auto' }}
                       disabled={
-                        isLoading ||
+                        sendTransactionMutation.isLoading ||
                         quotesData.isLoading ||
+                        !inputChainAddressMatch ||
+                        !outputChainAddressMatch ||
                         Boolean(
-                          (selectedQuote && !bridgeTransaction) ||
+                          (selectedQuote && !selectedQuote.transactionSwap) ||
                             quotesData.error
                         )
                       }
@@ -1233,7 +1177,7 @@ function BridgeFormComponent() {
                         {hint ||
                           (quotesData.isLoading
                             ? 'Fetching offers'
-                            : isLoading
+                            : sendTransactionMutation.isLoading
                             ? 'Sending...'
                             : 'Send')}
                       </span>

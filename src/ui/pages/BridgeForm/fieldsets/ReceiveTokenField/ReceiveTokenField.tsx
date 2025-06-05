@@ -5,7 +5,6 @@ import {
   roundTokenValue,
 } from 'src/shared/units/formatTokenValue';
 import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
-import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -20,22 +19,18 @@ import { calculatePriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact'
 export function ReceiveTokenField({
   receiveInput,
   receiveChain,
-  receiveAsset,
   receivePosition,
   availableReceivePositions,
   spendInput,
   spendAsset,
-  onChangeAmount,
   onChangeToken,
 }: {
   receiveInput?: string;
   receiveChain: Chain | null;
-  receiveAsset: Asset | null;
   receivePosition: AddressPosition | EmptyAddressPosition | null;
   availableReceivePositions: AddressPosition[];
   spendInput?: string;
   spendAsset: Asset | null;
-  onChangeAmount: (value: string) => void;
   onChangeToken: (value: string) => void;
 }) {
   const positionBalanceCommon = receivePosition
@@ -61,9 +56,9 @@ export function ReceiveTokenField({
         inputValue: spendInput ?? null,
         outputValue: receiveInput ?? null,
         inputAsset: spendAsset,
-        outputAsset: receiveAsset,
+        outputAsset: receivePosition?.asset ?? null,
       }),
-    [receiveAsset, receiveInput, spendAsset, spendInput]
+    [receivePosition?.asset, receiveInput, spendAsset, spendInput]
   );
 
   const inputId = useId();
@@ -89,32 +84,21 @@ export function ReceiveTokenField({
           </div>
         }
         endInput={
-          <DebouncedInput
-            ref={tokenValueInputRef}
-            delay={300}
+          <UnstyledInput
+            readOnly={true}
+            ref={inputRef}
+            style={{
+              textAlign: 'end',
+              textOverflow: 'ellipsis',
+              cursor: 'default',
+            }}
+            id={inputId}
+            inputMode="decimal"
+            name="receiveInput"
             value={receiveInput ?? ''}
-            onChange={(value) => onChangeAmount(value)}
-            render={({ value, handleChange }) => (
-              <UnstyledInput
-                readOnly={true}
-                ref={inputRef}
-                style={{
-                  textAlign: 'end',
-                  textOverflow: 'ellipsis',
-                  cursor: 'default',
-                }}
-                id={inputId}
-                inputMode="decimal"
-                name="receiveInput"
-                value={value}
-                placeholder="0"
-                onChange={(event) =>
-                  handleChange(event.currentTarget.value.replace(',', '.'))
-                }
-                pattern={FLOAT_INPUT_PATTERN}
-                required={false}
-              />
-            )}
+            placeholder="0"
+            pattern={FLOAT_INPUT_PATTERN}
+            required={false}
           />
         }
         startDescription={
@@ -141,7 +125,7 @@ export function ReceiveTokenField({
             spendInput={spendInput}
             spendAsset={spendAsset}
             receiveInput={receiveInput}
-            receiveAsset={receiveAsset}
+            receiveAsset={receivePosition?.asset ?? null}
             priceImpact={priceImpact}
           />
         }
