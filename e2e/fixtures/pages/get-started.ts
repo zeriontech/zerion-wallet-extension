@@ -120,7 +120,7 @@ export class PrivateKeyImportView {
 
   async ready() {
     await expect(
-      this.page.getByRole('link', { name: /Finish/i })
+      this.page.getByRole('link', { name: /View Wallet/i })
     ).toBeEnabled();
   }
 
@@ -131,12 +131,12 @@ export class PrivateKeyImportView {
           - button "Go back"
           - text: Private Key
         - text: Your wallet is ready Eth · 0x04d9a…F55e0
-        - link "Finish"
+        - link "View Wallet"
     `);
   }
 
   async finish() {
-    await this.page.getByRole('link', { name: /Finish/i }).click();
+    await this.page.getByRole('link', { name: /View Wallet/i }).click();
   }
 }
 
@@ -164,7 +164,7 @@ export class GenerateWalletView {
 
   async ready() {
     await expect(
-      this.page.getByRole('link', { name: /Finish/i })
+      this.page.getByRole('link', { name: /View Wallets/i })
     ).toBeInViewport();
   }
 
@@ -174,12 +174,12 @@ export class GenerateWalletView {
         - navigation:
           - button "Go back"
         - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
-        - link "Finish"
+        - link "View Wallets"
     `);
   }
 
   async finish() {
-    await this.page.getByRole('link', { name: /Finish/i }).click();
+    await this.page.getByRole('link', { name: /View Wallets/i }).click();
   }
 }
 
@@ -188,7 +188,7 @@ export class AddressImportMessagesView {
 
   async ready() {
     await expect(
-      this.page.getByRole('link', { name: /Finish/i })
+      this.page.getByRole('link', { name: /View Wallets/i })
     ).toBeEnabled();
   }
 
@@ -198,12 +198,12 @@ export class AddressImportMessagesView {
         - navigation:
           - button "Go back"
         - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
-        - link "Finish"
+        - link "View Wallets"
     `);
   }
 
   async finish() {
-    await this.page.getByRole('link', { name: /Finish/i }).click();
+    await this.page.getByRole('link', { name: /View Wallets/i }).click();
   }
 }
 

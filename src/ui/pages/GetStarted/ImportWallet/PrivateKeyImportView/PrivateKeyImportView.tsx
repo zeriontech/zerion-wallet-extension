@@ -118,7 +118,7 @@ export function PrivateKeyImportView({
               style={{ width: '100%' }}
               ref={autoFocusRef}
             >
-              Finish
+              View Wallet
             </Button>
           </animated.div>
         ) : null}

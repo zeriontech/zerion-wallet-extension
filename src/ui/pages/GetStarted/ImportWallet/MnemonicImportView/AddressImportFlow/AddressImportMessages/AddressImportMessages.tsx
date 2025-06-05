@@ -122,7 +122,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
               style={{ width: '100%' }}
               ref={autoFocusRef}
             >
-              Finish
+              {values.length > 1 ? 'View Wallets' : 'View Wallet'}
             </Button>
           </animated.div>
         ) : null}

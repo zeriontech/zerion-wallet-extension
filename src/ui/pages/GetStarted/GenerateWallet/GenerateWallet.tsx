@@ -114,7 +114,7 @@ function GenerateWalletView() {
             {getError(finalizeMutation.error).message}
           </UIText>
         ) : null}
-        {ready && finalizeMutation.isSuccess ? (
+        {ready && finalizeMutation.isSuccess && generatedWallets ? (
           <animated.div style={style}>
             <Button
               as={UnstyledLink}
@@ -122,7 +122,7 @@ function GenerateWalletView() {
               style={{ width: '100%' }}
               ref={autoFocusRef}
             >
-              Finish
+              {generatedWallets.length > 1 ? 'View Wallets' : 'View Wallet'}
             </Button>
           </animated.div>
         ) : null}
