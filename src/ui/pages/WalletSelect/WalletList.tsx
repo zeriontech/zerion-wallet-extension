@@ -13,7 +13,7 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
+import { middot, NBSP } from 'src/ui/shared/typography';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
@@ -22,6 +22,7 @@ import { CopyButton } from 'src/ui/components/CopyButton';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import * as styles from './styles.module.css';
 
 function WalletListItem({
@@ -77,6 +78,9 @@ function WalletListItem({
       }}
     />
   );
+  const ecosystemPrefix =
+    getAddressType(wallet.address) === 'evm' ? 'Eth' : 'Sol';
+
   return (
     <>
       <UnstyledButton
@@ -129,7 +133,11 @@ function WalletListItem({
                             verticalAlign: 'middle',
                           }}
                         >
-                          {data.value}
+                          {`${
+                            data.type !== WalletNameType.domain
+                              ? `${ecosystemPrefix} ${middot} `
+                              : ''
+                          }${data.value}`}
                         </span>
                         {showAddressValues &&
                         data.type !== WalletNameType.address ? (

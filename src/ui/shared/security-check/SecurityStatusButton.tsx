@@ -33,7 +33,7 @@ const SECURITY_COLORS: Record<
     accent: 'var(--black)',
   },
   unknown: {
-    primary: 'var(--neutral-600)',
+    primary: 'var(--primary)',
     secondary: 'var(--neutral-100)',
     accent: 'var(--primary)',
   },
@@ -176,7 +176,7 @@ export function SecurityStatusButton({
               borderRadius: 100,
             }}
           >
-            <HStack gap={size === 'big' ? 12 : 0} alignItems="center">
+            <HStack gap={size === 'big' ? 12 : 4} alignItems="center">
               <SecurityCheckIcon
                 kind={kind}
                 iconSize={size === 'big' ? 32 : 28}

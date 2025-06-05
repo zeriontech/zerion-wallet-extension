@@ -1,13 +1,11 @@
 import React, { useRef } from 'react';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { Button } from 'src/ui/ui-kit/Button';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import CheckmarkIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
 import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
 import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
@@ -17,9 +15,9 @@ import {
 } from './SecurityStatusButton';
 
 const SECURITY_STATUS_TO_TITLE: Record<DappSecurityStatus, string> = {
-  error: 'Security Checks Unavailliable',
+  error: 'Unverified',
   loading: '',
-  unknown: 'Security Checks Unavailliable',
+  unknown: 'Unverified',
   phishing: 'Risks Found',
   ok: 'No Risks Found',
 };
@@ -59,10 +57,11 @@ function SecurityCheckDialogContent({ status }: { status: 'ok' | 'error' }) {
           }}
         />
         <VStack gap={16} style={{ position: 'relative' }}>
-          <UIText kind="headline/h3">Transaction Analysis Failed</UIText>
+          <UIText kind="headline/h3">Unverified</UIText>
           <UIText kind="body/regular">
-            We were unable to simulate the transaction or complete all security
-            checks. Please proceed with caution.
+            We couldn’t verify this website or complete security checks. Be
+            careful and connect only if you trust the source.Security checks are
+            powered by Blockaid.
           </UIText>
           <UIText kind="body/regular">
             Security checks are powered by Blockaid.
@@ -103,38 +102,15 @@ function SecurityCheckDialogContent({ status }: { status: 'ok' | 'error' }) {
         }}
       />
       <VStack gap={16} style={{ position: 'relative' }}>
-        <UIText kind="headline/h3">
-          Transaction simulation found no security risks
+        <UIText kind="headline/h3">No Risks Found</UIText>
+        <UIText kind="body/regular">
+          We scanned this website and found no malicious code or phishing
+          attempts. It appears safe to connect. Always stay cautious and
+          double-check before proceeding.
         </UIText>
-        <HStack gap={12} alignItems="center">
-          <CheckmarkIcon
-            style={{
-              color: 'var(--positive-500)',
-              ['--check-color' as string]: 'var(--positive-100)',
-            }}
-          />
-          <UIText kind="body/regular">
-            This contract is open source and audited
-          </UIText>
-        </HStack>
-        <HStack gap={12} alignItems="center">
-          <CheckmarkIcon
-            style={{
-              color: 'var(--positive-500)',
-              ['--check-color' as string]: 'var(--positive-100)',
-            }}
-          />
-          <UIText kind="body/regular">The website is verified</UIText>
-        </HStack>
-        <HStack gap={12} alignItems="center">
-          <CheckmarkIcon
-            style={{
-              color: 'var(--positive-500)',
-              ['--check-color' as string]: 'var(--positive-100)',
-            }}
-          />
-          <UIText kind="body/regular">Tokens involved are not honeypots</UIText>
-        </HStack>
+        <UIText kind="body/regular">
+          Security checks are powered by Blockaid.
+        </UIText>
       </VStack>
       <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
         <Button

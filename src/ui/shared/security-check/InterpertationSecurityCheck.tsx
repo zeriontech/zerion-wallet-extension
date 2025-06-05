@@ -14,8 +14,6 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import CheckmarkIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
 import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
 import { SecurityStatusButton } from './SecurityStatusButton';
@@ -118,7 +116,7 @@ function InterpretationDescritionDialog({
           }}
         />
         <VStack gap={16} style={{ position: 'relative' }}>
-          <UIText kind="headline/h3">Transaction Analysis Failed</UIText>
+          <UIText kind="headline/h3">Unverified</UIText>
           <UIText kind="body/regular">
             We were unable to simulate the transaction or complete all security
             checks. Please proceed with caution.
@@ -162,38 +160,14 @@ function InterpretationDescritionDialog({
         }}
       />
       <VStack gap={16} style={{ position: 'relative' }}>
-        <UIText kind="headline/h3">
-          Transaction simulation found no security risks
+        <UIText kind="headline/h3">No Risks Found</UIText>
+        <UIText kind="body/regular">
+          Our simulation found no security issues. However, it is always crucial
+          to double-check and proceed with caution.
         </UIText>
-        <HStack gap={12} alignItems="center">
-          <CheckmarkIcon
-            style={{
-              color: 'var(--positive-500)',
-              ['--check-color' as string]: 'var(--positive-100)',
-            }}
-          />
-          <UIText kind="body/regular">
-            This contract is open source and audited
-          </UIText>
-        </HStack>
-        <HStack gap={12} alignItems="center">
-          <CheckmarkIcon
-            style={{
-              color: 'var(--positive-500)',
-              ['--check-color' as string]: 'var(--positive-100)',
-            }}
-          />
-          <UIText kind="body/regular">The website is verified</UIText>
-        </HStack>
-        <HStack gap={12} alignItems="center">
-          <CheckmarkIcon
-            style={{
-              color: 'var(--positive-500)',
-              ['--check-color' as string]: 'var(--positive-100)',
-            }}
-          />
-          <UIText kind="body/regular">Tokens involved are not honeypots</UIText>
-        </HStack>
+        <UIText kind="body/regular">
+          Security checks are powered by Blockaid.
+        </UIText>
       </VStack>
       <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
         <Button
