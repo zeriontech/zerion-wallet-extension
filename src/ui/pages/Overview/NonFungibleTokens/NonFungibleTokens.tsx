@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import type { AddressNFT } from 'defi-sdk';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
+import comingSoonImgSrc from 'url:src/ui/assets/coming-soon@2x.png';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
 import { NBSP } from 'src/ui/shared/typography';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -20,7 +21,10 @@ import {
   getNftId,
   useAddressNfts,
 } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import {
+  useNetworkConfig,
+  useNetworks,
+} from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
@@ -35,6 +39,8 @@ import {
 import { useStore } from '@store-unit/react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -57,7 +63,7 @@ function NFTItem({
   const price = item.prices.converted?.total_floor_price;
   const { networks } = useNetworks();
 
-  const network = networks?.getNetworkByName(createChain(item.chain));
+  const network = networks?.getByNetworkId(createChain(item.chain));
 
   return (
     <UnstyledLink
@@ -181,13 +187,18 @@ export function NonFungibleTokens({
     currency,
   });
   const { value: nftTotalValue } = useNftsTotalValue(params);
-  const { networks } = useNetworks();
-
   const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
-  const isSupportedByBackend =
+
+  // Derive a canonical chain to check nft support if current chain value is "all"
+  const referenceChain =
     chainValue === NetworkSelectValue.All
-      ? true
-      : networks?.supports('nft_positions', createChain(chainValue));
+      ? isSolanaAddress(singleAddressNormalized)
+        ? NetworkId.Solana
+        : NetworkId.Ethereum
+      : chainValue;
+  const { data: network } = useNetworkConfig(referenceChain);
+
+  const isSupportedByBackend = Boolean(network?.supports_nft_positions);
 
   const {
     value: items,
@@ -248,12 +259,17 @@ export function NonFungibleTokens({
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
       >
         {emptyNetworkBalance}
-        <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
-          <span style={{ fontSize: 20 }}>💔</span>
-          <UIText kind="body/regular">
-            NFTs for{' '}
-            {networks?.getChainName(createChain(chainValue)) || chainValue} are
-            not supported yet
+        <VStack
+          gap={16}
+          style={{ padding: 20, textAlign: 'center', placeItems: 'center' }}
+        >
+          <img style={{ width: 80 }} src={comingSoonImgSrc} alt="" />
+          <UIText kind="body/accent">
+            {referenceChain === 'solana'
+              ? 'NFTs coming soon'
+              : `NFTs for ${
+                  network?.name || referenceChain
+                } are not supported yet`}
           </UIText>
         </VStack>
       </CenteredFillViewportView>
