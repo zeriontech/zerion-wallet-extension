@@ -25,7 +25,11 @@ export function interpretTransaction({
     new Promise<InterpretResponse>((resolve) => {
       let value: InterpretResponse | null = null;
 
-      const normalizedTx = { ...transaction };
+      const normalizedTx = {
+        ...transaction,
+        maxFee: transaction.maxFeePerGas,
+        maxPriorityFee: transaction.maxPriorityFeePerGas,
+      };
       const gas = getGas(transaction);
       if (gas != null) {
         normalizedTx.gas = valueToHex(gas);

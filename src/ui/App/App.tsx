@@ -60,7 +60,6 @@ import { HandshakeFailure } from '../components/HandshakeFailure';
 import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
-import { SignInWithEthereum } from '../pages/SignInWithEthereum';
 import { TestnetModeGuard } from '../pages/TestnetModeGuard';
 import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
@@ -308,14 +307,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route path="/testnetModeGuard" element={<TestnetModeGuard />} />
-          <Route
-            path="/siwe/*"
-            element={
-              <RequireAuth>
-                <SignInWithEthereum />
-              </RequireAuth>
-            }
-          />
           <Route
             path="/signMessage"
             element={

@@ -1,1 +1,0 @@
-export { InterpretationState } from './InterpretationState';

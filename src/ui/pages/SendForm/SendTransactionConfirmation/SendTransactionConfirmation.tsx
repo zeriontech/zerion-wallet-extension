@@ -38,7 +38,6 @@ export function SendTransactionConfirmation({
     <TransactionConfirmationView
       title="Send"
       wallet={wallet}
-      showApplicationLine={false}
       chain={chain}
       transaction={transaction}
       configuration={toConfiguration(formState)}
