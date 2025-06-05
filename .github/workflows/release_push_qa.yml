@@ -36,6 +36,8 @@ jobs:
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_LOYALTY_FLOW: on
           FEATURE_BRIDGE_FORM: on
+          FEATURE_SOLANA: on
+          BACKEND_ENV: solana
         run: |
           npm install
           npm run build:production
