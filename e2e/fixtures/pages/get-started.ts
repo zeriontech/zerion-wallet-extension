@@ -120,7 +120,7 @@ export class PrivateKeyImportView {
 
   async ready() {
     await expect(
-      this.page.getByRole('button', { name: /Finish/i })
+      this.page.getByRole('link', { name: /View Wallet/i })
     ).toBeEnabled();
   }
 
@@ -130,16 +130,13 @@ export class PrivateKeyImportView {
         - navigation:
           - button "Go back"
           - text: Private Key
-        - img
-        - text: Hi 👋 We're generating your wallet and making sure it's encrypted with your passcode. This should only take a couple of minutes.
-        - img
-        - text: All done! Your wallet has been imported 🚀 You can now use 0x04d9a18e…C03F55e0
-        - button "Finish"
+        - text: Your wallet is ready Eth · 0x04d9a…F55e0
+        - link "View Wallet"
     `);
   }
 
   async finish() {
-    await this.page.getByRole('button', { name: /Finish/i }).click();
+    await this.page.getByRole('link', { name: /View Wallet/i }).click();
   }
 }
 
@@ -167,7 +164,7 @@ export class GenerateWalletView {
 
   async ready() {
     await expect(
-      this.page.getByRole('link', { name: /Finish/i })
+      this.page.getByRole('link', { name: /View Wallets/i })
     ).toBeInViewport();
   }
 
@@ -176,19 +173,13 @@ export class GenerateWalletView {
       - document:
         - navigation:
           - button "Go back"
-        - heading "Get Started" [level=1]
-        - img
-        - text: Wallet will be encrypted with your password
-        - img
-        - text: Hi 👋 We're generating your wallet and making sure it's encrypted with your passcode. This should only take a couple of minutes.
-        - img
-        - text: /All done! Your wallet has been created 🚀 You can now use 0x[\\w\\W]{8}…[\\w\\W]{8}/
-        - link "Finish"
+        - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
+        - link "View Wallets"
     `);
   }
 
   async finish() {
-    await this.page.getByRole('link', { name: /Finish/i }).click();
+    await this.page.getByRole('link', { name: /View Wallets/i }).click();
   }
 }
 
@@ -197,7 +188,7 @@ export class AddressImportMessagesView {
 
   async ready() {
     await expect(
-      this.page.getByRole('link', { name: /Finish/i })
+      this.page.getByRole('link', { name: /View Wallets/i })
     ).toBeEnabled();
   }
 
@@ -206,18 +197,13 @@ export class AddressImportMessagesView {
       - document:
         - navigation:
           - button "Go back"
-        - img
-        - text: ⏳ Checking your wallet history on the blockchain... 🔐 Encrypting your wallet with your password...
-        - img
-        - text: All done! Your wallets have been imported 🚀
-        - img
-        - text: /Congrats! Welcome on board 0x.+/
-        - link "Finish"
+        - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
+        - link "View Wallets"
     `);
   }
 
   async finish() {
-    await this.page.getByRole('link', { name: /Finish/i }).click();
+    await this.page.getByRole('link', { name: /View Wallets/i }).click();
   }
 }
 

@@ -1,0 +1,69 @@
+@keyframes scaleUpDown {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fullRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animatedDecoration {
+  animation: scaleUpDown 3s infinite ease-in-out, fullRotate 10s infinite linear;
+}
+
+.fancyBackground {
+  position: absolute;
+  inset: 0 0 0 0;
+  border-radius: 400px;
+  opacity: 0.25;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    #f00 0deg,
+    rgba(255, 246, 39, 0.85) 78.75deg,
+    #53ff5a 136.8750035762787deg,
+    #0ff 200.62500715255737deg,
+    #0500ff 268.1250071525574deg,
+    #700092 307.5000071525574deg,
+    #f00 360deg
+  );
+  filter: blur(60px);
+}
+
+.gradientText {
+  background: linear-gradient(
+    81deg,
+    #cd657f 0%,
+    #8a6df1 20%,
+    #71a1f3 35%,
+    #3bb1ed 50%,
+    #71a1f3 65%,
+    #8a6df1 80%,
+    #cd657f 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientMove 4s linear infinite;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}

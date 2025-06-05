@@ -52,6 +52,7 @@ jobs:
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_BRIDGE_FORM: on
+          FEATURE_SOLANA: on
         run: |
           npm install
           npm run build:production

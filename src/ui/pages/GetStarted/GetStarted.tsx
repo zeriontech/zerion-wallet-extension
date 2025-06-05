@@ -51,7 +51,6 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Media } from 'src/ui/ui-kit/Media';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
-import { ellipsis } from 'src/ui/shared/typography';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 import { AddReadonlyAddress } from './AddReadonlyAddress';
@@ -434,9 +433,24 @@ export function EcosystemOptionsList({
                 <EcosystemEthereumIcon style={{ width: 44, height: 44 }} />
                 <VStack gap={0}>
                   <UIText kind="body/accent">Ethereum Ecosystem</UIText>
-                  <UIText kind="small/regular" color="var(--neutral-600)">
-                    Base, Optimism, Polygon, Binance{ellipsis}
-                  </UIText>
+
+                  <HStack gap={4} alignItems="center">
+                    <img
+                      style={{
+                        width: 76,
+                        height: 20,
+                        position: 'relative',
+                        top: 1,
+                        left: -2,
+                      }}
+                      alt="Evm Chains"
+                      src="https://cdn.zerion.io/images/dna-assets/evm-chains.png"
+                      srcSet="https://cdn.zerion.io/images/dna-assets/evm-chains.png, https://cdn.zerion.io/images/dna-assets/evm-chains_2x.png 2x"
+                    />
+                    <UIText kind="small/regular" color="var(--neutral-600)">
+                      +60 more
+                    </UIText>
+                  </HStack>
                 </VStack>
               </HStack>
               <span>
