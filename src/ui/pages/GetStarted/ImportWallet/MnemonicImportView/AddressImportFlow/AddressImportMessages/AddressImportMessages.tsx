@@ -3,26 +3,24 @@ import { isTruthy } from 'is-truthy-ts';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
-import { Media } from 'src/ui/ui-kit/Media';
-import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
-import { PageBottom } from 'src/ui/components/PageBottom';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
-import { DecorativeMessage } from 'src/ui/pages/GetStarted/components/DecorativeMessage';
-import { WithConfetti } from 'src/ui/pages/GetStarted/components/DecorativeMessage/DecorativeMessage';
 import { getError } from 'src/shared/errors/getError';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { ViewError } from 'src/ui/components/ViewError';
-import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import {
+  ImportBackground,
+  ImportDecoration,
+} from 'src/ui/pages/GetStarted/components/importDecoration/ImportDecoration';
+import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
+import { useBackgroundKind } from 'src/ui/components/Background';
 
 export function OnMount({
   children,
@@ -36,11 +34,12 @@ export function OnMount({
   return children as JSX.Element;
 }
 
+const ANIMATION_DURATION = 1500;
+
 function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
-  const [ready, setReady] = useState(false);
-  const [messages, setMessages] = useState(() => new Set<React.ReactNode>());
-  const addMessage = (message: React.ReactNode) =>
-    setMessages((messages) => new Set(messages).add(message));
+  useBackgroundKind({ kind: 'transparent' });
+  const ready = useRenderDelay(ANIMATION_DURATION);
+  const buttonFocusReady = useRenderDelay(ANIMATION_DURATION + 300);
   const [idempotentRequest] = useState(() => new IdempotentRequest());
 
   const {
@@ -60,97 +59,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
       });
     },
   });
-  useEffect(() => {
-    const ids: NodeJS.Timeout[] = [];
-    const msg = (msg: React.ReactNode, delay: number) =>
-      setTimeout(() => addMessage(msg), delay);
-    ids.push(
-      msg(
-        <DecorativeMessage
-          key={0}
-          text={
-            <UIText kind="small/regular">
-              ⏳ Checking your wallet history on the blockchain...
-            </UIText>
-          }
-        />,
-        100
-      ),
-      msg(
-        <DecorativeMessage
-          key={1}
-          isConsecutive={true}
-          text={
-            <UIText kind="small/regular">
-              🔐 Encrypting your wallet with your password...
-            </UIText>
-          }
-        />,
-        1200
-      ),
-      msg(
-        <DecorativeMessage
-          key={2}
-          isConsecutive={false}
-          text={
-            <UIText kind="headline/h3">
-              All done!{' '}
-              <span style={{ color: 'var(--primary)' }}>
-                Your wallets have been imported 🚀
-              </span>
-            </UIText>
-          }
-        />,
-        2400
-      ),
-      msg(
-        <OnMount key={3} onMount={() => setReady(true)}>
-          <WithConfetti>
-            <DecorativeMessage
-              isConsecutive={true}
-              text={
-                <VStack gap={8}>
-                  <UIText kind="headline/h3">
-                    <CheckmarkCheckedIcon
-                      style={{
-                        color: 'var(--positive-500)',
-                        verticalAlign: 'middle',
-                      }}
-                    />{' '}
-                    <span style={{ verticalAlign: 'middle' }}>Congrats!</span>
-                  </UIText>
-                  <UIText kind="small/regular">Welcome on board</UIText>
-                  {values.map((wallet) => (
-                    <Media
-                      key={wallet.address}
-                      image={
-                        <WalletAvatar
-                          address={wallet.address}
-                          active={false}
-                          size={32}
-                          borderRadius={4}
-                        />
-                      }
-                      text={
-                        <UIText kind="body/regular">
-                          <WalletDisplayName wallet={wallet} padding={8} />
-                        </UIText>
-                      }
-                      detailText={null}
-                    />
-                  ))}
-                </VStack>
-              }
-            />
-          </WithConfetti>
-        </OnMount>,
-        3200
-      )
-    );
-    return () => {
-      ids.forEach((id) => clearTimeout(id));
-    };
-  }, [values]);
+
   const { style, trigger } = useTransformTrigger({
     scale: 1.1,
     timing: 100,
@@ -161,10 +70,8 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
     }
   }, [isSuccess, ready, trigger]);
 
-  const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
   useEffect(() => {
     if (ready) {
-      autoFocusRef.current?.focus();
       const mnemonics = values
         .map((wallet) => wallet.mnemonic)
         .filter(isTruthy);
@@ -173,14 +80,31 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
     }
   }, [finalize, ready, values]);
 
+  const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    if (buttonFocusReady) {
+      autoFocusRef.current?.focus();
+    }
+  }, [buttonFocusReady]);
+
   return (
     <PageColumn>
-      <PageTop />
-      <VStack gap={8} style={{ paddingBottom: 24 }}>
-        {messages}
-      </VStack>
+      <ImportBackground animate={!ready} />
+      <ImportDecoration
+        wallets={values}
+        isLoading={!ready}
+        loadingTitle="Importing wallets"
+      />
 
-      <VStack gap={4} style={{ marginTop: 'auto', marginBottom: 16 }}>
+      <VStack
+        gap={4}
+        style={{
+          marginTop: 'auto',
+          marginBottom: 16,
+          position: 'relative',
+          height: 44,
+        }}
+      >
         {finalizeMutation.isError ? (
           <UIText
             style={{ textAlign: 'center', overflowWrap: 'break-word' }}
@@ -203,7 +127,6 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
           </animated.div>
         ) : null}
       </VStack>
-      <PageBottom />
     </PageColumn>
   );
 }

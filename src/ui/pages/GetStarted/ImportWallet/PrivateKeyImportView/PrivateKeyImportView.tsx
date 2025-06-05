@@ -1,10 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
-import { PageBottom } from 'src/ui/components/PageBottom';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -15,69 +12,23 @@ import { IdempotentRequest } from 'src/ui/shared/IdempotentRequest';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import { unwrapOpaqueType } from 'src/shared/type-utils/Opaque';
-import {
-  DecorativeMessage,
-  DecorativeMessageDone,
-} from '../../components/DecorativeMessage';
+import { animated } from '@react-spring/web';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
-
-function PrivateKeyImportFlow({
-  address,
-  errorMessage,
-  onSubmit,
-  isPreparing,
-}: {
-  address: string | null;
-  errorMessage: string | null;
-  onSubmit: () => void;
-  isPreparing: boolean;
-}) {
-  const autoFocusRef = useRef<HTMLButtonElement | null>(null);
-  const isDonePreparing = !isPreparing;
-  useEffect(() => {
-    if (isDonePreparing) {
-      autoFocusRef.current?.focus();
-    }
-  }, [isDonePreparing]);
-  return (
-    <>
-      <VStack gap={8}>
-        <DecorativeMessage
-          text={
-            <UIText kind="small/regular">
-              Hi 👋 We're generating your wallet and making sure it's encrypted
-              with your passcode. This should only take a couple of minutes.
-            </UIText>
-          }
-        />
-        {address ? (
-          <DecorativeMessageDone messageKind="import" addresses={[address]} />
-        ) : null}
-        {errorMessage ? (
-          <UIText kind="small/regular" color="var(--negative-500)">
-            Could not import wallet {errorMessage ? `(${errorMessage})` : null}
-          </UIText>
-        ) : null}
-      </VStack>
-
-      <Button
-        ref={autoFocusRef}
-        style={{ marginTop: 'auto', marginBottom: 16 }}
-        onClick={onSubmit}
-        disabled={isPreparing}
-      >
-        {isPreparing ? 'Recovering...' : 'Finish'}
-      </Button>
-    </>
-  );
-}
+import {
+  ImportBackground,
+  ImportDecoration,
+} from '../../components/importDecoration/ImportDecoration';
 
 export function PrivateKeyImportView({
   locationStateStore,
 }: {
   locationStateStore: MemoryLocationState;
 }) {
+  useBackgroundKind({ kind: 'transparent' });
   const [idempotentRequest] = useState(() => new IdempotentRequest());
   const { value: privateKey } = useMemoryLocationState(locationStateStore);
   if (!privateKey) {
@@ -85,7 +36,6 @@ export function PrivateKeyImportView({
       'Location state for PrivateKeyImportView is expected to have a value property'
     );
   }
-  const navigate = useNavigate();
   const { data, mutate, isIdle, isError, ...importWallet } = useMutation({
     mutationFn: async (input: LocallyEncoded) => {
       await new Promise((r) => setTimeout(r, 1000));
@@ -112,20 +62,67 @@ export function PrivateKeyImportView({
     mutate(privateKey);
   }, [privateKey, mutate]);
 
+  const { style, trigger } = useTransformTrigger({
+    scale: 1.1,
+    timing: 100,
+  });
+  const ready = !importWallet.isLoading;
+  useEffect(() => {
+    if (ready) {
+      trigger();
+    }
+  }, [ready, trigger]);
+
+  const autoFocusRef = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    if (ready) {
+      setTimeout(() => autoFocusRef.current?.focus(), 100);
+    }
+  }, [ready]);
+
   if (isIdle) {
     return null;
   }
   return (
     <PageColumn>
-      <PageTop />
-
-      <PrivateKeyImportFlow
-        address={data?.address ?? null}
-        errorMessage={importError?.message ?? null}
-        isPreparing={importWallet.isLoading}
-        onSubmit={() => navigate('/overview')}
+      <ImportBackground animate={!ready} />
+      <ImportDecoration
+        wallets={data ? [data] : []}
+        isLoading={!ready}
+        loadingTitle="Importing wallet"
       />
-      <PageBottom />
+
+      <VStack
+        gap={4}
+        style={{
+          marginTop: 'auto',
+          marginBottom: 16,
+          position: 'relative',
+          height: 44,
+        }}
+      >
+        {importError?.message ? (
+          <UIText
+            style={{ textAlign: 'center', overflowWrap: 'break-word' }}
+            kind="caption/regular"
+            color="var(--negative-500)"
+          >
+            {importError.message}
+          </UIText>
+        ) : null}
+        {ready ? (
+          <animated.div style={style}>
+            <Button
+              as={UnstyledLink}
+              to="/overview"
+              style={{ width: '100%' }}
+              ref={autoFocusRef}
+            >
+              Finish
+            </Button>
+          </animated.div>
+        ) : null}
+      </VStack>
     </PageColumn>
   );
 }
