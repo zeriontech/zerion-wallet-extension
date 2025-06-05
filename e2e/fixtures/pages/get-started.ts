@@ -173,7 +173,7 @@ export class GenerateWalletView {
       - document:
         - navigation:
           - button "Go back"
-         - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
+        - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
         - link "Finish"
     `);
   }
