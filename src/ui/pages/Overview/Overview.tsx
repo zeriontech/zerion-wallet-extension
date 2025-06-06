@@ -89,7 +89,6 @@ import {
   getStickyOffset,
   offsetValues,
 } from './getTabsOffset';
-import { EmptyPositionsView } from './Positions/EmptyPositionsView';
 
 function PendingTransactionsIndicator() {
   const pendingTxs = usePendingTransactions();
@@ -740,15 +739,11 @@ function OverviewComponent() {
                       {!isReadonlyGroup && loyaltyEnabled ? (
                         <XpDropBanner address={params.address} />
                       ) : null}
-                      {!isLoadingPortfolio && !walletPortfolio?.totalValue ? (
-                        <EmptyPositionsView />
-                      ) : (
-                        <Positions
-                          dappChain={dappChain || null}
-                          selectedChain={selectedChain}
-                          onChainChange={setSelectedChain}
-                        />
-                      )}
+                      <Positions
+                        dappChain={dappChain || null}
+                        selectedChain={selectedChain}
+                        onChainChange={setSelectedChain}
+                      />
                     </VStack>
                   </TestnetworkGuard>
                 </ViewSuspense>
