@@ -29,7 +29,7 @@ export class WalletGroupSelectPage {
   });
 
   readonly createNewBackupLink = this.page.getByRole('link', {
-    name: /Create New Backup/i,
+    name: /New Recovery Phrase/i,
   });
 
   constructor(public readonly page: Page) {}
@@ -39,10 +39,13 @@ export class WalletGroupSelectPage {
       - document:
         - navigation:
           - button "Go back"
-        - text: Select Backup
-        - 'link /Wallet Group #1 0x[\\w\\W]{4}…[\\w\\W]{4}/':
+        - text: Select Wallet Group
+        - button "Each group contains wallets that are associated with same recovery phrase, stored locally on your device. Zerion does not have access to this data. We do not cross-associate wallet addresses or have a way to know that these wallets are grouped."
+        - 'link /Wallet Group #1 Ethereum wallets 0x[\\w\\W]{4}…[\\w\\W]{4} Solana wallets [\\w\\W]{4}…[\\w\\W]{4}/':
           - img
-        - link "Create New Backup":
+          - img
+          - img
+        - link "New Recovery Phrase":
           - img
     `);
   }
