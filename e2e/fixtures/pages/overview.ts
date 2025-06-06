@@ -3,13 +3,13 @@ import { ExtensionPage } from './extension-page';
 
 export class OverviewPage extends ExtensionPage {
   async ready() {
-    await expect(this.page.getByText(/No assets yet/i)).toBeInViewport();
+    await expect(this.page.getByText(/Get started/i)).toBeInViewport();
   }
 
   async matchesSnapshot() {
     await expect(this.page.locator('html')).toMatchAriaSnapshot(`
       - document:
-        - link /0x[\\w\\W]{5}…[\\w\\W]{5}/:
+        - link "0xc3A66…5Cbb1":
           - img
         - button "Copy Address":
           - img
@@ -36,15 +36,19 @@ export class OverviewPage extends ExtensionPage {
           - listitem:
             - link "Swap":
               - img
-        - link "Invite Friends Earn XP & Gift Free Premium":
-          - img
+        - img "Solana banner decoration"
         - button "close":
           - img
+        - img
+        - text: Solana & Zerion Zerion supports Solana wow
         - link "Tokens"
         - link "NFTs"
         - link "History"
         - link "Perks"
-        - text: 🥺 No assets yet
+        - img "Empty Wallet Cover"
+        - text: Get started By adding crypto to your wallet
+        - link "Buy Crypto with Card"
+        - link "Receive from Another Wallet"
     `);
   }
 }

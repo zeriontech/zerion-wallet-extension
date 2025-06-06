@@ -43,14 +43,14 @@ export function SolanaBanner({ onDismiss }: { onDismiss: () => void }) {
         />
       </div>
       <UIText kind="headline/h3" color="var(--always-black)">
-        Solana & Zerion
+        Solana is Live!
       </UIText>
       <UIText
         kind="small/regular"
         color="var(--always-black)"
         style={{ position: 'relative' }}
       >
-        Zerion supports Solana wow
+        Trade on Solana with Zerion
       </UIText>
     </VStack>
   );
