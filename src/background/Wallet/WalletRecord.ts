@@ -851,6 +851,7 @@ export class WalletRecordModel {
       mintDnaBannerDismissed: false,
       upgradeDnaBannerDismissed: false,
       inviteFriendsBannerDismissed: false,
+      solanaBannerDismissed: false,
       exploreZeroBannerDismissed: false,
       backupReminderDismissedTime: 0,
       enableTestnets: false,

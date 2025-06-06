@@ -10,7 +10,8 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { InviteFriendsBanner } from 'src/ui/features/referral-program/InviteFriendsBanner';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ENABLE_DNA_BANNERS } from 'src/ui/DNA/components/DnaBanners';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
+import { FEATURE_LOYALTY_FLOW, FEATURE_SOLANA } from 'src/env/config';
+import { SolanaBanner } from './SolanaBanner';
 
 function DnaBanners({ address }: { address: string }) {
   const { preferences, setPreferences } = usePreferences();
@@ -63,13 +64,23 @@ export function Banners({ address }: { address: string }) {
     loyaltyEnabled &&
     !preferences?.invitationBannerDismissed;
 
+  const solanaBannerVisible =
+    FEATURE_SOLANA === 'on' && !preferences?.solanaBannerDismissed;
+
   if (isRemoteConfigLoading) {
     return null;
   }
 
   return (
     <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
-      {invitationBannerVisible ? (
+      {solanaBannerVisible ? (
+        <>
+          <SolanaBanner
+            onDismiss={() => setPreferences({ solanaBannerDismissed: true })}
+          />
+          <Spacer height={24} />
+        </>
+      ) : invitationBannerVisible ? (
         <>
           <InviteFriendsBanner
             onDismiss={() =>

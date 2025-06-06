@@ -69,7 +69,6 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
-import { invariant } from 'src/shared/invariant';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
@@ -90,6 +89,7 @@ import {
   getStickyOffset,
   offsetValues,
 } from './getTabsOffset';
+import { EmptyPositionsView } from './Positions/EmptyPositionsView';
 
 function PendingTransactionsIndicator() {
   const pendingTxs = usePendingTransactions();
@@ -414,8 +414,10 @@ function OverviewComponent() {
   const { data: siteChain } = useQuery({
     queryKey: ['requestChainForOrigin', activeTabOrigin, address],
     queryFn: async () => {
-      invariant(activeTabOrigin, 'activeTabOrigin param missing');
-      return requestChainForOrigin(activeTabOrigin, getAddressType(address));
+      if (activeTabOrigin) {
+        return requestChainForOrigin(activeTabOrigin, getAddressType(address));
+      }
+      return null;
     },
     enabled: Boolean(activeTabOrigin),
     useErrorBoundary: true,
@@ -738,11 +740,15 @@ function OverviewComponent() {
                       {!isReadonlyGroup && loyaltyEnabled ? (
                         <XpDropBanner address={params.address} />
                       ) : null}
-                      <Positions
-                        dappChain={dappChain || null}
-                        selectedChain={selectedChain}
-                        onChainChange={setSelectedChain}
-                      />
+                      {!isLoadingPortfolio && !walletPortfolio?.totalValue ? (
+                        <EmptyPositionsView />
+                      ) : (
+                        <Positions
+                          dappChain={dappChain || null}
+                          selectedChain={selectedChain}
+                          onChainChange={setSelectedChain}
+                        />
+                      )}
                     </VStack>
                   </TestnetworkGuard>
                 </ViewSuspense>
