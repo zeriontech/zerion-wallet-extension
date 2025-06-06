@@ -40,7 +40,7 @@ export class OverviewPage extends ExtensionPage {
         - button "close":
           - img
         - img
-        - text: Solana & Zerion Zerion supports Solana wow
+        - text: Solana is Live! Trade on Solana with Zerion
         - link "Tokens"
         - link "NFTs"
         - link "History"
