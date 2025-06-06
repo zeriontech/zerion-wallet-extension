@@ -78,6 +78,7 @@ import {
 } from '../getTabsOffset';
 import { DappLink } from './DappLink';
 import { NetworkBalance } from './NetworkBalance';
+import { EmptyPositionsView } from './EmptyPositionsView';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -896,16 +897,30 @@ export function Positions({
     </div>
   );
 
-  const renderEmptyViewForNetwork = () => (
-    <CenteredFillViewportView
-      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-    >
-      {emptyNetworkBalance}
-      <DelayedRender delay={50}>
-        <EmptyView>No assets yet</EmptyView>
-      </DelayedRender>
-    </CenteredFillViewportView>
-  );
+  const renderEmptyViewForNetwork = () =>
+    chainValue === NetworkSelectValue.All ? (
+      <VStack gap={8}>
+        <div style={{ paddingInline: 16 }}>
+          <NetworkBalance
+            standard={addrIsSolana ? 'solana' : 'evm'}
+            dappChain={dappChain}
+            selectedChain={selectedChain}
+            onChange={onChainChange}
+            value={null}
+          />
+        </div>
+        <EmptyPositionsView />
+      </VStack>
+    ) : (
+      <CenteredFillViewportView
+        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+      >
+        {emptyNetworkBalance}
+        <DelayedRender delay={50}>
+          <EmptyView>No assets yet</EmptyView>
+        </DelayedRender>
+      </CenteredFillViewportView>
+    );
   const renderLoadingViewForNetwork = () => (
     <CenteredFillViewportView
       maxHeight={getGrownTabMaxHeight(offsetValuesState)}
