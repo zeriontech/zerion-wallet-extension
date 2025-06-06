@@ -51,9 +51,11 @@ export function createGroups({
     .getDefaultNetworks(standard)
     .filter((item) => Boolean(item.is_testnet) === testnetMode)
     .filter(filterPredicate);
+  const pinnedNetworkId =
+    standard === 'evm' ? NetworkId.Zero : NetworkId.Solana;
   const otherNetworkPredicate = (network: NetworkConfig) => {
     return (
-      network.id !== NetworkId.Zero &&
+      network.id !== pinnedNetworkId &&
       (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id))
     );
   };
@@ -73,7 +75,7 @@ export function createGroups({
                 : null
             )
           ),
-        (item) => item.id === NetworkId.Zero
+        (item) => item.id === pinnedNetworkId
       ),
     },
     {

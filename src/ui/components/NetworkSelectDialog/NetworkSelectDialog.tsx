@@ -31,8 +31,6 @@ import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { bringToFront } from 'src/shared/array-mutations';
-import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
@@ -257,10 +255,7 @@ function SectionView({
       rawGroups.map((group) => {
         return {
           ...group,
-          items: bringToFront(
-            group.items.filter((network) => !network.hidden),
-            (item) => item.id === NetworkId.Zero
-          ),
+          items: group.items.filter((network) => !network.hidden),
         };
       }),
     [rawGroups]
