@@ -123,7 +123,7 @@ function useMinedAndPendingAddressActions({
       actions_search_query: searchQuery,
     },
     {
-      limit: 30,
+      limit: 10,
       listenForUpdates: true,
       paginatedCacheMode: 'first-page',
       enabled: isSupportedByBackend,

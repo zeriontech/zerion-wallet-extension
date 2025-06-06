@@ -162,6 +162,7 @@ export function CreateUser() {
             <Spacer height={32} />
             <Button
               style={{ width: '100%' }}
+              disabled={values.size === 0}
               onClick={() => {
                 handleSubmit();
               }}

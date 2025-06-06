@@ -50,7 +50,12 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Media } from 'src/ui/ui-kit/Media';
-import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import {
+  BLOCKCHAIN_TYPES,
+  type BlockchainType,
+} from 'src/shared/wallet/classifiers';
+import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
+import { groupByEcosystem } from '../ManageWallets/shared/groupByEcosystem';
 import { ImportWallet } from './ImportWallet';
 import { GenerateWallet } from './GenerateWallet';
 import { AddReadonlyAddress } from './AddReadonlyAddress';
@@ -310,7 +315,7 @@ function WalletGroupSelect() {
     [walletGroups]
   );
   useBackgroundKind(whiteBackgroundKind);
-  const title = 'Select Backup';
+  const title = 'Select Wallet Group';
   const dialogRef = useRef<HTMLDialogElementInterface>(null);
   if (isLoading) {
     return null;
@@ -371,6 +376,7 @@ function WalletGroupSelect() {
       <Spacer height={16} />
       <VStack gap={8}>
         {mnemonicGroups.map((group) => {
+          const byEcosystem = groupByEcosystem(group.walletContainer.wallets);
           return (
             <TemporaryListItem
               key={group.id}
@@ -380,15 +386,35 @@ function WalletGroupSelect() {
               )}
             >
               <AngleRightRow>
-                <VStack gap={8}>
-                  <UIText kind="body/accent">
+                <VStack gap={FEATURE_SOLANA === 'on' ? 20 : 8}>
+                  <UIText
+                    kind="small/accent"
+                    style={{ overflowWrap: 'break-word' }}
+                  >
                     {getGroupDisplayName(group.name)}
                   </UIText>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {group.walletContainer.wallets.map((wallet) => (
-                      <AddressBadge key={wallet.address} wallet={wallet} />
-                    ))}
-                  </div>
+                  {BLOCKCHAIN_TYPES.filter(
+                    (blockchainType) => blockchainType in byEcosystem
+                  ).map((blockchainType) => {
+                    const wallets = byEcosystem[blockchainType];
+                    return (
+                      <VStack key={blockchainType} gap={8}>
+                        {FEATURE_SOLANA === 'on' ? (
+                          <BlockchainTitleHelper kind={blockchainType} />
+                        ) : null}
+                        <div
+                          style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}
+                        >
+                          {wallets.map((wallet) => (
+                            <AddressBadge
+                              key={wallet.address}
+                              wallet={wallet}
+                            />
+                          ))}
+                        </div>
+                      </VStack>
+                    );
+                  })}
                 </VStack>
               </AngleRightRow>
             </TemporaryListItem>
@@ -401,7 +427,7 @@ function WalletGroupSelect() {
             <SpaceZone backgroundColor="var(--actions-default)">
               <AddCircleIcon style={{ color: 'var(--always-white)' }} />
             </SpaceZone>
-            <UIText kind="body/accent">Create New Backup</UIText>
+            <UIText kind="body/accent">New Recovery Phrase</UIText>
           </HStack>
         </TemporaryListItem>
       </VStack>

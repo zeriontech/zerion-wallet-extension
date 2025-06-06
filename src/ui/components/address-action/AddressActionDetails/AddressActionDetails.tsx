@@ -5,6 +5,9 @@ import type { Networks } from 'src/modules/networks/Networks';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { InterpretationSecurityCheck } from 'src/ui/shared/security-check';
+import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
+import { RenderArea } from 'react-area';
 import { RecipientLine } from '../RecipientLine';
 import { ApplicationLine } from '../ApplicationLine';
 import { Transfers } from '../Transfers';
@@ -78,6 +81,18 @@ export function AddressActionDetails({
   );
 }
 
+const UNSUPPORTED_NETWORK_INTERPRETATION: InterpretResponse = {
+  action: null,
+  warnings: [
+    {
+      severity: 'Gray',
+      title: '',
+      description:
+        'Our security checks do not support Solana network right now. Please proceed with caution.',
+    },
+  ],
+};
+
 /**
  * TODO: Temporary helper, later the whole AddressActionDetails
  * must be refactored to take as few params as possible
@@ -117,6 +132,14 @@ export function AddressActionComponent({
         showApplicationLine={showApplicationLine}
         singleAssetElementEnd={null}
       />
+      <InterpretationSecurityCheck
+        interpretation={UNSUPPORTED_NETWORK_INTERPRETATION}
+        interpretQuery={{
+          isInitialLoading: false,
+          isError: false,
+        }}
+      />
+      <RenderArea name="transaction-warning-section" />
     </VStack>
   );
 }

@@ -346,7 +346,7 @@ function TransactionDefaultView({
           style={{
             justifyItems: 'center',
             paddingBlock: 24,
-            border: '1px solid var(--neutral-300)',
+            border: '1px solid var(--neutral-200)',
             backgroundColor: 'var(--light-background-transparent)',
             backdropFilter: 'blur(16px)',
             borderRadius: 12,

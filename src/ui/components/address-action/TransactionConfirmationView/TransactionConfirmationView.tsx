@@ -86,7 +86,7 @@ export function TransactionConfirmationView({
           style={{
             justifyItems: 'center',
             paddingBlock: 24,
-            border: '1px solid var(--neutral-300)',
+            border: '1px solid var(--neutral-200)',
             backgroundColor: 'var(--light-background-transparent)',
             backdropFilter: 'blur(16px)',
             borderRadius: 12,
@@ -169,7 +169,10 @@ export function TransactionConfirmationView({
           <HStack
             gap={12}
             justifyContent="center"
-            style={{ gridTemplateColumns: '1fr 1fr' }}
+            style={{
+              gridTemplateColumns: '1fr 1fr',
+              marginTop: transaction.evm ? undefined : 'auto',
+            }}
           >
             <Button value="cancel" kind="regular" ref={focusNode}>
               Cancel
