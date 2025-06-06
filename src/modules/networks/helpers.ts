@@ -34,6 +34,7 @@ export function toNetworkConfig(
       address: null,
       decimals: value.nativeCurrency?.decimals,
       symbol: value.nativeCurrency?.symbol,
+      icon_url: null,
       id: value.nativeCurrency?.symbol?.toLowerCase() === 'eth' ? 'eth' : '',
     },
     rpc_url_internal: null,
