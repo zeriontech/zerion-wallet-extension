@@ -124,7 +124,11 @@ const getMultipleItemsTooltip = ({
       r(
         'div',
         null,
-        r('span', null, total.balance),
+        r(
+          'span',
+          { style: `color: ${getItemColor(total.direction)}` },
+          total.balance
+        ),
         r('span', { style: 'font-weight: 400; padding-left: 4px' }, total.value)
       )
     )
