@@ -40,7 +40,9 @@ function eventToMessage(event: ErrorEvent) {
     : event.code === 503
     ? 'Service Unavailable'
     : event.code === 404
-    ? 'Request Error' // temporary message while backend responds 404 for invalid params
+    ? 'No liquidity for this trade'
+    : event.code === 400
+    ? 'Incorrect trade parameters'
     : event.message || 'Server Error';
 }
 
