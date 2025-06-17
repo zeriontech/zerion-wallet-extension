@@ -15,14 +15,11 @@ import type { EligibilityQuery } from 'src/ui/components/address-action/Eligibil
 import { usePreferences } from 'src/ui/features/preferences';
 import { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import { solFromBase64 } from 'src/modules/solana/transactions/create';
-import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import { SecurityStatusBackground } from 'src/ui/shared/security-check';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
-import { AddressActionComponent } from '../AddressActionDetails/AddressActionDetails';
 
 export function TransactionConfirmationView({
   title,
@@ -53,6 +50,7 @@ export function TransactionConfirmationView({
   const { preferences, query } = usePreferences();
 
   const txInterpretQuery = useInterpretTxBasedOnEligibility({
+    address: wallet.address,
     transaction,
     eligibilityQuery,
     origin: 'https://app.zerion.io',
@@ -109,24 +107,13 @@ export function TransactionConfirmationView({
           method="dialog"
           style={{ display: 'flex', flexDirection: 'column' }}
         >
-          {transaction.evm ? (
-            <TransactionSimulation
-              customAllowanceValueBase={customAllowanceValueBase}
-              onOpenAllowanceForm={onOpenAllowanceForm}
-              address={wallet.address}
-              transaction={transaction.evm}
-              txInterpretQuery={txInterpretQuery}
-            />
-          ) : (
-            <AddressActionComponent
-              address={wallet.address}
-              showApplicationLine={true}
-              addressAction={parseSolanaTransaction(
-                wallet.address,
-                solFromBase64(transaction.solana)
-              )}
-            />
-          )}
+          <TransactionSimulation
+            customAllowanceValueBase={customAllowanceValueBase}
+            onOpenAllowanceForm={onOpenAllowanceForm}
+            address={wallet.address}
+            transaction={transaction}
+            txInterpretQuery={txInterpretQuery}
+          />
           <Spacer height={20} />
           <React.Suspense
             fallback={

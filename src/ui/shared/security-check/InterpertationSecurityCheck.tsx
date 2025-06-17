@@ -73,12 +73,14 @@ function InterpretationDescritionDialog({
         }}
       >
         <VStack gap={16} style={{ position: 'relative' }}>
-          <UIText kind="headline/h3">
-            Transaction simulation found no security risks
-          </UIText>
-
+          <UIText kind="headline/h3">Transaction Analysis</UIText>
           <UIText kind="body/regular">
-            This contract is open source and audited
+            We simulate your transaction behavior to preview the exact outcome,
+            identify risks, and protect your funds before signing and executing
+            onchain.
+          </UIText>
+          <UIText kind="body/regular">
+            Security checks are powered by Blockaid.
           </UIText>
         </VStack>
         <form method="dialog" onSubmit={(event) => event.stopPropagation()}>

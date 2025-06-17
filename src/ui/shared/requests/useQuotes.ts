@@ -82,7 +82,8 @@ export function useQuotes2({
     }
     const slippageOptions = getSlippageOptions({
       chain,
-      userSlippage: formState.slippage ? Number(formState.slippage) : null,
+      userSlippage:
+        formState.slippage != null ? Number(formState.slippage) : null,
     });
     return {
       ...formState,

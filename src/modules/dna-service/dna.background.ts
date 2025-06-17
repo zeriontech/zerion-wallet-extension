@@ -12,6 +12,7 @@ import { isReadonlyContainer } from 'src/shared/types/validators';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import type { Account } from 'src/background/account/Account';
+import { ensureSolanaResult } from '../shared/transactions/helpers';
 import type { DnaAction } from './types';
 
 const REGISTER_ALL_WALLETS_INVOKED_KEY = 'registerAllWalletsInvoked-14-10-2024';
@@ -332,8 +333,14 @@ export class DnaService {
           chain,
         });
       } else if (data.solana) {
-        // TODO: Upgrade DNA for Solana transactions?...
+        const result = ensureSolanaResult(data);
+        this.registerTransaction({
+          address: result.publicKey,
+          hash: result.signature,
+          chain,
+        });
       }
+      throw new Error('Unexpected transaction type');
     });
   }
 }

@@ -54,6 +54,7 @@ import { getAddressType } from 'src/shared/wallet/classifiers';
 import { Networks } from 'src/modules/networks/Networks';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -180,6 +181,7 @@ function SendFormComponent() {
     staleTime: 20000,
     retry: 1,
   });
+
   const paymasterEligible = Boolean(
     sendData?.paymasterEligibility?.data.eligible
   );
@@ -260,6 +262,16 @@ function SendFormComponent() {
   });
 
   const navigate = useNavigate();
+
+  const addressType = getAddressType(address);
+
+  const addressFilterPredicate = useCallback(
+    (value: string) => {
+      return isMatchForEcosystem(value, addressType);
+    },
+    [addressType]
+  );
+
   if (sendTxMutation.isSuccess) {
     const result = sendTxMutation.data;
     invariant(result, 'Missing Form State View values');
@@ -284,9 +296,6 @@ function SendFormComponent() {
       />
     );
   }
-
-  const addressType = getAddressType(address);
-
   return (
     <PageColumn>
       <NavigationTitle
@@ -390,6 +399,7 @@ function SendFormComponent() {
                 onResolvedChange={(value) => handleChange('to', value ?? '')}
                 iconSize={44}
                 borderRadius={12}
+                filterAddressPredicate={addressFilterPredicate}
               />
             </>
             {type === 'token' ? (

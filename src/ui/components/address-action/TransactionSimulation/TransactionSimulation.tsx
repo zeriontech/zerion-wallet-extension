@@ -1,15 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { hashQueryKey, useQuery } from '@tanstack/react-query';
 import { RenderArea } from 'react-area';
 import { Client } from 'defi-sdk';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
-import type { IncomingTransactionWithChainId } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { invariant } from 'src/shared/invariant';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
-import { walletPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -26,6 +24,11 @@ import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
+import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
+import { solFromBase64 } from 'src/modules/solana/transactions/create';
+import { createChain } from 'src/modules/networks/Chain';
+import { NetworkId } from 'src/modules/networks/NetworkId';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -36,7 +39,7 @@ export function TransactionSimulation({
   onOpenAllowanceForm,
 }: {
   address: string;
-  transaction: IncomingTransactionWithChainId;
+  transaction: MultichainTransaction;
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   customAllowanceValueBase?: string;
   onOpenAllowanceForm?: () => void;
@@ -46,27 +49,22 @@ export function TransactionSimulation({
 
   const { networks } = useNetworks();
   const { currency } = useCurrency();
-  invariant(transaction.chainId, 'transaction must have a chainId value');
-  const chain = networks?.getChainById(normalizeChainId(transaction.chainId));
 
-  // TODO: "wallet" must not be used here,
-  // instead, a sender address must be taken from AddressAction
-  const { data: wallet } = useQuery({
-    queryKey: ['wallet/uiGetCurrentWallet'],
-    queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
-  });
+  const evmChain = transaction.evm?.chainId
+    ? networks?.getChainById(normalizeChainId(transaction.evm.chainId))
+    : null;
+  const solanaChain = transaction.solana ? createChain(NetworkId.Solana) : null;
 
   const transactionAction =
-    transaction && networks && chain
-      ? describeTransaction(transaction, {
+    transaction.evm && networks && evmChain
+      ? describeTransaction(transaction.evm, {
           networks,
-          chain,
+          chain: evmChain,
         })
       : null;
 
   const client = useDefiSdkClient();
-  const { data: localAddressAction } = useQuery({
+  const { data: localEvmAddressAction } = useQuery({
     queryKey: [
       'incomingTxToIncomingAddressAction',
       transaction,
@@ -81,10 +79,10 @@ export function TransactionSimulation({
       return hashQueryKey(key);
     },
     queryFn: () => {
-      return transaction && networks && transactionAction
+      return transaction.evm && networks && transactionAction
         ? incomingTxToIncomingAddressAction(
             {
-              transaction: { ...transaction, from: address },
+              transaction: { ...transaction.evm, from: address },
               hash: '',
               timestamp: 0,
             },
@@ -98,15 +96,24 @@ export function TransactionSimulation({
     staleTime: Infinity,
     keepPreviousData: true,
     enabled:
-      Boolean(transaction) && Boolean(networks) && Boolean(transactionAction),
+      Boolean(transaction.evm) &&
+      Boolean(networks) &&
+      Boolean(transactionAction),
     useErrorBoundary: true,
   });
+
+  const localSolanaAddressAction = useMemo(() => {
+    return transaction.solana
+      ? parseSolanaTransaction(address, solFromBase64(transaction.solana))
+      : null;
+  }, [transaction.solana, address]);
 
   const interpretation = txInterpretQuery.data;
 
   const interpretAddressAction = interpretation?.action;
-  const addressAction = interpretAddressAction || localAddressAction;
-  if (!addressAction || !chain || !networks || !wallet) {
+  const addressAction =
+    interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
+  if (!addressAction || !networks) {
     return <p>loading...</p>;
   }
   const recipientAddress = addressAction.label?.display_value.wallet_address;
@@ -118,6 +125,11 @@ export function TransactionSimulation({
   const allowanceQuantityBase =
     customAllowanceValueBase || addressAction.content?.single_asset?.quantity;
 
+  // Details view is supported only for EVM transactions
+  const detailesViewSupported = Boolean(transaction.evm);
+  const chain = evmChain ?? solanaChain;
+  invariant(chain, 'Chain must be defined for transaction simulation');
+
   return (
     <>
       <PopoverToast
@@ -128,30 +140,39 @@ export function TransactionSimulation({
       >
         Copied to Clipboard
       </PopoverToast>
-      <CenteredDialog
-        ref={advancedDialogRef}
-        containerStyle={{ paddingBottom: 0 }}
-        renderWhenOpen={() => (
-          <>
-            <DialogTitle
-              title={<UIText kind="body/accent">Details</UIText>}
-              closeKind="icon"
-            />
-            <TransactionAdvancedView
-              networks={networks}
-              chain={chain}
-              interpretation={interpretation}
-              // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
-              transaction={transaction}
-              addressAction={addressAction}
-              onCopyData={() => toastRef.current?.showToast()}
-            />
-          </>
-        )}
-      />
+      {detailesViewSupported ? (
+        <CenteredDialog
+          ref={advancedDialogRef}
+          containerStyle={{ paddingBottom: 0 }}
+          renderWhenOpen={() => {
+            invariant(
+              transaction.evm,
+              'EVM transaction must be defined for details view'
+            );
+            invariant(evmChain, 'EVM chain must be defined for details view');
+            return (
+              <>
+                <DialogTitle
+                  title={<UIText kind="body/accent">Details</UIText>}
+                  closeKind="icon"
+                />
+                <TransactionAdvancedView
+                  networks={networks}
+                  chain={evmChain}
+                  interpretation={interpretation}
+                  // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
+                  transaction={transaction.evm}
+                  addressAction={addressAction}
+                  onCopyData={() => toastRef.current?.showToast()}
+                />
+              </>
+            );
+          }}
+        />
+      ) : null}
       <VStack gap={8}>
         <AddressActionDetails
-          address={wallet.address}
+          address={address}
           recipientAddress={recipientAddress}
           addressAction={addressAction}
           chain={chain}
@@ -174,33 +195,40 @@ export function TransactionSimulation({
             ) : null
           }
         />
-        <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <HStack
+          gap={8}
+          style={{
+            gridTemplateColumns: detailesViewSupported ? '1fr 1fr' : '1fr',
+          }}
+        >
           <InterpretationSecurityCheck
             interpretation={interpretation}
             interpretQuery={txInterpretQuery}
           />
-          <Button
-            type="button"
-            kind="regular"
-            onClick={() => advancedDialogRef.current?.showModal()}
-            size={44}
-            className="parent-hover"
-            style={{
-              textAlign: 'start',
-              borderRadius: 100,
-              ['--parent-content-color' as string]: 'var(--neutral-500)',
-              ['--parent-hovered-content-color' as string]: 'var(--black)',
-            }}
-          >
-            <HStack gap={0} alignItems="center" justifyContent="center">
-              <ScrollIcon />
-              <span>Details</span>
-              <ArrowDownIcon
-                className="content-hover"
-                style={{ width: 24, height: 24 }}
-              />
-            </HStack>
-          </Button>
+          {detailesViewSupported ? (
+            <Button
+              type="button"
+              kind="regular"
+              onClick={() => advancedDialogRef.current?.showModal()}
+              size={44}
+              className="parent-hover"
+              style={{
+                textAlign: 'start',
+                borderRadius: 100,
+                ['--parent-content-color' as string]: 'var(--neutral-500)',
+                ['--parent-hovered-content-color' as string]: 'var(--black)',
+              }}
+            >
+              <HStack gap={0} alignItems="center" justifyContent="center">
+                <ScrollIcon />
+                <span>Details</span>
+                <ArrowDownIcon
+                  className="content-hover"
+                  style={{ width: 24, height: 24 }}
+                />
+              </HStack>
+            </Button>
+          ) : null}
         </HStack>
         <RenderArea name="transaction-warning-section" />
       </VStack>
