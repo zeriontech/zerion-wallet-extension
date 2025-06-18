@@ -37,7 +37,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { getDecimals } from 'src/modules/networks/asset';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressAction, AddressPosition } from 'defi-sdk';
 import {
   SignTransactionButton,
   type SendTxBtnHandle,
@@ -428,6 +428,7 @@ function BridgeFormComponent() {
       const positions = await filterSupportedPositions(allPositions);
       return positions;
     },
+    suspense: false,
   });
 
   const defaultFormValues = useMemo<BridgeFormState>(
@@ -609,7 +610,7 @@ function BridgeFormComponent() {
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (interpretationAction: AddressAction | null) => {
       invariant(
         selectedQuote?.transactionApprove?.evm,
         'Approval transaction is not configured'
@@ -632,22 +633,24 @@ function BridgeFormComponent() {
         getDecimals({ asset: inputPosition.asset, chain: spendChain })
       ).toFixed();
 
+      const fallbackAddressAction = selectedQuote.transactionApprove.evm
+        ? createApproveAddressAction({
+            transaction: toIncomingTransaction(
+              selectedQuote.transactionApprove.evm
+            ),
+            asset: inputPosition.asset,
+            quantity: inputAmountBase,
+            chain: spendChain,
+          })
+        : null;
+
       const txResponse = await approveTxBtnRef.current.sendTransaction({
         transaction: { evm: toIncomingTransaction(approvalTx) },
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        addressAction: selectedQuote.transactionApprove.evm
-          ? createApproveAddressAction({
-              transaction: toIncomingTransaction(
-                selectedQuote.transactionApprove.evm
-              ),
-              asset: inputPosition.asset,
-              quantity: inputAmountBase,
-              chain: spendChain,
-            })
-          : null,
+        addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;
@@ -676,7 +679,9 @@ function BridgeFormComponent() {
   };
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
-    mutationFn: async (): Promise<SignTransactionResult> => {
+    mutationFn: async (
+      interpretationAction: AddressAction | null
+    ): Promise<SignTransactionResult> => {
       invariant(
         selectedQuote?.transactionSwap,
         'Cannot submit transaction without a quote'
@@ -697,26 +702,20 @@ function BridgeFormComponent() {
         selectedQuote.outputAmount.quantity,
         getDecimals({ asset: outputPosition.asset, chain: spendChain })
       ).toFixed();
+      const fallbackAddressAction = createBridgeAddressAction({
+        address,
+        transaction: toMultichainTransaction(selectedQuote.transactionSwap),
+        outgoing: [{ asset: inputPosition.asset, quantity: inputAmountBase }],
+        incoming: [{ asset: outputPosition.asset, quantity: outputAmountBase }],
+        chain: spendChain,
+      });
       const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        addressAction: selectedQuote.transactionSwap.evm
-          ? createBridgeAddressAction({
-              transaction: toIncomingTransaction(
-                selectedQuote.transactionSwap.evm
-              ),
-              outgoing: [
-                { asset: inputPosition.asset, quantity: inputAmountBase },
-              ],
-              incoming: [
-                { asset: outputPosition.asset, quantity: outputAmountBase },
-              ],
-              chain: spendChain,
-            })
-          : null,
+        addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
         outputChain: outputChain ?? null,
       });
@@ -816,6 +815,7 @@ function BridgeFormComponent() {
           return (
             <ViewLoadingSuspense>
               <TransactionConfirmationView
+                formId={formId}
                 title={selectedQuote?.transactionApprove ? 'Approve' : 'Bridge'}
                 wallet={wallet}
                 chain={spendChain}
@@ -917,11 +917,17 @@ function BridgeFormComponent() {
             invariant(confirmDialogRef.current, 'Dialog not found');
             const formData = new FormData(event.currentTarget);
             const submitType = formData.get('submit_type');
+            const rawInterpretationAction = formData.get('interpretation') as
+              | string
+              | null;
+            const interpretationAction = rawInterpretationAction
+              ? (JSON.parse(rawInterpretationAction) as AddressAction)
+              : null;
             showConfirmDialog(confirmDialogRef.current).then(() => {
               if (submitType === 'approve') {
-                sendApproveTransaction();
+                sendApproveTransaction(interpretationAction);
               } else if (submitType === 'bridge') {
-                sendTransaction();
+                sendTransaction(interpretationAction);
               } else {
                 throw new Error('Must set a submit_type to form');
               }

@@ -1,7 +1,7 @@
 import React, { useCallback, useId, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressAction, AddressPosition } from 'defi-sdk';
 import { Client } from 'defi-sdk';
 import { sortPositionsByValue } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -214,7 +214,9 @@ function SendFormComponent() {
   };
 
   const sendTxMutation = useMutation({
-    mutationFn: async (): Promise<SignTransactionResult> => {
+    mutationFn: async (
+      interpretationAction: AddressAction | null
+    ): Promise<SignTransactionResult> => {
       invariant(sendData?.transaction, 'Send Form parameters missing');
       invariant(currentPosition, 'Current asset position is undefined');
       const feeValueCommon = feeValueCommonRef.current || null;
@@ -226,20 +228,21 @@ function SendFormComponent() {
         tokenValue,
         getDecimals({ asset: currentPosition.asset, chain })
       ).toFixed();
+      const fallbackAddressAction = createSendAddressAction({
+        address,
+        transaction: sendData.transaction,
+        asset: currentPosition.asset,
+        quantity: valueInBaseUnits,
+        chain,
+      });
+
       const txResponse = await signTxBtnRef.current.sendTransaction({
         transaction: sendData.transaction,
         chain: sendData.networkId.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Send',
         feeValueCommon,
-        addressAction: sendData.transaction.evm
-          ? createSendAddressAction({
-              transaction: sendData.transaction.evm,
-              asset: currentPosition.asset,
-              quantity: valueInBaseUnits,
-              chain,
-            })
-          : null,
+        addressAction: interpretationAction ?? fallbackAddressAction,
       });
       if (preferences) {
         setPreferences({
@@ -324,9 +327,16 @@ function SendFormComponent() {
           event.preventDefault();
 
           if (event.currentTarget.checkValidity()) {
+            const formData = new FormData(event.currentTarget);
+            const rawInterpretationAction = formData.get('interpretation') as
+              | string
+              | null;
+            const interpretationAction = rawInterpretationAction
+              ? (JSON.parse(rawInterpretationAction) as AddressAction)
+              : null;
             invariant(confirmDialogRef.current, 'Dialog not found');
             showConfirmDialog(confirmDialogRef.current).then(() => {
-              sendTxMutation.mutate();
+              sendTxMutation.mutate(interpretationAction);
             });
           }
         }}
@@ -509,6 +519,7 @@ function SendFormComponent() {
                 <DisableTestnetShortcuts />
                 <ViewLoadingSuspense>
                   <SendTransactionConfirmation
+                    formId={formId}
                     transaction={sendData.transaction}
                     formState={formState}
                     paymasterEligible={paymasterEligible}

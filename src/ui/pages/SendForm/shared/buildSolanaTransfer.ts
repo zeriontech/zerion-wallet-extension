@@ -4,7 +4,7 @@ import {
   PublicKey,
   Transaction,
   SystemProgram,
-  // ComputeBudgetProgram,
+  ComputeBudgetProgram,
 } from '@solana/web3.js';
 import {
   getAssociatedTokenAddress,
@@ -42,16 +42,6 @@ export async function buildSolanaTransfer(
   const connection = new Connection(rpcUrl);
   const latestBlockhash = await connection.getLatestBlockhash();
   tx.recentBlockhash = latestBlockhash.blockhash;
-  // tx.add(
-  //   ComputeBudgetProgram.setComputeUnitLimit({
-  //     units: 300,
-  //   })
-  // ).add(
-  //   // priorityFee
-  //   ComputeBudgetProgram.setComputeUnitPrice({
-  //     microLamports: 20000,
-  //   })
-  // );
 
   const isNativeAsset = Networks.isNativeAsset(position.asset, network);
   if (isNativeAsset) {
@@ -108,6 +98,25 @@ export async function buildSolanaTransfer(
 
     tx.add(...instructions);
   }
+  const simulatedTransaction = await connection.simulateTransaction(tx);
+  const computeUnitsEsimation =
+    simulatedTransaction.value.unitsConsumed ?? 100_000;
+  const adjustedComputeUnits = Math.max(
+    Math.min(1_400_000, computeUnitsEsimation * 1.2),
+    500
+  );
+
+  tx.add(
+    ComputeBudgetProgram.setComputeUnitLimit({
+      units: adjustedComputeUnits,
+    })
+  ).add(
+    // priorityFee
+    ComputeBudgetProgram.setComputeUnitPrice({
+      microLamports: Math.floor((100_000 / adjustedComputeUnits) * 1000_000),
+    })
+  );
+
   const fee = await tx.getEstimatedFee(connection);
 
   return { tx, fee };

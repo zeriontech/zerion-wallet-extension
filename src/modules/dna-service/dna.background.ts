@@ -339,8 +339,9 @@ export class DnaService {
           hash: result.signature,
           chain,
         });
+      } else {
+        throw new Error('Unexpected transaction type');
       }
-      throw new Error('Unexpected transaction type');
     });
   }
 }

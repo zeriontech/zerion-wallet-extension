@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -22,6 +22,7 @@ import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
 
 export function TransactionConfirmationView({
+  formId,
   title,
   wallet,
   transaction,
@@ -34,6 +35,7 @@ export function TransactionConfirmationView({
   onOpenAllowanceForm,
   onGasbackReady,
 }: {
+  formId: string;
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
   transaction: MultichainTransaction;
@@ -62,12 +64,23 @@ export function TransactionConfirmationView({
       onGasbackReady?.(gasbackValue);
     }
   }, [gasbackValue, onGasbackReady]);
+
+  const interpretationString = useMemo(() => {
+    return JSON.stringify(txInterpretQuery.data?.action);
+  }, [txInterpretQuery]);
+
   if (query.isLoading) {
     return null;
   }
 
   return (
     <>
+      <input
+        type="hidden"
+        name="interpretation"
+        value={interpretationString}
+        form={formId}
+      />
       <SecurityStatusBackground />
       <div
         style={{
