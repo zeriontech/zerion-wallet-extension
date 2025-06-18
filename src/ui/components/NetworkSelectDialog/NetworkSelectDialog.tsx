@@ -447,26 +447,28 @@ function AddressNetworkList({
         <Spacer height={8} />
         {standard !== 'all' && showEcosystemHint ? (
           <>
-            <HStack
-              gap={12}
-              alignItems="center"
-              style={{
-                padding: '8px 36px 8px 12px',
-                borderRadius: 16,
-                backgroundColor: 'var(--neutral-100)',
-              }}
-            >
-              {standard === 'evm' ? (
-                <EcosystemSolanaIcon style={{ width: 36, height: 36 }} />
-              ) : (
-                <EcosystemEthereumIcon style={{ width: 36, height: 36 }} />
-              )}
-              <UIText kind="small/regular">
-                {standard === 'evm'
-                  ? 'To use the Solana ecosystem, choose Solana wallet.'
-                  : 'To use the Ethereum ecosystem, choose Ethereum wallet.'}
-              </UIText>
-            </HStack>
+            <UnstyledLink to="/wallet-select">
+              <HStack
+                gap={12}
+                alignItems="center"
+                style={{
+                  padding: '8px 36px 8px 12px',
+                  borderRadius: 16,
+                  backgroundColor: 'var(--neutral-100)',
+                }}
+              >
+                {standard === 'evm' ? (
+                  <EcosystemSolanaIcon style={{ width: 36, height: 36 }} />
+                ) : (
+                  <EcosystemEthereumIcon style={{ width: 36, height: 36 }} />
+                )}
+                <UIText kind="small/regular">
+                  {standard === 'evm'
+                    ? 'To use the Solana ecosystem, choose Solana wallet.'
+                    : 'To use the Ethereum ecosystem, choose Ethereum wallet.'}
+                </UIText>
+              </HStack>
+            </UnstyledLink>
             <Spacer height={8} />
           </>
         ) : null}

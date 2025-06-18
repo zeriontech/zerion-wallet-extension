@@ -62,7 +62,8 @@ jobs:
           DEFI_SDK_TESTNET_API_URL: ${{ github.event.inputs.DEFI_SDK_TESTNET_API_URL || 'wss://api-testnet.zerion.io/' }}
           ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
           ZERION_TESTNET_API_URL: ${{ github.event.inputs.ZERION_TESTNET_API_URL || 'https://zpi-testnet.zerion.io/' }}
-          BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
+          # BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
+          BACKEND_ENV: solana
           PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
@@ -74,7 +75,7 @@ jobs:
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_LOYALTY_FLOW: on
           FEATURE_BRIDGE_FORM: on
-          FEATURE_SOLANA: off
+          FEATURE_SOLANA: on
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # required for gh-cli which is used in .github/scripts/
         run: |
           PR_NUMBER=${{ github.event.inputs.PR_NUMBER || github.event.number }}
