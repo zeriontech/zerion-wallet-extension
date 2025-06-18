@@ -713,7 +713,7 @@ function BridgeFormComponent() {
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
-        clientScope: 'Swap',
+        clientScope: 'Bridge',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
         addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
