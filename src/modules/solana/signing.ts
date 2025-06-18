@@ -56,7 +56,7 @@ export class SolanaSigning {
     keypair: Keypair
   ): SolSignTransactionResult {
     if (transaction instanceof SolanaTransactionLegacy) {
-      transaction.partialSign(keypair);
+      transaction.sign(keypair);
     } else {
       transaction.sign([keypair]);
     }
