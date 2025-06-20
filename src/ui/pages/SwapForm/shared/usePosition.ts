@@ -26,7 +26,10 @@ export function usePosition({
   const maybePosition = useMemo(
     () =>
       positions?.find(
-        (p) => p.asset.id === assetId && p.chain === chain?.toString()
+        (p) =>
+          p.asset.id === assetId &&
+          p.chain === chain?.toString() &&
+          p.type === 'asset'
       ) ?? null,
     [assetId, positions, chain]
   );

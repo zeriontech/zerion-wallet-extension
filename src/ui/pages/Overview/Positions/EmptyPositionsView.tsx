@@ -93,14 +93,15 @@ export function EmptyPositionsView() {
           style={{ height: 64 }}
         />
         <VStack gap={0}>
-          <UIText kind="headline/h3">Get started</UIText>
+          <UIText kind="headline/h3">Fund your wallet</UIText>
           <UIText kind="body/regular" color="var(--neutral-600)">
-            By adding crypto to your wallet
+            Buy or transfer crypto to get started
           </UIText>
         </VStack>
       </VStack>
       <VStack gap={8}>
         <Button
+          size={48}
           kind="primary"
           as={UnstyledAnchor}
           href={`${ZERION_ORIGIN}/deposit?${addWalletParams}`}
@@ -110,6 +111,7 @@ export function EmptyPositionsView() {
           Buy Crypto with Card
         </Button>
         <Button
+          size={44}
           kind="regular"
           as={UnstyledLink}
           to={`/receive?address=${wallet.address}`}
@@ -117,7 +119,11 @@ export function EmptyPositionsView() {
           Receive from Another Wallet
         </Button>
         {getAddressType(wallet.address) === 'solana' ? (
-          <Button kind="regular" onClick={() => goToBridgeMutation.mutate()}>
+          <Button
+            kind="regular"
+            size={44}
+            onClick={() => goToBridgeMutation.mutate()}
+          >
             Transfer from Ethereum
           </Button>
         ) : null}

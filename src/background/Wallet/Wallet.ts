@@ -1342,13 +1342,6 @@ export class Wallet {
     invariant(txBase64, () => new InvalidParams());
     const transaction = solFromBase64(txBase64);
 
-    const feePayer = SolanaSigning.getTransactionFeePayer(transaction);
-    // TODO: infer signer address from transaction instead
-    invariant(
-      feePayer === currentAddress,
-      "feePayer doesn't match active address"
-    );
-
     const keypair = this.getKeypairByAddress(currentAddress);
     const result = SolanaSigning.signTransaction(transaction, keypair);
     const { mode } = await this.assertNetworkMode({
@@ -1383,12 +1376,7 @@ export class Wallet {
       id: createChain('solana'),
     }); // MUST assert even if result is not used
     const transactions = txsBase64.map((tx) => solFromBase64(tx));
-    const feePayer = SolanaSigning.getTransactionFeePayer(transactions[0]);
     // TODO: infer signer address from transaction instead
-    invariant(
-      feePayer === currentAddress,
-      "feePayer doesn't match active address"
-    );
     const keypair = this.getKeypairByAddress(currentAddress);
     const results = SolanaSigning.signAllTransactions(transactions, keypair);
 

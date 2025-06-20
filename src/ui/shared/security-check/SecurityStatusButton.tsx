@@ -162,6 +162,7 @@ export function SecurityStatusButton({
             width: '100%',
             height: size === 'big' ? 52 : 44,
             whiteSpace: 'nowrap',
+            cursor: onClick ? 'pointer' : 'default',
           }}
           disabled={!onClick}
           onClick={onClick}

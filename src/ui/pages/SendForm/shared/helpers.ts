@@ -38,7 +38,7 @@ export function toConfiguration(
         gasPrice && isNumeric(gasPrice) ? gweiToWei(gasPrice) : null,
       gasLimit: formState.gasLimit || null,
     },
-    slippage: slippage && isNumeric(slippage) ? Number(slippage) : null,
+    slippage: slippage != null && isNumeric(slippage) ? Number(slippage) : null,
     nonce: nonce && isNumeric(nonce) ? nonce : null,
   };
 }
@@ -63,8 +63,9 @@ export function fromConfiguration(
     nonce: configuration.nonce
       ? BigInt(configuration.nonce).toString()
       : undefined,
-    slippage: configuration.slippage
-      ? String(configuration.slippage)
-      : undefined,
+    slippage:
+      configuration.slippage != null
+        ? String(configuration.slippage)
+        : undefined,
   };
 }

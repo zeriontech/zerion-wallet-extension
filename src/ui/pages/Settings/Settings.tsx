@@ -54,6 +54,7 @@ import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigV
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { emitter } from 'src/ui/shared/events';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -79,6 +80,10 @@ function SettingsMain() {
       return walletPort.request('uiGetCurrentWallet');
     },
   });
+
+  const addressType = currentWallet
+    ? getAddressType(currentWallet?.address)
+    : null;
 
   const { mutate: acceptZerionOrigin } = useMutation({
     mutationFn: async () => {
@@ -159,7 +164,8 @@ function SettingsMain() {
             ) : null}
             {FEATURE_LOYALTY_FLOW === 'on' &&
             loyaltyEnabled &&
-            currentWallet ? (
+            currentWallet &&
+            addressType === 'evm' ? (
               <FrameListItemAnchor
                 href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
                 target="_blank"

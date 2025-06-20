@@ -4,7 +4,7 @@ import {
   useNavigationType,
   useSearchParams,
 } from 'react-router-dom';
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressAction, AddressPosition } from 'defi-sdk';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { sortPositionsByValue } from '@zeriontech/transactions';
 import React, {
@@ -172,6 +172,22 @@ function FormHint({
   return render(hint);
 }
 
+async function filterSupportedPositionsOnSupportedChains(
+  positions: AddressPosition[] | null
+) {
+  if (!positions) {
+    return [];
+  }
+  const networksStore = await getNetworksStore();
+  const chains = positions.map((position) => position.chain);
+  const networks = await networksStore.load({ chains });
+  const filteredPositions = positions.filter((position) => {
+    const network = networks.getByNetworkId(createChain(position.chain));
+    return position.type === 'asset' && network?.supports_trading;
+  });
+  return filteredPositions;
+}
+
 function getDefaultState({
   address,
   positions,
@@ -216,8 +232,10 @@ async function prepareDefaultState({
     { source }
   );
   const networksStore = await getNetworksStore();
+  const positionsOnSupportedChains =
+    await filterSupportedPositionsOnSupportedChains(allPositions);
   const inputChain =
-    userStateInputChain || getDefaultChain(address, allPositions ?? []);
+    userStateInputChain || getDefaultChain(address, positionsOnSupportedChains);
   const [network, popularTokens] = await Promise.all([
     networksStore.fetchNetworkById(inputChain),
     // TODO: this request takes and additional 0.5-1s for initial form load,
@@ -306,10 +324,20 @@ function SwapFormComponent() {
   );
   /** All backend-known positions across all _supported_ chains */
   const allPositions = httpAddressPositionsQuery.data?.data || null;
+  const { data: positionsOnSupportedChains } = useQuery({
+    queryKey: ['positionsOnSupportedChains', allPositions],
+    queryFn: () => filterSupportedPositionsOnSupportedChains(allPositions),
+    enabled: Boolean(allPositions),
+    keepPreviousData: true,
+  });
 
   const defaultFormValues = useMemo<SwapFormState>(
-    () => getDefaultState({ address, positions: allPositions }),
-    [address, allPositions]
+    () =>
+      getDefaultState({
+        address,
+        positions: positionsOnSupportedChains || null,
+      }),
+    [address, positionsOnSupportedChains]
   );
 
   const preState = useMemo(
@@ -438,7 +466,7 @@ function SwapFormComponent() {
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (interpretationAction: AddressAction | null) => {
       invariant(
         selectedQuote?.transactionApprove?.evm,
         'Approval transaction is not configured'
@@ -461,22 +489,24 @@ function SwapFormComponent() {
         getDecimals({ asset: inputPosition.asset, chain: spendChain })
       ).toFixed();
 
+      const fallbackAddressAction = selectedQuote.transactionApprove.evm
+        ? createApproveAddressAction({
+            transaction: toIncomingTransaction(
+              selectedQuote.transactionApprove.evm
+            ),
+            asset: inputPosition.asset,
+            quantity: inputAmountBase,
+            chain: spendChain,
+          })
+        : null;
+
       const txResponse = await approveTxBtnRef.current.sendTransaction({
         transaction: { evm: toIncomingTransaction(approvalTx) },
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        addressAction: selectedQuote.transactionApprove.evm
-          ? createApproveAddressAction({
-              transaction: toIncomingTransaction(
-                selectedQuote.transactionApprove.evm
-              ),
-              asset: inputPosition.asset,
-              quantity: inputAmountBase,
-              chain: spendChain,
-            })
-          : null,
+        addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;
@@ -504,7 +534,9 @@ function SwapFormComponent() {
     snapshotRef.current = { state: { ...formState } };
   };
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
-    mutationFn: async (): Promise<SignTransactionResult> => {
+    mutationFn: async (
+      interpretationAction: AddressAction | null
+    ): Promise<SignTransactionResult> => {
       invariant(
         selectedQuote?.transactionSwap,
         'Cannot submit transaction without a quote'
@@ -525,26 +557,21 @@ function SwapFormComponent() {
         selectedQuote.outputAmount.quantity,
         getDecimals({ asset: outputPosition.asset, chain: spendChain })
       ).toFixed();
+      const fallbackAddressAction = createTradeAddressAction({
+        address,
+        transaction: toMultichainTransaction(selectedQuote.transactionSwap),
+        outgoing: [{ asset: inputPosition.asset, quantity: inputAmountBase }],
+        incoming: [{ asset: outputPosition.asset, quantity: outputAmountBase }],
+        chain: spendChain,
+      });
+
       const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        addressAction: selectedQuote.transactionSwap.evm
-          ? createTradeAddressAction({
-              transaction: toIncomingTransaction(
-                selectedQuote.transactionSwap.evm
-              ),
-              outgoing: [
-                { asset: inputPosition.asset, quantity: inputAmountBase },
-              ],
-              incoming: [
-                { asset: outputPosition.asset, quantity: outputAmountBase },
-              ],
-              chain: spendChain,
-            })
-          : null,
+        addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
         outputChain: inputChain ?? null,
       });
@@ -680,6 +707,7 @@ function SwapFormComponent() {
           return (
             <ViewLoadingSuspense>
               <TransactionConfirmationView
+                formId={formId}
                 title={selectedQuote?.transactionApprove ? 'Approve' : 'Trade'}
                 wallet={wallet}
                 chain={spendChain}
@@ -781,11 +809,17 @@ function SwapFormComponent() {
             invariant(confirmDialogRef.current, 'Dialog not found');
             const formData = new FormData(event.currentTarget);
             const submitType = formData.get('submit_type');
+            const rawInterpretationAction = formData.get('interpretation') as
+              | string
+              | null;
+            const interpretationAction = rawInterpretationAction
+              ? (JSON.parse(rawInterpretationAction) as AddressAction)
+              : null;
             showConfirmDialog(confirmDialogRef.current).then(() => {
               if (submitType === 'approve') {
-                sendApproveTransaction();
+                sendApproveTransaction(interpretationAction);
               } else if (submitType === 'swap') {
-                sendTransaction();
+                sendTransaction(interpretationAction);
               } else {
                 throw new Error('Must set a submit_type to form');
               }

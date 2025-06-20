@@ -1,21 +1,24 @@
 import { type Client, client as defaultClient } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { valueToHex } from 'src/shared/units/valueToHex';
+import type { Chain } from 'src/modules/networks/Chain';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { TypedData } from '../message-signing/TypedData';
-import type { IncomingTransactionWithChainId } from '../types/IncomingTransaction';
 import type { InterpretResponse } from './types';
 import { getGas } from './getGas';
 import type { ChainId } from './ChainId';
 
 export function interpretTransaction({
   address,
+  chain,
   transaction,
   origin,
   client = defaultClient,
   currency,
 }: {
   address: string;
-  transaction: IncomingTransactionWithChainId;
+  chain: Chain;
+  transaction: MultichainTransaction;
   origin: string;
   client?: Client;
   currency: string;
@@ -25,17 +28,20 @@ export function interpretTransaction({
     new Promise<InterpretResponse>((resolve) => {
       let value: InterpretResponse | null = null;
 
-      const normalizedTx = {
-        ...transaction,
-        maxFee: transaction.maxFeePerGas,
-        maxPriorityFee: transaction.maxPriorityFeePerGas,
-      };
-      const gas = getGas(transaction);
-      if (gas != null) {
-        normalizedTx.gas = valueToHex(gas);
-      }
-      if (normalizedTx.value != null) {
-        normalizedTx.value = valueToHex(normalizedTx.value);
+      let normalizedEvmTx;
+      if (transaction.evm) {
+        normalizedEvmTx = {
+          ...transaction.evm,
+          maxFee: transaction.evm.maxFeePerGas,
+          maxPriorityFee: transaction.evm.maxPriorityFeePerGas,
+        };
+        const gas = getGas(transaction.evm);
+        if (gas != null) {
+          normalizedEvmTx.gas = valueToHex(gas);
+        }
+        if (normalizedEvmTx.value != null) {
+          normalizedEvmTx.value = valueToHex(normalizedEvmTx.value);
+        }
       }
       const unsubscribe = client.subscribe<
         InterpretResponse,
@@ -48,9 +54,10 @@ export function interpretTransaction({
           scope: ['transaction'],
           payload: {
             address,
-            chain_id: transaction.chainId,
+            chain: chain.toString(),
             currency,
-            transaction: normalizedTx,
+            transaction: normalizedEvmTx,
+            solanaTransaction: transaction.solana,
             domain: origin,
           },
         },

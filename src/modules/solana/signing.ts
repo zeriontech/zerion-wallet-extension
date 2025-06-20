@@ -35,14 +35,6 @@ export class SolanaSigning {
     return { signature };
   }
 
-  static getTransactionFeePayer(transaction: SolTransaction) {
-    const feePayer =
-      transaction instanceof SolanaTransactionLegacy
-        ? transaction.feePayer?.toBase58()
-        : transaction.message.staticAccountKeys.at(0)?.toBase58();
-    return feePayer;
-  }
-
   static getTransactionSignature(transaction: SolTransaction): string | null {
     if (transaction instanceof SolanaTransactionLegacy) {
       return getSignatureFromLegacyTransaction(transaction);
@@ -56,7 +48,7 @@ export class SolanaSigning {
     keypair: Keypair
   ): SolSignTransactionResult {
     if (transaction instanceof SolanaTransactionLegacy) {
-      transaction.partialSign(keypair);
+      transaction.sign(keypair);
     } else {
       transaction.sign([keypair]);
     }

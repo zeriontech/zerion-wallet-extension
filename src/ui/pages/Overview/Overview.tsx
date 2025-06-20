@@ -556,7 +556,8 @@ function OverviewComponent() {
             <HStack gap={0} alignItems="center">
               {FEATURE_LOYALTY_FLOW === 'on' &&
               loyaltyEnabled &&
-              currentWallet ? (
+              currentWallet &&
+              addressType === 'evm' ? (
                 <RewardsLinkIcon currentWallet={currentWallet} />
               ) : null}
               <SettingsLinkIcon />
@@ -693,12 +694,14 @@ function OverviewComponent() {
             >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
-            <SegmentedControlLink
-              to={createTo('/overview/feed')}
-              onClick={() => handleTabChange('/overview/feed')}
-            >
-              Perks
-            </SegmentedControlLink>
+            {addressType === 'evm' ? (
+              <SegmentedControlLink
+                to={createTo('/overview/feed')}
+                onClick={() => handleTabChange('/overview/feed')}
+              >
+                Perks
+              </SegmentedControlLink>
+            ) : null}
           </SegmentedControlGroup>
         </div>
       </PageFullBleedColumn>
