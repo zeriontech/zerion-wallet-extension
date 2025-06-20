@@ -172,6 +172,22 @@ function FormHint({
   return render(hint);
 }
 
+async function filterSupportedPositionsOnSupportedChains(
+  positions: AddressPosition[] | null
+) {
+  if (!positions) {
+    return [];
+  }
+  const networksStore = await getNetworksStore();
+  const chains = positions.map((position) => position.chain);
+  const networks = await networksStore.load({ chains });
+  const filteredPositions = positions.filter((position) => {
+    const network = networks.getByNetworkId(createChain(position.chain));
+    return position.type === 'asset' && network?.supports_trading;
+  });
+  return filteredPositions;
+}
+
 function getDefaultState({
   address,
   positions,
@@ -216,8 +232,10 @@ async function prepareDefaultState({
     { source }
   );
   const networksStore = await getNetworksStore();
+  const positionsOnSupportedChains =
+    await filterSupportedPositionsOnSupportedChains(allPositions);
   const inputChain =
-    userStateInputChain || getDefaultChain(address, allPositions);
+    userStateInputChain || getDefaultChain(address, positionsOnSupportedChains);
   const [network, popularTokens] = await Promise.all([
     networksStore.fetchNetworkById(inputChain),
     // TODO: this request takes and additional 0.5-1s for initial form load,
@@ -306,10 +324,20 @@ function SwapFormComponent() {
   );
   /** All backend-known positions across all _supported_ chains */
   const allPositions = httpAddressPositionsQuery.data?.data || null;
+  const { data: positionsOnSupportedChains } = useQuery({
+    queryKey: ['positionsOnSupportedChains', allPositions],
+    queryFn: () => filterSupportedPositionsOnSupportedChains(allPositions),
+    enabled: Boolean(allPositions),
+    keepPreviousData: true,
+  });
 
   const defaultFormValues = useMemo<SwapFormState>(
-    () => getDefaultState({ address, positions: allPositions }),
-    [address, allPositions]
+    () =>
+      getDefaultState({
+        address,
+        positions: positionsOnSupportedChains || null,
+      }),
+    [address, positionsOnSupportedChains]
   );
 
   const preState = useMemo(

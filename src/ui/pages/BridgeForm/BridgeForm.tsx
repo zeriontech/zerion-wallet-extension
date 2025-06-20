@@ -174,6 +174,22 @@ function FormHint({
   return render(message);
 }
 
+async function filterSupportedPositionsOnSupportedChains(
+  positions: AddressPosition[] | null
+) {
+  if (!positions) {
+    return [];
+  }
+  const networksStore = await getNetworksStore();
+  const chains = positions.map((position) => position.chain);
+  const networks = await networksStore.load({ chains });
+  const filteredPositions = positions.filter((position) => {
+    const network = networks.getByNetworkId(createChain(position.chain));
+    return position.type === 'asset' && network?.supports_bridging;
+  });
+  return filteredPositions;
+}
+
 function getDefaultState({
   address,
   positions,
@@ -230,10 +246,12 @@ async function prepareDefaultState({
     { source }
   );
   const networksStore = await getNetworksStore();
+  const positionsOnSupportedChains =
+    await filterSupportedPositionsOnSupportedChains(allPositions);
   const { inputChain: defaultInputChain, outputChain: defaultOutputChain } =
     getDefaultState({
       address,
-      positions: allPositions,
+      positions: positionsOnSupportedChains,
     });
   const inputChain = userStateInputChain ?? defaultInputChain ?? NetworkId.Zero;
   const outputChain =
@@ -407,10 +425,20 @@ function BridgeFormComponent() {
   );
   /** All backend-known positions across all _supported_ chains */
   const allPositions = httpAddressPositionsQuery.data?.data || null;
+  const { data: positionsOnSupportedChains } = useQuery({
+    queryKey: ['positionsOnSupportedChains', allPositions],
+    queryFn: () => filterSupportedPositionsOnSupportedChains(allPositions),
+    enabled: Boolean(allPositions),
+    keepPreviousData: true,
+  });
 
   const defaultFormValues = useMemo<BridgeFormState>(
-    () => getDefaultState({ address, positions: allPositions }),
-    [address, allPositions]
+    () =>
+      getDefaultState({
+        address,
+        positions: positionsOnSupportedChains || null,
+      }),
+    [address, positionsOnSupportedChains]
   );
 
   const preState = useMemo(
