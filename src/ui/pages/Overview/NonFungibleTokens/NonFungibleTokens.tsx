@@ -181,13 +181,20 @@ export function NonFungibleTokens({
   onChainChange: (value: string | null) => void;
 }) {
   const { currency } = useCurrency();
-  const { ready, params, singleAddressNormalized } = useAddressParams();
+  const {
+    ready,
+    params,
+    singleAddressNormalized,
+    singleAddress: address,
+  } = useAddressParams();
   const { value: nftDistribution } = useAddressNFTDistribution({
     ...params,
     currency,
   });
   const { value: nftTotalValue } = useNftsTotalValue(params);
   const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
+  const addressType = getAddressType(address);
+  const showNetworkSelector = addressType === 'evm';
 
   // Derive a canonical chain to check nft support if current chain value is "all"
   const referenceChain =
@@ -233,7 +240,7 @@ export function NonFungibleTokens({
       ? nftTotalValue
       : nftDistribution?.floor_price[chainValue];
 
-  const emptyNetworkBalance = (
+  const emptyNetworkBalance = showNetworkSelector ? (
     <div
       style={{
         paddingInline: 16,
@@ -251,7 +258,7 @@ export function NonFungibleTokens({
         value={null}
       />
     </div>
-  );
+  ) : null;
 
   if (!isSupportedByBackend) {
     return (
@@ -329,20 +336,22 @@ export function NonFungibleTokens({
 
   return (
     <VStack gap={16}>
-      <div style={{ paddingInline: 16 }}>
-        <NetworkBalance
-          dappChain={dappChain}
-          selectedChain={selectedChain}
-          onChange={onChainChange}
-          value={
-            nftChainValue != null ? (
-              <NeutralDecimals
-                parts={formatCurrencyToParts(nftChainValue, 'en', currency)}
-              />
-            ) : null
-          }
-        />
-      </div>
+      {showNetworkSelector ? (
+        <div style={{ paddingInline: 16 }}>
+          <NetworkBalance
+            dappChain={dappChain}
+            selectedChain={selectedChain}
+            onChange={onChainChange}
+            value={
+              nftChainValue != null ? (
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(nftChainValue, 'en', currency)}
+                />
+              ) : null
+            }
+          />
+        </div>
+      ) : null}
       {ENABLE_DNA_BANNERS ? (
         <NftTabDnaBanner
           address={singleAddressNormalized}

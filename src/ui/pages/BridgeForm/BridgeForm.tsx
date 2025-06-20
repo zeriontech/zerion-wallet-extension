@@ -174,20 +174,6 @@ function FormHint({
   return render(message);
 }
 
-async function filterSupportedPositions(positions: AddressPosition[] | null) {
-  if (!positions) {
-    return [];
-  }
-  const networksStore = await getNetworksStore();
-  const chains = positions.map((position) => position.chain);
-  const networks = await networksStore.load({ chains });
-  const filteredPositions = positions.filter((position) => {
-    const network = networks.getByNetworkId(createChain(position.chain));
-    return position.type === 'asset' && network?.supports_bridging;
-  });
-  return filteredPositions;
-}
-
 function getDefaultState({
   address,
   positions,
@@ -244,11 +230,11 @@ async function prepareDefaultState({
     { source }
   );
   const networksStore = await getNetworksStore();
-  const supportedPositions = await filterSupportedPositions(allPositions);
+  // const supportedPositions = await filterSupportedPositions(allPositions);
   const { inputChain: defaultInputChain, outputChain: defaultOutputChain } =
     getDefaultState({
       address,
-      positions: supportedPositions,
+      positions: allPositions,
     });
   const inputChain = userStateInputChain ?? defaultInputChain ?? NetworkId.Zero;
   const outputChain =
@@ -260,9 +246,9 @@ async function prepareDefaultState({
       queryPopularTokens(createChain(inputChain)).catch(() => []),
     ]);
 
-  const positions =
-    supportedPositions?.filter((position) => position.chain === inputChain) ??
-    [];
+  const positions = allPositions
+    .filter((position) => position.chain === inputChain)
+    .filter((p) => p.type === 'asset');
 
   const sorted = sortPositionsByValue(positions);
   const inputNativeAssetId = inputNetwork.native_asset?.id;
@@ -422,18 +408,10 @@ function BridgeFormComponent() {
   );
   /** All backend-known positions across all _supported_ chains */
   const allPositions = httpAddressPositionsQuery.data?.data || null;
-  const { data: supportedPositions } = useQuery({
-    queryKey: ['filterBridgingPositions', allPositions],
-    queryFn: async () => {
-      const positions = await filterSupportedPositions(allPositions);
-      return positions;
-    },
-    suspense: false,
-  });
 
   const defaultFormValues = useMemo<BridgeFormState>(
-    () => getDefaultState({ address, positions: supportedPositions ?? null }),
-    [address, supportedPositions]
+    () => getDefaultState({ address, positions: allPositions ?? [] }),
+    [address, allPositions]
   );
 
   const preState = useMemo(
@@ -487,16 +465,18 @@ function BridgeFormComponent() {
   } = formState;
 
   const availableSpendPositions = useMemo(() => {
-    const positions = supportedPositions?.filter((p) => p.chain === inputChain);
+    const positions = allPositions
+      ?.filter((p) => p.chain === inputChain)
+      .filter((p) => p.type === 'asset');
     return sortPositionsByValue(positions);
-  }, [supportedPositions, inputChain]);
+  }, [allPositions, inputChain]);
 
   const availableReceivePositions = useMemo(() => {
-    const positions = supportedPositions?.filter(
-      (p) => p.chain === outputChain
-    );
+    const positions = allPositions
+      ?.filter((p) => p.chain === outputChain)
+      .filter((p) => p.type === 'asset');
     return sortPositionsByValue(positions);
-  }, [supportedPositions, outputChain]);
+  }, [allPositions, outputChain]);
 
   const spendChain = inputChain ? createChain(inputChain) : null;
   const receiveChain = outputChain ? createChain(outputChain) : null;
@@ -505,12 +485,12 @@ function BridgeFormComponent() {
 
   const inputPosition = usePosition({
     assetId: inputFungibleId ?? null,
-    positions: supportedPositions ?? [],
+    positions: allPositions,
     chain: spendChain,
   });
   const outputPosition = usePosition({
     assetId: outputFungibleId ?? null,
-    positions: supportedPositions ?? [],
+    positions: allPositions,
     chain: receiveChain,
   });
 

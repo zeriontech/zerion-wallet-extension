@@ -693,12 +693,14 @@ function OverviewComponent() {
             >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
-            <SegmentedControlLink
-              to={createTo('/overview/feed')}
-              onClick={() => handleTabChange('/overview/feed')}
-            >
-              Perks
-            </SegmentedControlLink>
+            {addressType === 'evm' ? (
+              <SegmentedControlLink
+                to={createTo('/overview/feed')}
+                onClick={() => handleTabChange('/overview/feed')}
+              >
+                Perks
+              </SegmentedControlLink>
+            ) : null}
           </SegmentedControlGroup>
         </div>
       </PageFullBleedColumn>

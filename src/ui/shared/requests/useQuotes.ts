@@ -127,6 +127,7 @@ export function useQuotes2({
             formState.inputChain &&
             formState.inputAmount &&
             isNumeric(formState.inputAmount) &&
+            Number(formState.inputAmount) > 0 &&
             formState.inputFungibleId &&
             formState.outputFungibleId
         ),

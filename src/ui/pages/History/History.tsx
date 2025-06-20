@@ -191,8 +191,10 @@ export function HistoryList({
   selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
-  const { params } = useAddressParams();
+  const { params, singleAddress: address } = useAddressParams();
   const offsetValuesState = useStore(offsetValues);
+  const addressType = getAddressType(address);
+  const showNetworkSelector = addressType === 'evm';
 
   const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
   const chain =
@@ -211,13 +213,15 @@ export function HistoryList({
   const actionFilters = (
     <div style={{ paddingInline: 16 }}>
       <VStack gap={8}>
-        <NetworkBalance
-          standard={getAddressType(params.address)}
-          dappChain={dappChain}
-          selectedChain={selectedChain}
-          onChange={onChainChange}
-          value={null}
-        />
+        {showNetworkSelector ? (
+          <NetworkBalance
+            standard={getAddressType(params.address)}
+            dappChain={dappChain}
+            selectedChain={selectedChain}
+            onChange={onChainChange}
+            value={null}
+          />
+        ) : null}
         <ActionSearch
           value={searchQuery}
           onChange={setSearchQuery}

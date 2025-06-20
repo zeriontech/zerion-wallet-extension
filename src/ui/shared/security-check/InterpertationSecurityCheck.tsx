@@ -231,7 +231,7 @@ export function InterpretationSecurityCheck({
           onClick={
             mode === 'loading'
               ? () => loadingDialogRef.current?.showModal()
-              : mode === 'error'
+              : mode === 'error' || warningSeverity === 'Gray'
               ? () => errorDialogRef.current?.showModal()
               : mode === 'success' && !warningSeverity
               ? () => successDialogRef.current?.showModal()
@@ -243,7 +243,7 @@ export function InterpretationSecurityCheck({
             warningSeverity === 'Yellow'
               ? 'Risks Found'
               : warningSeverity === 'Gray'
-              ? 'Pay Attention'
+              ? 'Unverified'
               : mode === 'loading'
               ? 'Simulating...'
               : mode === 'success'
@@ -303,7 +303,7 @@ export function InterpretationSecurityCheck({
         </BottomSheetDialog>
       </PortalToRootNode>
       <Content name="transaction-warning-section">
-        {warnings?.length ? (
+        {warnings?.length && warningSeverity !== 'Gray' ? (
           <VStack gap={8}>
             {warnings.map((warning) => (
               <TransactionWarning

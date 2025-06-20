@@ -3,7 +3,7 @@ import { isTruthy } from 'is-truthy-ts';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { Networks } from 'src/modules/networks/Networks';
+import { Networks } from 'src/modules/networks/Networks';
 import {
   useNetworks,
   useSearchNetworks,
@@ -34,6 +34,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { DelayedRender } from '../DelayedRender';
 import { NetworkIcon } from '../NetworkIcon';
 import { PageBottom } from '../PageBottom';
@@ -70,6 +71,7 @@ function NetworkItem({
   icon,
   chainDistribution,
   address,
+  ecosystem,
 }: {
   index: number;
   name: string;
@@ -78,6 +80,7 @@ function NetworkItem({
   icon: React.ReactElement;
   chainDistribution: ChainDistribution | null;
   address?: string;
+  ecosystem?: BlockchainType;
 }) {
   const preferChainDistribution =
     value === NetworkSelectValue.All ||
@@ -116,7 +119,12 @@ function NetworkItem({
           kind="small/regular"
           color={selected ? 'var(--primary)' : 'var(--neutral-500)'}
         >
-          {preferChainDistribution ? (
+          {address &&
+          ecosystem &&
+          !isMatchForEcosystem(
+            address,
+            ecosystem
+          ) ? null : preferChainDistribution ? (
             <ChainValue
               chain={chain || NetworkSelectValue.All}
               chainDistribution={chainDistribution}
@@ -209,6 +217,7 @@ function NetworkList({
             chainDistribution={chainDistribution}
             selected={network.id === value}
             address={singleAddress}
+            ecosystem={Networks.getEcosystem(network)}
           />
         ),
       };

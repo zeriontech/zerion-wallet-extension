@@ -172,20 +172,6 @@ function FormHint({
   return render(hint);
 }
 
-async function filterSupportedPositions(positions: AddressPosition[] | null) {
-  if (!positions) {
-    return [];
-  }
-  const networksStore = await getNetworksStore();
-  const chains = positions.map((position) => position.chain);
-  const networks = await networksStore.load({ chains });
-  const filteredPositions = positions.filter((position) => {
-    const network = networks.getByNetworkId(createChain(position.chain));
-    return position.type === 'asset' && network?.supports_trading;
-  });
-  return filteredPositions;
-}
-
 function getDefaultState({
   address,
   positions,
@@ -229,10 +215,10 @@ async function prepareDefaultState({
     { addresses: [address], currency },
     { source }
   );
-  const filteredPositions = await filterSupportedPositions(allPositions);
+  // const filteredPositions = await filterSupportedPositions(allPositions);
   const networksStore = await getNetworksStore();
   const inputChain =
-    userStateInputChain || getDefaultChain(address, filteredPositions);
+    userStateInputChain || getDefaultChain(address, allPositions);
   const [network, popularTokens] = await Promise.all([
     networksStore.fetchNetworkById(inputChain),
     // TODO: this request takes and additional 0.5-1s for initial form load,
@@ -246,7 +232,9 @@ async function prepareDefaultState({
     }),
   ]);
 
-  const positions = filteredPositions.filter((p) => p.chain === inputChain);
+  const positions = allPositions
+    .filter((p) => p.chain === inputChain)
+    .filter((p) => p.type === 'asset');
   const sorted = sortPositionsByValue(positions);
   const nativeAssetId = network.native_asset?.id;
   const defaultInputFungibleId = sorted.at(0)?.asset.id || nativeAssetId;
@@ -319,18 +307,10 @@ function SwapFormComponent() {
   );
   /** All backend-known positions across all _supported_ chains */
   const allPositions = httpAddressPositionsQuery.data?.data || null;
-  const { data: supportedPositions } = useQuery({
-    queryKey: ['filterTradingPositions', allPositions],
-    queryFn: async () => {
-      const positions = await filterSupportedPositions(allPositions);
-      return positions;
-    },
-    suspense: false,
-  });
 
   const defaultFormValues = useMemo<SwapFormState>(
-    () => getDefaultState({ address, positions: supportedPositions ?? [] }),
-    [address, supportedPositions]
+    () => getDefaultState({ address, positions: allPositions ?? [] }),
+    [address, allPositions]
   );
 
   const preState = useMemo(
@@ -381,21 +361,23 @@ function SwapFormComponent() {
     formState;
 
   const availablePositions = useMemo(() => {
-    const positions = supportedPositions?.filter((p) => p.chain === inputChain);
+    const positions = allPositions
+      ?.filter((p) => p.chain === inputChain)
+      .filter((p) => p.type === 'asset');
     return sortPositionsByValue(positions);
-  }, [supportedPositions, inputChain]);
+  }, [allPositions, inputChain]);
 
   const spendChain = inputChain ? createChain(inputChain) : null;
   const { data: network } = useNetworkConfig(inputChain ?? null);
 
   const inputPosition = usePosition({
     assetId: inputFungibleId ?? null,
-    positions: supportedPositions ?? null,
+    positions: allPositions,
     chain: spendChain,
   });
   const outputPosition = usePosition({
     assetId: outputFungibleId ?? null,
-    positions: supportedPositions ?? null,
+    positions: allPositions,
     chain: spendChain,
   });
 
