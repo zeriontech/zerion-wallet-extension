@@ -556,7 +556,8 @@ function OverviewComponent() {
             <HStack gap={0} alignItems="center">
               {FEATURE_LOYALTY_FLOW === 'on' &&
               loyaltyEnabled &&
-              currentWallet ? (
+              currentWallet &&
+              addressType === 'evm' ? (
                 <RewardsLinkIcon currentWallet={currentWallet} />
               ) : null}
               <SettingsLinkIcon />
