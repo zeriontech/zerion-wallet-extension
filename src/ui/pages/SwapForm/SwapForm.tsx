@@ -215,7 +215,6 @@ async function prepareDefaultState({
     { addresses: [address], currency },
     { source }
   );
-  // const filteredPositions = await filterSupportedPositions(allPositions);
   const networksStore = await getNetworksStore();
   const inputChain =
     userStateInputChain || getDefaultChain(address, allPositions);
@@ -309,7 +308,7 @@ function SwapFormComponent() {
   const allPositions = httpAddressPositionsQuery.data?.data || null;
 
   const defaultFormValues = useMemo<SwapFormState>(
-    () => getDefaultState({ address, positions: allPositions ?? [] }),
+    () => getDefaultState({ address, positions: allPositions }),
     [address, allPositions]
   );
 

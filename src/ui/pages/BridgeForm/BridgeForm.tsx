@@ -230,7 +230,6 @@ async function prepareDefaultState({
     { source }
   );
   const networksStore = await getNetworksStore();
-  // const supportedPositions = await filterSupportedPositions(allPositions);
   const { inputChain: defaultInputChain, outputChain: defaultOutputChain } =
     getDefaultState({
       address,
@@ -410,7 +409,7 @@ function BridgeFormComponent() {
   const allPositions = httpAddressPositionsQuery.data?.data || null;
 
   const defaultFormValues = useMemo<BridgeFormState>(
-    () => getDefaultState({ address, positions: allPositions ?? [] }),
+    () => getDefaultState({ address, positions: allPositions }),
     [address, allPositions]
   );
 
