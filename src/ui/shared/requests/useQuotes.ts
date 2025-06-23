@@ -82,7 +82,8 @@ export function useQuotes2({
     }
     const slippageOptions = getSlippageOptions({
       chain,
-      userSlippage: formState.slippage ? Number(formState.slippage) : null,
+      userSlippage:
+        formState.slippage != null ? Number(formState.slippage) : null,
     });
     return {
       ...formState,
@@ -126,6 +127,7 @@ export function useQuotes2({
             formState.inputChain &&
             formState.inputAmount &&
             isNumeric(formState.inputAmount) &&
+            Number(formState.inputAmount) > 0 &&
             formState.inputFungibleId &&
             formState.outputFungibleId
         ),

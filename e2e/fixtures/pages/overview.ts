@@ -46,7 +46,7 @@ export class OverviewPage extends ExtensionPage {
         - link "History"
         - link "Perks"
         - img "Empty Wallet Cover"
-        - text: Get started By adding crypto to your wallet
+        - text: Fund your wallet Buy or transfer crypto to get started
         - link "Buy Crypto with Card"
         - link "Receive from Another Wallet"
     `);

@@ -20,6 +20,7 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { NBSP } from 'src/ui/shared/typography';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { Networks } from 'src/modules/networks/Networks';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
@@ -31,11 +32,13 @@ function DisclosureButton({
   openDialog,
   textKind,
   valueDetail,
+  disabled,
 }: {
   value: string;
   openDialog: () => void;
   textKind: UITextKind;
   valueDetail: React.ReactNode | null;
+  disabled?: boolean;
 }) {
   const { networks, isLoading } = useNetworks();
   const { preferences } = usePreferences();
@@ -68,7 +71,9 @@ function DisclosureButton({
         width: '100%',
         ['--parent-content-color' as string]: 'var(--neutral-500)',
         ['--parent-hovered-content-color' as string]: 'var(--black)',
+        cursor: disabled ? 'auto' : undefined,
       }}
+      disabled={disabled}
     >
       <UIText kind={textKind} style={{ width: '100%' }}>
         <HStack
@@ -100,10 +105,12 @@ function DisclosureButton({
               <div key={key}>·</div>
             )
           )}
-          <ArrowDownIcon
-            className="content-hover"
-            style={{ width: 24, height: 24 }}
-          />
+          {disabled ? null : (
+            <ArrowDownIcon
+              className="content-hover"
+              style={{ width: 24, height: 24 }}
+            />
+          )}
         </HStack>
       </UIText>
     </UnstyledButton>
@@ -136,10 +143,15 @@ export function NetworkBalance({
     ? networks?.getNetworkByName(createChain(dappChain))
     : null;
 
-  const chain = selectedChain || dappChain || NetworkSelectValue.All;
+  const temporary_solanaDisabledSelector = standard === 'solana';
+
+  const chain = temporary_solanaDisabledSelector
+    ? NetworkId.Solana
+    : selectedChain || dappChain || NetworkSelectValue.All;
 
   const isClearableFilter = Boolean(selectedChain);
-  const showHelperButton = Boolean(selectedChain || dappChain);
+  const showHelperButton =
+    !temporary_solanaDisabledSelector && Boolean(selectedChain || dappChain);
   const showAllNetworksHelperButton =
     (!dappChain && selectedChain !== NetworkSelectValue.All) ||
     (dappChain && (!selectedChain || selectedChain === dappChain));
@@ -224,6 +236,7 @@ export function NetworkBalance({
               openDialog={openDialog}
               valueDetail={totalValue}
               textKind={textKind}
+              disabled={temporary_solanaDisabledSelector}
             />
           )}
         />

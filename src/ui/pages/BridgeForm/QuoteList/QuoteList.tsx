@@ -17,7 +17,7 @@ import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import type { BridgeFormState } from '../types';
 import * as styles from './styles.module.css';
 
-const QUOTE_GRID_TEMPLATE_COLUMNS = '30px 3fr 3fr 2fr 2fr';
+const QUOTE_GRID_TEMPLATE_COLUMNS = '20px 3fr 3fr 2fr 2fr';
 
 function QuoteNetworkFee({ quote }: { quote: Quote2 }) {
   const { networkFee } = quote;

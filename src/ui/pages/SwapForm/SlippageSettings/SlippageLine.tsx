@@ -28,7 +28,8 @@ export function SlippageLine({
 
   const { slippage } = getSlippageOptions({
     chain,
-    userSlippage: formState.slippage ? Number(formState.slippage) : null,
+    userSlippage:
+      formState.slippage != null ? Number(formState.slippage) : null,
   });
 
   const price = receiveAsset?.price?.value || 0;

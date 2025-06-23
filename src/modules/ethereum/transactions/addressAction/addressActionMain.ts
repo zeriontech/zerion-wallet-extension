@@ -2,6 +2,7 @@ import type { AddressAction, Asset, NFT, NFTAsset } from 'defi-sdk';
 import type { BigNumberish } from 'ethers';
 import { createChain, type Chain } from 'src/modules/networks/Chain';
 import { nanoid } from 'nanoid';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type {
   IncomingTransaction,
   IncomingTransactionWithFrom,
@@ -33,6 +34,16 @@ export function isLocalAddressAction(
 
 export const ZERO_HASH =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
+
+const toEmptyActionTx = (chain: Chain): AddressAction['transaction'] =>
+  ({
+    chain: chain.toString(),
+    hash: ZERO_HASH,
+    fee: null,
+    status: 'pending',
+    nonce: -1,
+    sponsored: false,
+  } as const);
 
 const toActionTx = (
   tx: IncomingTransaction,
@@ -76,12 +87,14 @@ function toNftAsset(x: NFT): NFTAsset {
 }
 
 export function createSendAddressAction({
+  address,
   transaction,
   asset,
   quantity,
   chain,
 }: {
-  transaction: IncomingTransactionWithFrom;
+  address: string;
+  transaction: MultichainTransaction;
   asset: Asset | NFT;
   quantity: string;
   chain: Chain;
@@ -89,10 +102,12 @@ export function createSendAddressAction({
   return {
     id: nanoid(),
     datetime: new Date().toISOString(),
-    address: transaction.from,
+    address,
     type: { display_value: 'Send', value: 'send' },
     label: null,
-    transaction: toActionTx(transaction, chain),
+    transaction: transaction.evm
+      ? toActionTx(transaction.evm, chain)
+      : toEmptyActionTx(chain),
     content: {
       transfers: {
         outgoing: isAsset(asset)
@@ -122,12 +137,14 @@ export function createSendAddressAction({
 type AssetQuantity = { asset: Asset; quantity: string };
 
 export function createTradeAddressAction({
+  address,
   transaction,
   outgoing,
   incoming,
   chain,
 }: {
-  transaction: IncomingTransactionWithFrom;
+  address: string;
+  transaction: MultichainTransaction;
   outgoing: AssetQuantity[];
   incoming: AssetQuantity[];
   chain: Chain;
@@ -135,9 +152,11 @@ export function createTradeAddressAction({
   return {
     id: nanoid(),
     datetime: new Date().toISOString(),
-    address: transaction.from,
+    address,
     type: { value: 'trade', display_value: 'Trade' },
-    transaction: toActionTx(transaction, chain),
+    transaction: transaction.evm
+      ? toActionTx(transaction.evm, chain)
+      : toEmptyActionTx(chain),
     label: null,
     content: {
       transfers: {
@@ -158,12 +177,14 @@ export function createTradeAddressAction({
 }
 
 export function createBridgeAddressAction({
+  address,
   transaction,
   outgoing,
   incoming,
   chain,
 }: {
-  transaction: IncomingTransactionWithFrom;
+  address: string;
+  transaction: MultichainTransaction;
   outgoing: AssetQuantity[];
   incoming: AssetQuantity[];
   chain: Chain;
@@ -171,10 +192,12 @@ export function createBridgeAddressAction({
   return {
     id: nanoid(),
     datetime: new Date().toISOString(),
-    address: transaction.from,
+    address,
     type: { display_value: 'Bridge', value: 'send' },
     label: null,
-    transaction: toActionTx(transaction, chain),
+    transaction: transaction.evm
+      ? toActionTx(transaction.evm, chain)
+      : toEmptyActionTx(chain),
     content: {
       transfers: {
         outgoing: outgoing.map(({ asset, quantity }) => ({

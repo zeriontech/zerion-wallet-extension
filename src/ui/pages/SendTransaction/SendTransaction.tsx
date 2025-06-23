@@ -40,7 +40,6 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -84,12 +83,12 @@ import { assertProp } from 'src/shared/assert-property';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
+import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
-import { AddressActionComponent } from 'src/ui/components/address-action/AddressActionDetails/AddressActionDetails';
 import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import {
   hasCriticalWarning,
@@ -99,6 +98,7 @@ import {
 import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -637,6 +637,7 @@ function SendTransactionContent({
       eligibilityQuery.data?.data.eligible,
       eligibilityQuery.status,
       origin,
+      wallet.address,
     ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -657,7 +658,8 @@ function SendTransactionContent({
         }
       );
       return interpretTxBasedOnEligibility({
-        transaction: configuredTx,
+        address: wallet.address,
+        transaction: { evm: configuredTx },
         eligibilityQueryData: eligibilityQuery.data?.data.eligible,
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,
@@ -929,59 +931,97 @@ function EthSendTransaction() {
 
 function SolDefaultView({
   addressAction,
+  txInterpretQuery,
   origin,
   wallet,
+  networks,
 }: {
   origin: string;
   addressAction: AnyAddressAction;
+  txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   wallet: ExternallyOwnedAccount;
+  networks: Networks;
 }) {
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
+
+  const recipientAddress = addressAction.label?.display_value.wallet_address;
+  const actionTransfers = addressAction.content?.transfers;
+  const singleAsset = addressAction?.content?.single_asset;
+
   return (
     <>
+      <SecurityStatusBackground />
       <PageTop />
-      <div style={{ display: 'grid', placeItems: 'center' }}>
-        <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
-          {addressAction.type.display_value}
-        </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {origin === INTERNAL_ORIGIN ? (
-            'Zerion'
-          ) : originForHref ? (
-            <TextAnchor
-              // Open URL in a new _window_ so that extension UI stays open and visible
-              onClick={openInNewWindow}
-              href={originForHref.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {originForHref.hostname}
-            </TextAnchor>
-          ) : (
-            'Unknown Initiator'
-          )}
-        </UIText>
-        <Spacer height={8} />
-        <HStack gap={8} alignItems="center">
-          <WalletAvatar
-            address={wallet.address}
-            size={20}
-            active={false}
-            borderRadius={4}
+      <VStack gap={8}>
+        <VStack
+          gap={8}
+          style={{
+            justifyItems: 'center',
+            paddingBlock: 24,
+            border: '1px solid var(--neutral-200)',
+            backgroundColor: 'var(--light-background-transparent)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: 12,
+          }}
+        >
+          <SiteFaviconImg
+            size={64}
+            style={{ borderRadius: 16 }}
+            url={origin}
+            alt={`Logo for ${origin}`}
           />
-          <UIText kind="small/regular">
-            <WalletDisplayName wallet={wallet} />
+          <UIText kind="headline/h2">{addressAction.type.display_value}</UIText>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            {origin === INTERNAL_ORIGIN ? (
+              'Zerion'
+            ) : originForHref ? (
+              <TextAnchor
+                href={originForHref.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {originForHref.hostname}
+              </TextAnchor>
+            ) : (
+              'Unknown Initiator'
+            )}
           </UIText>
-        </HStack>
-      </div>
-      <Spacer height={24} />
-
-      <VStack gap={16}>
-        <AddressActionComponent
-          address={wallet.address}
-          addressAction={addressAction}
-          showApplicationLine={true}
+          <HStack gap={8} alignItems="center">
+            <WalletAvatar
+              address={wallet.address}
+              size={20}
+              active={false}
+              borderRadius={6}
+            />
+            <UIText kind="small/regular">
+              <WalletDisplayName wallet={wallet} />
+            </UIText>
+          </HStack>
+        </VStack>
+        <VStack
+          gap={4}
+          style={{
+            ['--surface-background-color' as string]: 'var(--neutral-100)',
+          }}
+        >
+          <AddressActionDetails
+            address={wallet.address}
+            recipientAddress={recipientAddress}
+            addressAction={addressAction}
+            chain={createChain(NetworkId.Solana)}
+            networks={networks}
+            actionTransfers={actionTransfers}
+            singleAsset={singleAsset}
+            showApplicationLine={false}
+            allowanceQuantityBase={null}
+            singleAssetElementEnd={null}
+          />
+        </VStack>
+        <InterpretationSecurityCheck
+          interpretation={txInterpretQuery.data}
+          interpretQuery={txInterpretQuery}
         />
+        <RenderArea name="transaction-warning-section" />
       </VStack>
     </>
   );
@@ -1035,6 +1075,9 @@ function normalizeTxParams(params: URLSearchParams):
 
 function SolSendTransaction() {
   const [params] = useSearchParams();
+  const { currency } = useCurrency();
+  const { networks } = useNetworks();
+  const client = useDefiSdkClient();
   const origin = params.get('origin');
   const clientScope = params.get('clientScope');
   const txParams = useMemo(() => normalizeTxParams(params), [params]);
@@ -1081,10 +1124,43 @@ function SolSendTransaction() {
     txParams.method === 'signAllTransactions'
       ? txParams.transactions[0]
       : txParams.transaction;
-  const addressAction = useMemo(
+  const localAddressAction = useMemo(
     () => parseSolanaTransaction(wallet.address, solFromBase64(firstTx)),
     [firstTx, wallet.address]
   );
+
+  // TODO: support multiple transactions in simulation
+  const interpretQuery = useQuery({
+    // Failing to keepPreviousData currently may break AllowanceView
+    // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
+    keepPreviousData: true,
+    suspense: false,
+    queryKey: [
+      'interpretFirstSolanaTx',
+      client,
+      currency,
+      origin,
+      wallet.address,
+      firstTx,
+    ],
+    queryKeyHashFn: (queryKey) => {
+      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
+      return hashQueryKey(key);
+    },
+    queryFn: async () => {
+      return interpretTxBasedOnEligibility({
+        address: wallet.address,
+        transaction: { solana: firstTx },
+        eligibilityQueryData: false,
+        eligibilityQueryStatus: 'success',
+        currency,
+        origin,
+        client,
+      });
+    },
+  });
+
+  const addressAction = interpretQuery.data?.action || localAddressAction;
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {
@@ -1126,11 +1202,13 @@ function SolSendTransaction() {
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {addressAction ? (
+        {addressAction && networks ? (
           <SolDefaultView
             wallet={wallet}
             addressAction={addressAction}
+            txInterpretQuery={interpretQuery}
             origin={origin}
+            networks={networks}
           />
         ) : null}
         <Spacer height={16} />
