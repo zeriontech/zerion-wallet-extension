@@ -8,6 +8,7 @@ import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client
 import { HandshakeFailed } from 'src/shared/errors/errors';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { initializeSidepanelEvents } from 'src/shared/sidepanel/initialize.client';
+import { urlContext } from 'src/shared/UrlContext';
 import { applyDrawFix } from './shared/applyDrawFix';
 import { App } from './App';
 import type { AppProps } from './App/App';
@@ -18,6 +19,7 @@ import { persistQueryClient } from './shared/requests/queryClientPersistence';
 import { getPreferences } from './features/preferences/usePreferences';
 import { OnboardingInterrupt } from './features/onboarding/errors';
 import { maybeOpenOnboarding } from './features/onboarding/initialization';
+import { restoreRoute } from './App/RouteRestoration';
 
 applyDrawFix();
 initializeSidepanelEvents();
@@ -60,6 +62,8 @@ function renderApp({ initialView, inspect }: AppProps) {
   );
 }
 
+const isPopup = urlContext.windowType === 'popup';
+
 let isFirstLoad = true;
 async function initializeUI({
   initialView,
@@ -78,6 +82,9 @@ async function initializeUI({
     }
     await getPreferences(); // seed queryClient. TODO before merge: do we need this?
     await configureUIClient();
+    if (isPopup && !initialView) {
+      await restoreRoute();
+    }
     initializeClientAnalytics();
     renderApp({ initialView, inspect });
   } catch (error) {

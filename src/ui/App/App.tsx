@@ -205,7 +205,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
     <RouteResolver>
       <ViewArea>
         <URLBar />
-        {isPopup ? <RouteRestoration initialRoute={initialRoute} /> : null}
+        {isPopup ? <RouteRestoration /> : null}
         <Routes>
           {initialRoute ? (
             <Route path="/" element={<Navigate to={initialRoute} />} />

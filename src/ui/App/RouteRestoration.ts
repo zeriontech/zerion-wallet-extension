@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SessionStorage } from 'src/background/webapis/storage';
 
@@ -13,36 +12,24 @@ export async function resetPersistedRoutes() {
   return SessionStorage.remove('routeRestoration');
 }
 
-export function RouteRestoration({ initialRoute }: { initialRoute?: string }) {
+export async function restoreRoute() {
+  const result = await SessionStorage.get<string>('routeRestoration');
+  if (result) {
+    window.location.hash = result;
+  }
+}
+
+export function RouteRestoration() {
   const { pathname, search } = useLocation();
-  const didRestoreRef = useRef(false);
-  const { data: destination, isSuccess } = useQuery({
-    queryKey: ['routeRestoration'],
-    queryFn: async () => {
-      const result = await SessionStorage.get<string>('routeRestoration');
-      return result || null;
-    },
-    staleTime: Infinity,
-    enabled: !initialRoute,
-  });
   useEffect(() => {
-    if (!isSuccess) {
-      // only record routes after initialization
-      return;
-    }
     if (restorationWhiteList.has(pathname)) {
-      const destination = search ? `${pathname}?${search}` : pathname;
+      const destination = search
+        ? `${pathname}?${new URLSearchParams(search)}`
+        : pathname;
       SessionStorage.set('routeRestoration', destination);
     } else {
       SessionStorage.remove('routeRestoration');
     }
-  }, [pathname, search, isSuccess]);
-  if (initialRoute) {
-    return null;
-  }
-  if (destination && !didRestoreRef.current) {
-    didRestoreRef.current = true;
-    window.location.hash = destination;
-  }
+  }, [pathname, search]);
   return null;
 }
