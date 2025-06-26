@@ -132,7 +132,7 @@ export class TransactionsPoller {
           searchTransactionHistory: true,
         }),
       {
-        staleTime: (fulfilledCount) => (fulfilledCount < 3 ? 30000 : 180000),
+        staleTime: (fulfilledCount) => (fulfilledCount < 5 ? 2000 : 5000),
         retryTime: (rejectedCount) => (rejectedCount < 10 ? 1000 : Infinity),
       }
     );
