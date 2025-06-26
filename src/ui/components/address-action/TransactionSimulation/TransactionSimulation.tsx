@@ -161,7 +161,7 @@ export function TransactionSimulation({
                   chain={evmChain}
                   interpretation={interpretation}
                   // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
-                  transaction={transaction.evm}
+                  transaction={transaction}
                   addressAction={addressAction}
                   onCopyData={() => toastRef.current?.showToast()}
                 />

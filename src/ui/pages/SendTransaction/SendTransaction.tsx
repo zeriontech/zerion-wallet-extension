@@ -109,6 +109,7 @@ import {
 import { TransactionAdvancedView } from './TransactionAdvancedView';
 import { TransactionWarnings } from './TransactionWarnings';
 import { txErrorToMessage } from './shared/transactionErrorToMessage';
+import { AddressActionNetworkFee } from './TransactionConfiguration/TransactionConfiguration';
 
 async function configureTransactionToSign<T extends IncomingTransaction>(
   transaction: T,
@@ -514,7 +515,6 @@ function TransactionDefaultView({
 }
 
 function SendTransactionContent({
-  incomingTransaction,
   populatedTransaction,
   origin,
   clientScope,
@@ -522,7 +522,6 @@ function SendTransactionContent({
   networks,
   chain,
 }: {
-  incomingTransaction: IncomingTransaction;
   populatedTransaction: IncomingTransactionWithChainId;
   origin: string;
   clientScope: string | null;
@@ -806,8 +805,7 @@ function SendTransactionContent({
                 networks={networks}
                 chain={chain}
                 interpretation={interpretQuery.data}
-                // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
-                transaction={incomingTransaction}
+                transaction={{ evm: populatedTransaction }}
                 addressAction={addressAction}
                 onCopyData={() => toastRef.current?.showToast()}
               />
@@ -918,7 +916,6 @@ function EthSendTransaction() {
 
   return (
     <SendTransactionContent
-      incomingTransaction={incomingTransaction}
       populatedTransaction={populatedTransaction}
       origin={origin}
       clientScope={clientScope}
@@ -931,6 +928,7 @@ function EthSendTransaction() {
 
 function SolDefaultView({
   addressAction,
+  rawTransaction,
   txInterpretQuery,
   origin,
   wallet,
@@ -938,6 +936,7 @@ function SolDefaultView({
 }: {
   origin: string;
   addressAction: AnyAddressAction;
+  rawTransaction: StringBase64;
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   wallet: ExternallyOwnedAccount;
   networks: Networks;
@@ -947,6 +946,10 @@ function SolDefaultView({
   const recipientAddress = addressAction.label?.display_value.wallet_address;
   const actionTransfers = addressAction.content?.transfers;
   const singleAsset = addressAction?.content?.single_asset;
+
+  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+
+  const toastRef = useRef<PopoverToastHandle>(null);
 
   return (
     <>
@@ -1017,12 +1020,76 @@ function SolDefaultView({
             singleAssetElementEnd={null}
           />
         </VStack>
-        <InterpretationSecurityCheck
-          interpretation={txInterpretQuery.data}
-          interpretQuery={txInterpretQuery}
-        />
+        <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <InterpretationSecurityCheck
+            interpretation={txInterpretQuery.data}
+            interpretQuery={txInterpretQuery}
+          />
+          <Button
+            kind="regular"
+            size={44}
+            className="parent-hover"
+            onClick={() => {
+              advancedDialogRef.current?.showModal();
+            }}
+            style={{
+              textAlign: 'start',
+              borderRadius: 100,
+              ['--parent-content-color' as string]: 'var(--neutral-500)',
+              ['--parent-hovered-content-color' as string]: 'var(--black)',
+            }}
+          >
+            <HStack gap={0} alignItems="center" justifyContent="center">
+              <ScrollIcon />
+              <span>Details</span>
+              <ArrowDownIcon
+                className="content-hover"
+                style={{ width: 24, height: 24 }}
+              />
+            </HStack>
+          </Button>
+        </HStack>
         <RenderArea name="transaction-warning-section" />
       </VStack>
+      <div style={{ marginTop: 'auto' }}>
+        {addressAction.transaction.fee ? (
+          <AddressActionNetworkFee
+            chain={addressAction.transaction.chain}
+            networkFee={addressAction.transaction.fee}
+            isLoading={txInterpretQuery.isLoading}
+          />
+        ) : null}
+      </div>
+
+      <CenteredDialog
+        ref={advancedDialogRef}
+        containerStyle={{ paddingBottom: 0 }}
+        renderWhenOpen={() => (
+          <>
+            <DialogTitle
+              title={<UIText kind="body/accent">Details</UIText>}
+              closeKind="icon"
+            />
+            <TransactionAdvancedView
+              networks={networks}
+              chain={createChain(NetworkId.Solana)}
+              interpretation={txInterpretQuery.data}
+              transaction={{ solana: rawTransaction }}
+              addressAction={addressAction}
+              onCopyData={() => toastRef.current?.showToast()}
+            />
+          </>
+        )}
+      ></CenteredDialog>
+
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Copied to Clipboard
+      </PopoverToast>
     </>
   );
 }
@@ -1204,6 +1271,7 @@ function SolSendTransaction() {
       >
         {addressAction && networks ? (
           <SolDefaultView
+            rawTransaction={firstTx}
             wallet={wallet}
             addressAction={addressAction}
             txInterpretQuery={interpretQuery}
