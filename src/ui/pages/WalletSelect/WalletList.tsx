@@ -72,7 +72,7 @@ function WalletListItem({
           ? {
               position: 'absolute',
               ['positionAnchor' as string]: anchorName,
-              ['insetArea' as string]: 'center',
+              ['positionArea' as string]: 'center',
             }
           : undefined),
       }}
@@ -256,7 +256,7 @@ export function WalletList({
    * nesting buttons, which is invalid per html spec, but still works ¯\_(ツ)_/¯
    */
   // TODO: enable check when Chrome bug with CSS Anchors is fixed
-  const supportsCssAnchor = false; // CSS.supports('anchor-name: --name');
+  const supportsCssAnchor = CSS.supports('anchor-name: --name');
   for (const group of walletGroups) {
     for (const wallet of group.walletContainer.wallets) {
       if (predicate && !predicate(wallet)) {
