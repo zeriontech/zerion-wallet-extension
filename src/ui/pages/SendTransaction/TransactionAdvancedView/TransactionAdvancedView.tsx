@@ -27,6 +27,7 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 
 function maybeHexValue(value?: BigNumberish | null): string | null {
   return value ? valueToHex(value) : null;
@@ -207,15 +208,18 @@ export function TransactionAdvancedView({
 }: {
   networks: Networks;
   chain: Chain;
-  transaction: IncomingTransaction;
+  transaction: MultichainTransaction;
   interpretation?: InterpretResponse | null;
   addressAction: AnyAddressAction;
   onCopyData?: () => void;
 }) {
-  const transactionFormatted = useMemo(
-    () => JSON.stringify(transaction, null, 2),
-    [transaction]
-  );
+  const transactionFormatted = useMemo(() => {
+    if (transaction.evm) {
+      return JSON.stringify(transaction.evm, null, 2);
+    } else {
+      return transaction.solana;
+    }
+  }, [transaction]);
 
   const { handleCopy } = useCopyToClipboard({
     text: transactionFormatted,
@@ -236,14 +240,18 @@ export function TransactionAdvancedView({
           chain={chain}
           networks={networks}
         />
-        {transaction ? (
+        {transaction.evm ? (
           <TransactionDetails
             networks={networks}
             chain={chain}
-            transaction={transaction}
+            transaction={transaction.evm}
             interpretation={interpretation}
           />
-        ) : null}
+        ) : (
+          <Surface style={{ padding: 12, overflowWrap: 'break-word' }}>
+            {transaction.solana}
+          </Surface>
+        )}
       </VStack>
       <Spacer height={24} />
       <form
