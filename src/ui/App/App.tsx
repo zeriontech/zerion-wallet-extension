@@ -23,6 +23,7 @@ import { SignTypedData } from 'src/ui/pages/SignTypedData';
 import { useStore } from '@store-unit/react';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { Playground } from 'src/ui-lab/Playground';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import {
@@ -536,21 +537,29 @@ export function App({ initialView, inspect }: AppProps) {
                   <MaybeTestModeDecoration />
                 ) : null}
                 <ViewSuspense logDelays={true}>
-                  {isOnboardingView ? (
-                    <Onboarding />
-                  ) : isPageLayout ? (
-                    <PageLayoutViews />
-                  ) : (
-                    <DefiSdkClientProvider>
-                      <Views
-                        initialRoute={
-                          initialView === 'handshakeFailure'
-                            ? '/handshake-failure'
-                            : undefined
-                        }
-                      />
-                    </DefiSdkClientProvider>
-                  )}
+                  <Routes>
+                    <Route path="/playground/*" element={<Playground />} />
+                    <Route
+                      path="*"
+                      element={
+                        isOnboardingView ? (
+                          <Onboarding />
+                        ) : isPageLayout ? (
+                          <PageLayoutViews />
+                        ) : (
+                          <DefiSdkClientProvider>
+                            <Views
+                              initialRoute={
+                                initialView === 'handshakeFailure'
+                                  ? '/handshake-failure'
+                                  : undefined
+                              }
+                            />
+                          </DefiSdkClientProvider>
+                        )
+                      }
+                    />
+                  </Routes>
                 </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
