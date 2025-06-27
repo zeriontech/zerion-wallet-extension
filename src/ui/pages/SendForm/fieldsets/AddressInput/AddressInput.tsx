@@ -267,7 +267,7 @@ export function AddressInput({
       }
       const existingAddress = allItems.find(
         (item) =>
-          item.name?.toLowerCase() === normalizedValue ||
+          item.name?.toLowerCase() === normalizedValue.toLowerCase() ||
           truncateAddress(normalizeAddress(item.address), 4) === normalizedValue
       )?.address;
       if (existingAddress) {
