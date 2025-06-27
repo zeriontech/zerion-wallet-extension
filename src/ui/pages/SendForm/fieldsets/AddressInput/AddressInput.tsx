@@ -37,6 +37,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 
 type Item = {
   name: string | null;
@@ -263,7 +264,10 @@ export function AddressInput({
       if (!normalizedValue) {
         return null;
       }
-      if (isEthereumAddress(normalizedValue)) {
+      if (
+        isEthereumAddress(normalizedValue) ||
+        isSolanaAddress(normalizedValue)
+      ) {
         return normalizedValue;
       }
       const existingAddress = allItems.find(
