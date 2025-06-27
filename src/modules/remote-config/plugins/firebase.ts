@@ -9,7 +9,6 @@ const defaultConfig: RemoteConfig = {
   extension_wallet_name_flags: {},
   extension_uninstall_link: '',
   extension_loyalty_enabled: true,
-  extension_asset_page_enabled: false,
   loyalty_config: {},
   zerion_fee_learn_more_link: '',
   fee_comparison_config: [],
@@ -19,7 +18,6 @@ const knownKeys: (keyof RemoteConfig)[] = [
   'extension_wallet_name_flags',
   'extension_uninstall_link',
   'extension_loyalty_enabled',
-  'extension_asset_page_enabled',
   'loyalty_config',
   'fee_comparison_config',
 ];
