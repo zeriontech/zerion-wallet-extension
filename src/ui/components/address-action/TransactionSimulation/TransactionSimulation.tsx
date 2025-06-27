@@ -125,9 +125,7 @@ export function TransactionSimulation({
   const allowanceQuantityBase =
     customAllowanceValueBase || addressAction.content?.single_asset?.quantity;
 
-  // Details view is supported only for EVM transactions
-  const detailesViewSupported = Boolean(transaction.evm);
-  const chain = evmChain ?? solanaChain;
+  const chain = transaction.evm ? evmChain : solanaChain;
   invariant(chain, 'Chain must be defined for transaction simulation');
 
   return (
@@ -140,36 +138,28 @@ export function TransactionSimulation({
       >
         Copied to Clipboard
       </PopoverToast>
-      {detailesViewSupported ? (
-        <CenteredDialog
-          ref={advancedDialogRef}
-          containerStyle={{ paddingBottom: 0 }}
-          renderWhenOpen={() => {
-            invariant(
-              transaction.evm,
-              'EVM transaction must be defined for details view'
-            );
-            invariant(evmChain, 'EVM chain must be defined for details view');
-            return (
-              <>
-                <DialogTitle
-                  title={<UIText kind="body/accent">Details</UIText>}
-                  closeKind="icon"
-                />
-                <TransactionAdvancedView
-                  networks={networks}
-                  chain={evmChain}
-                  interpretation={interpretation}
-                  // NOTE: Pass {populaterTransaction} or even "configured" transaction instead?
-                  transaction={transaction}
-                  addressAction={addressAction}
-                  onCopyData={() => toastRef.current?.showToast()}
-                />
-              </>
-            );
-          }}
-        />
-      ) : null}
+      <CenteredDialog
+        ref={advancedDialogRef}
+        containerStyle={{ paddingBottom: 0 }}
+        renderWhenOpen={() => {
+          return (
+            <>
+              <DialogTitle
+                title={<UIText kind="body/accent">Details</UIText>}
+                closeKind="icon"
+              />
+              <TransactionAdvancedView
+                networks={networks}
+                chain={chain}
+                interpretation={interpretation}
+                transaction={transaction}
+                addressAction={addressAction}
+                onCopyData={() => toastRef.current?.showToast()}
+              />
+            </>
+          );
+        }}
+      />
       <VStack gap={8}>
         <AddressActionDetails
           address={address}
@@ -195,40 +185,33 @@ export function TransactionSimulation({
             ) : null
           }
         />
-        <HStack
-          gap={8}
-          style={{
-            gridTemplateColumns: detailesViewSupported ? '1fr 1fr' : '1fr',
-          }}
-        >
+        <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
             interpretation={interpretation}
             interpretQuery={txInterpretQuery}
           />
-          {detailesViewSupported ? (
-            <Button
-              type="button"
-              kind="regular"
-              onClick={() => advancedDialogRef.current?.showModal()}
-              size={44}
-              className="parent-hover"
-              style={{
-                textAlign: 'start',
-                borderRadius: 100,
-                ['--parent-content-color' as string]: 'var(--neutral-500)',
-                ['--parent-hovered-content-color' as string]: 'var(--black)',
-              }}
-            >
-              <HStack gap={0} alignItems="center" justifyContent="center">
-                <ScrollIcon />
-                <span>Details</span>
-                <ArrowDownIcon
-                  className="content-hover"
-                  style={{ width: 24, height: 24 }}
-                />
-              </HStack>
-            </Button>
-          ) : null}
+          <Button
+            type="button"
+            kind="regular"
+            onClick={() => advancedDialogRef.current?.showModal()}
+            size={44}
+            className="parent-hover"
+            style={{
+              textAlign: 'start',
+              borderRadius: 100,
+              ['--parent-content-color' as string]: 'var(--neutral-500)',
+              ['--parent-hovered-content-color' as string]: 'var(--black)',
+            }}
+          >
+            <HStack gap={0} alignItems="center" justifyContent="center">
+              <ScrollIcon />
+              <span>Details</span>
+              <ArrowDownIcon
+                className="content-hover"
+                style={{ width: 24, height: 24 }}
+              />
+            </HStack>
+          </Button>
         </HStack>
         <RenderArea name="transaction-warning-section" />
       </VStack>

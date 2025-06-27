@@ -17,6 +17,7 @@ import { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInter
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { SecurityStatusBackground } from 'src/ui/shared/security-check';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { AddressActionNetworkFee } from 'src/ui/pages/SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -141,8 +142,8 @@ export function TransactionConfirmationView({
               </div>
             }
           >
-            {transaction.evm ? (
-              <div style={{ marginTop: 'auto' }}>
+            <div style={{ marginTop: 'auto' }}>
+              {transaction.evm ? (
                 <TransactionConfiguration
                   transaction={transaction.evm}
                   from={wallet.address}
@@ -162,17 +163,20 @@ export function TransactionConfirmationView({
                       : null
                   }
                 />
-              </div>
-            ) : null}
+              ) : txInterpretQuery.data?.action?.transaction.fee ? (
+                <AddressActionNetworkFee
+                  chain={chain.toString()}
+                  networkFee={txInterpretQuery.data?.action?.transaction.fee}
+                  isLoading={txInterpretQuery.isLoading}
+                />
+              ) : null}
+            </div>
           </React.Suspense>
           <Spacer height={20} />
           <HStack
             gap={12}
             justifyContent="center"
-            style={{
-              gridTemplateColumns: '1fr 1fr',
-              marginTop: transaction.evm ? undefined : 'auto',
-            }}
+            style={{ gridTemplateColumns: '1fr 1fr' }}
           >
             <Button value="cancel" kind="regular" ref={focusNode}>
               Cancel
