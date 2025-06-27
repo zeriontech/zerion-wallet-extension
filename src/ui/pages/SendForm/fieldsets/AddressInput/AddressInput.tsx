@@ -51,6 +51,7 @@ function matches(query: string | null, item: Item, domainInfo?: string[]) {
   }
   const value = query.toLowerCase();
   return (
+    normalizedContains(normalizeAddress(item.address), query) || // Solana address is not transformed to lowercase
     normalizedContains(normalizeAddress(item.address), value) ||
     normalizedContains(
       truncateAddress(normalizeAddress(item.address), 4),
