@@ -56,7 +56,7 @@ export const emitter = createNanoEvents<{
   requestAccountsResolved: (data: {
     origin: string;
     address: string;
-    /** {explicitly: true} means that user confirmed connection in a dialog. {false} means that we resolve a previously approved addess value */
+    /** {explicitly: true} means that user confirmed connection in a dialog. {false} means that we resolve a previously approved address value */
     explicitly: boolean;
   }) => void;
   screenView: (data: ScreenViewParams) => void;
