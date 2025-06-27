@@ -116,7 +116,7 @@ function AddOrUpdateChain({
     return networks
       ? new Set(
           networks
-            .getNetworks()
+            .getEvmNetworks()
             .map((n) => Networks.getChainId(n))
             .filter(isTruthy)
         )
