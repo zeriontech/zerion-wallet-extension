@@ -58,66 +58,72 @@ function AccelerateTransactionContent({
       />
       <Spacer height={16} />
       <VStack gap={16}>
-        <div
-          style={{
-            borderRadius: 12,
-            border: '2px solid var(--neutral-200)',
-            padding: 16,
-          }}
-        >
-          <VStack gap={16}>
-            <HStack gap={8} justifyContent="space-between">
-              <HStack gap={8} alignItems="center">
-                <CircleSpinner />
-                <UIText kind="body/regular">
-                  {isCancel
-                    ? 'Transaction cancelling...'
-                    : 'Transaction pending...'}
-                </UIText>
-              </HStack>
-              {isAccelerated && !isCancel ? (
-                <HStack gap={8}>
-                  <UIText kind="body/regular" color="var(--neutral-600)">
-                    Accelerated
+        {action.transaction.chain === 'solana' ? null : (
+          <div
+            style={{
+              borderRadius: 12,
+              border: '2px solid var(--neutral-200)',
+              padding: 16,
+            }}
+          >
+            <VStack gap={16}>
+              <HStack gap={8} justifyContent="space-between">
+                <HStack gap={8} alignItems="center">
+                  <CircleSpinner />
+                  <UIText kind="body/regular">
+                    {isCancel
+                      ? 'Transaction cancelling...'
+                      : 'Transaction pending...'}
                   </UIText>
-                  <RocketOutlineIcon
-                    style={{
-                      color: 'var(--neutral-500)',
-                      width: 24,
-                      height: 24,
-                    }}
-                  />
                 </HStack>
-              ) : null}
-            </HStack>
-            <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
-              <Button kind="neutral" onClick={() => setView('speedup')}>
-                <HStack gap={8} justifyContent="center">
-                  <img
-                    alt=""
-                    style={{ width: 20, height: 20 }}
-                    src={RocketSrc}
-                    srcSet={`${RocketSrc}, ${Rocket2xSrc} 2x`}
-                  />
-                  Speed Up
-                </HStack>
-              </Button>
-              <Button kind="neutral" onClick={() => setView('cancel')}>
-                <HStack gap={8} justifyContent="center">
-                  <img
-                    alt=""
-                    style={{ width: 20, height: 20 }}
-                    src={RocketSrc}
-                    srcSet={`${CancelEmojiSrc}, ${CancelEmoji2xSrc} 2x`}
-                  />
-                  Cancel
-                </HStack>
-              </Button>
-            </HStack>
-          </VStack>
-        </div>
+                {isAccelerated && !isCancel ? (
+                  <HStack gap={8}>
+                    <UIText kind="body/regular" color="var(--neutral-600)">
+                      Accelerated
+                    </UIText>
+                    <RocketOutlineIcon
+                      style={{
+                        color: 'var(--neutral-500)',
+                        width: 24,
+                        height: 24,
+                      }}
+                    />
+                  </HStack>
+                ) : null}
+              </HStack>
+              <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <Button kind="neutral" onClick={() => setView('speedup')}>
+                  <HStack gap={8} justifyContent="center">
+                    <img
+                      alt=""
+                      style={{ width: 20, height: 20 }}
+                      src={RocketSrc}
+                      srcSet={`${RocketSrc}, ${Rocket2xSrc} 2x`}
+                    />
+                    Speed Up
+                  </HStack>
+                </Button>
+                <Button kind="neutral" onClick={() => setView('cancel')}>
+                  <HStack gap={8} justifyContent="center">
+                    <img
+                      alt=""
+                      style={{ width: 20, height: 20 }}
+                      src={RocketSrc}
+                      srcSet={`${CancelEmojiSrc}, ${CancelEmoji2xSrc} 2x`}
+                    />
+                    Cancel
+                  </HStack>
+                </Button>
+              </HStack>
+            </VStack>
+          </div>
+        )}
         {networks ? (
-          <div style={{ paddingInline: 16 }}>
+          <div
+            style={{
+              paddingInline: action.transaction.chain === 'solana' ? 0 : 16,
+            }}
+          >
             <ExplorerInfo action={action} networks={networks} />
           </div>
         ) : null}
