@@ -37,6 +37,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 
 type Item = {
   name: string | null;
@@ -51,7 +52,7 @@ function matches(query: string | null, item: Item, domainInfo?: string[]) {
   }
   const value = query.toLowerCase();
   return (
-    normalizedContains(normalizeAddress(item.address), value) ||
+    normalizedContains(normalizeAddress(item.address).toLowerCase(), value) ||
     normalizedContains(
       truncateAddress(normalizeAddress(item.address), 4),
       value
@@ -262,12 +263,15 @@ export function AddressInput({
       if (!normalizedValue) {
         return null;
       }
-      if (isEthereumAddress(normalizedValue)) {
+      if (
+        isEthereumAddress(normalizedValue) ||
+        isSolanaAddress(normalizedValue)
+      ) {
         return normalizedValue;
       }
       const existingAddress = allItems.find(
         (item) =>
-          item.name?.toLowerCase() === normalizedValue ||
+          item.name?.toLowerCase() === normalizedValue.toLowerCase() ||
           truncateAddress(normalizeAddress(item.address), 4) === normalizedValue
       )?.address;
       if (existingAddress) {
