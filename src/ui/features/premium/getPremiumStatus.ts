@@ -4,6 +4,11 @@ import { useAllSignerOrHwAddresses } from 'src/ui/shared/requests/useAllExisting
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { useMemo } from 'react';
 
+/**
+ * Premium status can be granted in 2 ways:
+ * 1. By having a Restricted plan in the current address
+ * 2. By having a non-Restricted plan in any of the imported or connected wallets
+ */
 function getPremiumStatus({
   normalizedAddress,
   walletsMeta,
