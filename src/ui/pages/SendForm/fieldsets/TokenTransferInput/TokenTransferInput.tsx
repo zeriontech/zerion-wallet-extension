@@ -1,4 +1,4 @@
-import React, { useId, useRef } from 'react';
+import React, { useId, useMemo, useRef } from 'react';
 import type { AddressPosition } from 'defi-sdk';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import {
@@ -19,10 +19,11 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import {
-  QUICK_AMOUNTS,
+  getQuickAmounts,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { AssetSelect } from '../../AssetSelect';
 
 function FiatInputValue({
@@ -67,6 +68,7 @@ export function TokenTransferInput<
   tokenAssetCode: _,
   tokenChain,
   onAssetCodeChange,
+  network,
 }: {
   type: 'nft' | 'token';
   value: string;
@@ -76,6 +78,7 @@ export function TokenTransferInput<
   tokenAssetCode: string | null;
   tokenChain: string | null;
   onAssetCodeChange: (value: string) => void;
+  network?: NetworkConfig;
 }) {
   const positionBalanceCommon = currentItem
     ? getPositionBalance(currentItem)
@@ -96,6 +99,13 @@ export function TokenTransferInput<
       : '',
   });
 
+  const quickAmounts = useMemo(() => {
+    if (!currentItem || !network) {
+      return [];
+    }
+    return getQuickAmounts(currentItem.asset, network);
+  }, [currentItem, network]);
+
   const chain = tokenChain ? createChain(tokenChain) : null;
   return (
     <>
@@ -104,7 +114,7 @@ export function TokenTransferInput<
         endTitle={
           currentItem && positionBalanceCommon ? (
             <HStack gap={16} alignItems="center">
-              {QUICK_AMOUNTS.map(({ factor, title }) => (
+              {quickAmounts.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
                   onClick={() => {

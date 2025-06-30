@@ -38,13 +38,20 @@ export function getPositionPartialBalance(
   position: Pick<AddressPosition, 'asset' | 'quantity' | 'chain'>,
   factor: number
 ) {
-  return baseToCommon(
+  if (factor === 1) {
+    // no need to round value for MAX balance request
+    return getPositionBalance(position);
+  }
+  const rawValue = baseToCommon(
     new BigNumber(position.quantity || 0).multipliedBy(factor).integerValue(),
     getDecimals({
       asset: position.asset,
       chain: createChain(position.chain),
     })
   );
+  return rawValue.gt(100)
+    ? rawValue.dp(0, BigNumber.ROUND_DOWN)
+    : rawValue.precision(3, BigNumber.ROUND_DOWN);
 }
 
 // we need to sum up all values, except loan values

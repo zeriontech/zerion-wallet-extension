@@ -1,7 +1,8 @@
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import type { AddressPosition, Asset } from 'defi-sdk';
-import React, { useId, useRef } from 'react';
-import type { Chain } from 'src/modules/networks/Chain';
+import React, { useId, useMemo, useRef } from 'react';
+import { createChain } from 'src/modules/networks/Chain';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
 import {
@@ -10,7 +11,7 @@ import {
 } from 'src/ui/components/Positions/helpers';
 import { AssetSelect } from 'src/ui/pages/SendForm/AssetSelect';
 import {
-  QUICK_AMOUNTS,
+  getQuickAmounts,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
@@ -25,22 +26,22 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 
 export function SpendTokenField({
   spendInput,
-  spendChain,
   spendPosition,
   availableSpendPositions,
   receiveInput,
   receiveAsset,
   onChangeAmount,
   onChangeToken,
+  network,
 }: {
   spendInput?: string;
-  spendChain: Chain | null;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
   availableSpendPositions: AddressPosition[];
   receiveInput?: string;
   receiveAsset: Asset | null;
   onChangeAmount: (value: string) => void;
   onChangeToken: (value: string) => void;
+  network?: NetworkConfig | null;
 }) {
   const positionBalanceCommon = spendPosition
     ? getPositionBalance(spendPosition)
@@ -62,13 +63,22 @@ export function SpendTokenField({
 
   const inputId = useId();
 
+  const quickAmounts = useMemo(() => {
+    if (!spendPosition || !network) {
+      return [];
+    }
+    return getQuickAmounts(spendPosition.asset, network);
+  }, [spendPosition, network]);
+
+  const spendChain = network ? createChain(network.id) : null;
+
   return (
     <FormFieldset
       title="Pay with"
       endTitle={
         spendPosition && positionBalanceCommon ? (
           <HStack gap={16} alignItems="center">
-            {QUICK_AMOUNTS.map(({ factor, title }) => (
+            {quickAmounts.map(({ factor, title }) => (
               <QuickAmountButton
                 key={factor}
                 onClick={() => {
