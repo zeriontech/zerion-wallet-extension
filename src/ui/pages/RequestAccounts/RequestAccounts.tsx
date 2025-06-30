@@ -43,6 +43,8 @@ import {
   SecurityStatusBackground,
   DappSecurityCheck,
 } from 'src/ui/shared/security-check';
+import { useEvent } from 'src/ui/shared/useEvent';
+import type { Permission } from 'src/shared/types/Permission';
 import { WalletList } from '../WalletSelect/WalletList';
 
 const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
@@ -110,24 +112,28 @@ function useRedirectIfOriginAlreadyAllowed({
   address: string | undefined;
   onIsAllowed: () => void;
 }) {
+  const onSuccess = useEvent((result: Record<string, Permission>) => {
+    if (!address) {
+      return;
+    }
+    const normalizedAddress = normalizeAddress(address);
+    const isAllowed = result[origin]?.addresses.includes(normalizedAddress);
+    if (isAllowed) {
+      onIsAllowed();
+    }
+  });
   useQuery({
     queryKey: ['getOriginPermissions'],
-    queryFn: () => walletPort.request('getOriginPermissions'),
+    queryFn: async () => {
+      const result = await walletPort.request('getOriginPermissions');
+      onSuccess(result);
+      return result;
+    },
     enabled: Boolean(address),
     useErrorBoundary: true,
     suspense: true,
     refetchOnWindowFocus: false,
     retry: false,
-    onSuccess(result) {
-      if (!address) {
-        return;
-      }
-      const normalizedAddress = normalizeAddress(address);
-      const isAllowed = result[origin]?.addresses.includes(normalizedAddress);
-      if (isAllowed) {
-        onIsAllowed();
-      }
-    },
   });
 }
 

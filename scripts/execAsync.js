@@ -1,9 +1,13 @@
-/* eslint-env node */
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 
-async function execAsync(command) {
+/**
+ * @param {string} command
+ * @param {string[]} args
+ * @returns {Promise<void>}
+ */
+async function execAsync(command, args) {
   return new Promise((resolve, reject) => {
-    exec(command, (err) => {
+    execFile(command, args, (err) => {
       if (err) {
         reject(err);
       } else {

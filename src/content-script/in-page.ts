@@ -79,7 +79,7 @@ for (const untypedKey in provider) {
         provider.nonEip6963Request = true;
       }
 
-      // eslint-disable-next-line @typescript-eslint/ban-types
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
       const result = (provider[key] as Function)(...args);
       provider.nonEip6963Request = false;
       return result;

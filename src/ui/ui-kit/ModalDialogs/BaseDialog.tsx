@@ -20,13 +20,6 @@ function setRef<T>(ref: React.Ref<T>, value: T) {
   }
 }
 
-function composeRefs<T>(ref1: React.Ref<T>, ref2: React.Ref<T>) {
-  return (node: T) => {
-    setRef(ref1, node);
-    setRef(ref2, node);
-  };
-}
-
 export const BaseDialog = React.forwardRef(
   (
     {
@@ -105,8 +98,13 @@ export const BaseDialog = React.forwardRef(
     }, [closeOnClickOutside, ref]);
     return (
       <dialog
-        // "useCallback" deps are statically unknown, but only "ref" is potentially unstable
-        ref={useCallback(composeRefs(ref, dialogRef), [ref])}
+        ref={useCallback(
+          (node: HTMLDialogElement) => {
+            setRef(ref, node);
+            setRef(dialogRef, node);
+          },
+          [ref]
+        )}
         style={{
           overflow: 'visible', // TODO: why not "auto"? Is it for some "click outside" edge case?
           backgroundColor: 'transparent',
