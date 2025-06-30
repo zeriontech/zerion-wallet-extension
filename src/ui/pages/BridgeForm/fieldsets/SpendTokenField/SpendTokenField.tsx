@@ -27,21 +27,21 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 export function SpendTokenField({
   spendInput,
   spendPosition,
+  spendNetwork,
   availableSpendPositions,
   receiveInput,
   receiveAsset,
   onChangeAmount,
   onChangeToken,
-  network,
 }: {
   spendInput?: string;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
+  spendNetwork?: NetworkConfig | null;
   availableSpendPositions: AddressPosition[];
   receiveInput?: string;
   receiveAsset: Asset | null;
   onChangeAmount: (value: string) => void;
   onChangeToken: (value: string) => void;
-  network?: NetworkConfig | null;
 }) {
   const positionBalanceCommon = spendPosition
     ? getPositionBalance(spendPosition)
@@ -64,13 +64,13 @@ export function SpendTokenField({
   const inputId = useId();
 
   const quickAmounts = useMemo(() => {
-    if (!spendPosition || !network) {
+    if (!spendPosition || !spendNetwork) {
       return [];
     }
-    return getQuickAmounts(spendPosition.asset, network);
-  }, [spendPosition, network]);
+    return getQuickAmounts(spendPosition.asset, spendNetwork);
+  }, [spendPosition, spendNetwork]);
 
-  const spendChain = network ? createChain(network.id) : null;
+  const spendChain = spendNetwork ? createChain(spendNetwork.id) : null;
 
   return (
     <FormFieldset

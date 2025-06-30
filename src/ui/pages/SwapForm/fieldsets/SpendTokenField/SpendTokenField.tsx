@@ -29,19 +29,19 @@ import type { SwapFormState } from '../../shared/SwapFormState';
 export function SpendTokenField({
   formState,
   spendPosition,
+  spendNetwork,
   receivePosition,
   positions,
   onChange,
   outputAmount,
-  network,
 }: {
   formState: SwapFormState;
   onChange: (key: keyof SwapFormState, value: string) => void;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
+  spendNetwork?: NetworkConfig;
   receivePosition: AddressPosition | EmptyAddressPosition | null;
   positions: AddressPosition[];
   outputAmount: string | null;
-  network?: NetworkConfig;
 }) {
   const { inputAmount } = formState;
   const primaryInput = 'spend' as 'spend' | 'receive';
@@ -88,11 +88,11 @@ export function SpendTokenField({
   }, [primaryInput, inputAmount, onChange]);
 
   const quickAmounts = useMemo(() => {
-    if (!spendPosition || !network) {
+    if (!spendPosition || !spendNetwork) {
       return [];
     }
-    return getQuickAmounts(spendPosition.asset, network);
-  }, [spendPosition, network]);
+    return getQuickAmounts(spendPosition.asset, spendNetwork);
+  }, [spendPosition, spendNetwork]);
 
   const inputId = useId();
   return (

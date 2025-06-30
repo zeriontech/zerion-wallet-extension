@@ -847,8 +847,8 @@ function SwapFormComponent() {
                   outputAmount={outputAmount}
                   positions={availablePositions}
                   spendPosition={inputPosition}
+                  spendNetwork={network}
                   receivePosition={outputPosition}
-                  network={network}
                 />
                 <BottomArc />
               </div>
