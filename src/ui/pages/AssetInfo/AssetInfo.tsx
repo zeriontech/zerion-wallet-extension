@@ -35,6 +35,7 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
+import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -138,6 +139,11 @@ export function AssetInfo() {
     { enabled: ready }
   );
 
+  const { isPremium, walletsMetaQuery } = usePremiumStatus({
+    address: params.address,
+  });
+  const isPremiumStatusLoading = walletsMetaQuery.isLoading;
+
   const assetAddressPnlQuery = useWalletAssetPnl(
     {
       addresses: [params.address],
@@ -145,7 +151,7 @@ export function AssetInfo() {
       currency,
     },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready && isPremium }
   );
 
   const { data: wallet } = useQuery({
@@ -212,6 +218,8 @@ export function AssetInfo() {
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
           assetAddressPnlQuery={assetAddressPnlQuery}
+          isPremium={isPremium}
+          isPremiumStatusLoading={isPremiumStatusLoading}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />

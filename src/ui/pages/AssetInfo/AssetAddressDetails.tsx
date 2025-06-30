@@ -36,8 +36,11 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { AssetAddressPnl } from 'src/modules/zerion-api/requests/asset-get-fungible-pnl';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import type { ResponseBody } from 'src/modules/zerion-api/requests/ResponseBody';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { PREMIUM_LANDING_LINK } from 'src/ui/features/premium/link';
 import { getColor, getSign } from './helpers';
 import { AssetHeader } from './AssetHeader';
+import * as styles from './styles.module.css';
 
 type AssetAddressPnlQuery = UseQueryResult<ResponseBody<AssetAddressPnl>>;
 
@@ -136,7 +139,7 @@ function StatLine({
 }: {
   title: string;
   isLoading?: boolean;
-  value: string;
+  value: React.ReactNode;
   valueColor?: string;
 }) {
   return (
@@ -157,10 +160,14 @@ function AssetStats({
   assetFullInfo,
   assetAddressPnlQuery,
   walletAssetDetails,
+  isPremium,
+  isPremiumStatusLoading,
 }: {
   assetFullInfo: AssetFullInfo;
   assetAddressPnlQuery: AssetAddressPnlQuery;
   walletAssetDetails: WalletAssetDetails;
+  isPremium: boolean;
+  isPremiumStatusLoading: boolean;
 }) {
   const { currency } = useCurrency();
   const { data, isLoading } = assetAddressPnlQuery;
@@ -175,7 +182,7 @@ function AssetStats({
       : null;
   const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
 
-  if (isUntrackedAsset) {
+  if (isUntrackedAsset || isPremiumStatusLoading) {
     return null;
   }
 
@@ -197,63 +204,82 @@ function AssetStats({
         }
         valueColor={return24h != null ? getColor(return24h) : undefined}
       />
-      <StatLine
-        title="Total PnL"
-        value={`${getSign(assetAddressPnl?.totalPnl)}${formatPercent(
-          Math.abs(assetAddressPnl?.relativeTotalPnl || 0) * 100,
-          'en'
-        )}% (${formatCurrencyValue(
-          Math.abs(assetAddressPnl?.totalPnl || 0),
-          'en',
-          currency
-        )})`}
-        valueColor={getColor(assetAddressPnl?.totalPnl)}
-        isLoading={isLoading}
-      />
-      <StatLine
-        title="Realised PnL"
-        value={`${getSign(assetAddressPnl?.realizedPnl)}${formatPercent(
-          Math.abs(assetAddressPnl?.relativeRealizedPnl || 0) * 100,
-          'en'
-        )}% (${formatCurrencyValue(
-          Math.abs(assetAddressPnl?.realizedPnl || 0),
-          'en',
-          currency
-        )})`}
-        valueColor={getColor(assetAddressPnl?.realizedPnl)}
-        isLoading={isLoading}
-      />
-      <StatLine
-        title="Unrealised PnL"
-        value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatPercent(
-          Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0) * 100,
-          'en'
-        )}% (${formatCurrencyValue(
-          Math.abs(assetAddressPnl?.unrealizedPnl || 0),
-          'en',
-          currency
-        )})`}
-        valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
-        isLoading={isLoading}
-      />
-      <StatLine
-        title="Invested"
-        value={formatCurrencyValue(
-          assetAddressPnl?.bought || 0,
-          'en',
-          currency
-        )}
-        isLoading={isLoading}
-      />
-      <StatLine
-        title="Average Cost"
-        value={formatPriceValue(
-          assetAddressPnl?.averageBuyPrice || 0,
-          'en',
-          currency
-        )}
-        isLoading={isLoading}
-      />
+      {isPremium ? (
+        <>
+          <StatLine
+            title="Total PnL"
+            value={`${getSign(assetAddressPnl?.totalPnl)}${formatPercent(
+              Math.abs(assetAddressPnl?.relativeTotalPnl || 0),
+              'en'
+            )}% (${formatCurrencyValue(
+              Math.abs(assetAddressPnl?.totalPnl || 0),
+              'en',
+              currency
+            )})`}
+            valueColor={getColor(assetAddressPnl?.totalPnl)}
+            isLoading={isLoading}
+          />
+          <StatLine
+            title="Realised PnL"
+            value={`${getSign(assetAddressPnl?.realizedPnl)}${formatPercent(
+              Math.abs(assetAddressPnl?.relativeRealizedPnl || 0),
+              'en'
+            )}% (${formatCurrencyValue(
+              Math.abs(assetAddressPnl?.realizedPnl || 0),
+              'en',
+              currency
+            )})`}
+            valueColor={getColor(assetAddressPnl?.realizedPnl)}
+            isLoading={isLoading}
+          />
+          <StatLine
+            title="Unrealised PnL"
+            value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatPercent(
+              Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0),
+              'en'
+            )}% (${formatCurrencyValue(
+              Math.abs(assetAddressPnl?.unrealizedPnl || 0),
+              'en',
+              currency
+            )})`}
+            valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
+            isLoading={isLoading}
+          />
+          <StatLine
+            title="Invested"
+            value={formatCurrencyValue(
+              assetAddressPnl?.bought || 0,
+              'en',
+              currency
+            )}
+            isLoading={isLoading}
+          />
+          <StatLine
+            title="Average Cost"
+            value={formatPriceValue(
+              assetAddressPnl?.averageBuyPrice || 0,
+              'en',
+              currency
+            )}
+            isLoading={isLoading}
+          />
+        </>
+      ) : (
+        <StatLine
+          title="Asset PnL & More"
+          value={
+            <UnstyledAnchor
+              href={PREMIUM_LANDING_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <UIText kind="body/accent" className={styles.gradientText}>
+                Buy Premium
+              </UIText>
+            </UnstyledAnchor>
+          }
+        />
+      )}
     </VStack>
   );
 }
@@ -477,11 +503,15 @@ function AssetImplementationsDialogContent({
   assetFullInfo,
   walletAssetDetails,
   assetAddressPnlQuery,
+  isPremium,
+  isPremiumStatusLoading,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
   assetAddressPnlQuery: AssetAddressPnlQuery;
+  isPremium: boolean;
+  isPremiumStatusLoading: boolean;
 }) {
   return (
     <VStack
@@ -500,7 +530,8 @@ function AssetImplementationsDialogContent({
         <AssetStats
           assetFullInfo={assetFullInfo}
           assetAddressPnlQuery={assetAddressPnlQuery}
-          walletAssetDetails={walletAssetDetails}
+          isPremium={isPremium}
+          isPremiumStatusLoading={isPremiumStatusLoading}
         />
         <Line />
         <AssetNetworkDistribution walletAssetDetails={walletAssetDetails} />
@@ -514,18 +545,134 @@ function AssetImplementationsDialogContent({
   );
 }
 
+function AssetPremiumAddressShortStats({
+  walletAssetDetails,
+  assetAddressPnlQuery,
+}: {
+  walletAssetDetails: WalletAssetDetails;
+  assetAddressPnlQuery: AssetAddressPnlQuery;
+}) {
+  const { currency } = useCurrency();
+
+  const unrealizedGainRaw = assetAddressPnlQuery.data?.data.unrealizedPnl || 0;
+  const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
+    Math.abs(unrealizedGainRaw / walletAssetDetails.totalValue),
+    'en'
+  )}% (${formatCurrencyValue(Math.abs(unrealizedGainRaw), 'en', currency)})`;
+
+  return walletAssetDetails.totalValue ? (
+    <HStack
+      gap={12}
+      style={{
+        gridTemplateColumns: 'minmax(max-content, 1fr) 1fr',
+      }}
+      alignItems="start"
+    >
+      <VStack gap={4}>
+        <UIText kind="caption/regular" color="var(--neutral-500)">
+          Unrealised PnL
+        </UIText>
+        {assetAddressPnlQuery.isLoading ? (
+          <LoadingSkeleton />
+        ) : (
+          <UIText kind="headline/h3" color={getColor(unrealizedGainRaw)}>
+            {unrealizedGainFormatted}
+          </UIText>
+        )}
+      </VStack>
+      <VStack gap={4}>
+        <UIText kind="caption/regular" color="var(--neutral-500)">
+          Invested
+        </UIText>
+        {assetAddressPnlQuery.isLoading ? (
+          <LoadingSkeleton />
+        ) : (
+          <UIText kind="headline/h3">
+            {formatCurrencyValue(
+              assetAddressPnlQuery.data?.data.bought || 0,
+              'en',
+              currency
+            )}
+          </UIText>
+        )}
+      </VStack>
+    </HStack>
+  ) : null;
+}
+
+function AssetRegularAddressShortStats({
+  assetFullInfo,
+}: {
+  assetFullInfo: AssetFullInfo;
+}) {
+  const { currency } = useCurrency();
+  const return24h =
+    assetFullInfo.fungible.meta.relativeChange1d != null &&
+    assetFullInfo.fungible.meta.price != null
+      ? assetFullInfo.fungible.meta.relativeChange1d *
+        assetFullInfo.fungible.meta.price
+      : null;
+  const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
+
+  return (
+    <HStack
+      gap={12}
+      style={{
+        gridTemplateColumns: '1fr minmax(max-content, 1fr)',
+      }}
+      alignItems="start"
+    >
+      <VStack gap={4}>
+        <UIText kind="caption/regular" color="var(--neutral-500)">
+          Unrealised PnL
+        </UIText>
+        <UnstyledAnchor
+          href={PREMIUM_LANDING_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <UIText kind="headline/h3" className={styles.gradientText}>
+            Buy Premium
+          </UIText>
+        </UnstyledAnchor>
+      </VStack>
+      <VStack gap={4}>
+        <UIText kind="caption/regular" color="var(--neutral-500)">
+          24h Return
+        </UIText>
+        <UIText kind="headline/h3" color={getColor(relativeReturn24h || 0)}>
+          {return24h != null
+            ? `${getSign(return24h)}${formatPercent(
+                Math.abs(relativeReturn24h || 0),
+                'en'
+              )}% (${formatCurrencyValue(
+                Math.abs(return24h || 0),
+                'en',
+                currency
+              )})`
+            : 'N/A'}
+        </UIText>
+      </VStack>
+    </HStack>
+  );
+}
+
 export function AssetAddressStats({
   address,
   assetFullInfo,
   wallet,
   walletAssetDetails,
   assetAddressPnlQuery,
+  isPremium,
+  isPremiumStatusLoading,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   wallet: ExternallyOwnedAccount;
   walletAssetDetails: WalletAssetDetails;
   assetAddressPnlQuery: AssetAddressPnlQuery;
+  isPremium: boolean;
+  isPremiumStatusLoading: boolean;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
@@ -533,14 +680,6 @@ export function AssetAddressStats({
   const asset = assetFullInfo.fungible;
 
   const isWatchedAddress = isReadonlyAccount(wallet);
-
-  const unrealizedGainRaw = assetAddressPnlQuery.data?.data.unrealizedPnl || 0;
-  const relativeUnrealizedGainRaw =
-    assetAddressPnlQuery.data?.data.relativeUnrealizedPnl || 0;
-  const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
-    Math.abs(relativeUnrealizedGainRaw) * 100,
-    'en'
-  )}% (${formatCurrencyValue(Math.abs(unrealizedGainRaw), 'en', currency)})`;
 
   return (
     <>
@@ -642,47 +781,16 @@ export function AssetAddressStats({
                   )}
                 </UIText>
               </VStack>
-              {walletAssetDetails.totalValue ? (
-                <HStack
-                  gap={12}
-                  style={{
-                    gridTemplateColumns: 'minmax(max-content, 1fr) 1fr',
-                  }}
-                  alignItems="start"
-                >
-                  <VStack gap={4}>
-                    <UIText kind="caption/regular" color="var(--neutral-500)">
-                      Unrealised PnL
-                    </UIText>
-                    {assetAddressPnlQuery.isLoading ? (
-                      <LoadingSkeleton />
-                    ) : (
-                      <UIText
-                        kind="headline/h3"
-                        color={getColor(unrealizedGainRaw)}
-                      >
-                        {unrealizedGainFormatted}
-                      </UIText>
-                    )}
-                  </VStack>
-                  <VStack gap={4}>
-                    <UIText kind="caption/regular" color="var(--neutral-500)">
-                      Invested
-                    </UIText>
-                    {assetAddressPnlQuery.isLoading ? (
-                      <LoadingSkeleton />
-                    ) : (
-                      <UIText kind="headline/h3">
-                        {formatCurrencyValue(
-                          assetAddressPnlQuery.data?.data.bought || 0,
-                          'en',
-                          currency
-                        )}
-                      </UIText>
-                    )}
-                  </VStack>
-                </HStack>
-              ) : null}
+              {isPremiumStatusLoading ? (
+                <Spacer height={44} />
+              ) : isPremium ? (
+                <AssetPremiumAddressShortStats
+                  assetAddressPnlQuery={assetAddressPnlQuery}
+                  walletAssetDetails={walletAssetDetails}
+                />
+              ) : (
+                <AssetRegularAddressShortStats assetFullInfo={assetFullInfo} />
+              )}
               {isUntrackedAsset ? null : (
                 <Button
                   kind="neutral"
@@ -738,6 +846,8 @@ export function AssetAddressStats({
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}
               assetAddressPnlQuery={assetAddressPnlQuery}
+              isPremium={isPremium}
+              isPremiumStatusLoading={isPremiumStatusLoading}
             />
           </>
         )}
