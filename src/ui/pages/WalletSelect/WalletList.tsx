@@ -109,7 +109,7 @@ function WalletListItem({
                       address={wallet.address}
                       size={40}
                       active={Boolean(isConnected)}
-                      borderRadius={4}
+                      borderRadius={12}
                       icon={
                         <WalletSourceIcon
                           address={wallet.address}

@@ -59,7 +59,6 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
       });
     },
   });
-
   const { style, trigger } = useTransformTrigger({
     scale: 1.1,
     timing: 100,

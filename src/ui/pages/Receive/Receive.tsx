@@ -30,12 +30,14 @@ export function Receive() {
         <NavigationTitle
           title="Receive"
           elementEnd={
-            <WalletAvatar
-              active={false}
-              address={address}
-              size={32}
-              borderRadius={4}
-            />
+            <div style={{ justifySelf: 'center' }}>
+              <WalletAvatar
+                active={false}
+                address={address}
+                size={24}
+                borderRadius={4}
+              />
+            </div>
           }
         />
         <VStack gap={16} style={{ justifyItems: 'center' }}>

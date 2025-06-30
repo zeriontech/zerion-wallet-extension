@@ -139,7 +139,7 @@ function RemoveAddressConfirmationDialog({
         )}
         <Media
           image={
-            <WalletAvatar address={wallet.address} size={32} borderRadius={4} />
+            <WalletAvatar address={wallet.address} size={32} borderRadius={8} />
           }
           text={
             <UIText kind="body/accent">
@@ -231,7 +231,7 @@ export function WalletAccount() {
                 <WalletAvatar
                   address={wallet.address}
                   size={44}
-                  borderRadius={4}
+                  borderRadius={12}
                 />
               }
               text={
