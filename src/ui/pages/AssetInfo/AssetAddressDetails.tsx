@@ -555,8 +555,10 @@ function AssetPremiumAddressShortStats({
   const { currency } = useCurrency();
 
   const unrealizedGainRaw = assetAddressPnlQuery.data?.data.unrealizedPnl || 0;
+  const relativeUnrealizedGainRaw =
+    assetAddressPnlQuery.data?.data.relativeUnrealizedPnl || 0;
   const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
-    Math.abs(unrealizedGainRaw / walletAssetDetails.totalValue),
+    Math.abs(relativeUnrealizedGainRaw),
     'en'
   )}% (${formatCurrencyValue(Math.abs(unrealizedGainRaw), 'en', currency)})`;
 
