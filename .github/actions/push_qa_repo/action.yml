@@ -36,6 +36,8 @@ runs:
         # Copy files from the dist directory
         mkdir -p extension-build
         cp -r ../dist/* ./extension-build
+        mkdir -p firefox-build
+        cp -r ../dist-firefox/* ./firefox-build 
 
         # Commit and push changes
         git add .

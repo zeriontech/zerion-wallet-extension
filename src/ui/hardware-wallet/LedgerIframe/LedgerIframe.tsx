@@ -3,6 +3,15 @@ import { useStore } from '@store-unit/react';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { themeStore } from 'src/ui/features/appearance';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { UIText } from 'src/ui/ui-kit/UIText';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import ErrorIcon from 'jsx:src/ui/assets/warning.svg';
+
+// USB connection doesn't supported in Firefox
+// so we should show a warning to the user
+function isUsbConnectionSupported() {
+  return 'usb' in navigator;
+}
 
 export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
   {
@@ -19,6 +28,38 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
   const themeState = useStore(themeStore);
   const { currency } = useCurrency();
   const ready = useRenderDelay(100);
+
+  const ledgerConnectionSupported = isUsbConnectionSupported();
+
+  if (!ledgerConnectionSupported) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          width: '100%',
+          padding: '0px 32px 40px',
+        }}
+      >
+        <VStack gap={4} style={{ textAlign: 'center', justifyItems: 'center' }}>
+          <ErrorIcon
+            style={{ width: 48, height: 48, color: 'var(--notice-500)' }}
+          />
+          <VStack gap={4}>
+            <UIText kind="headline/h3">
+              Ledger is not supported in Firefox
+            </UIText>
+            <UIText kind="body/regular" color="var(--neutral-500)">
+              Please, try a different browser
+            </UIText>
+          </VStack>
+        </VStack>
+      </div>
+    );
+  }
+
   return (
     <iframe
       ref={ref}

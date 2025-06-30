@@ -29,6 +29,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) {
+    return;
+  }
   /** Seems to be recommended when clients always expect a service worker */
   const registration = await navigator.serviceWorker.getRegistration();
   if (registration) {

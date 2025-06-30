@@ -11,6 +11,9 @@ hideURLBarFor('/handshake-failure');
 
 export function HandshakeFailure() {
   useEffect(() => {
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
     // Unregister serviceWorker on UI close. Currently, the only way
     // to get unstuck with the oudated SW
     let registration: ServiceWorkerRegistration | undefined = undefined;

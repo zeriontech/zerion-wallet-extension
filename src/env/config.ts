@@ -1,5 +1,7 @@
 import { createUrl } from 'src/shared/createUrl';
 import { invariant } from 'src/shared/invariant';
+import type { Platform } from 'src/shared/platform';
+import { ensureSupportedPlatform } from 'src/shared/platform';
 
 function backendUrl(url: string, backend_env?: string | undefined): string;
 function backendUrl(url: string | undefined, backend_env?: string | undefined): string | undefined;
@@ -36,3 +38,6 @@ export const FEATURE_SOLANA = process.env.FEATURE_SOLANA === 'on' ? 'on' : null;
 export const SLOW_MODE = false;
 export const GOOGLE_ANALYTICS_MEASUREMENT_ID = process.env.GOOGLE_ANALYTICS_MEASUREMENT_ID;
 export const GOOGLE_ANALYTICS_API_SECRET = process.env.GOOGLE_ANALYTICS_API_SECRET;
+
+export const PLATFORM = (process.env.PLATFORM || 'chrome') as Platform;
+ensureSupportedPlatform(PLATFORM);
