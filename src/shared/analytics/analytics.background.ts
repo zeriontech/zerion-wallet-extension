@@ -10,6 +10,7 @@ import {
   ensureSolanaResult,
   getTxSender,
 } from 'src/modules/shared/transactions/helpers';
+import { statsigTrack } from 'src/modules/statsig/shared';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -109,6 +110,7 @@ function trackAppEvents({ account }: { account: Account }) {
       ...getChainBreakdown(portfolio),
     };
     mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+    statsigTrack('General: Screen Viewed', mixpanelParams);
   });
 
   emitter.on('screenView', async (params) => {
@@ -208,6 +210,7 @@ function trackAppEvents({ account }: { account: Account }) {
         'wallet_address',
       ]);
       mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
+      statsigTrack('Transaction: Signed Transaction', mixpanelParams);
     }
   );
 
@@ -351,6 +354,7 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('firstScreenView', () => {
+    statsigTrack('General: Launch first time');
     mixpanelTrack(account, 'General: Launch first time', {});
     const gaParams = prepareGaParams(account, {});
     gaCollect('first_open', gaParams);

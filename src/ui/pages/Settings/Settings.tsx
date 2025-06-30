@@ -55,6 +55,8 @@ import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { emitter } from 'src/ui/shared/events';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
+import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -94,6 +96,14 @@ function SettingsMain() {
       });
     },
   });
+
+  const { data: currentUserId } = useQuery({
+    queryKey: ['getCurrentUserId'],
+    queryFn: async () => (await getCurrentUser())?.id,
+    suspense: false,
+  });
+
+  const { handleCopy, isSuccess } = useCopyToClipboard({ text: currentUserId });
 
   const addWalletParams = useWalletParams(currentWallet);
 
@@ -291,7 +301,13 @@ function SettingsMain() {
               Terms of use
             </UnstyledAnchor>
             <span>{middot}</span>
-            <span>{`v${version}`}</span>
+            <UnstyledButton
+              className="hover:underline"
+              disabled={!currentUserId}
+              onDoubleClick={handleCopy}
+            >
+              {isSuccess ? 'ID Copied' : `v${version}`}
+            </UnstyledButton>
           </HStack>
         </UIText>
       </VStack>
