@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useMemo } from 'react';
 import type { AddressPosition } from 'defi-sdk';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import {
@@ -19,15 +19,17 @@ import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import {
-  QUICK_AMOUNTS,
+  getQuickAmounts,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { SwapFormState } from '../../shared/SwapFormState';
 
 export function SpendTokenField({
   formState,
   spendPosition,
+  spendNetwork,
   receivePosition,
   positions,
   onChange,
@@ -36,6 +38,7 @@ export function SpendTokenField({
   formState: SwapFormState;
   onChange: (key: keyof SwapFormState, value: string) => void;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
+  spendNetwork?: NetworkConfig;
   receivePosition: AddressPosition | EmptyAddressPosition | null;
   positions: AddressPosition[];
   outputAmount: string | null;
@@ -84,6 +87,13 @@ export function SpendTokenField({
     primaryInputRef.current = primaryInput;
   }, [primaryInput, inputAmount, onChange]);
 
+  const quickAmounts = useMemo(() => {
+    if (!spendPosition || !spendNetwork) {
+      return [];
+    }
+    return getQuickAmounts(spendPosition.asset, spendNetwork);
+  }, [spendPosition, spendNetwork]);
+
   const inputId = useId();
   return (
     <>
@@ -92,7 +102,7 @@ export function SpendTokenField({
         endTitle={
           spendPosition && positionBalanceCommon ? (
             <HStack gap={16} alignItems="center">
-              {QUICK_AMOUNTS.map(({ factor, title }) => (
+              {quickAmounts.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
                   onClick={() => {

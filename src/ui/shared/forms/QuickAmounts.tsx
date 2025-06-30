@@ -1,12 +1,27 @@
+import type { Asset } from 'defi-sdk';
 import React from 'react';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { Networks } from 'src/modules/networks/Networks';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 
-export const QUICK_AMOUNTS: { title: string; factor: number }[] = [
-  { title: '25%', factor: 0.25 },
-  { title: '50%', factor: 0.5 },
-  { title: 'MAX', factor: 1 },
-];
+export function getQuickAmounts(
+  asset: Asset,
+  networkConfig: NetworkConfig
+): { title: string; factor: number }[] {
+  if (Networks.isNativeAsset(asset, networkConfig)) {
+    return [
+      { title: '25%', factor: 0.25 },
+      { title: '50%', factor: 0.5 },
+      { title: '75%', factor: 0.75 },
+    ];
+  }
+  return [
+    { title: '25%', factor: 0.25 },
+    { title: '50%', factor: 0.5 },
+    { title: 'MAX', factor: 1 },
+  ];
+}
 
 export function QuickAmountButton({
   children,
