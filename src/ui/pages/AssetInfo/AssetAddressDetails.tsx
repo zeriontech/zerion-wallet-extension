@@ -156,9 +156,11 @@ function StatLine({
 function AssetStats({
   assetFullInfo,
   assetAddressPnlQuery,
+  walletAssetDetails,
 }: {
   assetFullInfo: AssetFullInfo;
   assetAddressPnlQuery: AssetAddressPnlQuery;
+  walletAssetDetails: WalletAssetDetails;
 }) {
   const { currency } = useCurrency();
   const { data, isLoading } = assetAddressPnlQuery;
@@ -167,9 +169,9 @@ function AssetStats({
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
   const return24h =
     assetFullInfo.fungible.meta.relativeChange1d != null &&
-    assetFullInfo.fungible.meta.price != null
+    walletAssetDetails.totalValue != null
       ? assetFullInfo.fungible.meta.relativeChange1d *
-        assetFullInfo.fungible.meta.price
+        walletAssetDetails.totalValue
       : null;
   const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
 
@@ -184,7 +186,7 @@ function AssetStats({
         value={
           return24h != null
             ? `${getSign(return24h)}${formatPercent(
-                Math.abs(relativeReturn24h || 0),
+                Math.abs(relativeReturn24h || 0) * 100,
                 'en'
               )}% (${formatCurrencyValue(
                 Math.abs(return24h || 0),
@@ -198,7 +200,7 @@ function AssetStats({
       <StatLine
         title="Total PnL"
         value={`${getSign(assetAddressPnl?.totalPnl)}${formatPercent(
-          Math.abs(assetAddressPnl?.relativeTotalPnl || 0),
+          Math.abs(assetAddressPnl?.relativeTotalPnl || 0) * 100,
           'en'
         )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.totalPnl || 0),
@@ -211,7 +213,7 @@ function AssetStats({
       <StatLine
         title="Realised PnL"
         value={`${getSign(assetAddressPnl?.realizedPnl)}${formatPercent(
-          Math.abs(assetAddressPnl?.relativeRealizedPnl || 0),
+          Math.abs(assetAddressPnl?.relativeRealizedPnl || 0) * 100,
           'en'
         )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.realizedPnl || 0),
@@ -224,7 +226,7 @@ function AssetStats({
       <StatLine
         title="Unrealised PnL"
         value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatPercent(
-          Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0),
+          Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0) * 100,
           'en'
         )}% (${formatCurrencyValue(
           Math.abs(assetAddressPnl?.unrealizedPnl || 0),
@@ -498,6 +500,7 @@ function AssetImplementationsDialogContent({
         <AssetStats
           assetFullInfo={assetFullInfo}
           assetAddressPnlQuery={assetAddressPnlQuery}
+          walletAssetDetails={walletAssetDetails}
         />
         <Line />
         <AssetNetworkDistribution walletAssetDetails={walletAssetDetails} />
@@ -535,7 +538,7 @@ export function AssetAddressStats({
   const relativeUnrealizedGainRaw =
     assetAddressPnlQuery.data?.data.relativeUnrealizedPnl || 0;
   const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
-    Math.abs(relativeUnrealizedGainRaw),
+    Math.abs(relativeUnrealizedGainRaw) * 100,
     'en'
   )}% (${formatCurrencyValue(Math.abs(unrealizedGainRaw), 'en', currency)})`;
 
