@@ -612,16 +612,18 @@ function AssetPremiumAddressShortStats({
 function AssetRegularAddressShortStats({
   premiumStatus,
   assetFullInfo,
+  walletAssetDetails,
 }: {
   premiumStatus: PremiumStatus;
   assetFullInfo: AssetFullInfo;
+  walletAssetDetails: WalletAssetDetails;
 }) {
   const { currency } = useCurrency();
   const return24h =
     assetFullInfo.fungible.meta.relativeChange1d != null &&
-    assetFullInfo.fungible.meta.price != null
+    walletAssetDetails.totalValue != null
       ? assetFullInfo.fungible.meta.relativeChange1d *
-        assetFullInfo.fungible.meta.price
+        walletAssetDetails.totalValue
       : null;
   const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
 
@@ -805,6 +807,7 @@ export function AssetAddressStats({
                 <AssetRegularAddressShortStats
                   premiumStatus={premiumStatus}
                   assetFullInfo={assetFullInfo}
+                  walletAssetDetails={walletAssetDetails}
                 />
               )}
               {isUntrackedAsset ? null : (
