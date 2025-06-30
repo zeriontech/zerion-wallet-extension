@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -36,6 +36,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
+import { isSolanaAddress } from 'src/modules/solana/shared';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -142,7 +143,8 @@ export function AssetInfo() {
   const { isPremium, walletsMetaQuery } = usePremiumStatus({
     address: params.address,
   });
-  const isPremiumStatusLoading = walletsMetaQuery.isLoading;
+
+  const addrIsSolana = isSolanaAddress(params.address);
 
   const assetAddressPnlQuery = useWalletAssetPnl(
     {
@@ -151,7 +153,7 @@ export function AssetInfo() {
       currency,
     },
     { source: useHttpClientSource() },
-    { enabled: ready && isPremium }
+    { enabled: ready && isPremium && !addrIsSolana }
   );
 
   const { data: wallet } = useQuery({
@@ -163,6 +165,15 @@ export function AssetInfo() {
 
   const chainWithTheBiggestBalance =
     walletData?.data?.chainsDistribution?.at(0)?.chain.id || NetworkId.Zero;
+
+  const premiumStatus = useMemo(() => {
+    const isSupported = !addrIsSolana;
+    return {
+      isPremium,
+      isLoading: isSupported && walletsMetaQuery.isLoading,
+      isSupported,
+    };
+  }, [isPremium, walletsMetaQuery, addrIsSolana]);
 
   if (isLoading || !wallet || !walletData) {
     return (
@@ -218,8 +229,8 @@ export function AssetInfo() {
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
           assetAddressPnlQuery={assetAddressPnlQuery}
-          isPremium={isPremium}
-          isPremiumStatusLoading={isPremiumStatusLoading}
+          premiumStatus={premiumStatus}
+          pnlIsSupported={!addrIsSolana}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />
