@@ -5,11 +5,9 @@ const manifest = require('../dist/manifest.json');
 
 const GIT_BRANCH_NAME = process.env.GIT_BRANCH_NAME;
 
-const dist = path.join(__dirname, '../dist');
-
-async function updateDevName(manifestDir) {
+async function updateDevName() {
   await fs.writeFile(
-    path.join(manifestDir, 'manifest.json'),
+    path.join(path.join(__dirname, '../dist'), 'manifest.json'),
     JSON.stringify(
       {
         ...manifest,
@@ -22,4 +20,4 @@ async function updateDevName(manifestDir) {
   );
 }
 
-updateDevName(dist);
+updateDevName();

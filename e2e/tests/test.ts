@@ -108,6 +108,7 @@ function createBrowserArgs(headless: boolean) {
 }
 
 const getPopupFile = () => {
+  /* eslint-disable-next-line security/detect-non-literal-require -- extensionPath is defined in this file*/
   const extensionManifest = require(path.join(extensionPath, '/manifest.json'));
   return extensionManifest.action.default_popup;
 };
