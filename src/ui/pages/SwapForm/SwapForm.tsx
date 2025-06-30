@@ -848,6 +848,7 @@ function SwapFormComponent() {
                   positions={availablePositions}
                   spendPosition={inputPosition}
                   receivePosition={outputPosition}
+                  network={network}
                 />
                 <BottomArc />
               </div>

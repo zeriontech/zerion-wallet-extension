@@ -107,6 +107,7 @@ export function TokenTransferInput<
   }, [currentItem, network]);
 
   const chain = tokenChain ? createChain(tokenChain) : null;
+
   return (
     <>
       <FormFieldset

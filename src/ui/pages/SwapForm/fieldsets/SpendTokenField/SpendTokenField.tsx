@@ -41,11 +41,10 @@ export function SpendTokenField({
   receivePosition: AddressPosition | EmptyAddressPosition | null;
   positions: AddressPosition[];
   outputAmount: string | null;
-  network: NetworkConfig
+  network?: NetworkConfig;
 }) {
   const { inputAmount } = formState;
   const primaryInput = 'spend' as 'spend' | 'receive';
-
 
   const chain = formState.inputChain ? createChain(formState.inputChain) : null;
 
