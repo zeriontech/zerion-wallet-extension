@@ -418,7 +418,6 @@ function SendFormComponent() {
                 value={tokenValue}
                 onChange={(value) => handleChange('tokenValue', value)}
                 tokenAssetCode={formState.tokenAssetCode || null}
-                tokenChain={formState.tokenChain || null}
                 currentItem={currentPosition ?? null}
                 items={currentPositions}
                 onAssetCodeChange={(value) =>

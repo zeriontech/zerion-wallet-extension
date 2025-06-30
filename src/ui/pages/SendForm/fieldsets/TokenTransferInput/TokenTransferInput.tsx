@@ -66,7 +66,6 @@ export function TokenTransferInput<
   items,
   currentItem,
   tokenAssetCode: _,
-  tokenChain,
   onAssetCodeChange,
   network,
 }: {
@@ -76,7 +75,6 @@ export function TokenTransferInput<
   items: Array<T>;
   currentItem: T | null;
   tokenAssetCode: string | null;
-  tokenChain: string | null;
   onAssetCodeChange: (value: string) => void;
   network?: NetworkConfig;
 }) {
@@ -106,7 +104,7 @@ export function TokenTransferInput<
     return getQuickAmounts(currentItem.asset, network);
   }, [currentItem, network]);
 
-  const chain = tokenChain ? createChain(tokenChain) : null;
+  const chain = network ? createChain(network.id) : null;
 
   return (
     <>
