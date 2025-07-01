@@ -1,11 +1,17 @@
 import React from 'react';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { useNavigate } from 'react-router-dom';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { BackButton } from 'src/ui/components/BackButton';
+import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 
-export function NavigationBar({ title }: { title: string }) {
-  const navigate = useNavigate();
+export function NavigationBar({
+  title,
+  home,
+}: {
+  title: string;
+  home?: string;
+}) {
+  const goBack = useGoBack(home);
   return (
     <nav
       style={{
@@ -19,7 +25,7 @@ export function NavigationBar({ title }: { title: string }) {
         gridTemplateColumns: '36px 1fr 40px',
       }}
     >
-      <BackButton onClick={() => navigate(-1)} />
+      <BackButton onClick={goBack} />
       <UIText
         kind="body/accent"
         style={{
@@ -30,10 +36,7 @@ export function NavigationBar({ title }: { title: string }) {
       >
         {title}
       </UIText>
-      <KeyboardShortcut
-        combination="backspace"
-        onKeyDown={() => navigate(-1)}
-      />
+      <KeyboardShortcut combination="backspace" onKeyDown={goBack} />
     </nav>
   );
 }

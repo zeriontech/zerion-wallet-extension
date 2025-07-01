@@ -1,5 +1,5 @@
 import React from 'react';
-import { registerPreview } from 'src/ui-lab/previews/registerPreview';
+import { registerPreviewPermanent } from 'src/ui-lab/previews/registerPreview';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -63,7 +63,7 @@ export function NetworkIcon({ src, name, size = 32, style }: Props) {
   );
 }
 
-registerPreview({
+registerPreviewPermanent({
   name: 'NetworkIcon',
   component: (
     <VStack gap={8}>

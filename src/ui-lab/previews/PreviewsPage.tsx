@@ -4,9 +4,12 @@ import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { EmptyView2 } from 'src/ui/components/EmptyView';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
-import { ViewArea } from 'src/ui/components/ViewArea';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { NavigationBar } from 'src/ui/components/NavigationBar';
+import { DocumentTitle } from 'src/ui/components/URLBar/URLBar';
 import { previews } from './registerPreview';
 
 function PreviewList() {
@@ -14,7 +17,12 @@ function PreviewList() {
     <VStack gap={48}>
       {previews.map((preview) => (
         <VStack key={preview.name} gap={12}>
-          <UIText kind="headline/h2">{preview.name}</UIText>
+          <UnstyledLink
+            className="hover:underline"
+            to={`/playground/${encodeURIComponent(preview.name)}`}
+          >
+            <UIText kind="headline/h2">{preview.name}</UIText>
+          </UnstyledLink>
           {preview.component}
         </VStack>
       ))}
@@ -25,17 +33,17 @@ function PreviewList() {
 export default function PreviewsPage() {
   useBackgroundKind(whiteBackgroundKind);
   return (
-    <ViewArea>
-      <PageColumn>
-        <PageTop />
-        <UIText kind="headline/h1">Previews</UIText>
-        <PageTop />
-        {previews.length ? (
-          <PreviewList />
-        ) : (
-          <EmptyView2>No Previews Yet</EmptyView2>
-        )}
-      </PageColumn>
-    </ViewArea>
+    <PageColumn>
+      <PageTop />
+      <NavigationBar title="Component Previews" />
+      <DocumentTitle title="Component Previews" />
+      <PageTop />
+      <Spacer height={36} />
+      {previews.length ? (
+        <PreviewList />
+      ) : (
+        <EmptyView2>No Previews Yet</EmptyView2>
+      )}
+    </PageColumn>
   );
 }

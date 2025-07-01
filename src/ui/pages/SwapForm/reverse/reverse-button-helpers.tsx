@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import ReverseIcon from 'jsx:src/ui/assets/reverse.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { registerPreview } from 'src/ui-lab/previews/registerPreview';
 import * as styles from '../styles.module.css';
 
 export const ReverseButton = ({ onClick }: { onClick: () => void }) => {
@@ -28,18 +27,6 @@ export const ReverseButton = ({ onClick }: { onClick: () => void }) => {
     </UnstyledButton>
   );
 };
-
-registerPreview({
-  component: (
-    <div style={{ position: 'relative' }}>
-      <ReverseButton
-        onClick={() => {
-          // pass
-        }}
-      />
-    </div>
-  ),
-});
 
 export const BottomArc = () => (
   <div

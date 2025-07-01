@@ -57,6 +57,8 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
+import { useStore } from '@store-unit/react';
+import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -110,6 +112,8 @@ function SettingsMain() {
   const { pathname } = useLocation();
   useBackgroundKind({ kind: 'white' });
 
+  const { hasTestWallet } = useStore(metaAppState);
+
   return (
     <PageColumn>
       <PageTop />
@@ -149,6 +153,16 @@ function SettingsMain() {
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
+            {hasTestWallet ? (
+              <FrameListItemLink to="/playground">
+                <AngleRightRow>
+                  <HStack gap={8} alignItems="center">
+                    <ExperimentsIcon />
+                    <UIText kind="body/regular">Playground</UIText>
+                  </HStack>
+                </AngleRightRow>
+              </FrameListItemLink>
+            ) : null}
           </VStack>
         </Frame>
         <Frame>

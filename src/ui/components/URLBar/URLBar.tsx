@@ -57,12 +57,13 @@ export function toggleUrlBar(on: boolean) {
 // If styles are changed, this value needs to be updated manually
 export const NAVIGATION_BAR_HEIGHT = 46;
 
-function DocumentTitle({ title }: { title: string }) {
+export function DocumentTitle({ title }: { title: string }) {
   useLayoutEffect(() => {
     document.title = getDocumentTitle(title);
   }, [title]);
   return null;
 }
+
 export function URLBar() {
   const navigate = useNavigate();
   const [, rerender] = useReducer((n) => n + 1, 0);
