@@ -36,20 +36,26 @@ async function syncVersion() {
       2
     )
   );
-  
-  await execAsync('./node_modules/.bin/prettier --write src/manifest-chrome.json');
-  await execAsync('./node_modules/.bin/prettier --write src/manifest-firefox.json');
+
+  await execAsync('./node_modules/.bin/prettier', [
+    '--write',
+    'src/manifest-chrome.json',
+  ]);
+  await execAsync('./node_modules/.bin/prettier', [
+    '--write',
+    'src/manifest-firefox.json',
+  ]);
 
   /** Add changes to previous commit, which is a commit made by `npm run version` */
   const tag = `v${version}`;
-  await execAsync(`git tag --delete ${tag}`);
-  await execAsync('git add .');
-  await execAsync('git commit --amend --no-edit');
+  await execAsync('git', ['tag', '--delete', tag]);
+  await execAsync('git', ['add', '.']);
+  await execAsync('git', ['commit', '--amend', '--no-edit']);
   // Add --message flag because that is what `npm version` does under the hood:
   // https://github.com/npm/cli/blob/c52cf6bc547268833cde2715fe4f6299240049f8/workspaces/libnpmversion/lib/tag.js#L22
   // It also creates an "annotated" tag instead of a "lightweight" tag.
   // Only "annotated" tags are picked up by `git push --follow-tags`
-  await execAsync(`git tag ${tag} --message ${version}`); 
+  await execAsync('git', ['tag', tag, '--message', version]);
 }
 
 syncVersion();
