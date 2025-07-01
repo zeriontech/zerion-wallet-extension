@@ -173,7 +173,7 @@ export function AssetInfo() {
       isLoading: isSupported && walletsMetaQuery.isLoading,
       isSupported,
     };
-  }, [isPremium, walletsMetaQuery, addrIsSolana]);
+  }, [isPremium, walletsMetaQuery.isLoading, addrIsSolana]);
 
   if (isLoading || !wallet || !walletData) {
     return (

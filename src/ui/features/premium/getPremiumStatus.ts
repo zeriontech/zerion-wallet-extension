@@ -48,6 +48,7 @@ export function usePremiumStatus({ address }: { address?: string }) {
     enabled: Boolean(addresses?.length),
     suspense: false,
     useErrorBoundary: false,
+    staleTime: 1000 * 60 * 10, // 10 minutes
   });
 
   return {
