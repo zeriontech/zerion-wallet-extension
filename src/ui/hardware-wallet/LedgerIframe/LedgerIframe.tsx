@@ -52,7 +52,7 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
               Ledger is not supported in Firefox
             </UIText>
             <UIText kind="body/regular" color="var(--neutral-500)">
-              Please, try a different browser
+              Please try a different browser
             </UIText>
           </VStack>
         </VStack>
