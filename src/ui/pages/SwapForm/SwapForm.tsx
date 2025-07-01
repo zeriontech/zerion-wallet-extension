@@ -658,7 +658,7 @@ function SwapFormComponent() {
                 active={false}
                 address={address}
                 size={24}
-                borderRadius={4}
+                borderRadius={6}
               />
             </UnstyledLink>
           </HStack>

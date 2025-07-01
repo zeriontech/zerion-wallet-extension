@@ -13,7 +13,6 @@ env:
   PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
   DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
   DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
-  SOCIAL_API_URL: ${{ github.event.inputs.SOCIAL_API_URL || 'https://social.zerion.io/' }}
   TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
   FEATURE_SEND_FORM: on
   FEATURE_FOOTER_BUG_BUTTON: off
@@ -46,7 +45,6 @@ jobs:
           PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
           DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
-          SOCIAL_API_URL: ${{ github.event.inputs.SOCIAL_API_URL || 'https://social.zerion.io/' }}
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           FEATURE_FOOTER_BUG_BUTTON: off
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}

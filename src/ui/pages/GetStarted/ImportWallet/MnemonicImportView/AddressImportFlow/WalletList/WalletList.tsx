@@ -97,7 +97,7 @@ export function WalletListPresentation({
                           address={wallet.address}
                           active={false}
                           size={44}
-                          borderRadius={4}
+                          borderRadius={12}
                         />
                       }
                       text={

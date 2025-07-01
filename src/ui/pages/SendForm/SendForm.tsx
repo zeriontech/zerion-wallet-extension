@@ -18,7 +18,6 @@ import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { createChain } from 'src/modules/networks/Chain';
-import { Button } from 'src/ui/ui-kit/Button';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import { walletPort } from 'src/ui/shared/channels';
@@ -304,19 +303,18 @@ function SendFormComponent() {
       <NavigationTitle
         title="Send"
         elementEnd={
-          <Button
-            as={UnstyledLink}
+          <UnstyledLink
             to="/wallet-select"
-            kind="ghost"
             title="Change Wallet"
+            style={{ justifySelf: 'center' }}
           >
             <WalletAvatar
               active={false}
               address={address}
-              size={32}
-              borderRadius={4}
+              size={24}
+              borderRadius={6}
             />
-          </Button>
+          </UnstyledLink>
         }
       />
       <PageTop />

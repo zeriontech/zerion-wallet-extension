@@ -37,7 +37,7 @@ function WalletItem({ wallet }: { wallet: MaskedBareWallet | BareWallet }) {
         borderRadius: 8,
       }}
     >
-      <WalletAvatar address={wallet.address} size={32} borderRadius={6} />
+      <WalletAvatar address={wallet.address} size={32} borderRadius={8} />
       <WalletDisplayName
         wallet={wallet}
         render={(data) => (
