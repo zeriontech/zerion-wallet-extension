@@ -54,9 +54,10 @@ import { Networks } from 'src/modules/networks/Networks';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import { getError } from 'get-error';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
-import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { SuccessState } from './SuccessState';
 import { AddressInputWrapper } from './fieldsets/AddressInput';
@@ -530,16 +531,12 @@ function SendFormComponent() {
           }}
         ></BottomSheetDialog>
         <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
-          <UIText kind="body/regular" color="var(--negative-500)">
-            {sendDataQuery.isError
-              ? txErrorToMessage(sendDataQuery.error)
-              : null}
-          </UIText>
-          <UIText kind="body/regular" color="var(--negative-500)">
-            {sendTxMutation.isError
-              ? txErrorToMessage(sendTxMutation.error)
-              : null}
-          </UIText>
+          {sendDataQuery.isError ? (
+            <ErrorMessage error={getError(sendDataQuery.error)} />
+          ) : null}
+          {sendTxMutation.isError ? (
+            <ErrorMessage error={getError(sendTxMutation.error)} />
+          ) : null}
           {wallet ? (
             <SignTransactionButton
               ref={signTxBtnRef}
