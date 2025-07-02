@@ -10,6 +10,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { DocumentTitle } from 'src/ui/components/URLBar/URLBar';
+import { PageBottom } from 'src/ui/components/PageBottom';
 import { previews } from './registerPreview';
 
 function PreviewList() {
@@ -46,6 +47,7 @@ export default function PreviewsPage() {
       ) : (
         <EmptyView2>No Previews Yet</EmptyView2>
       )}
+      <PageBottom />
     </PageColumn>
   );
 }

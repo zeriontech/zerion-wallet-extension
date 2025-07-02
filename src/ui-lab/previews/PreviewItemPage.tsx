@@ -9,6 +9,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
 import { DocumentTitle } from 'src/ui/components/URLBar/URLBar';
+import { PageBottom } from 'src/ui/components/PageBottom';
 import type { PreviewConfig } from './registerPreview';
 import { previews } from './registerPreview';
 
@@ -41,6 +42,7 @@ export default function PreviewItemPage() {
       <DocumentTitle title={`Preview · ${item.name}`} />
       <PageTop />
       <PreviewItem preview={item} />
+      <PageBottom />
     </PageColumn>
   );
 }
