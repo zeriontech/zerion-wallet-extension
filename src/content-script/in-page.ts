@@ -13,7 +13,7 @@ import * as dappDetection from './dapp-detection';
 import * as competingProviders from './competing-providers';
 import { dappsWithoutCorrectEIP1193Support } from './dapp-configs';
 import { initializeEIP6963 } from './eip6963';
-import { getWalletChannelId } from './walletChannelId';
+import { popWalletChannelId } from './walletChannelId.in-page-script';
 
 declare global {
   interface Window {
@@ -23,13 +23,7 @@ declare global {
   }
 }
 
-const walletChannelId = getWalletChannelId();
-
-if (!walletChannelId) {
-  throw new Error(
-    'walletChannelId must be defined as a data attribute on the script tag'
-  );
-}
+const walletChannelId = popWalletChannelId();
 
 const broadcastChannel = new BroadcastChannel(walletChannelId);
 const connection = new Connection(broadcastChannel);
