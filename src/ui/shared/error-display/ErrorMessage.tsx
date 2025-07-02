@@ -86,6 +86,7 @@ export function ErrorMessage({ error }: { error: Error }) {
         <UIText
           kind="body/regular"
           style={{
+            textAlign: 'start',
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
