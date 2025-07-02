@@ -7,9 +7,9 @@ import {
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 import { initializeInDappNotifications } from './in-dapp-notifications';
-import { getWalletChannelId } from './walletChannelId';
+import { setChannelIdInDom } from './walletChannelId.content-script';
 
-const walletChannelId = getWalletChannelId();
+const walletChannelId = setChannelIdInDom();
 const broadcastChannel = new BroadcastChannel(walletChannelId);
 
 const port = new PortMessageChannel({
