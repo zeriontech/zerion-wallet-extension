@@ -7,6 +7,7 @@ import pluginSecurity from 'eslint-plugin-security';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import previewsPlugin from './src/ui-lab/previews/eslint-rules/previews-plugin.mjs';
 
 export default tseslint.config(
   { ignores: ['node_modules', 'dist', 'e2e-report', 'playwright/.cache'] },
@@ -63,6 +64,12 @@ export default tseslint.config(
   {
     plugins: { import: importPlugin },
     rules: { 'import/order': 'error' },
+  },
+
+  // Custom
+  {
+    plugins: { previews: previewsPlugin },
+    rules: { 'previews/no-preview': 'warn' },
   },
 
   {

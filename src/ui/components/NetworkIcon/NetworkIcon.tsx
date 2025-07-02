@@ -1,6 +1,9 @@
 import React from 'react';
+import { registerPreviewPermanent } from 'src/ui-lab/previews/registerPreview';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { VStack } from 'src/ui/ui-kit/VStack';
 
 interface Props {
   src?: string | null;
@@ -59,3 +62,22 @@ export function NetworkIcon({ src, name, size = 32, style }: Props) {
     <TextFallback name={name} size={size} style={style} src={src} />
   );
 }
+
+registerPreviewPermanent({
+  name: 'NetworkIcon',
+  component: (
+    <VStack gap={8}>
+      <HStack gap={8} alignItems="center">
+        <NetworkIcon name="Arbitrum" />
+        <UIText kind="body/regular">Arbitrum</UIText>
+      </HStack>
+      <HStack gap={8} alignItems="center">
+        <NetworkIcon
+          name="Base"
+          src="https://chain-icons.s3.amazonaws.com/chainlist/8453"
+        />
+        <UIText kind="body/regular">Base</UIText>
+      </HStack>
+    </VStack>
+  ),
+});
