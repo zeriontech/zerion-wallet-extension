@@ -92,9 +92,10 @@ import type { SignTransactionResult } from 'src/shared/types/SignTransactionResu
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { Networks } from 'src/modules/networks/Networks';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import { getError } from 'get-error';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
-import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
@@ -1015,11 +1016,9 @@ function SwapFormComponent() {
               form={formId}
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
-              <UIText kind="body/regular" color="var(--negative-500)">
-                {approveMutation.isError
-                  ? txErrorToMessage(approveMutation.error)
-                  : null}
-              </UIText>
+              {approveMutation.isError ? (
+                <ErrorMessage error={getError(sendTransactionMutation.error)} />
+              ) : null}
               {wallet ? (
                 <SignTransactionButton
                   ref={approveTxBtnRef}
@@ -1044,11 +1043,9 @@ function SwapFormComponent() {
               form={formId}
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
-              <UIText kind="body/regular" color="var(--negative-500)">
-                {sendTransactionMutation.isError
-                  ? txErrorToMessage(sendTransactionMutation.error)
-                  : null}
-              </UIText>
+              {sendTransactionMutation.isError ? (
+                <ErrorMessage error={getError(sendTransactionMutation.error)} />
+              ) : null}
               {wallet ? (
                 <FormHint
                   quotesData={quotesData}

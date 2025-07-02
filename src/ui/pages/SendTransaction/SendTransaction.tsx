@@ -99,6 +99,8 @@ import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import { getError } from 'get-error';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -108,7 +110,6 @@ import {
 } from './TransactionConfiguration/applyConfiguration';
 import { TransactionAdvancedView } from './TransactionAdvancedView';
 import { TransactionWarnings } from './TransactionWarnings';
-import { txErrorToMessage } from './shared/transactionErrorToMessage';
 import { AddressActionNetworkFee } from './TransactionConfiguration/TransactionConfiguration';
 
 async function configureTransactionToSign<T extends IncomingTransaction>(
@@ -828,9 +829,7 @@ function SendTransactionContent({
         <Spacer height={16} />
         <VStack style={{ textAlign: 'center' }} gap={8}>
           {sendTransactionMutation.isError ? (
-            <UIText kind="body/regular" color="var(--negative-500)">
-              {txErrorToMessage(sendTransactionMutation.error)}
-            </UIText>
+            <ErrorMessage error={getError(sendTransactionMutation.error)} />
           ) : null}
           {view === View.customAllowance ? (
             <RenderArea name="sign-transaction-footer" />
@@ -1285,9 +1284,7 @@ function SolSendTransaction() {
         <Spacer height={16} />
         <VStack style={{ textAlign: 'center' }} gap={8}>
           {sendTransactionMutation.isError ? (
-            <UIText kind="body/regular" color="var(--negative-500)">
-              {txErrorToMessage(sendTransactionMutation.error)}
-            </UIText>
+            <ErrorMessage error={getError(sendTransactionMutation.error)} />
           ) : null}
           <div
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
