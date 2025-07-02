@@ -23,7 +23,9 @@ function PreviewList() {
           >
             <UIText kind="headline/h2">{preview.name}</UIText>
           </UnstyledLink>
-          {preview.component}
+          {typeof preview.component === 'function'
+            ? preview.component()
+            : preview.component}
         </VStack>
       ))}
     </VStack>

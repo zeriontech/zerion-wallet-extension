@@ -2,7 +2,7 @@ import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional'
 
 export interface PreviewConfig {
   name: string;
-  component: React.ReactNode;
+  component: React.ReactNode | (() => React.ReactNode);
 }
 
 export const previews: PreviewConfig[] = [];

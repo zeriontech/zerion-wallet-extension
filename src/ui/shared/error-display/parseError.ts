@@ -16,7 +16,7 @@ export function parseError(error: Error): ParsedError {
     display = 'Insufficient Funds';
   } else if (/no record of a prior credit/i.test(message)) {
     display = 'Insufficient Funds';
-  } else if ((match = message.match(/"message\\?":\\?"([^"]+)\\?"/))) {
+  } else if ((match = message.match(/"message\\?":\s*\\?"([^"]+)\\?"/))) {
     display = match.at(1)?.replace('\\', '') ?? null;
   }
   return { code, display, message };

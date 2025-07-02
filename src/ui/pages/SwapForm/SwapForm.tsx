@@ -1024,7 +1024,10 @@ function SwapFormComponent() {
               value="approve"
               form={formId}
             />
-            <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
+            <VStack
+              gap={8}
+              style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 12 }}
+            >
               {approveMutation.isError ? (
                 <ErrorMessage error={getError(sendTransactionMutation.error)} />
               ) : null}
@@ -1051,7 +1054,10 @@ function SwapFormComponent() {
               value="swap"
               form={formId}
             />
-            <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
+            <VStack
+              gap={8}
+              style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 12 }}
+            >
               {sendTransactionMutation.isError ? (
                 <ErrorMessage error={getError(sendTransactionMutation.error)} />
               ) : null}
