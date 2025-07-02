@@ -15,7 +15,9 @@ import { previews } from './registerPreview';
 function PreviewItem({ preview }: { preview: PreviewConfig }) {
   return (
     <VStack key={preview.name} gap={12}>
-      {preview.component}
+      {typeof preview.component === 'function'
+        ? preview.component()
+        : preview.component}
     </VStack>
   );
 }
