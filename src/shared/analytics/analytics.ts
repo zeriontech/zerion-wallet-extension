@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill';
 import { Loglevel, logTable, logToConsole } from 'src/shared/logger';
 import { version } from 'src/shared/packageVersion';
 import { detectBrowser } from 'src/modules/detect-browser/detect-browser';
+import { onIdle } from '../onIdle';
 
 type MetabaseEvent =
   | 'screen_view'
@@ -23,14 +24,6 @@ type MetabaseEvent =
   | 'button_clicked';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
-
-export function onIdle(callback: () => void) {
-  if ('requestIdleCallback' in globalThis) {
-    globalThis.requestIdleCallback(callback);
-  } else {
-    setTimeout(callback);
-  }
-}
 
 export function sendToMetabase<
   E extends MetabaseEvent,

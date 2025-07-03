@@ -19,11 +19,8 @@ import {
 import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
 import { productionVersion } from '../packageVersion';
-import {
-  createParams as createBaseParams,
-  sendToMetabase,
-  onIdle,
-} from './analytics';
+import { onIdle } from '../onIdle';
+import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
   createAddProviderHook,
   initialize as initializeApiV4Analytics,
