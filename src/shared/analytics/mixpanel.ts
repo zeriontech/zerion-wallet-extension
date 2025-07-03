@@ -7,6 +7,7 @@ import { Loglevel, logTable, logToConsole } from '../logger';
 import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
 import { deviceIdStore } from './shared/DeviceIdStore';
 import { omitNullParams } from './shared/omitNullParams';
+import { getAnalyticsId } from './analyticsId';
 
 const mixPanelToken = MIXPANEL_TOKEN_PUBLIC;
 
@@ -180,7 +181,7 @@ class MixpanelApi {
     userProfileProperties: Record<string, unknown>
   ) {
     await this.ready();
-    this.userId = userId;
+    this.userId = (await getAnalyticsId()) || userId;
     const $anon_distinct_id = `$device:${this.deviceId}`;
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
