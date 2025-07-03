@@ -111,7 +111,7 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('screenView', async (params) => {
-    const gaParams = await prepareGaParams(account, {
+    const gaParams = await prepareGaParams({
       page_title: params.title,
       page_location: params.pathname,
     });
@@ -199,7 +199,7 @@ function trackAppEvents({ account }: { account: Account }) {
         ...omitNullParams(addressActionAnalytics),
       });
       sendToMetabase('signed_transaction', params);
-      const gaParams = await prepareGaParams(account, params);
+      const gaParams = await prepareGaParams(params);
       gaCollect('signed_transaction', gaParams);
       const mixpanelParams = omit(params, [
         'request_name',
@@ -262,7 +262,7 @@ function trackAppEvents({ account }: { account: Account }) {
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
     });
     sendToMetabase('signed_message', params);
-    const gaParams = await prepareGaParams(account, params);
+    const gaParams = await prepareGaParams(params);
     gaCollect('signed_message', gaParams);
     const mixpanelParams = omit(params, [
       'request_name',
@@ -353,7 +353,7 @@ function trackAppEvents({ account }: { account: Account }) {
   emitter.on('firstScreenView', async () => {
     statsigTrack('General: Launch first time');
     mixpanelTrack(account, 'General: Launch first time', {});
-    const gaParams = await prepareGaParams(account, {});
+    const gaParams = await prepareGaParams({});
     gaCollect('first_open', gaParams);
   });
 

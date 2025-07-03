@@ -5,7 +5,6 @@ import {
 import type { Options } from 'ky';
 import ky from 'ky';
 import { version } from 'src/shared/packageVersion';
-import type { Account } from 'src/background/account/Account';
 import { Loglevel, logTable, logToConsole } from '../logger';
 import { deviceIdStore } from './shared/DeviceIdStore';
 import { omitNullParams } from './shared/omitNullParams';
@@ -160,10 +159,9 @@ interface GoogleAnalyticsParams {
 }
 
 export async function prepareGaParams(
-  account: Account,
   params: Record<string, unknown>
 ): Promise<GoogleAnalyticsParams> {
-  const userId = (await getAnalyticsId()) || account.getUser()?.id;
+  const userId = await getAnalyticsId();
   return {
     params: {
       ...params,
