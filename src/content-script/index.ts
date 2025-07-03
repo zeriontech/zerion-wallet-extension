@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import browser from 'webextension-polyfill';
 import {
   isJsonRpcPayload,
@@ -8,10 +7,10 @@ import {
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 import { initializeInDappNotifications } from './in-dapp-notifications';
+import { setChannelIdInDom } from './walletChannelId.content-script';
 
-const id = nanoid();
-
-const broadcastChannel = new BroadcastChannel(id);
+const walletChannelId = setChannelIdInDom();
+const broadcastChannel = new BroadcastChannel(walletChannelId);
 
 const port = new PortMessageChannel({
   name: `${browser.runtime.id}/ethereum`,
@@ -78,11 +77,3 @@ broadcastChannel.addEventListener('message', async (event) => {
 });
 
 initializeInDappNotifications();
-
-// Insert script with id for provider _after_ creating a BroadcastChannel
-const script = document.createElement('script');
-script.setAttribute('id', 'zerion-extension-channel');
-script.dataset.walletChannelId = id;
-script.dataset.walletExtension = 'true';
-const container = document.head || document.documentElement;
-container.appendChild(script);

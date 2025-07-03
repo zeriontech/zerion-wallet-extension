@@ -2,12 +2,11 @@
 const { execAsync } = require('./execAsync');
 
 async function build() {
-  console.log('Building Chrome'); // eslint-disable-line no-console
+  console.log('Building Firefox'); // eslint-disable-line no-console
 
-  await execAsync('rm', ['-rf', '.parcel-cache', 'dist']);
-  await execAsync('cp', ['./src/manifest-chrome.json', './src/manifest.json']);
-
-  let env = Object.assign({}, process.env, { PLATFORM: 'chrome' });
+  await execAsync('rm', ['-rf', '.parcel-cache', 'dist-firefox']);
+  await execAsync('cp', ['./src/manifest-firefox.json', './src/manifest.json']);
+  let env = Object.assign({}, process.env, { PLATFORM: 'firefox' });
   await execAsync(
     // pass --no-content-hash flag to avoid code-splitting issues:
     // https://github.com/parcel-bundler/parcel/issues/8071#issuecomment-1214438848
@@ -19,11 +18,13 @@ async function build() {
       'src/ui/hardware-wallet/ledger.html',
       '--no-content-hash',
       '--no-source-maps',
+      '--dist-dir',
+      'dist-firefox',
     ],
     { env }
   );
 
-  console.log('Done Chrome'); // eslint-disable-line no-console
+  console.log('Done Firefox'); // eslint-disable-line no-console
 }
 
 build();

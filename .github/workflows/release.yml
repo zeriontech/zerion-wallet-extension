@@ -47,12 +47,15 @@ jobs:
           mv dist zerion-wallet-extension-${{github.ref_name}}
           zip -r zerion-wallet-extension-${{github.ref_name}}.zip zerion-wallet-extension-${{github.ref_name}}
           tar czf zerion-wallet-extension-${{github.ref_name}}.tar.gz --directory=zerion-wallet-extension-${{github.ref_name}} .
+          mv dist-firefox zerion-wallet-firefox-addon-${{github.ref_name}}
+          zip -r zerion-wallet-firefox-addon-${{github.ref_name}}.zip zerion-wallet-firefox-addon-${{github.ref_name}}
+          tar czf zerion-wallet-firefox-addon-${{github.ref_name}}.tar.gz --directory=zerion-wallet-firefox-addon-${{github.ref_name}} .
 
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           generateReleaseNotes: true
-          artifacts: 'zerion-wallet-extension-${{github.ref_name}}.zip,zerion-wallet-extension-${{github.ref_name}}.tar.gz'
+          artifacts: 'zerion-wallet-extension-${{github.ref_name}}.zip,zerion-wallet-extension-${{github.ref_name}}.tar.gz,zerion-wallet-firefox-addon-${{github.ref_name}}.zip,zerion-wallet-firefox-addon-${{github.ref_name}}.tar.gz'
 
       - name: Notify release
         id: notify-release

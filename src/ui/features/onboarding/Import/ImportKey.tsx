@@ -76,6 +76,7 @@ export function ImportKey({
               type="password"
               required={true}
               autoFocus={true}
+              autoComplete="off"
             />
             <Button
               kind="primary"

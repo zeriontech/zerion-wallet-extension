@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-firefox
 .env
 .eslintcache
 .parcel-cache
@@ -7,3 +8,4 @@ dist
 /e2e-report/
 /blob-report/
 /playwright/.cache/
+/src/manifest.json
