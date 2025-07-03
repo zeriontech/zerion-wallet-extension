@@ -79,7 +79,7 @@ export function TransactionConfirmationView({
       <input
         type="hidden"
         name="interpretation"
-        value={interpretationString}
+        value={interpretationString ?? ''}
         form={formId}
       />
       <SecurityStatusBackground />
