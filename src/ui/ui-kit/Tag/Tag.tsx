@@ -10,7 +10,7 @@ export function Tag({
   className,
   kind = 'primary',
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & { kind?: Kind }) {
+}: React.ComponentPropsWithRef<'div'> & { kind?: Kind }) {
   return (
     <div {...props} className={cn(className, styles.tag, styles[kind])}>
       <UIText kind="caption/accent">{children}</UIText>
