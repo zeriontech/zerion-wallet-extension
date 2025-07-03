@@ -6,7 +6,10 @@ import { saveReferrerData } from './shared/storage';
 
 const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
 
-type WebAppCallbackMethod = 'set-referral-code' | 'set-turnstile-token';
+type WebAppCallbackMethod =
+  | 'set-referral-code'
+  | 'set-turnstile-token'
+  | 'set-user-id';
 
 interface WebAppMessage {
   method: WebAppCallbackMethod;

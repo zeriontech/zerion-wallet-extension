@@ -15,9 +15,13 @@ import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigV
 import CreateImg from 'url:../assets/option_create.png';
 import ImportImg from 'url:../assets/option_import.png';
 import HardwareImg from 'url:../assets/option_hardware.png';
+import { setAnalyticsId } from 'src/shared/analytics/analyticsId';
 import * as helpersStyles from '../shared/helperStyles.module.css';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
-import { ReferralProgramHandler } from '../../referral-program/WebAppMessageHandler';
+import {
+  ReferralProgramHandler,
+  WebAppMessageHandler,
+} from '../../referral-program/WebAppMessageHandler';
 import * as styles from './styles.module.css';
 
 interface ImportOptionConfig {
@@ -220,6 +224,20 @@ function Banner() {
   );
 }
 
+function AnalyticsUserIdHandler() {
+  return (
+    <WebAppMessageHandler
+      pathname="/user-id"
+      callbackName="set-user-id"
+      callbackFn={(userId) => {
+        console.log('User ID:', userId);
+        setAnalyticsId(userId as string);
+      }}
+      hidden={true}
+    />
+  );
+}
+
 export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
   useOnboardingSession({ navigateOnExistingUser: 'success' });
@@ -233,6 +251,7 @@ export function Welcome() {
       {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? (
         <ReferralProgramHandler />
       ) : null}
+      <AnalyticsUserIdHandler />
       <Banner />
       <ImportOptions />
     </VStack>
