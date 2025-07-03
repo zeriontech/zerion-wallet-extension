@@ -4,7 +4,7 @@ const { execAsync } = require('./execAsync');
 async function build() {
   console.log('Building Firefox'); // eslint-disable-line no-console
 
-  await execAsync('rm', ['-rf', '.parcel-cache-firefox', 'dist-firefox']);
+  await execAsync('rm', ['-rf', '.parcel-cache', 'dist-firefox']);
   await execAsync('cp', ['./src/manifest-firefox.json', './src/manifest.json']);
   let env = Object.assign({}, process.env, { PLATFORM: 'firefox' });
   await execAsync(
@@ -20,8 +20,6 @@ async function build() {
       '--no-source-maps',
       '--dist-dir',
       'dist-firefox',
-      '--cache-dir',
-      '.parcel-cache-firefox',
     ],
     { env }
   );

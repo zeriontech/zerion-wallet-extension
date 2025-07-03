@@ -7,7 +7,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ErrorIcon from 'jsx:src/ui/assets/warning.svg';
 
-// USB connection doesn't supported in Firefox
+// USB connection isn't supported in Firefox
 // so we should show a warning to the user
 function isUsbConnectionSupported() {
   return 'usb' in navigator;

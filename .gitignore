@@ -4,7 +4,6 @@ dist-firefox
 .env
 .eslintcache
 .parcel-cache
-.parcel-cache-firefox
 /test-results/
 /e2e-report/
 /blob-report/
