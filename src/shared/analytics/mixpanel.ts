@@ -176,12 +176,9 @@ class MixpanelApi {
     return this.sendEvent(url.toString(), { json: [payload] });
   }
 
-  async identify(
-    userId: string,
-    userProfileProperties: Record<string, unknown>
-  ) {
+  async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
-    this.userId = (await getAnalyticsId()) || userId;
+    this.userId = await getAnalyticsId();
     const $anon_distinct_id = `$device:${this.deviceId}`;
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
@@ -231,13 +228,9 @@ export async function mixpanelTrack(
 }
 
 export async function mixpanelIdentify(account: Account) {
-  const userId = account.getUser()?.id;
-  if (!userId) {
-    return;
-  }
   try {
     const userProfileProperties = await getBaseMixpanelParams(account);
-    return mixpanelApi.identify(userId, userProfileProperties);
+    return mixpanelApi.identify(userProfileProperties);
   } catch (e) {
     // TODO: setup "error" event in background emitter and send errors to metabase
     // eslint-disable-next-line no-console

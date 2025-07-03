@@ -1,7 +1,6 @@
 import ky from 'ky';
 import { STATSIG_API_KEY } from 'src/env/config';
 import { getAnalyticsId } from 'src/shared/analytics/analyticsId';
-import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { Loglevel, logTable, logToConsole } from 'src/shared/logger';
 import { onIdle } from 'src/shared/onIdle';
 
@@ -9,7 +8,7 @@ export async function statsigTrack(
   eventName: string,
   eventParams?: Record<string, unknown>
 ) {
-  const userId = (await getAnalyticsId()) || (await getCurrentUser())?.id;
+  const userId = await getAnalyticsId();
   if (!userId) {
     return;
   }
@@ -40,7 +39,7 @@ export async function statsigTrack(
 }
 
 export async function getStatsigExperiment(name: string) {
-  const userId = (await getAnalyticsId()) || (await getCurrentUser())?.id;
+  const userId = await getAnalyticsId();
   if (!userId) {
     return;
   }
