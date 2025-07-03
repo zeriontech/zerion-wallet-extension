@@ -21,7 +21,8 @@ function ErrorDetails({ error }: { error: ParsedError }) {
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: error.message });
   return (
     <>
-      <div
+      <UIText
+        kind="small/regular"
         style={{
           color: 'var(--negative-500)',
           overflowWrap: 'break-word',
@@ -30,7 +31,7 @@ function ErrorDetails({ error }: { error: ParsedError }) {
         }}
       >
         {error.message}
-      </div>
+      </UIText>
       <HStack gap={12} style={{ gridTemplateColumns: '1fr 1fr' }}>
         <Button kind="regular" value="cancel" onClick={handleCopy}>
           {isSuccess ? (
@@ -55,10 +56,13 @@ function ErrorDetails({ error }: { error: ParsedError }) {
         </Button>
         <Button
           as={UnstyledAnchor}
+          href="https://help.zerion.io/en/"
+          target="_blank"
+          rel="noopener noreferrer"
           kind="primary"
           style={{ paddingInline: 16 }}
         >
-          Contact Support
+          Get Help
         </Button>
       </HStack>
     </>
@@ -78,14 +82,15 @@ export function ErrorMessage({ error }: { error: Error }) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          border: '2px solid var(--negative-300)',
-          padding: 8,
-          borderRadius: 16,
+          border: '1px solid var(--negative-300)',
+          paddingBlock: 11,
+          paddingInline: 15,
+          borderRadius: 1000,
           color: 'var(--negative-500)',
         }}
       >
         <UIText
-          kind="body/regular"
+          kind="small/accent"
           style={{
             textAlign: 'start',
             display: '-webkit-box',

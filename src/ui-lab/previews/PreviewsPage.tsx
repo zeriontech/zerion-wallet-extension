@@ -40,7 +40,6 @@ export default function PreviewsPage() {
       <PageTop />
       <NavigationBar title="Component Previews" />
       <DocumentTitle title="Component Previews" />
-      <PageTop />
       <Spacer height={36} />
       {previews.length ? (
         <PreviewList />
