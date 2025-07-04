@@ -9,9 +9,6 @@ export async function statsigTrack(
   eventParams?: Record<string, unknown>
 ) {
   const userId = await getAnalyticsId();
-  if (!userId) {
-    return;
-  }
   logToConsole(Loglevel.info, 'group', `Statsig track: ${eventName}`);
   logTable(Loglevel.info, eventParams, ['index']);
   logToConsole(Loglevel.info, 'groupEnd');
@@ -40,9 +37,6 @@ export async function statsigTrack(
 
 export async function getStatsigExperiment(name: string) {
   const userId = await getAnalyticsId();
-  if (!userId) {
-    return;
-  }
   return ky
     .post('https://api.statsig.com/v1/get_config', {
       headers: {
