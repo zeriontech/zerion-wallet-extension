@@ -4,6 +4,7 @@ import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { useScreenViewChange } from 'src/ui/shared/useScreenViewChange';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { setAnalyticsIdIfNeeded } from 'src/shared/analytics/analyticsId.client';
+import { deviceIdStore } from 'src/shared/analytics/shared/DeviceIdStore';
 import { WebAppMessageHandler } from '../referral-program/WebAppMessageHandler';
 import { Success } from './Success';
 import { Welcome } from './Welcome';
@@ -16,8 +17,9 @@ import { Backup } from './Backup';
 
 function AnalyticsUserIdFallback() {
   useEffect(() => {
-    const id = crypto.randomUUID();
-    setAnalyticsIdIfNeeded(id);
+    deviceIdStore.getSavedState().then((id) => {
+      setAnalyticsIdIfNeeded(id);
+    });
   }, []);
   return null;
 }
