@@ -1,5 +1,5 @@
 import { BrowserStorage } from 'src/background/webapis/storage';
-import { getCurrentUser } from '../getCurrentUser';
+import { deviceIdStore } from './shared/DeviceIdStore';
 
 /**
  * Analytics ID is used as userId in analytics events.
@@ -21,6 +21,6 @@ export const analyticsIdKey = 'z-user-id';
 export async function getAnalyticsId() {
   return (
     (await BrowserStorage.get<string>(analyticsIdKey)) ||
-    (await getCurrentUser())?.id
+    (await deviceIdStore.getSavedState())
   );
 }
