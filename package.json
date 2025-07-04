@@ -99,6 +99,12 @@
     "*.{ts,tsx}": "eslint --cache --fix",
     "*.{ts,tsx,css,md}": "prettier --write"
   },
+  "overrides": {
+    "@tanstack/react-query": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0"
+    }
+  },
   "dependencies": {
     "@download/blockies": "^1.0.3",
     "@ethersproject/abstract-provider": "^5.7.0",
@@ -112,10 +118,10 @@
     "@solana/web3.js": "^1.98.0",
     "@store-unit/react": "^1.0.4",
     "@tanstack/react-query": "^4.40.0",
-    "@tanstack/react-virtual": "^3.2.0",
+    "@tanstack/react-virtual": "^3.13.12",
     "@walletconnect/jsonrpc-provider": "^1.0.13",
     "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@zeriontech/components": "^2.0.0",
+    "@zeriontech/components": "^2.0.1",
     "@zeriontech/hardware-wallet-connection": "^1.0.11",
     "@zeriontech/solana-wallet-standard": "^1.0.0-alpha.2",
     "@zeriontech/transactions": "^0.4.2",

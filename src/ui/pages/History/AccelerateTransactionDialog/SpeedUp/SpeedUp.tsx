@@ -64,7 +64,7 @@ export function SpeedUp({
     [chainGasPrices]
   );
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string>(null); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);

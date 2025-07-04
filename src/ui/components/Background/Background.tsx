@@ -99,5 +99,5 @@ export function Background({
     };
   }, [backgroundColor, uiScrollRootElement.style]);
 
-  return children as JSX.Element;
+  return children as React.ReactNode;
 }

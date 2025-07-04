@@ -1,5 +1,6 @@
-import type { ComponentPropsWithRef, ElementType } from 'react';
+import type { ElementType } from 'react';
 import React from 'react';
+import type { PropsWithAs } from 'src/shared/type-utils/PropsWithAs';
 
 interface Props {
   padding?: React.CSSProperties['padding'];
@@ -10,7 +11,7 @@ export const Surface = <As extends ElementType = 'div'>({
   padding,
   as,
   ...props
-}: Props & { as?: As } & ComponentPropsWithRef<As>) => {
+}: Props & PropsWithAs<As>) => {
   return React.createElement(as || 'div', {
     style: {
       ['--surface-border-radius']: '12px',

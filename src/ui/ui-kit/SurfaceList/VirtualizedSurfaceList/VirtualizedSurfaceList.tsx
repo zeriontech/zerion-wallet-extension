@@ -86,7 +86,7 @@ export function WindowVirtualizedSurfaceList({
         const { style, ...item } = items[virtualItem.index];
         return {
           ...item,
-          key: virtualItem.key,
+          key: virtualItem.key.toString(),
           style: getItemStyles({
             isSticky: Boolean(stickyFirstElement && index === 0),
             offset: virtualItem.start - windowVirtualizer.options.scrollMargin,
@@ -133,7 +133,7 @@ export function DialogVirtualizedSurfaceList({
         const { style, ...item } = items[virtualItem.index];
         return {
           ...item,
-          key: virtualItem.key,
+          key: virtualItem.key.toString(),
           style: getItemStyles({
             isSticky: Boolean(stickyFirstElement && index === 0),
             offset: virtualItem.start - dialogVirtualizer.options.scrollMargin,

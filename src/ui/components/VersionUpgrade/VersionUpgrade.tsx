@@ -100,6 +100,6 @@ export function VersionUpgrade({ children }: React.PropsWithChildren) {
       </FillView>
     );
   } else {
-    return children as JSX.Element;
+    return children as React.ReactNode;
   }
 }

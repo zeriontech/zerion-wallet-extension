@@ -1,11 +1,6 @@
-import {
-  useCallback,
-  useRef,
-  useState,
-  type ComponentPropsWithRef,
-  type ElementType,
-} from 'react';
+import { useCallback, useRef, useState, type ElementType } from 'react';
 import React from 'react';
+import type { PropsWithAs } from 'src/shared/type-utils/PropsWithAs';
 import cn from 'classnames';
 import { UIText } from '../UIText';
 import { borderRadius, kinds, type Kind, type Size } from './Button';
@@ -70,7 +65,7 @@ export const HoldableButton = <As extends ElementType = 'button'>({
   error,
   holdHint = 'Please press and hold the button',
   ...props
-}: Props & { as?: As } & Omit<ComponentPropsWithRef<As>, 'kind' | 'as'>) => {
+}: Props & PropsWithAs<As>) => {
   const realButtonRef = useRef<HTMLButtonElement | null>(null);
   const [innerState, setInnerState] = useState<'idle' | 'hold' | 'submitting'>(
     'idle'

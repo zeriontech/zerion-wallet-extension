@@ -1,6 +1,6 @@
 import { useFetchDappIcon } from './useFetchDappIcon';
 
-type IconRenderer = (src: string | null) => JSX.Element;
+type IconRenderer = (src: string | null) => React.ReactNode;
 
 interface Props {
   url: string;

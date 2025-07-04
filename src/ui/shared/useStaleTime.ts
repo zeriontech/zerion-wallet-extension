@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 export function useStaleTime(value: unknown, staleTime: number) {
   const [isStale, setIsStale] = useState(false);
 
-  const debouncedRef = useRef<() => void>();
+  const debouncedRef = useRef<() => void>(null);
   if (!debouncedRef.current) {
     debouncedRef.current = debounce(() => {
       setIsStale(true);

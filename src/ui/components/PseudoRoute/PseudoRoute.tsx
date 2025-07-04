@@ -3,7 +3,7 @@ export function PseudoRoute({
   component,
 }: {
   when: boolean;
-  component: JSX.Element;
+  component: React.ReactNode;
 }) {
   if (when) {
     return component;

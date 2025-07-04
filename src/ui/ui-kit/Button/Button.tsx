@@ -1,6 +1,7 @@
-import type { ComponentPropsWithRef, ElementType } from 'react';
+import type { ElementType } from 'react';
 import React from 'react';
 import cx from 'classnames';
+import type { PropsWithAs } from 'src/shared/type-utils/PropsWithAs';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
 
@@ -54,7 +55,7 @@ export const Button = <As extends ElementType = 'button'>({
   children,
   className,
   ...props
-}: Props & { as?: As } & Omit<ComponentPropsWithRef<As>, 'size'>) => {
+}: Props & PropsWithAs<As>) => {
   const isButton = as == null || as === 'button';
   return (
     <UIText

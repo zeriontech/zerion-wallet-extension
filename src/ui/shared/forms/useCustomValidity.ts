@@ -4,7 +4,7 @@ export function useCustomValidity({
   ref,
   customValidity,
 }: {
-  ref: React.RefObject<HTMLInputElement>;
+  ref: React.RefObject<HTMLInputElement | null>;
   customValidity: string;
 }) {
   useEffect(() => {
