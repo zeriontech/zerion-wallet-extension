@@ -8,8 +8,8 @@ import { UIText } from '../../UIText';
 interface Props extends React.FieldsetHTMLAttributes<HTMLFieldSetElement> {
   labelTextKind?: UITextProps['kind'];
   inputTextKind?: UITextProps['kind'];
-  label: JSX.Element | string;
-  input: JSX.Element;
+  label: React.ReactElement | string;
+  input: React.ReactElement;
   htmlFor: string;
 }
 

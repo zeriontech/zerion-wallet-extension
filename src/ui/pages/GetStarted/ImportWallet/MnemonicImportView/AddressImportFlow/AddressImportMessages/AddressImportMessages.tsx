@@ -31,7 +31,7 @@ export function OnMount({
   useEffect(() => {
     onMountRef.current();
   }, []);
-  return children as JSX.Element;
+  return children as React.ReactNode;
 }
 
 const ANIMATION_DURATION = 1500;

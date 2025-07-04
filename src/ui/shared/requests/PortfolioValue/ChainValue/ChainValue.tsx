@@ -27,5 +27,5 @@ export function ChainValue({
     value || 0,
     'en',
     currency
-  ) as React.ReactNode as JSX.Element;
+  ) as React.ReactNode as React.ReactNode;
 }

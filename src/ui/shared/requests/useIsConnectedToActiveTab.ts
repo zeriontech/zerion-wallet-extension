@@ -30,7 +30,9 @@ export function IsConnectedToActiveTab({
   render,
 }: {
   address: string;
-  render: (value: ReturnType<typeof useIsConnectedToActiveTab>) => JSX.Element;
+  render: (
+    value: ReturnType<typeof useIsConnectedToActiveTab>
+  ) => React.ReactElement;
 }) {
   return render(useIsConnectedToActiveTab(address));
 }

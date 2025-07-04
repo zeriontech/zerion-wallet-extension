@@ -1,10 +1,7 @@
-import type {
-  ComponentPropsWithoutRef,
-  ComponentPropsWithRef,
-  ElementType,
-} from 'react';
+import type { ElementType } from 'react';
 import React from 'react';
 import cx from 'classnames';
+import type { PropsWithAs } from 'src/shared/type-utils/PropsWithAs';
 import { UIText } from '../UIText';
 import * as styles from './styles.module.css';
 
@@ -50,25 +47,19 @@ interface Props {
   size?: Size;
 }
 
-const ButtonElement = <As extends ElementType = 'button'>(
-  {
-    style,
-    as,
-    kind = 'primary',
-    size = 44,
-    children,
-    className,
-    ...props
-  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
-      ref?: ComponentPropsWithRef<As>['ref'];
-    },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>
-) => {
+export const Button = <As extends ElementType = 'button'>({
+  style,
+  as,
+  kind = 'primary',
+  size = 44,
+  children,
+  className,
+  ...props
+}: Props & PropsWithAs<As>) => {
   const isButton = as == null || as === 'button';
   return (
     <UIText
       as={as || 'button'}
-      ref={ref}
       kind="small/accent"
       className={cx(className, styles[kind], styles.button, {
         [styles.asButton]: !isButton,
@@ -90,5 +81,3 @@ const ButtonElement = <As extends ElementType = 'button'>(
     </UIText>
   );
 };
-
-export const Button = React.forwardRef(ButtonElement) as typeof ButtonElement;
