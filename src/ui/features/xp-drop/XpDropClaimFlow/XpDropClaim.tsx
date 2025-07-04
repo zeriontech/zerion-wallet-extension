@@ -37,7 +37,6 @@ import { SignMessageButton } from 'src/ui/components/SignMessageButton';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { txErrorToMessage } from 'src/ui/pages/SendTransaction/shared/transactionErrorToMessage';
 import { FillView } from 'src/ui/components/FillView';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -46,6 +45,7 @@ import { wait } from 'src/shared/wait';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
 import { getError } from 'src/shared/errors/getError';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -504,9 +504,7 @@ export function XpDropClaim() {
       <PageStickyFooter>
         <VStack gap={8}>
           {personalSignMutation.isError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {txErrorToMessage(personalSignMutation.error)}
-            </UIText>
+            <ErrorMessage error={getError(personalSignMutation.error)} />
           ) : null}
           <SignMessageButton
             ref={signMsgBtnRef}

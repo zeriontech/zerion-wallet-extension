@@ -10,6 +10,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { DocumentTitle } from 'src/ui/components/URLBar/URLBar';
+import { PageBottom } from 'src/ui/components/PageBottom';
 import { previews } from './registerPreview';
 
 function PreviewList() {
@@ -23,7 +24,9 @@ function PreviewList() {
           >
             <UIText kind="headline/h2">{preview.name}</UIText>
           </UnstyledLink>
-          {preview.component}
+          {typeof preview.component === 'function'
+            ? preview.component()
+            : preview.component}
         </VStack>
       ))}
     </VStack>
@@ -37,13 +40,13 @@ export default function PreviewsPage() {
       <PageTop />
       <NavigationBar title="Component Previews" />
       <DocumentTitle title="Component Previews" />
-      <PageTop />
       <Spacer height={36} />
       {previews.length ? (
         <PreviewList />
       ) : (
         <EmptyView2>No Previews Yet</EmptyView2>
       )}
+      <PageBottom />
     </PageColumn>
   );
 }
