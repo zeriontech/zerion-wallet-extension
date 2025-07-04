@@ -168,6 +168,8 @@ class MixpanelApi {
     const userId = await getAnalyticsId();
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
+      // $identify event can help to merge users if event is sent before actual user ID is known
+      // and device ID is used instead
       this.track('$identify', { $anon_distinct_id: userId }),
       this.engage(userId, userProfileProperties),
     ]);
