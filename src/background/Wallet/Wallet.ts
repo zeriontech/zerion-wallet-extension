@@ -109,12 +109,15 @@ import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
+import { wait } from 'src/shared/wait';
+import { analyticsIdKey } from 'src/shared/analytics/analyticsId';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { lastUsedAddressStore } from '../user-activity';
 import { transactionService } from '../transactions/TransactionService';
+import { BrowserStorage } from '../webapis/storage';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
@@ -1705,16 +1708,27 @@ export class Wallet {
     emitter.emit('cloudflareChallengeIssued');
   }
 
+  async analyticsIdSet({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('analyticsIdSet');
+  }
+
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
     // NOTE: maybe consider adding a more generic method, e.g.:
     // walletPort.request('sendEvent', { event_name, params }).
     this.verifyInternalOrigin(context);
+    const analyticsId = await BrowserStorage.get<string>(analyticsIdKey);
+    if (!analyticsId) {
+      await Promise.race([
+        wait(5000),
+        new Promise<void>((resolve) => {
+          emitter.on('analyticsIdSet', () => {
+            resolve();
+          });
+        }),
+      ]);
+    }
     emitter.emit('screenView', params);
-  }
-
-  async analyticsIdSet({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('analyticsIdSet');
   }
 
   async daylightAction({

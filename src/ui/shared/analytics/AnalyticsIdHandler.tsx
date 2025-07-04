@@ -24,7 +24,7 @@ export function AnalyticsIdHandler() {
 
   return (
     <WebAppMessageHandler
-      pathname="/user-id"
+      pathname="/user-id.html"
       callbackName="set-user-id"
       callbackFn={(params) => {
         invariant(
