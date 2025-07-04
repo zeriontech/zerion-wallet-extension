@@ -84,6 +84,7 @@ import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
 import { BridgeForm } from '../pages/BridgeForm';
 import { TurnstileTokenHandler } from '../features/turnstile';
+import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -511,6 +512,7 @@ export function App({ initialView, inspect }: AppProps) {
     <AreaProvider>
       <UIContext.Provider value={defaultUIContextValue}>
         <QueryClientProvider client={queryClient}>
+          <AnalyticsIdHandler />
           <DesignTheme bodyClassList={bodyClassList} />
           <Router>
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
