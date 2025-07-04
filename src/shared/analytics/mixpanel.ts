@@ -166,12 +166,7 @@ class MixpanelApi {
   async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
     const userId = await getAnalyticsId();
-    const $anon_distinct_id = `$device:${this.deviceId}`;
-    return Promise.all([
-      // TODO: "$identify" track event is not necessary?
-      this.track('$identify', { $anon_distinct_id }),
-      this.engage(userId, userProfileProperties),
-    ]);
+    return this.engage(userId, userProfileProperties);
   }
 
   async sendEvent(url: string, options: Options) {
