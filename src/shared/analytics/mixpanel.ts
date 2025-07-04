@@ -178,6 +178,7 @@ class MixpanelApi {
 
   async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
+    this.userId = await getAnalyticsId();
     const $anon_distinct_id = `$device:${this.deviceId}`;
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
