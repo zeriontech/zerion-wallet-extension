@@ -7,7 +7,7 @@ export enum Loglevel {
   info = 2,
 }
 
-const loglevelState = new Store<{ level: Loglevel }>({ level: Loglevel.none });
+const loglevelState = new Store<{ level: Loglevel }>({ level: Loglevel.info });
 
 const STORAGE_KEY = 'LOGLEVEL';
 
