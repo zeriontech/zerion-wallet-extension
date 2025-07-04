@@ -1717,6 +1717,10 @@ export class Wallet {
     // NOTE: maybe consider adding a more generic method, e.g.:
     // walletPort.request('sendEvent', { event_name, params }).
     this.verifyInternalOrigin(context);
+    /**
+     * Wait for analyticsId to be set before sending screenView event.
+     * This can happen on the first launch or suring the migration to thenew analytics ID storage
+     */
     const analyticsId = await BrowserStorage.get<string>(analyticsIdKey);
     if (!analyticsId) {
       await Promise.race([
