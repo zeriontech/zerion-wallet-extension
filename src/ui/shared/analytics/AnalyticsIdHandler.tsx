@@ -1,20 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserStorage } from 'src/background/webapis/storage';
 import { analyticsIdKey } from 'src/shared/analytics/analyticsId';
 import { setAnalyticsIdIfNeeded } from 'src/shared/analytics/analyticsId.client';
-import { deviceIdStore } from 'src/shared/analytics/shared/DeviceIdStore';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { invariant } from 'src/shared/invariant';
+import { isObj } from 'src/shared/isObj';
 import { WebAppMessageHandler } from 'src/ui/features/referral-program/WebAppMessageHandler';
-
-function AnalyticsIdFallback() {
-  useEffect(() => {
-    deviceIdStore.getSavedState().then((id) => {
-      setAnalyticsIdIfNeeded(id);
-    });
-  }, []);
-  return null;
-}
 
 export function AnalyticsIdHandler() {
   const { data, isLoading } = useQuery({
@@ -32,18 +23,17 @@ export function AnalyticsIdHandler() {
   }
 
   return (
-    <>
-      <DelayedRender delay={5000}>
-        <AnalyticsIdFallback />
-      </DelayedRender>
-      <WebAppMessageHandler
-        pathname="/user-id"
-        callbackName="set-user-id"
-        callbackFn={(userId) => {
-          setAnalyticsIdIfNeeded(userId as string);
-        }}
-        hidden={true}
-      />
-    </>
+    <WebAppMessageHandler
+      pathname="/user-id"
+      callbackName="set-user-id"
+      callbackFn={(params) => {
+        invariant(
+          isObj(params) && typeof params.userId === 'string',
+          'Got invalid payload from set-referral-code web app message'
+        );
+        setAnalyticsIdIfNeeded(params.userId);
+      }}
+      hidden={true}
+    />
   );
 }
