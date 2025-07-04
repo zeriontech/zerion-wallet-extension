@@ -178,7 +178,6 @@ class MixpanelApi {
 
   async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
-    this.userId = await getAnalyticsId();
     const $anon_distinct_id = `$device:${this.deviceId}`;
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
@@ -191,12 +190,6 @@ class MixpanelApi {
     if (this.token != null && this.sendRequestsOverTheNetwork) {
       return ky.post(url, options);
     }
-  }
-
-  reset() {
-    // we're not resetting "super" properties because in our case
-    // they're not user-specific
-    this.userId = undefined;
   }
 }
 
@@ -215,11 +208,10 @@ mixpanelApi.setBaseProperties({
 });
 
 export async function mixpanelTrack(
-  account: Account,
   event: string,
   values: Record<string, unknown>
 ) {
-  const userId = account.getUser()?.id;
+  const userId = getAnalyticsId();
   mixpanelApi.track(event, {
     ...values,
     // pass userId params cause identify function can still be in progress
@@ -236,8 +228,4 @@ export async function mixpanelIdentify(account: Account) {
     // eslint-disable-next-line no-console
     console.warn('Failed to identify (mixpanel)', e);
   }
-}
-
-export async function mixpanelReset() {
-  mixpanelApi.reset();
 }

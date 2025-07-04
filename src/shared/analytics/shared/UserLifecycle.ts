@@ -22,7 +22,7 @@ class UserLifecycleStore extends PersistentStore<State> {
   ) {
     super(initialState, key);
 
-    emitter.on('screenView', async () => {
+    emitter.on('analyticsIdSet', async () => {
       await this.ready();
       this.setState((state) => {
         if (state.installedEvent == null) {

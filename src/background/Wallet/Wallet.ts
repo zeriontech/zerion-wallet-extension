@@ -1712,6 +1712,11 @@ export class Wallet {
     emitter.emit('screenView', params);
   }
 
+  async analyticsIdSet({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('analyticsIdSet');
+  }
+
   async daylightAction({
     context,
     params,
