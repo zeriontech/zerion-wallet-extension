@@ -211,7 +211,7 @@ export async function mixpanelTrack(
   event: string,
   values: Record<string, unknown>
 ) {
-  const userId = getAnalyticsId();
+  const userId = await getAnalyticsId();
   mixpanelApi.track(event, {
     ...values,
     // pass userId params cause identify function can still be in progress

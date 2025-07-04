@@ -12,7 +12,7 @@ const loglevelState = new Store<{ level: Loglevel }>({ level: Loglevel.info });
 const STORAGE_KEY = 'LOGLEVEL';
 
 BrowserStorage.get<Loglevel>(STORAGE_KEY).then((v) => {
-  loglevelState.setState({ level: v ?? Loglevel.none });
+  loglevelState.setState({ level: v ?? Loglevel.info });
 });
 
 loglevelState.on('change', (state) => {
