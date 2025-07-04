@@ -25,7 +25,7 @@ class MixpanelApi {
    * They include $device_id, $user_id, distinct_id, $insert_id
    * $device_id is persisted for current device
    * $user_id is sent when its known
-   * distinct_id is equal to "$device:<$device_id>" before $user_id is known,
+   * distinct_id is equal to $device_id before $user_id is known,
    *              and equal to $user_id when $user_id is known
    * $insert_id is always unique per new request
    *
@@ -36,7 +36,7 @@ class MixpanelApi {
    * {
        event: "$identify",
        properties: {
-         $anon_distinct_id: "$device:<$device_id>",
+         $anon_distinct_id: $device_id,
          $user_id: "user-id",
          distinct_id: "user-id",
          ..., // base properties
@@ -128,7 +128,7 @@ class MixpanelApi {
         time: Date.now() / 1000,
         $insert_id: crypto.randomUUID(),
         $device_id: this.deviceId,
-        distinct_id: values.userId ?? `$device:${this.deviceId}`,
+        distinct_id: values.userId,
         token: this.token,
         ...values,
       }),
@@ -166,7 +166,11 @@ class MixpanelApi {
   async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
     const userId = await getAnalyticsId();
-    return this.engage(userId, userProfileProperties);
+    return Promise.all([
+      // TODO: "$identify" track event is not necessary?
+      this.track('$identify', { $anon_distinct_id: userId }),
+      this.engage(userId, userProfileProperties),
+    ]);
   }
 
   async sendEvent(url: string, options: Options) {
