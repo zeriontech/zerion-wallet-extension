@@ -74,7 +74,6 @@ class MixpanelApi {
    */
   baseProperties?: Record<string, unknown>;
   deviceId?: string;
-  userId?: string;
   url: string;
   token: string | null;
   debugMode: boolean;
@@ -129,16 +128,9 @@ class MixpanelApi {
         time: Date.now() / 1000,
         $insert_id: crypto.randomUUID(),
         $device_id: this.deviceId,
-        distinct_id: this.userId ?? `$device:${this.deviceId}`,
+        distinct_id: values.userId ?? `$device:${this.deviceId}`,
         token: this.token,
         ...values,
-        ...(this.userId
-          ? {
-              $user_id: this.userId,
-              // duplicated user_id is a current product requirement
-              user_id: this.userId,
-            }
-          : null),
       }),
     };
 
@@ -149,21 +141,16 @@ class MixpanelApi {
     return this.sendEvent(url.toString(), { json: [payload] });
   }
 
-  async engage(userProfileProperties: Record<string, unknown>) {
+  async engage(userId: string, userProfileProperties: Record<string, unknown>) {
     const url = new URL('/engage', this.url);
     if (this.debugMode) {
       url.searchParams.append('verbose', '1');
     }
     url.searchParams.append('ip', '1');
-    if (!this.userId) {
-      // eslint-disable-next-line no-console
-      console.warn('Must not call engage() method without a user id');
-      return;
-    }
     const payload = omitNullParams({
       $device_id: this.deviceId,
-      $distinct_id: this.userId,
-      $user_id: this.userId,
+      $distinct_id: userId,
+      $user_id: userId,
       token: this.token,
       $set: userProfileProperties,
     });
@@ -178,12 +165,12 @@ class MixpanelApi {
 
   async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
-    this.userId = await getAnalyticsId();
+    const userId = await getAnalyticsId();
     const $anon_distinct_id = `$device:${this.deviceId}`;
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
       this.track('$identify', { $anon_distinct_id }),
-      this.engage(userProfileProperties),
+      this.engage(userId, userProfileProperties),
     ]);
   }
 
@@ -216,7 +203,7 @@ export async function mixpanelTrack(
   mixpanelApi.track(event, {
     ...values,
     // pass userId params cause identify function can still be in progress
-    ...(userId ? { user_id: userId, $user_id: userId } : null),
+    ...{ user_id: userId, $user_id: userId },
   });
 }
 
