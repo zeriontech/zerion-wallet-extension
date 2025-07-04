@@ -1,27 +1,17 @@
-import type {
-  ComponentPropsWithoutRef,
-  ComponentPropsWithRef,
-  ElementType,
-} from 'react';
+import type { ComponentPropsWithRef, ElementType } from 'react';
 import React from 'react';
 
 interface Props {
   padding?: React.CSSProperties['padding'];
 }
 
-export const SurfaceComponent = <As extends ElementType = 'div'>(
-  {
-    style,
-    padding,
-    as,
-    ...props
-  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
-      ref?: ComponentPropsWithRef<As>['ref'];
-    },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>
-) => {
+export const Surface = <As extends ElementType = 'div'>({
+  style,
+  padding,
+  as,
+  ...props
+}: Props & { as?: As } & ComponentPropsWithRef<As>) => {
   return React.createElement(as || 'div', {
-    ref,
     style: {
       ['--surface-border-radius']: '12px',
       ['--local-surface-background-color']:
@@ -34,7 +24,3 @@ export const SurfaceComponent = <As extends ElementType = 'div'>(
     ...props,
   });
 };
-
-export const Surface = React.forwardRef(
-  SurfaceComponent
-) as typeof SurfaceComponent;
