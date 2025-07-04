@@ -31,7 +31,7 @@ import {
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
 import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
-import { mixpanelTrack, mixpanelIdentify, mixpanelReset } from './mixpanel';
+import { mixpanelTrack, mixpanelIdentify } from './mixpanel';
 import {
   getChainBreakdown,
   getOwnedWalletsPortolio,
@@ -87,7 +87,7 @@ function trackAppEvents({ account }: { account: Account }) {
     });
     sendToMetabase('dapp_connection', params);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(account, 'DApp: DApp Connection', mixpanelParams);
+    mixpanelTrack('DApp: DApp Connection', mixpanelParams);
   });
 
   emitter.on('screenView', async (data) => {
@@ -106,7 +106,7 @@ function trackAppEvents({ account }: { account: Account }) {
       total_balance: portfolio?.total_value ?? 0,
       ...getChainBreakdown(portfolio),
     };
-    mixpanelTrack(account, 'General: Screen Viewed', mixpanelParams);
+    mixpanelTrack('General: Screen Viewed', mixpanelParams);
     statsigTrack('General: Screen Viewed', mixpanelParams);
   });
 
@@ -128,7 +128,7 @@ function trackAppEvents({ account }: { account: Account }) {
     });
     const event_name = `${buttonScope}: Button Pressed`;
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(account, event_name, mixpanelParams);
+    mixpanelTrack(event_name, mixpanelParams);
   });
 
   emitter.on('daylightAction', ({ event_name, ...data }) => {
@@ -206,7 +206,7 @@ function trackAppEvents({ account }: { account: Account }) {
         'hash',
         'wallet_address',
       ]);
-      mixpanelTrack(account, 'Transaction: Signed Transaction', mixpanelParams);
+      mixpanelTrack('Transaction: Signed Transaction', mixpanelParams);
       statsigTrack('Transaction: Signed Transaction', mixpanelParams);
     }
   );
@@ -269,7 +269,7 @@ function trackAppEvents({ account }: { account: Account }) {
       'wallet_address',
       'address',
     ]);
-    mixpanelTrack(account, 'Transaction: Signed Message', mixpanelParams);
+    mixpanelTrack('Transaction: Signed Message', mixpanelParams);
   }
 
   emitter.on('typedDataSigned', ({ typedData, ...rest }) => {
@@ -325,7 +325,7 @@ function trackAppEvents({ account }: { account: Account }) {
       active,
     });
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(account, 'Experiments: Hold Sign Button', mixpanelParams);
+    mixpanelTrack('Experiments: Hold Sign Button', mixpanelParams);
   });
 
   emitter.on('walletCreated', ({ walletContainer, origin }) => {
@@ -346,13 +346,13 @@ function trackAppEvents({ account }: { account: Account }) {
         type,
       });
       sendToMetabase('add_wallet', params);
-      mixpanelTrack(account, 'Wallet: Wallet Added', { wallet_provider, type });
+      mixpanelTrack('Wallet: Wallet Added', { wallet_provider, type });
     }
   });
 
   emitter.on('firstScreenView', async () => {
     statsigTrack('General: Launch first time');
-    mixpanelTrack(account, 'General: Launch first time', {});
+    mixpanelTrack('General: Launch first time', {});
     const gaParams = await prepareGaParams({});
     gaCollect('first_open', gaParams);
   });
@@ -403,7 +403,7 @@ function trackAppEvents({ account }: { account: Account }) {
     });
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     const event = 'General: Background Script Reloaded';
-    mixpanelTrack(account, event, mixpanelParams);
+    mixpanelTrack(event, mixpanelParams);
   });
 
   dnaServiceEmitter.on('registerError', async (error, action) => {
@@ -419,11 +419,7 @@ function trackAppEvents({ account }: { account: Account }) {
       request_name: 'cloudflare_challenge_issued',
     });
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(
-      account,
-      'General: Cloudflare Challenge Issued',
-      mixpanelParams
-    );
+    mixpanelTrack('General: Cloudflare Challenge Issued', mixpanelParams);
   });
 }
 
@@ -439,8 +435,5 @@ export function initialize({ account }: { account: Account }) {
   if (account.getUser()) {
     handleUserId();
   }
-  account.on('reset', () => {
-    mixpanelReset();
-  });
   return trackAppEvents({ account });
 }
