@@ -18,7 +18,7 @@ function AnalyticsIdFallback() {
 
 export function AnalyticsIdHandler() {
   const { data, isLoading } = useQuery({
-    queryKey: ['analyticsId'],
+    queryKey: ['getAnalyticsId'],
     queryFn: async () => {
       return (await BrowserStorage.get<string>(analyticsIdKey)) || null;
     },
