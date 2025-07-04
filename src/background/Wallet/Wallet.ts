@@ -1719,7 +1719,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     /**
      * Wait for analyticsId to be set before sending screenView event.
-     * This can happen on the first launch or suring the migration to thenew analytics ID storage
+     * This can happen on the first launch or during the migration to the new analytics ID
      */
     const analyticsId = await BrowserStorage.get<string>(analyticsIdKey);
     if (!analyticsId) {
