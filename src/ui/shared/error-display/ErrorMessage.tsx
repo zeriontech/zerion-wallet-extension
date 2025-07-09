@@ -77,8 +77,11 @@ export function ErrorMessage({ error }: { error: Error }) {
   }
   return (
     <>
-      <div
+      <Button
+        kind="ghost"
+        onClick={() => dialogRef.current?.showModal()}
         style={{
+          height: 'auto',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -101,22 +104,23 @@ export function ErrorMessage({ error }: { error: Error }) {
         >
           {parsed.display || parsed.message}
         </UIText>
-        <Button
+        {/* <Button
           kind="ghost"
           type="button"
           style={{ padding: 0, height: 'auto', color: 'var(--negative-500)' }}
           onClick={() => dialogRef.current?.showModal()}
           title="See full error message"
         >
-          <ArrowDownIcon
-            style={{
-              width: 24,
-              height: 24,
-              display: 'block',
-            }}
-          />
-        </Button>
-      </div>
+        </Button> */}
+        <ArrowDownIcon
+          style={{
+            flexShrink: 0,
+            width: 24,
+            height: 24,
+            display: 'block',
+          }}
+        />
+      </Button>
 
       <PortalToRootNode>
         <BottomSheetDialog
