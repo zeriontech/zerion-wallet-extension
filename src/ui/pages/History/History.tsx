@@ -15,7 +15,7 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+// import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { useStore } from '@store-unit/react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -23,10 +23,11 @@ import { EmptyView } from 'src/ui/components/EmptyView';
 import { NetworkBalance } from 'src/ui/pages/Overview/Positions/NetworkBalance';
 import {
   getCurrentTabsOffset,
-  getGrownTabMaxHeight,
+  // getGrownTabMaxHeight,
   offsetValues,
 } from 'src/ui/pages/Overview/getTabsOffset';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { useSpinDelay } from 'spin-delay';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -65,9 +66,11 @@ function mergeLocalAndBackendActions(
 function useMinedAndPendingAddressActions({
   chain,
   searchQuery,
+  llmSearchQuery,
 }: {
   chain: Chain | null;
   searchQuery?: string;
+  llmSearchQuery?: string;
 }) {
   const { params } = useAddressParams();
   const { networks, loadNetworkByChainId } = useNetworks();
@@ -80,7 +83,14 @@ function useMinedAndPendingAddressActions({
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery({
     // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
-    queryKey: ['pages/history', localActions, chain, searchQuery, client],
+    queryKey: [
+      'pages/history',
+      localActions,
+      chain,
+      searchQuery,
+      llmSearchQuery,
+      client,
+    ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
@@ -104,6 +114,9 @@ function useMinedAndPendingAddressActions({
       if (searchQuery) {
         items = items.filter((item) => isMatchForAllWords(searchQuery, item));
       }
+      if (llmSearchQuery) {
+        return []; // backend-only filter
+      }
       return items;
     },
     useErrorBoundary: true,
@@ -121,6 +134,10 @@ function useMinedAndPendingAddressActions({
       actions_chains:
         chain && isSupportedByBackend ? [chain.toString()] : undefined,
       actions_search_query: searchQuery,
+      // @ts-ignore in-development parameter
+      actions_llm_search_query: llmSearchQuery,
+      actions_llm_search_query_depth: llmSearchQuery ? 10000 : undefined,
+      actions_asset_types: llmSearchQuery ? ['fungible', 'nft'] : undefined,
     },
     {
       limit: 10,
@@ -203,12 +220,25 @@ export function HistoryList({
       : null;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
+  const isLlmSearch =
+    searchQuery &&
+    searchQuery.split(' ').length > 1 &&
+    !searchQuery.startsWith('\\');
   const {
     value: transactions,
-    isLoading,
+    isLoading: isLoadingActions,
     fetchMore,
     hasMore,
-  } = useMinedAndPendingAddressActions({ chain, searchQuery });
+  } = useMinedAndPendingAddressActions({
+    chain,
+    searchQuery: isLlmSearch ? undefined : searchQuery?.replace(/\\/, ''),
+    llmSearchQuery: isLlmSearch ? searchQuery : undefined,
+  });
+
+  const isLoading = useSpinDelay(isLoadingActions, {
+    delay: 0,
+    minDuration: 2000,
+  });
 
   const actionFilters = (
     <div style={{ paddingInline: 16 }}>
@@ -223,7 +253,10 @@ export function HistoryList({
           />
         ) : null}
         <ActionSearch
+          key="actions-search"
           value={searchQuery}
+          llmEffects={Boolean(isLlmSearch)}
+          llmEffectsIdle={Boolean(isLlmSearch) && !isLoading}
           onChange={setSearchQuery}
           onFocus={() => {
             window.scrollTo({
@@ -236,39 +269,54 @@ export function HistoryList({
     </div>
   );
 
-  if (!transactions?.length) {
-    return (
-      <CenteredFillViewportView
-        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-      >
-        <div style={{ position: 'absolute', width: '100%' }}>
-          {actionFilters}
-        </div>
-        {isLoading ? (
-          <ViewLoading kind="network" />
-        ) : (
-          <HistoryEmptyView
-            hasFilters={Boolean(searchQuery || selectedChain)}
-            onReset={() => {
-              setSearchQuery(undefined);
-              onChainChange(null);
-            }}
-          />
-        )}
-      </CenteredFillViewportView>
-    );
-  }
+  // if (!transactions?.length) {
+  //   return (
+  //     <CenteredFillViewportView
+  //       maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+  //     >
+  //       <div style={{ position: 'absolute', width: '100%' }}>
+  //         {actionFilters}
+  //       </div>
+  //       {isLoading ? (
+  //         <ViewLoading kind="network" />
+  //       ) : (
+  //         <HistoryEmptyView
+  //           hasFilters={Boolean(searchQuery || selectedChain)}
+  //           onReset={() => {
+  //             setSearchQuery(undefined);
+  //             onChainChange(null);
+  //           }}
+  //         />
+  //       )}
+  //     </CenteredFillViewportView>
+  //   );
+  // }
 
   return (
     <>
       {actionFilters}
       <Spacer height={16} />
-      <ActionsList
-        actions={transactions}
-        hasMore={hasMore}
-        isLoading={isLoading}
-        onLoadMore={fetchMore}
-      />
+      {isLoading && !transactions?.length ? (
+        <>
+          <Spacer height={60} />
+          <ViewLoading kind="network" />
+        </>
+      ) : !transactions?.length ? (
+        <HistoryEmptyView
+          hasFilters={Boolean(searchQuery || selectedChain)}
+          onReset={() => {
+            setSearchQuery(undefined);
+            onChainChange(null);
+          }}
+        />
+      ) : (
+        <ActionsList
+          actions={transactions}
+          hasMore={hasMore}
+          isLoading={isLoading}
+          onLoadMore={fetchMore}
+        />
+      )}
     </>
   );
 }
