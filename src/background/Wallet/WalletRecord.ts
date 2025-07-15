@@ -846,6 +846,7 @@ export class WalletRecordModel {
       showNetworkSwitchShortcut: true,
       overviewChain: '',
       configurableNonce: false,
+      configurableTransactionData: false,
       invitationBannerDismissed: false,
       recentAddresses: [],
       mintDnaBannerDismissed: false,
