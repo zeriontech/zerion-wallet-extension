@@ -43,6 +43,8 @@ interface PublicPreferences {
    * Allow to configure nonce before signing transactions
    */
   configurableNonce?: boolean;
+  /** Custom field for "data" in Send Form */
+  configurableTransactionData?: boolean;
   invitationBannerDismissed?: boolean;
   recentAddresses?: string[];
   mintDnaBannerDismissed?: boolean;

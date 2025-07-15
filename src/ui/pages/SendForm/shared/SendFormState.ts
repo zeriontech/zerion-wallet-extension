@@ -10,6 +10,7 @@ export type SendFormState = {
    * @see SendFormState.addressInputValue
    */
   to?: string;
+  data?: string; // custom data
   tokenValue?: string;
   tokenChain?: string;
   tokenAssetCode?: string;
