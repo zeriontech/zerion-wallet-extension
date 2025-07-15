@@ -168,6 +168,7 @@ export async function prepareSendData(
     gasLimit,
     nftAmount,
     nftId,
+    data,
   } = formState;
   if (!from || !to || !tokenChain) {
     return EMPTY_SEND_DATA;
@@ -240,6 +241,9 @@ export async function prepareSendData(
         defaultBlock: 'pending',
       });
       nonce = String(latestNonce);
+    }
+    if (data) {
+      tx = { ...tx, data };
     }
     tx = await applyConfigurationAsync({
       chain,
