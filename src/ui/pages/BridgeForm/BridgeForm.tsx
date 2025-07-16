@@ -92,6 +92,8 @@ import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { useUKDetection } from 'src/ui/components/UKDisclaimer/useUKDetection';
+import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -744,6 +746,7 @@ function BridgeFormComponent() {
   }, []);
 
   const navigate = useNavigate();
+  const { isUK } = useUKDetection();
 
   const formRef = useRef<HTMLFormElement | null>(null);
   const { innerHeight } = useWindowSizeStore();
@@ -1090,6 +1093,12 @@ function BridgeFormComponent() {
             />
           ) : null}
         </VStack>
+        {isUK ? (
+          <>
+            <UKDisclaimer />
+            <Spacer height={8} />
+          </>
+        ) : null}
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
         <HiddenValidationInput

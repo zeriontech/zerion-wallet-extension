@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getStatsigExperiment } from './shared';
+import { getStatsigExperiment, getStatsigFeatureGate } from './shared';
 
 export function useStatsigExperiment(
   name: string,
@@ -15,6 +15,25 @@ export function useStatsigExperiment(
     queryKey: ['getStatsigExperiment', name],
     queryFn: () => getStatsigExperiment(name),
     staleTime: Infinity, // never refetch experiment status while UI is open
+    enabled,
+    suspense,
+  });
+}
+
+export function useStatsigFeatureGate(
+  name: string,
+  {
+    suspense = false,
+    enabled = true,
+  }: {
+    suspense?: boolean;
+    enabled?: boolean;
+  } = {}
+) {
+  return useQuery({
+    queryKey: ['getStatsigFeatureGate', name],
+    queryFn: () => getStatsigFeatureGate(name),
+    staleTime: Infinity, // never refetch feature gate status while UI is open
     enabled,
     suspense,
   });

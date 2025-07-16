@@ -92,6 +92,8 @@ import type { SignTransactionResult } from 'src/shared/types/SignTransactionResu
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { Networks } from 'src/modules/networks/Networks';
+import { useUKDetection } from 'src/ui/components/UKDisclaimer/useUKDetection';
+import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
@@ -604,6 +606,7 @@ function SwapFormComponent() {
   }, []);
 
   const navigate = useNavigate();
+  const { isUK } = useUKDetection();
 
   if (sendTransactionMutation.isSuccess) {
     const result = sendTransactionMutation.data;
@@ -959,6 +962,12 @@ function SwapFormComponent() {
             </HStack>
           ) : null}
         </VStack>
+        {isUK ? (
+          <>
+            <UKDisclaimer />
+            <Spacer height={8} />
+          </>
+        ) : null}
         {selectedQuote?.error?.message ? (
           <TransactionWarning
             title="Warning"
