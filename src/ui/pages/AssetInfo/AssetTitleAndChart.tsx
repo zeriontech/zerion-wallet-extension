@@ -152,14 +152,11 @@ export function AssetTitleAndChart({
           <VStack gap={0}>
             <HStack gap={8} alignItems="end">
               <UIText kind="headline/hero" ref={priceElementRef} />
-              {asset.meta.relativeChange1d != null ? (
-                <UIText
-                  kind="body/accent"
-                  color={getColor(asset.meta.relativeChange1d)}
-                  style={{ paddingBottom: 4 }}
-                  ref={priceChangeElementRef}
-                />
-              ) : null}
+              <UIText
+                kind="body/accent"
+                style={{ paddingBottom: 4 }}
+                ref={priceChangeElementRef}
+              />
             </HStack>
             <UIText
               kind="caption/regular"
