@@ -64,9 +64,10 @@ import {
   SecurityStatusBackground,
 } from 'src/ui/shared/security-check';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { getError } from 'get-error';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { PopoverToast } from '../Settings/PopoverToast';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
-import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 enum View {
@@ -412,9 +413,7 @@ function TypedDataDefaultView({
             gap={8}
           >
             {signTypedData_v4Mutation.isError ? (
-              <UIText kind="caption/regular" color="var(--negative-500)">
-                {txErrorToMessage(signTypedData_v4Mutation.error)}
-              </UIText>
+              <ErrorMessage error={getError(signTypedData_v4Mutation.error)} />
             ) : null}
             <div
               style={{

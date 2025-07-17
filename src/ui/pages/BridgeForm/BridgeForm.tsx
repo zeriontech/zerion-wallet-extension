@@ -92,9 +92,10 @@ import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import { getError } from 'get-error';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
-import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
 import { getPopularTokens } from '../SwapForm/shared/getPopularTokens';
 import { usePosition } from '../SwapForm/shared/usePosition';
@@ -1138,11 +1139,9 @@ function BridgeFormComponent() {
               form={formId}
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
-              <UIText kind="body/regular" color="var(--negative-500)">
-                {approveMutation.isError
-                  ? txErrorToMessage(approveMutation.error)
-                  : null}
-              </UIText>
+              {approveMutation.isError ? (
+                <ErrorMessage error={getError(approveMutation.error)} />
+              ) : null}
               {wallet ? (
                 <SignTransactionButton
                   ref={approveTxBtnRef}
@@ -1167,11 +1166,9 @@ function BridgeFormComponent() {
               form={formId}
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
-              <UIText kind="body/regular" color="var(--negative-500)">
-                {sendTransactionMutation.isError
-                  ? txErrorToMessage(sendTransactionMutation.error)
-                  : null}
-              </UIText>
+              {sendTransactionMutation.isError ? (
+                <ErrorMessage error={getError(sendTransactionMutation.error)} />
+              ) : null}
               {wallet ? (
                 <FormHint
                   formState={formState}

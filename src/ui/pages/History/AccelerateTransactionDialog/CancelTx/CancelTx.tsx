@@ -33,13 +33,13 @@ import { getError } from 'src/shared/errors/getError';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { wait } from 'src/shared/wait';
 import { usePreferences } from 'src/ui/features/preferences';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
 } from '../../../SendTransaction/TransactionConfiguration/applyConfiguration';
-import { txErrorToMessage } from '../../../SendTransaction/shared/transactionErrorToMessage';
 import {
   createCancelTransaction,
   increaseGasPrices,
@@ -196,9 +196,7 @@ function CancelTxContent({
           </div>
         </VStack>
         <VStack gap={8} style={{ textAlign: 'center' }}>
-          <UIText kind="body/regular" color="var(--negative-500)">
-            {isError ? txErrorToMessage(error) : null}
-          </UIText>
+          {isError ? <ErrorMessage error={getError(error)} /> : null}
           <div
             style={{
               display: 'grid',
