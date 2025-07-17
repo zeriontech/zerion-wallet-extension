@@ -166,7 +166,7 @@ class MixpanelApi {
   async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
     const userId = await getAnalyticsId();
-    const $anon_distinct_id = await deviceIdStore.getSavedState();
+    const $anon_distinct_id = this.deviceId;
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
       // $identify event can help to merge users if event is sent before actual user ID is known

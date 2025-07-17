@@ -1,4 +1,6 @@
+import browser from 'webextension-polyfill';
 import { BrowserStorage } from 'src/background/webapis/storage';
+import { wait } from '../wait';
 import { deviceIdStore } from './shared/DeviceIdStore';
 
 /**
@@ -23,4 +25,31 @@ export async function getAnalyticsId() {
     (await BrowserStorage.get<string>(analyticsIdKey)) ||
     (await deviceIdStore.getSavedState())
   );
+}
+
+function onAnalyticsIdSet(callback: () => void) {
+  browser.storage.onChanged.addListener((changes, _namespace) => {
+    if (analyticsIdKey in changes) {
+      const newValue = changes[analyticsIdKey].newValue;
+      if (newValue) {
+        callback();
+      }
+    }
+  });
+}
+
+export async function waitForAnalyticsIdSet() {
+  /**
+   * Helper to wait for analyticsId to be set before sending screenView event.
+   * This can happen on the first launch or during the migration to the new analytics ID
+   */
+  const analyticsId = await BrowserStorage.get<string>(analyticsIdKey);
+  if (!analyticsId) {
+    await Promise.race([
+      wait(5000),
+      new Promise<void>((resolve) => {
+        onAnalyticsIdSet(resolve);
+      }),
+    ]);
+  }
 }

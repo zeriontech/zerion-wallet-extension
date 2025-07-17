@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { BrowserStorage } from 'src/background/webapis/storage';
 import { analyticsIdKey } from 'src/shared/analytics/analyticsId';
-import { setAnalyticsIdIfNeeded } from 'src/shared/analytics/analyticsId.client';
+import { setAnalyticsId } from 'src/shared/analytics/analyticsId.client';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
 import { WebAppMessageHandler } from 'src/ui/features/referral-program/WebAppMessageHandler';
@@ -31,7 +31,7 @@ export function AnalyticsIdHandler() {
           isObj(params) && typeof params.userId === 'string',
           'Got invalid payload from set-referral-code web app message'
         );
-        setAnalyticsIdIfNeeded(params.userId);
+        setAnalyticsId(params.userId);
       }}
       hidden={true}
     />

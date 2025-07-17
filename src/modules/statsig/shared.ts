@@ -49,17 +49,14 @@ export async function getStatsigExperiment(name: string) {
 }
 
 export async function getStatsigFeatureGate(name: string) {
-  const user = await getCurrentUser();
-  if (!user) {
-    return { name, value: false };
-  }
+  const userId = await getAnalyticsId();
   return ky
     .post('https://api.statsig.com/v1/check_gate', {
       headers: {
         'statsig-api-key': STATSIG_API_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user: { userID: user.id }, gateName: name }),
+      body: JSON.stringify({ user: { userID: userId }, gateName: name }),
     })
     .json<{ name: string; value: boolean }>();
 }

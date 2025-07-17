@@ -80,5 +80,4 @@ export const emitter = createNanoEvents<{
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
   cloudflareChallengeIssued: () => void;
-  analyticsIdSet: () => void;
 }>();

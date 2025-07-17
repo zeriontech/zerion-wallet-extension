@@ -38,6 +38,7 @@ import {
 } from './shared/mixpanel-data-helpers';
 import { omitNullParams } from './shared/omitNullParams';
 import { gaCollect, prepareGaParams } from './google-analytics';
+import { waitForAnalyticsIdSet } from './analyticsId';
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -91,6 +92,7 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('screenView', async (data) => {
+    await waitForAnalyticsIdSet();
     const params = createParams({
       request_name: 'screen_view',
       wallet_address: data.address,
@@ -111,6 +113,7 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('screenView', async (params) => {
+    await waitForAnalyticsIdSet();
     const gaParams = await prepareGaParams({
       page_title: params.title,
       page_location: params.pathname,
