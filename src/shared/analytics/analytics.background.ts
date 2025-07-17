@@ -354,6 +354,7 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('firstScreenView', async () => {
+    await waitForAnalyticsIdSet();
     statsigTrack('General: Launch first time');
     mixpanelTrack('General: Launch first time', {});
     const gaParams = await prepareGaParams({});

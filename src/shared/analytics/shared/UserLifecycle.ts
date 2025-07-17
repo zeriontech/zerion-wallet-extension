@@ -1,6 +1,5 @@
 import { emitter } from 'src/background/events';
 import { PersistentStore } from 'src/modules/persistent-store';
-import { waitForAnalyticsIdSet } from '../analyticsId';
 
 interface State {
   installedEvent: null | number;
@@ -25,7 +24,6 @@ class UserLifecycleStore extends PersistentStore<State> {
 
     emitter.on('screenView', async () => {
       await this.ready();
-      await waitForAnalyticsIdSet();
       this.setState((state) => {
         if (state.installedEvent == null) {
           return state;
