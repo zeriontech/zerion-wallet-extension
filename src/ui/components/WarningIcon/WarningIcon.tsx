@@ -14,8 +14,8 @@ const colors = {
   },
   neutral: {
     color: 'var(--black)',
-    glowColor: 'var(--neutral-400)',
-    innerGlowColor: 'var(--neutral-200)',
+    glowColor: 'var(--neutral-300)',
+    innerGlowColor: 'var(--neutral-300)',
   },
 } as const;
 
