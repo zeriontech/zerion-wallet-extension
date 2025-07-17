@@ -58,7 +58,7 @@ export async function getStatsigExperiment(name: string) {
 export async function getStatsigFeatureGate(name: string) {
   const user = await getCurrentUser();
   if (!user) {
-    return false;
+    return { name, value: false };
   }
   return ky
     .post('https://api.statsig.com/v1/check_gate', {
@@ -68,5 +68,5 @@ export async function getStatsigFeatureGate(name: string) {
       },
       body: JSON.stringify({ user: { userID: user.id }, gateName: name }),
     })
-    .json<{ gateName: string; value: boolean }>();
+    .json<{ name: string; value: boolean }>();
 }
