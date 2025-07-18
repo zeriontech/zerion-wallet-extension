@@ -1,0 +1,1 @@
+export { XpDropClaim } from './XpDropClaim';
