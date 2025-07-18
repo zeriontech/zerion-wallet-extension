@@ -39,10 +39,6 @@ function onAnalyticsIdSet(callback: () => void) {
 }
 
 export async function waitForAnalyticsIdSet() {
-  /**
-   * Helper to wait for analyticsId to be set before sending screenView event.
-   * This can happen on the first launch or during the migration to the new analytics ID
-   */
   const analyticsId = await BrowserStorage.get<string>(analyticsIdKey);
   if (!analyticsId) {
     await Promise.race([
