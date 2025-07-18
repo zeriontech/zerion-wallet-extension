@@ -20,7 +20,7 @@ export function DelayedRender({
   const render = useRenderDelay(delay);
 
   if (render) {
-    return children as JSX.Element;
+    return children as React.ReactNode;
   } else {
     return null;
   }

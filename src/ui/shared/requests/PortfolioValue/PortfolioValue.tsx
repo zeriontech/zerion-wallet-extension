@@ -10,7 +10,7 @@ export function PortfolioValue({
 }: {
   address: string;
   enabled?: boolean;
-  render: (value: ReturnType<typeof useWalletPortfolio>) => JSX.Element;
+  render: (value: ReturnType<typeof useWalletPortfolio>) => React.ReactNode;
 }) {
   const { currency } = useCurrency();
   const query = useWalletPortfolio(

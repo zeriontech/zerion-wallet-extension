@@ -52,6 +52,6 @@ export function WithPasswordSession({
       </Background>
     );
   } else {
-    return children as JSX.Element;
+    return children as React.ReactNode;
   }
 }
