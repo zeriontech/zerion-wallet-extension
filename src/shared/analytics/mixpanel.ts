@@ -7,6 +7,7 @@ import { Loglevel, logTable, logToConsole } from '../logger';
 import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
 import { deviceIdStore } from './shared/DeviceIdStore';
 import { omitNullParams } from './shared/omitNullParams';
+import { getAnalyticsId } from './analyticsId';
 
 const mixPanelToken = MIXPANEL_TOKEN_PUBLIC;
 
@@ -24,7 +25,7 @@ class MixpanelApi {
    * They include $device_id, $user_id, distinct_id, $insert_id
    * $device_id is persisted for current device
    * $user_id is sent when its known
-   * distinct_id is equal to "$device:<$device_id>" before $user_id is known,
+   * distinct_id is equal to $device_id before $user_id is known,
    *              and equal to $user_id when $user_id is known
    * $insert_id is always unique per new request
    *
@@ -35,7 +36,7 @@ class MixpanelApi {
    * {
        event: "$identify",
        properties: {
-         $anon_distinct_id: "$device:<$device_id>",
+         $anon_distinct_id: $device_id,
          $user_id: "user-id",
          distinct_id: "user-id",
          ..., // base properties
@@ -73,7 +74,6 @@ class MixpanelApi {
    */
   baseProperties?: Record<string, unknown>;
   deviceId?: string;
-  userId?: string;
   url: string;
   token: string | null;
   debugMode: boolean;
@@ -128,16 +128,9 @@ class MixpanelApi {
         time: Date.now() / 1000,
         $insert_id: crypto.randomUUID(),
         $device_id: this.deviceId,
-        distinct_id: this.userId ?? `$device:${this.deviceId}`,
+        distinct_id: values.userId,
         token: this.token,
         ...values,
-        ...(this.userId
-          ? {
-              $user_id: this.userId,
-              // duplicated user_id is a current product requirement
-              user_id: this.userId,
-            }
-          : null),
       }),
     };
 
@@ -148,21 +141,16 @@ class MixpanelApi {
     return this.sendEvent(url.toString(), { json: [payload] });
   }
 
-  async engage(userProfileProperties: Record<string, unknown>) {
+  async engage(userId: string, userProfileProperties: Record<string, unknown>) {
     const url = new URL('/engage', this.url);
     if (this.debugMode) {
       url.searchParams.append('verbose', '1');
     }
     url.searchParams.append('ip', '1');
-    if (!this.userId) {
-      // eslint-disable-next-line no-console
-      console.warn('Must not call engage() method without a user id');
-      return;
-    }
     const payload = omitNullParams({
       $device_id: this.deviceId,
-      $distinct_id: this.userId,
-      $user_id: this.userId,
+      $distinct_id: userId,
+      $user_id: userId,
       token: this.token,
       $set: userProfileProperties,
     });
@@ -175,17 +163,16 @@ class MixpanelApi {
     return this.sendEvent(url.toString(), { json: [payload] });
   }
 
-  async identify(
-    userId: string,
-    userProfileProperties: Record<string, unknown>
-  ) {
+  async identify(userProfileProperties: Record<string, unknown>) {
     await this.ready();
-    this.userId = userId;
-    const $anon_distinct_id = `$device:${this.deviceId}`;
+    const userId = await getAnalyticsId();
+    const $anon_distinct_id = this.deviceId;
     return Promise.all([
       // TODO: "$identify" track event is not necessary?
+      // $identify event can help to merge users if event is sent before actual user ID is known
+      // and device ID is used instead
       this.track('$identify', { $anon_distinct_id }),
-      this.engage(userProfileProperties),
+      this.engage(userId, userProfileProperties),
     ]);
   }
 
@@ -193,12 +180,6 @@ class MixpanelApi {
     if (this.token != null && this.sendRequestsOverTheNetwork) {
       return ky.post(url, options);
     }
-  }
-
-  reset() {
-    // we're not resetting "super" properties because in our case
-    // they're not user-specific
-    this.userId = undefined;
   }
 }
 
@@ -217,33 +198,24 @@ mixpanelApi.setBaseProperties({
 });
 
 export async function mixpanelTrack(
-  account: Account,
   event: string,
   values: Record<string, unknown>
 ) {
-  const userId = account.getUser()?.id;
+  const userId = await getAnalyticsId();
   mixpanelApi.track(event, {
     ...values,
     // pass userId params cause identify function can still be in progress
-    ...(userId ? { user_id: userId, $user_id: userId } : null),
+    ...{ user_id: userId, $user_id: userId },
   });
 }
 
 export async function mixpanelIdentify(account: Account) {
-  const userId = account.getUser()?.id;
-  if (!userId) {
-    return;
-  }
   try {
     const userProfileProperties = await getBaseMixpanelParams(account);
-    return mixpanelApi.identify(userId, userProfileProperties);
+    return mixpanelApi.identify(userProfileProperties);
   } catch (e) {
     // TODO: setup "error" event in background emitter and send errors to metabase
     // eslint-disable-next-line no-console
     console.warn('Failed to identify (mixpanel)', e);
   }
-}
-
-export async function mixpanelReset() {
-  mixpanelApi.reset();
 }

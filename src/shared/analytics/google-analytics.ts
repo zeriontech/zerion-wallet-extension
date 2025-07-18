@@ -5,10 +5,10 @@ import {
 import type { Options } from 'ky';
 import ky from 'ky';
 import { version } from 'src/shared/packageVersion';
-import type { Account } from 'src/background/account/Account';
 import { Loglevel, logTable, logToConsole } from '../logger';
 import { deviceIdStore } from './shared/DeviceIdStore';
 import { omitNullParams } from './shared/omitNullParams';
+import { getAnalyticsId } from './analyticsId';
 
 if (!GOOGLE_ANALYTICS_API_SECRET) {
   // eslint-disable-next-line no-console
@@ -158,11 +158,10 @@ interface GoogleAnalyticsParams {
   sessionId: string | null;
 }
 
-export function prepareGaParams(
-  account: Account,
+export async function prepareGaParams(
   params: Record<string, unknown>
-): GoogleAnalyticsParams {
-  const userId = account.getUser()?.id;
+): Promise<GoogleAnalyticsParams> {
+  const userId = await getAnalyticsId();
   return {
     params: {
       ...params,
