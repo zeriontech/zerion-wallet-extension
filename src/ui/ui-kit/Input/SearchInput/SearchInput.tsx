@@ -4,9 +4,9 @@ import type { InputProps } from '../Input';
 import { Input } from '../Input';
 
 export const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
-  (props, ref) => {
+  ({ style, ...props }, ref) => {
     return (
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', ...style }}>
         <SearchIcon
           role="presentation"
           style={{
