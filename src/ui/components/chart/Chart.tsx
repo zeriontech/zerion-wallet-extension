@@ -248,11 +248,15 @@ export function Chart<T>({
               endRangeIndexRef.current =
                 chart.getActiveElements()[0]?.index ?? null;
             }
-            if (
-              args.event.type === 'mouseout' ||
-              args.event.type === 'mouseup'
-            ) {
+            if (args.event.type === 'mouseout') {
               endRangeIndexRef.current = null;
+              startRangeIndexRef.current = null;
+              startRangeXRef.current = null;
+            }
+            // chart is still hovered so we shouldn't reset the end of the range
+            if (args.event.type === 'mouseup') {
+              endRangeIndexRef.current =
+                chart.getActiveElements()[0]?.index ?? null;
               startRangeIndexRef.current = null;
               startRangeXRef.current = null;
             }
