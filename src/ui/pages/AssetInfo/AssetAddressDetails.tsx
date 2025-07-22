@@ -408,9 +408,9 @@ function AssetAppDistribution({
       {walletAssetDetails.apps?.map((app) => (
         <UnstyledAnchor
           key={app.app.id}
-          href={app.app.url || ''}
+          href={app.app.url || undefined}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="parent-hover"
           style={{
             width: '100%',
