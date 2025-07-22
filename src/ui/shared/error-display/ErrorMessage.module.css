@@ -1,0 +1,16 @@
+.errorButton {
+  cursor: pointer;
+  background-color: transparent;
+  border: 1px solid var(--negative-300);
+  padding-block: 11px;
+  padding-inline: 15px;
+  border-radius: 1000px;
+  color: var(--negative-500);
+}
+
+@media (hover: hover) {
+  .errorButton:enabled:hover {
+    background-color: var(--negative-100);
+    border-color: var(--negative-400);
+  }
+}

@@ -16,6 +16,7 @@ import { useCopyToClipboard } from '../useCopyToClipboard';
 import type { ParsedError } from './parseError';
 import { parseError } from './parseError';
 import { samples } from './samples';
+import * as styles from './ErrorMessage.module.css';
 
 function ErrorDetails({ error }: { error: ParsedError }) {
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: error.message });
@@ -77,19 +78,13 @@ export function ErrorMessage({ error }: { error: Error }) {
   }
   return (
     <>
-      <Button
-        kind="ghost"
+      <button
         onClick={() => dialogRef.current?.showModal()}
+        className={styles.errorButton}
         style={{
-          height: 'auto',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          border: '1px solid var(--negative-300)',
-          paddingBlock: 11,
-          paddingInline: 15,
-          borderRadius: 1000,
-          color: 'var(--negative-500)',
         }}
       >
         <UIText
@@ -104,14 +99,6 @@ export function ErrorMessage({ error }: { error: Error }) {
         >
           {parsed.display || parsed.message}
         </UIText>
-        {/* <Button
-          kind="ghost"
-          type="button"
-          style={{ padding: 0, height: 'auto', color: 'var(--negative-500)' }}
-          onClick={() => dialogRef.current?.showModal()}
-          title="See full error message"
-        >
-        </Button> */}
         <ArrowDownIcon
           style={{
             flexShrink: 0,
@@ -120,7 +107,7 @@ export function ErrorMessage({ error }: { error: Error }) {
             display: 'block',
           }}
         />
-      </Button>
+      </button>
 
       <PortalToRootNode>
         <BottomSheetDialog
