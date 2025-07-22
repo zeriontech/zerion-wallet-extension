@@ -59,5 +59,11 @@
     "storage",
     "unlimitedStorage"
   ],
-  "host_permissions": ["http://*/*", "https://*/*"]
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "master@zerion.io",
+      "strict_min_version": "120.0"
+    }
+  }
 }
