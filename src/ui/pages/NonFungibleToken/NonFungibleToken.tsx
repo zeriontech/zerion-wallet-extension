@@ -24,7 +24,8 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
-import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import { getError } from 'get-error';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
@@ -183,9 +184,7 @@ export function NonFungibleToken() {
             {nftTags.has('#dna') ? (
               <VStack gap={8}>
                 {promoteTokenMutation.isError ? (
-                  <UIText kind="body/regular" color="var(--negative-500)">
-                    {txErrorToMessage(promoteTokenMutation.error)}
-                  </UIText>
+                  <ErrorMessage error={getError(promoteTokenMutation.error)} />
                 ) : null}
                 {!wallet ? null : isPrimary ? (
                   <Button disabled={true}>Active</Button>

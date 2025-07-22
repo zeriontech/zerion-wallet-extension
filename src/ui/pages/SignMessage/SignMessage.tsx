@@ -41,7 +41,8 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { txErrorToMessage } from '../SendTransaction/shared/transactionErrorToMessage';
+import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import { getError } from 'get-error';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 
@@ -275,9 +276,7 @@ function SignMessageContent({
           gap={8}
         >
           {confirmMutation.isError ? (
-            <UIText kind="caption/regular" color="var(--negative-500)">
-              {txErrorToMessage(confirmMutation.error)}
-            </UIText>
+            <ErrorMessage error={getError(confirmMutation.error)} />
           ) : null}
 
           <div
