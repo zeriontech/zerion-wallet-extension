@@ -560,14 +560,22 @@ function AssetPremiumAddressShortStats({
   assetAddressPnlQuery: AssetAddressPnlQuery;
 }) {
   const { currency } = useCurrency();
+  const title = walletAssetDetails.totalConvertedQuantity
+    ? 'Unrealised PnL'
+    : 'Realised PnL';
+  const pnlRaw =
+    (walletAssetDetails.totalConvertedQuantity
+      ? assetAddressPnlQuery.data?.data.unrealizedPnl
+      : assetAddressPnlQuery.data?.data.realizedPnl) || 0;
+  const relativePnLRaw =
+    (walletAssetDetails.totalConvertedQuantity
+      ? assetAddressPnlQuery.data?.data.relativeUnrealizedPnl
+      : assetAddressPnlQuery.data?.data.relativeRealizedPnl) || 0;
 
-  const unrealizedGainRaw = assetAddressPnlQuery.data?.data.unrealizedPnl || 0;
-  const relativeUnrealizedGainRaw =
-    assetAddressPnlQuery.data?.data.relativeUnrealizedPnl || 0;
-  const unrealizedGainFormatted = `${getSign(unrealizedGainRaw)}${formatPercent(
-    Math.abs(relativeUnrealizedGainRaw) * 100,
+  const unrealizedGainFormatted = `${getSign(pnlRaw)}${formatPercent(
+    Math.abs(relativePnLRaw) * 100,
     'en'
-  )}% (${formatCurrencyValue(Math.abs(unrealizedGainRaw), 'en', currency)})`;
+  )}% (${formatCurrencyValue(Math.abs(pnlRaw), 'en', currency)})`;
 
   return walletAssetDetails.totalValue ? (
     <HStack
@@ -579,12 +587,12 @@ function AssetPremiumAddressShortStats({
     >
       <VStack gap={4}>
         <UIText kind="caption/regular" color="var(--neutral-500)">
-          Unrealised PnL
+          {title}
         </UIText>
         {assetAddressPnlQuery.isLoading ? (
           <LoadingSkeleton />
         ) : (
-          <UIText kind="headline/h3" color={getColor(unrealizedGainRaw)}>
+          <UIText kind="headline/h3" color={getColor(pnlRaw)}>
             {unrealizedGainFormatted}
           </UIText>
         )}
@@ -757,21 +765,22 @@ export function AssetAddressStats({
               />
             </HStack>
           </UnstyledLink>
-          {walletAssetDetails.totalConvertedQuantity === 0 ? (
-            <>
-              {assetAddressPnlQuery.data?.data.bought === 0 ? null : (
-                <UIText kind="headline/h2" color="var(--neutral-500)">
-                  {isUntrackedAsset
-                    ? 'N/A'
-                    : formatCurrencyValue(0, 'en', currency)}
+
+          <VStack gap={12}>
+            {walletAssetDetails.totalConvertedQuantity === 0 ? (
+              <VStack gap={4}>
+                {assetAddressPnlQuery.data?.data.bought === 0 ? null : (
+                  <UIText kind="headline/h2" color="var(--neutral-500)">
+                    {isUntrackedAsset
+                      ? 'N/A'
+                      : formatCurrencyValue(0, 'en', currency)}
+                  </UIText>
+                )}
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  {formatTokenValue(0, asset.symbol)}
                 </UIText>
-              )}
-              <UIText kind="small/regular" color="var(--neutral-500)">
-                {formatTokenValue(0, asset.symbol)}
-              </UIText>
-            </>
-          ) : (
-            <VStack gap={12}>
+              </VStack>
+            ) : (
               <VStack gap={4}>
                 <UIText
                   kind="headline/h1"
@@ -796,36 +805,35 @@ export function AssetAddressStats({
                   )}
                 </UIText>
               </VStack>
-              {premiumStatus.isLoading ? (
-                <Spacer height={44} />
-              ) : premiumStatus.isPremium && pnlIsSupported ? (
-                <AssetPremiumAddressShortStats
-                  assetAddressPnlQuery={assetAddressPnlQuery}
-                  walletAssetDetails={walletAssetDetails}
-                />
-              ) : (
-                <AssetRegularAddressShortStats
-                  premiumStatus={premiumStatus}
-                  assetFullInfo={assetFullInfo}
-                  walletAssetDetails={walletAssetDetails}
-                />
-              )}
-              {isUntrackedAsset ? null : (
-                <Button
-                  kind="neutral"
-                  size={48}
-                  onClick={() => dialogRef.current?.showModal()}
-                  style={{
-                    ['--button-background' as string]: 'var(--neutral-200)',
-                    ['--button-background-hover' as string]:
-                      'var(--neutral-300)',
-                  }}
-                >
-                  <UIText kind="body/accent"> More Details</UIText>
-                </Button>
-              )}
-            </VStack>
-          )}
+            )}
+            {premiumStatus.isLoading ? (
+              <Spacer height={44} />
+            ) : premiumStatus.isPremium && pnlIsSupported ? (
+              <AssetPremiumAddressShortStats
+                assetAddressPnlQuery={assetAddressPnlQuery}
+                walletAssetDetails={walletAssetDetails}
+              />
+            ) : (
+              <AssetRegularAddressShortStats
+                premiumStatus={premiumStatus}
+                assetFullInfo={assetFullInfo}
+                walletAssetDetails={walletAssetDetails}
+              />
+            )}
+            {isUntrackedAsset ? null : (
+              <Button
+                kind="neutral"
+                size={48}
+                onClick={() => dialogRef.current?.showModal()}
+                style={{
+                  ['--button-background' as string]: 'var(--neutral-200)',
+                  ['--button-background-hover' as string]: 'var(--neutral-300)',
+                }}
+              >
+                <UIText kind="body/accent"> More Details</UIText>
+              </Button>
+            )}
+          </VStack>
         </VStack>
       </VStack>
       <CenteredDialog
