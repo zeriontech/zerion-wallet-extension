@@ -541,8 +541,12 @@ function AssetImplementationsDialogContent({
           pnlIsSupported={pnlIsSupported}
         />
         <Line />
-        <AssetNetworkDistribution walletAssetDetails={walletAssetDetails} />
-        <Line />
+        {walletAssetDetails.chainsDistribution?.length ? (
+          <>
+            <AssetNetworkDistribution walletAssetDetails={walletAssetDetails} />
+            <Line />
+          </>
+        ) : null}
         <AssetAppDistribution
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletAssetDetails}
