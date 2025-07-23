@@ -824,7 +824,8 @@ export function AssetAddressStats({
                 walletAssetDetails={walletAssetDetails}
               />
             )}
-            {isUntrackedAsset ? null : (
+            {isUntrackedAsset ||
+            assetAddressPnlQuery.data?.data.bought === 0 ? null : (
               <Button
                 kind="neutral"
                 size={48}
