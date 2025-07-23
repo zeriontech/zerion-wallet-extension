@@ -393,6 +393,86 @@ function AssetNetworkDistribution({
   );
 }
 
+function AssetAddressApp({
+  app,
+  assetFullInfo,
+}: {
+  app: NonNullable<WalletAssetDetails['apps']>[number];
+  assetFullInfo: AssetFullInfo;
+}) {
+  const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
+  const { currency } = useCurrency();
+
+  return (
+    <HStack gap={12} alignItems="center">
+      {app.app.id === DEFAULT_APP_ID ? (
+        <WalletIcon style={{ width: 36, height: 36 }} />
+      ) : (
+        <TokenIcon
+          src={app.app.iconUrl}
+          symbol={app.app.name}
+          size={36}
+          style={{ borderRadius: 8 }}
+        />
+      )}
+      <VStack gap={0}>
+        <HStack gap={4} alignItems="center">
+          <UIText kind="small/regular" color="var(--nuetral-800)">
+            {app.app.name}
+          </UIText>
+          <UIText kind="caption/regular" color="var(--neutral-500)">
+            {`${middot} ${formatPercent(app.percentageAllocation, 'en')}%`}
+          </UIText>
+        </HStack>
+        <HStack gap={4} alignItems="center">
+          {app.chains.length === 1 ? (
+            <img
+              src={app.chains[0].iconUrl}
+              alt={app.chains[0].name}
+              width={16}
+              height={16}
+            />
+          ) : (
+            <ChainsIcon style={{ width: 16, height: 16 }} />
+          )}
+          {isUntrackedAsset ? (
+            <UIText kind="body/accent">
+              {formatTokenValue(
+                app.convertedQuantity,
+                assetFullInfo.fungible.symbol,
+                {
+                  notation:
+                    app.convertedQuantity > 100000 ? 'compact' : undefined,
+                }
+              )}
+            </UIText>
+          ) : (
+            <>
+              <UIText kind="body/accent">
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(app.value, 'en', currency)}
+                />
+              </UIText>
+              <UIText kind="body/regular" color="var(--neutral-500)">
+                (
+                {formatTokenValue(
+                  app.convertedQuantity,
+                  assetFullInfo.fungible.symbol,
+                  {
+                    notation:
+                      app.convertedQuantity > 100000 ? 'compact' : undefined,
+                  }
+                )}
+                )
+              </UIText>
+            </>
+          )}
+        </HStack>
+      </VStack>
+    </HStack>
+  );
+}
+
 function AssetAppDistribution({
   assetFullInfo,
   walletAssetDetails,
@@ -400,106 +480,31 @@ function AssetAppDistribution({
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
 }) {
-  const { currency } = useCurrency();
-  const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
-
   return (
     <VStack gap={16}>
-      {walletAssetDetails.apps?.map((app) => (
-        <UnstyledAnchor
-          key={app.app.id}
-          href={app.app.url || ''}
-          target="_blank"
-          rel="noreferrer"
-          className="parent-hover"
-          style={{
-            width: '100%',
-            ['--parent-content-color' as string]: 'var(--neutral-500)',
-            ['--parent-hovered-content-color' as string]: 'var(--black)',
-          }}
-        >
-          <HStack gap={12} justifyContent="space-between" alignItems="center">
-            <HStack gap={12} alignItems="center">
-              {app.app.id === DEFAULT_APP_ID ? (
-                <WalletIcon style={{ width: 36, height: 36 }} />
-              ) : (
-                <TokenIcon
-                  src={app.app.iconUrl}
-                  symbol={app.app.name}
-                  size={36}
-                  style={{ borderRadius: 8 }}
-                />
-              )}
-              <VStack gap={0}>
-                <HStack gap={4} alignItems="center">
-                  <UIText kind="small/regular" color="var(--nuetral-800)">
-                    {app.app.name}
-                  </UIText>
-                  <UIText kind="caption/regular" color="var(--neutral-500)">
-                    {`${middot} ${formatPercent(
-                      app.percentageAllocation,
-                      'en'
-                    )}%`}
-                  </UIText>
-                </HStack>
-                <HStack gap={4} alignItems="center">
-                  {app.chains.length === 1 ? (
-                    <img
-                      src={app.chains[0].iconUrl}
-                      alt={app.chains[0].name}
-                      width={16}
-                      height={16}
-                    />
-                  ) : (
-                    <ChainsIcon style={{ width: 16, height: 16 }} />
-                  )}
-                  {isUntrackedAsset ? (
-                    <UIText kind="body/accent">
-                      {formatTokenValue(
-                        app.convertedQuantity,
-                        assetFullInfo.fungible.symbol,
-                        {
-                          notation:
-                            app.convertedQuantity > 100000
-                              ? 'compact'
-                              : undefined,
-                        }
-                      )}
-                    </UIText>
-                  ) : (
-                    <>
-                      <UIText kind="body/accent">
-                        <NeutralDecimals
-                          parts={formatCurrencyToParts(
-                            app.value,
-                            'en',
-                            currency
-                          )}
-                        />
-                      </UIText>
-                      <UIText kind="body/regular" color="var(--neutral-500)">
-                        (
-                        {formatTokenValue(
-                          app.convertedQuantity,
-                          assetFullInfo.fungible.symbol,
-                          {
-                            notation:
-                              app.convertedQuantity > 100000
-                                ? 'compact'
-                                : undefined,
-                          }
-                        )}
-                        )
-                      </UIText>
-                    </>
-                  )}
-                </HStack>
-              </VStack>
+      {walletAssetDetails.apps?.map((app) =>
+        app.app.url ? (
+          <UnstyledAnchor
+            key={app.app.id}
+            href={app.app.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="parent-hover"
+            style={{
+              width: '100%',
+              ['--parent-content-color' as string]: 'var(--neutral-500)',
+              ['--parent-hovered-content-color' as string]: 'var(--black)',
+            }}
+          >
+            <HStack gap={12} justifyContent="space-between" alignItems="center">
+              <AssetAddressApp app={app} assetFullInfo={assetFullInfo} />
+              <LinkIcon className="content-hover" />
             </HStack>
-            {app.app.url ? <LinkIcon className="content-hover" /> : null}
-          </HStack>
-        </UnstyledAnchor>
-      ))}
+          </UnstyledAnchor>
+        ) : (
+          <AssetAddressApp app={app} assetFullInfo={assetFullInfo} />
+        )
+      )}
     </VStack>
   );
 }
