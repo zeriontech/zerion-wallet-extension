@@ -1712,6 +1712,11 @@ export class Wallet {
     emitter.emit('screenView', params);
   }
 
+  async unlockedAppOpened({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('unlockedAppOpened');
+  }
+
   async daylightAction({
     context,
     params,
