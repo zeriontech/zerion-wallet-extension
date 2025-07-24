@@ -94,7 +94,7 @@ function DefiSdkClientProvider({ children }: React.PropsWithChildren) {
   return <DefiSdkClientContextProvider client={client} children={children} />;
 }
 
-export const useAuthState = () => {
+const useAuthState = () => {
   const { data, isFetching } = useQuery({
     queryKey: ['authState'],
     queryFn: async () => {
