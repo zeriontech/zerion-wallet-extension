@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { AreaProvider } from 'react-area';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
   HashRouter as Router,
   Routes,
@@ -26,7 +26,11 @@ import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { Playground } from 'src/ui-lab/Playground';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { windowPort } from '../shared/channels';
+import {
+  accountPublicRPCPort,
+  walletPort,
+  windowPort,
+} from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
@@ -81,7 +85,6 @@ import { BridgeForm } from '../pages/BridgeForm';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
 import { ScreenViewTracker } from '../shared/ScreenViewTracker';
-import { useAuthState } from '../shared/useAuthState';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -90,6 +93,35 @@ function DefiSdkClientProvider({ children }: React.PropsWithChildren) {
   const client = useDefiSdkClient();
   return <DefiSdkClientContextProvider client={client} children={children} />;
 }
+
+export const useAuthState = () => {
+  const { data, isFetching } = useQuery({
+    queryKey: ['authState'],
+    queryFn: async () => {
+      const [isAuthenticated, existingUser, wallet] = await Promise.all([
+        accountPublicRPCPort.request('isAuthenticated'),
+        accountPublicRPCPort.request('getExistingUser'),
+        walletPort.request('uiGetCurrentWallet'),
+      ]);
+      return {
+        isAuthenticated,
+        existingUser,
+        wallet,
+      };
+    },
+    useErrorBoundary: true,
+    retry: false,
+    refetchOnWindowFocus: false,
+    networkMode: 'always',
+  });
+  const { isAuthenticated, existingUser, wallet } = data || {};
+  return {
+    isAuthenticated,
+    existingUser,
+    hasWallet: Boolean(wallet),
+    isLoading: isFetching,
+  };
+};
 
 function SomeKindOfResolver({
   noUser,

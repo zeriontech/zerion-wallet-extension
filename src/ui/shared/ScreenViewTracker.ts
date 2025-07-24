@@ -1,20 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
-import { walletPort } from 'src/ui/shared/channels';
+import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { urlContext } from 'src/shared/UrlContext';
-import { useAuthState } from './useAuthState';
 
 function useAuthenticatedAppOpened() {
-  const { isAuthenticated } = useAuthState();
+  const { pathname } = useLocation();
   const didTrackAppOpened = useRef(false);
 
   useEffect(() => {
-    if (isAuthenticated && !didTrackAppOpened.current) {
-      didTrackAppOpened.current = true;
-      walletPort.request('unlockedAppOpened');
-    }
-  }, [isAuthenticated]);
+    accountPublicRPCPort.request('isAuthenticated').then((isAuthenticated) => {
+      if (isAuthenticated && !didTrackAppOpened.current) {
+        didTrackAppOpened.current = true;
+        walletPort.request('unlockedAppOpened');
+      }
+    });
+  }, [pathname]);
 }
 
 function useScreenViewChange() {
