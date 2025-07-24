@@ -6,7 +6,7 @@ export async function eth_getBalance(
 ): Promise<string> {
   const { result: balanceInHex } = await sendRpcRequest<string>(url, {
     method: 'eth_getBalance',
-    params: [address],
+    params: [address, 'latest'],
   });
   const balance = BigInt(balanceInHex).toString();
   return balance;
