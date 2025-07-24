@@ -14,6 +14,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { BridgeFormState } from '../types';
 import * as styles from './styles.module.css';
 
@@ -113,13 +114,15 @@ export function QuoteList({
   onReset,
   sortType,
   onSortTypeChange,
+  isLoading,
 }: {
-  quotes: Quote2[];
+  quotes: Quote2[] | null;
   selectedQuote: Quote2 | null;
   onChange: (quoteId: string | null) => void;
   onReset: () => void;
   sortType: BridgeFormState['sort'];
   onSortTypeChange: (sortType: BridgeFormState['sort']) => void;
+  isLoading?: boolean;
 }) {
   const formId = useId();
 
@@ -186,7 +189,7 @@ export function QuoteList({
             style={{ maxHeight: 350, overflowY: 'auto' }}
           >
             <VStack gap={12}>
-              {quotes.map((quote) => {
+              {quotes?.map((quote) => {
                 const isSelected =
                   selectedQuote?.contractMetadata?.id ===
                   quote.contractMetadata?.id;
@@ -206,6 +209,11 @@ export function QuoteList({
                   </label>
                 );
               })}
+              {isLoading ? (
+                <div style={{ height: 32 }}>
+                  <CircleSpinner />
+                </div>
+              ) : null}
             </VStack>
           </form>
         </VStack>
