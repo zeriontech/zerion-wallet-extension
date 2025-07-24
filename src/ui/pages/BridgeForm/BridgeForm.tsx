@@ -1149,12 +1149,7 @@ function BridgeFormComponent() {
             />
           ) : null}
         </VStack>
-        {isUK ? (
-          <>
-            <UKDisclaimer />
-            <Spacer height={8} />
-          </>
-        ) : null}
+        {isUK ? <UKDisclaimer /> : null}
         {selectedQuote?.error?.message ? (
           <TransactionWarning
             title="Warning"
