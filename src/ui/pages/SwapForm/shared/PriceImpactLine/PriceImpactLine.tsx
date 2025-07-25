@@ -6,9 +6,6 @@ import { formatPercent } from 'src/shared/units/formatPercent';
 import { getPriceImpactPercentage, type PriceImpact } from '../price-impact';
 
 export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
-  const isHighValueLoss =
-    priceImpact.kind === 'loss' && priceImpact.level === 'high';
-
   const priceImpactPercentage = priceImpact
     ? getPriceImpactPercentage(priceImpact)
     : null;
@@ -21,7 +18,7 @@ export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
     [priceImpactPercentage]
   );
 
-  return isHighValueLoss ? (
+  return (
     <Surface padding={12} style={{ backgroundColor: 'var(--neutral-100)' }}>
       <HStack gap={4} justifyContent="space-between">
         <UIText kind="body/accent">High Price Impact</UIText>
@@ -32,5 +29,5 @@ export function PriceImpactLine({ priceImpact }: { priceImpact: PriceImpact }) {
         ) : null}
       </HStack>
     </Surface>
-  ) : null;
+  );
 }

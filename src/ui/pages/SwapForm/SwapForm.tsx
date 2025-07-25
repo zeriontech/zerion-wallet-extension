@@ -536,6 +536,29 @@ function SwapFormComponent() {
   const onBeforeSubmit = () => {
     snapshotRef.current = { state: { ...formState } };
   };
+
+  const outputAmount = selectedQuote?.outputAmount.quantity || null;
+
+  const priceImpact = useMemo(() => {
+    return calculatePriceImpact({
+      inputValue: inputAmount || null,
+      outputValue: outputAmount || null,
+      inputAsset: inputPosition?.asset ?? null,
+      outputAsset: outputPosition?.asset ?? null,
+    });
+  }, [inputAmount, inputPosition?.asset, outputAmount, outputPosition?.asset]);
+
+  const showPriceImpactCallout =
+    quotesData.done &&
+    !isApproveMode &&
+    priceImpact?.kind === 'loss' &&
+    priceImpact.level === 'high';
+
+  const showPriceImpactWarning =
+    quotesData.done &&
+    priceImpact?.kind === 'loss' &&
+    (priceImpact.level === 'medium' || priceImpact.level === 'high');
+
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
@@ -577,6 +600,8 @@ function SwapFormComponent() {
         addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
         outputChain: inputChain ?? null,
+        warningWasShown: Boolean(showPriceImpactCallout),
+        outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
       });
       return txResponse;
     },
@@ -589,17 +614,6 @@ function SwapFormComponent() {
       return 'sendTransaction';
     },
   });
-
-  const outputAmount = selectedQuote?.outputAmount.quantity || null;
-
-  const priceImpact = useMemo(() => {
-    return calculatePriceImpact({
-      inputValue: inputAmount || null,
-      outputValue: outputAmount || null,
-      inputAsset: inputPosition?.asset ?? null,
-      outputAsset: outputPosition?.asset ?? null,
-    });
-  }, [inputAmount, inputPosition?.asset, outputAmount, outputPosition?.asset]);
 
   const gasbackValueRef = useRef<number | null>(null);
   const handleGasbackReady = useCallback((value: number) => {
@@ -875,6 +889,7 @@ function SwapFormComponent() {
                 spendPosition={inputPosition}
                 receivePosition={outputPosition}
                 priceImpact={priceImpact}
+                showPriceImpactWarning={showPriceImpactWarning}
                 readOnly={true}
               />
             </div>
@@ -975,7 +990,7 @@ function SwapFormComponent() {
             message={selectedQuote?.error?.message}
           />
         ) : null}
-        {quotesData.done && priceImpact && !isApproveMode ? (
+        {showPriceImpactCallout ? (
           <PriceImpactLine priceImpact={priceImpact} />
         ) : null}
       </VStack>

@@ -27,6 +27,7 @@ export function ReceiveTokenField({
   onChange,
   outputAmount,
   priceImpact,
+  showPriceImpactWarning,
   readOnly = true,
 }: {
   formState: SwapFormState;
@@ -36,6 +37,7 @@ export function ReceiveTokenField({
   positions: AddressPosition[];
   outputAmount: string | null;
   priceImpact: PriceImpact | null;
+  showPriceImpactWarning: boolean;
   readOnly?: boolean;
 }) {
   const { inputAmount } = formState;
@@ -152,6 +154,7 @@ export function ReceiveTokenField({
             receiveInput={outputAmount ?? ''}
             receiveAsset={receivePosition?.asset ?? null}
             priceImpact={priceImpact}
+            showPriceImpactWarning={showPriceImpactWarning}
           />
         }
       />

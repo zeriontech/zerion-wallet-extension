@@ -15,6 +15,8 @@ export type TransactionContextParams = {
   initiator: string;
   clientScope: ClientScope | null;
   addressAction: AnyAddressAction | null;
+  warningWasShown?: boolean;
+  outputAmountColor?: 'grey' | 'red';
   /**
    * Currenly only applies to Solana dapp requests
    * This indicates the method that the dapp called originally
