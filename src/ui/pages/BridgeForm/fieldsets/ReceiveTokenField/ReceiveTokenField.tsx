@@ -25,6 +25,7 @@ export function ReceiveTokenField({
   spendAsset,
   onChangeToken,
   priceImpact,
+  showPriceImpactWarning,
 }: {
   receiveInput?: string;
   receiveChain: Chain | null;
@@ -34,6 +35,7 @@ export function ReceiveTokenField({
   spendAsset: Asset | null;
   onChangeToken: (value: string) => void;
   priceImpact: PriceImpact | null;
+  showPriceImpactWarning: boolean;
 }) {
   const positionBalanceCommon = receivePosition
     ? getPositionBalance(receivePosition)
@@ -118,6 +120,7 @@ export function ReceiveTokenField({
             receiveInput={receiveInput}
             receiveAsset={receivePosition?.asset ?? null}
             priceImpact={priceImpact}
+            showPriceImpactWarning={showPriceImpactWarning}
           />
         }
       />

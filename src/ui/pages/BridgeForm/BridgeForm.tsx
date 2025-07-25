@@ -730,6 +730,16 @@ function BridgeFormComponent() {
     snapshotRef.current = formState;
   };
 
+  const showPriceImpactCallout =
+    quotesData.done &&
+    !isApproveMode &&
+    priceImpact?.kind === 'loss' &&
+    priceImpact.level === 'high';
+
+  const showPriceImpactWarning =
+    priceImpact?.kind === 'loss' &&
+    (priceImpact.level === 'medium' || priceImpact.level === 'high');
+
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
@@ -770,6 +780,8 @@ function BridgeFormComponent() {
         addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
         outputChain: outputChain ?? null,
+        warningWasShown: Boolean(showPriceImpactCallout),
+        outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
       });
       return txResponse;
     },
@@ -829,10 +841,6 @@ function BridgeFormComponent() {
       />
     );
   }
-
-  const showPriceImpactWarning =
-    priceImpact?.kind === 'loss' &&
-    (priceImpact.level === 'medium' || priceImpact.level === 'high');
 
   /**
    * Show native zero bridge hint when: there is low liquidity or no liquidity at all
@@ -1055,6 +1063,7 @@ function BridgeFormComponent() {
               spendAsset={inputPosition?.asset ?? null}
               onChangeToken={(value) => handleChange('outputFungibleId', value)}
               priceImpact={priceImpact}
+              showPriceImpactWarning={showPriceImpactWarning}
             />
             <ReceiverAddressField
               title={
@@ -1156,7 +1165,7 @@ function BridgeFormComponent() {
             message={selectedQuote?.error?.message}
           />
         ) : null}
-        {quotesData.done && priceImpact && !isApproveMode ? (
+        {showPriceImpactCallout ? (
           <PriceImpactLine priceImpact={priceImpact} />
         ) : null}
         {showNativeZeroBridgeHint ? <NativeZeroBridgeHint /> : null}
