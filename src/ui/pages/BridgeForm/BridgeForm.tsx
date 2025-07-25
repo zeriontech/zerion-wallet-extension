@@ -1097,7 +1097,7 @@ function BridgeFormComponent() {
       </form>
 
       <Spacer height={16} />
-      <VStack gap={8}>
+      <VStack gap={8} style={{ paddingBottom: 8 }}>
         <VStack
           gap={8}
           style={
