@@ -21,6 +21,8 @@ interface AnalyticsTransactionData {
   zerion_fee_percentage?: number;
   zerion_fee_usd_amount?: number;
   output_chain?: string;
+  network_fee?: number;
+  gas_price?: number;
 }
 
 interface AssetQuantity {
@@ -116,17 +118,22 @@ export function addressActionToAnalytics({
   };
   if (quote) {
     const zerion_fee_percentage = quote.protocolFee.percentage;
-    const feeAmount = quote.protocolFee.amount.quantity;
-    const asset = incoming?.[0]?.asset;
     const zerion_fee_usd_amount =
-      feeAmount && asset
-        ? assetQuantityToValue({ quantity: feeAmount, asset }, chain)
+      quote.protocolFee.amount.usdValue ?? undefined;
+    const network_fee = quote.networkFee?.amount?.usdValue ?? undefined;
+    const currentTransaction =
+      quote.transactionSwap?.evm || quote.transactionApprove?.evm;
+    const gas_price =
+      currentTransaction?.gasPrice != null
+        ? Number(currentTransaction.gasPrice)
         : undefined;
 
     return {
       ...value,
       zerion_fee_percentage,
       zerion_fee_usd_amount,
+      network_fee,
+      gas_price,
       output_chain: outputChain ?? undefined,
     };
   } else {

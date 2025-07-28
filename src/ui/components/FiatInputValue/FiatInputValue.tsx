@@ -84,13 +84,12 @@ export function SpendFiatInputValue(props: FieldInputValueProps) {
 
 export function ReceiveFiatInputValue({
   priceImpact,
+  showPriceImpactWarning,
   ...props
 }: {
+  showPriceImpactWarning: boolean;
   priceImpact: PriceImpact | null;
 } & FieldInputValueProps) {
-  const isSignificantLoss =
-    priceImpact?.kind === 'loss' &&
-    (priceImpact.level === 'medium' || priceImpact.level === 'high');
   const isProfit = priceImpact?.kind === 'profit';
 
   const priceImpactPercentage = priceImpact
@@ -108,7 +107,7 @@ export function ReceiveFiatInputValue({
   const percentageChangeVisible =
     Boolean(percentageChange) && priceImpact?.kind !== 'n/a';
 
-  const priceImpactColor = isSignificantLoss
+  const priceImpactColor = showPriceImpactWarning
     ? 'var(--negative-500)'
     : isProfit
     ? 'var(--positive-500)'
@@ -126,9 +125,9 @@ export function ReceiveFiatInputValue({
         ) : null
       }
       color={priceImpactColor}
-      style={isSignificantLoss ? { cursor: 'help' } : undefined}
+      style={showPriceImpactWarning ? { cursor: 'help' } : undefined}
       title={
-        isSignificantLoss
+        showPriceImpactWarning
           ? 'The exchange rate is lower than the market rate. Lack of liquidity affects the exchange rate. Try a lower amount.'
           : undefined
       }
