@@ -165,6 +165,8 @@ function trackAppEvents({ account }: { account: Account }) {
         clientScope,
         chain,
         outputChain,
+        warningWasShown = false,
+        outputAmountColor = 'grey',
       }
     ) => {
       const initiatorURL = new URL(initiator);
@@ -199,6 +201,8 @@ function trackAppEvents({ account }: { account: Account }) {
         network_fee_value: feeValueCommon,
         contract_type: quote ? quote.contractMetadata.name ?? null : null,
         hold_sign_button: Boolean(preferences.enableHoldToSignButton),
+        warning_was_shown: warningWasShown,
+        output_amount_color: outputAmountColor,
         ...omitNullParams(addressActionAnalytics),
       });
       sendToMetabase('signed_transaction', params);
