@@ -27,6 +27,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { getColor, getSign } from './helpers';
 import { AssetChart } from './AssetChart/AssetChart';
 import type { AssetChartPoint } from './AssetChart/types';
@@ -263,6 +264,15 @@ export function AssetTitleAndChart({
           </>
         )}
       </VStack>
+      <KeyboardShortcut
+        combination="shift+T"
+        onKeyDown={() => {
+          setPreferences({
+            transactionsOnAssetPageChartHidden:
+              !preferences?.transactionsOnAssetPageChartHidden,
+          });
+        }}
+      />
       <BottomSheetDialog ref={dialogRef} height="min-content">
         <VStack gap={8}>
           <UIText kind="small/accent" color="var(--neutral-500)">
@@ -277,7 +287,20 @@ export function AssetTitleAndChart({
               borderRadius: 12,
             }}
           >
-            <UIText kind="body/accent">Transactions on the chart</UIText>
+            <HStack gap={8} alignItems="center">
+              <UIText kind="body/accent">Transactions on the chart</UIText>
+              <UIText
+                kind="caption/accent"
+                color="var(--neutral-600)"
+                style={{
+                  background: 'var(--neutral-200)',
+                  padding: '2px 4px',
+                  borderRadius: 8,
+                }}
+              >
+                ⇧T
+              </UIText>
+            </HStack>
             <Toggle
               checked={!preferences?.transactionsOnAssetPageChartHidden}
               onChange={(event) => {
