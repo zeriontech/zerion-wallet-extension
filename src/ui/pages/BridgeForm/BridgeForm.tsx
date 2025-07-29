@@ -97,7 +97,6 @@ import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -425,7 +424,6 @@ function NativeZeroBridgeHint() {
       </UIText>
       <UIText kind="small/accent" color="var(--primary)">
         <TextAnchor
-          onClick={openInNewWindow}
           href="https://bridge.zero.network/bridge/withdraw"
           target="_blank"
           rel="noopener noreferrer"
