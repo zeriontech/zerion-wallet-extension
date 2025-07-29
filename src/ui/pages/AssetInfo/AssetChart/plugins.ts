@@ -1,6 +1,9 @@
 import type { Plugin } from 'chart.js/auto';
 import { Theme } from 'src/ui/features/appearance';
-import { getChartColor } from 'src/ui/components/chart/helpers';
+import {
+  CHART_RIGHT_PADDING,
+  getChartColor,
+} from 'src/ui/components/chart/helpers';
 import type { ParsedAssetChartPoint } from './types';
 
 export function drawDotPlugin({
@@ -20,21 +23,16 @@ export function drawDotPlugin({
 
       const { x, y } = activeElement.element.tooltipPosition(false);
 
-      const direction =
+      const hasPointData =
         'raw' in activeElement.element
-          ? (activeElement.element.raw as ParsedAssetChartPoint)?.extra?.total
-              .direction
-          : null;
-      const color =
-        direction === 'in' || direction === 'out'
-          ? getChartColor({
-              isPositive: direction === 'in',
-              theme: getTheme(),
-              isHighlighted: false,
-            })
-          : getTheme() === Theme.light
-          ? '#9c9fa8'
-          : '#70737b';
+          ? Boolean((activeElement.element.raw as ParsedAssetChartPoint)?.extra)
+          : false;
+
+      if (hasPointData) {
+        return;
+      }
+
+      const color = getTheme() === Theme.light ? '#9c9fa8' : '#70737b';
 
       ctx.save();
 
@@ -87,6 +85,8 @@ export function drawVerticalLinePlugin({
   };
 }
 
+export const PULSE_CAP_CIRCLE_ID = 'asset-chart-pulse-cap-circle';
+
 export function drawCapPointPlugin({
   getTheme,
 }: {
@@ -97,9 +97,13 @@ export function drawCapPointPlugin({
     afterDraw: (chart) => {
       const activeElement = chart.getActiveElements()?.[0];
       const { ctx } = chart;
+      const animatedElement = document.getElementById(PULSE_CAP_CIRCLE_ID);
 
       // If there is no active element, we don't need to draw the cap point
       if (!ctx || activeElement) {
+        if (animatedElement) {
+          animatedElement.style.setProperty('--cap-dot-opacity', '0');
+        }
         return;
       }
 
@@ -108,10 +112,13 @@ export function drawCapPointPlugin({
 
       // Don't draw the cap point if last point has an action to show
       if (chartPoints.at(-1)?.extra) {
+        if (animatedElement) {
+          animatedElement.style.setProperty('--cap-dot-opacity', '0');
+        }
         return;
       }
 
-      const pointColor = getChartColor({
+      const strokeColor = getChartColor({
         theme: getTheme(),
         isPositive:
           (chartPoints?.at(0)?.y || 0) <= (chartPoints?.at(-1)?.y || 0),
@@ -125,17 +132,29 @@ export function drawCapPointPlugin({
         return;
       }
 
-      ctx.save();
+      if (animatedElement) {
+        animatedElement.style.setProperty('--pulse-color', strokeColor);
+        // Asset page chart has a 5% offset on the right side
+        animatedElement.style.setProperty(
+          '--pulse-x',
+          `calc(${x}px - ${CHART_RIGHT_PADDING * 100}%)`
+        );
+        animatedElement.style.setProperty('--pulse-y', `${y}px`);
+        animatedElement.style.setProperty('--cap-dot-opacity', '1');
+      }
 
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = pointColor;
-      ctx.strokeStyle = 'transparent';
-      ctx.fill();
-      ctx.stroke();
-      ctx.closePath();
+      // Uncomment the following lines if you want to draw a circle at the cap point on the canvas
+      // ctx.save();
 
-      ctx.restore();
+      // ctx.beginPath();
+      // ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      // ctx.fillStyle = pointColor;
+      // ctx.strokeStyle = 'transparent';
+      // ctx.fill();
+      // ctx.stroke();
+      // ctx.closePath();
+
+      // ctx.restore();
     },
   };
 }

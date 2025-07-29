@@ -15,9 +15,14 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
-import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
+import type {
+  AssetChartActions,
+  ChartPeriod,
+} from 'src/modules/zerion-api/requests/asset-get-chart';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import BigNumber from 'bignumber.js';
+import { usePreferences } from 'src/ui/features/preferences';
 import { getColor, getSign } from './helpers';
 import { AssetChart } from './AssetChart/AssetChart';
 import type { AssetChartPoint } from './AssetChart/types';
@@ -34,6 +39,22 @@ const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
 
 const REQUEST_TOKEN_LINK = 'https://zerion.io/request-token';
 
+function populateChartActionsDirection(
+  actions: AssetChartActions | null
+): AssetChartActions | null {
+  if (!actions || actions.total.direction) {
+    return actions;
+  }
+  const quantity = new BigNumber(actions.total.quantity);
+  return {
+    ...actions,
+    total: {
+      ...actions.total,
+      direction: quantity.gt(0) ? 'in' : quantity.lt(0) ? 'out' : null,
+    },
+  };
+}
+
 export function AssetTitleAndChart({
   asset,
   address,
@@ -42,6 +63,7 @@ export function AssetTitleAndChart({
   address: string;
 }) {
   const { currency } = useCurrency();
+  const { preferences } = usePreferences();
   const isUntrackedAsset = asset.meta.price == null;
   const priceElementRef = useRef<HTMLDivElement>(null);
   const priceChangeElementRef = useRef<HTMLDivElement>(null);
@@ -58,15 +80,20 @@ export function AssetTitleAndChart({
     period,
   });
 
+  const showTransactionsOnChart =
+    preferences && !preferences.transactionsOnAssetPageChartHidden;
+
   const chartPoints = useMemo<AssetChartPoint[]>(() => {
     return (
       chartData?.data.points.map((item) => [
         item.timestamp * 1000,
         item.value,
-        item.actions,
+        showTransactionsOnChart
+          ? populateChartActionsDirection(item.actions)
+          : null,
       ]) || []
     );
-  }, [chartData]);
+  }, [chartData, showTransactionsOnChart]);
 
   const handleRangeSelect = useCallback(
     ({

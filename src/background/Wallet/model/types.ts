@@ -63,6 +63,7 @@ interface PublicPreferences {
    */
   testnetMode?: null | { on: boolean };
   enableHoldToSignButton?: boolean | null;
+  transactionsOnAssetPageChartHidden?: boolean;
 }
 
 export interface Permission {
