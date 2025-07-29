@@ -23,6 +23,10 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import BigNumber from 'bignumber.js';
 import { usePreferences } from 'src/ui/features/preferences';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { Toggle } from 'src/ui/ui-kit/Toggle';
+import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import { getColor, getSign } from './helpers';
 import { AssetChart } from './AssetChart/AssetChart';
 import type { AssetChartPoint } from './AssetChart/types';
@@ -62,8 +66,9 @@ export function AssetTitleAndChart({
   asset: Asset;
   address: string;
 }) {
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
-  const { preferences } = usePreferences();
+  const { preferences, setPreferences } = usePreferences();
   const isUntrackedAsset = asset.meta.price == null;
   const priceElementRef = useRef<HTMLDivElement>(null);
   const priceChangeElementRef = useRef<HTMLDivElement>(null);
@@ -158,79 +163,135 @@ export function AssetTitleAndChart({
   }, [chartPoints, handleRangeSelect]);
 
   return (
-    <VStack gap={16}>
-      <VStack gap={12}>
-        {isUntrackedAsset ? (
-          <VStack gap={0}>
-            <UIText kind="headline/hero">Price Not Tracked</UIText>
-            <UIText kind="body/regular">
-              <TextAnchor
-                href={REQUEST_TOKEN_LINK}
-                rel="noopener noreferrer"
-                target="_blank"
-                style={{ color: 'var(--primary)', cursor: 'pointer' }}
-              >
-                Let us know
-              </TextAnchor>{' '}
-              if you’d like to see it on Zerion
-            </UIText>
-          </VStack>
-        ) : (
-          <VStack gap={0}>
-            <HStack gap={8} alignItems="end">
-              <UIText kind="headline/hero" ref={priceElementRef} />
+    <>
+      <VStack gap={16}>
+        <VStack gap={12}>
+          {isUntrackedAsset ? (
+            <VStack gap={0}>
+              <UIText kind="headline/hero">Price Not Tracked</UIText>
+              <UIText kind="body/regular">
+                <TextAnchor
+                  href={REQUEST_TOKEN_LINK}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  style={{ color: 'var(--primary)', cursor: 'pointer' }}
+                >
+                  Let us know
+                </TextAnchor>{' '}
+                if you’d like to see it on Zerion
+              </UIText>
+            </VStack>
+          ) : (
+            <VStack gap={0}>
+              <HStack gap={8} alignItems="end">
+                <UIText kind="headline/hero" ref={priceElementRef} />
+                <UIText
+                  kind="body/accent"
+                  style={{ paddingBottom: 4 }}
+                  ref={priceChangeElementRef}
+                />
+              </HStack>
               <UIText
-                kind="body/accent"
-                style={{ paddingBottom: 4 }}
-                ref={priceChangeElementRef}
+                kind="caption/regular"
+                color="var(--neutral-500)"
+                ref={dateElementRef}
+                style={{ height: 16 }}
               />
-            </HStack>
-            <UIText
-              kind="caption/regular"
-              color="var(--neutral-500)"
-              ref={dateElementRef}
-              style={{ height: 16 }}
+            </VStack>
+          )}
+        </VStack>
+        {isUntrackedAsset || isError ? null : (
+          <>
+            <AssetChart
+              asset={asset}
+              chartPoints={chartPoints}
+              onRangeSelect={handleRangeSelect}
             />
-          </VStack>
-        )}
-      </VStack>
-      {isUntrackedAsset || isError ? null : (
-        <>
-          <AssetChart
-            asset={asset}
-            chartPoints={chartPoints}
-            onRangeSelect={handleRangeSelect}
-          />
-          <HStack gap={8} justifyContent="space-between">
-            {CHART_TYPE_OPTIONS.map((type) => (
+            <HStack gap={8} justifyContent="space-between" alignItems="center">
+              {CHART_TYPE_OPTIONS.map((type) => (
+                <Button
+                  key={type}
+                  kind="neutral"
+                  size={32}
+                  style={{
+                    width: 44,
+                    padding: '0 8px',
+                    ['--button-background' as string]:
+                      type === period ? 'var(--neutral-200)' : 'var(--white)',
+                    ['--button-background-hover' as string]:
+                      type === period
+                        ? 'var(--neutral-300)'
+                        : 'var(--neutral-100)',
+                  }}
+                  onClick={() => setPeriod(type)}
+                >
+                  {type === period && isFetching ? (
+                    <CircleSpinner style={{ marginInline: 'auto' }} />
+                  ) : (
+                    <UIText kind="caption/accent" color="var(--neutral-700)">
+                      {CHART_TYPE_LABELS[type]}
+                    </UIText>
+                  )}
+                </Button>
+              ))}
               <Button
-                key={type}
                 kind="neutral"
                 size={32}
                 style={{
-                  width: 44,
-                  padding: '0 8px',
-                  ['--button-background' as string]:
-                    type === period ? 'var(--neutral-200)' : 'var(--white)',
-                  ['--button-background-hover' as string]:
-                    type === period
-                      ? 'var(--neutral-300)'
-                      : 'var(--neutral-100)',
+                  width: 36,
+                  padding: '4px 8px',
+                  ['--button-background' as string]: 'var(--white)',
+                  ['--button-background-hover' as string]: 'var(--neutral-100)',
                 }}
-                onClick={() => setPeriod(type)}
+                aria-label="Asset Chart Settings"
+                onClick={() => {
+                  if (dialogRef.current) {
+                    dialogRef.current.showModal();
+                  }
+                }}
               >
-                {type === period && isFetching ? (
-                  <CircleSpinner style={{ marginInline: 'auto' }} />
-                ) : (
-                  <UIText kind="caption/accent" color="var(--neutral-700)">
-                    {CHART_TYPE_LABELS[type]}
-                  </UIText>
-                )}
+                <SettingsSlidersIcon
+                  style={{
+                    display: 'block',
+                    width: 20,
+                    height: 20,
+                    color: 'var(--neutral-700)',
+                  }}
+                />
               </Button>
-            ))}
+            </HStack>
+          </>
+        )}
+      </VStack>
+      <BottomSheetDialog ref={dialogRef} height="min-content">
+        <VStack gap={8}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            Asset Chart
+          </UIText>
+          <HStack
+            gap={4}
+            justifyContent="space-between"
+            style={{
+              padding: 12,
+              border: '2px solid var(--neutral-200)',
+              borderRadius: 12,
+            }}
+          >
+            <UIText kind="body/accent">Transactions on the chart</UIText>
+            <Toggle
+              checked={!preferences?.transactionsOnAssetPageChartHidden}
+              onChange={(event) => {
+                setPreferences({
+                  transactionsOnAssetPageChartHidden: !event.target.checked,
+                });
+                if (dialogRef.current) {
+                  dialogRef.current.close();
+                }
+              }}
+            />
           </HStack>
-        </>
-      )}
-    </VStack>
+        </VStack>
+      </BottomSheetDialog>
+    </>
   );
 }
