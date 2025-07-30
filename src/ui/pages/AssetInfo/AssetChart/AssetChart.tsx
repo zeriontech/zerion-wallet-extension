@@ -51,17 +51,13 @@ function getChartPointColor({
   theme: Theme;
   direction: AssetChartActionDirection;
 }): string {
-  return direction === 'in'
+  return !direction || direction === 'in'
     ? theme === Theme.light
       ? '#01a643'
       : '#4fbf67'
-    : direction === 'out'
-    ? theme === Theme.light
-      ? '#ff4a4a'
-      : '#ff5c5c'
     : theme === Theme.light
-    ? '#9c9fa8'
-    : '#70737b';
+    ? '#ff4a4a'
+    : '#ff5c5c';
 }
 
 function getChartPointBorderColor({
@@ -71,17 +67,13 @@ function getChartPointBorderColor({
   theme: Theme;
   direction: AssetChartActionDirection;
 }): string {
-  return direction === 'in'
+  return !direction || direction === 'in'
     ? theme === Theme.light
       ? '#edfcf2'
       : '#29342f'
-    : direction === 'out'
-    ? theme === Theme.light
-      ? '#fcf2ef'
-      : '#382328'
     : theme === Theme.light
-    ? '#f0f0f2'
-    : '#29292c';
+    ? '#fcf2ef'
+    : '#382328';
 }
 
 function getPointStyle({
