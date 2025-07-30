@@ -33,10 +33,6 @@ const MultiActionPointImages = {
     light: new Image(),
     dark: new Image(),
   },
-  neutral: {
-    light: new Image(),
-    dark: new Image(),
-  },
 };
 
 MultiActionPointImages.in.light.src =
@@ -47,10 +43,6 @@ MultiActionPointImages.out.light.src =
   'https://cdn.zerion.io/images/dna-assets/chart-dot-negative-light.svg';
 MultiActionPointImages.out.dark.src =
   'https://cdn.zerion.io/images/dna-assets/chart-dot-negative-dark.svg';
-MultiActionPointImages.neutral.light.src =
-  'https://cdn.zerion.io/images/dna-assets/chart-dot-neutral-light.svg';
-MultiActionPointImages.neutral.dark.src =
-  'https://cdn.zerion.io/images/dna-assets/chart-dot-neutral-dark.svg';
 
 function getChartPointColor({
   theme,
@@ -102,7 +94,7 @@ function getPointStyle({
   direction: AssetChartActionDirection;
 }): PointStyle {
   if (count > 1) {
-    return MultiActionPointImages[direction || 'neutral'][
+    return MultiActionPointImages[direction || 'in'][
       theme === Theme.light ? 'light' : 'dark'
     ];
   }
