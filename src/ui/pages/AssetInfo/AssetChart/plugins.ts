@@ -1,9 +1,6 @@
 import type { Plugin } from 'chart.js/auto';
 import { Theme } from 'src/ui/features/appearance';
-import {
-  CHART_RIGHT_PADDING,
-  getChartColor,
-} from 'src/ui/components/chart/helpers';
+import { getChartColor } from 'src/ui/components/chart/helpers';
 import type { ParsedAssetChartPoint } from './types';
 
 export function drawDotPlugin({
@@ -134,11 +131,7 @@ export function drawCapPointPlugin({
 
       if (animatedElement) {
         animatedElement.style.setProperty('--pulse-color', strokeColor);
-        // Asset page chart has a 5% offset on the right side
-        animatedElement.style.setProperty(
-          '--pulse-x',
-          `calc(${x}px - ${CHART_RIGHT_PADDING * 100}%)`
-        );
+        animatedElement.style.setProperty('--pulse-x', `${x}px`);
         animatedElement.style.setProperty('--pulse-y', `${y}px`);
         animatedElement.style.setProperty('--cap-dot-opacity', '1');
       }
@@ -149,7 +142,7 @@ export function drawCapPointPlugin({
       // ctx.beginPath();
       // ctx.arc(x, y, 5, 0, 2 * Math.PI);
       // ctx.fillStyle = pointColor;
-      // ctx.strokeStyle = 'transparent';
+      // ctx.strokeStyle = 'green';
       // ctx.fill();
       // ctx.stroke();
       // ctx.closePath();

@@ -4,12 +4,12 @@
   --cap-dot-size: 5px;
   --cap-dot-opacity: 1;
   --pulse-color: transparent;
-  width: var(--cap-dot-size);
-  height: var(--cap-dot-size);
+  width: calc(var(--cap-dot-size) + 4px);
+  height: calc(var(--cap-dot-size) + 4px);
   position: absolute;
   top: var(--pulse-y);
   left: var(--pulse-x);
-  transform: translate(-100%, -100%);
+  transform: translate(-50%, -50%);
   border: 2px solid transparent;
   pointer-events: none;
   opacity: var(--cap-dot-opacity);

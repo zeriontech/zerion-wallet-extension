@@ -33,6 +33,10 @@ const MultiActionPointImages = {
     light: new Image(),
     dark: new Image(),
   },
+  neutral: {
+    light: new Image(),
+    dark: new Image(),
+  },
 };
 
 MultiActionPointImages.in.light.src =
@@ -43,6 +47,10 @@ MultiActionPointImages.out.light.src =
   'https://cdn.zerion.io/images/dna-assets/chart-dot-negative-light.svg';
 MultiActionPointImages.out.dark.src =
   'https://cdn.zerion.io/images/dna-assets/chart-dot-negative-dark.svg';
+MultiActionPointImages.neutral.light.src =
+  'https://cdn.zerion.io/images/dna-assets/chart-dot-neutral-light.svg';
+MultiActionPointImages.neutral.dark.src =
+  'https://cdn.zerion.io/images/dna-assets/chart-dot-neutral-dark.svg';
 
 function getChartPointColor({
   theme,
@@ -93,8 +101,8 @@ function getPointStyle({
   count: number;
   direction: AssetChartActionDirection;
 }): PointStyle {
-  if (count > 1 && direction) {
-    return MultiActionPointImages[direction][
+  if (count > 1) {
+    return MultiActionPointImages[direction || 'neutral'][
       theme === Theme.light ? 'light' : 'dark'
     ];
   }
@@ -226,7 +234,9 @@ export function AssetChart({
   );
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div
+      style={{ position: 'relative', left: -16, width: 'calc(100% + 32px)' }}
+    >
       <Chart
         chartPoints={chartPoints}
         onRangeSelect={onRangeSelect}
@@ -234,7 +244,7 @@ export function AssetChart({
         tooltip={tooltip}
         plugins={plugins}
         interaction={interaction}
-        style={{ position: 'relative', left: -16, width: 'calc(100% + 32px)' }}
+        style={{ position: 'relative', width: '100%' }}
         theme={theme}
         currency={currency}
       />

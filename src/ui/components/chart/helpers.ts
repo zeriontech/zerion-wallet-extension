@@ -77,7 +77,7 @@ export function getYLimits(points: ChartPoint[]) {
   };
 }
 
-export const CHART_RIGHT_PADDING = 0.05; // 5% offset on the right side of the chart
+const CHART_RIGHT_PADDING = 0.05; // 5% offset on the right side of the chart
 
 export function getXLimits(points: ChartPoint[]) {
   const firstPoint = points.at(0)?.[0] || 0;
