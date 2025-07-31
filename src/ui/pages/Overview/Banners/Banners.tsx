@@ -11,7 +11,7 @@ import { InviteFriendsBanner } from 'src/ui/features/referral-program/InviteFrie
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ENABLE_DNA_BANNERS } from 'src/ui/DNA/components/DnaBanners';
 import { FEATURE_LOYALTY_FLOW, FEATURE_SOLANA } from 'src/env/config';
-import { SolanaBanner } from './SolanaBanner';
+import { OverviewPremiumBanner } from 'src/ui/features/premium/banners/OverviewBanner';
 
 function DnaBanners({ address }: { address: string }) {
   const { preferences, setPreferences } = usePreferences();
@@ -75,9 +75,7 @@ export function Banners({ address }: { address: string }) {
     <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
       {solanaBannerVisible ? (
         <>
-          <SolanaBanner
-            onDismiss={() => setPreferences({ solanaBannerDismissed: true })}
-          />
+          <OverviewPremiumBanner onDismiss={() => null} />
           <Spacer height={24} />
         </>
       ) : invitationBannerVisible ? (
