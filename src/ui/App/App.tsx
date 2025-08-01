@@ -85,6 +85,7 @@ import { XpDrop } from '../features/xp-drop';
 import { BridgeForm } from '../pages/BridgeForm';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
+import { PremiumPage } from '../pages/Premium';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -411,6 +412,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <XpDrop />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/premium"
+            element={
+              <RequireAuth>
+                <PremiumPage />
               </RequireAuth>
             }
           />
