@@ -15,9 +15,19 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { useAssetChart } from 'src/modules/zerion-api/hooks/useAssetChart';
-import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
+import type {
+  AssetChartActions,
+  ChartPeriod,
+} from 'src/modules/zerion-api/requests/asset-get-chart';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import BigNumber from 'bignumber.js';
+import { usePreferences } from 'src/ui/features/preferences';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { Toggle } from 'src/ui/ui-kit/Toggle';
+import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { getColor, getSign } from './helpers';
 import { AssetChart } from './AssetChart/AssetChart';
 import type { AssetChartPoint } from './AssetChart/types';
@@ -34,6 +44,22 @@ const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
 
 const REQUEST_TOKEN_LINK = 'https://zerion.io/request-token';
 
+function populateChartActionsDirection(
+  actions: AssetChartActions | null
+): AssetChartActions | null {
+  if (!actions || actions.total.direction) {
+    return actions;
+  }
+  const quantity = new BigNumber(actions.total.quantity);
+  return {
+    ...actions,
+    total: {
+      ...actions.total,
+      direction: quantity.gt(0) ? 'in' : quantity.lt(0) ? 'out' : null,
+    },
+  };
+}
+
 export function AssetTitleAndChart({
   asset,
   address,
@@ -41,7 +67,9 @@ export function AssetTitleAndChart({
   asset: Asset;
   address: string;
 }) {
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
+  const { preferences, setPreferences } = usePreferences();
   const isUntrackedAsset = asset.meta.price == null;
   const priceElementRef = useRef<HTMLDivElement>(null);
   const priceChangeElementRef = useRef<HTMLDivElement>(null);
@@ -63,10 +91,12 @@ export function AssetTitleAndChart({
       chartData?.data.points.map((item) => [
         item.timestamp * 1000,
         item.value,
-        item.actions,
+        preferences?.showTransactionsOnAssetChart
+          ? populateChartActionsDirection(item.actions)
+          : null,
       ]) || []
     );
-  }, [chartData]);
+  }, [chartData, preferences?.showTransactionsOnAssetChart]);
 
   const handleRangeSelect = useCallback(
     ({
@@ -131,79 +161,157 @@ export function AssetTitleAndChart({
   }, [chartPoints, handleRangeSelect]);
 
   return (
-    <VStack gap={16}>
-      <VStack gap={12}>
-        {isUntrackedAsset ? (
-          <VStack gap={0}>
-            <UIText kind="headline/hero">Price Not Tracked</UIText>
-            <UIText kind="body/regular">
-              <TextAnchor
-                href={REQUEST_TOKEN_LINK}
-                rel="noopener noreferrer"
-                target="_blank"
-                style={{ color: 'var(--primary)', cursor: 'pointer' }}
-              >
-                Let us know
-              </TextAnchor>{' '}
-              if you’d like to see it on Zerion
-            </UIText>
-          </VStack>
-        ) : (
-          <VStack gap={0}>
-            <HStack gap={8} alignItems="end">
-              <UIText kind="headline/hero" ref={priceElementRef} />
+    <>
+      <VStack gap={16}>
+        <VStack gap={12}>
+          {isUntrackedAsset ? (
+            <VStack gap={0}>
+              <UIText kind="headline/hero">Price Not Tracked</UIText>
+              <UIText kind="body/regular">
+                <TextAnchor
+                  href={REQUEST_TOKEN_LINK}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  style={{ color: 'var(--primary)', cursor: 'pointer' }}
+                >
+                  Let us know
+                </TextAnchor>{' '}
+                if you’d like to see it on Zerion
+              </UIText>
+            </VStack>
+          ) : (
+            <VStack gap={0}>
+              <HStack gap={8} alignItems="end">
+                <UIText kind="headline/hero" ref={priceElementRef} />
+                <UIText
+                  kind="body/accent"
+                  style={{ paddingBottom: 4 }}
+                  ref={priceChangeElementRef}
+                />
+              </HStack>
               <UIText
-                kind="body/accent"
-                style={{ paddingBottom: 4 }}
-                ref={priceChangeElementRef}
+                kind="caption/regular"
+                color="var(--neutral-500)"
+                ref={dateElementRef}
+                style={{ height: 16 }}
               />
-            </HStack>
-            <UIText
-              kind="caption/regular"
-              color="var(--neutral-500)"
-              ref={dateElementRef}
-              style={{ height: 16 }}
+            </VStack>
+          )}
+        </VStack>
+        {isUntrackedAsset || isError ? null : (
+          <>
+            <AssetChart
+              asset={asset}
+              chartPoints={chartPoints}
+              onRangeSelect={handleRangeSelect}
             />
-          </VStack>
-        )}
-      </VStack>
-      {isUntrackedAsset || isError ? null : (
-        <>
-          <AssetChart
-            asset={asset}
-            chartPoints={chartPoints}
-            onRangeSelect={handleRangeSelect}
-          />
-          <HStack gap={8} justifyContent="space-between">
-            {CHART_TYPE_OPTIONS.map((type) => (
+            <HStack gap={8} justifyContent="space-between" alignItems="center">
+              {CHART_TYPE_OPTIONS.map((type) => (
+                <Button
+                  key={type}
+                  kind="neutral"
+                  size={32}
+                  style={{
+                    width: 44,
+                    padding: '0 8px',
+                    ['--button-background' as string]:
+                      type === period ? 'var(--neutral-200)' : 'var(--white)',
+                    ['--button-background-hover' as string]:
+                      type === period
+                        ? 'var(--neutral-300)'
+                        : 'var(--neutral-100)',
+                  }}
+                  onClick={() => setPeriod(type)}
+                >
+                  {type === period && isFetching ? (
+                    <CircleSpinner style={{ marginInline: 'auto' }} />
+                  ) : (
+                    <UIText kind="caption/accent" color="var(--neutral-700)">
+                      {CHART_TYPE_LABELS[type]}
+                    </UIText>
+                  )}
+                </Button>
+              ))}
               <Button
-                key={type}
                 kind="neutral"
                 size={32}
                 style={{
-                  width: 44,
-                  padding: '0 8px',
-                  ['--button-background' as string]:
-                    type === period ? 'var(--neutral-200)' : 'var(--white)',
-                  ['--button-background-hover' as string]:
-                    type === period
-                      ? 'var(--neutral-300)'
-                      : 'var(--neutral-100)',
+                  width: 36,
+                  padding: '4px 8px',
+                  ['--button-background' as string]: 'var(--white)',
+                  ['--button-background-hover' as string]: 'var(--neutral-100)',
                 }}
-                onClick={() => setPeriod(type)}
+                aria-label="Asset Chart Settings"
+                onClick={() => {
+                  if (dialogRef.current) {
+                    dialogRef.current.showModal();
+                  }
+                }}
               >
-                {type === period && isFetching ? (
-                  <CircleSpinner style={{ marginInline: 'auto' }} />
-                ) : (
-                  <UIText kind="caption/accent" color="var(--neutral-700)">
-                    {CHART_TYPE_LABELS[type]}
-                  </UIText>
-                )}
+                <SettingsSlidersIcon
+                  style={{
+                    display: 'block',
+                    width: 20,
+                    height: 20,
+                    color: 'var(--neutral-700)',
+                  }}
+                />
               </Button>
-            ))}
+            </HStack>
+          </>
+        )}
+      </VStack>
+      <KeyboardShortcut
+        combination="shift+T"
+        onKeyDown={() => {
+          setPreferences({
+            showTransactionsOnAssetChart:
+              !preferences?.showTransactionsOnAssetChart,
+          });
+        }}
+      />
+      <BottomSheetDialog ref={dialogRef} height="min-content">
+        <VStack gap={8}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            Asset Chart
+          </UIText>
+          <HStack
+            gap={4}
+            justifyContent="space-between"
+            style={{
+              padding: 12,
+              border: '2px solid var(--neutral-200)',
+              borderRadius: 12,
+            }}
+          >
+            <HStack gap={8} alignItems="center">
+              <UIText kind="body/accent">Transactions on the chart</UIText>
+              <UIText
+                kind="caption/accent"
+                color="var(--neutral-600)"
+                style={{
+                  background: 'var(--neutral-200)',
+                  padding: '2px 4px',
+                  borderRadius: 8,
+                }}
+              >
+                ⇧T
+              </UIText>
+            </HStack>
+            <Toggle
+              checked={preferences?.showTransactionsOnAssetChart}
+              onChange={(event) => {
+                setPreferences({
+                  showTransactionsOnAssetChart: event.target.checked,
+                });
+                if (dialogRef.current) {
+                  dialogRef.current.close();
+                }
+              }}
+            />
           </HStack>
-        </>
-      )}
-    </VStack>
+        </VStack>
+      </BottomSheetDialog>
+    </>
   );
 }

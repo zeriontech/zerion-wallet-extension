@@ -12,9 +12,11 @@ export interface Params {
   period: ChartPeriod;
 }
 
+export type AssetChartActionDirection = 'in' | 'out' | null;
+
 type AssetChartAction = {
   type: 'sell' | 'buy' | null;
-  direction: 'in' | 'out' | null;
+  direction: AssetChartActionDirection;
   quantity: string;
   value: number;
 };

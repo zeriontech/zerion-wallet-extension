@@ -857,6 +857,7 @@ export class WalletRecordModel {
       enableTestnets: false,
       testnetMode: null,
       enableHoldToSignButton: null,
+      showTransactionsOnAssetChart: true,
     };
     if (!record) {
       return defaults;
