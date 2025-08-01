@@ -115,19 +115,6 @@ import { BridgeLine } from './BridgeLine';
 import { ZerionFeeLine } from './ZerionFeeLine';
 import { ReceiverAddressField } from './ReceiverAddressField';
 
-function useSortedQuotes(params: Parameters<typeof useQuotes2>[0]) {
-  return {
-    quotesByAmount: useQuotes2({
-      ...params,
-      formState: { ...params.formState, sort: '1' },
-    }),
-    quotesByTime: useQuotes2({
-      ...params,
-      formState: { ...params.formState, sort: '2' },
-    }),
-  };
-}
-
 const rootNode = getRootDomNode();
 
 function FormHint({
@@ -551,7 +538,7 @@ function BridgeFormComponent() {
           isMatchForEcosystem(to, Networks.getEcosystem(outputNetwork))
   );
 
-  const { quotesByAmount, quotesByTime } = useSortedQuotes({
+  const quotesData = useQuotes2({
     address: singleAddressNormalized,
     currency,
     formState,
@@ -562,7 +549,6 @@ function BridgeFormComponent() {
       outputChainAddressMatch,
   });
 
-  const quotesData = sort === '1' ? quotesByAmount : quotesByTime;
   const { refetch: refetchQuotes } = quotesData;
 
   const [userQuoteId, setUserQuoteId] = useState<string | null>(null);

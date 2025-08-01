@@ -148,22 +148,21 @@ export function BridgeLine({
           ) : null}
         </span>
       </HStack>
-      {quotes?.length ? (
-        <BottomSheetDialog
-          ref={quotesDialogRef}
-          height="fit-content"
-          renderWhenOpen={() => (
-            <QuoteList
-              quotes={quotes}
-              selectedQuote={selectedQuote}
-              onChange={onQuoteIdChange}
-              onReset={() => onQuoteIdChange(null)}
-              sortType={sortType}
-              onSortTypeChange={onSortTypeChange}
-            />
-          )}
-        />
-      ) : null}
+      <BottomSheetDialog
+        ref={quotesDialogRef}
+        height="fit-content"
+        renderWhenOpen={() => (
+          <QuoteList
+            quotes={quotes}
+            isLoading={quotesData.isLoading}
+            selectedQuote={selectedQuote}
+            onChange={onQuoteIdChange}
+            onReset={() => onQuoteIdChange(null)}
+            sortType={sortType}
+            onSortTypeChange={onSortTypeChange}
+          />
+        )}
+      />
     </>
   );
 }
