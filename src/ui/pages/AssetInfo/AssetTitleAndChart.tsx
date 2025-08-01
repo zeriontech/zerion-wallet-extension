@@ -86,8 +86,7 @@ export function AssetTitleAndChart({
     period,
   });
 
-  const showTransactionsOnChart =
-    preferences && preferences.showTransactionsOnAssetChart;
+  const showTransactionsOnChart = preferences?.showTransactionsOnAssetChart;
 
   const chartPoints = useMemo<AssetChartPoint[]>(() => {
     return (
