@@ -109,6 +109,7 @@ import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
+import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1297,7 +1298,11 @@ export class Wallet {
         );
         return safeTxPlain;
       } catch (error) {
-        throw getEthersError(error);
+        const ethersError = getEthersError(error);
+        const parsedError = parseError(ethersError);
+        const errorMessage = parsedError.display || parsedError.message;
+        emitter.emit('transactionFailed', errorMessage, { mode, ...txContext });
+        throw ethersError;
       }
     }
   }
@@ -1353,6 +1358,7 @@ export class Wallet {
         { solana: result },
         { mode, ...transactionContextParams }
       );
+      // TODO: process Solana Txs errors and emit 'transactionFailed' event
     }
     return result;
   }
@@ -1391,6 +1397,7 @@ export class Wallet {
         { solana: result },
         { mode, ...contextParamsCopy }
       );
+      // TODO: process Solana Txs errors and emit 'transactionFailed' event
     });
 
     return results;
@@ -1430,6 +1437,7 @@ export class Wallet {
       { solana: result },
       { mode, ...params.params }
     );
+    // TODO: process Solana Txs errors and emit 'transactionFailed' event
     return result;
   }
 
@@ -1495,7 +1503,11 @@ export class Wallet {
       );
       return safeTxPlain;
     } catch (error) {
-      throw getEthersError(error);
+      const ethersError = getEthersError(error);
+      const parsedError = parseError(ethersError);
+      const errorMessage = parsedError.display || parsedError.message;
+      emitter.emit('transactionFailed', errorMessage, { mode, ...txContext });
+      throw ethersError;
     }
   }
 
