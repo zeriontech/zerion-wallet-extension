@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import {
   formatTokenValue,
@@ -14,7 +14,7 @@ import type { AddressPosition, Asset } from 'defi-sdk';
 import { MarketAssetSelect } from 'src/ui/pages/SwapForm/fieldsets/ReceiveTokenField/MarketAssetSelect';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { ReceiveFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
-import { calculatePriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
+import type { PriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
 
 export function ReceiveTokenField({
   receiveInput,
@@ -24,6 +24,8 @@ export function ReceiveTokenField({
   spendInput,
   spendAsset,
   onChangeToken,
+  priceImpact,
+  showPriceImpactWarning,
 }: {
   receiveInput?: string;
   receiveChain: Chain | null;
@@ -32,6 +34,8 @@ export function ReceiveTokenField({
   spendInput?: string;
   spendAsset: Asset | null;
   onChangeToken: (value: string) => void;
+  priceImpact: PriceImpact | null;
+  showPriceImpactWarning: boolean;
 }) {
   const positionBalanceCommon = receivePosition
     ? getPositionBalance(receivePosition)
@@ -49,17 +53,6 @@ export function ReceiveTokenField({
       tokenValueInputRef.current?.setValue('');
     }
   }, [receiveInput]);
-
-  const priceImpact = useMemo(
-    () =>
-      calculatePriceImpact({
-        inputValue: spendInput ?? null,
-        outputValue: receiveInput ?? null,
-        inputAsset: spendAsset,
-        outputAsset: receivePosition?.asset ?? null,
-      }),
-    [receivePosition?.asset, receiveInput, spendAsset, spendInput]
-  );
 
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -127,6 +120,7 @@ export function ReceiveTokenField({
             receiveInput={receiveInput}
             receiveAsset={receivePosition?.asset ?? null}
             priceImpact={priceImpact}
+            showPriceImpactWarning={showPriceImpactWarning}
           />
         }
       />

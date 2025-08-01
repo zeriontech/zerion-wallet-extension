@@ -96,6 +96,7 @@ import { useUKDetection } from 'src/ui/components/UKDisclaimer/useUKDetection';
 import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -105,6 +106,9 @@ import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
+import { PriceImpactLine } from '../SwapForm/shared/PriceImpactLine';
+import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
+import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
 import type { BridgeFormState } from './types';
 import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
@@ -391,6 +395,33 @@ function BridgeNetworksSelect({
   );
 }
 
+function NativeZeroBridgeHint() {
+  return (
+    <VStack
+      gap={8}
+      style={{
+        padding: 16,
+        borderRadius: 8,
+        border: '1px solid var(--notice-500)',
+      }}
+    >
+      <UIText kind="small/regular" color="var(--notice-500)">
+        It seems there is a lack of liquidity, if you are not in a hurry and
+        want a better quote, use:
+      </UIText>
+      <UIText kind="small/accent" color="var(--primary)">
+        <TextAnchor
+          href="https://bridge.zero.network/bridge/withdraw"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          bridge.zero.network
+        </TextAnchor>
+      </UIText>
+    </VStack>
+  );
+}
+
 function BridgeFormComponent() {
   useBackgroundKind(whiteBackgroundKind);
 
@@ -573,6 +604,15 @@ function BridgeFormComponent() {
 
   const outputAmount = selectedQuote?.outputAmount.quantity || null;
 
+  const priceImpact = useMemo(() => {
+    return calculatePriceImpact({
+      inputValue: inputAmount || null,
+      outputValue: outputAmount || null,
+      inputAsset: inputPosition?.asset ?? null,
+      outputAsset: outputPosition?.asset ?? null,
+    });
+  }, [inputAmount, inputPosition?.asset, outputAmount, outputPosition?.asset]);
+
   /** Same as handleChange, but reverses chains if selected chain is same as the opposite one */
   const handleChainChange = useEvent<HandleChangeFunction>((key, value) => {
     setUserFormState((state) => ({
@@ -674,6 +714,16 @@ function BridgeFormComponent() {
     snapshotRef.current = formState;
   };
 
+  const showPriceImpactCallout =
+    quotesData.done &&
+    !isApproveMode &&
+    priceImpact?.kind === 'loss' &&
+    priceImpact.level === 'high';
+
+  const showPriceImpactWarning =
+    priceImpact?.kind === 'loss' &&
+    (priceImpact.level === 'medium' || priceImpact.level === 'high');
+
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
@@ -714,6 +764,8 @@ function BridgeFormComponent() {
         addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
         outputChain: outputChain ?? null,
+        warningWasShown: Boolean(showPriceImpactCallout),
+        outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
       });
       return txResponse;
     },
@@ -773,6 +825,14 @@ function BridgeFormComponent() {
       />
     );
   }
+
+  /**
+   * Show native zero bridge hint when: there is low liquidity or no liquidity at all
+   */
+  const showNativeZeroBridgeHint =
+    inputChain === NetworkId.Zero &&
+    (quotesData.done || quotesData.error) &&
+    (!selectedQuote || showPriceImpactWarning);
 
   return (
     <PageColumn>
@@ -986,6 +1046,8 @@ function BridgeFormComponent() {
               spendInput={inputAmount ?? undefined}
               spendAsset={inputPosition?.asset ?? null}
               onChangeToken={(value) => handleChange('outputFungibleId', value)}
+              priceImpact={priceImpact}
+              showPriceImpactWarning={showPriceImpactWarning}
             />
             <ReceiverAddressField
               title={
@@ -1019,7 +1081,7 @@ function BridgeFormComponent() {
       </form>
 
       <Spacer height={16} />
-      <VStack gap={8}>
+      <VStack gap={8} style={{ paddingBottom: 8 }}>
         <VStack
           gap={8}
           style={
@@ -1080,12 +1142,17 @@ function BridgeFormComponent() {
             />
           ) : null}
         </VStack>
-        {isUK ? (
-          <>
-            <UKDisclaimer />
-            <Spacer height={8} />
-          </>
+        {isUK ? <UKDisclaimer /> : null}
+        {selectedQuote?.error?.message ? (
+          <TransactionWarning
+            title="Warning"
+            message={selectedQuote?.error?.message}
+          />
         ) : null}
+        {showPriceImpactCallout ? (
+          <PriceImpactLine priceImpact={priceImpact} />
+        ) : null}
+        {showNativeZeroBridgeHint ? <NativeZeroBridgeHint /> : null}
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
         <HiddenValidationInput
