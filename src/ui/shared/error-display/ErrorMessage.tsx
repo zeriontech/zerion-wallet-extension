@@ -12,10 +12,10 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
 import { getError } from 'get-error';
+import type { ParsedError } from 'src/shared/errors/parse-error/parseError';
+import { parseError } from 'src/shared/errors/parse-error/parseError';
+import { samples } from 'src/shared/errors/parse-error/samples';
 import { useCopyToClipboard } from '../useCopyToClipboard';
-import type { ParsedError } from './parseError';
-import { parseError } from './parseError';
-import { samples } from './samples';
 import * as styles from './ErrorMessage.module.css';
 
 function ErrorDetails({ error }: { error: ParsedError }) {
