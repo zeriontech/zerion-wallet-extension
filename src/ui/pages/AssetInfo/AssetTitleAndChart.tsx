@@ -86,19 +86,17 @@ export function AssetTitleAndChart({
     period,
   });
 
-  const showTransactionsOnChart = preferences?.showTransactionsOnAssetChart;
-
   const chartPoints = useMemo<AssetChartPoint[]>(() => {
     return (
       chartData?.data.points.map((item) => [
         item.timestamp * 1000,
         item.value,
-        showTransactionsOnChart
+        preferences?.showTransactionsOnAssetChart
           ? populateChartActionsDirection(item.actions)
           : null,
       ]) || []
     );
-  }, [chartData, showTransactionsOnChart]);
+  }, [chartData, preferences?.showTransactionsOnAssetChart]);
 
   const handleRangeSelect = useCallback(
     ({
