@@ -87,7 +87,7 @@ export function AssetTitleAndChart({
   });
 
   const showTransactionsOnChart =
-    preferences && !preferences.transactionsOnAssetPageChartHidden;
+    preferences && preferences.showTransactionsOnAssetChart;
 
   const chartPoints = useMemo<AssetChartPoint[]>(() => {
     return (
@@ -268,8 +268,8 @@ export function AssetTitleAndChart({
         combination="shift+T"
         onKeyDown={() => {
           setPreferences({
-            transactionsOnAssetPageChartHidden:
-              !preferences?.transactionsOnAssetPageChartHidden,
+            showTransactionsOnAssetChart:
+              !preferences?.showTransactionsOnAssetChart,
           });
         }}
       />
@@ -302,10 +302,10 @@ export function AssetTitleAndChart({
               </UIText>
             </HStack>
             <Toggle
-              checked={!preferences?.transactionsOnAssetPageChartHidden}
+              checked={preferences?.showTransactionsOnAssetChart}
               onChange={(event) => {
                 setPreferences({
-                  transactionsOnAssetPageChartHidden: !event.target.checked,
+                  showTransactionsOnAssetChart: event.target.checked,
                 });
                 if (dialogRef.current) {
                   dialogRef.current.close();
