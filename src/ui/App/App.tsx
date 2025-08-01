@@ -112,7 +112,6 @@ const useAuthState = () => {
     useErrorBoundary: true,
     retry: false,
     refetchOnWindowFocus: false,
-    networkMode: 'always',
   });
   const { isAuthenticated, existingUser, wallet } = data || {};
   return {

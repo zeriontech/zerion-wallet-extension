@@ -9,6 +9,9 @@ function useAuthenticatedAppOpened() {
   const didTrackAppOpened = useRef(false);
 
   useEffect(() => {
+    if (didTrackAppOpened.current) {
+      return;
+    }
     accountPublicRPCPort.request('isAuthenticated').then((isAuthenticated) => {
       if (isAuthenticated && !didTrackAppOpened.current) {
         didTrackAppOpened.current = true;
