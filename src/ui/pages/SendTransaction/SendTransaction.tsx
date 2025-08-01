@@ -616,7 +616,7 @@ function SendTransactionContent({
   const client = useDefiSdkClient();
 
   const interpretQuery = useQuery({
-    enabled: Boolean(network?.supports_simulations),
+    enabled: Boolean(network?.supports_simulations && chainGasPrices),
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
     keepPreviousData: true,
