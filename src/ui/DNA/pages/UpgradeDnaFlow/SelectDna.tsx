@@ -170,7 +170,7 @@ export function SelectDna() {
               textAlign: 'center',
             }}
           >
-            Backend is unavaliable
+            Backend is unavailable
             <br />
             Please, try again later
           </UIText>

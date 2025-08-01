@@ -16,7 +16,7 @@ describe('encrypt function', () => {
     function createVeryLargeString() {
       // A large string will at some point be split into bytes by the encrypting function
       // and those bytes may be passed as arguments, but browsers have a different
-      // limit on maximum number of agruments: https://stackoverflow.com/a/22747272/3523645
+      // limit on maximum number of arguments: https://stackoverflow.com/a/22747272/3523645
       // As a solution we avoid doing that and have this test as a guard, but its outcome
       // may differ across javascript environments
       const uint8Array = crypto.getRandomValues(new Uint8Array(65536));
