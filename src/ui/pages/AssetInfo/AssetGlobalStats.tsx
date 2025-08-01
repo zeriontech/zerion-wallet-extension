@@ -61,18 +61,6 @@ export function AssetGlobalStats({
       {createdRecently ? (
         <AssetStatsChip title="AGE" value={`${ageInHours}h`} />
       ) : null}
-      {assetFullInfo.fungible.meta.fullyDilutedValuation != null ? (
-        <AssetStatsChip
-          title="FDV"
-          fullTitle="Fully Diluted Valuation"
-          value={formatCurrencyValue(
-            assetFullInfo.fungible.meta.fullyDilutedValuation,
-            'en',
-            currency,
-            FORMATTING_OPTIONS
-          )}
-        />
-      ) : null}
       {assetFullInfo.fungible.meta.marketCap != null ? (
         <AssetStatsChip
           title="MCAP"
@@ -117,6 +105,18 @@ export function AssetGlobalStats({
           fullTitle="Liquidity"
           value={formatCurrencyValue(
             assetFullInfo.extra.liquidity,
+            'en',
+            currency,
+            FORMATTING_OPTIONS
+          )}
+        />
+      ) : null}
+      {assetFullInfo.fungible.meta.fullyDilutedValuation != null ? (
+        <AssetStatsChip
+          title="FDV"
+          fullTitle="Fully Diluted Valuation"
+          value={formatCurrencyValue(
+            assetFullInfo.fungible.meta.fullyDilutedValuation,
             'en',
             currency,
             FORMATTING_OPTIONS
