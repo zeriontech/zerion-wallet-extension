@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
-import { useScreenViewChange } from 'src/ui/shared/useScreenViewChange';
 import { Success } from './Success';
 import { Welcome } from './Welcome';
 import { Import } from './Import';
@@ -13,7 +12,7 @@ import { Backup } from './Backup';
 
 export function Onboarding() {
   const navigate = useNavigate();
-  useScreenViewChange();
+
   useBodyStyle(
     useMemo(
       () => ({
