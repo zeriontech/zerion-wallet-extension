@@ -1732,6 +1732,11 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('transactionFormed', params);
   }
+  
+  async unlockedAppOpened({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('unlockedAppOpened');
+  }
 
   async daylightAction({
     context,

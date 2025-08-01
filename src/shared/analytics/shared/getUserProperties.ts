@@ -92,7 +92,7 @@ async function fetchWalletsMeta({ addresses }: { addresses: string[] }) {
   });
 }
 
-export function getChainBreakdown(portfolio: PortfolioDecomposition | null) {
+function getChainBreakdown(portfolio: PortfolioDecomposition | null) {
   const chainBreakdown: Record<string, number> = {};
   if (portfolio) {
     for (const internalId in portfolio.positions_chains_distribution) {
@@ -103,7 +103,7 @@ export function getChainBreakdown(portfolio: PortfolioDecomposition | null) {
   return chainBreakdown;
 }
 
-export async function getBaseMixpanelParams(account: Account) {
+export async function getUserProperties(account: Account) {
   const apiLayer = account.getCurrentWallet();
   const groups = await apiLayer.uiGetWalletGroups({
     context: INTERNAL_SYMBOL_CONTEXT,
@@ -179,18 +179,4 @@ export async function getBaseMixpanelParams(account: Account) {
     num_zerion_wallets_eligible_for_xp_drop: eligibleOwnedAddresses.length,
     num_readonly_wallets_eligible_for_xp_drop: eligibleReadonlyAddresses.length,
   };
-}
-
-export async function getOwnedWalletsPortolio(account: Account) {
-  const apiLayer = account.getCurrentWallet();
-  const groups = await apiLayer.uiGetWalletGroups({
-    context: INTERNAL_SYMBOL_CONTEXT,
-  });
-  const ownedGroups = groups?.filter(
-    (group) => !isReadonlyContainer(group.walletContainer)
-  );
-  const ownedAddresses = ownedGroups?.flatMap((group) =>
-    group.walletContainer.wallets.map((wallet) => wallet.address)
-  );
-  return ownedAddresses?.length ? getAddressesPortfolio(ownedAddresses) : null;
 }

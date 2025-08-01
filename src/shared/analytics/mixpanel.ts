@@ -4,7 +4,7 @@ import type { Account } from 'src/background/account/Account';
 import { version } from 'src/shared/packageVersion';
 import { MIXPANEL_TOKEN_PUBLIC } from 'src/env/config';
 import { Loglevel, logTable, logToConsole } from '../logger';
-import { getBaseMixpanelParams } from './shared/mixpanel-data-helpers';
+import { getUserProperties } from './shared/getUserProperties';
 import { deviceIdStore } from './shared/DeviceIdStore';
 import { omitNullParams } from './shared/omitNullParams';
 import { getAnalyticsId } from './analyticsId';
@@ -211,7 +211,7 @@ export async function mixpanelTrack(
 
 export async function mixpanelIdentify(account: Account) {
   try {
-    const userProfileProperties = await getBaseMixpanelParams(account);
+    const userProfileProperties = await getUserProperties(account);
     return mixpanelApi.identify(userProfileProperties);
   } catch (e) {
     // TODO: setup "error" event in background emitter and send errors to metabase

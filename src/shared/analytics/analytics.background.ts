@@ -27,6 +27,7 @@ import { onIdle } from '../onIdle';
 import type { TransactionContextParams } from '../types/SignatureContextParams';
 import type { SignTransactionResult } from '../types/SignTransactionResult';
 import { invariant } from '../invariant';
+import { normalizeAddress } from '../normalizeAddress';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
   createAddProviderHook,
@@ -42,10 +43,7 @@ import {
   toMaybeArr,
 } from './shared/addressActionToAnalytics';
 import { mixpanelTrack, mixpanelIdentify } from './mixpanel';
-import {
-  getChainBreakdown,
-  getOwnedWalletsPortolio,
-} from './shared/mixpanel-data-helpers';
+import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
 import { gaCollect, prepareGaParams } from './google-analytics';
 import { waitForAnalyticsIdSet } from './analyticsId';
@@ -89,7 +87,7 @@ function trackAppEvents({ account }: { account: Account }) {
     }
 
     if (params.wallet_address) {
-      params.wallet_address = params.wallet_address.toLowerCase();
+      params.wallet_address = normalizeAddress(params.wallet_address);
       if (!params.wallet_provider) {
         params.wallet_provider = getProvider(params.wallet_address);
       }
@@ -112,6 +110,17 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack('DApp: DApp Connection', mixpanelParams);
   });
 
+  emitter.on('unlockedAppOpened', async () => {
+    await waitForAnalyticsIdSet();
+    const params = createParams({ request_name: 'unlocked_app_opened' });
+    const userProfileProperties = await getUserProperties(account);
+    const mixpanelParams: Record<string, unknown> = {
+      ...omit(params, ['request_name', 'wallet_address']),
+      ...userProfileProperties,
+    };
+    mixpanelTrack('General: App Opened', mixpanelParams);
+  });
+
   emitter.on('screenView', async (data) => {
     await waitForAnalyticsIdSet();
     const params = createParams({
@@ -123,12 +132,10 @@ function trackAppEvents({ account }: { account: Account }) {
       window_type: data.windowType,
     });
     sendToMetabase('screen_view', params);
-    const portfolio = await getOwnedWalletsPortolio(account);
-    const mixpanelParams: Record<string, unknown> = {
-      ...omit(params, ['request_name', 'wallet_address']),
-      total_balance: portfolio?.total_value ?? 0,
-      ...getChainBreakdown(portfolio),
-    };
+    const mixpanelParams: Record<string, unknown> = omit(params, [
+      'request_name',
+      'wallet_address',
+    ]);
     mixpanelTrack('General: Screen Viewed', mixpanelParams);
     statsigTrack('General: Screen Viewed', mixpanelParams);
   });

@@ -58,7 +58,6 @@ import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
-import { useScreenViewChange } from '../shared/useScreenViewChange';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
 import { TestnetModeGuard } from '../pages/TestnetModeGuard';
@@ -85,6 +84,7 @@ import { XpDrop } from '../features/xp-drop';
 import { BridgeForm } from '../pages/BridgeForm';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
+import { ScreenViewTracker } from '../shared/ScreenViewTracker';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -200,8 +200,6 @@ function MaybeTestModeDecoration() {
 }
 
 function Views({ initialRoute }: { initialRoute?: string }) {
-  useScreenViewChange();
-
   const isPopup = urlContext.windowType === 'popup';
   return (
     <RouteResolver>
@@ -516,6 +514,7 @@ export function App({ initialView, inspect }: AppProps) {
           <DesignTheme bodyClassList={bodyClassList} />
           <Router>
             <ErrorBoundary renderError={(error) => <ViewError error={error} />}>
+              <ScreenViewTracker />
               <InactivityDetector />
               <SessionResetHandler />
               <TurnstileTokenHandler />
