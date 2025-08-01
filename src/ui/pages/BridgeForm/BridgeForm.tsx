@@ -109,6 +109,7 @@ import { PopoverToast } from '../Settings/PopoverToast';
 import { PriceImpactLine } from '../SwapForm/shared/PriceImpactLine';
 import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
 import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
+import { getSlippageOptions } from '../SwapForm/SlippageSettings/getSlippageOptions';
 import type { BridgeFormState } from './types';
 import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
@@ -723,6 +724,37 @@ function BridgeFormComponent() {
   const showPriceImpactWarning =
     priceImpact?.kind === 'loss' &&
     (priceImpact.level === 'medium' || priceImpact.level === 'high');
+
+  const trackTransactionFormed = useEvent((quote: Quote2) => {
+    walletPort.request('transactionFormed', {
+      formState,
+      quote,
+      scope: 'Bridge',
+      warningWasShown: Boolean(showPriceImpactCallout),
+      outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+      enoughBalance:
+        (inputPosition &&
+          getPositionBalance(inputPosition)?.gte(
+            new BigNumber(formState.inputAmount || 0)
+          )) ??
+        false,
+      slippagePercent: formState.inputChain
+        ? getSlippageOptions({
+            chain: createChain(formState.inputChain),
+            userSlippage:
+              'slippage' in formState && formState.slippage
+                ? Number(formState.slippage)
+                : null,
+          }).slippagePercent
+        : undefined,
+    });
+  });
+
+  useEffect(() => {
+    if (selectedQuote && quotesData.done) {
+      trackTransactionFormed(selectedQuote);
+    }
+  }, [selectedQuote, quotesData.done, trackTransactionFormed]);
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (

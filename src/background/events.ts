@@ -4,6 +4,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import type {
   MessageContextParams,
   TransactionContextParams,
+  TransactionFormedContext,
 } from 'src/shared/types/SignatureContextParams';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
@@ -40,6 +41,7 @@ export const emitter = createNanoEvents<{
     message: string;
   }) => void;
   switchChainError: (chainId: ChainId, origin: string, error: unknown) => void;
+  transactionFormed: (context: TransactionFormedContext) => void;
   transactionSent: (
     result: SignTransactionResult,
     context: { mode: 'default' | 'testnet' } & TransactionContextParams

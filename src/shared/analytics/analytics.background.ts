@@ -11,6 +11,10 @@ import {
   getTxSender,
 } from 'src/modules/shared/transactions/helpers';
 import { statsigTrack } from 'src/modules/statsig/shared';
+import { getGas } from 'src/modules/ethereum/transactions/getGas';
+import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
+import type { Params } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -22,6 +26,7 @@ import { productionVersion } from '../packageVersion';
 import { onIdle } from '../onIdle';
 import type { TransactionContextParams } from '../types/SignatureContextParams';
 import type { SignTransactionResult } from '../types/SignTransactionResult';
+import { invariant } from '../invariant';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
   createAddProviderHook,
@@ -32,7 +37,10 @@ import {
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
-import { addressActionToAnalytics } from './shared/addressActionToAnalytics';
+import {
+  addressActionToAnalytics,
+  toMaybeArr,
+} from './shared/addressActionToAnalytics';
 import { mixpanelTrack, mixpanelIdentify } from './mixpanel';
 import {
   getChainBreakdown,
@@ -49,6 +57,17 @@ function queryWalletProvider(account: Account, address: string) {
     context: INTERNAL_SYMBOL_CONTEXT,
   });
   return getProviderNameFromGroup(group);
+}
+
+function queryFungibleInfo(payload: Params) {
+  const { currency, fungibleId } = payload;
+
+  return backgroundQueryClient.fetchQuery({
+    queryKey: ['assetGetFungibleFullInfo', fungibleId, currency],
+    queryFn: async () =>
+      ZerionAPI.assetGetFungibleFullInfo({ fungibleId, currency }),
+    staleTime: 20000,
+  });
 }
 
 function trackAppEvents({ account }: { account: Account }) {
@@ -249,6 +268,81 @@ function trackAppEvents({ account }: { account: Account }) {
   emitter.on('transactionFailed', (errorMessage, context) =>
     trackTransactionSign({ status: 'failed', errorMessage, context })
   );
+
+  emitter.on('transactionFormed', async (context) => {
+    const {
+      formState,
+      quote,
+      enoughBalance,
+      slippagePercent,
+      warningWasShown,
+      outputAmountColor,
+      scope,
+    } = context;
+
+    // We query fungible info for input and output assets
+    // to provide fdv_asset_sent and fdv_asset_received
+    const inputAssetData = formState.inputFungibleId
+      ? await queryFungibleInfo({
+          fungibleId: formState.inputFungibleId,
+          currency: 'usd',
+        })
+      : null;
+    const inputAsset = inputAssetData?.data?.fungible;
+    const outputAssetData = formState.outputFungibleId
+      ? await queryFungibleInfo({
+          fungibleId: formState.outputFungibleId,
+          currency: 'usd',
+        })
+      : null;
+    const outputAsset = outputAssetData?.data?.fungible;
+    invariant(inputAsset, 'Unable to fetch input asset data');
+    invariant(outputAsset, 'Unable to fetch output asset data');
+
+    const params = createParams({
+      request_name: 'swap_form_filled_out',
+      client_scope: scope,
+      screen_name: scope === 'Swap' ? 'Swap' : 'Bridge',
+      action_type: scope === 'Swap' ? 'Trade' : 'Send',
+
+      usd_amount_received: quote.outputAmount.usdValue ?? undefined,
+      asset_amount_received: toMaybeArr([Number(quote.outputAmount.quantity)]),
+      asset_name_received: toMaybeArr([outputAsset.name]),
+      asset_address_received: toMaybeArr([outputAsset.id]),
+
+      usd_amount_sent:
+        Number(formState.inputAmount) * (inputAsset.meta.price || 0),
+      asset_amount_sent: toMaybeArr([Number(formState.inputAmount)]),
+      asset_name_sent: toMaybeArr([inputAsset.name]),
+      asset_address_sent: toMaybeArr([inputAsset.id]),
+
+      gas: quote.transactionSwap?.evm
+        ? Number(getGas(quote.transactionSwap.evm))
+        : undefined,
+      network_fee: quote.networkFee?.amount.usdValue ?? undefined,
+      gas_price: quote.transactionSwap?.evm?.gasPrice ?? undefined,
+      guaranteed_output_amount: quote.minimumOutputAmount.quantity,
+      zerion_fee_percentage: quote.protocolFee.percentage,
+      zerion_fee_usd_amount: quote.protocolFee.amount.usdValue ?? 0,
+      input_chain: formState.inputChain,
+      output_chain: formState.outputChain ?? formState.inputChain,
+      slippage: slippagePercent,
+      contract_type: quote.contractMetadata.name,
+
+      fdv_asset_sent: inputAsset.meta.fullyDilutedValuation ?? undefined,
+      fdv_asset_received: outputAsset.meta.fullyDilutedValuation ?? undefined,
+
+      enough_balance: enoughBalance,
+      enough_allowance: Boolean(quote.transactionSwap),
+      bridge_fee_usd_amount: quote.bridgeFee?.amount.usdValue ?? 0,
+      warning_was_shown: warningWasShown,
+      output_amount_color: outputAmountColor,
+    });
+
+    sendToMetabase('swap_form_filled_out', params);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('Transaction: Swap Form Filled Out', mixpanelParams);
+  });
 
   async function handleSign({
     type,

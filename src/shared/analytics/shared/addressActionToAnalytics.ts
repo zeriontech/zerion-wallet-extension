@@ -75,7 +75,7 @@ function getAssetAddress({ asset }: { asset: ActionAsset }) {
   return getFungibleAsset(asset)?.asset_code;
 }
 
-function toMaybeArr<T>(
+export function toMaybeArr<T>(
   arr: (T | null | undefined)[] | null | undefined
 ): T[] | undefined {
   return arr?.length ? arr.filter(isTruthy) : undefined;
