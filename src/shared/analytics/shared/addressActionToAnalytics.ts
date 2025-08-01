@@ -121,11 +121,11 @@ export function addressActionToAnalytics({
     const zerion_fee_usd_amount =
       quote.protocolFee.amount.usdValue ?? undefined;
     const network_fee = quote.networkFee?.amount?.usdValue ?? undefined;
-    const currentTransaction =
+    const currentTransactionEvm =
       quote.transactionSwap?.evm || quote.transactionApprove?.evm;
     const gas_price =
-      currentTransaction?.gasPrice != null
-        ? Number(currentTransaction.gasPrice)
+      currentTransactionEvm?.gasPrice != null
+        ? Number(currentTransactionEvm.gasPrice)
         : undefined;
 
     return {
