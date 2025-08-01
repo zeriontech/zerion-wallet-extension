@@ -69,6 +69,7 @@ import { getWalletNameFlagsByOrigin } from 'src/shared/preferences-helpers';
 import type {
   MessageContextParams,
   TransactionContextParams,
+  TransactionFormedContext,
 } from 'src/shared/types/SignatureContextParams';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { Networks } from 'src/modules/networks/Networks';
@@ -1722,6 +1723,14 @@ export class Wallet {
     // walletPort.request('sendEvent', { event_name, params }).
     this.verifyInternalOrigin(context);
     emitter.emit('screenView', params);
+  }
+
+  async transactionFormed({
+    context,
+    params,
+  }: WalletMethodParams<TransactionFormedContext>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('transactionFormed', params);
   }
 
   async daylightAction({

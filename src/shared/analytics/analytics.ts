@@ -9,6 +9,7 @@ type MetabaseEvent =
   | 'dapp_connection'
   | 'signed_message'
   | 'signed_transaction'
+  | 'swap_form_filled_out'
   | 'client_error'
   | 'daylight_action'
   | 'custom_evm_network_created'

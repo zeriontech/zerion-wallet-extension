@@ -121,6 +121,7 @@ import { ReceiveTokenField } from './fieldsets/ReceiveTokenField/ReceiveTokenFie
 import { SuccessState } from './SuccessState/SuccessState';
 import type { SwapFormState } from './shared/SwapFormState';
 import { usePosition } from './shared/usePosition';
+import { getSlippageOptions } from './SlippageSettings/getSlippageOptions';
 
 const rootNode = getRootDomNode();
 
@@ -558,6 +559,37 @@ function SwapFormComponent() {
     quotesData.done &&
     priceImpact?.kind === 'loss' &&
     (priceImpact.level === 'medium' || priceImpact.level === 'high');
+
+  const trackTransactionFormed = useEvent((quote: Quote2) => {
+    walletPort.request('transactionFormed', {
+      formState,
+      quote,
+      scope: 'Swap',
+      warningWasShown: Boolean(showPriceImpactCallout),
+      outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+      enoughBalance:
+        (inputPosition &&
+          getPositionBalance(inputPosition)?.gte(
+            new BigNumber(formState.inputAmount || 0)
+          )) ??
+        false,
+      slippagePercent: formState.inputChain
+        ? getSlippageOptions({
+            chain: createChain(formState.inputChain),
+            userSlippage:
+              'slippage' in formState && formState.slippage
+                ? Number(formState.slippage)
+                : null,
+          }).slippagePercent
+        : undefined,
+    });
+  });
+
+  useEffect(() => {
+    if (selectedQuote && quotesData.done) {
+      trackTransactionFormed(selectedQuote);
+    }
+  }, [selectedQuote, quotesData.done, trackTransactionFormed]);
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
