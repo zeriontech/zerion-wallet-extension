@@ -30,6 +30,13 @@ export interface DaylightEventParams {
   [key: string]: string;
 }
 
+export interface AssetClickedParams {
+  assetId: string;
+  assetName: string;
+  pathname: string;
+  section: string;
+}
+
 export const emitter = createNanoEvents<{
   backgroundScriptInitialized: () => void;
   accountsChanged: () => void;
@@ -87,4 +94,5 @@ export const emitter = createNanoEvents<{
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
   cloudflareChallengeIssued: () => void;
+  assetClicked: (data: AssetClickedParams) => void;
 }>();

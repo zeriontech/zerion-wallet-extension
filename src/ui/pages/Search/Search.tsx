@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -21,6 +22,7 @@ import { EmptyView } from 'src/ui/components/EmptyView';
 import { Media } from 'src/ui/ui-kit/Media';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
+import { walletPort } from 'src/ui/shared/channels';
 import { useSearchQuery } from './useSearchQuery';
 
 const SEARCH_RESULT_CLASS = 'search-result';
@@ -33,6 +35,19 @@ function SearchResultItem({
   index: number;
 }) {
   const { currency } = useCurrency();
+  const { pathname } = useLocation();
+
+  const handleSearchItemClick = useCallback(
+    (fungible: Fungible) => {
+      walletPort.request('assetClicked', {
+        assetId: fungible.id,
+        assetName: fungible.name,
+        pathname,
+        section: 'Search',
+      });
+    },
+    [pathname]
+  );
 
   return (
     <SurfaceItemLink
@@ -40,6 +55,7 @@ function SearchResultItem({
       data-class={SEARCH_RESULT_CLASS}
       data-index={index}
       style={{ padding: '4px 0' }}
+      onClick={() => handleSearchItemClick(fungible)}
     >
       <Media
         image={
@@ -150,12 +166,9 @@ export function Search() {
         <Spacer height={24} />
 
         {isLoading && normalizedQuery ? (
-          <VStack gap={16} style={{ alignItems: 'center', paddingInline: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
             <CircleSpinner />
-            <UIText kind="body/regular" color="var(--neutral-500)">
-              Searching...
-            </UIText>
-          </VStack>
+          </div>
         ) : normalizedQuery && fungibles.length === 0 ? (
           <EmptyView>No results</EmptyView>
         ) : fungibles.length > 0 ? (
