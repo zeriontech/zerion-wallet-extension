@@ -23,39 +23,35 @@ import { Media } from 'src/ui/ui-kit/Media';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { walletPort } from 'src/ui/shared/channels';
+import { usePreferences } from 'src/ui/features/preferences';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import CloseIcon from 'jsx:src/ui/assets/close.svg';
+import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { invariant } from 'src/shared/invariant';
+import { Button } from 'src/ui/ui-kit/Button';
+import { updateRecentSearch } from './updateRecentSearch';
 import { useSearchQuery } from './useSearchQuery';
 
-const SEARCH_RESULT_CLASS = 'search-result';
+const SEARCH_ITEM_CLASS = 'search-page-fungible-item';
 
-function SearchResultItem({
+function FungibleView({
   fungible,
   index,
+  onClick,
 }: {
   fungible: Fungible;
   index: number;
+  onClick: (fungible: Fungible) => void;
 }) {
   const { currency } = useCurrency();
-  const { pathname } = useLocation();
-
-  const handleSearchItemClick = useCallback(
-    (fungible: Fungible) => {
-      walletPort.request('assetClicked', {
-        assetId: fungible.id,
-        assetName: fungible.name,
-        pathname,
-        section: 'Search',
-      });
-    },
-    [pathname]
-  );
-
   return (
     <SurfaceItemLink
       to={`/asset/${fungible.id}`}
-      data-class={SEARCH_RESULT_CLASS}
+      data-class={SEARCH_ITEM_CLASS}
       data-index={index}
       style={{ padding: '4px 0' }}
-      onClick={() => handleSearchItemClick(fungible)}
+      onClick={() => onClick(fungible)}
     >
       <Media
         image={
@@ -100,6 +96,171 @@ function SearchResultItem({
   );
 }
 
+function SearchResultItem({
+  fungible,
+  index,
+}: {
+  fungible: Fungible;
+  index: number;
+}) {
+  const { pathname } = useLocation();
+  const { preferences, setPreferences } = usePreferences();
+
+  const handleSearchItemClick = useCallback(
+    (fungible: Fungible) => {
+      if (preferences) {
+        setPreferences({
+          resentSearch: updateRecentSearch(
+            fungible.id,
+            preferences.resentSearch
+          ),
+        });
+      }
+      walletPort.request('assetClicked', {
+        assetId: fungible.id,
+        assetName: fungible.name,
+        pathname,
+        section: 'Search',
+      });
+    },
+    [pathname, preferences, setPreferences]
+  );
+
+  return (
+    <FungibleView
+      fungible={fungible}
+      index={index}
+      onClick={handleSearchItemClick}
+    />
+  );
+}
+
+function RecentItem({
+  fungibleId,
+  index,
+}: {
+  fungibleId: string;
+  index: number;
+}) {
+  const { currency } = useCurrency();
+  const { pathname } = useLocation();
+  const { preferences, setPreferences } = usePreferences();
+
+  const { data, isLoading } = useAssetFullInfo(
+    { fungibleId, currency },
+    { source: useHttpClientSource() }
+  );
+
+  const fungible = data?.data.fungible;
+
+  const handleItemClick = useCallback(
+    (fungible: Fungible) => {
+      walletPort.request('assetClicked', {
+        assetId: fungible.id,
+        assetName: fungible.name,
+        pathname,
+        section: 'Search',
+      });
+    },
+    [pathname]
+  );
+
+  const handleRemoveItemClick = useCallback(() => {
+    if (preferences) {
+      setPreferences({
+        resentSearch: preferences.resentSearch.filter(
+          (id) => id !== fungibleId
+        ),
+      });
+    }
+  }, [fungibleId, preferences, setPreferences]);
+
+  if (!isLoading && !fungible) {
+    return null;
+  }
+
+  if (isLoading) {
+    return <div style={{ height: 68 }} />;
+  }
+
+  invariant(fungible, 'Fungible data for recent search should be defined');
+
+  return (
+    <HStack
+      gap={4}
+      justifyContent="space-between"
+      alignItems="center"
+      style={{ gridTemplateColumns: '1fr auto' }}
+    >
+      <FungibleView
+        fungible={fungible}
+        index={index}
+        onClick={handleItemClick}
+      />
+      <Button
+        kind="ghost"
+        style={{ display: 'flex' }}
+        size={28}
+        aria-label="Remove item from recent"
+        onClick={handleRemoveItemClick}
+      >
+        <CloseIcon
+          style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
+        />
+      </Button>
+    </HStack>
+  );
+}
+
+function RecentSearchList() {
+  const { preferences, setPreferences } = usePreferences();
+
+  const items = useMemo(() => {
+    return preferences?.resentSearch.map((fungibleId, index) => ({
+      key: fungibleId,
+      isInteractive: true,
+      pad: false,
+      component: <RecentItem fungibleId={fungibleId} index={index} />,
+    }));
+  }, [preferences?.resentSearch]);
+
+  const handleClearClick = useCallback(() => {
+    if (preferences) {
+      setPreferences({ resentSearch: [] });
+    }
+  }, [preferences, setPreferences]);
+
+  if (!preferences || !preferences.resentSearch?.length) {
+    return null;
+  }
+
+  return (
+    <VStack gap={4}>
+      <HStack gap={4} justifyContent="space-between" alignItems="center">
+        <UIText kind="body/accent" style={{ paddingInline: 8 }}>
+          Recent
+        </UIText>
+        <UIText kind="body/accent" color="var(--neutral-500)">
+          <UnstyledButton
+            className="hover:underline"
+            aria-label="Clear recent search"
+            onClick={handleClearClick}
+          >
+            Clear
+          </UnstyledButton>
+        </UIText>
+      </HStack>
+      <SurfaceList
+        style={{
+          paddingBlock: 0,
+          ['--surface-background-color' as string]: 'transparent',
+        }}
+        items={items || []}
+      />
+    </VStack>
+  );
+}
+
 export function Search() {
   useBackgroundKind(whiteBackgroundKind);
   const { currency } = useCurrency();
@@ -122,7 +283,7 @@ export function Search() {
     selectPrev: selectPrevResult,
     focusSearchInput,
   } = useSearchKeyboardNavigation({
-    itemClassName: SEARCH_RESULT_CLASS,
+    itemClassName: SEARCH_ITEM_CLASS,
     searchRef,
   });
 
@@ -184,7 +345,9 @@ export function Search() {
               items={items}
             />
           </VStack>
-        ) : null}
+        ) : (
+          <RecentSearchList />
+        )}
       </PageColumn>
     </>
   );

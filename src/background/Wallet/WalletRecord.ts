@@ -848,6 +848,7 @@ export class WalletRecordModel {
       configurableNonce: false,
       invitationBannerDismissed: false,
       recentAddresses: [],
+      resentSearch: [],
       mintDnaBannerDismissed: false,
       upgradeDnaBannerDismissed: false,
       inviteFriendsBannerDismissed: false,
