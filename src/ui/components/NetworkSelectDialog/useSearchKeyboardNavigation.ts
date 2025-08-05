@@ -26,13 +26,13 @@ export function useSearchKeyboardNavigation({
       index = Number((activeElement as HTMLButtonElement).dataset.index);
     }
     if (index != null) {
-      const nextNetwork = document.querySelector<HTMLButtonElement>(
+      const nextItem = document.querySelector<HTMLButtonElement>(
         `button[data-class='${itemClassName}'][data-index='${
           index + 1
         }'], a[data-class='${itemClassName}'][data-index='${index + 1}']`
       );
-      if (nextNetwork) {
-        nextNetwork.focus();
+      if (nextItem) {
+        nextItem.focus();
       }
     }
   }, [itemClassName, searchRef]);
@@ -46,13 +46,13 @@ export function useSearchKeyboardNavigation({
       index = Number((activeElement as HTMLButtonElement).dataset.index);
     }
     if (index != null && index > 0) {
-      const prevNetwork = document.querySelector<HTMLButtonElement>(
+      const prevItem = document.querySelector<HTMLButtonElement>(
         `button[data-class='${itemClassName}'][data-index='${
           index - 1
         }'], a[data-class='${itemClassName}'][data-index='${index - 1}']`
       );
-      if (prevNetwork) {
-        prevNetwork.focus();
+      if (prevItem) {
+        prevItem.focus();
       }
     }
     if (index === 0) {
