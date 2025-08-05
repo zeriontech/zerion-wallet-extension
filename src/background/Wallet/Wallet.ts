@@ -114,7 +114,11 @@ import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
-import type { DaylightEventParams, ScreenViewParams } from '../events';
+import type {
+  AssetClickedParams,
+  DaylightEventParams,
+  ScreenViewParams,
+} from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
@@ -1728,6 +1732,14 @@ export class Wallet {
   }: WalletMethodParams<BannerClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('bannerClicked', params);
+  }
+  
+  async assetClicked({
+    context,
+    params,
+  }: WalletMethodParams<AssetClickedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('assetClicked', params);
   }
 
   async cloudflareChallengeIssued({ context }: WalletMethodParams) {
