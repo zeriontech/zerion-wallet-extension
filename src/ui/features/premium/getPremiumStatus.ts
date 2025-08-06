@@ -63,3 +63,35 @@ export function usePremiumStatus({ address }: { address?: string }) {
     walletsMetaQuery,
   };
 }
+
+/**
+ * In most of the time we need to check premium status for the whole wallet
+ * However, in some cases (trading) we need to check premium status for a single particular address
+ */
+export function useSingleAddressPremiumStatus({
+  address,
+}: {
+  address: string;
+}) {
+  const normalizedAddress = normalizeAddress(address);
+
+  const walletsMetaQuery = useWalletsMetaByChunks({
+    addresses: [normalizedAddress],
+    enabled: Boolean(normalizedAddress),
+    suspense: false,
+    useErrorBoundary: false,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+
+  return {
+    isPremium: useMemo(
+      () =>
+        getPremiumStatus({
+          normalizedAddress,
+          walletsMeta: walletsMetaQuery.data || [],
+        }),
+      [normalizedAddress, walletsMetaQuery.data]
+    ),
+    walletsMetaQuery,
+  };
+}

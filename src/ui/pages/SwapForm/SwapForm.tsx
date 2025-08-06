@@ -96,6 +96,7 @@ import { useUKDetection } from 'src/ui/components/UKDisclaimer/useUKDetection';
 import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { PremiumFormBanner } from 'src/ui/features/premium/banners/FormBanner';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -1015,12 +1016,8 @@ function SwapFormComponent() {
             </HStack>
           ) : null}
         </VStack>
-        {isUK ? (
-          <>
-            <UKDisclaimer />
-            <Spacer height={8} />
-          </>
-        ) : null}
+        {isUK ? <UKDisclaimer style={{ marginBottom: 8 }} /> : null}
+        <PremiumFormBanner address={address} style={{ marginBottom: 8 }} />
         {selectedQuote?.error?.message ? (
           <TransactionWarning
             title="Warning"
