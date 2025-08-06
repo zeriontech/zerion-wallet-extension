@@ -6,9 +6,8 @@ export function useSearchQuery(query: string, currency: string) {
   return useQuery<Response | null>({
     queryKey: ['searchQuery', query, currency],
     queryFn: () => {
-      if (!query.trim()) return null;
       return ZerionAPI.searchQuery({
-        query: query.trim(),
+        query,
         currency,
         limit: 5,
       });
