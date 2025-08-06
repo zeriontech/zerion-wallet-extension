@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useMemo, useRef, useCallback } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -261,31 +261,13 @@ function RecentSearchList() {
   );
 }
 
-export function Search() {
-  useBackgroundKind(whiteBackgroundKind);
+function SearchResultList({ query }: { query: string }) {
   const { currency } = useCurrency();
-  const [query, setQuery] = useState('');
-  const debouncedHandleChange = useDebouncedCallback(setQuery, 300);
-  const searchRef = useRef<HTMLInputElement | null>(null);
-  const normalizedQuery = query.trim();
-
-  const { data: searchResults, isLoading } = useSearchQuery(
-    normalizedQuery,
-    currency
-  );
+  const { data: searchResults, isLoading } = useSearchQuery(query, currency);
 
   const fungibles = useMemo(() => {
     return searchResults?.data?.fungibles || [];
   }, [searchResults]);
-
-  const {
-    selectNext: selectNextResult,
-    selectPrev: selectPrevResult,
-    focusSearchInput,
-  } = useSearchKeyboardNavigation({
-    itemClassName: SEARCH_ITEM_CLASS,
-    searchRef,
-  });
 
   const items = useMemo(() => {
     return fungibles.map((fungible, index) => ({
@@ -295,6 +277,47 @@ export function Search() {
       component: <SearchResultItem fungible={fungible} index={index} />,
     }));
   }, [fungibles]);
+
+  return isLoading ? (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <CircleSpinner />
+    </div>
+  ) : fungibles.length === 0 ? (
+    <EmptyView>No results</EmptyView>
+  ) : (
+    <VStack gap={4}>
+      <UIText kind="body/accent" style={{ paddingInline: 8 }}>
+        Results
+      </UIText>
+      <SurfaceList
+        style={{
+          paddingBlock: 0,
+          ['--surface-background-color' as string]: 'transparent',
+        }}
+        items={items}
+      />
+    </VStack>
+  );
+}
+
+export function Search() {
+  useBackgroundKind(whiteBackgroundKind);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlQuery = searchParams.get('query') || '';
+  const debouncedSetSearchParams = useDebouncedCallback((value: string) => {
+    setSearchParams(value ? { query: value } : {}, { replace: true });
+  }, 300);
+  const searchRef = useRef<HTMLInputElement | null>(null);
+  const normalizedQuery = urlQuery.trim();
+
+  const {
+    selectNext: selectNextResult,
+    selectPrev: selectPrevResult,
+    focusSearchInput,
+  } = useSearchKeyboardNavigation({
+    itemClassName: SEARCH_ITEM_CLASS,
+    searchRef,
+  });
 
   return (
     <>
@@ -315,7 +338,10 @@ export function Search() {
             placeholder="Search tokens"
             autoFocus={true}
             boxHeight={40}
-            onChange={(e) => debouncedHandleChange(e.currentTarget.value)}
+            defaultValue={urlQuery}
+            onChange={(e) => {
+              debouncedSetSearchParams(e.currentTarget.value);
+            }}
             onKeyDown={(event) => {
               if (event.key === 'ArrowDown') {
                 selectNextResult();
@@ -326,25 +352,8 @@ export function Search() {
 
         <Spacer height={24} />
 
-        {isLoading && normalizedQuery ? (
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <CircleSpinner />
-          </div>
-        ) : normalizedQuery && fungibles.length === 0 ? (
-          <EmptyView>No results</EmptyView>
-        ) : fungibles.length > 0 ? (
-          <VStack gap={4}>
-            <UIText kind="body/accent" style={{ paddingInline: 8 }}>
-              Results
-            </UIText>
-            <SurfaceList
-              style={{
-                paddingBlock: 0,
-                ['--surface-background-color' as string]: 'transparent',
-              }}
-              items={items}
-            />
-          </VStack>
+        {normalizedQuery ? (
+          <SearchResultList query={normalizedQuery} />
         ) : (
           <RecentSearchList />
         )}
