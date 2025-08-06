@@ -12,7 +12,7 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { PageTop } from 'src/ui/components/PageTop';
-import { useSearchKeyboardNavigation } from 'src/ui/components/NetworkSelectDialog/useSearchKeyboardNavigation';
+import { useSearchKeyboardNavigation } from 'src/ui/shared/useSearchKeyboardNavigation';
 import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
