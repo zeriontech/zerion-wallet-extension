@@ -40,8 +40,9 @@ const FungibleView = React.forwardRef<
     fungible: Fungible;
     index: number;
     highlighted?: boolean;
+    onClick: () => void;
   }
->(({ fungible, highlighted }, ref) => {
+>(({ fungible, highlighted, onClick }, ref) => {
   const { currency } = useCurrency();
   return (
     <SurfaceItemLink
@@ -49,6 +50,7 @@ const FungibleView = React.forwardRef<
       to={`/asset/${fungible.id}`}
       style={{ padding: '4px 0' }}
       highlighted={highlighted}
+      onClick={onClick}
     >
       <Media
         image={
@@ -99,13 +101,15 @@ const SearchResultItem = React.forwardRef<
     fungible: Fungible;
     index: number;
     highlighted?: boolean;
+    onClick: () => void;
   }
->(({ fungible, index, highlighted }, ref) => {
+>(({ fungible, index, highlighted, onClick }, ref) => {
   return (
     <FungibleView
       fungible={fungible}
       index={index}
       highlighted={highlighted}
+      onClick={onClick}
       ref={ref}
     />
   );
@@ -117,8 +121,9 @@ const RecentItem = React.forwardRef<
     fungibleId: string;
     index: number;
     highlighted?: boolean;
+    onClick: () => void;
   }
->(({ fungibleId, index, highlighted }, ref) => {
+>(({ fungibleId, index, highlighted, onClick }, ref) => {
   const { currency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
 
@@ -161,6 +166,7 @@ const RecentItem = React.forwardRef<
         fungible={fungible}
         index={index}
         highlighted={highlighted}
+        onClick={onClick}
       />
       <Button
         kind="ghost"
@@ -224,6 +230,26 @@ export function Search() {
 
   const items = normalizedQuery ? searchItems : recentItems;
 
+  const handleFungibleClick = useCallback(
+    (fungibleId: string) => {
+      if (preferences) {
+        setPreferences({
+          recentSearch: updateRecentSearch(
+            fungibleId,
+            preferences.recentSearch
+          ),
+        });
+      }
+      walletPort.request('assetClicked', {
+        assetId: fungibleId,
+        pathname,
+        section: 'Search',
+      });
+      navigate(`/asset/${fungibleId}`);
+    },
+    [navigate, pathname, preferences, setPreferences]
+  );
+
   const { getItemProps, getInputProps, getMenuProps, highlightedIndex } =
     useCombobox<SearchPageItem>({
       isOpen: true,
@@ -238,20 +264,7 @@ export function Search() {
         if (!fungibleId) {
           return;
         }
-        if (preferences) {
-          setPreferences({
-            recentSearch: updateRecentSearch(
-              fungibleId,
-              preferences.recentSearch
-            ),
-          });
-        }
-        walletPort.request('assetClicked', {
-          assetId: fungibleId,
-          pathname,
-          section: 'Search',
-        });
-        navigate(`/asset/${fungibleId}`);
+        handleFungibleClick(fungibleId);
       },
       stateReducer: (state, actionAndChanges) => {
         const { changes, type } = actionAndChanges;
@@ -286,6 +299,7 @@ export function Search() {
               {...getItemProps({
                 item,
                 index,
+                onClick: () => handleFungibleClick(item.fungibleId),
               })}
             />
           ),
@@ -302,13 +316,14 @@ export function Search() {
               {...getItemProps({
                 item,
                 index,
+                onClick: () => handleFungibleClick(item.fungibleId),
               })}
             />
           ),
         } as Item;
       }
     });
-  }, [items, getItemProps, highlightedIndex]);
+  }, [items, getItemProps, highlightedIndex, handleFungibleClick]);
 
   const handleClearRecentClick = useCallback(() => {
     setPreferences({ recentSearch: [] });

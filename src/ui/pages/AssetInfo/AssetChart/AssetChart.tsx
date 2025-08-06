@@ -219,7 +219,12 @@ export function AssetChart({
 
   return (
     <div
-      style={{ position: 'relative', left: -16, width: 'calc(100% + 32px)' }}
+      style={{
+        position: 'relative',
+        left: -16,
+        width: 'calc(100% + 32px)',
+        overflow: 'hidden',
+      }}
     >
       <Chart
         chartPoints={chartPoints}
