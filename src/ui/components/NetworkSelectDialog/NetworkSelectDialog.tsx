@@ -41,11 +41,11 @@ import { PageBottom } from '../PageBottom';
 import { PageColumn } from '../PageColumn';
 import { ViewLoading } from '../ViewLoading';
 import { KeyboardShortcut } from '../KeyboardShortcut';
+import { useSearchKeyboardNavigation } from '../../shared/useSearchKeyboardNavigation';
 import { LIST_ITEM_CLASS } from './constants';
 import type { NetworkGroups } from './createNetworkGroups';
 import { createGroups } from './createNetworkGroups';
 import { AddNetworkLink } from './AddNetworkLink';
-import { useSearchKeyboardNavigation } from './useSearchKeyboardNavigation';
 import { NetworksEmptyView, ShowTestnetsHint } from './NetworksEmptyView';
 
 function NativeBalance({ address, chain }: { address: string; chain: Chain }) {
