@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useCallback } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import React, { useMemo, useCallback } from 'react';
+import { useCombobox } from 'downshift';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -12,9 +13,8 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { PageTop } from 'src/ui/components/PageTop';
-import { useSearchKeyboardNavigation } from 'src/ui/shared/useSearchKeyboardNavigation';
+import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
@@ -30,28 +30,25 @@ import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo'
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { invariant } from 'src/shared/invariant';
 import { Button } from 'src/ui/ui-kit/Button';
+import { useEvent } from 'src/ui/shared/useEvent';
 import { updateRecentSearch } from './updateRecentSearch';
 import { useSearchQuery } from './useSearchQuery';
 
-const SEARCH_ITEM_CLASS = 'search-page-fungible-item';
-
-function FungibleView({
-  fungible,
-  index,
-  onClick,
-}: {
-  fungible: Fungible;
-  index: number;
-  onClick: (fungible: Fungible) => void;
-}) {
+const FungibleView = React.forwardRef<
+  HTMLAnchorElement,
+  {
+    fungible: Fungible;
+    index: number;
+    highlighted?: boolean;
+  }
+>(({ fungible, highlighted }, ref) => {
   const { currency } = useCurrency();
   return (
     <SurfaceItemLink
+      ref={ref}
       to={`/asset/${fungible.id}`}
-      data-class={SEARCH_ITEM_CLASS}
-      data-index={index}
       style={{ padding: '4px 0' }}
-      onClick={() => onClick(fungible)}
+      highlighted={highlighted}
     >
       <Media
         image={
@@ -94,56 +91,35 @@ function FungibleView({
       />
     </SurfaceItemLink>
   );
-}
+});
 
-function SearchResultItem({
-  fungible,
-  index,
-}: {
-  fungible: Fungible;
-  index: number;
-}) {
-  const { pathname } = useLocation();
-  const { preferences, setPreferences } = usePreferences();
-
-  const handleSearchItemClick = useCallback(
-    (fungible: Fungible) => {
-      if (preferences) {
-        setPreferences({
-          resentSearch: updateRecentSearch(
-            fungible.id,
-            preferences.resentSearch
-          ),
-        });
-      }
-      walletPort.request('assetClicked', {
-        assetId: fungible.id,
-        assetName: fungible.name,
-        pathname,
-        section: 'Search',
-      });
-    },
-    [pathname, preferences, setPreferences]
-  );
-
+const SearchResultItem = React.forwardRef<
+  HTMLAnchorElement,
+  {
+    fungible: Fungible;
+    index: number;
+    highlighted?: boolean;
+  }
+>(({ fungible, index, highlighted }, ref) => {
   return (
     <FungibleView
       fungible={fungible}
       index={index}
-      onClick={handleSearchItemClick}
+      highlighted={highlighted}
+      ref={ref}
     />
   );
-}
+});
 
-function RecentItem({
-  fungibleId,
-  index,
-}: {
-  fungibleId: string;
-  index: number;
-}) {
+const RecentItem = React.forwardRef<
+  HTMLAnchorElement,
+  {
+    fungibleId: string;
+    index: number;
+    highlighted?: boolean;
+  }
+>(({ fungibleId, index, highlighted }, ref) => {
   const { currency } = useCurrency();
-  const { pathname } = useLocation();
   const { preferences, setPreferences } = usePreferences();
 
   const { data, isLoading } = useAssetFullInfo(
@@ -153,22 +129,10 @@ function RecentItem({
 
   const fungible = data?.data.fungible;
 
-  const handleItemClick = useCallback(
-    (fungible: Fungible) => {
-      walletPort.request('assetClicked', {
-        assetId: fungible.id,
-        assetName: fungible.name,
-        pathname,
-        section: 'Search',
-      });
-    },
-    [pathname]
-  );
-
   const handleRemoveItemClick = useCallback(() => {
     if (preferences) {
       setPreferences({
-        resentSearch: preferences.resentSearch.filter(
+        recentSearch: preferences.recentSearch.filter(
           (id) => id !== fungibleId
         ),
       });
@@ -193,9 +157,10 @@ function RecentItem({
       style={{ gridTemplateColumns: '1fr auto' }}
     >
       <FungibleView
+        ref={ref}
         fungible={fungible}
         index={index}
-        onClick={handleItemClick}
+        highlighted={highlighted}
       />
       <Button
         kind="ghost"
@@ -210,120 +175,156 @@ function RecentItem({
       </Button>
     </HStack>
   );
-}
+});
 
-function RecentSearchList() {
-  const { preferences, setPreferences } = usePreferences();
-
-  const items = useMemo(() => {
-    return preferences?.resentSearch.map((fungibleId, index) => ({
-      key: fungibleId,
-      isInteractive: true,
-      pad: false,
-      component: <RecentItem fungibleId={fungibleId} index={index} />,
-    }));
-  }, [preferences?.resentSearch]);
-
-  const handleClearClick = useCallback(() => {
-    if (preferences) {
-      setPreferences({ resentSearch: [] });
-    }
-  }, [preferences, setPreferences]);
-
-  if (!preferences || !preferences.resentSearch?.length) {
-    return null;
-  }
-
-  return (
-    <VStack gap={4}>
-      <HStack gap={4} justifyContent="space-between" alignItems="center">
-        <UIText kind="body/accent" style={{ paddingInline: 8 }}>
-          Recent
-        </UIText>
-        <UIText kind="body/accent" color="var(--neutral-500)">
-          <UnstyledButton
-            className="hover:underline"
-            aria-label="Clear recent search"
-            onClick={handleClearClick}
-          >
-            Clear
-          </UnstyledButton>
-        </UIText>
-      </HStack>
-      <SurfaceList
-        style={{
-          paddingBlock: 0,
-          ['--surface-background-color' as string]: 'transparent',
-        }}
-        items={items || []}
-      />
-    </VStack>
-  );
-}
-
-function SearchResultList({ query }: { query: string }) {
-  const { currency } = useCurrency();
-  const { data: searchResults, isLoading } = useSearchQuery(query, currency);
-
-  const fungibles = useMemo(() => {
-    return searchResults?.data?.fungibles || [];
-  }, [searchResults]);
-
-  const items = useMemo(() => {
-    return fungibles.map((fungible, index) => ({
-      key: fungible.id,
-      isInteractive: true,
-      pad: false,
-      component: <SearchResultItem fungible={fungible} index={index} />,
-    }));
-  }, [fungibles]);
-
-  return isLoading ? (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <CircleSpinner />
-    </div>
-  ) : fungibles.length === 0 ? (
-    <EmptyView>No results</EmptyView>
-  ) : (
-    <VStack gap={4}>
-      <UIText kind="body/accent" style={{ paddingInline: 8 }}>
-        Results
-      </UIText>
-      <SurfaceList
-        style={{
-          paddingBlock: 0,
-          ['--surface-background-color' as string]: 'transparent',
-        }}
-        items={items}
-      />
-    </VStack>
-  );
-}
+type SearchPageItem =
+  | { kind: 'recent'; fungibleId: string }
+  | { kind: 'result'; fungibleId: string; fungible: Fungible };
 
 export function Search() {
   useBackgroundKind(whiteBackgroundKind);
+  const { currency } = useCurrency();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlQuery = searchParams.get('query') || '';
-  const debouncedSetSearchParams = useDebouncedCallback((value: string) => {
+  const setSearchParamsEvent = useEvent((value: string) => {
     setSearchParams(value ? { query: value } : {}, { replace: true });
-  }, 300);
-  const searchRef = useRef<HTMLInputElement | null>(null);
+  });
+  const debouncedSetSearchParams = useDebouncedCallback(
+    setSearchParamsEvent,
+    500
+  );
   const normalizedQuery = urlQuery.trim();
 
-  const {
-    selectNext: selectNextResult,
-    selectPrev: selectPrevResult,
-    focusSearchInput,
-  } = useSearchKeyboardNavigation({
-    itemClassName: SEARCH_ITEM_CLASS,
-    searchRef,
-  });
+  const { preferences, setPreferences } = usePreferences();
+  const { data: searchResults, isLoading } = useSearchQuery(
+    normalizedQuery,
+    currency
+  );
+
+  const recentItems = useMemo<SearchPageItem[]>(() => {
+    return (
+      preferences?.recentSearch.map((id) => ({
+        kind: 'recent',
+        fungibleId: id,
+      })) || []
+    );
+  }, [preferences]);
+
+  const searchItems = useMemo<SearchPageItem[]>(() => {
+    return (
+      searchResults?.data.fungibles?.map((fungible) => ({
+        kind: 'result',
+        fungibleId: fungible.id,
+        fungible,
+      })) || []
+    );
+  }, [searchResults]);
+
+  const items = normalizedQuery ? searchItems : recentItems;
+
+  const { getItemProps, getInputProps, getMenuProps, highlightedIndex } =
+    useCombobox<SearchPageItem>({
+      isOpen: true,
+      items,
+      itemToString: (item) => item?.fungibleId || '',
+      onInputValueChange: ({ inputValue }) => {
+        debouncedSetSearchParams(inputValue || '');
+      },
+      defaultInputValue: urlQuery,
+      onSelectedItemChange: ({ selectedItem }) => {
+        const fungibleId = selectedItem?.fungibleId;
+        if (!fungibleId) {
+          return;
+        }
+        if (preferences) {
+          setPreferences({
+            recentSearch: updateRecentSearch(
+              fungibleId,
+              preferences.recentSearch
+            ),
+          });
+        }
+        const name =
+          selectedItem.kind === 'result'
+            ? selectedItem.fungible.name
+            : undefined;
+        if (name) {
+          walletPort.request('assetClicked', {
+            assetId: fungibleId,
+            assetName: name,
+            pathname,
+            section: 'Search',
+          });
+        }
+        navigate(`/asset/${fungibleId}`);
+      },
+      stateReducer: (state, actionAndChanges) => {
+        const { changes, type } = actionAndChanges;
+        switch (type) {
+          case useCombobox.stateChangeTypes.InputKeyDownEnter:
+          case useCombobox.stateChangeTypes.ItemClick: {
+            /**
+             * By default, downshift fills input with the full name
+             * of selected item; we want to avoid this, because
+             * the server search doesn't work well with spaces
+             * Also, keeping user-entered value is better UX in our case, because
+             * the user gets can see other results sooner when he reopens the menu
+             */
+            return { ...changes, inputValue: state.inputValue };
+          }
+        }
+        return changes;
+      },
+    });
+
+  const surfaceItems = useMemo<Item[]>(() => {
+    return items.map((item, index) => {
+      if (item.kind === 'recent') {
+        return {
+          key: item.fungibleId,
+          isInteractive: true,
+          pad: false,
+          component: (
+            <RecentItem
+              fungibleId={item.fungibleId}
+              highlighted={highlightedIndex === index}
+              {...getItemProps({
+                item,
+                index,
+              })}
+            />
+          ),
+        } as Item;
+      } else {
+        return {
+          key: item.fungibleId,
+          isInteractive: true,
+          pad: false,
+          component: (
+            <SearchResultItem
+              fungible={item.fungible}
+              highlighted={highlightedIndex === index}
+              {...getItemProps({
+                item,
+                index,
+              })}
+            />
+          ),
+        } as Item;
+      }
+    });
+  }, [items, getItemProps, highlightedIndex]);
+
+  const handleClearClick = useCallback(() => {
+    if (preferences) {
+      setPreferences({ recentSearch: [] });
+    }
+  }, [preferences, setPreferences]);
 
   return (
     <>
-      <KeyboardShortcut combination="f" onKeyDown={focusSearchInput} />
-      <KeyboardShortcut combination="ArrowDown" onKeyDown={selectNextResult} />
-      <KeyboardShortcut combination="ArrowUp" onKeyDown={selectPrevResult} />
       <NavigationTitle title="Search" />
       <PageColumn
         style={{
@@ -333,30 +334,54 @@ export function Search() {
         <PageTop />
         <div style={{ paddingInline: 8 }}>
           <SearchInput
-            ref={searchRef}
-            type="search"
-            placeholder="Search tokens"
-            autoFocus={true}
             boxHeight={40}
-            defaultValue={urlQuery}
-            onChange={(e) => {
-              debouncedSetSearchParams(e.currentTarget.value);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'ArrowDown') {
-                selectNextResult();
-              }
-            }}
+            {...getInputProps({
+              placeholder: 'Search tokens',
+              type: 'search',
+              autoFocus: true,
+            })}
           />
         </div>
 
         <Spacer height={24} />
 
-        {normalizedQuery ? (
-          <SearchResultList query={normalizedQuery} />
-        ) : (
-          <RecentSearchList />
-        )}
+        <VStack gap={4}>
+          {normalizedQuery ? (
+            <UIText kind="body/accent" style={{ paddingInline: 8 }}>
+              Results
+            </UIText>
+          ) : preferences?.recentSearch.length ? (
+            <HStack gap={4} justifyContent="space-between" alignItems="center">
+              <UIText kind="body/accent" style={{ paddingInline: 8 }}>
+                Recent
+              </UIText>
+              <UIText kind="body/accent" color="var(--neutral-500)">
+                <UnstyledButton
+                  className="hover:underline"
+                  aria-label="Clear recent search"
+                  onClick={handleClearClick}
+                >
+                  Clear
+                </UnstyledButton>
+              </UIText>
+            </HStack>
+          ) : null}
+          {normalizedQuery && isLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <CircleSpinner />
+            </div>
+          ) : normalizedQuery && surfaceItems.length === 0 ? (
+            <EmptyView>No results</EmptyView>
+          ) : null}
+          <SurfaceList
+            {...getMenuProps()}
+            style={{
+              paddingBlock: 0,
+              ['--surface-background-color' as string]: 'transparent',
+            }}
+            items={surfaceItems}
+          />
+        </VStack>
       </PageColumn>
     </>
   );
