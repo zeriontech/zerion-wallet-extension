@@ -41,7 +41,7 @@ import { PageBottom } from '../PageBottom';
 import { PageColumn } from '../PageColumn';
 import { ViewLoading } from '../ViewLoading';
 import { KeyboardShortcut } from '../KeyboardShortcut';
-import { useSearchKeyboardNavigation } from '../../shared/useSearchKeyboardNavigation';
+import { useSearchKeyboardNavigation } from './useSearchKeyboardNavigation';
 import { LIST_ITEM_CLASS } from './constants';
 import type { NetworkGroups } from './createNetworkGroups';
 import { createGroups } from './createNetworkGroups';

@@ -246,19 +246,11 @@ export function Search() {
             ),
           });
         }
-        const name =
-          selectedItem.kind === 'result'
-            ? selectedItem.fungible.name
-            : undefined;
-        // Send analytics event only for search results, not for recent
-        if (name) {
-          walletPort.request('assetClicked', {
-            assetId: fungibleId,
-            assetName: name,
-            pathname,
-            section: 'Search',
-          });
-        }
+        walletPort.request('assetClicked', {
+          assetId: fungibleId,
+          pathname,
+          section: 'Search',
+        });
         navigate(`/asset/${fungibleId}`);
       },
       stateReducer: (state, actionAndChanges) => {

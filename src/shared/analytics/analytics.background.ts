@@ -184,13 +184,19 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
-  emitter.on('assetClicked', (data) => {
-    const { assetId, assetName, pathname, section } = data;
+  emitter.on('assetClicked', async (data) => {
+    const { assetId, pathname, section } = data;
+
+    const assetData = await queryFungibleInfo({
+      fungibleId: assetId,
+      currency: 'usd',
+    });
+
     const params = createParams({
       request_name: 'asset_clicked',
       screen_name: pathname,
       asset_id: assetId,
-      asset_name: assetName,
+      asset_name: assetData.data.fungible.name,
       section_id: section,
     });
     const event_name = 'General: Asset Clicked';
