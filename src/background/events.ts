@@ -32,7 +32,6 @@ export interface DaylightEventParams {
 
 export interface AssetClickedParams {
   assetId: string;
-  assetName: string;
   pathname: string;
   section: string;
 }

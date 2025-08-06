@@ -52,7 +52,7 @@ import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/Ch
 import type { NetworkGroups } from 'src/ui/components/NetworkSelectDialog/createNetworkGroups';
 import { createGroups } from 'src/ui/components/NetworkSelectDialog/createNetworkGroups';
 import { AddNetworkLink } from 'src/ui/components/NetworkSelectDialog/AddNetworkLink';
-import { useSearchKeyboardNavigation } from 'src/ui/shared/useSearchKeyboardNavigation';
+import { useSearchKeyboardNavigation } from 'src/ui/components/NetworkSelectDialog/useSearchKeyboardNavigation';
 import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
