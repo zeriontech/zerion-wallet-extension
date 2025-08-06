@@ -198,10 +198,10 @@ export function Search() {
   const normalizedQuery = urlQuery.trim();
 
   const { preferences, setPreferences } = usePreferences();
-  const { data: searchResults, isLoading } = useSearchQuery(
-    normalizedQuery,
-    currency
-  );
+  const { data: searchResults, isLoading } = useSearchQuery({
+    query: normalizedQuery,
+    currency,
+  });
 
   const recentItems = useMemo<SearchPageItem[]>(() => {
     return (
