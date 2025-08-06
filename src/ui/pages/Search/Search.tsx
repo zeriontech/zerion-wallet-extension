@@ -250,6 +250,7 @@ export function Search() {
           selectedItem.kind === 'result'
             ? selectedItem.fungible.name
             : undefined;
+        // Send analytics event only for search results, not for recent
         if (name) {
           walletPort.request('assetClicked', {
             assetId: fungibleId,
@@ -317,11 +318,9 @@ export function Search() {
     });
   }, [items, getItemProps, highlightedIndex]);
 
-  const handleClearClick = useCallback(() => {
-    if (preferences) {
-      setPreferences({ recentSearch: [] });
-    }
-  }, [preferences, setPreferences]);
+  const handleClearRecentClick = useCallback(() => {
+    setPreferences({ recentSearch: [] });
+  }, [setPreferences]);
 
   return (
     <>
@@ -359,7 +358,7 @@ export function Search() {
                 <UnstyledButton
                   className="hover:underline"
                   aria-label="Clear recent search"
-                  onClick={handleClearClick}
+                  onClick={handleClearRecentClick}
                 >
                   Clear
                 </UnstyledButton>
