@@ -41,7 +41,10 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
-import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import {
+  showConfirmDialog,
+  showConfirmDialogWithCondition,
+} from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { TransactionConfirmationView } from 'src/ui/components/address-action/TransactionConfirmationView';
@@ -114,7 +117,10 @@ import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
 import { getPopularTokens } from './shared/getPopularTokens';
 import type { PriceImpact } from './shared/price-impact';
-import { calculatePriceImpact } from './shared/price-impact';
+import {
+  calculatePriceImpact,
+  getPriceImpactBlockingWarningProps,
+} from './shared/price-impact';
 import { PriceImpactLine } from './shared/PriceImpactLine';
 import { SpendTokenField } from './fieldsets/SpendTokenField/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField/ReceiveTokenField';
@@ -122,6 +128,7 @@ import { SuccessState } from './SuccessState/SuccessState';
 import type { SwapFormState } from './shared/SwapFormState';
 import { usePosition } from './shared/usePosition';
 import { getSlippageOptions } from './SlippageSettings/getSlippageOptions';
+import { BlockingWarningOverlay } from './shared/BlockingWarningOverlay';
 
 const rootNode = getRootDomNode();
 
@@ -420,6 +427,9 @@ function SwapFormComponent() {
   const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const slippageDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const blockingWarningDialogRef = useRef<HTMLDialogElementInterface | null>(
+    null
+  );
 
   const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
   const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
@@ -596,6 +606,12 @@ function SwapFormComponent() {
     }
   }, [selectedQuote, quotesData.done, trackTransactionFormed]);
 
+  const blockingWarningProps = useMemo(() => {
+    return priceImpact && selectedQuote?.transactionSwap
+      ? getPriceImpactBlockingWarningProps(priceImpact)
+      : null;
+  }, [priceImpact, selectedQuote]);
+
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
@@ -746,7 +762,18 @@ function SwapFormComponent() {
           );
         }}
       />
-
+      <BottomSheetDialog
+        ref={blockingWarningDialogRef}
+        height="min-content"
+        containerStyle={{ display: 'flex', flexDirection: 'column' }}
+        renderWhenOpen={() => {
+          invariant(
+            blockingWarningProps,
+            'Blocking warning props must be defined'
+          );
+          return <BlockingWarningOverlay {...blockingWarningProps} />;
+        }}
+      />
       <BottomSheetDialog
         ref={confirmDialogRef}
         key={selectedQuote?.transactionApprove ? 'approve' : 'swap'}
@@ -861,7 +888,10 @@ function SwapFormComponent() {
           event.preventDefault();
 
           if (event.currentTarget.checkValidity()) {
-            invariant(confirmDialogRef.current, 'Dialog not found');
+            invariant(
+              blockingWarningDialogRef.current,
+              'Blocking warning dialog not found'
+            );
             const formData = new FormData(event.currentTarget);
             const submitType = formData.get('submit_type');
             const rawInterpretationAction = formData.get('interpretation') as
@@ -870,14 +900,23 @@ function SwapFormComponent() {
             const interpretationAction = rawInterpretationAction
               ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
-            showConfirmDialog(confirmDialogRef.current).then(() => {
-              if (submitType === 'approve') {
-                sendApproveTransaction(interpretationAction);
-              } else if (submitType === 'swap') {
-                sendTransaction(interpretationAction);
-              } else {
-                throw new Error('Must set a submit_type to form');
-              }
+            showConfirmDialogWithCondition(
+              blockingWarningDialogRef.current,
+              Boolean(blockingWarningProps)
+            ).then(() => {
+              invariant(
+                confirmDialogRef.current,
+                'Confirmation dialog not found'
+              );
+              return showConfirmDialog(confirmDialogRef.current).then(() => {
+                if (submitType === 'approve') {
+                  sendApproveTransaction(interpretationAction);
+                } else if (submitType === 'swap') {
+                  sendTransaction(interpretationAction);
+                } else {
+                  throw new Error('Must set a submit_type to form');
+                }
+              });
             });
           }
         }}

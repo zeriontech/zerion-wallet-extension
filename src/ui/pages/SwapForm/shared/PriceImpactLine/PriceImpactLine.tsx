@@ -1,9 +1,7 @@
-import React, { useMemo } from 'react';
-import { Surface } from 'src/ui/ui-kit/Surface';
-import { HStack } from 'src/ui/ui-kit/HStack';
-import { UIText } from 'src/ui/ui-kit/UIText';
+import React from 'react';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import { getPriceImpactPercentage, type PriceImpact } from '../price-impact';
 
 export function PriceImpactLine({
@@ -17,13 +15,9 @@ export function PriceImpactLine({
     ? getPriceImpactPercentage(priceImpact)
     : null;
 
-  const priceImpactText = useMemo(
-    () =>
-      priceImpactPercentage
-        ? `${formatPercent(priceImpactPercentage, 'en')}%`
-        : null,
-    [priceImpactPercentage]
-  );
+  if (!priceImpactPercentage) {
+    return null;
+  }
 
   if (priceImpact?.kind === 'n/a') {
     return (
@@ -36,18 +30,23 @@ export function PriceImpactLine({
   }
 
   return (
-    <Surface
-      padding={12}
-      style={{ backgroundColor: 'var(--neutral-100)', ...style }}
+    <UIText
+      kind="body/accent"
+      color="var(--negative-500)"
+      style={{
+        borderRadius: 24,
+        border: '1px solid var(--negative-300)',
+        background:
+          'linear-gradient(94deg, var(--negative-200) 0%, var(--negative-300) 100%)',
+        padding: '12px 16px',
+        ...style,
+      }}
     >
-      <HStack gap={4} justifyContent="space-between">
-        <UIText kind="body/accent">High Price Impact</UIText>
-        {priceImpactText ? (
-          <UIText kind="body/regular" color="var(--negative-500)">
-            {priceImpactText}
-          </UIText>
-        ) : null}
-      </HStack>
-    </Surface>
+      This trade will result in{' '}
+      {formatPercent(Math.abs(priceImpactPercentage), 'en', {
+        maximumFractionDigits: 0,
+      })}
+      % loss
+    </UIText>
   );
 }
