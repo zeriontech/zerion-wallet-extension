@@ -101,6 +101,15 @@ interface AddressMembership {
   levelProgress: number;
   newRewards: number;
   premium: MigrationToken['premium'] | null;
+  /** @description Expired premium info */
+  expiredPremium?: {
+    /**
+     * Format: date-time
+     * @description Premium expiration time
+     * @example null
+     */
+    expirationTime?: string | null;
+  } | null;
   migration: {
     balances: MigrationBalances[];
     nonPremiumTokens: NonPremiumTokens[];
