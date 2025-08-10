@@ -22,7 +22,7 @@ import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebase
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 
-type PremiumStatusKind = 'active' | 'expiring' | 'expired';
+type PremiumStatusKind = 'active' | 'expiring' | 'expired' | 'none';
 
 export function PremiumPage() {
   useBackgroundKind(whiteBackgroundKind);
@@ -44,37 +44,42 @@ export function PremiumPage() {
     suspense: false,
   });
 
-  const premiumInfo = walletsMeta?.at(0)?.membership.premium;
-  const expireDate = premiumInfo?.expirationTime;
+  const membershipInfo = walletsMeta?.at(0)?.membership;
+  const hasActivePremium = Boolean(membershipInfo?.premium);
+  const activePremiumExpirationDate = membershipInfo?.premium?.expirationTime;
+  const previousPremiumExpirationDate =
+    membershipInfo?.expiredPremium?.expirationTime;
 
-  const isMoreThan7Days = useMemo(
+  const isMoreThan7DaysLeft = useMemo(
     () =>
-      expireDate ? dayjs(expireDate).isAfter(dayjs().add(7, 'day')) : false,
-    [expireDate]
+      activePremiumExpirationDate
+        ? dayjs(activePremiumExpirationDate).isAfter(dayjs().add(7, 'day'))
+        : false,
+    [activePremiumExpirationDate]
   );
 
-  const isUnlimited = premiumInfo && !expireDate;
+  const isUnlimited = hasActivePremium && !activePremiumExpirationDate;
 
   const kind: PremiumStatusKind = isUnlimited
     ? 'active'
-    : expireDate
-    ? isMoreThan7Days
+    : previousPremiumExpirationDate
+    ? isMoreThan7DaysLeft
       ? 'active'
       : 'expiring'
-    : 'expired';
-
-  const formattedDate = expireDate
-    ? dayjs(expireDate).format('MMMM D, YYYY')
-    : '';
+    : previousPremiumExpirationDate != null
+    ? 'expired'
+    : 'none';
 
   const formattedDateInfo = isUnlimited
     ? 'Lifetime'
-    : expireDate
+    : activePremiumExpirationDate
     ? kind === 'active'
-      ? `Until ${formattedDate}`
+      ? `Until ${dayjs(activePremiumExpirationDate).format('MMMM D, YYYY')}`
       : kind === 'expiring'
-      ? `${dayjs(expireDate).fromNow(true)} left`
+      ? `${dayjs(activePremiumExpirationDate).fromNow(true)} left`
       : ''
+    : kind === 'expired'
+    ? `On ${dayjs(previousPremiumExpirationDate).format('MMMM D, YYYY')}`
     : '';
 
   return (
@@ -118,67 +123,73 @@ export function PremiumPage() {
             borderRadius={24}
             borderWidth={6}
           />
-          <VStack gap={8} style={{ justifyItems: 'center' }}>
-            <HStack gap={8} alignItems="center" justifyContent="center">
+          {kind !== 'none' ? (
+            <VStack gap={8} style={{ justifyItems: 'center' }}>
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                <UIText
+                  kind="headline/h2"
+                  style={{
+                    background:
+                      'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Premium
+                </UIText>
+                {kind === 'active' ? (
+                  <UIText
+                    kind="small/accent"
+                    color="var(--always-white)"
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: 16,
+                      backgroundColor: 'var(--positive-500)',
+                    }}
+                  >
+                    Active
+                  </UIText>
+                ) : kind === 'expiring' ? (
+                  <UIText
+                    kind="small/accent"
+                    color="var(--always-white)"
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: 16,
+                      backgroundColor: 'var(--notice-500)',
+                    }}
+                  >
+                    Expiring
+                  </UIText>
+                ) : kind === 'expired' ? (
+                  <UIText
+                    kind="small/accent"
+                    color="var(--always-white)"
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: 16,
+                      backgroundColor: 'var(--negative-500)',
+                    }}
+                  >
+                    Expired
+                  </UIText>
+                ) : null}
+              </HStack>
               <UIText
-                kind="headline/h2"
-                style={{
-                  background:
-                    'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
+                kind="small/regular"
+                color="var(--neutral-700)"
+                title={
+                  kind === 'expiring'
+                    ? dayjs(activePremiumExpirationDate).format('MMMM D, YYYY')
+                    : undefined
+                }
+                style={{ height: 20 }}
               >
-                Premium
+                {formattedDateInfo}
               </UIText>
-              {kind === 'active' ? (
-                <UIText
-                  kind="small/accent"
-                  color="var(--always-white)"
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: 16,
-                    backgroundColor: 'var(--positive-500)',
-                  }}
-                >
-                  Active
-                </UIText>
-              ) : kind === 'expiring' ? (
-                <UIText
-                  kind="small/accent"
-                  color="var(--always-white)"
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: 16,
-                    backgroundColor: 'var(--notice-500)',
-                  }}
-                >
-                  Expiring
-                </UIText>
-              ) : (
-                <UIText
-                  kind="small/accent"
-                  color="var(--always-white)"
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: 16,
-                    backgroundColor: 'var(--negative-500)',
-                  }}
-                >
-                  Expired
-                </UIText>
-              )}
-            </HStack>
-            <UIText
-              kind="small/regular"
-              color="var(--neutral-700)"
-              title={formattedDate}
-              style={{ height: 20 }}
-            >
-              {formattedDateInfo}
-            </UIText>
-          </VStack>
+            </VStack>
+          ) : null}
           {isConfigLoading || !config?.premium_page_feedback_link ? null : (
             <Button
               as={UnstyledAnchor}
@@ -198,7 +209,11 @@ export function PremiumPage() {
         <Button kind="primary" size={48}>
           <HStack gap={8} alignItems="center" justifyContent="center">
             <ZerionIcon style={{ width: 20, height: 20 }} />
-            <UIText kind="body/accent">Renew Premium</UIText>
+            {kind !== 'none' ? (
+              <UIText kind="body/accent">Renew Premium</UIText>
+            ) : (
+              <UIText kind="body/accent">Get Premium for 99$/year</UIText>
+            )}
           </HStack>
         </Button>
         <Button
