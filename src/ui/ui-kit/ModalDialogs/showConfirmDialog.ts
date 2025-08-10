@@ -19,3 +19,13 @@ export function showConfirmDialog(
     dialog.addEventListener('cancel', handler);
   });
 }
+
+export function showConfirmDialogWithCondition(
+  dialog: HTMLDialogElementInterface,
+  condition: boolean
+): Promise<string | void> {
+  if (condition) {
+    return showConfirmDialog(dialog);
+  }
+  return Promise.resolve();
+}

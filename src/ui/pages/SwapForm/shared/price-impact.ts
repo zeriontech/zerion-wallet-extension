@@ -1,6 +1,7 @@
 import type { Asset } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { isNumeric } from 'src/shared/isNumeric';
+import { formatPercent } from 'src/shared/units/formatPercent';
 
 const LOW_LOSS_RATIO = -0.05;
 const HIGH_LOSS_RATIO = -0.15;
@@ -86,4 +87,23 @@ export function getPriceImpactPercentage(priceImpact: PriceImpact) {
   } else {
     return null;
   }
+}
+
+export function getPriceImpactBlockingWarningProps(priceImpact: PriceImpact) {
+  const priceImpactPercentage = getPriceImpactPercentage(priceImpact);
+  if (!priceImpactPercentage || priceImpactPercentage > -50) {
+    return null;
+  }
+
+  return {
+    title: `This trade will result\nin ${formatPercent(
+      Math.abs(priceImpactPercentage),
+      'en',
+      { maximumFractionDigits: 0 }
+    )}% loss`,
+    description:
+      'This may be caused by low liquidity. Try lowering the amount to improve the rate.',
+    submitText: 'Proceed Anyway',
+    dismissText: 'Edit Amount',
+  };
 }
