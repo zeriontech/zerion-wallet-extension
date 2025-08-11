@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { emitter } from 'src/background/events';
 import { isBareWallet, isSignerContainer } from 'src/shared/types/validators';
 import type { Wallet } from 'src/shared/types/Wallet';
@@ -9,6 +10,8 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getError } from 'src/shared/errors/getError';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { readSavedReferrerData, saveReferrerData } from './shared/storage';
 
 interface Options {
@@ -47,19 +50,48 @@ class ReferralProgramService {
     const normalizedAddress = normalizeAddress(address);
     const message = `${normalizedAddress} -> ${referralCode}`;
 
-    try {
-      const signature = await walletFacade.signMessage({
-        params: {
-          signerAddress: address,
-          message,
-          messageContextParams: {
-            initiator: INTERNAL_ORIGIN,
-            clientScope: 'Referral Program',
+    /**
+     * Calls appropriate `walletFacade` method based on whether
+     * signer is an ethereum or a solana address
+     */
+    async function signHelper({
+      address,
+      message,
+    }: {
+      address: string;
+      message: string;
+    }) {
+      const CLIENT_SCOPE = 'Referral Program';
+      if (isSolanaAddress(address)) {
+        const { signatureSerialized } =
+          await walletFacade.solana_signMessageWithAddress({
+            params: {
+              signerAddress: address,
+              messageHex: ethers.hexlify(ethers.toUtf8Bytes(message)),
+              initiator: INTERNAL_ORIGIN,
+              clientScope: CLIENT_SCOPE,
+            },
+            context: { origin: INTERNAL_ORIGIN },
+          });
+        return signatureSerialized;
+      } else if (isEthereumAddress(address)) {
+        return walletFacade.signMessage({
+          params: {
+            signerAddress: address,
+            message,
+            messageContextParams: {
+              initiator: INTERNAL_ORIGIN,
+              clientScope: CLIENT_SCOPE,
+            },
           },
-        },
-        context: { origin: INTERNAL_ORIGIN },
-      });
-
+          context: { origin: INTERNAL_ORIGIN },
+        });
+      } else {
+        throw new Error(`Unexpected address types: ${address}`);
+      }
+    }
+    try {
+      const signature = await signHelper({ address, message });
       return signature;
     } catch (error) {
       emitter.emit('globalError', {
