@@ -414,13 +414,6 @@ export class Wallet {
     return walletContainer.getFirstWallet();
   }
 
-  async uiAddReadonlyAddress(
-    params: WalletMethodParams<{ address: string; name: string | null }>
-  ) {
-    await this.uiImportReadonlyAddress(params);
-    await this.savePendingWallet();
-  }
-
   async uiApplyReferralCodeToAllWallets({
     params: { referralCode },
     context,
