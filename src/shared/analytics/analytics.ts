@@ -6,6 +6,7 @@ import { onIdle } from '../onIdle';
 
 type MetabaseEvent =
   | 'screen_view'
+  | 'unlocked_app_opened'
   | 'dapp_connection'
   | 'signed_message'
   | 'signed_transaction'

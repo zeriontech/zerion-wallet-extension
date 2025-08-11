@@ -374,7 +374,7 @@ function OverviewComponent() {
     // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
     setSearchParams(value ? [['chain', value]] : '');
   });
-  const addressType = getAddressType(address);
+  const addressType = address ? getAddressType(address) : null;
   useEffect(() => {
     setSelectedChain(null);
   }, [addressType, setSelectedChain]);
