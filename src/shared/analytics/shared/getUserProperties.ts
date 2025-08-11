@@ -7,36 +7,47 @@ import { backgroundQueryClient } from 'src/modules/query-client/query-client.bac
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
+import { isSolanaAddress } from 'src/modules/solana/shared';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { getAddressesPortfolio } from './getTotalWalletsBalance';
 import {
   getProviderForMixpanel,
   getProviderNameFromGroup,
 } from './getProviderNameFromGroup';
 
-async function getFundedWalletsCount(addresses: string[]) {
-  // TODO: cache results and periodically make new checks only for non-funded addresses
-
-  const result = await getAddressActivity(
-    { addresses },
-    { cachePolicy: 'cache-first' }
-  );
-  if (!result) {
-    return 0;
+function getFundedStatsByEcosystem(
+  activity: Awaited<ReturnType<typeof getAddressActivity>>
+): { totalCount: number; solanaFundedCount: number; evmFundedCount: number } {
+  if (!activity) {
+    return {
+      totalCount: 0,
+      solanaFundedCount: 0,
+      evmFundedCount: 0,
+    };
   }
-  return Object.values(result).reduce(
-    (sum, value) => sum + (value.active ? 1 : 0),
-    0
-  );
+  const count = (values: Array<{ active: boolean }>) =>
+    values.reduce((sum, value) => sum + (value.active ? 1 : 0), 0);
+
+  const values = Object.values(activity);
+  return {
+    totalCount: count(values),
+    evmFundedCount: count(
+      values.filter((value) => isEthereumAddress(value.address))
+    ),
+    solanaFundedCount: count(
+      values.filter((value) => isSolanaAddress(value.address))
+    ),
+  };
 }
 
 async function getPortfolioStats(addresses: string[]) {
   return Promise.allSettled([
     getAddressesPortfolio(addresses),
-    getFundedWalletsCount(addresses),
+    getAddressActivity({ addresses }, { cachePolicy: 'cache-first' }),
   ]).then(([result1, result2]) => {
     return {
       portfolio: result1.status === 'fulfilled' ? result1.value : null,
-      fundedCount: result2.status === 'fulfilled' ? result2.value : null,
+      addressActivity: result2.status === 'fulfilled' ? result2.value : null,
     };
   });
 }
@@ -123,6 +134,13 @@ export async function getUserProperties(account: Account) {
     group.walletContainer.wallets.map((wallet) => wallet.address)
   );
   const readonlyAddressesCount = readonlyAddresses?.length ?? 0;
+  const readonlySolanaAddressesCount = readonlyAddresses?.filter((address) =>
+    isSolanaAddress(address)
+  ).length;
+  const readonlyEvmAddressesCount = readonlyAddresses?.filter((address) =>
+    isEthereumAddress(address)
+  ).length;
+
   const ownedAddresses = ownedGroups?.flatMap((group) =>
     group.walletContainer.wallets.map((wallet) => wallet.address)
   );
@@ -154,6 +172,16 @@ export async function getUserProperties(account: Account) {
   const zerionStats = ownedWalletsMeta
     ? await getZerionStats({ ownedWalletsMeta })
     : null;
+  const fundedStatsByEcosystem = getFundedStatsByEcosystem(
+    portfolioStats?.addressActivity ?? null
+  );
+
+  const ownedSolanaAddressesCount = ownedAddresses?.filter((address) =>
+    isSolanaAddress(address)
+  ).length;
+  const ownedEvmAddressesCount = ownedAddresses?.filter((address) =>
+    isEthereumAddress(address)
+  ).length;
 
   return {
     num_favourite_tokens: 0,
@@ -163,10 +191,16 @@ export async function getUserProperties(account: Account) {
     num_my_wallets: ownedAddressesCount,
     num_my_wallets_with_provider: ownedAddressesCount,
     num_wallets_with_provider: ownedAddressesCount,
-    num_funded_wallets_with_provider: portfolioStats?.fundedCount ?? 0,
+    num_funded_wallets_with_provider: fundedStatsByEcosystem.totalCount,
     num_zerion_wallets: ownedAddressesCount,
     num_connected_wallets: 0,
     num_wallet_groups: groups?.length ?? 0,
+    num_solana_wallets: ownedSolanaAddressesCount ?? 0,
+    num_funded_solana_wallets: fundedStatsByEcosystem.solanaFundedCount,
+    num_evm_wallets: ownedEvmAddressesCount ?? 0,
+    num_funded_evm_wallets: fundedStatsByEcosystem.evmFundedCount,
+    num_watchlist_solana_wallets: readonlySolanaAddressesCount ?? 0,
+    num_watchlist_evm_wallets: readonlyEvmAddressesCount ?? 0,
     total_balance: portfolioStats?.portfolio?.total_value ?? 0,
     ...getChainBreakdown(portfolioStats?.portfolio ?? null),
     currency: 'usd',
