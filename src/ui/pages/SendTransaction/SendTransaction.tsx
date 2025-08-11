@@ -615,8 +615,18 @@ function SendTransactionContent({
 
   const client = useDefiSdkClient();
 
+  const gasPricesReady = Boolean(chainGasPrices);
+  const { isStale: isStaleGasPricesValue } = useStaleTime(gasPricesReady, 2000);
+  /**
+   * We want to wait for chainGasPrices before making the interpret request
+   * (to avoid making two requests for most cases)
+   * but if chainGasPrices doesn't respond for too long (~2s), then we want
+   * to make the interpret request anyway
+   */
+  const isWaitingForGasrices = !gasPricesReady && !isStaleGasPricesValue;
+
   const interpretQuery = useQuery({
-    enabled: Boolean(network?.supports_simulations),
+    enabled: Boolean(network?.supports_simulations && !isWaitingForGasrices),
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
     keepPreviousData: true,
