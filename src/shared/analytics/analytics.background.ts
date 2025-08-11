@@ -113,6 +113,10 @@ function trackAppEvents({ account }: { account: Account }) {
   emitter.on('unlockedAppOpened', async () => {
     await waitForAnalyticsIdSet();
     const params = createParams({ request_name: 'unlocked_app_opened' });
+    /**
+     * Global user properties tend to be replaced with updated values from time to time
+     * We attach them to this event to track how user properties change over time
+     */
     const userProfileProperties = await getUserProperties(account);
     const mixpanelParams: Record<string, unknown> = {
       ...omit(params, ['request_name', 'wallet_address']),
