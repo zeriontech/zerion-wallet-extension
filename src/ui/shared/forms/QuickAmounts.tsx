@@ -11,13 +11,13 @@ export function getQuickAmounts(
 ): { title: string; factor: number }[] {
   if (Networks.isNativeAsset(asset, networkConfig)) {
     return [
-      { title: '25%', factor: 0.25 },
+      { title: '30%', factor: 0.3 },
       { title: '50%', factor: 0.5 },
-      { title: '75%', factor: 0.75 },
+      { title: '80%', factor: 0.8 },
     ];
   }
   return [
-    { title: '25%', factor: 0.25 },
+    { title: '30%', factor: 0.3 },
     { title: '50%', factor: 0.5 },
     { title: 'MAX', factor: 1 },
   ];
