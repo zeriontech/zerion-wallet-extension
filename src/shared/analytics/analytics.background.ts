@@ -194,10 +194,7 @@ function trackAppEvents({ account }: { account: Account }) {
     status: 'success';
     result: SignTransactionResult;
   };
-  type TransactionFailedContext = {
-    status: 'failed';
-    errorMessage: string;
-  };
+  type TransactionFailedContext = { status: 'failed'; errorMessage: string };
 
   const trackTransactionSign = async (
     props: {
