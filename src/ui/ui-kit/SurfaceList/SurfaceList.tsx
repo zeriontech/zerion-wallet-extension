@@ -141,7 +141,7 @@ export const ItemLabel = React.forwardRef<
 
 export interface Item {
   key: string | number;
-  component: JSX.Element;
+  component: React.ReactElement;
   to?: LinkProps['to'];
   href?: string;
   target?: React.AnchorHTMLAttributes<HTMLAnchorElement>['target'];

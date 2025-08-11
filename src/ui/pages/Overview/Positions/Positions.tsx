@@ -705,10 +705,10 @@ function MultiChainPositions({
   const groupedPositions = groupPositionsByDapp(items);
 
   if (isLoading) {
-    return renderLoadingView() as JSX.Element;
+    return renderLoadingView() as React.ReactNode;
   }
   if (!items || items.length === 0) {
-    return renderEmptyView() as JSX.Element;
+    return renderEmptyView() as React.ReactNode;
   }
 
   const chainTotalValue =
@@ -786,13 +786,13 @@ function RawChainPositions({
   if (isError) {
     return renderErrorView(
       networks?.getChainName(chain) || chainValue
-    ) as JSX.Element;
+    ) as React.ReactNode;
   }
   if (isLoading) {
-    return renderLoadingView() as JSX.Element;
+    return renderLoadingView() as React.ReactNode;
   }
   if (!addressPositions || !addressPositions.length) {
-    return renderEmptyView() as JSX.Element;
+    return renderEmptyView() as React.ReactNode;
   }
 
   return (

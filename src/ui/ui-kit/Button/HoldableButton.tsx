@@ -1,12 +1,6 @@
-import {
-  useCallback,
-  useRef,
-  useState,
-  type ComponentPropsWithRef,
-  type ComponentPropsWithoutRef,
-  type ElementType,
-} from 'react';
+import { useCallback, useRef, useState, type ElementType } from 'react';
 import React from 'react';
+import type { PropsWithAs } from 'src/shared/type-utils/PropsWithAs';
 import cn from 'classnames';
 import { UIText } from '../UIText';
 import { borderRadius, kinds, type Kind, type Size } from './Button';
@@ -49,33 +43,29 @@ const HINT_SHOW_DURATION = 1500;
 const HINT_SHOW_MIN_BREAK = 2000;
 const HOLD_DURATION_MARGIN = 100;
 
-const ButtonElement = <As extends ElementType = 'button'>(
-  {
-    style,
-    as,
-    kind = 'primary',
-    size = 44,
-    children,
-    className,
-    onClick,
-    holdColor,
-    successColor,
-    errorColor,
-    text,
-    submittingText = 'Submitting...',
-    successText = 'Success',
-    errorText = 'Something was wrong',
-    holdDuration = 1000,
-    submitting,
-    success,
-    error,
-    holdHint = 'Please press and hold the button',
-    ...props
-  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
-      ref?: ComponentPropsWithRef<As>['ref'];
-    },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>
-) => {
+export const HoldableButton = <As extends ElementType = 'button'>({
+  ref,
+  style,
+  as,
+  kind = 'primary',
+  size = 44,
+  children,
+  className,
+  onClick,
+  holdColor,
+  successColor,
+  errorColor,
+  text,
+  submittingText = 'Submitting...',
+  successText = 'Success',
+  errorText = 'Something was wrong',
+  holdDuration = 1000,
+  submitting,
+  success,
+  error,
+  holdHint = 'Please press and hold the button',
+  ...props
+}: Props & PropsWithAs<As>) => {
   const realButtonRef = useRef<HTMLButtonElement | null>(null);
   const [innerState, setInnerState] = useState<'idle' | 'hold' | 'submitting'>(
     'idle'
@@ -229,7 +219,3 @@ const ButtonElement = <As extends ElementType = 'button'>(
     </>
   );
 };
-
-export const HoldableButton = React.forwardRef(
-  ButtonElement
-) as typeof ButtonElement;

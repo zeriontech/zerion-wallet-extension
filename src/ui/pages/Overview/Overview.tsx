@@ -272,7 +272,7 @@ function RewardsLinkIcon({
 
 function DevelopmentOnly({ children }: React.PropsWithChildren) {
   if (process.env.NODE_ENV === 'development') {
-    return children as JSX.Element;
+    return children as React.ReactNode;
   } else {
     return null;
   }
