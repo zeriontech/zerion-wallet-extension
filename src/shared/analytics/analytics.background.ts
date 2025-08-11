@@ -28,6 +28,7 @@ import type { TransactionContextParams } from '../types/SignatureContextParams';
 import type { SignTransactionResult } from '../types/SignTransactionResult';
 import { invariant } from '../invariant';
 import { normalizeAddress } from '../normalizeAddress';
+import { getAddressType } from '../wallet/classifiers';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
   createAddProviderHook,
@@ -47,6 +48,9 @@ import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
 import { gaCollect, prepareGaParams } from './google-analytics';
 import { waitForAnalyticsIdSet } from './analyticsId';
+
+const toEcosystemProperty = (value: 'evm' | 'solana') =>
+  value === 'evm' ? 'EVM' : value === 'solana' ? 'Solana' : value;
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -103,6 +107,7 @@ function trackAppEvents({ account }: { account: Account }) {
       request_name: 'dapp_connection',
       dapp_domain: origin,
       wallet_address: address,
+      ecosystem: toEcosystemProperty(getAddressType(address)),
       eip6963_supported: eip6963Dapps.has(origin),
     });
     sendToMetabase('dapp_connection', params);
@@ -189,7 +194,10 @@ function trackAppEvents({ account }: { account: Account }) {
     status: 'success';
     result: SignTransactionResult;
   };
-  type TransactionFailedContext = { status: 'failed'; errorMessage: string };
+  type TransactionFailedContext = {
+    status: 'failed';
+    errorMessage: string;
+  };
 
   const trackTransactionSign = async (
     props: {
@@ -243,17 +251,20 @@ function trackAppEvents({ account }: { account: Account }) {
       ...omitNullParams(addressActionAnalytics),
     });
 
-    const statusParams =
-      status === 'success'
-        ? {
-            wallet_address: getTxSender(props.result), // transaction.from,
-            gas: props.result.evm ? props.result.evm.gasLimit.toString() : null,
-            /** Current requirement by analytics: send solana signatures as `hash` */
-            hash:
-              props.result.evm?.hash ??
-              ensureSolanaResult(props.result).signature,
-          }
-        : { transaction_error_message: props.errorMessage };
+    let statusParams;
+    if (status === 'success') {
+      const address = getTxSender(props.result);
+      statusParams = {
+        wallet_address: address, // transaction.from,
+        gas: props.result.evm ? props.result.evm.gasLimit.toString() : null,
+        /** Current requirement by analytics: send solana signatures as `hash` */
+        hash:
+          props.result.evm?.hash ?? ensureSolanaResult(props.result).signature,
+        ecosystem: toEcosystemProperty(getAddressType(address)),
+      };
+    } else {
+      statusParams = { transaction_error_message: props.errorMessage };
+    }
 
     const params = {
       ...commonParams,
@@ -488,9 +499,14 @@ function trackAppEvents({ account }: { account: Account }) {
         request_name: 'add_wallet',
         wallet_address: wallet.address.toLowerCase(),
         type,
+        ecosystem: toEcosystemProperty(getAddressType(wallet.address)),
       });
       sendToMetabase('add_wallet', params);
-      mixpanelTrack('Wallet: Wallet Added', { wallet_provider, type });
+      mixpanelTrack('Wallet: Wallet Added', {
+        wallet_provider,
+        type,
+        ecosystem: params.ecosystem,
+      });
     }
   });
 
