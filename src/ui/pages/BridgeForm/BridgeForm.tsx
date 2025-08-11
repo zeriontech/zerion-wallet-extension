@@ -26,6 +26,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { usePreferences } from 'src/ui/features/preferences';
 import { walletPort } from 'src/ui/shared/channels';
+import WarningIcon from 'jsx:src/ui/assets/warning.svg';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
@@ -107,6 +108,7 @@ import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { PriceImpactLine } from '../SwapForm/shared/PriceImpactLine';
+import type { PriceImpact } from '../SwapForm/shared/price-impact';
 import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
 import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
 import { getSlippageOptions } from '../SwapForm/SlippageSettings/getSlippageOptions';
@@ -130,14 +132,18 @@ function FormHint({
   inputNetwork,
   inputChainAddressMatch,
   outputChainAddressMatch,
+  priceImpact,
+  selectedQuote,
 }: {
   formState: BridgeFormState;
   inputPosition: AddressPosition | EmptyAddressPosition | null;
   quotesData: QuotesData<Quote2>;
-  render: (message: string | null) => React.ReactNode;
+  render: (message: React.ReactNode | null) => React.ReactNode;
   inputNetwork?: NetworkConfig | null;
   inputChainAddressMatch: boolean;
   outputChainAddressMatch: boolean;
+  priceImpact: PriceImpact | null;
+  selectedQuote: Quote2 | null;
 }) {
   const value = formState.inputAmount;
   const invalidValue = value && !isNumeric(value);
@@ -148,7 +154,14 @@ function FormHint({
     : null;
   const exceedsBalance = Number(value) > Number(positionBalanceCommon);
 
-  let message: string | null = null;
+  const showPriceImpactWarning =
+    selectedQuote?.transactionSwap &&
+    !quotesData.isLoading &&
+    (priceImpact?.kind === 'n/a' ||
+      (priceImpact?.kind === 'loss' &&
+        (priceImpact.level === 'medium' || priceImpact.level === 'high')));
+
+  let message: React.ReactNode | null = null;
   if (exceedsBalance) {
     message = 'Insufficient balance';
   } else if (valueMissing) {
@@ -165,6 +178,16 @@ function FormHint({
       : Networks.getEcosystem(inputNetwork) === 'solana'
       ? 'Please switch to an Ethereum "From" network'
       : 'Please switch to a Solana "From" network';
+  } else if (showPriceImpactWarning) {
+    message = (
+      <HStack gap={8} alignItems="center" justifyContent="center">
+        <WarningIcon
+          style={{ width: 20, height: 20 }}
+          color="var(--negative-500)"
+        />
+        <UIText kind="body/accent">Bridge Anyway</UIText>
+      </HStack>
+    );
   }
   return render(message);
 }
@@ -718,8 +741,8 @@ function BridgeFormComponent() {
   const showPriceImpactCallout =
     quotesData.done &&
     !isApproveMode &&
-    priceImpact?.kind === 'loss' &&
-    priceImpact.level === 'high';
+    (priceImpact?.kind === 'n/a' ||
+      (priceImpact?.kind === 'loss' && priceImpact.level === 'high'));
 
   const showPriceImpactWarning =
     priceImpact?.kind === 'loss' &&
@@ -1179,10 +1202,14 @@ function BridgeFormComponent() {
           <TransactionWarning
             title="Warning"
             message={selectedQuote?.error?.message}
+            style={{ marginBottom: 8 }}
           />
         ) : null}
         {showPriceImpactCallout ? (
-          <PriceImpactLine priceImpact={priceImpact} />
+          <PriceImpactLine
+            priceImpact={priceImpact}
+            style={{ marginBottom: 8 }}
+          />
         ) : null}
         {showNativeZeroBridgeHint ? <NativeZeroBridgeHint /> : null}
       </VStack>
@@ -1271,6 +1298,8 @@ function BridgeFormComponent() {
                   inputNetwork={inputNetwork}
                   inputChainAddressMatch={inputChainAddressMatch}
                   outputChainAddressMatch={outputChainAddressMatch}
+                  priceImpact={priceImpact}
+                  selectedQuote={selectedQuote}
                   render={(hint) => (
                     <SignTransactionButton
                       ref={sendTxBtnRef}

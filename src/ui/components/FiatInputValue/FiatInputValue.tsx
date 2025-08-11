@@ -85,6 +85,7 @@ export function SpendFiatInputValue(props: FieldInputValueProps) {
 export function ReceiveFiatInputValue({
   priceImpact,
   showPriceImpactWarning,
+  receiveAsset,
   ...props
 }: {
   showPriceImpactWarning: boolean;
@@ -104,6 +105,10 @@ export function ReceiveFiatInputValue({
     [priceImpactPercentage]
   );
 
+  if (receiveAsset?.price?.value == null) {
+    return null;
+  }
+
   const percentageChangeVisible =
     Boolean(percentageChange) && priceImpact?.kind !== 'n/a';
 
@@ -117,6 +122,7 @@ export function ReceiveFiatInputValue({
     <FiatInputValue
       {...props}
       name="receiveInput"
+      receiveAsset={receiveAsset}
       percentageChange={
         percentageChangeVisible && priceImpactPercentage ? (
           <UIText kind="small/regular" color={priceImpactColor}>

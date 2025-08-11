@@ -64,7 +64,7 @@ export function calculatePriceImpact({
   }
 
   if (!inputAsset?.price || !outputAsset?.price) {
-    return null;
+    return ratioToPriceImpact(null);
   }
 
   const inputFiatValue = toFiatValue(inputValue, inputAsset.price.value);

@@ -130,12 +130,14 @@ function FormHint({
   inputPosition,
   quotesData,
   priceImpact,
+  selectedQuote,
   render,
 }: {
   formState: SwapFormState;
   inputPosition: AddressPosition | EmptyAddressPosition | null;
   quotesData: QuotesData<Quote2>;
   priceImpact: PriceImpact | null;
+  selectedQuote: Quote2 | null;
   render: (message: React.ReactNode | null) => React.ReactNode;
 }) {
   const { inputAmount } = formState;
@@ -149,8 +151,11 @@ function FormHint({
   const exceedsBalance = Number(inputAmount) > Number(positionBalanceCommon);
 
   const showPriceImpactWarning =
-    priceImpact?.kind === 'loss' &&
-    (priceImpact.level === 'medium' || priceImpact.level === 'high');
+    selectedQuote?.transactionSwap &&
+    !quotesData.isLoading &&
+    (priceImpact?.kind === 'n/a' ||
+      (priceImpact?.kind === 'loss' &&
+        (priceImpact.level === 'medium' || priceImpact.level === 'high')));
 
   let hint: React.ReactNode | null = null;
   if (exceedsBalance) {
@@ -552,8 +557,8 @@ function SwapFormComponent() {
   const showPriceImpactCallout =
     quotesData.done &&
     !isApproveMode &&
-    priceImpact?.kind === 'loss' &&
-    priceImpact.level === 'high';
+    (priceImpact?.kind === 'n/a' ||
+      (priceImpact?.kind === 'loss' && priceImpact.level === 'high'));
 
   const showPriceImpactWarning =
     quotesData.done &&
@@ -1020,10 +1025,14 @@ function SwapFormComponent() {
           <TransactionWarning
             title="Warning"
             message={selectedQuote?.error?.message}
+            style={{ marginBottom: 8 }}
           />
         ) : null}
         {showPriceImpactCallout ? (
-          <PriceImpactLine priceImpact={priceImpact} />
+          <PriceImpactLine
+            priceImpact={priceImpact}
+            style={{ marginBottom: 8 }}
+          />
         ) : null}
       </VStack>
       <div style={{ position: 'relative', width: '100%', textAlign: 'center' }}>
@@ -1113,6 +1122,7 @@ function SwapFormComponent() {
                   quotesData={quotesData}
                   priceImpact={priceImpact}
                   formState={formState}
+                  selectedQuote={selectedQuote}
                   inputPosition={inputPosition}
                   render={(hint) => (
                     <SignTransactionButton
