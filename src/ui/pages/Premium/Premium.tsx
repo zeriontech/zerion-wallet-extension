@@ -21,11 +21,14 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
+import { emitter } from 'src/ui/shared/events';
+import { useLocation } from 'react-router-dom';
 
 type PremiumStatusKind = 'active' | 'expiring' | 'expired' | 'none';
 
 export function PremiumPage() {
   useBackgroundKind(whiteBackgroundKind);
+  const { pathname } = useLocation();
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -206,7 +209,21 @@ export function PremiumPage() {
         </VStack>
       ) : null}
       <VStack gap={8} style={{ marginTop: 'auto' }}>
-        <Button kind="primary" size={48}>
+        <Button
+          kind="primary"
+          size={48}
+          as={UnstyledAnchor}
+          href="http://zerion.io/premium"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => {
+            emitter.emit('buttonClicked', {
+              buttonScope: 'Premium',
+              buttonName: 'Buy Premium',
+              pathname,
+            });
+          }}
+        >
           <HStack gap={8} alignItems="center" justifyContent="center">
             <ZerionIcon style={{ width: 20, height: 20 }} />
             {kind !== 'none' ? (
@@ -223,6 +240,13 @@ export function PremiumPage() {
           target="_blank"
           rel="noopener noreferrer"
           kind="regular"
+          onClick={() => {
+            emitter.emit('buttonClicked', {
+              buttonScope: 'Premium',
+              buttonName: 'Premium Features',
+              pathname,
+            });
+          }}
         >
           <UIText kind="body/accent">Premium Features</UIText>
         </Button>
