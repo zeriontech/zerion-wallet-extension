@@ -1,12 +1,14 @@
 // Shared event types for analytics
 
-export type ButtonScope = 'General' | 'Loaylty';
+export type ButtonScope = 'General' | 'Loaylty' | 'Premium';
 export type ButtonName =
   | 'Claim XP'
   | 'Rewards'
   | 'Invite Friends'
   | 'Rate Tooltip'
-  | 'Quote List Bottom Description';
+  | 'Quote List Bottom Description'
+  | 'Premium Features'
+  | 'Buy Premium';
 
 export interface ButtonClickedParams {
   pathname: string;
