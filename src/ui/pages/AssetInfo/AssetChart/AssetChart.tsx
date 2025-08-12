@@ -127,6 +127,8 @@ export function AssetChart({
     []
   );
 
+  console.log('123');
+
   return (
     <Chart
       chartPoints={chartPoints}
