@@ -217,6 +217,8 @@ export function AssetChart({
     []
   );
 
+  console.log('123');
+
   return (
     <div
       style={{ position: 'relative', left: -16, width: 'calc(100% + 32px)' }}
