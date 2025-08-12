@@ -21,7 +21,6 @@ export function OverviewPremiumBanner({
         to="/premium"
         style={{ position: 'relative' }}
         onClick={() => {
-          console.log('Premium banner clicked');
           emitter.emit('bannerClicked', {
             bannerName: 'Buy Premium',
             pathname,
