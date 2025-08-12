@@ -218,7 +218,7 @@ export function PremiumPage() {
           rel="noopener noreferrer"
           onClick={() => {
             emitter.emit('buttonClicked', {
-              buttonScope: 'Premium',
+              buttonScope: 'General',
               buttonName: 'Buy Premium',
               pathname,
             });
@@ -242,7 +242,7 @@ export function PremiumPage() {
           kind="regular"
           onClick={() => {
             emitter.emit('buttonClicked', {
-              buttonScope: 'Premium',
+              buttonScope: 'General',
               buttonName: 'Premium Features',
               pathname,
             });

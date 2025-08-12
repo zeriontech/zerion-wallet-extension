@@ -1,19 +1,33 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import StarIcon from 'jsx:src/ui/assets/star.svg';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { emitter } from 'src/ui/shared/events';
 
 export function OverviewPremiumBanner({
   onDismiss,
 }: {
   onDismiss: () => void;
 }) {
+  const { pathname } = useLocation();
+
   return (
     <div style={{ position: 'relative' }}>
-      <UnstyledLink to="/premium" style={{ position: 'relative' }}>
+      <UnstyledLink
+        to="/premium"
+        style={{ position: 'relative' }}
+        onClick={() => {
+          console.log('Premium banner clicked');
+          emitter.emit('bannerClicked', {
+            bannerName: 'Buy Premium',
+            pathname,
+          });
+        }}
+      >
         <VStack
           gap={4}
           style={{
