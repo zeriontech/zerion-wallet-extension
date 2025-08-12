@@ -45,6 +45,7 @@ interface PublicPreferences {
   configurableNonce?: boolean;
   invitationBannerDismissed?: boolean;
   recentAddresses?: string[];
+  recentSearch?: string[];
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
   inviteFriendsBannerDismissed?: boolean;
