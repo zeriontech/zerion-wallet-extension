@@ -171,6 +171,19 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
+  emitter.on('bannerClicked', (data) => {
+    const { bannerName, pathname, walletAddress } = data;
+    const params = createParams({
+      request_name: 'banner_clicked',
+      screen_name: pathname,
+      banner_name: bannerName,
+      wallet_address: walletAddress,
+    });
+    const event_name = 'General: Banner Clicked';
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(event_name, mixpanelParams);
+  });
+
   emitter.on('daylightAction', ({ event_name, ...data }) => {
     const params = createParams({
       request_name: 'daylight_action',

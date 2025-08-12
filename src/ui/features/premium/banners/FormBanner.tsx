@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -6,6 +7,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-logo-transparent.svg';
+import { emitter } from 'src/ui/shared/events';
 import { usePreferences } from '../../preferences';
 import { useSingleAddressPremiumStatus } from '../getPremiumStatus';
 
@@ -16,6 +18,7 @@ export function PremiumFormBanner({
   address: string;
   style: React.CSSProperties;
 }) {
+  const { pathname } = useLocation();
   const { preferences, setPreferences } = usePreferences();
 
   const handleDismiss = useCallback(() => {
@@ -35,7 +38,16 @@ export function PremiumFormBanner({
 
   return (
     <div style={{ position: 'relative', ...style }}>
-      <UnstyledLink to="/premium" style={{ position: 'relative' }}>
+      <UnstyledLink
+        to="/premium"
+        style={{ position: 'relative' }}
+        onClick={() => {
+          emitter.emit('bannerClicked', {
+            bannerName: 'Buy Premium',
+            pathname,
+          });
+        }}
+      >
         <HStack
           gap={12}
           alignItems="center"
