@@ -230,6 +230,12 @@ export function Search() {
 
   const items = normalizedQuery ? searchItems : recentItems;
 
+  /**
+   * We provide link-like behavior for fungible items for both click and keyboard navigation.
+   * For the click event we pass this function to the onClick handler on the SurfaceLinkItem.
+   * For keyboard navigation, we use the onSelectedItemChange from the combobox params.
+   * In the onSelectedItemChange we also call navigate function to provide routing to the asset page
+   */
   const handleFungibleClick = useCallback(
     (fungibleId: string) => {
       if (preferences) {
@@ -245,9 +251,8 @@ export function Search() {
         pathname,
         section: 'Search',
       });
-      navigate(`/asset/${fungibleId}`);
     },
-    [navigate, pathname, preferences, setPreferences]
+    [pathname, preferences, setPreferences]
   );
 
   const { getItemProps, getInputProps, getMenuProps, highlightedIndex } =
@@ -265,6 +270,7 @@ export function Search() {
           return;
         }
         handleFungibleClick(fungibleId);
+        navigate(`/asset/${fungibleId}`);
       },
       stateReducer: (state, actionAndChanges) => {
         const { changes, type } = actionAndChanges;
