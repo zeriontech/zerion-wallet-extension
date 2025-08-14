@@ -12,6 +12,15 @@ export interface Identity {
 
 export type PremiumPlan = 'Single' | 'Bundle' | 'Restricted' | 'Bundle (Child)';
 
+// For analytics we need to choose the the best available premium plan
+// Lower is better
+export const PREMIUM_PRIORITY: Record<PremiumPlan, number> = {
+  Single: 0,
+  Bundle: 1,
+  'Bundle (Child)': 2,
+  Restricted: 3,
+};
+
 interface MigrationToken {
   generation: 'G1' | 'OnePointO';
   id: string;
