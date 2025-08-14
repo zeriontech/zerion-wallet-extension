@@ -90,7 +90,12 @@ export function PremiumPage() {
       <NavigationTitle
         title={
           <UnstyledLink
-            to="/wallet-select"
+            to={{
+              pathname: '/wallet-select',
+              search: `?${new URLSearchParams({
+                ecosystem: 'evm',
+              })}`,
+            }}
             title="Change Wallet"
             className="parent-hover"
             style={{

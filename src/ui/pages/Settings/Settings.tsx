@@ -60,6 +60,7 @@ import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { useStore } from '@store-unit/react';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -118,6 +119,9 @@ function SettingsMain() {
   useBackgroundKind({ kind: 'white' });
 
   const { hasTestWallet } = useStore(metaAppState);
+  const evmAddress = currentWallet
+    ? isEthereumAddress(currentWallet.address)
+    : false;
 
   return (
     <PageColumn>
@@ -172,7 +176,7 @@ function SettingsMain() {
         </Frame>
         <Frame>
           <VStack gap={0}>
-            {isPremium ? (
+            {isPremium && evmAddress ? (
               <FrameListItemLink to="/premium">
                 <AngleRightRow>
                   <HStack gap={8} alignItems="center">
