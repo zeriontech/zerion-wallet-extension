@@ -74,12 +74,6 @@ async function getZerionStats({
   for (const walletMeta of ownedWalletsMeta) {
     if (walletMeta.membership.premium?.plan != null) {
       stats.zerion_premium_holder = true;
-    }
-
-    if (
-      walletMeta.membership.premium?.plan &&
-      walletMeta.membership.premium.expirationTime == null
-    ) {
       if (
         !stats.zerion_premium_plan ||
         PREMIUM_PRIORITY[stats.zerion_premium_plan] >
@@ -89,6 +83,12 @@ async function getZerionStats({
         stats.zerion_premium_expiration_date =
           walletMeta.membership.premium.expirationTime;
       }
+    }
+
+    if (
+      walletMeta.membership.premium?.plan &&
+      walletMeta.membership.premium.expirationTime == null
+    ) {
       stats.og_dna_premium_holder = true;
     }
 
@@ -98,15 +98,6 @@ async function getZerionStats({
 
     if (walletMeta.membership.referrer) {
       stats.was_invited = true;
-    }
-
-    if (
-      stats.dna_holder &&
-      stats.og_dna_premium_holder &&
-      stats.zerion_premium_holder
-    ) {
-      // No need to make further checks
-      break;
     }
   }
   return omitNullParams(stats);
