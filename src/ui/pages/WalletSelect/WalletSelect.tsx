@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort } from 'src/ui/shared/channels';
@@ -35,6 +35,8 @@ import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByC
 import { emitter } from 'src/ui/shared/events';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -88,6 +90,9 @@ const ZERION_ORIGIN = 'https://app.zerion.io';
 export function WalletSelect() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [params] = useSearchParams();
+
+  const ecosystem = params.get('ecosystem') as BlockchainType;
 
   const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
@@ -212,6 +217,9 @@ export function WalletSelect() {
             }}
             selectedAddress={singleAddress}
             showAddressValues={true}
+            predicate={(wallet) =>
+              !ecosystem || isMatchForEcosystem(wallet.address, ecosystem)
+            }
             renderItemFooter={({ wallet }) => {
               const walletMeta = walletsMeta?.find(
                 (meta) =>
