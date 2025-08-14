@@ -6,12 +6,17 @@ import { isReadonlyContainer } from 'src/shared/types/validators';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
+import type {
+  PremiumPlan,
+  WalletMeta,
+} from 'src/modules/zerion-api/requests/wallet-get-meta';
+import { PREMIUM_PRIORITY } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { getAddressesPortfolio } from './getTotalWalletsBalance';
 import {
   getProviderForMixpanel,
   getProviderNameFromGroup,
 } from './getProviderNameFromGroup';
+import { omitNullParams } from './omitNullParams';
 
 async function getFundedWalletsCount(addresses: string[]) {
   // TODO: cache results and periodically make new checks only for non-funded addresses
@@ -49,9 +54,12 @@ async function getZerionStats({
   const stats = {
     zerion_premium_holder: false,
     og_dna_premium_holder: false,
+    zerion_premium_plan: null as PremiumPlan | null,
+    zerion_premium_expiration_date: null as string | null,
     dna_holder: false,
     was_invited: false,
   };
+
   for (const walletMeta of ownedWalletsMeta) {
     if (walletMeta.membership.premium?.plan != null) {
       stats.zerion_premium_holder = true;
@@ -61,6 +69,15 @@ async function getZerionStats({
       walletMeta.membership.premium?.plan &&
       walletMeta.membership.premium.expirationTime == null
     ) {
+      if (
+        !stats.zerion_premium_plan ||
+        PREMIUM_PRIORITY[stats.zerion_premium_plan] >
+          PREMIUM_PRIORITY[walletMeta.membership.premium.plan]
+      ) {
+        stats.zerion_premium_plan = walletMeta.membership.premium.plan;
+        stats.zerion_premium_expiration_date =
+          walletMeta.membership.premium.expirationTime;
+      }
       stats.og_dna_premium_holder = true;
     }
 
@@ -81,7 +98,7 @@ async function getZerionStats({
       break;
     }
   }
-  return stats;
+  return omitNullParams(stats);
 }
 
 async function fetchWalletsMeta({ addresses }: { addresses: string[] }) {
@@ -173,6 +190,9 @@ export async function getUserProperties(account: Account) {
     language: 'en',
     zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
     og_dna_premium_holder: zerionStats?.og_dna_premium_holder ?? false,
+    zerion_premium_plan: zerionStats?.zerion_premium_plan ?? null,
+    zerion_premium_expiration_date:
+      zerionStats?.zerion_premium_expiration_date ?? null,
     dna_holder: zerionStats?.dna_holder ?? false,
     was_invited: zerionStats?.was_invited ?? false,
     wallet_providers: Array.from(new Set(ownedWalletProviders)),
