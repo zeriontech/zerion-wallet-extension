@@ -65,7 +65,7 @@ export function PremiumPage() {
 
   const kind: PremiumStatusKind = isUnlimited
     ? 'active'
-    : previousPremiumExpirationDate
+    : activePremiumExpirationDate
     ? isMoreThan7DaysLeft
       ? 'active'
       : 'expiring'
@@ -119,7 +119,7 @@ export function PremiumPage() {
       />
       <PageTop />
       {wallet && !isLoading ? (
-        <VStack gap={24} style={{ paddingTop: 32, justifyItems: 'center' }}>
+        <VStack gap={24} style={{ justifyItems: 'center' }}>
           <WalletAvatar
             address={wallet.address}
             size={180}
