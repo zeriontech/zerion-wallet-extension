@@ -12,6 +12,7 @@ export function AvatarIcon({
   size,
   nft,
   borderRadius,
+  borderWidth,
   onReady,
   highlight,
 }: {
@@ -20,6 +21,7 @@ export function AvatarIcon({
   size: number;
   nft?: WalletMeta['nft'];
   borderRadius: number;
+  borderWidth?: number;
   onReady?(): void;
   highlight?: boolean;
 }) {
@@ -32,7 +34,7 @@ export function AvatarIcon({
     }
   }, [hasMediaContent, onReady]);
 
-  const strokeWidth = size > 24 ? 2 : 1;
+  const strokeWidth = borderWidth ?? (size > 24 ? 2 : 1);
   const imageSize = highlight ? size - strokeWidth * 4 : size;
   const imageBorderRadius = highlight
     ? borderRadius - strokeWidth * 2

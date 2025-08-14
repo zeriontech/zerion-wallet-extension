@@ -212,7 +212,7 @@ export async function mixpanelTrack(
 export async function mixpanelIdentify(account: Account) {
   try {
     const userProfileProperties = await getUserProperties(account);
-    return mixpanelApi.identify(userProfileProperties);
+    return mixpanelApi.identify(omitNullParams(userProfileProperties));
   } catch (e) {
     // TODO: setup "error" event in background emitter and send errors to metabase
     // eslint-disable-next-line no-console

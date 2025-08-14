@@ -23,7 +23,8 @@ type MetabaseEvent =
   | 'background_script_reloaded'
   | 'hold_to_sign_prerefence'
   | 'cloudflare_challenge_issued'
-  | 'button_clicked';
+  | 'button_clicked'
+  | 'banner_clicked';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

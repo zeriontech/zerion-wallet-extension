@@ -89,7 +89,10 @@ import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
-import type { ButtonClickedParams } from 'src/shared/types/button-events';
+import type {
+  BannerClickedParams,
+  ButtonClickedParams,
+} from 'src/shared/types/button-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
 import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import {
@@ -1706,6 +1709,14 @@ export class Wallet {
     emitter.emit('buttonClicked', params);
   }
 
+  async bannerClicked({
+    context,
+    params,
+  }: WalletMethodParams<BannerClickedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('bannerClicked', params);
+  }
+
   async cloudflareChallengeIssued({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     emitter.emit('cloudflareChallengeIssued');
@@ -1725,7 +1736,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('transactionFormed', params);
   }
-  
+
   async unlockedAppOpened({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     emitter.emit('unlockedAppOpened');
