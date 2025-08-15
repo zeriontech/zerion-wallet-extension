@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import type { AddressAction } from 'defi-sdk';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -23,7 +22,6 @@ import {
   getActionAddress,
   getActionAsset,
 } from 'src/modules/ethereum/transactions/addressAction';
-import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -35,11 +33,14 @@ import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { ActionDetailedView } from '../ActionDetailedView';
-import { isUnlimitedApproval } from '../isUnlimitedApproval';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
 import {
+  HistoryApprovalValue,
   HistoryItemValue,
+  HistoryNFTValue,
+  HistoryTokenValue,
   TransactionCurrencyValue,
 } from './TransactionItemValue';
 import {
@@ -52,7 +53,8 @@ import * as styles from './styles.module.css';
 
 function checkIsDnaMint(action: AnyAddressAction) {
   return (
-    normalizeAddress(action.label?.value || '') === DNA_MINT_CONTRACT_ADDRESS
+    normalizeAddress(action.label?.contract?.address || '') ===
+    DNA_MINT_CONTRACT_ADDRESS
   );
 }
 
@@ -64,10 +66,10 @@ function ActionTitle({
   explorerUrl?: string | null;
 }) {
   const isMintingDna = checkIsDnaMint(action);
-  const titlePrefix = action.transaction.status === 'failed' ? 'Failed ' : '';
+  const titlePrefix = action.status === 'failed' ? 'Failed ' : '';
   const actionTitle = isMintingDna
     ? 'Mint DNA'
-    : `${titlePrefix}${action.type.display_value}`;
+    : `${titlePrefix}${action.type.displayValue}`;
 
   const explorerUrlPrepared = useMemo(
     () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
@@ -107,47 +109,40 @@ function AddressTruncated({ value }: { value: string }) {
 
 function ActionLabel({ action }: { action: AnyAddressAction }) {
   const address = getActionAddress(action);
-  const text = action.label?.display_value.text;
-  if (address) {
-    return <AddressTruncated value={address} />;
-  } else if (text) {
+  const text =
+    action.label?.wallet?.name ||
+    action.label?.contract?.dapp.name ||
+    action.label?.displayTitle;
+  if (text && text !== address) {
     return (
       <span title={text} style={{ whiteSpace: 'nowrap' }}>
         {text}
       </span>
     );
-  } else {
+  } else if (address) {
+    return <AddressTruncated value={address} />;
+  } else if (action.transaction) {
     return <AddressTruncated value={action.transaction.hash} />;
   }
+  return null;
 }
 
-function ActionDetail({
-  action,
-  networks,
-}: {
-  action: AnyAddressAction;
-  networks: Networks;
-}) {
-  const { chain: chainStr } = action.transaction;
-  const chain = chainStr ? createChain(chainStr) : null;
-  const network = useMemo(
-    () => (chain ? networks.getNetworkByName(chain) : null),
-    [chain, networks]
-  );
+function ActionDetail({ action }: { action: AnyAddressAction }) {
+  const chainInfo = action.transaction?.chain;
 
   return (
     <HStack alignItems="center" gap={4}>
       <NetworkIcon
         size={16}
-        src={network?.icon_url}
-        name={network?.name || null}
+        src={chainInfo?.iconUrl}
+        name={chainInfo?.name || null}
       />
       <UIText kind="small/regular" color="var(--neutral-500)">
-        {action.transaction.status === 'pending' ? (
+        {action.status === 'pending' ? (
           <span style={{ color: 'var(--notice-500)' }}>Pending</span>
-        ) : action.transaction.status === 'failed' ? (
+        ) : action.status === 'failed' ? (
           <span style={{ color: 'var(--negative-500)' }}>Failed</span>
-        ) : action.transaction.status === 'dropped' ? (
+        ) : action.status === 'dropped' ? (
           <span style={{ color: 'var(--negative-500)' }}>Dropped</span>
         ) : (
           <ActionLabel action={action} />
@@ -159,11 +154,9 @@ function ActionDetail({
 
 function ActionItemBackend({
   action,
-  networks,
   testnetMode,
 }: {
-  action: AddressAction;
-  networks: Networks;
+  action: Action;
   testnetMode: boolean;
 }) {
   const { currency } = useCurrency();
@@ -178,22 +171,33 @@ function ActionItemBackend({
     dialogRef.current?.close();
   }, []);
 
+  const { address } = params;
+  // const singleTransfer = action.content?.single_asset;
+  const incomingTransfers = useMemo(
+    () =>
+      action.content?.transfers?.filter(
+        (transfer) => transfer.direction === 'in'
+      ),
+    [action.content?.transfers]
+  );
+  const outgoingTransfers = useMemo(
+    () =>
+      action.content?.transfers?.filter(
+        (transfer) => transfer.direction === 'out'
+      ),
+    [action.content?.transfers]
+  );
+  const approvals = useMemo(() => action.content?.approvals || [], [action]);
+
   if (!ready) {
     return null;
   }
 
-  const address = 'address' in params ? params.address : undefined;
-  const singleTransfer = action.content?.single_asset;
-  const incomingTransfers = action.content?.transfers?.incoming;
-  const outgoingTransfers = action.content?.transfers?.outgoing;
-
-  const shouldUsePositiveColor =
-    incomingTransfers?.length === 1 &&
-    Boolean(getFungibleAsset(incomingTransfers[0].asset));
-  const maybeSingleAsset = getFungibleAsset(singleTransfer?.asset);
-  const chain = action.transaction.chain
-    ? createChain(action.transaction.chain)
-    : null;
+  const shouldUsePositiveColor = incomingTransfers?.length === 1;
+  // const maybeSingleAsset = getFungibleAsset(singleTransfer?.asset);
+  // const chain = action.transaction?.chain
+  //   ? createChain(action.transaction.chain)
+  //   : null;
 
   return (
     <>
@@ -231,9 +235,9 @@ function ActionItemBackend({
           vGap={0}
           gap={12}
           image={
-            action.transaction.status === 'failed' ? (
+            action.status === 'failed' ? (
               <FailedIcon style={transactionIconStyle} />
-            ) : action.transaction.status === 'pending' ? (
+            ) : action.status === 'pending' ? (
               <CircleSpinner
                 size="38px"
                 trackWidth="7%"
@@ -249,7 +253,7 @@ function ActionItemBackend({
             )
           }
           text={<ActionTitle action={action} />}
-          detailText={<ActionDetail networks={networks} action={action} />}
+          detailText={<ActionDetail action={action} />}
         />
         <VStack
           gap={0}
@@ -270,74 +274,63 @@ function ActionItemBackend({
               maxWidth: '100%',
             }}
           >
-            {maybeSingleAsset ? (
-              <AssetLink
-                asset={maybeSingleAsset}
-                title={
-                  maybeSingleAsset.name ||
-                  maybeSingleAsset.symbol?.toUpperCase()
-                }
-                address={address}
-              />
-            ) : incomingTransfers?.length && chain ? (
+            {incomingTransfers?.length ? (
               <HistoryItemValue
                 actionType={action.type.value}
                 transfers={incomingTransfers}
-                direction="in"
-                chain={chain}
-                address={address}
                 withLink={!testnetMode}
               />
-            ) : outgoingTransfers?.length && chain ? (
+            ) : outgoingTransfers?.length ? (
               <HistoryItemValue
                 actionType={action.type.value}
                 transfers={outgoingTransfers}
-                direction="out"
-                chain={chain}
-                address={address}
+                withLink={!testnetMode}
+              />
+            ) : approvals.length ? (
+              <HistoryApprovalValue
+                approvals={approvals}
                 withLink={!testnetMode}
               />
             ) : null}
           </UIText>
-          {chain ? (
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {incomingTransfers?.length && !outgoingTransfers?.length ? (
-                <TransactionCurrencyValue
-                  transfers={incomingTransfers}
-                  chain={chain}
-                  currency={currency}
-                />
-              ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
-                <TransactionCurrencyValue
-                  transfers={outgoingTransfers}
-                  chain={chain}
-                  currency={currency}
-                />
-              ) : outgoingTransfers?.length ? (
-                <HistoryItemValue
-                  actionType={action.type.value}
-                  transfers={outgoingTransfers}
-                  direction="out"
-                  chain={chain}
-                  address={address}
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            {incomingTransfers?.length && !outgoingTransfers?.length ? (
+              <TransactionCurrencyValue
+                transfers={incomingTransfers}
+                currency={currency}
+              />
+            ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
+              <TransactionCurrencyValue
+                transfers={outgoingTransfers}
+                currency={currency}
+              />
+            ) : outgoingTransfers?.length ? (
+              <HistoryItemValue
+                actionType={action.type.value}
+                transfers={outgoingTransfers}
+                withLink={false}
+              />
+            ) : approvals.length === 1 && approvals[0].unlimited ? (
+              'Unlimited'
+            ) : approvals.length === 1 ? (
+              approvals[0].nft ? (
+                <HistoryNFTValue
+                  nft={approvals[0].nft}
+                  amount={approvals[0].amount}
+                  direction={null}
                   withLink={false}
                 />
-              ) : isUnlimitedApproval(
-                  action.content?.single_asset?.quantity
-                ) ? (
-                'Unlimited'
-              ) : action.content?.single_asset?.asset ? (
-                <HistoryItemValue
-                  actionType={action.type.value}
-                  transfers={[action.content.single_asset]}
-                  direction="self"
-                  chain={chain}
-                  address={address}
+              ) : approvals[0].fungible ? (
+                <HistoryTokenValue
+                  fungible={approvals[0].fungible}
+                  amount={approvals[0].amount}
+                  direction={null}
+                  actionType="approve"
                   withLink={false}
                 />
-              ) : null}
-            </UIText>
-          ) : null}
+              ) : null
+            ) : null}
+          </UIText>
         </VStack>
       </HStack>
       <CenteredDialog
@@ -360,11 +353,11 @@ function ActionItemBackend({
             >
               <ArrowLeftIcon />
             </Button>
-            <ActionDetailedView
+            {/* <ActionDetailedView
               action={action}
               networks={networks}
               address={address}
-            />
+            /> */}
           </>
         )}
       ></CenteredDialog>
@@ -473,7 +466,7 @@ function ActionItemLocal({
             </div>
           }
           text={<ActionTitle action={action} explorerUrl={explorerUrl} />}
-          detailText={<ActionDetail networks={networks} action={action} />}
+          detailText={<ActionDetail action={action} />}
         />
         <UIText kind="body/regular">
           {asset ? (
@@ -509,8 +502,7 @@ export function ActionItem({
     <ActionItemLocal action={addressAction} networks={networks} />
   ) : (
     <ActionItemBackend
-      action={addressAction as AddressAction}
-      networks={networks}
+      action={addressAction as Action}
       testnetMode={testnetMode}
     />
   );

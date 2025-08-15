@@ -1,6 +1,6 @@
 import type { Asset } from 'defi-sdk';
 import React from 'react';
-import { useStatsigExperiment } from 'src/modules/statsig/statsig.client';
+import type { FungibleOutline } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { usePreferences } from 'src/ui/features/preferences';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
@@ -42,29 +42,20 @@ export function AssetAnchor({
 }
 
 export function AssetLink({
-  asset,
+  fungible,
   title,
-  address,
 }: {
-  asset: Pick<Asset, 'symbol' | 'name' | 'asset_code'>;
+  fungible: FungibleOutline;
   title?: string;
-  address?: string;
 }) {
   const { preferences } = usePreferences();
-  const { data: statsigData } = useStatsigExperiment(
-    'android-revamp_asset_page_version_1'
-  );
-  const assetPageEnabled = statsigData?.group_name === 'Group1';
-  const content = title || asset.symbol || asset.name;
+  const content = title || fungible.symbol || fungible.name;
   if (preferences?.testnetMode?.on) {
     return content;
   }
-  if (!assetPageEnabled) {
-    return <AssetAnchor asset={asset} title={title} address={address} />;
-  }
   return (
     <TextLink
-      to={`/asset/${asset.asset_code}`}
+      to={`/asset/${fungible.id}`}
       style={{
         overflow: 'hidden',
         textOverflow: 'ellipsis',
