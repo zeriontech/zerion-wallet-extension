@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import type { AddressAction } from 'defi-sdk';
-import { Client, useAddressActions } from 'defi-sdk';
-import { hashQueryKey, useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+// import type { AddressAction } from 'defi-sdk';
+// import { Client, useAddressActions } from 'defi-sdk';
+// import { hashQueryKey, useQuery } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
+// import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -12,12 +12,11 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
+// import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+// import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { useStore } from '@store-unit/react';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { NetworkBalance } from 'src/ui/pages/Overview/Positions/NetworkBalance';
@@ -27,40 +26,41 @@ import {
   offsetValues,
 } from 'src/ui/pages/Overview/getTabsOffset';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
-import { isMatchForAllWords } from './matchSearcQuery';
 
-function sortActions<T extends { datetime?: string }>(actions: T[]) {
-  return actions.sort((a, b) => {
-    const aDate = a.datetime ? new Date(a.datetime).getTime() : Date.now();
-    const bDate = b.datetime ? new Date(b.datetime).getTime() : Date.now();
-    return bDate - aDate;
-  });
-}
+// function sortActions<T extends { datetime?: string }>(actions: T[]) {
+//   return actions.sort((a, b) => {
+//     const aDate = a.datetime ? new Date(a.datetime).getTime() : Date.now();
+//     const bDate = b.datetime ? new Date(b.datetime).getTime() : Date.now();
+//     return bDate - aDate;
+//   });
+// }
 
-function mergeLocalAndBackendActions(
-  local: AnyAddressAction[],
-  backend: AddressAction[],
-  hasMoreBackendActions: boolean
-) {
-  const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
+// function mergeLocalAndBackendActions(
+//   local: AnyAddressAction[],
+//   backend: AddressAction[],
+//   hasMoreBackendActions: boolean
+// ) {
+//   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
 
-  const lastBackendActionDatetime = backend.at(-1)?.datetime;
-  const lastBackendTimestamp =
-    lastBackendActionDatetime && hasMoreBackendActions
-      ? new Date(lastBackendActionDatetime).getTime()
-      : 0;
+//   const lastBackendActionDatetime = backend.at(-1)?.datetime;
+//   const lastBackendTimestamp =
+//     lastBackendActionDatetime && hasMoreBackendActions
+//       ? new Date(lastBackendActionDatetime).getTime()
+//       : 0;
 
-  const merged = local
-    .filter(
-      (tx) =>
-        backendHashes.has(tx.transaction.hash) === false &&
-        new Date(tx.datetime).getTime() >= lastBackendTimestamp
-    )
-    .concat(backend);
-  return sortActions(merged);
-}
+//   const merged = local
+//     .filter(
+//       (tx) =>
+//         backendHashes.has(tx.transaction.hash) === false &&
+//         new Date(tx.datetime).getTime() >= lastBackendTimestamp
+//     )
+//     .concat(backend);
+//   return sortActions(merged);
+// }
 
 function useMinedAndPendingAddressActions({
   chain,
@@ -70,91 +70,86 @@ function useMinedAndPendingAddressActions({
   searchQuery?: string;
 }) {
   const { params } = useAddressParams();
-  const { networks, loadNetworkByChainId } = useNetworks();
+  const { networks /* loadNetworkByChainId */ } = useNetworks();
   const isSupportedByBackend = chain
     ? networks?.supports('actions', chain)
     : true;
-  const localActions = useLocalAddressTransactions(params);
-  const client = useDefiSdkClient();
+  // const localActions = useLocalAddressTransactions(params);
+  // const client = useDefiSdkClient();
   const { currency } = useCurrency();
 
-  const { data: localAddressActions, ...localActionsQuery } = useQuery({
-    // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
-    queryKey: ['pages/history', localActions, chain, searchQuery, client],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
-    queryFn: async () => {
-      let items = await Promise.all(
-        localActions.map((transactionObject) =>
-          pendingTransactionToAddressAction(
-            transactionObject,
-            loadNetworkByChainId,
-            currency,
-            client
-          )
-        )
-      );
-      if (chain) {
-        items = items.filter(
-          (item) => item.transaction.chain === chain.toString()
-        );
-      }
-      if (searchQuery) {
-        items = items.filter((item) => isMatchForAllWords(searchQuery, item));
-      }
-      return items;
-    },
-    useErrorBoundary: true,
-  });
+  // const { data: localAddressActions, ...localActionsQuery } = useQuery({
+  //   // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
+  //   queryKey: ['pages/history', localActions, chain, searchQuery, client],
+  //   queryKeyHashFn: (queryKey) => {
+  //     const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
+  //     return hashQueryKey(key);
+  //   },
+  //   queryFn: async () => {
+  //     let items = await Promise.all(
+  //       localActions.map((transactionObject) =>
+  //         pendingTransactionToAddressAction(
+  //           transactionObject,
+  //           loadNetworkByChainId,
+  //           currency,
+  //           client
+  //         )
+  //       )
+  //     );
+  //     if (chain) {
+  //       items = items.filter(
+  //         (item) => item.transaction.chain === chain.toString()
+  //       );
+  //     }
+  //     if (searchQuery) {
+  //       items = items.filter((item) => isMatchForAllWords(searchQuery, item));
+  //     }
+  //     return items;
+  //   },
+  //   useErrorBoundary: true,
+  // });
 
-  const {
-    value,
-    isFetching: actionsIsLoading,
-    hasNext,
-    fetchMore,
-  } = useAddressActions(
+  const { actions, queryData } = useWalletActions(
     {
-      ...params,
+      addresses: [params.address],
       currency,
-      actions_chains:
-        chain && isSupportedByBackend ? [chain.toString()] : undefined,
-      actions_search_query: searchQuery,
-    },
-    {
+      chain: chain && isSupportedByBackend ? chain.toString() : undefined,
+      searchQuery,
       limit: 10,
-      listenForUpdates: true,
-      paginatedCacheMode: 'first-page',
-      enabled: isSupportedByBackend,
-    }
+    },
+    { source: useHttpClientSource() },
+    { enabled: isSupportedByBackend }
   );
 
-  return useMemo(() => {
-    const backendItems = isSupportedByBackend && value ? value : [];
-    const hasMore = Boolean(isSupportedByBackend && hasNext);
-    return {
-      value: localAddressActions
-        ? mergeLocalAndBackendActions(
-            localAddressActions,
-            backendItems,
-            hasMore
-          )
-        : null,
-      ...localActionsQuery,
-      isLoading: actionsIsLoading || localActionsQuery.isLoading,
-      hasMore,
-      fetchMore,
-    };
-  }, [
-    isSupportedByBackend,
-    value,
-    localAddressActions,
-    localActionsQuery,
-    actionsIsLoading,
-    hasNext,
-    fetchMore,
-  ]);
+  return {
+    actions,
+    queryData,
+  };
+  // return useMemo(() => {
+  //   const backendItems = isSupportedByBackend && value ? value : [];
+  //   const hasMore = Boolean(isSupportedByBackend && hasNext);
+  //   return {
+  //     value: localAddressActions
+  //       ? mergeLocalAndBackendActions(
+  //           localAddressActions,
+  //           backendItems,
+  //           hasMore
+  //         )
+  //       : null,
+  //     ...localActionsQuery,
+  //     isLoading: actionsIsLoading || localActionsQuery.isLoading,
+  //     hasMore,
+  //     fetchMore,
+  //   };
+  // }, [
+  //   isSupportedByBackend,
+  //   value,
+  //   localAddressActions,
+  //   localActionsQuery,
+  //   actionsIsLoading,
+  //   hasNext,
+  //   fetchMore,
+  // ]);
 }
 
 function HistoryEmptyView({
@@ -203,12 +198,12 @@ export function HistoryList({
       : null;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
-  const {
-    value: transactions,
-    isLoading,
-    fetchMore,
-    hasMore,
-  } = useMinedAndPendingAddressActions({ chain, searchQuery });
+  const { actions, queryData } = useMinedAndPendingAddressActions({
+    chain,
+    searchQuery,
+  });
+
+  const isLoading = queryData.isLoading || queryData.isFetching;
 
   const actionFilters = (
     <div style={{ paddingInline: 16 }}>
@@ -236,7 +231,7 @@ export function HistoryList({
     </div>
   );
 
-  if (!transactions?.length) {
+  if (!actions?.length) {
     return (
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
@@ -264,10 +259,10 @@ export function HistoryList({
       {actionFilters}
       <Spacer height={16} />
       <ActionsList
-        actions={transactions}
-        hasMore={hasMore}
+        actions={actions}
+        hasMore={Boolean(queryData.hasNextPage)}
         isLoading={isLoading}
-        onLoadMore={fetchMore}
+        onLoadMore={queryData.fetchNextPage}
       />
     </>
   );

@@ -1,8 +1,15 @@
-import type { AddressAction, Asset, NFT, NFTAsset } from 'defi-sdk';
+import type {
+  ActionAsset,
+  AddressAction,
+  Asset,
+  NFT,
+  NFTAsset,
+} from 'defi-sdk';
 import type { BigNumberish } from 'ethers';
 import { createChain, type Chain } from 'src/modules/networks/Chain';
 import { nanoid } from 'nanoid';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type {
   IncomingTransaction,
   IncomingTransactionWithFrom,
@@ -13,21 +20,29 @@ export type ClientTransactionStatus =
   | AddressAction['transaction']['status']
   | 'dropped';
 
-export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
-  transaction: Omit<AddressAction['transaction'], 'status'> & {
+export type LocalAddressAction = Action & {
+  transaction: {
     status: ClientTransactionStatus;
     data?: string;
     value?: BigNumberish;
     from?: string;
+    nonce: number;
+    sponsored: boolean;
+    fee: {
+      asset: ActionAsset;
+      quantity: string;
+      price: number | null;
+    } | null;
+    gasback?: number | null;
   };
   local: true;
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
 };
 
-export type AnyAddressAction = AddressAction | LocalAddressAction;
+export type AnyAddressAction = Action | LocalAddressAction;
 
 export function isLocalAddressAction(
-  addressAction: AnyAddressAction
+  addressAction: Action | LocalAddressAction
 ): addressAction is LocalAddressAction {
   return 'local' in addressAction && addressAction.local;
 }
@@ -285,8 +300,5 @@ export function getActionAsset(action: AnyAddressAction) {
 }
 
 export function getActionAddress(action: AnyAddressAction) {
-  return (
-    action.label?.display_value.wallet_address ||
-    action.label?.display_value.contract_address
-  );
+  return action.label?.wallet?.address || action.label?.contract?.address;
 }
