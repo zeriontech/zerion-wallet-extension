@@ -39,12 +39,13 @@ function WordBreak({
 
 export function AssetQuantity({
   sign,
-  commonQuantity,
+  quantity,
 }: {
   sign?: string;
-  commonQuantity: BigNumber;
+  quantity: string;
 }) {
-  const level = getQuantityLevel(commonQuantity);
+  const quantityNumber = new BigNumber(quantity);
+  const level = getQuantityLevel(quantityNumber);
 
   return (
     <WordBreak>
@@ -58,7 +59,7 @@ export function AssetQuantity({
       ) : null}
       {level === QuantityLevel.large ? `${muchGreater} 1T` : null}
       {level === QuantityLevel.normal
-        ? `${sign || ''}${formatWithSignificantValue(commonQuantity)}`
+        ? `${sign || ''}${formatWithSignificantValue(quantityNumber)}`
         : null}
     </WordBreak>
   );
