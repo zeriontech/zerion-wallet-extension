@@ -8,35 +8,50 @@ import { UnstyledLink } from '../UnstyledLink';
 import { VStack } from '../VStack';
 import * as s from './styles.module.css';
 
-export function ItemLink({
-  to,
-  onClick,
-  children,
-  style,
-  className,
-  decorationStyle,
-  ...props
-}: {
-  to: LinkProps['to'];
-  children: React.ReactNode;
-  onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
-  className?: React.AnchorHTMLAttributes<HTMLAnchorElement>['className'];
-  decorationStyle?: React.CSSProperties;
-} & React.AnchorHTMLAttributes<HTMLAnchorElement>) {
-  return (
-    <UnstyledLink
-      {...props}
-      style={{ color: 'inherit', ...style }}
-      to={to}
-      onClick={onClick}
-      className={cn(s.option, className)}
-    >
-      <div className={s.decoration} style={decorationStyle}>
-        {children}
-      </div>
-    </UnstyledLink>
-  );
-}
+export const ItemLink = React.forwardRef<
+  HTMLAnchorElement,
+  {
+    to: LinkProps['to'];
+    children: React.ReactNode;
+    onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
+    className?: React.AnchorHTMLAttributes<HTMLAnchorElement>['className'];
+    decorationStyle?: React.CSSProperties;
+    highlighted?: boolean;
+  } & React.AnchorHTMLAttributes<HTMLAnchorElement>
+>(
+  (
+    {
+      to,
+      onClick,
+      children,
+      style,
+      className,
+      decorationStyle,
+      highlighted,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <UnstyledLink
+        {...props}
+        ref={ref}
+        style={{ color: 'inherit', ...style }}
+        to={to}
+        onClick={onClick}
+        className={cn(
+          s.option,
+          highlighted ? s.highlighted : undefined,
+          className
+        )}
+      >
+        <div className={s.decoration} style={decorationStyle}>
+          {children}
+        </div>
+      </UnstyledLink>
+    );
+  }
+);
 
 export function ItemAnchor({
   href,

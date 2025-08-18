@@ -219,7 +219,11 @@ export function AssetChart({
 
   return (
     <div
-      style={{ position: 'relative', left: -16, width: 'calc(100% + 32px)' }}
+      style={{
+        position: 'relative',
+        left: -16,
+        width: 'calc(100% + 32px)',
+      }}
     >
       <Chart
         chartPoints={chartPoints}
@@ -232,7 +236,16 @@ export function AssetChart({
         theme={theme}
         currency={currency}
       />
-      <div id={PULSE_CAP_CIRCLE_ID} className={styles.pulseCircle} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}
+      >
+        <div id={PULSE_CAP_CIRCLE_ID} className={styles.pulseCircle} />
+      </div>
     </div>
   );
 }
