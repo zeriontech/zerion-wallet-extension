@@ -234,11 +234,7 @@ export function AssetInfo() {
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />
-        <AssetHistory
-          assetId={asset_code}
-          assetFullInfo={assetFullInfo}
-          address={params.address}
-        />
+        <AssetHistory fungibleId={asset_code} address={params.address} />
         <ReportAssetLink asset={assetFullInfo.fungible} />
       </VStack>
       {isWatchedAddress || !portfolioData ? null : (
