@@ -1435,21 +1435,19 @@ export class Wallet {
     return result;
   }
 
-  async solana_signMessage({
-    params: { messageHex, ...messageContextParams },
+  async solana_signMessageWithAddress({
+    params: { signerAddress, messageHex, ...messageContextParams },
     context,
   }: WalletMethodParams<
-    { messageHex: string } & MessageContextParams
-  >): Promise<{ signatureSerialized: string }> {
+    { signerAddress: string; messageHex: string } & MessageContextParams
+  >) {
     this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
     const messageUint8 = ethers.getBytes(messageHex);
-    const address = this.ensureCurrentAddress();
-    const keypair = this.getKeypairByAddress(address);
+    const keypair = this.getKeypairByAddress(signerAddress);
     const result = SolanaSigning.signMessage(messageUint8, keypair);
     this.registerPersonalSign({
       params: {
-        address,
+        address: signerAddress,
         message: messageUint8,
         ...messageContextParams,
       },
@@ -1457,6 +1455,21 @@ export class Wallet {
     return {
       signatureSerialized: uint8ArrayToBase64(result.signature),
     };
+  }
+
+  async solana_signMessage({
+    params,
+    context,
+  }: WalletMethodParams<
+    { messageHex: string } & MessageContextParams
+  >): Promise<{ signatureSerialized: string }> {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    const address = this.ensureCurrentAddress();
+    return this.solana_signMessageWithAddress({
+      params: { signerAddress: address, ...params },
+      context,
+    });
   }
 
   async sendSignedTransaction({
@@ -1725,7 +1738,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('transactionFormed', params);
   }
-  
+
   async unlockedAppOpened({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     emitter.emit('unlockedAppOpened');
