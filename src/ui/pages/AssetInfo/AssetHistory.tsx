@@ -1,12 +1,8 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
+import React, { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Button } from 'src/ui/ui-kit/Button';
-import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
@@ -18,7 +14,7 @@ import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
-import { ActionDetailedView } from '../History/ActionDetailedView';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import * as styles from './styles.module.css';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
@@ -29,19 +25,8 @@ const dateFormatter = new Intl.DateTimeFormat('en', {
   minute: '2-digit',
 });
 
-function AssetHistoryItem({
-  action,
-  address,
-}: {
-  action: Action;
-  address: string;
-}) {
+function AssetHistoryItem({ action }: { action: Action }) {
   const { currency } = useCurrency();
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-
-  const handleDialogOpen = useCallback(() => {
-    dialogRef.current?.showModal();
-  }, []);
 
   const transfer = useMemo(() => {
     const incomingTransfer = action.content?.transfers
@@ -92,63 +77,40 @@ function AssetHistoryItem({
     : null;
 
   return (
-    <>
-      <UnstyledButton onClick={handleDialogOpen} className={styles.historyItem}>
-        <div className={styles.historyItemBackdrop} />
-        <HStack
-          gap={12}
-          justifyContent="space-between"
-          style={{ position: 'relative', paddingBlock: 12 }}
-        >
-          <VStack gap={0} style={{ justifyItems: 'start' }}>
-            <UIText kind="body/regular">{actionTitle}</UIText>
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {actionDatetime}
-            </UIText>
-          </VStack>
-          <VStack gap={0} style={{ justifyItems: 'end' }}>
-            <UIText
-              kind="body/regular"
-              color={
-                transfer.direction === 'in'
-                  ? 'var(--positive-500)'
-                  : 'currentColor'
-              }
-            >
-              {actionBalance}
-            </UIText>
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {actionValue}
-            </UIText>
-          </VStack>
-        </HStack>
-      </UnstyledButton>
-      <CenteredDialog
-        ref={dialogRef}
-        containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
-        renderWhenOpen={() => (
-          <>
-            <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-              <Button
-                kind="ghost"
-                value="cancel"
-                size={36}
-                style={{
-                  width: 36,
-                  padding: 8,
-                  position: 'absolute',
-                  top: 16,
-                  left: 8,
-                }}
-              >
-                <ArrowLeftIcon style={{ width: 20, height: 20 }} />
-              </Button>
-            </form>
-            <ActionDetailedView action={action} address={address} />
-          </>
-        )}
-      />
-    </>
+    <UnstyledLink
+      to={`/action/${action.id}`}
+      state={{ action }}
+      className={styles.historyItem}
+    >
+      <div className={styles.historyItemBackdrop} />
+      <HStack
+        gap={12}
+        justifyContent="space-between"
+        style={{ position: 'relative', paddingBlock: 12 }}
+      >
+        <VStack gap={0} style={{ justifyItems: 'start' }}>
+          <UIText kind="body/regular">{actionTitle}</UIText>
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            {actionDatetime}
+          </UIText>
+        </VStack>
+        <VStack gap={0} style={{ justifyItems: 'end' }}>
+          <UIText
+            kind="body/regular"
+            color={
+              transfer.direction === 'in'
+                ? 'var(--positive-500)'
+                : 'currentColor'
+            }
+          >
+            {actionBalance}
+          </UIText>
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            {actionValue}
+          </UIText>
+        </VStack>
+      </HStack>
+    </UnstyledLink>
   );
 }
 
@@ -183,11 +145,7 @@ export function AssetHistory({
         <PageFullBleedColumn paddingInline={false}>
           <VStack gap={0}>
             {actions?.map((action) => (
-              <AssetHistoryItem
-                key={action.id}
-                address={address}
-                action={action}
-              />
+              <AssetHistoryItem key={action.id} action={action} />
             ))}
           </VStack>
         </PageFullBleedColumn>

@@ -84,6 +84,7 @@ import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavi
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
 import { BridgeForm } from '../pages/BridgeForm';
+import { ActionInfo } from '../pages/ActionInfo';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
 import { ScreenViewTracker } from '../shared/ScreenViewTracker';
@@ -248,6 +249,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             element={
               <RequireAuth>
                 <Overview />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/action/:action_id/:act_index?"
+            element={
+              <RequireAuth>
+                <ActionInfo />
               </RequireAuth>
             }
           />

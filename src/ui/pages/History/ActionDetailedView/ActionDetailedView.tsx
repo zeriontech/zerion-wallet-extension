@@ -1,18 +1,14 @@
 import React, { useMemo } from 'react';
-import type { AddressAction } from 'defi-sdk';
 import { capitalize } from 'capitalize-ts';
-import type { Networks } from 'src/modules/networks/Networks';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { createChain } from 'src/modules/networks/Chain';
-import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
-import { ApprovalInfo, TransferInfo } from './components/TransferInfo';
-import { CollectionLine } from './components/CollectionLine';
-import { RateLine } from './components/RateLine';
-import { SenderReceiverLine } from './components/SenderReceiverLine';
-import { FeeLine } from './components/FeeLine';
-import { ExplorerInfo } from './components/ExplorerInfo';
+import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { RateLine } from '../../ActionInfo/RateLine';
+import { SenderReceiverLine } from '../../ActionInfo/LabelLine';
+import { FeeLine } from '../../ActionInfo/FeeLine';
+import { ExplorerInfo } from '../../ActionInfo/ExplorerInfo';
+import { ApprovalInfo, TransferInfo } from './components/AssetView';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
   year: 'numeric',
@@ -22,32 +18,24 @@ const dateFormatter = new Intl.DateTimeFormat('en', {
   minute: '2-digit',
 });
 
-export function ActionDetailedView({
-  action,
-  address,
-  networks,
+function ActView({
+  act,
+  showTransactionInfo,
+  showTradeLabels,
 }: {
-  action: AddressAction;
-  address?: string;
-  networks: Networks;
+  act: Action['acts'][number];
+  showTransactionInfo: boolean;
+  showTradeLabels: boolean;
 }) {
-  const chain = useMemo(() => createChain(action.transaction.chain), [action]);
+  return null;
+}
 
+export function ActionDetailedView({ action }: { action: Action }) {
   const actionDate = useMemo(() => {
-    return dateFormatter.format(new Date(action.datetime));
-  }, [action.datetime]);
+    return dateFormatter.format(new Date(action.timestamp));
+  }, [action.timestamp]);
 
-  const outgoingTransfers = action.content?.transfers?.outgoing;
-  const incomingTransfers = action.content?.transfers?.incoming;
-
-  const isFailed =
-    action.transaction.status === 'failed' ||
-    (action.transaction.status as ClientTransactionStatus) === 'dropped';
-
-  const hasTransferInfo =
-    outgoingTransfers?.length ||
-    incomingTransfers?.length ||
-    action.content?.single_asset;
+  const isFailed = action.status === 'failed' || action.status === 'dropped';
 
   return (
     <VStack
@@ -59,55 +47,42 @@ export function ActionDetailedView({
           kind="body/accent"
           color={isFailed ? 'var(--negative-500)' : undefined}
         >
-          {`${action.type.display_value}${
-            isFailed ? ` (${capitalize(action.transaction.status)})` : ''
+          {`${action.type.displayValue}${
+            isFailed ? ` (${capitalize(action.status)})` : ''
           }`}
         </UIText>
         <UIText kind="small/regular" color="var(--neutral-500)">
           {actionDate}
         </UIText>
       </VStack>
-      {hasTransferInfo ? (
-        <VStack gap={4}>
-          {outgoingTransfers?.length ? (
-            <TransferInfo
-              transfers={outgoingTransfers}
-              address={address}
-              title={incomingTransfers?.length ? 'Send' : undefined}
-              direction="outgoing"
-              chain={chain}
+      <VStack gap={16}>
+        <VStack gap={8}>
+          {action.acts.map((act, index) => (
+            <ActView
+              key={index}
+              act={act}
+              showTransactionInfo={!action.transaction}
+              showTradeLabels={action.acts.length === 1}
             />
-          ) : null}
-          {incomingTransfers?.length ? (
-            <TransferInfo
-              transfers={incomingTransfers}
-              address={address}
-              title={outgoingTransfers?.length ? 'Receive' : undefined}
-              direction="incoming"
-              chain={chain}
-            />
-          ) : null}
-          {action.content?.single_asset ? (
-            <ApprovalInfo
-              actionType={action.type.value}
-              singleTransfer={action.content.single_asset}
-              address={address}
-              chain={chain}
-            />
-          ) : null}
+          ))}
         </VStack>
-      ) : null}
-      <Surface padding={16}>
-        <VStack gap={24}>
-          <ExplorerInfo action={action} networks={networks} />
-          <VStack gap={20}>
-            <CollectionLine action={action} />
-            <RateLine action={action} address={address} />
-            <SenderReceiverLine action={action} />
-            <FeeLine action={action} networks={networks} address={address} />
+        <Surface padding={16}>
+          <VStack gap={24}>
+            {action.transaction ? (
+              <ExplorerInfo transaction={action.transaction} />
+            ) : null}
+            <VStack gap={20}>
+              {action.acts.length === 1 && action.acts[0].rate ? (
+                <RateLine rate={action.acts[0].rate} />
+              ) : null}
+              {action.label ? (
+                <SenderReceiverLine label={action.label} />
+              ) : null}
+              {action.fee ? <FeeLine fee={action.fee} /> : null}
+            </VStack>
           </VStack>
-        </VStack>
-      </Surface>
+        </Surface>
+      </VStack>
     </VStack>
   );
 }
