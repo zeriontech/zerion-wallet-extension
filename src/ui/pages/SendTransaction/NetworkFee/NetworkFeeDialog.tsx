@@ -576,7 +576,7 @@ export const NetworkFeeDialog = React.forwardRef<
       customViewOnly ? 'custom' : 'default'
     );
 
-    const dialogHeight = view === 'default' ? '230px' : '90vh';
+    const dialogHeight = view === 'default' ? 'min-content' : '90vh';
 
     return (
       <BottomSheetDialog
