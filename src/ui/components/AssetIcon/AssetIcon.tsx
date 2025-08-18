@@ -27,6 +27,6 @@ export function AssetIcon({
       symbol={nft.symbol}
     />
   ) : (
-    (fallback as JSX.Element)
+    (fallback as React.ReactNode)
   );
 }
