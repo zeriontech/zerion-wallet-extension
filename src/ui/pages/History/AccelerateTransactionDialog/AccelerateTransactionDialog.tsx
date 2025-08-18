@@ -24,7 +24,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import { ExplorerInfo } from '../ActionDetailedView/components/ExplorerInfo';
+import { ExplorerInfo } from '../../ActionInfo/ExplorerInfo';
 import { SpeedUp } from './SpeedUp';
 import { CancelTx } from './CancelTx';
 import { isCancelTx } from './shared/accelerate-helpers';
