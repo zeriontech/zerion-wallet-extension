@@ -175,6 +175,8 @@ type Fee = {
   fungible: null | FungibleOutline;
 };
 
+export type ActionFee = Fee;
+
 export type ActionDirection = 'in' | 'out';
 
 export type Transfer = {
@@ -217,7 +219,7 @@ type Chain = {
 
 export type ActionChain = Chain;
 
-type ActionTransaction = {
+export type ActionTransaction = {
   chain: Chain;
   /** @description Unique identifier for the transaction, hash for EVM, signature for Solana */
   hash: string;

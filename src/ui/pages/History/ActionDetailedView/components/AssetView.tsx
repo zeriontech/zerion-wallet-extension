@@ -22,10 +22,34 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import type {
+  ActionDirection,
+  Amount,
+  Collection,
+  FungibleOutline,
+  NFTPreview,
+} from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { isUnlimitedApproval } from '../../isUnlimitedApproval';
 
-type Direction = 'incoming' | 'outgoing';
 const ICON_SIZE = 36;
+
+export function AssetView({
+  fungible,
+  nft,
+  collection,
+  amount,
+  direction,
+  unlimited,
+}: {
+  fungible?: FungibleOutline;
+  nft?: NFTPreview;
+  collection?: Collection;
+  amount: Amount;
+  direction: ActionDirection | null;
+  unlimited: boolean;
+}) {
+  return null;
+}
 
 export function ApprovalInfo({
   singleTransfer,

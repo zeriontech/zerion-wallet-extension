@@ -4,7 +4,6 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
-import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -24,17 +23,14 @@ import {
 } from 'src/modules/ethereum/transactions/addressAction';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
-import { ActionDetailedView } from '../ActionDetailedView';
+import { useNavigate } from 'react-router-dom';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
 import {
   HistoryApprovalValue,
@@ -160,19 +156,8 @@ function ActionItemBackend({
   testnetMode: boolean;
 }) {
   const { currency } = useCurrency();
-  const { params, ready } = useAddressParams();
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const navigate = useNavigate();
 
-  const handleDialogOpen = useCallback(() => {
-    dialogRef.current?.showModal();
-  }, []);
-
-  const handleDialogDismiss = useCallback(() => {
-    dialogRef.current?.close();
-  }, []);
-
-  const { address } = params;
-  // const singleTransfer = action.content?.single_asset;
   const incomingTransfers = useMemo(
     () =>
       action.content?.transfers?.filter(
@@ -189,179 +174,137 @@ function ActionItemBackend({
   );
   const approvals = useMemo(() => action.content?.approvals || [], [action]);
 
-  if (!ready) {
-    return null;
-  }
-
   const shouldUsePositiveColor = incomingTransfers?.length === 1;
-  // const maybeSingleAsset = getFungibleAsset(singleTransfer?.asset);
-  // const chain = action.transaction?.chain
-  //   ? createChain(action.transaction.chain)
-  //   : null;
 
   return (
-    <>
-      <KeyboardShortcut
-        combination="backspace"
-        onKeyDown={handleDialogDismiss}
-      />
-      <HStack
-        className={styles.actionItem}
-        gap={24}
-        justifyContent="space-between"
-        style={{
-          cursor: 'pointer',
-          position: 'relative',
-          height: 42,
-          gridTemplateColumns:
-            'minmax(min-content, max-content) minmax(100px, max-content)',
+    <HStack
+      className={styles.actionItem}
+      gap={24}
+      justifyContent="space-between"
+      style={{
+        cursor: 'pointer',
+        position: 'relative',
+        height: 42,
+        gridTemplateColumns:
+          'minmax(min-content, max-content) minmax(100px, max-content)',
+      }}
+      alignItems="center"
+      onClick={(event) => {
+        if (isInteractiveElement(event.target)) {
+          return;
+        }
+        navigate(`/action/${action.id}`, { state: { action } });
+      }}
+    >
+      <UnstyledButton
+        className={styles.actionItemBackdropButton}
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/action/${action.id}`, { state: { action } });
         }}
-        alignItems="center"
-        onClick={(event) => {
-          if (isInteractiveElement(event.target)) {
-            return;
-          }
-          handleDialogOpen();
+      />
+      <Media
+        vGap={0}
+        gap={12}
+        image={
+          action.status === 'failed' ? (
+            <FailedIcon style={transactionIconStyle} />
+          ) : action.status === 'pending' ? (
+            <CircleSpinner
+              size="38px"
+              trackWidth="7%"
+              color="var(--primary)"
+              style={{
+                position: 'absolute',
+                top: -1,
+                left: -1,
+              }}
+            />
+          ) : (
+            <TransactionItemIcon action={action} />
+          )
+        }
+        text={<ActionTitle action={action} />}
+        detailText={<ActionDetail action={action} />}
+      />
+      <VStack
+        gap={0}
+        style={{
+          justifyItems: 'end',
+          overflow: 'hidden',
+          textAlign: 'left',
         }}
       >
-        <UnstyledButton
-          className={styles.actionItemBackdropButton}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDialogOpen();
-          }}
-        />
-        <Media
-          vGap={0}
-          gap={12}
-          image={
-            action.status === 'failed' ? (
-              <FailedIcon style={transactionIconStyle} />
-            ) : action.status === 'pending' ? (
-              <CircleSpinner
-                size="38px"
-                trackWidth="7%"
-                color="var(--primary)"
-                style={{
-                  position: 'absolute',
-                  top: -1,
-                  left: -1,
-                }}
-              />
-            ) : (
-              <TransactionItemIcon action={action} />
-            )
+        <UIText
+          kind="body/regular"
+          color={
+            shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
           }
-          text={<ActionTitle action={action} />}
-          detailText={<ActionDetail action={action} />}
-        />
-        <VStack
-          gap={0}
           style={{
-            justifyItems: 'end',
             overflow: 'hidden',
-            textAlign: 'left',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
           }}
         >
-          <UIText
-            kind="body/regular"
-            color={
-              shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
-            }
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: '100%',
-            }}
-          >
-            {incomingTransfers?.length ? (
-              <HistoryItemValue
-                actionType={action.type.value}
-                transfers={incomingTransfers}
-                withLink={!testnetMode}
-              />
-            ) : outgoingTransfers?.length ? (
-              <HistoryItemValue
-                actionType={action.type.value}
-                transfers={outgoingTransfers}
-                withLink={!testnetMode}
-              />
-            ) : approvals.length ? (
-              <HistoryApprovalValue
-                approvals={approvals}
-                withLink={!testnetMode}
-              />
-            ) : null}
-          </UIText>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            {incomingTransfers?.length && !outgoingTransfers?.length ? (
-              <TransactionCurrencyValue
-                transfers={incomingTransfers}
-                currency={currency}
-              />
-            ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
-              <TransactionCurrencyValue
-                transfers={outgoingTransfers}
-                currency={currency}
-              />
-            ) : outgoingTransfers?.length ? (
-              <HistoryItemValue
-                actionType={action.type.value}
-                transfers={outgoingTransfers}
+          {incomingTransfers?.length ? (
+            <HistoryItemValue
+              actionType={action.type.value}
+              transfers={incomingTransfers}
+              withLink={!testnetMode}
+            />
+          ) : outgoingTransfers?.length ? (
+            <HistoryItemValue
+              actionType={action.type.value}
+              transfers={outgoingTransfers}
+              withLink={!testnetMode}
+            />
+          ) : approvals.length ? (
+            <HistoryApprovalValue
+              approvals={approvals}
+              withLink={!testnetMode}
+            />
+          ) : null}
+        </UIText>
+        <UIText kind="small/regular" color="var(--neutral-500)">
+          {incomingTransfers?.length && !outgoingTransfers?.length ? (
+            <TransactionCurrencyValue
+              transfers={incomingTransfers}
+              currency={currency}
+            />
+          ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
+            <TransactionCurrencyValue
+              transfers={outgoingTransfers}
+              currency={currency}
+            />
+          ) : outgoingTransfers?.length ? (
+            <HistoryItemValue
+              actionType={action.type.value}
+              transfers={outgoingTransfers}
+              withLink={false}
+            />
+          ) : approvals.length === 1 && approvals[0].unlimited ? (
+            'Unlimited'
+          ) : approvals.length === 1 ? (
+            approvals[0].nft ? (
+              <HistoryNFTValue
+                nft={approvals[0].nft}
+                amount={approvals[0].amount}
+                direction={null}
                 withLink={false}
               />
-            ) : approvals.length === 1 && approvals[0].unlimited ? (
-              'Unlimited'
-            ) : approvals.length === 1 ? (
-              approvals[0].nft ? (
-                <HistoryNFTValue
-                  nft={approvals[0].nft}
-                  amount={approvals[0].amount}
-                  direction={null}
-                  withLink={false}
-                />
-              ) : approvals[0].fungible ? (
-                <HistoryTokenValue
-                  fungible={approvals[0].fungible}
-                  amount={approvals[0].amount}
-                  direction={null}
-                  actionType="approve"
-                  withLink={false}
-                />
-              ) : null
-            ) : null}
-          </UIText>
-        </VStack>
-      </HStack>
-      <CenteredDialog
-        ref={dialogRef}
-        containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
-        renderWhenOpen={() => (
-          <>
-            <Button
-              kind="ghost"
-              value="cancel"
-              size={40}
-              style={{
-                width: 40,
-                padding: 8,
-                position: 'absolute',
-                top: 16,
-                left: 8,
-              }}
-              onClick={handleDialogDismiss}
-            >
-              <ArrowLeftIcon />
-            </Button>
-            {/* <ActionDetailedView
-              action={action}
-              networks={networks}
-              address={address}
-            /> */}
-          </>
-        )}
-      ></CenteredDialog>
-    </>
+            ) : approvals[0].fungible ? (
+              <HistoryTokenValue
+                fungible={approvals[0].fungible}
+                amount={approvals[0].amount}
+                direction={null}
+                actionType="approve"
+                withLink={false}
+              />
+            ) : null
+          ) : null}
+        </UIText>
+      </VStack>
+    </HStack>
   );
 }
 
