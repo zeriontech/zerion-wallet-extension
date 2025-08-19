@@ -1,12 +1,9 @@
 import { animated, useTransition } from '@react-spring/web';
-import { capitalize } from 'capitalize-ts';
 import React, { useLayoutEffect, useState } from 'react';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { Chain } from 'src/modules/networks/Chain';
+import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { Networks } from 'src/modules/networks/Networks';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { ShuffleText } from 'src/ui/components/ShuffleText';
@@ -18,6 +15,7 @@ import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { Networks } from 'src/modules/networks/Networks';
 
 const FadeOutAndIn = ({
   src,
@@ -61,12 +59,12 @@ function ApplicationImage({
   action,
   network,
 }: {
-  action: Pick<AnyAddressAction, 'label'>;
+  action: Pick<AnyAction, 'label'>;
   network: NetworkConfig | null;
 }) {
   return (
     <FadeOutAndIn
-      src={action.label?.icon_url || ''}
+      src={action.label?.contract?.dapp.iconUrl || ''}
       render={(src) => (
         <div
           style={{
@@ -82,11 +80,7 @@ function ApplicationImage({
             style={{ width: '100%', display: 'block', borderRadius: 8 }}
             renderError={() => (
               <BlockieImg
-                address={
-                  action.label?.display_value.contract_address ||
-                  action.label?.value ||
-                  ''
-                }
+                address={action.label?.contract?.address || ''}
                 size={36}
                 borderRadius={8}
               />
@@ -116,36 +110,16 @@ function ApplicationImage({
   );
 }
 
-function getApplicationAddress(action: Pick<AnyAddressAction, 'label'>) {
-  const contractAddress = action.label?.display_value.contract_address;
-  if (contractAddress) {
-    return contractAddress;
-  }
-
-  if (!action.label?.value) {
-    return null;
-  }
-
-  try {
-    return toChecksumAddress(action.label.value);
-  } catch {
-    return null;
-  }
-}
-
 export function ApplicationLine({
   action,
-  chain,
-  networks,
+  network,
 }: {
-  action: Pick<AnyAddressAction, 'label'>;
-  chain: Chain;
-  networks: Networks;
+  action: Pick<AnyAction, 'label'>;
+  network: NetworkConfig;
 }) {
-  const network = networks.getNetworkByName(chain) || null;
-
-  // TODO: Remove this hacky fallback once we have backend support
-  const applicationAddress = getApplicationAddress(action);
+  const applicationAddress = action.label?.contract?.address
+    ? toChecksumAddress(action.label.contract.address)
+    : null;
 
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
@@ -154,9 +128,9 @@ export function ApplicationLine({
         image={<ApplicationImage action={action} network={network} />}
         vGap={0}
         text={
-          action.label?.type ? (
+          action.label?.displayTitle ? (
             <UIText kind="caption/regular" color="var(--neutral-500)">
-              {capitalize(action.label.type)}
+              {action.label.displayTitle}
             </UIText>
           ) : null
         }
@@ -165,7 +139,7 @@ export function ApplicationLine({
             <UIText kind="body/accent" color="var(--black)">
               <ShuffleText
                 text={
-                  action.label?.display_value.text ||
+                  action.label?.contract?.dapp.name ||
                   (applicationAddress
                     ? truncateAddress(applicationAddress, 4)
                     : '')
@@ -181,8 +155,8 @@ export function ApplicationLine({
                 <TextAnchor
                   // Open URL in a new _window_ so that extension UI stays open and visible
                   onClick={openInNewWindow}
-                  href={networks.getExplorerAddressUrlByName(
-                    chain,
+                  href={Networks.getExplorerAddressUrl(
+                    network,
                     applicationAddress
                   )}
                   target="_blank"

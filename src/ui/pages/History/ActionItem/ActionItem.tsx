@@ -14,8 +14,8 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type {
-  AnyAddressAction,
-  LocalAddressAction,
+  AnyAction,
+  LocalAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import {
   getActionAddress,
@@ -47,7 +47,7 @@ import {
 } from './TransactionTypeIcon';
 import * as styles from './styles.module.css';
 
-function checkIsDnaMint(action: AnyAddressAction) {
+function checkIsDnaMint(action: AnyAction) {
   return (
     normalizeAddress(action.label?.contract?.address || '') ===
     DNA_MINT_CONTRACT_ADDRESS
@@ -58,7 +58,7 @@ function ActionTitle({
   action,
   explorerUrl,
 }: {
-  action: AnyAddressAction;
+  action: AnyAction;
   explorerUrl?: string | null;
 }) {
   const isMintingDna = checkIsDnaMint(action);
@@ -103,7 +103,7 @@ function AddressTruncated({ value }: { value: string }) {
   );
 }
 
-function ActionLabel({ action }: { action: AnyAddressAction }) {
+function ActionLabel({ action }: { action: AnyAction }) {
   const address = getActionAddress(action);
   const text =
     action.label?.wallet?.name ||
@@ -123,7 +123,7 @@ function ActionLabel({ action }: { action: AnyAddressAction }) {
   return null;
 }
 
-function ActionDetail({ action }: { action: AnyAddressAction }) {
+function ActionDetail({ action }: { action: AnyAction }) {
   const chainInfo = action.transaction?.chain;
 
   return (
@@ -312,7 +312,7 @@ function ActionItemLocal({
   action,
   networks,
 }: {
-  action: LocalAddressAction;
+  action: LocalAction;
   networks: Networks;
 }) {
   const asset = getActionAsset(action);
@@ -433,7 +433,7 @@ export function ActionItem({
   addressAction,
   testnetMode,
 }: {
-  addressAction: AnyAddressAction;
+  addressAction: AnyAction;
   testnetMode: boolean;
 }) {
   const { networks } = useNetworks();

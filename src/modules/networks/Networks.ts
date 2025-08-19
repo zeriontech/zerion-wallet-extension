@@ -281,10 +281,10 @@ export class Networks {
   }
 
   getExplorerAddressUrlByName(chain: Chain, address: string) {
-    return this.getExplorerAddressUrl(this.getByNetworkId(chain), address);
+    return Networks.getExplorerAddressUrl(this.getByNetworkId(chain), address);
   }
 
-  private getExplorerAddressUrl(
+  static getExplorerAddressUrl(
     network: NetworkConfig | undefined,
     address: string
   ) {

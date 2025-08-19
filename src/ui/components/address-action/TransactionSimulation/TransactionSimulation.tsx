@@ -104,9 +104,13 @@ export function TransactionSimulation({
 
   const localSolanaAddressAction = useMemo(() => {
     return transaction.solana
-      ? parseSolanaTransaction(address, solFromBase64(transaction.solana))
+      ? parseSolanaTransaction(
+          address,
+          solFromBase64(transaction.solana),
+          currency
+        )
       : null;
-  }, [transaction.solana, address]);
+  }, [transaction.solana, address, currency]);
 
   const interpretation = txInterpretQuery.data;
 

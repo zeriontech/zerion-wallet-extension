@@ -134,12 +134,12 @@ type DApp = {
    * @description URL to the DApp's icon // [!code link {"token":"DApp","href":"/docs/actions/entities.html#dapp"}]
    * @example https://protocol-icons.s3.amazonaws.com/icons/uniswap-v2.jpg
    */
-  iconUrl: string;
+  iconUrl: string | null;
   /**
    * @description URL to the DApp's website // [!code link {"token":"DApp","href":"/docs/actions/entities.html#dapp"}]
    * @example https://app.uniswap.org/
    */
-  url: string;
+  url: string | null;
 };
 
 export type ActionLabel = {
@@ -239,7 +239,7 @@ export type ActionStatus = 'confirmed' | 'failed' | 'pending' | 'dropped';
 type Act = {
   type: { value: ActionType; displayValue: string };
   label: ActionLabel | null;
-  content: Content;
+  content: Content | null;
   /** @description Exchange rate, non-null only for Trade acts with exactly 2 transfers */
   rate: null | Rate;
   /**

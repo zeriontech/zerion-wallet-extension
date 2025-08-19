@@ -3,7 +3,7 @@ import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Client, type AddressAction } from 'defi-sdk';
 import type { CustomConfiguration } from '@zeriontech/transactions';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import type {
   IncomingTransaction,
@@ -236,7 +236,7 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   };
 }
 
-function useLocalAddressAction({
+function useLocalAction({
   address: from,
   transactionAction,
   transaction,
@@ -291,7 +291,7 @@ function TransactionDefaultView({
   chain,
   origin,
   wallet,
-  addressAction,
+  action,
   singleAsset,
   allowanceQuantityBase,
   interpretation,
@@ -309,7 +309,7 @@ function TransactionDefaultView({
   chain: Chain;
   origin: string;
   wallet: ExternallyOwnedAccount;
-  addressAction: AnyAddressAction;
+  action: AnyAction;
   singleAsset: NonNullable<AddressAction['content']>['single_asset'];
   allowanceQuantityBase: string | null;
   interpretation: InterpretResponse | null | undefined;
@@ -335,8 +335,8 @@ function TransactionDefaultView({
     [params]
   );
 
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
+  const recipientAddress = action.label?.display_value.wallet_address;
+  const actionTransfers = action.content?.transfers;
 
   return (
     <>
@@ -360,7 +360,7 @@ function TransactionDefaultView({
             url={origin}
             alt={`Logo for ${origin}`}
           />
-          <UIText kind="headline/h2">{addressAction.type.display_value}</UIText>
+          <UIText kind="headline/h2">{action.type.displayValue}</UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
@@ -397,7 +397,7 @@ function TransactionDefaultView({
           <AddressActionDetails
             address={wallet.address}
             recipientAddress={recipientAddress}
-            addressAction={addressAction}
+            addressAction={action}
             chain={chain}
             networks={networks}
             actionTransfers={actionTransfers}
@@ -405,8 +405,7 @@ function TransactionDefaultView({
             allowanceQuantityBase={allowanceQuantityBase}
             showApplicationLine={true}
             singleAssetElementEnd={
-              allowanceQuantityBase &&
-              addressAction.type.value === 'approve' ? (
+              allowanceQuantityBase && action.type.value === 'approve' ? (
                 <UIText
                   as={TextLink}
                   kind="small/accent"
@@ -454,7 +453,7 @@ function TransactionDefaultView({
             <React.Suspense fallback={null}>
               <TransactionWarnings
                 address={singleAddress}
-                addressAction={addressAction}
+                addressAction={action}
                 transaction={populatedTransaction}
                 chain={chain}
                 networkFeeConfiguration={configuration.networkFee}
@@ -545,13 +544,12 @@ function SendTransactionContent({
     chain,
   });
 
-  const { data: localAddressAction, ...localAddressActionQuery } =
-    useLocalAddressAction({
-      address: singleAddress,
-      transactionAction,
-      transaction: populatedTransaction,
-      networks,
-    });
+  const { data: localAction, ...localActionQuery } = useLocalAction({
+    address: singleAddress,
+    transactionAction,
+    transaction: populatedTransaction,
+    networks,
+  });
 
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
@@ -685,10 +683,10 @@ function SendTransactionContent({
 
   const requestedAllowanceQuantityBase =
     interpretQuery.data?.action?.content?.single_asset?.quantity ||
-    localAddressAction?.content?.single_asset?.quantity;
-  const interpretAddressAction = interpretQuery.data?.action;
+    localAction?.content?.single_asset?.quantity;
+  const interpretAction = interpretQuery.data?.action;
 
-  const addressAction = interpretAddressAction || localAddressAction || null;
+  const action = interpretAction || localAction || null;
 
   const view = params.get('view') || View.default;
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -737,22 +735,22 @@ function SendTransactionContent({
         feeValueCommon,
         initiator: origin,
         clientScope: clientScope || 'External Dapp',
-        addressAction,
+        action,
       });
     },
     onMutate: () => 'sendTransaction',
     onSuccess: (tx) => handleSentTransaction(tx),
   });
 
-  if (localAddressActionQuery.isSuccess && !localAddressAction) {
+  if (localActionQuery.isSuccess && !localAction) {
     throw new Error('Unexpected missing localAddressAction');
   }
 
-  if (!addressAction) {
+  if (!action) {
     return null;
   }
 
-  const singleAsset = addressAction?.content?.single_asset;
+  const singleAsset = action?.content?.single_asset;
 
   const handleChangeAllowance = (value: string) => {
     setAllowanceQuantityBase(value);
@@ -786,7 +784,7 @@ function SendTransactionContent({
             chain={chain}
             origin={origin}
             wallet={wallet}
-            addressAction={addressAction}
+            addressAction={action}
             singleAsset={singleAsset}
             allowanceQuantityBase={
               allowanceQuantityBase || requestedAllowanceQuantityBase || null
@@ -817,7 +815,7 @@ function SendTransactionContent({
                 chain={chain}
                 interpretation={interpretQuery.data}
                 transaction={{ evm: populatedTransaction }}
-                addressAction={addressAction}
+                addressAction={action}
                 onCopyData={() => toastRef.current?.showToast()}
               />
             </>
@@ -936,7 +934,7 @@ function EthSendTransaction() {
 }
 
 function SolDefaultView({
-  addressAction,
+  action,
   rawTransaction,
   txInterpretQuery,
   origin,
@@ -944,7 +942,7 @@ function SolDefaultView({
   networks,
 }: {
   origin: string;
-  addressAction: AnyAddressAction;
+  action: AnyAction;
   rawTransaction: StringBase64;
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   wallet: ExternallyOwnedAccount;
@@ -952,9 +950,9 @@ function SolDefaultView({
 }) {
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
-  const singleAsset = addressAction?.content?.single_asset;
+  const recipientAddress = action.label?.display_value.wallet_address;
+  const actionTransfers = action.content?.transfers;
+  const singleAsset = action?.content?.single_asset;
 
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
@@ -982,7 +980,7 @@ function SolDefaultView({
             url={origin}
             alt={`Logo for ${origin}`}
           />
-          <UIText kind="headline/h2">{addressAction.type.display_value}</UIText>
+          <UIText kind="headline/h2">{action.type.displayValue}</UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
@@ -1019,7 +1017,7 @@ function SolDefaultView({
           <AddressActionDetails
             address={wallet.address}
             recipientAddress={recipientAddress}
-            addressAction={addressAction}
+            addressAction={action}
             chain={createChain(NetworkId.Solana)}
             networks={networks}
             actionTransfers={actionTransfers}
@@ -1061,10 +1059,10 @@ function SolDefaultView({
         <RenderArea name="transaction-warning-section" />
       </VStack>
       <div style={{ marginTop: 'auto' }}>
-        {addressAction.transaction.fee ? (
+        {action.transaction.fee ? (
           <AddressActionNetworkFee
-            chain={addressAction.transaction.chain}
-            networkFee={addressAction.transaction.fee}
+            chain={action.transaction.chain}
+            networkFee={action.transaction.fee}
             isLoading={txInterpretQuery.isLoading}
           />
         ) : null}
@@ -1084,7 +1082,7 @@ function SolDefaultView({
               chain={createChain(NetworkId.Solana)}
               interpretation={txInterpretQuery.data}
               transaction={{ solana: rawTransaction }}
-              addressAction={addressAction}
+              addressAction={action}
               onCopyData={() => toastRef.current?.showToast()}
             />
           </>
@@ -1200,9 +1198,10 @@ function SolSendTransaction() {
     txParams.method === 'signAllTransactions'
       ? txParams.transactions[0]
       : txParams.transaction;
-  const localAddressAction = useMemo(
-    () => parseSolanaTransaction(wallet.address, solFromBase64(firstTx)),
-    [firstTx, wallet.address]
+  const localAction = useMemo(
+    () =>
+      parseSolanaTransaction(wallet.address, solFromBase64(firstTx), currency),
+    [firstTx, wallet.address, currency]
   );
 
   // TODO: support multiple transactions in simulation
@@ -1236,7 +1235,7 @@ function SolSendTransaction() {
     },
   });
 
-  const addressAction = interpretQuery.data?.action || localAddressAction;
+  const action = interpretQuery.data?.action || localAction;
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {
@@ -1249,7 +1248,7 @@ function SolSendTransaction() {
           initiator: origin,
           clientScope: clientScope || 'External Dapp',
           method: txParams.method,
-          addressAction,
+          action,
         });
       } else {
         return sendTxBtnRef.current.sendTransaction({
@@ -1259,7 +1258,7 @@ function SolSendTransaction() {
           initiator: origin,
           clientScope: clientScope || 'External Dapp',
           method: txParams.method,
-          addressAction,
+          action,
         });
       }
     },
@@ -1278,11 +1277,11 @@ function SolSendTransaction() {
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {addressAction && networks ? (
+        {action && networks ? (
           <SolDefaultView
             rawTransaction={firstTx}
             wallet={wallet}
-            addressAction={addressAction}
+            addressAction={action}
             txInterpretQuery={interpretQuery}
             origin={origin}
             networks={networks}

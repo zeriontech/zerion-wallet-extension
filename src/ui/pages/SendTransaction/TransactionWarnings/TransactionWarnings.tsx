@@ -26,7 +26,7 @@ export function TransactionWarnings({
   return (
     <ZStack hideLowerElements={true}>
       <RenderArea name="transaction-warning-section" />
-      {addressAction.transaction.status === 'failed' ? (
+      {addressAction.status === 'failed' ? (
         <>
           <TransactionWarning
             title="Transaction may fail"

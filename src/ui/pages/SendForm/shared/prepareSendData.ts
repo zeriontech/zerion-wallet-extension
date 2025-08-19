@@ -129,11 +129,11 @@ async function getPaymasterTx(transaction: IncomingTransaction) {
 
 type SendSubmitData = (
   | {
-      networkId: null;
+      network: null;
       transaction: null;
     }
   | {
-      networkId: Chain;
+      network: NetworkConfig;
       transaction: MultichainTransaction<
         PartiallyRequired<IncomingTransaction, 'chainId' | 'from'>
       >;
@@ -144,6 +144,7 @@ type SendSubmitData = (
     ReturnType<typeof adjustedCheckEligibility>
   >;
   networkFee: null | NetworkFeeType;
+  nftPosition: null | AddressNFT;
 };
 
 export async function prepareSendData(
@@ -153,11 +154,12 @@ export async function prepareSendData(
   client: Client
 ): Promise<SendSubmitData> {
   const EMPTY_SEND_DATA = {
-    networkId: null,
+    network: null,
     paymasterPossible: false,
     paymasterEligibility: null,
     transaction: null,
     networkFee: null,
+    nftPosition: null,
   };
   const {
     type,
@@ -182,11 +184,12 @@ export async function prepareSendData(
     const chainId = Networks.getChainId(network);
 
     let tx: IncomingTransaction;
+    let nftPosition: AddressNFT | null = null;
     if (type === 'nft') {
       if (!nftAmount || !nftId) {
         return EMPTY_SEND_DATA;
       }
-      const nftPosition = await getNftPosition(client, from, formState);
+      nftPosition = await getNftPosition(client, from, formState);
       tx = createSendNFTTransaction({
         chainId,
         from,
@@ -256,11 +259,12 @@ export async function prepareSendData(
     assertProp(tx, 'chainId');
     assertProp(tx, 'from');
     return {
-      networkId: chain,
+      network,
       paymasterPossible: network.supports_sponsored_transactions,
       paymasterEligibility: eligibility,
       transaction: { evm: tx },
       networkFee: null, // TODO: Currently calculated in UI, calculate here instead
+      nftPosition,
     };
   } else {
     if (type === 'nft') {
@@ -277,11 +281,12 @@ export async function prepareSendData(
       network
     );
     return {
-      networkId: chain,
+      network,
       paymasterPossible: false,
       paymasterEligibility: null,
       networkFee: fee != null ? createNetworkFee(fee, network) : null,
       transaction: { solana: solToBase64(tx) },
+      nftPosition: null,
     };
   }
 }

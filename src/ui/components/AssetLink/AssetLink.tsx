@@ -11,7 +11,7 @@ export function AssetAnchor({
   title,
   address,
 }: {
-  asset: Pick<Asset, 'symbol' | 'name' | 'asset_code'>;
+  asset: Pick<Asset, 'symbol' | 'name' | 'id'>;
   title?: string;
   address?: string;
 }) {
@@ -22,7 +22,7 @@ export function AssetAnchor({
   }
   return (
     <TextAnchor
-      href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.asset_code}?address=${address}`}
+      href={`https://app.zerion.io/explore/asset/${asset.symbol}-${asset.id}?address=${address}`}
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => {

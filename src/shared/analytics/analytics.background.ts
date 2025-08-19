@@ -48,10 +48,7 @@ import {
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
-import {
-  addressActionToAnalytics,
-  toMaybeArr,
-} from './shared/addressActionToAnalytics';
+import { actionToAnalytics, toMaybeArr } from './shared/actionToAnalytics';
 import { mixpanelTrack, mixpanelIdentify } from './mixpanel';
 import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
@@ -300,7 +297,7 @@ function trackAppEvents({ account }: { account: Account }) {
     const {
       initiator,
       feeValueCommon,
-      addressAction,
+      action,
       quote,
       clientScope,
       chain,
@@ -313,8 +310,8 @@ function trackAppEvents({ account }: { account: Account }) {
     const { origin, pathname } = initiatorURL;
     const isInternalOrigin = globalThis.location.origin === origin;
     const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
-    const addressActionAnalytics = addressActionToAnalytics({
-      addressAction,
+    const actionAnalytics = actionToAnalytics({
+      action,
       quote,
       outputChain: outputChain ?? null,
     });
@@ -332,8 +329,8 @@ function trackAppEvents({ account }: { account: Account }) {
       client_scope: clientScope ?? initiatorName,
       dapp_domain: isInternalOrigin ? null : origin,
       chain,
-      gas_price: null, // TODO for general case - this is partially covered in addressActionAnalytics
-      network_fee: null, // TODO for general case - this is partially covered in addressActionAnalytics
+      gas_price: null, // TODO for general case - this is partially covered in actionAnalytics
+      network_fee: null, // TODO for general case - this is partially covered in actionAnalytics
       network_fee_value: feeValueCommon,
       contract_type: quote ? quote.contractMetadata.name ?? null : null,
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
@@ -341,7 +338,7 @@ function trackAppEvents({ account }: { account: Account }) {
       output_amount_color: outputAmountColor,
       transaction_success: status === 'success',
       backend_error_message: quote?.error?.message || null,
-      ...omitNullParams(addressActionAnalytics),
+      ...omitNullParams(actionAnalytics),
     });
 
     let statusParams;

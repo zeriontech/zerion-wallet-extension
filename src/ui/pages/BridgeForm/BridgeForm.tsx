@@ -38,7 +38,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { getDecimals } from 'src/modules/networks/asset';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { AddressAction, AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'defi-sdk';
 import {
   SignTransactionButton,
   type SendTxBtnHandle,
@@ -98,6 +98,7 @@ import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -720,12 +721,13 @@ function BridgeFormComponent() {
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
-    mutationFn: async (interpretationAction: AddressAction | null) => {
+    mutationFn: async (interpretationAction: Action | null) => {
       invariant(
         selectedQuote?.transactionApprove?.evm,
         'Approval transaction is not configured'
       );
 
+      invariant(inputNetwork, 'Network must be defined to sign the tx');
       invariant(spendChain, 'Chain must be defined to sign the tx');
       invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
       invariant(inputPosition, 'Spend position must be defined');
@@ -738,19 +740,16 @@ function BridgeFormComponent() {
           ? await modifyApproveAmount(evmTx, allowanceBase)
           : evmTx;
 
-      const inputAmountBase = commonToBase(
-        formState.inputAmount,
-        getDecimals({ asset: inputPosition.asset, chain: spendChain })
-      ).toFixed();
-
-      const fallbackAddressAction = selectedQuote.transactionApprove.evm
+      const fallbackAction = selectedQuote.transactionApprove.evm
         ? createApproveAddressAction({
             transaction: toIncomingTransaction(
               selectedQuote.transactionApprove.evm
             ),
+            hash: null,
+            explorerUrl: null,
+            amount: selectedQuote.outputAmount,
             asset: inputPosition.asset,
-            quantity: inputAmountBase,
-            chain: spendChain,
+            network: inputNetwork,
           })
         : null;
 
@@ -760,7 +759,7 @@ function BridgeFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        addressAction: interpretationAction ?? fallbackAddressAction,
+        action: interpretationAction ?? fallbackAction,
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;
@@ -837,7 +836,7 @@ function BridgeFormComponent() {
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
-      interpretationAction: AddressAction | null
+      interpretationAction: Action | null
     ): Promise<SignTransactionResult> => {
       invariant(
         selectedQuote?.transactionSwap,
@@ -845,26 +844,35 @@ function BridgeFormComponent() {
       );
       const { inputAmount } = formState;
       invariant(spendChain, 'Chain must be defined to sign the tx');
+      invariant(inputNetwork, 'Network must be defined to sign the tx');
+      invariant(outputNetwork, 'Output network must be defined to sign the tx');
       invariant(inputAmount, 'inputAmount must be set');
       invariant(
         inputPosition && outputPosition,
         'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      const inputAmountBase = commonToBase(
-        inputAmount,
-        getDecimals({ asset: inputPosition.asset, chain: spendChain })
-      ).toFixed();
-      const outputAmountBase = commonToBase(
-        selectedQuote.outputAmount.quantity,
-        getDecimals({ asset: outputPosition.asset, chain: spendChain })
-      ).toFixed();
-      const fallbackAddressAction = createBridgeAddressAction({
+      const fallbackAction = createBridgeAddressAction({
+        hash: null,
         address,
+        explorerUrl: null,
+        inputNetwork,
+        outputNetwork,
+        receiverAddress: to || null,
+        spendAsset: inputPosition.asset,
+        receiveAsset: outputPosition.asset,
+        spendAmount: {
+          currency,
+          quantity: inputAmount,
+          value: inputPosition.asset.price?.value
+            ? new BigNumber(inputAmount)
+                .multipliedBy(inputPosition.asset.price.value)
+                .toNumber()
+            : null,
+          usdValue: null,
+        },
+        receiveAmount: selectedQuote.outputAmount,
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),
-        outgoing: [{ asset: inputPosition.asset, quantity: inputAmountBase }],
-        incoming: [{ asset: outputPosition.asset, quantity: outputAmountBase }],
-        chain: spendChain,
       });
       const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),
@@ -872,7 +880,7 @@ function BridgeFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        addressAction: interpretationAction ?? fallbackAddressAction,
+        action: interpretationAction ?? fallbackAction,
         quote: selectedQuote,
         outputChain: outputChain ?? null,
         warningWasShown: Boolean(showPriceImpactCallout),
@@ -1104,7 +1112,7 @@ function BridgeFormComponent() {
               | string
               | null;
             const interpretationAction = rawInterpretationAction
-              ? (JSON.parse(rawInterpretationAction) as AddressAction)
+              ? (JSON.parse(rawInterpretationAction) as Action)
               : null;
             const promise = blockingWarningProps
               ? showConfirmDialog(blockingWarningDialogRef.current)

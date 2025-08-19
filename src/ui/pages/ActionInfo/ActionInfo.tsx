@@ -195,16 +195,18 @@ function ActContent({
   act: Action['acts'][number];
   showActType: boolean;
 }) {
-  const approvals = act.content.approvals;
+  const approvals = act.content?.approvals;
   const incomingTransfers = useMemo(
     () =>
-      act.content.transfers?.filter((transfer) => transfer.direction === 'in'),
-    [act.content.transfers]
+      act.content?.transfers?.filter((transfer) => transfer.direction === 'in'),
+    [act.content?.transfers]
   );
   const outgoingTransfers = useMemo(
     () =>
-      act.content.transfers?.filter((transfer) => transfer.direction === 'out'),
-    [act.content.transfers]
+      act.content?.transfers?.filter(
+        (transfer) => transfer.direction === 'out'
+      ),
+    [act.content?.transfers]
   );
 
   return (

@@ -1,10 +1,10 @@
 import { invariant } from 'src/shared/invariant';
+import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { TransactionObject } from './types';
-import type { ClientTransactionStatus } from './addressAction/addressActionMain';
 
 function transactionReceiptToActionStatus(
   transactionObject: Pick<TransactionObject, 'receipt' | 'dropped'>
-): ClientTransactionStatus {
+): ActionStatus {
   return transactionObject.receipt
     ? transactionObject.receipt.status === 1
       ? 'confirmed'
@@ -16,7 +16,7 @@ function transactionReceiptToActionStatus(
 
 function solanaTransactionObjectToStatus(
   transactionObject: TransactionObject
-): ClientTransactionStatus {
+): ActionStatus {
   invariant(transactionObject.signature, 'Must be solana tx');
   if (transactionObject.dropped) {
     return 'dropped';
