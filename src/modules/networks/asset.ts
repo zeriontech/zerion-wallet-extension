@@ -7,7 +7,7 @@ export function getAssetImplementationInChain({
   asset,
   chain,
 }: {
-  asset?: Asset;
+  asset?: Pick<Asset, 'implementations'>;
   chain: Chain;
 }) {
   return asset?.implementations?.[String(chain)];

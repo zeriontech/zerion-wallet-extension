@@ -1,1 +1,0 @@
-export { SingleAsset } from './SingleAsset';
