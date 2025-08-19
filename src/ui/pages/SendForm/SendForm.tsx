@@ -1,7 +1,7 @@
 import React, { useCallback, useId, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
-import type { AddressAction, AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'defi-sdk';
 import { Client } from 'defi-sdk';
 import { sortPositionsByValue } from '@zeriontech/transactions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -36,7 +36,10 @@ import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
-import { createSendAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  createSendTokenAddressAction,
+  createSendNFTAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
@@ -45,8 +48,6 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import { commonToBase } from 'src/shared/units/convert';
-import { getDecimals } from 'src/modules/networks/asset';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import { getAddressType } from 'src/shared/wallet/classifiers';
@@ -56,6 +57,8 @@ import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import BigNumber from 'bignumber.js';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
@@ -215,34 +218,60 @@ function SendFormComponent() {
 
   const sendTxMutation = useMutation({
     mutationFn: async (
-      interpretationAction: AddressAction | null
+      interpretationAction: Action | null
     ): Promise<SignTransactionResult> => {
+      invariant(sendData?.network, 'Network must be defined to sign the tx');
       invariant(sendData?.transaction, 'Send Form parameters missing');
       invariant(currentPosition, 'Current asset position is undefined');
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(signTxBtnRef.current, 'SignTransactionButton not found');
-
-      const chain = sendData.networkId;
-      const valueInBaseUnits = commonToBase(
-        tokenValue,
-        getDecimals({ asset: currentPosition.asset, chain })
-      ).toFixed();
-      const fallbackAddressAction = createSendAddressAction({
-        address,
-        transaction: sendData.transaction,
-        asset: currentPosition.asset,
-        quantity: valueInBaseUnits,
-        chain,
-      });
+      const fallbackAction =
+        type === 'token'
+          ? createSendTokenAddressAction({
+              address,
+              hash: null,
+              explorerUrl: null,
+              transaction: sendData.transaction,
+              network: sendData.network,
+              receiverAddress: to,
+              sendAsset: currentPosition.asset,
+              sendAmount: {
+                currency,
+                quantity: tokenValue,
+                value: currentPosition.asset.price?.value
+                  ? new BigNumber(tokenValue)
+                      .multipliedBy(currentPosition.asset.price.value)
+                      .toNumber()
+                  : null,
+                usdValue: null,
+              },
+            })
+          : sendData.nftPosition
+          ? createSendNFTAddressAction({
+              address,
+              hash: null,
+              explorerUrl: null,
+              transaction: sendData.transaction,
+              network: sendData.network,
+              receiverAddress: to,
+              sendAsset: sendData.nftPosition,
+              sendAmount: {
+                currency,
+                quantity: formState.nftAmount,
+                usdValue: null,
+                value: null,
+              },
+            })
+          : null;
 
       const txResponse = await signTxBtnRef.current.sendTransaction({
         transaction: sendData.transaction,
-        chain: sendData.networkId.toString(),
+        chain: sendData.network.id,
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Send',
         feeValueCommon,
-        addressAction: interpretationAction ?? fallbackAddressAction,
+        action: interpretationAction ?? fallbackAction,
       });
       if (preferences) {
         setPreferences({
@@ -331,7 +360,7 @@ function SendFormComponent() {
               | string
               | null;
             const interpretationAction = rawInterpretationAction
-              ? (JSON.parse(rawInterpretationAction) as AddressAction)
+              ? (JSON.parse(rawInterpretationAction) as Action)
               : null;
             invariant(confirmDialogRef.current, 'Dialog not found');
             showConfirmDialog(confirmDialogRef.current).then(() => {

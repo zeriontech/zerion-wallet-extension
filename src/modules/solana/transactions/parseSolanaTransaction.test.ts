@@ -14,13 +14,11 @@ describe('parseSolanaTransaction', () => {
   test('send should be parsed', () => {
     const tx = solFromBase64(samples.simpleSend);
     expect(tx).toBeDefined();
-    const parsed = parseSolanaTransaction(samples.sender, tx);
+    const parsed = parseSolanaTransaction(samples.sender, tx, 'usd');
 
-    expect(parsed.type.display_value).toBe('Send');
-    expect(parsed.content?.transfers?.outgoing?.at(0)?.quantity).toBe(
-      '10100000'
-    );
-    expect(parsed.content?.transfers?.outgoing?.at(0)?.recipient).toBe(
+    expect(parsed.type.displayValue).toBe('Send');
+    expect(parsed.content?.transfers?.at(0)?.amount?.quantity).toBe('10100000');
+    expect(parsed.label?.wallet?.address).toBe(
       'BJpYy4oW3XREUi9mQhPXzzqtf37azUbz1JPqMbU5qU23'
     );
     expect(parsed.address).toBe(samples.sender);
