@@ -6,10 +6,10 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { ActionItem } from '../ActionItem';
 
 export function ActionsList({
@@ -18,7 +18,7 @@ export function ActionsList({
   isLoading,
   onLoadMore,
 }: {
-  actions: Action[];
+  actions: AnyAction[];
   hasMore: boolean;
   isLoading: boolean;
   onLoadMore?(): void;

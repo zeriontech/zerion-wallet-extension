@@ -181,7 +181,7 @@ function TransferDivider() {
           height: 12,
           borderRight: '1px solid var(--neutral-300)',
           borderBottom: '1px solid var(--neutral-300)',
-          backgroundColor: 'var(--white)',
+          backgroundColor: 'var(--z-index-1)',
         }}
       />
     </div>
@@ -214,7 +214,7 @@ function ActContent({
       style={{
         borderRadius: 12,
         padding: '8px 12px',
-        backgroundColor: 'var(--white)',
+        backgroundColor: 'var(--z-index-1)',
       }}
     >
       {showActType ? (
@@ -343,6 +343,8 @@ export function ActionInfo() {
         <VStack gap={8}>
           {actIndex != null && action?.acts[actIndex] ? (
             <ActContent act={action.acts[actIndex]} showActType={false} />
+          ) : action.acts.length === 1 ? (
+            <ActContent act={action.acts[0]} showActType={false} />
           ) : (
             action?.acts.map((act, index) => (
               <div
@@ -375,7 +377,7 @@ export function ActionInfo() {
         <VStack
           gap={20}
           style={{
-            backgroundColor: 'var(--white)',
+            backgroundColor: 'var(--z-index-1)',
             padding: 16,
             borderRadius: 12,
           }}
