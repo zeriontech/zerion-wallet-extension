@@ -100,7 +100,7 @@ function restoreValue(value: BigNumberish) {
 export function isCancelTx(addressAction: AnyAddressAction) {
   if (isLocalAddressAction(addressAction)) {
     const { address } = addressAction;
-    const { value, data, from } = addressAction.transaction;
+    const { value, data, from } = addressAction.rawTransaction || {};
     if (!from || normalizeAddress(from) !== normalizeAddress(address)) {
       return false;
     }

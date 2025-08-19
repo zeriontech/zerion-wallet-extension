@@ -7,7 +7,6 @@ import {
   useSpringRef,
   easings,
 } from '@react-spring/web';
-import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -20,6 +19,7 @@ import { apostrophe, emDash, NBSP } from 'src/ui/shared/typography';
 import ArrowRight from 'jsx:src/ui/assets/caret-right.svg';
 import SuccessIcon from 'jsx:./success.svg';
 import ErrorIcon from 'jsx:./error.svg';
+import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import * as styles from './SuccessStateLoader.module.css';
 
 const x_break = 0.08;
@@ -37,7 +37,7 @@ function AnimatedIcons({
 }: {
   startItem: React.ReactNode;
   endItem: React.ReactNode;
-  status: ClientTransactionStatus;
+  status: ActionStatus;
 }) {
   const playExitAnimation = status === 'confirmed' || status === 'failed';
 
@@ -185,7 +185,7 @@ export function SuccessStateLoader({
 }: {
   startItem: React.ReactNode;
   endItem: React.ReactNode;
-  status: ClientTransactionStatus;
+  status: ActionStatus;
   pendingTitle?: string;
   confirmedTitle?: string;
   failedTitle?: string;
