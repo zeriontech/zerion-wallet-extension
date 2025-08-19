@@ -4,12 +4,9 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import FailedIcon from 'jsx:src/ui/assets/failed.svg';
-import type { Networks } from 'src/modules/networks/Networks';
-import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -17,15 +14,11 @@ import type {
   AnyAction,
   LocalAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import {
-  getActionAddress,
-  getActionAsset,
-} from 'src/modules/ethereum/transactions/addressAction';
+import { getActionAddress } from 'src/modules/ethereum/transactions/addressAction';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
-import { AssetLink } from 'src/ui/components/AssetLink';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -40,7 +33,6 @@ import {
   TransactionCurrencyValue,
 } from './TransactionItemValue';
 import {
-  HistoryAssetIcon,
   transactionIconStyle,
   TransactionItemIcon,
   TRANSACTION_ICON_SIZE,
@@ -117,7 +109,7 @@ function ActionLabel({ action }: { action: AnyAction }) {
     );
   } else if (address) {
     return <AddressTruncated value={address} />;
-  } else if (action.transaction) {
+  } else if (action.transaction?.hash) {
     return <AddressTruncated value={action.transaction.hash} />;
   }
   return null;
@@ -308,39 +300,32 @@ function ActionItemBackend({
   );
 }
 
-function ActionItemLocal({
-  action,
-  networks,
-}: {
-  action: LocalAction;
-  networks: Networks;
-}) {
-  const asset = getActionAsset(action);
-
-  const { params, ready } = useAddressParams();
-
+function ActionItemLocal({ action }: { action: LocalAction }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const handleDialogOpen = useCallback(() => {
     dialogRef.current?.showModal();
   }, []);
 
-  if (!ready) {
-    return null;
-  }
-
-  const address = 'address' in params ? params.address : undefined;
-
   const isMintingDna = checkIsDnaMint(action);
+  const isPending = action.status === 'pending';
 
-  const { chain: chainStr } = action.transaction;
-  const chain = chainStr ? createChain(chainStr) : null;
-
-  const explorerUrl = chain
-    ? networks.getExplorerTxUrlByName(chain, action.transaction.hash)
-    : null;
-
-  const isPending = action.transaction.status === 'pending';
+  const incomingTransfers = useMemo(
+    () =>
+      action.content?.transfers?.filter(
+        (transfer) => transfer.direction === 'in'
+      ),
+    [action.content?.transfers]
+  );
+  const outgoingTransfers = useMemo(
+    () =>
+      action.content?.transfers?.filter(
+        (transfer) => transfer.direction === 'out'
+      ),
+    [action.content?.transfers]
+  );
+  const approvals = useMemo(() => action.content?.approvals || [], [action]);
+  const shouldUsePositiveColor = incomingTransfers?.length === 1;
 
   return (
     <>
@@ -400,28 +385,43 @@ function ActionItemLocal({
                   height={TRANSACTION_ICON_SIZE}
                 />
               ) : (
-                <HistoryAssetIcon
-                  size={TRANSACTION_ICON_SIZE}
-                  asset={asset ? { fungible: asset } : undefined}
-                  type={action.type.value}
-                />
+                <TransactionItemIcon action={action} />
               )}
             </div>
           }
-          text={<ActionTitle action={action} explorerUrl={explorerUrl} />}
+          text={
+            <ActionTitle
+              action={action}
+              explorerUrl={action.transaction?.explorerUrl}
+            />
+          }
           detailText={<ActionDetail action={action} />}
         />
-        <UIText kind="body/regular">
-          {asset ? (
-            <AssetLink
-              asset={asset}
-              title={
-                action.type.value === 'approve'
-                  ? asset.name || asset.symbol?.toUpperCase()
-                  : undefined
-              }
-              address={address}
+        <UIText
+          kind="body/regular"
+          color={
+            shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
+          }
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+          }}
+        >
+          {incomingTransfers?.length ? (
+            <HistoryItemValue
+              actionType={action.type.value}
+              transfers={incomingTransfers}
+              withLink={false}
             />
+          ) : outgoingTransfers?.length ? (
+            <HistoryItemValue
+              actionType={action.type.value}
+              transfers={outgoingTransfers}
+              withLink={false}
+            />
+          ) : approvals.length ? (
+            <HistoryApprovalValue approvals={approvals} withLink={false} />
           ) : null}
         </UIText>
       </HStack>
@@ -442,7 +442,7 @@ export function ActionItem({
     return null;
   }
   return 'local' in addressAction && addressAction.local ? (
-    <ActionItemLocal action={addressAction} networks={networks} />
+    <ActionItemLocal action={addressAction} />
   ) : (
     <ActionItemBackend
       action={addressAction as Action}

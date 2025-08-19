@@ -29,6 +29,9 @@ import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { getActionApprovalFungibleId } from 'src/modules/ethereum/transactions/addressAction';
+import { useFungibleDecimals } from 'src/ui/shared/useFungibleDecimals';
+import { baseToCommon } from 'src/shared/units/convert';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -115,22 +118,37 @@ export function TransactionSimulation({
   const interpretation = txInterpretQuery.data;
 
   const interpretAddressAction = interpretation?.action;
-  const addressAction =
+  const action =
     interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
-  if (!addressAction || !networks) {
-    return <p>loading...</p>;
-  }
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
-  const singleAsset = addressAction.content?.single_asset;
+
+  const requestedAllowanceQuantityCommon = action?.acts
+    .at(0)
+    ?.content?.approvals?.at(0)?.amount?.quantity;
+
+  const approvalFungibleId = action
+    ? getActionApprovalFungibleId(action)
+    : null;
+
+  const chain = transaction.evm ? evmChain : solanaChain;
+
+  const fungibleDecimals = useFungibleDecimals({
+    fungibleId: approvalFungibleId,
+    chain: chain || null,
+  });
 
   // TODO: what if network doesn't support simulations (txInterpretQuery is idle or isError),
   // but this is an approval tx? Can there be a bug?
-  const allowanceQuantityBase =
-    customAllowanceValueBase || addressAction.content?.single_asset?.quantity;
+  const allowanceQuantityCommon =
+    fungibleDecimals && customAllowanceValueBase
+      ? baseToCommon(customAllowanceValueBase, fungibleDecimals).toFixed()
+      : requestedAllowanceQuantityCommon;
 
-  const chain = transaction.evm ? evmChain : solanaChain;
+  if (!action || !networks) {
+    return <p>loading...</p>;
+  }
+
   invariant(chain, 'Chain must be defined for transaction simulation');
+  const network = networks.getByNetworkId(chain);
 
   return (
     <>
@@ -152,43 +170,42 @@ export function TransactionSimulation({
                 title={<UIText kind="body/accent">Details</UIText>}
                 closeKind="icon"
               />
-              <TransactionAdvancedView
-                networks={networks}
-                chain={chain}
-                interpretation={interpretation}
-                transaction={transaction}
-                addressAction={addressAction}
-                onCopyData={() => toastRef.current?.showToast()}
-              />
+              {network ? (
+                <TransactionAdvancedView
+                  network={network}
+                  interpretation={interpretation}
+                  transaction={transaction}
+                  action={action}
+                  onCopyData={() => toastRef.current?.showToast()}
+                />
+              ) : null}
             </>
           );
         }}
       />
       <VStack gap={8}>
-        <AddressActionDetails
-          address={address}
-          recipientAddress={recipientAddress}
-          addressAction={addressAction}
-          chain={chain}
-          networks={networks}
-          actionTransfers={actionTransfers}
-          singleAsset={singleAsset}
-          allowanceQuantityBase={allowanceQuantityBase || null}
-          showApplicationLine={false}
-          singleAssetElementEnd={
-            allowanceQuantityBase && onOpenAllowanceForm ? (
-              <UIText kind="small/accent" color="var(--primary)">
-                <UnstyledButton
-                  type="button"
-                  className="hover:underline"
-                  onClick={onOpenAllowanceForm}
-                >
-                  Edit
-                </UnstyledButton>
-              </UIText>
-            ) : null
-          }
-        />
+        {network ? (
+          <AddressActionDetails
+            address={address}
+            action={action}
+            network={network}
+            allowanceQuantityCommon={allowanceQuantityCommon || null}
+            showApplicationLine={false}
+            singleAssetElementEnd={
+              allowanceQuantityCommon && onOpenAllowanceForm ? (
+                <UIText kind="small/accent" color="var(--primary)">
+                  <UnstyledButton
+                    type="button"
+                    className="hover:underline"
+                    onClick={onOpenAllowanceForm}
+                  >
+                    Edit
+                  </UnstyledButton>
+                </UIText>
+              ) : null
+            }
+          />
+        ) : null}
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
             interpretation={interpretation}

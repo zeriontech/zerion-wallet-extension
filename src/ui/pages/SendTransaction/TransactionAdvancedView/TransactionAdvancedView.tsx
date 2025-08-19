@@ -5,9 +5,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { noValueDash } from 'src/ui/shared/typography';
-import type { Networks } from 'src/modules/networks/Networks';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
-import type { Chain } from 'src/modules/networks/Chain';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -28,24 +26,25 @@ import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { Networks } from 'src/modules/networks/Networks';
 
 function maybeHexValue(value?: BigNumberish | null): string | null {
   return value ? valueToHex(value) : null;
 }
 
 function AddressLine({
-  networks,
-  chain,
+  network,
   label,
   address,
 }: {
-  networks: Networks;
-  chain: Chain;
+  network: NetworkConfig;
   label: React.ReactNode;
   address: string;
 }) {
   const truncatedAddress = truncateAddress(address, 16);
-  const explorerUrl = networks.getExplorerAddressUrlByName(chain, address);
+  const explorerUrl = Networks.getExplorerAddressUrl(network, address);
+
   return (
     <HStack gap={8} justifyContent="space-between" alignItems="center">
       <VStack gap={0}>
@@ -74,13 +73,11 @@ function AddressLine({
 }
 
 function TransactionDetails({
-  networks,
-  chain,
+  network,
   transaction,
   interpretation,
 }: {
-  networks: Networks;
-  chain: Chain;
+  network: NetworkConfig;
   transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
 }) {
@@ -114,8 +111,7 @@ function TransactionDetails({
         <VStack gap={16}>
           {transaction.from ? (
             <AddressLine
-              networks={networks}
-              chain={chain}
+              network={network}
               label="from"
               address={transaction.from}
             />
@@ -124,8 +120,7 @@ function TransactionDetails({
           )}
           {transaction.to ? (
             <AddressLine
-              networks={networks}
-              chain={chain}
+              network={network}
               label="to"
               address={transaction.to}
             />
@@ -199,15 +194,13 @@ function TransactionDetails({
 }
 
 export function TransactionAdvancedView({
-  networks,
-  chain,
+  network,
   transaction,
   interpretation,
   action,
   onCopyData,
 }: {
-  networks: Networks;
-  chain: Chain;
+  network: NetworkConfig;
   transaction: MultichainTransaction;
   interpretation?: InterpretResponse | null;
   action: AnyAction;
@@ -235,11 +228,10 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        <ApplicationLine action={action} chain={chain} networks={networks} />
+        <ApplicationLine action={action} network={network} />
         {transaction.evm ? (
           <TransactionDetails
-            networks={networks}
-            chain={chain}
+            network={network}
             transaction={transaction.evm}
             interpretation={interpretation}
           />
