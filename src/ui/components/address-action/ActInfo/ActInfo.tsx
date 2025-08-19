@@ -17,6 +17,7 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { AssetAnchor } from '../../AssetLink';
 import { NFTAnchor } from '../../NFTLink/NFTLink';
 
@@ -48,7 +49,7 @@ function AssetContent({
           >
             <HStack gap={4} alignItems="center">
               <span>
-                {unlimited
+                {unlimited || isUnlimitedApproval(amount?.quantity)
                   ? 'Unlimited'
                   : amount?.quantity
                   ? `${

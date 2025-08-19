@@ -22,7 +22,6 @@ import ChangeAssets3 from 'jsx:src/ui/assets/changed-assets-3.svg';
 import ChangeAssetsMore from 'jsx:src/ui/assets/changed-assets-more.svg';
 import { AssetIcon } from 'src/ui/components/AssetIcon';
 import type {
-  Action,
   ActionType,
   Approval,
   Collection,
@@ -30,6 +29,7 @@ import type {
   NFTPreview,
   Transfer,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
 
 export const TRANSACTION_ICON_SIZE = 36;
 export const TRANSACTION_SMALL_ICON_SIZE = 27;
@@ -216,7 +216,7 @@ function TransferIcon({
   );
 }
 
-export function TransactionItemIcon({ action }: { action: Action }) {
+export function TransactionItemIcon({ action }: { action: AnyAction }) {
   const approvals = action.content?.approvals;
   const incomingTransfers = useMemo(
     () => action.content?.transfers?.filter((t) => t.direction === 'in'),

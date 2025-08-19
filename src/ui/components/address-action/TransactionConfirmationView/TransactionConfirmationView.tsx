@@ -58,8 +58,7 @@ export function TransactionConfirmationView({
     eligibilityQuery,
     origin: 'https://app.zerion.io',
   });
-  const gasbackValue =
-    txInterpretQuery.data?.action?.transaction.gasback ?? null;
+  const gasbackValue = txInterpretQuery.data?.action?.gasback ?? null;
   useEffect(() => {
     if (gasbackValue != null) {
       onGasbackReady?.(gasbackValue);
@@ -155,18 +154,14 @@ export function TransactionConfirmationView({
                   paymasterPossible={paymasterPossible}
                   paymasterWaiting={false}
                   gasback={
-                    txInterpretQuery.data?.action?.transaction.gasback != null
-                      ? {
-                          value:
-                            txInterpretQuery.data?.action.transaction.gasback,
-                        }
+                    txInterpretQuery.data?.action?.gasback != null
+                      ? { value: txInterpretQuery.data?.action.gasback }
                       : null
                   }
                 />
-              ) : txInterpretQuery.data?.action?.transaction.fee ? (
+              ) : txInterpretQuery.data?.action?.fee ? (
                 <AddressActionNetworkFee
-                  chain={chain.toString()}
-                  networkFee={txInterpretQuery.data?.action?.transaction.fee}
+                  fee={txInterpretQuery.data?.action.fee}
                   isLoading={txInterpretQuery.isLoading}
                 />
               ) : null}

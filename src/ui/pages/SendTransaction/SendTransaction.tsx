@@ -1,9 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Client, type AddressAction } from 'defi-sdk';
+import { Client } from 'defi-sdk';
 import type { CustomConfiguration } from '@zeriontech/transactions';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  getActionApprovalFungibleId,
+  type AnyAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import type {
   IncomingTransaction,
@@ -47,7 +50,6 @@ import type { Networks } from 'src/modules/networks/Networks';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { AllowanceView } from 'src/ui/components/AllowanceView';
-import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -101,6 +103,8 @@ import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import { useFungibleDecimals } from 'src/ui/shared/useFungibleDecimals';
+import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -292,8 +296,7 @@ function TransactionDefaultView({
   origin,
   wallet,
   action,
-  singleAsset,
-  allowanceQuantityBase,
+  allowanceQuantityCommon,
   interpretation,
   interpretQuery,
   populatedTransaction,
@@ -310,8 +313,7 @@ function TransactionDefaultView({
   origin: string;
   wallet: ExternallyOwnedAccount;
   action: AnyAction;
-  singleAsset: NonNullable<AddressAction['content']>['single_asset'];
-  allowanceQuantityBase: string | null;
+  allowanceQuantityCommon: string | null;
   interpretation: InterpretResponse | null | undefined;
   interpretQuery: {
     isInitialLoading: boolean;
@@ -335,8 +337,7 @@ function TransactionDefaultView({
     [params]
   );
 
-  const recipientAddress = action.label?.display_value.wallet_address;
-  const actionTransfers = action.content?.transfers;
+  const network = networks.getByNetworkId(chain);
 
   return (
     <>
@@ -394,29 +395,27 @@ function TransactionDefaultView({
             ['--surface-background-color' as string]: 'var(--neutral-100)',
           }}
         >
-          <AddressActionDetails
-            address={wallet.address}
-            recipientAddress={recipientAddress}
-            addressAction={action}
-            chain={chain}
-            networks={networks}
-            actionTransfers={actionTransfers}
-            singleAsset={singleAsset}
-            allowanceQuantityBase={allowanceQuantityBase}
-            showApplicationLine={true}
-            singleAssetElementEnd={
-              allowanceQuantityBase && action.type.value === 'approve' ? (
-                <UIText
-                  as={TextLink}
-                  kind="small/accent"
-                  style={{ color: 'var(--primary)' }}
-                  to={allowanceViewHref}
-                >
-                  Edit
-                </UIText>
-              ) : null
-            }
-          />
+          {network ? (
+            <AddressActionDetails
+              address={wallet.address}
+              action={action}
+              network={network}
+              allowanceQuantityCommon={allowanceQuantityCommon}
+              showApplicationLine={true}
+              singleAssetElementEnd={
+                allowanceQuantityCommon && action.type.value === 'approve' ? (
+                  <UIText
+                    as={TextLink}
+                    kind="small/accent"
+                    style={{ color: 'var(--primary)' }}
+                    to={allowanceViewHref}
+                  >
+                    Edit
+                  </UIText>
+                ) : null
+              }
+            />
+          ) : null}
         </VStack>
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
@@ -453,7 +452,7 @@ function TransactionDefaultView({
             <React.Suspense fallback={null}>
               <TransactionWarnings
                 address={singleAddress}
-                addressAction={action}
+                action={action}
                 transaction={populatedTransaction}
                 chain={chain}
                 networkFeeConfiguration={configuration.networkFee}
@@ -492,8 +491,8 @@ function TransactionDefaultView({
                     paymasterPossible={paymasterPossible}
                     paymasterWaiting={paymasterWaiting}
                     gasback={
-                      interpretation?.action?.transaction.gasback != null
-                        ? { value: interpretation.action.transaction.gasback }
+                      interpretation?.action?.gasback != null
+                        ? { value: interpretation.action.gasback }
                         : null
                     }
                     listViewTransitions={true}
@@ -681,9 +680,6 @@ function SendTransactionContent({
     interpretQuery.data?.warnings
   );
 
-  const requestedAllowanceQuantityBase =
-    interpretQuery.data?.action?.content?.single_asset?.quantity ||
-    localAction?.content?.single_asset?.quantity;
   const interpretAction = interpretQuery.data?.action;
 
   const action = interpretAction || localAction || null;
@@ -746,11 +742,37 @@ function SendTransactionContent({
     throw new Error('Unexpected missing localAddressAction');
   }
 
+  const approvalFungibleId = interpretQuery.data?.action
+    ? getActionApprovalFungibleId(interpretQuery.data.action)
+    : null;
+
+  const fungibleDecimals = useFungibleDecimals({
+    fungibleId: approvalFungibleId,
+    chain: chain || null,
+  });
+
+  const requestedAllowanceQuantityCommon =
+    interpretQuery.data?.action?.acts.at(0)?.content?.approvals?.at(0)?.amount
+      ?.quantity ||
+    localAction?.acts.at(0)?.content?.approvals?.at(0)?.amount?.quantity;
+
+  const requestedAllowanceQuantityBase =
+    requestedAllowanceQuantityCommon && fungibleDecimals
+      ? commonToBase(
+          requestedAllowanceQuantityCommon,
+          fungibleDecimals
+        ).toFixed()
+      : null;
+
+  const baseQuantity = allowanceQuantityBase || requestedAllowanceQuantityBase;
+  const allowanceQuantityCommon =
+    fungibleDecimals && baseQuantity
+      ? baseToCommon(baseQuantity, fungibleDecimals).toFixed()
+      : null;
+
   if (!action) {
     return null;
   }
-
-  const singleAsset = action?.content?.single_asset;
 
   const handleChangeAllowance = (value: string) => {
     setAllowanceQuantityBase(value);
@@ -784,11 +806,8 @@ function SendTransactionContent({
             chain={chain}
             origin={origin}
             wallet={wallet}
-            addressAction={action}
-            singleAsset={singleAsset}
-            allowanceQuantityBase={
-              allowanceQuantityBase || requestedAllowanceQuantityBase || null
-            }
+            action={action}
+            allowanceQuantityCommon={allowanceQuantityCommon || null}
             interpretation={interpretQuery.data}
             interpretQuery={interpretQuery}
             populatedTransaction={populatedTransaction}
@@ -810,24 +829,25 @@ function SendTransactionContent({
                 title={<UIText kind="body/accent">Details</UIText>}
                 closeKind="icon"
               />
-              <TransactionAdvancedView
-                networks={networks}
-                chain={chain}
-                interpretation={interpretQuery.data}
-                transaction={{ evm: populatedTransaction }}
-                addressAction={action}
-                onCopyData={() => toastRef.current?.showToast()}
-              />
+              {network ? (
+                <TransactionAdvancedView
+                  network={network}
+                  interpretation={interpretQuery.data}
+                  transaction={{ evm: populatedTransaction }}
+                  action={action}
+                  onCopyData={() => toastRef.current?.showToast()}
+                />
+              ) : null}
             </>
           )}
-        ></CenteredDialog>
-        {view === View.customAllowance ? (
+        />
+        {view === View.customAllowance && network ? (
           <AllowanceView
             address={wallet.address}
-            asset={getFungibleAsset(singleAsset?.asset)}
+            assetId={approvalFungibleId}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             value={allowanceQuantityBase}
-            chain={chain}
+            network={network}
             onChange={handleChangeAllowance}
           />
         ) : null}
@@ -950,13 +970,11 @@ function SolDefaultView({
 }) {
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
-  const recipientAddress = action.label?.display_value.wallet_address;
-  const actionTransfers = action.content?.transfers;
-  const singleAsset = action?.content?.single_asset;
-
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const toastRef = useRef<PopoverToastHandle>(null);
+
+  const network = networks.getByNetworkId(createChain(NetworkId.Solana));
 
   return (
     <>
@@ -1014,18 +1032,16 @@ function SolDefaultView({
             ['--surface-background-color' as string]: 'var(--neutral-100)',
           }}
         >
-          <AddressActionDetails
-            address={wallet.address}
-            recipientAddress={recipientAddress}
-            addressAction={action}
-            chain={createChain(NetworkId.Solana)}
-            networks={networks}
-            actionTransfers={actionTransfers}
-            singleAsset={singleAsset}
-            showApplicationLine={false}
-            allowanceQuantityBase={null}
-            singleAssetElementEnd={null}
-          />
+          {network ? (
+            <AddressActionDetails
+              address={wallet.address}
+              action={action}
+              network={network}
+              showApplicationLine={false}
+              allowanceQuantityCommon={null}
+              singleAssetElementEnd={null}
+            />
+          ) : null}
         </VStack>
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
@@ -1059,10 +1075,9 @@ function SolDefaultView({
         <RenderArea name="transaction-warning-section" />
       </VStack>
       <div style={{ marginTop: 'auto' }}>
-        {action.transaction.fee ? (
+        {action.fee ? (
           <AddressActionNetworkFee
-            chain={action.transaction.chain}
-            networkFee={action.transaction.fee}
+            fee={action.fee}
             isLoading={txInterpretQuery.isLoading}
           />
         ) : null}
@@ -1077,14 +1092,15 @@ function SolDefaultView({
               title={<UIText kind="body/accent">Details</UIText>}
               closeKind="icon"
             />
-            <TransactionAdvancedView
-              networks={networks}
-              chain={createChain(NetworkId.Solana)}
-              interpretation={txInterpretQuery.data}
-              transaction={{ solana: rawTransaction }}
-              addressAction={action}
-              onCopyData={() => toastRef.current?.showToast()}
-            />
+            {network ? (
+              <TransactionAdvancedView
+                network={network}
+                interpretation={txInterpretQuery.data}
+                transaction={{ solana: rawTransaction }}
+                action={action}
+                onCopyData={() => toastRef.current?.showToast()}
+              />
+            ) : null}
           </>
         )}
       ></CenteredDialog>
@@ -1281,7 +1297,7 @@ function SolSendTransaction() {
           <SolDefaultView
             rawTransaction={firstTx}
             wallet={wallet}
-            addressAction={action}
+            action={action}
             txInterpretQuery={interpretQuery}
             origin={origin}
             networks={networks}

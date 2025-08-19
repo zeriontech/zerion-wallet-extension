@@ -17,7 +17,7 @@ import type {
   IncomingTransactionWithFrom,
 } from '../../types/IncomingTransaction';
 
-type LocalActionTransaction = Omit<
+export type LocalActionTransaction = Omit<
   NonNullable<Action['transaction']>,
   'hash'
 > & {
@@ -33,7 +33,7 @@ export type LocalAction = Omit<Action, 'transaction' | 'acts'> & {
   transaction: LocalActionTransaction | null;
   rawTransaction: {
     data?: string | null;
-    value?: BigNumberish | null;
+    value?: BigNumberish;
     from?: string | null;
     nonce: number;
     hash: string;
@@ -71,9 +71,15 @@ const toActionTx = (
     chain,
     hash: (tx as { hash?: string }).hash || ZERO_HASH,
     nonce: -1,
+    value: tx.value ?? undefined,
   } as const);
 
-function convertAssetToFungibleOutline(asset: Asset): FungibleOutline {
+export function convertAssetToFungibleOutline(
+  asset: Asset | null
+): FungibleOutline | null {
+  if (!asset) {
+    return null;
+  }
   return {
     id: asset.id || asset.asset_code,
     name: asset.name,
@@ -645,4 +651,14 @@ export function createCancelAddressAction(
 
 export function getActionAddress(action: AnyAction) {
   return action.label?.wallet?.address || action.label?.contract?.address;
+}
+
+export function getActionApprovalFungibleId(action: AnyAction) {
+  return (
+    (action?.acts.length === 1 &&
+    action.acts[0].content?.approvals?.length === 1 &&
+    !action.acts[0].content.transfers
+      ? action.acts[0].content.approvals[0].fungible?.id
+      : null) || null
+  );
 }

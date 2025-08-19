@@ -1,8 +1,6 @@
 import BigNumber from 'bignumber.js';
-import type { Asset } from 'defi-sdk';
 import React, { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import type { Chain } from 'src/modules/networks/Chain';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
@@ -10,22 +8,24 @@ import { invariant } from 'src/shared/invariant';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { createChain } from 'src/modules/networks/Chain';
 import { AllowanceForm } from '../AllowanceForm';
 import { NavigationBar } from '../NavigationBar';
 
 export function AllowanceView({
   address,
-  chain,
-  asset,
+  network,
+  assetId,
   value,
   requestedAllowanceQuantityBase,
   onChange,
 }: {
   address: string;
-  chain: Chain;
-  asset?: Asset | null;
+  network: NetworkConfig;
+  assetId?: string | null;
   value: string;
-  requestedAllowanceQuantityBase?: string;
+  requestedAllowanceQuantityBase: string | null;
   onChange: (value: string) => void;
 }) {
   const { currency } = useCurrency();
@@ -34,38 +34,38 @@ export function AllowanceView({
     'requestedAllowanceQuantityBase is required to set custom allowance'
   );
 
-  const assetIds = asset ? [asset?.asset_code] : [];
+  const assetIds = assetId ? [assetId] : [];
   const { data, isLoading: positionsAreLoading } = useHttpAddressPositions(
     { addresses: [address], currency, assetIds },
     { source: useHttpClientSource() },
     {
-      enabled: Boolean(asset),
+      enabled: Boolean(assetId),
       refetchInterval: usePositionsRefetchInterval(10000),
     }
   );
   const positions = data?.data;
 
-  const positionQuantity = useMemo(
+  const position = useMemo(
     () =>
       positions?.find(
-        (position) => position.chain === chain.toString() && !position.dapp?.id
-      )?.quantity,
-    [chain, positions]
+        (position) => position.chain === network.id && !position.dapp?.id
+      ),
+    [network.id, positions]
   );
 
-  const balance = useMemo(
-    () =>
-      positionQuantity && asset
-        ? getCommonQuantity({
-            asset,
-            chain,
-            baseQuantity: positionQuantity,
-          })
-        : null,
-    [asset, chain, positionQuantity]
-  );
+  const chain = createChain(network.id);
 
-  if (positionsAreLoading || !asset) {
+  const balance = useMemo(() => {
+    return position?.quantity
+      ? getCommonQuantity({
+          asset: position.asset,
+          chain,
+          baseQuantity: position?.quantity,
+        })
+      : null;
+  }, [chain, position]);
+
+  if (positionsAreLoading || !position?.asset) {
     return <ViewLoading kind="network" />;
   }
 
@@ -74,7 +74,7 @@ export function AllowanceView({
       <NavigationBar title="Edit allowance" />
       <PageTop />
       <AllowanceForm
-        asset={asset}
+        asset={position?.asset}
         chain={chain}
         address={address}
         balance={balance}

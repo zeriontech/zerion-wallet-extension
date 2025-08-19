@@ -13,6 +13,7 @@ import SuccessIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { ActionTransaction } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { LocalActionTransaction } from 'src/modules/ethereum/transactions/addressAction';
 
 const ICON_SIZE = 20;
 
@@ -85,7 +86,7 @@ function HashButton({ hash }: { hash: string }) {
 export function ExplorerInfo({
   transaction,
 }: {
-  transaction: ActionTransaction;
+  transaction: ActionTransaction | LocalActionTransaction;
 }) {
   return (
     <HStack
@@ -104,7 +105,7 @@ export function ExplorerInfo({
       {transaction.explorerUrl ? (
         <ExplorerLink url={transaction.explorerUrl} />
       ) : null}
-      <HashButton hash={transaction.hash} />
+      {transaction.hash ? <HashButton hash={transaction.hash} /> : null}
     </HStack>
   );
 }

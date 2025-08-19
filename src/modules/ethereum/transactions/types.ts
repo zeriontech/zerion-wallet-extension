@@ -1,8 +1,8 @@
-import type { AddressAction } from 'defi-sdk';
 import type {
   EthersV5TransactionReceiptStripped,
   EthersV5TransactionResponse,
 } from 'src/background/Wallet/model/ethers-v5-types';
+import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 
 type CombineUnion<A, B> =
@@ -84,7 +84,7 @@ export interface InterpretInput {
 }
 
 export interface InterpretResponse {
-  action: AddressAction | null;
+  action: Action | null;
   input?: InterpretInput;
   warnings: Warning[];
 }
