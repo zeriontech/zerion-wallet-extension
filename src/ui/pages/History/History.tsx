@@ -1,9 +1,5 @@
-import React, { useState } from 'react';
-// import type { AddressAction } from 'defi-sdk';
-// import { Client, useAddressActions } from 'defi-sdk';
-// import { hashQueryKey, useQuery } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-// import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -12,8 +8,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-// import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-// import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { useStore } from '@store-unit/react';
@@ -28,39 +22,50 @@ import {
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { hashQueryKey, useQuery } from '@tanstack/react-query';
+import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
+import { Client } from 'defi-sdk';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
+import { isMatchForAllWords } from './matchSearcQuery';
 
-// function sortActions<T extends { datetime?: string }>(actions: T[]) {
-//   return actions.sort((a, b) => {
-//     const aDate = a.datetime ? new Date(a.datetime).getTime() : Date.now();
-//     const bDate = b.datetime ? new Date(b.datetime).getTime() : Date.now();
-//     return bDate - aDate;
-//   });
-// }
+function sortActions<T extends { timestamp?: number }>(actions: T[]) {
+  return actions.sort((a, b) => {
+    const aDate = a.timestamp || Date.now();
+    const bDate = b.timestamp || Date.now();
+    return bDate - aDate;
+  });
+}
 
-// function mergeLocalAndBackendActions(
-//   local: AnyAddressAction[],
-//   backend: AddressAction[],
-//   hasMoreBackendActions: boolean
-// ) {
-//   const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
+function mergeLocalAndBackendActions(
+  local: AnyAction[],
+  backend: Action[],
+  hasMoreBackendActions: boolean
+) {
+  const backendHashes = new Set(
+    backend.map((tx) => tx.transaction?.hash || tx.acts[0].transaction.hash)
+  );
 
-//   const lastBackendActionDatetime = backend.at(-1)?.datetime;
-//   const lastBackendTimestamp =
-//     lastBackendActionDatetime && hasMoreBackendActions
-//       ? new Date(lastBackendActionDatetime).getTime()
-//       : 0;
+  const lastBackendActionDatetime = backend.at(-1)?.timestamp;
+  const lastBackendTimestamp =
+    lastBackendActionDatetime && hasMoreBackendActions
+      ? new Date(lastBackendActionDatetime).getTime()
+      : 0;
 
-//   const merged = local
-//     .filter(
-//       (tx) =>
-//         backendHashes.has(tx.transaction.hash) === false &&
-//         new Date(tx.datetime).getTime() >= lastBackendTimestamp
-//     )
-//     .concat(backend);
-//   return sortActions(merged);
-// }
+  const merged = local
+    .filter(
+      (tx) =>
+        tx.transaction?.hash &&
+        backendHashes.has(tx.transaction.hash) === false &&
+        tx.timestamp >= lastBackendTimestamp
+    )
+    .concat(backend);
+  return sortActions(merged);
+}
 
 function useMinedAndPendingAddressActions({
   chain,
@@ -70,44 +75,44 @@ function useMinedAndPendingAddressActions({
   searchQuery?: string;
 }) {
   const { params } = useAddressParams();
-  const { networks /* loadNetworkByChainId */ } = useNetworks();
+  const { networks, loadNetworkByChainId } = useNetworks();
   const isSupportedByBackend = chain
     ? networks?.supports('actions', chain)
     : true;
-  // const localActions = useLocalAddressTransactions(params);
-  // const client = useDefiSdkClient();
+  const localActions = useLocalAddressTransactions(params);
+  const client = useDefiSdkClient();
   const { currency } = useCurrency();
 
-  // const { data: localAddressActions, ...localActionsQuery } = useQuery({
-  //   // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
-  //   queryKey: ['pages/history', localActions, chain, searchQuery, client],
-  //   queryKeyHashFn: (queryKey) => {
-  //     const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-  //     return hashQueryKey(key);
-  //   },
-  //   queryFn: async () => {
-  //     let items = await Promise.all(
-  //       localActions.map((transactionObject) =>
-  //         pendingTransactionToAddressAction(
-  //           transactionObject,
-  //           loadNetworkByChainId,
-  //           currency,
-  //           client
-  //         )
-  //       )
-  //     );
-  //     if (chain) {
-  //       items = items.filter(
-  //         (item) => item.transaction.chain === chain.toString()
-  //       );
-  //     }
-  //     if (searchQuery) {
-  //       items = items.filter((item) => isMatchForAllWords(searchQuery, item));
-  //     }
-  //     return items;
-  //   },
-  //   useErrorBoundary: true,
-  // });
+  const { data: localAddressActions, ...localActionsQuery } = useQuery({
+    // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
+    queryKey: ['pages/history', localActions, chain, searchQuery, client],
+    queryKeyHashFn: (queryKey) => {
+      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
+      return hashQueryKey(key);
+    },
+    queryFn: async () => {
+      let items = await Promise.all(
+        localActions.map((transactionObject) =>
+          pendingTransactionToAddressAction(
+            transactionObject,
+            loadNetworkByChainId,
+            currency,
+            client
+          )
+        )
+      );
+      if (chain) {
+        items = items.filter(
+          (item) => item.transaction?.chain.id === chain.toString()
+        );
+      }
+      if (searchQuery) {
+        items = items.filter((item) => isMatchForAllWords(searchQuery, item));
+      }
+      return items;
+    },
+    useErrorBoundary: true,
+  });
 
   const { actions, queryData } = useWalletActions(
     {
@@ -121,35 +126,31 @@ function useMinedAndPendingAddressActions({
     { enabled: isSupportedByBackend }
   );
 
-  return {
+  return useMemo(() => {
+    const backendItems = isSupportedByBackend && actions ? actions : [];
+    const hasMore = Boolean(isSupportedByBackend && queryData.hasNextPage);
+    return {
+      actions: localAddressActions
+        ? mergeLocalAndBackendActions(
+            localAddressActions,
+            backendItems,
+            hasMore
+          )
+        : null,
+      ...localActionsQuery,
+      isLoading:
+        queryData.isLoading ||
+        queryData.isFetching ||
+        localActionsQuery.isLoading,
+      queryData,
+    };
+  }, [
+    isSupportedByBackend,
     actions,
+    localAddressActions,
+    localActionsQuery,
     queryData,
-  };
-  // return useMemo(() => {
-  //   const backendItems = isSupportedByBackend && value ? value : [];
-  //   const hasMore = Boolean(isSupportedByBackend && hasNext);
-  //   return {
-  //     value: localAddressActions
-  //       ? mergeLocalAndBackendActions(
-  //           localAddressActions,
-  //           backendItems,
-  //           hasMore
-  //         )
-  //       : null,
-  //     ...localActionsQuery,
-  //     isLoading: actionsIsLoading || localActionsQuery.isLoading,
-  //     hasMore,
-  //     fetchMore,
-  //   };
-  // }, [
-  //   isSupportedByBackend,
-  //   value,
-  //   localAddressActions,
-  //   localActionsQuery,
-  //   actionsIsLoading,
-  //   hasNext,
-  //   fetchMore,
-  // ]);
+  ]);
 }
 
 function HistoryEmptyView({
@@ -198,12 +199,10 @@ export function HistoryList({
       : null;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
-  const { actions, queryData } = useMinedAndPendingAddressActions({
+  const { actions, isLoading, queryData } = useMinedAndPendingAddressActions({
     chain,
     searchQuery,
   });
-
-  const isLoading = queryData.isLoading || queryData.isFetching;
 
   const actionFilters = (
     <div style={{ paddingInline: 16 }}>
