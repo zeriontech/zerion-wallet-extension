@@ -59,7 +59,6 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { useStore } from '@store-unit/react';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
-import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
@@ -99,10 +98,6 @@ function SettingsMain() {
         address: currentWallet.address,
       });
     },
-  });
-
-  const { isPremium } = usePremiumStatus({
-    address: currentWallet?.address,
   });
 
   const { data: currentUserId } = useQuery({
@@ -176,7 +171,7 @@ function SettingsMain() {
         </Frame>
         <Frame>
           <VStack gap={0}>
-            {isPremium && evmAddress ? (
+            {evmAddress ? (
               <FrameListItemLink to="/premium">
                 <AngleRightRow>
                   <HStack gap={8} alignItems="center">
