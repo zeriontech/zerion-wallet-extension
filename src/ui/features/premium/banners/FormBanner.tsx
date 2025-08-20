@@ -8,6 +8,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-logo-transparent.svg';
 import { emitter } from 'src/ui/shared/events';
+import { useStatsigExperiment } from 'src/modules/statsig/statsig.client';
 import { usePreferences } from '../../preferences';
 import { useSingleAddressPremiumStatus } from '../getPremiumStatus';
 
@@ -27,10 +28,18 @@ export function PremiumFormBanner({
     });
   }, [setPreferences]);
 
+  const { data: statsigData } = useStatsigExperiment(
+    'extension-entry_point_premium_purchase'
+  );
+  const isExperimentEnabled = statsigData?.group_name === 'Group1';
+
   const { isPremium } = useSingleAddressPremiumStatus({ address });
 
   const shouldShowBanner =
-    preferences && !preferences.formPremiumBannerDismissed && !isPremium;
+    preferences &&
+    !preferences.formPremiumBannerDismissed &&
+    !isPremium &&
+    isExperimentEnabled;
 
   if (!shouldShowBanner) {
     return null;
