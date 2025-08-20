@@ -297,6 +297,7 @@ function TransactionDefaultView({
   wallet,
   action,
   allowanceQuantityCommon,
+  customAllowanceQuantityBase,
   interpretation,
   interpretQuery,
   populatedTransaction,
@@ -314,6 +315,7 @@ function TransactionDefaultView({
   wallet: ExternallyOwnedAccount;
   action: AnyAction;
   allowanceQuantityCommon: string | null;
+  customAllowanceQuantityBase: string | null;
   interpretation: InterpretResponse | null | undefined;
   interpretQuery: {
     isInitialLoading: boolean;
@@ -401,6 +403,7 @@ function TransactionDefaultView({
               action={action}
               network={network}
               allowanceQuantityCommon={allowanceQuantityCommon}
+              customAllowanceQuantityBase={customAllowanceQuantityBase}
               showApplicationLine={true}
               singleAssetElementEnd={
                 allowanceQuantityCommon && action.type.value === 'approve' ? (
@@ -808,6 +811,7 @@ function SendTransactionContent({
             wallet={wallet}
             action={action}
             allowanceQuantityCommon={allowanceQuantityCommon || null}
+            customAllowanceQuantityBase={allowanceQuantityBase || null}
             interpretation={interpretQuery.data}
             interpretQuery={interpretQuery}
             populatedTransaction={populatedTransaction}
@@ -1039,6 +1043,7 @@ function SolDefaultView({
               network={network}
               showApplicationLine={false}
               allowanceQuantityCommon={null}
+              customAllowanceQuantityBase={null}
               singleAssetElementEnd={null}
             />
           ) : null}

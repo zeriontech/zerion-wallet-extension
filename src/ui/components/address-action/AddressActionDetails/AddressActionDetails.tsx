@@ -3,6 +3,7 @@ import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction'
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { produce } from 'immer';
+import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { RecipientLine } from '../RecipientLine';
 import { ApplicationLine } from '../ApplicationLine';
 import { ActInfo } from '../ActInfo';
@@ -12,6 +13,7 @@ export function AddressActionDetails({
   action,
   network,
   allowanceQuantityCommon,
+  customAllowanceQuantityBase,
   showApplicationLine,
   singleAssetElementEnd,
 }: {
@@ -19,6 +21,7 @@ export function AddressActionDetails({
   action?: AnyAction;
   network: NetworkConfig;
   allowanceQuantityCommon: string | null;
+  customAllowanceQuantityBase: string | null;
   showApplicationLine: boolean;
   singleAssetElementEnd: React.ReactNode;
 }) {
@@ -39,9 +42,12 @@ export function AddressActionDetails({
       if (draft.acts[0].content?.approvals?.[0].amount) {
         draft.acts[0].content.approvals[0].amount.quantity =
           allowanceQuantityCommon;
+        draft.acts[0].content.approvals[0].unlimited = isUnlimitedApproval(
+          customAllowanceQuantityBase
+        );
       }
     });
-  }, [action, allowanceQuantityCommon]);
+  }, [action, allowanceQuantityCommon, customAllowanceQuantityBase]);
 
   const showEndElement =
     action?.acts.length === 1 &&
