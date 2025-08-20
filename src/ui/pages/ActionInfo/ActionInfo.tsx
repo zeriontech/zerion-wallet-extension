@@ -56,7 +56,11 @@ function AssetContent({
 }) {
   if (fungible) {
     return (
-      <HStack gap={12} alignItems="center" style={{ position: 'relative' }}>
+      <HStack
+        gap={12}
+        alignItems="center"
+        style={{ position: 'relative', height: 44 }}
+      >
         <TokenIcon size={36} src={fungible.iconUrl} symbol={fungible.symbol} />
         <VStack gap={0}>
           <UIText
@@ -97,7 +101,7 @@ function AssetContent({
 
   if (nft) {
     return (
-      <HStack gap={12} alignItems="center">
+      <HStack gap={12} alignItems="center" style={{ height: 44 }}>
         <TokenIcon
           size={36}
           src={nft.metadata?.content?.imagePreviewUrl}
@@ -136,7 +140,7 @@ function AssetContent({
 
   if (collection) {
     return (
-      <HStack gap={12} alignItems="center">
+      <HStack gap={12} alignItems="center" style={{ height: 44 }}>
         <TokenIcon
           size={36}
           src={collection.iconUrl}
