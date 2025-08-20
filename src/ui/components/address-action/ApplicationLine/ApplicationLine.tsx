@@ -121,6 +121,11 @@ export function ApplicationLine({
     ? toChecksumAddress(action.label.contract.address)
     : null;
 
+  const name =
+    action.label?.contract?.dapp.name !== action.label?.contract?.address
+      ? action.label?.contract?.dapp.name
+      : null;
+
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
@@ -139,7 +144,7 @@ export function ApplicationLine({
             <UIText kind="body/accent" color="var(--black)">
               <ShuffleText
                 text={
-                  action.label?.contract?.dapp.name ||
+                  name ||
                   (applicationAddress
                     ? truncateAddress(applicationAddress, 4)
                     : '')
