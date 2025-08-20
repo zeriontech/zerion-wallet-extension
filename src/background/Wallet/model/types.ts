@@ -49,6 +49,8 @@ interface PublicPreferences {
   upgradeDnaBannerDismissed?: boolean;
   inviteFriendsBannerDismissed?: boolean;
   solanaBannerDismissed?: boolean;
+  premiumBannerDismissed?: boolean;
+  formPremiumBannerDismissed?: boolean;
   /** @deprecated */
   exploreZeroBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;

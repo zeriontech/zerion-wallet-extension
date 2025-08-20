@@ -8,7 +8,10 @@ import type {
 } from 'src/shared/types/SignatureContextParams';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import type { ButtonClickedParams } from 'src/shared/types/button-events';
+import type {
+  BannerClickedParams,
+  ButtonClickedParams,
+} from 'src/shared/types/button-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
@@ -86,5 +89,6 @@ export const emitter = createNanoEvents<{
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
+  bannerClicked: (data: BannerClickedParams) => void;
   cloudflareChallengeIssued: () => void;
 }>();
