@@ -49,12 +49,12 @@ export function useWalletActions(
     queryClient.setQueryData<InfiniteData<Response>>(
       ['walletGetActions', params, source],
       (data) => ({
-        pages: data?.pages.slice(1) || [],
-        pageParams: data?.pageParams.slice(1) || [],
+        pages: data?.pages.slice(0, 1) || [],
+        pageParams: data?.pageParams.slice(0, 1) || [],
       })
     );
-    queryData.refetch();
-  }, [queryData, params, source]);
+    queryClient.refetchQueries(['walletGetActions', params, source]);
+  }, [params, source]);
 
   return { actions, refetch, queryData };
 }
