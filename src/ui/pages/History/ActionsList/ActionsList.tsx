@@ -8,7 +8,6 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { usePreferences } from 'src/ui/features/preferences';
 import { ActionItem } from '../ActionItem';
 
@@ -72,15 +71,14 @@ export function ActionsList({
       </VStack>
       {actions.length && (isLoading || hasMore) ? (
         <SurfaceList
+          style={{ paddingBlockStart: 6, paddingBlockEnd: 6 }}
           items={[
             {
               key: 0,
               onClick: isLoading ? undefined : onLoadMore,
               style: { height: 40 },
               component: isLoading ? (
-                <DelayedRender delay={400}>
-                  <ViewLoading />
-                </DelayedRender>
+                <ViewLoading />
               ) : (
                 <UIText kind="body/accent" color="var(--primary)">
                   Show More
