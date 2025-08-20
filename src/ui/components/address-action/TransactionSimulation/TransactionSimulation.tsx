@@ -190,6 +190,7 @@ export function TransactionSimulation({
             action={action}
             network={network}
             allowanceQuantityCommon={allowanceQuantityCommon || null}
+            customAllowanceQuantityBase={customAllowanceValueBase || null}
             showApplicationLine={false}
             singleAssetElementEnd={
               allowanceQuantityCommon && onOpenAllowanceForm ? (

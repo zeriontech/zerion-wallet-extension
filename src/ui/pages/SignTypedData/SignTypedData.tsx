@@ -294,6 +294,7 @@ function TypedDataDefaultView({
                 action={action}
                 network={network}
                 allowanceQuantityCommon={allowanceQuantityCommon || null}
+                customAllowanceQuantityBase={allowanceQuantityBase || null}
                 showApplicationLine={true}
                 singleAssetElementEnd={
                   allowanceQuantityCommon && action.type.value === 'approve' ? (

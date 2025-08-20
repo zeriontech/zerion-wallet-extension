@@ -175,34 +175,16 @@ export function ActInfo({
     (outgoingTransfers?.length ? 150 : 0) +
     (approvals?.length ? 150 : 0);
 
+  if (
+    !approvals?.length &&
+    !outgoingTransfers?.length &&
+    !incomingTransfers?.length
+  ) {
+    return null;
+  }
+
   return (
     <VStack gap={2} style={{ position: 'relative' }}>
-      <UIText
-        kind="caption/accent"
-        color="var(--neutral-500)"
-        style={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          backgroundColor: 'var(--white)',
-          padding: '4px 8px',
-          borderRadius: 8,
-        }}
-      >
-        {act.type.displayValue}
-      </UIText>
-      {elementEnd ? (
-        <div
-          style={{
-            position: 'absolute',
-            right: 12,
-            top: '50%',
-            transform: 'translateY(-50%)',
-          }}
-        >
-          {elementEnd}
-        </div>
-      ) : null}
       {approvals?.length ? (
         <Appear delay={initialDelay}>
           <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
@@ -273,6 +255,33 @@ export function ActInfo({
           </Surface>
         </Appear>
       ) : null}
+      <Appear delay={initialDelay}>
+        <UIText
+          kind="caption/accent"
+          color="var(--neutral-500)"
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            backgroundColor: 'var(--white)',
+            padding: '4px 8px',
+            borderRadius: 8,
+          }}
+        >
+          {act.type.displayValue}
+        </UIText>
+        {elementEnd ? (
+          <div
+            style={{
+              position: 'absolute',
+              right: 12,
+              bottom: 12,
+            }}
+          >
+            {elementEnd}
+          </div>
+        ) : null}
+      </Appear>
     </VStack>
   );
 }
