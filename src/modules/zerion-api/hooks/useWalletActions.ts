@@ -34,7 +34,7 @@ export function useWalletActions(
     suspense,
     getNextPageParam: (lastPage) =>
       lastPage?.meta?.pagination.cursor || undefined,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: !params.searchQuery,
     refetchOnMount: true,
     refetchInterval,
   });
