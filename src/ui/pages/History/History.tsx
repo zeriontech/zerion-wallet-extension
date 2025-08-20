@@ -248,6 +248,7 @@ export function HistoryList({
             size={40}
             kind="neutral"
             style={{ paddingInline: 8 }}
+            disabled={isLoading}
           >
             <SyncIcon
               style={{
@@ -259,8 +260,22 @@ export function HistoryList({
               className={isLoading ? styles.updateIconLoading : undefined}
             />
           </Button>
-          <KeyboardShortcut combination="cmd+r" onKeyDown={refetch} />
-          <KeyboardShortcut combination="ctrl+r" onKeyDown={refetch} />
+          <KeyboardShortcut
+            combination="cmd+r"
+            onKeyDown={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
+          <KeyboardShortcut
+            combination="ctrl+r"
+            onKeyDown={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
         </HStack>
       </VStack>
     </div>
