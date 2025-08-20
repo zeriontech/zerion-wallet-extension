@@ -37,9 +37,7 @@ export function PremiumPage() {
     },
   });
 
-  const { data: config, isLoading: isConfigLoading } = useFirebaseConfig([
-    'premium_page_feedback_link',
-  ]);
+  const { data: config } = useFirebaseConfig(['premium_page_feedback_link']);
 
   const { data: walletsMeta, isLoading } = useWalletsMetaByChunks({
     addresses: [wallet?.address].filter(isTruthy),
@@ -198,7 +196,7 @@ export function PremiumPage() {
               </UIText>
             </VStack>
           ) : null}
-          {isConfigLoading || !config?.premium_page_feedback_link ? null : (
+          {kind !== 'none' && config?.premium_page_feedback_link ? (
             <Button
               as={UnstyledAnchor}
               size={36}
@@ -210,34 +208,36 @@ export function PremiumPage() {
             >
               Leave Feedback
             </Button>
-          )}
+          ) : null}
         </VStack>
       ) : null}
       <VStack gap={8} style={{ marginTop: 'auto' }}>
-        <Button
-          kind="primary"
-          size={48}
-          as={UnstyledAnchor}
-          href="http://zerion.io/premium"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => {
-            emitter.emit('buttonClicked', {
-              buttonScope: 'General',
-              buttonName: 'Buy Premium',
-              pathname,
-            });
-          }}
-        >
-          <HStack gap={8} alignItems="center" justifyContent="center">
-            <ZerionIcon style={{ width: 20, height: 20 }} />
-            {kind !== 'none' ? (
-              <UIText kind="body/accent">Renew Premium</UIText>
-            ) : (
-              <UIText kind="body/accent">Get Premium for 99$/year</UIText>
-            )}
-          </HStack>
-        </Button>
+        {isUnlimited ? null : (
+          <Button
+            kind="primary"
+            size={48}
+            as={UnstyledAnchor}
+            href="http://zerion.io/premium"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              emitter.emit('buttonClicked', {
+                buttonScope: 'General',
+                buttonName: 'Buy Premium',
+                pathname,
+              });
+            }}
+          >
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              <ZerionIcon style={{ width: 20, height: 20 }} />
+              {kind !== 'none' ? (
+                <UIText kind="body/accent">Renew Premium</UIText>
+              ) : (
+                <UIText kind="body/accent">Get Premium</UIText>
+              )}
+            </HStack>
+          </Button>
+        )}
         <Button
           as={UnstyledAnchor}
           size={48}
