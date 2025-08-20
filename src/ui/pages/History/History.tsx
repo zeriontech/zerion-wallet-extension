@@ -61,6 +61,10 @@ function mergeLocalAndBackendActions(
       (tx) =>
         tx.transaction?.hash &&
         backendHashes.has(tx.transaction.hash) === false &&
+        !tx.acts.some(
+          (act) =>
+            act.transaction.hash && backendHashes.has(act.transaction.hash)
+        ) &&
         tx.timestamp >= lastBackendTimestamp
     )
     .concat(backend);
