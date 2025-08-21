@@ -963,7 +963,7 @@ function SwapFormComponent() {
             const rawInterpretationAction = formData.get('interpretation') as
               | string
               | null;
-            const interpretationAddressAction = rawInterpretationAction
+            const interpretationAction = rawInterpretationAction
               ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
             const promise = blockingWarningProps
@@ -976,9 +976,9 @@ function SwapFormComponent() {
               );
               return showConfirmDialog(confirmDialogRef.current).then(() => {
                 if (submitType === 'approve') {
-                  sendApproveTransaction(interpretationAddressAction);
+                  sendApproveTransaction(interpretationAction);
                 } else if (submitType === 'swap') {
-                  sendTransaction(interpretationAddressAction);
+                  sendTransaction(interpretationAction);
                 } else {
                   throw new Error('Must set a submit_type to form');
                 }
