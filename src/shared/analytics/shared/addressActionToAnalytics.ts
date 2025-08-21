@@ -1,5 +1,5 @@
 import { isTruthy } from 'is-truthy-ts';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Quote2 } from 'src/shared/types/Quote';
 
 interface AnalyticsTransactionData {
@@ -25,16 +25,16 @@ export function toMaybeArr<T>(
   return arr?.length ? arr.filter(isTruthy) : undefined;
 }
 
-export function actionToAnalytics({
-  action,
+export function addressActionToAnalytics({
+  addressAction,
   quote,
   outputChain,
 }: {
-  action: AnyAction | null;
+  addressAction: AnyAddressAction | null;
   quote?: Quote2;
   outputChain: string | null;
 }): AnalyticsTransactionData {
-  if (!action) {
+  if (!addressAction) {
     return {
       action_type: 'Execute',
       asset_amount_sent: [],
@@ -42,15 +42,15 @@ export function actionToAnalytics({
       usd_amount_sent: null,
     };
   }
-  const outgoing = action.acts
+  const outgoing = addressAction.acts
     .at(0)
     ?.content?.transfers?.filter(({ direction }) => direction === 'out');
-  const incoming = action.acts
+  const incoming = addressAction.acts
     .at(0)
     ?.content?.transfers?.filter(({ direction }) => direction === 'in');
 
   const value = {
-    action_type: action.type.displayValue || 'Execute',
+    action_type: addressAction.type.displayValue || 'Execute',
     usd_amount_sent:
       outgoing?.reduce((acc, item) => acc + (item.amount?.usdValue || 0), 0) ??
       null,

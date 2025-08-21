@@ -57,7 +57,7 @@ import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import BigNumber from 'bignumber.js';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
@@ -218,7 +218,7 @@ function SendFormComponent() {
 
   const sendTxMutation = useMutation({
     mutationFn: async (
-      interpretationAction: Action | null
+      interpretationAction: AddressAction | null
     ): Promise<SignTransactionResult> => {
       invariant(sendData?.network, 'Network must be defined to sign the tx');
       invariant(sendData?.transaction, 'Send Form parameters missing');
@@ -226,7 +226,7 @@ function SendFormComponent() {
       const feeValueCommon = feeValueCommonRef.current || null;
 
       invariant(signTxBtnRef.current, 'SignTransactionButton not found');
-      const fallbackAction =
+      const fallbackAddressAction =
         type === 'token'
           ? createSendTokenAddressAction({
               address,
@@ -271,7 +271,7 @@ function SendFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Send',
         feeValueCommon,
-        action: interpretationAction ?? fallbackAction,
+        addressAction: interpretationAction ?? fallbackAddressAction,
       });
       if (preferences) {
         setPreferences({
@@ -360,7 +360,7 @@ function SendFormComponent() {
               | string
               | null;
             const interpretationAction = rawInterpretationAction
-              ? (JSON.parse(rawInterpretationAction) as Action)
+              ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
             invariant(confirmDialogRef.current, 'Dialog not found');
             showConfirmDialog(confirmDialogRef.current).then(() => {

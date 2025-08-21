@@ -29,7 +29,7 @@ import type {
   NFTPreview,
   Transfer,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 
 export const TRANSACTION_ICON_SIZE = 36;
 export const TRANSACTION_SMALL_ICON_SIZE = 27;
@@ -216,15 +216,20 @@ function TransferIcon({
   );
 }
 
-export function TransactionItemIcon({ action }: { action: AnyAction }) {
-  const approvals = action.content?.approvals;
+export function TransactionItemIcon({
+  addressAction,
+}: {
+  addressAction: AnyAddressAction;
+}) {
+  const approvals = addressAction.content?.approvals;
   const incomingTransfers = useMemo(
-    () => action.content?.transfers?.filter((t) => t.direction === 'in'),
-    [action]
+    () => addressAction.content?.transfers?.filter((t) => t.direction === 'in'),
+    [addressAction]
   );
   const outgoingTransfers = useMemo(
-    () => action.content?.transfers?.filter((t) => t.direction === 'out'),
-    [action]
+    () =>
+      addressAction.content?.transfers?.filter((t) => t.direction === 'out'),
+    [addressAction]
   );
 
   if (incomingTransfers?.length && outgoingTransfers?.length) {
@@ -239,14 +244,14 @@ export function TransactionItemIcon({ action }: { action: AnyAction }) {
         <div style={{ position: 'absolute', left: 0, top: 0 }}>
           <TransferIcon
             transfers={outgoingTransfers}
-            type={action.type.value}
+            type={addressAction.type.value}
             size={TRANSACTION_SMALL_ICON_SIZE}
           />
         </div>
         <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
           <TransferIcon
             transfers={incomingTransfers}
-            type={action.type.value}
+            type={addressAction.type.value}
             size={TRANSACTION_SMALL_ICON_SIZE}
           />
         </div>
@@ -258,7 +263,7 @@ export function TransactionItemIcon({ action }: { action: AnyAction }) {
     return (
       <TransferIcon
         transfers={incomingTransfers}
-        type={action.type.value}
+        type={addressAction.type.value}
         size={TRANSACTION_ICON_SIZE}
       />
     );
@@ -268,7 +273,7 @@ export function TransactionItemIcon({ action }: { action: AnyAction }) {
     return (
       <TransferIcon
         transfers={outgoingTransfers}
-        type={action.type.value}
+        type={addressAction.type.value}
         size={TRANSACTION_ICON_SIZE}
       />
     );
@@ -278,11 +283,11 @@ export function TransactionItemIcon({ action }: { action: AnyAction }) {
     return (
       <ApprovalIcon
         approvals={approvals}
-        type={action.type.value}
+        type={addressAction.type.value}
         size={TRANSACTION_ICON_SIZE}
       />
     );
   }
 
-  return <TransactionTypeIcon type={action.type.value} />;
+  return <TransactionTypeIcon type={addressAction.type.value} />;
 }

@@ -6,7 +6,7 @@ import type {
 } from '@solana/web3.js';
 import { SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { SolanaSigning } from '../signing';
 
 function isSystemTransfer(ix: TransactionInstruction): boolean {
@@ -74,7 +74,7 @@ export function parseSolanaTransaction(
   from: string,
   tx: Transaction | VersionedTransaction,
   currency: string
-): Action {
+): AddressAction {
   const timestamp = new Date().getTime();
 
   const instructions =

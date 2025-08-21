@@ -1,4 +1,4 @@
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { SwapFormState } from 'src/ui/pages/SwapForm/shared/SwapFormState';
 import type { BridgeFormState } from 'src/ui/pages/BridgeForm/types';
 import type { Quote2 } from './Quote';
@@ -16,7 +16,7 @@ export type TransactionContextParams = {
   feeValueCommon: string | null;
   initiator: string;
   clientScope: ClientScope | null;
-  action: AnyAction | null;
+  addressAction: AnyAddressAction | null;
   warningWasShown?: boolean;
   outputAmountColor?: 'grey' | 'red';
   /**

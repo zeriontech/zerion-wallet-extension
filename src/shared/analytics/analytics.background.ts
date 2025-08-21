@@ -48,7 +48,10 @@ import {
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
-import { actionToAnalytics, toMaybeArr } from './shared/actionToAnalytics';
+import {
+  addressActionToAnalytics,
+  toMaybeArr,
+} from './shared/addressActionToAnalytics';
 import { mixpanelTrack, mixpanelIdentify } from './mixpanel';
 import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
@@ -297,7 +300,7 @@ function trackAppEvents({ account }: { account: Account }) {
     const {
       initiator,
       feeValueCommon,
-      action,
+      addressAction,
       quote,
       clientScope,
       chain,
@@ -310,8 +313,8 @@ function trackAppEvents({ account }: { account: Account }) {
     const { origin, pathname } = initiatorURL;
     const isInternalOrigin = globalThis.location.origin === origin;
     const initiatorName = isInternalOrigin ? 'Extension' : 'External Dapp';
-    const actionAnalytics = actionToAnalytics({
-      action,
+    const actionAnalytics = addressActionToAnalytics({
+      addressAction,
       quote,
       outputChain: outputChain ?? null,
     });

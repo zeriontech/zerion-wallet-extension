@@ -21,7 +21,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { ApplicationLine } from 'src/ui/components/address-action/ApplicationLine';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -197,13 +197,13 @@ export function TransactionAdvancedView({
   network,
   transaction,
   interpretation,
-  action,
+  addressAction,
   onCopyData,
 }: {
   network: NetworkConfig;
   transaction: MultichainTransaction;
   interpretation?: InterpretResponse | null;
-  action: AnyAction;
+  addressAction: AnyAddressAction;
   onCopyData?: () => void;
 }) {
   const transactionFormatted = useMemo(() => {
@@ -228,7 +228,7 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        <ApplicationLine action={action} network={network} />
+        <ApplicationLine addressAction={addressAction} network={network} />
         {transaction.evm ? (
           <TransactionDetails
             network={network}

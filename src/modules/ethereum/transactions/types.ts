@@ -2,7 +2,7 @@ import type {
   EthersV5TransactionReceiptStripped,
   EthersV5TransactionResponse,
 } from 'src/background/Wallet/model/ethers-v5-types';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 
 type CombineUnion<A, B> =
@@ -84,7 +84,7 @@ export interface InterpretInput {
 }
 
 export interface InterpretResponse {
-  action: Action | null;
+  action: AddressAction | null;
   input?: InterpretInput;
   warnings: Warning[];
 }

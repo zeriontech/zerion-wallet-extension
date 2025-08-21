@@ -291,12 +291,16 @@ export class TransactionService {
   }
 
   addListeners() {
-    emitter.on('transactionSent', (result, { initiator, action }) => {
+    emitter.on('transactionSent', (result, { initiator, addressAction }) => {
       const newItem = TransactionService.toTransactionObject(result, {
         initiator,
       });
-      if (action && isLocalAddressAction(action) && action.relatedTransaction) {
-        newItem.relatedTransactionHash = action.relatedTransaction;
+      if (
+        addressAction &&
+        isLocalAddressAction(addressAction) &&
+        addressAction.relatedTransaction
+      ) {
+        newItem.relatedTransactionHash = addressAction.relatedTransaction;
       }
       this.transactionsPoller.add([toPollingObj(newItem)]);
 

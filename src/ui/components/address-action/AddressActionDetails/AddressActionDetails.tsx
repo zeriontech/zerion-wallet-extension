@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { produce } from 'immer';
@@ -10,7 +10,7 @@ import { ActInfo } from '../ActInfo';
 
 export function AddressActionDetails({
   address,
-  action,
+  addressAction,
   network,
   allowanceQuantityCommon,
   customAllowanceQuantityBase,
@@ -18,27 +18,28 @@ export function AddressActionDetails({
   singleAssetElementEnd,
 }: {
   address: string;
-  action?: AnyAction;
+  addressAction?: AnyAddressAction;
   network: NetworkConfig;
   allowanceQuantityCommon: string | null;
   customAllowanceQuantityBase: string | null;
   showApplicationLine: boolean;
   singleAssetElementEnd: React.ReactNode;
 }) {
-  const recipientAddress = action?.label?.wallet?.address;
-  const showRecipientLine = recipientAddress && action?.type.value === 'send';
+  const recipientAddress = addressAction?.label?.wallet?.address;
+  const showRecipientLine =
+    recipientAddress && addressAction?.type.value === 'send';
   const applicationLineVisible =
-    showApplicationLine && action?.label?.contract && !showRecipientLine;
+    showApplicationLine && addressAction?.label?.contract && !showRecipientLine;
 
   const actionWithAppliedAllowance = useMemo(() => {
     if (
       allowanceQuantityCommon == null ||
-      action?.acts.length !== 1 ||
-      action.acts[0].content?.approvals?.length !== 1
+      addressAction?.acts.length !== 1 ||
+      addressAction.acts[0].content?.approvals?.length !== 1
     ) {
-      return action;
+      return addressAction;
     }
-    return produce(action, (draft) => {
+    return produce(addressAction, (draft) => {
       if (draft.acts[0].content?.approvals?.[0].amount) {
         draft.acts[0].content.approvals[0].amount.quantity =
           allowanceQuantityCommon;
@@ -47,12 +48,12 @@ export function AddressActionDetails({
         );
       }
     });
-  }, [action, allowanceQuantityCommon, customAllowanceQuantityBase]);
+  }, [addressAction, allowanceQuantityCommon, customAllowanceQuantityBase]);
 
   const showEndElement =
-    action?.acts.length === 1 &&
-    !action.acts[0].content?.transfers &&
-    action.acts[0].content?.approvals?.length === 1;
+    addressAction?.acts.length === 1 &&
+    !addressAction.acts[0].content?.transfers &&
+    addressAction.acts[0].content?.approvals?.length === 1;
 
   return (
     <>
@@ -64,7 +65,7 @@ export function AddressActionDetails({
         />
       ) : null}
       {applicationLineVisible ? (
-        <ApplicationLine action={action} network={network} />
+        <ApplicationLine addressAction={addressAction} network={network} />
       ) : null}
       {actionWithAppliedAllowance?.acts?.length ? (
         <VStack gap={4}>

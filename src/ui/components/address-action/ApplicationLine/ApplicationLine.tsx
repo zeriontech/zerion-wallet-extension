@@ -2,7 +2,7 @@ import { animated, useTransition } from '@react-spring/web';
 import React, { useLayoutEffect, useState } from 'react';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
@@ -56,15 +56,15 @@ const FadeOutAndIn = ({
 };
 
 function ApplicationImage({
-  action,
+  addressAction,
   network,
 }: {
-  action: Pick<AnyAction, 'label'>;
+  addressAction: Pick<AnyAddressAction, 'label'>;
   network: NetworkConfig | null;
 }) {
   return (
     <FadeOutAndIn
-      src={action.label?.contract?.dapp.iconUrl || ''}
+      src={addressAction.label?.contract?.dapp.iconUrl || ''}
       render={(src) => (
         <div
           style={{
@@ -80,7 +80,7 @@ function ApplicationImage({
             style={{ width: '100%', display: 'block', borderRadius: 8 }}
             renderError={() => (
               <BlockieImg
-                address={action.label?.contract?.address || ''}
+                address={addressAction.label?.contract?.address || ''}
                 size={36}
                 borderRadius={8}
               />
@@ -111,31 +111,34 @@ function ApplicationImage({
 }
 
 export function ApplicationLine({
-  action,
+  addressAction,
   network,
 }: {
-  action: Pick<AnyAction, 'label'>;
+  addressAction: Pick<AnyAddressAction, 'label'>;
   network: NetworkConfig;
 }) {
-  const applicationAddress = action.label?.contract?.address
-    ? toChecksumAddress(action.label.contract.address)
+  const applicationAddress = addressAction.label?.contract?.address
+    ? toChecksumAddress(addressAction.label.contract.address)
     : null;
 
   const name =
-    action.label?.contract?.dapp.name !== action.label?.contract?.address
-      ? action.label?.contract?.dapp.name
+    addressAction.label?.contract?.dapp.name !==
+    addressAction.label?.contract?.address
+      ? addressAction.label?.contract?.dapp.name
       : null;
 
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
         style={{ gridAutoColumns: 'minmax(min-content, max-content) auto' }}
-        image={<ApplicationImage action={action} network={network} />}
+        image={
+          <ApplicationImage addressAction={addressAction} network={network} />
+        }
         vGap={0}
         text={
-          action.label?.displayTitle ? (
+          addressAction.label?.displayTitle ? (
             <UIText kind="caption/regular" color="var(--neutral-500)">
-              {action.label.displayTitle}
+              {addressAction.label.displayTitle}
             </UIText>
           ) : null
         }

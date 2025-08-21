@@ -3,7 +3,7 @@ import type { BigNumberish } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import omit from 'lodash/omit';
 import type {
-  AnyAction,
+  AnyAddressAction,
   LocalAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
@@ -98,7 +98,7 @@ function restoreValue(value: BigNumberish) {
   return valueToHex(value);
 }
 
-export function isCancelTx(action: AnyAction) {
+export function isCancelTx(action: AnyAddressAction) {
   if (isLocalAddressAction(action)) {
     const { address } = action;
     const { value, data, from } = action.rawTransaction || {};

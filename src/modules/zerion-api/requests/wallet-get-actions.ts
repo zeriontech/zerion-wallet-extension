@@ -250,7 +250,7 @@ type Act = {
   transaction: ActionTransaction;
 };
 
-export type Action = {
+type Action = {
   address: string;
   /** @description Unique identifier for the action */
   id: string;
@@ -277,6 +277,8 @@ export type Action = {
   content: Content | null;
   transaction: ActionTransaction | null;
 };
+
+export type AddressAction = Action;
 
 export type ActionWithoutTimestamp = Omit<Action, 'timestamp'>;
 

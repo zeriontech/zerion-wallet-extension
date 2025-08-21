@@ -1419,8 +1419,8 @@ export class Wallet {
     results.forEach((result, index) => {
       const contextParamsCopy = { ...transactionContextParams };
       if (index > 0) {
-        /** TODO: Temporarily assume that action describes only first tx */
-        contextParamsCopy.action = null;
+        /** TODO: Temporarily assume that addressAction describes only first tx */
+        contextParamsCopy.addressAction = null;
       }
       emitter.emit(
         'transactionSent',

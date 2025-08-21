@@ -27,10 +27,10 @@ import { CancelTx } from './CancelTx';
 import { isCancelTx } from './shared/accelerate-helpers';
 
 function AccelerateTransactionContent({
-  action,
+  addressAction,
   onDismiss,
 }: {
-  action: LocalAction;
+  addressAction: LocalAction;
   onDismiss: () => void;
 }) {
   const [view, setView] = useState<'speedup' | 'cancel' | 'default'>('default');
@@ -43,15 +43,18 @@ function AccelerateTransactionContent({
     return null;
   }
   const isAccelerated =
-    isLocalAddressAction(action) && action.relatedTransaction;
-  const isCancel = isCancelTx(action);
+    isLocalAddressAction(addressAction) && addressAction.relatedTransaction;
+  const isCancel = isCancelTx(addressAction);
   const disabled =
-    !action.transaction || action.transaction.chain.id === 'solana';
+    !addressAction.transaction ||
+    addressAction.transaction.chain.id === 'solana';
   return view === 'default' ? (
     <>
       <DialogTitle
         alignTitle="start"
-        title={<UIText kind="headline/h3">{action.type.displayValue}</UIText>}
+        title={
+          <UIText kind="headline/h3">{addressAction.type.displayValue}</UIText>
+        }
         closeKind="icon"
       />
       <Spacer height={16} />
@@ -116,9 +119,9 @@ function AccelerateTransactionContent({
             </VStack>
           </div>
         )}
-        {action.transaction?.hash ? (
+        {addressAction.transaction?.hash ? (
           <div style={{ paddingInline: disabled ? 0 : 16 }}>
-            <ExplorerInfo transaction={action.transaction} />
+            <ExplorerInfo transaction={addressAction.transaction} />
           </div>
         ) : null}
         <form
@@ -140,7 +143,7 @@ function AccelerateTransactionContent({
     <ViewLoadingSuspense>
       <SpeedUp
         wallet={wallet}
-        action={action}
+        addressAction={addressAction}
         onDismiss={() => setView('default')}
         onSuccess={onDismiss}
       />
@@ -149,7 +152,7 @@ function AccelerateTransactionContent({
     <ViewLoadingSuspense>
       <CancelTx
         wallet={wallet}
-        action={action}
+        addressAction={addressAction}
         onDismiss={() => setView('default')}
         onSuccess={onDismiss}
       />
@@ -159,15 +162,18 @@ function AccelerateTransactionContent({
 
 export const AccelerateTransactionDialog = React.forwardRef<
   HTMLDialogElementInterface,
-  { action: LocalAction; onDismiss: () => void }
->(({ action, onDismiss }, ref) => {
+  { addressAction: LocalAction; onDismiss: () => void }
+>(({ addressAction, onDismiss }, ref) => {
   return (
     <BottomSheetDialog
       ref={ref}
       height="min-content"
       containerStyle={{ padding: 16, paddingBottom: 24 }}
       renderWhenOpen={() => (
-        <AccelerateTransactionContent action={action} onDismiss={onDismiss} />
+        <AccelerateTransactionContent
+          addressAction={addressAction}
+          onDismiss={onDismiss}
+        />
       )}
     ></BottomSheetDialog>
   );
