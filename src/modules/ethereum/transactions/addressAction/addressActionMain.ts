@@ -102,7 +102,7 @@ function convertNftToNftPreview(nft: NFT): NFTPreview {
   };
 }
 
-function getActionChain(network: NetworkConfig): ActionChain {
+function convertNetworkToActionChain(network: NetworkConfig): ActionChain {
   return {
     id: network.id,
     name: network.name,
@@ -151,7 +151,7 @@ export function createSendTokenAddressAction({
   };
 
   const actionTransaction = {
-    chain: getActionChain(network),
+    chain: convertNetworkToActionChain(network),
     hash,
     explorerUrl,
   };
@@ -236,7 +236,7 @@ export function createSendNFTAddressAction({
     ],
   };
   const actionTransaction = {
-    chain: getActionChain(network),
+    chain: convertNetworkToActionChain(network),
     hash,
     explorerUrl,
   };
@@ -328,7 +328,7 @@ export function createTradeAddressAction({
   };
 
   const actionTransaction = {
-    chain: getActionChain(network),
+    chain: convertNetworkToActionChain(network),
     hash,
     explorerUrl,
   };
@@ -411,8 +411,14 @@ export function createBridgeAddressAction({
     ],
   };
 
-  const actionTransaction = {
-    chain: getActionChain(inputNetwork),
+  const actionInputTransaction = {
+    chain: convertNetworkToActionChain(inputNetwork),
+    hash,
+    explorerUrl,
+  };
+
+  const actionOutputTransaction = {
+    chain: convertNetworkToActionChain(outputNetwork),
     hash,
     explorerUrl,
   };
@@ -422,7 +428,7 @@ export function createBridgeAddressAction({
     timestamp: new Date().getTime(),
     address,
     content,
-    transaction: actionTransaction,
+    transaction: actionInputTransaction,
     acts: [
       {
         content,
@@ -433,11 +439,7 @@ export function createBridgeAddressAction({
           value: 'send',
           displayValue: 'Send',
         },
-        transaction: {
-          chain: getActionChain(inputNetwork),
-          hash,
-          explorerUrl,
-        },
+        transaction: actionInputTransaction,
       },
       receiverAddress
         ? {
@@ -466,11 +468,7 @@ export function createBridgeAddressAction({
               value: 'send',
               displayValue: 'Send',
             },
-            transaction: {
-              chain: getActionChain(outputNetwork),
-              hash,
-              explorerUrl,
-            },
+            transaction: actionOutputTransaction,
           }
         : {
             content: {
@@ -491,11 +489,7 @@ export function createBridgeAddressAction({
               value: 'receive',
               displayValue: 'Receive',
             },
-            transaction: {
-              chain: getActionChain(outputNetwork),
-              hash,
-              explorerUrl,
-            },
+            transaction: actionOutputTransaction,
           },
     ],
     status: 'pending',
@@ -552,7 +546,7 @@ export function createApproveAddressAction({
   };
 
   const actionTransaction = {
-    chain: getActionChain(network),
+    chain: convertNetworkToActionChain(network),
     hash,
     explorerUrl,
   };
