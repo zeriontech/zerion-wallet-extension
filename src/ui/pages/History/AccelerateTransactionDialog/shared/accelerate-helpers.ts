@@ -98,10 +98,10 @@ function restoreValue(value: BigNumberish) {
   return valueToHex(value);
 }
 
-export function isCancelTx(action: AnyAddressAction) {
-  if (isLocalAddressAction(action)) {
-    const { address } = action;
-    const { value, data, from } = action.rawTransaction || {};
+export function isCancelTx(addressAction: AnyAddressAction) {
+  if (isLocalAddressAction(addressAction)) {
+    const { address } = addressAction;
+    const { value, data, from } = addressAction.rawTransaction || {};
     if (!from || normalizeAddress(from) !== normalizeAddress(address)) {
       return false;
     }
