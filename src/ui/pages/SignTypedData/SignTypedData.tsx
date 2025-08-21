@@ -514,7 +514,7 @@ function SignTypedDataContent({
 
   const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
   const chainId = chain && networks ? networks.getChainId(chain) : null;
-  const network = chain && networks ? networks.getNetworkByName(chain) : null;
+  const network = chain && networks ? networks.getByNetworkId(chain) : null;
 
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: [
