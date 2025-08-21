@@ -34,37 +34,37 @@ import {
 } from './addressActionMain';
 
 export async function createActionContent(
-  addressAction: TransactionAction,
+  action: TransactionAction,
   currency: string,
   client: Client
 ): Promise<AddressAction['content']> {
-  switch (addressAction.type) {
+  switch (action.type) {
     case 'execute':
     case 'send': {
-      if (!addressAction.amount) {
+      if (!action.amount) {
         return null;
       }
-      const query: CachedAssetQuery = addressAction.isNativeAsset
+      const query: CachedAssetQuery = action.isNativeAsset
         ? {
             isNative: true,
-            chain: addressAction.chain,
-            id: addressAction.assetId,
-            address: addressAction.assetAddress,
+            chain: action.chain,
+            id: action.assetId,
+            address: action.assetAddress,
             currency,
           }
         : {
             isNative: false,
-            chain: addressAction.chain,
-            address: addressAction.assetAddress,
+            chain: action.chain,
+            address: action.assetAddress,
             currency,
           };
       const asset = await fetchAssetFromCacheOrAPI(query, client);
-      if (!asset || !addressAction.amount) {
+      if (!asset || !action.amount) {
         return null;
       }
       const commonQuantity = baseToCommon(
-        addressAction.amount,
-        getDecimals({ asset, chain: addressAction.chain })
+        action.amount,
+        getDecimals({ asset, chain: action.chain })
       );
       return {
         approvals: null,
@@ -95,8 +95,8 @@ export async function createActionContent(
       const asset = await fetchAssetFromCacheOrAPI(
         {
           isNative: false,
-          chain: addressAction.chain,
-          address: addressAction.assetAddress,
+          chain: action.chain,
+          address: action.assetAddress,
           currency,
         },
         client
@@ -105,8 +105,8 @@ export async function createActionContent(
         return null;
       }
       const commonQuantity = baseToCommon(
-        addressAction.amount,
-        getDecimals({ asset, chain: addressAction.chain })
+        action.amount,
+        getDecimals({ asset, chain: action.chain })
       );
       return {
         transfers: null,
