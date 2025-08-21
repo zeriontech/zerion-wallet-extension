@@ -34,13 +34,13 @@ export function AddressActionDetails({
   const actionWithAppliedAllowance = useMemo(() => {
     if (
       allowanceQuantityCommon == null ||
-      addressAction?.acts.length !== 1 ||
+      addressAction?.acts?.length !== 1 ||
       addressAction.acts[0].content?.approvals?.length !== 1
     ) {
       return addressAction;
     }
     return produce(addressAction, (draft) => {
-      if (draft.acts[0].content?.approvals?.[0].amount) {
+      if (draft.acts?.[0].content?.approvals?.[0].amount) {
         draft.acts[0].content.approvals[0].amount.quantity =
           allowanceQuantityCommon;
         draft.acts[0].content.approvals[0].unlimited = isUnlimitedApproval(
@@ -51,7 +51,7 @@ export function AddressActionDetails({
   }, [addressAction, allowanceQuantityCommon, customAllowanceQuantityBase]);
 
   const showEndElement =
-    addressAction?.acts.length === 1 &&
+    addressAction?.acts?.length === 1 &&
     !addressAction.acts[0].content?.transfers &&
     addressAction.acts[0].content?.approvals?.length === 1;
 

@@ -122,7 +122,7 @@ export function TransactionSimulation({
     interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
 
   const requestedAllowanceQuantityCommon = addressAction?.acts
-    .at(0)
+    ?.at(0)
     ?.content?.approvals?.at(0)?.amount?.quantity;
 
   const approvalFungibleId = addressAction

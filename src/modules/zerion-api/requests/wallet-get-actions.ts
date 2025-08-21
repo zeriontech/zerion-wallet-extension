@@ -273,7 +273,7 @@ type Action = {
   };
   /** @description Gasback amount if applicable (when network fee is not free) */
   gasback: null | number;
-  acts: Act[];
+  acts: Act[] | null;
   content: Content | null;
   transaction: ActionTransaction | null;
 };
