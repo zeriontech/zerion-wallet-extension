@@ -13,7 +13,7 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import * as styles from './styles.module.css';
 
@@ -25,29 +25,29 @@ const dateFormatter = new Intl.DateTimeFormat('en', {
   minute: '2-digit',
 });
 
-function AssetHistoryItem({ action }: { action: Action }) {
+function AssetHistoryItem({ addressAction }: { addressAction: AddressAction }) {
   const { currency } = useCurrency();
 
   const transfer = useMemo(() => {
-    const incomingTransfer = action.content?.transfers
+    const incomingTransfer = addressAction.content?.transfers
       ?.filter(({ direction }) => direction === 'in')
       .at(0);
-    const outgoingTransfer = action.content?.transfers
+    const outgoingTransfer = addressAction.content?.transfers
       ?.filter(({ direction }) => direction === 'out')
       .at(0);
     return incomingTransfer || outgoingTransfer;
-  }, [action]);
+  }, [addressAction]);
 
   if (!transfer) {
     return null;
   }
 
   const actionType =
-    action.type.value === 'trade'
+    addressAction.type.value === 'trade'
       ? transfer.direction === 'in'
         ? 'Buy'
         : 'Sell'
-      : action.type.displayValue;
+      : addressAction.type.displayValue;
 
   const price = transfer?.amount?.value
     ? new BigNumber(transfer.amount.value || 0).dividedBy(
@@ -60,7 +60,9 @@ function AssetHistoryItem({ action }: { action: Action }) {
     : noValueDash;
 
   const actionTitle = `${actionType} at ${formattedPrice}`;
-  const actionDatetime = dateFormatter.format(new Date(action.timestamp));
+  const actionDatetime = dateFormatter.format(
+    new Date(addressAction.timestamp)
+  );
   const actionBalance = transfer.amount
     ? `${transfer.direction === 'in' ? '+' : minus}${formatTokenValue(
         transfer.amount?.quantity,
@@ -78,8 +80,8 @@ function AssetHistoryItem({ action }: { action: Action }) {
 
   return (
     <UnstyledLink
-      to={`/action/${action.id}`}
-      state={{ action }}
+      to={`/action/${addressAction.id}`}
+      state={{ addressAction }}
       className={styles.historyItem}
     >
       <div className={styles.historyItemBackdrop} />
@@ -144,8 +146,11 @@ export function AssetHistory({
         <UIText kind="headline/h3">History</UIText>
         <PageFullBleedColumn paddingInline={false}>
           <VStack gap={0}>
-            {actions?.map((action) => (
-              <AssetHistoryItem key={action.id} action={action} />
+            {actions?.map((addressAction) => (
+              <AssetHistoryItem
+                key={addressAction.id}
+                addressAction={addressAction}
+              />
             ))}
           </VStack>
         </PageFullBleedColumn>

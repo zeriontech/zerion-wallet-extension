@@ -39,18 +39,18 @@ import {
 
 export function SpeedUp({
   wallet,
-  action,
+  addressAction,
   onDismiss,
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  action: LocalAction;
+  addressAction: LocalAction;
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
   const { address } = wallet;
   const { preferences } = usePreferences();
-  const { rawTransaction: originalTransaction } = action;
+  const { rawTransaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   invariant(originalTransaction, 'Original transaction must be defined');
   const transaction = useMemo(() => {
@@ -109,7 +109,7 @@ export function SpeedUp({
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Speed Up',
         feeValueCommon,
-        action: createAcceleratedAddressAction(action, tx),
+        addressAction: createAcceleratedAddressAction(addressAction, tx),
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;

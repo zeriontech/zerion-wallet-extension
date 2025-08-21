@@ -2,7 +2,7 @@ import type { BigNumberish } from 'ethers';
 import { nanoid } from 'nanoid';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type {
-  Action,
+  AddressAction,
   ActionChain,
   Amount,
   FungibleOutline,
@@ -18,17 +18,17 @@ import type {
 } from '../../types/IncomingTransaction';
 
 export type LocalActionTransaction = Omit<
-  NonNullable<Action['transaction']>,
+  NonNullable<AddressAction['transaction']>,
   'hash'
 > & {
   hash: string | null;
 };
 
-type LocalAct = Omit<Action['acts'][number], 'transaction'> & {
+type LocalAct = Omit<AddressAction['acts'][number], 'transaction'> & {
   transaction: LocalActionTransaction;
 };
 
-export type LocalAction = Omit<Action, 'transaction' | 'acts'> & {
+export type LocalAction = Omit<AddressAction, 'transaction' | 'acts'> & {
   acts: LocalAct[];
   transaction: LocalActionTransaction | null;
   rawTransaction: {
@@ -44,10 +44,10 @@ export type LocalAction = Omit<Action, 'transaction' | 'acts'> & {
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
 };
 
-export type AnyAction = Action | LocalAction;
+export type AnyAddressAction = AddressAction | LocalAction;
 
 export function isLocalAddressAction(
-  addressAction: Action | LocalAction
+  addressAction: AddressAction | LocalAction
 ): addressAction is LocalAction {
   return 'local' in addressAction && addressAction.local;
 }
@@ -649,11 +649,11 @@ export function createCancelAddressAction(
   };
 }
 
-export function getActionAddress(action: AnyAction) {
+export function getActionAddress(action: AnyAddressAction) {
   return action.label?.wallet?.address || action.label?.contract?.address;
 }
 
-export function getActionApprovalFungibleId(action: AnyAction) {
+export function getActionApprovalFungibleId(action: AnyAddressAction) {
   return (
     (action?.acts.length === 1 &&
     action.acts[0].content?.approvals?.length === 1 &&

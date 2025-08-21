@@ -22,8 +22,8 @@ import {
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { hashQueryKey, useQuery } from '@tanstack/react-query';
@@ -47,8 +47,8 @@ function sortActions<T extends { timestamp?: number }>(actions: T[]) {
 }
 
 function mergeLocalAndBackendActions(
-  local: AnyAction[],
-  backend: Action[],
+  local: AnyAddressAction[],
+  backend: AddressAction[],
   hasMoreBackendActions: boolean
 ) {
   const backendHashes = new Set(

@@ -6,7 +6,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { usePreferences } from 'src/ui/features/preferences';
 import { ActionItem } from '../ActionItem';
@@ -17,7 +17,7 @@ export function ActionsList({
   isLoading,
   onLoadMore,
 }: {
-  actions: AnyAction[];
+  actions: AnyAddressAction[];
   hasMore: boolean;
   isLoading: boolean;
   onLoadMore?(): void;

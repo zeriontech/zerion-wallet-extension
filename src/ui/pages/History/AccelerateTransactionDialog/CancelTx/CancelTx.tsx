@@ -47,20 +47,20 @@ import {
 
 function CancelTxContent({
   wallet,
-  action,
+  addressAction,
   transaction,
   onDismiss,
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  action: LocalAction;
+  addressAction: LocalAction;
   transaction: IncomingTransactionWithChainId & IncomingTransactionWithFrom;
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
   const { address } = wallet;
   const { preferences } = usePreferences();
-  const { rawTransaction: originalTransaction } = action;
+  const { rawTransaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   invariant(originalTransaction, 'Original transaction must be defined');
   const chain = createChain(originalTransaction.chain);
@@ -111,7 +111,7 @@ function CancelTxContent({
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Cancel',
         feeValueCommon,
-        action: createCancelAddressAction(action, tx),
+        addressAction: createCancelAddressAction(addressAction, tx),
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm?.hash;
@@ -230,17 +230,17 @@ function CancelTxContent({
 
 export function CancelTx({
   wallet,
-  action,
+  addressAction,
   onDismiss,
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  action: LocalAction;
+  addressAction: LocalAction;
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
   const { address } = wallet;
-  const { rawTransaction: originalTransaction } = action;
+  const { rawTransaction: originalTransaction } = addressAction;
   const { networks } = useNetworks();
   invariant(originalTransaction, 'Original transaction must be defined');
   const chain = createChain(originalTransaction.chain);
@@ -281,7 +281,7 @@ export function CancelTx({
     <CancelTxContent
       wallet={wallet}
       transaction={transactionWithGas}
-      action={action}
+      addressAction={addressAction}
       onDismiss={onDismiss}
       onSuccess={onSuccess}
     />
