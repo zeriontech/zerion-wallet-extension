@@ -118,15 +118,15 @@ export function TransactionSimulation({
   const interpretation = txInterpretQuery.data;
 
   const interpretAddressAction = interpretation?.action;
-  const action =
+  const addressAction =
     interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
 
-  const requestedAllowanceQuantityCommon = action?.acts
+  const requestedAllowanceQuantityCommon = addressAction?.acts
     .at(0)
     ?.content?.approvals?.at(0)?.amount?.quantity;
 
-  const approvalFungibleId = action
-    ? getActionApprovalFungibleId(action)
+  const approvalFungibleId = addressAction
+    ? getActionApprovalFungibleId(addressAction)
     : null;
 
   const chain = transaction.evm ? evmChain : solanaChain;
@@ -143,7 +143,7 @@ export function TransactionSimulation({
       ? baseToCommon(customAllowanceValueBase, fungibleDecimals).toFixed()
       : requestedAllowanceQuantityCommon;
 
-  if (!action || !networks) {
+  if (!addressAction || !networks) {
     return <p>loading...</p>;
   }
 
@@ -175,7 +175,7 @@ export function TransactionSimulation({
                   network={network}
                   interpretation={interpretation}
                   transaction={transaction}
-                  action={action}
+                  addressAction={addressAction}
                   onCopyData={() => toastRef.current?.showToast()}
                 />
               ) : null}
@@ -187,7 +187,7 @@ export function TransactionSimulation({
         {network ? (
           <AddressActionDetails
             address={address}
-            action={action}
+            addressAction={addressAction}
             network={network}
             allowanceQuantityCommon={allowanceQuantityCommon || null}
             customAllowanceQuantityBase={customAllowanceValueBase || null}

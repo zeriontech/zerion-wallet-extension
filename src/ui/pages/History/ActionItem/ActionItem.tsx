@@ -11,10 +11,13 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type {
-  AnyAction,
+  AnyAddressAction,
   LocalAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import { getActionAddress } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  getActionAddress,
+  isLocalAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -22,7 +25,7 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useNavigate } from 'react-router-dom';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
 import {
@@ -39,7 +42,7 @@ import {
 } from './TransactionTypeIcon';
 import * as styles from './styles.module.css';
 
-function checkIsDnaMint(action: AnyAction) {
+function checkIsDnaMint(action: AnyAddressAction) {
   return (
     normalizeAddress(action.label?.contract?.address || '') ===
     DNA_MINT_CONTRACT_ADDRESS
@@ -47,17 +50,17 @@ function checkIsDnaMint(action: AnyAction) {
 }
 
 function ActionTitle({
-  action,
+  addressAction,
   explorerUrl,
 }: {
-  action: AnyAction;
+  addressAction: AnyAddressAction;
   explorerUrl?: string | null;
 }) {
-  const isMintingDna = checkIsDnaMint(action);
-  const titlePrefix = action.status === 'failed' ? 'Failed ' : '';
+  const isMintingDna = checkIsDnaMint(addressAction);
+  const titlePrefix = addressAction.status === 'failed' ? 'Failed ' : '';
   const actionTitle = isMintingDna
     ? 'Mint DNA'
-    : `${titlePrefix}${action.type.displayValue}`;
+    : `${titlePrefix}${addressAction.type.displayValue}`;
 
   const explorerUrlPrepared = useMemo(
     () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
@@ -95,12 +98,12 @@ function AddressTruncated({ value }: { value: string }) {
   );
 }
 
-function ActionLabel({ action }: { action: AnyAction }) {
-  const address = getActionAddress(action);
+function ActionLabel({ addressAction }: { addressAction: AnyAddressAction }) {
+  const address = getActionAddress(addressAction);
   const text =
-    action.label?.wallet?.name ||
-    action.label?.contract?.dapp.name ||
-    action.label?.displayTitle;
+    addressAction.label?.wallet?.name ||
+    addressAction.label?.contract?.dapp.name ||
+    addressAction.label?.displayTitle;
   if (text && text !== address) {
     return (
       <span title={text} style={{ whiteSpace: 'nowrap' }}>
@@ -109,14 +112,14 @@ function ActionLabel({ action }: { action: AnyAction }) {
     );
   } else if (address) {
     return <AddressTruncated value={address} />;
-  } else if (action.transaction?.hash) {
-    return <AddressTruncated value={action.transaction.hash} />;
+  } else if (addressAction.transaction?.hash) {
+    return <AddressTruncated value={addressAction.transaction.hash} />;
   }
   return null;
 }
 
-function ActionDetail({ action }: { action: AnyAction }) {
-  const chainInfo = action.transaction?.chain;
+function ActionDetail({ addressAction }: { addressAction: AnyAddressAction }) {
+  const chainInfo = addressAction.transaction?.chain;
 
   return (
     <HStack alignItems="center" gap={4}>
@@ -126,14 +129,14 @@ function ActionDetail({ action }: { action: AnyAction }) {
         name={chainInfo?.name || null}
       />
       <UIText kind="small/regular" color="var(--neutral-500)">
-        {action.status === 'pending' ? (
+        {addressAction.status === 'pending' ? (
           <span style={{ color: 'var(--notice-500)' }}>Pending</span>
-        ) : action.status === 'failed' ? (
+        ) : addressAction.status === 'failed' ? (
           <span style={{ color: 'var(--negative-500)' }}>Failed</span>
-        ) : action.status === 'dropped' ? (
+        ) : addressAction.status === 'dropped' ? (
           <span style={{ color: 'var(--negative-500)' }}>Dropped</span>
         ) : (
-          <ActionLabel action={action} />
+          <ActionLabel addressAction={addressAction} />
         )}
       </UIText>
     </HStack>
@@ -141,10 +144,10 @@ function ActionDetail({ action }: { action: AnyAction }) {
 }
 
 function ActionItemBackend({
-  action,
+  addressAction,
   testnetMode,
 }: {
-  action: Action;
+  addressAction: AddressAction;
   testnetMode: boolean;
 }) {
   const { currency } = useCurrency();
@@ -152,19 +155,22 @@ function ActionItemBackend({
 
   const incomingTransfers = useMemo(
     () =>
-      action.content?.transfers?.filter(
+      addressAction.content?.transfers?.filter(
         (transfer) => transfer.direction === 'in'
       ),
-    [action.content?.transfers]
+    [addressAction.content?.transfers]
   );
   const outgoingTransfers = useMemo(
     () =>
-      action.content?.transfers?.filter(
+      addressAction.content?.transfers?.filter(
         (transfer) => transfer.direction === 'out'
       ),
-    [action.content?.transfers]
+    [addressAction.content?.transfers]
   );
-  const approvals = useMemo(() => action.content?.approvals || [], [action]);
+  const approvals = useMemo(
+    () => addressAction.content?.approvals || [],
+    [addressAction]
+  );
 
   const shouldUsePositiveColor = incomingTransfers?.length === 1;
 
@@ -185,23 +191,23 @@ function ActionItemBackend({
         if (isInteractiveElement(event.target)) {
           return;
         }
-        navigate(`/action/${action.id}`, { state: { action } });
+        navigate(`/action/${addressAction.id}`, { state: { addressAction } });
       }}
     >
       <UnstyledButton
         className={styles.actionItemBackdropButton}
         onClick={(e) => {
           e.stopPropagation();
-          navigate(`/action/${action.id}`, { state: { action } });
+          navigate(`/action/${addressAction.id}`, { state: { addressAction } });
         }}
       />
       <Media
         vGap={0}
         gap={12}
         image={
-          action.status === 'failed' ? (
+          addressAction.status === 'failed' ? (
             <FailedIcon style={transactionIconStyle} />
-          ) : action.status === 'pending' ? (
+          ) : addressAction.status === 'pending' ? (
             <CircleSpinner
               size="38px"
               trackWidth="7%"
@@ -213,11 +219,11 @@ function ActionItemBackend({
               }}
             />
           ) : (
-            <TransactionItemIcon action={action} />
+            <TransactionItemIcon addressAction={addressAction} />
           )
         }
-        text={<ActionTitle action={action} />}
-        detailText={<ActionDetail action={action} />}
+        text={<ActionTitle addressAction={addressAction} />}
+        detailText={<ActionDetail addressAction={addressAction} />}
       />
       <VStack
         gap={0}
@@ -240,13 +246,13 @@ function ActionItemBackend({
         >
           {incomingTransfers?.length ? (
             <HistoryItemValue
-              actionType={action.type.value}
+              actionType={addressAction.type.value}
               transfers={incomingTransfers}
               withLink={!testnetMode}
             />
           ) : outgoingTransfers?.length ? (
             <HistoryItemValue
-              actionType={action.type.value}
+              actionType={addressAction.type.value}
               transfers={outgoingTransfers}
               withLink={!testnetMode}
             />
@@ -270,7 +276,7 @@ function ActionItemBackend({
             />
           ) : outgoingTransfers?.length ? (
             <HistoryItemValue
-              actionType={action.type.value}
+              actionType={addressAction.type.value}
               transfers={outgoingTransfers}
               withLink={false}
             />
@@ -300,31 +306,34 @@ function ActionItemBackend({
   );
 }
 
-function ActionItemLocal({ action }: { action: LocalAction }) {
+function ActionItemLocal({ addressAction }: { addressAction: LocalAction }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const handleDialogOpen = useCallback(() => {
     dialogRef.current?.showModal();
   }, []);
 
-  const isMintingDna = checkIsDnaMint(action);
-  const isPending = action.status === 'pending';
+  const isMintingDna = checkIsDnaMint(addressAction);
+  const isPending = addressAction.status === 'pending';
 
   const incomingTransfers = useMemo(
     () =>
-      action.content?.transfers?.filter(
+      addressAction.content?.transfers?.filter(
         (transfer) => transfer.direction === 'in'
       ),
-    [action.content?.transfers]
+    [addressAction.content?.transfers]
   );
   const outgoingTransfers = useMemo(
     () =>
-      action.content?.transfers?.filter(
+      addressAction.content?.transfers?.filter(
         (transfer) => transfer.direction === 'out'
       ),
-    [action.content?.transfers]
+    [addressAction.content?.transfers]
   );
-  const approvals = useMemo(() => action.content?.approvals || [], [action]);
+  const approvals = useMemo(
+    () => addressAction.content?.approvals || [],
+    [addressAction]
+  );
   const shouldUsePositiveColor = incomingTransfers?.length === 1;
 
   return (
@@ -332,7 +341,7 @@ function ActionItemLocal({ action }: { action: LocalAction }) {
       {isPending ? (
         <AccelerateTransactionDialog
           ref={dialogRef}
-          action={action}
+          addressAction={addressAction}
           onDismiss={() => dialogRef.current?.close()}
         />
       ) : null}
@@ -385,17 +394,17 @@ function ActionItemLocal({ action }: { action: LocalAction }) {
                   height={TRANSACTION_ICON_SIZE}
                 />
               ) : (
-                <TransactionItemIcon action={action} />
+                <TransactionItemIcon addressAction={addressAction} />
               )}
             </div>
           }
           text={
             <ActionTitle
-              action={action}
-              explorerUrl={action.transaction?.explorerUrl}
+              addressAction={addressAction}
+              explorerUrl={addressAction.transaction?.explorerUrl}
             />
           }
-          detailText={<ActionDetail action={action} />}
+          detailText={<ActionDetail addressAction={addressAction} />}
         />
         <UIText
           kind="body/regular"
@@ -410,13 +419,13 @@ function ActionItemLocal({ action }: { action: LocalAction }) {
         >
           {incomingTransfers?.length ? (
             <HistoryItemValue
-              actionType={action.type.value}
+              actionType={addressAction.type.value}
               transfers={incomingTransfers}
               withLink={false}
             />
           ) : outgoingTransfers?.length ? (
             <HistoryItemValue
-              actionType={action.type.value}
+              actionType={addressAction.type.value}
               transfers={outgoingTransfers}
               withLink={false}
             />
@@ -433,7 +442,7 @@ export function ActionItem({
   addressAction,
   testnetMode,
 }: {
-  addressAction: AnyAction;
+  addressAction: AnyAddressAction;
   testnetMode: boolean;
 }) {
   const { networks } = useNetworks();
@@ -441,11 +450,11 @@ export function ActionItem({
   if (!networks || !addressAction) {
     return null;
   }
-  return 'local' in addressAction && addressAction.local ? (
-    <ActionItemLocal action={addressAction} />
+  return isLocalAddressAction(addressAction) ? (
+    <ActionItemLocal addressAction={addressAction} />
   ) : (
     <ActionItemBackend
-      action={addressAction as Action}
+      addressAction={addressAction}
       testnetMode={testnetMode}
     />
   );

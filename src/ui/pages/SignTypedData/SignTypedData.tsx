@@ -129,10 +129,10 @@ function TypedDataDefaultView({
   const [params] = useSearchParams();
   const { preferences } = usePreferences();
 
-  const action = interpretation?.action;
+  const addressAction = interpretation?.action;
 
   const title =
-    action?.type.displayValue ||
+    addressAction?.type.displayValue ||
     (isPermit(typedData) ? 'Permit' : 'Sign Message');
 
   const typedDataFormatted = useMemo(
@@ -186,7 +186,7 @@ function TypedDataDefaultView({
     interpretation?.warnings
   );
 
-  const showRawTypedData = !action;
+  const showRawTypedData = !addressAction;
 
   const { handleCopy } = useCopyToClipboard({
     text: typedDataFormatted,
@@ -287,17 +287,18 @@ function TypedDataDefaultView({
           </HStack>
         </VStack>
         <VStack gap={16}>
-          {action ? (
+          {addressAction ? (
             <VStack gap={4}>
               <AddressActionDetails
                 address={wallet.address}
-                action={action}
+                addressAction={addressAction}
                 network={network}
                 allowanceQuantityCommon={allowanceQuantityCommon || null}
                 customAllowanceQuantityBase={allowanceQuantityBase || null}
                 showApplicationLine={true}
                 singleAssetElementEnd={
-                  allowanceQuantityCommon && action.type.value === 'approve' ? (
+                  allowanceQuantityCommon &&
+                  addressAction.type.value === 'approve' ? (
                     <UIText
                       as={TextLink}
                       kind="small/accent"

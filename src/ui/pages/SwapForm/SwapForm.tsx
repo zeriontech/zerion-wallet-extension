@@ -96,7 +96,7 @@ import { useUKDetection } from 'src/ui/components/UKDisclaimer/useUKDetection';
 import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -476,7 +476,7 @@ function SwapFormComponent() {
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
-    mutationFn: async (interpretationAction: Action | null) => {
+    mutationFn: async (interpretationAction: AddressAction | null) => {
       invariant(
         selectedQuote?.transactionApprove?.evm,
         'Approval transaction is not configured'
@@ -495,7 +495,7 @@ function SwapFormComponent() {
           ? await modifyApproveAmount(evmTx, allowanceBase)
           : evmTx;
 
-      const fallbackAction = selectedQuote.transactionApprove.evm
+      const fallbackAddressAction = selectedQuote.transactionApprove.evm
         ? createApproveAddressAction({
             transaction: toIncomingTransaction(
               selectedQuote.transactionApprove.evm
@@ -514,7 +514,7 @@ function SwapFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        action: interpretationAction ?? fallbackAction,
+        addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;
@@ -597,7 +597,7 @@ function SwapFormComponent() {
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
-      interpretationAction: Action | null
+      interpretationAction: AddressAction | null
     ): Promise<SignTransactionResult> => {
       invariant(
         selectedQuote?.transactionSwap,
@@ -612,7 +612,7 @@ function SwapFormComponent() {
         'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      const fallbackAction = createTradeAddressAction({
+      const fallbackAddressAction = createTradeAddressAction({
         hash: null,
         address,
         explorerUrl: null,
@@ -640,7 +640,7 @@ function SwapFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        action: interpretationAction ?? fallbackAction,
+        addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
         outputChain: inputChain ?? null,
         warningWasShown: Boolean(showPriceImpactCallout),
@@ -873,14 +873,14 @@ function SwapFormComponent() {
             const rawInterpretationAction = formData.get('interpretation') as
               | string
               | null;
-            const interpretationAction = rawInterpretationAction
-              ? (JSON.parse(rawInterpretationAction) as Action)
+            const interpretationAddressAction = rawInterpretationAction
+              ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
             showConfirmDialog(confirmDialogRef.current).then(() => {
               if (submitType === 'approve') {
-                sendApproveTransaction(interpretationAction);
+                sendApproveTransaction(interpretationAddressAction);
               } else if (submitType === 'swap') {
-                sendTransaction(interpretationAction);
+                sendTransaction(interpretationAddressAction);
               } else {
                 throw new Error('Must set a submit_type to form');
               }

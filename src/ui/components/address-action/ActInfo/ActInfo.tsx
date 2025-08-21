@@ -5,7 +5,7 @@ import { minus } from 'src/ui/shared/typography';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { animated, useSpring } from '@react-spring/web';
-import type { AnyAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
   FungibleOutline,
   NFTPreview,
@@ -154,7 +154,7 @@ export function ActInfo({
   elementEnd,
 }: {
   address: string;
-  act: AnyAction['acts'][number];
+  act: AnyAddressAction['acts'][number];
   initialDelay: number;
   elementEnd: React.ReactNode;
 }) {

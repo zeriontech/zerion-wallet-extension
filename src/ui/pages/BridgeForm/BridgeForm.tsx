@@ -98,7 +98,7 @@ import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -671,7 +671,7 @@ function BridgeFormComponent() {
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
-    mutationFn: async (interpretationAction: Action | null) => {
+    mutationFn: async (interpretationAction: AddressAction | null) => {
       invariant(
         selectedQuote?.transactionApprove?.evm,
         'Approval transaction is not configured'
@@ -690,7 +690,7 @@ function BridgeFormComponent() {
           ? await modifyApproveAmount(evmTx, allowanceBase)
           : evmTx;
 
-      const fallbackAction = selectedQuote.transactionApprove.evm
+      const fallbackAddressAction = selectedQuote.transactionApprove.evm
         ? createApproveAddressAction({
             transaction: toIncomingTransaction(
               selectedQuote.transactionApprove.evm
@@ -709,7 +709,7 @@ function BridgeFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        action: interpretationAction ?? fallbackAction,
+        addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
       return txResponse.evm.hash;
@@ -780,7 +780,7 @@ function BridgeFormComponent() {
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
-      interpretationAction: Action | null
+      interpretationAction: AddressAction | null
     ): Promise<SignTransactionResult> => {
       invariant(
         selectedQuote?.transactionSwap,
@@ -796,7 +796,7 @@ function BridgeFormComponent() {
         'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      const fallbackAction = createBridgeAddressAction({
+      const fallbackAddressAction = createBridgeAddressAction({
         hash: null,
         address,
         explorerUrl: null,
@@ -824,7 +824,7 @@ function BridgeFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
         feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
-        action: interpretationAction ?? fallbackAction,
+        addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedQuote,
         outputChain: outputChain ?? null,
         warningWasShown: Boolean(showPriceImpactCallout),
@@ -1041,7 +1041,7 @@ function BridgeFormComponent() {
               | string
               | null;
             const interpretationAction = rawInterpretationAction
-              ? (JSON.parse(rawInterpretationAction) as Action)
+              ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
             showConfirmDialog(confirmDialogRef.current).then(() => {
               if (submitType === 'approve') {

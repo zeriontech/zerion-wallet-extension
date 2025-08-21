@@ -2,7 +2,7 @@ import { capitalize } from 'capitalize-ts';
 import React, { useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type {
-  Action,
+  AddressAction,
   ActionDirection,
   Amount,
   Collection,
@@ -196,7 +196,7 @@ function ActContent({
   act,
   showActType,
 }: {
-  act: Action['acts'][number];
+  act: AddressAction['acts'][number];
   showActType: boolean;
 }) {
   const approvals = act.content?.approvals;
@@ -307,16 +307,17 @@ export function ActionInfo() {
     'actIndex should be a number or be empty'
   );
   const actIndex = act_index ? Number(act_index) : undefined;
-  const action = state.action as Action | undefined;
-  const targetObject = actIndex != null ? action?.acts.at(actIndex) : action;
+  const addressAction = state.action as AddressAction | undefined;
+  const targetObject =
+    actIndex != null ? addressAction?.acts.at(actIndex) : addressAction;
 
   const actionDate = useMemo(() => {
-    return action?.timestamp
-      ? dateFormatter.format(new Date(action.timestamp))
+    return addressAction?.timestamp
+      ? dateFormatter.format(new Date(addressAction.timestamp))
       : null;
-  }, [action?.timestamp]);
+  }, [addressAction?.timestamp]);
 
-  if (!action || !targetObject) {
+  if (!addressAction || !targetObject) {
     return (
       <PageColumn>
         Sorry, action not found. Please, go back and select it from the history
@@ -345,12 +346,15 @@ export function ActionInfo() {
       />
       <VStack gap={16} style={{ marginTop: 16 }}>
         <VStack gap={8}>
-          {actIndex != null && action?.acts[actIndex] ? (
-            <ActContent act={action.acts[actIndex]} showActType={false} />
-          ) : action.acts.length === 1 ? (
-            <ActContent act={action.acts[0]} showActType={false} />
+          {actIndex != null && addressAction?.acts[actIndex] ? (
+            <ActContent
+              act={addressAction.acts[actIndex]}
+              showActType={false}
+            />
+          ) : addressAction.acts.length === 1 ? (
+            <ActContent act={addressAction.acts[0]} showActType={false} />
           ) : (
-            action?.acts.map((act, index) => (
+            addressAction?.acts.map((act, index) => (
               <div
                 key={index}
                 className={styles.act}
@@ -358,8 +362,8 @@ export function ActionInfo() {
                   if (isInteractiveElement(event.target)) {
                     return;
                   }
-                  navigate(`/action/${action.id}/${index}`, {
-                    state: { action },
+                  navigate(`/action/${addressAction.id}/${index}`, {
+                    state: { addressAction },
                   });
                 }}
               >
@@ -367,8 +371,8 @@ export function ActionInfo() {
                   className={styles.actBackdrop}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/action/${action.id}/${index}`, {
-                      state: { action },
+                    navigate(`/action/${addressAction.id}/${index}`, {
+                      state: { addressAction },
                     });
                   }}
                 />
@@ -391,7 +395,7 @@ export function ActionInfo() {
           {'rate' in targetObject && targetObject.rate ? (
             <RateLine rate={targetObject.rate} />
           ) : null}
-          {action.fee ? <FeeLine fee={action.fee} /> : null}
+          {addressAction.fee ? <FeeLine fee={addressAction.fee} /> : null}
         </VStack>
       </VStack>
     </PageColumn>

@@ -14,7 +14,7 @@ import { v5ToPlainTransactionResponse } from 'src/background/Wallet/model/ethers
 import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import { invariant } from 'src/shared/invariant';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
-import type { Action } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
@@ -34,37 +34,37 @@ import {
 } from './addressActionMain';
 
 export async function createActionContent(
-  action: TransactionAction,
+  addressAction: TransactionAction,
   currency: string,
   client: Client
-): Promise<Action['content'] | null> {
-  switch (action.type) {
+): Promise<AddressAction['content']> {
+  switch (addressAction.type) {
     case 'execute':
     case 'send': {
-      if (!action.amount) {
+      if (!addressAction.amount) {
         return null;
       }
-      const query: CachedAssetQuery = action.isNativeAsset
+      const query: CachedAssetQuery = addressAction.isNativeAsset
         ? {
             isNative: true,
-            chain: action.chain,
-            id: action.assetId,
-            address: action.assetAddress,
+            chain: addressAction.chain,
+            id: addressAction.assetId,
+            address: addressAction.assetAddress,
             currency,
           }
         : {
             isNative: false,
-            chain: action.chain,
-            address: action.assetAddress,
+            chain: addressAction.chain,
+            address: addressAction.assetAddress,
             currency,
           };
       const asset = await fetchAssetFromCacheOrAPI(query, client);
-      if (!asset || !action.amount) {
+      if (!asset || !addressAction.amount) {
         return null;
       }
       const commonQuantity = baseToCommon(
-        action.amount,
-        getDecimals({ asset, chain: action.chain })
+        addressAction.amount,
+        getDecimals({ asset, chain: addressAction.chain })
       );
       return {
         approvals: null,
@@ -95,8 +95,8 @@ export async function createActionContent(
       const asset = await fetchAssetFromCacheOrAPI(
         {
           isNative: false,
-          chain: action.chain,
-          address: action.assetAddress,
+          chain: addressAction.chain,
+          address: addressAction.assetAddress,
           currency,
         },
         client
@@ -105,8 +105,8 @@ export async function createActionContent(
         return null;
       }
       const commonQuantity = baseToCommon(
-        action.amount,
-        getDecimals({ asset, chain: action.chain })
+        addressAction.amount,
+        getDecimals({ asset, chain: addressAction.chain })
       );
       return {
         transfers: null,
@@ -149,28 +149,30 @@ const actionTypeToLabelType: Record<
   approve: 'application',
 };
 
-function createActionLabel(action: TransactionAction): Action['label'] {
-  const title = actionTypeToLabelType[action.type];
+function createActionLabel(
+  addressAction: TransactionAction
+): AddressAction['label'] {
+  const title = actionTypeToLabelType[addressAction.type];
 
   return {
     title,
     displayTitle: capitalize(title),
     wallet:
-      action.type === 'send'
+      addressAction.type === 'send'
         ? {
-            address: action.receiverAddress,
-            name: action.receiverAddress,
+            address: addressAction.receiverAddress,
+            name: addressAction.receiverAddress,
             iconUrl: null,
           }
         : null,
     contract:
-      action.type === 'send'
+      addressAction.type === 'send'
         ? null
         : {
-            address: action.contractAddress,
+            address: addressAction.contractAddress,
             dapp: {
-              id: action.contractAddress,
-              name: action.contractAddress,
+              id: addressAction.contractAddress,
+              name: addressAction.contractAddress,
               iconUrl: null,
               url: null,
             },
