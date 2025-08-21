@@ -1,8 +1,8 @@
 import { useMemo, useRef } from 'react';
 import { useStore } from '@store-unit/react';
 import { localTransactionsStore } from 'src/ui/transactions/transactions-store';
-import type { ClientTransactionStatus } from 'src/modules/ethereum/transactions/addressAction';
 import { getTransactionObjectStatus } from 'src/modules/ethereum/transactions/getTransactionObjectStatus';
+import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-actions';
 
 export function useActionStatusByHash(hash: string) {
   const localActions = useStore(localTransactionsStore);
@@ -18,7 +18,7 @@ export function useActionStatusByHash(hash: string) {
    * see `performPurgeCheck` in `TransactionService`
    * To avoid fallback into `pending` state we should use the last non-null status
    */
-  const lastNonNullableStatus = useRef<ClientTransactionStatus | null>(null);
+  const lastNonNullableStatus = useRef<ActionStatus | null>(null);
   if (localStatus) {
     lastNonNullableStatus.current = localStatus;
   }

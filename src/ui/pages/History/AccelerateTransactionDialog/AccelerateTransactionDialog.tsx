@@ -15,29 +15,25 @@ import {
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  isLocalAddressAction,
-  type AnyAddressAction,
-} from 'src/modules/ethereum/transactions/addressAction';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { walletPort } from 'src/ui/shared/channels';
 import { useQuery } from '@tanstack/react-query';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
-import { useNetworks } from 'src/modules/networks/useNetworks';
-import { ExplorerInfo } from '../ActionDetailedView/components/ExplorerInfo';
+import { ExplorerInfo } from '../../ActionInfo/ExplorerInfo';
 import { SpeedUp } from './SpeedUp';
 import { CancelTx } from './CancelTx';
 import { isCancelTx } from './shared/accelerate-helpers';
 
 function AccelerateTransactionContent({
-  action,
+  addressAction,
   onDismiss,
 }: {
-  action: AnyAddressAction;
+  addressAction: LocalAddressAction;
   onDismiss: () => void;
 }) {
   const [view, setView] = useState<'speedup' | 'cancel' | 'default'>('default');
-  const { networks } = useNetworks();
   const { data: wallet, isLoading } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
@@ -47,18 +43,23 @@ function AccelerateTransactionContent({
     return null;
   }
   const isAccelerated =
-    isLocalAddressAction(action) && action.relatedTransaction;
-  const isCancel = isCancelTx(action);
+    isLocalAddressAction(addressAction) && addressAction.relatedTransaction;
+  const isCancel = isCancelTx(addressAction);
+  const disabled =
+    !addressAction.transaction ||
+    addressAction.transaction.chain.id === 'solana';
   return view === 'default' ? (
     <>
       <DialogTitle
         alignTitle="start"
-        title={<UIText kind="headline/h3">{action.type.display_value}</UIText>}
+        title={
+          <UIText kind="headline/h3">{addressAction.type.displayValue}</UIText>
+        }
         closeKind="icon"
       />
       <Spacer height={16} />
       <VStack gap={16}>
-        {action.transaction.chain === 'solana' ? null : (
+        {disabled ? null : (
           <div
             style={{
               borderRadius: 12,
@@ -118,13 +119,9 @@ function AccelerateTransactionContent({
             </VStack>
           </div>
         )}
-        {networks ? (
-          <div
-            style={{
-              paddingInline: action.transaction.chain === 'solana' ? 0 : 16,
-            }}
-          >
-            <ExplorerInfo action={action} networks={networks} />
+        {addressAction.transaction?.hash ? (
+          <div style={{ paddingInline: disabled ? 0 : 16 }}>
+            <ExplorerInfo transaction={addressAction.transaction} />
           </div>
         ) : null}
         <form
@@ -146,7 +143,7 @@ function AccelerateTransactionContent({
     <ViewLoadingSuspense>
       <SpeedUp
         wallet={wallet}
-        addressAction={action}
+        addressAction={addressAction}
         onDismiss={() => setView('default')}
         onSuccess={onDismiss}
       />
@@ -155,7 +152,7 @@ function AccelerateTransactionContent({
     <ViewLoadingSuspense>
       <CancelTx
         wallet={wallet}
-        addressAction={action}
+        addressAction={addressAction}
         onDismiss={() => setView('default')}
         onSuccess={onDismiss}
       />
@@ -165,15 +162,18 @@ function AccelerateTransactionContent({
 
 export const AccelerateTransactionDialog = React.forwardRef<
   HTMLDialogElementInterface,
-  { action: AnyAddressAction; onDismiss: () => void }
->(({ action, onDismiss }, ref) => {
+  { addressAction: LocalAddressAction; onDismiss: () => void }
+>(({ addressAction, onDismiss }, ref) => {
   return (
     <BottomSheetDialog
       ref={ref}
       height="min-content"
       containerStyle={{ padding: 16, paddingBottom: 24 }}
       renderWhenOpen={() => (
-        <AccelerateTransactionContent action={action} onDismiss={onDismiss} />
+        <AccelerateTransactionContent
+          addressAction={addressAction}
+          onDismiss={onDismiss}
+        />
       )}
     ></BottomSheetDialog>
   );

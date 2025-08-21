@@ -1,0 +1,21 @@
+.act {
+  position: relative;
+  cursor: pointer;
+}
+
+.actBackdrop {
+  position: absolute;
+  inset: 0 0 0 0;
+  border-radius: 12px;
+}
+
+.actArrow {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  color: var(--neutral-400);
+}
+
+.act:hover .actArrow {
+  color: var(--neutral-600);
+}
