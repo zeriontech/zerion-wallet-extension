@@ -252,7 +252,7 @@ function SendFormComponent() {
                       .multipliedBy(currentPosition.asset.price.value)
                       .toNumber()
                   : null,
-                usdValue: inputFungibleUsdInfo?.data.fungible.meta.price
+                usdValue: inputFungibleUsdInfo?.data?.fungible.meta.price
                   ? new BigNumber(tokenValue)
                       .multipliedBy(
                         inputFungibleUsdInfo.data.fungible.meta.price
