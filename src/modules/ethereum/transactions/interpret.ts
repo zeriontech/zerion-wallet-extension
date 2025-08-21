@@ -1,5 +1,5 @@
 import { baseToCommon } from 'src/shared/units/convert';
-import type { Asset, AddressAction, Client } from 'defi-sdk';
+import type { Asset, AddressAction, Client, NFT } from 'defi-sdk';
 import { client as defaultClient } from 'defi-sdk';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { valueToHex } from 'src/shared/units/valueToHex';
@@ -11,8 +11,11 @@ import type { TypedData } from '../message-signing/TypedData';
 import type { InterpretResponse } from './types';
 import { getGas } from './getGas';
 import type { ChainId } from './ChainId';
-import { getFungibleAsset } from './actionAsset';
-import { convertAssetToFungibleOutline } from './addressAction';
+import { getFungibleAsset, getNftAsset } from './actionAsset';
+import {
+  convertAssetToFungibleOutline,
+  convertNftToNftPreview,
+} from './addressAction';
 
 type LegacyInterpretResponse = Omit<InterpretResponse, 'action'> & {
   action: AddressAction | null;
@@ -129,36 +132,42 @@ async function convertToNewInterpretation(
                             direction: 'in' as const,
                             amount: {
                               currency,
-                              quantity: baseToCommon(
-                                transfer.quantity,
-                                getDecimals({
-                                  asset: getFungibleAsset(
-                                    transfer.asset
-                                  ) as Asset,
-                                  chain: createChain(
-                                    legacyAction.transaction.chain
-                                  ),
-                                })
-                              ).toFixed(),
-                              value: baseToCommon(
-                                transfer.quantity,
-                                getDecimals({
-                                  asset: getFungibleAsset(
-                                    transfer.asset
-                                  ) as Asset,
-                                  chain: createChain(
-                                    legacyAction.transaction.chain
-                                  ),
-                                })
-                              )
-                                .multipliedBy(transfer.price || 0)
-                                .toNumber(),
+                              quantity: getFungibleAsset(transfer.asset)
+                                ? baseToCommon(
+                                    transfer.quantity,
+                                    getDecimals({
+                                      asset: getFungibleAsset(
+                                        transfer.asset
+                                      ) as Asset,
+                                      chain: createChain(
+                                        legacyAction.transaction.chain
+                                      ),
+                                    })
+                                  ).toFixed()
+                                : '1',
+                              value: getFungibleAsset(transfer.asset)
+                                ? baseToCommon(
+                                    transfer.quantity,
+                                    getDecimals({
+                                      asset: getFungibleAsset(
+                                        transfer.asset
+                                      ) as Asset,
+                                      chain: createChain(
+                                        legacyAction.transaction.chain
+                                      ),
+                                    })
+                                  )
+                                    .multipliedBy(transfer.price || 0)
+                                    .toNumber()
+                                : null,
                               usdValue: null,
                             },
                             fungible: convertAssetToFungibleOutline(
                               getFungibleAsset(transfer.asset)
                             ),
-                            nft: null,
+                            nft: convertNftToNftPreview(
+                              getNftAsset(transfer.asset) as NFT | null
+                            ),
                           })
                         ) || []),
                         ...(legacyAction.content.transfers.outgoing?.map(
@@ -166,36 +175,42 @@ async function convertToNewInterpretation(
                             direction: 'out' as const,
                             amount: {
                               currency,
-                              quantity: baseToCommon(
-                                transfer.quantity,
-                                getDecimals({
-                                  asset: getFungibleAsset(
-                                    transfer.asset
-                                  ) as Asset,
-                                  chain: createChain(
-                                    legacyAction.transaction.chain
-                                  ),
-                                })
-                              ).toFixed(),
-                              value: baseToCommon(
-                                transfer.quantity,
-                                getDecimals({
-                                  asset: getFungibleAsset(
-                                    transfer.asset
-                                  ) as Asset,
-                                  chain: createChain(
-                                    legacyAction.transaction.chain
-                                  ),
-                                })
-                              )
-                                .multipliedBy(transfer.price || 0)
-                                .toNumber(),
+                              quantity: getFungibleAsset(transfer.asset)
+                                ? baseToCommon(
+                                    transfer.quantity,
+                                    getDecimals({
+                                      asset: getFungibleAsset(
+                                        transfer.asset
+                                      ) as Asset,
+                                      chain: createChain(
+                                        legacyAction.transaction.chain
+                                      ),
+                                    })
+                                  ).toFixed()
+                                : '1',
+                              value: getFungibleAsset(transfer.asset)
+                                ? baseToCommon(
+                                    transfer.quantity,
+                                    getDecimals({
+                                      asset: getFungibleAsset(
+                                        transfer.asset
+                                      ) as Asset,
+                                      chain: createChain(
+                                        legacyAction.transaction.chain
+                                      ),
+                                    })
+                                  )
+                                    .multipliedBy(transfer.price || 0)
+                                    .toNumber()
+                                : null,
                               usdValue: null,
                             },
                             fungible: convertAssetToFungibleOutline(
                               getFungibleAsset(transfer.asset)
                             ),
-                            nft: null,
+                            nft: convertNftToNftPreview(
+                              getNftAsset(transfer.asset) as NFT | null
+                            ),
                           })
                         ) || []),
                       ]
