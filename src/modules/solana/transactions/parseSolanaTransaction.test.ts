@@ -17,7 +17,7 @@ describe('parseSolanaTransaction', () => {
     const parsed = parseSolanaTransaction(samples.sender, tx, 'usd');
 
     expect(parsed.type.displayValue).toBe('Send');
-    expect(parsed.content?.transfers?.at(0)?.amount?.quantity).toBe('10100000');
+    expect(parsed.content?.transfers?.at(0)?.amount?.quantity).toBe('0.0101');
     expect(parsed.label?.wallet?.address).toBe(
       'BJpYy4oW3XREUi9mQhPXzzqtf37azUbz1JPqMbU5qU23'
     );
