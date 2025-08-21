@@ -14,10 +14,7 @@ import type {
   AnyAddressAction,
   LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import {
-  getActionAddress,
-  isLocalAddressAction,
-} from 'src/modules/ethereum/transactions/addressAction';
+import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -99,11 +96,15 @@ function AddressTruncated({ value }: { value: string }) {
 }
 
 function ActionLabel({ addressAction }: { addressAction: AnyAddressAction }) {
-  const address = getActionAddress(addressAction);
+  const address =
+    addressAction.label?.wallet?.address ||
+    addressAction.label?.contract?.address;
+
   const text =
     addressAction.label?.wallet?.name ||
     addressAction.label?.contract?.dapp.name ||
     addressAction.label?.displayTitle;
+
   if (text && text !== address) {
     return (
       <span title={text} style={{ whiteSpace: 'nowrap' }}>

@@ -643,10 +643,6 @@ export function createCancelAddressAction(
   };
 }
 
-export function getActionAddress(action: AnyAddressAction) {
-  return action.label?.wallet?.address || action.label?.contract?.address;
-}
-
 export function getActionApprovalFungibleId(action: AnyAddressAction) {
   return (
     (action?.acts.length === 1 &&
