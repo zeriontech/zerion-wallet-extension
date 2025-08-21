@@ -340,6 +340,7 @@ function TransactionDefaultView({
   );
 
   const network = networks.getByNetworkId(chain);
+  invariant(network, 'Network should be known to show transaction details');
 
   return (
     <>
@@ -397,29 +398,27 @@ function TransactionDefaultView({
             ['--surface-background-color' as string]: 'var(--neutral-100)',
           }}
         >
-          {network ? (
-            <AddressActionDetails
-              address={wallet.address}
-              addressAction={addressAction}
-              network={network}
-              allowanceQuantityCommon={allowanceQuantityCommon}
-              customAllowanceQuantityBase={customAllowanceQuantityBase}
-              showApplicationLine={true}
-              singleAssetElementEnd={
-                allowanceQuantityCommon &&
-                addressAction.type.value === 'approve' ? (
-                  <UIText
-                    as={TextLink}
-                    kind="small/accent"
-                    style={{ color: 'var(--primary)' }}
-                    to={allowanceViewHref}
-                  >
-                    Edit
-                  </UIText>
-                ) : null
-              }
-            />
-          ) : null}
+          <AddressActionDetails
+            address={wallet.address}
+            addressAction={addressAction}
+            network={network}
+            allowanceQuantityCommon={allowanceQuantityCommon}
+            customAllowanceQuantityBase={customAllowanceQuantityBase}
+            showApplicationLine={true}
+            singleAssetElementEnd={
+              allowanceQuantityCommon &&
+              addressAction.type.value === 'approve' ? (
+                <UIText
+                  as={TextLink}
+                  kind="small/accent"
+                  style={{ color: 'var(--primary)' }}
+                  to={allowanceViewHref}
+                >
+                  Edit
+                </UIText>
+              ) : null
+            }
+          />
         </VStack>
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
@@ -458,7 +457,7 @@ function TransactionDefaultView({
                 address={singleAddress}
                 addressAction={addressAction}
                 transaction={populatedTransaction}
-                chain={chain}
+                network={network}
                 networkFeeConfiguration={configuration.networkFee}
                 paymasterEligible={paymasterEligible}
               />
@@ -753,7 +752,7 @@ function SendTransactionContent({
 
   const fungibleDecimals = useFungibleDecimals({
     fungibleId: approvalFungibleId,
-    chain: chain || null,
+    chain,
   });
 
   const requestedAllowanceQuantityCommon =
@@ -829,13 +828,17 @@ function SendTransactionContent({
         <CenteredDialog
           ref={advancedDialogRef}
           containerStyle={{ paddingBottom: 0 }}
-          renderWhenOpen={() => (
-            <>
-              <DialogTitle
-                title={<UIText kind="body/accent">Details</UIText>}
-                closeKind="icon"
-              />
-              {network ? (
+          renderWhenOpen={() => {
+            invariant(
+              network,
+              'Network should be known to show transaction details'
+            );
+            return (
+              <>
+                <DialogTitle
+                  title={<UIText kind="body/accent">Details</UIText>}
+                  closeKind="icon"
+                />
                 <TransactionAdvancedView
                   network={network}
                   interpretation={interpretQuery.data}
@@ -843,9 +846,9 @@ function SendTransactionContent({
                   addressAction={addressAction}
                   onCopyData={() => toastRef.current?.showToast()}
                 />
-              ) : null}
-            </>
-          )}
+              </>
+            );
+          }}
         />
         {view === View.customAllowance && network ? (
           <AllowanceView
@@ -981,6 +984,7 @@ function SolDefaultView({
   const toastRef = useRef<PopoverToastHandle>(null);
 
   const network = networks.getByNetworkId(createChain(NetworkId.Solana));
+  invariant(network, 'Network should be known to show transaction details');
 
   return (
     <>
@@ -1038,17 +1042,15 @@ function SolDefaultView({
             ['--surface-background-color' as string]: 'var(--neutral-100)',
           }}
         >
-          {network ? (
-            <AddressActionDetails
-              address={wallet.address}
-              addressAction={addressAction}
-              network={network}
-              showApplicationLine={false}
-              allowanceQuantityCommon={null}
-              customAllowanceQuantityBase={null}
-              singleAssetElementEnd={null}
-            />
-          ) : null}
+          <AddressActionDetails
+            address={wallet.address}
+            addressAction={addressAction}
+            network={network}
+            showApplicationLine={false}
+            allowanceQuantityCommon={null}
+            customAllowanceQuantityBase={null}
+            singleAssetElementEnd={null}
+          />
         </VStack>
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
@@ -1099,15 +1101,13 @@ function SolDefaultView({
               title={<UIText kind="body/accent">Details</UIText>}
               closeKind="icon"
             />
-            {network ? (
-              <TransactionAdvancedView
-                network={network}
-                interpretation={txInterpretQuery.data}
-                transaction={{ solana: rawTransaction }}
-                addressAction={addressAction}
-                onCopyData={() => toastRef.current?.showToast()}
-              />
-            ) : null}
+            <TransactionAdvancedView
+              network={network}
+              interpretation={txInterpretQuery.data}
+              transaction={{ solana: rawTransaction }}
+              addressAction={addressAction}
+              onCopyData={() => toastRef.current?.showToast()}
+            />
           </>
         )}
       ></CenteredDialog>

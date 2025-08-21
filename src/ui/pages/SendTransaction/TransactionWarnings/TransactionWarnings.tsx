@@ -1,10 +1,10 @@
 import React from 'react';
 import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import type { Chain } from 'src/modules/networks/Chain';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { RenderArea } from 'react-area';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { InsufficientFundsWarning } from './InsufficientFundsWarning';
 import { TransactionWarning } from './TransactionWarning';
 
@@ -12,14 +12,14 @@ export function TransactionWarnings({
   address,
   transaction,
   addressAction,
-  chain,
+  network,
   networkFeeConfiguration,
   paymasterEligible,
 }: {
   address: string;
   transaction: IncomingTransaction;
   addressAction: AnyAddressAction;
-  chain: Chain;
+  network: NetworkConfig;
   networkFeeConfiguration: NetworkFeeConfiguration;
   paymasterEligible: boolean;
 }) {
@@ -39,7 +39,7 @@ export function TransactionWarnings({
         <InsufficientFundsWarning
           address={address}
           transaction={transaction}
-          chain={chain}
+          network={network}
           networkFeeConfiguration={networkFeeConfiguration}
         />
       )}
