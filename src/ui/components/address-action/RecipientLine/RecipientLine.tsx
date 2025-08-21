@@ -13,10 +13,12 @@ import { NetworkIcon } from '../../NetworkIcon';
 
 export function RecipientLine({
   recipientAddress,
+  recipientName,
   network,
   showNetworkIcon,
 }: {
   recipientAddress: string;
+  recipientName: string | null;
   network: NetworkConfig;
   showNetworkIcon: boolean;
 }) {
@@ -24,6 +26,9 @@ export function RecipientLine({
     () => toChecksumAddress(recipientAddress),
     [recipientAddress]
   );
+
+  const showRecipientName = recipientName && recipientName !== recipientAddress;
+
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
@@ -64,7 +69,9 @@ export function RecipientLine({
               target="_blank"
               rel="noopener noreferrer"
             >
-              {truncateAddress(checksumAddress, 15)}
+              {showRecipientName
+                ? recipientName
+                : truncateAddress(checksumAddress, 15)}
             </TextAnchor>
           </UIText>
         }

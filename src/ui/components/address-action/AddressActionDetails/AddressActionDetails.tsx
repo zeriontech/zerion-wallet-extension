@@ -60,6 +60,7 @@ export function AddressActionDetails({
       {showRecipientLine ? (
         <RecipientLine
           recipientAddress={recipientAddress}
+          recipientName={addressAction.label?.wallet?.name || null}
           showNetworkIcon={!applicationLineVisible}
           network={network}
         />
