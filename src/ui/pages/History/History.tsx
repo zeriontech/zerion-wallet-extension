@@ -249,6 +249,7 @@ export function HistoryList({
             kind="neutral"
             style={{ paddingInline: 8 }}
             disabled={isLoading}
+            title="Reload History"
           >
             <SyncIcon
               style={{
