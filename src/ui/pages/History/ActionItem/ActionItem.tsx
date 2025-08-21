@@ -102,8 +102,7 @@ function ActionLabel({ addressAction }: { addressAction: AnyAddressAction }) {
 
   const text =
     addressAction.label?.wallet?.name ||
-    addressAction.label?.contract?.dapp.name ||
-    addressAction.label?.displayTitle;
+    addressAction.label?.contract?.dapp.name;
 
   if (text && text !== address) {
     return (
