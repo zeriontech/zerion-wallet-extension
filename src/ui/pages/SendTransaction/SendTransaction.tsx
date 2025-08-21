@@ -756,9 +756,10 @@ function SendTransactionContent({
   });
 
   const requestedAllowanceQuantityCommon =
-    interpretQuery.data?.action?.acts.at(0)?.content?.approvals?.at(0)?.amount
+    interpretQuery.data?.action?.acts?.at(0)?.content?.approvals?.at(0)?.amount
       ?.quantity ||
-    localAddressAction?.acts.at(0)?.content?.approvals?.at(0)?.amount?.quantity;
+    localAddressAction?.acts?.at(0)?.content?.approvals?.at(0)?.amount
+      ?.quantity;
 
   const requestedAllowanceQuantityBase =
     requestedAllowanceQuantityCommon && fungibleDecimals

@@ -154,7 +154,7 @@ export function ActInfo({
   elementEnd,
 }: {
   address: string;
-  act: AnyAddressAction['acts'][number];
+  act: NonNullable<AnyAddressAction['acts']>[number];
   initialDelay: number;
   elementEnd: React.ReactNode;
 }) {

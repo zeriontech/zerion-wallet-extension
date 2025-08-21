@@ -52,7 +52,9 @@ function mergeLocalAndBackendActions(
   hasMoreBackendActions: boolean
 ) {
   const backendHashes = new Set(
-    backend.map((tx) => tx.transaction?.hash || tx.acts[0].transaction.hash)
+    backend.map(
+      (tx) => tx.transaction?.hash || tx.acts?.at(0)?.transaction.hash
+    )
   );
 
   const lastBackendActionDatetime = backend.at(-1)?.timestamp;
@@ -66,7 +68,7 @@ function mergeLocalAndBackendActions(
       (tx) =>
         tx.transaction?.hash &&
         backendHashes.has(tx.transaction.hash) === false &&
-        !tx.acts.some(
+        !tx.acts?.some(
           (act) =>
             act.transaction.hash && backendHashes.has(act.transaction.hash)
         ) &&

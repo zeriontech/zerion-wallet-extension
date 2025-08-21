@@ -24,12 +24,15 @@ export type LocalActionTransaction = Omit<
   hash: string | null;
 };
 
-type LocalAct = Omit<AddressAction['acts'][number], 'transaction'> & {
+type LocalAct = Omit<
+  NonNullable<AddressAction['acts']>[number],
+  'transaction'
+> & {
   transaction: LocalActionTransaction;
 };
 
 export type LocalAddressAction = Omit<AddressAction, 'transaction' | 'acts'> & {
-  acts: LocalAct[];
+  acts: LocalAct[] | null;
   transaction: LocalActionTransaction | null;
   rawTransaction: {
     data?: string | null;
@@ -648,7 +651,7 @@ export function createCancelAddressAction(
 
 export function getActionApprovalFungibleId(action: AnyAddressAction) {
   return (
-    (action?.acts.length === 1 &&
+    (action?.acts?.length === 1 &&
     action.acts[0].content?.approvals?.length === 1 &&
     !action.acts[0].content.transfers
       ? action.acts[0].content.approvals[0].fungible?.id

@@ -196,7 +196,7 @@ function ActContent({
   act,
   showActType,
 }: {
-  act: AddressAction['acts'][number];
+  act: NonNullable<AddressAction['acts']>[number];
   showActType: boolean;
 }) {
   const approvals = act.content?.approvals;
@@ -309,7 +309,7 @@ export function ActionInfo() {
   const actIndex = act_index ? Number(act_index) : undefined;
   const addressAction = state.addressAction as AddressAction | undefined;
   const targetObject =
-    actIndex != null ? addressAction?.acts.at(actIndex) : addressAction;
+    actIndex != null ? addressAction?.acts?.at(actIndex) : addressAction;
 
   const actionDate = useMemo(() => {
     return addressAction?.timestamp
@@ -346,15 +346,15 @@ export function ActionInfo() {
       />
       <VStack gap={16} style={{ marginTop: 16 }}>
         <VStack gap={8}>
-          {actIndex != null && addressAction?.acts[actIndex] ? (
+          {actIndex != null && addressAction?.acts?.at(actIndex) ? (
             <ActContent
               act={addressAction.acts[actIndex]}
               showActType={false}
             />
-          ) : addressAction.acts.length === 1 ? (
+          ) : addressAction.acts?.length === 1 ? (
             <ActContent act={addressAction.acts[0]} showActType={false} />
           ) : (
-            addressAction?.acts.map((act, index) => (
+            addressAction?.acts?.map((act, index) => (
               <div
                 key={index}
                 className={styles.act}

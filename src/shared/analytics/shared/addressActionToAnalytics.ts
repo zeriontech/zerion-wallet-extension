@@ -43,10 +43,10 @@ export function addressActionToAnalytics({
     };
   }
   const outgoing = addressAction.acts
-    .at(0)
+    ?.at(0)
     ?.content?.transfers?.filter(({ direction }) => direction === 'out');
   const incoming = addressAction.acts
-    .at(0)
+    ?.at(0)
     ?.content?.transfers?.filter(({ direction }) => direction === 'in');
 
   const value = {
