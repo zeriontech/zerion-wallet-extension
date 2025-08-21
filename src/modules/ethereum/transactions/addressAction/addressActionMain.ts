@@ -88,7 +88,10 @@ export function convertAssetToFungibleOutline(
   };
 }
 
-function convertNftToNftPreview(nft: NFT): NFTPreview {
+export function convertNftToNftPreview(nft: NFT | null): NFTPreview | null {
+  if (!nft) {
+    return null;
+  }
   return {
     chain: nft.chain,
     contractAddress: nft.contract_address,
