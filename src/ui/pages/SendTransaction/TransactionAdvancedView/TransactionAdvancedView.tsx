@@ -28,6 +28,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Networks } from 'src/modules/networks/Networks';
+import { RecipientLine } from 'src/ui/components/address-action/RecipientLine';
 
 function maybeHexValue(value?: BigNumberish | null): string | null {
   return value ? valueToHex(value) : null;
@@ -228,7 +229,17 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        <ApplicationLine addressAction={addressAction} network={network} />
+        {addressAction.label?.wallet ? (
+          <RecipientLine
+            recipientAddress={addressAction.label.wallet.address}
+            recipientName={addressAction.label.wallet.name || null}
+            network={network}
+            showNetworkIcon={true}
+          />
+        ) : null}
+        {addressAction.label?.contract ? (
+          <ApplicationLine addressAction={addressAction} network={network} />
+        ) : null}
         {transaction.evm ? (
           <TransactionDetails
             network={network}
