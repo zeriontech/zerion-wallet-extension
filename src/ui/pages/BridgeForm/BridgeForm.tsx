@@ -713,7 +713,7 @@ function BridgeFormComponent() {
                     .multipliedBy(inputPosition.asset.price.value)
                     .toNumber()
                 : null,
-              usdValue: inputFungibleUsdInfo?.data.fungible.meta.price
+              usdValue: inputFungibleUsdInfo?.data?.fungible.meta.price
                 ? new BigNumber(formState.inputAmount)
                     .multipliedBy(inputFungibleUsdInfo.data.fungible.meta.price)
                     .toNumber()
@@ -833,7 +833,7 @@ function BridgeFormComponent() {
                 .multipliedBy(inputPosition.asset.price.value)
                 .toNumber()
             : null,
-          usdValue: inputFungibleUsdInfo?.data.fungible.meta.price
+          usdValue: inputFungibleUsdInfo?.data?.fungible.meta.price
             ? new BigNumber(formState.inputAmount)
                 .multipliedBy(inputFungibleUsdInfo.data.fungible.meta.price)
                 .toNumber()
