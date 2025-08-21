@@ -771,7 +771,7 @@ function SendTransactionContent({
   const allowanceQuantityCommon =
     fungibleDecimals && allowanceQuantityBase
       ? baseToCommon(allowanceQuantityBase, fungibleDecimals).toFixed()
-      : requestedAllowanceQuantityBase;
+      : requestedAllowanceQuantityCommon;
 
   if (!addressAction) {
     return null;
