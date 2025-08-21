@@ -149,6 +149,7 @@ export function TransactionSimulation({
 
   invariant(chain, 'Chain must be defined for transaction simulation');
   const network = networks.getByNetworkId(chain);
+  invariant(network, 'Network must be known for transaction simulation');
 
   return (
     <>
@@ -170,43 +171,39 @@ export function TransactionSimulation({
                 title={<UIText kind="body/accent">Details</UIText>}
                 closeKind="icon"
               />
-              {network ? (
-                <TransactionAdvancedView
-                  network={network}
-                  interpretation={interpretation}
-                  transaction={transaction}
-                  addressAction={addressAction}
-                  onCopyData={() => toastRef.current?.showToast()}
-                />
-              ) : null}
+              <TransactionAdvancedView
+                network={network}
+                interpretation={interpretation}
+                transaction={transaction}
+                addressAction={addressAction}
+                onCopyData={() => toastRef.current?.showToast()}
+              />
             </>
           );
         }}
       />
       <VStack gap={8}>
-        {network ? (
-          <AddressActionDetails
-            address={address}
-            addressAction={addressAction}
-            network={network}
-            allowanceQuantityCommon={allowanceQuantityCommon || null}
-            customAllowanceQuantityBase={customAllowanceValueBase || null}
-            showApplicationLine={false}
-            singleAssetElementEnd={
-              allowanceQuantityCommon && onOpenAllowanceForm ? (
-                <UIText kind="small/accent" color="var(--primary)">
-                  <UnstyledButton
-                    type="button"
-                    className="hover:underline"
-                    onClick={onOpenAllowanceForm}
-                  >
-                    Edit
-                  </UnstyledButton>
-                </UIText>
-              ) : null
-            }
-          />
-        ) : null}
+        <AddressActionDetails
+          address={address}
+          addressAction={addressAction}
+          network={network}
+          allowanceQuantityCommon={allowanceQuantityCommon || null}
+          customAllowanceQuantityBase={customAllowanceValueBase || null}
+          showApplicationLine={false}
+          singleAssetElementEnd={
+            allowanceQuantityCommon && onOpenAllowanceForm ? (
+              <UIText kind="small/accent" color="var(--primary)">
+                <UnstyledButton
+                  type="button"
+                  className="hover:underline"
+                  onClick={onOpenAllowanceForm}
+                >
+                  Edit
+                </UnstyledButton>
+              </UIText>
+            ) : null
+          }
+        />
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
             interpretation={interpretation}
