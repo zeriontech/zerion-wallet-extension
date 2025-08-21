@@ -8,7 +8,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { LocalAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { createAcceleratedAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { createChain } from 'src/modules/networks/Chain';
@@ -44,7 +44,7 @@ export function SpeedUp({
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  addressAction: LocalAction;
+  addressAction: LocalAddressAction;
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
