@@ -99,6 +99,7 @@ import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import { PremiumFormBanner } from 'src/ui/features/premium/banners/FormBanner';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -516,6 +517,13 @@ function SwapFormComponent() {
 
   useEffect(() => setAllowanceBase(null), [inputAmount, inputFungibleId]);
 
+  // Special request for analytics purposes.
+  const { data: inputFungibleUsdInfo } = useAssetFullInfo(
+    { fungibleId: inputPosition?.asset.id || '', currency: 'usd' },
+    { source: useHttpClientSource() },
+    { enabled: Boolean(inputPosition?.asset.id) }
+  );
+
   const {
     mutate: sendApproveTransaction,
     data: approveHash = null,
@@ -548,7 +556,20 @@ function SwapFormComponent() {
             ),
             hash: null,
             explorerUrl: null,
-            amount: selectedQuote.outputAmount,
+            amount: {
+              currency,
+              quantity: formState.inputAmount,
+              value: inputPosition.asset.price?.value
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(inputPosition.asset.price.value)
+                    .toNumber()
+                : null,
+              usdValue: inputFungibleUsdInfo?.data.fungible.meta.price
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(inputFungibleUsdInfo.data.fungible.meta.price)
+                    .toNumber()
+                : null,
+            },
             asset: inputPosition.asset,
             network,
           })
@@ -655,10 +676,9 @@ function SwapFormComponent() {
         selectedQuote?.transactionSwap,
         'Cannot submit transaction without a quote'
       );
-      const { inputAmount } = formState;
       invariant(spendChain, 'Chain must be defined to sign the tx');
       invariant(network, 'Network must be defined to sign the tx');
-      invariant(inputAmount, 'inputAmount must be set');
+      invariant(formState.inputAmount, 'inputAmount must be set');
       invariant(
         inputPosition && outputPosition,
         'Trade positions must be defined'
@@ -674,13 +694,17 @@ function SwapFormComponent() {
         receiveAsset: outputPosition.asset,
         spendAmount: {
           currency,
-          quantity: inputAmount,
+          quantity: formState.inputAmount,
           value: inputPosition.asset.price?.value
-            ? new BigNumber(inputAmount)
+            ? new BigNumber(formState.inputAmount)
                 .multipliedBy(inputPosition.asset.price.value)
                 .toNumber()
             : null,
-          usdValue: null,
+          usdValue: inputFungibleUsdInfo?.data.fungible.meta.price
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(inputFungibleUsdInfo.data.fungible.meta.price)
+                .toNumber()
+            : null,
         },
         receiveAmount: selectedQuote.outputAmount,
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),

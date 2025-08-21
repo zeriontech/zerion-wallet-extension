@@ -59,6 +59,7 @@ import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import BigNumber from 'bignumber.js';
+import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
@@ -216,6 +217,13 @@ function SendFormComponent() {
     snapshotRef.current = { state: { ...formState } };
   };
 
+  // Special request for analytics purposes.
+  const { data: inputFungibleUsdInfo } = useAssetFullInfo(
+    { fungibleId: currentPosition?.asset.id || '', currency: 'usd' },
+    { source: useHttpClientSource() },
+    { enabled: Boolean(currentPosition?.asset.id) }
+  );
+
   const sendTxMutation = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
@@ -244,7 +252,13 @@ function SendFormComponent() {
                       .multipliedBy(currentPosition.asset.price.value)
                       .toNumber()
                   : null,
-                usdValue: null,
+                usdValue: inputFungibleUsdInfo?.data.fungible.meta.price
+                  ? new BigNumber(tokenValue)
+                      .multipliedBy(
+                        inputFungibleUsdInfo.data.fungible.meta.price
+                      )
+                      .toNumber()
+                  : null,
               },
             })
           : sendData.nftPosition
