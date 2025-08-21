@@ -307,7 +307,7 @@ export function ActionInfo() {
     'actIndex should be a number or be empty'
   );
   const actIndex = act_index ? Number(act_index) : undefined;
-  const addressAction = state.action as AddressAction | undefined;
+  const addressAction = state.addressAction as AddressAction | undefined;
   const targetObject =
     actIndex != null ? addressAction?.acts.at(actIndex) : addressAction;
 
