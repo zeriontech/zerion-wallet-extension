@@ -51,7 +51,7 @@ export function ActionsList({
               items={items.map((addressAction) => {
                 const hash =
                   addressAction.transaction?.hash ||
-                  addressAction.acts.at(0)?.transaction.hash ||
+                  addressAction.acts?.at(0)?.transaction.hash ||
                   '';
                 return {
                   key: isLocalAddressAction(addressAction)
