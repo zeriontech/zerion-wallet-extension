@@ -1,5 +1,5 @@
 import { isTruthy } from 'is-truthy-ts';
-import type { LocalAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
   Collection,
   FungibleOutline,
@@ -36,7 +36,7 @@ function collectionMatches(query: string, collection: Collection | null) {
     .some((s) => s.includes(query));
 }
 
-function isMatchForQuery(query: string, action: LocalAction) {
+function isMatchForQuery(query: string, action: LocalAddressAction) {
   if (
     action.type.displayValue.toLowerCase().includes(query) ||
     action.type.value.toLowerCase().includes(query)
@@ -78,7 +78,7 @@ function isMatchForQuery(query: string, action: LocalAction) {
   return false;
 }
 
-export function isMatchForAllWords(query: string, action: LocalAction) {
+export function isMatchForAllWords(query: string, action: LocalAddressAction) {
   const words = query.trim().split(/\s+/);
   return words.every((word) => isMatchForQuery(word, action));
 }

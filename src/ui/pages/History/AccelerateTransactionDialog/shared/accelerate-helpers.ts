@@ -4,7 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import omit from 'lodash/omit';
 import type {
   AnyAddressAction,
-  LocalAction,
+  LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
@@ -16,7 +16,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 export function fromAddressActionTransaction(
   transaction: (
     | TransactionObject['transaction']
-    | LocalAction['rawTransaction']
+    | LocalAddressAction['rawTransaction']
   ) & {
     gasLimit?: BigNumberish;
     gasPrice?: BigNumberish;

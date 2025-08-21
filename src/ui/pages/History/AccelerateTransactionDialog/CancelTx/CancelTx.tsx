@@ -10,7 +10,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
   createCancelAddressAction,
-  type LocalAction,
+  type LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { createChain } from 'src/modules/networks/Chain';
@@ -53,7 +53,7 @@ function CancelTxContent({
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  addressAction: LocalAction;
+  addressAction: LocalAddressAction;
   transaction: IncomingTransactionWithChainId & IncomingTransactionWithFrom;
   onDismiss: () => void;
   onSuccess: () => void;
@@ -235,7 +235,7 @@ export function CancelTx({
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  addressAction: LocalAction;
+  addressAction: LocalAddressAction;
   onDismiss: () => void;
   onSuccess: () => void;
 }) {

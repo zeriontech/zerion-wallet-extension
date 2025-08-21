@@ -15,7 +15,7 @@ import {
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { LocalAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { walletPort } from 'src/ui/shared/channels';
 import { useQuery } from '@tanstack/react-query';
@@ -30,7 +30,7 @@ function AccelerateTransactionContent({
   addressAction,
   onDismiss,
 }: {
-  addressAction: LocalAction;
+  addressAction: LocalAddressAction;
   onDismiss: () => void;
 }) {
   const [view, setView] = useState<'speedup' | 'cancel' | 'default'>('default');
@@ -162,7 +162,7 @@ function AccelerateTransactionContent({
 
 export const AccelerateTransactionDialog = React.forwardRef<
   HTMLDialogElementInterface,
-  { addressAction: LocalAction; onDismiss: () => void }
+  { addressAction: LocalAddressAction; onDismiss: () => void }
 >(({ addressAction, onDismiss }, ref) => {
   return (
     <BottomSheetDialog

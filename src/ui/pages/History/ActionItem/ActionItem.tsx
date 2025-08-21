@@ -12,7 +12,7 @@ import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type {
   AnyAddressAction,
-  LocalAction,
+  LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import {
   getActionAddress,
@@ -306,7 +306,11 @@ function ActionItemBackend({
   );
 }
 
-function ActionItemLocal({ addressAction }: { addressAction: LocalAction }) {
+function ActionItemLocal({
+  addressAction,
+}: {
+  addressAction: LocalAddressAction;
+}) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const handleDialogOpen = useCallback(() => {

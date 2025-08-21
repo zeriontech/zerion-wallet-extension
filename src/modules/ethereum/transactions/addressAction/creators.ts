@@ -30,7 +30,7 @@ import { getTransactionObjectStatus } from '../getTransactionObjectStatus';
 import {
   getExplorerUrl,
   ZERO_HASH,
-  type LocalAction,
+  type LocalAddressAction,
 } from './addressActionMain';
 
 export async function createActionContent(
@@ -185,7 +185,7 @@ async function pendingEvmTxToAddressAction(
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
   currency: string,
   client: Client
-): Promise<LocalAction> {
+): Promise<LocalAddressAction> {
   invariant(transactionObject.hash, 'Must be evm tx');
   const { transaction, hash, timestamp } = transactionObject;
   let network: NetworkConfig | null;
@@ -267,7 +267,7 @@ async function pendingEvmTxToAddressAction(
 function pendingSolanaTxToAddressAction(
   transactionObject: TransactionObject,
   currency: string
-): LocalAction {
+): LocalAddressAction {
   invariant(transactionObject.signature, 'Must be solana tx');
   const tx = solFromBase64(transactionObject.solanaBase64);
   const action = parseSolanaTransaction(
@@ -289,7 +289,7 @@ export async function pendingTransactionToAddressAction(
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
   currency: string,
   client: Client
-): Promise<LocalAction> {
+): Promise<LocalAddressAction> {
   if (transactionObject.hash) {
     return pendingEvmTxToAddressAction(
       transactionObject,
@@ -312,7 +312,7 @@ export async function incomingTxToIncomingAddressAction(
   networks: Networks,
   currency: string,
   client: Client
-): Promise<LocalAction> {
+): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
   const network = networks.getNetworkById(
     normalizeChainId(transaction.chainId)

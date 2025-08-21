@@ -28,7 +28,7 @@ type LocalAct = Omit<AddressAction['acts'][number], 'transaction'> & {
   transaction: LocalActionTransaction;
 };
 
-export type LocalAction = Omit<AddressAction, 'transaction' | 'acts'> & {
+export type LocalAddressAction = Omit<AddressAction, 'transaction' | 'acts'> & {
   acts: LocalAct[];
   transaction: LocalActionTransaction | null;
   rawTransaction: {
@@ -44,18 +44,18 @@ export type LocalAction = Omit<AddressAction, 'transaction' | 'acts'> & {
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
 };
 
-export type AnyAddressAction = AddressAction | LocalAction;
+export type AnyAddressAction = AddressAction | LocalAddressAction;
 
 export function isLocalAddressAction(
-  addressAction: AddressAction | LocalAction
-): addressAction is LocalAction {
+  addressAction: AddressAction | LocalAddressAction
+): addressAction is LocalAddressAction {
   return 'local' in addressAction && addressAction.local;
 }
 
 export const ZERO_HASH =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-const toEmptyActionTx = (chain: string): LocalAction['rawTransaction'] =>
+const toEmptyActionTx = (chain: string): LocalAddressAction['rawTransaction'] =>
   ({
     chain,
     hash: ZERO_HASH,
@@ -65,7 +65,7 @@ const toEmptyActionTx = (chain: string): LocalAction['rawTransaction'] =>
 const toActionTx = (
   tx: IncomingTransaction,
   chain: string
-): LocalAction['rawTransaction'] =>
+): LocalAddressAction['rawTransaction'] =>
   ({
     ...tx,
     chain,
@@ -137,7 +137,7 @@ export function createSendTokenAddressAction({
   address: string;
   receiverAddress: string;
   explorerUrl: string | null;
-}): LocalAction {
+}): LocalAddressAction {
   const content = {
     approvals: null,
     transfers: [
@@ -223,7 +223,7 @@ export function createSendNFTAddressAction({
   address: string;
   receiverAddress: string;
   explorerUrl: string | null;
-}): LocalAction {
+}): LocalAddressAction {
   const content = {
     approvals: null,
     transfers: [
@@ -308,7 +308,7 @@ export function createTradeAddressAction({
   network: NetworkConfig;
   rate: Quote2['rate'] | null;
   explorerUrl: string | null;
-}): LocalAction {
+}): LocalAddressAction {
   const content = {
     approvals: null,
     transfers: [
@@ -392,7 +392,7 @@ export function createBridgeAddressAction({
   outputNetwork: NetworkConfig;
   explorerUrl: string | null;
   receiverAddress: string | null;
-}): LocalAction {
+}): LocalAddressAction {
   const content = {
     approvals: null,
     transfers: [
@@ -537,7 +537,7 @@ export function createApproveAddressAction({
   amount: Amount;
   network: NetworkConfig;
   explorerUrl: string | null;
-}): LocalAction {
+}): LocalAddressAction {
   const content = {
     approvals: [
       {
@@ -591,9 +591,9 @@ export function createApproveAddressAction({
 }
 
 export function createAcceleratedAddressAction(
-  originalAddressAction: LocalAction,
+  originalAddressAction: LocalAddressAction,
   transaction: IncomingTransaction
-): LocalAction {
+): LocalAddressAction {
   invariant(
     originalAddressAction.rawTransaction,
     'Missing initial transaction data to create a cancel transaction'
@@ -610,9 +610,9 @@ export function createAcceleratedAddressAction(
 }
 
 export function createCancelAddressAction(
-  originalAddressAction: LocalAction,
+  originalAddressAction: LocalAddressAction,
   transaction: IncomingTransactionWithFrom
-): LocalAction {
+): LocalAddressAction {
   invariant(
     originalAddressAction.rawTransaction,
     'Missing initial transaction data to create a cancel transaction'
