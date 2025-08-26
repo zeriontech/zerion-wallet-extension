@@ -65,3 +65,17 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+.statsContainer {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+  user-select: none; /* Prevent text selection during drag */
+}
+
+/* Hide scrollbar for Webkit browsers */
+.statsContainer::-webkit-scrollbar {
+  display: none;
+}
