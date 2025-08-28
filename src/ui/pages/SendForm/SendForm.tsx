@@ -165,6 +165,7 @@ function SendFormComponent() {
     tokenValue = '',
     addressInputValue = '',
     data = '',
+    tokenAssetCode = '',
   } = formState;
   const chain = tokenChain ? createChain(tokenChain) : null;
   const currentPosition = useCurrentPosition(formState, currentPositions);
@@ -212,6 +213,8 @@ function SendFormComponent() {
     supportsSponsoredTransactions: network?.supports_sponsored_transactions,
   });
 
+  const nativeAssetId = network?.native_asset?.id;
+  const isNativeAsset = tokenAssetCode === nativeAssetId;
   const configuration = useMemo(() => toConfiguration(formState), [formState]);
 
   const snapshotRef = useRef<{ state: SendFormState } | null>(null);
@@ -463,7 +466,7 @@ function SendFormComponent() {
                 value={tokenValue}
                 network={network}
                 onChange={(value) => handleChange('tokenValue', value)}
-                tokenAssetCode={formState.tokenAssetCode || null}
+                tokenAssetCode={tokenAssetCode || null}
                 currentItem={currentPosition ?? null}
                 items={currentPositions}
                 onAssetCodeChange={(value) =>
@@ -481,6 +484,7 @@ function SendFormComponent() {
               />
             ) : null}
             {preferences?.configurableTransactionData &&
+            isNativeAsset &&
             addressType === 'evm' ? (
               <FormFieldset
                 title="Data"

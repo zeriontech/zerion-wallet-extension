@@ -226,6 +226,9 @@ export async function prepareSendData(
           getDecimals({ asset: position.asset, chain })
         ).toFixed(),
       });
+      if (data && isNativeAsset) {
+        tx = { ...tx, data };
+      }
     }
     if (gasLimit) {
       invariant(isNumeric(gasLimit), 'Gas limit must be numeric');
@@ -244,9 +247,6 @@ export async function prepareSendData(
         defaultBlock: 'pending',
       });
       nonce = String(latestNonce);
-    }
-    if (data) {
-      tx = { ...tx, data };
     }
     tx = await applyConfigurationAsync({
       chain,
