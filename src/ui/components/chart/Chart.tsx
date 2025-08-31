@@ -200,6 +200,7 @@ export function Chart<T>({
       return;
     }
 
+    chartPointsRef.current = [];
     chartRef.current = new ChartJS(ctx, {
       ...DEFAULT_CONFIG,
       data: {
@@ -286,15 +287,17 @@ export function Chart<T>({
     };
   }, [onRangeSelectEvent, datasetConfig, plugins, tooltip, interaction]);
 
-  if (!equal(chartPointsRef.current, chartPoints) && chartRef.current) {
-    updateChartPoints({
-      chart: chartRef.current,
-      prevPoints: chartPointsRef.current,
-      nextPoints: chartPoints,
-      theme,
-    });
-    chartPointsRef.current = chartPoints;
-  }
+  useEffect(() => {
+    if (!equal(chartPointsRef.current, chartPoints) && chartRef.current) {
+      updateChartPoints({
+        chart: chartRef.current,
+        prevPoints: chartPointsRef.current,
+        nextPoints: chartPoints,
+        theme: themeRef.current,
+      });
+      chartPointsRef.current = chartPoints;
+    }
+  }, [chartPoints]);
 
   return (
     <div style={{ position: 'relative', height: CHART_HEIGHT, ...style }}>
