@@ -5,6 +5,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import * as styles from './styles.module.css';
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const ONE_HOUR = 60 * 60 * 1000;
@@ -57,7 +58,7 @@ export function AssetGlobalStats({
   );
 
   return (
-    <HStack gap={8}>
+    <HStack gap={8} className={styles.statsContainer}>
       {createdRecently ? (
         <AssetStatsChip title="AGE" value={`${ageInHours}h`} />
       ) : null}
