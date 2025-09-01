@@ -5,6 +5,27 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WarningIcon from 'jsx:src/ui/assets/info-big.svg';
+import { formatPercent } from 'src/shared/units/formatPercent';
+import { getPriceImpactPercentage, type PriceImpact } from './price-impact';
+
+export function getBlockingWarningProps(priceImpact: PriceImpact) {
+  const priceImpactPercentage = getPriceImpactPercentage(priceImpact);
+  if (!priceImpactPercentage || priceImpactPercentage > -50) {
+    return null;
+  }
+
+  return {
+    title: `This trade will result\nin ${formatPercent(
+      Math.abs(priceImpactPercentage),
+      'en',
+      { maximumFractionDigits: 0 }
+    )}% loss`,
+    description:
+      'This may be caused by low liquidity. Try lowering the amount to improve the rate.',
+    submitText: 'Proceed Anyway',
+    dismissText: 'Edit Amount',
+  };
+}
 
 export function BlockingWarningOverlay({
   title,

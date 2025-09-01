@@ -41,10 +41,7 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
-import {
-  showConfirmDialog,
-  showConfirmDialogWithCondition,
-} from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { TransactionConfirmationView } from 'src/ui/components/address-action/TransactionConfirmationView';
@@ -117,10 +114,7 @@ import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
 import { getPopularTokens } from './shared/getPopularTokens';
 import type { PriceImpact } from './shared/price-impact';
-import {
-  calculatePriceImpact,
-  getPriceImpactBlockingWarningProps,
-} from './shared/price-impact';
+import { calculatePriceImpact } from './shared/price-impact';
 import { PriceImpactLine } from './shared/PriceImpactLine';
 import { SpendTokenField } from './fieldsets/SpendTokenField/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField/ReceiveTokenField';
@@ -128,7 +122,10 @@ import { SuccessState } from './SuccessState/SuccessState';
 import type { SwapFormState } from './shared/SwapFormState';
 import { usePosition } from './shared/usePosition';
 import { getSlippageOptions } from './SlippageSettings/getSlippageOptions';
-import { BlockingWarningOverlay } from './shared/BlockingWarningOverlay';
+import {
+  BlockingWarningOverlay,
+  getBlockingWarningProps,
+} from './shared/BlockingWarningOverlay';
 
 const rootNode = getRootDomNode();
 
@@ -608,7 +605,7 @@ function SwapFormComponent() {
 
   const blockingWarningProps = useMemo(() => {
     return priceImpact && selectedQuote?.transactionSwap
-      ? getPriceImpactBlockingWarningProps(priceImpact)
+      ? getBlockingWarningProps(priceImpact)
       : null;
   }, [priceImpact, selectedQuote]);
 
@@ -900,10 +897,10 @@ function SwapFormComponent() {
             const interpretationAction = rawInterpretationAction
               ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
-            showConfirmDialogWithCondition(
-              blockingWarningDialogRef.current,
-              Boolean(blockingWarningProps)
-            ).then(() => {
+            const promise = blockingWarningProps
+              ? showConfirmDialog(blockingWarningDialogRef.current)
+              : Promise.resolve();
+            promise.then(() => {
               invariant(
                 confirmDialogRef.current,
                 'Confirmation dialog not found'

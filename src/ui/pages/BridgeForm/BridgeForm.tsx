@@ -63,10 +63,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
-import {
-  showConfirmDialog,
-  showConfirmDialogWithCondition,
-} from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
+import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
@@ -112,13 +109,13 @@ import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { PriceImpactLine } from '../SwapForm/shared/PriceImpactLine';
 import type { PriceImpact } from '../SwapForm/shared/price-impact';
-import {
-  calculatePriceImpact,
-  getPriceImpactBlockingWarningProps,
-} from '../SwapForm/shared/price-impact';
+import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
 import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
 import { getSlippageOptions } from '../SwapForm/SlippageSettings/getSlippageOptions';
-import { BlockingWarningOverlay } from '../SwapForm/shared/BlockingWarningOverlay';
+import {
+  BlockingWarningOverlay,
+  getBlockingWarningProps,
+} from '../SwapForm/shared/BlockingWarningOverlay';
 import type { BridgeFormState } from './types';
 import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
@@ -791,7 +788,7 @@ function BridgeFormComponent() {
 
   const blockingWarningProps = useMemo(() => {
     return priceImpact && selectedQuote?.transactionSwap
-      ? getPriceImpactBlockingWarningProps(priceImpact)
+      ? getBlockingWarningProps(priceImpact)
       : null;
   }, [priceImpact, selectedQuote]);
 
@@ -1066,10 +1063,10 @@ function BridgeFormComponent() {
             const interpretationAction = rawInterpretationAction
               ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
-            showConfirmDialogWithCondition(
-              blockingWarningDialogRef.current,
-              Boolean(blockingWarningProps)
-            ).then(() => {
+            const promise = blockingWarningProps
+              ? showConfirmDialog(blockingWarningDialogRef.current)
+              : Promise.resolve();
+            promise.then(() => {
               invariant(
                 confirmDialogRef.current,
                 'Confirmation dialog not found'
