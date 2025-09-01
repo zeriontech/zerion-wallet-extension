@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import type { AddressAction } from 'defi-sdk';
 import { capitalize } from 'capitalize-ts';
 import { useQuery } from '@tanstack/react-query';
 import { animated } from '@react-spring/web';
@@ -7,7 +6,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
-import { useProfileName } from 'src/ui/shared/useProfileName';
 import { walletPort } from 'src/ui/shared/channels';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import SuccessIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
@@ -15,17 +13,13 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
+import type { ActionLabel } from 'src/modules/zerion-api/requests/wallet-get-actions';
 
 const ICON_SIZE = 20;
 
-function SenderReceiver({
-  label,
-}: {
-  label: NonNullable<AddressAction['label']>;
-}) {
-  const { icon_url, display_value, value } = label;
-  const address =
-    display_value.wallet_address || display_value.contract_address || '';
+function LabelInfo({ label }: { label: ActionLabel }) {
+  const { wallet, contract } = label;
+  const address = wallet?.address || contract?.address || '';
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
 
   const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
@@ -34,7 +28,7 @@ function SenderReceiver({
   const { style: successIconStyle, trigger: successCopyTrigger } =
     useTransformTrigger({ x: 2 });
 
-  const { data: wallet } = useQuery({
+  const { data: localWallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address],
     queryFn: () =>
       walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
@@ -42,9 +36,9 @@ function SenderReceiver({
     suspense: false,
   });
 
-  const { value: walletName } = useProfileName(
-    wallet || { address, name: null }
-  );
+  const walletName = localWallet?.name || wallet?.name || null;
+  const contractName = contract?.dapp.name || null;
+  const contractIconUrl = contract?.dapp.iconUrl || null;
 
   const handleClick = useCallback(() => {
     handleCopy();
@@ -64,12 +58,12 @@ function SenderReceiver({
         alignItems="center"
         style={{ gridTemplateColumns: 'auto 1fr' }}
       >
-        {icon_url ? (
+        {contractIconUrl ? (
           <TokenIcon
-            src={icon_url}
+            src={contractIconUrl}
+            title={contractName || 'Contract icon'}
             size={ICON_SIZE}
             style={{ borderRadius: 4 }}
-            title={value}
           />
         ) : address ? (
           <WalletAvatar size={ICON_SIZE} address={address} borderRadius={4} />
@@ -83,7 +77,7 @@ function SenderReceiver({
             kind="small/accent"
             style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
-            {label.display_value.text || walletName}
+            {contractName || walletName}
           </UIText>
           {address ? (
             isSuccess ? (
@@ -114,13 +108,7 @@ function SenderReceiver({
   );
 }
 
-export function SenderReceiverLine({ action }: { action: AddressAction }) {
-  const { label } = action;
-
-  if (!label) {
-    return null;
-  }
-
+export function LabelLine({ label }: { label: ActionLabel }) {
   return (
     <HStack
       gap={24}
@@ -128,8 +116,10 @@ export function SenderReceiverLine({ action }: { action: AddressAction }) {
       justifyContent="space-between"
       style={{ gridTemplateColumns: 'auto 1fr' }}
     >
-      <UIText kind="small/regular">{capitalize(label.type)}</UIText>
-      <SenderReceiver label={label} />
+      {label.displayTitle ? (
+        <UIText kind="small/regular">{capitalize(label.displayTitle)}</UIText>
+      ) : null}
+      <LabelInfo label={label} />
     </HStack>
   );
 }

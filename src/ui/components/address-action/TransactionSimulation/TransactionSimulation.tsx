@@ -29,6 +29,9 @@ import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { getActionApprovalFungibleId } from 'src/modules/ethereum/transactions/addressAction';
+import { useFungibleDecimals } from 'src/ui/shared/useFungibleDecimals';
+import { baseToCommon } from 'src/shared/units/convert';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -104,29 +107,49 @@ export function TransactionSimulation({
 
   const localSolanaAddressAction = useMemo(() => {
     return transaction.solana
-      ? parseSolanaTransaction(address, solFromBase64(transaction.solana))
+      ? parseSolanaTransaction(
+          address,
+          solFromBase64(transaction.solana),
+          currency
+        )
       : null;
-  }, [transaction.solana, address]);
+  }, [transaction.solana, address, currency]);
 
   const interpretation = txInterpretQuery.data;
 
   const interpretAddressAction = interpretation?.action;
   const addressAction =
     interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
-  if (!addressAction || !networks) {
-    return <p>loading...</p>;
-  }
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
-  const singleAsset = addressAction.content?.single_asset;
+
+  const requestedAllowanceQuantityCommon = addressAction?.acts
+    ?.at(0)
+    ?.content?.approvals?.at(0)?.amount?.quantity;
+
+  const approvalFungibleId = addressAction
+    ? getActionApprovalFungibleId(addressAction)
+    : null;
+
+  const chain = transaction.evm ? evmChain : solanaChain;
+
+  const fungibleDecimals = useFungibleDecimals({
+    fungibleId: approvalFungibleId,
+    chain: chain || null,
+  });
 
   // TODO: what if network doesn't support simulations (txInterpretQuery is idle or isError),
   // but this is an approval tx? Can there be a bug?
-  const allowanceQuantityBase =
-    customAllowanceValueBase || addressAction.content?.single_asset?.quantity;
+  const allowanceQuantityCommon =
+    fungibleDecimals && customAllowanceValueBase
+      ? baseToCommon(customAllowanceValueBase, fungibleDecimals).toFixed()
+      : requestedAllowanceQuantityCommon;
 
-  const chain = transaction.evm ? evmChain : solanaChain;
+  if (!addressAction || !networks) {
+    return <p>loading...</p>;
+  }
+
   invariant(chain, 'Chain must be defined for transaction simulation');
+  const network = networks.getByNetworkId(chain);
+  invariant(network, 'Network must be known for transaction simulation');
 
   return (
     <>
@@ -149,8 +172,7 @@ export function TransactionSimulation({
                 closeKind="icon"
               />
               <TransactionAdvancedView
-                networks={networks}
-                chain={chain}
+                network={network}
                 interpretation={interpretation}
                 transaction={transaction}
                 addressAction={addressAction}
@@ -163,16 +185,13 @@ export function TransactionSimulation({
       <VStack gap={8}>
         <AddressActionDetails
           address={address}
-          recipientAddress={recipientAddress}
           addressAction={addressAction}
-          chain={chain}
-          networks={networks}
-          actionTransfers={actionTransfers}
-          singleAsset={singleAsset}
-          allowanceQuantityBase={allowanceQuantityBase || null}
+          network={network}
+          allowanceQuantityCommon={allowanceQuantityCommon || null}
+          customAllowanceQuantityBase={customAllowanceValueBase || null}
           showApplicationLine={false}
           singleAssetElementEnd={
-            allowanceQuantityBase && onOpenAllowanceForm ? (
+            allowanceQuantityCommon && onOpenAllowanceForm ? (
               <UIText kind="small/accent" color="var(--primary)">
                 <UnstyledButton
                   type="button"

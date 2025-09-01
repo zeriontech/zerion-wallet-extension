@@ -6,12 +6,16 @@ import type { BackendSourceParams } from '../shared';
 export function useAssetFullInfo(
   params: Params,
   { source }: BackendSourceParams,
-  { suspense = false }: { suspense?: boolean } = {}
+  {
+    suspense = false,
+    enabled = true,
+  }: { suspense?: boolean; enabled?: boolean } = {}
 ) {
   return useQuery({
     queryKey: ['assetGetFungibleFullInfo', params, source],
     queryFn: () => ZerionAPI.assetGetFungibleFullInfo(params, { source }),
     suspense,
+    enabled,
     staleTime: 20000,
   });
 }
