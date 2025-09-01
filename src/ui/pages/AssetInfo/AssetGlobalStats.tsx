@@ -1,11 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { AssetFullInfo } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import * as styles from './styles.module.css';
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const ONE_HOUR = 60 * 60 * 1000;
@@ -44,44 +43,12 @@ const FORMATTING_OPTIONS: Intl.NumberFormatOptions = {
 
 const numberFormatter = Intl.NumberFormat('en', FORMATTING_OPTIONS);
 
-const pointerDrag = (elem: HTMLDivElement) => {
-  const dragStart = (ev: PointerEvent) => {
-    elem.setPointerCapture(ev.pointerId);
-  };
-  const dragEnd = (ev: PointerEvent) => {
-    elem.releasePointerCapture(ev.pointerId);
-  };
-  const drag = (ev: PointerEvent) => {
-    if (elem.hasPointerCapture(ev.pointerId)) {
-      elem.scrollLeft -= ev.movementX;
-    }
-  };
-
-  elem.addEventListener('pointerdown', dragStart);
-  elem.addEventListener('pointerup', dragEnd);
-  elem.addEventListener('pointermove', drag);
-
-  return () => {
-    elem.removeEventListener('pointerdown', dragStart);
-    elem.removeEventListener('pointerup', dragEnd);
-    elem.removeEventListener('pointermove', drag);
-  };
-};
-
 export function AssetGlobalStats({
   assetFullInfo,
 }: {
   assetFullInfo: AssetFullInfo;
 }) {
   const { currency } = useCurrency();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!containerRef.current) {
-      return;
-    }
-    return pointerDrag(containerRef.current);
-  }, []);
 
   const createdRecently =
     Date.now() - new Date(assetFullInfo.extra.createdAt).getTime() < ONE_DAY;
@@ -90,12 +57,7 @@ export function AssetGlobalStats({
   );
 
   return (
-    <HStack
-      ref={containerRef}
-      gap={8}
-      className={styles.statsContainer}
-      style={{ paddingBlock: 16 }}
-    >
+    <HStack gap={8}>
       {createdRecently ? (
         <AssetStatsChip title="AGE" value={`${ageInHours}h`} />
       ) : null}

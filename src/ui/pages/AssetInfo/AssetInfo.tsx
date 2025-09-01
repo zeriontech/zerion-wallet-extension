@@ -218,22 +218,20 @@ export function AssetInfo() {
         gap={24}
         style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
       >
-        <VStack gap={8}>
-          <AssetTitleAndChart
-            asset={assetFullInfo.fungible}
-            address={params.address}
-          />
-          <AssetGlobalStats assetFullInfo={assetFullInfo} />
-          <AssetAddressStats
-            address={params.address}
-            wallet={wallet}
-            assetFullInfo={assetFullInfo}
-            walletAssetDetails={walletData.data}
-            assetAddressPnlQuery={assetAddressPnlQuery}
-            premiumStatus={premiumStatus}
-            pnlIsSupported={!addrIsSolana}
-          />
-        </VStack>
+        <AssetTitleAndChart
+          asset={assetFullInfo.fungible}
+          address={params.address}
+        />
+        <AssetGlobalStats assetFullInfo={assetFullInfo} />
+        <AssetAddressStats
+          address={params.address}
+          wallet={wallet}
+          assetFullInfo={assetFullInfo}
+          walletAssetDetails={walletData.data}
+          assetAddressPnlQuery={assetAddressPnlQuery}
+          premiumStatus={premiumStatus}
+          pnlIsSupported={!addrIsSolana}
+        />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />
         <AssetHistory
