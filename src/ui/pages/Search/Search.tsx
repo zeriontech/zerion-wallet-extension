@@ -23,7 +23,6 @@ import { Media } from 'src/ui/ui-kit/Media';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { walletPort } from 'src/ui/shared/channels';
-import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
@@ -31,7 +30,8 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { invariant } from 'src/shared/invariant';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useEvent } from 'src/ui/shared/useEvent';
-import { updateRecentSearch } from './updateRecentSearch';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { useSearchQuery } from './useSearchQuery';
 
 const FungibleView = React.forwardRef<
@@ -125,7 +125,6 @@ const RecentItem = React.forwardRef<
   }
 >(({ fungibleId, index, highlighted, onClick }, ref) => {
   const { currency } = useCurrency();
-  const { preferences, setPreferences } = usePreferences();
 
   const { data, isLoading } = useAssetFullInfo(
     { fungibleId, currency },
@@ -134,15 +133,12 @@ const RecentItem = React.forwardRef<
 
   const fungible = data?.data.fungible;
 
-  const handleRemoveItemClick = useCallback(() => {
-    if (preferences) {
-      setPreferences({
-        recentSearch: preferences.recentSearch.filter(
-          (id) => id !== fungibleId
-        ),
-      });
-    }
-  }, [fungibleId, preferences, setPreferences]);
+  const removeRecentSearchMutation = useMutation({
+    mutationFn: () => walletPort.request('removeRecentSearch', { fungibleId }),
+    onSuccess: () => {
+      queryClient.refetchQueries(['wallet/getSearchHistory']);
+    },
+  });
 
   if (!isLoading && !fungible) {
     return null;
@@ -173,7 +169,8 @@ const RecentItem = React.forwardRef<
         style={{ display: 'flex' }}
         size={28}
         aria-label="Remove item from recent"
-        onClick={handleRemoveItemClick}
+        onClick={() => removeRecentSearchMutation.mutate()}
+        disabled={removeRecentSearchMutation.isLoading}
       >
         <CloseIcon
           style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
@@ -202,8 +199,13 @@ export function Search() {
     500
   );
   const normalizedQuery = urlQuery.trim();
+  const { data: searchHistory } = useQuery({
+    queryKey: ['wallet/getSearchHistory'],
+    queryFn: () => walletPort.request('getSearchHistory'),
+    suspense: false,
+    keepPreviousData: true,
+  });
 
-  const { preferences, setPreferences } = usePreferences();
   const { data: searchResults, isLoading } = useSearchQuery({
     query: normalizedQuery,
     currency,
@@ -211,12 +213,12 @@ export function Search() {
 
   const recentItems = useMemo<SearchPageItem[]>(() => {
     return (
-      preferences?.recentSearch.map((id) => ({
+      searchHistory?.map((id) => ({
         kind: 'recent',
         fungibleId: id,
       })) || []
     );
-  }, [preferences]);
+  }, [searchHistory]);
 
   const searchItems = useMemo<SearchPageItem[]>(() => {
     return (
@@ -238,21 +240,14 @@ export function Search() {
    */
   const handleFungibleClick = useCallback(
     (fungibleId: string) => {
-      if (preferences) {
-        setPreferences({
-          recentSearch: updateRecentSearch(
-            fungibleId,
-            preferences.recentSearch
-          ),
-        });
-      }
+      walletPort.request('addRecentSearch', { fungibleId });
       walletPort.request('assetClicked', {
         assetId: fungibleId,
         pathname,
         section: 'Search',
       });
     },
-    [pathname, preferences, setPreferences]
+    [pathname]
   );
 
   const { getItemProps, getInputProps, getMenuProps, highlightedIndex } =
@@ -331,9 +326,12 @@ export function Search() {
     });
   }, [items, getItemProps, highlightedIndex, handleFungibleClick]);
 
-  const handleClearRecentClick = useCallback(() => {
-    setPreferences({ recentSearch: [] });
-  }, [setPreferences]);
+  const clearSearchHistoryMutation = useMutation({
+    mutationFn: () => walletPort.request('clearSearchHistory'),
+    onSuccess: () => {
+      queryClient.refetchQueries(['wallet/getSearchHistory']);
+    },
+  });
 
   return (
     <>
@@ -362,7 +360,7 @@ export function Search() {
             <UIText kind="body/accent" style={{ paddingInline: 8 }}>
               Results
             </UIText>
-          ) : preferences?.recentSearch.length ? (
+          ) : searchHistory?.length ? (
             <HStack gap={4} justifyContent="space-between" alignItems="center">
               <UIText kind="body/accent" style={{ paddingInline: 8 }}>
                 Recent
@@ -371,7 +369,8 @@ export function Search() {
                 <UnstyledButton
                   className="hover:underline"
                   aria-label="Clear recent search"
-                  onClick={handleClearRecentClick}
+                  onClick={() => clearSearchHistoryMutation.mutate()}
+                  disabled={clearSearchHistoryMutation.isLoading}
                 >
                   Clear
                 </UnstyledButton>
