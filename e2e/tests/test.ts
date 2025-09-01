@@ -146,7 +146,7 @@ export function createExtensionTest(testConfig?: Config) {
       const context = await chromium.launchPersistentContext('', {
         headless,
         devtools: Boolean(testConfig?.devtools),
-        channel: 'chrome',
+        channel: 'chromium',
         args: createBrowserArgs(headless),
       });
       await use(context);
