@@ -65,13 +65,13 @@ export class SettingsPage extends ExtensionPage {
         - link "Developer Tools":
           - img
           - img
+        - link "Zerion Premium":
+          - img
+          - img
         - link "Invite Friends":
           - img
           - img
         - link "Rewards":
-          - img
-          - img
-        - link "Zerion Premium":
           - img
           - img
         - link "Security":
@@ -99,7 +99,7 @@ export class SettingsPage extends ExtensionPage {
         - text: ·
         - link "Terms of use"
         - text: ·
-        - button /v1\\.\\d+\\.\\d+(-\\w+)?/
+        - button /v1\\.\\d+\\.\\d+-dev/
         - button "Lock Wallet":
           - img
     `);
