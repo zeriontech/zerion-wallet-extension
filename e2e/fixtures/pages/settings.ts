@@ -99,7 +99,7 @@ export class SettingsPage extends ExtensionPage {
         - text: ·
         - link "Terms of use"
         - text: ·
-        - button /v1\\.\\d+\\.\\d+-dev/
+        - button /v1\\.\\d+\\.\\d+(-\\w+)?/
         - button "Lock Wallet":
           - img
     `);
