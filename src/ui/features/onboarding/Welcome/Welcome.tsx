@@ -16,7 +16,6 @@ import CreateImg from 'url:../assets/option_create.png';
 import ImportImg from 'url:../assets/option_import.png';
 import HardwareImg from 'url:../assets/option_hardware.png';
 import * as helpersStyles from '../shared/helperStyles.module.css';
-import { useOnboardingSession } from '../shared/useOnboardingSession';
 import { ReferralProgramHandler } from '../../referral-program/WebAppMessageHandler';
 import * as styles from './styles.module.css';
 
@@ -222,7 +221,6 @@ function Banner() {
 
 export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
-  useOnboardingSession({ navigateOnExistingUser: 'success' });
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'

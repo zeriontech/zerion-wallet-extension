@@ -5,6 +5,7 @@ import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { removeEmptyValues } from 'src/shared/removeEmptyValues';
 import { equal } from 'src/modules/fast-deep-equal';
 import { difference } from 'src/shared/difference';
+import { PLATFORM } from 'src/env/config';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 
 const HALF_DAY = 1000 * 60 * 60 * 12;
@@ -26,6 +27,7 @@ export interface State {
   recognizableConnectButtons?: boolean;
   providerInjection?: ProviderInjection;
   autoLockTimeout?: number | 'none';
+  analyticsEnabled?: boolean | null;
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
 }
 
@@ -58,6 +60,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     recognizableConnectButtons: true,
     providerInjection: {},
     walletNameFlags: {},
+    analyticsEnabled: PLATFORM === 'chrome' ? true : null,
     autoLockTimeout: HALF_DAY,
   };
 
