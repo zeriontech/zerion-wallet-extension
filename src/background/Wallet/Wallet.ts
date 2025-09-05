@@ -114,12 +114,17 @@ import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
-import type { DaylightEventParams, ScreenViewParams } from '../events';
+import type {
+  AssetClickedParams,
+  DaylightEventParams,
+  ScreenViewParams,
+} from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { lastUsedAddressStore } from '../user-activity';
 import { transactionService } from '../transactions/TransactionService';
+import { searchStore } from '../search/SearchStore';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
@@ -852,6 +857,33 @@ export class Wallet {
   }: WalletMethodParams): Promise<ReturnType<typeof Model.getPreferences>> {
     this.verifyInternalOrigin(context);
     return Model.getPreferences(this.record);
+  }
+
+  async getSearchHistory({ context }: WalletMethodParams): Promise<string[]> {
+    this.verifyInternalOrigin(context);
+    await searchStore.ready();
+    return searchStore.getSearchHistory();
+  }
+
+  async addRecentSearch({
+    context,
+    params: { fungibleId },
+  }: WalletMethodParams<{ fungibleId: string }>) {
+    this.verifyInternalOrigin(context);
+    searchStore.addRecentSearch(fungibleId);
+  }
+
+  async clearSearchHistory({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    searchStore.clearSearchHistory();
+  }
+
+  async removeRecentSearch({
+    context,
+    params: { fungibleId },
+  }: WalletMethodParams<{ fungibleId: string }>) {
+    this.verifyInternalOrigin(context);
+    searchStore.removeRecentSearch(fungibleId);
   }
 
   /** bound to instance */
@@ -1728,6 +1760,14 @@ export class Wallet {
   }: WalletMethodParams<BannerClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('bannerClicked', params);
+  }
+  
+  async assetClicked({
+    context,
+    params,
+  }: WalletMethodParams<AssetClickedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('assetClicked', params);
   }
 
   async cloudflareChallengeIssued({ context }: WalletMethodParams) {

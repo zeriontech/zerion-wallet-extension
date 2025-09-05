@@ -74,6 +74,7 @@ import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
+import { SearchLinkIcon } from '../Search';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import { BackupReminder } from './BackupReminder';
 import { Banners } from './Banners';
@@ -560,6 +561,7 @@ function OverviewComponent() {
               addressType === 'evm' ? (
                 <RewardsLinkIcon currentWallet={currentWallet} />
               ) : null}
+              <SearchLinkIcon />
               <SettingsLinkIcon />
               <SidepanelOptionsButton />
             </HStack>

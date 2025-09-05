@@ -184,6 +184,26 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
+  emitter.on('assetClicked', async (data) => {
+    const { assetId, pathname, section } = data;
+
+    const assetData = await queryFungibleInfo({
+      fungibleId: assetId,
+      currency: 'usd',
+    });
+
+    const params = createParams({
+      request_name: 'asset_clicked',
+      screen_name: pathname,
+      asset_id: assetId,
+      asset_name: assetData.data.fungible.name,
+      section_id: section,
+    });
+    const event_name = 'General: Asset Clicked';
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(event_name, mixpanelParams);
+  });
+
   emitter.on('daylightAction', ({ event_name, ...data }) => {
     const params = createParams({
       request_name: 'daylight_action',

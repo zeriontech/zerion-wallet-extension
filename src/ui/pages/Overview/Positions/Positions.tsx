@@ -69,6 +69,8 @@ import { openHrefInTabIfSidepanel } from 'src/ui/shared/openInTabIfInSidepanel';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { walletPort } from 'src/ui/shared/channels';
+import { useLocation } from 'react-router-dom';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -461,6 +463,7 @@ function PositionList({
       }),
     []
   );
+  const { pathname } = useLocation();
   const { preferences } = usePreferences();
   const { data: firebaseConfig } = useFirebaseConfig([
     'extension_asset_page_enabled',
@@ -545,6 +548,13 @@ function PositionList({
               component: assetPageEnabled ? (
                 <SurfaceItemLink
                   to={`/asset/${position.asset.id}`}
+                  onClick={() => {
+                    walletPort.request('assetClicked', {
+                      assetId: position.asset.id,
+                      pathname,
+                      section: 'Overview',
+                    });
+                  }}
                   decorationStyle={{ borderRadius: 16 }}
                 >
                   {itemContent}

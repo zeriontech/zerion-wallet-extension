@@ -24,7 +24,8 @@ type MetabaseEvent =
   | 'hold_to_sign_prerefence'
   | 'cloudflare_challenge_issued'
   | 'button_clicked'
-  | 'banner_clicked';
+  | 'banner_clicked'
+  | 'asset_clicked';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

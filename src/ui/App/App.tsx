@@ -24,6 +24,7 @@ import { useStore } from '@store-unit/react';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { Playground } from 'src/ui-lab/Playground';
+import { useNavigate } from 'react-router-dom';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import {
@@ -39,6 +40,7 @@ import { FillView } from '../components/FillView';
 import { ViewError } from '../components/ViewError';
 import { ViewArea } from '../components/ViewArea';
 import { Settings } from '../pages/Settings';
+import { Search } from '../pages/Search';
 import { Networks } from '../pages/Networks';
 import { ManageWallets } from '../pages/ManageWallets';
 import { WalletSelect } from '../pages/WalletSelect';
@@ -266,6 +268,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
             }
           />
           <Route
+            path="/search"
+            element={
+              <RequireAuth>
+                <Search />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/networks-select"
             element={
               <RequireAuth>
@@ -450,6 +460,8 @@ registerPersistentRoute('/bridge-form');
 
 function GlobalKeyboardShortcuts() {
   const isDialog = urlContext.windowType === 'dialog';
+  const navigate = useNavigate();
+
   return (
     <>
       {isDialog ? (
@@ -471,6 +483,19 @@ function GlobalKeyboardShortcuts() {
           // Helper for development and debugging :)
           const url = new URL(window.location.href);
           openUrl(url, { windowType: 'tab' });
+        }}
+      />
+
+      <KeyboardShortcut
+        combination="cmd+k"
+        onKeyDown={() => {
+          navigate('/search');
+        }}
+      />
+      <KeyboardShortcut
+        combination="ctrl+k"
+        onKeyDown={() => {
+          navigate('/search');
         }}
       />
     </>
