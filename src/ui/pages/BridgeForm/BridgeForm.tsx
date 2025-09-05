@@ -112,6 +112,10 @@ import type { PriceImpact } from '../SwapForm/shared/price-impact';
 import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
 import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
 import { getSlippageOptions } from '../SwapForm/SlippageSettings/getSlippageOptions';
+import {
+  BlockingWarningOverlay,
+  getBlockingWarningProps,
+} from '../SwapForm/shared/BlockingWarningOverlay';
 import type { BridgeFormState } from './types';
 import { ReverseButton } from './ReverseButton';
 import { SpendTokenField } from './fieldsets/SpendTokenField';
@@ -568,6 +572,9 @@ function BridgeFormComponent() {
 
   const allowanceDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const confirmDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const blockingWarningDialogRef = useRef<HTMLDialogElementInterface | null>(
+    null
+  );
 
   const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
   const approveTxBtnRef = useRef<SendTxBtnHandle | null>(null);
@@ -779,6 +786,12 @@ function BridgeFormComponent() {
     }
   }, [selectedQuote, quotesData.done, trackTransactionFormed]);
 
+  const blockingWarningProps = useMemo(() => {
+    return priceImpact && selectedQuote?.transactionSwap
+      ? getBlockingWarningProps(priceImpact)
+      : null;
+  }, [priceImpact, selectedQuote]);
+
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
@@ -911,6 +924,18 @@ function BridgeFormComponent() {
         }
       />
       <BottomSheetDialog
+        ref={blockingWarningDialogRef}
+        height="min-content"
+        containerStyle={{ display: 'flex', flexDirection: 'column' }}
+        renderWhenOpen={() => {
+          invariant(
+            blockingWarningProps,
+            'Blocking warning props must be defined'
+          );
+          return <BlockingWarningOverlay {...blockingWarningProps} />;
+        }}
+      />
+      <BottomSheetDialog
         ref={confirmDialogRef}
         key={selectedQuote?.transactionApprove ? 'approve' : 'swap'}
         height="min-content"
@@ -1026,7 +1051,10 @@ function BridgeFormComponent() {
           event.preventDefault();
 
           if (event.currentTarget.checkValidity()) {
-            invariant(confirmDialogRef.current, 'Dialog not found');
+            invariant(
+              blockingWarningDialogRef.current,
+              'Blocking warning dialog not found'
+            );
             const formData = new FormData(event.currentTarget);
             const submitType = formData.get('submit_type');
             const rawInterpretationAction = formData.get('interpretation') as
@@ -1035,14 +1063,23 @@ function BridgeFormComponent() {
             const interpretationAction = rawInterpretationAction
               ? (JSON.parse(rawInterpretationAction) as AddressAction)
               : null;
-            showConfirmDialog(confirmDialogRef.current).then(() => {
-              if (submitType === 'approve') {
-                sendApproveTransaction(interpretationAction);
-              } else if (submitType === 'bridge') {
-                sendTransaction(interpretationAction);
-              } else {
-                throw new Error('Must set a submit_type to form');
-              }
+            const promise = blockingWarningProps
+              ? showConfirmDialog(blockingWarningDialogRef.current)
+              : Promise.resolve();
+            promise.then(() => {
+              invariant(
+                confirmDialogRef.current,
+                'Confirmation dialog not found'
+              );
+              showConfirmDialog(confirmDialogRef.current).then(() => {
+                if (submitType === 'approve') {
+                  sendApproveTransaction(interpretationAction);
+                } else if (submitType === 'bridge') {
+                  sendTransaction(interpretationAction);
+                } else {
+                  throw new Error('Must set a submit_type to form');
+                }
+              });
             });
           }
         }}
