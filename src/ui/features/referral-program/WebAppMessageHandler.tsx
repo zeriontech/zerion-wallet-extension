@@ -100,7 +100,7 @@ async function setReferralCode(params: unknown) {
 export function ReferralProgramHandler() {
   return (
     <WebAppMessageHandler
-      pathname="/referral/get-code"
+      pathname="/referral-code.html"
       callbackName="set-referral-code"
       callbackFn={setReferralCode}
       hidden={true}

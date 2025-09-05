@@ -3,7 +3,10 @@ import { LoginActivity, type Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { getWalletNameFlagsChange } from 'src/background/Wallet/GlobalPreferences';
+import {
+  getWalletNameFlagsChange,
+  globalPreferences,
+} from 'src/background/Wallet/GlobalPreferences';
 import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
 import { estimateSessionExpiry } from 'src/background/user-activity';
 import {
@@ -99,23 +102,34 @@ function trackAppEvents({ account }: { account: Account }) {
     return createBaseParams(params);
   };
 
-  emitter.on('requestAccountsResolved', ({ origin, address, explicitly }) => {
-    if (!explicitly) {
-      return;
+  emitter.on(
+    'requestAccountsResolved',
+    async ({ origin, address, explicitly }) => {
+      const preferences = await globalPreferences.getPreferences();
+      if (!preferences.analyticsEnabled) {
+        return;
+      }
+      if (!explicitly) {
+        return;
+      }
+      const params = createParams({
+        request_name: 'dapp_connection',
+        dapp_domain: origin,
+        wallet_address: address,
+        ecosystem: toEcosystemProperty(getAddressType(address)),
+        eip6963_supported: eip6963Dapps.has(origin),
+      });
+      sendToMetabase('dapp_connection', params);
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('DApp: DApp Connection', mixpanelParams);
     }
-    const params = createParams({
-      request_name: 'dapp_connection',
-      dapp_domain: origin,
-      wallet_address: address,
-      ecosystem: toEcosystemProperty(getAddressType(address)),
-      eip6963_supported: eip6963Dapps.has(origin),
-    });
-    sendToMetabase('dapp_connection', params);
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('DApp: DApp Connection', mixpanelParams);
-  });
+  );
 
   emitter.on('unlockedAppOpened', async () => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     await waitForAnalyticsIdSet();
     const params = createParams({ request_name: 'unlocked_app_opened' });
     /**
@@ -131,6 +145,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('screenView', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     await waitForAnalyticsIdSet();
     const params = createParams({
       request_name: 'screen_view',
@@ -150,6 +168,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('screenView', async (params) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     await waitForAnalyticsIdSet();
     const gaParams = await prepareGaParams({
       page_title: params.title,
@@ -158,7 +180,11 @@ function trackAppEvents({ account }: { account: Account }) {
     gaCollect('page_view', gaParams);
   });
 
-  emitter.on('buttonClicked', (data) => {
+  emitter.on('buttonClicked', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const { buttonName, buttonScope, pathname, walletAddress } = data;
     const params = createParams({
       request_name: 'button_clicked',
@@ -171,7 +197,11 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
-  emitter.on('bannerClicked', (data) => {
+  emitter.on('bannerClicked', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const { bannerName, pathname, walletAddress } = data;
     const params = createParams({
       request_name: 'banner_clicked',
@@ -185,6 +215,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('assetClicked', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const { assetId, pathname, section } = data;
 
     const assetData = await queryFungibleInfo({
@@ -204,7 +238,11 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
-  emitter.on('daylightAction', ({ event_name, ...data }) => {
+  emitter.on('daylightAction', async ({ event_name, ...data }) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'daylight_action',
       wallet_address: data.address,
@@ -214,7 +252,11 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('daylight_action', params);
   });
 
-  emitter.on('globalError', ({ name, message }) => {
+  emitter.on('globalError', async ({ name, message }) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'client_error',
       type: name,
@@ -313,15 +355,27 @@ function trackAppEvents({ account }: { account: Account }) {
     statsigTrack('Transaction: Signed Transaction', mixpanelParams);
   };
 
-  emitter.on('transactionSent', (result, context) =>
-    trackTransactionSign({ status: 'success', result, context })
-  );
+  emitter.on('transactionSent', async (result, context) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    trackTransactionSign({ status: 'success', result, context });
+  });
 
-  emitter.on('transactionFailed', (errorMessage, context) =>
-    trackTransactionSign({ status: 'failed', errorMessage, context })
-  );
+  emitter.on('transactionFailed', async (errorMessage, context) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    trackTransactionSign({ status: 'failed', errorMessage, context });
+  });
 
   emitter.on('transactionFormed', async (context) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const {
       formState,
       quote,
@@ -457,15 +511,27 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack('Transaction: Signed Message', mixpanelParams);
   }
 
-  emitter.on('typedDataSigned', ({ typedData, ...rest }) => {
+  emitter.on('typedDataSigned', async ({ typedData, ...rest }) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     handleSign({ type: 'typedDataSigned', ...rest });
   });
-  emitter.on('messageSigned', ({ message, ...rest }) => {
+  emitter.on('messageSigned', async ({ message, ...rest }) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     handleSign({ type: 'messageSigned', ...rest });
   });
 
   // TODO: add networks-related analytics
-  emitter.on('addEthereumChain', ({ values: [chainConfig], origin }) => {
+  emitter.on('addEthereumChain', async ({ values: [chainConfig], origin }) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const wallet_address = getCurrentAddress();
     const params = createParams({
       request_name: 'custom_evm_network_created',
@@ -481,7 +547,11 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('globalPreferencesChange', (state, prevState) => {
-    onIdle(() => {
+    onIdle(async () => {
+      const preferences = await globalPreferences.getPreferences();
+      if (!preferences.analyticsEnabled) {
+        return;
+      }
       const { enabled: newlyEnabled, disabled: newlyDisabled } =
         getWalletNameFlagsChange(state, prevState);
 
@@ -504,7 +574,11 @@ function trackAppEvents({ account }: { account: Account }) {
     });
   });
 
-  emitter.on('holdToSignPreferenceChange', (active) => {
+  emitter.on('holdToSignPreferenceChange', async (active) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'hold_to_sign_prerefence',
       active,
@@ -513,7 +587,11 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack('Experiments: Hold Sign Button', mixpanelParams);
   });
 
-  emitter.on('walletCreated', ({ walletContainer, origin }) => {
+  emitter.on('walletCreated', async ({ walletContainer, origin }) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     for (const wallet of walletContainer.wallets) {
       const type =
         origin === WalletOrigin.extension
@@ -541,6 +619,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('firstScreenView', async () => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     await waitForAnalyticsIdSet();
     statsigTrack('General: Launch first time');
     mixpanelTrack('General: Launch first time', {});
@@ -553,6 +635,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('backgroundScriptInitialized', async () => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     // We want to check whether background script got restarted in a way
     // that has led to an unexpected logout.
     // The browser restart is considered an expected logout.
@@ -598,6 +684,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   dnaServiceEmitter.on('registerError', async (error, action) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const request_name = 'client_error';
     const message = getError(error).message;
     const type = 'dna action';
@@ -605,7 +695,11 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase(request_name, params);
   });
 
-  emitter.on('cloudflareChallengeIssued', () => {
+  emitter.on('cloudflareChallengeIssued', async () => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'cloudflare_challenge_issued',
     });
@@ -621,10 +715,25 @@ export function initialize({ account }: { account: Account }) {
   initializeApiV4Analytics({
     willSendRequest: createAddProviderHook({ getWalletProvider }),
   });
-  const handleUserId = () => mixpanelIdentify(account);
+  const handleUserId = async () => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    mixpanelIdentify(account);
+  };
   account.on('authenticated', () => handleUserId());
   if (account.getUser()) {
     handleUserId();
   }
+  globalPreferences.on('change', (state, prevState) => {
+    if (
+      state.analyticsEnabled &&
+      !prevState.analyticsEnabled &&
+      account.getUser()
+    ) {
+      handleUserId();
+    }
+  });
   return trackAppEvents({ account });
 }
