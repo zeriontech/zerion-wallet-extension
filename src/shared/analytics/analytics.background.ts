@@ -726,9 +726,9 @@ export function initialize({ account }: { account: Account }) {
   if (account.getUser()) {
     handleUserId();
   }
-  globalPreferences.on('change', (prevState, newState) => {
+  globalPreferences.on('change', (state, prevState) => {
     if (
-      newState.analyticsEnabled &&
+      state.analyticsEnabled &&
       !prevState.analyticsEnabled &&
       account.getUser()
     ) {

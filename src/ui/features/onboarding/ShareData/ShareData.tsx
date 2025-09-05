@@ -6,6 +6,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { useMutation } from '@tanstack/react-query';
 import { useOnboardingSession } from '../shared/useOnboardingSession';
 import * as helpersStyles from '../shared/helperStyles.module.css';
 
@@ -24,12 +25,16 @@ export function ShareData() {
     }
   }, [query.isLoading, globalPreferences?.analyticsEnabled, navigate]);
 
-  const handleAnalyticsChoice = (enabled: boolean) => {
-    setGlobalPreferences({
-      analyticsEnabled: enabled,
-    });
-    navigate('/onboarding/welcome');
-  };
+  const handleAnalyticsChoiceMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      return setGlobalPreferences({
+        analyticsEnabled: enabled,
+      });
+    },
+    onSuccess: () => {
+      navigate('/onboarding/welcome');
+    },
+  });
 
   if (query.isLoading) {
     return null;
@@ -97,7 +102,8 @@ export function ShareData() {
           <Button
             kind="primary"
             size={48}
-            onClick={() => handleAnalyticsChoice(true)}
+            onClick={() => handleAnalyticsChoiceMutation.mutate(true)}
+            disabled={handleAnalyticsChoiceMutation.isLoading}
             style={{ width: '100%' }}
           >
             <UIText kind="body/accent" color="var(--white)">
@@ -107,7 +113,8 @@ export function ShareData() {
           <Button
             kind="regular"
             size={48}
-            onClick={() => handleAnalyticsChoice(false)}
+            onClick={() => handleAnalyticsChoiceMutation.mutate(false)}
+            disabled={handleAnalyticsChoiceMutation.isLoading}
             style={{ width: '100%' }}
           >
             <UIText kind="body/accent">Deny anonymous data collection</UIText>

@@ -520,7 +520,7 @@ function Privacy() {
       <Frame>
         <ToggleSettingLine
           text="Share App Usage Analytics"
-          checked={globalPreferences?.analyticsEnabled ?? true}
+          checked={Boolean(globalPreferences?.analyticsEnabled)}
           onChange={(event) => {
             setGlobalPreferences({
               analyticsEnabled: event.target.checked,
