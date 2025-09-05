@@ -13,7 +13,7 @@ interface Props {
   tooltipContent?: React.ReactNode;
   tooltipPosition?: 'right' | 'center-bottom';
   size?: number;
-  buttonRef?: React.RefObject<HTMLButtonElement>;
+  buttonRef?: React.RefObject<HTMLButtonElement | null>;
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
