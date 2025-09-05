@@ -80,6 +80,10 @@ function trackAppEvents({
     walletPort.request('buttonClicked', data);
   });
 
+  emitter.on('bannerClicked', async (data) => {
+    walletPort.request('bannerClicked', data);
+  });
+
   emitter.on('errorScreenView', async (data) => {
     const params = createParams({
       request_name: 'client_error',

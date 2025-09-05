@@ -36,11 +36,11 @@ export class OverviewPage extends ExtensionPage {
           - listitem:
             - link "Swap":
               - img
-        - img "Solana banner decoration"
+        - link "Premium banner decoration Get Premium Lower fees, PnL and more":
+          - img "Premium banner decoration"
+          - img
         - button "close":
           - img
-        - img
-        - text: Solana is Live! Trade on Solana with Zerion
         - link "Tokens"
         - link "NFTs"
         - link "History"

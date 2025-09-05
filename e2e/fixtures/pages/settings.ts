@@ -65,13 +65,13 @@ export class SettingsPage extends ExtensionPage {
         - link "Developer Tools":
           - img
           - img
+        - link "Zerion Premium":
+          - img
+          - img
         - link "Invite Friends":
           - img
           - img
         - link "Rewards":
-          - img
-          - img
-        - link "Zerion Premium":
           - img
           - img
         - link "Security":

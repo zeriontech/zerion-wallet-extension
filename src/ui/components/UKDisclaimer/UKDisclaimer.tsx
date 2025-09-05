@@ -5,7 +5,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WarningIcon } from '../WarningIcon';
 
-export function UKDisclaimer() {
+export function UKDisclaimer({ style }: { style?: React.CSSProperties }) {
   return (
     <HStack
       gap={12}
@@ -13,6 +13,7 @@ export function UKDisclaimer() {
         padding: 12,
         borderRadius: 12,
         backgroundColor: 'var(--neutral-100)',
+        ...style,
       }}
     >
       <WarningIcon

@@ -1,6 +1,9 @@
 import { createNanoEvents } from 'nanoevents';
 import { getError } from 'src/shared/errors/getError';
-import type { ButtonClickedParams } from 'src/shared/types/button-events';
+import type {
+  BannerClickedParams,
+  ButtonClickedParams,
+} from 'src/shared/types/button-events';
 
 type EthersSignMethod = 'sendTransaction' | '_signTypedData' | 'signMessage';
 
@@ -20,6 +23,7 @@ export const emitter = createNanoEvents<{
   ethereumEvent: () => void;
   'sidepanel/activeTabUpdated': () => void;
   buttonClicked: (data: ButtonClickedParams) => void;
+  bannerClicked: (data: BannerClickedParams) => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

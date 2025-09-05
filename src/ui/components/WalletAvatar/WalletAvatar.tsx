@@ -8,6 +8,7 @@ export function WalletAvatar({
   address,
   size,
   borderRadius = 6,
+  borderWidth,
   icon,
   onReady,
 }: {
@@ -15,6 +16,7 @@ export function WalletAvatar({
   address: string;
   size: number;
   borderRadius?: number;
+  borderWidth?: number; // Optional for backward compatibility
   // TODO: should these be nullable instead of optional?
   icon?: React.ReactNode;
   onReady?(): void;
@@ -43,6 +45,7 @@ export function WalletAvatar({
         size={size}
         nft={data?.at(0)?.nft}
         borderRadius={borderRadius}
+        borderWidth={borderWidth}
         onReady={onReady}
         highlight={isPremium}
       />
