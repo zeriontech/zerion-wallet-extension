@@ -56,6 +56,7 @@ import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
@@ -159,6 +160,8 @@ function SendFormComponent() {
     tokenChain = '',
     tokenValue = '',
     addressInputValue = '',
+    data = '',
+    tokenAssetCode = '',
   } = formState;
   const chain = tokenChain ? createChain(tokenChain) : null;
   const currentPosition = useCurrentPosition(formState, currentPositions);
@@ -206,6 +209,8 @@ function SendFormComponent() {
     supportsSponsoredTransactions: network?.supports_sponsored_transactions,
   });
 
+  const nativeAssetId = network?.native_asset?.id;
+  const isNativeAsset = tokenAssetCode === nativeAssetId;
   const configuration = useMemo(() => toConfiguration(formState), [formState]);
 
   const snapshotRef = useRef<{ state: SendFormState } | null>(null);
@@ -417,7 +422,7 @@ function SendFormComponent() {
                 value={tokenValue}
                 network={network}
                 onChange={(value) => handleChange('tokenValue', value)}
-                tokenAssetCode={formState.tokenAssetCode || null}
+                tokenAssetCode={tokenAssetCode || null}
                 currentItem={currentPosition ?? null}
                 items={currentPositions}
                 onAssetCodeChange={(value) =>
@@ -432,6 +437,41 @@ function SendFormComponent() {
                 nftId={formState.nftId || null}
                 onNftIdChange={(id) => handleChange('nftId', id)}
                 networkId={formState.tokenChain || null}
+              />
+            ) : null}
+            {preferences?.configurableTransactionData &&
+            isNativeAsset &&
+            addressType === 'evm' ? (
+              <FormFieldset
+                title="Data"
+                style={{ borderBottomRightRadius: 4 }}
+                startInput={
+                  <textarea
+                    name="data"
+                    value={data}
+                    onChange={(event) => {
+                      handleChange('data', event.currentTarget.value);
+                    }}
+                    style={{
+                      border: 'none',
+                      outline: 'none',
+                      backgroundColor: 'transparent',
+                      fontSize: 'inherit',
+                      fontFamily: 'inherit',
+                      fontWeight: 'inherit',
+                      fontStyle: 'inherit',
+                      lineHeight: 'inherit',
+                      padding: 16,
+                      paddingTop: 0,
+                      width: 'calc(100% + 32px)',
+                      marginLeft: -16,
+                      marginBottom: -16,
+                      resize: 'vertical',
+                    }}
+                    rows={2}
+                    placeholder="0x..."
+                  />
+                }
               />
             ) : null}
           </VStack>
