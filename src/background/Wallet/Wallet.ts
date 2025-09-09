@@ -1785,7 +1785,15 @@ export class Wallet {
 
   async quoteError({ context, params }: WalletMethodParams<QuoteErrorContext>) {
     this.verifyInternalOrigin(context);
-    emitter.emit('quoteError', params);
+    invariant(params.inputChain, 'inputChain is required to report quoteError');
+    const { mode } = await this.assertNetworkMode({
+      id: createChain(params.inputChain),
+    });
+    emitter.emit(
+      'quoteError',
+      params,
+      mode === 'default' ? 'mainnet' : 'testnet'
+    );
   }
 
   async transactionFormed({

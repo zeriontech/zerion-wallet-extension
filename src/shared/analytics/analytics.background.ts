@@ -17,10 +17,13 @@ import { statsigTrack } from 'src/modules/statsig/shared';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
-import type { Params } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { queryHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
-import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
+import type { Params as FungibleFullInfoParams } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import {
+  toAddressPositions,
+  type Params as WalletGetPositionsParams,
+} from 'src/modules/zerion-api/requests/wallet-get-positions';
 import { getPositionBalance } from 'src/ui/components/Positions/helpers';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -67,7 +70,7 @@ function queryWalletProvider(account: Account, address: string) {
   return getProviderNameFromGroup(group);
 }
 
-function queryFungibleInfo(payload: Params) {
+function queryFungibleInfo(payload: FungibleFullInfoParams) {
   const { currency, fungibleId } = payload;
 
   return backgroundQueryClient.fetchQuery({
@@ -75,6 +78,20 @@ function queryFungibleInfo(payload: Params) {
     queryFn: async () =>
       ZerionAPI.assetGetFungibleFullInfo({ fungibleId, currency }),
     staleTime: 20000,
+  });
+}
+
+async function queryWalletPositions(
+  payload: WalletGetPositionsParams,
+  source: NetworksSource
+) {
+  return backgroundQueryClient.fetchQuery({
+    queryKey: ['ZerionAPI.getWalletsMeta', payload, source],
+    queryFn: async () => {
+      const response = await ZerionAPI.walletGetPositions(payload, { source });
+      return toAddressPositions(response);
+    },
+    staleTime: 10000,
   });
 }
 
@@ -375,7 +392,7 @@ function trackAppEvents({ account }: { account: Account }) {
     trackTransactionSign({ status: 'failed', errorMessage, context });
   });
 
-  emitter.on('quoteError', async (quoteErrorContext) => {
+  emitter.on('quoteError', async (quoteErrorContext, source) => {
     const inputAssetData = quoteErrorContext.inputFungibleId
       ? await queryFungibleInfo({
           fungibleId: quoteErrorContext.inputFungibleId,
@@ -413,16 +430,15 @@ function trackAppEvents({ account }: { account: Account }) {
     const mixpanelParams = omit(baseParams, ['request_name', 'wallet_address']);
     mixpanelTrack('General: Client Error', mixpanelParams);
 
-    const source = await getHttpClientSource();
-    const sendTokenPositions = await queryHttpAddressPositions(
+    const inputTokenPositions = await queryWalletPositions(
       {
         addresses: [quoteErrorContext.address],
         currency: 'usd',
         assetIds: [quoteErrorContext.inputFungibleId],
       },
-      { source }
+      source
     );
-    const position = sendTokenPositions.data
+    const inputPosition = inputTokenPositions.data
       .filter(
         (position) =>
           position.type === 'asset' &&
@@ -444,7 +460,9 @@ function trackAppEvents({ account }: { account: Account }) {
       asset_amount_received: toMaybeArr([
         Number(quoteErrorContext.outputAmount),
       ]),
-      wallet_token_balance: position ? getPositionBalance(position) : null,
+      wallet_token_balance: inputPosition
+        ? getPositionBalance(inputPosition)
+        : null,
     };
     sendToMetabase('client_error', metabaseParams);
   });
