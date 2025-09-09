@@ -60,6 +60,8 @@ export class GlobalPreferences extends PersistentStore<State> {
     recognizableConnectButtons: true,
     providerInjection: {},
     walletNameFlags: {},
+    // Disable analytics by default for Firefox users
+    // And show first blocking screen during onboarding to set the initial value
     analyticsEnabled: PLATFORM === 'firefox' ? null : true,
     autoLockTimeout: HALF_DAY,
   };
