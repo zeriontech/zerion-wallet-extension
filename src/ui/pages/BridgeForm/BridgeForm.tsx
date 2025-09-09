@@ -609,6 +609,7 @@ function BridgeFormComponent() {
       !defaultStateQuery.isPreviousData &&
       inputChainAddressMatch &&
       outputChainAddressMatch,
+    context: 'Bridge',
   });
 
   const { refetch: refetchQuotes } = quotesData;
@@ -632,6 +633,38 @@ function BridgeFormComponent() {
     const defaultQuote = quotesData.quotes?.[0];
     return userQuote || defaultQuote || null;
   }, [userQuoteId, quotesData.quotes]);
+
+  const handleQuoteErrorEvent = useEvent((message: string, quote: Quote2) => {
+    if (
+      !inputFungibleId ||
+      !outputFungibleId ||
+      !inputAmount ||
+      !inputChain ||
+      !outputChain
+    ) {
+      return;
+    }
+    walletPort.request('quoteError', {
+      message,
+      context: 'Bridge',
+      actionType: 'Send',
+      type: 'Bridge form error',
+      address,
+      inputFungibleId,
+      outputFungibleId,
+      inputAmount,
+      inputChain,
+      outputAmount: quote.outputAmount.quantity || null,
+      outputChain,
+    });
+  });
+
+  useEffect(() => {
+    const errorMessage = selectedQuote?.error?.message;
+    if (errorMessage && quotesData.done) {
+      handleQuoteErrorEvent(errorMessage, selectedQuote);
+    }
+  }, [selectedQuote, quotesData.done, handleQuoteErrorEvent]);
 
   const outputAmount = selectedQuote?.outputAmount.quantity || null;
 

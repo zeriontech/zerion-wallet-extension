@@ -18,6 +18,9 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { Params } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import { queryHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
+import { getPositionBalance } from 'src/ui/components/Positions/helpers';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -320,6 +323,7 @@ function trackAppEvents({ account }: { account: Account }) {
       warning_was_shown: warningWasShown,
       output_amount_color: outputAmountColor,
       transaction_success: status === 'success',
+      backend_error_message: quote?.error?.message || null,
       ...omitNullParams(addressActionAnalytics),
     });
 
@@ -369,6 +373,80 @@ function trackAppEvents({ account }: { account: Account }) {
       return;
     }
     trackTransactionSign({ status: 'failed', errorMessage, context });
+  });
+
+  emitter.on('quoteError', async (quoteErrorContext) => {
+    const inputAssetData = quoteErrorContext.inputFungibleId
+      ? await queryFungibleInfo({
+          fungibleId: quoteErrorContext.inputFungibleId,
+          currency: 'usd',
+        })
+      : null;
+    const inputAsset = inputAssetData?.data?.fungible;
+    const outputAssetData = quoteErrorContext.outputFungibleId
+      ? await queryFungibleInfo({
+          fungibleId: quoteErrorContext.outputFungibleId,
+          currency: 'usd',
+        })
+      : null;
+    const outputAsset = outputAssetData?.data?.fungible;
+    invariant(inputAsset, 'Unable to fetch input asset data');
+    invariant(outputAsset, 'Unable to fetch output asset data');
+
+    const baseParams = createParams({
+      request_name: 'client_error',
+      action_type: quoteErrorContext.actionType,
+      type: quoteErrorContext.type,
+      message: quoteErrorContext.message,
+      backend_response_code: quoteErrorContext.errorCode || null,
+      backend_error_message: quoteErrorContext.backendMessage || null,
+      wallet_address: quoteErrorContext.address,
+      client_scope: quoteErrorContext.context,
+
+      asset_address_sent: [quoteErrorContext.inputFungibleId],
+      asset_address_received: [quoteErrorContext.outputFungibleId],
+      asset_name_sent: toMaybeArr([inputAsset.name]),
+      asset_name_received: toMaybeArr([outputAsset.name]),
+      input_chain: quoteErrorContext.inputChain,
+      output_chain: quoteErrorContext.outputChain,
+    });
+    const mixpanelParams = omit(baseParams, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Client Error', mixpanelParams);
+
+    const source = await getHttpClientSource();
+    const sendTokenPositions = await queryHttpAddressPositions(
+      {
+        addresses: [quoteErrorContext.address],
+        currency: 'usd',
+        assetIds: [quoteErrorContext.inputFungibleId],
+      },
+      { source }
+    );
+    const position = sendTokenPositions.data
+      .filter(
+        (position) =>
+          position.type === 'asset' &&
+          position.chain === quoteErrorContext.inputChain
+      )
+      .at(0);
+
+    const metabaseParams = {
+      ...baseParams,
+      asset_market_cap_sent: inputAsset.meta.marketCap,
+      asset_market_cap_received: outputAsset.meta.marketCap,
+      asset_fdv_sent: inputAsset.meta.fullyDilutedValuation,
+      asset_fdv_received: outputAsset.meta.fullyDilutedValuation,
+      usd_amount_sent:
+        Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
+      asset_amount_sent: toMaybeArr([Number(quoteErrorContext.inputAmount)]),
+      usd_amount_received:
+        Number(quoteErrorContext.outputAmount) * (outputAsset.meta.price || 0),
+      asset_amount_received: toMaybeArr([
+        Number(quoteErrorContext.outputAmount),
+      ]),
+      wallet_token_balance: position ? getPositionBalance(position) : null,
+    };
+    sendToMetabase('client_error', metabaseParams);
   });
 
   emitter.on('transactionFormed', async (context) => {

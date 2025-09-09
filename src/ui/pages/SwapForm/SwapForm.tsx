@@ -446,6 +446,7 @@ function SwapFormComponent() {
       defaultStateQuery.isFetched &&
       !defaultStateQuery.isPreviousData &&
       inputChainAddressMatch,
+    context: 'Swap',
   });
   const { refetch: refetchQuotes } = quotesData;
 
@@ -461,6 +462,32 @@ function SwapFormComponent() {
     const defaultQuote = quotesData.quotes?.[0];
     return userQuote || defaultQuote || null;
   }, [userQuoteId, quotesData.quotes]);
+
+  const handleQuoteErrorEvent = useEvent((message: string, quote: Quote2) => {
+    if (!inputFungibleId || !outputFungibleId || !inputAmount || !inputChain) {
+      return;
+    }
+    walletPort.request('quoteError', {
+      message,
+      context: 'Swap',
+      actionType: 'Trade',
+      type: 'Trade form error',
+      address,
+      inputFungibleId,
+      outputFungibleId,
+      inputAmount,
+      inputChain,
+      outputAmount: quote.outputAmount.quantity || null,
+      outputChain: null,
+    });
+  });
+
+  useEffect(() => {
+    const errorMessage = selectedQuote?.error?.message;
+    if (errorMessage && quotesData.done) {
+      handleQuoteErrorEvent(errorMessage, selectedQuote);
+    }
+  }, [selectedQuote, quotesData.done, handleQuoteErrorEvent]);
 
   const { data: gasbackEstimation } = useGasbackEstimation({
     paymasterEligible: Boolean(

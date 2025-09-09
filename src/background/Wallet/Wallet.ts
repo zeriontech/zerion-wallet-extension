@@ -114,6 +114,7 @@ import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
+import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
 import type {
   AssetClickedParams,
   DaylightEventParams,
@@ -1761,7 +1762,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('bannerClicked', params);
   }
-  
+
   async assetClicked({
     context,
     params,
@@ -1780,6 +1781,11 @@ export class Wallet {
     // walletPort.request('sendEvent', { event_name, params }).
     this.verifyInternalOrigin(context);
     emitter.emit('screenView', params);
+  }
+
+  async quoteError({ context, params }: WalletMethodParams<QuoteErrorContext>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('quoteError', params);
   }
 
   async transactionFormed({

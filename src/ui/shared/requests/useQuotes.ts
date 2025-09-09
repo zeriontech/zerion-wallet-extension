@@ -10,6 +10,8 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
 import { createHeaders } from 'src/modules/zerion-api/shared';
 import { weiToGweiStr } from 'src/shared/units/formatGasPrice';
+import { invariant } from 'src/shared/invariant';
+import { walletPort } from '../channels';
 import { useGasPrices } from './useGasPrices';
 import { useEventSource } from './useEventSource';
 export interface QuotesData<T> {
@@ -59,16 +61,25 @@ function applyGasPrices(
   }
 }
 
+const QUOTES_EVENT_CODE_TO_MESSAGE = {
+  500: 'Internal Server Error',
+  503: 'Service Unavailable',
+  404: 'No liquidity for this trade',
+  400: 'Incorrect trade parameters',
+};
+
 export function useQuotes2({
   address,
   currency,
   formState,
   enabled = true,
+  context,
 }: {
   address: string;
   currency: string;
   formState: SwapFormState;
   enabled?: boolean;
+  context: 'Swap' | 'Bridge';
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
@@ -110,6 +121,49 @@ export function useQuotes2({
     return createSwapQuotesUrl(address, formStateWithGasPrices);
   }, [formStateCompleted, gasPrices, address]);
 
+  const handleQuoteError = useCallback(
+    ({
+      message,
+      code,
+      backendMessage,
+      requestParams,
+    }: {
+      message: string;
+      code?: number;
+      backendMessage?: string;
+      requestParams: Partial<SwapFormState> & { from: string };
+    }) => {
+      invariant(
+        requestParams.inputFungibleId,
+        'Unable to find inputFungibleId in quotes request'
+      );
+      invariant(
+        requestParams.outputFungibleId,
+        'Unable to find outputFungibleId in quotes request'
+      );
+      invariant(
+        requestParams.inputAmount,
+        'Unable to find inputAmount in quotes request'
+      );
+      walletPort.request('quoteError', {
+        message,
+        errorCode: code,
+        backendMessage,
+        context,
+        actionType: context === 'Swap' ? 'Trade' : 'Send',
+        type: context === 'Swap' ? 'Trade form error' : 'Bridge form error',
+        address: requestParams.from,
+        inputFungibleId: requestParams.inputFungibleId,
+        outputFungibleId: requestParams.outputFungibleId,
+        inputAmount: requestParams.inputAmount,
+        inputChain: requestParams.inputChain || null,
+        outputAmount: null,
+        outputChain: requestParams.outputChain || null,
+      });
+    },
+    [context]
+  );
+
   const {
     value: quotes,
     isLoading,
@@ -146,6 +200,19 @@ export function useQuotes2({
               nextItem.contractMetadata.id === item.contractMetadata.id
           );
           return updatedItem || item;
+        });
+      },
+      eventCodeToMessage: QUOTES_EVENT_CODE_TO_MESSAGE,
+      onError: ({ parsedError, rawEvent, requestUrl }) => {
+        handleQuoteError({
+          message: parsedError.message,
+          code: rawEvent.code,
+          backendMessage: rawEvent.message,
+          requestParams: Object.fromEntries(
+            requestUrl.searchParams.entries()
+          ) as Partial<SwapFormState> & {
+            from: string;
+          },
         });
       },
     }
