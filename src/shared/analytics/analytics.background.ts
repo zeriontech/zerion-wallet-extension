@@ -407,8 +407,14 @@ function trackAppEvents({ account }: { account: Account }) {
         })
       : null;
     const outputAsset = outputAssetData?.data?.fungible;
-    invariant(inputAsset, 'Unable to fetch input asset data');
-    invariant(outputAsset, 'Unable to fetch output asset data');
+    invariant(
+      inputAsset,
+      'Unable to fetch input asset data for quoteError event'
+    );
+    invariant(
+      outputAsset,
+      'Unable to fetch output asset data for quoteError event'
+    );
 
     const baseParams = createParams({
       request_name: 'client_error',
@@ -498,8 +504,14 @@ function trackAppEvents({ account }: { account: Account }) {
         })
       : null;
     const outputAsset = outputAssetData?.data?.fungible;
-    invariant(inputAsset, 'Unable to fetch input asset data');
-    invariant(outputAsset, 'Unable to fetch output asset data');
+    invariant(
+      inputAsset,
+      'Unable to fetch input asset data for transactionFormed event'
+    );
+    invariant(
+      outputAsset,
+      'Unable to fetch output asset data for transactionFormed event'
+    );
 
     const params = createParams({
       request_name: 'swap_form_filled_out',
