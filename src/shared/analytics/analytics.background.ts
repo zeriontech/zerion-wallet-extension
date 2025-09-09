@@ -462,10 +462,12 @@ function trackAppEvents({ account }: { account: Account }) {
         Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
       asset_amount_sent: toMaybeArr([Number(quoteErrorContext.inputAmount)]),
       usd_amount_received:
-        Number(quoteErrorContext.outputAmount) * (outputAsset.meta.price || 0),
-      asset_amount_received: toMaybeArr([
-        Number(quoteErrorContext.outputAmount),
-      ]),
+        quoteErrorContext.outputAmount != null
+          ? Number(quoteErrorContext.outputAmount) * (outputAsset.meta.price || 0)
+          : null,
+      asset_amount_received: quoteErrorContext.outputAmount != null
+        ? toMaybeArr([Number(quoteErrorContext.outputAmount)])
+        : null,
       wallet_token_balance: inputPosition
         ? getPositionBalance(inputPosition)
         : null,
