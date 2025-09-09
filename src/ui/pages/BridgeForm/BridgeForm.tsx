@@ -646,6 +646,7 @@ function BridgeFormComponent() {
     }
     walletPort.request('quoteError', {
       message,
+      backendMessage: message,
       context: 'Bridge',
       actionType: 'Send',
       type: 'Bridge form error',

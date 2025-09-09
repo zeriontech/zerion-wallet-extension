@@ -469,6 +469,7 @@ function SwapFormComponent() {
     }
     walletPort.request('quoteError', {
       message,
+      backendMessage: message,
       context: 'Swap',
       actionType: 'Trade',
       type: 'Trade form error',
