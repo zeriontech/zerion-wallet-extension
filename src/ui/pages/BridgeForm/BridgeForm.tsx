@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -600,6 +600,8 @@ function BridgeFormComponent() {
           isMatchForEcosystem(to, Networks.getEcosystem(outputNetwork))
   );
 
+  const { pathname } = useLocation();
+
   const quotesData = useQuotes2({
     address: singleAddressNormalized,
     currency,
@@ -610,6 +612,7 @@ function BridgeFormComponent() {
       inputChainAddressMatch &&
       outputChainAddressMatch,
     context: 'Bridge',
+    pathname,
   });
 
   const { refetch: refetchQuotes } = quotesData;
@@ -657,6 +660,8 @@ function BridgeFormComponent() {
       inputChain,
       outputAmount: quote.outputAmount.quantity || null,
       outputChain,
+      contractType: quote.contractMetadata?.name || null,
+      pathname,
     });
   });
 

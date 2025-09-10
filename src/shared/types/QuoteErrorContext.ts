@@ -12,4 +12,6 @@ export type QuoteErrorContext = {
   inputChain: string | null;
   outputAmount: string | null;
   outputChain: string | null;
+  contractType: string | null;
+  pathname: string;
 };

@@ -74,12 +74,14 @@ export function useQuotes2({
   formState,
   enabled = true,
   context,
+  pathname,
 }: {
   address: string;
   currency: string;
   formState: SwapFormState;
   enabled?: boolean;
   context: 'Swap' | 'Bridge';
+  pathname: string;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
@@ -159,9 +161,11 @@ export function useQuotes2({
         inputChain: requestParams.inputChain || null,
         outputAmount: null,
         outputChain: requestParams.outputChain || null,
+        contractType: null,
+        pathname,
       });
     },
-    [context]
+    [context, pathname]
   );
 
   const {

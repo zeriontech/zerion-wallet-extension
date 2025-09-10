@@ -416,26 +416,6 @@ function trackAppEvents({ account }: { account: Account }) {
       'Unable to fetch output asset data for quoteError event'
     );
 
-    const baseParams = createParams({
-      request_name: 'client_error',
-      action_type: quoteErrorContext.actionType,
-      type: quoteErrorContext.type,
-      message: quoteErrorContext.message,
-      backend_response_code: quoteErrorContext.errorCode || null,
-      backend_error_message: quoteErrorContext.backendMessage || null,
-      wallet_address: quoteErrorContext.address,
-      client_scope: quoteErrorContext.context,
-
-      asset_address_sent: [quoteErrorContext.inputFungibleId],
-      asset_address_received: [quoteErrorContext.outputFungibleId],
-      asset_name_sent: toMaybeArr([inputAsset.name]),
-      asset_name_received: toMaybeArr([outputAsset.name]),
-      input_chain: quoteErrorContext.inputChain,
-      output_chain: quoteErrorContext.outputChain,
-    });
-    const mixpanelParams = omit(baseParams, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Client Error', mixpanelParams);
-
     const inputTokenPositions = await queryWalletPositions(
       {
         addresses: [quoteErrorContext.address],
@@ -452,8 +432,27 @@ function trackAppEvents({ account }: { account: Account }) {
       )
       .at(0);
 
-    const metabaseParams = {
-      ...baseParams,
+    const params = createParams({
+      request_name: 'client_error',
+      action_type: quoteErrorContext.actionType,
+      type: quoteErrorContext.type,
+      name: quoteErrorContext.type,
+      message: quoteErrorContext.message,
+      backend_response_code: quoteErrorContext.errorCode || null,
+      backend_error_message: quoteErrorContext.backendMessage || null,
+      wallet_address: quoteErrorContext.address,
+      client_scope: quoteErrorContext.context,
+      context: quoteErrorContext.context,
+      screen_name: quoteErrorContext.pathname,
+
+      asset_address_sent: [quoteErrorContext.inputFungibleId],
+      asset_address_received: [quoteErrorContext.outputFungibleId],
+      asset_name_sent: toMaybeArr([inputAsset.name]),
+      asset_name_received: toMaybeArr([outputAsset.name]),
+      input_chain: quoteErrorContext.inputChain,
+      output_chain: quoteErrorContext.outputChain,
+      contract_type: quoteErrorContext.contractType || null,
+
       asset_market_cap_sent: inputAsset.meta.marketCap,
       asset_market_cap_received: outputAsset.meta.marketCap,
       asset_fdv_sent: inputAsset.meta.fullyDilutedValuation,
@@ -473,8 +472,10 @@ function trackAppEvents({ account }: { account: Account }) {
       wallet_token_balance: inputPosition
         ? getPositionBalance(inputPosition)
         : null,
-    };
-    sendToMetabase('client_error', metabaseParams);
+    });
+    sendToMetabase('client_error', params);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Client Error', mixpanelParams);
   });
 
   emitter.on('transactionFormed', async (context) => {

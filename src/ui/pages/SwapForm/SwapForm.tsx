@@ -1,5 +1,6 @@
 import {
   Navigate,
+  useLocation,
   useNavigate,
   useNavigationType,
   useSearchParams,
@@ -438,6 +439,7 @@ function SwapFormComponent() {
     network && isMatchForEcosystem(address, Networks.getEcosystem(network));
   const inputChainAddressMismatch = network && !inputChainAddressMatch;
 
+  const { pathname } = useLocation();
   const quotesData = useQuotes2({
     address: singleAddressNormalized,
     currency,
@@ -447,6 +449,7 @@ function SwapFormComponent() {
       !defaultStateQuery.isPreviousData &&
       inputChainAddressMatch,
     context: 'Swap',
+    pathname,
   });
   const { refetch: refetchQuotes } = quotesData;
 
@@ -480,6 +483,8 @@ function SwapFormComponent() {
       inputChain,
       outputAmount: quote.outputAmount.quantity || null,
       outputChain: null,
+      contractType: quote.contractMetadata?.name || null,
+      pathname,
     });
   });
 
