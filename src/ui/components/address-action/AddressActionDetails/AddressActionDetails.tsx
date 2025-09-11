@@ -40,12 +40,23 @@ export function AddressActionDetails({
       return addressAction;
     }
     return produce(addressAction, (draft) => {
-      if (draft.acts?.[0].content?.approvals?.[0].amount) {
-        draft.acts[0].content.approvals[0].amount.quantity =
-          allowanceQuantityCommon;
-        draft.acts[0].content.approvals[0].unlimited = isUnlimitedApproval(
-          customAllowanceQuantityBase
-        );
+      if (draft.acts?.[0].content?.approvals?.[0]) {
+        if (draft.acts[0].content.approvals[0].amount) {
+          draft.acts[0].content.approvals[0].amount.quantity =
+            allowanceQuantityCommon;
+        } else {
+          draft.acts[0].content.approvals[0].amount = {
+            quantity: allowanceQuantityCommon,
+            value: null,
+            usdValue: null,
+            currency: '',
+          };
+        }
+        if (customAllowanceQuantityBase != null) {
+          draft.acts[0].content.approvals[0].unlimited = isUnlimitedApproval(
+            customAllowanceQuantityBase
+          );
+        }
       }
     });
   }, [addressAction, allowanceQuantityCommon, customAllowanceQuantityBase]);
