@@ -105,6 +105,7 @@ import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { getDecimals } from 'src/modules/networks/asset';
+import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -760,7 +761,9 @@ function SendTransactionContent({
     : null;
 
   const requestedAllowanceQuantityCommon =
-    maybeApproval?.amount?.quantity ?? maybeLocalApproval?.amount?.quantity;
+    maybeApproval?.amount?.quantity ??
+    maybeLocalApproval?.amount?.quantity ??
+    UNLIMITED_APPROVAL_AMOUNT.toFixed();
 
   const requestedAllowanceQuantityBase =
     requestedAllowanceQuantityCommon && fungibleDecimals
@@ -851,9 +854,7 @@ function SendTransactionContent({
             );
           }}
         />
-        {view === View.customAllowance &&
-        network &&
-        requestedAllowanceQuantityBase ? (
+        {view === View.customAllowance && network ? (
           <AllowanceView
             address={wallet.address}
             assetId={maybeApproval?.fungible?.id}

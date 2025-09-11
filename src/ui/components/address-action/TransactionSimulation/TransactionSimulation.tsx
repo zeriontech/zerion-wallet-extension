@@ -32,6 +32,7 @@ import type { MultichainTransaction } from 'src/shared/types/MultichainTransacti
 import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
 import { baseToCommon } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
+import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -122,7 +123,8 @@ export function TransactionSimulation({
     interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
 
   const maybeApproval = addressAction ? getActionApproval(addressAction) : null;
-  const requestedAllowanceQuantityCommon = maybeApproval?.amount?.quantity;
+  const requestedAllowanceQuantityCommon =
+    maybeApproval?.amount?.quantity ?? UNLIMITED_APPROVAL_AMOUNT.toFixed();
 
   const chain = transaction.evm ? evmChain : solanaChain;
 
