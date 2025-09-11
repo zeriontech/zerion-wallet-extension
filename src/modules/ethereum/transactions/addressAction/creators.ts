@@ -28,6 +28,7 @@ import {
 import type { ChainId } from '../ChainId';
 import { getTransactionObjectStatus } from '../getTransactionObjectStatus';
 import {
+  convertAssetToFungible,
   getExplorerUrl,
   ZERO_HASH,
   type LocalAddressAction,
@@ -71,12 +72,7 @@ export async function createActionContent(
         transfers: [
           {
             direction: 'out',
-            fungible: {
-              id: asset.asset_code,
-              name: asset.name,
-              symbol: asset.symbol,
-              iconUrl: asset.icon_url,
-            },
+            fungible: convertAssetToFungible(asset),
             nft: null,
             amount: {
               currency,
@@ -112,12 +108,7 @@ export async function createActionContent(
         transfers: null,
         approvals: [
           {
-            fungible: {
-              id: asset.asset_code,
-              name: asset.name,
-              symbol: asset.symbol,
-              iconUrl: asset.icon_url,
-            },
+            fungible: convertAssetToFungible(asset),
             nft: null,
             collection: null,
             unlimited: false,

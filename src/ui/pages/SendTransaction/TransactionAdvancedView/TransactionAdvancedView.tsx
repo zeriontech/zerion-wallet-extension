@@ -13,8 +13,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import type { BigNumberish } from 'ethers';
-import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
-import { getInterpretationFunctionName } from 'src/modules/ethereum/transactions/interpret';
+// import { getInterpretationFunctionName } from 'src/modules/ethereum/transactions/interpret';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -29,6 +28,7 @@ import type { MultichainTransaction } from 'src/shared/types/MultichainTransacti
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Networks } from 'src/modules/networks/Networks';
 import { RecipientLine } from 'src/ui/components/address-action/RecipientLine';
+import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 
 function maybeHexValue(value?: BigNumberish | null): string | null {
   return value ? valueToHex(value) : null;
@@ -76,17 +76,17 @@ function AddressLine({
 function TransactionDetails({
   network,
   transaction,
-  interpretation,
-}: {
+}: // interpretation,
+{
   network: NetworkConfig;
   transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
 }) {
-  const functionName = useMemo(
-    () =>
-      interpretation ? getInterpretationFunctionName(interpretation) : null,
-    [interpretation]
-  );
+  // const functionName = useMemo(
+  //   () =>
+  //     interpretation ? getInterpretationFunctionName(interpretation) : null,
+  //   [interpretation]
+  // );
 
   const accessList = useMemo(
     () =>
@@ -96,7 +96,7 @@ function TransactionDetails({
 
   return (
     <VStack gap={8}>
-      {functionName ? (
+      {/* {functionName ? (
         <>
           <Surface padding={16}>
             <UIText kind="small/regular" color="var(--neutral-500)">
@@ -107,7 +107,7 @@ function TransactionDetails({
             </UIText>
           </Surface>
         </>
-      ) : null}
+      ) : null} */}
       <Surface padding={16}>
         <VStack gap={16}>
           {transaction.from ? (

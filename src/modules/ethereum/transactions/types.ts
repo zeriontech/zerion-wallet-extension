@@ -2,7 +2,6 @@ import type {
   EthersV5TransactionReceiptStripped,
   EthersV5TransactionResponse,
 } from 'src/background/Wallet/model/ethers-v5-types';
-import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 
 type CombineUnion<A, B> =
@@ -59,32 +58,3 @@ export type TransactionObject = CombineUnion<EvmObject, SolanaObject> & {
 };
 
 export type StoredTransactions = Array<TransactionObject>;
-
-export type WarningSeverity = 'Red' | 'Orange' | 'Yellow' | 'Gray';
-
-interface Warning {
-  severity: WarningSeverity;
-  title?: string;
-  description: string;
-  details?: string;
-}
-
-interface Block {
-  name: string;
-  value: string;
-}
-
-interface Section {
-  name: string | null;
-  blocks: Block[];
-}
-
-export interface InterpretInput {
-  sections: Section[];
-}
-
-export interface InterpretResponse {
-  action: AddressAction | null;
-  input?: InterpretInput;
-  warnings: Warning[];
-}

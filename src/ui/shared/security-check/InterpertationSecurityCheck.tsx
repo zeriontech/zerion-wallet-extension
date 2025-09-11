@@ -1,9 +1,5 @@
 import React, { useMemo, useRef } from 'react';
 import { Content } from 'react-area';
-import type {
-  InterpretResponse,
-  WarningSeverity,
-} from 'src/modules/ethereum/transactions/types';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
 import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
@@ -16,6 +12,11 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
 import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
+import type {
+  InterpretResponse,
+  Warning,
+  WarningSeverity,
+} from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { SecurityStatusButton } from './SecurityStatusButton';
 import type { SecurityButtonKind } from './SecurityStatusButton';
 
@@ -26,10 +27,7 @@ const WarningSeverityPriority: Record<WarningSeverity, number> = {
   Red: 3,
 };
 
-function warningComparator(
-  a: InterpretResponse['warnings'][0],
-  b: InterpretResponse['warnings'][0]
-) {
+function warningComparator(a: Warning, b: Warning) {
   // We have fallback value here in case backend introduces new severity value
   return (
     (WarningSeverityPriority[b.severity] || 0) -
@@ -37,16 +35,14 @@ function warningComparator(
   );
 }
 
-function sortWarnings(warnings?: InterpretResponse['warnings']) {
+function sortWarnings(warnings?: Warning[]) {
   if (!warnings) {
     return null;
   }
   return warnings.sort(warningComparator);
 }
 
-export function hasCriticalWarning(
-  warnings?: InterpretResponse['warnings'] | null
-) {
+export function hasCriticalWarning(warnings?: Warning[] | null) {
   if (!warnings) {
     return false;
   }
@@ -204,7 +200,7 @@ export function InterpretationSecurityCheck({
     : 'success';
 
   const warnings = useMemo(
-    () => sortWarnings(interpretation?.warnings),
+    () => sortWarnings(interpretation?.data.warnings),
     [interpretation]
   );
   const warningSeverity = warnings?.at(0)?.severity;

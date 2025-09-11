@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Client } from 'defi-sdk';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import {
-  getActionApprovalFungibleId,
+  getActionApproval,
   type AnyAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
@@ -63,7 +63,6 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
-import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
@@ -103,8 +102,9 @@ import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { useFungibleDecimals } from 'src/ui/shared/useFungibleDecimals';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
+import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
+import { getDecimals } from 'src/modules/networks/asset';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -494,8 +494,8 @@ function TransactionDefaultView({
                     paymasterPossible={paymasterPossible}
                     paymasterWaiting={paymasterWaiting}
                     gasback={
-                      interpretation?.action?.gasback != null
-                        ? { value: interpretation.action.gasback }
+                      interpretation?.data.action?.gasback != null
+                        ? { value: interpretation.data.action.gasback }
                         : null
                     }
                     listViewTransitions={true}
@@ -675,16 +675,15 @@ function SendTransactionContent({
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,
         origin,
-        client,
       });
     },
   });
 
   const interpretationHasCriticalWarning = hasCriticalWarning(
-    interpretQuery.data?.warnings
+    interpretQuery.data?.data.warnings
   );
 
-  const interpretAddressAction = interpretQuery.data?.action;
+  const interpretAddressAction = interpretQuery.data?.data.action;
 
   const addressAction = interpretAddressAction || localAddressAction || null;
 
@@ -746,20 +745,22 @@ function SendTransactionContent({
     throw new Error('Unexpected missing localAddressAction');
   }
 
-  const approvalFungibleId = interpretQuery.data?.action
-    ? getActionApprovalFungibleId(interpretQuery.data.action)
+  const maybeApproval = interpretQuery.data?.data.action
+    ? getActionApproval(interpretQuery.data.data.action)
+    : null;
+  const maybeLocalApproval = localAddressAction
+    ? getActionApproval(localAddressAction)
     : null;
 
-  const fungibleDecimals = useFungibleDecimals({
-    fungibleId: approvalFungibleId,
-    chain,
-  });
+  const fungibleDecimals = maybeApproval?.fungible
+    ? getDecimals({
+        asset: maybeApproval.fungible,
+        chain,
+      })
+    : null;
 
   const requestedAllowanceQuantityCommon =
-    interpretQuery.data?.action?.acts?.at(0)?.content?.approvals?.at(0)?.amount
-      ?.quantity ||
-    localAddressAction?.acts?.at(0)?.content?.approvals?.at(0)?.amount
-      ?.quantity;
+    maybeApproval?.amount?.quantity ?? maybeLocalApproval?.amount?.quantity;
 
   const requestedAllowanceQuantityBase =
     requestedAllowanceQuantityCommon && fungibleDecimals
@@ -850,10 +851,12 @@ function SendTransactionContent({
             );
           }}
         />
-        {view === View.customAllowance && network ? (
+        {view === View.customAllowance &&
+        network &&
+        requestedAllowanceQuantityBase ? (
           <AllowanceView
             address={wallet.address}
-            assetId={approvalFungibleId}
+            assetId={maybeApproval?.fungible?.id}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             value={allowanceQuantityBase}
             network={network}
@@ -1253,12 +1256,11 @@ function SolSendTransaction() {
         eligibilityQueryStatus: 'success',
         currency,
         origin,
-        client,
       });
     },
   });
 
-  const addressAction = interpretQuery.data?.action || localAddressAction;
+  const addressAction = interpretQuery.data?.data.action || localAddressAction;
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {

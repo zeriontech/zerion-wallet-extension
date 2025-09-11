@@ -7,7 +7,6 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { animated, useSpring } from '@react-spring/web';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
-  FungibleOutline,
   NFTPreview,
   ActionDirection,
   Amount,
@@ -18,6 +17,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { AssetAnchor } from '../../AssetLink';
 import { NFTAnchor } from '../../NFTLink/NFTLink';
 
@@ -30,7 +30,7 @@ function AssetContent({
   unlimited,
   address,
 }: {
-  fungible: FungibleOutline | null;
+  fungible: Fungible | null;
   nft: NFTPreview | null;
   collection: Collection | null;
   direction: ActionDirection | null;

@@ -3,6 +3,7 @@ import { invariant } from 'src/shared/invariant';
 import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
+import type { Fungible } from '../types/Fungible';
 
 export type NFTPreview = {
   /**
@@ -36,16 +37,6 @@ export type NFTPreview = {
       imagePreviewUrl: string | null;
     } | null;
   } | null;
-};
-
-export type FungibleOutline = {
-  id: string;
-  /** @example Ethereum */
-  name: string;
-  /** @example ETH */
-  symbol: string;
-  /** @example https://token-icons.s3.amazonaws.com/eth.png */
-  iconUrl: string | null;
 };
 
 export type Collection = {
@@ -172,7 +163,7 @@ type Fee = {
   free: boolean;
   /** @description Fee amount (can be expected fee or max fee) */
   amount: Amount;
-  fungible: null | FungibleOutline;
+  fungible: null | Fungible;
 };
 
 export type ActionFee = Fee;
@@ -182,7 +173,7 @@ export type ActionDirection = 'in' | 'out';
 export type Transfer = {
   direction: ActionDirection;
   amount: null | Amount;
-  fungible: null | FungibleOutline;
+  fungible: null | Fungible;
   nft: null | NFTPreview;
 };
 
@@ -191,7 +182,7 @@ export type Approval = {
   unlimited: boolean;
   /** @description Approval amount, null if unlimited or collection/erc721 approval */
   amount: null | Amount;
-  fungible: null | FungibleOutline;
+  fungible: null | Fungible;
   nft: null | NFTPreview;
   collection: null | Collection;
 };
@@ -269,7 +260,7 @@ type Action = {
   refund: null | {
     /** @description Refund amount */
     amount: Amount;
-    fungible: null | FungibleOutline;
+    fungible: null | Fungible;
   };
   /** @description Gasback amount if applicable (when network fee is not free) */
   gasback: null | number;
