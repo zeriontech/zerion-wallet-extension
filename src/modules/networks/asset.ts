@@ -13,9 +13,17 @@ export function getAssetImplementationInChain({
   return asset?.implementations?.[String(chain)];
 }
 
-export function getDecimals({ asset, chain }: { asset: Asset; chain: Chain }) {
+export function getDecimals({
+  asset,
+  chain,
+}: {
+  asset: Pick<Asset, 'implementations'> & { decimals?: number };
+  chain: Chain;
+}) {
   return (
-    getAssetImplementationInChain({ asset, chain })?.decimals || asset.decimals
+    getAssetImplementationInChain({ asset, chain })?.decimals ||
+    asset.decimals ||
+    18
   );
 }
 

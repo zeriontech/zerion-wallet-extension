@@ -6,7 +6,6 @@ import type {
   ActionDirection,
   Amount,
   Collection,
-  FungibleOutline,
   NFTPreview,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { invariant } from 'src/shared/invariant';
@@ -25,6 +24,7 @@ import { minus } from 'src/ui/shared/typography';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { NFTLink } from 'src/ui/components/NFTLink';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { RateLine } from './RateLine';
 import { LabelLine } from './LabelLine';
 import { FeeLine } from './FeeLine';
@@ -47,7 +47,7 @@ function AssetContent({
   amount,
   unlimited,
 }: {
-  fungible: FungibleOutline | null;
+  fungible: Fungible | null;
   nft: NFTPreview | null;
   collection: Collection | null;
   direction: ActionDirection | null;

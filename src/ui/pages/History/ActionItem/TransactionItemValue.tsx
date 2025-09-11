@@ -11,10 +11,10 @@ import type {
   ActionType,
   Amount,
   Approval,
-  FungibleOutline,
   NFTPreview,
   Transfer,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 function getSign(
   decimaledValue?: number | BigNumber | string,
@@ -35,7 +35,7 @@ export function HistoryTokenValue({
 }: {
   actionType: ActionType;
   amount: Amount | null;
-  fungible: FungibleOutline;
+  fungible: Fungible;
   direction: ActionDirection | null;
   withLink: boolean;
 }) {

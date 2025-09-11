@@ -5,13 +5,13 @@ import type {
   AddressAction,
   ActionChain,
   Amount,
-  FungibleOutline,
   NFTPreview,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { invariant } from 'src/shared/invariant';
 import type { Asset, NFT } from 'defi-sdk';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Quote2 } from 'src/shared/types/Quote';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import type {
   IncomingTransaction,
   IncomingTransactionWithFrom,
@@ -77,9 +77,7 @@ const toActionTx = (
     value: tx.value ?? undefined,
   } as const);
 
-export function convertAssetToFungibleOutline(
-  asset: Asset | null
-): FungibleOutline | null {
+export function convertAssetToFungible(asset: Asset | null): Fungible | null {
   if (!asset) {
     return null;
   }
@@ -88,6 +86,20 @@ export function convertAssetToFungibleOutline(
     name: asset.name,
     symbol: asset.symbol,
     iconUrl: asset.icon_url || null,
+    implementations: asset.implementations || {},
+    new: false,
+    verified: asset.is_verified,
+    meta: {
+      circulatingSupply: null,
+      totalSupply: null,
+      price: asset.price?.value || null,
+      marketCap: null,
+      fullyDilutedValuation: null,
+      relativeChange1d: asset.price?.relative_change_24h || null,
+      relativeChange30d: null,
+      relativeChange90d: null,
+      relativeChange365d: null,
+    },
   };
 }
 
@@ -150,7 +162,7 @@ export function createSendTokenAddressAction({
       {
         direction: 'out' as const,
         amount: sendAmount,
-        fungible: convertAssetToFungibleOutline(sendAsset),
+        fungible: convertAssetToFungible(sendAsset),
         nft: null,
       },
     ],
@@ -321,13 +333,13 @@ export function createTradeAddressAction({
       {
         direction: 'out' as const,
         amount: spendAmount,
-        fungible: convertAssetToFungibleOutline(spendAsset),
+        fungible: convertAssetToFungible(spendAsset),
         nft: null,
       },
       {
         direction: 'in' as const,
         amount: receiveAmount,
-        fungible: convertAssetToFungibleOutline(receiveAsset),
+        fungible: convertAssetToFungible(receiveAsset),
         nft: null,
       },
     ],
@@ -405,13 +417,13 @@ export function createBridgeAddressAction({
       {
         direction: 'out' as const,
         amount: spendAmount,
-        fungible: convertAssetToFungibleOutline(spendAsset),
+        fungible: convertAssetToFungible(spendAsset),
         nft: null,
       },
       {
         direction: 'in' as const,
         amount: receiveAmount,
-        fungible: convertAssetToFungibleOutline(receiveAsset),
+        fungible: convertAssetToFungible(receiveAsset),
         nft: null,
       },
     ],
@@ -455,7 +467,7 @@ export function createBridgeAddressAction({
                 {
                   direction: 'out',
                   amount: receiveAmount,
-                  fungible: convertAssetToFungibleOutline(receiveAsset),
+                  fungible: convertAssetToFungible(receiveAsset),
                   nft: null,
                 },
               ],
@@ -483,7 +495,7 @@ export function createBridgeAddressAction({
                 {
                   direction: 'in',
                   amount: receiveAmount,
-                  fungible: convertAssetToFungibleOutline(receiveAsset),
+                  fungible: convertAssetToFungible(receiveAsset),
                   nft: null,
                 },
               ],
@@ -542,7 +554,7 @@ export function createApproveAddressAction({
     approvals: [
       {
         amount,
-        fungible: convertAssetToFungibleOutline(asset),
+        fungible: convertAssetToFungible(asset),
         nft: null,
         collection: null,
         unlimited: false,
@@ -649,12 +661,12 @@ export function createCancelAddressAction(
   };
 }
 
-export function getActionApprovalFungibleId(action: AnyAddressAction) {
+export function getActionApproval(action: AnyAddressAction) {
   return (
     (action?.acts?.length === 1 &&
     action.acts[0].content?.approvals?.length === 1 &&
     !action.acts[0].content.transfers
-      ? action.acts[0].content.approvals[0].fungible?.id
+      ? action.acts[0].content.approvals[0]
       : null) || null
   );
 }

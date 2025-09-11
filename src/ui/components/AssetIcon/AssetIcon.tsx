@@ -2,9 +2,9 @@ import React from 'react';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import type {
   Collection,
-  FungibleOutline,
   NFTPreview,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 export function AssetIcon({
   fungible,
@@ -13,7 +13,7 @@ export function AssetIcon({
   size,
   fallback = null,
 }: {
-  fungible: FungibleOutline | null;
+  fungible: Fungible | null;
   nft: NFTPreview | null;
   collection: Collection | null;
   size: number;

@@ -25,11 +25,11 @@ import type {
   ActionType,
   Approval,
   Collection,
-  FungibleOutline,
   NFTPreview,
   Transfer,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 export const TRANSACTION_ICON_SIZE = 36;
 export const TRANSACTION_SMALL_ICON_SIZE = 27;
@@ -138,7 +138,7 @@ export function HistoryAssetIcon({
   type,
   size,
 }: {
-  fungible: FungibleOutline | null;
+  fungible: Fungible | null;
   nft: NFTPreview | null;
   collection: Collection | null;
   type: ActionType;

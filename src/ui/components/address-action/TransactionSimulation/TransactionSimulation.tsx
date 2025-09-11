@@ -29,9 +29,9 @@ import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import { getActionApprovalFungibleId } from 'src/modules/ethereum/transactions/addressAction';
-import { useFungibleDecimals } from 'src/ui/shared/useFungibleDecimals';
+import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
 import { baseToCommon } from 'src/shared/units/convert';
+import { getDecimals } from 'src/modules/networks/asset';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -117,30 +117,21 @@ export function TransactionSimulation({
 
   const interpretation = txInterpretQuery.data;
 
-  const interpretAddressAction = interpretation?.action;
+  const interpretAddressAction = interpretation?.data.action;
   const addressAction =
     interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
 
-  const requestedAllowanceQuantityCommon = addressAction?.acts
-    ?.at(0)
-    ?.content?.approvals?.at(0)?.amount?.quantity;
-
-  const approvalFungibleId = addressAction
-    ? getActionApprovalFungibleId(addressAction)
-    : null;
+  const maybeApproval = addressAction ? getActionApproval(addressAction) : null;
+  const requestedAllowanceQuantityCommon = maybeApproval?.amount?.quantity;
 
   const chain = transaction.evm ? evmChain : solanaChain;
 
-  const fungibleDecimals = useFungibleDecimals({
-    fungibleId: approvalFungibleId,
-    chain: chain || null,
-  });
-
-  // TODO: what if network doesn't support simulations (txInterpretQuery is idle or isError),
-  // but this is an approval tx? Can there be a bug?
   const allowanceQuantityCommon =
-    fungibleDecimals && customAllowanceValueBase
-      ? baseToCommon(customAllowanceValueBase, fungibleDecimals).toFixed()
+    chain && maybeApproval?.fungible && customAllowanceValueBase
+      ? baseToCommon(
+          customAllowanceValueBase,
+          getDecimals({ asset: maybeApproval.fungible, chain })
+        ).toFixed()
       : requestedAllowanceQuantityCommon;
 
   if (!addressAction || !networks) {

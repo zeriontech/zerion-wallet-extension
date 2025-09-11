@@ -2,11 +2,11 @@ import { isTruthy } from 'is-truthy-ts';
 import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type {
   Collection,
-  FungibleOutline,
   NFTPreview,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
-function fungibleMatches(query: string, fungible: FungibleOutline | null) {
+function fungibleMatches(query: string, fungible: Fungible | null) {
   if (!fungible) {
     return false;
   }

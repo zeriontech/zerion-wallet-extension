@@ -1,6 +1,6 @@
 import type { Asset } from 'defi-sdk';
 import React from 'react';
-import type { FungibleOutline } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { usePreferences } from 'src/ui/features/preferences';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
@@ -45,7 +45,7 @@ export function AssetLink({
   fungible,
   title,
 }: {
-  fungible: FungibleOutline;
+  fungible: Fungible;
   title?: string;
 }) {
   const { preferences } = usePreferences();

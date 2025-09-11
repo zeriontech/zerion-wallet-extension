@@ -21,28 +21,6 @@ function parseLamports(ix: TransactionInstruction): number {
   return Number(ix.data.readBigUInt64LE(4));
 }
 
-export const SOL_ASSET = {
-  fungible: {
-    id: 'sol',
-    asset_code: '11111111111111111111111111111111',
-    name: 'Solana',
-    symbol: 'SOL',
-    decimals: 9,
-    type: '',
-    icon_url:
-      'https://token-icons.s3.amazonaws.com/11111111111111111111111111111111.png',
-    price: null,
-    is_displayable: true,
-    is_verified: true,
-    implementations: {
-      solana: {
-        address: '11111111111111111111111111111111',
-        decimals: 9,
-      },
-    },
-  },
-};
-
 export const SOL_ASSET_FUNGIBLE: Fungible = {
   id: '11111111111111111111111111111111',
   name: 'Solana',
@@ -108,16 +86,11 @@ export function parseSolanaTransaction(
             usdValue: null,
             quantity: baseToCommon(
               lamports,
-              SOL_ASSET.fungible.implementations.solana.decimals
+              SOL_ASSET_FUNGIBLE.implementations.solana.decimals
             ).toFixed(),
           },
           direction: 'out' as const,
-          fungible: {
-            id: SOL_ASSET.fungible.id,
-            name: SOL_ASSET.fungible.name,
-            symbol: SOL_ASSET.fungible.symbol,
-            iconUrl: SOL_ASSET.fungible.icon_url,
-          },
+          fungible: SOL_ASSET_FUNGIBLE,
           nft: null,
         },
       ],

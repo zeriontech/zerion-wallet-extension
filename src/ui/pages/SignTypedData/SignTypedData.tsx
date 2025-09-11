@@ -23,10 +23,9 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
-import { interpretSignature } from 'src/modules/ethereum/transactions/interpret';
+import { interpretSignature } from 'src/ui/shared/requests/interpret';
 import { Content, RenderArea } from 'react-area';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { PageTop } from 'src/ui/components/PageTop';
 import { AllowanceView } from 'src/ui/components/AllowanceView';
 import { produce } from 'immer';
@@ -64,9 +63,10 @@ import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { getActionApprovalFungibleId } from 'src/modules/ethereum/transactions/addressAction';
-import { useFungibleDecimals } from 'src/ui/shared/useFungibleDecimals';
+import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
 import { baseToCommon } from 'src/shared/units/convert';
+import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
+import { getDecimals } from 'src/modules/networks/asset';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
@@ -117,7 +117,7 @@ function TypedDataDefaultView({
     isError: boolean;
     isFetched: boolean;
   };
-  interpretation?: InterpretResponse | null;
+  interpretation?: SignatureInterpretResponse | null;
   allowanceQuantityCommon: string | null;
   allowanceQuantityBase: string | null;
   onSignSuccess: (signature: string) => void;
@@ -129,7 +129,7 @@ function TypedDataDefaultView({
   const [params] = useSearchParams();
   const { preferences } = usePreferences();
 
-  const addressAction = interpretation?.action;
+  const addressAction = interpretation?.data.action;
 
   const title =
     addressAction?.type.displayValue ||
@@ -183,7 +183,7 @@ function TypedDataDefaultView({
   );
 
   const interpretationHasCriticalWarning = hasCriticalWarning(
-    interpretation?.warnings
+    interpretation?.data.warnings
   );
 
   const showRawTypedData = !addressAction;
@@ -516,24 +516,31 @@ function SignTypedDataContent({
   const chainId = chain && networks ? networks.getChainId(chain) : null;
   const network = chain && networks ? networks.getByNetworkId(chain) : null;
 
+  const { preferences } = usePreferences();
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
+
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: [
       'interpretSignature',
       wallet.address,
-      chainId,
+      chain,
       typedData,
       currency,
       origin,
+      source,
     ],
     queryFn: () =>
-      chainId
-        ? interpretSignature({
-            address: wallet.address,
-            chainId,
-            typedData,
-            currency,
-            origin,
-          })
+      chain
+        ? interpretSignature(
+            {
+              address: wallet.address,
+              chain: chain.toString(),
+              typedData,
+              currency,
+              origin,
+            },
+            { source }
+          )
         : null,
     enabled: Boolean(chainId && network?.supports_simulations),
     suspense: false,
@@ -547,21 +554,17 @@ function SignTypedDataContent({
     windowPort.confirm(windowId, signature);
   const handleReject = () => windowPort.reject(windowId);
 
-  const approvalFungibleId = interpretation?.action
-    ? getActionApprovalFungibleId(interpretation.action)
+  const maybeApproval = interpretation?.data.action
+    ? getActionApproval(interpretation.data.action)
     : null;
 
-  const fungibleDecimals = useFungibleDecimals({
-    chain: chain || null,
-    fungibleId: approvalFungibleId,
-  });
-
-  const allowanceQuantityCommon = fungibleDecimals
-    ? baseToCommon(
-        allowanceQuantityBase || requestedAllowanceQuantityBase,
-        fungibleDecimals
-      ).toFixed()
-    : null;
+  const allowanceQuantityCommon =
+    maybeApproval?.fungible && chain
+      ? baseToCommon(
+          allowanceQuantityBase || requestedAllowanceQuantityBase,
+          getDecimals({ asset: maybeApproval.fungible, chain })
+        ).toFixed()
+      : null;
 
   if (!network) {
     return null;
@@ -602,8 +605,8 @@ function SignTypedDataContent({
                 title={<UIText kind="body/accent">Details</UIText>}
                 closeKind="icon"
               />
-              {interpretation?.input ? (
-                <TypedDataAdvancedView data={interpretation.input} />
+              {interpretation?.data.inputs ? (
+                <TypedDataAdvancedView inputs={interpretation.data.inputs} />
               ) : null}
             </>
           )}
@@ -611,7 +614,7 @@ function SignTypedDataContent({
         {view === View.customAllowance ? (
           <AllowanceView
             address={wallet.address}
-            assetId={approvalFungibleId}
+            assetId={maybeApproval?.fungible?.id}
             value={allowanceQuantityBase}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             network={network}
