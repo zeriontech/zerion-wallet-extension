@@ -452,6 +452,7 @@ function trackAppEvents({ account }: { account: Account }) {
       input_chain: quoteErrorContext.inputChain,
       output_chain: quoteErrorContext.outputChain,
       contract_type: quoteErrorContext.contractType || null,
+      slippage: quoteErrorContext.slippage,
 
       asset_market_cap_sent: inputAsset.meta.marketCap,
       asset_market_cap_received: outputAsset.meta.marketCap,

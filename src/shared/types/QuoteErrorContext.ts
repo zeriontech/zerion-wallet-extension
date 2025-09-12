@@ -14,4 +14,5 @@ export type QuoteErrorContext = {
   outputChain: string | null;
   contractType: string | null;
   pathname: string;
+  slippage: number | null;
 };

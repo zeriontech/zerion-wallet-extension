@@ -485,6 +485,11 @@ function SwapFormComponent() {
       outputChain: null,
       contractType: quote.contractMetadata?.name || null,
       pathname,
+      slippage: getSlippageOptions({
+        chain: createChain(inputChain),
+        userSlippage:
+          formState.slippage != null ? Number(formState.slippage) : null,
+      }).slippagePercent,
     });
   });
 

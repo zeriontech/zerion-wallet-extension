@@ -662,6 +662,10 @@ function BridgeFormComponent() {
       outputChain,
       contractType: quote.contractMetadata?.name || null,
       pathname,
+      slippage: getSlippageOptions({
+        chain: createChain(inputChain),
+        userSlippage: null,
+      }).slippagePercent,
     });
   });
 

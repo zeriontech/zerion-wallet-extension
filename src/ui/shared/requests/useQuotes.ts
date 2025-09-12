@@ -163,6 +163,9 @@ export function useQuotes2({
         outputChain: requestParams.outputChain || null,
         contractType: null,
         pathname,
+        slippage: requestParams.slippage
+          ? Number(requestParams.slippage)
+          : null,
       });
     },
     [context, pathname]
