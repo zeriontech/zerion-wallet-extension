@@ -393,19 +393,30 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('quoteError', async (quoteErrorContext, source) => {
-    const inputAssetData = quoteErrorContext.inputFungibleId
-      ? await queryFungibleInfo({
-          fungibleId: quoteErrorContext.inputFungibleId,
-          currency: 'usd',
-        })
-      : null;
+    const [inputTokenPositions, inputAssetData, outputAssetData] =
+      await Promise.all([
+        queryWalletPositions(
+          {
+            addresses: [quoteErrorContext.address],
+            currency: 'usd',
+            assetIds: [quoteErrorContext.inputFungibleId],
+          },
+          source
+        ),
+        quoteErrorContext.inputFungibleId
+          ? queryFungibleInfo({
+              fungibleId: quoteErrorContext.inputFungibleId,
+              currency: 'usd',
+            })
+          : null,
+        quoteErrorContext.outputFungibleId
+          ? queryFungibleInfo({
+              fungibleId: quoteErrorContext.outputFungibleId,
+              currency: 'usd',
+            })
+          : null,
+      ]);
     const inputAsset = inputAssetData?.data?.fungible;
-    const outputAssetData = quoteErrorContext.outputFungibleId
-      ? await queryFungibleInfo({
-          fungibleId: quoteErrorContext.outputFungibleId,
-          currency: 'usd',
-        })
-      : null;
     const outputAsset = outputAssetData?.data?.fungible;
     invariant(
       inputAsset,
@@ -414,15 +425,6 @@ function trackAppEvents({ account }: { account: Account }) {
     invariant(
       outputAsset,
       'Unable to fetch output asset data for quoteError event'
-    );
-
-    const inputTokenPositions = await queryWalletPositions(
-      {
-        addresses: [quoteErrorContext.address],
-        currency: 'usd',
-        assetIds: [quoteErrorContext.inputFungibleId],
-      },
-      source
     );
     const inputPosition = inputTokenPositions.data
       .filter(
@@ -471,7 +473,7 @@ function trackAppEvents({ account }: { account: Account }) {
           ? toMaybeArr([Number(quoteErrorContext.outputAmount)])
           : null,
       wallet_token_balance: inputPosition
-        ? getPositionBalance(inputPosition)
+        ? getPositionBalance(inputPosition).toFixed()
         : null,
     });
     sendToMetabase('client_error', params);
