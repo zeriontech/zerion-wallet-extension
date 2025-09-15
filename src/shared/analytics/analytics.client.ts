@@ -2,6 +2,7 @@ import { emitter } from 'src/ui/shared/events';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { readCachedCurrentAddress } from 'src/ui/shared/user-address/useAddressParams';
 import { walletPort } from 'src/ui/shared/channels';
+import { fetchGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { HandshakeFailed } from '../errors/errors';
 import { rejectAfterDelay } from '../rejectAfterDelay';
 import { createParams, sendToMetabase } from './analytics';
@@ -36,6 +37,10 @@ function trackAppEvents({
     return { wallet_address: address?.toLowerCase(), wallet_provider } as const;
   }
   emitter.on('signingError', async (signatureType, message) => {
+    const preferences = await fetchGlobalPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'client_error',
       type: signatureType,
@@ -46,6 +51,10 @@ function trackAppEvents({
   });
 
   emitter.on('error', async (error) => {
+    const preferences = await fetchGlobalPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     if (error instanceof HandshakeFailed) {
       const params = createParams({
         request_name: 'client_error',
@@ -67,6 +76,10 @@ function trackAppEvents({
   });
 
   emitter.on('networksSearchResponse', async (query, resultsCount) => {
+    const preferences = await fetchGlobalPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'network_search',
       query,
@@ -85,6 +98,10 @@ function trackAppEvents({
   });
 
   emitter.on('errorScreenView', async (data) => {
+    const preferences = await fetchGlobalPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'client_error',
       type: 'global error',
@@ -96,6 +113,10 @@ function trackAppEvents({
   });
 
   emitter.on('loaderScreenView', async (data) => {
+    const preferences = await fetchGlobalPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const params = createParams({
       request_name: 'client_error',
       type: 'global error',

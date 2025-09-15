@@ -1,0 +1,1 @@
+export { ShareData } from './ShareData';

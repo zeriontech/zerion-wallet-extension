@@ -250,6 +250,14 @@ function SettingsMain() {
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
+            <FrameListItemLink to="/settings/privacy">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <LockIcon />
+                  <UIText kind="body/regular">Privacy</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
             <FrameListItemLink to="/settings/appearance">
               <AngleRightRow>
                 <HStack gap={8} alignItems="center">
@@ -501,6 +509,47 @@ function DeveloperTools() {
   );
 }
 
+function Privacy() {
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
+  useBackgroundKind({ kind: 'white' });
+
+  return (
+    <PageColumn>
+      <NavigationTitle title="Privacy" />
+      <PageTop />
+      <Frame>
+        <ToggleSettingLine
+          text="Share App Usage Analytics"
+          checked={Boolean(globalPreferences?.analyticsEnabled)}
+          onChange={(event) => {
+            setGlobalPreferences({
+              analyticsEnabled: event.target.checked,
+            });
+          }}
+          detailText={
+            <span>
+              Help us improve our app experience by sharing anonymous statistics
+              about how you use Zerion. We will not associate any of this to you
+              and your personal data will not be sent to us. Read more in our{' '}
+              <UnstyledAnchor
+                href="https://s3.amazonaws.com/cdn.zerion.io/assets/privacy.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+                style={{ color: 'var(--primary)' }}
+              >
+                Privacy Policy
+              </UnstyledAnchor>
+              .
+            </span>
+          }
+        />
+      </Frame>
+      <PageBottom />
+    </PageColumn>
+  );
+}
+
 function Experiments() {
   const { preferences, setPreferences } = usePreferences();
   useBackgroundKind({ kind: 'white' });
@@ -562,6 +611,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <Security />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/privacy/*"
+        element={
+          <ViewSuspense>
+            <Privacy />
           </ViewSuspense>
         }
       />

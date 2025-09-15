@@ -1,4 +1,5 @@
 import { emitter } from 'src/background/events';
+import { globalPreferences } from 'src/background/Wallet/GlobalPreferences';
 import { PersistentStore } from 'src/modules/persistent-store';
 
 interface State {
@@ -23,6 +24,10 @@ class UserLifecycleStore extends PersistentStore<State> {
     super(initialState, key);
 
     emitter.on('screenView', async () => {
+      const preferences = await globalPreferences.getPreferences();
+      if (!preferences.analyticsEnabled) {
+        return;
+      }
       await this.ready();
       this.setState((state) => {
         if (state.installedEvent == null) {

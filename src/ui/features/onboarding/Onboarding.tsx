@@ -9,6 +9,7 @@ import { Hardware } from './Hardware';
 import { SessionExpired } from './shared/SessionExpired';
 import { PageLayout } from './shared/PageLayout';
 import { Backup } from './Backup';
+import { ShareData } from './ShareData';
 
 export function Onboarding() {
   const navigate = useNavigate();
@@ -26,6 +27,14 @@ export function Onboarding() {
     <Routes>
       <Route
         path="/onboarding"
+        element={
+          <PageLayout>
+            <ShareData />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/onboarding/welcome"
         element={
           <PageLayout>
             <Welcome />
