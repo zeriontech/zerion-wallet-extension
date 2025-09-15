@@ -393,6 +393,10 @@ function trackAppEvents({ account }: { account: Account }) {
   });
 
   emitter.on('quoteError', async (quoteErrorContext, source) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
     const [inputTokenPositions, inputAssetData, outputAssetData] =
       await Promise.all([
         queryWalletPositions(
