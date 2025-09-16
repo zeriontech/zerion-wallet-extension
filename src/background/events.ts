@@ -14,6 +14,8 @@ import type {
 } from 'src/shared/types/button-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -59,6 +61,7 @@ export const emitter = createNanoEvents<{
     errorMessage: string,
     context: { mode: 'default' | 'testnet' } & TransactionContextParams
   ) => void;
+  quoteError: (context: QuoteErrorContext, source: NetworksSource) => void;
   typedDataSigned: (
     data: { typedData: TypedData; address: string } & MessageContextParams
   ) => void;

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Store } from 'store-unit';
 import { EventSource, type ErrorEvent } from 'eventsource'; // supports passing custom headers
 import { getError } from 'get-error';
+import { invariant } from 'src/shared/invariant';
 
 interface EventSourceState<T> {
   value: null | T;
@@ -17,6 +18,12 @@ interface Options<T> {
   mapResponse?: (response: unknown) => T;
   mergeResponse?(currentValue: T | null, nextValue: T | null): T | null;
   headers?: HeadersInit;
+  eventCodeToMessage?: Record<number, string>;
+  onError?: (params: {
+    parsedError: Error;
+    rawEvent: ErrorEvent;
+    requestUrl: URL;
+  }) => void;
 }
 
 function createEventSource(url: string | URL, headers?: HeadersInit) {
@@ -34,16 +41,20 @@ function createEventSource(url: string | URL, headers?: HeadersInit) {
   );
 }
 
-function eventToMessage(event: ErrorEvent) {
-  return event.code === 500
-    ? 'Internal Server Error'
-    : event.code === 503
-    ? 'Service Unavailable'
-    : event.code === 404
-    ? 'No liquidity for this trade'
-    : event.code === 400
-    ? 'Incorrect trade parameters'
-    : event.message || 'Server Error';
+const DEFAULT_EVENT_CODE_TO_MESSAGE = {
+  500: 'Internal Server Error',
+  503: 'Service Unavailable',
+};
+
+function eventToMessage(
+  event: ErrorEvent,
+  eventCodeToMessage: Record<number, string> = DEFAULT_EVENT_CODE_TO_MESSAGE
+) {
+  return (
+    (event.code != null && eventCodeToMessage[event.code]) ||
+    event.message ||
+    'Server Error'
+  );
 }
 
 export class EventSourceStore<T> extends Store<EventSourceState<T>> {
@@ -116,25 +127,43 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
   };
 
   handleError = (event: ErrorEvent) => {
+    const error = new Error(
+      eventToMessage(event, this.options.eventCodeToMessage)
+    );
     this.setState((state) => ({
       ...state,
-      error: new Error(eventToMessage(event)),
+      error,
       isLoading: false,
       isError: true,
     }));
     this.unlistenAndClose();
+    invariant(this.url, 'URL must be set in order to call onError');
+    this.options.onError?.({
+      parsedError: error,
+      rawEvent: event,
+      requestUrl: new URL(this.url),
+    });
   };
 
   handleException = (event: ErrorEvent | MessageEvent) => {
+    const error = new Error(
+      'data' in event && event.data
+        ? event.data
+        : eventToMessage(event, this.options.eventCodeToMessage)
+    );
     this.setState((state) => ({
       ...state,
-      error: new Error(
-        'data' in event && event.data ? event.data : eventToMessage(event)
-      ),
+      error,
       isLoading: false,
       isError: true,
     }));
     this.unlistenAndClose();
+    invariant(this.url, 'URL must be set in order to call onError');
+    this.options.onError?.({
+      parsedError: error,
+      rawEvent: event,
+      requestUrl: new URL(this.url),
+    });
   };
 
   handleEnd = () => {

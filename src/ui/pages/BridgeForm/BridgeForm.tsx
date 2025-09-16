@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -600,6 +600,8 @@ function BridgeFormComponent() {
           isMatchForEcosystem(to, Networks.getEcosystem(outputNetwork))
   );
 
+  const { pathname } = useLocation();
+
   const quotesData = useQuotes2({
     address: singleAddressNormalized,
     currency,
@@ -609,6 +611,8 @@ function BridgeFormComponent() {
       !defaultStateQuery.isPreviousData &&
       inputChainAddressMatch &&
       outputChainAddressMatch,
+    context: 'Bridge',
+    pathname,
   });
 
   const { refetch: refetchQuotes } = quotesData;
@@ -632,6 +636,45 @@ function BridgeFormComponent() {
     const defaultQuote = quotesData.quotes?.[0];
     return userQuote || defaultQuote || null;
   }, [userQuoteId, quotesData.quotes]);
+
+  const handleQuoteErrorEvent = useEvent((message: string, quote: Quote2) => {
+    if (
+      !inputFungibleId ||
+      !outputFungibleId ||
+      !inputAmount ||
+      !inputChain ||
+      !outputChain
+    ) {
+      return;
+    }
+    walletPort.request('quoteError', {
+      message,
+      backendMessage: message,
+      context: 'Bridge',
+      actionType: 'Send',
+      type: 'Bridge form error',
+      address,
+      inputFungibleId,
+      outputFungibleId,
+      inputAmount,
+      inputChain,
+      outputAmount: quote.outputAmount.quantity || null,
+      outputChain,
+      contractType: quote.contractMetadata?.name || null,
+      pathname,
+      slippage: getSlippageOptions({
+        chain: createChain(inputChain),
+        userSlippage: null,
+      }).slippagePercent,
+    });
+  });
+
+  useEffect(() => {
+    const errorMessage = selectedQuote?.error?.message;
+    if (errorMessage && quotesData.done) {
+      handleQuoteErrorEvent(errorMessage, selectedQuote);
+    }
+  }, [selectedQuote, quotesData.done, handleQuoteErrorEvent]);
 
   const outputAmount = selectedQuote?.outputAmount.quantity || null;
 

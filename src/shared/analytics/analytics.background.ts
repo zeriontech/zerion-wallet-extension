@@ -17,7 +17,13 @@ import { statsigTrack } from 'src/modules/statsig/shared';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
-import type { Params } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import type { Params as FungibleFullInfoParams } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
+import {
+  toAddressPositions,
+  type Params as WalletGetPositionsParams,
+} from 'src/modules/zerion-api/requests/wallet-get-positions';
+import { getPositionBalance } from 'src/ui/components/Positions/helpers';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { WalletOrigin } from '../WalletOrigin';
 import {
   isMnemonicContainer,
@@ -64,7 +70,7 @@ function queryWalletProvider(account: Account, address: string) {
   return getProviderNameFromGroup(group);
 }
 
-function queryFungibleInfo(payload: Params) {
+function queryFungibleInfo(payload: FungibleFullInfoParams) {
   const { currency, fungibleId } = payload;
 
   return backgroundQueryClient.fetchQuery({
@@ -72,6 +78,20 @@ function queryFungibleInfo(payload: Params) {
     queryFn: async () =>
       ZerionAPI.assetGetFungibleFullInfo({ fungibleId, currency }),
     staleTime: 20000,
+  });
+}
+
+async function queryWalletPositions(
+  payload: WalletGetPositionsParams,
+  source: NetworksSource
+) {
+  return backgroundQueryClient.fetchQuery({
+    queryKey: ['ZerionAPI.getWalletsMeta', payload, source],
+    queryFn: async () => {
+      const response = await ZerionAPI.walletGetPositions(payload, { source });
+      return toAddressPositions(response);
+    },
+    staleTime: 10000,
   });
 }
 
@@ -320,6 +340,7 @@ function trackAppEvents({ account }: { account: Account }) {
       warning_was_shown: warningWasShown,
       output_amount_color: outputAmountColor,
       transaction_success: status === 'success',
+      backend_error_message: quote?.error?.message || null,
       ...omitNullParams(addressActionAnalytics),
     });
 
@@ -371,6 +392,99 @@ function trackAppEvents({ account }: { account: Account }) {
     trackTransactionSign({ status: 'failed', errorMessage, context });
   });
 
+  emitter.on('quoteError', async (quoteErrorContext, source) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const [inputTokenPositions, inputAssetData, outputAssetData] =
+      await Promise.all([
+        queryWalletPositions(
+          {
+            addresses: [quoteErrorContext.address],
+            currency: 'usd',
+            assetIds: [quoteErrorContext.inputFungibleId],
+          },
+          source
+        ),
+        quoteErrorContext.inputFungibleId
+          ? queryFungibleInfo({
+              fungibleId: quoteErrorContext.inputFungibleId,
+              currency: 'usd',
+            })
+          : null,
+        quoteErrorContext.outputFungibleId
+          ? queryFungibleInfo({
+              fungibleId: quoteErrorContext.outputFungibleId,
+              currency: 'usd',
+            })
+          : null,
+      ]);
+    const inputAsset = inputAssetData?.data?.fungible;
+    const outputAsset = outputAssetData?.data?.fungible;
+    invariant(
+      inputAsset,
+      'Unable to fetch input asset data for quoteError event'
+    );
+    invariant(
+      outputAsset,
+      'Unable to fetch output asset data for quoteError event'
+    );
+    const inputPosition = inputTokenPositions.data
+      .filter(
+        (position) =>
+          position.type === 'asset' &&
+          position.chain === quoteErrorContext.inputChain
+      )
+      .at(0);
+
+    const params = createParams({
+      request_name: 'client_error',
+      action_type: quoteErrorContext.actionType,
+      type: quoteErrorContext.type,
+      name: quoteErrorContext.type,
+      message: quoteErrorContext.message,
+      backend_response_code: quoteErrorContext.errorCode || null,
+      backend_error_message: quoteErrorContext.backendMessage || null,
+      wallet_address: quoteErrorContext.address,
+      client_scope: quoteErrorContext.context,
+      context: quoteErrorContext.context,
+      screen_name: quoteErrorContext.pathname,
+
+      asset_address_sent: [quoteErrorContext.inputFungibleId],
+      asset_address_received: [quoteErrorContext.outputFungibleId],
+      asset_name_sent: toMaybeArr([inputAsset.name]),
+      asset_name_received: toMaybeArr([outputAsset.name]),
+      input_chain: quoteErrorContext.inputChain,
+      output_chain: quoteErrorContext.outputChain,
+      contract_type: quoteErrorContext.contractType || null,
+      slippage: quoteErrorContext.slippage,
+
+      asset_market_cap_sent: inputAsset.meta.marketCap,
+      asset_market_cap_received: outputAsset.meta.marketCap,
+      asset_fdv_sent: inputAsset.meta.fullyDilutedValuation,
+      asset_fdv_received: outputAsset.meta.fullyDilutedValuation,
+      usd_amount_sent:
+        Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
+      asset_amount_sent: toMaybeArr([Number(quoteErrorContext.inputAmount)]),
+      usd_amount_received:
+        quoteErrorContext.outputAmount != null
+          ? Number(quoteErrorContext.outputAmount) *
+            (outputAsset.meta.price || 0)
+          : null,
+      asset_amount_received:
+        quoteErrorContext.outputAmount != null
+          ? toMaybeArr([Number(quoteErrorContext.outputAmount)])
+          : null,
+      wallet_token_balance: inputPosition
+        ? getPositionBalance(inputPosition).toFixed()
+        : null,
+    });
+    sendToMetabase('client_error', params);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Client Error', mixpanelParams);
+  });
+
   emitter.on('transactionFormed', async (context) => {
     const preferences = await globalPreferences.getPreferences();
     if (!preferences.analyticsEnabled) {
@@ -402,8 +516,14 @@ function trackAppEvents({ account }: { account: Account }) {
         })
       : null;
     const outputAsset = outputAssetData?.data?.fungible;
-    invariant(inputAsset, 'Unable to fetch input asset data');
-    invariant(outputAsset, 'Unable to fetch output asset data');
+    invariant(
+      inputAsset,
+      'Unable to fetch input asset data for transactionFormed event'
+    );
+    invariant(
+      outputAsset,
+      'Unable to fetch output asset data for transactionFormed event'
+    );
 
     const params = createParams({
       request_name: 'swap_form_filled_out',

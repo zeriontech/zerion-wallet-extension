@@ -1,5 +1,6 @@
 import {
   Navigate,
+  useLocation,
   useNavigate,
   useNavigationType,
   useSearchParams,
@@ -438,6 +439,7 @@ function SwapFormComponent() {
     network && isMatchForEcosystem(address, Networks.getEcosystem(network));
   const inputChainAddressMismatch = network && !inputChainAddressMatch;
 
+  const { pathname } = useLocation();
   const quotesData = useQuotes2({
     address: singleAddressNormalized,
     currency,
@@ -446,6 +448,8 @@ function SwapFormComponent() {
       defaultStateQuery.isFetched &&
       !defaultStateQuery.isPreviousData &&
       inputChainAddressMatch,
+    context: 'Swap',
+    pathname,
   });
   const { refetch: refetchQuotes } = quotesData;
 
@@ -461,6 +465,40 @@ function SwapFormComponent() {
     const defaultQuote = quotesData.quotes?.[0];
     return userQuote || defaultQuote || null;
   }, [userQuoteId, quotesData.quotes]);
+
+  const handleQuoteErrorEvent = useEvent((message: string, quote: Quote2) => {
+    if (!inputFungibleId || !outputFungibleId || !inputAmount || !inputChain) {
+      return;
+    }
+    walletPort.request('quoteError', {
+      message,
+      backendMessage: message,
+      context: 'Swap',
+      actionType: 'Trade',
+      type: 'Trade form error',
+      address,
+      inputFungibleId,
+      outputFungibleId,
+      inputAmount,
+      inputChain,
+      outputAmount: quote.outputAmount.quantity || null,
+      outputChain: null,
+      contractType: quote.contractMetadata?.name || null,
+      pathname,
+      slippage: getSlippageOptions({
+        chain: createChain(inputChain),
+        userSlippage:
+          formState.slippage != null ? Number(formState.slippage) : null,
+      }).slippagePercent,
+    });
+  });
+
+  useEffect(() => {
+    const errorMessage = selectedQuote?.error?.message;
+    if (errorMessage && quotesData.done) {
+      handleQuoteErrorEvent(errorMessage, selectedQuote);
+    }
+  }, [selectedQuote, quotesData.done, handleQuoteErrorEvent]);
 
   const { data: gasbackEstimation } = useGasbackEstimation({
     paymasterEligible: Boolean(
