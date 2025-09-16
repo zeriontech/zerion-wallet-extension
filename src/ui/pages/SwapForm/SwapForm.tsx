@@ -600,9 +600,10 @@ function SwapFormComponent() {
   }, [resetApproveMutation, approveTxStatus, refetchQuotes]);
 
   const isApproveMode =
-    approveMutation.isLoading ||
-    selectedQuote?.transactionApprove ||
-    approveTxStatus === 'pending';
+    !quotesData.isLoading &&
+    (approveMutation.isLoading ||
+      selectedQuote?.transactionApprove ||
+      approveTxStatus === 'pending');
   const showApproveHintLine =
     Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
 
