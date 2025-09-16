@@ -8,7 +8,7 @@ export function useTransactionStatus(hash: string | null) {
   return useMemo(() => {
     if (hash) {
       const tx = transactions.find((tx) => tx.hash === hash);
-      return tx ? getTransactionObjectStatus(tx) : null;
+      return tx ? getTransactionObjectStatus(tx) : 'pending';
     } else {
       return null;
     }

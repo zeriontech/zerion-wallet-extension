@@ -594,7 +594,12 @@ function SwapFormComponent() {
     },
   });
 
-  const approveTxStatus = useTransactionStatus(approveData?.hash ?? null);
+  const approveTxStatus =
+    useTransactionStatus(approveData?.hash ?? null) ??
+    // This fallback helps to avoid the submit button blinking
+    // while we are updating the local transactions store
+    (approveData?.hash ? 'pending' : null);
+
   useEffect(() => {
     if (approveTxStatus === 'confirmed') {
       refetchQuotes();
