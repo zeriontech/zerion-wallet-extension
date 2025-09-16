@@ -544,10 +544,9 @@ function SwapFormComponent() {
   }, [resetApproveMutation, approveTxStatus, refetchQuotes]);
 
   const isApproveMode =
-    !quotesData.isLoading &&
-    (approveMutation.isLoading ||
-      selectedQuote?.transactionApprove ||
-      approveTxStatus === 'pending');
+    approveMutation.isLoading ||
+    Boolean(selectedQuote?.transactionApprove) ||
+    approveTxStatus === 'pending';
   const showApproveHintLine =
     Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
 
@@ -1131,11 +1130,17 @@ function SwapFormComponent() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    approveMutation.isLoading || approveTxStatus === 'pending'
+                    quotesData.isLoading ||
+                    approveMutation.isLoading ||
+                    approveTxStatus === 'pending'
                   }
                   holdToSign={false}
                 >
-                  Approve {inputPosition?.asset.symbol ?? null}
+                  {quotesData.isLoading
+                    ? 'Fetching offers'
+                    : approveMutation.isLoading || approveTxStatus === 'pending'
+                    ? 'Approving...'
+                    : `Approve ${inputPosition?.asset.symbol ?? null}`}
                 </SignTransactionButton>
               ) : null}
             </VStack>
