@@ -525,7 +525,7 @@ function SwapFormComponent() {
 
   const {
     mutate: sendApproveTransaction,
-    data: approveHash = null,
+    data: approveData,
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
@@ -542,6 +542,7 @@ function SwapFormComponent() {
       invariant(formState.inputAmount, 'inputAmount must be set');
 
       const evmTx = selectedQuote.transactionApprove.evm;
+      const quoteId = selectedQuote.contractMetadata?.id || null;
       const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
       const approvalTx =
         allowanceBase && !isPaymasterTx
@@ -586,11 +587,14 @@ function SwapFormComponent() {
         addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
-      return txResponse.evm.hash;
+      return { hash: txResponse.evm.hash, quoteId };
+    },
+    onSuccess: ({ quoteId }) => {
+      setUserQuoteId(quoteId);
     },
   });
 
-  const approveTxStatus = useTransactionStatus(approveHash);
+  const approveTxStatus = useTransactionStatus(approveData?.hash ?? null);
   useEffect(() => {
     if (approveTxStatus === 'confirmed') {
       refetchQuotes();
