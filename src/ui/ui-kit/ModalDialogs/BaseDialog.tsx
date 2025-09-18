@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { invariant } from 'src/shared/invariant';
 import { UIContext, defaultUIContextValue } from 'src/ui/components/UIContext';
+import * as styles from './styles.module.css';
 
 export interface BaseDialogProps
   extends React.DialogHTMLAttributes<HTMLDialogElement> {
@@ -127,6 +128,7 @@ export const BaseDialog = React.forwardRef(
               node ? { uiScrollRootElement: node } : defaultUIContextValue
             );
           }, [])}
+          className={styles.hiddenScrollbar}
           style={{
             height: '100%',
             overflow: 'auto',
