@@ -15,6 +15,8 @@ export class OverviewPage extends ExtensionPage {
           - img
         - link "Rewards":
           - img
+        - link "Search":
+          - img
         - link "Settings":
           - img
         - button "Open Sidepanel":
@@ -45,10 +47,11 @@ export class OverviewPage extends ExtensionPage {
         - link "NFTs"
         - link "History"
         - link "Perks"
-        - img "Empty Wallet Cover"
-        - text: Fund your wallet Buy or transfer crypto to get started
-        - link "Buy Crypto with Card"
-        - link "Receive from Another Wallet"
+        - button "All Networks":
+          - img
+        - text: Get Started By adding crypto to your wallet
+        - button "Fund":
+          - img
     `);
   }
 }
