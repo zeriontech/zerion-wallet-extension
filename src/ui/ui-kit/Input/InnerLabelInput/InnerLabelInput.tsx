@@ -7,7 +7,7 @@ import { InputDecorator } from '../InputDecorator';
 interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
   labelTextKind?: UITextProps['kind'];
   inputTextKind?: UITextProps['kind'];
-  label: JSX.Element | string;
+  label: React.ReactElement | string;
 }
 
 function InnerLabelInputComponent(

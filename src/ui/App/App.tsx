@@ -131,10 +131,10 @@ function SomeKindOfResolver({
   notAuthenticated,
   authenticated,
 }: {
-  noUser: JSX.Element;
-  noWallet: JSX.Element;
-  notAuthenticated: JSX.Element;
-  authenticated: JSX.Element;
+  noUser: React.ReactNode;
+  noWallet: React.ReactNode;
+  notAuthenticated: React.ReactNode;
+  authenticated: React.ReactNode;
 }) {
   const { isLoading, isAuthenticated, existingUser, hasWallet } =
     useAuthState();
@@ -153,7 +153,7 @@ function SomeKindOfResolver({
   return authenticated;
 }
 
-function RequireAuth({ children }: { children: JSX.Element }) {
+function RequireAuth({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { isLoading, isAuthenticated, existingUser } = useAuthState();
 
