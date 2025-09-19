@@ -1,28 +1,20 @@
-import type { NFTAsset } from 'defi-sdk';
 import React from 'react';
-import type { Chain } from 'src/modules/networks/Chain';
-import { NetworkId } from 'src/modules/networks/NetworkId';
+import type { NFTPreview } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import { TextLink } from 'src/ui/ui-kit/TextLink';
 
-export function NFTLink({
+export function NFTAnchor({
   nft,
-  chain,
   address,
-  title,
 }: {
-  nft: NFTAsset;
-  chain?: Chain;
+  nft: NFTPreview;
   address?: string;
-  title?: string;
 }) {
   return (
     <TextAnchor
-      href={`https://app.zerion.io/nfts/${
-        chain?.toString() || NetworkId.Ethereum
-      }/${nft.asset_code}?address=${address}`}
+      href={`https://app.zerion.io/nfts/${nft.chain}/${nft.contractAddress}:${nft.tokenId}?address=${address}`}
       target="_blank"
-      title={nft.name}
       rel="noopener noreferrer"
       onClick={(e) => {
         e.stopPropagation();
@@ -35,7 +27,24 @@ export function NFTLink({
         outlineOffset: -1, // make focus ring visible despite overflow: hidden
       }}
     >
-      {title || nft.name}
+      {nft.metadata?.name || 'NFT'}
     </TextAnchor>
+  );
+}
+
+export function NFTLink({ nft }: { nft: NFTPreview }) {
+  return (
+    <TextLink
+      to={`/nft/${nft.chain}/${nft.contractAddress}:${nft.tokenId}`}
+      title={nft.metadata?.name || 'NFT'}
+      style={{
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        outlineOffset: -1, // make focus ring visible despite overflow: hidden
+      }}
+    >
+      {nft.metadata?.name || 'NFT'}
+    </TextLink>
   );
 }

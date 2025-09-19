@@ -1,10 +1,4 @@
 import React, { useMemo } from 'react';
-import type {
-  ActionAsset,
-  ActionTransfer,
-  ActionType,
-  AddressAction,
-} from 'defi-sdk';
 import ApproveIcon from 'jsx:src/ui/assets/actionTypes/approve.svg';
 import BorrowIcon from 'jsx:src/ui/assets/actionTypes/borrow.svg';
 import BurnIcon from 'jsx:src/ui/assets/actionTypes/burn.svg';
@@ -27,6 +21,15 @@ import ChangeAssets2 from 'jsx:src/ui/assets/changed-assets-2.svg';
 import ChangeAssets3 from 'jsx:src/ui/assets/changed-assets-3.svg';
 import ChangeAssetsMore from 'jsx:src/ui/assets/changed-assets-more.svg';
 import { AssetIcon } from 'src/ui/components/AssetIcon';
+import type {
+  ActionType,
+  Approval,
+  Collection,
+  NFTPreview,
+  Transfer,
+} from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 export const TRANSACTION_ICON_SIZE = 36;
 export const TRANSACTION_SMALL_ICON_SIZE = 27;
@@ -129,23 +132,58 @@ function TransactionMultipleAssetsIcon({
 }
 
 export function HistoryAssetIcon({
-  asset,
+  fungible,
+  nft,
+  collection,
   type,
   size,
 }: {
-  asset?: ActionAsset;
+  fungible: Fungible | null;
+  nft: NFTPreview | null;
+  collection: Collection | null;
   type: ActionType;
   size: number;
 }) {
-  if (!asset) {
+  if (!fungible && !nft && !collection) {
     return <TransactionTypeIcon type={type} />;
   }
 
   return (
     <AssetIcon
-      asset={asset}
+      fungible={fungible}
+      nft={nft}
+      collection={collection}
       size={size}
       fallback={<TransactionTypeIcon type={type} size={size} />}
+    />
+  );
+}
+
+function ApprovalIcon({
+  approvals,
+  type,
+  size,
+}: {
+  approvals: Approval[];
+  type: ActionType;
+  size: number;
+}) {
+  if (!approvals.length) {
+    return null;
+  }
+  if (approvals.length > 1) {
+    return (
+      <TransactionMultipleAssetsIcon amount={approvals.length} size={size} />
+    );
+  }
+
+  return (
+    <HistoryAssetIcon
+      fungible={approvals[0].fungible}
+      nft={approvals[0].nft}
+      collection={null}
+      type={type}
+      size={size}
     />
   );
 }
@@ -155,7 +193,7 @@ function TransferIcon({
   type,
   size,
 }: {
-  transfers: ActionTransfer[];
+  transfers: Transfer[];
   type: ActionType;
   size: number;
 }) {
@@ -168,24 +206,31 @@ function TransferIcon({
     );
   }
   return (
-    <HistoryAssetIcon asset={transfers[0].asset} type={type} size={size} />
+    <HistoryAssetIcon
+      fungible={transfers[0].fungible}
+      nft={transfers[0].nft}
+      collection={null}
+      type={type}
+      size={size}
+    />
   );
 }
 
-export function TransactionItemIcon({ action }: { action: AddressAction }) {
-  const singleTransfer = action.content?.single_asset;
-  const incomingTransfers = action.content?.transfers?.incoming;
-  const outgoingTransfers = action.content?.transfers?.outgoing;
-
-  if (singleTransfer) {
-    return (
-      <HistoryAssetIcon
-        asset={singleTransfer?.asset}
-        type={action.type.value}
-        size={TRANSACTION_ICON_SIZE}
-      />
-    );
-  }
+export function TransactionItemIcon({
+  addressAction,
+}: {
+  addressAction: AnyAddressAction;
+}) {
+  const approvals = addressAction.content?.approvals;
+  const incomingTransfers = useMemo(
+    () => addressAction.content?.transfers?.filter((t) => t.direction === 'in'),
+    [addressAction]
+  );
+  const outgoingTransfers = useMemo(
+    () =>
+      addressAction.content?.transfers?.filter((t) => t.direction === 'out'),
+    [addressAction]
+  );
 
   if (incomingTransfers?.length && outgoingTransfers?.length) {
     return (
@@ -199,14 +244,14 @@ export function TransactionItemIcon({ action }: { action: AddressAction }) {
         <div style={{ position: 'absolute', left: 0, top: 0 }}>
           <TransferIcon
             transfers={outgoingTransfers}
-            type={action.type.value}
+            type={addressAction.type.value}
             size={TRANSACTION_SMALL_ICON_SIZE}
           />
         </div>
         <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
           <TransferIcon
             transfers={incomingTransfers}
-            type={action.type.value}
+            type={addressAction.type.value}
             size={TRANSACTION_SMALL_ICON_SIZE}
           />
         </div>
@@ -218,7 +263,7 @@ export function TransactionItemIcon({ action }: { action: AddressAction }) {
     return (
       <TransferIcon
         transfers={incomingTransfers}
-        type={action.type.value}
+        type={addressAction.type.value}
         size={TRANSACTION_ICON_SIZE}
       />
     );
@@ -228,11 +273,21 @@ export function TransactionItemIcon({ action }: { action: AddressAction }) {
     return (
       <TransferIcon
         transfers={outgoingTransfers}
-        type={action.type.value}
+        type={addressAction.type.value}
         size={TRANSACTION_ICON_SIZE}
       />
     );
   }
 
-  return <TransactionTypeIcon type={action.type.value} />;
+  if (approvals) {
+    return (
+      <ApprovalIcon
+        approvals={approvals}
+        type={addressAction.type.value}
+        size={TRANSACTION_ICON_SIZE}
+      />
+    );
+  }
+
+  return <TransactionTypeIcon type={addressAction.type.value} />;
 }
