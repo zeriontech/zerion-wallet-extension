@@ -459,6 +459,16 @@ function DeveloperTools() {
             }
           />
           <ToggleSettingLine
+            text="Custom Data"
+            checked={preferences?.configurableTransactionData ?? false}
+            onChange={(event) => {
+              setPreferences({
+                configurableTransactionData: event.target.checked,
+              });
+            }}
+            detailText={<span>Attach arbitrary data to Send transactions</span>}
+          />
+          <ToggleSettingLine
             text="Recognizable Connect Buttons"
             checked={globalPreferences?.recognizableConnectButtons || false}
             onChange={(event) => {
