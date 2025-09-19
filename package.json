@@ -155,6 +155,7 @@
     "react-qrcode-logo": "^2.9.0",
     "react-router-dom": "^6.18.0",
     "rlp": "^3.0.0",
+    "spin-delay": "^2.0.1",
     "store-unit": "^1.0.3",
     "stream-browserify": "^3.0.0",
     "tweetnacl": "^1.0.3",
