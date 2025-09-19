@@ -21,6 +21,7 @@ import { walletGetAssetDetails } from './requests/wallet-get-asset-details';
 import { assetGetFungiblePnl } from './requests/asset-get-fungible-pnl';
 import { assetGetChart } from './requests/asset-get-chart';
 import { searchQuery } from './requests/search-query';
+import { searchQueryFungibles } from './requests/search-query-fungibles';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -46,6 +47,7 @@ export const ZerionApiBare = {
   walletGetAssetDetails,
   assetGetChart,
   searchQuery,
+  searchQueryFungibles,
 };
 
 export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;

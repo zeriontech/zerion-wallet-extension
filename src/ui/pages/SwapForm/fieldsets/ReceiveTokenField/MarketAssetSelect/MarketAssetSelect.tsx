@@ -1,11 +1,11 @@
 import { ETH, EmptyAddressPosition } from '@zeriontech/transactions';
+import type { Asset } from 'defi-sdk';
 import { useAssetsPrices } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { AssetSelect } from 'src/ui/pages/SendForm/AssetSelect';
 import type { Props as AssetSelectProps } from 'src/ui/pages/SendForm/AssetSelect';
-import { useAssetsInfoPaginatedQuery } from 'src/ui/shared/requests/useAssetsInfoPaginated';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { capitalize } from 'capitalize-ts';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -14,7 +14,29 @@ import { getAssetImplementationInChain } from 'src/modules/networks/asset';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useQuery } from '@tanstack/react-query';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
+import { useSearchQueryFungibles } from 'src/modules/zerion-api/hooks/useSearchQueryFungibles';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { getPopularTokens } from '../../../shared/getPopularTokens';
+
+function convertFungibleToAsset(fungible: Fungible): Asset {
+  return {
+    id: fungible.id,
+    asset_code: fungible.id,
+    name: fungible.name,
+    symbol: fungible.symbol,
+    icon_url: fungible.iconUrl || null,
+    decimals: 18,
+    is_displayable: true,
+    is_verified: fungible.verified,
+    type: null,
+    implementations: fungible.implementations,
+    price: {
+      changed_at: 0,
+      relative_change_24h: fungible.meta.relativeChange1d || 0,
+      value: fungible.meta.price || 0,
+    },
+  };
+}
 
 export function MarketAssetSelect({
   chain,
@@ -94,57 +116,30 @@ export function MarketAssetSelect({
     popularAssetCodesAreLoading,
   ]);
 
-  const {
-    items: marketAssets,
-    hasNextPage,
-    fetchNextPage,
-    isLoading: marketAssetsAreLoading,
-    isFetchingNextPage,
-  } = useAssetsInfoPaginatedQuery(
-    {
+  const { data: searchResults, isLoading: searchResultsAreLoading } =
+    useSearchQueryFungibles({
+      query,
       currency,
-      search_query: query,
-      order_by: query ? {} : { market_cap: 'desc' },
-      chain: shouldQueryByChain ? chain.toString() : null,
-    },
-    { suspense: false }
-  );
+      chain: shouldQueryByChain ? chain.toString() : undefined,
+      limit: 15,
+    });
 
-  const popularAssetCodeSet = useMemo(
-    () =>
-      new Set(popularPositions.map((position) => position.asset.asset_code)),
-    [popularPositions]
-  );
-
-  const marketPositions = useMemo(() => {
-    if (marketAssets) {
-      return marketAssets
-        .filter(
-          (item): item is Exclude<typeof item, null> =>
-            !popularAssetCodeSet.has(item.asset.asset_code)
-        )
-        .map(
-          (item) =>
-            positionsMap.get(item.asset.id) ||
-            new EmptyAddressPosition({ asset: item.asset, chain })
-        );
+  const searchPositions = useMemo(() => {
+    if (searchResults) {
+      return searchResults.data.map(
+        (item) =>
+          positionsMap.get(item.id) ||
+          new EmptyAddressPosition({
+            asset: convertFungibleToAsset(item),
+            chain,
+          })
+      );
     } else {
       return [];
     }
-  }, [chain, marketAssets, popularAssetCodeSet, positionsMap]);
+  }, [chain, searchResults, positionsMap]);
 
-  const items = useMemo(
-    () => [...popularPositions, ...marketPositions],
-    [popularPositions, marketPositions]
-  );
-  const getGroupName = useCallback(
-    (position: BareAddressPosition) => {
-      return popularAssetCodeSet.has(position.asset.asset_code)
-        ? 'Popular'
-        : 'Others';
-    },
-    [popularAssetCodeSet]
-  );
+  const items = query ? searchPositions : popularPositions;
 
   const currentItem = selectedItem || savedSelectedItem;
   if (!currentItem) {
@@ -179,12 +174,6 @@ export function MarketAssetSelect({
       }}
       chain={chain}
       selectedItem={currentItem}
-      getGroupName={query ? undefined : getGroupName}
-      pagination={{
-        fetchMore: fetchNextPage,
-        hasMore: Boolean(hasNextPage),
-        isLoading: marketAssetsAreLoading || isFetchingNextPage,
-      }}
       noItemsMessage="No assets found"
       dialogTitle="Receive"
       renderListTitle={() =>
@@ -207,7 +196,7 @@ export function MarketAssetSelect({
       }
       onQueryDidChange={handleQueryDidChange}
       onClosed={() => setSearchAllNetworks(false)}
-      isLoading={isLoading}
+      isLoading={isLoading || searchResultsAreLoading}
     />
   );
 }
