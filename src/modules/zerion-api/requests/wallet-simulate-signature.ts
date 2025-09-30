@@ -26,25 +26,8 @@ interface Payload {
   signature: Signature;
 }
 
-type Input = {
-  /** @description List of sections containing structured input data */
-  sections?: Array<{
-    /** @description Optional section name */
-    name?: string;
-    /** @description List of blocks within this section */
-    blocks: Array<{
-      /** @description Block name/label */
-      name: string;
-      /** @description The value that should be copied and shown */
-      value: string;
-    }>;
-  }>;
-};
-
-export type InterpretInput = Input;
-
 type Response = {
-  data: { action: AddressAction; inputs: Input[]; warnings: Warning[] };
+  data: { action: AddressAction; warnings: Warning[] };
   errors?: { title: string; detail: string }[];
 };
 

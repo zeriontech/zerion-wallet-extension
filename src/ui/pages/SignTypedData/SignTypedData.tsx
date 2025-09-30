@@ -605,9 +605,7 @@ function SignTypedDataContent({
                 title={<UIText kind="body/accent">Details</UIText>}
                 closeKind="icon"
               />
-              {interpretation?.data.inputs ? (
-                <TypedDataAdvancedView inputs={interpretation.data.inputs} />
-              ) : null}
+              <TypedDataAdvancedView typedData={typedData} />
             </>
           )}
         />
