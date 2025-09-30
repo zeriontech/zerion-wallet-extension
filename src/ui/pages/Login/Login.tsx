@@ -120,6 +120,14 @@ export function Login() {
       return walletPort.request('getLastUsedAddress', { userId });
     },
   });
+  const handleSuccess = useCallback(() => {
+    navigate(params.get('next') || '/', {
+      // If user clicks "back" when we redirect them,
+      // we should take them to overview, not back to the login view
+      replace: true,
+    });
+  }, [navigate, params]);
+
   const loginMutation = useMutation({
     mutationFn: async ({
       user,
@@ -135,11 +143,7 @@ export function Login() {
       // There's a rare weird bug when logging in reloads login page instead of redirecting to overview.
       // Maybe this will fix it? If not, then remove this delay
       await new Promise((r) => setTimeout(r, 100));
-      navigate(params.get('next') || '/', {
-        // If user clicks "back" when we redirect them,
-        // we should take them to overview, not back to the login view
-        replace: true,
-      });
+      handleSuccess();
     },
   });
 
@@ -209,13 +213,7 @@ export function Login() {
             {user ? (
               <TouchIdLogin
                 user={user}
-                onSuccess={() => {
-                  navigate(params.get('next') || '/', {
-                    // If user clicks "back" when we redirect them,
-                    // we should take them to overview, not back to the login view
-                    replace: true,
-                  });
-                }}
+                onSuccess={handleSuccess}
                 style={{ justifyItems: 'center' }}
               />
             ) : null}

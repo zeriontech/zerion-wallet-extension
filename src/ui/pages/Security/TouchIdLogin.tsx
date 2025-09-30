@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import type { PublicUser } from 'src/shared/types/User';
@@ -7,6 +7,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { useNavigationType } from 'react-router-dom';
 import { getPasswordWithPasskey } from './passkey';
 import * as styles from './styles.module.css';
 
@@ -35,7 +36,21 @@ export function TouchIdLogin({
     onSuccess,
   });
 
-  if (!defaultValueQuery.data) {
+  const passkeyEnabled = defaultValueQuery.data;
+  const navigationType = useNavigationType();
+  const autologinRef = useRef(false);
+
+  useEffect(() => {
+    // Automatically trigger Touch ID login if the user navigated here via a replace action
+    // This happens when user is redirected to the login page when opening the extension popup
+    const showSuggestTouchId = navigationType === 'REPLACE';
+    if (showSuggestTouchId && passkeyEnabled && !autologinRef.current) {
+      autologinRef.current = true;
+      loginMutation.mutate();
+    }
+  }, [navigationType, passkeyEnabled, loginMutation]);
+
+  if (!passkeyEnabled) {
     return null;
   }
 
