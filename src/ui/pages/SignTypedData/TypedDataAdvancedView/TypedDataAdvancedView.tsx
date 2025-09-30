@@ -7,8 +7,15 @@ export function TypedDataAdvancedView({ typedData }: { typedData: TypedData }) {
   return (
     <>
       <PageTop />
-      <Surface padding={16} style={{ backgroundColor: 'var(--neutral-100)' }}>
-        {JSON.stringify(typedData)}
+      <Surface
+        padding={16}
+        style={{
+          backgroundColor: 'var(--neutral-100)',
+          wordBreak: 'break-all',
+          whiteSpace: 'pre-wrap',
+        }}
+      >
+        {JSON.stringify(typedData, null, 2)}
       </Surface>
     </>
   );
