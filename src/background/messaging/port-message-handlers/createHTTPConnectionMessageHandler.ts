@@ -31,7 +31,7 @@ export function createHttpConnectionMessageHandler(
           .eth_chainId({ context, id: msg.id })
           .then((chainIdStr) => {
             const chainId = normalizeChainId(chainIdStr);
-            return wallet.getRpcUrlByChainId({ chainId, type: 'public' });
+            return wallet.getRpcUrlByChainId({ chainId, type: 'internal' });
           })
           .then((url) => {
             invariant(url, `HttpConnection: No RpcUrl for ${context.origin}`);
@@ -52,7 +52,7 @@ export function createHttpConnectionMessageHandler(
         const chainId = normalizeChainId(requestContext.chainId);
         const wallet = getWallet();
         wallet
-          .getRpcUrlByChainId({ chainId, type: 'public' })
+          .getRpcUrlByChainId({ chainId, type: 'internal' })
           .then((url) => {
             invariant(url, `HttpConnection: No RpcUrl for ${context.origin}`);
             const httpConnection = new HttpConnection({ url });
