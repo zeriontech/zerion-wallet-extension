@@ -1,4 +1,3 @@
-import type { PortfolioDecomposition } from 'defi-sdk';
 import type { Account } from 'src/background/account/Account';
 import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
@@ -13,7 +12,10 @@ import type {
   WalletMeta,
 } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { PREMIUM_PRIORITY } from 'src/modules/zerion-api/requests/wallet-get-meta';
-import { getAddressesPortfolio } from './getTotalWalletsBalance';
+import type {
+  Params,
+  WalletPortfolio,
+} from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import {
   getProviderForMixpanel,
   getProviderNameFromGroup,
@@ -45,9 +47,17 @@ function getFundedStatsByEcosystem(
   };
 }
 
+async function queryWalletPortfolio(params: Params) {
+  return backgroundQueryClient.fetchQuery({
+    queryKey: ['walletGetPortfolio', params],
+    queryFn: () => ZerionAPI.walletGetPortfolio(params),
+    staleTime: 20000,
+  });
+}
+
 async function getPortfolioStats(addresses: string[]) {
   return Promise.allSettled([
-    getAddressesPortfolio(addresses),
+    queryWalletPortfolio({ addresses, currency: 'usd' }),
     getAddressActivity({ addresses }, { cachePolicy: 'cache-first' }),
   ]).then(([result1, result2]) => {
     return {
@@ -111,12 +121,12 @@ async function fetchWalletsMeta({ addresses }: { addresses: string[] }) {
   });
 }
 
-function getChainBreakdown(portfolio: PortfolioDecomposition | null) {
+function getChainBreakdown(portfolio: WalletPortfolio | null) {
   const chainBreakdown: Record<string, number> = {};
   if (portfolio) {
-    for (const internalId in portfolio.positions_chains_distribution) {
+    for (const internalId in portfolio.positionsChainsDistribution) {
       const key = `${internalId}_balance`;
-      chainBreakdown[key] = portfolio.positions_chains_distribution[internalId];
+      chainBreakdown[key] = portfolio.positionsChainsDistribution[internalId];
     }
   }
   return chainBreakdown;
@@ -209,8 +219,8 @@ export async function getUserProperties(account: Account) {
     num_funded_evm_wallets: fundedStatsByEcosystem.evmFundedCount,
     num_watchlist_solana_wallets: readonlySolanaAddressesCount ?? 0,
     num_watchlist_evm_wallets: readonlyEvmAddressesCount ?? 0,
-    total_balance: portfolioStats?.portfolio?.total_value ?? 0,
-    ...getChainBreakdown(portfolioStats?.portfolio ?? null),
+    total_balance: portfolioStats?.portfolio?.data.totalValue ?? 0,
+    ...getChainBreakdown(portfolioStats?.portfolio?.data ?? null),
     currency: 'usd',
     language: 'en',
     zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
