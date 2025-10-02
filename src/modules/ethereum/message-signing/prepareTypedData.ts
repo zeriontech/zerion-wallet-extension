@@ -13,11 +13,6 @@ export function toTypedData(data: string | Partial<TypedData>): TypedData {
   if (typeof data === 'string') {
     try {
       const typedData = JSON.parse(data) as TypedData;
-      // Backend expect chainId to be a string
-      // TODO: remove when backend fixed
-      typedData.domain.chainId = typedData.domain.chainId
-        ? String(typedData.domain.chainId)
-        : undefined;
       return typedData as TypedData;
     } catch (e) {
       throw new Error('Failed to parse typedData input');
