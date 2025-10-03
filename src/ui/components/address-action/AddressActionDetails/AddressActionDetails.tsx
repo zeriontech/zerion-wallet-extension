@@ -2,8 +2,7 @@ import React, { useMemo } from 'react';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { produce } from 'immer';
-import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
+import { applyCustomAllowance } from 'src/modules/ethereum/transactions/appovals';
 import { RecipientLine } from '../RecipientLine';
 import { ApplicationLine } from '../ApplicationLine';
 import { ActInfo } from '../ActInfo';
@@ -31,35 +30,15 @@ export function AddressActionDetails({
   const applicationLineVisible =
     showApplicationLine && addressAction?.label?.contract && !showRecipientLine;
 
-  const actionWithAppliedAllowance = useMemo(() => {
-    if (
-      allowanceQuantityCommon == null ||
-      addressAction?.acts?.length !== 1 ||
-      addressAction.acts[0].content?.approvals?.length !== 1
-    ) {
-      return addressAction;
-    }
-    return produce(addressAction, (draft) => {
-      if (draft.acts?.[0].content?.approvals?.[0]) {
-        if (draft.acts[0].content.approvals[0].amount) {
-          draft.acts[0].content.approvals[0].amount.quantity =
-            allowanceQuantityCommon;
-        } else {
-          draft.acts[0].content.approvals[0].amount = {
-            quantity: allowanceQuantityCommon,
-            value: null,
-            usdValue: null,
-            currency: '',
-          };
-        }
-        if (customAllowanceQuantityBase != null) {
-          draft.acts[0].content.approvals[0].unlimited = isUnlimitedApproval(
-            customAllowanceQuantityBase
-          );
-        }
-      }
-    });
-  }, [addressAction, allowanceQuantityCommon, customAllowanceQuantityBase]);
+  const actionWithAppliedAllowance = useMemo(
+    () =>
+      applyCustomAllowance({
+        addressAction,
+        customAllowanceQuantityCommon: allowanceQuantityCommon,
+        customAllowanceQuantityBase,
+      }),
+    [addressAction, allowanceQuantityCommon, customAllowanceQuantityBase]
+  );
 
   const showEndElement =
     addressAction?.acts?.length === 1 &&

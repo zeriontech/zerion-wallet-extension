@@ -217,8 +217,7 @@ function SendFormComponent() {
     snapshotRef.current = { state: { ...formState } };
   };
 
-  // Special request for analytics purposes.
-  const { data: inputFungibleUsdInfo } = useAssetFullInfo(
+  const { data: inputFungibleUsdInfoForAnalytics } = useAssetFullInfo(
     { fungibleId: currentPosition?.asset.id || '', currency: 'usd' },
     { source: useHttpClientSource() },
     { enabled: Boolean(currentPosition?.asset.id) }
@@ -252,10 +251,12 @@ function SendFormComponent() {
                       .multipliedBy(currentPosition.asset.price.value)
                       .toNumber()
                   : null,
-                usdValue: inputFungibleUsdInfo?.data?.fungible.meta.price
+                usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta
+                  .price
                   ? new BigNumber(tokenValue)
                       .multipliedBy(
-                        inputFungibleUsdInfo.data.fungible.meta.price
+                        inputFungibleUsdInfoForAnalytics.data.fungible.meta
+                          .price
                       )
                       .toNumber()
                   : null,

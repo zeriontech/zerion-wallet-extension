@@ -67,7 +67,11 @@ function AssetContent({
             kind="headline/h3"
             color={direction === 'in' ? 'var(--positive-500)' : undefined}
           >
-            <HStack gap={4} alignItems="center">
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{ gridTemplateColumns: 'auto 1fr' }}
+            >
               <span>
                 {unlimited
                   ? 'Unlimited'
@@ -109,7 +113,11 @@ function AssetContent({
         />
         <VStack gap={0}>
           <UIText kind="headline/h3">
-            <HStack gap={4} alignItems="center">
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{ gridTemplateColumns: 'auto 1fr' }}
+            >
               <span>
                 {amount?.quantity
                   ? `${
@@ -146,9 +154,7 @@ function AssetContent({
           src={collection.iconUrl}
           symbol={collection.name || 'Collection'}
         />
-        <VStack gap={0}>
-          <UIText kind="headline/h3">{collection.name}</UIText>
-        </VStack>
+        <UIText kind="headline/h3">{collection.name}</UIText>
       </HStack>
     );
   }
@@ -307,7 +313,7 @@ export function ActionInfo() {
     'actIndex should be a number or be empty'
   );
   const actIndex = act_index ? Number(act_index) : undefined;
-  const addressAction = state.addressAction as AddressAction | undefined;
+  const addressAction = state?.addressAction as AddressAction | undefined;
   const targetObject =
     actIndex != null ? addressAction?.acts?.at(actIndex) : addressAction;
 

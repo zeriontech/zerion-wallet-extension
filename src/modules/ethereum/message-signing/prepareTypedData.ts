@@ -13,7 +13,7 @@ export function toTypedData(data: string | Partial<TypedData>): TypedData {
   if (typeof data === 'string') {
     try {
       const typedData = JSON.parse(data) as TypedData;
-      return typedData as TypedData;
+      return typedData;
     } catch (e) {
       throw new Error('Failed to parse typedData input');
     }

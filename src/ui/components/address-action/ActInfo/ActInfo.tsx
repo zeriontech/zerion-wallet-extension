@@ -16,8 +16,8 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
-import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
+import { isUnlimitedApproval } from 'src/modules/ethereum/transactions/appovals';
 import { AssetAnchor } from '../../AssetLink';
 import { NFTAnchor } from '../../NFTLink/NFTLink';
 

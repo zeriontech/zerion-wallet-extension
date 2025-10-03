@@ -21,11 +21,11 @@ import { Content } from 'react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { AssetAnchor } from 'src/ui/components/AssetLink';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { isUnlimitedApproval } from 'src/ui/pages/History/isUnlimitedApproval';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { isUnlimitedApproval } from 'src/modules/ethereum/transactions/appovals';
 
 export function AllowanceForm({
   asset,

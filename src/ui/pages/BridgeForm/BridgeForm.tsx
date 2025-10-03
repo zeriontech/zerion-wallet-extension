@@ -716,8 +716,7 @@ function BridgeFormComponent() {
     [inputChain, inputAmount, inputFungibleId]
   );
 
-  // Special request for analytics purposes.
-  const { data: inputFungibleUsdInfo } = useAssetFullInfo(
+  const { data: inputFungibleUsdInfoForAnalytics } = useAssetFullInfo(
     { fungibleId: inputPosition?.asset.id || '', currency: 'usd' },
     { source: useHttpClientSource() },
     { enabled: Boolean(inputPosition?.asset.id) }
@@ -763,9 +762,12 @@ function BridgeFormComponent() {
                     .multipliedBy(inputPosition.asset.price.value)
                     .toNumber()
                 : null,
-              usdValue: inputFungibleUsdInfo?.data?.fungible.meta.price
+              usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta
+                .price
                 ? new BigNumber(formState.inputAmount)
-                    .multipliedBy(inputFungibleUsdInfo.data.fungible.meta.price)
+                    .multipliedBy(
+                      inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                    )
                     .toNumber()
                 : null,
             },
@@ -889,9 +891,11 @@ function BridgeFormComponent() {
                 .multipliedBy(inputPosition.asset.price.value)
                 .toNumber()
             : null,
-          usdValue: inputFungibleUsdInfo?.data?.fungible.meta.price
+          usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta.price
             ? new BigNumber(formState.inputAmount)
-                .multipliedBy(inputFungibleUsdInfo.data.fungible.meta.price)
+                .multipliedBy(
+                  inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                )
                 .toNumber()
             : null,
         },
@@ -1338,7 +1342,7 @@ function BridgeFormComponent() {
 
       <VStack gap={16} style={{ marginTop: 'auto' }}>
         <AnimatedAppear display={showApproveHintLine}>
-          <HStack gap={12} alignItems="center">
+          <HStack gap={12} alignItems="center" style={{ paddingTop: 16 }}>
             <ApproveHintLine
               // or {approveTxStatus === 'confirmed'} ?
               approved={Boolean(selectedQuote?.transactionSwap)}

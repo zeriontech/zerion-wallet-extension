@@ -13,7 +13,6 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import type { BigNumberish } from 'ethers';
-// import { getInterpretationFunctionName } from 'src/modules/ethereum/transactions/interpret';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -76,18 +75,11 @@ function AddressLine({
 function TransactionDetails({
   network,
   transaction,
-}: // interpretation,
-{
+}: {
   network: NetworkConfig;
   transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
 }) {
-  // const functionName = useMemo(
-  //   () =>
-  //     interpretation ? getInterpretationFunctionName(interpretation) : null,
-  //   [interpretation]
-  // );
-
   const accessList = useMemo(
     () =>
       transaction.accessList ? accessListify(transaction.accessList) : null,
@@ -96,18 +88,6 @@ function TransactionDetails({
 
   return (
     <VStack gap={8}>
-      {/* {functionName ? (
-        <>
-          <Surface padding={16}>
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              Function
-            </UIText>
-            <UIText kind="body/accent" color="var(--black)">
-              {functionName}
-            </UIText>
-          </Surface>
-        </>
-      ) : null} */}
       <Surface padding={16}>
         <VStack gap={16}>
           {transaction.from ? (

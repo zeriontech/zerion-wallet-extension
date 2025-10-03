@@ -52,8 +52,9 @@ function mergeLocalAndBackendActions(
   hasMoreBackendActions: boolean
 ) {
   const backendHashes = new Set(
-    backend.map(
-      (tx) => tx.transaction?.hash || tx.acts?.at(0)?.transaction.hash
+    backend.flatMap(
+      (tx) =>
+        tx.transaction?.hash || tx.acts?.map((act) => act.transaction.hash)
     )
   );
 
@@ -251,7 +252,7 @@ export function HistoryList({
             kind="neutral"
             style={{ paddingInline: 8 }}
             disabled={isLoading}
-            title="Reload History"
+            title="Reload History (⌃R)"
           >
             <SyncIcon
               style={{

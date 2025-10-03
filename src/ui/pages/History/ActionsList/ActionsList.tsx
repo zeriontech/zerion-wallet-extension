@@ -71,7 +71,7 @@ export function ActionsList({
       </VStack>
       {actions.length && (isLoading || hasMore) ? (
         <SurfaceList
-          style={{ paddingBlockStart: 6, paddingBlockEnd: 6 }}
+          style={{ paddingBlock: 6 }}
           items={[
             {
               key: 0,

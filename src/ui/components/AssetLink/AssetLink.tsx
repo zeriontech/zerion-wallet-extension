@@ -29,6 +29,7 @@ export function AssetAnchor({
         e.stopPropagation();
         openInNewWindow(e);
       }}
+      title={content}
       style={{
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -56,6 +57,7 @@ export function AssetLink({
   return (
     <TextLink
       to={`/asset/${fungible.id}`}
+      title={content}
       style={{
         overflow: 'hidden',
         textOverflow: 'ellipsis',
