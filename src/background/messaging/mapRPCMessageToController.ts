@@ -30,8 +30,10 @@ export function mapRPCMessageToController<T>(
   if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg)) {
     const { method, params, id } = msg;
     // logging
-    // console.debug({ method, params, id, port, context });
-    // console.table({ initiator: port.sender?.url, method, id });
+    if (process.env.NODE_ENV === 'development') {
+      console.debug({ method, params, id, port, context }); // eslint-disable-line no-console
+      console.table({ initiator: port.sender?.url, method, id }); // eslint-disable-line no-console
+    }
     if (
       !isClassProperty(controller, method) ||
       typeof controller[method as keyof typeof controller] !== 'function'
@@ -65,8 +67,10 @@ export function mapRPCMessageToController<T>(
       )
       .then((result: JsonRpcResponse) => {
         // logging
-        // console.debug('controller result', result);
-        // console.table({ initiator: port.sender?.url, id: result.id });
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('controller result', result); // eslint-disable-line no-console
+          console.table({ initiator: port.sender?.url, id: result.id }); // eslint-disable-line no-console
+        }
         port.postMessage(result);
       });
   }
