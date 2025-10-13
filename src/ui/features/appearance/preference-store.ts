@@ -16,5 +16,5 @@ const initialState = { mode: ThemePreference.system, currency: 'usd' };
 
 export const preferenceStore = new Store<State>({
   ...initialState,
-  ...retrieve(),
+  ...(retrieve() ?? {}),
 });
