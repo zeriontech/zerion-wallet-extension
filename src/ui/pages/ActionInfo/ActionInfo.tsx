@@ -110,34 +110,34 @@ function AssetContent({
           size={36}
           src={nft.metadata?.content?.imagePreviewUrl}
           symbol={nft.metadata?.name || 'NFT'}
+          style={{ borderRadius: 8 }}
         />
         <VStack gap={0}>
           <UIText kind="headline/h3">
-            <HStack
-              gap={4}
-              alignItems="center"
-              style={{ gridTemplateColumns: 'auto 1fr' }}
-            >
-              <span>
-                {amount?.quantity
-                  ? `${
-                      direction === 'out'
-                        ? minus
-                        : direction === 'in'
-                        ? '+'
-                        : ''
-                    }${formatTokenValue(amount?.quantity || '0', '')}`
-                  : null}
-              </span>
-              <NFTLink nft={nft} />
-            </HStack>
+            <NFTLink nft={nft} />
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
             {direction != null ? (
               <UIText kind="small/regular" color="var(--neutral-500)">
-                {amount?.value != null
-                  ? formatPriceValue(amount.value || '0', 'en', amount.currency)
-                  : 'N/A'}
+                <HStack gap={4}>
+                  <span>
+                    {amount?.quantity
+                      ? `Amount: ${formatTokenValue(
+                          amount?.quantity || '0',
+                          ''
+                        )}`
+                      : null}
+                  </span>
+                  <span>
+                    {amount?.value != null
+                      ? formatPriceValue(
+                          amount.value || '0',
+                          'en',
+                          amount.currency
+                        )
+                      : null}
+                  </span>
+                </HStack>
               </UIText>
             ) : null}
           </UIText>
