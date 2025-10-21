@@ -222,12 +222,15 @@ function trackAppEvents({ account }: { account: Account }) {
     if (!preferences.analyticsEnabled) {
       return;
     }
-    const { bannerName, pathname, walletAddress } = data;
+    const { bannerName, pathname, walletAddress, bannerSource, bannerType } =
+      data;
     const params = createParams({
       request_name: 'banner_clicked',
       screen_name: pathname,
       banner_name: bannerName,
       wallet_address: walletAddress,
+      ...(bannerSource ? { source: bannerSource } : null),
+      ...(bannerType ? { banner_type: bannerType } : null),
     });
     const event_name = 'General: Banner Clicked';
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
