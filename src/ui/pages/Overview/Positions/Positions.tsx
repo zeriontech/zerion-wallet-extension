@@ -53,7 +53,6 @@ import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { useAddressPositionsFromNode } from 'src/ui/shared/requests/useAddressPositionsFromNode';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { EmptyView } from 'src/ui/components/EmptyView';
 import { invariant } from 'src/shared/invariant';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { useStore } from '@store-unit/react';
@@ -958,7 +957,7 @@ export function Positions({
       >
         {emptyNetworkBalance}
         <DelayedRender delay={50}>
-          <EmptyView>No assets yet</EmptyView>
+          <EmptyPositionsView />
         </DelayedRender>
       </CenteredFillViewportView>
     );
