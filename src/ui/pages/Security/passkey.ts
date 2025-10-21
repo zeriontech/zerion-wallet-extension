@@ -18,6 +18,25 @@ interface PRFExtensionResult {
 }
 
 /**
+ * Detects if the current platform is macOS
+ */
+export function isMacOS(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  // Use userAgent as navigator.platform is deprecated
+  const userAgent = window.navigator.userAgent;
+  return /Mac|iPhone|iPad|iPod/.test(userAgent);
+}
+
+/**
+ * Gets the platform-specific title for passkey unlock
+ */
+export function getPasskeyTitle(): string {
+  return isMacOS() ? 'Touch ID' : 'Passkey Unlock';
+}
+
+/**
  * Checks if the current browser and authenticator support the PRF extension.
  * This is critical for passkey-based password encryption.
  */
@@ -116,6 +135,11 @@ export async function setupAccountPasskey(password: string) {
         },
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
         challenge: getRandomUint8Array(32),
+        // Use platform authenticator (Apple Keychain on macOS, Windows Hello on Windows, etc.)
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+        },
         extensions: {
           prf: {
             eval: {

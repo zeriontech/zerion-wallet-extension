@@ -26,11 +26,32 @@ import { ToggleSettingLine } from '../Settings/ToggleSettingsLine';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
-import { setupAccountPasskey } from './passkey';
+import { setupAccountPasskey, getPasskeyTitle } from './passkey';
 
 function TouchIdSettings() {
   const toastRef = useRef<PopoverToastHandle>(null);
   const [userValue, setUserValue] = useState<boolean | null>(null);
+  const passkeyTitle = getPasskeyTitle();
+
+  // Check if passkeys are supported on this device
+  const passkeyAvailabilityQuery = useQuery({
+    queryKey: ['passkey/isSupported'],
+    queryFn: async () => {
+      if (!window.PublicKeyCredential) {
+        return false;
+      }
+      try {
+        const available =
+          await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        return available;
+      } catch {
+        return false;
+      }
+    },
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
+
   const defaultValueQuery = useQuery({
     queryKey: ['account/getPasskeyEnabled'],
     queryFn: () => {
@@ -91,10 +112,15 @@ function TouchIdSettings() {
     removeTouchIdMutation.isLoading ||
     defaultValueQuery.isLoading;
 
+  // Hide the setting if passkeys are not supported
+  if (!passkeyAvailabilityQuery.data) {
+    return null;
+  }
+
   return (
     <>
       <ToggleSettingLine
-        text="Unlock with Touch ID"
+        text={`Unlock with ${passkeyTitle}`}
         checked={checked}
         disabled={disabled}
         onChange={(event) => {
@@ -104,7 +130,7 @@ function TouchIdSettings() {
             removeTouchIdMutation.mutate();
           }
         }}
-        detailText="Use biometrics (Touch ID) to securely sign in without typing in your password"
+        detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
       />
       <BottomSheetDialog
         ref={dialogRef}
@@ -119,7 +145,7 @@ function TouchIdSettings() {
                 <VStack gap={8}>
                   <UIText kind="headline/h1">Enter Password</UIText>
                   <UIText kind="body/regular">
-                    Verification is required to enable login via Touch ID
+                    Verification is required to enable login via {passkeyTitle}
                   </UIText>
                 </VStack>
                 <form
@@ -164,7 +190,7 @@ function TouchIdSettings() {
                           <CircleSpinner />
                         </div>
                       ) : (
-                        'Enable Touch ID'
+                        `Enable ${passkeyTitle}`
                       )}
                     </Button>
                   </VStack>
@@ -180,7 +206,7 @@ function TouchIdSettings() {
           bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
         }}
       >
-        Touch ID is enabled.
+        {passkeyTitle} is enabled.
       </PopoverToast>
     </>
   );

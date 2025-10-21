@@ -20,12 +20,12 @@ import { utf8ToUint8Array } from './convert';
 async function hkdf({
   ikm,
   salt,
-  info = 'zerion-passkey-encryption-key',
+  info,
   length = 32,
 }: {
   ikm: string | ArrayBuffer;
   salt: string;
-  info?: string;
+  info: string;
   length?: number;
 }): Promise<string> {
   // Convert inputs to Uint8Array
@@ -81,5 +81,6 @@ export async function deriveEncryptionKeyFromPRF(
     ikm: prfOutput,
     salt,
     length: 32,
+    info: 'zerion-passkey-v1',
   });
 }

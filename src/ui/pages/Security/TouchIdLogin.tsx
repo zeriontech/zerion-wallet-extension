@@ -8,7 +8,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useNavigationType } from 'react-router-dom';
-import { getPasswordWithPasskey } from './passkey';
+import { getPasswordWithPasskey, getPasskeyTitle } from './passkey';
 import * as styles from './styles.module.css';
 
 export function TouchIdLogin({
@@ -39,12 +39,13 @@ export function TouchIdLogin({
   const passkeyEnabled = defaultValueQuery.data;
   const navigationType = useNavigationType();
   const autologinRef = useRef(false);
+  const passkeyTitle = getPasskeyTitle();
 
   useEffect(() => {
-    // Automatically trigger Touch ID login if the user navigated here via a replace action
+    // Automatically trigger passkey login if the user navigated here via a replace action
     // This happens when user is redirected to the login page when opening the extension popup
-    const showSuggestTouchId = navigationType === 'REPLACE';
-    if (showSuggestTouchId && passkeyEnabled && !autologinRef.current) {
+    const showSuggestPasskey = navigationType === 'REPLACE';
+    if (showSuggestPasskey && passkeyEnabled && !autologinRef.current) {
       autologinRef.current = true;
       loginMutation.mutate();
     }
@@ -59,11 +60,11 @@ export function TouchIdLogin({
       <UnstyledButton
         type="button"
         autoFocus={true}
-        aria-label="Login with Touch ID"
+        aria-label={`Login with ${passkeyTitle}`}
         onClick={() => loginMutation.mutate()}
         className={styles.touchId}
         disabled={loginMutation.isLoading}
-        title="Unlock with Touch ID"
+        title={`Unlock with ${passkeyTitle}`}
       >
         {loginMutation.isLoading ? (
           <CircleSpinner
@@ -81,7 +82,7 @@ export function TouchIdLogin({
           color="var(--white)"
           className={styles.touchIdPopup}
         >
-          Unlock with Touch ID
+          Unlock with {passkeyTitle}
         </UIText>
       )}
       {loginMutation.error ? (
