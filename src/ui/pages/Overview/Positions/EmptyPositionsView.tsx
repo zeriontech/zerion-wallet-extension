@@ -1,15 +1,11 @@
 import React, { useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import ArrowCircleIcon from 'jsx:src/ui/assets/arrow-circle-outlined.svg';
 import IdentityIcon from 'jsx:src/ui/assets/identity.svg';
 import QrCodeIcon from 'jsx:src/ui/assets/qr-code.svg';
-import { useNavigate } from 'react-router-dom';
-import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { getAddressType } from 'src/shared/wallet/classifiers';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { usePreferences } from 'src/ui/features/preferences';
 import { walletPort } from 'src/ui/shared/channels';
-import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -23,6 +19,8 @@ import {
   FrameListItemAnchor,
   FrameListItemLink,
 } from 'src/ui/ui-kit/FrameList';
+import { emitter } from 'src/ui/shared/events';
+import { useLocation } from 'react-router-dom';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
@@ -30,10 +28,12 @@ function AddFundsOptionsDialog({
   address,
   buyCryptoHref,
   dialogRef,
+  analytics,
 }: {
   address: string;
   buyCryptoHref: string;
   dialogRef: React.RefObject<HTMLDialogElementInterface>;
+  analytics: { pathname: string; address: string };
 }) {
   return (
     <BottomSheetDialog
@@ -46,6 +46,14 @@ function AddFundsOptionsDialog({
             <FrameListItemAnchor
               style={{ border: '2px solid var(--neutral-100)' }}
               href={buyCryptoHref}
+              onClick={() => {
+                emitter.emit('buttonClicked', {
+                  buttonName: 'Buy Crypto',
+                  buttonScope: 'General',
+                  pathname: analytics.pathname,
+                  walletAddress: analytics.address,
+                });
+              }}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -79,6 +87,14 @@ function AddFundsOptionsDialog({
             <FrameListItemLink
               style={{ border: '2px solid var(--neutral-100)' }}
               to={`/receive?address=${address}`}
+              onClick={() => {
+                emitter.emit('buttonClicked', {
+                  buttonName: 'Receive Crypto',
+                  buttonScope: 'General',
+                  pathname: analytics.pathname,
+                  walletAddress: analytics.address,
+                });
+              }}
             >
               <Media
                 image={
@@ -115,6 +131,7 @@ function AddFundsOptionsDialog({
 }
 
 export function EmptyPositionsView() {
+  const { pathname } = useLocation();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
@@ -122,56 +139,13 @@ export function EmptyPositionsView() {
     },
   });
 
-  const { data: walletGroups, isLoading } = useQuery({
-    queryKey: ['wallet/uiGetWalletGroups'],
-    queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
-    suspense: false,
-  });
-
   const { preferences } = usePreferences();
   const addWalletParams = useWalletParams(wallet);
-  const navigate = useNavigate();
   const dialogRef = useRef<HTMLDialogElementInterface>(null);
 
   const isTestnetMode = preferences?.testnetMode?.on;
 
-  const goToBridgeMutation = useMutation({
-    mutationFn: async () => {
-      const solanaAddress = wallet?.address;
-      let ethereumAddress: string | null = null;
-      if (walletGroups) {
-        for (const group of walletGroups) {
-          for (const wallet of group.walletContainer.wallets) {
-            const address = normalizeAddress(wallet.address);
-            if (getAddressType(address) === 'evm') {
-              ethereumAddress = address;
-              break;
-            }
-          }
-        }
-      }
-      if (ethereumAddress) {
-        await setCurrentAddress({ address: ethereumAddress });
-      }
-      return { ethereumAddress, solanaAddress };
-    },
-    onSuccess: ({ ethereumAddress, solanaAddress }) => {
-      if (!ethereumAddress || !solanaAddress) {
-        navigate('/bridge-form');
-      } else {
-        const params = new URLSearchParams({
-          outputChain: 'solana',
-          showReceiverAddressInput: 'on',
-          receiverAddressInput: solanaAddress,
-          to: solanaAddress,
-        });
-        navigate(`/bridge-form?${params.toString()}`);
-      }
-    },
-  });
-
-  if (isTestnetMode || !wallet || goToBridgeMutation.isLoading || isLoading) {
+  if (isTestnetMode || !wallet) {
     return <EmptyView>No assets yet</EmptyView>;
   }
 
@@ -207,6 +181,13 @@ export function EmptyPositionsView() {
             size={48}
             kind="primary"
             onClick={() => {
+              emitter.emit('bannerClicked', {
+                pathname,
+                bannerName: 'Get started',
+                walletAddress: wallet.address,
+                bannerType: 'Fund_wallet',
+                bannerSource: 'Internal',
+              });
               dialogRef.current?.showModal();
             }}
           >
@@ -221,6 +202,7 @@ export function EmptyPositionsView() {
         dialogRef={dialogRef}
         address={wallet.address}
         buyCryptoHref={buyCryptoHref}
+        analytics={{ pathname, address: wallet.address }}
       />
     </>
   );
