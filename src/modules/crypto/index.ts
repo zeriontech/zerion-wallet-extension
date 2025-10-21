@@ -11,3 +11,4 @@ export {
 export { createSalt, createCryptoKey } from './key';
 export { encrypt, decrypt } from './aes';
 export { stableEncrypt, stableDecrypt } from './aesStable';
+export { deriveEncryptionKeyFromPRF } from './hkdf';
