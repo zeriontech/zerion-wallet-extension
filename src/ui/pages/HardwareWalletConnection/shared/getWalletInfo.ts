@@ -1,5 +1,6 @@
 import { lookupAddressName } from 'src/modules/name-service';
-import { getAddressPortfolio } from 'src/ui/shared/requests/PortfolioValue/getAddressPortfolio';
+import { getHttpClientSource } from 'src/modules/zerion-api/getHttpClientSource';
+import { queryWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 
 export interface WalletInfo {
   portfolio: number;
@@ -10,7 +11,12 @@ export async function getWalletInfo(
   address: string,
   currency: string
 ): Promise<WalletInfo> {
-  const name = await lookupAddressName(address);
-  const portfolio = await getAddressPortfolio({ address, currency });
-  return { portfolio: portfolio.total_value, name };
+  const [name, portfolioData] = await Promise.all([
+    lookupAddressName(address),
+    queryWalletPortfolio(
+      { addresses: [address], currency },
+      { source: await getHttpClientSource() }
+    ),
+  ]);
+  return { portfolio: portfolioData.data.totalValue, name };
 }
