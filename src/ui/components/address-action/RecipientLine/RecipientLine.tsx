@@ -1,6 +1,4 @@
 import React, { useMemo } from 'react';
-import type { Networks } from 'src/modules/networks/Networks';
-import type { Chain } from 'src/modules/networks/Chain';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { Media } from 'src/ui/ui-kit/Media';
@@ -9,25 +7,28 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { Networks } from 'src/modules/networks/Networks';
 import { NetworkIcon } from '../../NetworkIcon';
 
 export function RecipientLine({
   recipientAddress,
-  chain,
-  networks,
+  recipientName,
+  network,
   showNetworkIcon,
 }: {
   recipientAddress: string;
-  chain: Chain;
-  networks: Networks;
+  recipientName: string | null;
+  network: NetworkConfig;
   showNetworkIcon: boolean;
 }) {
-  const network = networks.getNetworkByName(chain) || null;
-
   const checksumAddress = useMemo(
     () => toChecksumAddress(recipientAddress),
     [recipientAddress]
   );
+
+  const showRecipientName = recipientName && recipientName !== recipientAddress;
+
   return (
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
@@ -64,14 +65,13 @@ export function RecipientLine({
             <TextAnchor
               // Open URL in a new _window_ so that extension UI stays open and visible
               onClick={openInNewWindow}
-              href={networks.getExplorerAddressUrlByName(
-                chain,
-                checksumAddress
-              )}
+              href={Networks.getExplorerAddressUrl(network, checksumAddress)}
               target="_blank"
               rel="noopener noreferrer"
             >
-              {truncateAddress(checksumAddress, 15)}
+              {showRecipientName
+                ? recipientName
+                : truncateAddress(checksumAddress, 15)}
             </TextAnchor>
           </UIText>
         }

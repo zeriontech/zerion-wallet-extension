@@ -1,8 +1,8 @@
-import { hashQueryKey, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   interpretSignature,
   interpretTransaction,
-} from 'src/modules/ethereum/transactions/interpret';
+} from 'src/ui/shared/requests/interpret';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { invariant } from 'src/shared/invariant';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -11,15 +11,12 @@ import {
   usePreferences,
 } from 'src/ui/features/preferences/usePreferences';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { Client } from 'defi-sdk';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { createChain } from 'src/modules/networks/Chain';
 import { walletPort } from '../channels';
 
 /**
@@ -33,7 +30,6 @@ export async function interpretTxBasedOnEligibility({
   eligibilityQueryStatus,
   currency,
   origin,
-  client,
 }: {
   address: string;
   transaction: MultichainTransaction;
@@ -41,7 +37,6 @@ export async function interpretTxBasedOnEligibility({
   eligibilityQueryStatus: 'error' | 'success' | 'loading';
   currency: string;
   origin: string;
-  client: Client;
 }) {
   const preferences = await getPreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
@@ -70,14 +65,16 @@ export async function interpretTxBasedOnEligibility({
     eligibilityQueryStatus === 'error';
 
   if (shouldDoRegularInterpret) {
-    return interpretTransaction({
-      address,
-      chain: createChain(network.id),
-      transaction,
-      origin,
-      currency,
-      client,
-    });
+    return interpretTransaction(
+      {
+        address,
+        chain: network.id,
+        transaction,
+        origin,
+        currency,
+      },
+      { source }
+    );
   } else if (network.supports_sponsored_transactions && eligibilityQueryData) {
     invariant(
       transaction.evm,
@@ -90,14 +87,16 @@ export async function interpretTxBasedOnEligibility({
     const typedData = await walletPort.request('uiGetEip712Transaction', {
       transaction: toSign,
     });
-    return interpretSignature({
-      address,
-      chainId: normalizeChainId(toSign.chainId),
-      typedData,
-      currency,
-      origin,
-      client,
-    });
+    return interpretSignature(
+      {
+        address,
+        chain: network.id,
+        typedData,
+        currency,
+        origin,
+      },
+      { source }
+    );
   } else {
     return null;
   }
@@ -114,7 +113,6 @@ export function useInterpretTxBasedOnEligibility({
   eligibilityQuery: EligibilityQuery;
   origin: string;
 }) {
-  const client = useDefiSdkClient();
   const { currency } = useCurrency();
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
@@ -130,7 +128,6 @@ export function useInterpretTxBasedOnEligibility({
     queryKey: [
       'interpretSignature',
       address,
-      client,
       currency,
       transaction,
       source,
@@ -138,10 +135,6 @@ export function useInterpretTxBasedOnEligibility({
       eligibilityQuery.data?.data.eligible,
       eligibilityQuery.status,
     ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
     queryFn: () => {
       return interpretTxBasedOnEligibility({
         address,
@@ -150,7 +143,6 @@ export function useInterpretTxBasedOnEligibility({
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,
         origin,
-        client,
       });
     },
   });

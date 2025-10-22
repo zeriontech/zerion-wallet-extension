@@ -1,25 +1,48 @@
-import type { AddressAction, Asset, NFT, NFTAsset } from 'defi-sdk';
 import type { BigNumberish } from 'ethers';
-import { createChain, type Chain } from 'src/modules/networks/Chain';
 import { nanoid } from 'nanoid';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import type {
+  AddressAction,
+  ActionChain,
+  Amount,
+  NFTPreview,
+} from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { invariant } from 'src/shared/invariant';
+import type { Asset, NFT } from 'defi-sdk';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { Quote2 } from 'src/shared/types/Quote';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import type {
   IncomingTransaction,
   IncomingTransactionWithFrom,
 } from '../../types/IncomingTransaction';
-import { getFungibleAsset } from '../actionAsset';
 
-export type ClientTransactionStatus =
-  | AddressAction['transaction']['status']
-  | 'dropped';
+export type LocalActionTransaction = Omit<
+  NonNullable<AddressAction['transaction']>,
+  'hash'
+> & {
+  hash: string | null;
+};
 
-export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
-  transaction: Omit<AddressAction['transaction'], 'status'> & {
-    status: ClientTransactionStatus;
-    data?: string;
+type LocalAct = Omit<
+  NonNullable<AddressAction['acts']>[number],
+  'transaction'
+> & {
+  transaction: LocalActionTransaction;
+};
+
+export type LocalAddressAction = Omit<AddressAction, 'transaction' | 'acts'> & {
+  acts: LocalAct[] | null;
+  transaction: LocalActionTransaction | null;
+  rawTransaction: {
+    data?: string | null;
     value?: BigNumberish;
-    from?: string;
-  };
+    from?: string | null;
+    nonce: number;
+    hash: string;
+    chain: string;
+    gasback?: number | null;
+  } | null;
   local: true;
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
 };
@@ -27,7 +50,7 @@ export type LocalAddressAction = Omit<AddressAction, 'transaction'> & {
 export type AnyAddressAction = AddressAction | LocalAddressAction;
 
 export function isLocalAddressAction(
-  addressAction: AnyAddressAction
+  addressAction: AddressAction | LocalAddressAction
 ): addressAction is LocalAddressAction {
   return 'local' in addressAction && addressAction.local;
 }
@@ -35,258 +58,615 @@ export function isLocalAddressAction(
 export const ZERO_HASH =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-const toEmptyActionTx = (chain: Chain): AddressAction['transaction'] =>
+const toEmptyActionTx = (chain: string): LocalAddressAction['rawTransaction'] =>
   ({
-    chain: chain.toString(),
+    chain,
     hash: ZERO_HASH,
-    fee: null,
-    status: 'pending',
     nonce: -1,
-    sponsored: false,
   } as const);
 
 const toActionTx = (
   tx: IncomingTransaction,
-  chain: Chain
-): AddressAction['transaction'] =>
+  chain: string
+): LocalAddressAction['rawTransaction'] =>
   ({
     ...tx,
-    chain: chain.toString(),
+    chain,
     hash: (tx as { hash?: string }).hash || ZERO_HASH,
-    fee: null,
-    status: 'pending',
     nonce: -1,
-    sponsored: false,
+    value: tx.value ?? undefined,
   } as const);
 
-function isAsset(x: Asset | NFT): x is Asset {
-  return 'asset_code' in x && 'decimals' in x && 'symbol' in x;
-}
-function isNFT(x: Asset | NFT): x is NFT {
-  return 'contract_address' in x && 'token_id' in x;
-}
-
-function toNftAsset(x: NFT): NFTAsset {
+export function convertAssetToFungible(asset: Asset | null): Fungible | null {
+  if (!asset) {
+    return null;
+  }
   return {
-    ...x,
-    asset_code: `${x.contract_address}:${x.token_id}`,
-    name: x.metadata.name,
-    symbol: '',
-    preview: { url: null, meta: null },
-    detail: { url: null, meta: null },
-    interface: x.contract_standard,
-    type: 'nft',
-    price: null,
-    icon_url: null,
-    is_verified: false,
-    collection_info: null,
-    tags: null,
-    floor_price: x.prices.converted?.floor_price ?? 0,
-    last_price: 0,
+    id: asset.id || asset.asset_code,
+    name: asset.name,
+    symbol: asset.symbol,
+    iconUrl: asset.icon_url || null,
+    implementations: asset.implementations || {},
+    new: false,
+    verified: asset.is_verified,
+    meta: {
+      circulatingSupply: null,
+      totalSupply: null,
+      price: asset.price?.value || null,
+      marketCap: null,
+      fullyDilutedValuation: null,
+      relativeChange1d: asset.price?.relative_change_24h || null,
+      relativeChange30d: null,
+      relativeChange90d: null,
+      relativeChange365d: null,
+    },
   };
 }
 
-export function createSendAddressAction({
-  address,
-  transaction,
-  asset,
-  quantity,
-  chain,
-}: {
-  address: string;
-  transaction: MultichainTransaction;
-  asset: Asset | NFT;
-  quantity: string;
-  chain: Chain;
-}): LocalAddressAction {
+export function convertNftToNftPreview(nft: NFT | null): NFTPreview | null {
+  if (!nft) {
+    return null;
+  }
   return {
-    id: nanoid(),
-    datetime: new Date().toISOString(),
-    address,
-    type: { display_value: 'Send', value: 'send' },
-    label: null,
-    transaction: transaction.evm
-      ? toActionTx(transaction.evm, chain)
-      : toEmptyActionTx(chain),
-    content: {
-      transfers: {
-        outgoing: isAsset(asset)
-          ? [
-              {
-                asset: { fungible: asset },
-                quantity,
-                price: asset.price?.value ?? null,
-              },
-            ]
-          : isNFT(asset)
-          ? [
-              {
-                asset: { nft: toNftAsset(asset) },
-                quantity,
-                price: asset.prices.converted?.floor_price ?? null,
-              },
-            ]
-          : [],
-        incoming: [],
+    chain: nft.chain,
+    contractAddress: nft.contract_address,
+    tokenId: nft.token_id,
+    metadata: {
+      name: nft.metadata?.name || null,
+      content: {
+        imagePreviewUrl: nft.metadata?.content?.image_preview_url || null,
       },
     },
-    local: true,
   };
 }
 
-type AssetQuantity = { asset: Asset; quantity: string };
+function convertNetworkToActionChain(network: NetworkConfig): ActionChain {
+  return {
+    id: network.id,
+    name: network.name,
+    iconUrl: network.icon_url,
+  };
+}
+
+export function getExplorerUrl(
+  explorerUrlTemplate: string | null,
+  hash: string | null
+) {
+  return hash && explorerUrlTemplate
+    ? explorerUrlTemplate.replace('{HASH}', hash)
+    : null;
+}
+
+export function createSendTokenAddressAction({
+  transaction,
+  hash,
+  sendAsset,
+  sendAmount,
+  address,
+  network,
+  receiverAddress,
+  explorerUrl,
+}: {
+  transaction: MultichainTransaction;
+  hash: string | null;
+  network: NetworkConfig;
+  sendAsset: Asset;
+  sendAmount: Amount;
+  address: string;
+  receiverAddress: string;
+  explorerUrl: string | null;
+}): LocalAddressAction {
+  const content = {
+    approvals: null,
+    transfers: [
+      {
+        direction: 'out' as const,
+        amount: sendAmount,
+        fungible: convertAssetToFungible(sendAsset),
+        nft: null,
+      },
+    ],
+  };
+
+  const actionTransaction = {
+    chain: convertNetworkToActionChain(network),
+    hash,
+    explorerUrl,
+  };
+
+  return {
+    id: nanoid(),
+    timestamp: new Date().getTime(),
+    address,
+    content,
+    transaction: actionTransaction,
+    acts: [
+      {
+        content,
+        status: 'pending',
+        label: {
+          contract: null,
+          wallet: {
+            address: receiverAddress,
+            name: null,
+            iconUrl: null,
+          },
+        },
+        rate: null,
+        transaction: actionTransaction,
+        type: {
+          value: 'send',
+          displayValue: 'Send',
+        },
+      },
+    ],
+    status: 'pending',
+    type: {
+      displayValue: 'Send',
+      value: 'send',
+    },
+    label: {
+      contract: null,
+      wallet: {
+        address: receiverAddress,
+        name: null,
+        iconUrl: null,
+      },
+    },
+    fee: null,
+    gasback: null,
+    refund: null,
+    local: true,
+    rawTransaction: transaction.evm
+      ? toActionTx(transaction.evm, network.id)
+      : toEmptyActionTx(network.id),
+  };
+}
+
+export function createSendNFTAddressAction({
+  hash,
+  transaction,
+  network,
+  sendAsset,
+  sendAmount,
+  address,
+  receiverAddress,
+  explorerUrl,
+}: {
+  hash: string | null;
+  transaction: MultichainTransaction;
+  network: NetworkConfig;
+  sendAsset: NFT;
+  sendAmount: Amount;
+  address: string;
+  receiverAddress: string;
+  explorerUrl: string | null;
+}): LocalAddressAction {
+  const content = {
+    approvals: null,
+    transfers: [
+      {
+        direction: 'out' as const,
+        amount: sendAmount,
+        fungible: null,
+        nft: convertNftToNftPreview(sendAsset),
+      },
+    ],
+  };
+  const actionTransaction = {
+    chain: convertNetworkToActionChain(network),
+    hash,
+    explorerUrl,
+  };
+
+  return {
+    id: nanoid(),
+    timestamp: new Date().getTime(),
+    address,
+    content,
+    transaction: actionTransaction,
+    acts: [
+      {
+        content,
+        status: 'pending',
+        label: {
+          contract: null,
+          wallet: { address: receiverAddress, name: null, iconUrl: null },
+        },
+        rate: null,
+        transaction: actionTransaction,
+        type: {
+          value: 'send',
+          displayValue: 'Send',
+        },
+      },
+    ],
+    status: 'pending',
+    type: {
+      displayValue: 'Send',
+      value: 'send',
+    },
+    label: {
+      contract: null,
+      wallet: {
+        address: receiverAddress,
+        name: null,
+        iconUrl: null,
+      },
+    },
+    fee: null,
+    gasback: null,
+    refund: null,
+    local: true,
+    rawTransaction: transaction.evm
+      ? toActionTx(transaction.evm, network.id)
+      : toEmptyActionTx(network.id),
+  };
+}
 
 export function createTradeAddressAction({
   address,
   transaction,
-  outgoing,
-  incoming,
-  chain,
+  hash,
+  spendAmount,
+  spendAsset,
+  receiveAmount,
+  receiveAsset,
+  network,
+  rate,
+  explorerUrl,
 }: {
-  address: string;
   transaction: MultichainTransaction;
-  outgoing: AssetQuantity[];
-  incoming: AssetQuantity[];
-  chain: Chain;
+  hash: string | null;
+  spendAmount: Amount;
+  spendAsset: Asset;
+  receiveAmount: Amount;
+  receiveAsset: Asset;
+  address: string;
+  network: NetworkConfig;
+  rate: Quote2['rate'] | null;
+  explorerUrl: string | null;
 }): LocalAddressAction {
+  const content = {
+    approvals: null,
+    transfers: [
+      {
+        direction: 'out' as const,
+        amount: spendAmount,
+        fungible: convertAssetToFungible(spendAsset),
+        nft: null,
+      },
+      {
+        direction: 'in' as const,
+        amount: receiveAmount,
+        fungible: convertAssetToFungible(receiveAsset),
+        nft: null,
+      },
+    ],
+  };
+
+  const actionTransaction = {
+    chain: convertNetworkToActionChain(network),
+    hash,
+    explorerUrl,
+  };
+
   return {
     id: nanoid(),
-    datetime: new Date().toISOString(),
     address,
-    type: { value: 'trade', display_value: 'Trade' },
-    transaction: transaction.evm
-      ? toActionTx(transaction.evm, chain)
-      : toEmptyActionTx(chain),
-    label: null,
-    content: {
-      transfers: {
-        outgoing: outgoing.map(({ asset, quantity }) => ({
-          asset: { fungible: asset },
-          quantity,
-          price: asset.price?.value ?? null,
-        })),
-        incoming: incoming.map(({ asset, quantity }) => ({
-          asset: { fungible: asset },
-          quantity,
-          price: asset.price?.value ?? null,
-        })),
+    timestamp: new Date().getTime(),
+    content,
+    transaction: actionTransaction,
+    acts: [
+      {
+        content,
+        label: null,
+        rate,
+        status: 'pending',
+        type: {
+          value: 'trade',
+          displayValue: 'Trade',
+        },
+        transaction: actionTransaction,
       },
+    ],
+    status: 'pending',
+    type: {
+      value: 'trade',
+      displayValue: 'Trade',
     },
+    label: null,
+    fee: null,
+    gasback: null,
+    refund: null,
     local: true,
+    rawTransaction: transaction.evm
+      ? toActionTx(transaction.evm, network.id)
+      : toEmptyActionTx(network.id),
   };
 }
 
 export function createBridgeAddressAction({
   address,
   transaction,
-  outgoing,
-  incoming,
-  chain,
+  hash,
+  spendAmount,
+  spendAsset,
+  receiveAmount,
+  receiveAsset,
+  inputNetwork,
+  outputNetwork,
+  explorerUrl,
+  receiverAddress,
 }: {
   address: string;
   transaction: MultichainTransaction;
-  outgoing: AssetQuantity[];
-  incoming: AssetQuantity[];
-  chain: Chain;
+  hash: string | null;
+  spendAmount: Amount;
+  spendAsset: Asset;
+  receiveAmount: Amount;
+  receiveAsset: Asset;
+  inputNetwork: NetworkConfig;
+  outputNetwork: NetworkConfig;
+  explorerUrl: string | null;
+  receiverAddress: string | null;
 }): LocalAddressAction {
+  const content = {
+    approvals: null,
+    transfers: [
+      {
+        direction: 'out' as const,
+        amount: spendAmount,
+        fungible: convertAssetToFungible(spendAsset),
+        nft: null,
+      },
+      {
+        direction: 'in' as const,
+        amount: receiveAmount,
+        fungible: convertAssetToFungible(receiveAsset),
+        nft: null,
+      },
+    ],
+  };
+
+  const actionInputTransaction = {
+    chain: convertNetworkToActionChain(inputNetwork),
+    hash,
+    explorerUrl,
+  };
+
+  const actionOutputTransaction = {
+    chain: convertNetworkToActionChain(outputNetwork),
+    hash,
+    explorerUrl,
+  };
+
   return {
     id: nanoid(),
-    datetime: new Date().toISOString(),
+    timestamp: new Date().getTime(),
     address,
-    type: { display_value: 'Bridge', value: 'send' },
-    label: null,
-    transaction: transaction.evm
-      ? toActionTx(transaction.evm, chain)
-      : toEmptyActionTx(chain),
-    content: {
-      transfers: {
-        outgoing: outgoing.map(({ asset, quantity }) => ({
-          asset: { fungible: asset },
-          quantity,
-          price: asset.price?.value ?? null,
-        })),
-        incoming: incoming.map(({ asset, quantity }) => ({
-          asset: { fungible: asset },
-          quantity,
-          price: asset.price?.value ?? null,
-        })),
+    content,
+    transaction: actionInputTransaction,
+    acts: [
+      {
+        content,
+        label: null,
+        rate: null,
+        status: 'pending',
+        type: {
+          value: 'send',
+          displayValue: 'Send',
+        },
+        transaction: actionInputTransaction,
       },
+      receiverAddress
+        ? {
+            content: {
+              approvals: null,
+              transfers: [
+                {
+                  direction: 'out',
+                  amount: receiveAmount,
+                  fungible: convertAssetToFungible(receiveAsset),
+                  nft: null,
+                },
+              ],
+            },
+            label: {
+              contract: null,
+              wallet: {
+                address: receiverAddress,
+                name: null,
+                iconUrl: null,
+              },
+            },
+            rate: null,
+            status: 'pending',
+            type: {
+              value: 'send',
+              displayValue: 'Send',
+            },
+            transaction: actionOutputTransaction,
+          }
+        : {
+            content: {
+              approvals: null,
+              transfers: [
+                {
+                  direction: 'in',
+                  amount: receiveAmount,
+                  fungible: convertAssetToFungible(receiveAsset),
+                  nft: null,
+                },
+              ],
+            },
+            label: null,
+            rate: null,
+            status: 'pending',
+            type: {
+              value: 'receive',
+              displayValue: 'Receive',
+            },
+            transaction: actionOutputTransaction,
+          },
+    ],
+    status: 'pending',
+    type: {
+      value: 'send',
+      displayValue: receiverAddress ? 'Send' : 'Bridge',
     },
+    label: receiverAddress
+      ? {
+          contract: null,
+          wallet: {
+            address: receiverAddress,
+            name: null,
+            iconUrl: null,
+          },
+        }
+      : null,
+    fee: null,
+    gasback: null,
+    refund: null,
     local: true,
+    rawTransaction: transaction.evm
+      ? toActionTx(transaction.evm, inputNetwork.id)
+      : toEmptyActionTx(inputNetwork.id),
   };
 }
 
 export function createApproveAddressAction({
+  hash,
   transaction,
   asset,
-  quantity,
-  chain,
+  amount,
+  network,
+  explorerUrl,
 }: {
+  hash: string | null;
   transaction: IncomingTransactionWithFrom;
   asset: Asset;
-  quantity: string;
-  chain: Chain;
+  amount: Amount;
+  network: NetworkConfig;
+  explorerUrl: string | null;
 }): LocalAddressAction {
+  const content = {
+    approvals: [
+      {
+        amount,
+        fungible: convertAssetToFungible(asset),
+        nft: null,
+        collection: null,
+        unlimited: false,
+      },
+    ],
+    transfers: null,
+  };
+
+  const actionTransaction = {
+    chain: convertNetworkToActionChain(network),
+    hash,
+    explorerUrl,
+  };
+
   return {
     id: nanoid(),
+    timestamp: new Date().getTime(),
     address: transaction.from,
-    datetime: new Date().toISOString(),
-    type: { value: 'approve', display_value: 'Approve' },
-    transaction: toActionTx(transaction, chain),
+    content,
+    transaction: actionTransaction,
+    acts: [
+      {
+        content,
+        label: null,
+        rate: null,
+        status: 'pending',
+        transaction: actionTransaction,
+        type: {
+          value: 'approve',
+          displayValue: 'Approve',
+        },
+      },
+    ],
+    status: 'pending',
+    type: {
+      value: 'approve',
+      displayValue: 'Approve',
+    },
     label: null,
-    content: { single_asset: { asset: { fungible: asset }, quantity } },
+    fee: null,
+    gasback: null,
+    refund: null,
     local: true,
+    rawTransaction: toActionTx(transaction, network.id),
   };
 }
 
 export function createAcceleratedAddressAction(
-  addressAction: AnyAddressAction,
+  originalAddressAction: LocalAddressAction,
   transaction: IncomingTransaction
 ): LocalAddressAction {
-  const chain = createChain(addressAction.transaction.chain);
+  invariant(
+    originalAddressAction.rawTransaction,
+    'Missing initial transaction data to create a cancel transaction'
+  );
+  const chain = originalAddressAction.rawTransaction.chain;
   return {
-    ...addressAction,
+    ...originalAddressAction,
     id: nanoid(),
-    datetime: new Date().toISOString(),
+    timestamp: new Date().getTime(),
     local: true,
-    transaction: toActionTx(transaction, chain),
-    relatedTransaction: addressAction.transaction.hash,
+    rawTransaction: toActionTx(transaction, chain),
+    relatedTransaction: originalAddressAction.rawTransaction.hash,
   };
 }
 
 export function createCancelAddressAction(
-  originalAddressAction: AnyAddressAction,
+  originalAddressAction: LocalAddressAction,
   transaction: IncomingTransactionWithFrom
 ): LocalAddressAction {
-  const chain = createChain(originalAddressAction.transaction.chain);
+  invariant(
+    originalAddressAction.rawTransaction,
+    'Missing initial transaction data to create a cancel transaction'
+  );
+  const chain = originalAddressAction.rawTransaction.chain;
+  const type = { displayValue: 'Send', value: 'send' as const };
   return {
     id: nanoid(),
-    datetime: new Date().toISOString(),
+    timestamp: new Date().getTime(),
     local: true,
     address: transaction.from,
-    type: { display_value: 'Send', value: 'send' },
+    type,
     label: null,
     content: null,
-    transaction: toActionTx(transaction, chain),
-    relatedTransaction: originalAddressAction.transaction.hash,
+    rawTransaction: toActionTx(transaction, chain),
+    relatedTransaction: originalAddressAction.rawTransaction.hash,
+    fee: null,
+    gasback: null,
+    refund: null,
+    status: 'pending',
+    transaction: originalAddressAction.transaction,
+    acts: originalAddressAction.transaction
+      ? [
+          {
+            content: null,
+            label: null,
+            rate: null,
+            status: 'pending',
+            type,
+            transaction: originalAddressAction.transaction,
+          },
+        ]
+      : [],
   };
 }
 
-export function getActionAsset(action: AnyAddressAction) {
-  const approvedAsset = action.content?.single_asset?.asset;
-  const sentAsset = action.content?.transfers?.outgoing?.[0]?.asset;
-
-  if (approvedAsset) {
-    return getFungibleAsset(approvedAsset);
-  } else if (sentAsset) {
-    return getFungibleAsset(sentAsset);
-  }
-  return null;
-}
-
-export function getActionAddress(action: AnyAddressAction) {
+export function getActionApproval(action: AnyAddressAction) {
   return (
-    action.label?.display_value.wallet_address ||
-    action.label?.display_value.contract_address
+    (action?.acts?.length === 1 &&
+    action.acts[0].content?.approvals?.length === 1 &&
+    !action.acts[0].content.transfers
+      ? action.acts[0].content.approvals[0]
+      : null) || null
   );
 }

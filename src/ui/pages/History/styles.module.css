@@ -1,0 +1,9 @@
+@keyframes spin {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+.updateIconLoading {
+  animation: spin 1s linear infinite;
+}

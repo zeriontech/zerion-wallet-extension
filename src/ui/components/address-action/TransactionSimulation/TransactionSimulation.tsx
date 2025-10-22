@@ -29,6 +29,10 @@ import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
+import { baseToCommon } from 'src/shared/units/convert';
+import { getDecimals } from 'src/modules/networks/asset';
+import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -104,29 +108,41 @@ export function TransactionSimulation({
 
   const localSolanaAddressAction = useMemo(() => {
     return transaction.solana
-      ? parseSolanaTransaction(address, solFromBase64(transaction.solana))
+      ? parseSolanaTransaction(
+          address,
+          solFromBase64(transaction.solana),
+          currency
+        )
       : null;
-  }, [transaction.solana, address]);
+  }, [transaction.solana, address, currency]);
 
   const interpretation = txInterpretQuery.data;
 
-  const interpretAddressAction = interpretation?.action;
+  const interpretAddressAction = interpretation?.data.action;
   const addressAction =
     interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
+
+  const maybeApproval = addressAction ? getActionApproval(addressAction) : null;
+  const requestedAllowanceQuantityCommon =
+    maybeApproval?.amount?.quantity ?? UNLIMITED_APPROVAL_AMOUNT.toFixed();
+
+  const chain = transaction.evm ? evmChain : solanaChain;
+
+  const allowanceQuantityCommon =
+    chain && maybeApproval?.fungible && customAllowanceValueBase
+      ? baseToCommon(
+          customAllowanceValueBase,
+          getDecimals({ asset: maybeApproval.fungible, chain })
+        ).toFixed()
+      : requestedAllowanceQuantityCommon;
+
   if (!addressAction || !networks) {
     return <p>loading...</p>;
   }
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
-  const singleAsset = addressAction.content?.single_asset;
 
-  // TODO: what if network doesn't support simulations (txInterpretQuery is idle or isError),
-  // but this is an approval tx? Can there be a bug?
-  const allowanceQuantityBase =
-    customAllowanceValueBase || addressAction.content?.single_asset?.quantity;
-
-  const chain = transaction.evm ? evmChain : solanaChain;
   invariant(chain, 'Chain must be defined for transaction simulation');
+  const network = networks.getByNetworkId(chain);
+  invariant(network, 'Network must be known for transaction simulation');
 
   return (
     <>
@@ -149,8 +165,7 @@ export function TransactionSimulation({
                 closeKind="icon"
               />
               <TransactionAdvancedView
-                networks={networks}
-                chain={chain}
+                network={network}
                 interpretation={interpretation}
                 transaction={transaction}
                 addressAction={addressAction}
@@ -163,16 +178,13 @@ export function TransactionSimulation({
       <VStack gap={8}>
         <AddressActionDetails
           address={address}
-          recipientAddress={recipientAddress}
           addressAction={addressAction}
-          chain={chain}
-          networks={networks}
-          actionTransfers={actionTransfers}
-          singleAsset={singleAsset}
-          allowanceQuantityBase={allowanceQuantityBase || null}
+          network={network}
+          allowanceQuantityCommon={allowanceQuantityCommon || null}
+          customAllowanceQuantityBase={customAllowanceValueBase || null}
           showApplicationLine={false}
           singleAssetElementEnd={
-            allowanceQuantityBase && onOpenAllowanceForm ? (
+            allowanceQuantityCommon && onOpenAllowanceForm ? (
               <UIText kind="small/accent" color="var(--primary)">
                 <UnstyledButton
                   type="button"

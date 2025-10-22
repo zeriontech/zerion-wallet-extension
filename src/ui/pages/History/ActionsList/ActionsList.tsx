@@ -6,11 +6,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import {
-  isLocalAddressAction,
-  type AnyAddressAction,
-} from 'src/modules/ethereum/transactions/addressAction';
-import { DelayedRender } from 'src/ui/components/DelayedRender';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { usePreferences } from 'src/ui/features/preferences';
 import { ActionItem } from '../ActionItem';
 
@@ -29,7 +26,7 @@ export function ActionsList({
   const groupedByDate = useMemo(
     () =>
       groupBy(actions, (item) =>
-        startOfDate(new Date(item.datetime).getTime() || Date.now()).getTime()
+        startOfDate(new Date(item.timestamp).getTime() || Date.now()).getTime()
       ),
     [actions]
   );
@@ -52,7 +49,10 @@ export function ActionsList({
             <SurfaceList
               gap={4}
               items={items.map((addressAction) => {
-                const hash = addressAction.transaction.hash;
+                const hash =
+                  addressAction.transaction?.hash ||
+                  addressAction.acts?.at(0)?.transaction.hash ||
+                  '';
                 return {
                   key: isLocalAddressAction(addressAction)
                     ? `local-${addressAction.relatedTransaction || hash}`
@@ -71,15 +71,14 @@ export function ActionsList({
       </VStack>
       {actions.length && (isLoading || hasMore) ? (
         <SurfaceList
+          style={{ paddingBlock: 6 }}
           items={[
             {
               key: 0,
               onClick: isLoading ? undefined : onLoadMore,
               style: { height: 40 },
               component: isLoading ? (
-                <DelayedRender delay={400}>
-                  <ViewLoading />
-                </DelayedRender>
+                <ViewLoading />
               ) : (
                 <UIText kind="body/accent" color="var(--primary)">
                   Show More

@@ -1,7 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
 import { animated } from '@react-spring/web';
-import { createChain } from 'src/modules/networks/Chain';
-import type { Networks } from 'src/modules/networks/Networks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
@@ -14,7 +12,8 @@ import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import SuccessIcon from 'jsx:src/ui/assets/checkmark-allowed.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { ActionTransaction } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { LocalActionTransaction } from 'src/modules/ethereum/transactions/addressAction';
 
 const ICON_SIZE = 20;
 
@@ -85,39 +84,28 @@ function HashButton({ hash }: { hash: string }) {
 }
 
 export function ExplorerInfo({
-  action,
-  networks,
+  transaction,
 }: {
-  action: AnyAddressAction;
-  networks: Networks;
+  transaction: ActionTransaction | LocalActionTransaction;
 }) {
-  const chain = useMemo(() => createChain(action.transaction.chain), [action]);
-  const network = useMemo(
-    () => networks.getNetworkByName(chain),
-    [networks, chain]
-  );
-
-  const explorerUrl = networks.getExplorerTxUrlByName(
-    createChain(action.transaction.chain),
-    action.transaction.hash
-  );
-
   return (
     <HStack
       gap={16}
       alignItems="center"
-      style={{
-        gridTemplateColumns: network ? '1fr auto auto' : undefined,
-      }}
+      style={{ gridTemplateColumns: '1fr auto auto' }}
     >
-      {network ? (
-        <HStack gap={8} alignItems="center">
-          <NetworkIcon src={network.icon_url} size={24} name={network.name} />
-          <UIText kind="small/accent">{network.name}</UIText>
-        </HStack>
+      <HStack gap={8} alignItems="center">
+        <NetworkIcon
+          src={transaction.chain.iconUrl}
+          size={24}
+          name={transaction.chain.name}
+        />
+        <UIText kind="small/accent">{transaction.chain.name}</UIText>
+      </HStack>
+      {transaction.explorerUrl ? (
+        <ExplorerLink url={transaction.explorerUrl} />
       ) : null}
-      {explorerUrl ? <ExplorerLink url={explorerUrl} /> : null}
-      <HashButton hash={action.transaction.hash} />
+      {transaction.hash ? <HashButton hash={transaction.hash} /> : null}
     </HStack>
   );
 }

@@ -10,7 +10,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
   createCancelAddressAction,
-  type AnyAddressAction,
+  type LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { createChain } from 'src/modules/networks/Chain';
@@ -53,15 +53,16 @@ function CancelTxContent({
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  addressAction: AnyAddressAction;
+  addressAction: LocalAddressAction;
   transaction: IncomingTransactionWithChainId & IncomingTransactionWithFrom;
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
   const { address } = wallet;
   const { preferences } = usePreferences();
-  const { transaction: originalTransaction } = addressAction;
+  const { rawTransaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
+  invariant(originalTransaction, 'Original transaction must be defined');
   const chain = createChain(originalTransaction.chain);
   const { data: chainGasPrices = null } = useGasPrices(chain);
   const acceleratedGasPrices = useMemo(
@@ -234,13 +235,14 @@ export function CancelTx({
   onSuccess,
 }: {
   wallet: ExternallyOwnedAccount;
-  addressAction: AnyAddressAction;
+  addressAction: LocalAddressAction;
   onDismiss: () => void;
   onSuccess: () => void;
 }) {
   const { address } = wallet;
-  const { transaction: originalTransaction } = addressAction;
+  const { rawTransaction: originalTransaction } = addressAction;
   const { networks } = useNetworks();
+  invariant(originalTransaction, 'Original transaction must be defined');
   const chain = createChain(originalTransaction.chain);
   const chainId = networks?.getChainId(chain);
   const transaction = useMemo(() => {

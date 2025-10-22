@@ -1,105 +1,80 @@
-import React, { useMemo } from 'react';
-import type {
-  NFTAsset,
-  Asset,
-  Direction,
-  ActionTransfer,
-  ActionType,
-} from 'defi-sdk';
+import React from 'react';
 import { minus } from 'src/ui/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import type { Chain } from 'src/modules/networks/Chain';
-import { getCommonQuantity } from 'src/modules/networks/asset';
-import {
-  getFungibleAsset,
-  getNftAsset,
-} from 'src/modules/ethereum/transactions/actionAsset';
 import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { AssetQuantity } from 'src/ui/components/AssetQuantity';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { NFTLink } from 'src/ui/components/NFTLink';
+import type {
+  ActionDirection,
+  ActionType,
+  Amount,
+  Approval,
+  NFTPreview,
+  Transfer,
+} from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 function getSign(
   decimaledValue?: number | BigNumber | string,
-  direction?: Direction
+  direction?: ActionDirection | null
 ) {
-  if (!decimaledValue || !direction || direction === 'self') {
+  if (!decimaledValue || !direction) {
     return '';
   }
   return direction === 'in' ? '+' : minus;
 }
 
-function HistoryTokenValue({
+export function HistoryTokenValue({
   actionType,
-  value,
-  asset,
-  chain,
+  amount,
+  fungible,
   direction,
-  address,
   withLink,
 }: {
   actionType: ActionType;
-  value: number | string;
-  asset: Asset;
-  chain: Chain;
-  direction: Direction;
-  address?: string;
+  amount: Amount | null;
+  fungible: Fungible;
+  direction: ActionDirection | null;
   withLink: boolean;
 }) {
-  const sign = getSign(value, direction);
-  const commonQuantity = useMemo(
-    () =>
-      value === '0' && actionType === 'revoke'
-        ? null
-        : getCommonQuantity({
-            asset,
-            chain,
-            baseQuantity: value,
-          }),
-    [chain, actionType, asset, value]
-  );
+  const sign = getSign(amount?.value || 0, direction);
+  const quantity = actionType === 'revoke' ? null : amount?.quantity;
 
   return (
     <HStack
       gap={4}
       alignItems="center"
       style={{
-        gridTemplateColumns: commonQuantity
-          ? 'minmax(min-content, max-content) minmax(20px, max-content)'
-          : 'minmax(min-content, max-content)',
+        gridTemplateColumns:
+          quantity != null
+            ? 'minmax(min-content, max-content) minmax(20px, max-content)'
+            : 'minmax(min-content, max-content)',
         overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
-      title={commonQuantity?.toFixed()}
+      title={quantity || undefined}
     >
-      {commonQuantity ? (
-        <AssetQuantity sign={sign} commonQuantity={commonQuantity} />
-      ) : null}
+      {quantity ? <AssetQuantity sign={sign} quantity={quantity} /> : null}
       {withLink ? (
-        <AssetLink asset={asset} address={address} />
+        <AssetLink fungible={fungible} />
       ) : (
-        asset.symbol?.toUpperCase() || asset.name
+        fungible.symbol || fungible.name
       )}
     </HStack>
   );
 }
 
 export function HistoryNFTValue({
-  quantity = 0,
-  nftAsset,
-  chain,
-  name,
+  amount,
+  nft,
   direction,
-  address,
   withLink,
 }: {
-  quantity?: number;
-  nftAsset?: NFTAsset | null;
-  chain?: Chain;
-  name?: string;
-  direction?: Direction;
-  address?: string;
+  amount: Amount | null;
+  nft: NFTPreview;
+  direction: ActionDirection | null;
   withLink?: boolean;
 }) {
   return (
@@ -108,17 +83,13 @@ export function HistoryNFTValue({
       alignItems="center"
       style={{ gridTemplateColumns: 'minmax(40px, 1fr) auto' }}
     >
-      {quantity > 1 ? (
+      {(Number(amount?.quantity) || 0) > 1 ? (
         <span>
-          {getSign(quantity, direction)}
-          {quantity}
+          {getSign(amount?.quantity, direction)}
+          {amount?.quantity}
         </span>
       ) : null}
-      {(!quantity || quantity === 1) && nftAsset?.asset_code && withLink ? (
-        <NFTLink nft={nftAsset} chain={chain} address={address} title={name} />
-      ) : (
-        name
-      )}
+      {withLink ? <NFTLink nft={nft} /> : nft?.metadata?.name || 'NFT'}
     </HStack>
   );
 }
@@ -126,16 +97,10 @@ export function HistoryNFTValue({
 export function HistoryItemValue({
   actionType,
   transfers,
-  direction,
-  chain,
-  address,
   withLink,
 }: {
   actionType: ActionType;
-  transfers?: Pick<ActionTransfer, 'asset' | 'quantity'>[];
-  direction: Direction;
-  chain: Chain;
-  address?: string;
+  transfers?: Transfer[];
   withLink: boolean;
 }) {
   if (!transfers?.length) {
@@ -145,65 +110,80 @@ export function HistoryItemValue({
   if (transfers.length > 1) {
     return (
       <span>
-        {direction === 'out' ? minus : '+'}
+        {transfers[0].direction === 'out' ? minus : '+'}
         {transfers.length} assets
       </span>
     );
   }
 
-  const nftAsset = getNftAsset(transfers[0].asset);
-  const fungibleAsset = getFungibleAsset(transfers[0].asset);
+  const transfer = transfers[0];
 
-  return nftAsset ? (
+  return transfer.nft ? (
     <HistoryNFTValue
-      address={address}
-      nftAsset={nftAsset}
-      direction={direction}
-      quantity={1}
-      name={nftAsset.name || nftAsset.collection?.name}
-      chain={chain}
+      nft={transfer.nft}
+      direction={transfer.direction}
+      amount={transfer.amount}
       withLink={withLink}
     />
-  ) : fungibleAsset ? (
+  ) : transfer.fungible ? (
     <HistoryTokenValue
       actionType={actionType}
-      address={address}
-      asset={fungibleAsset}
-      chain={chain}
-      value={transfers[0].quantity}
-      direction={direction}
+      amount={transfer.amount}
+      fungible={transfer.fungible}
+      direction={transfer.direction}
       withLink={withLink}
     />
   ) : null;
 }
 
+export function HistoryApprovalValue({
+  approvals,
+  withLink,
+}: {
+  approvals: Approval[];
+  withLink: boolean;
+}) {
+  if (!approvals.length) {
+    return null;
+  }
+
+  if (approvals.length > 1) {
+    return <span>{approvals.length} assets</span>;
+  }
+
+  const approval = approvals[0];
+
+  return approval.nft ? (
+    withLink ? (
+      <NFTLink nft={approval.nft} />
+    ) : (
+      <span>{approval.nft.metadata?.name || 'NFT'}</span>
+    )
+  ) : approval.fungible ? (
+    withLink ? (
+      <AssetLink fungible={approval.fungible} title={approval.fungible.name} />
+    ) : (
+      <span>{approval.fungible.name || approval.fungible.symbol}</span>
+    )
+  ) : approval.collection ? (
+    <span>{approval.collection.name}</span>
+  ) : null;
+}
+
 export function TransactionCurrencyValue({
   transfers,
-  chain,
   currency,
 }: {
-  transfers?: ActionTransfer[];
-  chain: Chain;
+  transfers?: Transfer[];
   currency: string;
 }) {
   if (transfers?.length !== 1) {
     return null;
   }
   const transfer = transfers[0];
-  const asset = getFungibleAsset(transfer.asset);
-  if (!asset) {
+  if (transfer.amount?.value == null) {
     return null;
   }
-
-  const commonQuantity = getCommonQuantity({
-    asset,
-    chain,
-    baseQuantity: transfer.quantity,
-  });
-  const value = formatCurrencyValue(
-    commonQuantity.times(transfer.price || 0),
-    'en',
-    currency
-  );
+  const value = formatCurrencyValue(transfer.amount.value, 'en', currency);
   return <>{value}</>;
 }

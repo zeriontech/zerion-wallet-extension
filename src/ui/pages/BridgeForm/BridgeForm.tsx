@@ -38,7 +38,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { getDecimals } from 'src/modules/networks/asset';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type { AddressAction, AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'defi-sdk';
 import {
   SignTransactionButton,
   type SendTxBtnHandle,
@@ -98,6 +98,8 @@ import { UKDisclaimer } from 'src/ui/components/UKDisclaimer/UKDisclaimer';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -714,6 +716,12 @@ function BridgeFormComponent() {
     [inputChain, inputAmount, inputFungibleId]
   );
 
+  const { data: inputFungibleUsdInfoForAnalytics } = useAssetFullInfo(
+    { fungibleId: inputPosition?.asset.id || '', currency: 'usd' },
+    { source: useHttpClientSource() },
+    { enabled: Boolean(inputPosition?.asset.id) }
+  );
+
   const {
     mutate: sendApproveTransaction,
     data: approveHash = null,
@@ -726,6 +734,7 @@ function BridgeFormComponent() {
         'Approval transaction is not configured'
       );
 
+      invariant(inputNetwork, 'Network must be defined to sign the tx');
       invariant(spendChain, 'Chain must be defined to sign the tx');
       invariant(approveTxBtnRef.current, 'SignTransactionButton not found');
       invariant(inputPosition, 'Spend position must be defined');
@@ -738,19 +747,32 @@ function BridgeFormComponent() {
           ? await modifyApproveAmount(evmTx, allowanceBase)
           : evmTx;
 
-      const inputAmountBase = commonToBase(
-        formState.inputAmount,
-        getDecimals({ asset: inputPosition.asset, chain: spendChain })
-      ).toFixed();
-
       const fallbackAddressAction = selectedQuote.transactionApprove.evm
         ? createApproveAddressAction({
             transaction: toIncomingTransaction(
               selectedQuote.transactionApprove.evm
             ),
+            hash: null,
+            explorerUrl: null,
+            amount: {
+              currency,
+              quantity: formState.inputAmount,
+              value: inputPosition.asset.price?.value
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(inputPosition.asset.price.value)
+                    .toNumber()
+                : null,
+              usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta
+                .price
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(
+                      inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                    )
+                    .toNumber()
+                : null,
+            },
             asset: inputPosition.asset,
-            quantity: inputAmountBase,
-            chain: spendChain,
+            network: inputNetwork,
           })
         : null;
 
@@ -843,28 +865,42 @@ function BridgeFormComponent() {
         selectedQuote?.transactionSwap,
         'Cannot submit transaction without a quote'
       );
-      const { inputAmount } = formState;
       invariant(spendChain, 'Chain must be defined to sign the tx');
-      invariant(inputAmount, 'inputAmount must be set');
+      invariant(inputNetwork, 'Network must be defined to sign the tx');
+      invariant(outputNetwork, 'Output network must be defined to sign the tx');
+      invariant(formState.inputAmount, 'inputAmount must be set');
       invariant(
         inputPosition && outputPosition,
         'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-      const inputAmountBase = commonToBase(
-        inputAmount,
-        getDecimals({ asset: inputPosition.asset, chain: spendChain })
-      ).toFixed();
-      const outputAmountBase = commonToBase(
-        selectedQuote.outputAmount.quantity,
-        getDecimals({ asset: outputPosition.asset, chain: spendChain })
-      ).toFixed();
       const fallbackAddressAction = createBridgeAddressAction({
+        hash: null,
         address,
+        explorerUrl: null,
+        inputNetwork,
+        outputNetwork,
+        receiverAddress: to || null,
+        spendAsset: inputPosition.asset,
+        receiveAsset: outputPosition.asset,
+        spendAmount: {
+          currency,
+          quantity: formState.inputAmount,
+          value: inputPosition.asset.price?.value
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(inputPosition.asset.price.value)
+                .toNumber()
+            : null,
+          usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta.price
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(
+                  inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                )
+                .toNumber()
+            : null,
+        },
+        receiveAmount: selectedQuote.outputAmount,
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),
-        outgoing: [{ asset: inputPosition.asset, quantity: inputAmountBase }],
-        incoming: [{ asset: outputPosition.asset, quantity: outputAmountBase }],
-        chain: spendChain,
       });
       const txResponse = await sendTxBtnRef.current.sendTransaction({
         transaction: toMultichainTransaction(selectedQuote.transactionSwap),
@@ -1306,7 +1342,7 @@ function BridgeFormComponent() {
 
       <VStack gap={16} style={{ marginTop: 'auto' }}>
         <AnimatedAppear display={showApproveHintLine}>
-          <HStack gap={12} alignItems="center">
+          <HStack gap={12} alignItems="center" style={{ paddingTop: 16 }}>
             <ApproveHintLine
               // or {approveTxStatus === 'confirmed'} ?
               approved={Boolean(selectedQuote?.transactionSwap)}

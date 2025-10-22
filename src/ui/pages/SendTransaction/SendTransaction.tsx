@@ -1,9 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Client, type AddressAction } from 'defi-sdk';
+import { Client } from 'defi-sdk';
 import type { CustomConfiguration } from '@zeriontech/transactions';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  getActionApproval,
+  type AnyAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import type {
   IncomingTransaction,
@@ -47,7 +50,6 @@ import type { Networks } from 'src/modules/networks/Networks';
 import type { TransactionAction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { AllowanceView } from 'src/ui/components/AllowanceView';
-import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -61,7 +63,6 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
-import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
@@ -101,6 +102,10 @@ import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import { baseToCommon, commonToBase } from 'src/shared/units/convert';
+import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
+import { getDecimals } from 'src/modules/networks/asset';
+import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -236,7 +241,7 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   };
 }
 
-function useLocalAddressAction({
+function useLocalAction({
   address: from,
   transactionAction,
   transaction,
@@ -292,8 +297,8 @@ function TransactionDefaultView({
   origin,
   wallet,
   addressAction,
-  singleAsset,
-  allowanceQuantityBase,
+  allowanceQuantityCommon,
+  customAllowanceQuantityBase,
   interpretation,
   interpretQuery,
   populatedTransaction,
@@ -310,8 +315,8 @@ function TransactionDefaultView({
   origin: string;
   wallet: ExternallyOwnedAccount;
   addressAction: AnyAddressAction;
-  singleAsset: NonNullable<AddressAction['content']>['single_asset'];
-  allowanceQuantityBase: string | null;
+  allowanceQuantityCommon: string | null;
+  customAllowanceQuantityBase: string | null;
   interpretation: InterpretResponse | null | undefined;
   interpretQuery: {
     isInitialLoading: boolean;
@@ -335,8 +340,8 @@ function TransactionDefaultView({
     [params]
   );
 
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
+  const network = networks.getByNetworkId(chain);
+  invariant(network, 'Network should be known to show transaction details');
 
   return (
     <>
@@ -360,7 +365,7 @@ function TransactionDefaultView({
             url={origin}
             alt={`Logo for ${origin}`}
           />
-          <UIText kind="headline/h2">{addressAction.type.display_value}</UIText>
+          <UIText kind="headline/h2">{addressAction.type.displayValue}</UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
@@ -396,16 +401,13 @@ function TransactionDefaultView({
         >
           <AddressActionDetails
             address={wallet.address}
-            recipientAddress={recipientAddress}
             addressAction={addressAction}
-            chain={chain}
-            networks={networks}
-            actionTransfers={actionTransfers}
-            singleAsset={singleAsset}
-            allowanceQuantityBase={allowanceQuantityBase}
+            network={network}
+            allowanceQuantityCommon={allowanceQuantityCommon}
+            customAllowanceQuantityBase={customAllowanceQuantityBase}
             showApplicationLine={true}
             singleAssetElementEnd={
-              allowanceQuantityBase &&
+              allowanceQuantityCommon &&
               addressAction.type.value === 'approve' ? (
                 <UIText
                   as={TextLink}
@@ -456,7 +458,7 @@ function TransactionDefaultView({
                 address={singleAddress}
                 addressAction={addressAction}
                 transaction={populatedTransaction}
-                chain={chain}
+                network={network}
                 networkFeeConfiguration={configuration.networkFee}
                 paymasterEligible={paymasterEligible}
               />
@@ -493,8 +495,8 @@ function TransactionDefaultView({
                     paymasterPossible={paymasterPossible}
                     paymasterWaiting={paymasterWaiting}
                     gasback={
-                      interpretation?.action?.transaction.gasback != null
-                        ? { value: interpretation.action.transaction.gasback }
+                      interpretation?.data.action?.gasback != null
+                        ? { value: interpretation.data.action.gasback }
                         : null
                     }
                     listViewTransitions={true}
@@ -546,7 +548,7 @@ function SendTransactionContent({
   });
 
   const { data: localAddressAction, ...localAddressActionQuery } =
-    useLocalAddressAction({
+    useLocalAction({
       address: singleAddress,
       transactionAction,
       transaction: populatedTransaction,
@@ -674,19 +676,15 @@ function SendTransactionContent({
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,
         origin,
-        client,
       });
     },
   });
 
   const interpretationHasCriticalWarning = hasCriticalWarning(
-    interpretQuery.data?.warnings
+    interpretQuery.data?.data.warnings
   );
 
-  const requestedAllowanceQuantityBase =
-    interpretQuery.data?.action?.content?.single_asset?.quantity ||
-    localAddressAction?.content?.single_asset?.quantity;
-  const interpretAddressAction = interpretQuery.data?.action;
+  const interpretAddressAction = interpretQuery.data?.data.action;
 
   const addressAction = interpretAddressAction || localAddressAction || null;
 
@@ -748,11 +746,41 @@ function SendTransactionContent({
     throw new Error('Unexpected missing localAddressAction');
   }
 
+  const maybeApproval = interpretQuery.data?.data.action
+    ? getActionApproval(interpretQuery.data.data.action)
+    : null;
+  const maybeLocalApproval = localAddressAction
+    ? getActionApproval(localAddressAction)
+    : null;
+
+  const fungibleDecimals = maybeApproval?.fungible
+    ? getDecimals({
+        asset: maybeApproval.fungible,
+        chain,
+      })
+    : null;
+
+  const requestedAllowanceQuantityCommon =
+    maybeApproval?.amount?.quantity ??
+    maybeLocalApproval?.amount?.quantity ??
+    UNLIMITED_APPROVAL_AMOUNT.toFixed();
+
+  const requestedAllowanceQuantityBase =
+    requestedAllowanceQuantityCommon && fungibleDecimals
+      ? commonToBase(
+          requestedAllowanceQuantityCommon,
+          fungibleDecimals
+        ).toFixed()
+      : null;
+
+  const allowanceQuantityCommon =
+    fungibleDecimals && allowanceQuantityBase
+      ? baseToCommon(allowanceQuantityBase, fungibleDecimals).toFixed()
+      : requestedAllowanceQuantityCommon;
+
   if (!addressAction) {
     return null;
   }
-
-  const singleAsset = addressAction?.content?.single_asset;
 
   const handleChangeAllowance = (value: string) => {
     setAllowanceQuantityBase(value);
@@ -787,10 +815,8 @@ function SendTransactionContent({
             origin={origin}
             wallet={wallet}
             addressAction={addressAction}
-            singleAsset={singleAsset}
-            allowanceQuantityBase={
-              allowanceQuantityBase || requestedAllowanceQuantityBase || null
-            }
+            allowanceQuantityCommon={allowanceQuantityCommon || null}
+            customAllowanceQuantityBase={allowanceQuantityBase || null}
             interpretation={interpretQuery.data}
             interpretQuery={interpretQuery}
             populatedTransaction={populatedTransaction}
@@ -806,30 +832,35 @@ function SendTransactionContent({
         <CenteredDialog
           ref={advancedDialogRef}
           containerStyle={{ paddingBottom: 0 }}
-          renderWhenOpen={() => (
-            <>
-              <DialogTitle
-                title={<UIText kind="body/accent">Details</UIText>}
-                closeKind="icon"
-              />
-              <TransactionAdvancedView
-                networks={networks}
-                chain={chain}
-                interpretation={interpretQuery.data}
-                transaction={{ evm: populatedTransaction }}
-                addressAction={addressAction}
-                onCopyData={() => toastRef.current?.showToast()}
-              />
-            </>
-          )}
-        ></CenteredDialog>
-        {view === View.customAllowance ? (
+          renderWhenOpen={() => {
+            invariant(
+              network,
+              'Network should be known to show transaction details'
+            );
+            return (
+              <>
+                <DialogTitle
+                  title={<UIText kind="body/accent">Details</UIText>}
+                  closeKind="icon"
+                />
+                <TransactionAdvancedView
+                  network={network}
+                  interpretation={interpretQuery.data}
+                  transaction={{ evm: populatedTransaction }}
+                  addressAction={addressAction}
+                  onCopyData={() => toastRef.current?.showToast()}
+                />
+              </>
+            );
+          }}
+        />
+        {view === View.customAllowance && network ? (
           <AllowanceView
             address={wallet.address}
-            asset={getFungibleAsset(singleAsset?.asset)}
+            assetId={maybeApproval?.fungible?.id}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             value={allowanceQuantityBase}
-            chain={chain}
+            network={network}
             onChange={handleChangeAllowance}
           />
         ) : null}
@@ -952,13 +983,12 @@ function SolDefaultView({
 }) {
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
-  const recipientAddress = addressAction.label?.display_value.wallet_address;
-  const actionTransfers = addressAction.content?.transfers;
-  const singleAsset = addressAction?.content?.single_asset;
-
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const toastRef = useRef<PopoverToastHandle>(null);
+
+  const network = networks.getByNetworkId(createChain(NetworkId.Solana));
+  invariant(network, 'Network should be known to show transaction details');
 
   return (
     <>
@@ -982,7 +1012,7 @@ function SolDefaultView({
             url={origin}
             alt={`Logo for ${origin}`}
           />
-          <UIText kind="headline/h2">{addressAction.type.display_value}</UIText>
+          <UIText kind="headline/h2">{addressAction.type.displayValue}</UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
@@ -1018,14 +1048,11 @@ function SolDefaultView({
         >
           <AddressActionDetails
             address={wallet.address}
-            recipientAddress={recipientAddress}
             addressAction={addressAction}
-            chain={createChain(NetworkId.Solana)}
-            networks={networks}
-            actionTransfers={actionTransfers}
-            singleAsset={singleAsset}
+            network={network}
             showApplicationLine={false}
-            allowanceQuantityBase={null}
+            allowanceQuantityCommon={null}
+            customAllowanceQuantityBase={null}
             singleAssetElementEnd={null}
           />
         </VStack>
@@ -1061,10 +1088,9 @@ function SolDefaultView({
         <RenderArea name="transaction-warning-section" />
       </VStack>
       <div style={{ marginTop: 'auto' }}>
-        {addressAction.transaction.fee ? (
+        {addressAction.fee ? (
           <AddressActionNetworkFee
-            chain={addressAction.transaction.chain}
-            networkFee={addressAction.transaction.fee}
+            fee={addressAction.fee}
             isLoading={txInterpretQuery.isLoading}
           />
         ) : null}
@@ -1080,8 +1106,7 @@ function SolDefaultView({
               closeKind="icon"
             />
             <TransactionAdvancedView
-              networks={networks}
-              chain={createChain(NetworkId.Solana)}
+              network={network}
               interpretation={txInterpretQuery.data}
               transaction={{ solana: rawTransaction }}
               addressAction={addressAction}
@@ -1201,8 +1226,9 @@ function SolSendTransaction() {
       ? txParams.transactions[0]
       : txParams.transaction;
   const localAddressAction = useMemo(
-    () => parseSolanaTransaction(wallet.address, solFromBase64(firstTx)),
-    [firstTx, wallet.address]
+    () =>
+      parseSolanaTransaction(wallet.address, solFromBase64(firstTx), currency),
+    [firstTx, wallet.address, currency]
   );
 
   // TODO: support multiple transactions in simulation
@@ -1231,12 +1257,11 @@ function SolSendTransaction() {
         eligibilityQueryStatus: 'success',
         currency,
         origin,
-        client,
       });
     },
   });
 
-  const addressAction = interpretQuery.data?.action || localAddressAction;
+  const addressAction = interpretQuery.data?.data.action || localAddressAction;
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {

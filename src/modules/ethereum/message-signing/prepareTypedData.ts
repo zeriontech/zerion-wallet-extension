@@ -12,8 +12,8 @@ export function isPermit({ message }: TypedData) {
 export function toTypedData(data: string | Partial<TypedData>): TypedData {
   if (typeof data === 'string') {
     try {
-      const typedData = JSON.parse(data);
-      return typedData as TypedData;
+      const typedData = JSON.parse(data) as TypedData;
+      return typedData;
     } catch (e) {
       throw new Error('Failed to parse typedData input');
     }

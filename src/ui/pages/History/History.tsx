@@ -1,9 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import type { AddressAction } from 'defi-sdk';
-import { Client, useAddressActions } from 'defi-sdk';
-import { hashQueryKey, useQuery } from '@tanstack/react-query';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -12,12 +8,9 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { useStore } from '@store-unit/react';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { EmptyView } from 'src/ui/components/EmptyView';
 import { NetworkBalance } from 'src/ui/pages/Overview/Positions/NetworkBalance';
@@ -27,14 +20,28 @@ import {
   offsetValues,
 } from 'src/ui/pages/Overview/getTabsOffset';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
+import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { hashQueryKey, useQuery } from '@tanstack/react-query';
+import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
+import { Client } from 'defi-sdk';
+import SyncIcon from 'jsx:src/ui/assets/sync.svg';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { Button } from 'src/ui/ui-kit/Button';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
+import * as styles from './styles.module.css';
 
-function sortActions<T extends { datetime?: string }>(actions: T[]) {
+function sortActions<T extends { timestamp?: number }>(actions: T[]) {
   return actions.sort((a, b) => {
-    const aDate = a.datetime ? new Date(a.datetime).getTime() : Date.now();
-    const bDate = b.datetime ? new Date(b.datetime).getTime() : Date.now();
+    const aDate = a.timestamp || Date.now();
+    const bDate = b.timestamp || Date.now();
     return bDate - aDate;
   });
 }
@@ -44,9 +51,14 @@ function mergeLocalAndBackendActions(
   backend: AddressAction[],
   hasMoreBackendActions: boolean
 ) {
-  const backendHashes = new Set(backend.map((tx) => tx.transaction.hash));
+  const backendHashes = new Set(
+    backend.flatMap(
+      (tx) =>
+        tx.transaction?.hash || tx.acts?.map((act) => act.transaction.hash)
+    )
+  );
 
-  const lastBackendActionDatetime = backend.at(-1)?.datetime;
+  const lastBackendActionDatetime = backend.at(-1)?.timestamp;
   const lastBackendTimestamp =
     lastBackendActionDatetime && hasMoreBackendActions
       ? new Date(lastBackendActionDatetime).getTime()
@@ -55,8 +67,13 @@ function mergeLocalAndBackendActions(
   const merged = local
     .filter(
       (tx) =>
+        tx.transaction?.hash &&
         backendHashes.has(tx.transaction.hash) === false &&
-        new Date(tx.datetime).getTime() >= lastBackendTimestamp
+        !tx.acts?.some(
+          (act) =>
+            act.transaction.hash && backendHashes.has(act.transaction.hash)
+        ) &&
+        tx.timestamp >= lastBackendTimestamp
     )
     .concat(backend);
   return sortActions(merged);
@@ -98,7 +115,7 @@ function useMinedAndPendingAddressActions({
       );
       if (chain) {
         items = items.filter(
-          (item) => item.transaction.chain === chain.toString()
+          (item) => item.transaction?.chain.id === chain.toString()
         );
       }
       if (searchQuery) {
@@ -109,32 +126,23 @@ function useMinedAndPendingAddressActions({
     useErrorBoundary: true,
   });
 
-  const {
-    value,
-    isFetching: actionsIsLoading,
-    hasNext,
-    fetchMore,
-  } = useAddressActions(
+  const { actions, queryData, refetch } = useWalletActions(
     {
-      ...params,
+      addresses: [params.address],
       currency,
-      actions_chains:
-        chain && isSupportedByBackend ? [chain.toString()] : undefined,
-      actions_search_query: searchQuery,
-    },
-    {
+      chain: chain && isSupportedByBackend ? chain.toString() : undefined,
+      searchQuery,
       limit: 10,
-      listenForUpdates: true,
-      paginatedCacheMode: 'first-page',
-      enabled: isSupportedByBackend,
-    }
+    },
+    { source: useHttpClientSource() },
+    { enabled: isSupportedByBackend }
   );
 
   return useMemo(() => {
-    const backendItems = isSupportedByBackend && value ? value : [];
-    const hasMore = Boolean(isSupportedByBackend && hasNext);
+    const backendItems = isSupportedByBackend && actions ? actions : [];
+    const hasMore = Boolean(isSupportedByBackend && queryData.hasNextPage);
     return {
-      value: localAddressActions
+      actions: localAddressActions
         ? mergeLocalAndBackendActions(
             localAddressActions,
             backendItems,
@@ -142,18 +150,20 @@ function useMinedAndPendingAddressActions({
           )
         : null,
       ...localActionsQuery,
-      isLoading: actionsIsLoading || localActionsQuery.isLoading,
-      hasMore,
-      fetchMore,
+      isLoading:
+        queryData.isLoading ||
+        queryData.isFetching ||
+        localActionsQuery.isLoading,
+      queryData,
+      refetch,
     };
   }, [
     isSupportedByBackend,
-    value,
+    actions,
     localAddressActions,
     localActionsQuery,
-    actionsIsLoading,
-    hasNext,
-    fetchMore,
+    queryData,
+    refetch,
   ]);
 }
 
@@ -203,12 +213,11 @@ export function HistoryList({
       : null;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
-  const {
-    value: transactions,
-    isLoading,
-    fetchMore,
-    hasMore,
-  } = useMinedAndPendingAddressActions({ chain, searchQuery });
+  const { actions, isLoading, queryData, refetch } =
+    useMinedAndPendingAddressActions({
+      chain,
+      searchQuery,
+    });
 
   const actionFilters = (
     <div style={{ paddingInline: 16 }}>
@@ -222,21 +231,61 @@ export function HistoryList({
             value={null}
           />
         ) : null}
-        <ActionSearch
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onFocus={() => {
-            window.scrollTo({
-              behavior: 'smooth',
-              top: getCurrentTabsOffset(offsetValuesState),
-            });
-          }}
-        />
+        <HStack
+          gap={8}
+          alignItems="center"
+          style={{ gridTemplateColumns: '1fr auto' }}
+        >
+          <ActionSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onFocus={() => {
+              window.scrollTo({
+                behavior: 'smooth',
+                top: getCurrentTabsOffset(offsetValuesState),
+              });
+            }}
+          />
+          <Button
+            onClick={refetch}
+            size={40}
+            kind="neutral"
+            style={{ paddingInline: 8 }}
+            disabled={isLoading}
+            title="Reload History (⌃R)"
+          >
+            <SyncIcon
+              style={{
+                display: 'block',
+                width: 24,
+                height: 24,
+                transition: 'transform 0.5s linear',
+              }}
+              className={isLoading ? styles.updateIconLoading : undefined}
+            />
+          </Button>
+          <KeyboardShortcut
+            combination="cmd+r"
+            onKeyDown={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
+          <KeyboardShortcut
+            combination="ctrl+r"
+            onKeyDown={() => {
+              if (!isLoading) {
+                refetch();
+              }
+            }}
+          />
+        </HStack>
       </VStack>
     </div>
   );
 
-  if (!transactions?.length) {
+  if (!actions?.length) {
     return (
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
@@ -264,10 +313,10 @@ export function HistoryList({
       {actionFilters}
       <Spacer height={16} />
       <ActionsList
-        actions={transactions}
-        hasMore={hasMore}
+        actions={actions}
+        hasMore={Boolean(queryData.hasNextPage)}
         isLoading={isLoading}
-        onLoadMore={fetchMore}
+        onLoadMore={queryData.fetchNextPage}
       />
     </>
   );

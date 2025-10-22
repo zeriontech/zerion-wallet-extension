@@ -1,23 +1,25 @@
 import React from 'react';
 import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import type { Chain } from 'src/modules/networks/Chain';
+import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { TransactionWarning } from './TransactionWarning';
 
 function useInsufficientFundsWarning({
   address,
   transaction,
-  chain,
+  network,
   networkFeeConfiguration,
 }: {
   address: string;
   transaction: IncomingTransaction;
-  chain: Chain;
+  network: NetworkConfig;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
+  const chain = createChain(network.id);
   const { data: chainGasPrices = null } = useGasPrices(chain, {
     suspense: true,
   });
@@ -36,12 +38,12 @@ function useInsufficientFundsWarning({
 export function InsufficientFundsWarning({
   address,
   transaction,
-  chain,
+  network,
   networkFeeConfiguration,
 }: {
   address: string;
   transaction: IncomingTransaction;
-  chain: Chain;
+  network: NetworkConfig;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
   const { networks } = useNetworks();
@@ -49,7 +51,7 @@ export function InsufficientFundsWarning({
   const isInsufficientFundsWarning = useInsufficientFundsWarning({
     address,
     transaction,
-    chain,
+    network,
     networkFeeConfiguration,
   });
 
@@ -61,8 +63,7 @@ export function InsufficientFundsWarning({
     <TransactionWarning
       title="Insufficient balance"
       message={`You don't have enough ${
-        networks?.getNetworkByName(chain)?.native_asset?.symbol ||
-        'native token'
+        network.native_asset?.symbol || 'native token'
       } to cover network fees`}
     />
   );

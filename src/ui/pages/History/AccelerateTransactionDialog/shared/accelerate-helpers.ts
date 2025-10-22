@@ -2,10 +2,11 @@ import { produce } from 'immer';
 import type { BigNumberish } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 import omit from 'lodash/omit';
-import {
-  isLocalAddressAction,
-  type AnyAddressAction,
+import type {
+  AnyAddressAction,
+  LocalAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
+import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import type { TransactionObject } from 'src/modules/ethereum/transactions/types';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
@@ -15,7 +16,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 export function fromAddressActionTransaction(
   transaction: (
     | TransactionObject['transaction']
-    | AnyAddressAction['transaction']
+    | LocalAddressAction['rawTransaction']
   ) & {
     gasLimit?: BigNumberish;
     gasPrice?: BigNumberish;
@@ -100,7 +101,7 @@ function restoreValue(value: BigNumberish) {
 export function isCancelTx(addressAction: AnyAddressAction) {
   if (isLocalAddressAction(addressAction)) {
     const { address } = addressAction;
-    const { value, data, from } = addressAction.transaction;
+    const { value, data, from } = addressAction.rawTransaction || {};
     if (!from || normalizeAddress(from) !== normalizeAddress(address)) {
       return false;
     }

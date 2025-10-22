@@ -19,20 +19,16 @@ import {
   isPermit,
   toTypedData,
 } from 'src/modules/ethereum/message-signing/prepareTypedData';
-import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
-import { interpretSignature } from 'src/modules/ethereum/transactions/interpret';
+import { interpretSignature } from 'src/ui/shared/requests/interpret';
 import { Content, RenderArea } from 'react-area';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import type { InterpretResponse } from 'src/modules/ethereum/transactions/types';
-import type { Networks } from 'src/modules/networks/Networks';
 import { PageTop } from 'src/ui/components/PageTop';
 import { AllowanceView } from 'src/ui/components/AllowanceView';
 import { produce } from 'immer';
-import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
@@ -66,8 +62,13 @@ import {
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { PopoverToast } from '../Settings/PopoverToast';
+import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
+import { baseToCommon } from 'src/shared/units/convert';
+import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
+import { getDecimals } from 'src/modules/networks/asset';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
+import { PopoverToast } from '../Settings/PopoverToast';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 enum View {
@@ -94,12 +95,12 @@ function TypedDataDefaultView({
   origin,
   clientScope: clientScopeParam,
   wallet,
-  chain,
-  networks,
+  network,
   typedDataRaw,
   typedData,
   interpretQuery,
   interpretation,
+  allowanceQuantityCommon,
   allowanceQuantityBase,
   onSignSuccess,
   onReject,
@@ -108,8 +109,7 @@ function TypedDataDefaultView({
   origin: string;
   clientScope: string | null;
   wallet: ExternallyOwnedAccount;
-  chain: Chain;
-  networks: Networks;
+  network: NetworkConfig;
   typedDataRaw: string;
   typedData: TypedData;
   interpretQuery: {
@@ -117,8 +117,9 @@ function TypedDataDefaultView({
     isError: boolean;
     isFetched: boolean;
   };
-  interpretation?: InterpretResponse | null;
-  allowanceQuantityBase?: string;
+  interpretation?: SignatureInterpretResponse | null;
+  allowanceQuantityCommon: string | null;
+  allowanceQuantityBase: string | null;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
   onOpenAdvancedView: () => void;
@@ -128,11 +129,10 @@ function TypedDataDefaultView({
   const [params] = useSearchParams();
   const { preferences } = usePreferences();
 
-  const addressAction = interpretation?.action;
-  const recipientAddress = addressAction?.label?.display_value.wallet_address;
+  const addressAction = interpretation?.data.action;
 
   const title =
-    addressAction?.type.display_value ||
+    addressAction?.type.displayValue ||
     (isPermit(typedData) ? 'Permit' : 'Sign Message');
 
   const typedDataFormatted = useMemo(
@@ -183,7 +183,7 @@ function TypedDataDefaultView({
   );
 
   const interpretationHasCriticalWarning = hasCriticalWarning(
-    interpretation?.warnings
+    interpretation?.data.warnings
   );
 
   const showRawTypedData = !addressAction;
@@ -291,16 +291,13 @@ function TypedDataDefaultView({
             <VStack gap={4}>
               <AddressActionDetails
                 address={wallet.address}
-                recipientAddress={recipientAddress}
                 addressAction={addressAction}
-                chain={chain}
-                networks={networks}
-                actionTransfers={addressAction?.content?.transfers}
-                singleAsset={addressAction?.content?.single_asset}
-                allowanceQuantityBase={allowanceQuantityBase || null}
+                network={network}
+                allowanceQuantityCommon={allowanceQuantityCommon || null}
+                customAllowanceQuantityBase={allowanceQuantityBase || null}
                 showApplicationLine={true}
                 singleAssetElementEnd={
-                  allowanceQuantityBase &&
+                  allowanceQuantityCommon &&
                   addressAction.type.value === 'approve' ? (
                     <UIText
                       as={TextLink}
@@ -517,26 +514,33 @@ function SignTypedDataContent({
 
   const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
   const chainId = chain && networks ? networks.getChainId(chain) : null;
-  const network = chain && networks ? networks.getNetworkByName(chain) : null;
+  const network = chain && networks ? networks.getByNetworkId(chain) : null;
+
+  const { preferences } = usePreferences();
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
   const { data: interpretation, ...interpretQuery } = useQuery({
     queryKey: [
       'interpretSignature',
       wallet.address,
-      chainId,
+      chain,
       typedData,
       currency,
       origin,
+      source,
     ],
     queryFn: () =>
-      chainId
-        ? interpretSignature({
-            address: wallet.address,
-            chainId,
-            typedData,
-            currency,
-            origin,
-          })
+      chain
+        ? interpretSignature(
+            {
+              address: wallet.address,
+              chain: chain.toString(),
+              typedData,
+              currency,
+              origin,
+            },
+            { source }
+          )
         : null,
     enabled: Boolean(chainId && network?.supports_simulations),
     suspense: false,
@@ -550,9 +554,19 @@ function SignTypedDataContent({
     windowPort.confirm(windowId, signature);
   const handleReject = () => windowPort.reject(windowId);
 
-  const singleAsset = interpretation?.action?.content?.single_asset;
+  const maybeApproval = interpretation?.data.action
+    ? getActionApproval(interpretation.data.action)
+    : null;
 
-  if (!networks || !chain) {
+  const allowanceQuantityCommon =
+    maybeApproval?.fungible && chain
+      ? baseToCommon(
+          allowanceQuantityBase || requestedAllowanceQuantityBase,
+          getDecimals({ asset: maybeApproval.fungible, chain })
+        ).toFixed()
+      : null;
+
+  if (!network) {
     return null;
   }
 
@@ -569,8 +583,7 @@ function SignTypedDataContent({
             origin={origin}
             clientScope={clientScope}
             wallet={wallet}
-            chain={chain}
-            networks={networks}
+            network={network}
             typedDataRaw={typedDataRaw}
             typedData={typedData}
             interpretQuery={interpretQuery}
@@ -578,6 +591,7 @@ function SignTypedDataContent({
             allowanceQuantityBase={
               allowanceQuantityBase || requestedAllowanceQuantityBase
             }
+            allowanceQuantityCommon={allowanceQuantityCommon}
             onSignSuccess={handleSignSuccess}
             onOpenAdvancedView={openAdvancedView}
             onReject={handleReject}
@@ -591,19 +605,17 @@ function SignTypedDataContent({
                 title={<UIText kind="body/accent">Details</UIText>}
                 closeKind="icon"
               />
-              {interpretation?.input ? (
-                <TypedDataAdvancedView data={interpretation.input} />
-              ) : null}
+              <TypedDataAdvancedView typedData={typedData} />
             </>
           )}
         />
         {view === View.customAllowance ? (
           <AllowanceView
             address={wallet.address}
-            asset={getFungibleAsset(singleAsset?.asset)}
+            assetId={maybeApproval?.fungible?.id}
             value={allowanceQuantityBase}
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
-            chain={chain}
+            network={network}
             onChange={handleChangeAllowance}
           />
         ) : null}

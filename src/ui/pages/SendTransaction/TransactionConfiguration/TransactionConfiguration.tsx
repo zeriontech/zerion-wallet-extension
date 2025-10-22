@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { AddressAction } from 'defi-sdk';
 import { flushSync } from 'react-dom';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
@@ -7,7 +6,7 @@ import type {
   IncomingTransaction,
   IncomingTransactionWithFrom,
 } from 'src/modules/ethereum/types/IncomingTransaction';
-import { createChain, type Chain } from 'src/modules/networks/Chain';
+import { type Chain } from 'src/modules/networks/Chain';
 import { usePreferences } from 'src/ui/features/preferences';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
@@ -30,9 +29,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
-import { baseToCommon } from 'src/shared/units/convert';
-import { getDecimals } from 'src/modules/networks/asset';
-import { getFungibleAsset } from 'src/modules/ethereum/transactions/actionAsset';
+import type { ActionFee } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
 import { useTransactionFee } from './useTransactionFee';
@@ -120,35 +117,13 @@ export function NetworkFeeLineInfo({
 
 export function AddressActionNetworkFee({
   label,
-  networkFee,
-  chain,
+  fee,
   isLoading,
 }: {
   label?: React.ReactNode;
-  networkFee: NonNullable<AddressAction['transaction']['fee']>;
+  fee: ActionFee;
   isLoading: boolean;
-  chain: string;
 }) {
-  const { currency } = useCurrency();
-  const { asset, fiatCost, assetCost } = useMemo(() => {
-    const asset = getFungibleAsset(networkFee.asset);
-
-    if (!asset) {
-      return { asset: null, fiatCost: null, assetCost: null };
-    }
-    const decimals = getDecimals({ asset, chain: createChain(chain) });
-    const commonQuantity = baseToCommon(networkFee.quantity, decimals);
-    const fiatCost = asset.price
-      ? commonQuantity.times(asset.price?.value)
-      : null;
-    const assetCost = commonQuantity;
-    return { asset, fiatCost, assetCost };
-  }, [chain, networkFee.asset, networkFee.quantity]);
-
-  if (!fiatCost && !assetCost) {
-    return null;
-  }
-
   return (
     <HStack gap={8} justifyContent="space-between">
       {label !== undefined ? (
@@ -161,11 +136,16 @@ export function AddressActionNetworkFee({
         <HStack gap={8} alignItems="center">
           {isLoading ? <CircleSpinner /> : null}
 
-          {fiatCost != null
-            ? formatCurrencyValueExtra(fiatCost.toNumber(), 'en', currency, {
-                zeroRoundingFallback: 0.01,
-              })
-            : formatTokenValue(assetCost.toNumber(), asset.symbol)}
+          {fee.amount.value != null
+            ? formatCurrencyValueExtra(
+                fee.amount.value,
+                'en',
+                fee.amount.currency,
+                {
+                  zeroRoundingFallback: 0.01,
+                }
+              )
+            : formatTokenValue(fee.amount.quantity, fee.fungible?.symbol)}
         </HStack>
       </UIText>
     </HStack>

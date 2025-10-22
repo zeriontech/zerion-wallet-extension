@@ -58,8 +58,7 @@ export function TransactionConfirmationView({
     eligibilityQuery,
     origin: 'https://app.zerion.io',
   });
-  const gasbackValue =
-    txInterpretQuery.data?.action?.transaction.gasback ?? null;
+  const gasbackValue = txInterpretQuery.data?.data.action?.gasback ?? null;
   useEffect(() => {
     if (gasbackValue != null) {
       onGasbackReady?.(gasbackValue);
@@ -67,7 +66,7 @@ export function TransactionConfirmationView({
   }, [gasbackValue, onGasbackReady]);
 
   const interpretationString = useMemo(() => {
-    return JSON.stringify(txInterpretQuery.data?.action);
+    return JSON.stringify(txInterpretQuery.data?.data.action);
   }, [txInterpretQuery]);
 
   if (query.isLoading) {
@@ -155,18 +154,14 @@ export function TransactionConfirmationView({
                   paymasterPossible={paymasterPossible}
                   paymasterWaiting={false}
                   gasback={
-                    txInterpretQuery.data?.action?.transaction.gasback != null
-                      ? {
-                          value:
-                            txInterpretQuery.data?.action.transaction.gasback,
-                        }
+                    txInterpretQuery.data?.data.action?.gasback != null
+                      ? { value: txInterpretQuery.data?.data.action.gasback }
                       : null
                   }
                 />
-              ) : txInterpretQuery.data?.action?.transaction.fee ? (
+              ) : txInterpretQuery.data?.data.action?.fee ? (
                 <AddressActionNetworkFee
-                  chain={chain.toString()}
-                  networkFee={txInterpretQuery.data?.action?.transaction.fee}
+                  fee={txInterpretQuery.data?.data.action.fee}
                   isLoading={txInterpretQuery.isLoading}
                 />
               ) : null}
