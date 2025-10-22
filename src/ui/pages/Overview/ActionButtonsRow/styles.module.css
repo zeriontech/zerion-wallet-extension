@@ -16,7 +16,7 @@
 
 @container action-buttons-row (width > 390px) {
   .list {
-    grid-template-columns: repeat(4, 48px) minmax(100px, 176px);
+    grid-template-columns: repeat(3, 48px) minmax(100px, 225px);
     justify-content: start;
   }
   .hideWhenSmall {
@@ -28,7 +28,7 @@
 }
 
 .actionButton {
-  --btn-bg-color: var(--neutral-200);
+  --btn-bg-color: var(--neutral-100);
   --btn-active-bg-color: var(--neutral-300);
   --btn-color: var(--neutral-800);
 }
