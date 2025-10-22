@@ -10,6 +10,7 @@ export type ButtonName =
   | 'Premium Features'
   | 'Buy Crypto'
   | 'Receive Crypto'
+  | 'Fund'
   | 'Buy Premium';
 
 export interface ButtonClickedParams {
