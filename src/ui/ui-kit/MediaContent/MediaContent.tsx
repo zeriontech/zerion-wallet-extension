@@ -28,7 +28,7 @@ export const MediaError = ({
       ...style,
     }}
   >
-    <span style={{ lineHeight: 1 }}>{image}</span>
+    <span style={{ userSelect: 'none', lineHeight: 1 }}>{image}</span>
   </div>
 );
 
