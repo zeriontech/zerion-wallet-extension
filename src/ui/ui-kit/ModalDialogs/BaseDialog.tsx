@@ -97,6 +97,24 @@ export const BaseDialog = React.forwardRef(
         document.body.removeEventListener('click', handler);
       };
     }, [closeOnClickOutside, ref]);
+
+    useEffect(() => {
+      // Prevent extension popup from closing when dialog is closed on Escape
+      const handler = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          const dialog = (event.target as Element | null)?.closest('dialog');
+          if (dialog?.open) {
+            event.preventDefault(); // prevent extension popup from closing
+            dialog.close(); // close dialog manually
+          }
+        }
+      };
+      document.body.addEventListener('keydown', handler);
+      return () => {
+        document.body.removeEventListener('keydown', handler);
+      };
+    });
+
     return (
       <dialog
         ref={useCallback(
