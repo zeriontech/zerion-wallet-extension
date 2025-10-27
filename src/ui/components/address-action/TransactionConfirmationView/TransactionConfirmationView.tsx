@@ -103,7 +103,9 @@ export function TransactionConfirmationView({
             borderRadius: 12,
           }}
         >
-          <UIText kind="headline/h2">{title}</UIText>
+          <UIText kind="headline/h2">
+            {txInterpretQuery.data?.action?.type.display_value ?? title}
+          </UIText>
           <HStack gap={8} alignItems="center">
             <WalletAvatar
               address={wallet.address}

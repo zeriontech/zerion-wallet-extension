@@ -170,6 +170,7 @@ export async function prepareSendData(
     gasLimit,
     nftAmount,
     nftId,
+    data,
   } = formState;
   if (!from || !to || !tokenChain) {
     return EMPTY_SEND_DATA;
@@ -225,6 +226,9 @@ export async function prepareSendData(
           getDecimals({ asset: position.asset, chain })
         ).toFixed(),
       });
+      if (data && isNativeAsset) {
+        tx = { ...tx, data };
+      }
     }
     if (gasLimit) {
       invariant(isNumeric(gasLimit), 'Gas limit must be numeric');
