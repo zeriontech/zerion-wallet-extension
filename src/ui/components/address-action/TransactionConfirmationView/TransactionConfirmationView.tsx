@@ -104,7 +104,7 @@ export function TransactionConfirmationView({
           }}
         >
           <UIText kind="headline/h2">
-            {txInterpretQuery.data?.action?.type.display_value ?? title}
+            {txInterpretQuery.data?.data.action?.type.displayValue ?? title}
           </UIText>
           <HStack gap={8} alignItems="center">
             <WalletAvatar
