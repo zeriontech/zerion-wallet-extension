@@ -1,5 +1,4 @@
-import { ethers } from 'ethers';
-import { utils as zksUtils } from 'zksync-ethers';
+import { utils as zkSyncUtils } from 'zksync-ethers';
 import { invariant } from 'src/shared/invariant';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -11,10 +10,6 @@ import { GAS_PER_PUBDATA_BYTE_DEFAULT } from './constants';
 
 type NetworksSource = 'mainnet' | 'testnet';
 
-function adjustGas(value: ethers.BigNumberish): string {
-  return ethers.toQuantity(BigInt(value) + 50000n);
-}
-
 export function adjustedCheckEligibility(
   params: Parameters<ZerionApiClient['paymasterCheckEligibility']>[0],
   { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
@@ -22,14 +17,12 @@ export function adjustedCheckEligibility(
   const txCopy = { ...params };
   const gas = getGas(txCopy);
   invariant(gas, 'Tx param missing: {gas}');
-  const moreGas = adjustGas(gas);
-  txCopy.gas = moreGas;
   return apiClient.paymasterCheckEligibility(txCopy, { source });
 }
 
 function normalizeTransactionProps(tx: IncomingTransaction) {
   const gasLimit = getGas(tx);
-  invariant(gasLimit, 'tx param missing: {gasLimit}');
+  invariant(gasLimit, 'transaction param missing: {gasLimit}');
   assertProp(tx, 'from');
   assertProp(tx, 'to');
   assertProp(tx, 'nonce');
@@ -88,21 +81,27 @@ export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
   const txCopy = { ...tx };
   const gas = getGas(txCopy);
   invariant(gas, 'Tx param missing: {gas}');
-  const moreGas = adjustGas(gas);
-  txCopy.gasLimit = moreGas;
   const gasPerPubdataByte = GAS_PER_PUBDATA_BYTE_DEFAULT;
-  const { eligible, paymasterParams } = await getPaymasterParams(txCopy, {
-    gasPerPubdataByte,
-    source,
-    apiClient,
-  });
-  if (eligible && paymasterParams) {
-    txCopy.type = zksUtils.EIP712_TX_TYPE;
-    txCopy.customData = { paymasterParams, gasPerPubdata: gasPerPubdataByte };
+  const { eligible, paymasterParams, suggestedGas } = await getPaymasterParams(
+    txCopy,
+    {
+      gasPerPubdataByte,
+      source,
+      apiClient,
+    }
+  );
+  if (eligible && paymasterParams && suggestedGas) {
+    txCopy.type = zkSyncUtils.EIP712_TX_TYPE;
+    const normalizedSuggestedGas = valueToHex(suggestedGas);
+    txCopy.gas = normalizedSuggestedGas;
+    txCopy.gasLimit = normalizedSuggestedGas;
+    txCopy.customData = {
+      paymasterParams,
+      gasPerPubdata: gasPerPubdataByte,
+    };
     return txCopy;
-  } else {
-    // NOTE: Maybe better to throw here? If paymaster endoint returns {eligible: false},
-    // can it be an unexpected behavior to silently submit a transaction without a paymaster?
-    return tx;
   }
+  // NOTE: Maybe better to throw here? If paymaster endpoint returns {eligible: false},
+  // can it be an unexpected behavior to silently submit a transaction without a paymaster?
+  return tx;
 }
