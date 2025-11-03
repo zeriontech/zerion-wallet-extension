@@ -1209,10 +1209,10 @@ function SwapFormComponent() {
                   }
                   holdToSign={false}
                 >
-                  {quotesData.isLoading
-                    ? 'Fetching offers'
-                    : approveMutation.isLoading || approveTxStatus === 'pending'
+                  {approveMutation.isLoading || approveTxStatus === 'pending'
                     ? 'Approving...'
+                    : quotesData.isLoading
+                    ? 'Fetching offers'
                     : `Approve ${inputPosition?.asset.symbol ?? null}`}
                 </SignTransactionButton>
               ) : null}
