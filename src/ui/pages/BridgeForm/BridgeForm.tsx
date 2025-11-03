@@ -191,7 +191,7 @@ function FormHint({
           style={{ width: 20, height: 20 }}
           color="var(--negative-500)"
         />
-        <UIText kind="body/accent">Bridge Anyway</UIText>
+        <UIText kind="small/accent">Bridge Anyway</UIText>
       </HStack>
     );
   }
@@ -793,11 +793,7 @@ function BridgeFormComponent() {
     },
   });
 
-  const approveTxStatus =
-    useTransactionStatus(approveData?.hash ?? null) ??
-    // This fallback helps to avoid the submit button blinking
-    // while we are updating the local transactions store
-    (approveData?.hash ? 'pending' : null);
+  const approveTxStatus = useTransactionStatus(approveData?.hash ?? null);
 
   useEffect(() => {
     if (approveTxStatus === 'confirmed') {
