@@ -89,25 +89,22 @@ export function NetworkFee({
     !totalValueExceedsBalance &&
     networkFeeConfiguration.speed === 'fast' &&
     interpretation?.data.action.fee;
+  const interpretationFee = showInterpretationFee
+    ? interpretation?.data.action.fee?.amount.value
+    : undefined;
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
-  const feeValueFormatted =
-    showInterpretationFee && interpretation?.data.action.fee?.amount.value
-      ? formatCurrencyValueExtra(
-          interpretation.data.action.fee.amount.value,
-          'en',
-          currency,
-          {
-            zeroRoundingFallback: 0.01,
-          }
-        )
-      : feeValueFiat
-      ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
-          zeroRoundingFallback: 0.01,
-        })
-      : feeValueCommon
-      ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
-      : undefined;
+  const feeValueFormatted = interpretationFee
+    ? formatCurrencyValueExtra(interpretationFee, 'en', currency, {
+        zeroRoundingFallback: 0.01,
+      })
+    : feeValueFiat
+    ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
+        zeroRoundingFallback: 0.01,
+      })
+    : feeValueCommon
+    ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
+    : undefined;
 
   const hintTitle = [
     getFeeTypeTitle(feeEstimation?.type),
