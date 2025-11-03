@@ -499,6 +499,7 @@ function TransactionDefaultView({
                         ? { value: interpretation.data.action.gasback }
                         : null
                     }
+                    interpretation={interpretation}
                     listViewTransitions={true}
                   />
                 </React.Suspense>

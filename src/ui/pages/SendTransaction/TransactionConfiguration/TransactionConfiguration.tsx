@@ -30,6 +30,7 @@ import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { ActionFee } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
 import { useTransactionFee } from './useTransactionFee';
@@ -161,6 +162,7 @@ function NetworkFeeLine({
   paymasterPossible,
   paymasterEligible,
   keepPreviousData = false,
+  interpretation,
 }: {
   transaction: IncomingTransactionWithFrom;
   chain: Chain;
@@ -170,6 +172,7 @@ function NetworkFeeLine({
   paymasterPossible: boolean;
   paymasterEligible: boolean;
   keepPreviousData?: boolean;
+  interpretation?: InterpretResponse | null;
 }) {
   const { data: chainGasPrices = null } = useGasPrices(chain, {
     suspense: true,
@@ -234,6 +237,7 @@ function NetworkFeeLine({
                 onConfigurationChange({ ...configuration, networkFee })
             : null
         }
+        interpretation={interpretation}
       />
     </>
   );
@@ -258,6 +262,7 @@ export function TransactionConfiguration({
   keepPreviousData = false,
   gasback: gasbackData,
   listViewTransitions = false,
+  interpretation,
 }: {
   transaction: IncomingTransaction;
   from: string;
@@ -272,6 +277,7 @@ export function TransactionConfiguration({
   gasback: GasbackData | null;
   /** Hacky, experimental and only needed on SendTransaction View because list is stuck to the bottom */
   listViewTransitions?: boolean;
+  interpretation?: InterpretResponse | null;
 }) {
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
@@ -350,6 +356,7 @@ export function TransactionConfiguration({
             onFeeValueCommonReady={onFeeValueCommonReady}
             paymasterPossible={paymasterPossible}
             paymasterEligible={paymasterEligible}
+            interpretation={interpretation}
           />
         </div>
       )}
