@@ -41,6 +41,7 @@ import { PageBottom } from '../PageBottom';
 import { PageColumn } from '../PageColumn';
 import { ViewLoading } from '../ViewLoading';
 import { KeyboardShortcut } from '../KeyboardShortcut';
+import { BlurrableBalance } from '../BlurrableBalance';
 import { LIST_ITEM_CLASS } from './constants';
 import type { NetworkGroups } from './createNetworkGroups';
 import { createGroups } from './createNetworkGroups';
@@ -115,25 +116,30 @@ function NetworkItem({
           vGap={0}
           detailText={null}
         />
-        <UIText
+        <BlurrableBalance
           kind="small/regular"
           color={selected ? 'var(--primary)' : 'var(--neutral-500)'}
         >
-          {address &&
-          ecosystem &&
-          !isMatchForEcosystem(
-            address,
-            ecosystem
-          ) ? null : preferChainDistribution ? (
-            <ChainValue
-              chain={chain || NetworkSelectValue.All}
-              chainDistribution={chainDistribution}
-              currency={currency}
-            />
-          ) : address && chain ? (
-            <NativeBalance address={address} chain={chain} />
-          ) : null}
-        </UIText>
+          <UIText
+            kind="small/regular"
+            color={selected ? 'var(--primary)' : 'var(--neutral-500)'}
+          >
+            {address &&
+            ecosystem &&
+            !isMatchForEcosystem(
+              address,
+              ecosystem
+            ) ? null : preferChainDistribution ? (
+              <ChainValue
+                chain={chain || NetworkSelectValue.All}
+                chainDistribution={chainDistribution}
+                currency={currency}
+              />
+            ) : address && chain ? (
+              <NativeBalance address={address} chain={chain} />
+            ) : null}
+          </UIText>
+        </BlurrableBalance>
       </HStack>
     </SurfaceItemButton>
   );

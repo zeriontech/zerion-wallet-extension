@@ -10,9 +10,14 @@ export enum ThemePreference {
 export interface State {
   mode: ThemePreference;
   currency: string;
+  hideBalances: boolean;
 }
 
-const initialState = { mode: ThemePreference.system, currency: 'usd' };
+const initialState = {
+  mode: ThemePreference.system,
+  currency: 'usd',
+  hideBalances: false,
+};
 
 export const preferenceStore = new Store<State>({
   ...initialState,

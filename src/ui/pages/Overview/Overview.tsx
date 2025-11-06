@@ -69,6 +69,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
@@ -593,19 +594,21 @@ function OverviewComponent() {
             />
           ) : null}
           <VStack gap={0}>
-            <UIText kind="headline/h1">
-              {walletPortfolio?.totalValue != null ? (
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(
-                    walletPortfolio.totalValue,
-                    'en',
-                    currency
-                  )}
-                />
-              ) : (
-                NBSP
-              )}
-            </UIText>
+            <BlurrableBalance kind="headline/h1">
+              <UIText kind="headline/h1">
+                {walletPortfolio?.totalValue != null ? (
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(
+                      walletPortfolio.totalValue,
+                      'en',
+                      currency
+                    )}
+                  />
+                ) : (
+                  NBSP
+                )}
+              </UIText>
+            </BlurrableBalance>
             {percentageChange ? (
               <UIText
                 kind="small/regular"
@@ -618,13 +621,22 @@ function OverviewComponent() {
                 {`${percentageChange.isPositive ? '+' : ''}${
                   percentageChange.formatted
                 }`}{' '}
-                {walletPortfolio?.change24h.absolute
-                  ? `(${formatCurrencyValue(
-                      Math.abs(walletPortfolio.change24h.absolute),
-                      'en',
-                      currency
-                    )})`
-                  : ''}{' '}
+                <BlurrableBalance
+                  kind="small/regular"
+                  color={
+                    percentageChange.isNonNegative
+                      ? 'var(--positive-500)'
+                      : 'var(--negative-500)'
+                  }
+                >
+                  {walletPortfolio?.change24h.absolute
+                    ? `(${formatCurrencyValue(
+                        Math.abs(walletPortfolio.change24h.absolute),
+                        'en',
+                        currency
+                      )})`
+                    : ''}
+                </BlurrableBalance>{' '}
                 Today
               </UIText>
             ) : (

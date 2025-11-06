@@ -28,6 +28,7 @@ import ToolsIcon from 'jsx:src/ui/assets/hammer.svg';
 import { version } from 'src/shared/packageVersion';
 import { apostrophe, middot } from 'src/ui/shared/typography';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
+import { preferenceStore } from 'src/ui/features/appearance';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -521,40 +522,87 @@ function DeveloperTools() {
 
 function Privacy() {
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
+  const { hideBalances } = useStore(preferenceStore);
   useBackgroundKind({ kind: 'white' });
 
   return (
     <PageColumn>
       <NavigationTitle title="Privacy" />
       <PageTop />
-      <Frame>
-        <ToggleSettingLine
-          text="Share App Usage Analytics"
-          checked={Boolean(globalPreferences?.analyticsEnabled)}
-          onChange={(event) => {
-            setGlobalPreferences({
-              analyticsEnabled: event.target.checked,
-            });
-          }}
-          detailText={
-            <span>
-              Help us improve our app experience by sharing anonymous statistics
-              about how you use Zerion. We will not associate any of this to you
-              and your personal data will not be sent to us. Read more in our{' '}
-              <UnstyledAnchor
-                href="https://s3.amazonaws.com/cdn.zerion.io/assets/privacy.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline"
-                style={{ color: 'var(--primary)' }}
-              >
-                Privacy Policy
-              </UnstyledAnchor>
-              .
-            </span>
-          }
-        />
-      </Frame>
+      <VStack gap={16}>
+        <Frame>
+          <ToggleSettingLine
+            text="Hide Balances"
+            checked={hideBalances}
+            onChange={(event) => {
+              preferenceStore.setState((state) => ({
+                ...state,
+                hideBalances: event.target.checked,
+              }));
+            }}
+            detailText={
+              <span>
+                Replace balance amounts with blur squares for privacy. Toggle
+                with{' '}
+                <code
+                  style={{
+                    backgroundColor: 'var(--neutral-100)',
+                    color: 'var(--neutral-700)',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '0.9em',
+                    fontWeight: 500,
+                  }}
+                >
+                  Shift+H
+                </code>{' '}
+                or{' '}
+                <code
+                  style={{
+                    backgroundColor: 'var(--neutral-100)',
+                    color: 'var(--neutral-700)',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '0.9em',
+                    fontWeight: 500,
+                  }}
+                >
+                  Cmd/Ctrl+H
+                </code>
+              </span>
+            }
+          />
+        </Frame>
+        <Frame>
+          <ToggleSettingLine
+            text="Share App Usage Analytics"
+            checked={Boolean(globalPreferences?.analyticsEnabled)}
+            onChange={(event) => {
+              setGlobalPreferences({
+                analyticsEnabled: event.target.checked,
+              });
+            }}
+            detailText={
+              <span>
+                Help us improve our app experience by sharing anonymous
+                statistics about how you use Zerion. We will not associate any
+                of this to you and your personal data will not be sent to us.
+                Read more in our{' '}
+                <UnstyledAnchor
+                  href="https://s3.amazonaws.com/cdn.zerion.io/assets/privacy.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  Privacy Policy
+                </UnstyledAnchor>
+                .
+              </span>
+            }
+          />
+        </Frame>
+      </VStack>
       <PageBottom />
     </PageColumn>
   );

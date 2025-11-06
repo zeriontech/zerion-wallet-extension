@@ -21,6 +21,7 @@ import { NBSP } from 'src/ui/shared/typography';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { Networks } from 'src/modules/networks/Networks';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { NetworkSelect } from '../../Networks/NetworkSelect';
 import { getTabScrollContentHeight, offsetValues } from '../getTabsOffset';
 import * as styles from './styles.module.css';
@@ -99,7 +100,11 @@ function DisclosureButton({
               >
                 {selectedNetworkName}
               </div>,
-              valueDetail != null ? <div key={1}>{valueDetail}</div> : null,
+              valueDetail != null ? (
+                <BlurrableBalance kind={textKind} key={1}>
+                  <div key={1}>{valueDetail}</div>
+                </BlurrableBalance>
+              ) : null,
             ],
             (key) => (
               <div key={key}>·</div>
@@ -195,18 +200,20 @@ export function NetworkBalance({
     <>
       {hasValue && showWalletNameContent ? (
         <Content name="wallet-name-end">
-          <UIText
-            kind={textKind}
-            style={{
-              paddingLeft: 8,
-              maxWidth: '120px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-            className={styles.walletNameContent}
-          >
-            {totalValue}
-          </UIText>
+          <BlurrableBalance kind={textKind}>
+            <UIText
+              kind={textKind}
+              style={{
+                paddingLeft: 8,
+                maxWidth: '120px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+              className={styles.walletNameContent}
+            >
+              {totalValue}
+            </UIText>
+          </BlurrableBalance>
         </Content>
       ) : null}
       <HStack

@@ -37,6 +37,7 @@ import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 
@@ -65,17 +66,19 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
           image={<PortfolioIcon className={styles.portfolioIcon} />}
           text={<UIText kind="small/regular">Portfolio</UIText>}
           detailText={
-            <UIText kind="headline/h3">
+            <UIText kind="headline/h3" style={{ display: 'flex' }}>
               {isLoading || !walletPortfolio ? (
                 ellipsis
               ) : (
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(
-                    walletPortfolio.totalValue || 0,
-                    'en',
-                    currency
-                  )}
-                />
+                <BlurrableBalance kind="headline/h3">
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(
+                      walletPortfolio.totalValue || 0,
+                      'en',
+                      currency
+                    )}
+                  />
+                </BlurrableBalance>
               )}
             </UIText>
           }

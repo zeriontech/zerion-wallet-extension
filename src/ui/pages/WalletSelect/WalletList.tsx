@@ -23,6 +23,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import * as styles from './styles.module.css';
 
 function WalletListItem({
@@ -191,15 +192,17 @@ function WalletListItem({
                 <PortfolioValue
                   address={wallet.address}
                   render={(query) => (
-                    <UIText kind="headline/h3">
+                    <UIText kind="headline/h3" style={{ display: 'flex' }}>
                       {query.data ? (
-                        <NeutralDecimals
-                          parts={formatCurrencyToParts(
-                            query.data.data?.totalValue || 0,
-                            'en',
-                            currency
-                          )}
-                        />
+                        <BlurrableBalance kind="headline/h3">
+                          <NeutralDecimals
+                            parts={formatCurrencyToParts(
+                              query.data.data?.totalValue || 0,
+                              'en',
+                              currency
+                            )}
+                          />
+                        </BlurrableBalance>
                       ) : (
                         NBSP
                       )}

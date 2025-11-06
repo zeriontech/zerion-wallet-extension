@@ -71,6 +71,7 @@ import { isSolanaAddress } from 'src/modules/solana/shared';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { walletPort } from 'src/ui/shared/channels';
 import { useLocation } from 'react-router-dom';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
@@ -242,15 +243,23 @@ function AddressPositionItem({
                       {positionTypeToStringMap[position.type]}
                     </span>
                   ) : position.quantity ? (
-                    <span key="position-quantity" style={textOverflowStyle}>
-                      {formatTokenValue(
-                        getCommonQuantity({
-                          asset: position.asset,
-                          chain,
-                          baseQuantity: position.quantity,
-                        }),
-                        position.asset.symbol
-                      )}
+                    <span
+                      key="position-quantity"
+                      style={{ ...textOverflowStyle, display: 'flex' }}
+                    >
+                      <BlurrableBalance
+                        kind="small/regular"
+                        color="var(--neutral-700)"
+                      >
+                        {formatTokenValue(
+                          getCommonQuantity({
+                            asset: position.asset,
+                            chain,
+                            baseQuantity: position.quantity,
+                          }),
+                          position.asset.symbol
+                        )}
+                      </BlurrableBalance>
                     </span>
                   ) : null,
                 ],
@@ -262,9 +271,11 @@ function AddressPositionItem({
           }
         />
         {position.value != null ? (
-          <VStack gap={0} style={{ textAlign: 'right' }}>
-            <UIText kind="body/regular">
-              {formatCurrencyValue(position.value, 'en', currency)}
+          <VStack gap={0} style={{ textAlign: 'right', justifyItems: 'end' }}>
+            <UIText kind="body/regular" style={{ display: 'flex' }}>
+              <BlurrableBalance kind="body/regular">
+                {formatCurrencyValue(position.value, 'en', currency)}
+              </BlurrableBalance>
             </UIText>
             {position.asset.price?.relative_change_24h ? (
               <UIText
@@ -274,13 +285,26 @@ function AddressPositionItem({
                     ? 'var(--negative-500)'
                     : 'var(--positive-500)'
                 }
+                style={{ display: 'flex', gap: 4 }}
               >
-                {`${
-                  position.asset.price.relative_change_24h > 0 ? '+' : minus
-                }${formatPercent(
-                  Math.abs(position.asset.price.relative_change_24h),
-                  'en'
-                )}% (${formatCurrencyValue(absoluteChange, 'en', currency)})`}
+                <span>
+                  {`${
+                    position.asset.price.relative_change_24h > 0 ? '+' : minus
+                  }${formatPercent(
+                    Math.abs(position.asset.price.relative_change_24h),
+                    'en'
+                  )}%`}
+                </span>
+                <BlurrableBalance
+                  kind="small/regular"
+                  color={
+                    position.asset.price.relative_change_24h < 0
+                      ? 'var(--negative-500)'
+                      : 'var(--positive-500)'
+                  }
+                >
+                  ({formatCurrencyValue(absoluteChange, 'en', currency)})
+                </BlurrableBalance>
               </UIText>
             ) : null}
           </VStack>
@@ -632,10 +656,15 @@ function PositionList({
                   />
                 </div>
                 <Spacer height={4} />
-                <UIText style={{ paddingInline: 16 }} kind="headline/h2">
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(totalValue, 'en', currency)}
-                  />
+                <UIText
+                  style={{ paddingInline: 16, display: 'flex' }}
+                  kind="headline/h2"
+                >
+                  <BlurrableBalance kind="headline/h2">
+                    <NeutralDecimals
+                      parts={formatCurrencyToParts(totalValue, 'en', currency)}
+                    />
+                  </BlurrableBalance>
                 </UIText>
               </>
             ) : null}
