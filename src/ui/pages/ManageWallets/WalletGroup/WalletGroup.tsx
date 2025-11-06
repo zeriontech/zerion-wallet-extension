@@ -48,6 +48,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { BLOCKCHAIN_TYPES } from 'src/shared/wallet/classifiers';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
 import { FEATURE_SOLANA } from 'src/env/config';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { groupByEcosystem } from '../shared/groupByEcosystem';
 
 const strings = {
@@ -225,15 +226,17 @@ function WalletGroupItem({
           <PortfolioValue
             address={wallet.address}
             render={(query) => (
-              <UIText kind="headline/h2">
+              <UIText kind="headline/h2" style={{ display: 'flex' }}>
                 {query.data ? (
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(
-                      query.data.data?.totalValue || 0,
-                      'en',
-                      currency
-                    )}
-                  />
+                  <BlurrableBalance kind="headline/h2">
+                    <NeutralDecimals
+                      parts={formatCurrencyToParts(
+                        query.data.data?.totalValue || 0,
+                        'en',
+                        currency
+                      )}
+                    />
+                  </BlurrableBalance>
                 ) : (
                   NBSP
                 )}

@@ -42,6 +42,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import * as styles from './styles.module.css';
 
 function ResultItem({
@@ -111,7 +112,9 @@ function ResultItem({
                 whiteSpace: 'nowrap',
               }}
             >
-              {details[0]}
+              <BlurrableBalance kind="small/regular">
+                {details[0]}
+              </BlurrableBalance>
               <div
                 style={{
                   textOverflow: 'ellipsis',
@@ -128,12 +131,18 @@ function ResultItem({
         }
       />
       {price ? (
-        <UIText kind="body/accent" color="var(--black)">
-          {formatCurrencyValue(
-            quantityCommon.times(price.value),
-            'en',
-            currency
-          )}
+        <UIText
+          kind="body/accent"
+          color="var(--black)"
+          style={{ display: 'flex' }}
+        >
+          <BlurrableBalance kind="body/accent" color="var(--black)">
+            {formatCurrencyValue(
+              quantityCommon.times(price.value),
+              'en',
+              currency
+            )}
+          </BlurrableBalance>
         </UIText>
       ) : null}
     </HStack>

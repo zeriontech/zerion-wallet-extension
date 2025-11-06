@@ -34,6 +34,7 @@ import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
 import { FEATURE_SOLANA } from 'src/env/config';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { suggestInitialWallets, type DerivedWallets } from '../helpers';
 import { AddressImportMessages } from './AddressImportMessages';
 import { WalletList, WalletListPresentation } from './WalletList';
@@ -73,16 +74,18 @@ export function PortfolioValueDetail({ address }: { address: string }) {
   const { currency } = useCurrency();
 
   return (
-    <UIText kind="headline/h2">
+    <UIText kind="headline/h2" style={{ display: 'flex' }}>
       <PortfolioValue
         address={address}
         render={({ data }) => {
           if (data) {
             const value = data.data?.totalValue ?? 0;
             return (
-              <NeutralDecimals
-                parts={formatCurrencyToParts(value, 'en', currency)}
-              />
+              <BlurrableBalance kind="headline/h2">
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(value, 'en', currency)}
+                />
+              </BlurrableBalance>
             );
           } else {
             return <span>{NBSP}</span>;
