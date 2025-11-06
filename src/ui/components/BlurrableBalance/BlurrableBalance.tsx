@@ -44,7 +44,7 @@ export function BlurrableBalance({
   }
 
   const gridConfig = getGridConfigForKind(kind);
-  const squareColor = color || '#D0D5DD';
+  const squareColor = color || 'var(--neutral-600)';
 
   return (
     <div
