@@ -15,6 +15,7 @@ import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/Inc
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
+import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
@@ -43,6 +44,7 @@ export function NetworkFee({
   label,
   renderDisplayValue,
   displayValueEnd,
+  interpretation,
 }: {
   transaction: IncomingTransactionWithFrom;
   transactionFee: TransactionFee;
@@ -57,6 +59,11 @@ export function NetworkFee({
     displayValue: string;
   }) => React.ReactNode;
   displayValueEnd?: React.ReactNode;
+  /**
+   * The interpretation response from the transaction simulation API.
+   * Used to display more accurate Network Fee for Fast speed
+   */
+  interpretation?: InterpretResponse | null;
 }) {
   const { networks } = useNetworks();
   const { currency } = useCurrency();
@@ -78,8 +85,20 @@ export function NetworkFee({
 
   const disabled = isLoading || !onChange;
 
+  const showInterpretationFee =
+    !totalValueExceedsBalance &&
+    networkFeeConfiguration.speed === 'fast' &&
+    interpretation?.data.action.fee;
+  const interpretationFee = showInterpretationFee
+    ? interpretation?.data.action.fee?.amount.value
+    : undefined;
+
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
-  const feeValueFormatted = feeValueFiat
+  const feeValueFormatted = interpretationFee
+    ? formatCurrencyValueExtra(interpretationFee, 'en', currency, {
+        zeroRoundingFallback: 0.01,
+      })
+    : feeValueFiat
     ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
         zeroRoundingFallback: 0.01,
       })
