@@ -532,7 +532,26 @@ function Privacy() {
       <VStack gap={16}>
         <Frame>
           <ToggleSettingLine
-            text="Hide Balances"
+            text={
+              <>
+                <span>Hide Balances</span>{' '}
+                <UIText
+                  kind="caption/accent"
+                  inline={true}
+                  color="var(--neutral-700)"
+                >
+                  <code
+                    style={{
+                      backgroundColor: 'var(--neutral-100)',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    Shift+H
+                  </code>
+                </UIText>
+              </>
+            }
             checked={hideBalances}
             onChange={(event) => {
               preferenceStore.setState((state) => ({
@@ -542,33 +561,8 @@ function Privacy() {
             }}
             detailText={
               <span>
-                Replace balance amounts with blur squares for privacy. Toggle
-                with{' '}
-                <code
-                  style={{
-                    backgroundColor: 'var(--neutral-100)',
-                    color: 'var(--neutral-700)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontSize: '0.9em',
-                    fontWeight: 500,
-                  }}
-                >
-                  Shift+H
-                </code>{' '}
-                or{' '}
-                <code
-                  style={{
-                    backgroundColor: 'var(--neutral-100)',
-                    color: 'var(--neutral-700)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontSize: '0.9em',
-                    fontWeight: 500,
-                  }}
-                >
-                  Cmd/Ctrl+H
-                </code>
+                Replace balance amounts with blur squares. Useful if you don't
+                want to expose your balances in public.
               </span>
             }
           />
