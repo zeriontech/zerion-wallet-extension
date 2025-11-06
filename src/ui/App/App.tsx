@@ -15,7 +15,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
 import { Overview } from 'src/ui/pages/Overview';
-import { RouteResolver } from 'src/ui/pages/RouteResolver';
 import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
@@ -206,258 +205,256 @@ function MaybeTestModeDecoration() {
 function Views({ initialRoute }: { initialRoute?: string }) {
   const isPopup = urlContext.windowType === 'popup';
   return (
-    <RouteResolver>
-      <ViewArea>
-        <URLBar />
-        {isPopup ? <RouteRestoration /> : null}
-        <Routes>
-          {initialRoute ? (
-            <Route path="/" element={<Navigate to={initialRoute} />} />
-          ) : null}
-          <Route
-            path="/"
-            element={
-              <SomeKindOfResolver
-                noUser={<Navigate to="/intro" replace={true} />}
-                noWallet={<Navigate to="/get-started?intro" replace={true} />}
-                notAuthenticated={<Navigate to="/login" replace={true} />}
-                authenticated={<Navigate to="/overview" replace={true} />}
-              />
-            }
-          />
-          <Route path="/intro" element={<Intro />} />
-          <Route path="/create-account" element={<CreateAccount />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/get-started/*" element={<GetStarted />} />
-          <Route
-            path="/connect-hardware-wallet/*"
-            element={<HardwareWalletConnection />}
-          />
-          <Route path="/receive" element={<Receive />} />
-          <Route path="/phishing-warning" element={<PhishingWarningPage />} />
-          <Route
-            path="/nft/:chain/:asset_code"
-            element={
+    <ViewArea>
+      <URLBar />
+      {isPopup ? <RouteRestoration /> : null}
+      <Routes>
+        {initialRoute ? (
+          <Route path="/" element={<Navigate to={initialRoute} />} />
+        ) : null}
+        <Route
+          path="/"
+          element={
+            <SomeKindOfResolver
+              noUser={<Navigate to="/intro" replace={true} />}
+              noWallet={<Navigate to="/get-started?intro" replace={true} />}
+              notAuthenticated={<Navigate to="/login" replace={true} />}
+              authenticated={<Navigate to="/overview" replace={true} />}
+            />
+          }
+        />
+        <Route path="/intro" element={<Intro />} />
+        <Route path="/create-account" element={<CreateAccount />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/get-started/*" element={<GetStarted />} />
+        <Route
+          path="/connect-hardware-wallet/*"
+          element={<HardwareWalletConnection />}
+        />
+        <Route path="/receive" element={<Receive />} />
+        <Route path="/phishing-warning" element={<PhishingWarningPage />} />
+        <Route
+          path="/nft/:chain/:asset_code"
+          element={
+            <RequireAuth>
+              <NonFungibleToken />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/overview/*"
+          element={
+            <RequireAuth>
+              <Overview />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/action/:action_id/:act_index?"
+          element={
+            <RequireAuth>
+              <ActionInfo />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/asset/:asset_code"
+          element={
+            <RequireAuth>
+              <AssetInfo />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings/*"
+          element={
+            <RequireAuth>
+              <Settings />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <RequireAuth>
+              <Search />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/networks-select"
+          element={
+            <RequireAuth>
+              <Networks />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/networks/*"
+          element={
+            <RequireAuth>
+              <Networks />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/reveal-private-key/*"
+          element={
+            <RequireAuth>
+              <RevealPrivateKey />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/requestAccounts"
+          element={
+            <ChooseGlobalProviderGuard>
               <RequireAuth>
-                <NonFungibleToken />
+                <RequestAccounts />
               </RequireAuth>
-            }
-          />
-          <Route
-            path="/overview/*"
-            element={
-              <RequireAuth>
-                <Overview />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/action/:action_id/:act_index?"
-            element={
-              <RequireAuth>
-                <ActionInfo />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/asset/:asset_code"
-            element={
-              <RequireAuth>
-                <AssetInfo />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/settings/*"
-            element={
-              <RequireAuth>
-                <Settings />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <RequireAuth>
-                <Search />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/networks-select"
-            element={
-              <RequireAuth>
-                <Networks />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/networks/*"
-            element={
-              <RequireAuth>
-                <Networks />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/reveal-private-key/*"
-            element={
-              <RequireAuth>
-                <RevealPrivateKey />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/requestAccounts"
-            element={
-              <ChooseGlobalProviderGuard>
-                <RequireAuth>
-                  <RequestAccounts />
-                </RequireAuth>
-              </ChooseGlobalProviderGuard>
-            }
-          />
-          <Route
-            path="/sendTransaction/*"
-            element={
-              <RequireAuth>
-                <SendTransaction />
-              </RequireAuth>
-            }
-          />
-          <Route path="/testnetModeGuard" element={<TestnetModeGuard />} />
-          <Route
-            path="/signMessage"
-            element={
-              <RequireAuth>
-                <SignMessage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/signTypedData"
-            element={
-              <RequireAuth>
-                <SignTypedData />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/switchEthereumChain"
-            element={
-              <RequireAuth>
-                <SwitchEthereumChain />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/addEthereumChain/*"
-            element={
-              <RequireAuth>
-                <AddEthereumChain />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/wallets/*"
-            element={
-              <RequireAuth>
-                <ManageWallets />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/wallet-select"
-            element={
-              <RequireAuth>
-                <WalletSelect />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/connected-sites/*"
-            element={
-              <RequireAuth>
-                <ConnectedSites />
-              </RequireAuth>
-            }
-          />
-          <Route path="/handshake-failure" element={<HandshakeFailure />} />
-          <Route
-            path="/ability/:ability_uid"
-            element={
-              <RequireAuth>
-                <AbilityPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/send-form/*"
-            element={
-              <RequireAuth>
-                <SendForm />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/swap-form/*"
-            element={
-              <RequireAuth>
-                <SwapForm />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/bridge-form/*"
-            element={
-              <RequireAuth>
-                <BridgeForm />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/invite/*"
-            element={
-              <RequireAuth>
-                <Invite />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/xp-drop/*"
-            element={
-              <RequireAuth>
-                <XpDrop />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/premium"
-            element={
-              <RequireAuth>
-                <PremiumPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/not-implemented"
-            element={
-              <FillView>
-                <UIText
-                  kind="body/regular"
-                  color="var(--neutral-500)"
-                  style={{ padding: 20, textAlign: 'center' }}
-                >
-                  This View is not Implemented
-                </UIText>
-              </FillView>
-            }
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </ViewArea>
-    </RouteResolver>
+            </ChooseGlobalProviderGuard>
+          }
+        />
+        <Route
+          path="/sendTransaction/*"
+          element={
+            <RequireAuth>
+              <SendTransaction />
+            </RequireAuth>
+          }
+        />
+        <Route path="/testnetModeGuard" element={<TestnetModeGuard />} />
+        <Route
+          path="/signMessage"
+          element={
+            <RequireAuth>
+              <SignMessage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/signTypedData"
+          element={
+            <RequireAuth>
+              <SignTypedData />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/switchEthereumChain"
+          element={
+            <RequireAuth>
+              <SwitchEthereumChain />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/addEthereumChain/*"
+          element={
+            <RequireAuth>
+              <AddEthereumChain />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/wallets/*"
+          element={
+            <RequireAuth>
+              <ManageWallets />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/wallet-select"
+          element={
+            <RequireAuth>
+              <WalletSelect />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/connected-sites/*"
+          element={
+            <RequireAuth>
+              <ConnectedSites />
+            </RequireAuth>
+          }
+        />
+        <Route path="/handshake-failure" element={<HandshakeFailure />} />
+        <Route
+          path="/ability/:ability_uid"
+          element={
+            <RequireAuth>
+              <AbilityPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/send-form/*"
+          element={
+            <RequireAuth>
+              <SendForm />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/swap-form/*"
+          element={
+            <RequireAuth>
+              <SwapForm />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/bridge-form/*"
+          element={
+            <RequireAuth>
+              <BridgeForm />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/invite/*"
+          element={
+            <RequireAuth>
+              <Invite />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/xp-drop/*"
+          element={
+            <RequireAuth>
+              <XpDrop />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/premium"
+          element={
+            <RequireAuth>
+              <PremiumPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/not-implemented"
+          element={
+            <FillView>
+              <UIText
+                kind="body/regular"
+                color="var(--neutral-500)"
+                style={{ padding: 20, textAlign: 'center' }}
+              >
+                This View is not Implemented
+              </UIText>
+            </FillView>
+          }
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </ViewArea>
   );
 }
 
