@@ -594,7 +594,7 @@ function OverviewComponent() {
             />
           ) : null}
           <VStack gap={0}>
-            <BlurrableBalance kind="headline/h1">
+            <BlurrableBalance kind="headline/h1" color="var(--black)">
               <UIText kind="headline/h1">
                 {walletPortfolio?.totalValue != null ? (
                   <NeutralDecimals

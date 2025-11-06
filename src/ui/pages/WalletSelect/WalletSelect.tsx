@@ -70,7 +70,7 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
               {isLoading || !walletPortfolio ? (
                 ellipsis
               ) : (
-                <BlurrableBalance kind="headline/h3">
+                <BlurrableBalance kind="headline/h3" color="var(--black)">
                   <NeutralDecimals
                     parts={formatCurrencyToParts(
                       walletPortfolio.totalValue || 0,

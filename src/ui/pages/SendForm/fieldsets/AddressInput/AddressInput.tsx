@@ -181,7 +181,7 @@ const SuggestedItem = React.forwardRef(
             render={(query) => (
               <UIText kind="body/accent" style={{ display: 'flex' }}>
                 {query.data ? (
-                  <BlurrableBalance kind="body/accent">
+                  <BlurrableBalance kind="body/accent" color="var(--black)">
                     <NeutralDecimals
                       parts={formatCurrencyToParts(
                         query.data.data?.totalValue || 0,

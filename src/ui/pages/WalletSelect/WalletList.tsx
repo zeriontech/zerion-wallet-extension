@@ -194,7 +194,10 @@ function WalletListItem({
                   render={(query) => (
                     <UIText kind="headline/h3" style={{ display: 'flex' }}>
                       {query.data ? (
-                        <BlurrableBalance kind="headline/h3">
+                        <BlurrableBalance
+                          kind="headline/h3"
+                          color="var(--black)"
+                        >
                           <NeutralDecimals
                             parts={formatCurrencyToParts(
                               query.data.data?.totalValue || 0,

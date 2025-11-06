@@ -81,7 +81,7 @@ export function PortfolioValueDetail({ address }: { address: string }) {
           if (data) {
             const value = data.data?.totalValue ?? 0;
             return (
-              <BlurrableBalance kind="headline/h2">
+              <BlurrableBalance kind="headline/h2" color="var(--black)">
                 <NeutralDecimals
                   parts={formatCurrencyToParts(value, 'en', currency)}
                 />

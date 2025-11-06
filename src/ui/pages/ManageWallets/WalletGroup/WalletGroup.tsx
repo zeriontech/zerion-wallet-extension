@@ -228,7 +228,7 @@ function WalletGroupItem({
             render={(query) => (
               <UIText kind="headline/h2" style={{ display: 'flex' }}>
                 {query.data ? (
-                  <BlurrableBalance kind="headline/h2">
+                  <BlurrableBalance kind="headline/h2" color="var(--black)">
                     <NeutralDecimals
                       parts={formatCurrencyToParts(
                         query.data.data?.totalValue || 0,

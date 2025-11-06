@@ -141,7 +141,7 @@ function NFTItem({
           </UIText>
           {price ? (
             <UIText kind="small/accent">
-              <BlurrableBalance kind="small/accent">
+              <BlurrableBalance kind="small/accent" color="var(--black)">
                 <NeutralDecimals
                   parts={formatCurrencyToParts(price, 'en', currency)}
                 />

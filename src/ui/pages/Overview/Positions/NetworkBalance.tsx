@@ -101,7 +101,7 @@ function DisclosureButton({
                 {selectedNetworkName}
               </div>,
               valueDetail != null ? (
-                <BlurrableBalance kind={textKind} key={1}>
+                <BlurrableBalance kind={textKind} key={1} color="var(--black)">
                   <div key={1}>{valueDetail}</div>
                 </BlurrableBalance>
               ) : null,
@@ -200,7 +200,7 @@ export function NetworkBalance({
     <>
       {hasValue && showWalletNameContent ? (
         <Content name="wallet-name-end">
-          <BlurrableBalance kind={textKind}>
+          <BlurrableBalance kind={textKind} color="var(--black)">
             <UIText
               kind={textKind}
               style={{

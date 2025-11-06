@@ -273,7 +273,7 @@ function AddressPositionItem({
         {position.value != null ? (
           <VStack gap={0} style={{ textAlign: 'right', justifyItems: 'end' }}>
             <UIText kind="body/regular" style={{ display: 'flex' }}>
-              <BlurrableBalance kind="body/regular">
+              <BlurrableBalance kind="body/regular" color="var(--black)">
                 {formatCurrencyValue(position.value, 'en', currency)}
               </BlurrableBalance>
             </UIText>
@@ -660,7 +660,7 @@ function PositionList({
                   style={{ paddingInline: 16, display: 'flex' }}
                   kind="headline/h2"
                 >
-                  <BlurrableBalance kind="headline/h2">
+                  <BlurrableBalance kind="headline/h2" color="var(--black)">
                     <NeutralDecimals
                       parts={formatCurrencyToParts(totalValue, 'en', currency)}
                     />
