@@ -69,6 +69,7 @@ import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests
 import { getDecimals } from 'src/modules/networks/asset';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
+import { AddressActionNetworkFee } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 
 enum View {
@@ -409,6 +410,14 @@ function TypedDataDefaultView({
             }}
             gap={8}
           >
+            {interpretation?.data.action.fee ? (
+              <div style={{ marginBottom: 8 }}>
+                <AddressActionNetworkFee
+                  fee={interpretation.data.action.fee}
+                  isLoading={interpretQuery.isInitialLoading}
+                />
+              </div>
+            ) : null}
             {signTypedData_v4Mutation.isError ? (
               <ErrorMessage error={getError(signTypedData_v4Mutation.error)} />
             ) : null}
