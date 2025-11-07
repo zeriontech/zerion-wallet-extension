@@ -617,10 +617,13 @@ function OverviewComponent() {
                     ? 'var(--positive-500)'
                     : 'var(--negative-500)'
                 }
+                style={{ display: 'flex', gap: 4 }}
               >
-                {`${percentageChange.isPositive ? '+' : ''}${
-                  percentageChange.formatted
-                }`}{' '}
+                <span>
+                  {`${percentageChange.isPositive ? '+' : ''}${
+                    percentageChange.formatted
+                  }`}
+                </span>
                 <BlurrableBalance
                   kind="small/regular"
                   color={
