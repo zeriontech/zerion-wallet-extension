@@ -25,6 +25,7 @@ import { AssetLink } from 'src/ui/components/AssetLink';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { NFTLink } from 'src/ui/components/NFTLink';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { RateLine } from './RateLine';
 import { LabelLine } from './LabelLine';
 import { FeeLine } from './FeeLine';
@@ -72,7 +73,7 @@ function AssetContent({
               alignItems="center"
               style={{ gridTemplateColumns: 'auto 1fr' }}
             >
-              <span>
+              <BlurrableBalance kind="headline/h3">
                 {unlimited
                   ? 'Unlimited'
                   : amount?.quantity
@@ -84,7 +85,7 @@ function AssetContent({
                         : ''
                     }${formatTokenValue(amount?.quantity || '0', '')}`
                   : null}
-              </span>
+              </BlurrableBalance>
               <AssetLink
                 fungible={fungible}
                 title={direction == null ? fungible.name : undefined}
@@ -92,10 +93,16 @@ function AssetContent({
             </HStack>
           </UIText>
           {direction != null ? (
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {amount?.value != null
-                ? formatPriceValue(amount.value || '0', 'en', amount.currency)
-                : 'N/A'}
+            <UIText
+              kind="small/regular"
+              color="var(--neutral-500)"
+              style={{ display: 'flex' }}
+            >
+              <BlurrableBalance kind="small/regular">
+                {amount?.value != null
+                  ? formatPriceValue(amount.value || '0', 'en', amount.currency)
+                  : 'N/A'}
+              </BlurrableBalance>
             </UIText>
           ) : null}
         </VStack>
