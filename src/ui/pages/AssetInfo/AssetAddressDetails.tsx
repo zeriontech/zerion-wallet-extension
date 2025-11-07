@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import type { Kind } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import ChainsIcon from 'jsx:src/ui/assets/pie-chart.svg';
@@ -38,6 +39,7 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import type { ResponseBody } from 'src/modules/zerion-api/requests/ResponseBody';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PREMIUM_LANDING_LINK } from 'src/ui/features/premium/link';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { getColor, getSign } from './helpers';
 import { AssetHeader } from './AssetHeader';
 import * as styles from './styles.module.css';
@@ -113,24 +115,33 @@ function AssetDetailsTitle({
         <UIText
           kind="headline/h1"
           color={isUntrackedAsset ? 'var(--neutral-500)' : undefined}
+          style={{ display: 'flex' }}
         >
-          {isUntrackedAsset ? (
-            'N/A'
-          ) : (
-            <NeutralDecimals
-              parts={formatCurrencyToParts(
-                walletAssetDetails.totalValue,
-                'en',
-                currency
-              )}
-            />
-          )}
+          <BlurrableBalance kind="headline/h1">
+            {isUntrackedAsset ? (
+              'N/A'
+            ) : (
+              <NeutralDecimals
+                parts={formatCurrencyToParts(
+                  walletAssetDetails.totalValue,
+                  'en',
+                  currency
+                )}
+              />
+            )}
+          </BlurrableBalance>
         </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {formatTokenValue(
-            walletAssetDetails.totalConvertedQuantity,
-            assetFullInfo.fungible.symbol
-          )}
+        <UIText
+          kind="small/regular"
+          color="var(--neutral-500)"
+          style={{ display: 'flex' }}
+        >
+          <BlurrableBalance kind="small/regular">
+            {formatTokenValue(
+              walletAssetDetails.totalConvertedQuantity,
+              assetFullInfo.fungible.symbol
+            )}
+          </BlurrableBalance>
         </UIText>
       </VStack>
     </VStack>
@@ -145,7 +156,7 @@ function StatLine({
 }: {
   title: string;
   isLoading?: boolean;
-  value: React.ReactNode;
+  value: ({ color, kind }: { color: string; kind: Kind }) => React.ReactNode;
   valueColor?: string;
 }) {
   return (
@@ -154,8 +165,12 @@ function StatLine({
       {isLoading ? (
         <LoadingSkeleton />
       ) : (
-        <UIText kind="body/accent" color={valueColor}>
-          {value}
+        <UIText
+          kind="body/accent"
+          color={valueColor}
+          style={{ display: 'flex' }}
+        >
+          {value({ color: valueColor || 'currentColor', kind: 'body/accent' })}
         </UIText>
       )}
     </HStack>
@@ -196,17 +211,21 @@ function AssetStats({
     <VStack gap={16}>
       <StatLine
         title="24-hour Return"
-        value={
-          return24h != null
-            ? `${getSign(return24h)}${formatPercent(
+        value={({ color, kind }) =>
+          return24h != null ? (
+            <>
+              <span>{`${getSign(return24h)}${formatPercent(
                 Math.abs(relativeReturn24h || 0) * 100,
                 'en'
-              )}% (${formatCurrencyValue(
-                Math.abs(return24h || 0),
-                'en',
-                currency
-              )})`
-            : 'N/A'
+              )}% (`}</span>
+              <BlurrableBalance kind={kind} color={color}>
+                {formatCurrencyValue(Math.abs(return24h || 0), 'en', currency)}
+              </BlurrableBalance>
+              <span>)</span>
+            </>
+          ) : (
+            'N/A'
+          )
         }
         valueColor={return24h != null ? getColor(return24h) : undefined}
       />
@@ -214,66 +233,98 @@ function AssetStats({
         <>
           <StatLine
             title="Total PnL"
-            value={`${getSign(assetAddressPnl?.totalPnl)}${formatPercent(
-              Math.abs(assetAddressPnl?.relativeTotalPnl || 0) * 100,
-              'en'
-            )}% (${formatCurrencyValue(
-              Math.abs(assetAddressPnl?.totalPnl || 0),
-              'en',
-              currency
-            )})`}
+            value={({ color, kind }) => (
+              <>
+                <span>{`${getSign(assetAddressPnl?.totalPnl)}${formatPercent(
+                  Math.abs(assetAddressPnl?.relativeTotalPnl || 0) * 100,
+                  'en'
+                )}% (`}</span>
+                <BlurrableBalance kind={kind} color={color}>
+                  {formatCurrencyValue(
+                    Math.abs(assetAddressPnl?.totalPnl || 0),
+                    'en',
+                    currency
+                  )}
+                </BlurrableBalance>
+                <span>)</span>
+              </>
+            )}
             valueColor={getColor(assetAddressPnl?.totalPnl)}
             isLoading={isLoading}
           />
           <StatLine
             title="Realised PnL"
-            value={`${getSign(assetAddressPnl?.realizedPnl)}${formatPercent(
-              Math.abs(assetAddressPnl?.relativeRealizedPnl || 0) * 100,
-              'en'
-            )}% (${formatCurrencyValue(
-              Math.abs(assetAddressPnl?.realizedPnl || 0),
-              'en',
-              currency
-            )})`}
+            value={({ color, kind }) => (
+              <>
+                <span>{`${getSign(assetAddressPnl?.realizedPnl)}${formatPercent(
+                  Math.abs(assetAddressPnl?.relativeRealizedPnl || 0) * 100,
+                  'en'
+                )}% (`}</span>
+                <BlurrableBalance kind={kind} color={color}>
+                  {formatCurrencyValue(
+                    Math.abs(assetAddressPnl?.realizedPnl || 0),
+                    'en',
+                    currency
+                  )}
+                </BlurrableBalance>
+                <span>)</span>
+              </>
+            )}
             valueColor={getColor(assetAddressPnl?.realizedPnl)}
             isLoading={isLoading}
           />
           <StatLine
             title="Unrealised PnL"
-            value={`${getSign(assetAddressPnl?.unrealizedPnl)}${formatPercent(
-              Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0) * 100,
-              'en'
-            )}% (${formatCurrencyValue(
-              Math.abs(assetAddressPnl?.unrealizedPnl || 0),
-              'en',
-              currency
-            )})`}
+            value={({ color, kind }) => (
+              <>
+                <span>{`${getSign(
+                  assetAddressPnl?.unrealizedPnl
+                )}${formatPercent(
+                  Math.abs(assetAddressPnl?.relativeUnrealizedPnl || 0) * 100,
+                  'en'
+                )}% (`}</span>
+                <BlurrableBalance kind={kind} color={color}>
+                  {formatCurrencyValue(
+                    Math.abs(assetAddressPnl?.unrealizedPnl || 0),
+                    'en',
+                    currency
+                  )}
+                </BlurrableBalance>
+                <span>)</span>
+              </>
+            )}
             valueColor={getColor(assetAddressPnl?.relativeUnrealizedPnl)}
             isLoading={isLoading}
           />
           <StatLine
             title="Invested"
-            value={formatCurrencyValue(
-              assetAddressPnl?.bought || 0,
-              'en',
-              currency
+            value={({ color, kind }) => (
+              <BlurrableBalance kind={kind} color={color}>
+                {formatCurrencyValue(
+                  assetAddressPnl?.bought || 0,
+                  'en',
+                  currency
+                )}
+              </BlurrableBalance>
             )}
             isLoading={isLoading}
           />
           <StatLine
             title="Average Cost"
-            value={formatPriceValue(
-              assetAddressPnl?.averageBuyPrice || 0,
-              'en',
-              currency
-            )}
+            value={() =>
+              formatPriceValue(
+                assetAddressPnl?.averageBuyPrice || 0,
+                'en',
+                currency
+              )
+            }
             isLoading={isLoading}
           />
         </>
       ) : premiumStatus.isSupported ? (
         <StatLine
           title="Asset PnL & More"
-          value={
+          value={() => (
             <UnstyledAnchor
               href={PREMIUM_LANDING_LINK}
               target="_blank"
@@ -283,7 +334,7 @@ function AssetStats({
                 Buy Premium
               </UIText>
             </UnstyledAnchor>
-          }
+          )}
         />
       ) : null}
     </VStack>
@@ -381,8 +432,10 @@ function AssetNetworkDistribution({
                     </UIText>
                   </HStack>
                 </HStack>
-                <UIText kind="body/accent">
-                  {formatCurrencyValue(value, 'en', currency)}
+                <UIText kind="body/accent" style={{ display: 'flex' }}>
+                  <BlurrableBalance kind="body/accent">
+                    {formatCurrencyValue(value, 'en', currency)}
+                  </BlurrableBalance>
                 </UIText>
               </HStack>
             )
@@ -436,25 +489,8 @@ function AssetAddressApp({
             <ChainsIcon style={{ width: 16, height: 16 }} />
           )}
           {isUntrackedAsset ? (
-            <UIText kind="body/accent">
-              {formatTokenValue(
-                app.convertedQuantity,
-                assetFullInfo.fungible.symbol,
-                {
-                  notation:
-                    app.convertedQuantity > 100000 ? 'compact' : undefined,
-                }
-              )}
-            </UIText>
-          ) : (
-            <>
-              <UIText kind="body/accent">
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(app.value, 'en', currency)}
-                />
-              </UIText>
-              <UIText kind="body/regular" color="var(--neutral-500)">
-                (
+            <UIText kind="body/accent" style={{ display: 'flex' }}>
+              <BlurrableBalance kind="body/accent">
                 {formatTokenValue(
                   app.convertedQuantity,
                   assetFullInfo.fungible.symbol,
@@ -463,7 +499,37 @@ function AssetAddressApp({
                       app.convertedQuantity > 100000 ? 'compact' : undefined,
                   }
                 )}
-                )
+              </BlurrableBalance>
+            </UIText>
+          ) : (
+            <>
+              <UIText kind="body/accent" style={{ display: 'flex' }}>
+                <BlurrableBalance kind="body/accent">
+                  <NeutralDecimals
+                    parts={formatCurrencyToParts(app.value, 'en', currency)}
+                  />
+                </BlurrableBalance>
+              </UIText>
+              <UIText
+                kind="body/regular"
+                color="var(--neutral-500)"
+                style={{ display: 'flex' }}
+              >
+                <span>(</span>
+                <BlurrableBalance
+                  kind="body/regular"
+                  color="var(--neutral-500)"
+                >
+                  {formatTokenValue(
+                    app.convertedQuantity,
+                    assetFullInfo.fungible.symbol,
+                    {
+                      notation:
+                        app.convertedQuantity > 100000 ? 'compact' : undefined,
+                    }
+                  )}
+                </BlurrableBalance>
+                <span>)</span>
               </UIText>
             </>
           )}
@@ -601,8 +667,14 @@ function AssetPremiumAddressShortStats({
         {assetAddressPnlQuery.isLoading ? (
           <LoadingSkeleton />
         ) : (
-          <UIText kind="headline/h3" color={getColor(pnlRaw)}>
-            {unrealizedGainFormatted}
+          <UIText
+            kind="headline/h3"
+            color={getColor(pnlRaw)}
+            style={{ display: 'flex' }}
+          >
+            <BlurrableBalance kind="headline/h3" color={getColor(pnlRaw)}>
+              {unrealizedGainFormatted}
+            </BlurrableBalance>
           </UIText>
         )}
       </VStack>
@@ -613,12 +685,14 @@ function AssetPremiumAddressShortStats({
         {assetAddressPnlQuery.isLoading ? (
           <LoadingSkeleton />
         ) : (
-          <UIText kind="headline/h3">
-            {formatCurrencyValue(
-              assetAddressPnlQuery.data?.data.bought || 0,
-              'en',
-              currency
-            )}
+          <UIText kind="headline/h3" style={{ display: 'flex' }}>
+            <BlurrableBalance kind="headline/h3">
+              {formatCurrencyValue(
+                assetAddressPnlQuery.data?.data.bought || 0,
+                'en',
+                currency
+              )}
+            </BlurrableBalance>
           </UIText>
         )}
       </VStack>
@@ -794,24 +868,33 @@ export function AssetAddressStats({
                 <UIText
                   kind="headline/h1"
                   color={isUntrackedAsset ? 'var(--neutral-500)' : undefined}
+                  style={{ display: 'flex' }}
                 >
-                  {isUntrackedAsset ? (
-                    'N/A'
-                  ) : (
-                    <NeutralDecimals
-                      parts={formatCurrencyToParts(
-                        walletAssetDetails.totalValue,
-                        'en',
-                        currency
-                      )}
-                    />
-                  )}
+                  <BlurrableBalance kind="headline/h1">
+                    {isUntrackedAsset ? (
+                      'N/A'
+                    ) : (
+                      <NeutralDecimals
+                        parts={formatCurrencyToParts(
+                          walletAssetDetails.totalValue,
+                          'en',
+                          currency
+                        )}
+                      />
+                    )}
+                  </BlurrableBalance>
                 </UIText>
-                <UIText kind="small/regular" color="var(--neutral-500)">
-                  {formatTokenValue(
-                    walletAssetDetails.totalConvertedQuantity,
-                    asset.symbol
-                  )}
+                <UIText
+                  kind="small/regular"
+                  color="var(--neutral-500)"
+                  style={{ display: 'flex' }}
+                >
+                  <BlurrableBalance kind="small/regular">
+                    {formatTokenValue(
+                      walletAssetDetails.totalConvertedQuantity,
+                      asset.symbol
+                    )}
+                  </BlurrableBalance>
                 </UIText>
               </VStack>
             )}
@@ -830,7 +913,8 @@ export function AssetAddressStats({
               />
             )}
             {isUntrackedAsset ||
-            assetAddressPnlQuery.data?.data.bought === 0 ? null : (
+            (assetAddressPnlQuery.data?.data.bought === 0 &&
+              walletAssetDetails.totalValue === 0) ? null : (
               <Button
                 kind="neutral"
                 size={48}

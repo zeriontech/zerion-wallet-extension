@@ -15,6 +15,7 @@ import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions'
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import * as styles from './styles.module.css';
 
 const dateFormatter = new Intl.DateTimeFormat('en', {
@@ -104,11 +105,20 @@ function AssetHistoryItem({ addressAction }: { addressAction: AddressAction }) {
                 ? 'var(--positive-500)'
                 : 'currentColor'
             }
+            style={{ display: 'flex' }}
           >
-            {actionBalance}
+            <BlurrableBalance kind="body/regular">
+              {actionBalance}
+            </BlurrableBalance>
           </UIText>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            {actionValue}
+          <UIText
+            kind="small/regular"
+            color="var(--neutral-500)"
+            style={{ display: 'flex' }}
+          >
+            <BlurrableBalance kind="small/regular">
+              {actionValue}
+            </BlurrableBalance>
           </UIText>
         </VStack>
       </HStack>

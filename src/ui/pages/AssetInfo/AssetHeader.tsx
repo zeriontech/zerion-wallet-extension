@@ -8,6 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { emDash } from 'src/ui/shared/typography';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
 export function AssetHeader({
   asset,
@@ -32,15 +33,16 @@ export function AssetHeader({
         size={20}
         title={asset.name}
       />
-      <UIText kind="body/accent">
-        {asset.symbol}
-        {isUntrackedAsset
-          ? null
-          : ` ${emDash} ${formatPriceValue(
-              asset.meta.price || 0,
-              'en',
-              currency
-            )}`}
+      <UIText kind="body/accent" style={{ display: 'flex', gap: 4 }}>
+        <span>{asset.symbol}</span>
+        {isUntrackedAsset ? null : (
+          <>
+            <span>{emDash}</span>
+            <BlurrableBalance kind="body/accent">
+              {formatPriceValue(asset.meta.price || 0, 'en', currency)}
+            </BlurrableBalance>
+          </>
+        )}
       </UIText>
     </HStack>
   );
