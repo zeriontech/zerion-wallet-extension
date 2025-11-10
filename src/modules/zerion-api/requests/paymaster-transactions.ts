@@ -97,13 +97,16 @@ interface PaymasterParamsRequest {
   };
 }
 
-type PaymasterParamsResponse = ResponseBody<{
+type PaymasterParamsResponseData = {
   eligible: boolean;
-  paymasterParams: {
+  paymasterParams: null | {
     paymaster: string;
     paymasterInput: string;
   };
-}>;
+  suggestedGas?: string | null;
+};
+
+type PaymasterParamsResponse = ResponseBody<PaymasterParamsResponseData>;
 
 export function getPaymasterParams(
   this: ZerionApiContext,
@@ -131,7 +134,7 @@ export function getPaymasterParams(
     },
   };
   const kyOptions = this.getKyOptions();
-  const endpoint = '/paymaster/get-params/v2';
+  const endpoint = '/paymaster/get-params/v3';
   return ZerionHttpClient.post<PaymasterParamsResponse>(
     {
       endpoint,
