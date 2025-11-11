@@ -24,6 +24,7 @@ import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useNavigate } from 'react-router-dom';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
 import {
   HistoryApprovalValue,
@@ -128,7 +129,11 @@ function ActionDetail({ addressAction }: { addressAction: AnyAddressAction }) {
         src={chainInfo?.iconUrl}
         name={chainInfo?.name || null}
       />
-      <UIText kind="small/regular" color="var(--neutral-500)">
+      <UIText
+        kind="small/regular"
+        color="var(--neutral-500)"
+        style={{ display: 'flex' }}
+      >
         {addressAction.status === 'pending' ? (
           <span style={{ color: 'var(--notice-500)' }}>Pending</span>
         ) : addressAction.status === 'failed' ? (
@@ -136,7 +141,9 @@ function ActionDetail({ addressAction }: { addressAction: AnyAddressAction }) {
         ) : addressAction.status === 'dropped' ? (
           <span style={{ color: 'var(--negative-500)' }}>Dropped</span>
         ) : (
-          <ActionLabel addressAction={addressAction} />
+          <BlurrableBalance kind="small/regular">
+            <ActionLabel addressAction={addressAction} />
+          </BlurrableBalance>
         )}
       </UIText>
     </HStack>
@@ -249,12 +256,14 @@ function ActionItemBackend({
               actionType={addressAction.type.value}
               transfers={incomingTransfers}
               withLink={!testnetMode}
+              kind="body/regular"
             />
           ) : outgoingTransfers?.length ? (
             <HistoryItemValue
               actionType={addressAction.type.value}
               transfers={outgoingTransfers}
               withLink={!testnetMode}
+              kind="body/regular"
             />
           ) : approvals.length ? (
             <HistoryApprovalValue
@@ -268,17 +277,20 @@ function ActionItemBackend({
             <TransactionCurrencyValue
               transfers={incomingTransfers}
               currency={currency}
+              kind="small/regular"
             />
           ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
             <TransactionCurrencyValue
               transfers={outgoingTransfers}
               currency={currency}
+              kind="small/regular"
             />
           ) : outgoingTransfers?.length ? (
             <HistoryItemValue
               actionType={addressAction.type.value}
               transfers={outgoingTransfers}
               withLink={false}
+              kind="small/regular"
             />
           ) : approvals.length === 1 && approvals[0].unlimited ? (
             'Unlimited'
@@ -289,6 +301,7 @@ function ActionItemBackend({
                 amount={approvals[0].amount}
                 direction={null}
                 withLink={false}
+                kind="small/regular"
               />
             ) : approvals[0].fungible ? (
               <HistoryTokenValue
@@ -297,6 +310,7 @@ function ActionItemBackend({
                 direction={null}
                 actionType="approve"
                 withLink={false}
+                kind="small/regular"
               />
             ) : null
           ) : null}
@@ -426,12 +440,14 @@ function ActionItemLocal({
               actionType={addressAction.type.value}
               transfers={incomingTransfers}
               withLink={false}
+              kind="body/regular"
             />
           ) : outgoingTransfers?.length ? (
             <HistoryItemValue
               actionType={addressAction.type.value}
               transfers={outgoingTransfers}
               withLink={false}
+              kind="body/regular"
             />
           ) : approvals.length ? (
             <HistoryApprovalValue approvals={approvals} withLink={false} />

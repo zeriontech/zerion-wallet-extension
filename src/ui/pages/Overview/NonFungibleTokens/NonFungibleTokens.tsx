@@ -41,6 +41,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { getNftEntityUrl } from '../../NonFungibleToken/getEntityUrl';
 import { getGrownTabMaxHeight, offsetValues } from '../getTabsOffset';
 import { NetworkBalance } from '../Positions/NetworkBalance';
@@ -140,9 +141,11 @@ function NFTItem({
           </UIText>
           {price ? (
             <UIText kind="small/accent">
-              <NeutralDecimals
-                parts={formatCurrencyToParts(price, 'en', currency)}
-              />
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(price, 'en', currency)}
+                />
+              </BlurrableBalance>
             </UIText>
           ) : someHavePrice ? (
             <UIText kind="small/accent">{NBSP}</UIText>

@@ -15,6 +15,7 @@ import { NBSP } from 'src/ui/shared/typography';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { ReceiveFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import type { PriceImpact } from '../../shared/price-impact';
 import type { SwapFormState } from '../../shared/SwapFormState';
 import { MarketAssetSelect } from './MarketAssetSelect';
@@ -129,17 +130,16 @@ export function ReceiveTokenField({
           />
         }
         startDescription={
-          <div>
+          <div style={{ color: 'var(--neutral-600)', display: 'flex', gap: 4 }}>
             {positionBalanceCommon ? (
               <>
-                <span style={{ color: 'var(--neutral-600)' }}>Balance:</span>{' '}
-                <span
-                  style={{
-                    color: 'var(--neutral-600)',
-                  }}
+                <span>Balance:</span>
+                <BlurrableBalance
+                  kind="small/regular"
+                  color="var(--neutral-600)"
                 >
                   {formatTokenValue(positionBalanceCommon)}
-                </span>
+                </BlurrableBalance>
               </>
             ) : (
               NBSP

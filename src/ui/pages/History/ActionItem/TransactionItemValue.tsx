@@ -15,6 +15,8 @@ import type {
   Transfer,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
+import type { Kind } from 'src/ui/ui-kit/UIText';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
 function getSign(
   decimaledValue?: number | BigNumber | string,
@@ -32,12 +34,14 @@ export function HistoryTokenValue({
   fungible,
   direction,
   withLink,
+  kind,
 }: {
   actionType: ActionType;
   amount: Amount | null;
   fungible: Fungible;
   direction: ActionDirection | null;
   withLink: boolean;
+  kind: Kind;
 }) {
   const sign = getSign(amount?.value || 0, direction);
   const quantity = actionType === 'revoke' ? null : amount?.quantity;
@@ -56,7 +60,9 @@ export function HistoryTokenValue({
       }}
       title={quantity || undefined}
     >
-      {quantity ? <AssetQuantity sign={sign} quantity={quantity} /> : null}
+      <BlurrableBalance kind={kind}>
+        {quantity ? <AssetQuantity sign={sign} quantity={quantity} /> : null}
+      </BlurrableBalance>
       {withLink ? (
         <AssetLink fungible={fungible} />
       ) : (
@@ -71,11 +77,13 @@ export function HistoryNFTValue({
   nft,
   direction,
   withLink,
+  kind,
 }: {
   amount: Amount | null;
   nft: NFTPreview;
   direction: ActionDirection | null;
   withLink?: boolean;
+  kind: Kind;
 }) {
   return (
     <HStack
@@ -84,10 +92,10 @@ export function HistoryNFTValue({
       style={{ gridTemplateColumns: 'minmax(40px, 1fr) auto' }}
     >
       {(Number(amount?.quantity) || 0) > 1 ? (
-        <span>
+        <BlurrableBalance kind={kind}>
           {getSign(amount?.quantity, direction)}
           {amount?.quantity}
-        </span>
+        </BlurrableBalance>
       ) : null}
       {withLink ? <NFTLink nft={nft} /> : nft?.metadata?.name || 'NFT'}
     </HStack>
@@ -98,10 +106,12 @@ export function HistoryItemValue({
   actionType,
   transfers,
   withLink,
+  kind,
 }: {
   actionType: ActionType;
   transfers?: Transfer[];
   withLink: boolean;
+  kind: Kind;
 }) {
   if (!transfers?.length) {
     return null;
@@ -124,6 +134,7 @@ export function HistoryItemValue({
       direction={transfer.direction}
       amount={transfer.amount}
       withLink={withLink}
+      kind={kind}
     />
   ) : transfer.fungible ? (
     <HistoryTokenValue
@@ -132,6 +143,7 @@ export function HistoryItemValue({
       fungible={transfer.fungible}
       direction={transfer.direction}
       withLink={withLink}
+      kind={kind}
     />
   ) : null;
 }
@@ -173,9 +185,11 @@ export function HistoryApprovalValue({
 export function TransactionCurrencyValue({
   transfers,
   currency,
+  kind,
 }: {
   transfers?: Transfer[];
   currency: string;
+  kind: Kind;
 }) {
   if (transfers?.length !== 1) {
     return null;
@@ -185,5 +199,5 @@ export function TransactionCurrencyValue({
     return null;
   }
   const value = formatCurrencyValue(transfer.amount.value, 'en', currency);
-  return <>{value}</>;
+  return <BlurrableBalance kind={kind}>{value}</BlurrableBalance>;
 }

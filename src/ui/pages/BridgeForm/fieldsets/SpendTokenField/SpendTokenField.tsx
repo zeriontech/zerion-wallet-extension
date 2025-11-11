@@ -4,6 +4,7 @@ import React, { useId, useMemo, useRef } from 'react';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
 import {
   getPositionBalance,
@@ -165,11 +166,13 @@ export function SpendTokenField({
         />
       }
       startDescription={
-        <div style={{ color: 'var(--neutral-600)' }}>
-          Balance:{' '}
-          {positionBalanceCommon
-            ? formatTokenValue(positionBalanceCommon)
-            : 'n/a'}
+        <div style={{ color: 'var(--neutral-600)', display: 'flex', gap: 4 }}>
+          <span>Balance:</span>
+          <BlurrableBalance kind="small/regular" color="var(--neutral-600)">
+            {positionBalanceCommon
+              ? formatTokenValue(positionBalanceCommon)
+              : 'n/a'}
+          </BlurrableBalance>
         </div>
       }
       endDescription={

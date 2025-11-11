@@ -58,6 +58,7 @@ import { FooterBugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
+import { preferenceStore } from '../features/appearance';
 import { HandshakeFailure } from '../components/HandshakeFailure';
 import { NonFungibleToken } from '../pages/NonFungibleToken';
 import { AddEthereumChain } from '../pages/AddEthereumChain';
@@ -467,6 +468,14 @@ registerPersistentRoute('/bridge-form');
 function GlobalKeyboardShortcuts() {
   const isDialog = urlContext.windowType === 'dialog';
   const navigate = useNavigate();
+  const { hideBalances } = useStore(preferenceStore);
+
+  const toggleHideBalances = () => {
+    preferenceStore.setState((state) => ({
+      ...state,
+      hideBalances: !hideBalances,
+    }));
+  };
 
   return (
     <>
@@ -504,6 +513,10 @@ function GlobalKeyboardShortcuts() {
           navigate('/search');
         }}
       />
+
+      <KeyboardShortcut combination="shift+h" onKeyDown={toggleHideBalances} />
+      <KeyboardShortcut combination="cmd+h" onKeyDown={toggleHideBalances} />
+      <KeyboardShortcut combination="ctrl+h" onKeyDown={toggleHideBalances} />
     </>
   );
 }

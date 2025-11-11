@@ -35,6 +35,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import type { NftId } from '../../shared/useNftPosition';
 import { createNftId, useNftPosition } from '../../shared/useNftPosition';
 import * as styles from './styles.module.css';
@@ -138,14 +139,16 @@ function NFTList({
                 <UIText kind="caption/regular">{displayName}</UIText>
                 {item.prices.converted &&
                 item.prices.converted.floor_price > 0 ? (
-                  <UIText kind="body/accent">
-                    <NeutralDecimals
-                      parts={formatCurrencyToParts(
-                        item.prices.converted.floor_price,
-                        'en',
-                        item.prices.converted.currency
-                      )}
-                    />
+                  <UIText kind="body/accent" style={{ display: 'flex' }}>
+                    <BlurrableBalance kind="body/accent">
+                      <NeutralDecimals
+                        parts={formatCurrencyToParts(
+                          item.prices.converted.floor_price,
+                          'en',
+                          item.prices.converted.currency
+                        )}
+                      />
+                    </BlurrableBalance>
                   </UIText>
                 ) : null}
               </div>

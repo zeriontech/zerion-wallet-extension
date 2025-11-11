@@ -24,6 +24,7 @@ import {
 } from 'src/ui/shared/forms/QuickAmounts';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import type { SwapFormState } from '../../shared/SwapFormState';
 
 export function SpendTokenField({
@@ -192,11 +193,13 @@ export function SpendTokenField({
           />
         }
         startDescription={
-          <div style={{ color: 'var(--neutral-600)' }}>
-            Balance:{' '}
-            {positionBalanceCommon
-              ? formatTokenValue(positionBalanceCommon)
-              : 'n/a'}
+          <div style={{ color: 'var(--neutral-600)', display: 'flex', gap: 4 }}>
+            <span>Balance:</span>
+            <BlurrableBalance kind="small/regular" color="var(--neutral-600)">
+              {positionBalanceCommon
+                ? formatTokenValue(positionBalanceCommon)
+                : 'n/a'}
+            </BlurrableBalance>
           </div>
         }
         endDescription={

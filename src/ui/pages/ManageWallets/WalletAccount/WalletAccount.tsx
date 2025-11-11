@@ -41,6 +41,7 @@ import {
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { getError } from 'src/shared/errors/getError';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
 function EditableWalletName({
   id,
@@ -238,15 +239,20 @@ export function WalletAccount() {
                 <PortfolioValue
                   address={wallet.address}
                   render={(query) => (
-                    <UIText kind="headline/h2">
+                    <UIText kind="headline/h2" style={{ display: 'flex' }}>
                       {query.data ? (
-                        <NeutralDecimals
-                          parts={formatCurrencyToParts(
-                            query.data.data?.totalValue || 0,
-                            'en',
-                            currency
-                          )}
-                        />
+                        <BlurrableBalance
+                          kind="headline/h2"
+                          color="var(--black)"
+                        >
+                          <NeutralDecimals
+                            parts={formatCurrencyToParts(
+                              query.data.data?.totalValue || 0,
+                              'en',
+                              currency
+                            )}
+                          />
+                        </BlurrableBalance>
                       ) : (
                         NBSP
                       )}

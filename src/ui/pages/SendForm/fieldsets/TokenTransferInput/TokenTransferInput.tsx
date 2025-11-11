@@ -24,6 +24,7 @@ import {
 } from 'src/ui/shared/forms/QuickAmounts';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { AssetSelect } from '../../AssetSelect';
 
 function FiatInputValue({
@@ -193,11 +194,13 @@ export function TokenTransferInput<
           />
         }
         startDescription={
-          <div style={{ color: 'var(--neutral-600)' }}>
-            Balance:{' '}
-            {positionBalanceCommon
-              ? formatTokenValue(positionBalanceCommon)
-              : 'n/a'}
+          <div style={{ color: 'var(--neutral-600)', display: 'flex', gap: 4 }}>
+            <span>Balance:</span>
+            <BlurrableBalance kind="small/regular">
+              {positionBalanceCommon
+                ? formatTokenValue(positionBalanceCommon)
+                : 'n/a'}
+            </BlurrableBalance>
           </div>
         }
         endDescription={

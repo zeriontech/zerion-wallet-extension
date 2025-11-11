@@ -15,6 +15,7 @@ import { MarketAssetSelect } from 'src/ui/pages/SwapForm/fieldsets/ReceiveTokenF
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { ReceiveFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
 import type { PriceImpact } from 'src/ui/pages/SwapForm/shared/price-impact';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
 export function ReceiveTokenField({
   receiveInput,
@@ -95,17 +96,16 @@ export function ReceiveTokenField({
           />
         }
         startDescription={
-          <div>
+          <div style={{ color: 'var(--neutral-600)', display: 'flex', gap: 4 }}>
             {positionBalanceCommon ? (
               <>
-                <span style={{ color: 'var(--neutral-600)' }}>Balance:</span>{' '}
-                <span
-                  style={{
-                    color: 'var(--neutral-600)',
-                  }}
+                <span>Balance:</span>
+                <BlurrableBalance
+                  kind="small/regular"
+                  color="var(--neutral-600)"
                 >
                   {formatTokenValue(positionBalanceCommon)}
-                </span>
+                </BlurrableBalance>
               </>
             ) : (
               NBSP
