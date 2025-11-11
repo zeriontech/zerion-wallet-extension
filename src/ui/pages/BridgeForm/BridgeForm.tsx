@@ -191,7 +191,7 @@ function FormHint({
           style={{ width: 20, height: 20 }}
           color="var(--negative-500)"
         />
-        <UIText kind="body/accent">Bridge Anyway</UIText>
+        <UIText kind="small/accent">Bridge Anyway</UIText>
       </HStack>
     );
   }
@@ -724,7 +724,7 @@ function BridgeFormComponent() {
 
   const {
     mutate: sendApproveTransaction,
-    data: approveHash = null,
+    data: approveData,
     reset: resetApproveMutation,
     ...approveMutation
   } = useMutation({
@@ -741,6 +741,7 @@ function BridgeFormComponent() {
       invariant(formState.inputAmount, 'inputAmount must be set');
 
       const evmTx = selectedQuote.transactionApprove.evm;
+      const quoteId = selectedQuote.contractMetadata?.id || null;
       const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
       const approvalTx =
         allowanceBase && !isPaymasterTx
@@ -785,11 +786,15 @@ function BridgeFormComponent() {
         addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
-      return txResponse.evm.hash;
+      return { hash: txResponse.evm.hash, quoteId };
+    },
+    onSuccess: ({ quoteId }) => {
+      setUserQuoteId(quoteId);
     },
   });
 
-  const approveTxStatus = useTransactionStatus(approveHash);
+  const approveTxStatus = useTransactionStatus(approveData?.hash ?? null);
+
   useEffect(() => {
     if (approveTxStatus === 'confirmed') {
       refetchQuotes();
@@ -800,7 +805,7 @@ function BridgeFormComponent() {
 
   const isApproveMode =
     approveMutation.isLoading ||
-    selectedQuote?.transactionApprove ||
+    Boolean(selectedQuote?.transactionApprove) ||
     approveTxStatus === 'pending';
   const showApproveHintLine =
     Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
@@ -1385,11 +1390,17 @@ function BridgeFormComponent() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    approveMutation.isLoading || approveTxStatus === 'pending'
+                    quotesData.isLoading ||
+                    approveMutation.isLoading ||
+                    approveTxStatus === 'pending'
                   }
                   holdToSign={false}
                 >
-                  Approve {inputPosition?.asset.symbol ?? null}
+                  {approveMutation.isLoading || approveTxStatus === 'pending'
+                    ? 'Approving...'
+                    : quotesData.isLoading
+                    ? 'Fetching offers'
+                    : `Approve ${inputPosition?.asset.symbol ?? null}`}
                 </SignTransactionButton>
               ) : null}
             </VStack>
