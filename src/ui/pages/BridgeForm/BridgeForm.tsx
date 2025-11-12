@@ -111,7 +111,11 @@ import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { PriceImpactLine } from '../SwapForm/shared/PriceImpactLine';
 import type { PriceImpact } from '../SwapForm/shared/price-impact';
-import { calculatePriceImpact } from '../SwapForm/shared/price-impact';
+import {
+  calculatePriceImpact,
+  getPriceImpactPercentage,
+  NOT_BLOCKING_PRICE_IMPACT,
+} from '../SwapForm/shared/price-impact';
 import { TransactionWarning } from '../SendTransaction/TransactionWarnings/TransactionWarning';
 import { getSlippageOptions } from '../SwapForm/SlippageSettings/getSlippageOptions';
 import {
@@ -858,11 +862,19 @@ function BridgeFormComponent() {
     });
   });
 
+  const showQuotesLoadingState =
+    quotesData.isLoading &&
+    (!selectedQuote ||
+      (selectedQuote &&
+        priceImpact &&
+        Math.abs(getPriceImpactPercentage(priceImpact) || 0) >
+          NOT_BLOCKING_PRICE_IMPACT));
+
   useEffect(() => {
-    if (selectedQuote && quotesData.done) {
+    if (selectedQuote && !showQuotesLoadingState) {
       trackTransactionFormed(selectedQuote);
     }
-  }, [selectedQuote, quotesData.done, trackTransactionFormed]);
+  }, [selectedQuote, showQuotesLoadingState, trackTransactionFormed]);
 
   const blockingWarningProps = useMemo(() => {
     return priceImpact && selectedQuote?.transactionSwap
@@ -1410,7 +1422,7 @@ function BridgeFormComponent() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    quotesData.isLoading ||
+                    showQuotesLoadingState ||
                     approveMutation.isLoading ||
                     approveTxStatus === 'pending'
                   }
@@ -1418,7 +1430,7 @@ function BridgeFormComponent() {
                 >
                   {approveMutation.isLoading || approveTxStatus === 'pending'
                     ? 'Approving...'
-                    : quotesData.isLoading
+                    : showQuotesLoadingState
                     ? 'Fetching offers'
                     : `Approve ${inputPosition?.asset.symbol ?? null}`}
                 </SignTransactionButton>
@@ -1455,7 +1467,7 @@ function BridgeFormComponent() {
                       style={{ marginTop: 'auto' }}
                       disabled={
                         sendTransactionMutation.isLoading ||
-                        quotesData.isLoading ||
+                        showQuotesLoadingState ||
                         !inputChainAddressMatch ||
                         !outputChainAddressMatch ||
                         Boolean(
@@ -1474,7 +1486,7 @@ function BridgeFormComponent() {
                         }}
                       >
                         {hint ||
-                          (quotesData.isLoading
+                          (showQuotesLoadingState
                             ? 'Fetching offers'
                             : sendTransactionMutation.isLoading
                             ? 'Sending...'

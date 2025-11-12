@@ -121,6 +121,7 @@ import type { PriceImpact } from './shared/price-impact';
 import {
   calculatePriceImpact,
   getPriceImpactPercentage,
+  NOT_BLOCKING_PRICE_IMPACT,
 } from './shared/price-impact';
 import { PriceImpactLine } from './shared/PriceImpactLine';
 import { SpendTokenField } from './fieldsets/SpendTokenField/SpendTokenField';
@@ -674,24 +675,25 @@ function SwapFormComponent() {
     });
   });
 
+  const showQuotesLoadingState =
+    quotesData.isLoading &&
+    (!selectedQuote ||
+      (selectedQuote &&
+        priceImpact &&
+        Math.abs(getPriceImpactPercentage(priceImpact) || 0) >
+          NOT_BLOCKING_PRICE_IMPACT));
+
   useEffect(() => {
-    if (selectedQuote && quotesData.done) {
+    if (selectedQuote && !showQuotesLoadingState) {
       trackTransactionFormed(selectedQuote);
     }
-  }, [selectedQuote, quotesData.done, trackTransactionFormed]);
+  }, [selectedQuote, showQuotesLoadingState, trackTransactionFormed]);
 
   const blockingWarningProps = useMemo(() => {
     return priceImpact && selectedQuote?.transactionSwap
       ? getBlockingWarningProps(priceImpact)
       : null;
   }, [priceImpact, selectedQuote]);
-
-  const showQuotesLoadingState =
-    quotesData.isLoading &&
-    (!selectedQuote ||
-      (selectedQuote &&
-        priceImpact &&
-        Math.abs(getPriceImpactPercentage(priceImpact) || 0) > 2));
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
@@ -1235,7 +1237,9 @@ function SwapFormComponent() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    approveMutation.isLoading || approveTxStatus === 'pending'
+                    showQuotesLoadingState ||
+                    approveMutation.isLoading ||
+                    approveTxStatus === 'pending'
                   }
                   holdToSign={false}
                 >
