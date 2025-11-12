@@ -1,7 +1,7 @@
 import { createChain } from 'src/modules/networks/Chain';
 import { isNumeric } from 'src/shared/isNumeric';
 import { getSlippageOptions } from 'src/ui/pages/SwapForm/SlippageSettings/getSlippageOptions';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Quote2 } from 'src/shared/types/Quote';
 import { ZERION_API_URL } from 'src/env/config';
 import { createUrl } from 'src/shared/createUrl';
@@ -87,7 +87,9 @@ export function useQuotes2({
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
 
   const chain = formState.inputChain ? createChain(formState.inputChain) : null;
-  const { data: gasPrices } = useGasPrices(chain, { refetchInterval: 20000 });
+  const { data: gasPrices } = useGasPrices(chain, {
+    refetchInterval: 20000,
+  });
 
   const formStateCompleted = useMemo(() => {
     if (!chain) {
@@ -177,7 +179,7 @@ export function useQuotes2({
     error,
     done,
   } = useEventSource<Quote2[]>(
-    `${url ?? 'no-url'}-${refetchHash}`,
+    `${urlWithoutGasPrices ?? 'no-url'}-${refetchHash}`,
     url ?? null,
     {
       headers: createHeaders({}),
@@ -224,6 +226,27 @@ export function useQuotes2({
       },
     }
   );
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
+    }
+
+    if (done) {
+      timeoutRef.current = setTimeout(() => {
+        refetch();
+      }, 20000);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [done, refetch]);
 
   /**
    * The following is a very hacky way to create "keepPreviousData"

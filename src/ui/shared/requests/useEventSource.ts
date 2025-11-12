@@ -209,6 +209,8 @@ export function useEventSource<T>(
   url: string | null,
   options?: Options<T>
 ) {
+  const urlRef = useRef(url);
+  urlRef.current = url;
   const optionsRef = useRef(options);
   optionsRef.current = options;
   const store = useRef<EventSourceStore<T> | null>(null);
@@ -235,8 +237,11 @@ export function useEventSource<T>(
     if (!store.current) {
       return;
     }
-    store.current.updateEventSource(enabled ? url : null, optionsRef.current);
-  }, [key, url, enabled]);
+    store.current.updateEventSource(
+      enabled ? urlRef.current : null,
+      optionsRef.current
+    );
+  }, [key, enabled]);
 
   return useStore(store.current);
 }

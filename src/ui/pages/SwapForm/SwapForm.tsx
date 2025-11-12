@@ -516,6 +516,13 @@ function SwapFormComponent() {
   const currentTransaction =
     selectedQuote?.transactionApprove || selectedQuote?.transactionSwap || null;
 
+  const [selectedForSignQuote, setSelectedForSignQuote] =
+    useState<Quote2 | null>(null);
+  const selectedForSignTransaction =
+    selectedForSignQuote?.transactionApprove ||
+    selectedForSignQuote?.transactionSwap ||
+    null;
+
   const [allowanceBase, setAllowanceBase] = useState<string | null>(null);
 
   useEffect(() => setAllowanceBase(null), [inputAmount, inputFungibleId]);
@@ -534,7 +541,7 @@ function SwapFormComponent() {
   } = useMutation({
     mutationFn: async (interpretationAction: AddressAction | null) => {
       invariant(
-        selectedQuote?.transactionApprove?.evm,
+        selectedForSignQuote?.transactionApprove?.evm,
         'Approval transaction is not configured'
       );
 
@@ -544,18 +551,18 @@ function SwapFormComponent() {
       invariant(inputPosition, 'Spend position must be defined');
       invariant(formState.inputAmount, 'inputAmount must be set');
 
-      const evmTx = selectedQuote.transactionApprove.evm;
-      const quoteId = selectedQuote.contractMetadata?.id || null;
+      const evmTx = selectedForSignQuote.transactionApprove.evm;
+      const quoteId = selectedForSignQuote.contractMetadata?.id || null;
       const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
       const approvalTx =
         allowanceBase && !isPaymasterTx
           ? await modifyApproveAmount(evmTx, allowanceBase)
           : evmTx;
 
-      const fallbackAddressAction = selectedQuote.transactionApprove.evm
+      const fallbackAddressAction = selectedForSignQuote.transactionApprove.evm
         ? createApproveAddressAction({
             transaction: toIncomingTransaction(
-              selectedQuote.transactionApprove.evm
+              selectedForSignQuote.transactionApprove.evm
             ),
             hash: null,
             explorerUrl: null,
@@ -586,7 +593,8 @@ function SwapFormComponent() {
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
-        feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
+        feeValueCommon:
+          selectedForSignQuote.networkFee?.amount.quantity ?? null,
         addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
@@ -690,7 +698,7 @@ function SwapFormComponent() {
       interpretationAction: AddressAction | null
     ): Promise<SignTransactionResult> => {
       invariant(
-        selectedQuote?.transactionSwap,
+        selectedForSignQuote?.transactionSwap,
         'Cannot submit transaction without a quote'
       );
       invariant(spendChain, 'Chain must be defined to sign the tx');
@@ -706,7 +714,7 @@ function SwapFormComponent() {
         address,
         explorerUrl: null,
         network,
-        rate: selectedQuote.rate,
+        rate: selectedForSignQuote.rate,
         spendAsset: inputPosition.asset,
         receiveAsset: outputPosition.asset,
         spendAmount: {
@@ -725,18 +733,23 @@ function SwapFormComponent() {
                 .toNumber()
             : null,
         },
-        receiveAmount: selectedQuote.outputAmount,
-        transaction: toMultichainTransaction(selectedQuote.transactionSwap),
+        receiveAmount: selectedForSignQuote.outputAmount,
+        transaction: toMultichainTransaction(
+          selectedForSignQuote.transactionSwap
+        ),
       });
 
       const txResponse = await sendTxBtnRef.current.sendTransaction({
-        transaction: toMultichainTransaction(selectedQuote.transactionSwap),
+        transaction: toMultichainTransaction(
+          selectedForSignQuote.transactionSwap
+        ),
         chain: spendChain.toString(),
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
-        feeValueCommon: selectedQuote.networkFee?.amount.quantity ?? null,
+        feeValueCommon:
+          selectedForSignQuote.networkFee?.amount.quantity ?? null,
         addressAction: interpretationAction ?? fallbackAddressAction,
-        quote: selectedQuote,
+        quote: selectedForSignQuote,
         outputChain: inputChain ?? null,
         warningWasShown: Boolean(showPriceImpactCallout),
         outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
@@ -861,33 +874,39 @@ function SwapFormComponent() {
       />
       <BottomSheetDialog
         ref={confirmDialogRef}
-        key={selectedQuote?.transactionApprove ? 'approve' : 'swap'}
+        key={selectedForSignQuote?.transactionApprove ? 'approve' : 'swap'}
         height="min-content"
         displayGrid={true}
         style={{ minHeight: innerHeight >= 750 ? '70vh' : '90vh' }}
         containerStyle={{ display: 'flex', flexDirection: 'column' }}
         renderWhenOpen={() => {
-          invariant(currentTransaction, 'Tx must be defined to confirm');
+          invariant(
+            selectedForSignTransaction,
+            'Tx must be defined to confirm'
+          );
           invariant(wallet, 'Current wallet not found');
           invariant(spendChain, 'Chain must be defined');
 
           return (
             <ViewLoadingSuspense>
               <TransactionConfirmationView
-                formId={formId}
-                title={selectedQuote?.transactionApprove ? 'Approve' : 'Trade'}
+                title={
+                  selectedForSignQuote?.transactionApprove ? 'Approve' : 'Trade'
+                }
                 wallet={wallet}
                 chain={spendChain}
-                transaction={toMultichainTransaction(currentTransaction)}
+                transaction={toMultichainTransaction(
+                  selectedForSignTransaction
+                )}
                 configuration={toConfiguration(formState)}
                 customAllowanceValueBase={allowanceBase || undefined}
                 onOpenAllowanceForm={
-                  currentTransaction.evm?.customData?.paymasterParams // support editing allowance only for non-paymaster transactions
+                  selectedForSignTransaction.evm?.customData?.paymasterParams // support editing allowance only for non-paymaster transactions
                     ? undefined
                     : () => allowanceDialogRef.current?.showModal()
                 }
                 paymasterEligible={Boolean(
-                  currentTransaction.evm?.customData?.paymasterParams
+                  selectedForSignTransaction.evm?.customData?.paymasterParams
                 )}
                 paymasterPossible={Boolean(
                   network?.supports_sponsored_transactions
@@ -898,7 +917,8 @@ function SwapFormComponent() {
                   data: {
                     data: {
                       eligible: Boolean(
-                        currentTransaction.evm?.customData?.paymasterParams
+                        selectedForSignTransaction.evm?.customData
+                          ?.paymasterParams
                       ),
                     },
                   },
@@ -977,14 +997,9 @@ function SwapFormComponent() {
               blockingWarningDialogRef.current,
               'Blocking warning dialog not found'
             );
+            setSelectedForSignQuote(selectedQuote);
             const formData = new FormData(event.currentTarget);
             const submitType = formData.get('submit_type');
-            const rawInterpretationAction = formData.get('interpretation') as
-              | string
-              | null;
-            const interpretationAction = rawInterpretationAction
-              ? (JSON.parse(rawInterpretationAction) as AddressAction)
-              : null;
             const promise = blockingWarningProps
               ? showConfirmDialog(blockingWarningDialogRef.current)
               : Promise.resolve();
@@ -993,15 +1008,22 @@ function SwapFormComponent() {
                 confirmDialogRef.current,
                 'Confirmation dialog not found'
               );
-              return showConfirmDialog(confirmDialogRef.current).then(() => {
-                if (submitType === 'approve') {
-                  sendApproveTransaction(interpretationAction);
-                } else if (submitType === 'swap') {
-                  sendTransaction(interpretationAction);
-                } else {
-                  throw new Error('Must set a submit_type to form');
+              return showConfirmDialog(confirmDialogRef.current).then(
+                (rawInterpretationAction) => {
+                  const interpretationAction =
+                    rawInterpretationAction !== 'confirm'
+                      ? (JSON.parse(rawInterpretationAction) as AddressAction)
+                      : null;
+
+                  if (submitType === 'approve') {
+                    sendApproveTransaction(interpretationAction);
+                  } else if (submitType === 'swap') {
+                    sendTransaction(interpretationAction);
+                  } else {
+                    throw new Error('Must set a submit_type to form');
+                  }
                 }
-              });
+              );
             });
           }
         }}

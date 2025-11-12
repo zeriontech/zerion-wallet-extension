@@ -9,14 +9,12 @@ import type { SendFormState } from '../shared/SendFormState';
 import { toConfiguration } from '../shared/helpers';
 
 export function SendTransactionConfirmation({
-  formId,
   transaction,
   paymasterEligible,
   paymasterPossible,
   onGasbackReady,
   formState,
 }: {
-  formId: string;
   transaction: MultichainTransaction;
   formState: SendFormState;
   paymasterEligible: boolean;
@@ -38,7 +36,6 @@ export function SendTransactionConfirmation({
 
   return (
     <TransactionConfirmationView
-      formId={formId}
       title="Send"
       wallet={wallet}
       chain={chain}
