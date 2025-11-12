@@ -92,7 +92,7 @@ export function RateLine({
           <div
             className={quotesData.done ? styles.iconCountdown : undefined}
             style={{ position: 'relative' }}
-            title="Quotes auto-refreshing every 20 seconds"
+            title="Quotes auto-refresh every 20 seconds"
           >
             <div
               style={{
