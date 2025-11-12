@@ -89,6 +89,7 @@ export function useQuotes2({
   const chain = formState.inputChain ? createChain(formState.inputChain) : null;
   const { data: gasPrices } = useGasPrices(chain, {
     refetchInterval: 20000,
+    keepPreviousData: true,
   });
 
   const formStateCompleted = useMemo(() => {
