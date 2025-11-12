@@ -26,7 +26,13 @@ export async function queryGasPrices(chain: Chain) {
   });
 }
 
-export function useGasPrices(chain: Chain | null, { suspense = false } = {}) {
+export function useGasPrices(
+  chain: Chain | null,
+  {
+    suspense = false,
+    refetchInterval,
+  }: { suspense?: boolean; refetchInterval?: number } = {}
+) {
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const { data: network } = useNetworkConfig(chain?.toString() ?? null);
@@ -41,6 +47,7 @@ export function useGasPrices(chain: Chain | null, { suspense = false } = {}) {
     useErrorBoundary: true,
     enabled: Boolean(network && network.standard === 'eip155'),
     suspense,
+    refetchInterval,
     staleTime: 10000,
   });
 }

@@ -118,7 +118,10 @@ import { getQuotesErrorMessage } from './Quotes/getQuotesErrorMessage';
 import { SlippageLine } from './SlippageSettings/SlippageLine';
 import { getPopularTokens } from './shared/getPopularTokens';
 import type { PriceImpact } from './shared/price-impact';
-import { calculatePriceImpact } from './shared/price-impact';
+import {
+  calculatePriceImpact,
+  getPriceImpactPercentage,
+} from './shared/price-impact';
 import { PriceImpactLine } from './shared/PriceImpactLine';
 import { SpendTokenField } from './fieldsets/SpendTokenField/SpendTokenField';
 import { ReceiveTokenField } from './fieldsets/ReceiveTokenField/ReceiveTokenField';
@@ -675,6 +678,13 @@ function SwapFormComponent() {
       : null;
   }, [priceImpact, selectedQuote]);
 
+  const showQuotesLoadingState =
+    quotesData.isLoading &&
+    (!selectedQuote ||
+      (selectedQuote &&
+        priceImpact &&
+        Math.abs(getPriceImpactPercentage(priceImpact) || 0) > 2));
+
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
@@ -1203,15 +1213,13 @@ function SwapFormComponent() {
                   form={formId}
                   wallet={wallet}
                   disabled={
-                    quotesData.isLoading ||
-                    approveMutation.isLoading ||
-                    approveTxStatus === 'pending'
+                    approveMutation.isLoading || approveTxStatus === 'pending'
                   }
                   holdToSign={false}
                 >
                   {approveMutation.isLoading || approveTxStatus === 'pending'
                     ? 'Approving...'
-                    : quotesData.isLoading
+                    : showQuotesLoadingState
                     ? 'Fetching offers'
                     : `Approve ${inputPosition?.asset.symbol ?? null}`}
                 </SignTransactionButton>
@@ -1248,7 +1256,7 @@ function SwapFormComponent() {
                       style={{ marginTop: 'auto' }}
                       disabled={
                         sendTransactionMutation.isLoading ||
-                        quotesData.isLoading ||
+                        showQuotesLoadingState ||
                         Boolean(
                           (selectedQuote && !selectedQuote.transactionSwap) ||
                             quotesData.error
@@ -1265,7 +1273,7 @@ function SwapFormComponent() {
                         }}
                       >
                         {hint ||
-                          (quotesData.isLoading
+                          (showQuotesLoadingState
                             ? 'Fetching offers'
                             : sendTransactionMutation.isLoading
                             ? 'Sending...'
