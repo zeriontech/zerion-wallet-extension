@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { minus } from 'src/ui/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import type BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { AssetQuantity } from 'src/ui/components/AssetQuantity';
 import { AssetLink } from 'src/ui/components/AssetLink';
@@ -17,6 +17,7 @@ import type {
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import type { Kind } from 'src/ui/ui-kit/UIText';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 
 function getSign(
   decimaledValue?: number | BigNumber | string,
@@ -85,19 +86,40 @@ export function HistoryNFTValue({
   withLink?: boolean;
   kind: Kind;
 }) {
+  const sign = getSign(amount?.value || 0, direction);
+  const quantity = amount?.quantity;
+
+  const formattedValue = useMemo(() => {
+    if (!quantity) {
+      return null;
+    }
+    const quantityNumber = new BigNumber(quantity);
+    return `${sign || ''}${formatTokenValue(quantity, '', {
+      notation: quantityNumber.gt(new BigNumber(1e4)) ? 'compact' : undefined,
+    })}`;
+  }, [quantity, sign]);
+
   return (
     <HStack
       gap={4}
       alignItems="center"
-      style={{ gridTemplateColumns: 'minmax(40px, 1fr) auto' }}
+      style={{
+        gridTemplateColumns:
+          quantity && (Number(quantity) || 0) > 1
+            ? 'minmax(min-content, max-content) minmax(20px, max-content)'
+            : 'minmax(min-content, max-content)',
+      }}
     >
-      {(Number(amount?.quantity) || 0) > 1 ? (
+      {quantity && (Number(quantity) || 0) > 1 ? (
         <BlurrableBalance kind={kind}>
-          {getSign(amount?.quantity, direction)}
-          {amount?.quantity}
+          <span title={quantity}>{formattedValue}</span>
         </BlurrableBalance>
       ) : null}
-      {withLink ? <NFTLink nft={nft} /> : nft?.metadata?.name || 'NFT'}
+      {withLink ? (
+        <NFTLink nft={nft} />
+      ) : (
+        <span>{nft?.metadata?.name || 'NFT'}</span>
+      )}
     </HStack>
   );
 }

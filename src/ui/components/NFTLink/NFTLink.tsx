@@ -32,7 +32,13 @@ export function NFTAnchor({
   );
 }
 
-export function NFTLink({ nft }: { nft: NFTPreview }) {
+export function NFTLink({
+  nft,
+  style,
+}: {
+  nft: NFTPreview;
+  style?: React.CSSProperties;
+}) {
   return (
     <TextLink
       to={`/nft/${nft.chain}/${nft.contractAddress}:${nft.tokenId}`}
@@ -42,6 +48,7 @@ export function NFTLink({ nft }: { nft: NFTPreview }) {
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
         outlineOffset: -1, // make focus ring visible despite overflow: hidden
+        ...style,
       }}
     >
       {nft.metadata?.name || 'NFT'}

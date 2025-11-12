@@ -112,7 +112,7 @@ function AssetContent({
 
   if (nft) {
     return (
-      <HStack gap={12} alignItems="center" style={{ height: 44 }}>
+      <HStack gap={12} alignItems="center" style={{ minHeight: 44 }}>
         <TokenIcon
           size={36}
           src={nft.metadata?.content?.imagePreviewUrl}
@@ -121,7 +121,7 @@ function AssetContent({
         />
         <VStack gap={0}>
           <UIText kind="headline/h3">
-            <NFTLink nft={nft} />
+            <NFTLink nft={nft} style={{ whiteSpace: 'normal' }} />
           </UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
             {direction != null ? (
