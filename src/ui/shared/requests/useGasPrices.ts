@@ -31,9 +31,11 @@ export function useGasPrices(
   {
     suspense = false,
     refetchInterval,
+    keepPreviousData,
   }: {
     suspense?: boolean;
     refetchInterval?: number;
+    keepPreviousData?: boolean;
   } = {}
 ) {
   const { preferences } = usePreferences();
@@ -51,7 +53,7 @@ export function useGasPrices(
     enabled: Boolean(network && network.standard === 'eip155'),
     suspense,
     refetchInterval,
-    keepPreviousData: true,
+    keepPreviousData,
     staleTime: 10000,
   });
 }
