@@ -1,6 +1,6 @@
 // Shared event types for analytics
 
-export type ButtonScope = 'General' | 'Loaylty' | 'General';
+export type ButtonScope = 'General' | 'Loaylty';
 export type ButtonName =
   | 'Claim XP'
   | 'Rewards'
@@ -8,6 +8,9 @@ export type ButtonName =
   | 'Rate Tooltip'
   | 'Quote List Bottom Description'
   | 'Premium Features'
+  | 'Buy Crypto'
+  | 'Receive Crypto'
+  | 'Fund'
   | 'Buy Premium';
 
 export interface ButtonClickedParams {
@@ -17,10 +20,14 @@ export interface ButtonClickedParams {
   walletAddress?: string;
 }
 
-export type BannerName = 'Buy Premium';
+export type BannerName = 'Buy Premium' | 'Get started';
+type BannerType = 'Fund_wallet';
+type BannerSource = 'Internal';
 
 export interface BannerClickedParams {
   pathname: string;
   bannerName: BannerName;
+  bannerType?: BannerType;
+  bannerSource?: BannerSource;
   walletAddress?: string;
 }

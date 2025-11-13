@@ -1,34 +1,11 @@
-.containerRoot {
-  container-name: action-buttons-row;
-  container-type: inline-size;
-}
-
 .list {
-  display: grid;
+  display: flex;
   gap: 8;
-  grid-template-columns: repeat(5, 48px);
   justify-content: space-between;
 }
 
-.hideWhenSmall {
-  display: none;
-}
-
-@container action-buttons-row (width > 390px) {
-  .list {
-    grid-template-columns: repeat(4, 48px) minmax(100px, 176px);
-    justify-content: start;
-  }
-  .hideWhenSmall {
-    display: block;
-  }
-  .showWhenSmall {
-    display: none;
-  }
-}
-
 .actionButton {
-  --btn-bg-color: var(--neutral-200);
+  --btn-bg-color: var(--neutral-100);
   --btn-active-bg-color: var(--neutral-300);
   --btn-color: var(--neutral-800);
 }
