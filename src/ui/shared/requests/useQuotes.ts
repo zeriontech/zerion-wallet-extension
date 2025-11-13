@@ -11,6 +11,7 @@ import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assi
 import { createHeaders } from 'src/modules/zerion-api/shared';
 import { weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { invariant } from 'src/shared/invariant';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { walletPort } from '../channels';
 import { useGasPrices } from './useGasPrices';
 import { useEventSource } from './useEventSource';
@@ -84,6 +85,7 @@ export function useQuotes2({
   pathname: string;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
+  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
 
   const chain = formState.inputChain ? createChain(formState.inputChain) : null;
@@ -231,6 +233,9 @@ export function useQuotes2({
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
+    if (!config?.quotes_refetch_interval) {
+      return;
+    }
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = undefined;
@@ -239,7 +244,7 @@ export function useQuotes2({
     if (done) {
       timeoutRef.current = setTimeout(() => {
         refetch();
-      }, 20000);
+      }, config?.quotes_refetch_interval ?? 20000);
     }
 
     return () => {
@@ -247,7 +252,7 @@ export function useQuotes2({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [done, refetch]);
+  }, [done, refetch, config?.quotes_refetch_interval]);
 
   /**
    * The following is a very hacky way to create "keepPreviousData"

@@ -11,6 +11,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { getQuotesErrorMessage } from '../../SwapForm/Quotes/getQuotesErrorMessage';
 import { QuoteList } from '../QuoteList';
 import type { BridgeFormState } from '../types';
@@ -30,6 +31,8 @@ export function BridgeLine({
   onSortTypeChange: (sortType: BridgeFormState['sort']) => void;
 }) {
   const { isLoading, error, quotes } = quotesData;
+  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
+  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
   const quotesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const feeAsset = selectedQuote?.bridgeFee?.fungible;
@@ -50,8 +53,13 @@ export function BridgeLine({
           <UIText kind="small/regular">Bridge</UIText>
           <div
             className={quotesData.done ? styles.iconCountdown : undefined}
-            style={{ position: 'relative' }}
-            title="Quotes auto-refresh every 20 seconds"
+            style={{
+              position: 'relative',
+              ['--countdown-duration' as string]: `${refetchInterval}ms`,
+            }}
+            title={`Quotes auto-refresh every ${
+              refetchInterval / 1000
+            } seconds`}
           >
             <div
               style={{

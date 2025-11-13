@@ -81,7 +81,7 @@
   border-radius: 6px;
 
   position: absolute;
-  animation: countdown-border 20s linear forwards infinite;
+  animation: countdown-border var(--countdown-duration) linear forwards infinite;
   background: conic-gradient(
     var(--neutral-400) 0deg,
     var(--neutral-400) var(--countdown-angle),

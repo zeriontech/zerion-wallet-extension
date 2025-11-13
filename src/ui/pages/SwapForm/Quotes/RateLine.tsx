@@ -28,6 +28,8 @@ export function RateLine({
   selectedQuote: Quote2 | null;
   onQuoteIdChange: (quoteId: string | null) => void;
 }) {
+  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
+  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
   const { pathname } = useLocation();
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
@@ -91,8 +93,13 @@ export function RateLine({
           ) : null}
           <div
             className={quotesData.done ? styles.iconCountdown : undefined}
-            style={{ position: 'relative' }}
-            title="Quotes auto-refresh every 20 seconds"
+            style={{
+              position: 'relative',
+              ['--countdown-duration' as string]: `${refetchInterval}ms`,
+            }}
+            title={`Quotes auto-refresh every ${
+              refetchInterval / 1000
+            } seconds`}
           >
             <div
               style={{
