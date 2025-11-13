@@ -231,11 +231,9 @@ export function useQuotes2({
   );
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
 
   useEffect(() => {
-    if (!config?.quotes_refetch_interval) {
-      return;
-    }
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = undefined;
@@ -244,7 +242,7 @@ export function useQuotes2({
     if (done) {
       timeoutRef.current = setTimeout(() => {
         refetch();
-      }, config?.quotes_refetch_interval ?? 20000);
+      }, refetchInterval);
     }
 
     return () => {
@@ -252,7 +250,7 @@ export function useQuotes2({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [done, refetch, config?.quotes_refetch_interval]);
+  }, [done, refetch, refetchInterval]);
 
   /**
    * The following is a very hacky way to create "keepPreviousData"
