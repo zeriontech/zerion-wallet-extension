@@ -863,12 +863,14 @@ function BridgeFormComponent() {
   });
 
   const showQuotesLoadingState =
-    quotesData.isLoading &&
-    (!selectedQuote ||
-      (selectedQuote &&
-        priceImpact &&
-        Math.abs(getPriceImpactPercentage(priceImpact) || 0) >
-          NOT_BLOCKING_PRICE_IMPACT));
+    // This case covers loading state when approve tx was just done and new quotes are being fetched
+    (isApproveMode && quotesData.isPreviousData) ||
+    (quotesData.isLoading &&
+      (!selectedQuote ||
+        (selectedQuote &&
+          priceImpact &&
+          Math.abs(getPriceImpactPercentage(priceImpact) || 0) >
+            NOT_BLOCKING_PRICE_IMPACT)));
 
   useEffect(() => {
     if (selectedQuote && !showQuotesLoadingState) {

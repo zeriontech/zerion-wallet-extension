@@ -124,6 +124,7 @@ export function RateLine({
                   // when the values change. This way, the animated images stay in one place
                   fontVariantNumeric: 'tabular-nums',
                 }}
+                alignItems="center"
               >
                 {selectedQuote.contractMetadata?.iconUrl ? (
                   <div
