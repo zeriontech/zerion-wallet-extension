@@ -375,17 +375,16 @@ function SendFormComponent() {
           event.preventDefault();
 
           if (event.currentTarget.checkValidity()) {
-            const formData = new FormData(event.currentTarget);
-            const rawInterpretationAction = formData.get('interpretation') as
-              | string
-              | null;
-            const interpretationAction = rawInterpretationAction
-              ? (JSON.parse(rawInterpretationAction) as AddressAction)
-              : null;
             invariant(confirmDialogRef.current, 'Dialog not found');
-            showConfirmDialog(confirmDialogRef.current).then(() => {
-              sendTxMutation.mutate(interpretationAction);
-            });
+            showConfirmDialog(confirmDialogRef.current).then(
+              (rawInterpretationAction) => {
+                const interpretationAction =
+                  rawInterpretationAction !== 'confirm'
+                    ? (JSON.parse(rawInterpretationAction) as AddressAction)
+                    : null;
+                sendTxMutation.mutate(interpretationAction);
+              }
+            );
           }
         }}
       >
@@ -602,7 +601,6 @@ function SendFormComponent() {
                 <DisableTestnetShortcuts />
                 <ViewLoadingSuspense>
                   <SendTransactionConfirmation
-                    formId={formId}
                     transaction={sendData.transaction}
                     formState={formState}
                     paymasterEligible={paymasterEligible}

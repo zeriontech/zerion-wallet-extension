@@ -11,9 +11,11 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { getQuotesErrorMessage } from '../../SwapForm/Quotes/getQuotesErrorMessage';
 import { QuoteList } from '../QuoteList';
 import type { BridgeFormState } from '../types';
+import * as styles from '../../SwapForm/Quotes/styles.module.css';
 
 export function BridgeLine({
   sortType,
@@ -29,6 +31,8 @@ export function BridgeLine({
   onSortTypeChange: (sortType: BridgeFormState['sort']) => void;
 }) {
   const { isLoading, error, quotes } = quotesData;
+  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
+  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
   const quotesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const feeAsset = selectedQuote?.bridgeFee?.fungible;
@@ -45,7 +49,29 @@ export function BridgeLine({
             !isLoading && !selectedQuote && !error ? 'hidden' : undefined,
         }}
       >
-        <UIText kind="small/regular">Bridge</UIText>
+        <HStack gap={8} alignItems="center">
+          <UIText kind="small/regular">Bridge</UIText>
+          <div
+            className={quotesData.done ? styles.iconCountdown : undefined}
+            style={{
+              position: 'relative',
+              ['--countdown-duration' as string]: `${refetchInterval}ms`,
+            }}
+            title={`Quotes auto-refresh every ${
+              refetchInterval / 1000
+            } seconds`}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: 'var(--white)',
+                position: 'relative',
+              }}
+            />
+          </div>
+        </HStack>
         <span>
           {isLoading && !selectedQuote ? (
             <span style={{ color: 'var(--neutral-500)' }}>
@@ -75,21 +101,29 @@ export function BridgeLine({
                       size={20}
                       src={selectedQuote.contractMetadata.iconUrl}
                       render={(src, index) => (
-                        <img
-                          title={selectedQuote.contractMetadata?.name}
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            right: 0,
-                            width: 20,
-                            height: 20,
-                            borderRadius: 6,
-                            zIndex: index,
-                          }}
-                          src={src}
-                          // The alt here may be from a sibling image, but hopefully it doesn't matter
-                          alt={`${selectedQuote.contractMetadata?.name} logo`}
-                        />
+                        <div
+                          className={
+                            quotesData.isLoading
+                              ? styles.iconLoading
+                              : undefined
+                          }
+                        >
+                          <img
+                            title={selectedQuote.contractMetadata?.name}
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              right: 0,
+                              width: 20,
+                              height: 20,
+                              borderRadius: 6,
+                              zIndex: index,
+                            }}
+                            src={src}
+                            // The alt here may be from a sibling image, but hopefully it doesn't matter
+                            alt={`${selectedQuote.contractMetadata?.name} logo`}
+                          />
+                        </div>
                       )}
                     />
                   </div>

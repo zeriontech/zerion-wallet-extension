@@ -54,3 +54,47 @@
   top: -6px;
   right: 0px;
 }
+
+.iconLoading {
+  animation: flicker 2s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@property --countdown-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.iconCountdown::before {
+  content: '';
+  inset: -2px;
+  border-radius: 6px;
+
+  position: absolute;
+  animation: countdown-border var(--countdown-duration) linear forwards infinite;
+  background: conic-gradient(
+    var(--neutral-400) 0deg,
+    var(--neutral-400) var(--countdown-angle),
+    transparent var(--countdown-angle),
+    transparent 360deg
+  );
+}
+
+@keyframes countdown-border {
+  from {
+    --countdown-angle: 0deg;
+  }
+  to {
+    --countdown-angle: 360deg;
+  }
+}

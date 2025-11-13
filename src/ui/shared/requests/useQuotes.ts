@@ -1,7 +1,7 @@
 import { createChain } from 'src/modules/networks/Chain';
 import { isNumeric } from 'src/shared/isNumeric';
 import { getSlippageOptions } from 'src/ui/pages/SwapForm/SlippageSettings/getSlippageOptions';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Quote2 } from 'src/shared/types/Quote';
 import { ZERION_API_URL } from 'src/env/config';
 import { createUrl } from 'src/shared/createUrl';
@@ -11,6 +11,7 @@ import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assi
 import { createHeaders } from 'src/modules/zerion-api/shared';
 import { weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { invariant } from 'src/shared/invariant';
+import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { walletPort } from '../channels';
 import { useGasPrices } from './useGasPrices';
 import { useEventSource } from './useEventSource';
@@ -84,10 +85,14 @@ export function useQuotes2({
   pathname: string;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
+  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
 
   const chain = formState.inputChain ? createChain(formState.inputChain) : null;
-  const { data: gasPrices } = useGasPrices(chain);
+  const { data: gasPrices } = useGasPrices(chain, {
+    refetchInterval: 20000,
+    keepPreviousData: true,
+  });
 
   const formStateCompleted = useMemo(() => {
     if (!chain) {
@@ -177,7 +182,7 @@ export function useQuotes2({
     error,
     done,
   } = useEventSource<Quote2[]>(
-    `${url ?? 'no-url'}-${refetchHash}`,
+    `${urlWithoutGasPrices ?? 'no-url'}-${refetchHash}`,
     url ?? null,
     {
       headers: createHeaders({}),
@@ -224,6 +229,28 @@ export function useQuotes2({
       },
     }
   );
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
+    }
+
+    if (done) {
+      timeoutRef.current = setTimeout(() => {
+        refetch();
+      }, refetchInterval);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [done, refetch, refetchInterval]);
 
   /**
    * The following is a very hacky way to create "keepPreviousData"

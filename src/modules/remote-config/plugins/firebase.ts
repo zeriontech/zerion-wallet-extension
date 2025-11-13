@@ -14,6 +14,7 @@ const defaultConfig: RemoteConfig = {
   zerion_fee_learn_more_link: '',
   fee_comparison_config: [],
   premium_page_feedback_link: '',
+  quotes_refetch_interval: 20000,
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
@@ -24,6 +25,7 @@ const knownKeys: (keyof RemoteConfig)[] = [
   'loyalty_config',
   'fee_comparison_config',
   'premium_page_feedback_link',
+  'quotes_refetch_interval',
 ];
 
 export async function fetchRemoteConfig<T extends keyof RemoteConfig>(

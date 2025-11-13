@@ -23,7 +23,6 @@ import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
 
 export function TransactionConfirmationView({
-  formId,
   title,
   wallet,
   transaction,
@@ -36,7 +35,6 @@ export function TransactionConfirmationView({
   onOpenAllowanceForm,
   onGasbackReady,
 }: {
-  formId: string;
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
   transaction: MultichainTransaction;
@@ -75,12 +73,6 @@ export function TransactionConfirmationView({
 
   return (
     <>
-      <input
-        type="hidden"
-        name="interpretation"
-        value={interpretationString ?? ''}
-        form={formId}
-      />
       <SecurityStatusBackground />
       <div
         style={{
@@ -181,7 +173,7 @@ export function TransactionConfirmationView({
             {isDeviceAccount(wallet) ? (
               <Button
                 kind="primary"
-                value="confirm"
+                value={interpretationString ?? 'confirm'}
                 style={{ whiteSpace: 'nowrap' }}
               >
                 <HStack gap={8} alignItems="center" justifyContent="center">
@@ -193,12 +185,12 @@ export function TransactionConfirmationView({
               <HoldableButton
                 text="Hold to Sign"
                 submittingText="Signing..."
-                value="confirm"
+                value={interpretationString ?? 'confirm'}
               />
             ) : (
               <Button
                 kind="primary"
-                value="confirm"
+                value={interpretationString ?? 'confirm'}
                 style={{ whiteSpace: 'nowrap' }}
               >
                 Sign and Send

@@ -17,6 +17,7 @@ import { getQuotesErrorMessage } from './getQuotesErrorMessage';
 import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
 import type { FeeTier } from './FeeTier';
+import * as styles from './styles.module.css';
 
 export function RateLine({
   quotesData,
@@ -27,6 +28,8 @@ export function RateLine({
   selectedQuote: Quote2 | null;
   onQuoteIdChange: (quoteId: string | null) => void;
 }) {
+  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
+  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
   const { pathname } = useLocation();
   const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
     null
@@ -52,12 +55,6 @@ export function RateLine({
       ? 'premium'
       : 'regular'
     : null;
-
-  // If we decide to _not_ circle the images,
-  // the gap in the parent HStack needs to be larger
-  const shouldCircleProtocolImages = false;
-  const gap = shouldCircleProtocolImages ? 4 : 8;
-  const protocolBorderRadius = shouldCircleProtocolImages ? '50%' : undefined;
 
   return (
     <>
@@ -94,6 +91,26 @@ export function RateLine({
               />
             </UnstyledButton>
           ) : null}
+          <div
+            className={quotesData.done ? styles.iconCountdown : undefined}
+            style={{
+              position: 'relative',
+              ['--countdown-duration' as string]: `${refetchInterval}ms`,
+            }}
+            title={`Quotes auto-refresh every ${
+              refetchInterval / 1000
+            } seconds`}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: 'var(--white)',
+                position: 'relative',
+              }}
+            />
+          </div>
         </HStack>
         <span>
           {isLoading && !selectedQuote ? (
@@ -108,12 +125,13 @@ export function RateLine({
             >
               <HStack
                 // in design it's 4, but design has circle images
-                gap={gap}
+                gap={8}
                 style={{
                   // Prevent formatted rate text from changing width
                   // when the values change. This way, the animated images stay in one place
                   fontVariantNumeric: 'tabular-nums',
                 }}
+                alignItems="center"
               >
                 {selectedQuote.contractMetadata?.iconUrl ? (
                   <div
@@ -128,21 +146,28 @@ export function RateLine({
                       size={20}
                       src={selectedQuote.contractMetadata.iconUrl}
                       render={(src, index) => (
-                        <img
-                          title={selectedQuote.contractMetadata?.name}
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            right: 0,
-                            width: 20,
-                            height: 20,
-                            borderRadius: protocolBorderRadius,
-                            zIndex: index,
-                          }}
-                          src={src}
-                          // The alt here may be from a sibling image, but hopefully it doesn't matter
-                          alt={`${selectedQuote.contractMetadata?.name} logo`}
-                        />
+                        <div
+                          className={
+                            quotesData.isLoading
+                              ? styles.iconLoading
+                              : undefined
+                          }
+                        >
+                          <img
+                            title={selectedQuote.contractMetadata?.name}
+                            style={{
+                              position: 'absolute',
+                              left: 0,
+                              right: 0,
+                              width: 20,
+                              height: 20,
+                              zIndex: index,
+                            }}
+                            src={src}
+                            // The alt here may be from a sibling image, but hopefully it doesn't matter
+                            alt={`${selectedQuote.contractMetadata?.name} logo`}
+                          />
+                        </div>
                       )}
                     />
                   </div>
