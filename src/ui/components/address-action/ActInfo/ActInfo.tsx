@@ -47,7 +47,11 @@ function AssetContent({
             kind="headline/h3"
             color={direction === 'in' ? 'var(--positive-500)' : undefined}
           >
-            <HStack gap={4} alignItems="center">
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{ gridTemplateColumns: 'auto 1fr' }}
+            >
               <span>
                 {unlimited || isUnlimitedApproval(amount?.quantity)
                   ? 'Unlimited'
@@ -187,11 +191,16 @@ export function ActInfo({
     <VStack gap={2} style={{ position: 'relative' }}>
       {approvals?.length ? (
         <Appear delay={initialDelay}>
-          <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
-            <UIText kind="caption/accent" color="var(--neutral-500)">
-              Allow to Spend
-            </UIText>
+          <Surface
+            style={{
+              paddingBlock: 8,
+              paddingInline: elementEnd ? '12px 40px' : 12,
+            }}
+          >
             <VStack gap={4}>
+              <UIText kind="caption/accent" color="var(--neutral-500)">
+                Allow to Spend
+              </UIText>
               {approvals.map((approval, index) => (
                 <AssetContent
                   key={index}
@@ -210,7 +219,12 @@ export function ActInfo({
       ) : null}
       {outgoingTransfers?.length ? (
         <Appear delay={outgoingDelay}>
-          <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
+          <Surface
+            style={{
+              paddingBlock: 8,
+              paddingInline: elementEnd ? '12px 40px' : 12,
+            }}
+          >
             <UIText kind="caption/accent" color="var(--neutral-500)">
               Send
             </UIText>
@@ -233,7 +247,12 @@ export function ActInfo({
       ) : null}
       {incomingTransfers?.length ? (
         <Appear delay={incomingDelay}>
-          <Surface style={{ paddingBlock: 8, paddingInline: 12 }}>
+          <Surface
+            style={{
+              paddingBlock: 8,
+              paddingInline: elementEnd ? '12px 40px' : 12,
+            }}
+          >
             <UIText kind="caption/accent" color="var(--neutral-500)">
               Receive
             </UIText>
@@ -275,7 +294,7 @@ export function ActInfo({
             style={{
               position: 'absolute',
               right: 12,
-              bottom: 12,
+              bottom: 16,
             }}
           >
             {elementEnd}
