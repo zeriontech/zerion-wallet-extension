@@ -5,16 +5,11 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { SlidingRectangle } from 'src/ui/components/SlidingRectangle';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import type { Quote2 } from 'src/shared/types/Quote';
-import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
-import { emitter } from 'src/ui/shared/events';
-import { useLocation } from 'react-router-dom';
-import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { getQuotesErrorMessage } from './getQuotesErrorMessage';
-import { FeeDescription } from './FeeDescription';
 import { QuoteList } from './QuoteList';
 import type { FeeTier } from './FeeTier';
 import * as styles from './styles.module.css';
@@ -30,10 +25,6 @@ export function RateLine({
 }) {
   const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
   const refetchInterval = config?.quotes_refetch_interval ?? 20000;
-  const { pathname } = useLocation();
-  const feeDescriptionDialogRef = useRef<HTMLDialogElementInterface | null>(
-    null
-  );
   const quotesDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
   const { isLoading, error, quotes } = quotesData;
@@ -68,29 +59,6 @@ export function RateLine({
       >
         <HStack gap={4} alignItems="center">
           <UIText kind="small/regular">Rate</UIText>
-          {userFeeTier ? (
-            <UnstyledButton
-              title="Zerion fees description"
-              onClick={() => {
-                feeDescriptionDialogRef.current?.showModal();
-                emitter.emit('buttonClicked', {
-                  buttonScope: 'General',
-                  buttonName: 'Rate Tooltip',
-                  pathname,
-                });
-              }}
-            >
-              <QuestionHintIcon
-                role="decoration"
-                style={{
-                  width: 16,
-                  height: 16,
-                  display: 'block',
-                  color: 'var(--neutral-500)',
-                }}
-              />
-            </UnstyledButton>
-          ) : null}
           <div
             className={quotesData.done ? styles.iconCountdown : undefined}
             style={{
@@ -195,24 +163,6 @@ export function RateLine({
           ) : null}
         </span>
       </HStack>
-      {userFeeTier && selectedQuote ? (
-        <BottomSheetDialog
-          ref={feeDescriptionDialogRef}
-          height="fit-content"
-          containerStyle={{ paddingTop: 16 }}
-          renderWhenOpen={() => (
-            <>
-              <FeeDescription
-                userFeeTier={userFeeTier}
-                fee={selectedQuote.protocolFee.percentage}
-              />
-              <DialogCloseButton
-                style={{ position: 'absolute', top: 8, right: 8 }}
-              />
-            </>
-          )}
-        />
-      ) : null}
       {quotes?.length ? (
         <BottomSheetDialog
           ref={quotesDialogRef}
