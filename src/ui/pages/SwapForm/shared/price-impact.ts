@@ -78,6 +78,9 @@ export function calculatePriceImpact({
   return ratioToPriceImpact(ratio);
 }
 
+// 2% allows us to unblock trade button while quotes are still loading
+export const NOT_BLOCKING_PRICE_IMPACT = 2;
+
 export function getPriceImpactPercentage(priceImpact: PriceImpact) {
   if (priceImpact.kind === 'zero') {
     return 0;

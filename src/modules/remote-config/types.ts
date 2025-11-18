@@ -18,4 +18,5 @@ export interface RemoteConfig {
   }>;
   zerion_fee_learn_more_link: string;
   premium_page_feedback_link: string;
+  quotes_refetch_interval: number;
 }
