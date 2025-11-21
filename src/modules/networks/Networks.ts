@@ -116,6 +116,13 @@ export class Networks {
     }
   }
 
+  /**
+   * Update this predicate when adding new supported ecosystems
+   */
+  static isSupportedEcosystem(network: NetworkConfig) {
+    return Networks.isEip155(network) || network.id === 'solana';
+  }
+
   constructor({
     networks,
     ethereumChainConfigs,
@@ -127,6 +134,7 @@ export class Networks {
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
     this.networks = injectChainConfigs(networks, ethereumChainConfigs);
+    this.networks = this.networks.filter(Networks.isSupportedEcosystem);
     if (FEATURE_SOLANA !== 'on') {
       this.networks = this.networks.filter((n) => n.standard === 'eip155');
     }
