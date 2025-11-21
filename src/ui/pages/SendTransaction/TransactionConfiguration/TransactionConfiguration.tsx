@@ -87,6 +87,9 @@ export function NetworkFeeLineInfo({
   isLoading: boolean;
 }) {
   const { currency } = useCurrency();
+  if (!networkFee.amount) {
+    return null;
+  }
   return (
     <HStack gap={8} justifyContent="space-between">
       {label !== undefined ? (
@@ -99,7 +102,7 @@ export function NetworkFeeLineInfo({
         <HStack gap={8} alignItems="center">
           {isLoading ? <CircleSpinner /> : null}
 
-          {networkFee.amount.value != null
+          {networkFee.amount?.value != null
             ? formatCurrencyValueExtra(
                 networkFee.amount.value,
                 'en',

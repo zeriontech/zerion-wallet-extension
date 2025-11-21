@@ -37,7 +37,7 @@ export type Warning = {
 };
 
 type Response = {
-  data: { action: AddressAction; warnings: Warning[] };
+  data: { action: AddressAction | null; warnings: Warning[] };
   errors?: { title: string; detail: string }[];
 };
 

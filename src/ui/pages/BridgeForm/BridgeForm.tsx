@@ -794,7 +794,7 @@ function BridgeFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Swap',
         feeValueCommon:
-          selectedForSignQuote.networkFee?.amount.quantity ?? null,
+          selectedForSignQuote.networkFee?.amount?.quantity || '0',
         addressAction: interpretationAction ?? fallbackAddressAction,
       });
       invariant(txResponse.evm?.hash);
@@ -939,7 +939,7 @@ function BridgeFormComponent() {
         initiator: INTERNAL_ORIGIN,
         clientScope: 'Bridge',
         feeValueCommon:
-          selectedForSignQuote.networkFee?.amount.quantity ?? null,
+          selectedForSignQuote.networkFee?.amount?.quantity || '0',
         addressAction: interpretationAction ?? fallbackAddressAction,
         quote: selectedForSignQuote,
         outputChain: outputChain ?? null,

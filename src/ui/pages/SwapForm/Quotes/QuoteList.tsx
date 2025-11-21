@@ -25,13 +25,13 @@ function QuoteNetworkFee({ quote }: { quote: Quote2 }) {
   const { networkFee } = quote;
   return (
     <span>
-      {networkFee?.amount.value != null
+      {networkFee?.amount?.value != null
         ? formatCurrencyValue(
             networkFee.amount.value,
             'en',
             networkFee.amount.currency
           )
-        : networkFee?.amount.quantity
+        : networkFee?.amount?.quantity
         ? formatTokenValue(
             networkFee.amount.quantity,
             networkFee.fungible?.symbol ?? ''

@@ -410,7 +410,7 @@ function TypedDataDefaultView({
             }}
             gap={8}
           >
-            {interpretation?.data.action.fee ? (
+            {interpretation?.data.action?.fee ? (
               <div style={{ marginBottom: 8 }}>
                 <AddressActionNetworkFee
                   fee={interpretation.data.action.fee}

@@ -88,9 +88,9 @@ export function NetworkFee({
   const showInterpretationFee =
     !totalValueExceedsBalance &&
     networkFeeConfiguration.speed === 'fast' &&
-    interpretation?.data.action.fee;
+    interpretation?.data.action?.fee;
   const interpretationFee = showInterpretationFee
-    ? interpretation?.data.action.fee?.amount.value
+    ? interpretation?.data.action?.fee?.amount.value
     : undefined;
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';

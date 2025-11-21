@@ -545,7 +545,7 @@ function trackAppEvents({ account }: { account: Account }) {
       gas: quote.transactionSwap?.evm
         ? Number(getGas(quote.transactionSwap.evm))
         : undefined,
-      network_fee: quote.networkFee?.amount.usdValue ?? undefined,
+      network_fee: quote.networkFee?.amount?.usdValue ?? undefined,
       gas_price: quote.transactionSwap?.evm?.gasPrice ?? undefined,
       guaranteed_output_amount: quote.minimumOutputAmount.quantity,
       zerion_fee_percentage: quote.protocolFee.percentage,

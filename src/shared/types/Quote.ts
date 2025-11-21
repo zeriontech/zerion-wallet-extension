@@ -201,7 +201,7 @@ export interface Quote2 {
     /** @description Whether the network fee is free */
     free: boolean;
     /** @description Fee amount (can be expected fee or max fee) */
-    amount: Amount;
+    amount: Amount | null;
     fungible: null | Fungible;
   };
   /** @description Approval transaction if required */

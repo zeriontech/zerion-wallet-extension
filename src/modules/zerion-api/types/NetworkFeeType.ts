@@ -8,6 +8,6 @@ export interface NetworkFeeType {
     /** @description Amount in fiat units */
     value: number | null;
     usdValue: number | null;
-  };
+  } | null;
   fungible: null | Fungible;
 }
