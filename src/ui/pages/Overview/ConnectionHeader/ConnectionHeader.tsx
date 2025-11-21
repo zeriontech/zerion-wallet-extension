@@ -133,6 +133,7 @@ export function ConnectionHeader() {
       if (activeTabOrigin) {
         return requestChainForOrigin(activeTabOrigin, getAddressType(address));
       }
+      return null;
     },
     enabled: Boolean(activeTabOrigin),
     useErrorBoundary: true,

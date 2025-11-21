@@ -1,7 +1,12 @@
 import type { EventsMap } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
-import { createSalt, createCryptoKey } from 'src/modules/crypto';
+import {
+  createSalt,
+  createCryptoKey,
+  encrypt,
+  decrypt,
+} from 'src/modules/crypto';
 import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
 import {
   BrowserStorage,
@@ -10,9 +15,11 @@ import {
 } from 'src/background/webapis/storage';
 import { validate } from 'src/shared/validation/user-input';
 import { eraseAndUpdateToLatestVersion } from 'src/shared/core/version/shared';
-import { currentUserKey } from 'src/shared/getCurrentUser';
-import type { PublicUser, User } from 'src/shared/types/User';
+import { currentUserKey, getCurrentUser } from 'src/shared/getCurrentUser';
+import type { Passkey, PublicUser, User } from 'src/shared/types/User';
 import { payloadId } from '@walletconnect/jsonrpc-utils';
+import { sha256 } from 'src/modules/crypto/sha256';
+import { produce } from 'immer';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
@@ -20,10 +27,6 @@ import { globalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
-
-async function sha256({ password, salt }: { password: string; salt: string }) {
-  return await getSHA256HexDigest(`${salt}:${password}`);
-}
 
 class EventEmitter<Events extends EventsMap> {
   private emitter = createNanoEvents<Events>();
@@ -75,6 +78,34 @@ export class Account extends EventEmitter<AccountEvents> {
 
   private static async removeCurrentUser() {
     await BrowserStorage.remove(currentUserKey);
+  }
+
+  async getEncryptedPassword() {
+    return (await Account.readCurrentUser())?.passkey ?? null;
+  }
+
+  async setEncryptedPassword(passkey: Passkey) {
+    const user = await getCurrentUser();
+    if (!user) {
+      throw new Error('No user found');
+    }
+    await Account.writeCurrentUser(
+      produce(user, (draft) => {
+        draft.passkey = passkey;
+      })
+    );
+  }
+
+  async removeEncryptedPassword() {
+    const user = await Account.readCurrentUser();
+    if (!user) {
+      throw new Error('No user found');
+    }
+    await Account.writeCurrentUser(
+      produce(user, (draft) => {
+        draft.passkey = null;
+      })
+    );
   }
 
   private static async writeCredentials(credentials: Credentials) {
@@ -394,5 +425,53 @@ export class AccountPublicRPC {
   async eraseAllData() {
     await eraseAndUpdateToLatestVersion();
     await this.account.logout(); // reset account after erasing storage
+  }
+
+  async setPasskey({
+    params: { encryptionKey, password, salt, id },
+  }: PublicMethodParams<{
+    encryptionKey: string;
+    password: string;
+    salt: string;
+    id: string;
+  }>) {
+    const encrypted = await encrypt(encryptionKey, { password });
+    return this.account.setEncryptedPassword({
+      encryptedPassword: encrypted,
+      salt,
+      id,
+    });
+  }
+
+  async getPasskeyMeta() {
+    const data = await this.account.getEncryptedPassword();
+    if (!data) {
+      throw new Error('No passkey found');
+    }
+    const { id, salt } = data;
+    return { id, salt };
+  }
+
+  async getPassword({
+    params: { encryptionKey },
+  }: PublicMethodParams<{ encryptionKey: string }>) {
+    const data = await this.account.getEncryptedPassword();
+    if (!data) {
+      throw new Error('No passkey found');
+    }
+    const decrypted = await decrypt<{ password: string }>(
+      encryptionKey,
+      data.encryptedPassword
+    );
+    return decrypted.password;
+  }
+
+  async getPasskeyEnabled(): Promise<boolean> {
+    const data = await this.account.getEncryptedPassword();
+    return Boolean(data);
+  }
+
+  async removePasskey() {
+    return this.account.removeEncryptedPassword();
   }
 }
