@@ -1,4 +1,5 @@
 import type { WalletAbility } from 'src/shared/types/Daylight';
+import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
 import type { SignerContainer } from './WalletContainer';
 import type { WalletOrigin } from './WalletOrigin';
 import type { AccountContainer } from './AccountContainer';
@@ -68,6 +69,7 @@ interface PublicPreferences {
   testnetMode?: null | { on: boolean };
   enableHoldToSignButton?: boolean | null;
   showTransactionsOnAssetChart?: boolean;
+  walletsOrder?: WalletListGroup[];
 }
 
 export interface Permission {

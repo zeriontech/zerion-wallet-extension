@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
@@ -13,9 +13,10 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import AddIcon from 'jsx:src/ui/assets/plus.svg';
 import EditIcon from 'jsx:src/ui/assets/edit.svg';
+import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import { Button } from 'src/ui/ui-kit/Button';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Background } from 'src/ui/components/Background';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isReadonlyContainer } from 'src/shared/types/validators';
@@ -38,8 +39,14 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import { usePreferences } from 'src/ui/features/preferences';
+import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import {
+  DEFAULT_WALLET_LIST_GROUPS,
+  type WalletListGroup,
+} from 'src/shared/wallet/wallet-list';
 import * as styles from './styles.module.css';
-import { WalletList } from './WalletList';
+import { WalletList, WalletListEdit } from './WalletList';
 
 function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
   const { currency } = useCurrency();
@@ -91,11 +98,17 @@ function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function WalletSelect() {
+  useBackgroundKind(whiteBackgroundKind);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [params] = useSearchParams();
 
   const ecosystem = params.get('ecosystem') as BlockchainType;
+  const { preferences, setPreferences } = usePreferences();
+  const [editMode, setEditMode] = useState(false);
+  const [unsavedWalletOrder, setUnsavedWalletOrder] = useState<
+    WalletListGroup[] | null
+  >(null);
 
   const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
@@ -159,28 +172,62 @@ export function WalletSelect() {
         <HStack
           gap={0}
           alignItems="center"
-          style={{ position: 'relative', left: -36 }}
+          style={{ position: 'relative', left: editMode ? -52 : -36 }}
         >
-          <Button
-            kind="ghost"
-            size={36}
-            style={{ padding: 6 }}
-            as={UnstyledLink}
-            to="/wallets"
-            title="Edit Wallets"
-          >
-            <EditIcon style={{ width: 24, height: 24 }} />
-          </Button>
-          <Button
-            kind="ghost"
-            size={36}
-            style={{ padding: 6 }}
-            as={UnstyledLink}
-            to="/get-started"
-            title="Add Wallet"
-          >
-            <AddIcon style={{ width: 24, height: 24 }} />
-          </Button>
+          {editMode ? (
+            <Button
+              kind="ghost"
+              size={36}
+              style={{ padding: 6 }}
+              as={UnstyledLink}
+              to="/wallets"
+              title="Manage Wallets"
+            >
+              <SettingsIcon style={{ width: 24, height: 24 }} />
+            </Button>
+          ) : (
+            <Button
+              kind="ghost"
+              size={36}
+              style={{ padding: 6 }}
+              title="Edit Wallets"
+              onClick={() => {
+                setUnsavedWalletOrder(
+                  preferences?.walletsOrder || DEFAULT_WALLET_LIST_GROUPS
+                );
+                setEditMode(true);
+              }}
+            >
+              <EditIcon style={{ width: 24, height: 24 }} />
+            </Button>
+          )}
+          {editMode ? (
+            <Button
+              kind="ghost"
+              size={36}
+              style={{ padding: 6 }}
+              onClick={() => {
+                setPreferences({
+                  walletsOrder: unsavedWalletOrder || undefined,
+                });
+                setUnsavedWalletOrder(null);
+                setEditMode(false);
+              }}
+            >
+              Done
+            </Button>
+          ) : (
+            <Button
+              kind="ghost"
+              size={36}
+              style={{ padding: 6 }}
+              as={UnstyledLink}
+              to="/get-started"
+              title="Add Wallet"
+            >
+              <AddIcon style={{ width: 24, height: 24 }} />
+            </Button>
+          )}
         </HStack>
       }
     />
@@ -200,20 +247,27 @@ export function WalletSelect() {
   }
 
   return (
-    <Background backgroundKind="white">
-      <PageColumn>
-        {title}
-        <Spacer height={10} />
-        {ownedAddressesCount > 1 ? (
-          <PortfolioRow walletGroups={walletGroups} />
-        ) : null}
-        <VStack
-          gap={2}
-          style={{
-            ['--surface-background-color' as string]: 'transparent',
-          }}
-        >
+    <PageColumn>
+      {title}
+      <Spacer height={10} />
+      {ownedAddressesCount > 1 && !editMode ? (
+        <PortfolioRow walletGroups={walletGroups} />
+      ) : null}
+      <VStack
+        gap={2}
+        style={{
+          ['--surface-background-color' as string]: 'transparent',
+        }}
+      >
+        {editMode && unsavedWalletOrder ? (
+          <WalletListEdit
+            walletsOrder={unsavedWalletOrder}
+            walletGroups={walletGroups}
+            onChange={setUnsavedWalletOrder}
+          />
+        ) : (
           <WalletList
+            walletsOrder={preferences?.walletsOrder}
             walletGroups={walletGroups}
             onSelect={(wallet) => {
               setCurrentAddressMutation.mutate(wallet.address);
@@ -271,7 +325,11 @@ export function WalletSelect() {
               ) : null;
             }}
           />
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+        )}
+        {editMode ? null : (
+          <div
+            style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}
+          >
             <Button
               kind="neutral"
               size={36}
@@ -283,9 +341,9 @@ export function WalletSelect() {
               Add Wallet
             </Button>
           </div>
-        </VStack>
-        <PageBottom />
-      </PageColumn>
-    </Background>
+        )}
+      </VStack>
+      <PageBottom />
+    </PageColumn>
   );
 }
