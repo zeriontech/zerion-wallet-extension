@@ -12,6 +12,7 @@ import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { createChain } from 'src/modules/networks/Chain';
 import {
   useMainnetNetwork,
+  useNetworkConfig,
   useNetworks,
 } from 'src/modules/networks/useNetworks';
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
@@ -70,6 +71,8 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import { Networks } from 'src/modules/networks/Networks';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { Feed } from '../Feed';
@@ -377,9 +380,17 @@ function OverviewComponent() {
     setSearchParams(value ? [['chain', value]] : '');
   });
   const addressType = address ? getAddressType(address) : null;
+  const { data: network } = useNetworkConfig(selectedChain ?? null);
+
   useEffect(() => {
-    setSelectedChain(null);
-  }, [addressType, setSelectedChain]);
+    if (
+      network &&
+      !isMatchForEcosystem(address, Networks.getEcosystem(network))
+    ) {
+      setSelectedChain(null);
+    }
+  }, [address, network, setSelectedChain]);
+
   const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
