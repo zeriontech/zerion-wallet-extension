@@ -41,21 +41,51 @@ import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { usePreferences } from 'src/ui/features/preferences';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
-import { DEFAULT_WALLET_LIST_GROUPS } from 'src/shared/wallet/wallet-list';
+import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
+import {
+  DEFAULT_WALLET_LIST_GROUPS,
+  getWalletId,
+} from 'src/shared/wallet/wallet-list';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 import { WalletListEdit } from './WalletListEdit';
+import { getFullWalletList } from './shared';
 
-function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
+function PortfolioRow({
+  walletGroups,
+  walletsOrder,
+}: {
+  walletGroups: WalletGroup[];
+  walletsOrder?: WalletListGroup[];
+}) {
   const { currency } = useCurrency();
+
+  const groups = useMemo(
+    () =>
+      getFullWalletList({
+        walletsOrder,
+        walletGroups,
+      }),
+    [walletsOrder, walletGroups]
+  );
+
+  const portfolioWalletIdSet = useMemo(() => {
+    return new Set(groups?.[0]?.walletIds || []);
+  }, [groups]);
 
   const addresses = useMemo(() => {
     return walletGroups
-      .filter((group) => !isReadonlyContainer(group.walletContainer))
       .flatMap((group) =>
-        group.walletContainer.wallets.map((wallet) => wallet.address)
-      );
-  }, [walletGroups]);
+        group.walletContainer.wallets.map((wallet) => ({
+          address: wallet.address,
+          groupId: group.id,
+        }))
+      )
+      .filter(({ address, groupId }) =>
+        portfolioWalletIdSet.has(getWalletId({ address, groupId }))
+      )
+      .map(({ address }) => address);
+  }, [walletGroups, portfolioWalletIdSet]);
 
   const { data, isLoading } = useWalletPortfolio(
     { addresses, currency },
@@ -239,7 +269,10 @@ export function WalletSelect() {
       {title}
       <Spacer height={10} />
       {ownedAddressesCount > 1 && !editMode ? (
-        <PortfolioRow walletGroups={walletGroups} />
+        <PortfolioRow
+          walletGroups={walletGroups}
+          walletsOrder={preferences?.walletsOrder}
+        />
       ) : null}
       <VStack
         gap={2}

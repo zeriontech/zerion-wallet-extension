@@ -84,6 +84,7 @@ function DroppableContainer({
       ref={setNodeRef}
       style={{
         transform: CSS.Translate.toString(transform),
+        paddingBottom: 20,
       }}
     >
       {children}
@@ -219,7 +220,7 @@ function DraggableWalletItem({
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
       : undefined,
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0 : 1,
     cursor: 'grab',
   };
 
@@ -479,7 +480,7 @@ function WalletListEditInner({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={allIds} strategy={verticalListSortingStrategy}>
-        <VStack gap={4}>
+        <VStack gap={0}>
           {groups.map((group) => (
             <DroppableContainer
               key={group.id}
