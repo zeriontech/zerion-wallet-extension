@@ -46,7 +46,8 @@ import {
   type WalletListGroup,
 } from 'src/shared/wallet/wallet-list';
 import * as styles from './styles.module.css';
-import { WalletList, WalletListEdit } from './WalletList';
+import { WalletList } from './WalletList';
+import { WalletListEdit } from './WalletListEdit';
 
 function PortfolioRow({ walletGroups }: { walletGroups: WalletGroup[] }) {
   const { currency } = useCurrency();
