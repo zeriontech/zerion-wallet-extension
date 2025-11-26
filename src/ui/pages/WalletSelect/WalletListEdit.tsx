@@ -45,6 +45,9 @@ import { WalletNameType } from 'src/ui/shared/useProfileName';
 import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
 import { getWalletId } from 'src/shared/wallet/wallet-list';
 import { useEvent } from 'src/ui/shared/useEvent';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import DotsIcon from 'jsx:src/ui/assets/dots.svg';
+import DragIcon from 'jsx:src/ui/assets/drag.svg';
 import * as styles from './styles.module.css';
 import type { AnyWallet, WalletGroupInfo } from './shared';
 import { getFullWalletList } from './shared';
@@ -68,7 +71,7 @@ function DroppableContainer({
   id,
   items,
 }: React.PropsWithChildren<{ id: string; items: string[] }>) {
-  const { isDragging, transition, transform, setNodeRef } = useSortable({
+  const { transform, setNodeRef } = useSortable({
     id,
     data: {
       type: 'container',
@@ -80,33 +83,11 @@ function DroppableContainer({
     <div
       ref={setNodeRef}
       style={{
-        transition,
         transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : undefined,
       }}
     >
       {children}
     </div>
-  );
-}
-
-function DragIcon({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={style}
-    >
-      <path
-        d="M8 6H16M8 12H16M8 18H16"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 
@@ -128,6 +109,7 @@ function WalletListEditItem({
         borderRadius: 20,
         width: '100%',
         marginBlock: 4,
+        backgroundColor: 'var(--white)',
       }}
     >
       <VStack gap={0}>
@@ -198,7 +180,16 @@ function WalletListEditItem({
               />
             }
           />
-          <DragIcon style={{ color: 'var(--neutral-500)' }} />
+          <HStack gap={12} alignItems="center">
+            <UnstyledLink
+              to={`/wallets/accounts/${wallet.address}?groupId=${groupId}`}
+              style={{ display: 'flex' }}
+              title="Edit wallet"
+            >
+              <DotsIcon />
+            </UnstyledLink>
+            <DragIcon style={{ color: 'var(--neutral-500)' }} />
+          </HStack>
         </HStack>
       </VStack>
     </div>
@@ -526,9 +517,9 @@ function WalletListEditInner({
                     <VStack
                       gap={0}
                       style={{
-                        minHeight: 80,
+                        minHeight: 60,
                         borderRadius: 12,
-                        backgroundColor: 'var(--neutral-50)',
+                        backgroundColor: 'var(--neutral-100)',
                         padding: 16,
                         display: 'flex',
                         alignItems: 'center',

@@ -41,10 +41,7 @@ import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { usePreferences } from 'src/ui/features/preferences';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
-import {
-  DEFAULT_WALLET_LIST_GROUPS,
-  type WalletListGroup,
-} from 'src/shared/wallet/wallet-list';
+import { DEFAULT_WALLET_LIST_GROUPS } from 'src/shared/wallet/wallet-list';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 import { WalletListEdit } from './WalletListEdit';
@@ -107,9 +104,6 @@ export function WalletSelect() {
   const ecosystem = params.get('ecosystem') as BlockchainType;
   const { preferences, setPreferences } = usePreferences();
   const [editMode, setEditMode] = useState(false);
-  const [unsavedWalletOrder, setUnsavedWalletOrder] = useState<
-    WalletListGroup[] | null
-  >(null);
 
   const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
@@ -171,7 +165,7 @@ export function WalletSelect() {
       title="Wallets"
       elementEnd={
         <HStack
-          gap={0}
+          gap={editMode ? 8 : 0}
           alignItems="center"
           style={{ position: 'relative', left: editMode ? -52 : -36 }}
         >
@@ -193,9 +187,6 @@ export function WalletSelect() {
               style={{ padding: 6 }}
               title="Edit Wallets"
               onClick={() => {
-                setUnsavedWalletOrder(
-                  preferences?.walletsOrder || DEFAULT_WALLET_LIST_GROUPS
-                );
                 setEditMode(true);
               }}
             >
@@ -208,10 +199,6 @@ export function WalletSelect() {
               size={36}
               style={{ padding: 6 }}
               onClick={() => {
-                setPreferences({
-                  walletsOrder: unsavedWalletOrder || undefined,
-                });
-                setUnsavedWalletOrder(null);
                 setEditMode(false);
               }}
             >
@@ -260,11 +247,17 @@ export function WalletSelect() {
           ['--surface-background-color' as string]: 'transparent',
         }}
       >
-        {editMode && unsavedWalletOrder ? (
+        {editMode ? (
           <WalletListEdit
-            walletsOrder={unsavedWalletOrder}
+            walletsOrder={
+              preferences?.walletsOrder || DEFAULT_WALLET_LIST_GROUPS
+            }
             walletGroups={walletGroups}
-            onChange={setUnsavedWalletOrder}
+            onChange={(newOrder) => {
+              setPreferences({
+                walletsOrder: newOrder,
+              });
+            }}
           />
         ) : (
           <WalletList
