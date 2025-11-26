@@ -43,10 +43,7 @@ import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import { middot, NBSP } from 'src/ui/shared/typography';
 import { WalletNameType } from 'src/ui/shared/useProfileName';
 import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
-import {
-  DEFAULT_WALLET_LIST_GROUPS,
-  getWalletId,
-} from 'src/shared/wallet/wallet-list';
+import { getWalletId } from 'src/shared/wallet/wallet-list';
 import { useEvent } from 'src/ui/shared/useEvent';
 import * as styles from './styles.module.css';
 import type { AnyWallet, WalletGroupInfo } from './shared';
@@ -566,7 +563,7 @@ function WalletListEditInner({
 }
 
 export function WalletListEdit({
-  walletsOrder = DEFAULT_WALLET_LIST_GROUPS,
+  walletsOrder,
   walletGroups,
   onChange,
 }: {

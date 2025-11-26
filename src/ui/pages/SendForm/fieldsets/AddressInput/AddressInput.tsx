@@ -39,6 +39,8 @@ import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import { getWalletId } from 'src/shared/wallet/wallet-list';
+import { getFullWalletList } from 'src/ui/pages/WalletSelect/shared';
 
 type Item = {
   name: string | null;
@@ -584,15 +586,21 @@ export function AddressInputWrapper({
     useErrorBoundary: true,
     suspense: false,
   });
+  const { preferences } = usePreferences();
 
   const { savedNamesMap, savedWallets } = useMemo(() => {
     const wallets: Item[] = [];
+    const walletsMap: Map<string, Item> = new Map();
     const namesMap: Record<string, string> = {};
     if (walletGroups) {
       for (const group of walletGroups) {
         for (const wallet of group.walletContainer.wallets) {
+          const walletId = getWalletId({
+            address: wallet.address,
+            groupId: group.id,
+          });
           const address = normalizeAddress(wallet.address);
-          wallets.push({
+          walletsMap.set(walletId, {
             address,
             groupId: group.id,
             name: wallet.name || null,
@@ -603,11 +611,19 @@ export function AddressInputWrapper({
           }
         }
       }
+      const walletIdList = getFullWalletList({
+        walletsOrder: preferences?.walletsOrder,
+        walletGroups,
+      }).flatMap((group) => group.walletIds);
+      for (const walletId of walletIdList) {
+        const wallet = walletsMap.get(walletId);
+        if (wallet) {
+          wallets.push(wallet);
+        }
+      }
     }
     return { savedWallets: [...wallets], savedNamesMap: namesMap };
-  }, [walletGroups]);
-
-  const { preferences } = usePreferences();
+  }, [walletGroups, preferences?.walletsOrder]);
 
   const recentWallets = useMemo<Item[]>(() => {
     return (

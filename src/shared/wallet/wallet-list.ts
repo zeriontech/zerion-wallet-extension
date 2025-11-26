@@ -29,14 +29,3 @@ export function getWalletId({
 }): string {
   return `${groupId}--${address}`;
 }
-
-export function parseWalletId(walletId: string): {
-  address: string;
-  groupId: string;
-} {
-  const [groupId, ...addressParts] = walletId.split('--');
-  return {
-    groupId,
-    address: addressParts.join('--'),
-  };
-}

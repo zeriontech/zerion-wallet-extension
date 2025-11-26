@@ -45,6 +45,7 @@ import {
 } from 'src/ui/shared/security-check';
 import { useEvent } from 'src/ui/shared/useEvent';
 import type { Permission } from 'src/shared/types/Permission';
+import { usePreferences } from 'src/ui/features/preferences';
 import { WalletList } from '../WalletSelect/WalletList';
 
 const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
@@ -72,6 +73,8 @@ function WalletSelectDialog({
   walletGroups?: WalletGroup[] | null;
   onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
 }) {
+  const { preferences } = usePreferences();
+
   return walletGroups?.length ? (
     <VStack gap={24} style={{ paddingTop: 72 }}>
       <VStack gap={12} style={{ justifyItems: 'center' }}>
@@ -87,6 +90,7 @@ function WalletSelectDialog({
         </UIText>
       </VStack>
       <WalletList
+        walletsOrder={preferences?.walletsOrder}
         selectedAddress={value}
         walletGroups={walletGroups}
         onSelect={onSelect}

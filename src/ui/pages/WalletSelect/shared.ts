@@ -5,6 +5,7 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import {
   DEFAULT_WALLET_LIST_GROUP_ID,
+  DEFAULT_WALLET_LIST_GROUPS,
   getWalletId,
   WATCHLIST_WALLET_LIST_GROUP_ID,
   type WalletListGroup,
@@ -27,12 +28,12 @@ export interface WalletGroupInfo {
  * Also filter wallets by predicate if provided.
  */
 export function getFullWalletList({
-  walletsOrder,
+  walletsOrder = DEFAULT_WALLET_LIST_GROUPS,
   walletGroups,
   predicate,
   filterEmptyGroups = true,
 }: {
-  walletsOrder: WalletListGroup[];
+  walletsOrder?: WalletListGroup[];
   walletGroups: WalletGroupInfo[];
   predicate?: (item: AnyWallet) => boolean;
   filterEmptyGroups?: boolean;

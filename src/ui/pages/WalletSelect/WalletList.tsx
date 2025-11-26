@@ -22,7 +22,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import {
-  DEFAULT_WALLET_LIST_GROUPS,
   getWalletId,
   type WalletListGroup,
 } from 'src/shared/wallet/wallet-list';
@@ -234,7 +233,7 @@ function WalletListItem({
 const alwaysTrue = () => true;
 
 export function WalletList({
-  walletsOrder = DEFAULT_WALLET_LIST_GROUPS,
+  walletsOrder,
   walletGroups,
   selectedAddress,
   showAddressValues,
