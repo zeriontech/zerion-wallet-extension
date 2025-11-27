@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
@@ -133,7 +133,19 @@ export function WalletSelect() {
 
   const ecosystem = params.get('ecosystem') as BlockchainType;
   const { preferences, setPreferences } = usePreferences();
-  const [editMode, setEditMode] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const editMode = searchParams.get('edit') === 'true';
+  const setEditMode = useCallback(
+    (value: boolean) => {
+      if (value) {
+        searchParams.set('edit', 'true');
+      } else {
+        searchParams.delete('edit');
+      }
+      setSearchParams(searchParams, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
 
   const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
