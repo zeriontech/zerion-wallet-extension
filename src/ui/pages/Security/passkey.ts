@@ -99,6 +99,8 @@ function extractPRFResult(cred: unknown): ArrayBuffer {
 
   const result = credential.getClientExtensionResults();
 
+  console.log('PRF Extension Result:', result);
+
   if (!isPRFResultValid(result)) {
     throw new Error(
       'PRF extension is not supported by your authenticator. ' +
@@ -173,6 +175,7 @@ export async function setupAccountPasskey(password: string) {
     throw new Error('Failed to get passkey ID from credential');
   }
 
+  console.log('credential created:', cred);
   // Use the safe PRF extraction with proper type guards
   const prf = extractPRFResult(cred);
 
