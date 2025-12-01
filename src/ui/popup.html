@@ -9,6 +9,16 @@
     <meta name="google" value="notranslate" />
 
     <style>
+      /* Prevent UI to blink with a white background in the dark theme when open */
+      /* --default-background variable is updated later to reflect the actual selected theme */
+      body {
+        background-color: var(--default-background, white);
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: var(--default-background, #16161a);
+        }
+      }
       body::-webkit-scrollbar {
         /* display: none; */
         visibility: hidden;
@@ -78,9 +88,9 @@
     <link rel="preload" as="image" href="https://cdn.zerion.io/images/dna-assets/rotating-zero_2x.png" />
 
     <title>Zerion</title>
-    <script type="module" src="./index.tsx"></script>
   </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
