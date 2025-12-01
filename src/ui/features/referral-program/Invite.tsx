@@ -40,6 +40,8 @@ import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referra
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
+import { usePreferences } from '../preferences';
 import { ReferralLinkDialog } from './ReferralLinkDialog';
 import { EnterReferralCodeDialog } from './EnterReferralCodeDialog';
 import { QRCodeDialog } from './QRCodeDialog';
@@ -50,16 +52,19 @@ import * as styles from './styles.module.css';
 function WalletSelectDialog({
   value,
   walletGroups,
+  walletsOrder,
   onSelect,
 }: {
   value: string;
   walletGroups?: WalletGroup[] | null;
+  walletsOrder?: WalletListGroup[];
   onSelect: Parameters<typeof WalletList>[0]['onSelect'];
 }) {
   return walletGroups?.length ? (
     <div style={{ ['--surface-background-color' as string]: 'none' }}>
       <DialogTitle title={<UIText kind="body/accent">Select Wallet</UIText>} />
       <WalletList
+        walletsOrder={walletsOrder}
         selectedAddress={value}
         walletGroups={walletGroups}
         onSelect={onSelect}
@@ -302,6 +307,7 @@ export function Invite() {
   useBackgroundKind({ kind: 'white' });
   useEffect(() => window.scrollTo(0, 0), []);
   const { pathname } = useLocation();
+  const { preferences } = usePreferences();
 
   const { data: currentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -436,6 +442,7 @@ export function Invite() {
           ref={walletSelectDialogRef}
           renderWhenOpen={() => (
             <WalletSelectDialog
+              walletsOrder={preferences?.walletsOrder}
               walletGroups={ownedWalletGroups}
               value={normalizeAddress(selectedWallet.address)}
               onSelect={(wallet) => {

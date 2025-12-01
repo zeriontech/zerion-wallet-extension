@@ -30,6 +30,7 @@ import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { DEFAULT_WALLET_LIST_GROUPS } from 'src/shared/wallet/wallet-list';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { emitter } from '../events';
 import type {
@@ -861,6 +862,7 @@ export class WalletRecordModel {
       testnetMode: null,
       enableHoldToSignButton: null,
       showTransactionsOnAssetChart: true,
+      walletsOrder: DEFAULT_WALLET_LIST_GROUPS,
     };
     if (!record) {
       return defaults;

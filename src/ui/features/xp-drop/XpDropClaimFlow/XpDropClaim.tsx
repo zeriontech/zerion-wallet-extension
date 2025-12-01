@@ -46,6 +46,8 @@ import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByC
 import { emitter } from 'src/ui/shared/events';
 import { getError } from 'src/shared/errors/getError';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
+import { usePreferences } from '../../preferences';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -57,6 +59,7 @@ function formatXp(value: number) {
 function WalletSelectDialog({
   value,
   walletGroups,
+  walletsOrder,
   onSelect,
 }: {
   value: string;
@@ -66,6 +69,7 @@ function WalletSelectDialog({
       wallets: (ExternallyOwnedAccount | BareWallet | DeviceAccount)[];
     };
   }[];
+  walletsOrder?: WalletListGroup[];
   onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
 }) {
   return (
@@ -77,6 +81,7 @@ function WalletSelectDialog({
       <WalletList
         selectedAddress={value}
         walletGroups={walletGroups}
+        walletsOrder={walletsOrder}
         onSelect={onSelect}
         showAddressValues={true}
       />
@@ -269,6 +274,7 @@ export function XpDropClaim() {
   useBackgroundKind({ kind: 'white' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { preferences } = usePreferences();
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -485,6 +491,7 @@ export function XpDropClaim() {
           ref={walletSelectDialogRef}
           renderWhenOpen={() => (
             <WalletSelectDialog
+              walletsOrder={preferences?.walletsOrder}
               walletGroups={eligibleWalletGroups}
               value={normalizeAddress(selectedWallet.address)}
               onSelect={async (wallet) => {

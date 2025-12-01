@@ -1,8 +1,5 @@
-import React, { useId, useRef } from 'react';
-import type { BareWallet } from 'src/shared/types/BareWallet';
-import type { DeviceAccount } from 'src/shared/types/Device';
+import React, { useId, useMemo, useRef } from 'react';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
-import { SurfaceList, type Item } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -24,7 +21,14 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import {
+  getWalletId,
+  type WalletListGroup,
+} from 'src/shared/wallet/wallet-list';
+import { useEvent } from 'src/ui/shared/useEvent';
 import * as styles from './styles.module.css';
+import type { AnyWallet, WalletGroupInfo } from './shared';
+import { getFullWalletList } from './shared';
 
 function WalletListItem({
   wallet,
@@ -226,23 +230,18 @@ function WalletListItem({
   );
 }
 
-type AnyWallet = ExternallyOwnedAccount | BareWallet | DeviceAccount;
-
-interface WalletGroupInfo {
-  id: string;
-  walletContainer: {
-    wallets: AnyWallet[];
-  };
-}
+const alwaysTrue = () => true;
 
 export function WalletList({
+  walletsOrder,
   walletGroups,
   selectedAddress,
   showAddressValues,
   renderItemFooter,
   onSelect,
-  predicate,
+  predicate = alwaysTrue,
 }: {
+  walletsOrder?: WalletListGroup[];
   walletGroups: WalletGroupInfo[];
   selectedAddress: string;
   showAddressValues: boolean;
@@ -256,44 +255,84 @@ export function WalletList({
   onSelect(wallet: AnyWallet): void;
   predicate?: (item: AnyWallet) => boolean;
 }) {
-  const items: Item[] = [];
+  const predicateEvent = useEvent(predicate);
+  const groups = useMemo(
+    () =>
+      getFullWalletList({
+        walletsOrder,
+        walletGroups,
+        predicate: predicateEvent,
+      }),
+    [walletsOrder, walletGroups, predicateEvent]
+  );
+  const walletMap = useMemo(() => {
+    const map = new Map<
+      string,
+      { group: WalletGroupInfo; wallet: AnyWallet }
+    >();
+    for (const group of walletGroups) {
+      for (const wallet of group.walletContainer.wallets) {
+        map.set(
+          getWalletId({
+            address: wallet.address,
+            groupId: group.id,
+          }),
+          { group, wallet }
+        );
+      }
+    }
+    return map;
+  }, [walletGroups]);
   /**
    * If CSS anchor positioning is supported, we use it to avoid
    * nesting buttons, which is invalid per html spec, but still works ¯\_(ツ)_/¯
    */
-  // TODO: enable check when Chrome bug with CSS Anchors is fixed
   const supportsCssAnchor = CSS.supports('anchor-name: --name');
-  for (const group of walletGroups) {
-    for (const wallet of group.walletContainer.wallets) {
-      if (predicate && !predicate(wallet)) {
-        continue;
-      }
-      const key = `${group.id}-${wallet.address}`;
-      items.push({
-        key,
-        isInteractive: true,
-        pad: false,
-        component: (
-          <WalletListItem
-            onClick={() => onSelect(wallet)}
-            wallet={wallet}
-            groupId={group.id}
-            useCssAnchors={supportsCssAnchor}
-            showAddressValues={showAddressValues}
-            isSelected={
-              normalizeAddress(wallet.address) ===
-              normalizeAddress(selectedAddress)
-            }
-            renderFooter={
-              renderItemFooter
-                ? () => renderItemFooter({ group, wallet })
-                : null
-            }
-          />
-        ),
-      });
-    }
-  }
 
-  return <SurfaceList items={items} style={{ padding: 0 }} />;
+  return (
+    <VStack gap={4}>
+      {groups.map((group) => (
+        <VStack key={group.id} gap={2}>
+          <UIText
+            kind="small/accent"
+            color="var(--neutral-700)"
+            style={{ paddingLeft: 4, paddingTop: 12 }}
+          >
+            {group.title}
+          </UIText>
+          <VStack gap={0}>
+            {group.walletIds.map((walletId) => {
+              const { group, wallet } = walletMap.get(walletId) || {};
+              if (!wallet || !group) {
+                return null;
+              }
+              const key = getWalletId({
+                address: wallet.address,
+                groupId: group.id,
+              });
+              return (
+                <WalletListItem
+                  key={key}
+                  onClick={() => onSelect(wallet)}
+                  wallet={wallet}
+                  groupId={group.id}
+                  useCssAnchors={supportsCssAnchor}
+                  showAddressValues={showAddressValues}
+                  isSelected={
+                    normalizeAddress(wallet.address) ===
+                    normalizeAddress(selectedAddress)
+                  }
+                  renderFooter={
+                    renderItemFooter
+                      ? () => renderItemFooter({ group, wallet })
+                      : null
+                  }
+                />
+              );
+            })}
+          </VStack>
+        </VStack>
+      ))}
+    </VStack>
+  );
 }
