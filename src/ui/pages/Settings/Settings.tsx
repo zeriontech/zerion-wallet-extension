@@ -8,7 +8,6 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
@@ -66,6 +65,7 @@ import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
 import type { PopoverToastHandle } from './PopoverToast';
 import { PopoverToast } from './PopoverToast';
+import { ToggleSettingLine } from './ToggleSettingsLine';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
@@ -369,32 +369,6 @@ function SettingsMain() {
         </VStack>
       </StickyBottomPanel>
     </PageColumn>
-  );
-}
-
-function ToggleSettingLine({
-  checked,
-  onChange,
-  text,
-  detailText,
-}: {
-  checked: boolean;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  text: NonNullable<React.ReactNode>;
-  detailText: React.ReactNode | null;
-}) {
-  return (
-    <HStack gap={4} justifyContent="space-between" style={{ padding: 12 }}>
-      <VStack gap={0}>
-        <UIText kind="body/accent">{text}</UIText>
-        {detailText ? (
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            {detailText}
-          </UIText>
-        ) : null}
-      </VStack>
-      <Toggle checked={checked} onChange={onChange} />
-    </HStack>
   );
 }
 

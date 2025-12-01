@@ -28,6 +28,7 @@ import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
+import { TouchIdLogin } from '../Security/TouchIdLogin';
 import { LayersAnimationLottie } from './LayersAnimationLottie';
 import { type LottieComponentHandle } from './LayersAnimationLottie';
 
@@ -119,6 +120,14 @@ export function Login() {
       return walletPort.request('getLastUsedAddress', { userId });
     },
   });
+  const handleSuccess = useCallback(() => {
+    navigate(params.get('next') || '/', {
+      // If user clicks "back" when we redirect them,
+      // we should take them to overview, not back to the login view
+      replace: true,
+    });
+  }, [navigate, params]);
+
   const loginMutation = useMutation({
     mutationFn: async ({
       user,
@@ -134,11 +143,7 @@ export function Login() {
       // There's a rare weird bug when logging in reloads login page instead of redirecting to overview.
       // Maybe this will fix it? If not, then remove this delay
       await new Promise((r) => setTimeout(r, 100));
-      navigate(params.get('next') || '/', {
-        // If user clicks "back" when we redirect them,
-        // we should take them to overview, not back to the login view
-        replace: true,
-      });
+      handleSuccess();
     },
   });
 
@@ -178,29 +183,39 @@ export function Login() {
           }
           loginMutation.mutate({ user, password });
         }}
+        style={{ flexGrow: 1, display: 'flex' }}
       >
-        <VStack gap={24}>
-          <UIText
-            as="label"
-            htmlFor={inputId}
-            kind="headline/h1"
-            style={{ textAlign: 'center' }}
-          >
-            Welcome Back!
-          </UIText>
-          <VStack gap={4}>
-            <Input
-              id={inputId}
-              autoFocus={true}
-              type="password"
-              name="password"
-              placeholder="Password"
-              required={true}
-            />
-            {loginMutation.error ? (
-              <UIText kind="caption/regular" color="var(--negative-500)">
-                {(loginMutation.error as Error).message || 'unknown error'}
-              </UIText>
+        <VStack gap={24} style={{ gridTemplateRows: '1fr auto', flexGrow: 1 }}>
+          <VStack gap={24}>
+            <UIText
+              as="label"
+              htmlFor={inputId}
+              kind="headline/h1"
+              style={{ textAlign: 'center' }}
+            >
+              Welcome Back!
+            </UIText>
+            <VStack gap={4}>
+              <Input
+                id={inputId}
+                autoFocus={true}
+                type="password"
+                name="password"
+                placeholder="Password"
+                required={true}
+              />
+              {loginMutation.error ? (
+                <UIText kind="caption/regular" color="var(--negative-500)">
+                  {(loginMutation.error as Error).message || 'unknown error'}
+                </UIText>
+              ) : null}
+            </VStack>
+            {user ? (
+              <TouchIdLogin
+                user={user}
+                onSuccess={handleSuccess}
+                style={{ justifyItems: 'center' }}
+              />
             ) : null}
           </VStack>
           <Button form={formId} disabled={loginMutation.isLoading}>
@@ -208,7 +223,7 @@ export function Login() {
           </Button>
         </VStack>
       </form>
-      <Spacer height={24} />
+      <Spacer height={16} />
       <UIText
         as={UnstyledLink}
         to="/forgot-password"
