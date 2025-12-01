@@ -30,7 +30,7 @@ body {
   line-height: calc(20 / 14);
   -webkit-font-smoothing: antialiased;
   color: var(--black);
-  background-color: var(--background) !important;
+  background-color: var(--background);
   /**
    * Setting display: grid allows children to use {height: 100%}
    * even when we use {min-height} for body size. This is crucial for

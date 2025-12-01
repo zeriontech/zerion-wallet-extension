@@ -9,12 +9,14 @@
     <meta name="google" value="notranslate" />
 
     <style>
+      /* Prevent UI to blink with a white background in the dark theme when open */
+      /* --default-background variable is updated later to reflect the actual selected theme */
       body {
-        background-color: white;
+        background-color: var(--default-background, white);
       }
       @media (prefers-color-scheme: dark) {
         body {
-          background-color: #16161a;
+          background-color: var(--default-background, #16161a);
         }
       }
       body::-webkit-scrollbar {
