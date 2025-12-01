@@ -240,7 +240,7 @@ export async function prepareSendData(
       tx.gas = valueToHex(gas);
     }
     let nonce = formState.nonce;
-    if (network.supports_sponsored_transactions && nonce == null) {
+    if (nonce == null) {
       const { value: latestNonce } = await uiGetBestKnownTransactionCount({
         address: from,
         network,
