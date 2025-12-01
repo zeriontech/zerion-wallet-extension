@@ -36,6 +36,17 @@ export function getPasskeyTitle(): string {
   return isMacOS() ? 'Touch ID' : 'Passkey Unlock';
 }
 
+function getAuthenticatorSelection() {
+  return isMacOS()
+    ? {
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform' as AuthenticatorAttachment,
+          userVerification: 'required' as UserVerificationRequirement,
+        },
+      }
+    : ({} as Record<string, never>);
+}
+
 /**
  * Checks if the current browser and authenticator support the PRF extension.
  * This is critical for passkey-based password encryption.
@@ -138,10 +149,7 @@ export async function setupAccountPasskey(password: string) {
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
         challenge: getRandomUint8Array(32),
         // Use platform authenticator (Apple Keychain on macOS, Windows Hello on Windows, etc.)
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-          userVerification: 'required',
-        },
+        ...getAuthenticatorSelection(),
         extensions: {
           prf: {
             eval: {
