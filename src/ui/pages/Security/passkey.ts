@@ -36,17 +36,6 @@ export function getPasskeyTitle(): string {
   return isMacOS() ? 'Touch ID' : 'Passkey Unlock';
 }
 
-function getAuthenticatorSelection() {
-  return isMacOS()
-    ? {
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform' as AuthenticatorAttachment,
-          userVerification: 'required' as UserVerificationRequirement,
-        },
-      }
-    : ({} as Record<string, never>);
-}
-
 /**
  * Checks if the current browser and authenticator support the PRF extension.
  * This is critical for passkey-based password encryption.
@@ -110,12 +99,10 @@ function extractPRFResult(cred: unknown): ArrayBuffer {
 
   const result = credential.getClientExtensionResults();
 
-  console.log('PRF Extension Result:', result);
-
   if (!isPRFResultValid(result)) {
     throw new Error(
       'PRF extension is not supported by your authenticator. ' +
-        'This feature requires a compatible device with biometric authentication (Touch ID, Face ID, Windows Hello, etc.). ' +
+        'This feature requires a compatible device with biometric authentication (Touch ID, Face ID, etc.). ' +
         'Please try a different device or use password login instead.'
     );
   }
@@ -130,7 +117,7 @@ export async function setupAccountPasskey(password: string) {
   if (!prfSupported) {
     throw new Error(
       'Your device does not support passkey-based password encryption. ' +
-        'Please ensure you are using a compatible browser and have platform authentication (Touch ID, Face ID, or Windows Hello) enabled.'
+        'Please ensure you are using a compatible browser and have platform authentication (Touch ID) enabled.'
     );
   }
 
@@ -149,7 +136,10 @@ export async function setupAccountPasskey(password: string) {
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
         challenge: getRandomUint8Array(32),
         // Use platform authenticator (Apple Keychain on macOS, Windows Hello on Windows, etc.)
-        ...getAuthenticatorSelection(),
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform' as AuthenticatorAttachment,
+          userVerification: 'required' as UserVerificationRequirement,
+        },
         extensions: {
           prf: {
             eval: {
@@ -183,7 +173,6 @@ export async function setupAccountPasskey(password: string) {
     throw new Error('Failed to get passkey ID from credential');
   }
 
-  console.log('credential created:', cred);
   // Use the safe PRF extraction with proper type guards
   const prf = extractPRFResult(cred);
 

@@ -22,11 +22,12 @@ import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ToggleSettingLine } from '../Settings/ToggleSettingsLine';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
-import { setupAccountPasskey, getPasskeyTitle } from './passkey';
+import { setupAccountPasskey, getPasskeyTitle, isMacOS } from './passkey';
 
 function TouchIdSettings() {
   const toastRef = useRef<PopoverToastHandle>(null);
@@ -60,7 +61,12 @@ function TouchIdSettings() {
     useErrorBoundary: true,
     suspense: false,
   });
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const enablePasskeyDialogRef = useRef<HTMLDialogElementInterface | null>(
+    null
+  );
+  const disablePasskeyDialogRef = useRef<HTMLDialogElementInterface | null>(
+    null
+  );
 
   const userQuery = useQuery({
     queryKey: ['account/getExistingUser'],
@@ -71,9 +77,9 @@ function TouchIdSettings() {
   });
 
   const handleSetupClick = useCallback(() => {
-    invariant(dialogRef.current, 'Dialog element must be mounted');
+    invariant(enablePasskeyDialogRef.current, 'Dialog element must be mounted');
     setUserValue(true);
-    showConfirmDialog(dialogRef.current)
+    showConfirmDialog(enablePasskeyDialogRef.current)
       .then(() => setUserValue(true))
       .catch(() => setUserValue(false));
   }, []);
@@ -90,11 +96,11 @@ function TouchIdSettings() {
     onSuccess: () => {
       zeroizeAfterSubmission();
       toastRef.current?.showToast();
-      if (!dialogRef.current) {
+      if (!enablePasskeyDialogRef.current) {
         return;
       }
-      dialogRef.current.returnValue = 'confirm';
-      dialogRef.current.close();
+      enablePasskeyDialogRef.current.returnValue = 'confirm';
+      enablePasskeyDialogRef.current.close();
     },
   });
 
@@ -119,21 +125,51 @@ function TouchIdSettings() {
 
   return (
     <>
-      <ToggleSettingLine
-        text={`Unlock with ${passkeyTitle}`}
-        checked={checked}
-        disabled={disabled}
-        onChange={(event) => {
-          if (event.target.checked) {
-            handleSetupClick();
-          } else {
-            removeTouchIdMutation.mutate();
-          }
-        }}
-        detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
-      />
+      {/* Currently, Windos Hello doesn't support PRF extension for passkeys */}
+      {/* TODO: Research other passkey providers and enable them */}
+      {isMacOS() ? (
+        <ToggleSettingLine
+          text={`Unlock with ${passkeyTitle}`}
+          checked={checked}
+          disabled={disabled}
+          onChange={(event) => {
+            if (event.target.checked) {
+              handleSetupClick();
+            } else {
+              if (!disablePasskeyDialogRef.current) {
+                return;
+              }
+              showConfirmDialog(disablePasskeyDialogRef.current).then(() => {
+                removeTouchIdMutation.mutate();
+              });
+            }
+          }}
+          detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
+        />
+      ) : null}
+      <BottomSheetDialog ref={disablePasskeyDialogRef} height="fit-content">
+        <VStack gap={8}>
+          <form method="dialog">
+            <UIText kind="headline/h3">Turn Off {passkeyTitle} Unlock?</UIText>
+            <Spacer height={8} />
+            <UIText kind="body/regular">
+              You will be able to log in only with your password. You can turn
+              this back on at any time.
+            </UIText>
+            <Spacer height={16} />
+            <Button kind="danger" value="confirm" style={{ width: '100%' }}>
+              Turn Off {passkeyTitle}
+            </Button>
+          </form>
+          <form method="dialog">
+            <Button kind="regular" value="cancel" style={{ width: '100%' }}>
+              Back
+            </Button>
+          </form>
+        </VStack>
+      </BottomSheetDialog>
       <BottomSheetDialog
-        ref={dialogRef}
+        ref={enablePasskeyDialogRef}
         height="fit-content"
         renderWhenOpen={() => {
           return (
