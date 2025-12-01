@@ -26,7 +26,6 @@ import {
   defaultAnimateLayoutChanges,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -96,7 +95,7 @@ function WalletListEditItem({
   wallet,
   groupId,
 }: {
-  wallet: ExternallyOwnedAccount;
+  wallet: AnyWallet;
   groupId: string;
 }) {
   const { currency } = useCurrency();
@@ -203,7 +202,7 @@ function DraggableWalletItem({
   groupId,
 }: {
   walletId: string;
-  wallet: ExternallyOwnedAccount;
+  wallet: AnyWallet;
   groupId: string;
 }) {
   const {

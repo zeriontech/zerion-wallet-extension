@@ -129,11 +129,10 @@ export function WalletSelect() {
   useBackgroundKind(whiteBackgroundKind);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [params] = useSearchParams();
 
-  const ecosystem = params.get('ecosystem') as BlockchainType;
   const { preferences, setPreferences } = usePreferences();
   const [searchParams, setSearchParams] = useSearchParams();
+  const ecosystem = searchParams.get('ecosystem') as BlockchainType;
   const editMode = searchParams.get('edit') === 'true';
   const setEditMode = useCallback(
     (value: boolean) => {

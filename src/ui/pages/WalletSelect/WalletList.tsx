@@ -302,7 +302,10 @@ export function WalletList({
           </UIText>
           <VStack gap={0}>
             {group.walletIds.map((walletId) => {
-              const { group, wallet } = walletMap.get(walletId)!;
+              const { group, wallet } = walletMap.get(walletId) || {};
+              if (!wallet || !group) {
+                return null;
+              }
               const key = getWalletId({
                 address: wallet.address,
                 groupId: group.id,

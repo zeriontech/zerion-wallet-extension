@@ -83,7 +83,13 @@ export function getFullWalletList({
       const targetWalletGroup = isReadonly
         ? WATCHLIST_WALLET_LIST_GROUP_ID
         : DEFAULT_WALLET_LIST_GROUP_ID;
-      result.find((g) => g.id === targetWalletGroup)?.walletIds.push(walletId);
+      const targetGroup = result.find((g) => g.id === targetWalletGroup);
+      if (!targetGroup) {
+        throw new Error(
+          `Wallet group with id "${targetWalletGroup}" not found in result. Cannot add wallet with id "${walletId}".`
+        );
+      }
+      targetGroup.walletIds.push(walletId);
     }
   }
 
