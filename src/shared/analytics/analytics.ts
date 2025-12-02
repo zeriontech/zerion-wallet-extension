@@ -25,7 +25,9 @@ type MetabaseEvent =
   | 'cloudflare_challenge_issued'
   | 'button_clicked'
   | 'banner_clicked'
-  | 'asset_clicked';
+  | 'asset_clicked'
+  | 'passkey_login_enabled'
+  | 'passkey_login_disabled';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

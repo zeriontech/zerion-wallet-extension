@@ -19,7 +19,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
-import { accountPublicRPCPort } from 'src/ui/shared/channels';
+import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -94,6 +94,7 @@ function TouchIdSettings() {
       return setupAccountPasskey(password);
     },
     onSuccess: () => {
+      walletPort.request('passkeyLoginEnabled');
       zeroizeAfterSubmission();
       toastRef.current?.showToast();
       if (!enablePasskeyDialogRef.current) {
@@ -108,6 +109,9 @@ function TouchIdSettings() {
     mutationFn: async () => {
       await accountPublicRPCPort.request('removePasskey');
       setUserValue(false);
+    },
+    onSuccess: () => {
+      walletPort.request('passkeyLoginDisabled');
     },
   });
 

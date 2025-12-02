@@ -1776,6 +1776,16 @@ export class Wallet {
     emitter.emit('cloudflareChallengeIssued');
   }
 
+  async passkeyLoginEnabled({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('passkeyLoginEnabled');
+  }
+
+  async passkeyLoginDisabled({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('passkeyLoginDisabled');
+  }
+
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
     // NOTE: maybe consider adding a more generic method, e.g.:
     // walletPort.request('sendEvent', { event_name, params }).

@@ -101,4 +101,6 @@ export const emitter = createNanoEvents<{
   bannerClicked: (data: BannerClickedParams) => void;
   cloudflareChallengeIssued: () => void;
   assetClicked: (data: AssetClickedParams) => void;
+  passkeyLoginEnabled: () => void;
+  passkeyLoginDisabled: () => void;
 }>();

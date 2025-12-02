@@ -826,6 +826,22 @@ function trackAppEvents({ account }: { account: Account }) {
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack('General: Cloudflare Challenge Issued', mixpanelParams);
   });
+
+  emitter.on('passkeyLoginEnabled', () => {
+    const params = createParams({
+      request_name: 'passkey_login_enabled',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Passkey Login Enabled', mixpanelParams);
+  });
+
+  emitter.on('passkeyLoginDisabled', () => {
+    const params = createParams({
+      request_name: 'passkey_login_disabled',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Passkey Login Disabled', mixpanelParams);
+  });
 }
 
 export function initialize({ account }: { account: Account }) {
