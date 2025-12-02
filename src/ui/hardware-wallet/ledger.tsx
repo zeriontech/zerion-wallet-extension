@@ -56,7 +56,7 @@ function ConnectDeviceFlow({
         handleRequest={(request) => controller.request(request)}
         onImport={(accounts) => {
           // @ts-ignore
-          const device = ledger.appEth.transport.device as USBDevice;
+          const device = ledger.device as USBDevice;
           const importData: LedgerAccountImport = {
             accounts,
             device: {

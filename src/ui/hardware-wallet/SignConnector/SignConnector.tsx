@@ -28,10 +28,10 @@ export class DeviceController {
   }>();
 
   static async signTransaction(params: unknown) {
-    await checkDevice();
+    const { appEth } = await checkDevice();
     assertSignTransactionParams(params);
     // @ts-ignore params.transaction is object
-    return signTransaction(params.derivationPath, params.transaction);
+    return signTransaction(params.derivationPath, params.transaction, appEth);
   }
 
   static async personalSign(params: unknown) {
