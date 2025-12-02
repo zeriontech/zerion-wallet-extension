@@ -19,11 +19,12 @@ import type { DeviceConnection } from '../types';
 import { ConnectIllustration } from './ConnectIllustration';
 
 async function safelyConnectDevice() {
-  try {
-    return await checkDevice();
-  } catch (e) {
+  const result = await checkDevice().catch(() => {
+    console.log('Connecting to Ledger device...');
     return connectDevice();
-  }
+  });
+  console.log('Ledger device connected:', result);
+  return result;
 }
 
 function CheckListItem({
@@ -60,8 +61,13 @@ export function ConnectLedgerDevice({
     isError,
     error: maybeError,
   } = useMutation({
-    mutationFn: () => safelyConnectDevice(),
+    mutationFn: async () => {
+      const result = await safelyConnectDevice();
+      console.log('Connected to Ledger device:', result);
+      return result;
+    },
     onSuccess: (data) => {
+      console.log('successfully connected to Ledger device', data);
       onConnect(data);
     },
   });
