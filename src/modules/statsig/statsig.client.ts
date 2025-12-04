@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { getStatsigExperiment, getStatsigFeatureGate } from './shared';
 
+export const ONRAMP_EXPERIMENT_NAME = 'web-onramp_flow';
+
 export function useStatsigExperiment(
   name: string,
   {
