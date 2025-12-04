@@ -165,7 +165,7 @@ export function ActionButtonsRow() {
     />
   );
   return (
-    <div className={s.containerRoot}>
+    <div>
       <AddFundsOptionsDialog
         dialogRef={fundOptionsDialogRef}
         wallet={wallet}
