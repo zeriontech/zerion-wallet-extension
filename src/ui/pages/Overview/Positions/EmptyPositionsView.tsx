@@ -97,7 +97,7 @@ export function EmptyPositionsView() {
   if (isLoading) {
     return null;
   }
-  if (data?.group_name === 'test') {
+  if (data?.group_name?.toLowerCase() === 'test') {
     return <EmptyPositionsViewNew />;
   } else {
     return <EmptyPositionsViewLegacy />;

@@ -179,7 +179,7 @@ export function ActionButtonsRow() {
           listStyle: 'none',
         }}
       >
-        {statsigExperimentQuery.data?.group_name == 'test' ? (
+        {statsigExperimentQuery.data?.group_name?.toLowerCase() === 'test' ? (
           <>
             <li>{fundButton}</li>
             <li>{sendButton}</li>
