@@ -1,6 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { getAddresses } from '@zeriontech/hardware-wallet-connection';
+import {
+  getAddressesEth,
+  getAddressesSolana,
+} from '@zeriontech/hardware-wallet-connection';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import {
   SegmentedControlGroup,
@@ -25,9 +28,13 @@ import { NBSP } from 'src/ui/shared/typography';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { opaqueType } from 'src/shared/type-utils/Opaque';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
+import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import type { DeviceConnection } from '../types';
 
 type ControllerRequest = Omit<RpcRequest, 'id'>;
+type CurveValue = 'ecdsa' | 'ed25519';
 
 // We don't have access to preference-store inside iframe and can't use useCurrency hook
 function getIframeCurrency() {
@@ -105,34 +112,49 @@ function WalletMediaData({
 
 function AddressSelectList({
   ledger,
+  curve,
   pathType,
   onImport,
   existingAddressesSet,
   handleRequest,
 }: {
   pathType: DerivationPathType;
+  curve: CurveValue;
   ledger: DeviceConnection;
   existingAddressesSet: Set<string>;
   onImport: (values: DeviceAccount[]) => void;
   handleRequest: (request: ControllerRequest) => Promise<unknown>;
 }) {
-  const { appEth } = ledger;
+  const { sessionId } = ledger;
   const COUNT = 5;
-  const { data, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ['ledger/addresses', COUNT, pathType, appEth],
-    queryKeyHashFn: (queryKey) => queryKey.filter((x) => x !== appEth).join(''),
-    queryFn: async ({ pageParam = 0 }) => {
-      return getAddresses(appEth, {
-        type: pathType as 'ledger' | 'ledgerLive',
-        from: pageParam,
-        count: COUNT,
-      });
-    },
-    getNextPageParam: (_lastPage, allPages) => {
-      return allPages.reduce((sum, items) => sum + items.length, 0);
-    },
-    staleTime: Infinity, // addresses found on ledger will not change
-  });
+  const { data, fetchNextPage, isFetchingNextPage, refetch, ...query } =
+    useInfiniteQuery({
+      queryKey: ['ledger/addresses', COUNT, pathType, sessionId, curve],
+      // queryKeyHashFn: (queryKey) =>
+      //   queryKey.filter((x) => x !== appEth && x !== appSol).join(''),
+      queryFn: async ({ pageParam = 0 }) => {
+        console.log('Fetching addresses');
+        return curve === 'ecdsa'
+          ? getAddressesEth(sessionId, {
+              type: pathType,
+              from: pageParam,
+              count: COUNT,
+            })
+          : getAddressesSolana(sessionId, {
+              type: pathType,
+              from: pageParam,
+              count: COUNT,
+            });
+      },
+      getNextPageParam: (_lastPage, allPages) => {
+        return allPages.reduce((sum, items) => sum + items.length, 0);
+      },
+      retry: 1,
+      refetchOnWindowFocus: true,
+      staleTime: Infinity, // addresses found on ledger will not change
+      useErrorBoundary: false,
+    });
+
   const itemsByAddress = useMemo(
     () =>
       new Map(
@@ -154,9 +176,11 @@ function AddressSelectList({
       }
     });
   }, []);
+
   if (!data) {
     return null;
   }
+
   const wallets = data.pages.flatMap((items) =>
     items.map((item) => ({
       address: item.account.address,
@@ -251,6 +275,8 @@ export function ImportLedgerAddresses({
   handleRequest: (request: ControllerRequest) => Promise<unknown>;
 }) {
   const [pathType, setPathType] = useState<DerivationPathType>('ledgerLive');
+  const [curve, setCurve] = useState<CurveValue>('ecdsa');
+
   return (
     <PageColumn
       style={{ height: '100%', position: 'relative' }}
@@ -268,41 +294,116 @@ export function ImportLedgerAddresses({
         <UIText kind="headline/hero">Select Wallets</UIText>
         <Spacer height={24} />
       </PageFullBleedColumn>
-      <SegmentedControlGroup style={{ paddingTop: 4 }}>
-        <SegmentedControlRadio
-          name="pathType"
-          value="ledgerLive"
-          checked={pathType === 'ledgerLive'}
-          onChange={(event) =>
-            setPathType(event.currentTarget.value as DerivationPathType)
-          }
-        >
-          Ledger Live
-        </SegmentedControlRadio>
-        <SegmentedControlRadio
-          name="pathType"
-          value="bip44"
-          checked={pathType === 'bip44'}
-          onChange={(event) =>
-            setPathType(event.currentTarget.value as DerivationPathType)
-          }
-        >
-          BIP44
-        </SegmentedControlRadio>
-        <SegmentedControlRadio
-          name="pathType"
-          value="ledger"
-          checked={pathType === 'ledger'}
-          onChange={(event) =>
-            setPathType(event.currentTarget.value as DerivationPathType)
-          }
-        >
-          Legacy
-        </SegmentedControlRadio>
-      </SegmentedControlGroup>
+      <div
+        style={{
+          placeSelf: 'center',
+          gridColumnStart: 2,
+          display: 'flex',
+          gap: 12,
+        }}
+      >
+        <SegmentedControlGroup kind="secondary">
+          <SegmentedControlRadio
+            name="curve"
+            value="ecdsa"
+            checked={curve === 'ecdsa'}
+            onChange={(event) => {
+              setCurve(event.currentTarget.value as CurveValue);
+              setPathType('ledgerLive');
+            }}
+          >
+            <HStack gap={8} alignItems="center">
+              <EcosystemEthereumIcon />
+              <span>EVM</span>
+            </HStack>
+          </SegmentedControlRadio>
+          <SegmentedControlRadio
+            name="curve"
+            value="ed25519"
+            checked={curve === 'ed25519'}
+            onChange={(event) => {
+              setCurve(event.currentTarget.value as CurveValue);
+              setPathType('solanaBip44Change');
+            }}
+          >
+            <HStack gap={8} alignItems="center">
+              <EcosystemSolanaIcon />
+              <span>Solana</span>
+            </HStack>
+          </SegmentedControlRadio>
+        </SegmentedControlGroup>
+      </div>
+      {curve === 'ecdsa' ? (
+        <SegmentedControlGroup style={{ paddingTop: 4 }}>
+          <SegmentedControlRadio
+            name="pathType"
+            value="ledgerLive"
+            checked={pathType === 'ledgerLive'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            Ledger Live
+          </SegmentedControlRadio>
+          <SegmentedControlRadio
+            name="pathType"
+            value="bip44"
+            checked={pathType === 'bip44'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            BIP44
+          </SegmentedControlRadio>
+          <SegmentedControlRadio
+            name="pathType"
+            value="ledger"
+            checked={pathType === 'ledger'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            Legacy
+          </SegmentedControlRadio>
+        </SegmentedControlGroup>
+      ) : (
+        <SegmentedControlGroup style={{ paddingTop: 4 }}>
+          <SegmentedControlRadio
+            name="pathType"
+            value="solanaBip44Change"
+            checked={pathType === 'solanaBip44Change'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            Bip44 Change
+          </SegmentedControlRadio>
+          <SegmentedControlRadio
+            name="pathType"
+            value="solanaBip44"
+            checked={pathType === 'solanaBip44'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            BIP44
+          </SegmentedControlRadio>
+          <SegmentedControlRadio
+            name="pathType"
+            value="solanaDeprecated"
+            checked={pathType === 'solanaDeprecated'}
+            onChange={(event) =>
+              setPathType(event.currentTarget.value as DerivationPathType)
+            }
+          >
+            Legacy
+          </SegmentedControlRadio>
+        </SegmentedControlGroup>
+      )}
       <Spacer height={24} />
       <AddressSelectList
         key={pathType}
+        curve={curve}
         ledger={ledger}
         pathType={pathType}
         onImport={onImport}

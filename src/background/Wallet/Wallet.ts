@@ -1471,6 +1471,41 @@ export class Wallet {
     return result;
   }
 
+  async solana_sendTransaction({
+    params,
+    context,
+  }: WalletMethodParams<{
+    signed: StringBase64;
+    publicKey: string;
+    params: TransactionContextParams;
+  }>): Promise<SolSignTransactionResult> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    this.ensureRecord(this.record);
+    const { signed, publicKey } = params;
+    const { mode } = await this.assertNetworkMode({
+      id: createChain('solana'),
+    }); // MUST assert even if result is not used
+    const networksStore = getNetworksStore(Model.getPreferences(this.record));
+    const network = await networksStore.fetchNetworkById('solana');
+    const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
+    const connection = new Connection(rpcUrl, 'confirmed');
+
+    const transaction = solFromBase64(signed);
+
+    const signature = await connection.sendRawTransaction(
+      transaction.serialize()
+    );
+    const result = { signature, publicKey, tx: solToBase64(transaction) };
+    emitter.emit(
+      'transactionSent',
+      { solana: result },
+      { mode, ...params.params }
+    );
+    // TODO: process Solana Txs errors and emit 'transactionFailed' event
+    return result;
+  }
+
   async solana_signMessageWithAddress({
     params: { signerAddress, messageHex, ...messageContextParams },
     context,

@@ -92,8 +92,25 @@ export const SignTransactionButton = React.forwardRef(
         } else {
           // solana
           if (isDeviceAccount(wallet)) {
-            throw new Error('TODO: Support hardware signing for Solana');
+            invariant(
+              hardwareSignRef.current,
+              'HardwareSignTransaction must be mounted'
+            );
+            const signedTx =
+              await hardwareSignRef.current.solana_signTransaction({
+                transaction: transaction.solana,
+                address: wallet.address,
+                ...txContext,
+              });
+            console.log('Signed TX from HW', signedTx);
+            const result = await walletPort.request('solana_sendTransaction', {
+              signed: signedTx as StringBase64,
+              publicKey: wallet.address,
+              params: txContext,
+            });
+            return { solana: result };
           }
+
           const methodMap = {
             default: 'solana_signAndSendTransaction',
             signAndSendTransaction: 'solana_signAndSendTransaction',
@@ -106,7 +123,7 @@ export const SignTransactionButton = React.forwardRef(
           const methodName = txContext.method
             ? methodMap[txContext.method]
             : methodMap.default;
-
+          console.log('tx', transaction.solana);
           const result = await walletPort.request(methodName, {
             transaction: transaction.solana,
             params: txContext,
