@@ -23,6 +23,7 @@ import {
   serializePaymasterTx,
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
 import omit from 'lodash/omit';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
 async function signRegularOrPaymasterTx({
@@ -80,10 +81,36 @@ async function signRegularOrPaymasterTx({
   }
 }
 
+async function signSolanaTransaction({
+  messageHandler,
+  transaction,
+  derivationPath,
+  contentWindow,
+}: {
+  messageHandler: typeof hardwareMessageHandler;
+  transaction: StringBase64;
+  derivationPath: string;
+  contentWindow: Window;
+}): Promise<StringBase64> {
+  return await messageHandler.request<StringBase64>(
+    {
+      id: nanoid(),
+      method: 'solana_signTransaction',
+      params: { derivationPath, transaction },
+    },
+    contentWindow
+  );
+}
+
 interface SignTransactionParams {
   transaction: IncomingTransaction;
   address: string;
   chain: Chain;
+}
+
+interface SolanaSignTransactionParams {
+  transaction: StringBase64; // base64
+  address: string;
 }
 
 export interface SignTransactionHandle {
@@ -92,6 +119,10 @@ export interface SignTransactionHandle {
     address,
     chain,
   }: SignTransactionParams) => Promise<string>;
+  solana_signTransaction: ({
+    transaction,
+    address,
+  }: SolanaSignTransactionParams) => Promise<string>;
 }
 
 async function prepareForSignByLedger({
@@ -188,7 +219,47 @@ export const HardwareSignTransaction = React.forwardRef(
       },
     });
 
-    useImperativeHandle(ref, () => ({ signTransaction }));
+    const { mutateAsync: solana_signTransaction, ...signSolanaMutation } =
+      useMutation({
+        mutationFn: async ({
+          transaction,
+        }: SolanaSignTransactionParams): Promise<string> => {
+          invariant(iframeRef.current, 'Ledger iframe not found');
+          invariant(
+            iframeRef.current.contentWindow,
+            'Iframe contentWindow is not available'
+          );
+          try {
+            const result = await signSolanaTransaction({
+              transaction,
+              messageHandler: hardwareMessageHandler,
+              derivationPath,
+              contentWindow: iframeRef.current.contentWindow,
+            });
+            return result;
+          } catch (error) {
+            const normalizedError = getError(error);
+            if (normalizedError.message === 'ConnectError') {
+              navigate(
+                `/connect-hardware-wallet?${new URLSearchParams({
+                  strategy: 'connect',
+                  next: `${location.pathname}${location.search}`,
+                  replaceAfterRedirect: 'true',
+                })}`
+              );
+              // NOTE: TODO: should we throw the same error here? Or return meaningless <string> to match fn signature?
+              throw normalizedError;
+            } else {
+              throw normalizedError;
+            }
+          }
+        },
+      });
+
+    useImperativeHandle(ref, () => ({
+      signTransaction,
+      solana_signTransaction,
+    }));
 
     return (
       <>
@@ -203,7 +274,7 @@ export const HardwareSignTransaction = React.forwardRef(
           tabIndex={-1}
           height={0}
         />
-        {signMutation.isLoading ? (
+        {signMutation.isLoading || signSolanaMutation.isLoading ? (
           <Button
             kind="loading-border"
             disabled={true}
@@ -214,7 +285,11 @@ export const HardwareSignTransaction = React.forwardRef(
         ) : (
           <Button
             kind={buttonKind}
-            disabled={signMutation.isLoading || isSending}
+            disabled={
+              signMutation.isLoading ||
+              signSolanaMutation.isLoading ||
+              isSending
+            }
             style={{
               paddingInline: 16, // fit longer button label
             }}

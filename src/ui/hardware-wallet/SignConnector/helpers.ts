@@ -1,6 +1,7 @@
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
 
 interface PersonalSignParams {
   derivationPath: string;
@@ -45,6 +46,22 @@ export function assertSignTransactionParams(
 ): asserts x is SignTransactionParams {
   invariant(
     isObj(x) && typeof x.derivationPath === 'string' && isObj(x.transaction),
+    'Invalid Payload'
+  );
+}
+
+interface SignSolanaTransactionParams {
+  derivationPath: string;
+  transaction: StringBase64;
+}
+
+export function assertSignSolanaTransactionParams(
+  x: unknown
+): asserts x is SignSolanaTransactionParams {
+  invariant(
+    isObj(x) &&
+      typeof x.derivationPath === 'string' &&
+      typeof x.transaction === 'string',
     'Invalid Payload'
   );
 }
