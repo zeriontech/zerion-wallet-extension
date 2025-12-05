@@ -1,7 +1,10 @@
+import type { TransportIdentifier } from '@zeriontech/hardware-wallet-connection';
 import {
   connectDevice,
   checkDevice,
   interpretError,
+  webBleIdentifier,
+  webHidIdentifier,
 } from '@zeriontech/hardware-wallet-connection';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
@@ -18,13 +21,15 @@ import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import type { DeviceConnection } from '../types';
 import { ConnectIllustration } from './ConnectIllustration';
 
-async function safelyConnectDevice() {
-  const result = await checkDevice().catch(() => {
-    console.log('Connecting to Ledger device...');
-    return connectDevice();
-  });
-  console.log('Ledger device connected:', result);
-  return result;
+async function safelyConnectDevice(transport: TransportIdentifier) {
+  // const result = await checkDevice({ transportIdentifier: transport }).catch(
+  //   () => {
+  //     console.log('Connecting to Ledger device...');
+  return connectDevice({ transportIdentifier: transport });
+  //   }
+  // );
+  // console.log('Ledger device connected:', result);
+  // return result;
 }
 
 function CheckListItem({
@@ -61,8 +66,8 @@ export function ConnectLedgerDevice({
     isError,
     error: maybeError,
   } = useMutation({
-    mutationFn: async () => {
-      const result = await safelyConnectDevice();
+    mutationFn: async (transport: TransportIdentifier) => {
+      const result = await safelyConnectDevice(transport);
       console.log('Connected to Ledger device:', result);
       return result;
     },
@@ -134,12 +139,24 @@ export function ConnectLedgerDevice({
         <Spacer height={24} />
         <Button
           kind="primary"
-          onClick={() => invokeConnectDevice()}
+          onClick={() => invokeConnectDevice(webHidIdentifier)}
           style={{ width: '100%' }}
           // disable on isSuccess to prevent flick of button before redirect
           disabled={isLoading || isSuccess}
         >
           {isLoading || isSuccess ? 'Looking for device...' : 'Connect'}
+        </Button>
+
+        <Button
+          kind="primary"
+          onClick={() => invokeConnectDevice(webBleIdentifier)}
+          style={{ width: '100%' }}
+          // disable on isSuccess to prevent flick of button before redirect
+          disabled={isLoading || isSuccess}
+        >
+          {isLoading || isSuccess
+            ? 'Looking for device...'
+            : 'Connect Bluetooth'}
         </Button>
         <Spacer height={24} />
       </div>
