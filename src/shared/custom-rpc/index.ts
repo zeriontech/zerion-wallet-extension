@@ -12,6 +12,7 @@ export interface RpcRequest<T = unknown> {
   id: string;
   method: string;
   params?: T;
+  transport?: string;
 }
 
 export interface RpcResult<T = unknown> {

@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
+import type {
+  TransportIdentifier} from '@zeriontech/hardware-wallet-connection';
 import {
   checkDevice,
   signTransaction,
   personalSign,
   signSolanaTransaction,
   signTypedData_v4,
+  connectDevice,
+  webBleIdentifier,
+  webHidIdentifier
 } from '@zeriontech/hardware-wallet-connection';
 import type { RpcRequest } from 'src/shared/custom-rpc';
 import {
@@ -26,6 +31,11 @@ import {
   uint8ArrayToBase64,
 } from 'src/modules/crypto';
 import { Transaction } from '@solana/web3.js';
+import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { Button } from 'src/ui/ui-kit/Button';
+import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
+import { useMutation } from '@tanstack/react-query';
 import { normalizeDeviceError } from '../shared/errors';
 import {
   assertPersonalSignParams,
@@ -36,14 +46,33 @@ import {
 // import { StringBase64 } from 'src/shared/types/StringBase64';
 // import { StringBase64 } from 'src/shared/types/StringBase64';
 
+async function checkConnection({
+  transport = webHidIdentifier,
+}: {
+  transport?: TransportIdentifier;
+}) {
+  return Promise.race([
+    rejectAfterDelay(1000, 'Device not connected').catch(() => false),
+    checkDevice({ transportIdentifier: transport })
+      .then(() => true)
+      .catch(() => false),
+  ]);
+}
+
 export class DeviceController {
   private emitter = createNanoEvents<{
     message: (msg: unknown) => void;
   }>();
 
+  private onNotConnected?: (
+    message: Omit<RpcRequest, 'id'> & { id?: string }
+  ) => void;
+
   static async signTransaction(params: unknown) {
-    const { sessionId } = await checkDevice();
     assertSignTransactionParams(params);
+    const { sessionId } = await checkDevice({
+      transportIdentifier: params.transport,
+    });
     // @ts-ignore params.transaction is object
     return signTransaction(
       params.derivationPath,
@@ -53,7 +82,9 @@ export class DeviceController {
   }
 
   static async solana_signTransaction(params: unknown) {
-    const { sessionId } = await checkDevice();
+    const { sessionId } = await checkDevice({
+      transportIdentifier: webHidIdentifier,
+    });
     assertSignSolanaTransactionParams(params);
     console.log('Signing transaction with params', params);
 
@@ -95,27 +126,43 @@ export class DeviceController {
   }
 
   static async personalSign(params: unknown) {
-    await checkDevice();
+    const { sessionId } = await checkDevice({
+      transportIdentifier: webHidIdentifier,
+    });
     assertPersonalSignParams(params);
-    return personalSign(params.derivationPath, params.message);
+    console.log('Signing message with params', params);
+    const message = toUtf8String(params.message);
+    return personalSign(params.derivationPath, message, sessionId);
   }
 
   static async signTypedData_v4(params: unknown) {
-    await checkDevice();
+    const { sessionId } = await checkDevice({
+      transportIdentifier: webHidIdentifier,
+    });
     assertSignTypedData_v4Params(params);
     // @ts-ignore params.typedData is object
-    return signTypedData_v4(params.derivationPath, params.typedData);
+    return signTypedData_v4(params.derivationPath, params.typedData, sessionId);
   }
 
   listener = async (event: MessageEvent) => {
     console.log('SignConnector received message', event.data);
     if (isRpcRequest(event.data)) {
-      const { id, method, params } = event.data;
+      const { id, method, params, transport } = event.data;
       if (
         isClassProperty(DeviceController, method) &&
         typeof DeviceController[method] === 'function'
       ) {
         try {
+          console.log(
+            `Invoking DeviceController.${method} with params`,
+            params
+          );
+          const isConnected = await checkConnection({ transport });
+          console.log('Device connection status:', isConnected);
+          if (!isConnected) {
+            this.onNotConnected?.(event.data);
+            return;
+          }
           // @ts-ignore Controller[method] should be callable here
           const result = await DeviceController[method](params);
           window.parent.postMessage({ id, result }, window.location.origin);
@@ -153,7 +200,14 @@ export class DeviceController {
     });
   }
 
-  listen() {
+  listen({
+    onNotConnected,
+  }: {
+    onNotConnected?: (
+      message: Omit<RpcRequest, 'id'> & { id?: string }
+    ) => void;
+  } = {}) {
+    this.onNotConnected = onNotConnected;
     window.addEventListener('message', this.listener);
     return () => {
       window.removeEventListener('message', this.listener);
@@ -162,9 +216,26 @@ export class DeviceController {
 }
 
 export function SignConnector() {
+  const [interruptedRequest, setInterruptedRequest] = useState<
+    (Omit<RpcRequest, 'id'> & { id?: string }) | null
+  >(null);
   const [controller] = useState(() => new DeviceController());
   useEffect(() => {
-    return controller.listen();
+    return controller.listen({
+      onNotConnected: setInterruptedRequest,
+    });
   }, [controller]);
-  return null;
+  const { mutate } = useMutation({
+    mutationFn: async (transport: TransportIdentifier) => {
+      await connectDevice({ transportIdentifier: transport });
+      window.postMessage({ ...interruptedRequest, transport });
+      setInterruptedRequest(null);
+    },
+  });
+  return interruptedRequest ? (
+    <VStack gap={4}>
+      <Button onClick={() => mutate(webHidIdentifier)}>Usb</Button>
+      <Button onClick={() => mutate(webBleIdentifier)}>Bluetooth</Button>
+    </VStack>
+  ) : null;
 }

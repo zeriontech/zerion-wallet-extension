@@ -267,12 +267,12 @@ export const HardwareSignTransaction = React.forwardRef(
           ref={iframeRef}
           initialRoute="/signConnector"
           style={{
-            position: 'absolute',
-            border: 'none',
+            // position: 'absolute',
+            // border: 'none',
             backgroundColor: 'transparent',
           }}
           tabIndex={-1}
-          height={0}
+          height={100}
         />
         {signMutation.isLoading || signSolanaMutation.isLoading ? (
           <Button
