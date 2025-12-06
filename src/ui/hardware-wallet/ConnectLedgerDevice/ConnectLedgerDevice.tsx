@@ -3,8 +3,7 @@ import {
   connectDevice,
   checkDevice,
   interpretError,
-  webBleIdentifier,
-  webHidIdentifier,
+  transports,
 } from '@zeriontech/hardware-wallet-connection';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
@@ -139,7 +138,7 @@ export function ConnectLedgerDevice({
         <Spacer height={24} />
         <Button
           kind="primary"
-          onClick={() => invokeConnectDevice(webHidIdentifier)}
+          onClick={() => invokeConnectDevice(transports.hid)}
           style={{ width: '100%' }}
           // disable on isSuccess to prevent flick of button before redirect
           disabled={isLoading || isSuccess}
@@ -149,7 +148,7 @@ export function ConnectLedgerDevice({
 
         <Button
           kind="primary"
-          onClick={() => invokeConnectDevice(webBleIdentifier)}
+          onClick={() => invokeConnectDevice(transports.bluetooth)}
           style={{ width: '100%' }}
           // disable on isSuccess to prevent flick of button before redirect
           disabled={isLoading || isSuccess}

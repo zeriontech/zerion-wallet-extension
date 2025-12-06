@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
-import type {
-  TransportIdentifier} from '@zeriontech/hardware-wallet-connection';
+import type { TransportIdentifier } from '@zeriontech/hardware-wallet-connection';
 import {
   checkDevice,
   signTransaction,
@@ -9,8 +8,8 @@ import {
   signSolanaTransaction,
   signTypedData_v4,
   connectDevice,
-  webBleIdentifier,
-  webHidIdentifier
+  transports,
+  getAddressesEth,
 } from '@zeriontech/hardware-wallet-connection';
 import type { RpcRequest } from 'src/shared/custom-rpc';
 import {
@@ -25,11 +24,7 @@ import {
   solFromBase64,
   solToBase64,
 } from 'src/modules/solana/transactions/create';
-import {
-  base64ToArrayBuffer,
-  base64ToUint8Array,
-  uint8ArrayToBase64,
-} from 'src/modules/crypto';
+import { base64ToArrayBuffer, uint8ArrayToBase64 } from 'src/modules/crypto';
 import { Transaction } from '@solana/web3.js';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -43,18 +38,16 @@ import {
   assertSignTransactionParams,
   assertSignTypedData_v4Params,
 } from './helpers';
-// import { StringBase64 } from 'src/shared/types/StringBase64';
-// import { StringBase64 } from 'src/shared/types/StringBase64';
 
-async function checkConnection({
-  transport = webHidIdentifier,
+async function getConnectedSessionId({
+  transport = transports.hid,
 }: {
   transport?: TransportIdentifier;
 }) {
   return Promise.race([
     rejectAfterDelay(1000, 'Device not connected').catch(() => false),
     checkDevice({ transportIdentifier: transport })
-      .then(() => true)
+      .then(({ sessionId }) => sessionId)
       .catch(() => false),
   ]);
 }
@@ -68,86 +61,87 @@ export class DeviceController {
     message: Omit<RpcRequest, 'id'> & { id?: string }
   ) => void;
 
-  static async signTransaction(params: unknown) {
+  static signTransaction = (params: unknown) => async (sessionId: string) => {
     assertSignTransactionParams(params);
-    const { sessionId } = await checkDevice({
-      transportIdentifier: params.transport,
-    });
-    // @ts-ignore params.transaction is object
+    // return getAddressesEth(sessionId, {
+    //   type: 'ledgerLive',
+    //   from: 0,
+    //   count: 2,
+    // });
+    // console.log('Signing transaction with params', params);
+    // await wait(100);
+    // console.log('Proceeding to sign transaction...');
     return signTransaction(
       params.derivationPath,
       params.transaction,
       sessionId
     );
-  }
+  };
 
-  static async solana_signTransaction(params: unknown) {
-    const { sessionId } = await checkDevice({
-      transportIdentifier: webHidIdentifier,
-    });
-    assertSignSolanaTransactionParams(params);
-    console.log('Signing transaction with params', params);
+  static solana_signTransaction =
+    (params: unknown) => async (sessionId: string) => {
+      assertSignSolanaTransactionParams(params);
+      console.log('Signing transaction with params', params);
 
-    // Deserialize, remove signatures, and serialize back to base64
-    const transaction = solFromBase64(params.transaction);
+      // Deserialize, remove signatures, and serialize back to base64
+      const transaction = solFromBase64(params.transaction);
 
-    const cleanedTransaction =
-      transaction instanceof Transaction
-        ? uint8ArrayToBase64(transaction.serializeMessage())
-        : uint8ArrayToBase64(transaction.message.serialize());
+      const cleanedTransaction =
+        transaction instanceof Transaction
+          ? uint8ArrayToBase64(transaction.serializeMessage())
+          : uint8ArrayToBase64(transaction.message.serialize());
 
-    console.log('Original transaction:', params.transaction);
-    console.log('Cleaned transaction:', cleanedTransaction);
-    console.log({ transaction });
+      console.log('Original transaction:', params.transaction);
+      console.log('Cleaned transaction:', cleanedTransaction);
+      console.log({ transaction });
 
-    // @ts-ignore params.transaction is object
-    const { signature } = await signSolanaTransaction(
-      params.derivationPath,
-      cleanedTransaction,
-      sessionId
-    );
+      // @ts-ignore params.transaction is object
+      const { signature } = await signSolanaTransaction(
+        params.derivationPath,
+        cleanedTransaction,
+        sessionId
+      );
 
-    if (transaction instanceof Transaction) {
-      transaction.signatures = [
-        {
-          publicKey: transaction.feePayer!,
-          signature,
-        },
-      ];
-    } else {
-      transaction.signatures[0] = signature;
-    }
+      if (transaction instanceof Transaction) {
+        transaction.signatures = [
+          {
+            publicKey: transaction.feePayer!,
+            signature,
+          },
+        ];
+      } else {
+        transaction.signatures[0] = signature;
+      }
 
-    console.log({ transaction });
-    const base64Transaction = solToBase64(transaction);
-    console.log('Signed transaction base64:', base64Transaction);
+      console.log({ transaction });
+      const base64Transaction = solToBase64(transaction);
+      console.log('Signed transaction base64:', base64Transaction);
 
-    return base64Transaction;
-  }
+      return base64Transaction;
+    };
 
-  static async personalSign(params: unknown) {
-    const { sessionId } = await checkDevice({
-      transportIdentifier: webHidIdentifier,
-    });
+  static personalSign = (params: unknown) => async (sessionId: string) => {
     assertPersonalSignParams(params);
     console.log('Signing message with params', params);
     const message = toUtf8String(params.message);
     return personalSign(params.derivationPath, message, sessionId);
-  }
+  };
 
-  static async signTypedData_v4(params: unknown) {
-    const { sessionId } = await checkDevice({
-      transportIdentifier: webHidIdentifier,
-    });
+  static signTypedData_v4 = (params: unknown) => async (sessionId: string) => {
     assertSignTypedData_v4Params(params);
     // @ts-ignore params.typedData is object
     return signTypedData_v4(params.derivationPath, params.typedData, sessionId);
-  }
+  };
 
   listener = async (event: MessageEvent) => {
     console.log('SignConnector received message', event.data);
     if (isRpcRequest(event.data)) {
-      const { id, method, params, transport } = event.data;
+      const transport =
+        'transport' in event.data
+          ? (event.data.transport as TransportIdentifier)
+          : transports.hid;
+      let sessionId = 'sessionId' in event.data ? event.data.sessionId : '';
+      const { id, method, params } = event.data;
       if (
         isClassProperty(DeviceController, method) &&
         typeof DeviceController[method] === 'function'
@@ -157,14 +151,16 @@ export class DeviceController {
             `Invoking DeviceController.${method} with params`,
             params
           );
-          const isConnected = await checkConnection({ transport });
-          console.log('Device connection status:', isConnected);
-          if (!isConnected) {
+          if (!sessionId) {
+            sessionId = await getConnectedSessionId({ transport });
+          }
+          console.log('Device connection status:', sessionId);
+          if (!sessionId) {
             this.onNotConnected?.(event.data);
             return;
           }
           // @ts-ignore Controller[method] should be callable here
-          const result = await DeviceController[method](params);
+          const result = await DeviceController[method](params)(sessionId);
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
           window.parent.postMessage(
@@ -227,15 +223,19 @@ export function SignConnector() {
   }, [controller]);
   const { mutate } = useMutation({
     mutationFn: async (transport: TransportIdentifier) => {
-      await connectDevice({ transportIdentifier: transport });
-      window.postMessage({ ...interruptedRequest, transport });
+      const { sessionId } = await connectDevice({
+        transportIdentifier: transport,
+      });
+      window.postMessage({ ...interruptedRequest, transport, sessionId });
       setInterruptedRequest(null);
     },
   });
   return interruptedRequest ? (
     <VStack gap={4}>
-      <Button onClick={() => mutate(webHidIdentifier)}>Usb</Button>
-      <Button onClick={() => mutate(webBleIdentifier)}>Bluetooth</Button>
+      <Button onClick={() => mutate(transports.hid)}>Usb</Button>
+      <Button onClick={() => mutate(transports.bluetooth)}>Bluetooth</Button>
     </VStack>
-  ) : null;
+  ) : (
+    <div>Hello</div>
+  );
 }

@@ -1,3 +1,4 @@
+import type { TransportIdentifier } from '@zeriontech/hardware-wallet-connection';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
@@ -39,6 +40,7 @@ export function assertSignTypedData_v4Params(
 interface SignTransactionParams {
   derivationPath: string;
   transaction: object;
+  transport: TransportIdentifier;
 }
 
 export function assertSignTransactionParams(
