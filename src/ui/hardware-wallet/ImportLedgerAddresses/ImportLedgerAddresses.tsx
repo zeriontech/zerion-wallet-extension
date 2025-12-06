@@ -31,6 +31,7 @@ import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
+import { wait } from 'src/shared/wait';
 import type { DeviceConnection } from '../types';
 
 type ControllerRequest = Omit<RpcRequest, 'id'>;
@@ -133,6 +134,7 @@ function AddressSelectList({
       // queryKeyHashFn: (queryKey) =>
       //   queryKey.filter((x) => x !== appEth && x !== appSol).join(''),
       queryFn: async ({ pageParam = 0 }) => {
+        // await wait(100);
         console.log('Fetching addresses');
         return curve === 'ecdsa'
           ? getAddressesEth(sessionId, {
@@ -149,8 +151,7 @@ function AddressSelectList({
       getNextPageParam: (_lastPage, allPages) => {
         return allPages.reduce((sum, items) => sum + items.length, 0);
       },
-      retry: 1,
-      refetchOnWindowFocus: true,
+      retry: 0,
       staleTime: Infinity, // addresses found on ledger will not change
       useErrorBoundary: false,
     });
