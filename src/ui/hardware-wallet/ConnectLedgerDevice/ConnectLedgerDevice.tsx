@@ -1,8 +1,6 @@
 import type { TransportIdentifier } from '@zeriontech/hardware-wallet-connection';
 import {
   connectDevice,
-  checkDevice,
-  interpretError,
   transports,
 } from '@zeriontech/hardware-wallet-connection';
 import { useMutation } from '@tanstack/react-query';
@@ -17,19 +15,9 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { DeviceConnection } from '../types';
 import { ConnectIllustration } from './ConnectIllustration';
-
-async function safelyConnectDevice(transport: TransportIdentifier) {
-  // const result = await checkDevice({ transportIdentifier: transport }).catch(
-  //   () => {
-  //     console.log('Connecting to Ledger device...');
-  return connectDevice({ transportIdentifier: transport });
-  //   }
-  // );
-  // console.log('Ledger device connected:', result);
-  // return result;
-}
 
 function CheckListItem({
   checked,
@@ -66,12 +54,10 @@ export function ConnectLedgerDevice({
     error: maybeError,
   } = useMutation({
     mutationFn: async (transport: TransportIdentifier) => {
-      const result = await safelyConnectDevice(transport);
-      console.log('Connected to Ledger device:', result);
+      const result = await connectDevice({ transportIdentifier: transport });
       return result;
     },
     onSuccess: (data) => {
-      console.log('successfully connected to Ledger device', data);
       onConnect(data);
     },
   });
@@ -113,11 +99,11 @@ export function ConnectLedgerDevice({
           >
             <CheckListItem
               checked={isSuccess || Boolean(isPhysicallyConnected)}
-              text="Is plugged into the computer."
+              text="Is can be connected to the computer."
             />
             <CheckListItem
               checked={isSuccess}
-              text="Has Ethereum App installed and open."
+              text="Has Ethereum App or Solana App installed."
             />
           </ol>
         </UIText>
@@ -132,31 +118,34 @@ export function ConnectLedgerDevice({
       <div style={{ marginTop: 'auto' }}>
         {error ? (
           <UIText kind="small/regular" color="var(--negative-500)">
-            {interpretError(error)}
+            {error.message}
           </UIText>
         ) : null}
         <Spacer height={24} />
-        <Button
-          kind="primary"
-          onClick={() => invokeConnectDevice(transports.hid)}
-          style={{ width: '100%' }}
-          // disable on isSuccess to prevent flick of button before redirect
-          disabled={isLoading || isSuccess}
-        >
-          {isLoading || isSuccess ? 'Looking for device...' : 'Connect'}
-        </Button>
+        {/* disable on isSuccess to prevent flick of button before redirect */}
+        {isLoading || isSuccess ? (
+          <HStack alignItems="center" gap={24}>
+            <CircleSpinner color="var(--primary)" size="24px" />
+            <UIText kind="headline/h3">Connecting...</UIText>
+          </HStack>
+        ) : (
+          <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <Button
+              kind="primary"
+              onClick={() => invokeConnectDevice(transports.hid)}
+            >
+              Connect via USB
+            </Button>
 
-        <Button
-          kind="primary"
-          onClick={() => invokeConnectDevice(transports.bluetooth)}
-          style={{ width: '100%' }}
-          // disable on isSuccess to prevent flick of button before redirect
-          disabled={isLoading || isSuccess}
-        >
-          {isLoading || isSuccess
-            ? 'Looking for device...'
-            : 'Connect Bluetooth'}
-        </Button>
+            <Button
+              kind="primary"
+              onClick={() => invokeConnectDevice(transports.bluetooth)}
+            >
+              Connect via Bluetooth
+            </Button>
+          </HStack>
+        )}
+
         <Spacer height={24} />
       </div>
     </PageColumn>
