@@ -1,11 +1,11 @@
 import type { TransportIdentifier } from '@zeriontech/hardware-wallet-connection';
 import {
   connectDevice,
+  parseLedgerError,
   transports,
 } from '@zeriontech/hardware-wallet-connection';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
-import { getError } from 'src/shared/errors/getError';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -61,12 +61,18 @@ export function ConnectLedgerDevice({
       onConnect(data);
     },
   });
-  const error = isError ? getError(maybeError) : null;
+  const error = isError ? parseLedgerError(maybeError) : null;
   const isPhysicallyConnected =
     error &&
     error.name !== 'TransportOpenUserCancelled' &&
     error.name !== 'Error';
+
   const title = 'Connect Ledger';
+
+  const userCancelledFlowError =
+    error?._tag === 'NoAccessibleDeviceError' || // USB connection cancelled by user
+    error?.message === 'User cancelled the requestDevice() chooser.'; // Bluetooth connection cancelled by user
+
   return (
     <PageColumn style={{ height: '100%' }} paddingInline={24}>
       <VStack gap={24}>
@@ -116,7 +122,7 @@ export function ConnectLedgerDevice({
         </div>
       </PageFullBleedColumn>
       <div style={{ marginTop: 'auto' }}>
-        {error ? (
+        {error && !userCancelledFlowError ? (
           <UIText kind="small/regular" color="var(--negative-500)">
             {error.message}
           </UIText>

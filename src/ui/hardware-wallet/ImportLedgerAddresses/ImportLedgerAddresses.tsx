@@ -2,8 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { UserInteractionRequested } from '@zeriontech/hardware-wallet-connection';
 import {
+  deniedByUser,
   getAddressesEth,
   getAddressesSolana,
+  parseLedgerError,
+  unfinishedAction,
 } from '@zeriontech/hardware-wallet-connection';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import {
@@ -46,7 +49,7 @@ type CurveValue = 'ecdsa' | 'ed25519';
 function getIframeCurrency() {
   const pageUrl = new URL(window.location.href);
   const currencyStateParam = pageUrl.searchParams.get('currency');
-  invariant(currencyStateParam, 'currency param is requred');
+  invariant(currencyStateParam, 'currency param is required');
   return currencyStateParam;
 }
 
@@ -234,55 +237,69 @@ export function ImportLedgerAddresses({
   const [loadedWallets, setLoadedWallets] = useState(0);
   const { sessionId } = ledger;
 
-  const { data, fetchNextPage, isFetchingNextPage, isFetching, isLoading } =
-    useInfiniteQuery({
-      queryKey: [
-        'ledger/addresses',
-        COUNT,
-        pathType,
-        sessionId,
-        curve,
-        setInteractionRequested,
-        setLoadedWallets,
-      ],
-      queryFn: async ({ pageParam = 0 }) => {
-        return curve === 'ecdsa'
-          ? getAddressesEth(
-              {
-                type: pathType,
-                from: pageParam,
-                count: COUNT,
-              },
-              {
-                sessionId,
-                onInteractionRequested: setInteractionRequested,
-                onProgress: (progress) =>
-                  pageParam === 0 ? setLoadedWallets(progress) : undefined,
-              }
-            )
-          : getAddressesSolana(
-              {
-                type: pathType,
-                from: pageParam,
-                count: COUNT,
-              },
-              {
-                sessionId,
-                onInteractionRequested: setInteractionRequested,
-                onProgress: (progress) =>
-                  pageParam === 0 ? setLoadedWallets(progress) : undefined,
-              }
-            );
-      },
-      getNextPageParam: (_lastPage, allPages) => {
-        return allPages.reduce((sum, items) => sum + items.length, 0);
-      },
-      retry: 0,
-      refetchOnWindowFocus: false,
-      suspense: false,
-      staleTime: Infinity, // addresses found on ledger will not change
-      useErrorBoundary: false,
-    });
+  const {
+    data,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetching,
+    isLoading,
+    error: maybeError,
+  } = useInfiniteQuery({
+    queryKey: [
+      'ledger/addresses',
+      COUNT,
+      pathType,
+      sessionId,
+      curve,
+      setInteractionRequested,
+      setLoadedWallets,
+    ],
+    queryFn: async ({ pageParam = 0 }) => {
+      return curve === 'ecdsa'
+        ? getAddressesEth(
+            {
+              type: pathType,
+              from: pageParam,
+              count: COUNT,
+            },
+            {
+              sessionId,
+              onInteractionRequested: setInteractionRequested,
+              onProgress: (progress) =>
+                pageParam === 0 ? setLoadedWallets(progress) : undefined,
+            }
+          )
+        : getAddressesSolana(
+            {
+              type: pathType,
+              from: pageParam,
+              count: COUNT,
+            },
+            {
+              sessionId,
+              onInteractionRequested: setInteractionRequested,
+              onProgress: (progress) =>
+                pageParam === 0 ? setLoadedWallets(progress) : undefined,
+            }
+          );
+    },
+    getNextPageParam: (_lastPage, allPages) => {
+      return allPages.reduce((sum, items) => sum + items.length, 0);
+    },
+    retry: 0,
+    refetchOnWindowFocus: false,
+    suspense: false,
+    staleTime: Infinity, // addresses found on ledger will not change
+    useErrorBoundary: false,
+  });
+
+  const parsedError = maybeError ? parseLedgerError(maybeError) : null;
+  const isUserRejectedError = parsedError ? deniedByUser(parsedError) : false;
+  const isUnfinishedAction = parsedError
+    ? unfinishedAction(parsedError)
+    : false;
+  const isError =
+    Boolean(parsedError) && !isUserRejectedError && !isUnfinishedAction;
 
   useEffect(() => {
     if (!isFetching) {
@@ -487,6 +504,63 @@ export function ImportLedgerAddresses({
               </HStack>
             </DelayedRender>
           )}
+        </div>
+      ) : isError ? (
+        <div
+          style={{
+            flexGrow: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingBottom: 40,
+            flexDirection: 'column',
+            gap: 16,
+          }}
+        >
+          <UIText kind="small/regular" color="var(--negative-500)">
+            {parsedError ? parsedError.message : 'An unknown error occurred'}
+          </UIText>
+          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
+            Please reload the page and try again.
+          </UIText>
+        </div>
+      ) : isUnfinishedAction ? (
+        <div
+          style={{
+            flexGrow: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingBottom: 40,
+            flexDirection: 'column',
+            gap: 16,
+          }}
+        >
+          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
+            Please wrap up the previous action on your Ledger device to
+            continue.
+          </UIText>
+          <ul
+            style={{
+              listStyle: 'disc',
+              paddingLeft: 20,
+              margin: 0,
+              textAlign: 'left',
+            }}
+          >
+            <li>
+              <UIText kind="small/regular">Unlock the Device</UIText>
+            </li>
+            <li>
+              <UIText kind="small/regular">Close all Ledger apps</UIText>
+            </li>
+            <li>
+              <UIText kind="small/regular">Reject previous request</UIText>
+            </li>
+          </ul>
+          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
+            Then reload this page and try again.
+          </UIText>
         </div>
       ) : (
         <AddressSelectList

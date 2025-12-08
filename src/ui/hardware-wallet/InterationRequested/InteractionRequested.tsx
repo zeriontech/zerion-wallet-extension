@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import type { UserInteractionRequested } from '@zeriontech/hardware-wallet-connection';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -12,6 +12,7 @@ import CheckIcon from 'jsx:../../assets/check.svg';
 import WalletIcon from 'jsx:../../assets/wallet.svg';
 import EyeIcon from 'jsx:../../assets/eye.svg';
 import ShieldIcon from 'jsx:../../assets/shield.svg';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import * as styles from './styles.module.css';
 
 const INTERACTION_CONFIG: Record<
@@ -54,33 +55,46 @@ export function InteractionRequested({
   kind: UserInteractionRequested;
   ecosystem: BlockchainType;
 }) {
-  if (kind === 'none') {
-    return null;
-  }
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const config = INTERACTION_CONFIG[kind];
-  let IconComponent = config.icon;
+  const config = kind && kind !== 'none' ? INTERACTION_CONFIG[kind] : null;
+  let IconComponent = config?.icon;
 
   if (kind === 'confirm-open-app') {
     IconComponent =
       ecosystem === 'solana' ? EcosystemSolanaIcon : EcosystemEthereumIcon;
   }
 
+  if (!config || !IconComponent) {
+    return null;
+  }
+
   return (
-    <div className={styles.container}>
-      <HStack gap={12} alignItems="center">
-        <div
-          className={config.shake ? styles.iconShake : undefined}
-          style={{ display: 'flex' }}
+    <div ref={containerRef}>
+      <VStack gap={12} style={{ justifyItems: 'center' }}>
+        <UIText
+          kind="small/accent"
+          style={{ textAlign: 'center' }}
+          color="var(--neutral-600)"
         >
-          <IconComponent
-            style={{ width: 24, height: 24, color: 'var(--primary)' }}
-          />
-        </div>
-        <UIText kind="body/accent" style={{ color: 'var(--primary)' }}>
-          {config.title}
+          Action Required on Device
         </UIText>
-      </HStack>
+        <div className={styles.container}>
+          <HStack gap={12} alignItems="center">
+            <div
+              className={config.shake ? styles.iconShake : undefined}
+              style={{ display: 'flex' }}
+            >
+              <IconComponent
+                style={{ width: 24, height: 24, color: 'var(--primary)' }}
+              />
+            </div>
+            <UIText kind="body/accent" style={{ color: 'var(--primary)' }}>
+              {config.title}
+            </UIText>
+          </HStack>
+        </div>
+      </VStack>
     </div>
   );
 }
