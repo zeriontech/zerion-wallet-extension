@@ -6,7 +6,6 @@ import {
   getAddressesEth,
   getAddressesSolana,
   parseLedgerError,
-  unfinishedAction,
 } from '@zeriontech/hardware-wallet-connection';
 import type { DeviceAccount } from 'src/shared/types/Device';
 import {
@@ -41,6 +40,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import type { DeviceConnection } from '../types';
 import { InteractionRequested } from '../InterationRequested/InteractionRequested';
+import { TroubleshootingDialog } from '../TroubleshootingDialog';
 
 type ControllerRequest = Omit<RpcRequest, 'id'>;
 type CurveValue = 'ecdsa' | 'ed25519';
@@ -244,6 +244,7 @@ export function ImportLedgerAddresses({
     isFetching,
     isLoading,
     error: maybeError,
+    refetch,
   } = useInfiniteQuery({
     queryKey: [
       'ledger/addresses',
@@ -295,11 +296,7 @@ export function ImportLedgerAddresses({
 
   const parsedError = maybeError ? parseLedgerError(maybeError) : null;
   const isUserRejectedError = parsedError ? deniedByUser(parsedError) : false;
-  const isUnfinishedAction = parsedError
-    ? unfinishedAction(parsedError)
-    : false;
-  const isError =
-    Boolean(parsedError) && !isUserRejectedError && !isUnfinishedAction;
+  const isError = Boolean(parsedError) && !isUserRejectedError;
 
   useEffect(() => {
     if (!isFetching) {
@@ -520,47 +517,10 @@ export function ImportLedgerAddresses({
           <UIText kind="small/regular" color="var(--negative-500)">
             {parsedError ? parsedError.message : 'An unknown error occurred'}
           </UIText>
-          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
-            Please reload the page and try again.
-          </UIText>
-        </div>
-      ) : isUnfinishedAction ? (
-        <div
-          style={{
-            flexGrow: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingBottom: 40,
-            flexDirection: 'column',
-            gap: 16,
-          }}
-        >
-          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
-            Please wrap up the previous action on your Ledger device to
-            continue.
-          </UIText>
-          <ul
-            style={{
-              listStyle: 'disc',
-              paddingLeft: 20,
-              margin: 0,
-              textAlign: 'left',
-            }}
-          >
-            <li>
-              <UIText kind="small/regular">Unlock the Device</UIText>
-            </li>
-            <li>
-              <UIText kind="small/regular">Close all Ledger apps</UIText>
-            </li>
-            <li>
-              <UIText kind="small/regular">Reject previous request</UIText>
-            </li>
-          </ul>
-          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
-            Then reload this page and try again.
-          </UIText>
+          <TroubleshootingDialog error={parsedError} />
+          <Button onClick={() => refetch()} kind="primary">
+            Try Again
+          </Button>
         </div>
       ) : (
         <AddressSelectList
