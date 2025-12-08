@@ -20,6 +20,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
 type SendTxParams = TransactionContextParams & {
@@ -96,13 +97,16 @@ export const SignTransactionButton = React.forwardRef(
               hardwareSignRef.current,
               'HardwareSignTransaction must be mounted'
             );
+            invariant(
+              txContext.method !== 'signAllTransactions',
+              'SignTransactionButton: signAllTransactions not supported for hardware wallets'
+            );
             const signedTx =
               await hardwareSignRef.current.solana_signTransaction({
                 transaction: transaction.solana,
                 address: wallet.address,
                 ...txContext,
               });
-            console.log('Signed TX from HW', signedTx);
             const result = await walletPort.request('solana_sendTransaction', {
               signed: signedTx as StringBase64,
               publicKey: wallet.address,
@@ -123,7 +127,6 @@ export const SignTransactionButton = React.forwardRef(
           const methodName = txContext.method
             ? methodMap[txContext.method]
             : methodMap.default;
-          console.log('tx', transaction.solana);
           const result = await walletPort.request(methodName, {
             transaction: transaction.solana,
             params: txContext,
@@ -170,6 +173,7 @@ export const SignTransactionButton = React.forwardRef(
     return isDeviceAccount(wallet) ? (
       <HardwareSignTransaction
         ref={hardwareSignRef}
+        ecosystem={getAddressType(wallet.address)}
         derivationPath={wallet.derivationPath}
         isSending={isSending}
         children={children}

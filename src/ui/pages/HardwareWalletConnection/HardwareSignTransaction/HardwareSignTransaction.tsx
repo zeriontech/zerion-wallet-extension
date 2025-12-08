@@ -1,4 +1,4 @@
-import React, { useImperativeHandle, useRef } from 'react';
+import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { ethers } from 'ethers';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
@@ -24,6 +24,13 @@ import {
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
 import omit from 'lodash/omit';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { isRpcRequest } from 'src/shared/custom-rpc';
+import type { LedgerError } from '@zeriontech/hardware-wallet-connection';
+import { parseLedgerError } from '@zeriontech/hardware-wallet-connection';
+import { isObj } from 'src/shared/isObj';
+import { TroubleshootingDialog } from 'src/ui/hardware-wallet/TroubleshootingDialog';
+import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
 async function signRegularOrPaymasterTx({
@@ -154,6 +161,7 @@ async function prepareForSignByLedger({
 export const HardwareSignTransaction = React.forwardRef(
   function HardwareSignTransaction(
     {
+      ecosystem,
       derivationPath,
       isSending,
       children,
@@ -161,6 +169,7 @@ export const HardwareSignTransaction = React.forwardRef(
       buttonKind = 'primary',
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      ecosystem: BlockchainType;
       derivationPath: string;
       isSending: boolean;
       buttonTitle?: React.ReactNode;
@@ -256,6 +265,39 @@ export const HardwareSignTransaction = React.forwardRef(
         },
       });
 
+    const [iframeHeight, setIframeHeight] = useState(0);
+    const [signError, setSignError] = useState<LedgerError | null>(null);
+
+    useEffect(() => {
+      async function handler(event: MessageEvent) {
+        invariant(iframeRef.current, 'Iframe should be mounted');
+        if (!isAllowedMessage(event, iframeRef.current)) {
+          return;
+        }
+        if (isRpcRequest(event.data)) {
+          const { method, params } = event.data;
+          if (method === 'ledger/sign/success') {
+            setIframeHeight(0);
+            setSignError(
+              isObj(params) && 'error' in params
+                ? parseLedgerError(params.error)
+                : null
+            );
+          } else if (method === 'ledger/sign/error') {
+            setIframeHeight(0);
+            setSignError(null);
+          } else if (
+            method === 'ledger/sign/notConnected' ||
+            method === 'ledger/sign/interactionRequested'
+          ) {
+            setIframeHeight(100);
+          }
+        }
+      }
+      window.addEventListener('message', handler);
+      return () => window.removeEventListener('message', handler);
+    }, []);
+
     useImperativeHandle(ref, () => ({
       signTransaction,
       solana_signTransaction,
@@ -265,15 +307,16 @@ export const HardwareSignTransaction = React.forwardRef(
       <>
         <LedgerIframe
           ref={iframeRef}
-          initialRoute="/signConnector"
+          initialRoute={`/signConnector?ecosystem=${ecosystem}`}
           style={{
             // position: 'absolute',
             // border: 'none',
             backgroundColor: 'transparent',
           }}
           tabIndex={-1}
-          height={100}
+          height={iframeHeight}
         />
+        {signError ? <TroubleshootingDialog error={signError} /> : null}
         {signMutation.isLoading || signSolanaMutation.isLoading ? (
           <Button
             kind="loading-border"

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
-import type { TransportIdentifier } from '@zeriontech/hardware-wallet-connection';
+import type {
+  TransportIdentifier,
+  UserInteractionRequested,
+} from '@zeriontech/hardware-wallet-connection';
 import {
   checkDevice,
   signTransaction,
@@ -9,7 +12,7 @@ import {
   signTypedData_v4,
   connectDevice,
   transports,
-  getAddressesEth,
+  parseLedgerError,
 } from '@zeriontech/hardware-wallet-connection';
 import type { RpcRequest } from 'src/shared/custom-rpc';
 import {
@@ -18,20 +21,22 @@ import {
   isRpcResult,
 } from 'src/shared/custom-rpc';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
-import { getError } from 'src/shared/errors/getError';
 import { createNanoEvents } from 'nanoevents';
 import {
   solFromBase64,
   solToBase64,
 } from 'src/modules/solana/transactions/create';
-import { base64ToArrayBuffer, uint8ArrayToBase64 } from 'src/modules/crypto';
+import { uint8ArrayToBase64 } from 'src/modules/crypto';
 import { Transaction } from '@solana/web3.js';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { useMutation } from '@tanstack/react-query';
-import { normalizeDeviceError } from '../shared/errors';
+import { useSearchParams } from 'react-router-dom';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import { InteractionRequested } from '../InterationRequested/InteractionRequested';
 import {
   assertPersonalSignParams,
   assertSignSolanaTransactionParams,
@@ -45,11 +50,23 @@ async function getConnectedSessionId({
   transport?: TransportIdentifier;
 }) {
   return Promise.race([
-    rejectAfterDelay(1000, 'Device not connected').catch(() => false),
+    rejectAfterDelay(1000, 'Device not connected').catch(() => null),
     checkDevice({ transportIdentifier: transport })
       .then(({ sessionId }) => sessionId)
-      .catch(() => false),
+      .catch(() => null),
   ]);
+}
+
+type HardwareRPCRequest = Omit<RpcRequest, 'id'> & {
+  id?: string;
+  transport?: TransportIdentifier;
+  sessionId?: string;
+};
+
+function isHardwareRpcRequest(
+  payload: Partial<RpcRequest> | unknown
+): payload is HardwareRPCRequest {
+  return isRpcRequest(payload);
 }
 
 export class DeviceController {
@@ -57,49 +74,45 @@ export class DeviceController {
     message: (msg: unknown) => void;
   }>();
 
-  private onNotConnected?: (
-    message: Omit<RpcRequest, 'id'> & { id?: string }
-  ) => void;
+  private onNotConnected?: (message: HardwareRPCRequest) => void;
+  private onInteractionRequested?: (type: UserInteractionRequested) => void;
 
-  static signTransaction = (params: unknown) => async (sessionId: string) => {
-    assertSignTransactionParams(params);
-    // return getAddressesEth(sessionId, {
-    //   type: 'ledgerLive',
-    //   from: 0,
-    //   count: 2,
-    // });
-    // console.log('Signing transaction with params', params);
-    // await wait(100);
-    // console.log('Proceeding to sign transaction...');
-    return signTransaction(
-      params.derivationPath,
-      params.transaction,
-      sessionId
-    );
-  };
+  static signTransaction =
+    (params: unknown) =>
+    async (
+      sessionId: string,
+      onInteractionRequested?: (type: UserInteractionRequested) => void
+    ) => {
+      assertSignTransactionParams(params);
+      return signTransaction(
+        {
+          derivationPath: params.derivationPath,
+          rawTransaction: params.transaction,
+        },
+        { sessionId, onInteractionRequested }
+      );
+    };
 
   static solana_signTransaction =
-    (params: unknown) => async (sessionId: string) => {
+    (params: unknown) =>
+    async (
+      sessionId: string,
+      onInteractionRequested?: (type: UserInteractionRequested) => void
+    ) => {
       assertSignSolanaTransactionParams(params);
-      console.log('Signing transaction with params', params);
 
-      // Deserialize, remove signatures, and serialize back to base64
       const transaction = solFromBase64(params.transaction);
-
       const cleanedTransaction =
         transaction instanceof Transaction
           ? uint8ArrayToBase64(transaction.serializeMessage())
           : uint8ArrayToBase64(transaction.message.serialize());
 
-      console.log('Original transaction:', params.transaction);
-      console.log('Cleaned transaction:', cleanedTransaction);
-      console.log({ transaction });
-
-      // @ts-ignore params.transaction is object
       const { signature } = await signSolanaTransaction(
-        params.derivationPath,
-        cleanedTransaction,
-        sessionId
+        {
+          derivationPath: params.derivationPath,
+          transaction: cleanedTransaction,
+        },
+        { sessionId, onInteractionRequested }
       );
 
       if (transaction instanceof Transaction) {
@@ -112,59 +125,64 @@ export class DeviceController {
       } else {
         transaction.signatures[0] = signature;
       }
-
-      console.log({ transaction });
-      const base64Transaction = solToBase64(transaction);
-      console.log('Signed transaction base64:', base64Transaction);
-
-      return base64Transaction;
+      return solToBase64(transaction);
     };
 
-  static personalSign = (params: unknown) => async (sessionId: string) => {
-    assertPersonalSignParams(params);
-    console.log('Signing message with params', params);
-    const message = toUtf8String(params.message);
-    return personalSign(params.derivationPath, message, sessionId);
-  };
+  static personalSign =
+    (params: unknown) =>
+    async (
+      sessionId: string,
+      onInteractionRequested?: (type: UserInteractionRequested) => void
+    ) => {
+      assertPersonalSignParams(params);
+      const message = toUtf8String(params.message);
+      return personalSign(
+        { derivationPath: params.derivationPath, message },
+        { sessionId, onInteractionRequested }
+      );
+    };
 
-  static signTypedData_v4 = (params: unknown) => async (sessionId: string) => {
-    assertSignTypedData_v4Params(params);
-    // @ts-ignore params.typedData is object
-    return signTypedData_v4(params.derivationPath, params.typedData, sessionId);
-  };
+  static signTypedData_v4 =
+    (params: unknown) =>
+    async (
+      sessionId: string,
+      onInteractionRequested?: (type: UserInteractionRequested) => void
+    ) => {
+      assertSignTypedData_v4Params(params);
+      return signTypedData_v4(
+        {
+          derivationPath: params.derivationPath,
+          rawTypedData: params.typedData,
+        },
+        { sessionId, onInteractionRequested }
+      );
+    };
 
   listener = async (event: MessageEvent) => {
-    console.log('SignConnector received message', event.data);
-    if (isRpcRequest(event.data)) {
-      const transport =
-        'transport' in event.data
-          ? (event.data.transport as TransportIdentifier)
-          : transports.hid;
-      let sessionId = 'sessionId' in event.data ? event.data.sessionId : '';
-      const { id, method, params } = event.data;
+    if (isHardwareRpcRequest(event.data)) {
+      const { id, method, params, transport = transports.hid } = event.data;
       if (
         isClassProperty(DeviceController, method) &&
         typeof DeviceController[method] === 'function'
       ) {
         try {
-          console.log(
-            `Invoking DeviceController.${method} with params`,
-            params
-          );
+          let sessionId = event.data.sessionId || null;
           if (!sessionId) {
             sessionId = await getConnectedSessionId({ transport });
           }
-          console.log('Device connection status:', sessionId);
           if (!sessionId) {
             this.onNotConnected?.(event.data);
             return;
           }
-          // @ts-ignore Controller[method] should be callable here
-          const result = await DeviceController[method](params)(sessionId);
+          const result = await DeviceController[method](params)(
+            // @ts-ignore Controller[method] should be callable here
+            sessionId,
+            this.onInteractionRequested
+          );
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
           window.parent.postMessage(
-            { id, error: normalizeDeviceError(getError(error)) },
+            { id, error: parseLedgerError(error) },
             window.location.origin
           );
         }
@@ -198,12 +216,13 @@ export class DeviceController {
 
   listen({
     onNotConnected,
+    onInteractionRequested,
   }: {
-    onNotConnected?: (
-      message: Omit<RpcRequest, 'id'> & { id?: string }
-    ) => void;
+    onNotConnected?: (message: HardwareRPCRequest) => void;
+    onInteractionRequested?: (type: UserInteractionRequested) => void;
   } = {}) {
     this.onNotConnected = onNotConnected;
+    this.onInteractionRequested = onInteractionRequested;
     window.addEventListener('message', this.listener);
     return () => {
       window.removeEventListener('message', this.listener);
@@ -212,30 +231,55 @@ export class DeviceController {
 }
 
 export function SignConnector() {
-  const [interruptedRequest, setInterruptedRequest] = useState<
-    (Omit<RpcRequest, 'id'> & { id?: string }) | null
-  >(null);
+  const [interruptedRequest, setInterruptedRequest] =
+    useState<HardwareRPCRequest | null>(null);
+  const [interactionRequested, setInteractionRequested] =
+    useState<UserInteractionRequested | null>(null);
   const [controller] = useState(() => new DeviceController());
   useEffect(() => {
     return controller.listen({
-      onNotConnected: setInterruptedRequest,
+      onNotConnected: (request) => {
+        setInterruptedRequest(request);
+        controller.request({ method: 'ledger/sign/notConnected', params: {} });
+      },
+      onInteractionRequested: (type) => {
+        setInteractionRequested(type);
+        controller.request({
+          method: 'ledger/sign/interactionRequested',
+          params: { type },
+        });
+      },
     });
   }, [controller]);
+  const [params] = useSearchParams();
+  const ecosystem = (params.get('ecosystem') as BlockchainType) || 'evm';
   const { mutate } = useMutation({
     mutationFn: async (transport: TransportIdentifier) => {
       const { sessionId } = await connectDevice({
         transportIdentifier: transport,
       });
       window.postMessage({ ...interruptedRequest, transport, sessionId });
+    },
+    onSettled: () => {
       setInterruptedRequest(null);
+      setInteractionRequested(null);
+    },
+    onError: (error) => {
+      controller.request({ method: 'ledger/sign/error', params: { error } });
+    },
+    onSuccess: () => {
+      controller.request({ method: 'ledger/sign/success', params: {} });
     },
   });
+
   return interruptedRequest ? (
-    <VStack gap={4}>
-      <Button onClick={() => mutate(transports.hid)}>Usb</Button>
-      <Button onClick={() => mutate(transports.bluetooth)}>Bluetooth</Button>
+    <VStack gap={8}>
+      <Button onClick={() => mutate(transports.hid)}>Sign via USB</Button>
+      <Button onClick={() => mutate(transports.bluetooth)}>
+        Sign via Bluetooth
+      </Button>
     </VStack>
-  ) : (
-    <div>Hello</div>
-  );
+  ) : interactionRequested ? (
+    <InteractionRequested kind={interactionRequested} ecosystem={ecosystem} />
+  ) : null;
 }
