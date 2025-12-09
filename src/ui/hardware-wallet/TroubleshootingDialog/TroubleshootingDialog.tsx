@@ -6,7 +6,9 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { useMutation } from '@tanstack/react-query';
+import { walletPort } from 'src/ui/shared/channels';
 
 export function TroubleshootingDialog({
   error,
@@ -14,22 +16,28 @@ export function TroubleshootingDialog({
   error: LedgerError | null;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const reportMutation = useMutation({
+    mutationFn: async () => {
+      return walletPort.request('reportLedgerError', {
+        errorMessage: error?.toString() || 'Unknown Ledger error',
+      });
+    },
+  });
 
   return (
     <>
       <Button
-        kind="regular"
+        kind="text-primary"
         onClick={() => {
           dialogRef.current?.showModal();
         }}
-        style={{ paddingInline: 24 }}
       >
         Troubleshooting
       </Button>
-      <CenteredDialog ref={dialogRef}>
+      <BottomSheetDialog ref={dialogRef} height="fit-content">
         <DialogTitle alignTitle="start" title="Troubleshooting" />
         <Spacer height={24} />
-        <VStack gap={16}>
+        <VStack gap={16} style={{ textAlign: 'left' }}>
           <UIText kind="body/regular">
             If you're experiencing issues with your Ledger device, try the
             following steps:
@@ -37,7 +45,7 @@ export function TroubleshootingDialog({
           <UIText
             kind="small/regular"
             style={{
-              padding: '16px 32px',
+              padding: '12px 16px',
               borderRadius: 8,
               backgroundColor: 'var(--neutral-100)',
             }}
@@ -81,18 +89,21 @@ export function TroubleshootingDialog({
             If the problem persists, you can submit a report to help us improve.
           </UIText>
           {error ? (
-            <Button
-              kind="primary"
-              onClick={() => {
-                // TODO: Implement submit report logic
-              }}
-            >
-              Submit Report
-            </Button>
+            reportMutation.isIdle || reportMutation.isLoading ? (
+              <Button
+                kind="primary"
+                onClick={() => reportMutation.mutate()}
+                disabled={reportMutation.isLoading}
+              >
+                Submit Report
+              </Button>
+            ) : (
+              <UIText kind="body/regular">Report submitted. Thank you!</UIText>
+            )
           ) : null}
         </VStack>
         <Spacer height={24} />
-      </CenteredDialog>
+      </BottomSheetDialog>
     </>
   );
 }

@@ -845,6 +845,19 @@ function trackAppEvents({ account }: { account: Account }) {
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack('General: Passkey Login Disabled', mixpanelParams);
   });
+  
+  emitter.on('reportLedgerError', async (errorMessage: string) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'report_ledger_error',
+      message: errorMessage,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Report Ledger Error', mixpanelParams);
+  });
 }
 
 export function initialize({ account }: { account: Account }) {

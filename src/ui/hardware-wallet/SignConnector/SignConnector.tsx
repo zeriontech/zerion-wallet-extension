@@ -185,12 +185,12 @@ export class DeviceController {
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
           window.parent.postMessage(
-            { id, error: parseLedgerError(error) },
+            { id, error: parseLedgerError(error).toString() },
             window.location.origin
           );
           this.request({
             method: 'ledger/sign/error',
-            params: { error },
+            params: { error: parseLedgerError(error).toString() },
           });
         }
       }
@@ -278,10 +278,16 @@ export function SignConnector() {
     },
     onError: (error) => {
       window.parent.postMessage(
-        { id: interruptedRequest?.id, error: parseLedgerError(error) },
+        {
+          id: interruptedRequest?.id,
+          error: parseLedgerError(error).toString(),
+        },
         window.location.origin
       );
-      controller.request({ method: 'ledger/sign/error', params: { error } });
+      controller.request({
+        method: 'ledger/sign/error',
+        params: { error: parseLedgerError(error).toString() },
+      });
     },
     onSuccess: ({ sessionId, transport }) => {
       controller.request({ method: 'ledger/sign/success', params: {} });

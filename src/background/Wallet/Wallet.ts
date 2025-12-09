@@ -1776,6 +1776,14 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('passkeyLoginDisabled');
   }
+  
+  async reportLedgerError({
+    context,
+    params,
+  }: WalletMethodParams<{ errorMessage: string }>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('reportLedgerError', params.errorMessage);
+  }
 
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
     // NOTE: maybe consider adding a more generic method, e.g.:

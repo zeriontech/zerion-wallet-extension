@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
@@ -16,11 +17,16 @@ import { invariant } from 'src/shared/invariant';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { TextPulse } from 'src/ui/components/TextPulse';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { TroubleshootingDialog } from 'src/ui/hardware-wallet/TroubleshootingDialog';
+import type { LedgerError } from '@zeriontech/hardware-wallet-connection';
+import { parseLedgerError } from '@zeriontech/hardware-wallet-connection';
 import { isRpcRequest } from 'src/shared/custom-rpc';
+import { isObj } from 'src/shared/isObj';
 import { openUrl } from 'src/ui/shared/openUrl';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { urlContext } from 'src/shared/UrlContext';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -125,6 +131,8 @@ export const HardwareSignMessage = React.forwardRef(
         onError: handleError,
       });
 
+    const [signError, setSignError] = useState<LedgerError | null>(null);
+
     useEffect(() => {
       async function handler(event: MessageEvent) {
         invariant(iframeRef.current, 'Iframe should be mounted');
@@ -132,11 +140,17 @@ export const HardwareSignMessage = React.forwardRef(
           return;
         }
         if (isRpcRequest(event.data)) {
-          const { method } = event.data;
+          const { method, params } = event.data;
           if (method === 'ledger/sign/success') {
             dialogRef.current?.close();
+            setSignError(null);
           } else if (method === 'ledger/sign/error') {
             dialogRef.current?.close();
+            setSignError(
+              isObj(params) && 'error' in params
+                ? parseLedgerError(params.error)
+                : null
+            );
           } else if (
             method === 'ledger/sign/notConnected' ||
             method === 'ledger/sign/interactionRequested'
@@ -184,35 +198,38 @@ export const HardwareSignMessage = React.forwardRef(
               backgroundColor: 'transparent',
             }}
             // @ts-ignore
-            allowtransparency={true}
+            allowtransparency="true"
             tabIndex={-1}
             height={300}
           />
         </BottomSheetDialog>
-        {isLoading ? (
-          <Button
-            kind="loading-border"
-            disabled={true}
-            title="Follow instructions on your ledger device"
-          >
-            <TextPulse>Sign on Device</TextPulse>
-          </Button>
-        ) : (
-          <Button
-            kind={buttonKind}
-            disabled={isLoading || isSigning}
-            style={{
-              paddingInline: 16, // fit longer button label
-            }}
-            {...buttonProps}
-          >
-            <HStack gap={8} alignItems="center" justifyContent="center">
-              <LedgerIcon />
-              {children ||
-                (isSigning ? 'Sending' : buttonTitle || 'Sign with Ledger')}
-            </HStack>
-          </Button>
-        )}
+        <VStack gap={8}>
+          {isLoading ? (
+            <Button
+              kind="loading-border"
+              disabled={true}
+              title="Follow instructions on your ledger device"
+            >
+              <TextPulse>Sign on Device</TextPulse>
+            </Button>
+          ) : (
+            <Button
+              kind={buttonKind}
+              disabled={isLoading || isSigning}
+              style={{
+                paddingInline: 16, // fit longer button label
+              }}
+              {...buttonProps}
+            >
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                <LedgerIcon />
+                {children ||
+                  (isSigning ? 'Sending' : buttonTitle || 'Sign with Ledger')}
+              </HStack>
+            </Button>
+          )}
+          {signError ? <TroubleshootingDialog error={signError} /> : null}
+        </VStack>
       </>
     );
   }

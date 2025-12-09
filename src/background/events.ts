@@ -103,4 +103,5 @@ export const emitter = createNanoEvents<{
   assetClicked: (data: AssetClickedParams) => void;
   passkeyLoginEnabled: () => void;
   passkeyLoginDisabled: () => void;
+  reportLedgerError: (errorMessage: string) => void;
 }>();

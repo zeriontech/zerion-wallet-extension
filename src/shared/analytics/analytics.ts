@@ -27,7 +27,8 @@ type MetabaseEvent =
   | 'banner_clicked'
   | 'asset_clicked'
   | 'passkey_login_enabled'
-  | 'passkey_login_disabled';
+  | 'passkey_login_disabled'
+  | 'report_ledger_error';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 
