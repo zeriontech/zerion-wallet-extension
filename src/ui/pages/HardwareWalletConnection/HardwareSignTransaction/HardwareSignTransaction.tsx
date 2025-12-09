@@ -1,11 +1,9 @@
-import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import { ethers } from 'ethers';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { getError } from 'src/shared/errors/getError';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import { nanoid } from 'nanoid';
 import type { SignTransactionResult } from 'src/ui/hardware-wallet/types';
@@ -26,10 +24,14 @@ import omit from 'lodash/omit';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { isRpcRequest } from 'src/shared/custom-rpc';
-import type { LedgerError } from '@zeriontech/hardware-wallet-connection';
-import { parseLedgerError } from '@zeriontech/hardware-wallet-connection';
-import { isObj } from 'src/shared/isObj';
-import { TroubleshootingDialog } from 'src/ui/hardware-wallet/TroubleshootingDialog';
+import {
+  deniedByUser,
+  parseLedgerError,
+} from '@zeriontech/hardware-wallet-connection';
+import { openUrl } from 'src/ui/shared/openUrl';
+import { urlContext } from 'src/shared/UrlContext';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -177,10 +179,8 @@ export const HardwareSignTransaction = React.forwardRef(
     },
     ref: React.Ref<SignTransactionHandle>
   ) {
-    const navigate = useNavigate();
-    const location = useLocation();
-
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
+    const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
     const { mutateAsync: signTransaction, ...signMutation } = useMutation({
       mutationFn: async ({
@@ -210,20 +210,11 @@ export const HardwareSignTransaction = React.forwardRef(
           });
           return result.serialized;
         } catch (error) {
-          const normalizedError = getError(error);
-          if (normalizedError.message === 'ConnectError') {
-            navigate(
-              `/connect-hardware-wallet?${new URLSearchParams({
-                strategy: 'connect',
-                next: `${location.pathname}${location.search}`,
-                replaceAfterRedirect: 'true',
-              })}`
-            );
-            // NOTE: TODO: should we throw the same error here? Or return meaningless <string> to match fn signature?
-            throw normalizedError;
-          } else {
-            throw normalizedError;
+          const normalizedError = parseLedgerError(error);
+          if (deniedByUser(normalizedError)) {
+            throw new Error('Signature denied by user');
           }
+          throw normalizedError;
         }
       },
     });
@@ -247,26 +238,14 @@ export const HardwareSignTransaction = React.forwardRef(
             });
             return result;
           } catch (error) {
-            const normalizedError = getError(error);
-            if (normalizedError.message === 'ConnectError') {
-              navigate(
-                `/connect-hardware-wallet?${new URLSearchParams({
-                  strategy: 'connect',
-                  next: `${location.pathname}${location.search}`,
-                  replaceAfterRedirect: 'true',
-                })}`
-              );
-              // NOTE: TODO: should we throw the same error here? Or return meaningless <string> to match fn signature?
-              throw normalizedError;
-            } else {
-              throw normalizedError;
+            const normalizedError = parseLedgerError(error);
+            if (deniedByUser(normalizedError)) {
+              throw new Error('Signature denied by user');
             }
+            throw normalizedError;
           }
         },
       });
-
-    const [iframeHeight, setIframeHeight] = useState(0);
-    const [signError, setSignError] = useState<LedgerError | null>(null);
 
     useEffect(() => {
       async function handler(event: MessageEvent) {
@@ -275,28 +254,32 @@ export const HardwareSignTransaction = React.forwardRef(
           return;
         }
         if (isRpcRequest(event.data)) {
-          const { method, params } = event.data;
+          const { method } = event.data;
           if (method === 'ledger/sign/success') {
-            setIframeHeight(0);
-            setSignError(
-              isObj(params) && 'error' in params
-                ? parseLedgerError(params.error)
-                : null
-            );
+            dialogRef.current?.close();
           } else if (method === 'ledger/sign/error') {
-            setIframeHeight(0);
-            setSignError(null);
+            dialogRef.current?.close();
           } else if (
             method === 'ledger/sign/notConnected' ||
             method === 'ledger/sign/interactionRequested'
           ) {
-            setIframeHeight(100);
+            dialogRef.current?.showModal();
+          } else if (method === 'ledger/sign/openInTab') {
+            const url = new URL(window.location.href);
+            openUrl(url, { windowType: 'tab' });
           }
         }
       }
       window.addEventListener('message', handler);
       return () => window.removeEventListener('message', handler);
     }, []);
+
+    const isError = signMutation.isError || signSolanaMutation.isError;
+    useEffect(() => {
+      if (isError) {
+        dialogRef.current?.close();
+      }
+    }, [isError]);
 
     useImperativeHandle(ref, () => ({
       signTransaction,
@@ -305,18 +288,28 @@ export const HardwareSignTransaction = React.forwardRef(
 
     return (
       <>
-        <LedgerIframe
-          ref={iframeRef}
-          initialRoute={`/signConnector?ecosystem=${ecosystem}`}
-          style={{
-            // position: 'absolute',
-            // border: 'none',
-            backgroundColor: 'transparent',
-          }}
-          tabIndex={-1}
-          height={iframeHeight}
-        />
-        {signError ? <TroubleshootingDialog error={signError} /> : null}
+        <BottomSheetDialog
+          ref={dialogRef}
+          closeOnClickOutside={false}
+          height="fit-content"
+        >
+          <LedgerIframe
+            ref={iframeRef}
+            initialRoute="/signConnector"
+            appSearchParams={new URLSearchParams({
+              ecosystem,
+              windowType: urlContext.windowType,
+            }).toString()}
+            style={{
+              // border: 'none',
+              backgroundColor: 'transparent',
+            }}
+            // @ts-ignore
+            allowtransparency={true}
+            tabIndex={-1}
+            height={300}
+          />
+        </BottomSheetDialog>
         {signMutation.isLoading || signSolanaMutation.isLoading ? (
           <Button
             kind="loading-border"

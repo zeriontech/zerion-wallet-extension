@@ -15,6 +15,7 @@ import {
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
 
 type PersonalSignParams = MessageContextParams & {
@@ -137,6 +138,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   return isDeviceAccount(wallet) ? (
     <HardwareSignMessage
       ref={hardwareSignRef}
+      ecosystem={getAddressType(wallet.address)}
       derivationPath={wallet.derivationPath}
       isSigning={isLoading}
       children={children}

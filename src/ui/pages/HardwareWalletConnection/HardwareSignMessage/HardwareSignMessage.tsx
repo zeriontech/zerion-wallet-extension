@@ -1,5 +1,10 @@
 import { nanoid } from 'nanoid';
-import React, { useCallback, useImperativeHandle, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
@@ -10,6 +15,13 @@ import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { TextPulse } from 'src/ui/components/TextPulse';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import { isRpcRequest } from 'src/shared/custom-rpc';
+import { openUrl } from 'src/ui/shared/openUrl';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { urlContext } from 'src/shared/UrlContext';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
 type Props = {
@@ -17,6 +29,7 @@ type Props = {
   isSigning: boolean;
   buttonTitle?: React.ReactNode;
   buttonKind?: ButtonKind;
+  ecosystem: BlockchainType;
 };
 
 export interface SignMessageHandle {
@@ -32,6 +45,7 @@ export const HardwareSignMessage = React.forwardRef(
       buttonKind = 'primary',
       children,
       buttonTitle,
+      ecosystem,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & Props,
     ref: React.Ref<SignMessageHandle>
@@ -40,6 +54,7 @@ export const HardwareSignMessage = React.forwardRef(
     const location = useLocation();
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
+    const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
     const handleError = useCallback(
       (error: unknown) => {
@@ -110,6 +125,41 @@ export const HardwareSignMessage = React.forwardRef(
         onError: handleError,
       });
 
+    useEffect(() => {
+      async function handler(event: MessageEvent) {
+        invariant(iframeRef.current, 'Iframe should be mounted');
+        if (!isAllowedMessage(event, iframeRef.current)) {
+          return;
+        }
+        if (isRpcRequest(event.data)) {
+          const { method } = event.data;
+          if (method === 'ledger/sign/success') {
+            dialogRef.current?.close();
+          } else if (method === 'ledger/sign/error') {
+            dialogRef.current?.close();
+          } else if (
+            method === 'ledger/sign/notConnected' ||
+            method === 'ledger/sign/interactionRequested'
+          ) {
+            dialogRef.current?.showModal();
+          } else if (method === 'ledger/sign/openInTab') {
+            const url = new URL(window.location.href);
+            openUrl(url, { windowType: 'tab' });
+          }
+        }
+      }
+      window.addEventListener('message', handler);
+      return () => window.removeEventListener('message', handler);
+    }, []);
+
+    const isError =
+      personalSignMutation.isError || signTypedData_v4Mutation.isError;
+    useEffect(() => {
+      if (isError) {
+        dialogRef.current?.close();
+      }
+    }, [isError]);
+
     useImperativeHandle(ref, () => ({ personalSign, signTypedData_v4 }));
 
     const isLoading =
@@ -117,17 +167,28 @@ export const HardwareSignMessage = React.forwardRef(
 
     return (
       <>
-        <LedgerIframe
-          ref={iframeRef}
-          initialRoute="/signConnector"
-          style={{
-            position: 'absolute',
-            border: 'none',
-            backgroundColor: 'transparent',
-          }}
-          tabIndex={-1}
-          height={0}
-        />
+        <BottomSheetDialog
+          ref={dialogRef}
+          closeOnClickOutside={false}
+          height="fit-content"
+        >
+          <LedgerIframe
+            ref={iframeRef}
+            initialRoute="/signConnector"
+            appSearchParams={new URLSearchParams({
+              ecosystem,
+              windowType: urlContext.windowType,
+            }).toString()}
+            style={{
+              // border: 'none',
+              backgroundColor: 'transparent',
+            }}
+            // @ts-ignore
+            allowtransparency={true}
+            tabIndex={-1}
+            height={300}
+          />
+        </BottomSheetDialog>
         {isLoading ? (
           <Button
             kind="loading-border"

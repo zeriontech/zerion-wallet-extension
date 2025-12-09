@@ -93,6 +93,7 @@ body.isSidepanel :global(#root) {
   --body-width: initial;
   display: block; /* display: grid for some reason creates unwanted x an y overscolls */
   height: var(--body-height);
+  background-color: transparent;
 }
 
 :root:has(body.pageLayout) {

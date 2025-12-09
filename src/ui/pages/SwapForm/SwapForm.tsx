@@ -1231,7 +1231,7 @@ function SwapFormComponent() {
               style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 12 }}
             >
               {approveMutation.isError ? (
-                <ErrorMessage error={getError(sendTransactionMutation.error)} />
+                <ErrorMessage error={getError(approveMutation.error)} />
               ) : null}
               {wallet ? (
                 <SignTransactionButton
