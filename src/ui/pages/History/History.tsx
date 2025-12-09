@@ -33,10 +33,13 @@ import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
+import dayjs from 'dayjs';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
 import * as styles from './styles.module.css';
+import { getAddressActionsCursor } from './getAddressActionCursor';
 
 function sortActions<T extends { timestamp?: number }>(actions: T[]) {
   return actions.sort((a, b) => {
@@ -82,9 +85,11 @@ function mergeLocalAndBackendActions(
 function useMinedAndPendingAddressActions({
   chain,
   searchQuery,
+  startDate,
 }: {
   chain: Chain | null;
   searchQuery?: string;
+  startDate?: string;
 }) {
   const { params } = useAddressParams();
   const { networks, loadNetworkByChainId } = useNetworks();
@@ -97,7 +102,14 @@ function useMinedAndPendingAddressActions({
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery({
     // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
-    queryKey: ['pages/history', localActions, chain, searchQuery, client],
+    queryKey: [
+      'pages/history',
+      localActions,
+      chain,
+      searchQuery,
+      client,
+      startDate,
+    ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
       return hashQueryKey(key);
@@ -121,6 +133,11 @@ function useMinedAndPendingAddressActions({
       if (searchQuery) {
         items = items.filter((item) => isMatchForAllWords(searchQuery, item));
       }
+      if (startDate) {
+        items = items.filter((item) =>
+          dayjs(item.timestamp).isBefore(dayjs(startDate))
+        );
+      }
       return items;
     },
     useErrorBoundary: true,
@@ -132,6 +149,7 @@ function useMinedAndPendingAddressActions({
       currency,
       chain: chain && isSupportedByBackend ? chain.toString() : undefined,
       searchQuery,
+      cursor: startDate ? getAddressActionsCursor(startDate) : undefined,
       limit: 10,
     },
     { source: useHttpClientSource() },
@@ -192,6 +210,13 @@ function HistoryEmptyView({
   );
 }
 
+function formatDate(date: Date): string {
+  const month = date.toLocaleString('en-US', { month: 'short' });
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
+}
+
 export function HistoryList({
   dappChain,
   selectedChain,
@@ -202,6 +227,9 @@ export function HistoryList({
   onChainChange: (value: string | null) => void;
 }) {
   const { params, singleAddress: address } = useAddressParams();
+  const [searchParams, setSearchParams] = useSearchParamsObj<{
+    date?: string;
+  }>();
   const offsetValuesState = useStore(offsetValues);
   const addressType = getAddressType(address);
   const showNetworkSelector = addressType === 'evm';
@@ -217,6 +245,7 @@ export function HistoryList({
     useMinedAndPendingAddressActions({
       chain,
       searchQuery,
+      startDate: searchParams.date,
     });
 
   const actionFilters = (
@@ -317,6 +346,13 @@ export function HistoryList({
         hasMore={Boolean(queryData.hasNextPage)}
         isLoading={isLoading}
         onLoadMore={queryData.fetchNextPage}
+        targetDate={searchParams.date || null}
+        onChangeDate={(date) =>
+          setSearchParams((state) => ({
+            ...state,
+            date: date ? formatDate(date) : '',
+          }))
+        }
       />
     </>
   );
