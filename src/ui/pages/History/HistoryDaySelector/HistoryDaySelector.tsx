@@ -158,7 +158,7 @@ function DayPicker({
         >
           <ChevronLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
-        <UIText kind="headline/h3">
+        <UIText kind="headline/h3" style={{ userSelect: 'none' }}>
           {monthNames[month]} {year}
         </UIText>
         <UnstyledButton
@@ -230,6 +230,7 @@ export function HistoryDaySelector({
         onClick={handleTriggerClick}
         style={style}
         className={className}
+        title="Select target date"
       >
         {trigger}
       </UnstyledButton>
