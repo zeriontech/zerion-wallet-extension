@@ -1,7 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import type { UserInteractionRequested } from '@zeriontech/hardware-wallet-connection';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import LockIcon from 'jsx:../../assets/lock-outline.svg';
 import ConnectIcon from 'jsx:../../assets/technology-connect.svg';
@@ -55,8 +54,6 @@ export function InteractionRequested({
   kind: UserInteractionRequested;
   ecosystem: BlockchainType;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const config = kind && kind !== 'none' ? INTERACTION_CONFIG[kind] : null;
   let IconComponent = config?.icon;
 
@@ -70,31 +67,21 @@ export function InteractionRequested({
   }
 
   return (
-    <div ref={containerRef}>
-      <VStack gap={12} style={{ justifyItems: 'center' }}>
-        <UIText
-          kind="small/accent"
-          style={{ textAlign: 'center' }}
-          color="var(--neutral-600)"
-        >
-          Action Required on Device
+    <VStack gap={12} style={{ justifyItems: 'center' }}>
+      <div
+        className={config.shake ? styles.iconShake : undefined}
+        style={{ display: 'flex' }}
+      >
+        <IconComponent
+          style={{ width: 60, height: 60, color: 'var(--black)' }}
+        />
+      </div>
+      <VStack gap={4} style={{ justifyItems: 'center' }}>
+        <UIText kind="caption/regular" color="var(--neutral-500)">
+          Action on your device:
         </UIText>
-        <div className={styles.container}>
-          <HStack gap={12} alignItems="center">
-            <div
-              className={config.shake ? styles.iconShake : undefined}
-              style={{ display: 'flex' }}
-            >
-              <IconComponent
-                style={{ width: 24, height: 24, color: 'var(--primary)' }}
-              />
-            </div>
-            <UIText kind="body/accent" style={{ color: 'var(--primary)' }}>
-              {config.title}
-            </UIText>
-          </HStack>
-        </div>
+        <UIText kind="body/accent">{config.title}</UIText>
       </VStack>
-    </div>
+    </VStack>
   );
 }

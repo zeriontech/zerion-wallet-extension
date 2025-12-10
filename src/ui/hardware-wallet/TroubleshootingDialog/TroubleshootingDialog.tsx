@@ -102,7 +102,6 @@ export function TroubleshootingDialog({
             )
           ) : null}
         </VStack>
-        <Spacer height={24} />
       </BottomSheetDialog>
     </>
   );

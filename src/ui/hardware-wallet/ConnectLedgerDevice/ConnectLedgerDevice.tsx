@@ -127,7 +127,7 @@ export function ConnectLedgerDevice({
     <>
       <CenteredDialog
         ref={dialogRef}
-        containerStyle={{ padding: '20px 24px' }}
+        containerStyle={{ padding: 24, borderRadius: 16 }}
         style={{ width: 380, height: 'max-content' }}
       >
         <BluetoothWarningDialog
@@ -209,6 +209,7 @@ export function ConnectLedgerDevice({
               <Button
                 kind="primary"
                 onClick={() => invokeConnectDevice(transports.hid)}
+                style={{ paddingInline: 16 }}
               >
                 Connect via USB
               </Button>
@@ -217,21 +218,39 @@ export function ConnectLedgerDevice({
                 <Button
                   kind="primary"
                   onClick={() => invokeConnectDevice(transports.bluetooth)}
+                  style={{ paddingInline: 16 }}
                 >
                   Connect via Bluetooth
                 </Button>
               ) : bluetoothSupportEnabled == null ? (
-                <Button
-                  kind="primary"
-                  onClick={() => {
-                    if (!dialogRef.current) {
-                      return;
-                    }
-                    dialogRef.current.showModal();
-                  }}
-                >
-                  Connect via Bluetooth (beta)
-                </Button>
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <Button
+                    kind="primary"
+                    onClick={() => {
+                      if (!dialogRef.current) {
+                        return;
+                      }
+                      dialogRef.current.showModal();
+                    }}
+                    style={{ paddingInline: 16, width: '100%' }}
+                  >
+                    Connect via Bluetooth
+                  </Button>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: -8,
+                      right: -8,
+                      borderRadius: 8,
+                      backgroundColor: 'var(--primary)',
+                      padding: '2px 8px',
+                    }}
+                  >
+                    <UIText kind="caption/accent" color="var(--always-white)">
+                      Beta
+                    </UIText>
+                  </div>
+                </div>
               ) : null}
             </HStack>
           )}

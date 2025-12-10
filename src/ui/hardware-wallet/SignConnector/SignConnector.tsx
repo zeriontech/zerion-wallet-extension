@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
 import type {
   TransportIdentifier,
@@ -87,10 +87,12 @@ export class DeviceController {
   private onNotConnected?: (message: HardwareRPCRequest) => void;
   private onInteractionRequested?: (type: UserInteractionRequested) => void;
   private onError?: (error: unknown) => void;
+  private cancelLedgerRequest?: () => void;
+  private lastRequestId: string | null = null;
 
   static signTransaction =
     (params: unknown) =>
-    async (
+    (
       sessionId: string,
       onInteractionRequested?: (type: UserInteractionRequested) => void
     ) => {
@@ -106,7 +108,7 @@ export class DeviceController {
 
   static solana_signTransaction =
     (params: unknown) =>
-    async (
+    (
       sessionId: string,
       onInteractionRequested?: (type: UserInteractionRequested) => void
     ) => {
@@ -118,7 +120,7 @@ export class DeviceController {
           ? uint8ArrayToBase64(transaction.serializeMessage())
           : uint8ArrayToBase64(transaction.message.serialize());
 
-      const { signature } = await signSolanaTransaction(
+      const { promise, cancel } = signSolanaTransaction(
         {
           derivationPath: params.derivationPath,
           transaction: cleanedTransaction,
@@ -126,22 +128,27 @@ export class DeviceController {
         { sessionId, onInteractionRequested }
       );
 
-      if (transaction instanceof Transaction) {
-        transaction.signatures = [
-          {
-            publicKey: transaction.feePayer!,
-            signature: Buffer.from(signature),
-          },
-        ];
-      } else {
-        transaction.signatures[0] = signature;
-      }
-      return solToBase64(transaction);
+      return {
+        promise: promise.then(({ signature }) => {
+          if (transaction instanceof Transaction) {
+            transaction.signatures = [
+              {
+                publicKey: transaction.feePayer!,
+                signature: Buffer.from(signature),
+              },
+            ];
+          } else {
+            transaction.signatures[0] = signature;
+          }
+          return solToBase64(transaction);
+        }),
+        cancel,
+      };
     };
 
   static personalSign =
     (params: unknown) =>
-    async (
+    (
       sessionId: string,
       onInteractionRequested?: (type: UserInteractionRequested) => void
     ) => {
@@ -155,7 +162,7 @@ export class DeviceController {
 
   static signTypedData_v4 =
     (params: unknown) =>
-    async (
+    (
       sessionId: string,
       onInteractionRequested?: (type: UserInteractionRequested) => void
     ) => {
@@ -172,6 +179,7 @@ export class DeviceController {
   listener = async (event: MessageEvent) => {
     if (isHardwareRpcRequest(event.data)) {
       const { id, method, params, transport = transports.hid } = event.data;
+      this.lastRequestId = id || null;
       if (
         isClassProperty(DeviceController, method) &&
         typeof DeviceController[method] === 'function'
@@ -185,11 +193,13 @@ export class DeviceController {
             this.onNotConnected?.(event.data);
             return;
           }
-          const result = await DeviceController[method](params)(
+          const { promise, cancel } = DeviceController[method](params)(
             // @ts-ignore Controller[method] should be callable here
             sessionId,
             this.onInteractionRequested
           );
+          this.cancelLedgerRequest = cancel;
+          const result = await promise;
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
           this.onError?.(error);
@@ -197,6 +207,8 @@ export class DeviceController {
             { id, error: parseLedgerError(error).toString() },
             window.location.origin
           );
+        } finally {
+          this.lastRequestId = null;
         }
       }
     }
@@ -243,6 +255,21 @@ export class DeviceController {
       window.removeEventListener('message', this.listener);
     };
   }
+
+  cancel() {
+    this.cancelLedgerRequest?.();
+    this.cancelLedgerRequest = undefined;
+
+    const error = getDeniedByUserError();
+    this.request({
+      method: 'ledger/sign/error',
+      params: { error: parseLedgerError(error).toString() },
+    });
+
+    const lastRequestId = this.lastRequestId;
+    this.lastRequestId = null;
+    return lastRequestId;
+  }
 }
 
 export function SignConnector() {
@@ -268,6 +295,7 @@ export function SignConnector() {
         });
       },
       onError: (error) => {
+        controller.cancel();
         controller.request({
           method: 'ledger/sign/error',
           params: { error: parseLedgerError(error).toString() },
@@ -277,6 +305,22 @@ export function SignConnector() {
       },
     });
   }, [controller]);
+
+  const interruptRequest = useCallback(() => {
+    const requestId = controller.cancel() || interruptedRequest?.id;
+    if (requestId) {
+      window.parent.postMessage(
+        {
+          id: requestId,
+          error: getDeniedByUserError().toString(),
+        },
+        window.location.origin
+      );
+    }
+    setInterruptedRequest(null);
+    setInteractionRequested(null);
+  }, [controller, interruptedRequest]);
+
   const [params] = useSearchParams();
   const ecosystem = (params.get('ecosystem') as BlockchainType) || 'evm';
   const windowType = params.get('windowType') || 'popup';
@@ -338,19 +382,7 @@ export function SignConnector() {
                   Sign via Bluetooth
                 </Button>
               ) : null}
-              <Button
-                onClick={() => {
-                  setInterruptedRequest(null);
-                  window.parent.postMessage(
-                    {
-                      id: interruptedRequest?.id,
-                      error: getDeniedByUserError(),
-                    },
-                    window.location.origin
-                  );
-                }}
-                kind="danger"
-              >
+              <Button onClick={interruptRequest} kind="danger">
                 Cancel
               </Button>
             </VStack>
@@ -372,35 +404,16 @@ export function SignConnector() {
             <VStack gap={8}>
               <Button
                 onClick={() => {
-                  setInterruptedRequest(null);
+                  interruptRequest();
                   controller.request({
                     method: 'ledger/sign/openInTab',
                     params: {},
                   });
-                  window.parent.postMessage(
-                    {
-                      id: interruptedRequest?.id,
-                      error: getDeniedByUserError(),
-                    },
-                    window.location.origin
-                  );
                 }}
               >
                 Open in new tab to connect
               </Button>
-              <Button
-                onClick={() => {
-                  setInterruptedRequest(null);
-                  window.parent.postMessage(
-                    {
-                      id: interruptedRequest?.id,
-                      error: getDeniedByUserError(),
-                    },
-                    window.location.origin
-                  );
-                }}
-                kind="danger"
-              >
+              <Button onClick={interruptRequest} kind="danger">
                 Cancel
               </Button>
             </VStack>
@@ -418,19 +431,7 @@ export function SignConnector() {
               >
                 Try Again
               </Button>
-              <Button
-                onClick={() => {
-                  setInterruptedRequest(null);
-                  window.parent.postMessage(
-                    {
-                      id: interruptedRequest?.id,
-                      error: getDeniedByUserError(),
-                    },
-                    window.location.origin
-                  );
-                }}
-                kind="danger"
-              >
+              <Button onClick={interruptRequest} kind="danger">
                 Cancel
               </Button>
             </VStack>
@@ -457,15 +458,25 @@ export function SignConnector() {
       </div>
     )
   ) : interactionRequested && interactionRequested !== 'none' ? (
-    <div
+    <VStack
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         height: 300,
+        width: '100%',
+        gridTemplateRows: '1fr auto',
+        gridTemplateColumns: '1fr',
+        placeItems: 'center',
       }}
+      gap={4}
     >
       <InteractionRequested kind={interactionRequested} ecosystem={ecosystem} />
-    </div>
+      <Button
+        onClick={interruptRequest}
+        kind="regular"
+        style={{ width: '100%' }}
+      >
+        Cancel
+      </Button>
+    </VStack>
   ) : null;
 }
