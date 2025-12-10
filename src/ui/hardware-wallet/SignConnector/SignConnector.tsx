@@ -16,6 +16,9 @@ import {
   getDeniedByUserError,
   unsubscribeCheckDeviceListeners,
 } from '@zeriontech/hardware-wallet-connection';
+import ConnectionOnIcon from 'jsx:src/ui/assets/connection-toggle-on.svg';
+import ConnectionOffIcon from 'jsx:src/ui/assets/connection-toggle-off.svg';
+import DisconnectIcon from 'jsx:src/ui/assets/disconnect.svg';
 import type { RpcRequest } from 'src/shared/custom-rpc';
 import {
   isRpcRequest,
@@ -373,6 +376,14 @@ export function SignConnector() {
             <UIText kind="body/accent" style={{ textAlign: 'center' }}>
               Select how your device is connected
             </UIText>
+            <ConnectionOnIcon
+              style={{
+                height: 60,
+                width: 60,
+                display: 'block',
+                alignSelf: 'center',
+              }}
+            />
             <VStack gap={8}>
               <Button onClick={() => mutate(transports.hid)}>
                 Sign via USB
@@ -401,40 +412,62 @@ export function SignConnector() {
             No connected device found.
           </UIText>
           {supportBluetooth ? (
-            <VStack gap={8}>
-              <Button
-                onClick={() => {
-                  interruptRequest();
-                  controller.request({
-                    method: 'ledger/sign/openInTab',
-                    params: {},
-                  });
+            <>
+              <ConnectionOffIcon
+                style={{
+                  height: 80,
+                  width: 80,
+                  display: 'block',
+                  alignSelf: 'center',
+                  color: 'var(--notice-500)',
                 }}
-              >
-                Open in new tab to connect
-              </Button>
-              <Button onClick={interruptRequest} kind="danger">
-                Cancel
-              </Button>
-            </VStack>
+              />
+              <VStack gap={8}>
+                <Button
+                  onClick={() => {
+                    interruptRequest();
+                    controller.request({
+                      method: 'ledger/sign/openInTab',
+                      params: {},
+                    });
+                  }}
+                >
+                  Open in new tab to connect
+                </Button>
+                <Button onClick={interruptRequest} kind="danger">
+                  Cancel
+                </Button>
+              </VStack>
+            </>
           ) : (
-            <VStack gap={8}>
-              <Button
-                onClick={() => {
-                  window.postMessage(interruptedRequest);
-                  setInterruptedRequest(null);
-                  controller.request({
-                    method: 'ledger/sign/resume',
-                    params: {},
-                  });
+            <>
+              <DisconnectIcon
+                style={{
+                  height: 80,
+                  width: 80,
+                  display: 'block',
+                  alignSelf: 'center',
+                  color: 'var(--negative-500)',
                 }}
-              >
-                Try Again
-              </Button>
-              <Button onClick={interruptRequest} kind="danger">
-                Cancel
-              </Button>
-            </VStack>
+              />
+              <VStack gap={8}>
+                <Button
+                  onClick={() => {
+                    window.postMessage(interruptedRequest);
+                    setInterruptedRequest(null);
+                    controller.request({
+                      method: 'ledger/sign/resume',
+                      params: {},
+                    });
+                  }}
+                >
+                  Try Again
+                </Button>
+                <Button onClick={interruptRequest} kind="danger">
+                  Cancel
+                </Button>
+              </VStack>
+            </>
           )}
         </div>
       )
