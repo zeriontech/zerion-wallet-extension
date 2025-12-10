@@ -67,7 +67,7 @@ export function InteractionRequested({
   }
 
   return (
-    <VStack gap={12} style={{ justifyItems: 'center' }}>
+    <VStack gap={16} style={{ justifyItems: 'center' }}>
       <div
         className={config.shake ? styles.iconShake : undefined}
         style={{ display: 'flex' }}
@@ -76,7 +76,7 @@ export function InteractionRequested({
           style={{ width: 60, height: 60, color: 'var(--black)' }}
         />
       </div>
-      <VStack gap={4} style={{ justifyItems: 'center' }}>
+      <VStack gap={0} style={{ justifyItems: 'center' }}>
         <UIText kind="caption/regular" color="var(--neutral-500)">
           Action on your device:
         </UIText>
