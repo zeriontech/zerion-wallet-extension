@@ -2118,7 +2118,11 @@ class PublicController {
     const wallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
     const searchParams = new URLSearchParams({
       origin: context.origin,
       transaction: txBase64,
@@ -2142,7 +2146,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
-        type: deviceAccount ? 'tab' : undefined,
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2162,7 +2166,11 @@ class PublicController {
     const wallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
     const searchParams = new URLSearchParams({
       origin: context.origin,
       transactions: JSON.stringify(transactionsBase64),
@@ -2186,7 +2194,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
-        type: deviceAccount ? 'tab' : undefined,
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2207,7 +2215,11 @@ class PublicController {
     const wallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
 
     const messageUint8 = base64ToUint8Array(messageSerialized);
     const searchParams = new URLSearchParams({
@@ -2231,7 +2243,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
-        type: deviceAccount ? 'tab' : undefined,
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2369,14 +2381,20 @@ class PublicController {
     const currentWallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
-    const wallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
     // TODO: should we check transaction.from instead of currentAddress?
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
+
     const [transaction, { clientScope } = { clientScope: undefined }] = params;
     invariant(transaction, () => new InvalidParams());
     const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
@@ -2407,7 +2425,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
-        type: deviceAccount ? 'tab' : undefined,
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2424,7 +2442,11 @@ class PublicController {
     const wallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
     if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
@@ -2454,7 +2476,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
-        type: deviceAccount ? 'tab' : undefined,
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2522,7 +2544,11 @@ class PublicController {
     const wallet = this.wallet.getCurrentWalletSync({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
     const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
 
     const currentWallet = await this.wallet.uiGetCurrentWallet({
       context: INTERNAL_SYMBOL_CONTEXT,
@@ -2549,7 +2575,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
-        type: deviceAccount ? 'tab' : undefined,
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }

@@ -5,7 +5,7 @@ import {
   transports,
 } from '@zeriontech/hardware-wallet-connection';
 import { useMutation } from '@tanstack/react-query';
-import React from 'react';
+import React, { useRef } from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -16,6 +16,9 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { useEvent } from 'src/ui/shared/useEvent';
+import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import type { DeviceConnection } from '../types';
 import { ConnectIllustration } from './ConnectIllustration';
 
@@ -41,11 +44,56 @@ function CheckListItem({
   );
 }
 
+function BluetoothWarningDialog({ onSubmit }: { onSubmit: () => void }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+      }}
+    >
+      <VStack gap={16}>
+        <UIText kind="headline/h3">Enable Bluetooth Support</UIText>
+
+        <div
+          style={{
+            backgroundColor: 'var(--neutral-100)',
+            borderRadius: 8,
+            padding: 12,
+          }}
+        >
+          <UIText kind="small/regular" color="var(--neutral-700)">
+            Due to browser limitations, signing flows for your hardware wallets
+            will open in a tab view instead of popup or sidepanel.
+          </UIText>
+        </div>
+
+        <UIText kind="caption/accent" color="var(--neutral-500)">
+          You can turn this on or off anytime in{' '}
+          <span style={{ textDecoration: 'underline' }}>
+            Settings → Experiments.
+          </span>
+        </UIText>
+
+        <Button kind="primary" style={{ width: '100%' }} onClick={onSubmit}>
+          Enable Bluetooth Connection
+        </Button>
+      </VStack>
+    </div>
+  );
+}
+
 export function ConnectLedgerDevice({
+  bluetoothSupportEnabled,
   onConnect,
+  onBluetoothEnabled,
 }: {
+  bluetoothSupportEnabled: boolean | null;
   onConnect: (data: DeviceConnection) => void;
+  onBluetoothEnabled: () => void;
 }) {
+  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const {
     mutate: invokeConnectDevice,
     isLoading,
@@ -73,87 +121,124 @@ export function ConnectLedgerDevice({
     error?._tag === 'NoAccessibleDeviceError' || // USB connection cancelled by user
     error?.message === 'User cancelled the requestDevice() chooser.'; // Bluetooth connection cancelled by user
 
+  const onBluetoothEnabledEvent = useEvent(onBluetoothEnabled);
+
   return (
-    <PageColumn style={{ height: '100%' }} paddingInline={24}>
-      <VStack gap={24}>
-        <div>
-          <div
-            style={{
-              backgroundColor: 'var(--black)',
-              borderRadius: '50%',
-              padding: 10,
-              height: 52,
-              width: 52,
-            }}
-          >
-            <LedgerIcon
-              style={{ color: 'var(--white)', width: 32, height: 32 }}
-            />
+    <>
+      <CenteredDialog
+        ref={dialogRef}
+        containerStyle={{ padding: '20px 24px' }}
+        style={{ width: 380, height: 'max-content' }}
+      >
+        <BluetoothWarningDialog
+          onSubmit={() => {
+            onBluetoothEnabledEvent();
+            invokeConnectDevice(transports.bluetooth);
+            dialogRef.current?.close();
+          }}
+        />
+      </CenteredDialog>
+      <PageColumn style={{ height: '100%' }} paddingInline={24}>
+        <VStack gap={24}>
+          <div>
+            <div
+              style={{
+                backgroundColor: 'var(--black)',
+                borderRadius: '50%',
+                padding: 10,
+                height: 52,
+                width: 52,
+              }}
+            >
+              <LedgerIcon
+                style={{ color: 'var(--white)', width: 32, height: 32 }}
+              />
+            </div>
           </div>
-        </div>
-        <UIText kind="headline/hero">{title}</UIText>
-        <UIText kind="headline/h3">Ensure your device:</UIText>
-        <UIText kind="body/regular">
-          <ol
-            style={{
-              display: 'grid',
-              gap: 16,
-              margin: 0,
-              padding: 0,
-              listStyle: 'none',
-            }}
-          >
-            <CheckListItem
-              checked={isSuccess || Boolean(isPhysicallyConnected)}
-              text="Is can be connected to the computer."
-            />
-            <CheckListItem
-              checked={isSuccess}
-              text="Has Ethereum App or Solana App installed."
-            />
-          </ol>
-        </UIText>
-      </VStack>
-      <PageFullBleedColumn paddingInline={false}>
-        <div style={{ overflow: 'hidden' }}>
-          <Spacer height={68} />
-          <ConnectIllustration />
-          <Spacer height={28} />
-        </div>
-      </PageFullBleedColumn>
-      <div style={{ marginTop: 'auto' }}>
-        {error && !userCancelledFlowError ? (
-          <UIText kind="small/regular" color="var(--negative-500)">
-            {error.message}
+          <UIText kind="headline/hero">{title}</UIText>
+          <UIText kind="headline/h3">Ensure your device:</UIText>
+          <UIText kind="body/regular">
+            <ol
+              style={{
+                display: 'grid',
+                gap: 16,
+                margin: 0,
+                padding: 0,
+                listStyle: 'none',
+              }}
+            >
+              <CheckListItem
+                checked={isSuccess || Boolean(isPhysicallyConnected)}
+                text="Is can be connected to the computer."
+              />
+              <CheckListItem
+                checked={isSuccess}
+                text="Has Ethereum App or Solana App installed."
+              />
+            </ol>
           </UIText>
-        ) : null}
-        <Spacer height={24} />
-        {/* disable on isSuccess to prevent flick of button before redirect */}
-        {isLoading || isSuccess ? (
-          <HStack alignItems="center" gap={24}>
-            <CircleSpinner color="var(--primary)" size="24px" />
-            <UIText kind="headline/h3">Connecting...</UIText>
-          </HStack>
-        ) : (
-          <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <Button
-              kind="primary"
-              onClick={() => invokeConnectDevice(transports.hid)}
+        </VStack>
+        <PageFullBleedColumn paddingInline={false}>
+          <div style={{ overflow: 'hidden' }}>
+            <Spacer height={68} />
+            <ConnectIllustration />
+            <Spacer height={28} />
+          </div>
+        </PageFullBleedColumn>
+        <div style={{ marginTop: 'auto' }}>
+          {error && !userCancelledFlowError ? (
+            <UIText kind="small/regular" color="var(--negative-500)">
+              {error.message}
+            </UIText>
+          ) : null}
+          <Spacer height={24} />
+          {/* disable on isSuccess to prevent flick of button before redirect */}
+          {isLoading || isSuccess ? (
+            <HStack alignItems="center" gap={24}>
+              <CircleSpinner color="var(--primary)" size="24px" />
+              <UIText kind="headline/h3">Connecting...</UIText>
+            </HStack>
+          ) : (
+            <HStack
+              gap={8}
+              style={{
+                gridTemplateColumns:
+                  bluetoothSupportEnabled !== false ? '1fr 1fr' : '1fr',
+              }}
             >
-              Connect via USB
-            </Button>
+              <Button
+                kind="primary"
+                onClick={() => invokeConnectDevice(transports.hid)}
+              >
+                Connect via USB
+              </Button>
 
-            <Button
-              kind="primary"
-              onClick={() => invokeConnectDevice(transports.bluetooth)}
-            >
-              Connect via Bluetooth
-            </Button>
-          </HStack>
-        )}
+              {bluetoothSupportEnabled ? (
+                <Button
+                  kind="primary"
+                  onClick={() => invokeConnectDevice(transports.bluetooth)}
+                >
+                  Connect via Bluetooth
+                </Button>
+              ) : bluetoothSupportEnabled == null ? (
+                <Button
+                  kind="primary"
+                  onClick={() => {
+                    if (!dialogRef.current) {
+                      return;
+                    }
+                    dialogRef.current.showModal();
+                  }}
+                >
+                  Connect via Bluetooth (beta)
+                </Button>
+              ) : null}
+            </HStack>
+          )}
 
-        <Spacer height={24} />
-      </div>
-    </PageColumn>
+          <Spacer height={24} />
+        </div>
+      </PageColumn>
+    </>
   );
 }

@@ -28,6 +28,7 @@ export interface State {
   providerInjection?: ProviderInjection;
   autoLockTimeout?: number | 'none';
   analyticsEnabled?: boolean | null;
+  bluetoothSupportEnabled?: boolean | null;
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
 }
 
@@ -63,6 +64,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     // Disable analytics by default for Firefox users
     // And show first blocking screen during onboarding to set the initial value
     analyticsEnabled: PLATFORM === 'firefox' ? null : true,
+    bluetoothSupportEnabled: null,
     autoLockTimeout: HALF_DAY,
   };
 

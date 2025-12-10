@@ -14,6 +14,7 @@ import {
   transports,
   parseLedgerError,
   getDeniedByUserError,
+  unsubscribeCheckDeviceListeners,
 } from '@zeriontech/hardware-wallet-connection';
 import type { RpcRequest } from 'src/shared/custom-rpc';
 import {
@@ -53,10 +54,16 @@ async function getConnectedSessionId({
   transport?: TransportIdentifier;
 }) {
   return Promise.race([
-    rejectAfterDelay(1000, 'Device not connected').catch(() => null),
+    rejectAfterDelay(1000, 'Device not connected').catch(() => {
+      unsubscribeCheckDeviceListeners();
+      return null;
+    }),
     checkDevice({ transportIdentifier: transport })
       .then(({ sessionId }) => sessionId)
-      .catch(() => null),
+      .catch(() => {
+        unsubscribeCheckDeviceListeners();
+        return null;
+      }),
   ]);
 }
 
@@ -79,6 +86,7 @@ export class DeviceController {
 
   private onNotConnected?: (message: HardwareRPCRequest) => void;
   private onInteractionRequested?: (type: UserInteractionRequested) => void;
+  private onError?: (error: unknown) => void;
 
   static signTransaction =
     (params: unknown) =>
@@ -184,14 +192,11 @@ export class DeviceController {
           );
           window.parent.postMessage({ id, result }, window.location.origin);
         } catch (error) {
+          this.onError?.(error);
           window.parent.postMessage(
             { id, error: parseLedgerError(error).toString() },
             window.location.origin
           );
-          this.request({
-            method: 'ledger/sign/error',
-            params: { error: parseLedgerError(error).toString() },
-          });
         }
       }
     }
@@ -224,12 +229,15 @@ export class DeviceController {
   listen({
     onNotConnected,
     onInteractionRequested,
+    onError,
   }: {
     onNotConnected?: (message: HardwareRPCRequest) => void;
     onInteractionRequested?: (type: UserInteractionRequested) => void;
+    onError?: (error: unknown) => void;
   } = {}) {
     this.onNotConnected = onNotConnected;
     this.onInteractionRequested = onInteractionRequested;
+    this.onError = onError;
     window.addEventListener('message', this.listener);
     return () => {
       window.removeEventListener('message', this.listener);
@@ -259,11 +267,20 @@ export function SignConnector() {
           params: { type },
         });
       },
+      onError: (error) => {
+        controller.request({
+          method: 'ledger/sign/error',
+          params: { error: parseLedgerError(error).toString() },
+        });
+        setInterruptedRequest(null);
+        setInteractionRequested(null);
+      },
     });
   }, [controller]);
   const [params] = useSearchParams();
   const ecosystem = (params.get('ecosystem') as BlockchainType) || 'evm';
   const windowType = params.get('windowType') || 'popup';
+  const supportBluetooth = params.get('supportBluetooth') === 'true';
 
   const { mutate, isLoading } = useMutation({
     mutationFn: async (transport: TransportIdentifier) => {
@@ -298,86 +315,156 @@ export function SignConnector() {
   return interruptedRequest ? (
     !isLoading ? (
       windowType === 'tab' ? (
-        <VStack gap={16} style={{ padding: 24 }}>
-          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
-            Select how your device is connected
-          </UIText>
-          <VStack gap={8}>
-            <Button onClick={() => mutate(transports.hid)}>Sign via USB</Button>
-            <Button onClick={() => mutate(transports.bluetooth)}>
-              Sign via Bluetooth
-            </Button>
-            <Button
-              onClick={() => {
-                window.parent.postMessage(
-                  {
-                    id: interruptedRequest?.id,
-                    error: getDeniedByUserError(),
-                  },
-                  window.location.origin
-                );
-              }}
-              kind="danger"
-            >
-              Cancel
-            </Button>
-          </VStack>
-        </VStack>
-      ) : (
-        <VStack gap={16} style={{ padding: 24, alignItems: 'center' }}>
-          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
-            No connected device found. Please open the wallet in a new tab to
-            finalize the signing process.
-          </UIText>
-          <UIText
-            kind="body/regular"
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div
             style={{
-              textAlign: 'center',
-              padding: '8px 12px',
-              borderRadius: 8,
-              backgroundColor: 'var(--neutral-100)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              height: 300,
+              width: '100%',
+              maxWidth: 400,
             }}
           >
-            Device connection is not supported inside extension.
+            <UIText kind="body/accent" style={{ textAlign: 'center' }}>
+              Select how your device is connected
+            </UIText>
+            <VStack gap={8}>
+              <Button onClick={() => mutate(transports.hid)}>
+                Sign via USB
+              </Button>
+              {supportBluetooth ? (
+                <Button onClick={() => mutate(transports.bluetooth)}>
+                  Sign via Bluetooth
+                </Button>
+              ) : null}
+              <Button
+                onClick={() => {
+                  setInterruptedRequest(null);
+                  window.parent.postMessage(
+                    {
+                      id: interruptedRequest?.id,
+                      error: getDeniedByUserError(),
+                    },
+                    window.location.origin
+                  );
+                }}
+                kind="danger"
+              >
+                Cancel
+              </Button>
+            </VStack>
+          </div>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            height: 300,
+          }}
+        >
+          <UIText kind="body/accent" style={{ textAlign: 'center' }}>
+            No connected device found.
           </UIText>
-          <Button
-            onClick={() =>
-              controller.request({
-                method: 'ledger/sign/openInTab',
-                params: {},
-              })
-            }
-          >
-            Open in new tab and try again
-          </Button>
-          <Button
-            onClick={() => {
-              window.parent.postMessage(
-                {
-                  id: interruptedRequest?.id,
-                  error: getDeniedByUserError(),
-                },
-                window.location.origin
-              );
-            }}
-            kind="danger"
-          >
-            Cancel
-          </Button>
-        </VStack>
+          {supportBluetooth ? (
+            <VStack gap={8}>
+              <Button
+                onClick={() => {
+                  setInterruptedRequest(null);
+                  controller.request({
+                    method: 'ledger/sign/openInTab',
+                    params: {},
+                  });
+                  window.parent.postMessage(
+                    {
+                      id: interruptedRequest?.id,
+                      error: getDeniedByUserError(),
+                    },
+                    window.location.origin
+                  );
+                }}
+              >
+                Open in new tab to connect
+              </Button>
+              <Button
+                onClick={() => {
+                  setInterruptedRequest(null);
+                  window.parent.postMessage(
+                    {
+                      id: interruptedRequest?.id,
+                      error: getDeniedByUserError(),
+                    },
+                    window.location.origin
+                  );
+                }}
+                kind="danger"
+              >
+                Cancel
+              </Button>
+            </VStack>
+          ) : (
+            <VStack gap={8}>
+              <Button
+                onClick={() => {
+                  window.postMessage(interruptedRequest);
+                  setInterruptedRequest(null);
+                  controller.request({
+                    method: 'ledger/sign/resume',
+                    params: {},
+                  });
+                }}
+              >
+                Try Again
+              </Button>
+              <Button
+                onClick={() => {
+                  setInterruptedRequest(null);
+                  window.parent.postMessage(
+                    {
+                      id: interruptedRequest?.id,
+                      error: getDeniedByUserError(),
+                    },
+                    window.location.origin
+                  );
+                }}
+                kind="danger"
+              >
+                Cancel
+              </Button>
+            </VStack>
+          )}
+        </div>
       )
     ) : (
-      <HStack
-        gap={8}
-        style={{ padding: 24, width: '100%' }}
-        justifyContent="center"
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          height: 300,
+        }}
       >
-        <CircleSpinner color="var(--primary)" size="24px" />
-        <UIText kind="body/accent">Connecting...</UIText>
-      </HStack>
+        <HStack
+          gap={8}
+          style={{ padding: 24, width: '100%' }}
+          justifyContent="center"
+        >
+          <CircleSpinner color="var(--primary)" size="24px" />
+          <UIText kind="body/accent">Connecting...</UIText>
+        </HStack>
+      </div>
     )
   ) : interactionRequested && interactionRequested !== 'none' ? (
-    <div style={{ padding: 24 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        height: 300,
+      }}
+    >
       <InteractionRequested kind={interactionRequested} ecosystem={ecosystem} />
     </div>
   ) : null;

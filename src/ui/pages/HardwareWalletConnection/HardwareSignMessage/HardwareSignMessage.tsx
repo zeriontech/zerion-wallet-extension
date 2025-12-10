@@ -27,6 +27,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { urlContext } from 'src/shared/UrlContext';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -58,6 +59,7 @@ export const HardwareSignMessage = React.forwardRef(
   ) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { globalPreferences } = useGlobalPreferences();
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -141,7 +143,10 @@ export const HardwareSignMessage = React.forwardRef(
         }
         if (isRpcRequest(event.data)) {
           const { method, params } = event.data;
-          if (method === 'ledger/sign/success') {
+          if (
+            method === 'ledger/sign/success' ||
+            method === 'ledger/sign/resume'
+          ) {
             dialogRef.current?.close();
             setSignError(null);
           } else if (method === 'ledger/sign/error') {
@@ -159,6 +164,7 @@ export const HardwareSignMessage = React.forwardRef(
           } else if (method === 'ledger/sign/openInTab') {
             const url = new URL(window.location.href);
             openUrl(url, { windowType: 'tab' });
+            setSignError(null);
           }
         }
       }
@@ -186,22 +192,27 @@ export const HardwareSignMessage = React.forwardRef(
           closeOnClickOutside={false}
           height="fit-content"
         >
-          <LedgerIframe
-            ref={iframeRef}
-            initialRoute="/signConnector"
-            appSearchParams={new URLSearchParams({
-              ecosystem,
-              windowType: urlContext.windowType,
-            }).toString()}
-            style={{
-              // border: 'none',
-              backgroundColor: 'transparent',
-            }}
-            // @ts-ignore
-            allowtransparency="true"
-            tabIndex={-1}
-            height={300}
-          />
+          {globalPreferences ? (
+            <LedgerIframe
+              ref={iframeRef}
+              initialRoute="/signConnector"
+              appSearchParams={new URLSearchParams({
+                ecosystem,
+                windowType: urlContext.windowType,
+                supportBluetooth: `${Boolean(
+                  globalPreferences.bluetoothSupportEnabled
+                )}`,
+              }).toString()}
+              style={{
+                // border: 'none',
+                backgroundColor: 'transparent',
+              }}
+              // @ts-ignore
+              allowtransparency="true"
+              tabIndex={-1}
+              height={300}
+            />
+          ) : null}
         </BottomSheetDialog>
         <VStack gap={8}>
           {isLoading ? (

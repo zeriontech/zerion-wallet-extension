@@ -42,6 +42,16 @@ function ConnectDeviceFlow({
     const addresses = params.get('existingAddresses[]');
     return new Set(addresses?.split(','));
   }, [params]);
+  const bluetoothSupportEnabled = useMemo(() => {
+    const supportBluetoothParam = params.get('supportBluetooth');
+    if (supportBluetoothParam === 'true') {
+      return true;
+    }
+    if (supportBluetoothParam === 'false') {
+      return false;
+    }
+    return null;
+  }, [params]);
   const [ledger, setLedger] = useState<DeviceConnection | null>(null);
   const [controller] = useState(() => new DeviceController());
   useEffect(() => {
@@ -83,6 +93,13 @@ function ConnectDeviceFlow({
           } else {
             setLedger(data);
           }
+        }}
+        bluetoothSupportEnabled={bluetoothSupportEnabled}
+        onBluetoothEnabled={() => {
+          onPostMessage({
+            id: nanoid(),
+            method: 'ledger/enable-bluetooth',
+          });
         }}
       />
     );

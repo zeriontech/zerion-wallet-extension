@@ -22,6 +22,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
 import { getWalletInfo } from './shared/getWalletInfo';
@@ -94,6 +95,7 @@ export function HardwareWalletConnectionStart({
 
   const navigate = useNavigate();
   const existingAddresses = useAllSignerOrHwAddresses();
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
 
   const { mutate: finalize } = useMutation({
     mutationFn: async (params: LedgerAccountImport) => {
@@ -144,18 +146,39 @@ export function HardwareWalletConnectionStart({
           if (iframeRef.current && iframeRef.current.contentWindow) {
             iframeRef.current.contentWindow.postMessage({ id, result }, '*');
           }
+        } else if (method === 'ledger/enable-bluetooth') {
+          setGlobalPreferences({
+            bluetoothSupportEnabled: true,
+          });
         }
       }
     }
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [finalize, onImport, navigate, requestId, searchParams, currency]);
+  }, [
+    finalize,
+    onImport,
+    navigate,
+    requestId,
+    searchParams,
+    currency,
+    setGlobalPreferences,
+  ]);
+
+  if (!globalPreferences) {
+    return null;
+  }
+
   return (
     <LedgerIframe
       ref={iframeRef}
       appSearchParams={new URLSearchParams({
         strategy: searchParams.get('strategy') || 'import',
         'existingAddresses[]': existingAddresses?.join(',') ?? '',
+        supportBluetooth:
+          globalPreferences?.bluetoothSupportEnabled != null
+            ? `${globalPreferences.bluetoothSupportEnabled}`
+            : '',
       }).toString()}
       style={{
         border: 'none',

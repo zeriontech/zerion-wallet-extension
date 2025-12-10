@@ -578,28 +578,61 @@ function Privacy() {
 
 function Experiments() {
   const { preferences, setPreferences } = usePreferences();
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
   useBackgroundKind({ kind: 'white' });
 
   return (
     <PageColumn>
       <NavigationTitle title="Experiments" />
       <PageTop />
-      <Frame>
-        <ToggleSettingLine
-          text="Hold to Sign"
-          checked={preferences?.enableHoldToSignButton || false}
-          onChange={(event) => {
-            setPreferences({
-              enableHoldToSignButton: event.target.checked,
-            });
-          }}
-          detailText={
-            <span>
-              Sign transactions with a long click to avoid accidental signing
-            </span>
-          }
-        />
-      </Frame>
+      <VStack gap={16}>
+        <Frame>
+          <ToggleSettingLine
+            text="Hold to Sign"
+            checked={preferences?.enableHoldToSignButton || false}
+            onChange={(event) => {
+              setPreferences({
+                enableHoldToSignButton: event.target.checked,
+              });
+            }}
+            detailText={
+              <span>
+                Sign transactions with a long click to avoid accidental signing
+              </span>
+            }
+          />
+        </Frame>
+        <Frame>
+          <ToggleSettingLine
+            text="Signing via Bluetooth"
+            checked={Boolean(globalPreferences?.bluetoothSupportEnabled)}
+            onChange={(event) => {
+              setGlobalPreferences({
+                bluetoothSupportEnabled: event.target.checked,
+              });
+            }}
+            detailText={
+              <span>
+                Due to browser limitations, signing flows for your hardware
+                wallets will open in a tab view instead of popup or sidepanel.
+              </span>
+            }
+          />
+        </Frame>
+        <Frame>
+          Debug value to reset bluetooth support preference
+          <Button
+            kind="neutral"
+            onClick={() => {
+              setGlobalPreferences({
+                bluetoothSupportEnabled: null,
+              });
+            }}
+          >
+            Reset Bluetooth Preference
+          </Button>
+        </Frame>
+      </VStack>
       <PageBottom />
     </PageColumn>
   );
