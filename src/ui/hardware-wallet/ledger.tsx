@@ -70,9 +70,9 @@ function ConnectDeviceFlow({
           const importData: LedgerAccountImport = {
             accounts,
             device: {
-              productId: device.productId,
+              productId: device.id,
               vendorId: device.vendorId,
-              productName: device.productName,
+              productName: device.name,
             },
             provider: 'ledger',
           };
