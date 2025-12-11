@@ -619,18 +619,34 @@ function Experiments() {
             }
           />
         </Frame>
-        <Frame>
-          Debug value to reset bluetooth support preference
-          <Button
-            kind="neutral"
-            onClick={() => {
-              setGlobalPreferences({
-                bluetoothSupportEnabled: null,
-              });
-            }}
-          >
-            Reset Bluetooth Preference
-          </Button>
+        <Frame style={{ borderColor: 'var(--notice-500)' }}>
+          <VStack gap={8} style={{ padding: 16, justifyItems: 'center' }}>
+            <UIText kind="body/regular">
+              Reset Bluetooth Preference (current value:{' '}
+              <UIText
+                kind="body/accent"
+                inline
+                style={{ color: 'var(--primary)' }}
+              >
+                {String(globalPreferences?.bluetoothSupportEnabled)}
+              </UIText>
+              )
+            </UIText>
+            <UIText kind="caption/accent" color="var(--notice-500)">
+              Remove before production release
+            </UIText>
+            <Button
+              kind="neutral"
+              onClick={() => {
+                setGlobalPreferences({
+                  bluetoothSupportEnabled: null,
+                });
+              }}
+              style={{ paddingInline: 24 }}
+            >
+              Reset Bluetooth Preference
+            </Button>
+          </VStack>
         </Frame>
       </VStack>
       <PageBottom />

@@ -42,6 +42,7 @@ type Props = {
 export interface SignMessageHandle {
   personalSign: (message: string) => Promise<string>;
   signTypedData_v4: (typedData: string | TypedData) => Promise<string>;
+  solana_signMessage: (messageHex: string) => Promise<string>;
 }
 
 export const HardwareSignMessage = React.forwardRef(
@@ -133,6 +134,32 @@ export const HardwareSignMessage = React.forwardRef(
         onError: handleError,
       });
 
+    const { mutateAsync: solana_signMessage, ...solana_signMessageMutation } =
+      useMutation({
+        mutationFn: async (message: string) => {
+          invariant(iframeRef.current, 'Ledger iframe not found');
+          invariant(
+            iframeRef.current.contentWindow,
+            'Iframe contentWindow is not available'
+          );
+          try {
+            const result = await hardwareMessageHandler.request<string>(
+              {
+                id: nanoid(),
+                method: 'solana_signMessage',
+                params: { derivationPath, message },
+              },
+              iframeRef.current.contentWindow
+            );
+            return result;
+          } catch (error) {
+            const normalizedError = handleError(error);
+            throw normalizedError;
+          }
+        },
+        onError: handleError,
+      });
+
     const [signError, setSignError] = useState<LedgerError | null>(null);
 
     useEffect(() => {
@@ -180,10 +207,16 @@ export const HardwareSignMessage = React.forwardRef(
       }
     }, [isError]);
 
-    useImperativeHandle(ref, () => ({ personalSign, signTypedData_v4 }));
+    useImperativeHandle(ref, () => ({
+      personalSign,
+      signTypedData_v4,
+      solana_signMessage,
+    }));
 
     const isLoading =
-      personalSignMutation.isLoading || signTypedData_v4Mutation.isLoading;
+      personalSignMutation.isLoading ||
+      signTypedData_v4Mutation.isLoading ||
+      solana_signMessageMutation.isLoading;
 
     return (
       <>

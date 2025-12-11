@@ -108,7 +108,15 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   const solanaSignMutation = useMutation({
     mutationFn: async (params: SolanaSignMessageParams) => {
       if (isDeviceAccount(wallet)) {
-        throw new Error('TODO: Support solana signMessage method for ledger');
+        invariant(
+          hardwareSignRef.current,
+          'HardwareSignMessage must be mounted'
+        );
+        const { messageHex: message } = params;
+        const signature = await hardwareSignRef.current.solana_signMessage(
+          message
+        );
+        return signature;
       } else {
         const result = await walletPort.request('solana_signMessage', params);
         return result.signatureSerialized;

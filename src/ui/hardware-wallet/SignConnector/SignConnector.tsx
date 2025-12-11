@@ -15,6 +15,7 @@ import {
   parseLedgerError,
   getDeniedByUserError,
   unsubscribeCheckDeviceListeners,
+  solanaSignMessage,
 } from '@zeriontech/hardware-wallet-connection';
 import ConnectionOnIcon from 'jsx:src/ui/assets/connection-toggle-on.svg';
 import ConnectionOffIcon from 'jsx:src/ui/assets/connection-toggle-off.svg';
@@ -175,6 +176,20 @@ export class DeviceController {
           derivationPath: params.derivationPath,
           rawTypedData: params.typedData,
         },
+        { sessionId, onInteractionRequested }
+      );
+    };
+
+  static solana_signMessage =
+    (params: unknown) =>
+    (
+      sessionId: string,
+      onInteractionRequested?: (type: UserInteractionRequested) => void
+    ) => {
+      assertPersonalSignParams(params);
+      const message = toUtf8String(params.message);
+      return solanaSignMessage(
+        { derivationPath: params.derivationPath, message },
         { sessionId, onInteractionRequested }
       );
     };
