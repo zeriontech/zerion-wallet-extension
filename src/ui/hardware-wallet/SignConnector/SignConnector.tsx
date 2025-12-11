@@ -447,7 +447,19 @@ export function SignConnector() {
                     });
                   }}
                 >
-                  Open in new tab to connect
+                  Open in new tab to connect via Bluetooth
+                </Button>
+                <Button
+                  onClick={() => {
+                    window.postMessage(interruptedRequest);
+                    setInterruptedRequest(null);
+                    controller.request({
+                      method: 'ledger/sign/resume',
+                      params: {},
+                    });
+                  }}
+                >
+                  Try Again
                 </Button>
                 <Button onClick={interruptRequest} kind="danger">
                   Cancel

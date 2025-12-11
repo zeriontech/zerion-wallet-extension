@@ -37,6 +37,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { useNavigate } from 'react-router-dom';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -185,6 +186,7 @@ export const HardwareSignTransaction = React.forwardRef(
     ref: React.Ref<SignTransactionHandle>
   ) {
     const { globalPreferences } = useGlobalPreferences();
+    const navigate = useNavigate();
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -285,21 +287,24 @@ export const HardwareSignTransaction = React.forwardRef(
           } else if (method === 'ledger/sign/openInTab') {
             const url = new URL(window.location.href);
             openUrl(url, { windowType: 'tab' });
+            navigate('/');
             setSignError(null);
           }
         }
       }
       window.addEventListener('message', handler);
       return () => window.removeEventListener('message', handler);
-    }, []);
+    }, [navigate]);
 
     const isError = signMutation.isError || signSolanaMutation.isError;
     const isSuccess = signMutation.isSuccess || signSolanaMutation.isSuccess;
     useEffect(() => {
       if (isError || isSuccess) {
+        signMutation.reset();
+        signSolanaMutation.reset();
         dialogRef.current?.close();
       }
-    }, [isError, isSuccess]);
+    }, [isError, isSuccess, signMutation, signSolanaMutation]);
 
     useImperativeHandle(ref, () => ({
       signTransaction,

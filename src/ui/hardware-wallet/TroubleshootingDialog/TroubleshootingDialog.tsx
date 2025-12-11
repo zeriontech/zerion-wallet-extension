@@ -50,7 +50,9 @@ export function TroubleshootingDialog({
               backgroundColor: 'var(--neutral-100)',
             }}
           >
-            There is most likely another unfinished operation in progress
+            There is most likely another unfinished operation in progress. Or
+            device is already connected via usb to another app or window of this
+            extension
           </UIText>
           <ul
             style={{

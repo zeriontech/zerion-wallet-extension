@@ -191,13 +191,14 @@ export const HardwareSignMessage = React.forwardRef(
           } else if (method === 'ledger/sign/openInTab') {
             const url = new URL(window.location.href);
             openUrl(url, { windowType: 'tab' });
+            navigate('/');
             setSignError(null);
           }
         }
       }
       window.addEventListener('message', handler);
       return () => window.removeEventListener('message', handler);
-    }, []);
+    }, [navigate]);
 
     const isError =
       personalSignMutation.isError ||
@@ -209,9 +210,18 @@ export const HardwareSignMessage = React.forwardRef(
       solana_signMessageMutation.isSuccess;
     useEffect(() => {
       if (isError || isSuccess) {
+        personalSignMutation.reset();
+        signTypedData_v4Mutation.reset();
+        solana_signMessageMutation.reset();
         dialogRef.current?.close();
       }
-    }, [isError, isSuccess]);
+    }, [
+      isError,
+      isSuccess,
+      personalSignMutation,
+      signTypedData_v4Mutation,
+      solana_signMessageMutation,
+    ]);
 
     useImperativeHandle(ref, () => ({
       personalSign,
