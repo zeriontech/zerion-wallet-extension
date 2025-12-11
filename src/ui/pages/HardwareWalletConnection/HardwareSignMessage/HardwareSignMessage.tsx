@@ -200,12 +200,18 @@ export const HardwareSignMessage = React.forwardRef(
     }, []);
 
     const isError =
-      personalSignMutation.isError || signTypedData_v4Mutation.isError;
+      personalSignMutation.isError ||
+      signTypedData_v4Mutation.isError ||
+      solana_signMessageMutation.isError;
+    const isSuccess =
+      signTypedData_v4Mutation.isSuccess ||
+      personalSignMutation.isSuccess ||
+      solana_signMessageMutation.isSuccess;
     useEffect(() => {
-      if (isError) {
+      if (isError || isSuccess) {
         dialogRef.current?.close();
       }
-    }, [isError]);
+    }, [isError, isSuccess]);
 
     useImperativeHandle(ref, () => ({
       personalSign,

@@ -294,11 +294,12 @@ export const HardwareSignTransaction = React.forwardRef(
     }, []);
 
     const isError = signMutation.isError || signSolanaMutation.isError;
+    const isSuccess = signMutation.isSuccess || signSolanaMutation.isSuccess;
     useEffect(() => {
-      if (isError) {
+      if (isError || isSuccess) {
         dialogRef.current?.close();
       }
-    }, [isError]);
+    }, [isError, isSuccess]);
 
     useImperativeHandle(ref, () => ({
       signTransaction,
