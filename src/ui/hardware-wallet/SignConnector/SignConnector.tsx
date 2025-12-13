@@ -52,16 +52,19 @@ import {
   assertSignTypedData_v4Params,
 } from './helpers';
 
+const DEVICE_CONNECTION_TIMEOUT = 500;
 async function getConnectedSessionId({
   transport = transports.hid,
 }: {
   transport?: TransportIdentifier;
 }) {
   return Promise.race([
-    rejectAfterDelay(1000, 'Device not connected').catch(() => {
-      unsubscribeCheckDeviceListeners();
-      return null;
-    }),
+    rejectAfterDelay(DEVICE_CONNECTION_TIMEOUT, 'Device not connected').catch(
+      () => {
+        unsubscribeCheckDeviceListeners();
+        return null;
+      }
+    ),
     checkDevice({ transportIdentifier: transport })
       .then(({ sessionId }) => sessionId)
       .catch(() => {
@@ -118,6 +121,12 @@ export class DeviceController {
     ) => {
       assertSignSolanaTransactionParams(params);
 
+      /**
+       * Solana transactions in Ledger require only the message data without signatures
+       * In @solana/web3.js we expect signatures to be prefilled with placeholders.
+       * So we need to clean the transaction before sending it to Ledger.
+       * And after receiving the signature, we need to reattach it to the transaction.
+       */
       const transaction = solFromBase64(params.transaction);
       const cleanedTransaction =
         transaction instanceof Transaction
@@ -285,6 +294,15 @@ export class DeviceController {
 }
 
 export function SignConnector() {
+  /**
+   * If device is not connected, we store the interrupted request here
+   * and show the connection options UI.
+   * So we can retry it directly from this component;
+   *
+   * We also need to show connection buttons directly insie the IFrame,
+   * because connect flow should be triggered by user interaction (click),
+   * and the parent window can't do it.
+   */
   const [interruptedRequest, setInterruptedRequest] =
     useState<HardwareRPCRequest | null>(null);
   const [interactionRequested, setInteractionRequested] =
