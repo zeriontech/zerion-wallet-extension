@@ -51,14 +51,8 @@ export const walletRecordUpgrades: Upgrades<PossibleEntry> = {
     };
   },
   4: (entry) => {
-    return {
-      ...entry,
-      version: 4,
-      feed: {
-        completedAbilities: [],
-        dismissedAbilities: [],
-      },
-    };
+    // WalletFeed type was removed
+    return { ...entry, version: 4, feed: {} };
   },
   5: (entry) => {
     return {
@@ -75,4 +69,5 @@ export const walletRecordUpgrades: Upgrades<PossibleEntry> = {
   6: (entry) => {
     return { ...entry, version: 6, activityRecord: {} };
   },
+  // TODO: nullify feed in version 7 migration
 };

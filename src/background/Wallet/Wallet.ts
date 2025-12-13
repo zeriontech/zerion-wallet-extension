@@ -51,7 +51,6 @@ import { removeSignature } from 'src/modules/ethereum/transactions/removeSignatu
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { isKnownDapp } from 'src/shared/dapps/known-dapps';
-import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
@@ -947,49 +946,6 @@ export class Wallet {
   }: WalletMethodParams<{ key: keyof RemoteConfig }>) {
     this.verifyInternalOrigin(context);
     return getRemoteConfigValue(key);
-  }
-
-  async getFeedInfo({
-    context,
-  }: WalletMethodParams): Promise<ReturnType<typeof Model.getFeedInfo>> {
-    this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    return Model.getFeedInfo(this.record);
-  }
-
-  async markAbility({
-    context,
-    params: { ability, action },
-  }: WalletMethodParams<{
-    ability: WalletAbility;
-    action: 'dismiss' | 'complete';
-  }>) {
-    this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    this.record = Model.markAbility(this.record, { ability, action });
-    this.updateWalletStore(this.record);
-    const currentAddress = normalizeAddress(this.ensureCurrentAddress());
-    emitter.emit('daylightAction', {
-      event_name:
-        action === 'complete'
-          ? 'Perks: Complete Tab Clicked'
-          : 'Perks: Dismiss Tab Clicked',
-      ability_id: ability.uid,
-      perk_type: ability.type,
-      address: currentAddress,
-    });
-  }
-
-  async unmarkAbility({
-    context,
-    params: { abilityId },
-  }: WalletMethodParams<{
-    abilityId: string;
-  }>) {
-    this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    this.record = Model.unmarkAbility(this.record, { abilityId });
-    this.updateWalletStore(this.record);
   }
 
   async createApprovalTransaction({

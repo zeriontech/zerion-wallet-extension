@@ -8,7 +8,6 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
-import type { WalletAbility } from 'src/shared/types/Daylight';
 import {
   isEncryptedMnemonic,
   decryptMnemonic,
@@ -36,7 +35,6 @@ import { emitter } from '../events';
 import type {
   PendingWallet,
   WalletContainer,
-  WalletFeed,
   WalletGroup,
   WalletRecord,
 } from './model/types';
@@ -302,7 +300,7 @@ export class WalletRecordModel {
         permissions: {},
         publicPreferences: {},
         activityRecord: {},
-        feed: { completedAbilities: [], dismissedAbilities: [] },
+        feed: null,
       };
     }
     return produce(record, (draft) => {
@@ -311,12 +309,6 @@ export class WalletRecordModel {
       const isReadonlyGroup = isReadonlyContainer(walletContainer);
       const isMnemonicGroup = isMnemonicContainer(walletContainer);
       const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
-      if (!draft.feed.completedAbilities) {
-        draft.feed.completedAbilities = [];
-      }
-      if (!draft.feed.dismissedAbilities) {
-        draft.feed.dismissedAbilities = [];
-      }
       /**
        * NOTE:
        * (De)duplication logic:
@@ -915,55 +907,6 @@ export class WalletRecordModel {
     return produce(record, (draft) => {
       draft.activityRecord[address] ??= {};
       draft.activityRecord[address].lastSwapChain = chain;
-    });
-  }
-
-  static getFeedInfo(record: WalletRecord): WalletFeed {
-    return record.feed;
-  }
-
-  static markAbility(
-    record: WalletRecord,
-    {
-      ability,
-      action,
-    }: { ability: WalletAbility; action: 'dismiss' | 'complete' }
-  ) {
-    return produce(record, (draft) => {
-      const { completedAbilities, dismissedAbilities } = draft.feed;
-      if (action === 'complete') {
-        if (!completedAbilities.some((item) => item.uid === ability.uid)) {
-          completedAbilities.unshift(ability);
-        }
-      } else if (action === 'dismiss') {
-        if (!dismissedAbilities.some((item) => item.uid === ability.uid)) {
-          dismissedAbilities.unshift(ability);
-        }
-      } else {
-        throw new Error(
-          'Unexpected ability marking type. Try "complete" or "dismiss"'
-        );
-      }
-    });
-  }
-
-  static unmarkAbility(
-    record: WalletRecord,
-    { abilityId }: { abilityId: string }
-  ) {
-    return produce(record, (draft) => {
-      const completedIndex = draft.feed.completedAbilities?.findIndex(
-        (item) => item.uid === abilityId
-      );
-      const dismissedIndex = draft.feed.dismissedAbilities?.findIndex(
-        (item) => item.uid === abilityId
-      );
-      if (completedIndex >= 0) {
-        draft.feed.completedAbilities.splice(completedIndex, 1);
-      }
-      if (dismissedIndex >= 0) {
-        draft.feed.dismissedAbilities.splice(dismissedIndex, 1);
-      }
     });
   }
 }
