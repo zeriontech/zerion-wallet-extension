@@ -47,6 +47,7 @@ import { emitter } from 'src/ui/shared/events';
 import { getError } from 'src/shared/errors/getError';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { usePreferences } from '../../preferences';
 import * as styles from './styles.module.css';
 
@@ -511,7 +512,10 @@ export function XpDropClaim() {
       <PageStickyFooter>
         <VStack gap={8}>
           {personalSignMutation.isError ? (
-            <ErrorMessage error={getError(personalSignMutation.error)} />
+            <ErrorMessage
+              error={getError(personalSignMutation.error)}
+              hardwareError={getHardwareError(personalSignMutation.error)}
+            />
           ) : null}
           <SignMessageButton
             ref={signMsgBtnRef}

@@ -276,14 +276,8 @@ export class DeviceController {
 
   cancel() {
     this.cancelLedgerRequest?.();
+    this.request({ method: 'ledger/sign/cancel' });
     this.cancelLedgerRequest = undefined;
-
-    const error = getDeniedByUserError();
-    this.request({
-      method: 'ledger/sign/error',
-      params: { error: parseLedgerError(error).toString() },
-    });
-
     const lastRequestId = this.lastRequestId;
     this.lastRequestId = null;
     return lastRequestId;
@@ -312,12 +306,9 @@ export function SignConnector() {
           params: { type },
         });
       },
-      onError: (error) => {
+      onError: () => {
         controller.cancel();
-        controller.request({
-          method: 'ledger/sign/error',
-          params: { error: parseLedgerError(error).toString() },
-        });
+        controller.request({ method: 'ledger/sign/error' });
         setInterruptedRequest(null);
         setInteractionRequested(null);
       },
@@ -363,10 +354,7 @@ export function SignConnector() {
         },
         window.location.origin
       );
-      controller.request({
-        method: 'ledger/sign/error',
-        params: { error: parseLedgerError(error).toString() },
-      });
+      controller.request({ method: 'ledger/sign/error' });
     },
     onSuccess: ({ sessionId, transport }) => {
       controller.request({ method: 'ledger/sign/success', params: {} });

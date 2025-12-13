@@ -100,6 +100,7 @@ import { getError } from 'get-error';
 import { PremiumFormBanner } from 'src/ui/features/premium/banners/FormBanner';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -1231,7 +1232,10 @@ function SwapFormComponent() {
               style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 12 }}
             >
               {approveMutation.isError ? (
-                <ErrorMessage error={getError(approveMutation.error)} />
+                <ErrorMessage
+                  error={getError(approveMutation.error)}
+                  hardwareError={getHardwareError(approveMutation.error)}
+                />
               ) : null}
               {wallet ? (
                 <SignTransactionButton
@@ -1267,7 +1271,12 @@ function SwapFormComponent() {
               style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 12 }}
             >
               {sendTransactionMutation.isError ? (
-                <ErrorMessage error={getError(sendTransactionMutation.error)} />
+                <ErrorMessage
+                  error={getError(sendTransactionMutation.error)}
+                  hardwareError={getHardwareError(
+                    sendTransactionMutation.error
+                  )}
+                />
               ) : null}
               {wallet ? (
                 <FormHint

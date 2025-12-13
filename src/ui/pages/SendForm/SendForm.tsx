@@ -61,6 +61,7 @@ import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-a
 import BigNumber from 'bignumber.js';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
@@ -614,10 +615,16 @@ function SendFormComponent() {
         ></BottomSheetDialog>
         <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
           {sendDataQuery.isError ? (
-            <ErrorMessage error={getError(sendDataQuery.error)} />
+            <ErrorMessage
+              error={getError(sendDataQuery.error)}
+              hardwareError={getHardwareError(sendDataQuery.error)}
+            />
           ) : null}
           {sendTxMutation.isError ? (
-            <ErrorMessage error={getError(sendTxMutation.error)} />
+            <ErrorMessage
+              error={getError(sendTxMutation.error)}
+              hardwareError={getHardwareError(sendTxMutation.error)}
+            />
           ) : null}
           {wallet ? (
             <SignTransactionButton

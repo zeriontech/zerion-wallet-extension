@@ -15,11 +15,22 @@ import { getError } from 'get-error';
 import type { ParsedError } from 'src/shared/errors/parse-error/parseError';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import { samples } from 'src/shared/errors/parse-error/samples';
+import type { LedgerError } from '@zeriontech/hardware-wallet-connection';
+import { TroubleshootingDialog } from 'src/ui/hardware-wallet/TroubleshootingDialog';
+import { Frame } from 'src/ui/ui-kit/Frame';
 import { useCopyToClipboard } from '../useCopyToClipboard';
 import * as styles from './ErrorMessage.module.css';
 
-function ErrorDetails({ error }: { error: ParsedError }) {
-  const { handleCopy, isSuccess } = useCopyToClipboard({ text: error.message });
+function ErrorDetails({
+  error,
+  hardwareError,
+}: {
+  error: ParsedError;
+  hardwareError: LedgerError | null;
+}) {
+  const { handleCopy, isSuccess } = useCopyToClipboard({
+    text: (hardwareError && hardwareError.toString()) || error.message,
+  });
   return (
     <>
       <UIText
@@ -33,6 +44,18 @@ function ErrorDetails({ error }: { error: ParsedError }) {
       >
         {error.message}
       </UIText>
+      {hardwareError && (
+        <Frame style={{ borderColor: 'var(--notice-500)' }}>
+          <VStack gap={8} style={{ padding: '12px 12px 16px' }}>
+            <UIText kind="small/regular" color="var(--neutral-700)">
+              Hardware Wallet Issue
+            </UIText>
+            <div style={{ display: 'flex' }}>
+              <TroubleshootingDialog error={hardwareError} />
+            </div>
+          </VStack>
+        </Frame>
+      )}
       <HStack gap={12} style={{ gridTemplateColumns: '1fr 1fr' }}>
         <Button kind="regular" value="cancel" onClick={handleCopy}>
           {isSuccess ? (
@@ -70,7 +93,13 @@ function ErrorDetails({ error }: { error: ParsedError }) {
   );
 }
 
-export function ErrorMessage({ error }: { error: Error }) {
+export function ErrorMessage({
+  error,
+  hardwareError,
+}: {
+  error: Error;
+  hardwareError: LedgerError | null;
+}) {
   const parsed = parseError(error);
   const dialogRef = useRef<HTMLDialogElementInterface>(null);
   if (error.message === 'DeniedByUser') {
@@ -119,7 +148,7 @@ export function ErrorMessage({ error }: { error: Error }) {
                 title={<UIText kind="headline/h3">Error Details</UIText>}
                 alignTitle="start"
               />
-              <ErrorDetails error={parsed} />
+              <ErrorDetails error={parsed} hardwareError={hardwareError} />
             </VStack>
           )}
         />
@@ -133,7 +162,11 @@ registerPreviewPermanent({
   component: () => (
     <VStack gap={12}>
       {samples.map((sample, index) => (
-        <ErrorMessage key={index} error={getError(sample.value)} />
+        <ErrorMessage
+          key={index}
+          error={getError(sample.value)}
+          hardwareError={null}
+        />
       ))}
     </VStack>
   ),

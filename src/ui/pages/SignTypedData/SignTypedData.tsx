@@ -67,6 +67,7 @@ import { getActionApproval } from 'src/modules/ethereum/transactions/addressActi
 import { baseToCommon } from 'src/shared/units/convert';
 import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
 import { getDecimals } from 'src/modules/networks/asset';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { AddressActionNetworkFee } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
@@ -419,7 +420,10 @@ function TypedDataDefaultView({
               </div>
             ) : null}
             {signTypedData_v4Mutation.isError ? (
-              <ErrorMessage error={getError(signTypedData_v4Mutation.error)} />
+              <ErrorMessage
+                error={getError(signTypedData_v4Mutation.error)}
+                hardwareError={getHardwareError(signTypedData_v4Mutation.error)}
+              />
             ) : null}
             <div
               style={{

@@ -1,4 +1,4 @@
-import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import { ethers } from 'ethers';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
@@ -24,18 +24,14 @@ import omit from 'lodash/omit';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { isRpcRequest } from 'src/shared/custom-rpc';
-import type { LedgerError } from '@zeriontech/hardware-wallet-connection';
 import {
   deniedByUser,
   parseLedgerError,
 } from '@zeriontech/hardware-wallet-connection';
-import { isObj } from 'src/shared/isObj';
-import { TroubleshootingDialog } from 'src/ui/hardware-wallet/TroubleshootingDialog';
 import { openUrl } from 'src/ui/shared/openUrl';
 import { urlContext } from 'src/shared/UrlContext';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useNavigate } from 'react-router-dom';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
@@ -256,8 +252,6 @@ export const HardwareSignTransaction = React.forwardRef(
         },
       });
 
-    const [signError, setSignError] = useState<LedgerError | null>(null);
-
     useEffect(() => {
       async function handler(event: MessageEvent) {
         invariant(iframeRef.current, 'Iframe should be mounted');
@@ -265,20 +259,14 @@ export const HardwareSignTransaction = React.forwardRef(
           return;
         }
         if (isRpcRequest(event.data)) {
-          const { method, params } = event.data;
+          const { method } = event.data;
           if (
             method === 'ledger/sign/success' ||
-            method === 'ledger/sign/resume'
+            method === 'ledger/sign/resume' ||
+            method === 'ledger/sign/error' ||
+            method === 'ledger/sign/cancel'
           ) {
             dialogRef.current?.close();
-            setSignError(null);
-          } else if (method === 'ledger/sign/error') {
-            dialogRef.current?.close();
-            setSignError(
-              isObj(params) && 'error' in params
-                ? parseLedgerError(params.error)
-                : null
-            );
           } else if (
             method === 'ledger/sign/notConnected' ||
             method === 'ledger/sign/interactionRequested'
@@ -288,7 +276,6 @@ export const HardwareSignTransaction = React.forwardRef(
             const url = new URL(window.location.href);
             openUrl(url, { windowType: 'tab' });
             navigate('/');
-            setSignError(null);
           }
         }
       }
@@ -340,37 +327,34 @@ export const HardwareSignTransaction = React.forwardRef(
             />
           ) : null}
         </BottomSheetDialog>
-        <VStack gap={8}>
-          {signMutation.isLoading || signSolanaMutation.isLoading ? (
-            <Button
-              kind="loading-border"
-              disabled={true}
-              title="Follow instructions on your ledger device"
-            >
-              <TextPulse>Sign on Device</TextPulse>
-            </Button>
-          ) : (
-            <Button
-              kind={buttonKind}
-              disabled={
-                signMutation.isLoading ||
-                signSolanaMutation.isLoading ||
-                isSending
-              }
-              style={{
-                paddingInline: 16, // fit longer button label
-              }}
-              {...buttonProps}
-            >
-              <HStack gap={8} alignItems="center" justifyContent="center">
-                <LedgerIcon />
-                {children || // all this will definitely be refactored soon
-                  (isSending ? 'Sending' : buttonTitle || 'Sign with Ledger')}
-              </HStack>
-            </Button>
-          )}
-          {signError ? <TroubleshootingDialog error={signError} /> : null}
-        </VStack>
+        {signMutation.isLoading || signSolanaMutation.isLoading ? (
+          <Button
+            kind="loading-border"
+            disabled={true}
+            title="Follow instructions on your ledger device"
+          >
+            <TextPulse>Sign on Device</TextPulse>
+          </Button>
+        ) : (
+          <Button
+            kind={buttonKind}
+            disabled={
+              signMutation.isLoading ||
+              signSolanaMutation.isLoading ||
+              isSending
+            }
+            style={{
+              paddingInline: 16, // fit longer button label
+            }}
+            {...buttonProps}
+          >
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              <LedgerIcon />
+              {children || // all this will definitely be refactored soon
+                (isSending ? 'Sending' : buttonTitle || 'Sign with Ledger')}
+            </HStack>
+          </Button>
+        )}
       </>
     );
   }

@@ -106,6 +106,7 @@ import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { getDecimals } from 'src/modules/networks/asset';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -871,7 +872,10 @@ function SendTransactionContent({
         <Spacer height={16} />
         <VStack style={{ textAlign: 'center' }} gap={8}>
           {sendTransactionMutation.isError ? (
-            <ErrorMessage error={getError(sendTransactionMutation.error)} />
+            <ErrorMessage
+              error={getError(sendTransactionMutation.error)}
+              hardwareError={getHardwareError(sendTransactionMutation.error)}
+            />
           ) : null}
           {view === View.customAllowance ? (
             <RenderArea name="sign-transaction-footer" />
@@ -1320,7 +1324,10 @@ function SolSendTransaction() {
         <Spacer height={16} />
         <VStack style={{ textAlign: 'center' }} gap={8}>
           {sendTransactionMutation.isError ? (
-            <ErrorMessage error={getError(sendTransactionMutation.error)} />
+            <ErrorMessage
+              error={getError(sendTransactionMutation.error)}
+              hardwareError={getHardwareError(sendTransactionMutation.error)}
+            />
           ) : null}
           <div
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}

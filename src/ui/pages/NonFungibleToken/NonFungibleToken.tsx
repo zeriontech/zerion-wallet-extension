@@ -26,6 +26,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
@@ -184,7 +185,10 @@ export function NonFungibleToken() {
             {nftTags.has('#dna') ? (
               <VStack gap={8}>
                 {promoteTokenMutation.isError ? (
-                  <ErrorMessage error={getError(promoteTokenMutation.error)} />
+                  <ErrorMessage
+                    error={getError(promoteTokenMutation.error)}
+                    hardwareError={getHardwareError(promoteTokenMutation.error)}
+                  />
                 ) : null}
                 {!wallet ? null : isPrimary ? (
                   <Button disabled={true}>Active</Button>

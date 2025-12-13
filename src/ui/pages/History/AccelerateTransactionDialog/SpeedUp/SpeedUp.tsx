@@ -25,6 +25,7 @@ import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
@@ -195,7 +196,12 @@ export function SpeedUp({
           </div>
         </VStack>
         <VStack gap={8} style={{ textAlign: 'center' }}>
-          {isError ? <ErrorMessage error={getError(error)} /> : null}
+          {isError ? (
+            <ErrorMessage
+              error={getError(error)}
+              hardwareError={getHardwareError(error)}
+            />
+          ) : null}
           <div
             style={{
               display: 'grid',

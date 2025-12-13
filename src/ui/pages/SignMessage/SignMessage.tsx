@@ -43,6 +43,7 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 
@@ -276,7 +277,10 @@ function SignMessageContent({
           gap={8}
         >
           {confirmMutation.isError ? (
-            <ErrorMessage error={getError(confirmMutation.error)} />
+            <ErrorMessage
+              error={getError(confirmMutation.error)}
+              hardwareError={getHardwareError(confirmMutation.error)}
+            />
           ) : null}
 
           <div

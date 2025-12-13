@@ -100,6 +100,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -1416,7 +1417,10 @@ function BridgeFormComponent() {
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
               {approveMutation.isError ? (
-                <ErrorMessage error={getError(approveMutation.error)} />
+                <ErrorMessage
+                  error={getError(approveMutation.error)}
+                  hardwareError={getHardwareError(approveMutation.error)}
+                />
               ) : null}
               {wallet ? (
                 <SignTransactionButton
@@ -1449,7 +1453,12 @@ function BridgeFormComponent() {
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
               {sendTransactionMutation.isError ? (
-                <ErrorMessage error={getError(sendTransactionMutation.error)} />
+                <ErrorMessage
+                  error={getError(sendTransactionMutation.error)}
+                  hardwareError={getHardwareError(
+                    sendTransactionMutation.error
+                  )}
+                />
               ) : null}
               {wallet ? (
                 <FormHint
