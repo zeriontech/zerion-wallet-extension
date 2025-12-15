@@ -364,7 +364,6 @@ export class Account extends EventEmitter<AccountEvents> {
       throw new Error('Incorrect password');
     }
 
-    // TODO: reencode wallet with new password
     const backup = await BrowserStorage.get(WalletStore.key);
     await BrowserStorage.set(WalletStore.backupKey, backup);
 
@@ -379,8 +378,9 @@ export class Account extends EventEmitter<AccountEvents> {
       [user.id]: updatedWalletRecord,
     });
     await this.wallet.reloadWalletStore();
-    await BrowserStorage.remove(WalletStore.backupKey);
     await this.setUser(user, { password: newPassword }, { isNewUser: false });
+
+    await BrowserStorage.remove(WalletStore.backupKey);
   }
 }
 
