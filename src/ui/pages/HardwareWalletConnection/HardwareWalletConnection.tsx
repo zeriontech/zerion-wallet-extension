@@ -23,11 +23,15 @@ import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
 import { getWalletInfo } from './shared/getWalletInfo';
 
-export function FrameLayout({ children }: React.PropsWithChildren) {
+export function FrameLayout({
+  children,
+  showBackButton,
+}: React.PropsWithChildren<{ showBackButton?: boolean }>) {
   useBackgroundKind({ kind: 'transparent' });
   useBodyStyle(useMemo(() => ({ border: 'none' }), []));
 
@@ -66,11 +70,15 @@ export function FrameLayout({ children }: React.PropsWithChildren) {
             flexDirection: 'column',
           }}
         >
-          <PageColumn style={{ paddingTop: 16, paddingBottom: 24 }}>
-            <div>
-              <NavigationBackButton />
-            </div>
-          </PageColumn>
+          {showBackButton ? (
+            <PageColumn style={{ paddingTop: 16, paddingBottom: 24 }}>
+              <div>
+                <NavigationBackButton />
+              </div>
+            </PageColumn>
+          ) : (
+            <Spacer height={100} />
+          )}
           <FillView
             // grow children
             style={{ display: 'flex' }}
@@ -193,11 +201,23 @@ export function HardwareWalletConnectionStart({
 
 export function HardwareWalletConnection() {
   return (
-    <FrameLayout>
-      <Routes>
-        <Route path="/" element={<HardwareWalletConnectionStart />} />
-        <Route path="/import-success" element={<ImportSuccess />} />
-      </Routes>
-    </FrameLayout>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <FrameLayout showBackButton={true}>
+            <HardwareWalletConnectionStart />
+          </FrameLayout>
+        }
+      />
+      <Route
+        path="/import-success"
+        element={
+          <FrameLayout showBackButton={false}>
+            <ImportSuccess />
+          </FrameLayout>
+        }
+      />
+    </Routes>
   );
 }

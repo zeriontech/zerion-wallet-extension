@@ -230,8 +230,8 @@ export function ImportLedgerAddresses({
   onImport: (values: DeviceAccount[]) => void;
   handleRequest: (request: ControllerRequest) => Promise<unknown>;
 }) {
-  const [pathType, setPathType] = useState<DerivationPathType>('ledgerLive');
-  const [curve, setCurve] = useState<CurveValue>('ecdsa');
+  const [curve, setCurve] = useState<CurveValue | null>(null);
+  const [pathType, setPathType] = useState<DerivationPathType | null>(null);
   const [interactionRequested, setInteractionRequested] =
     useState<UserInteractionRequested | null>(null);
   const [loadedWallets, setLoadedWallets] = useState(0);
@@ -256,6 +256,9 @@ export function ImportLedgerAddresses({
       setLoadedWallets,
     ],
     queryFn: async ({ pageParam = 0 }) => {
+      if (curve === null || pathType === null) {
+        return [];
+      }
       return curve === 'ecdsa'
         ? getAddressesEth(
             {
@@ -292,6 +295,7 @@ export function ImportLedgerAddresses({
     suspense: false,
     staleTime: Infinity, // addresses found on ledger will not change
     useErrorBoundary: false,
+    enabled: curve !== null && pathType !== null,
   });
 
   const parsedError = maybeError ? parseLedgerError(maybeError) : null;
@@ -331,6 +335,64 @@ export function ImportLedgerAddresses({
       ),
     [data]
   );
+
+  if (curve === null || pathType === null) {
+    return (
+      <PageColumn
+        style={{ height: '100%', position: 'relative' }}
+        paddingInline={24}
+      >
+        <PageFullBleedColumn
+          paddingInline={true}
+          style={{
+            position: 'sticky',
+            top: 0,
+            backgroundColor: 'var(--background)',
+            zIndex: 1,
+            textAlign: 'center',
+          }}
+        >
+          <UIText kind="headline/hero">Select Ecosystem</UIText>
+          <Spacer height={24} />
+        </PageFullBleedColumn>
+        <VStack
+          gap={12}
+          style={{
+            justifyItems: 'center',
+            width: '100%',
+            flexGrow: 1,
+            paddingBottom: 80,
+          }}
+        >
+          <Button
+            style={{ width: 320, alignSelf: 'end' }}
+            onClick={() => {
+              setCurve('ecdsa');
+              setPathType('ledgerLive');
+            }}
+          >
+            <HStack gap={8} alignItems="center">
+              <EcosystemEthereumIcon style={{ width: 24, height: 24 }} />
+              <span>Connect Ethereum Address</span>
+            </HStack>
+          </Button>
+
+          <Button
+            style={{ width: 320 }}
+            onClick={() => {
+              setCurve('ed25519');
+              setPathType('solanaBip44Change');
+            }}
+          >
+            <HStack gap={8} alignItems="center">
+              <EcosystemSolanaIcon style={{ width: 24, height: 24 }} />
+              <span>Connect Solana Address</span>
+            </HStack>
+          </Button>
+        </VStack>
+      </PageColumn>
+    );
+  }
 
   return (
     <PageColumn
