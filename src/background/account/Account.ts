@@ -21,7 +21,7 @@ import { payloadId } from '@walletconnect/jsonrpc-utils';
 import { sha256 } from 'src/modules/crypto/sha256';
 import { produce } from 'immer';
 import { Wallet } from '../Wallet/Wallet';
-import { peakSavedWalletState } from '../Wallet/persistence';
+import { peakSavedWalletState, WalletStore } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
 import { globalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
@@ -59,6 +59,38 @@ export class LoginActivity {
 
 interface Credentials {
   encryptionKey: string;
+}
+
+async function deriveUserKeys({
+  user,
+  credentials,
+}: {
+  user: User;
+  credentials: { password: string } | { encryptionKey: string };
+}) {
+  let encryptionKey: string | null = null;
+  let seedPhraseEncryptionKey: string | null = null;
+  let seedPhraseEncryptionKey_deprecated: CryptoKey | null = null;
+  if ('password' in credentials) {
+    const { password } = credentials;
+    const [key1, key2, key3] = await Promise.all([
+      sha256({ salt: user.id, password }),
+      sha256({ salt: user.salt, password }),
+      createCryptoKey(password, user.salt),
+    ]);
+    encryptionKey = key1;
+    seedPhraseEncryptionKey = key2;
+    seedPhraseEncryptionKey_deprecated = key3;
+  } else {
+    encryptionKey = credentials.encryptionKey;
+  }
+
+  return {
+    id: user.id,
+    encryptionKey,
+    seedPhraseEncryptionKey,
+    seedPhraseEncryptionKey_deprecated,
+  };
 }
 export class Account extends EventEmitter<AccountEvents> {
   private user: User | null;
@@ -256,37 +288,19 @@ export class Account extends EventEmitter<AccountEvents> {
 
   async setUser(
     user: User,
-    credentials: { password: string } | { encryptionKey: string },
+    partialCredentials: { password: string } | { encryptionKey: string },
     { isNewUser = false } = {}
   ) {
     this.user = user;
     this.isPendingNewUser = isNewUser;
-    let seedPhraseEncryptionKey: string | null = null;
-    let seedPhraseEncryptionKey_deprecated: CryptoKey | null = null;
-    if ('password' in credentials) {
-      const { password } = credentials;
-      const [key1, key2, key3] = await Promise.all([
-        sha256({ salt: user.id, password }),
-        sha256({ salt: user.salt, password }),
-        createCryptoKey(password, user.salt),
-      ]);
-      this.encryptionKey = key1;
-      seedPhraseEncryptionKey = key2;
-      seedPhraseEncryptionKey_deprecated = key3;
-    } else {
-      this.encryptionKey = credentials.encryptionKey;
-    }
+    const credentials = await deriveUserKeys({
+      user,
+      credentials: partialCredentials,
+    });
+    this.encryptionKey = credentials.encryptionKey;
     await this.wallet.updateCredentials({
       id: payloadId(),
-      params: {
-        credentials: {
-          id: user.id,
-          encryptionKey: this.encryptionKey,
-          seedPhraseEncryptionKey,
-          seedPhraseEncryptionKey_deprecated,
-        },
-        isNewUser,
-      },
+      params: { credentials, isNewUser },
     });
     if (!this.isPendingNewUser) {
       this.emit('authenticated');
@@ -342,6 +356,32 @@ export class Account extends EventEmitter<AccountEvents> {
   async logout() {
     await Account.removeCredentials();
     return this.reset();
+  }
+
+  async changePassword(user: User, oldPassword: string, newPassword: string) {
+    const passwordIsCorrect = await this.verifyPassword(user, oldPassword);
+    if (!passwordIsCorrect) {
+      throw new Error('Incorrect password');
+    }
+
+    // TODO: reencode wallet with new password
+    const backup = await BrowserStorage.get(WalletStore.key);
+    await BrowserStorage.set(WalletStore.backupKey, backup);
+
+    const newCredentials = await deriveUserKeys({
+      user,
+      credentials: { password: newPassword },
+    });
+    const updatedWalletRecord = await this.wallet.reencodeWalletWithNewPassword(
+      { encryptionKey: newCredentials.encryptionKey }
+    );
+    await BrowserStorage.set(WalletStore.key, updatedWalletRecord);
+    await BrowserStorage.remove(WalletStore.backupKey);
+    await this.setUser(
+      user,
+      { encryptionKey: newCredentials.encryptionKey },
+      { isNewUser: false }
+    );
   }
 }
 
@@ -473,5 +513,27 @@ export class AccountPublicRPC {
 
   async removePasskey() {
     return this.account.removeEncryptedPassword();
+  }
+
+  async changePassword({
+    params: { user, oldPassword, newPassword },
+  }: PublicMethodParams<{
+    oldPassword: string;
+    newPassword: string;
+    user: PublicUser;
+  }>) {
+    const currentUser = await Account.readCurrentUser();
+    if (!currentUser || currentUser.id !== user.id) {
+      throw new Error(`User ${user.id} not found`);
+    }
+    const passwordIsCorrect = await this.account.verifyPassword(
+      currentUser,
+      oldPassword
+    );
+    if (!passwordIsCorrect) {
+      throw new Error('Incorrect password');
+    }
+    await this.account.removeEncryptedPassword();
+    return this.account.changePassword(currentUser, oldPassword, newPassword);
   }
 }

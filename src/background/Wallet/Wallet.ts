@@ -126,6 +126,7 @@ import { isSessionCredentials } from '../account/Credentials';
 import { lastUsedAddressStore } from '../user-activity';
 import { transactionService } from '../transactions/TransactionService';
 import { searchStore } from '../search/SearchStore';
+import { BrowserStorage } from '../webapis/storage';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
@@ -334,6 +335,34 @@ export class Wallet {
         1500
       )
     );
+  }
+
+  async checkBackupData({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    const backupData = await BrowserStorage.get(WalletStore.backupKey);
+    return Boolean(backupData);
+  }
+
+  async restoreBackupData({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    const backup = await BrowserStorage.get(WalletStore.backupKey);
+    invariant(backup, 'No backup data found');
+    await BrowserStorage.set(WalletStore.key, backup);
+    await BrowserStorage.remove(WalletStore.backupKey);
+  }
+
+  async reencodeWalletWithNewPassword({
+    encryptionKey,
+  }: {
+    encryptionKey: string;
+  }): Promise<string> {
+    this.ensureActiveSession(this.userCredentials);
+    this.ensureRecord(this.record);
+    const encryptedRecord = await Model.encryptRecord(
+      encryptionKey,
+      this.record
+    );
+    return encryptedRecord;
   }
 
   // TODO: For now, I prefix methods with "ui" which return wallet data and are supposed to be called

@@ -89,6 +89,8 @@ import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
 import { ScreenViewTracker } from '../shared/ScreenViewTracker';
 import { PremiumPage } from '../pages/Premium';
+import { RestoreData } from '../pages/RestoreData';
+import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -204,6 +206,7 @@ function MaybeTestModeDecoration() {
 }
 
 function Views({ initialRoute }: { initialRoute?: string }) {
+  useRedirectToRestorePage();
   const isPopup = urlContext.windowType === 'popup';
   return (
     <ViewArea>
@@ -229,6 +232,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/get-started/*" element={<GetStarted />} />
+        <Route path="/restore-data" element={<RestoreData />} />
         <Route
           path="/connect-hardware-wallet/*"
           element={<HardwareWalletConnection />}
