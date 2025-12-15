@@ -368,20 +368,16 @@ export class Account extends EventEmitter<AccountEvents> {
     const backup = await BrowserStorage.get(WalletStore.key);
     await BrowserStorage.set(WalletStore.backupKey, backup);
 
-    const newCredentials = await deriveUserKeys({
+    const { encryptionKey } = await deriveUserKeys({
       user,
       credentials: { password: newPassword },
     });
     const updatedWalletRecord = await this.wallet.reencodeWalletWithNewPassword(
-      { encryptionKey: newCredentials.encryptionKey }
+      { encryptionKey }
     );
     await BrowserStorage.set(WalletStore.key, updatedWalletRecord);
     await BrowserStorage.remove(WalletStore.backupKey);
-    await this.setUser(
-      user,
-      { encryptionKey: newCredentials.encryptionKey },
-      { isNewUser: false }
-    );
+    await this.setUser(user, { encryptionKey }, { isNewUser: false });
   }
 }
 
