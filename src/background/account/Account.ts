@@ -376,8 +376,8 @@ export class Account extends EventEmitter<AccountEvents> {
       { encryptionKey }
     );
     await BrowserStorage.set(WalletStore.key, updatedWalletRecord);
-    await BrowserStorage.remove(WalletStore.backupKey);
-    await this.setUser(user, { encryptionKey }, { isNewUser: false });
+    // await BrowserStorage.remove(WalletStore.backupKey);
+    await this.setUser(user, { password: newPassword }, { isNewUser: false });
   }
 }
 

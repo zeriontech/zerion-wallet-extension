@@ -24,7 +24,8 @@ export function RestoreData() {
       return walletPort.request('restoreBackupData');
     },
     onSuccess: () => {
-      navigate('/login', { replace: true });
+      navigate('/', { replace: true });
+      window.location.reload();
     },
   });
 
@@ -81,9 +82,11 @@ export function RestoreData() {
           >
             Restore Data
           </Button>
-          <UIText kind="caption/regular" color="var(--negative-500)">
-            {getError(handleRestoreDataMutation.error).message}
-          </UIText>
+          {handleRestoreDataMutation.isError ? (
+            <UIText kind="caption/regular" color="var(--negative-500)">
+              {getError(handleRestoreDataMutation.error).message}
+            </UIText>
+          ) : null}
         </VStack>
       </VStack>
       <PageBottom />
