@@ -365,6 +365,11 @@ export class Wallet {
     return encryptedRecord;
   }
 
+  async reloadWalletStore() {
+    this.walletStore = new WalletStore({}, 'wallet');
+    await this.walletStore.ready();
+  }
+
   // TODO: For now, I prefix methods with "ui" which return wallet data and are supposed to be called
   // from the UI (extension popup) thread. It's maybe better to refactor them
   // into a separate isolated class

@@ -375,8 +375,11 @@ export class Account extends EventEmitter<AccountEvents> {
     const updatedWalletRecord = await this.wallet.reencodeWalletWithNewPassword(
       { encryptionKey }
     );
-    await BrowserStorage.set(WalletStore.key, updatedWalletRecord);
-    // await BrowserStorage.remove(WalletStore.backupKey);
+    await BrowserStorage.set(WalletStore.key, {
+      [user.id]: updatedWalletRecord,
+    });
+    await this.wallet.reloadWalletStore();
+    await BrowserStorage.remove(WalletStore.backupKey);
     await this.setUser(user, { password: newPassword }, { isNewUser: false });
   }
 }
