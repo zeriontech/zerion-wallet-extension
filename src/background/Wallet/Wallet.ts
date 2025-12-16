@@ -1820,6 +1820,16 @@ export class Wallet {
     emitter.emit('passkeyLoginDisabled');
   }
 
+  async passwordChangeSuccess({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('passwordChangeSuccess');
+  }
+
+  async passwordChangeError({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('passwordChangeError');
+  }
+
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
     // NOTE: maybe consider adding a more generic method, e.g.:
     // walletPort.request('sendEvent', { event_name, params }).

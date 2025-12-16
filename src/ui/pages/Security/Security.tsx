@@ -304,6 +304,7 @@ function ChangePassword() {
     },
     onSuccess: () => {
       zeroizeAfterSubmission();
+      walletPort.request('passwordChangeSuccess');
       toastRef.current?.showToast();
       if (dialogRef.current) {
         dialogRef.current.close();
@@ -314,6 +315,9 @@ function ChangePassword() {
       setConfirmValue('');
       zeroizeAfterSubmission();
       queryClient.refetchQueries(['account/getPasskeyEnabled']);
+    },
+    onError: () => {
+      walletPort.request('passwordChangeError');
     },
   });
 
@@ -342,18 +346,18 @@ function ChangePassword() {
               Your new password is considered weak. Are you sure you want to
               proceed with this password?
             </UIText>
-            <HStack gap={16} style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <VStack gap={8}>
               <Button
                 kind="primary"
                 value="cancel"
-                style={{ paddingInline: 12 }}
+                style={{ paddingInline: 12, width: '100%' }}
               >
                 Improve Password
               </Button>
-              <Button kind="regular" value="confirm">
+              <Button kind="regular" value="confirm" style={{ width: '100%' }}>
                 Proceed Anyway
               </Button>
-            </HStack>
+            </VStack>
           </VStack>
         </form>
       </BottomSheetDialog>

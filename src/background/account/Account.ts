@@ -374,12 +374,26 @@ export class Account extends EventEmitter<AccountEvents> {
     const updatedWalletRecord = await this.wallet.reencodeWalletWithNewPassword(
       { encryptionKey }
     );
+    /**
+     * We don't use WalletStore.save here to make Storage change strictly before the next operation.
+     * The save function for the PersistentStore is not blocking.
+     */
     await BrowserStorage.set(WalletStore.key, {
       [user.id]: updatedWalletRecord,
     });
+
+    // TODO: DEBUG CASE, REMOVE BEFORE RELEASE
+    if (newPassword === 'password') {
+      throw new Error('Insecure password used for debugging purposes');
+    }
+
     await this.wallet.reloadWalletStore();
     await this.setUser(user, { password: newPassword }, { isNewUser: false });
 
+    /**
+     * Remove backup in the end after successful password change
+     * To ensure that backup is not removed if something goes wrong
+     */
     await BrowserStorage.remove(WalletStore.backupKey);
   }
 }
