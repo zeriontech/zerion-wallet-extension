@@ -546,6 +546,11 @@ export class AccountPublicRPC {
     if (!passwordIsCorrect) {
       throw new Error('Incorrect password');
     }
+    /**
+     * Passkey is used to encrypt/decrypt the password for passkey login.
+     * When changing the password, we need to remove the existing passkey
+     * to avoid inconsistencies.
+     */
     await this.account.removeEncryptedPassword();
     return this.account.changePassword(currentUser, oldPassword, newPassword);
   }
