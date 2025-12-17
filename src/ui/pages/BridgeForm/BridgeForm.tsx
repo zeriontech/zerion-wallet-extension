@@ -31,7 +31,6 @@ import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
-import { NetworkId } from '@zeriontech/transactions';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -100,6 +99,7 @@ import { getError } from 'get-error';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -229,7 +229,7 @@ function getDefaultState({
   return {
     inputChain,
     outputChain:
-      inputChain === NetworkId.Zero ? NetworkId.Ethereum : NetworkId.Zero,
+      inputChain === NetworkId.Solana ? NetworkId.Ethereum : NetworkId.Solana,
     sort: '1' as const,
   };
 }
