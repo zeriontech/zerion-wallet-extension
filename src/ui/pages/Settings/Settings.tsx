@@ -60,6 +60,7 @@ import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { useStore } from '@store-unit/react';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { isMacOS } from 'src/ui/shared/isMacos';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -602,52 +603,25 @@ function Experiments() {
             }
           />
         </Frame>
-        <Frame>
-          <ToggleSettingLine
-            text="Signing via Bluetooth"
-            checked={Boolean(globalPreferences?.bluetoothSupportEnabled)}
-            onChange={(event) => {
-              setGlobalPreferences({
-                bluetoothSupportEnabled: event.target.checked,
-              });
-            }}
-            detailText={
-              <span>
-                Due to browser limitations, signing flows for your hardware
-                wallets will open in a tab view instead of popup or sidepanel.
-              </span>
-            }
-          />
-        </Frame>
-        <Frame style={{ borderColor: 'var(--notice-500)' }}>
-          <VStack gap={8} style={{ padding: 16, justifyItems: 'center' }}>
-            <UIText kind="body/regular">
-              Reset Bluetooth Preference (current value:{' '}
-              <UIText
-                kind="body/accent"
-                inline
-                style={{ color: 'var(--primary)' }}
-              >
-                {String(globalPreferences?.bluetoothSupportEnabled)}
-              </UIText>
-              )
-            </UIText>
-            <UIText kind="caption/accent" color="var(--notice-500)">
-              Remove before production release
-            </UIText>
-            <Button
-              kind="neutral"
-              onClick={() => {
+        {isMacOS() ? (
+          <Frame>
+            <ToggleSettingLine
+              text="Signing via Bluetooth"
+              checked={Boolean(globalPreferences?.bluetoothSupportEnabled)}
+              onChange={(event) => {
                 setGlobalPreferences({
-                  bluetoothSupportEnabled: null,
+                  bluetoothSupportEnabled: event.target.checked,
                 });
               }}
-              style={{ paddingInline: 24 }}
-            >
-              Reset Bluetooth Preference
-            </Button>
-          </VStack>
-        </Frame>
+              detailText={
+                <span>
+                  Due to browser limitations, signing flows for your hardware
+                  wallets will open in a tab view instead of popup or sidepanel.
+                </span>
+              }
+            />
+          </Frame>
+        ) : null}
       </VStack>
       <PageBottom />
     </PageColumn>

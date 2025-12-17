@@ -19,6 +19,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
+import { isMacOS } from 'src/ui/shared/isMacos';
 import type { DeviceConnection } from '../types';
 import { ConnectIllustration } from './ConnectIllustration';
 
@@ -222,7 +223,7 @@ export function ConnectLedgerDevice({
                 >
                   Connect via Bluetooth
                 </Button>
-              ) : bluetoothSupportEnabled == null ? (
+              ) : isMacOS() && bluetoothSupportEnabled == null ? (
                 <div style={{ position: 'relative', width: '100%' }}>
                   <Button
                     kind="primary"
