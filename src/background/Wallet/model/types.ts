@@ -1,4 +1,3 @@
-import type { WalletAbility } from 'src/shared/types/Daylight';
 import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
 import type { SignerContainer } from './WalletContainer';
 import type { WalletOrigin } from './WalletOrigin';
@@ -104,15 +103,10 @@ export interface WalletRecordVersion3 {
   publicPreferences: PublicPreferences;
 }
 
-export interface WalletFeed {
-  dismissedAbilities: WalletAbility[];
-  completedAbilities: WalletAbility[];
-}
-
 export interface WalletRecordVersion4
   extends Omit<WalletRecordVersion3, 'version'> {
   version: 4;
-  feed: WalletFeed;
+  feed: unknown; // Old WalletFeed type was removed
 }
 
 export interface WalletRecordVersion5

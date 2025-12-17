@@ -77,10 +77,7 @@ const mockRecord: WalletRecord = {
       },
     ],
   },
-  feed: {
-    completedAbilities: [],
-    dismissedAbilities: [],
-  },
+  feed: null,
   activityRecord: {},
 };
 

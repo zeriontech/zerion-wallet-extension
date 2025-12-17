@@ -53,7 +53,6 @@ import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
-import { AbilityPage } from '../pages/Feed/Ability';
 import { FooterBugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
@@ -383,14 +382,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           }
         />
         <Route path="/handshake-failure" element={<HandshakeFailure />} />
-        <Route
-          path="/ability/:ability_uid"
-          element={
-            <RequireAuth>
-              <AbilityPage />
-            </RequireAuth>
-          }
-        />
         <Route
           path="/send-form/*"
           element={

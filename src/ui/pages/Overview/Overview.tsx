@@ -75,7 +75,6 @@ import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { Networks } from 'src/modules/networks/Networks';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
-import { Feed } from '../Feed';
 import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { SearchLinkIcon } from '../Search';
@@ -722,14 +721,6 @@ function OverviewComponent() {
             >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
-            {addressType === 'evm' ? (
-              <SegmentedControlLink
-                to={createTo('/overview/feed')}
-                onClick={() => handleTabChange('/overview/feed')}
-              >
-                Perks
-              </SegmentedControlLink>
-            ) : null}
           </SegmentedControlGroup>
         </div>
       </PageFullBleedColumn>
@@ -815,16 +806,6 @@ function OverviewComponent() {
                       onChainChange={setSelectedChain}
                     />
                   </TestnetworkGuard>
-                </ViewSuspense>
-              }
-            />
-            <Route
-              path="/feed"
-              element={
-                <ViewSuspense logDelays={true} fallback={tabFallback}>
-                  <NavigationTitle title={null} documentTitle="Perks" />
-                  <Spacer height={TAB_TOP_PADDING} />
-                  <Feed />
                 </ViewSuspense>
               }
             />
