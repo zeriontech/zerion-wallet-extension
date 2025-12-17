@@ -289,12 +289,10 @@ function ChangePassword() {
       oldPassword: string;
       newPassword: string;
     }) => {
+      if (oldPassword === newPassword) {
+        throw new Error('The new password must be different from the old one.');
+      }
       invariant(userQuery.data, 'User must be defined');
-      // Verify old password
-      await accountPublicRPCPort.request('login', {
-        user: userQuery.data,
-        password: oldPassword,
-      });
       // Change password
       await accountPublicRPCPort.request('changePassword', {
         user: userQuery.data,
@@ -371,12 +369,7 @@ function ChangePassword() {
                 style={{ position: 'absolute', top: 8, right: 8 }}
               />
               <VStack gap={24}>
-                <VStack gap={8}>
-                  <UIText kind="headline/h1">Change Password</UIText>
-                  <UIText kind="body/regular">
-                    Enter your current password and choose a new one
-                  </UIText>
-                </VStack>
+                <UIText kind="headline/h1">Change Password</UIText>
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
