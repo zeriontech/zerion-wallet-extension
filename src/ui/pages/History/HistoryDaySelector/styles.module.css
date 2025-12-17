@@ -1,0 +1,78 @@
+.dayPicker {
+  width: 100%;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dayName {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  text-align: center;
+}
+
+.emptyDay {
+  padding: 8px;
+}
+
+.dayButton {
+  padding: 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--neutral-900);
+}
+
+.dayButton:hover:not([data-disabled]) {
+  background-color: var(--neutral-100);
+}
+
+.dayButton:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.dayButton[data-selected] {
+  background-color: var(--primary);
+  color: var(--always-white);
+}
+
+.dayButton[data-selected]:hover {
+  background-color: var(--primary);
+}
+
+.dayButton[data-disabled] {
+  color: var(--neutral-400);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.navButton {
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navButton:hover {
+  background-color: var(--neutral-200);
+}
+
+.navButton:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.triggerButton:hover {
+  background-color: var(--neutral-200);
+}
