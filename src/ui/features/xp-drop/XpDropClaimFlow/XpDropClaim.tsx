@@ -49,6 +49,7 @@ import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { usePreferences } from '../../preferences';
+import { useGlobalPreferences } from '../../preferences/usePreferences';
 import * as styles from './styles.module.css';
 
 const xpFormatter = new Intl.NumberFormat('en-US');
@@ -276,6 +277,7 @@ export function XpDropClaim() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { preferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
   const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -517,37 +519,42 @@ export function XpDropClaim() {
               hardwareError={getHardwareError(personalSignMutation.error)}
             />
           ) : null}
-          <SignMessageButton
-            ref={signMsgBtnRef}
-            wallet={selectedWallet}
-            onClick={() => {
-              if (!personalSignMutation.isSuccess) {
-                emitter.emit('buttonClicked', {
-                  buttonScope: 'Loaylty',
-                  buttonName: 'Claim XP',
-                  pathname,
-                });
-                personalSignAndClaim();
-              } else {
-                walletSelectDialogRef.current?.showModal();
+          {globalPreferences ? (
+            <SignMessageButton
+              ref={signMsgBtnRef}
+              wallet={selectedWallet}
+              onClick={() => {
+                if (!personalSignMutation.isSuccess) {
+                  emitter.emit('buttonClicked', {
+                    buttonScope: 'Loaylty',
+                    buttonName: 'Claim XP',
+                    pathname,
+                  });
+                  personalSignAndClaim();
+                } else {
+                  walletSelectDialogRef.current?.showModal();
+                }
+              }}
+              buttonKind="primary"
+              holdToSign={false}
+              bluetoothSupportEnabled={
+                globalPreferences.bluetoothSupportEnabled
               }
-            }}
-            buttonKind="primary"
-            holdToSign={false}
-          >
-            {personalSignMutation.isLoading ? (
-              <HCenter>
-                <CircleSpinner />
-              </HCenter>
-            ) : personalSignMutation.isSuccess ? (
-              <HStack gap={8} alignItems="center" justifyContent="center">
-                <UIText kind="body/accent">Next Wallet</UIText>
-                <ArrowRightIcon style={{ width: 20, height: 20 }} />
-              </HStack>
-            ) : (
-              `Claim ${formatXp(totalXp)} XP`
-            )}
-          </SignMessageButton>
+            >
+              {personalSignMutation.isLoading ? (
+                <HCenter>
+                  <CircleSpinner />
+                </HCenter>
+              ) : personalSignMutation.isSuccess ? (
+                <HStack gap={8} alignItems="center" justifyContent="center">
+                  <UIText kind="body/accent">Next Wallet</UIText>
+                  <ArrowRightIcon style={{ width: 20, height: 20 }} />
+                </HStack>
+              ) : (
+                `Claim ${formatXp(totalXp)} XP`
+              )}
+            </SignMessageButton>
+          ) : null}
         </VStack>
         <PageBottom />
       </PageStickyFooter>

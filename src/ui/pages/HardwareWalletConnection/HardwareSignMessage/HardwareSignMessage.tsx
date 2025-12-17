@@ -15,7 +15,6 @@ import { openUrl } from 'src/ui/shared/openUrl';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { urlContext } from 'src/shared/UrlContext';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
-import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import {
   deniedByUser,
   parseLedgerError,
@@ -29,6 +28,7 @@ type Props = {
   buttonTitle?: React.ReactNode;
   buttonKind?: ButtonKind;
   ecosystem: BlockchainType;
+  bluetoothSupportEnabled: boolean;
 };
 
 export interface SignMessageHandle {
@@ -46,12 +46,12 @@ export const HardwareSignMessage = React.forwardRef(
       children,
       buttonTitle,
       ecosystem,
+      bluetoothSupportEnabled,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & Props,
     ref: React.Ref<SignMessageHandle>
   ) {
     const navigate = useNavigate();
-    const { globalPreferences } = useGlobalPreferences();
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -211,27 +211,23 @@ export const HardwareSignMessage = React.forwardRef(
           closeOnClickOutside={false}
           height="fit-content"
         >
-          {globalPreferences ? (
-            <LedgerIframe
-              ref={iframeRef}
-              initialRoute="/signConnector"
-              appSearchParams={new URLSearchParams({
-                ecosystem,
-                windowType: urlContext.windowType,
-                supportBluetooth: `${Boolean(
-                  globalPreferences.bluetoothSupportEnabled
-                )}`,
-              }).toString()}
-              style={{
-                // border: 'none',
-                backgroundColor: 'transparent',
-              }}
-              // @ts-ignore
-              allowtransparency="true"
-              tabIndex={-1}
-              height={300}
-            />
-          ) : null}
+          <LedgerIframe
+            ref={iframeRef}
+            initialRoute="/signConnector"
+            appSearchParams={new URLSearchParams({
+              ecosystem,
+              windowType: urlContext.windowType,
+              supportBluetooth: `${Boolean(bluetoothSupportEnabled)}`,
+            }).toString()}
+            style={{
+              // border: 'none',
+              backgroundColor: 'transparent',
+            }}
+            // @ts-ignore
+            allowtransparency="true"
+            tabIndex={-1}
+            height={300}
+          />
         </BottomSheetDialog>
         {isLoading ? (
           <Button

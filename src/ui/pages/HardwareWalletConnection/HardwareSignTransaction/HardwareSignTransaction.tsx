@@ -32,7 +32,6 @@ import { openUrl } from 'src/ui/shared/openUrl';
 import { urlContext } from 'src/shared/UrlContext';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
-import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useNavigate } from 'react-router-dom';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
@@ -170,6 +169,7 @@ export const HardwareSignTransaction = React.forwardRef(
       isSending,
       children,
       buttonTitle,
+      bluetoothSupportEnabled,
       buttonKind = 'primary',
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -178,10 +178,10 @@ export const HardwareSignTransaction = React.forwardRef(
       isSending: boolean;
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
+      bluetoothSupportEnabled: boolean;
     },
     ref: React.Ref<SignTransactionHandle>
   ) {
-    const { globalPreferences } = useGlobalPreferences();
     const navigate = useNavigate();
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -305,27 +305,23 @@ export const HardwareSignTransaction = React.forwardRef(
           closeOnClickOutside={false}
           height="fit-content"
         >
-          {globalPreferences ? (
-            <LedgerIframe
-              ref={iframeRef}
-              initialRoute="/signConnector"
-              appSearchParams={new URLSearchParams({
-                ecosystem,
-                windowType: urlContext.windowType,
-                supportBluetooth: `${Boolean(
-                  globalPreferences.bluetoothSupportEnabled
-                )}`,
-              }).toString()}
-              style={{
-                // border: 'none',
-                backgroundColor: 'transparent',
-              }}
-              // @ts-ignore
-              allowtransparency="true"
-              tabIndex={-1}
-              height={300}
-            />
-          ) : null}
+          <LedgerIframe
+            ref={iframeRef}
+            initialRoute="/signConnector"
+            appSearchParams={new URLSearchParams({
+              ecosystem,
+              windowType: urlContext.windowType,
+              supportBluetooth: `${Boolean(bluetoothSupportEnabled)}`,
+            }).toString()}
+            style={{
+              // border: 'none',
+              backgroundColor: 'transparent',
+            }}
+            // @ts-ignore
+            allowtransparency="true"
+            tabIndex={-1}
+            height={300}
+          />
         </BottomSheetDialog>
         {signMutation.isLoading || signSolanaMutation.isLoading ? (
           <Button

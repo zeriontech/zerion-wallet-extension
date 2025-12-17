@@ -31,7 +31,10 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworkConfig } from 'src/modules/networks/useNetworks';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
-import { usePreferences } from 'src/ui/features/preferences/usePreferences';
+import {
+  useGlobalPreferences,
+  usePreferences,
+} from 'src/ui/features/preferences/usePreferences';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
@@ -107,6 +110,7 @@ function SendFormComponent() {
     useErrorBoundary: true,
   });
   const { preferences, setPreferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
   const { innerHeight } = useWindowSizeStore();
 
   const [userFormState, setUserFormState] = useSearchParamsObj<SendFormState>();
@@ -626,13 +630,16 @@ function SendFormComponent() {
               hardwareError={getHardwareError(sendTxMutation.error)}
             />
           ) : null}
-          {wallet ? (
+          {wallet && globalPreferences ? (
             <SignTransactionButton
               ref={signTxBtnRef}
               form={formId}
               wallet={wallet}
               disabled={sendTxMutation.isLoading}
               holdToSign={false}
+              bluetoothSupportEnabled={
+                globalPreferences.bluetoothSupportEnabled
+              }
             />
           ) : null}
         </VStack>

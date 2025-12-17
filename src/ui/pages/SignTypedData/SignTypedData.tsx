@@ -68,6 +68,7 @@ import { baseToCommon } from 'src/shared/units/convert';
 import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
 import { getDecimals } from 'src/modules/networks/asset';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { AddressActionNetworkFee } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
@@ -130,6 +131,7 @@ function TypedDataDefaultView({
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const [params] = useSearchParams();
   const { preferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
 
   const addressAction = interpretation?.data.action;
 
@@ -442,7 +444,7 @@ function TypedDataDefaultView({
               >
                 Cancel
               </Button>
-              {preferences ? (
+              {preferences && globalPreferences ? (
                 <SignMessageButton
                   wallet={wallet}
                   ref={signMsgBtnRef}
@@ -458,6 +460,9 @@ function TypedDataDefaultView({
                       : undefined
                   }
                   holdToSign={preferences.enableHoldToSignButton}
+                  bluetoothSupportEnabled={
+                    globalPreferences.bluetoothSupportEnabled
+                  }
                 />
               ) : null}
             </div>

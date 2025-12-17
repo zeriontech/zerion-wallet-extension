@@ -46,12 +46,14 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     buttonKind = 'primary',
     onClick,
     holdToSign,
+    bluetoothSupportEnabled,
     ...buttonProps
   }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
     wallet: ExternallyOwnedAccount;
     buttonTitle?: React.ReactNode;
     buttonKind?: ButtonKind;
     holdToSign: boolean | null;
+    bluetoothSupportEnabled: boolean | null;
   },
   ref: React.Ref<SignMsgBtnHandle>
 ) {
@@ -154,6 +156,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
       buttonKind={buttonKind}
       onClick={onClick}
       disabled={disabled}
+      bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
       {...buttonProps}
     />
   ) : (

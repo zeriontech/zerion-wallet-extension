@@ -49,6 +49,7 @@ export const SignTransactionButton = React.forwardRef(
       isLoading: isLoadingProp,
       disabled: disabledAttr,
       holdToSign,
+      bluetoothSupportEnabled,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
@@ -56,6 +57,7 @@ export const SignTransactionButton = React.forwardRef(
       buttonKind?: ButtonKind;
       isLoading?: boolean;
       holdToSign: boolean | null;
+      bluetoothSupportEnabled: boolean | null;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
@@ -187,6 +189,7 @@ export const SignTransactionButton = React.forwardRef(
         buttonKind={buttonKind}
         onClick={onClick}
         disabled={disabled}
+        bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
         {...buttonProps}
       />
     ) : (

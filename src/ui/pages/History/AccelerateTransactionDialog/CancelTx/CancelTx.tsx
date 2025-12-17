@@ -35,6 +35,7 @@ import { wait } from 'src/shared/wait';
 import { usePreferences } from 'src/ui/features/preferences';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
@@ -61,6 +62,7 @@ function CancelTxContent({
 }) {
   const { address } = wallet;
   const { preferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
   const { rawTransaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   invariant(originalTransaction, 'Original transaction must be defined');
@@ -219,12 +221,15 @@ function CancelTxContent({
             >
               Back
             </Button>
-            {preferences ? (
+            {preferences && globalPreferences ? (
               <SignTransactionButton
                 wallet={wallet}
                 ref={signTxBtnRef}
                 onClick={() => sendTransaction()}
                 holdToSign={preferences.enableHoldToSignButton}
+                bluetoothSupportEnabled={
+                  globalPreferences.bluetoothSupportEnabled
+                }
               />
             ) : null}
           </div>

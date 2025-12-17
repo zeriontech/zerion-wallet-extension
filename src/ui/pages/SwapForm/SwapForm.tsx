@@ -101,6 +101,7 @@ import { PremiumFormBanner } from 'src/ui/features/premium/banners/FormBanner';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -325,6 +326,7 @@ function changeAssetId<K extends keyof SwapFormState>(
 
 function SwapFormComponent() {
   useBackgroundKind({ kind: 'white' });
+  const { globalPreferences } = useGlobalPreferences();
   const { singleAddress: address, singleAddressNormalized } =
     useAddressParams();
   const { currency } = useCurrency();
@@ -1237,7 +1239,7 @@ function SwapFormComponent() {
                   hardwareError={getHardwareError(approveMutation.error)}
                 />
               ) : null}
-              {wallet ? (
+              {wallet && globalPreferences ? (
                 <SignTransactionButton
                   ref={approveTxBtnRef}
                   form={formId}
@@ -1248,6 +1250,9 @@ function SwapFormComponent() {
                     approveTxStatus === 'pending'
                   }
                   holdToSign={false}
+                  bluetoothSupportEnabled={
+                    globalPreferences.bluetoothSupportEnabled
+                  }
                 >
                   {approveMutation.isLoading || approveTxStatus === 'pending'
                     ? 'Approving...'
@@ -1278,7 +1283,7 @@ function SwapFormComponent() {
                   )}
                 />
               ) : null}
-              {wallet ? (
+              {wallet && globalPreferences ? (
                 <FormHint
                   quotesData={quotesData}
                   priceImpact={priceImpact}
@@ -1300,6 +1305,9 @@ function SwapFormComponent() {
                         )
                       }
                       holdToSign={false}
+                      bluetoothSupportEnabled={
+                        globalPreferences.bluetoothSupportEnabled
+                      }
                     >
                       <span
                         style={{
