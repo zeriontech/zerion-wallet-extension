@@ -23,11 +23,12 @@ import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { isMacOS } from 'src/ui/shared/isMacos';
 import { ToggleSettingLine } from '../Settings/ToggleSettingsLine';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
-import { setupAccountPasskey, getPasskeyTitle, isMacOS } from './passkey';
+import { setupAccountPasskey, getPasskeyTitle } from './passkey';
 
 function TouchIdSettings() {
   const toastRef = useRef<PopoverToastHandle>(null);

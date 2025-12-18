@@ -7,6 +7,7 @@ import {
   utf8ToUint8Array,
 } from 'src/modules/crypto';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
+import { isMacOS } from 'src/ui/shared/isMacos';
 
 interface PRFExtensionResult {
   prf?: {
@@ -15,18 +16,6 @@ interface PRFExtensionResult {
       first?: ArrayBuffer;
     };
   };
-}
-
-/**
- * Detects if the current platform is macOS
- */
-export function isMacOS(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-  // Use userAgent as navigator.platform is deprecated
-  const userAgent = window.navigator.userAgent;
-  return /Mac|iPhone|iPad|iPod/.test(userAgent);
 }
 
 /**

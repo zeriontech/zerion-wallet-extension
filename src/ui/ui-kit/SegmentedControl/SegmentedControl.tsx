@@ -31,10 +31,17 @@ export function SegmentedControlRadio({
   onChange,
   style,
   children,
+  disabled,
 }: HTMLProps<HTMLInputElement>) {
   const { kind } = useContext(SegmentedControlGroupContext);
   return (
-    <label className={cx(s.radio, { [s.radioChecked]: checked })} style={style}>
+    <label
+      className={cx(s.radio, {
+        [s.radioChecked]: checked,
+        [s.radioDisabled]: disabled,
+      })}
+      style={style}
+    >
       <UIText kind={labelParams[kind].kind}>{children}</UIText>
       <input
         type="radio"
@@ -43,6 +50,7 @@ export function SegmentedControlRadio({
         value={value}
         checked={checked}
         onChange={onChange}
+        disabled={disabled}
       />
       <div className={s.activeDecorator} />
     </label>

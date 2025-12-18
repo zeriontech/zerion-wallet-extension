@@ -1427,6 +1427,41 @@ export class Wallet {
     return result;
   }
 
+  async solana_sendTransaction({
+    params,
+    context,
+  }: WalletMethodParams<{
+    signed: StringBase64;
+    publicKey: string;
+    params: TransactionContextParams;
+  }>): Promise<SolSignTransactionResult> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    this.ensureRecord(this.record);
+    const { signed, publicKey } = params;
+    const { mode } = await this.assertNetworkMode({
+      id: createChain('solana'),
+    }); // MUST assert even if result is not used
+    const networksStore = getNetworksStore(Model.getPreferences(this.record));
+    const network = await networksStore.fetchNetworkById('solana');
+    const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
+    const connection = new Connection(rpcUrl, 'confirmed');
+
+    const transaction = solFromBase64(signed);
+
+    const signature = await connection.sendRawTransaction(
+      transaction.serialize()
+    );
+    const result = { signature, publicKey, tx: solToBase64(transaction) };
+    emitter.emit(
+      'transactionSent',
+      { solana: result },
+      { mode, ...params.params }
+    );
+    // TODO: process Solana Txs errors and emit 'transactionFailed' event
+    return result;
+  }
+
   async solana_signMessageWithAddress({
     params: { signerAddress, messageHex, ...messageContextParams },
     context,
@@ -1740,6 +1775,14 @@ export class Wallet {
   async passkeyLoginDisabled({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     emitter.emit('passkeyLoginDisabled');
+  }
+  
+  async reportLedgerError({
+    context,
+    params,
+  }: WalletMethodParams<{ errorMessage: string }>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('reportLedgerError', params.errorMessage);
   }
 
   async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
@@ -2072,6 +2115,14 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
     const searchParams = new URLSearchParams({
       origin: context.origin,
       transaction: txBase64,
@@ -2095,6 +2146,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2111,6 +2163,14 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
     const searchParams = new URLSearchParams({
       origin: context.origin,
       transactions: JSON.stringify(transactionsBase64),
@@ -2134,6 +2194,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2151,6 +2212,14 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
 
     const messageUint8 = base64ToUint8Array(messageSerialized);
     const searchParams = new URLSearchParams({
@@ -2174,6 +2243,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2315,6 +2385,16 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
+
     const [transaction, { clientScope } = { clientScope: undefined }] = params;
     invariant(transaction, () => new InvalidParams());
     const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
@@ -2345,6 +2425,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2358,6 +2439,14 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
     if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
@@ -2387,6 +2476,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }
@@ -2451,6 +2541,14 @@ class PublicController {
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
 
     const currentWallet = await this.wallet.uiGetCurrentWallet({
       context: INTERNAL_SYMBOL_CONTEXT,
@@ -2477,6 +2575,7 @@ class PublicController {
         onDismiss: () => {
           reject(new UserRejectedTxSignature());
         },
+        type: openInTab ? 'tab' : undefined,
       });
     });
   }

@@ -20,6 +20,7 @@ const DEFAULT_WINDOW_SIZE = {
   width: 425 + (IS_WINDOWS ? 14 : 0), // windows cuts the width
   height: 700,
 };
+const DEFAULT_TAB_VIEW_WIDTH = 500;
 
 export interface WindowProps {
   route: string;
@@ -30,12 +31,15 @@ export interface WindowProps {
 }
 
 export async function createBrowserWindow({
-  width = DEFAULT_WINDOW_SIZE.width,
+  width: rawWidth,
   height = DEFAULT_WINDOW_SIZE.height,
   route: initialRoute,
   search,
   type,
 }: WindowProps) {
+  const width =
+    rawWidth ??
+    (type === 'tab' ? DEFAULT_TAB_VIEW_WIDTH : DEFAULT_WINDOW_SIZE.width);
   const id = nanoid();
   const params = new URLSearchParams(search);
   params.append('windowId', id);

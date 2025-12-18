@@ -22,11 +22,16 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { PrivacyFooter } from 'src/ui/components/PrivacyFooter';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { isAllowedMessage } from './shared/isAllowedMessage';
 import { ImportSuccess } from './ImportSuccess';
 import { getWalletInfo } from './shared/getWalletInfo';
 
-export function FrameLayout({ children }: React.PropsWithChildren) {
+export function FrameLayout({
+  children,
+  showBackButton,
+}: React.PropsWithChildren<{ showBackButton?: boolean }>) {
   useBackgroundKind({ kind: 'transparent' });
   useBodyStyle(useMemo(() => ({ border: 'none' }), []));
 
@@ -65,11 +70,15 @@ export function FrameLayout({ children }: React.PropsWithChildren) {
             flexDirection: 'column',
           }}
         >
-          <PageColumn style={{ paddingTop: 16, paddingBottom: 24 }}>
-            <div>
-              <NavigationBackButton />
-            </div>
-          </PageColumn>
+          {showBackButton ? (
+            <PageColumn style={{ paddingTop: 16, paddingBottom: 24 }}>
+              <div>
+                <NavigationBackButton />
+              </div>
+            </PageColumn>
+          ) : (
+            <Spacer height={100} />
+          )}
           <FillView
             // grow children
             style={{ display: 'flex' }}
@@ -94,6 +103,7 @@ export function HardwareWalletConnectionStart({
 
   const navigate = useNavigate();
   const existingAddresses = useAllSignerOrHwAddresses();
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
 
   const { mutate: finalize } = useMutation({
     mutationFn: async (params: LedgerAccountImport) => {
@@ -144,18 +154,39 @@ export function HardwareWalletConnectionStart({
           if (iframeRef.current && iframeRef.current.contentWindow) {
             iframeRef.current.contentWindow.postMessage({ id, result }, '*');
           }
+        } else if (method === 'ledger/enable-bluetooth') {
+          setGlobalPreferences({
+            bluetoothSupportEnabled: true,
+          });
         }
       }
     }
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [finalize, onImport, navigate, requestId, searchParams, currency]);
+  }, [
+    finalize,
+    onImport,
+    navigate,
+    requestId,
+    searchParams,
+    currency,
+    setGlobalPreferences,
+  ]);
+
+  if (!globalPreferences) {
+    return null;
+  }
+
   return (
     <LedgerIframe
       ref={iframeRef}
       appSearchParams={new URLSearchParams({
         strategy: searchParams.get('strategy') || 'import',
         'existingAddresses[]': existingAddresses?.join(',') ?? '',
+        supportBluetooth:
+          globalPreferences?.bluetoothSupportEnabled != null
+            ? `${globalPreferences.bluetoothSupportEnabled}`
+            : '',
       }).toString()}
       style={{
         border: 'none',
@@ -170,11 +201,23 @@ export function HardwareWalletConnectionStart({
 
 export function HardwareWalletConnection() {
   return (
-    <FrameLayout>
-      <Routes>
-        <Route path="/" element={<HardwareWalletConnectionStart />} />
-        <Route path="/import-success" element={<ImportSuccess />} />
-      </Routes>
-    </FrameLayout>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <FrameLayout showBackButton={true}>
+            <HardwareWalletConnectionStart />
+          </FrameLayout>
+        }
+      />
+      <Route
+        path="/import-success"
+        element={
+          <FrameLayout showBackButton={false}>
+            <ImportSuccess />
+          </FrameLayout>
+        }
+      />
+    </Routes>
   );
 }

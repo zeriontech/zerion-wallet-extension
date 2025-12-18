@@ -20,6 +20,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
 type SendTxParams = TransactionContextParams & {
@@ -48,6 +49,7 @@ export const SignTransactionButton = React.forwardRef(
       isLoading: isLoadingProp,
       disabled: disabledAttr,
       holdToSign,
+      bluetoothSupportEnabled,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
@@ -55,6 +57,7 @@ export const SignTransactionButton = React.forwardRef(
       buttonKind?: ButtonKind;
       isLoading?: boolean;
       holdToSign: boolean | null;
+      bluetoothSupportEnabled: boolean | null;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
@@ -92,8 +95,28 @@ export const SignTransactionButton = React.forwardRef(
         } else {
           // solana
           if (isDeviceAccount(wallet)) {
-            throw new Error('TODO: Support hardware signing for Solana');
+            invariant(
+              hardwareSignRef.current,
+              'HardwareSignTransaction must be mounted'
+            );
+            invariant(
+              txContext.method !== 'signAllTransactions',
+              'SignTransactionButton: signAllTransactions not supported for hardware wallets'
+            );
+            const signedTx =
+              await hardwareSignRef.current.solana_signTransaction({
+                transaction: transaction.solana,
+                address: wallet.address,
+                ...txContext,
+              });
+            const result = await walletPort.request('solana_sendTransaction', {
+              signed: signedTx as StringBase64,
+              publicKey: wallet.address,
+              params: txContext,
+            });
+            return { solana: result };
           }
+
           const methodMap = {
             default: 'solana_signAndSendTransaction',
             signAndSendTransaction: 'solana_signAndSendTransaction',
@@ -106,7 +129,6 @@ export const SignTransactionButton = React.forwardRef(
           const methodName = txContext.method
             ? methodMap[txContext.method]
             : methodMap.default;
-
           const result = await walletPort.request(methodName, {
             transaction: transaction.solana,
             params: txContext,
@@ -153,6 +175,7 @@ export const SignTransactionButton = React.forwardRef(
     return isDeviceAccount(wallet) ? (
       <HardwareSignTransaction
         ref={hardwareSignRef}
+        ecosystem={getAddressType(wallet.address)}
         derivationPath={wallet.derivationPath}
         isSending={isSending}
         children={children}
@@ -166,6 +189,7 @@ export const SignTransactionButton = React.forwardRef(
         buttonKind={buttonKind}
         onClick={onClick}
         disabled={disabled}
+        bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
         {...buttonProps}
       />
     ) : (

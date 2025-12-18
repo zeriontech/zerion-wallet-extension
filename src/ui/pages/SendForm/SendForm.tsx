@@ -31,7 +31,10 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworkConfig } from 'src/modules/networks/useNetworks';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
-import { usePreferences } from 'src/ui/features/preferences/usePreferences';
+import {
+  useGlobalPreferences,
+  usePreferences,
+} from 'src/ui/features/preferences/usePreferences';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import type { SendTxBtnHandle } from 'src/ui/components/SignTransactionButton';
 import { SignTransactionButton } from 'src/ui/components/SignTransactionButton';
@@ -61,6 +64,7 @@ import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-a
 import BigNumber from 'bignumber.js';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { FormFieldset } from 'src/ui/ui-kit/FormFieldset';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { NetworkFeeLineInfo } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
@@ -106,6 +110,7 @@ function SendFormComponent() {
     useErrorBoundary: true,
   });
   const { preferences, setPreferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
   const { innerHeight } = useWindowSizeStore();
 
   const [userFormState, setUserFormState] = useSearchParamsObj<SendFormState>();
@@ -614,18 +619,27 @@ function SendFormComponent() {
         ></BottomSheetDialog>
         <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
           {sendDataQuery.isError ? (
-            <ErrorMessage error={getError(sendDataQuery.error)} />
+            <ErrorMessage
+              error={getError(sendDataQuery.error)}
+              hardwareError={getHardwareError(sendDataQuery.error)}
+            />
           ) : null}
           {sendTxMutation.isError ? (
-            <ErrorMessage error={getError(sendTxMutation.error)} />
+            <ErrorMessage
+              error={getError(sendTxMutation.error)}
+              hardwareError={getHardwareError(sendTxMutation.error)}
+            />
           ) : null}
-          {wallet ? (
+          {wallet && globalPreferences ? (
             <SignTransactionButton
               ref={signTxBtnRef}
               form={formId}
               wallet={wallet}
               disabled={sendTxMutation.isLoading}
               holdToSign={false}
+              bluetoothSupportEnabled={
+                globalPreferences.bluetoothSupportEnabled
+              }
             />
           ) : null}
         </VStack>

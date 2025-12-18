@@ -1,11 +1,9 @@
-import React, { useImperativeHandle, useRef } from 'react';
+import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import { ethers } from 'ethers';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { getError } from 'src/shared/errors/getError';
 import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
 import { nanoid } from 'nanoid';
 import type { SignTransactionResult } from 'src/ui/hardware-wallet/types';
@@ -23,6 +21,19 @@ import {
   serializePaymasterTx,
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
 import omit from 'lodash/omit';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
+import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { isRpcRequest } from 'src/shared/custom-rpc';
+import {
+  deniedByUser,
+  parseLedgerError,
+} from '@zeriontech/hardware-wallet-connection';
+import { openUrl } from 'src/ui/shared/openUrl';
+import { urlContext } from 'src/shared/UrlContext';
+import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
+import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { useNavigate } from 'react-router-dom';
+import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
 async function signRegularOrPaymasterTx({
@@ -80,10 +91,36 @@ async function signRegularOrPaymasterTx({
   }
 }
 
+async function signSolanaTransaction({
+  messageHandler,
+  transaction,
+  derivationPath,
+  contentWindow,
+}: {
+  messageHandler: typeof hardwareMessageHandler;
+  transaction: StringBase64;
+  derivationPath: string;
+  contentWindow: Window;
+}): Promise<StringBase64> {
+  return await messageHandler.request<StringBase64>(
+    {
+      id: nanoid(),
+      method: 'solana_signTransaction',
+      params: { derivationPath, transaction },
+    },
+    contentWindow
+  );
+}
+
 interface SignTransactionParams {
   transaction: IncomingTransaction;
   address: string;
   chain: Chain;
+}
+
+interface SolanaSignTransactionParams {
+  transaction: StringBase64; // base64
+  address: string;
 }
 
 export interface SignTransactionHandle {
@@ -92,6 +129,10 @@ export interface SignTransactionHandle {
     address,
     chain,
   }: SignTransactionParams) => Promise<string>;
+  solana_signTransaction: ({
+    transaction,
+    address,
+  }: SolanaSignTransactionParams) => Promise<string>;
 }
 
 async function prepareForSignByLedger({
@@ -123,24 +164,28 @@ async function prepareForSignByLedger({
 export const HardwareSignTransaction = React.forwardRef(
   function HardwareSignTransaction(
     {
+      ecosystem,
       derivationPath,
       isSending,
       children,
       buttonTitle,
+      bluetoothSupportEnabled,
       buttonKind = 'primary',
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+      ecosystem: BlockchainType;
       derivationPath: string;
       isSending: boolean;
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
+      bluetoothSupportEnabled: boolean;
     },
     ref: React.Ref<SignTransactionHandle>
   ) {
     const navigate = useNavigate();
-    const location = useLocation();
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
+    const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
     const { mutateAsync: signTransaction, ...signMutation } = useMutation({
       mutationFn: async ({
@@ -170,40 +215,115 @@ export const HardwareSignTransaction = React.forwardRef(
           });
           return result.serialized;
         } catch (error) {
-          const normalizedError = getError(error);
-          if (normalizedError.message === 'ConnectError') {
-            navigate(
-              `/connect-hardware-wallet?${new URLSearchParams({
-                strategy: 'connect',
-                next: `${location.pathname}${location.search}`,
-                replaceAfterRedirect: 'true',
-              })}`
-            );
-            // NOTE: TODO: should we throw the same error here? Or return meaningless <string> to match fn signature?
-            throw normalizedError;
-          } else {
-            throw normalizedError;
+          const normalizedError = parseLedgerError(error);
+          if (deniedByUser(normalizedError)) {
+            throw new Error('Signature denied by user');
           }
+          throw normalizedError;
         }
       },
     });
 
-    useImperativeHandle(ref, () => ({ signTransaction }));
+    const { mutateAsync: solana_signTransaction, ...signSolanaMutation } =
+      useMutation({
+        mutationFn: async ({
+          transaction,
+        }: SolanaSignTransactionParams): Promise<string> => {
+          invariant(iframeRef.current, 'Ledger iframe not found');
+          invariant(
+            iframeRef.current.contentWindow,
+            'Iframe contentWindow is not available'
+          );
+          try {
+            const result = await signSolanaTransaction({
+              transaction,
+              messageHandler: hardwareMessageHandler,
+              derivationPath,
+              contentWindow: iframeRef.current.contentWindow,
+            });
+            return result;
+          } catch (error) {
+            const normalizedError = parseLedgerError(error);
+            if (deniedByUser(normalizedError)) {
+              throw new Error('Signature denied by user');
+            }
+            throw normalizedError;
+          }
+        },
+      });
+
+    useEffect(() => {
+      async function handler(event: MessageEvent) {
+        invariant(iframeRef.current, 'Iframe should be mounted');
+        if (!isAllowedMessage(event, iframeRef.current)) {
+          return;
+        }
+        if (isRpcRequest(event.data)) {
+          const { method } = event.data;
+          if (
+            method === 'ledger/sign/success' ||
+            method === 'ledger/sign/resume' ||
+            method === 'ledger/sign/error' ||
+            method === 'ledger/sign/cancel'
+          ) {
+            dialogRef.current?.close();
+          } else if (
+            method === 'ledger/sign/notConnected' ||
+            method === 'ledger/sign/interactionRequested'
+          ) {
+            dialogRef.current?.showModal();
+          } else if (method === 'ledger/sign/openInTab') {
+            const url = new URL(window.location.href);
+            openUrl(url, { windowType: 'tab' });
+            navigate('/');
+          }
+        }
+      }
+      window.addEventListener('message', handler);
+      return () => window.removeEventListener('message', handler);
+    }, [navigate]);
+
+    const isError = signMutation.isError || signSolanaMutation.isError;
+    const isSuccess = signMutation.isSuccess || signSolanaMutation.isSuccess;
+    useEffect(() => {
+      if (isError || isSuccess) {
+        signMutation.reset();
+        signSolanaMutation.reset();
+        dialogRef.current?.close();
+      }
+    }, [isError, isSuccess, signMutation, signSolanaMutation]);
+
+    useImperativeHandle(ref, () => ({
+      signTransaction,
+      solana_signTransaction,
+    }));
 
     return (
       <>
-        <LedgerIframe
-          ref={iframeRef}
-          initialRoute="/signConnector"
-          style={{
-            position: 'absolute',
-            border: 'none',
-            backgroundColor: 'transparent',
-          }}
-          tabIndex={-1}
-          height={0}
-        />
-        {signMutation.isLoading ? (
+        <BottomSheetDialog
+          ref={dialogRef}
+          closeOnClickOutside={false}
+          height="fit-content"
+        >
+          <LedgerIframe
+            ref={iframeRef}
+            initialRoute="/signConnector"
+            appSearchParams={new URLSearchParams({
+              ecosystem,
+              windowType: urlContext.windowType,
+              supportBluetooth: `${Boolean(bluetoothSupportEnabled)}`,
+            }).toString()}
+            style={{
+              // border: 'none',
+              backgroundColor: 'transparent',
+            }}
+            // @ts-ignore
+            allowtransparency="true"
+            tabIndex={-1}
+            height={300}
+          />
+        </BottomSheetDialog>
+        {signMutation.isLoading || signSolanaMutation.isLoading ? (
           <Button
             kind="loading-border"
             disabled={true}
@@ -214,7 +334,11 @@ export const HardwareSignTransaction = React.forwardRef(
         ) : (
           <Button
             kind={buttonKind}
-            disabled={signMutation.isLoading || isSending}
+            disabled={
+              signMutation.isLoading ||
+              signSolanaMutation.isLoading ||
+              isSending
+            }
             style={{
               paddingInline: 16, // fit longer button label
             }}
