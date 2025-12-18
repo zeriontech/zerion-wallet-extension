@@ -27,7 +27,9 @@ type MetabaseEvent =
   | 'banner_clicked'
   | 'asset_clicked'
   | 'passkey_login_enabled'
-  | 'passkey_login_disabled';
+  | 'passkey_login_disabled'
+  | 'password_change_success'
+  | 'password_change_error';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

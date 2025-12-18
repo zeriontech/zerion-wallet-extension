@@ -10,6 +10,7 @@ type WalletStoreState = Record<string, EncryptedWalletRecord | undefined>;
 
 export class WalletStore extends PersistentStore<WalletStoreState> {
   static key = 'wallet';
+  static backupKey = 'wallet-backup';
   /** Store unencrypted "lastRecord" to avoid unnecessary stringifications */
   private lastRecord: WalletRecord | null = null;
 
