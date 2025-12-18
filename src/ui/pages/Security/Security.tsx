@@ -290,7 +290,9 @@ function ChangePassword() {
       newPassword: string;
     }) => {
       if (oldPassword === newPassword) {
-        throw new Error('The new password must be different from the old one.');
+        throw new Error(
+          'The new password must be different from the current one.'
+        );
       }
       invariant(userQuery.data, 'User must be defined');
       // Change password
@@ -416,7 +418,7 @@ function ChangePassword() {
                         autoFocus={true}
                         type="password"
                         name="oldPassword"
-                        placeholder="Old Password"
+                        placeholder="Current Password"
                         required={true}
                       />
                       <VStack gap={12}>
