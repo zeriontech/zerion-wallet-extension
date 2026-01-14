@@ -38,6 +38,7 @@ const URLBarBlacklist = new Set([
   '/requestAccounts',
   '/testnetModeGuard',
   '/phishing-warning',
+  '/restore-data',
 ]);
 
 export function hideURLBarFor(path: string) {

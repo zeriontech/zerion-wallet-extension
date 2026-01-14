@@ -845,6 +845,22 @@ function trackAppEvents({ account }: { account: Account }) {
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack('General: Passkey Login Disabled', mixpanelParams);
   });
+
+  emitter.on('passwordChangeSuccess', () => {
+    const params = createParams({
+      request_name: 'password_change_success',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Password Change Success', mixpanelParams);
+  });
+
+  emitter.on('passwordChangeError', () => {
+    const params = createParams({
+      request_name: 'password_change_error',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Password Change Failed', mixpanelParams);
+  });
 }
 
 export function initialize({ account }: { account: Account }) {

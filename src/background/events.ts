@@ -103,4 +103,6 @@ export const emitter = createNanoEvents<{
   assetClicked: (data: AssetClickedParams) => void;
   passkeyLoginEnabled: () => void;
   passkeyLoginDisabled: () => void;
+  passwordChangeSuccess: () => void;
+  passwordChangeError: () => void; // we do not pass error body to analytics to avoid sensitive data leaks
 }>();
