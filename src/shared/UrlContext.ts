@@ -7,7 +7,10 @@ import type {
 import { UrlContextParam } from './types/UrlContext';
 
 function getWindowType(params: URLSearchParams): WindowType {
-  if (window.location.pathname.startsWith('/sidepanel')) {
+  if (
+    window.location.pathname.startsWith('/sidepanel') &&
+    params.get(UrlContextParam.windowType) !== 'tab'
+  ) {
     return 'sidepanel';
   }
   return (params.get(UrlContextParam.windowType) as WindowType) || 'popup';

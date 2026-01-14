@@ -100,6 +100,8 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { NetworkId } from 'src/modules/networks/NetworkId';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -458,6 +460,7 @@ function NativeZeroBridgeHint() {
 
 function BridgeFormComponent() {
   useBackgroundKind(whiteBackgroundKind);
+  const { globalPreferences } = useGlobalPreferences();
 
   const toastRef = useRef<PopoverToastHandle>(null);
   const { singleAddress: address, singleAddressNormalized } =
@@ -1416,9 +1419,12 @@ function BridgeFormComponent() {
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
               {approveMutation.isError ? (
-                <ErrorMessage error={getError(approveMutation.error)} />
+                <ErrorMessage
+                  error={getError(approveMutation.error)}
+                  hardwareError={getHardwareError(approveMutation.error)}
+                />
               ) : null}
-              {wallet ? (
+              {wallet && globalPreferences ? (
                 <SignTransactionButton
                   ref={approveTxBtnRef}
                   form={formId}
@@ -1429,6 +1435,9 @@ function BridgeFormComponent() {
                     approveTxStatus === 'pending'
                   }
                   holdToSign={false}
+                  bluetoothSupportEnabled={
+                    globalPreferences.bluetoothSupportEnabled
+                  }
                 >
                   {approveMutation.isLoading || approveTxStatus === 'pending'
                     ? 'Approving...'
@@ -1449,9 +1458,14 @@ function BridgeFormComponent() {
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
               {sendTransactionMutation.isError ? (
-                <ErrorMessage error={getError(sendTransactionMutation.error)} />
+                <ErrorMessage
+                  error={getError(sendTransactionMutation.error)}
+                  hardwareError={getHardwareError(
+                    sendTransactionMutation.error
+                  )}
+                />
               ) : null}
-              {wallet ? (
+              {wallet && globalPreferences ? (
                 <FormHint
                   formState={formState}
                   inputPosition={inputPosition}
@@ -1478,6 +1492,9 @@ function BridgeFormComponent() {
                         )
                       }
                       holdToSign={false}
+                      bluetoothSupportEnabled={
+                        globalPreferences.bluetoothSupportEnabled
+                      }
                     >
                       <span
                         style={{

@@ -1,0 +1,32 @@
+.container {
+  background: var(--neutral-100);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: inline-block;
+}
+
+.iconShake {
+  animation: shake 2s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  5% {
+    transform: translateX(-3px);
+  }
+  10% {
+    transform: translateX(3px);
+  }
+  15% {
+    transform: translateX(-2px);
+  }
+  20% {
+    transform: translateX(2px);
+  }
+  25%,
+  100% {
+    transform: translateX(0);
+  }
+}

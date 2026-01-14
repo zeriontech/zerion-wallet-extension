@@ -26,9 +26,12 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useAddressNftPosition } from './useAddressNftPosition';
 
 export function NonFungibleToken() {
+  const { globalPreferences } = useGlobalPreferences();
   const { asset_code, chain } = useParams();
   const { singleAddress } = useAddressParams();
   const { data: wallet } = useQuery({
@@ -184,11 +187,14 @@ export function NonFungibleToken() {
             {nftTags.has('#dna') ? (
               <VStack gap={8}>
                 {promoteTokenMutation.isError ? (
-                  <ErrorMessage error={getError(promoteTokenMutation.error)} />
+                  <ErrorMessage
+                    error={getError(promoteTokenMutation.error)}
+                    hardwareError={getHardwareError(promoteTokenMutation.error)}
+                  />
                 ) : null}
                 {!wallet ? null : isPrimary ? (
                   <Button disabled={true}>Active</Button>
-                ) : (
+                ) : globalPreferences ? (
                   <SignMessageButton
                     ref={signMsgBtnRef}
                     wallet={wallet}
@@ -207,8 +213,11 @@ export function NonFungibleToken() {
                     }
                     disabled={promoteTokenMutation.isLoading}
                     holdToSign={false}
+                    bluetoothSupportEnabled={
+                      globalPreferences.bluetoothSupportEnabled
+                    }
                   />
-                )}
+                ) : null}
               </VStack>
             ) : null}
           </VStack>

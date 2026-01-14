@@ -412,6 +412,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       tabWhereRequestComesFrom.windowId &&
       browserWindow?.focused &&
       sidepanelIsOpen &&
+      type !== 'tab' &&
       // As a simplification for first iteration always skip sidepanel if any sidepanel already has a request
       !this.hasPendingSidepanelRequests()
     ) {
