@@ -64,7 +64,7 @@ export function RestoreData() {
           <UIText kind="body/regular" color="var(--neutral-500)">
             If the problem persists, please{' '}
             <TextAnchor
-              href="help.zerion.io"
+              href="https://help.zerion.io"
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => {

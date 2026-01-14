@@ -382,11 +382,6 @@ export class Account extends EventEmitter<AccountEvents> {
       [user.id]: updatedWalletRecord,
     });
 
-    // TODO: DEBUG CASE, REMOVE BEFORE RELEASE
-    if (newPassword === 'password') {
-      throw new Error('Insecure password used for debugging purposes');
-    }
-
     await this.wallet.reloadWalletStore();
     await this.setUser(user, { password: newPassword }, { isNewUser: false });
 
