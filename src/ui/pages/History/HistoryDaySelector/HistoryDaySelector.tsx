@@ -155,6 +155,7 @@ function DayPicker({
           onClick={goToPreviousMonth}
           className={styles.navButton}
           type="button"
+          aria-label="Previous month"
         >
           <ChevronLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
@@ -165,6 +166,7 @@ function DayPicker({
           onClick={goToNextMonth}
           className={styles.navButton}
           type="button"
+          aria-label="Next month"
         >
           <ChevronRightIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
