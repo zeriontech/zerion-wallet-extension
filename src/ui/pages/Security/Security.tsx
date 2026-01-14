@@ -33,12 +33,13 @@ import {
 import { getError } from 'get-error';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
+import { isMacOS } from 'src/ui/shared/isMacos';
 import { ToggleSettingLine } from '../Settings/ToggleSettingsLine';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { StrengthIndicator } from '../CreateAccount/StrengthIndicator';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
-import { setupAccountPasskey, getPasskeyTitle, isMacOS } from './passkey';
+import { setupAccountPasskey, getPasskeyTitle } from './passkey';
 
 function TouchIdSettings() {
   const toastRef = useRef<PopoverToastHandle>(null);

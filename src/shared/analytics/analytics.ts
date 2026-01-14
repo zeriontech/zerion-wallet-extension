@@ -29,7 +29,8 @@ type MetabaseEvent =
   | 'passkey_login_enabled'
   | 'passkey_login_disabled'
   | 'password_change_success'
-  | 'password_change_error';
+  | 'password_change_error'
+  | 'report_ledger_error';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

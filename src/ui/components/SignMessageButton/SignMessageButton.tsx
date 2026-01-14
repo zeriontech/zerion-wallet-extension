@@ -15,6 +15,7 @@ import {
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
 
 type PersonalSignParams = MessageContextParams & {
@@ -45,12 +46,14 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     buttonKind = 'primary',
     onClick,
     holdToSign,
+    bluetoothSupportEnabled,
     ...buttonProps
   }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
     wallet: ExternallyOwnedAccount;
     buttonTitle?: React.ReactNode;
     buttonKind?: ButtonKind;
     holdToSign: boolean | null;
+    bluetoothSupportEnabled: boolean | null;
   },
   ref: React.Ref<SignMsgBtnHandle>
 ) {
@@ -107,7 +110,15 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   const solanaSignMutation = useMutation({
     mutationFn: async (params: SolanaSignMessageParams) => {
       if (isDeviceAccount(wallet)) {
-        throw new Error('TODO: Support solana signMessage method for ledger');
+        invariant(
+          hardwareSignRef.current,
+          'HardwareSignMessage must be mounted'
+        );
+        const { messageHex: message } = params;
+        const signature = await hardwareSignRef.current.solana_signMessage(
+          message
+        );
+        return signature;
       } else {
         const result = await walletPort.request('solana_signMessage', params);
         return result.signatureSerialized;
@@ -137,6 +148,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   return isDeviceAccount(wallet) ? (
     <HardwareSignMessage
       ref={hardwareSignRef}
+      ecosystem={getAddressType(wallet.address)}
       derivationPath={wallet.derivationPath}
       isSigning={isLoading}
       children={children}
@@ -144,6 +156,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
       buttonKind={buttonKind}
       onClick={onClick}
       disabled={disabled}
+      bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
       {...buttonProps}
     />
   ) : (

@@ -106,6 +106,8 @@ import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { getDecimals } from 'src/modules/networks/asset';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -539,6 +541,7 @@ function SendTransactionContent({
   const navigate = useNavigate();
   const { singleAddress } = useAddressParams();
   const { preferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   const { data: chainGasPrices, ...gasPricesQuery } = useGasPrices(chain);
   const toastRef = useRef<PopoverToastHandle>(null);
@@ -871,7 +874,10 @@ function SendTransactionContent({
         <Spacer height={16} />
         <VStack style={{ textAlign: 'center' }} gap={8}>
           {sendTransactionMutation.isError ? (
-            <ErrorMessage error={getError(sendTransactionMutation.error)} />
+            <ErrorMessage
+              error={getError(sendTransactionMutation.error)}
+              hardwareError={getHardwareError(sendTransactionMutation.error)}
+            />
           ) : null}
           {view === View.customAllowance ? (
             <RenderArea name="sign-transaction-footer" />
@@ -893,7 +899,7 @@ function SendTransactionContent({
               >
                 Cancel
               </Button>
-              {preferences ? (
+              {preferences && globalPreferences ? (
                 <SignTransactionButton
                   // TODO: set loading state when {sendTransactionMutation.isLoading}
                   // (important for paymaster flow)
@@ -911,6 +917,9 @@ function SendTransactionContent({
                       : undefined
                   }
                   holdToSign={preferences.enableHoldToSignButton}
+                  bluetoothSupportEnabled={
+                    globalPreferences.bluetoothSupportEnabled
+                  }
                 />
               ) : null}
             </div>
@@ -1194,6 +1203,7 @@ function SolSendTransaction() {
   });
   invariant(wallet, 'Wallet must be available');
   const { preferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
   const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
   const navigate = useNavigate();
@@ -1320,7 +1330,10 @@ function SolSendTransaction() {
         <Spacer height={16} />
         <VStack style={{ textAlign: 'center' }} gap={8}>
           {sendTransactionMutation.isError ? (
-            <ErrorMessage error={getError(sendTransactionMutation.error)} />
+            <ErrorMessage
+              error={getError(sendTransactionMutation.error)}
+              hardwareError={getHardwareError(sendTransactionMutation.error)}
+            />
           ) : null}
           <div
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
@@ -1333,7 +1346,7 @@ function SolSendTransaction() {
             >
               Cancel
             </Button>
-            {preferences ? (
+            {preferences && globalPreferences ? (
               <SignTransactionButton
                 wallet={wallet}
                 ref={sendTxBtnRef}
@@ -1342,6 +1355,9 @@ function SolSendTransaction() {
                 disabled={sendTransactionMutation.isLoading}
                 buttonKind="primary"
                 holdToSign={preferences.enableHoldToSignButton}
+                bluetoothSupportEnabled={
+                  globalPreferences.bluetoothSupportEnabled
+                }
               />
             ) : null}
           </div>

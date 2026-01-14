@@ -42,6 +42,16 @@ function ConnectDeviceFlow({
     const addresses = params.get('existingAddresses[]');
     return new Set(addresses?.split(','));
   }, [params]);
+  const bluetoothSupportEnabled = useMemo(() => {
+    const supportBluetoothParam = params.get('supportBluetooth');
+    if (supportBluetoothParam === 'true') {
+      return true;
+    }
+    if (supportBluetoothParam === 'false') {
+      return false;
+    }
+    return null;
+  }, [params]);
   const [ledger, setLedger] = useState<DeviceConnection | null>(null);
   const [controller] = useState(() => new DeviceController());
   useEffect(() => {
@@ -56,13 +66,13 @@ function ConnectDeviceFlow({
         handleRequest={(request) => controller.request(request)}
         onImport={(accounts) => {
           // @ts-ignore
-          const device = ledger.appEth.transport.device as USBDevice;
+          const device = ledger.device as USBDevice;
           const importData: LedgerAccountImport = {
             accounts,
             device: {
-              productId: device.productId,
+              productId: device.id,
               vendorId: device.vendorId,
-              productName: device.productName,
+              productName: device.name,
             },
             provider: 'ledger',
           };
@@ -83,6 +93,13 @@ function ConnectDeviceFlow({
           } else {
             setLedger(data);
           }
+        }}
+        bluetoothSupportEnabled={bluetoothSupportEnabled}
+        onBluetoothEnabled={() => {
+          onPostMessage({
+            id: nanoid(),
+            method: 'ledger/enable-bluetooth',
+          });
         }}
       />
     );

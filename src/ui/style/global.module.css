@@ -65,7 +65,7 @@ body.isTab {
    * Also "unset" seems to work, too. Not sure if it's better here than "initial"
    */
   --body-height: initial;
-  --body-width: 450px;
+  --body-width: 500px;
   height: auto;
   min-height: 100vh;
   border-inline: 1px solid var(--neutral-300);
@@ -93,6 +93,7 @@ body.isSidepanel :global(#root) {
   --body-width: initial;
   display: block; /* display: grid for some reason creates unwanted x an y overscolls */
   height: var(--body-height);
+  background-color: transparent;
 }
 
 :root:has(body.pageLayout) {

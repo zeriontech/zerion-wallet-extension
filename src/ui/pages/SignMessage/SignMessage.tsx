@@ -43,6 +43,8 @@ import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 
@@ -63,6 +65,7 @@ function SignMessageContent({
   const [params] = useSearchParams();
   const windowId = params.get('windowId');
   const { preferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
   invariant(windowId, 'windowId get-parameter is required');
   const handleSignSuccess = (signature: string) =>
     windowPort.confirm(windowId, signature);
@@ -276,7 +279,10 @@ function SignMessageContent({
           gap={8}
         >
           {confirmMutation.isError ? (
-            <ErrorMessage error={getError(confirmMutation.error)} />
+            <ErrorMessage
+              error={getError(confirmMutation.error)}
+              hardwareError={getHardwareError(confirmMutation.error)}
+            />
           ) : null}
 
           <div
@@ -294,13 +300,16 @@ function SignMessageContent({
             >
               Cancel
             </Button>
-            {preferences ? (
+            {preferences && globalPreferences ? (
               <SignMessageButton
                 ref={signMsgBtnRef}
                 wallet={wallet}
                 onClick={() => confirmRequest()}
                 disabled={confirmMutation.isLoading}
                 holdToSign={preferences.enableHoldToSignButton}
+                bluetoothSupportEnabled={
+                  globalPreferences.bluetoothSupportEnabled
+                }
               />
             ) : null}
           </div>

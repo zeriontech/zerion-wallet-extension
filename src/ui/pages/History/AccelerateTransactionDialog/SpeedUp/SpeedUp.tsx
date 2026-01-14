@@ -25,6 +25,8 @@ import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
+import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
 import { useTransactionFee } from '../../../SendTransaction/TransactionConfiguration/useTransactionFee';
 import {
@@ -50,6 +52,7 @@ export function SpeedUp({
 }) {
   const { address } = wallet;
   const { preferences } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
   const { rawTransaction: originalTransaction } = addressAction;
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   invariant(originalTransaction, 'Original transaction must be defined');
@@ -195,7 +198,12 @@ export function SpeedUp({
           </div>
         </VStack>
         <VStack gap={8} style={{ textAlign: 'center' }}>
-          {isError ? <ErrorMessage error={getError(error)} /> : null}
+          {isError ? (
+            <ErrorMessage
+              error={getError(error)}
+              hardwareError={getHardwareError(error)}
+            />
+          ) : null}
           <div
             style={{
               display: 'grid',
@@ -211,12 +219,15 @@ export function SpeedUp({
             >
               Back
             </Button>
-            {preferences ? (
+            {preferences && globalPreferences ? (
               <SignTransactionButton
                 wallet={wallet}
                 ref={signTxBtnRef}
                 onClick={() => sendTransaction()}
                 holdToSign={preferences.enableHoldToSignButton}
+                bluetoothSupportEnabled={
+                  globalPreferences.bluetoothSupportEnabled
+                }
               />
             ) : null}
           </div>

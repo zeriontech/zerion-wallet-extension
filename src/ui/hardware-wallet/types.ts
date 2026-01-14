@@ -35,10 +35,6 @@ export function verifyLedgerAccountImport(
   throw Error('Type Error: not a LedgerDeviceImport');
 }
 
-export type SignTransactionResult = Awaited<ReturnType<typeof signTransaction>>;
-// type SignTransactionParams =
-// export function verifySignTransactionParams(
-//   params: unknown
-// ): params is Parameters<typeof signTransaction>[0] {
-//
-// }
+export type SignTransactionResult = Awaited<
+  ReturnType<typeof signTransaction>['promise']
+>;
