@@ -50,7 +50,9 @@ type PremiumStatus = {
   isSupported: boolean;
 };
 
-type AssetAddressPnlQuery = UseQueryResult<ResponseBody<AssetAddressPnl>>;
+type AssetAddressPnlQuery = UseQueryResult<
+  ResponseBody<AssetAddressPnl | null>
+>;
 
 function Line() {
   return (
@@ -640,12 +642,12 @@ function AssetPremiumAddressShortStats({
     : 'Realised PnL';
   const pnlRaw =
     (walletAssetDetails.totalConvertedQuantity
-      ? assetAddressPnlQuery.data?.data.unrealizedPnl
-      : assetAddressPnlQuery.data?.data.realizedPnl) || 0;
+      ? assetAddressPnlQuery.data?.data?.unrealizedPnl
+      : assetAddressPnlQuery.data?.data?.realizedPnl) || 0;
   const relativePnLRaw =
     (walletAssetDetails.totalConvertedQuantity
-      ? assetAddressPnlQuery.data?.data.relativeUnrealizedPnl
-      : assetAddressPnlQuery.data?.data.relativeRealizedPnl) || 0;
+      ? assetAddressPnlQuery.data?.data?.relativeUnrealizedPnl
+      : assetAddressPnlQuery.data?.data?.relativeRealizedPnl) || 0;
 
   const unrealizedGainFormatted = `${getSign(pnlRaw)}${formatPercent(
     Math.abs(relativePnLRaw) * 100,
@@ -688,7 +690,7 @@ function AssetPremiumAddressShortStats({
           <UIText kind="headline/h3" style={{ display: 'flex' }}>
             <BlurrableBalance kind="headline/h3">
               {formatCurrencyValue(
-                assetAddressPnlQuery.data?.data.bought || 0,
+                assetAddressPnlQuery.data?.data?.bought || 0,
                 'en',
                 currency
               )}
@@ -852,7 +854,7 @@ export function AssetAddressStats({
           <VStack gap={12}>
             {walletAssetDetails.totalConvertedQuantity === 0 ? (
               <VStack gap={4}>
-                {assetAddressPnlQuery.data?.data.bought === 0 ? null : (
+                {assetAddressPnlQuery.data?.data?.bought === 0 ? null : (
                   <UIText kind="headline/h2" color="var(--neutral-500)">
                     {isUntrackedAsset
                       ? 'N/A'
@@ -913,7 +915,7 @@ export function AssetAddressStats({
               />
             )}
             {isUntrackedAsset ||
-            (assetAddressPnlQuery.data?.data.bought === 0 &&
+            (assetAddressPnlQuery.data?.data?.bought === 0 &&
               walletAssetDetails.totalValue === 0) ? null : (
               <Button
                 kind="neutral"

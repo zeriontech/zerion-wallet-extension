@@ -20,7 +20,7 @@ export interface AssetAddressPnl {
   bought: number;
 }
 
-type Response = ResponseBody<AssetAddressPnl>;
+type Response = ResponseBody<AssetAddressPnl | null>;
 
 export async function assetGetFungiblePnl(
   this: ZerionApiContext,
