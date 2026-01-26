@@ -25,7 +25,7 @@
  * you're welcome to refactor
  */
 .primary.primary {
-  --button-background: var(--black);
+  --button-background: var(--primary);
   --button-background-hover: var(--neutral-800);
   --button-text: var(--white);
 }
