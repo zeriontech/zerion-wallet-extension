@@ -26,7 +26,7 @@
  */
 .primary.primary {
   --button-background: var(--primary);
-  --button-background-hover: var(--neutral-800);
+  --button-background-hover: var(--primary-300);
   --button-text: var(--white);
 }
 
