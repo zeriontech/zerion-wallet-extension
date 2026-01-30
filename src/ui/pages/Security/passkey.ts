@@ -139,6 +139,7 @@ export async function setupAccountPasskey(password: string) {
       },
     });
   } catch (error) {
+    console.log(error);
     // Handle user cancellation or other creation errors
     if (error instanceof Error) {
       if (
@@ -197,13 +198,13 @@ export async function getPasswordWithPasskey() {
             type: 'public-key',
           },
         ],
-        // extensions: {
-        //   prf: {
-        //     eval: {
-        //       first: utf8ToUint8Array(salt),
-        //     },
-        //   },
-        // },
+        extensions: {
+          prf: {
+            eval: {
+              first: utf8ToUint8Array(salt),
+            },
+          },
+        },
       },
     });
   } catch (error) {
