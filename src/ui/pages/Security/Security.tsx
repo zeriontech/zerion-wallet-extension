@@ -143,26 +143,26 @@ function TouchIdSettings() {
     <>
       {/* Currently, Windos Hello doesn't support PRF extension for passkeys */}
       {/* TODO: Research other passkey providers and enable them */}
-      {isMacOS() ? (
-        <ToggleSettingLine
-          text={`Unlock with ${passkeyTitle}`}
-          checked={checked}
-          disabled={disabled}
-          onChange={(event) => {
-            if (event.target.checked) {
-              handleSetupClick();
-            } else {
-              if (!disablePasskeyDialogRef.current) {
-                return;
-              }
-              showConfirmDialog(disablePasskeyDialogRef.current).then(() => {
-                removeTouchIdMutation.mutate();
-              });
+      {/* {isMacOS() ? ( */}
+      <ToggleSettingLine
+        text={`Unlock with ${passkeyTitle}`}
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => {
+          if (event.target.checked) {
+            handleSetupClick();
+          } else {
+            if (!disablePasskeyDialogRef.current) {
+              return;
             }
-          }}
-          detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
-        />
-      ) : null}
+            showConfirmDialog(disablePasskeyDialogRef.current).then(() => {
+              removeTouchIdMutation.mutate();
+            });
+          }
+        }}
+        detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
+      />
+      {/* ) : null} */}
       <BottomSheetDialog ref={disablePasskeyDialogRef} height="fit-content">
         <VStack gap={8}>
           <form method="dialog">
