@@ -197,13 +197,13 @@ export async function getPasswordWithPasskey() {
             type: 'public-key',
           },
         ],
-        extensions: {
-          prf: {
-            eval: {
-              first: utf8ToUint8Array(salt),
-            },
-          },
-        },
+        // extensions: {
+        //   prf: {
+        //     eval: {
+        //       first: utf8ToUint8Array(salt),
+        //     },
+        //   },
+        // },
       },
     });
   } catch (error) {
