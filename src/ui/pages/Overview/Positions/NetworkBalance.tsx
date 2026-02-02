@@ -152,14 +152,13 @@ export function NetworkBalance({
 
   const chain = temporary_solanaDisabledSelector
     ? NetworkId.Solana
-    : selectedChain || dappChain || NetworkSelectValue.All;
+    : selectedChain || NetworkSelectValue.All;
 
-  const isClearableFilter = Boolean(selectedChain);
   const showHelperButton =
     !temporary_solanaDisabledSelector && Boolean(selectedChain || dappChain);
   const showAllNetworksHelperButton =
     (!dappChain && selectedChain !== NetworkSelectValue.All) ||
-    (dappChain && (!selectedChain || selectedChain === dappChain));
+    (dappChain && selectedChain === dappChain);
 
   const hasValue = totalValue != null;
 
@@ -234,9 +233,9 @@ export function NetworkBalance({
           showAllNetworksOption={showAllNetworksOption}
           value={chain}
           standard={standard}
-          onChange={(selectedValue) =>
-            onChange(selectedValue === dappChain ? null : selectedValue)
-          }
+          onChange={(value) => {
+            onChange(value === NetworkSelectValue.All ? null : value);
+          }}
           renderButton={({ value, openDialog }) => (
             <DisclosureButton
               value={value}
@@ -252,7 +251,7 @@ export function NetworkBalance({
           <Button
             kind="text-primary"
             onClick={() =>
-              onChange(isClearableFilter ? null : NetworkSelectValue.All)
+              onChange(showAllNetworksHelperButton ? null : dappChain)
             }
             style={{
               ['--button-text' as string]: 'var(--primary)',
