@@ -195,7 +195,7 @@ export function NonFungibleTokens({
     currency,
   });
   const { value: nftTotalValue } = useNftsTotalValue(params);
-  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || NetworkSelectValue.All;
   const addressType = getAddressType(address);
   const showNetworkSelector = addressType === 'evm';
 

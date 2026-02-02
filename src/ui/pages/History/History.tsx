@@ -234,7 +234,7 @@ export function HistoryList({
   const addressType = getAddressType(address);
   const showNetworkSelector = addressType === 'evm';
 
-  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || NetworkSelectValue.All;
   const chain =
     chainValue && chainValue !== NetworkSelectValue.All
       ? createChain(chainValue)

@@ -727,7 +727,7 @@ function MultiChainPositions({
   );
   const positions = data?.data;
 
-  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || NetworkSelectValue.All;
 
   const items = useMemo(
     () =>
@@ -805,7 +805,7 @@ function RawChainPositions({
     'All networks filter should not show custom chain positions'
   );
   const { networks } = useNetworks();
-  const chainValue = selectedChain || dappChain;
+  const chainValue = selectedChain;
   invariant(
     chainValue,
     'Chain filter should be defined to show custom chain positions'
@@ -881,7 +881,7 @@ export function Positions({
     { enabled: ready && !addrIsSolana }
   );
   const walletPortfolio = data?.data;
-  const chainValue = selectedChain || dappChain || NetworkSelectValue.All;
+  const chainValue = selectedChain || NetworkSelectValue.All;
   const chain =
     chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
   const positionChains = useMemo(() => {
