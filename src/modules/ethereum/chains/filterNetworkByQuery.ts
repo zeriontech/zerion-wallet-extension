@@ -22,8 +22,8 @@ export function filterNetworksByQuery(query: string) {
 
 /**
  * Filters and sorts networks by query with prioritized matching:
- * 1. Networks with names starting with the query (highest priority)
- * 2. Networks with the query anywhere in the name (medium priority)
+ * 1. Networks with names or IDs starting with the query (highest priority)
+ * 2. Networks with the query anywhere in the name or ID (medium priority)
  * 3. Networks matching other fields via filterNetworksByQuery (lowest priority)
  */
 export function filterAndSortNetworksByQuery(
@@ -41,15 +41,21 @@ export function filterAndSortNetworksByQuery(
   const processedIds = new Set<string>();
 
   for (const network of networks) {
-    const networkName = network.name.toLowerCase();
+    // Skip if already processed
+    if (processedIds.has(network.id)) {
+      continue;
+    }
 
-    // Priority 1: Name starts with query
-    if (networkName.startsWith(normalizedQuery)) {
+    const networkName = network.name.toLowerCase();
+    const networkId = network.id.toLowerCase();
+
+    // Priority 1: Name or ID starts with query
+    if (networkName.startsWith(normalizedQuery) || networkId.startsWith(normalizedQuery)) {
       startsWithMatches.push(network);
       processedIds.add(network.id);
     }
-    // Priority 2: Name contains query (but doesn't start with it)
-    else if (contains(network.name, query)) {
+    // Priority 2: Name or ID contains query (but doesn't start with it)
+    else if (contains(network.name, query) || contains(network.id, query)) {
       nameContainsMatches.push(network);
       processedIds.add(network.id);
     }
