@@ -47,7 +47,6 @@ import * as styles from './styles.module.css';
 type PremiumStatus = {
   isPremium: boolean;
   isLoading: boolean;
-  isSupported: boolean;
 };
 
 type AssetAddressPnlQuery = UseQueryResult<
@@ -321,7 +320,7 @@ function AssetStats({
             isLoading={isLoading}
           />
         </>
-      ) : premiumStatus.isSupported ? (
+      ) : (
         <StatLine
           title="Asset PnL & More"
           value={() => (
@@ -336,7 +335,7 @@ function AssetStats({
             </UnstyledAnchor>
           )}
         />
-      ) : null}
+      )}
     </VStack>
   );
 }
@@ -723,7 +722,7 @@ function AssetRegularAddressShortStats({
       }}
       alignItems="start"
     >
-      {!premiumStatus.isPremium && premiumStatus.isSupported ? (
+      {!premiumStatus.isPremium ? (
         <VStack gap={4}>
           <UIText kind="caption/regular" color="var(--neutral-500)">
             Unrealised PnL

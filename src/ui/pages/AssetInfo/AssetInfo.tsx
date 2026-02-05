@@ -167,7 +167,6 @@ export function AssetInfo() {
     return {
       isPremium,
       isLoading: walletsMetaQuery.isLoading,
-      isSupported: true,
     };
   }, [isPremium, walletsMetaQuery.isLoading]);
 
