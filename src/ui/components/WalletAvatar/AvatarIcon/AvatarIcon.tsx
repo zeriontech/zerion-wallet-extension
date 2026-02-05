@@ -67,12 +67,15 @@ export function AvatarIcon({
             errorStyle={{ width: imageSize, height: imageSize }}
             content={convertMediaContent(mediaContent)}
             alt={`${nft.metadata.name} image`}
-            forcePreview={
-              size <= 40 ||
-              mediaContent.type === 'audio' ||
-              (!mediaContent.imageUrl && Boolean(mediaContent.imagePreviewUrl))
-            }
+            forcePreview={size <= 40 || mediaContent.type === 'audio'}
             onReady={onReady}
+            renderUnsupportedContent={() => (
+              <BlockieImg
+                address={address}
+                size={imageSize}
+                borderRadius={imageBorderRadius}
+              />
+            )}
           />
         ) : (
           <BlockieImg

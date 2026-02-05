@@ -61,6 +61,7 @@ export function MediaContent({
   className,
   forcePreview,
   onReady,
+  renderUnsupportedContent,
 }: {
   content?: MediaContentValue;
   alt: string;
@@ -70,6 +71,7 @@ export function MediaContent({
   className?: string;
   forcePreview?: boolean;
   onReady?(): void;
+  renderUnsupportedContent?(): React.ReactNode;
 }) {
   if (forcePreview && content?.image_preview_url) {
     return (
@@ -142,9 +144,8 @@ export function MediaContent({
       />
     );
   }
-  return (
-    <UIText kind="body/regular" className={className}>
-      Unsupported content
-    </UIText>
-  );
+  if (renderUnsupportedContent) {
+    return <>{renderUnsupportedContent()}</>;
+  }
+  return <MediaError image="🖼️" style={errorStyle} src={null} />;
 }
