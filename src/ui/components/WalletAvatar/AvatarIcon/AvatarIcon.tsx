@@ -67,7 +67,11 @@ export function AvatarIcon({
             errorStyle={{ width: imageSize, height: imageSize }}
             content={convertMediaContent(mediaContent)}
             alt={`${nft.metadata.name} image`}
-            forcePreview={size <= 40 || mediaContent.type === 'audio'}
+            forcePreview={
+              size <= 40 ||
+              mediaContent.type === 'audio' ||
+              (!mediaContent.imageUrl && Boolean(mediaContent.imagePreviewUrl))
+            }
             onReady={onReady}
           />
         ) : (
