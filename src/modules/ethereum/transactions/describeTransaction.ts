@@ -72,7 +72,12 @@ function sliceArguments(data: string) {
 
 function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
   const { data } = transaction;
-  if (!transaction.to || data == null || ethers.toQuantity(data) === '0x0') {
+  if (
+    !transaction.to ||
+    data == null ||
+    data === '' ||
+    ethers.toQuantity(data) === '0x0'
+  ) {
     return null;
   }
   const selector = sliceSelector(data);
