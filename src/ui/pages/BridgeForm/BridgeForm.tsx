@@ -61,7 +61,6 @@ import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { AllowanceForm } from 'src/ui/components/AllowanceForm';
-import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
@@ -1125,8 +1124,10 @@ function BridgeFormComponent() {
 
           const asset = inputPosition.asset;
           const decimals = getDecimals({ asset, chain: spendChain });
-          const spendAmountBase = commonToBase(inputAmount, decimals).toFixed();
-          const value = new BigNumber(allowanceBase || spendAmountBase);
+          const spendAmountBase = commonToBase(inputAmount, decimals);
+          const value = allowanceBase
+            ? new BigNumber(allowanceBase)
+            : spendAmountBase;
           const positionBalanceCommon = getPositionBalance(inputPosition);
           return (
             <ViewLoadingSuspense>
@@ -1151,12 +1152,13 @@ function BridgeFormComponent() {
                     chain={spendChain}
                     address={address}
                     balance={positionBalanceCommon}
-                    requestedAllowanceQuantityBase={UNLIMITED_APPROVAL_AMOUNT}
+                    requestedAllowanceQuantityBase={spendAmountBase}
                     value={value}
                     onSubmit={(quantity) => {
                       setAllowanceBase(quantity);
                       allowanceDialogRef.current?.close();
                     }}
+                    addressAction={null}
                   />
                 </div>
               </>

@@ -10,6 +10,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { createChain } from 'src/modules/networks/Chain';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { AllowanceForm } from '../AllowanceForm';
 import { NavigationBar } from '../NavigationBar';
 
@@ -20,6 +21,7 @@ export function AllowanceView({
   value,
   requestedAllowanceQuantityBase,
   onChange,
+  addressAction,
 }: {
   address: string;
   network: NetworkConfig;
@@ -27,6 +29,7 @@ export function AllowanceView({
   value: string;
   requestedAllowanceQuantityBase: string | null;
   onChange: (value: string) => void;
+  addressAction: AnyAddressAction | null;
 }) {
   const { currency } = useCurrency();
   invariant(
@@ -84,6 +87,7 @@ export function AllowanceView({
         value={new BigNumber(value || requestedAllowanceQuantityBase)}
         onSubmit={onChange}
         footerRenderArea="sign-transaction-footer"
+        addressAction={addressAction}
       />
     </>
   );

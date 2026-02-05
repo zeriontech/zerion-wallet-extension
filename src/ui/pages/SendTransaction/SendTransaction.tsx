@@ -866,6 +866,7 @@ function SendTransactionContent({
             value={allowanceQuantityBase}
             network={network}
             onChange={handleChangeAllowance}
+            addressAction={addressAction}
           />
         ) : null}
         <Spacer height={16} />

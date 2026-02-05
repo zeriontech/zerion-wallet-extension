@@ -105,6 +105,7 @@ function TypedDataDefaultView({
   interpretation,
   allowanceQuantityCommon,
   allowanceQuantityBase,
+  customAllowanceQuantityBase,
   onSignSuccess,
   onReject,
   onOpenAdvancedView,
@@ -123,6 +124,7 @@ function TypedDataDefaultView({
   interpretation?: SignatureInterpretResponse | null;
   allowanceQuantityCommon: string | null;
   allowanceQuantityBase: string | null;
+  customAllowanceQuantityBase: string | null;
   onSignSuccess: (signature: string) => void;
   onReject: () => void;
   onOpenAdvancedView: () => void;
@@ -298,7 +300,9 @@ function TypedDataDefaultView({
                 addressAction={addressAction}
                 network={network}
                 allowanceQuantityCommon={allowanceQuantityCommon || null}
-                customAllowanceQuantityBase={allowanceQuantityBase || null}
+                customAllowanceQuantityBase={
+                  customAllowanceQuantityBase || null
+                }
                 showApplicationLine={true}
                 singleAssetElementEnd={
                   allowanceQuantityCommon &&
@@ -584,6 +588,8 @@ function SignTypedDataContent({
         ).toFixed()
       : null;
 
+  const addressAction = interpretation?.data.action || null;
+
   if (!network) {
     return null;
   }
@@ -606,6 +612,7 @@ function SignTypedDataContent({
             typedData={typedData}
             interpretQuery={interpretQuery}
             interpretation={interpretation}
+            customAllowanceQuantityBase={allowanceQuantityBase}
             allowanceQuantityBase={
               allowanceQuantityBase || requestedAllowanceQuantityBase
             }
@@ -635,6 +642,7 @@ function SignTypedDataContent({
             requestedAllowanceQuantityBase={requestedAllowanceQuantityBase}
             network={network}
             onChange={handleChangeAllowance}
+            addressAction={addressAction}
           />
         ) : null}
         <RenderArea name="transaction-warning-section" />

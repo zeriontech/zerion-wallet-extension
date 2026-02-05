@@ -60,7 +60,6 @@ import {
   createApproveAddressAction,
   createTradeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import BigNumber from 'bignumber.js';
 import { usePreferences } from 'src/ui/features/preferences';
@@ -954,8 +953,10 @@ function SwapFormComponent() {
 
           const asset = inputPosition.asset;
           const decimals = getDecimals({ asset, chain: spendChain });
-          const spendAmountBase = commonToBase(inputAmount, decimals).toFixed();
-          const value = new BigNumber(allowanceBase || spendAmountBase);
+          const spendAmountBase = commonToBase(inputAmount, decimals);
+          const value = allowanceBase
+            ? new BigNumber(allowanceBase)
+            : spendAmountBase;
           const positionBalanceCommon = getPositionBalance(inputPosition);
           return (
             <ViewLoadingSuspense>
@@ -980,12 +981,13 @@ function SwapFormComponent() {
                     chain={spendChain}
                     address={address}
                     balance={positionBalanceCommon}
-                    requestedAllowanceQuantityBase={UNLIMITED_APPROVAL_AMOUNT}
+                    requestedAllowanceQuantityBase={spendAmountBase}
                     value={value}
                     onSubmit={(quantity) => {
                       setAllowanceBase(quantity);
                       allowanceDialogRef.current?.close();
                     }}
+                    addressAction={null}
                   />
                 </div>
               </>

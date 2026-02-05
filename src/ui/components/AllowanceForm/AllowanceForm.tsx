@@ -26,6 +26,10 @@ import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isUnlimitedApproval } from 'src/modules/ethereum/transactions/appovals';
+import {
+  getActionApproval,
+  type AnyAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 
 export function AllowanceForm({
   asset,
@@ -36,6 +40,7 @@ export function AllowanceForm({
   value,
   onSubmit,
   footerRenderArea,
+  addressAction,
 }: {
   asset: Asset;
   chain: Chain;
@@ -45,12 +50,18 @@ export function AllowanceForm({
   value: BigNumber;
   onSubmit(newValue: string): void;
   footerRenderArea?: string;
+  addressAction: AnyAddressAction | null;
 }) {
   const { currency } = useCurrency();
-  const isRequestedAllowanceUnlimited = isUnlimitedApproval(
-    requestedAllowanceQuantityBase
-  );
-  const isCurrentAllowanceUnlimited = isUnlimitedApproval(value);
+  const isRequestedAllowanceUnlimited =
+    isUnlimitedApproval(requestedAllowanceQuantityBase) ||
+    Boolean(
+      addressAction?.type.value === 'approve' &&
+        getActionApproval(addressAction)?.unlimited
+    );
+  const isCurrentAllowanceUnlimited =
+    isUnlimitedApproval(value) ||
+    (value.eq(requestedAllowanceQuantityBase) && isRequestedAllowanceUnlimited);
   const [isAllowanceUnlimited, setIsAllowanceUnlimited] = useState(
     isCurrentAllowanceUnlimited
   );
@@ -165,7 +176,7 @@ export function AllowanceForm({
           } else {
             onSubmit(
               isRequestedAllowanceUnlimited
-                ? requestedAllowanceQuantityBase.toFixed()
+                ? ''
                 : UNLIMITED_APPROVAL_AMOUNT.toFixed()
             );
           }
