@@ -181,7 +181,27 @@ export function AssetInfo() {
     );
   }
 
-  invariant(assetFullInfo?.fungible, 'Fungible asset info is missing');
+  if (!assetFullInfo?.fungible) {
+    return (
+      <PageColumn>
+        <NavigationTitle title="Unknown Token" documentTitle="Unknown Token" />
+        <PageTop />
+        <VStack
+          gap={16}
+          style={{
+            flexGrow: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingBottom: 72,
+          }}
+        >
+          <UIText kind="body/regular" style={{ textAlign: 'center' }}>
+            We don't track this token's info
+          </UIText>
+        </VStack>
+      </PageColumn>
+    );
+  }
 
   const isWatchedAddress = isReadonlyAccount(wallet);
   const isEmptyBalance = walletData?.data.totalValue === 0;
