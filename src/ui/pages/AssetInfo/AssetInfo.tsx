@@ -36,7 +36,6 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
-import { isSolanaAddress } from 'src/modules/solana/shared';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -144,8 +143,6 @@ export function AssetInfo() {
     address: params.address,
   });
 
-  const addrIsSolana = isSolanaAddress(params.address);
-
   const assetAddressPnlQuery = useWalletAssetPnl(
     {
       addresses: [params.address],
@@ -153,7 +150,7 @@ export function AssetInfo() {
       currency,
     },
     { source: useHttpClientSource() },
-    { enabled: ready && isPremium && !addrIsSolana }
+    { enabled: ready && isPremium }
   );
 
   const { data: wallet } = useQuery({
@@ -167,13 +164,12 @@ export function AssetInfo() {
     walletData?.data?.chainsDistribution?.at(0)?.chain.id || NetworkId.Zero;
 
   const premiumStatus = useMemo(() => {
-    const isSupported = !addrIsSolana;
     return {
       isPremium,
-      isLoading: isSupported && walletsMetaQuery.isLoading,
-      isSupported,
+      isLoading: walletsMetaQuery.isLoading,
+      isSupported: true,
     };
-  }, [isPremium, walletsMetaQuery.isLoading, addrIsSolana]);
+  }, [isPremium, walletsMetaQuery.isLoading]);
 
   if (isLoading || !wallet || !walletData) {
     return (
@@ -230,7 +226,6 @@ export function AssetInfo() {
           walletAssetDetails={walletData.data}
           assetAddressPnlQuery={assetAddressPnlQuery}
           premiumStatus={premiumStatus}
-          pnlIsSupported={!addrIsSolana}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />
