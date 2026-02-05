@@ -219,7 +219,7 @@ function AddressPositionItem({
               {position.chain !== NetworkId.Ethereum ? (
                 <NetworkIcon
                   size={16}
-                  name={network?.name || null}
+                  name={network?.name || position.chain}
                   src={network?.icon_url}
                 />
               ) : null}

@@ -189,9 +189,27 @@ export function NetworkBalance({
 
   if (isLoading) {
     return (
-      <UIText kind={textKind} style={{ width: '100%' }}>
-        {NBSP}
-      </UIText>
+      <HStack
+        gap={4}
+        alignItems="center"
+        style={{
+          gridTemplateColumns: showHelperButton
+            ? hasValue
+              ? 'minmax(130px, max-content) minmax(40px, max-content)'
+              : 'minmax(50px, max-content) minmax(40px, max-content)'
+            : '1fr',
+          width: '100%',
+        }}
+      >
+        <div
+          style={{
+            height: '32px',
+            width: '100%',
+            backgroundColor: 'var(--neutral-200)',
+            borderRadius: '8px',
+          }}
+        />
+      </HStack>
     );
   }
 
