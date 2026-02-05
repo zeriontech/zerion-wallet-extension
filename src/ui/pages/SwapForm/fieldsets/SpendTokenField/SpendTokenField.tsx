@@ -184,7 +184,9 @@ export function SpendTokenField({
                 value={value}
                 placeholder="0"
                 onChange={(event) =>
-                  handleChange(event.currentTarget.value.replace(',', '.'))
+                  handleChange(
+                    event.currentTarget.value.replace(',', '.').replace(/\s/g, '')
+                  )
                 }
                 pattern={FLOAT_INPUT_PATTERN}
                 required={primaryInput === 'spend'}

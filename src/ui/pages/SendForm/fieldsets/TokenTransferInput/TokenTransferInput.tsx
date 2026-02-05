@@ -185,7 +185,9 @@ export function TokenTransferInput<
                 placeholder="0"
                 inputMode="decimal"
                 onChange={(event) =>
-                  handleChange(event.currentTarget.value.replace(',', '.'))
+                  handleChange(
+                    event.currentTarget.value.replace(',', '.').replace(/\s/g, '')
+                  )
                 }
                 pattern={FLOAT_INPUT_PATTERN}
                 required={true}
