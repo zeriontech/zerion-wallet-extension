@@ -19,3 +19,46 @@ export function filterNetworksByQuery(query: string) {
     contains(item.rpc_url_public?.join(' '), query) ||
     contains(item.explorer_home_url || '', query);
 }
+
+/**
+ * Filters and sorts networks by query with prioritized matching:
+ * 1. Networks with names starting with the query (highest priority)
+ * 2. Networks with the query anywhere in the name (medium priority)
+ * 3. Networks matching other fields via filterNetworksByQuery (lowest priority)
+ */
+export function filterAndSortNetworksByQuery(
+  networks: NetworkConfig[],
+  query: string
+): NetworkConfig[] {
+  if (!query) {
+    return networks;
+  }
+
+  const normalizedQuery = query.toLowerCase();
+  const startsWithMatches: NetworkConfig[] = [];
+  const nameContainsMatches: NetworkConfig[] = [];
+  const otherMatches: NetworkConfig[] = [];
+  const processedIds = new Set<string>();
+
+  for (const network of networks) {
+    const networkName = network.name.toLowerCase();
+
+    // Priority 1: Name starts with query
+    if (networkName.startsWith(normalizedQuery)) {
+      startsWithMatches.push(network);
+      processedIds.add(network.id);
+    }
+    // Priority 2: Name contains query (but doesn't start with it)
+    else if (contains(network.name, query)) {
+      nameContainsMatches.push(network);
+      processedIds.add(network.id);
+    }
+    // Priority 3: Other fields match
+    else if (filterNetworksByQuery(query)(network)) {
+      otherMatches.push(network);
+      processedIds.add(network.id);
+    }
+  }
+
+  return [...startsWithMatches, ...nameContainsMatches, ...otherMatches];
+}

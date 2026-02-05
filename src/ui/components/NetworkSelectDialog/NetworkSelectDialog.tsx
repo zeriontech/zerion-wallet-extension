@@ -18,7 +18,7 @@ import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { filterNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
+import { filterAndSortNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
 import type { ChainDistribution } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { ChainValue } from 'src/ui/shared/requests/PortfolioValue/ChainValue';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
@@ -325,7 +325,7 @@ function SearchView({
     const allNetworks = testnetMode
       ? networks?.getNetworks().filter(filterPredicate)
       : networks?.getMainnets().filter(filterPredicate);
-    return allNetworks?.filter(filterNetworksByQuery(query));
+    return allNetworks ? filterAndSortNetworksByQuery(allNetworks, query) : [];
   }, [filterPredicate, query, networks, testnetMode]);
   if (isLoading) {
     return <ViewLoading kind="network" />;

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useSearchNetworks } from 'src/modules/networks/useNetworks';
-import { filterNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
+import { filterAndSortNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
 import {
   NetworksEmptyView,
   ShowTestnetsHint,
@@ -24,7 +24,7 @@ export function SearchResults({
     const allNetworks = testnetMode
       ? networks?.getNetworks()
       : networks?.getMainnets();
-    return allNetworks?.filter(filterNetworksByQuery(query));
+    return allNetworks ? filterAndSortNetworksByQuery(allNetworks, query) : [];
   }, [query, networks, testnetMode]);
 
   if (isLoading || !networks) {
