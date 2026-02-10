@@ -345,25 +345,25 @@ export function NetworkForm({
             required={false}
           />
         </VStack>
-        {disabledFields?.has('hidden') &&
-        disabledFields?.has('is_testnet') ? null : (
+        {disabledFields?.has('hidden') ? null : (
           <>
             <Spacer height={20} />
-            <Frame>
-              <VStack gap={8}>
-                {disabledFields?.has('hidden') ? null : (
-                  <NetworkHiddenFieldLine
-                    name="hidden"
-                    defaultChecked={chainConfig.hidden}
-                  />
-                )}
-                {disabledFields?.has('is_testnet') ? null : (
-                  <NetworkTestnetFieldLine
-                    name="is_testnet"
-                    defaultChecked={chainConfig.is_testnet}
-                  />
-                )}
-              </VStack>
+            <Frame style={{ padding: 24 }}>
+              <NetworkHiddenFieldLine
+                name="hidden"
+                defaultChecked={chainConfig.hidden}
+              />
+            </Frame>
+          </>
+        )}
+        {disabledFields?.has('is_testnet') ? null : (
+          <>
+            <Spacer height={12} />
+            <Frame style={{ padding: 24 }}>
+              <NetworkTestnetFieldLine
+                name="is_testnet"
+                defaultChecked={chainConfig.is_testnet}
+              />
             </Frame>
           </>
         )}
