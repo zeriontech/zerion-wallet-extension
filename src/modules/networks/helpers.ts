@@ -47,6 +47,7 @@ export function toNetworkConfig(
         id: Number(value.chainId),
       },
     },
+    is_testnet: value.is_testnet,
   };
 }
 
@@ -61,6 +62,7 @@ export function toAddEthereumChainParameter(
     | 'icon_url'
     | 'explorer_tx_url'
     | 'hidden'
+    | 'is_testnet'
     | 'specification'
     | 'standard'
   >
@@ -83,5 +85,6 @@ export function toAddEthereumChainParameter(
     blockExplorerUrls: item.explorer_tx_url ? [item.explorer_tx_url] : [],
     iconUrls: [item.icon_url],
     hidden: item.hidden,
+    is_testnet: item.is_testnet,
   };
 }

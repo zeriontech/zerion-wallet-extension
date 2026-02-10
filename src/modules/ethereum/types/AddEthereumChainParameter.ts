@@ -11,4 +11,5 @@ export interface AddEthereumChainParameter {
   blockExplorerUrls?: string[];
   iconUrls?: string[]; // Currently ignored.
   hidden?: boolean; // Not in standart, but this is a part of Network Form
+  is_testnet?: boolean; // User-defined testnet status for custom networks
 }

@@ -9,4 +9,5 @@ export const createEmptyChainConfig = (): AddEthereumChainParameter => ({
     symbol: '',
   },
   rpcUrls: [''],
+  is_testnet: undefined,
 });

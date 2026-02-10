@@ -166,7 +166,13 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
               `Unable to fetch network info by chainId: ${config.value.chainId}`
             );
           }
-          updatedEthereumChainConfigs.push({ ...config, id: network.id });
+          // Remove user-defined is_testnet when network becomes backend-supported
+          const { is_testnet, ...valueWithoutTestnet } = config.value;
+          updatedEthereumChainConfigs.push({
+            ...config,
+            id: network.id,
+            value: valueWithoutTestnet,
+          });
         } catch {
           updatedEthereumChainConfigs.push(config);
         }

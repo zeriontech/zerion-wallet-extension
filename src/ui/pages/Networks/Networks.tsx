@@ -166,6 +166,7 @@ const FORBIDDEN_FIELDS = new Set([
   'chainId',
   'nativeCurrency.decimals',
   'hidden',
+  'is_testnet',
 ]);
 
 function RemoveNetworkConfirmationDialog({

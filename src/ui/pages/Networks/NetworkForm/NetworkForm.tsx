@@ -121,6 +121,10 @@ const parsers = {
     const value = untypedValue as 'on' | null;
     return Boolean(value);
   },
+  is_testnet: (untypedValue: unknown) => {
+    const value = untypedValue as 'on' | null;
+    return Boolean(value);
+  },
   'nativeCurrency.decimals': (untypedValue: unknown) => {
     const value = untypedValue as string;
     return Number(value);
@@ -150,6 +154,30 @@ function NetworkHiddenFieldLine({
          */
         checked={!checked}
         onChange={(event) => setState(!event.currentTarget.checked)}
+      />
+      <input name={name} type="hidden" value={checked ? 'on' : ''} />
+    </HStack>
+  );
+}
+
+function NetworkTestnetFieldLine({
+  name,
+  defaultChecked,
+}: {
+  name: string;
+  defaultChecked?: boolean;
+}) {
+  const id = useId();
+  const [checked, setState] = useState(defaultChecked);
+  return (
+    <HStack gap={4} justifyContent="space-between">
+      <UIText kind="body/accent" as="label" htmlFor={id}>
+        Testnet
+      </UIText>
+      <Toggle
+        id={id}
+        checked={Boolean(checked)}
+        onChange={(event) => setState(event.currentTarget.checked)}
       />
       <input name={name} type="hidden" value={checked ? 'on' : ''} />
     </HStack>
@@ -322,6 +350,15 @@ export function NetworkForm({
             <NetworkHiddenFieldLine
               name="hidden"
               defaultChecked={chainConfig.hidden}
+            />
+          </>
+        )}
+        {disabledFields?.has('is_testnet') ? null : (
+          <>
+            <Spacer height={12} />
+            <NetworkTestnetFieldLine
+              name="is_testnet"
+              defaultChecked={chainConfig.is_testnet}
             />
           </>
         )}

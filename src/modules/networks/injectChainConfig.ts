@@ -29,5 +29,6 @@ export function injectChainConfig(
         chainConfig.nativeCurrency.symbol.toLowerCase(),
     },
     hidden: chainConfig.hidden ?? networkConfig.hidden,
+    is_testnet: chainConfig.is_testnet ?? networkConfig.is_testnet,
   };
 }
