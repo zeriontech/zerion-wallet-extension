@@ -13,6 +13,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { Frame } from 'src/ui/ui-kit/Frame';
 import { collectData } from 'src/ui/shared/form-data';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import {
@@ -344,22 +345,26 @@ export function NetworkForm({
             required={false}
           />
         </VStack>
-        {disabledFields?.has('hidden') ? null : (
+        {disabledFields?.has('hidden') &&
+        disabledFields?.has('is_testnet') ? null : (
           <>
             <Spacer height={20} />
-            <NetworkHiddenFieldLine
-              name="hidden"
-              defaultChecked={chainConfig.hidden}
-            />
-          </>
-        )}
-        {disabledFields?.has('is_testnet') ? null : (
-          <>
-            <Spacer height={12} />
-            <NetworkTestnetFieldLine
-              name="is_testnet"
-              defaultChecked={chainConfig.is_testnet}
-            />
+            <Frame>
+              <VStack gap={8}>
+                {disabledFields?.has('hidden') ? null : (
+                  <NetworkHiddenFieldLine
+                    name="hidden"
+                    defaultChecked={chainConfig.hidden}
+                  />
+                )}
+                {disabledFields?.has('is_testnet') ? null : (
+                  <NetworkTestnetFieldLine
+                    name="is_testnet"
+                    defaultChecked={chainConfig.is_testnet}
+                  />
+                )}
+              </VStack>
+            </Frame>
           </>
         )}
         {onReset ? (
