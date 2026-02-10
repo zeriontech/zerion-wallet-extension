@@ -89,7 +89,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
   cny: {
     name: 'Chinese Yuan',
     code: 'cny',
-    symbol: 'CN¥',
+    symbol: '¥',
     options: null,
   },
   rub: {
@@ -107,7 +107,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
   aud: {
     name: 'Australian Dollar',
     code: 'aud',
-    symbol: 'A$',
+    symbol: '$',
     options: null,
   },
   inr: {
@@ -119,7 +119,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
   jpy: {
     name: 'Japanese Yen',
     code: 'jpy',
-    symbol: 'JP¥',
+    symbol: '¥',
     options: null,
   },
   try: {
@@ -131,13 +131,13 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
   cad: {
     name: 'Canadian Dollar',
     code: 'cad',
-    symbol: 'CA$',
+    symbol: '$',
     options: null,
   },
   nzd: {
     name: 'New Zealand Dollar',
     code: 'nzd',
-    symbol: 'NZ$',
+    symbol: '$',
     options: null,
   },
   zar: {
@@ -179,7 +179,7 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
   chf: {
     name: 'Swiss Franc',
     code: 'chf',
-    symbol: 'CHF',
+    symbol: '₣',
     options: null,
   },
 };
