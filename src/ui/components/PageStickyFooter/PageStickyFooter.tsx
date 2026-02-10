@@ -49,6 +49,7 @@ export function PageStickyFooter({
         position: 'sticky',
         bottom: BUG_REPORT_BUTTON_HEIGHT,
         backgroundColor: 'var(--background)',
+        ['viewTransitionName' as string]: 'page-sticky-footer',
         ...style,
       }}
     >

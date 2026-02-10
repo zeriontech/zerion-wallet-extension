@@ -387,12 +387,7 @@ export function TransactionConfiguration({
           }
           config={{ tension: 300, friction: 20 }}
         >
-          <HStack
-            style={{ ['viewTransitionName' as string]: `gasback-line-${id}` }}
-            gap={8}
-            justifyContent="space-between"
-            aria-hidden={!gasback}
-          >
+          <HStack gap={8} justifyContent="space-between" aria-hidden={!gasback}>
             <UIText kind="small/regular">
               <HStack gap={4}>
                 <span>Gasback</span>
