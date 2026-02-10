@@ -176,4 +176,10 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     symbol: '₦',
     options: null,
   },
+  chf: {
+    name: 'Swiss Franc',
+    code: 'chf',
+    symbol: 'CHF',
+    options: null,
+  },
 };
