@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import cx from 'classnames';
 import { NAVIGATION_BAR_HEIGHT } from '../URLBar';
 import { BUG_REPORT_BUTTON_HEIGHT } from '../BugReportButton';
@@ -53,28 +59,39 @@ export function CenteredFillViewportView({
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [overflows, setOverflows] = useState(false);
 
-  const handleScroll = useCallback(() => {
+  const updateLayout = useCallback(() => {
     if (!containerRef.current || !wrapperRef.current) {
       return;
     }
-    const height =
-      window.innerHeight - wrapperRef.current.getBoundingClientRect().top;
-    containerRef.current.style.height = `${
-      height - BUG_REPORT_BUTTON_HEIGHT
-    }px`;
+    const availableHeight =
+      window.innerHeight -
+      wrapperRef.current.getBoundingClientRect().top -
+      BUG_REPORT_BUTTON_HEIGHT;
+    containerRef.current.style.height = `${availableHeight}px`;
+    setOverflows(containerRef.current.scrollHeight > availableHeight);
   }, []);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', updateLayout);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', updateLayout);
     };
-  }, [handleScroll]);
+  }, [updateLayout]);
 
   useLayoutEffect(() => {
-    handleScroll();
-  }, [handleScroll]);
+    updateLayout();
+  }, [updateLayout]);
+
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+    const observer = new ResizeObserver(() => updateLayout());
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [updateLayout]);
 
   return (
     <div
@@ -82,7 +99,7 @@ export function CenteredFillViewportView({
       className={adjustForNavigationBar ? s.adjustForNavigationBar : null}
       style={{
         ['--navigation-bar-height' as string]: `${NAVIGATION_BAR_HEIGHT}px`,
-        height: maxHeight,
+        maxHeight,
         flexGrow: 1,
         display: 'grid',
         ...wrapperStyle,
@@ -91,11 +108,13 @@ export function CenteredFillViewportView({
       <div
         ref={containerRef}
         {...props}
+        className={cx(className, s.hideScrollbar)}
         style={{
           display: 'grid',
-          alignContent: 'center',
+          alignContent: overflows ? 'start' : 'center',
           justifyItems: 'center',
           position: 'relative',
+          overflowY: 'auto',
           ...style,
         }}
       >

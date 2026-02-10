@@ -1,3 +1,11 @@
 .adjustForNavigationBar > * {
   margin-top: calc(0px - var(--navigation-bar-height));
 }
+
+.hideScrollbar {
+  scrollbar-width: none;
+}
+
+.hideScrollbar::-webkit-scrollbar {
+  display: none;
+}
