@@ -146,4 +146,34 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
     symbol: 'R',
     options: { currencyDisplay: 'narrowSymbol' },
   },
+  idr: {
+    name: 'Indonesian Rupiah',
+    code: 'idr',
+    symbol: 'Rp',
+    options: { minimumFractionDigits: 0, maximumFractionDigits: 0 },
+  },
+  brl: {
+    name: 'Brazilian Real',
+    code: 'brl',
+    symbol: 'R$',
+    options: null,
+  },
+  thb: {
+    name: 'Thai Baht',
+    code: 'thb',
+    symbol: '฿',
+    options: null,
+  },
+  php: {
+    name: 'Philippine Peso',
+    code: 'php',
+    symbol: '₱',
+    options: null,
+  },
+  ngn: {
+    name: 'Nigerian Naira',
+    code: 'ngn',
+    symbol: '₦',
+    options: null,
+  },
 };
