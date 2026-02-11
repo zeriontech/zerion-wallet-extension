@@ -12,7 +12,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { useStore } from '@store-unit/react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { EmptyView } from 'src/ui/components/EmptyView';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import { NetworkBalance } from 'src/ui/pages/Overview/Positions/NetworkBalance';
 import {
   getCurrentTabsOffset,
@@ -193,20 +193,23 @@ function HistoryEmptyView({
   onReset(): void;
 }) {
   return (
-    <EmptyView>
-      <VStack gap={4}>
-        <div>No transactions</div>
-        {hasFilters ? (
-          <UnstyledButton
-            onClick={onReset}
-            style={{ color: 'var(--primary)' }}
-            className={helperStyles.hoverUnderline}
-          >
-            Reset all filters
-          </UnstyledButton>
-        ) : null}
-      </VStack>
-    </EmptyView>
+    <VStack gap={6} style={{ textAlign: 'center' }}>
+      <UIText kind="headline/hero">🥺</UIText>
+      <UIText kind="small/accent" color="var(--neutral-500)">
+        <VStack gap={4}>
+          <div>No transactions</div>
+          {hasFilters ? (
+            <UnstyledButton
+              onClick={onReset}
+              style={{ color: 'var(--primary)' }}
+              className={helperStyles.hoverUnderline}
+            >
+              Reset all filters
+            </UnstyledButton>
+          ) : null}
+        </VStack>
+      </UIText>
+    </VStack>
   );
 }
 

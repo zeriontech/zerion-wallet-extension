@@ -31,7 +31,6 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { EmptyView } from 'src/ui/components/EmptyView';
 import {
   ENABLE_DNA_BANNERS,
   NftTabDnaBanner,
@@ -328,7 +327,12 @@ export function NonFungibleTokens({
                   paddingTop: ENABLE_DNA_BANNERS ? 164 : 0,
                 }}
               >
-                <EmptyView>No NFTs yet</EmptyView>
+                <VStack gap={6} style={{ textAlign: 'center' }}>
+                  <UIText kind="headline/hero">🥺</UIText>
+                  <UIText kind="small/accent" color="var(--neutral-500)">
+                    No NFTs yet
+                  </UIText>
+                </VStack>
               </div>
             </>
           )}

@@ -29,11 +29,8 @@ import { formatPercent } from 'src/shared/units/formatPercent';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
-import { EmptyView2 } from 'src/ui/components/EmptyView';
-import {
-  CenteredFillViewportView,
-  FillView,
-} from 'src/ui/components/FillView/FillView';
+import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
+import noResultsImg from 'url:src/ui/assets/no-results@2x.png';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -478,10 +475,15 @@ function OverviewComponent() {
       adjustForNavigationBar={true}
       maxHeight={getMinTabContentHeight(offsetValuesState)}
     >
-      <FillView>
-        <EmptyView2
-          title="Wrong Environment"
-          message={
+      <VStack gap={16} style={{ textAlign: 'center' }}>
+        <img
+          src={noResultsImg}
+          style={{ height: 64, placeSelf: 'center' }}
+          alt=""
+        />
+        <VStack gap={8}>
+          <UIText kind="headline/h3">Wrong Environment</UIText>
+          <UIText kind="small/regular" color="var(--neutral-500)">
             <div>
               {preferences?.testnetMode?.on ? (
                 <UnstyledButton
@@ -504,9 +506,9 @@ function OverviewComponent() {
               )}{' '}
               or change your network
             </div>
-          }
-        />
-      </FillView>
+          </UIText>
+        </VStack>
+      </VStack>
     </CenteredFillViewportView>
   );
 
