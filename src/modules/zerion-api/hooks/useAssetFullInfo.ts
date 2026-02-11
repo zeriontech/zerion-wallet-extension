@@ -17,5 +17,6 @@ export function useAssetFullInfo(
     suspense,
     enabled,
     staleTime: 20000,
+    retry: 1,
   });
 }
