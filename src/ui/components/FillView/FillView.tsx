@@ -10,6 +10,8 @@ import { NAVIGATION_BAR_HEIGHT } from '../URLBar';
 import { BUG_REPORT_BUTTON_HEIGHT } from '../BugReportButton';
 import * as s from './styles.module.css';
 
+const NETWORK_SELECTOR_HEIGHT = 28;
+
 export const FillView = React.forwardRef(
   (
     {
@@ -68,7 +70,8 @@ export function CenteredFillViewportView({
     const availableHeight =
       window.innerHeight -
       wrapperRef.current.getBoundingClientRect().top -
-      BUG_REPORT_BUTTON_HEIGHT;
+      BUG_REPORT_BUTTON_HEIGHT -
+      NETWORK_SELECTOR_HEIGHT;
     containerRef.current.style.height = `${availableHeight}px`;
     setOverflows(containerRef.current.scrollHeight > availableHeight);
   }, []);
