@@ -17,7 +17,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { usePreferences } from 'src/ui/features/preferences';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import { NBSP } from 'src/ui/shared/typography';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { Networks } from 'src/modules/networks/Networks';
 import { NetworkId } from 'src/modules/networks/NetworkId';
@@ -203,8 +202,8 @@ export function NetworkBalance({
       >
         <div
           style={{
-            height: '32px',
-            width: '100%',
+            height: 28,
+            width: 150,
             backgroundColor: 'var(--neutral-200)',
             borderRadius: '8px',
           }}
