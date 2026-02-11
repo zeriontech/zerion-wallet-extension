@@ -1,5 +1,4 @@
 import React from 'react';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import { Image, Audio, Video } from 'src/ui/ui-kit/MediaFallback';
 import type { WalletMetaMediaContent } from 'src/modules/zerion-api/requests/wallet-get-meta';
 
@@ -128,7 +127,8 @@ export function MediaContent({
     );
   }
   if (content?.image_url || content?.image_preview_url) {
-    const imageSrc = content.image_url || content.image_preview_url || 'no-image';
+    const imageSrc =
+      content.image_url || content.image_preview_url || 'no-image';
     return (
       <Image
         // safari doesn't emit img onError for empty string src
@@ -136,9 +136,7 @@ export function MediaContent({
         alt={alt}
         style={style}
         className={className}
-        renderError={() => (
-          <MediaError style={errorStyle} src={imageSrc} />
-        )}
+        renderError={() => <MediaError style={errorStyle} src={imageSrc} />}
         renderLoading={renderLoading}
         onReady={onReady}
       />
