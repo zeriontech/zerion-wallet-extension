@@ -50,6 +50,10 @@ export function useNetworks(chains?: string[]) {
 
   useEffect(() => {
     return networksStore?.on('change', ({ networks }) => {
+      queryClient.invalidateQueries({
+        queryKey: ['loadNetworks'],
+        refetchType: 'none',
+      });
       if (networks) {
         queryClient.setQueryData(
           ['loadNetworks', chains, networksStore.toString()],

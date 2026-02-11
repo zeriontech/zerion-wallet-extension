@@ -24,7 +24,10 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
-import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import {
+  mainNetworksStore,
+  testenvNetworksStore,
+} from 'src/modules/networks/networks-store.client';
 import { Networks } from 'src/modules/networks/Networks';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -106,8 +109,8 @@ function AddOrUpdateChain({
       };
     },
     onSuccess: async (result) => {
-      const networksStore = await getNetworksStore();
-      networksStore.update();
+      mainNetworksStore.update();
+      testenvNetworksStore.update();
       onSuccess(result);
     },
   });

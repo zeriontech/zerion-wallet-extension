@@ -20,15 +20,20 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { walletPort } from 'src/ui/shared/channels';
-import { getNetworksStore } from 'src/modules/networks/networks-store.client';
+import {
+  mainNetworksStore,
+  testenvNetworksStore,
+} from 'src/modules/networks/networks-store.client';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 
 async function updateNetworks() {
-  const networksStore = await getNetworksStore();
-  return networksStore.update();
+  return Promise.all([
+    mainNetworksStore.update(),
+    testenvNetworksStore.update(),
+  ]);
 }
 
 export function NetworkSelect({
