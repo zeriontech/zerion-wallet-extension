@@ -73,7 +73,7 @@ export function EmptyPositionsViewLegacy() {
 
   if (isTestnetMode || !wallet || goToBridgeMutation.isLoading || isLoading) {
     return (
-      <VStack gap={6} style={{ textAlign: 'center' }}>
+      <VStack gap={6} style={{ textAlign: 'center', padding: 20 }}>
         <UIText kind="headline/hero">🥺</UIText>
         <UIText kind="small/accent" color="var(--neutral-500)">
           No assets yet
@@ -89,6 +89,7 @@ export function EmptyPositionsViewLegacy() {
         justifyItems: 'stretch',
         paddingInline: 16,
         textAlign: 'center',
+        paddingBottom: 48,
       }}
     >
       <VStack gap={12} style={{ justifyItems: 'center' }}>

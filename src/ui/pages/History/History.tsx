@@ -193,7 +193,10 @@ function HistoryEmptyView({
   onReset(): void;
 }) {
   return (
-    <VStack gap={6} style={{ textAlign: 'center' }}>
+    <VStack
+      gap={6}
+      style={{ textAlign: 'center', padding: 20, paddingBlock: 80 }}
+    >
       <UIText kind="headline/hero">🥺</UIText>
       <UIText kind="small/accent" color="var(--neutral-500)">
         <VStack gap={4}>

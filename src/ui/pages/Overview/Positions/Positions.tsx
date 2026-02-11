@@ -935,32 +935,16 @@ export function Positions({
     </div>
   );
 
-  const renderEmptyViewForNetwork = () =>
-    chainValue === NetworkSelectValue.All ? (
+  const renderEmptyViewForNetwork = () => (
+    <CenteredFillViewportView
+      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
+    >
+      {emptyNetworkBalance}
       <DelayedRender delay={50}>
-        <VStack gap={8}>
-          <div style={{ paddingInline: 16 }}>
-            <NetworkBalance
-              standard={addrIsSolana ? 'solana' : 'evm'}
-              dappChain={dappChain}
-              selectedChain={selectedChain}
-              onChange={onChainChange}
-              value={null}
-            />
-          </div>
-          <EmptyPositionsView />
-        </VStack>
+        <EmptyPositionsView />
       </DelayedRender>
-    ) : (
-      <CenteredFillViewportView
-        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-      >
-        {emptyNetworkBalance}
-        <DelayedRender delay={50}>
-          <EmptyPositionsView />
-        </DelayedRender>
-      </CenteredFillViewportView>
-    );
+    </CenteredFillViewportView>
+  );
   const renderLoadingViewForNetwork = () => (
     <CenteredFillViewportView
       maxHeight={getGrownTabMaxHeight(offsetValuesState)}
