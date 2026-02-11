@@ -75,8 +75,10 @@ export function CenteredFillViewportView({
 
   useEffect(() => {
     window.addEventListener('scroll', updateLayout);
+    window.addEventListener('resize', updateLayout);
     return () => {
       window.removeEventListener('scroll', updateLayout);
+      window.removeEventListener('resize', updateLayout);
     };
   }, [updateLayout]);
 
