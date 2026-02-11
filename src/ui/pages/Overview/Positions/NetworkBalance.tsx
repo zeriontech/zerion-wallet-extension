@@ -202,7 +202,7 @@ export function NetworkBalance({
       >
         <div
           style={{
-            height: 28,
+            height: 24,
             width: 150,
             backgroundColor: 'var(--neutral-200)',
             borderRadius: '8px',
