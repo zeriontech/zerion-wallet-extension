@@ -64,6 +64,7 @@ import { isMacOS } from 'src/ui/shared/isMacos';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
+import { StatsigOverrides } from './StatsigOverrides';
 import type { PopoverToastHandle } from './PopoverToast';
 import { PopoverToast } from './PopoverToast';
 import { ToggleSettingLine } from './ToggleSettingsLine';
@@ -160,14 +161,24 @@ function SettingsMain() {
               </AngleRightRow>
             </FrameListItemLink>
             {hasTestWallet ? (
-              <FrameListItemLink to="/playground">
-                <AngleRightRow>
-                  <HStack gap={8} alignItems="center">
-                    <ExperimentsIcon />
-                    <UIText kind="body/regular">Playground</UIText>
-                  </HStack>
-                </AngleRightRow>
-              </FrameListItemLink>
+              <>
+                <FrameListItemLink to="/playground">
+                  <AngleRightRow>
+                    <HStack gap={8} alignItems="center">
+                      <ExperimentsIcon />
+                      <UIText kind="body/regular">Playground</UIText>
+                    </HStack>
+                  </AngleRightRow>
+                </FrameListItemLink>
+                <FrameListItemLink to="/settings/statsig-overrides">
+                  <AngleRightRow>
+                    <HStack gap={8} alignItems="center">
+                      <ExperimentsIcon />
+                      <UIText kind="body/regular">Statsig Overrides</UIText>
+                    </HStack>
+                  </AngleRightRow>
+                </FrameListItemLink>
+              </>
             ) : null}
           </VStack>
         </Frame>
@@ -684,6 +695,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <Experiments />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/statsig-overrides"
+        element={
+          <ViewSuspense>
+            <StatsigOverrides />
           </ViewSuspense>
         }
       />

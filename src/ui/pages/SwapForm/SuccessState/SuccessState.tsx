@@ -20,13 +20,15 @@ export function SuccessState({
   hash,
   onDone,
   gasbackValue,
+  approvePending = false,
 }: {
   swapFormState: SwapFormState;
   inputPosition: BareAddressPosition;
   outputPosition: BareAddressPosition;
-  hash: string;
+  hash: string | null;
   gasbackValue: number | null;
   onDone: () => void;
+  approvePending?: boolean;
 }) {
   const { networks } = useNetworks();
   const { inputChain } = swapFormState;
@@ -67,8 +69,9 @@ export function SuccessState({
             chainIconUrl={chainIconUrl}
           />
         }
-        status={actionStatus}
-        pendingTitle="Swapping"
+        status={approvePending ? 'pending' : actionStatus}
+        pendingTitle={approvePending ? 'Approving' : 'Swapping'}
+        pendingSubtitle={approvePending ? 'Approve in progress' : undefined}
         failedTitle="Swap failed"
         dropppedTitle="Swap cancelled"
         explorerUrl={

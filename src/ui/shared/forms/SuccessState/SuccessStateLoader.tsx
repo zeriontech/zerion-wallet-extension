@@ -178,6 +178,7 @@ export function SuccessStateLoader({
   confirmedTitle = 'Done',
   failedTitle = 'Failed',
   dropppedTitle = 'Dropped',
+  pendingSubtitle,
   explorerUrl,
   error,
   confirmedContent,
@@ -190,6 +191,7 @@ export function SuccessStateLoader({
   confirmedTitle?: string;
   failedTitle?: string;
   dropppedTitle?: string;
+  pendingSubtitle?: string;
   explorerUrl?: string;
   error?: string;
   confirmedContent?: React.ReactNode;
@@ -274,7 +276,15 @@ export function SuccessStateLoader({
                   {dropppedTitle}
                 </UIText>
               </UIText>
-              {status === 'pending' && showLongWaitNotice ? (
+              {status === 'pending' && pendingSubtitle ? (
+                <UIText
+                  kind="small/regular"
+                  color="var(--neutral-500)"
+                  style={{ textAlign: 'center' }}
+                >
+                  {pendingSubtitle}
+                </UIText>
+              ) : status === 'pending' && showLongWaitNotice ? (
                 <UIText
                   kind="small/regular"
                   color="var(--neutral-500)"

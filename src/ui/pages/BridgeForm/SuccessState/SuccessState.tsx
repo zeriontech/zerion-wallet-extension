@@ -22,6 +22,7 @@ export function SuccessState({
   explorer,
   onDone,
   gasbackValue,
+  approvePending = false,
 }: {
   formState: BridgeFormState;
   inputPosition: BareAddressPosition;
@@ -30,6 +31,7 @@ export function SuccessState({
   explorer: ContractMetadata2['explorer'] | null;
   gasbackValue: number | null;
   onDone: () => void;
+  approvePending?: boolean;
 }) {
   const { networks } = useNetworks();
 
@@ -84,8 +86,9 @@ export function SuccessState({
             chainIconUrl={receiveChainIconUrl}
           />
         }
-        status={actionStatus}
-        pendingTitle="Transferring"
+        status={approvePending ? 'pending' : actionStatus}
+        pendingTitle={approvePending ? 'Approving' : 'Transferring'}
+        pendingSubtitle={approvePending ? 'Approve in progress' : undefined}
         failedTitle="Transfer failed"
         dropppedTitle="Transfer cancelled"
         explorerUrl={explorerUrl ?? explorerFallbackUrl}
