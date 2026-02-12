@@ -40,7 +40,7 @@ export async function estimateNetworkFee({
           gasPriceInfo: gasPrices?.fast,
           gasPriceObject: gasPrice,
           gasLimit: gas,
-          transaction: hexifyTxValues(transaction),
+          transaction: hexifyTxValues({ transaction }),
           getNonce: async () => (chainId ? getNonce(address, chainId) : 0),
         })
       : 'not-enough-data';

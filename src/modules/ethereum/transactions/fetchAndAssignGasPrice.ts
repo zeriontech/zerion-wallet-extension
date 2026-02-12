@@ -25,17 +25,41 @@ export async function estimateGasForNetwork<T extends IncomingTransaction>(
 ) {
   const chainIdHex = resolveChainId(transaction);
   const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
-  const { result } = await sendRpcRequest<string>(rpcUrl, {
-    method: 'eth_estimateGas',
-    params: [
-      omit({ ...hexifyTxValues(transaction), chainId: chainIdHex }, [
-        'gas', // error on Aurora if gas: 0x0, so we omit it
-        'nonce', // error on Polygon if nonce is int, but we don't need it at all
-        'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx
-      ]),
-    ],
-  });
-  return add10Percent(parseInt(result));
+  let gasEstimation: string = '';
+  try {
+    const { result } = await sendRpcRequest<string>(rpcUrl, {
+      method: 'eth_estimateGas',
+      params: [
+        omit({ ...hexifyTxValues({ transaction }), chainId: chainIdHex }, [
+          'gas', // error on Aurora if gas: 0x0, so we omit it
+          'nonce', // error on Polygon if nonce is int, but we don't need it at all
+          'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx
+        ]),
+      ],
+    });
+    gasEstimation = result;
+  } catch (error) {
+    // Error on Abstract - if data: '', rpc returns an 'invalid param', so we need  transform '' into '0x'
+    // However, data: '0x' can break Ledger transactions on Avalanche, so default request with '' and if it fails, try again with '0x'
+    const { result } = await sendRpcRequest<string>(rpcUrl, {
+      method: 'eth_estimateGas',
+      params: [
+        omit(
+          {
+            ...hexifyTxValues({ transaction, transformEmptyString: true }),
+            chainId: chainIdHex,
+          },
+          [
+            'gas', // error on Aurora if gas: 0x0, so we omit it
+            'nonce', // error on Polygon if nonce is int, but we don't need it at all
+            'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx
+          ]
+        ),
+      ],
+    });
+    gasEstimation = result;
+  }
+  return add10Percent(parseInt(gasEstimation));
 }
 
 export async function estimateGas(
