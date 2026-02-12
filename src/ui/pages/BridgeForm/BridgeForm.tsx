@@ -49,7 +49,10 @@ import {
   createApproveAddressAction,
   createBridgeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
+import {
+  useTransactionStatus,
+  waitForTransactionResolve,
+} from 'src/ui/transactions/useLocalTransactionStatus';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
@@ -70,7 +73,8 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { useQuotes2 } from 'src/ui/shared/requests/useQuotes';
+import { useQuotes2, useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
+import { useApproveAndTradeInOneAction } from 'src/modules/statsig/statsig.client';
 import type { Quote2 } from 'src/shared/types/Quote';
 import {
   toIncomingTransaction,
@@ -609,20 +613,29 @@ function BridgeFormComponent() {
   );
 
   const { pathname } = useLocation();
-
-  const quotesData = useQuotes2({
+  const approveAndTradeInOneAction = useApproveAndTradeInOneAction();
+  const quotesBaseEnabled =
+    defaultStateQuery.isFetched &&
+    !defaultStateQuery.isPreviousData &&
+    inputChainAddressMatch &&
+    outputChainAddressMatch;
+  const quotesDataV1 = useQuotes2({
     address: singleAddressNormalized,
     currency,
     formState,
-    enabled:
-      defaultStateQuery.isFetched &&
-      !defaultStateQuery.isPreviousData &&
-      inputChainAddressMatch &&
-      outputChainAddressMatch,
+    enabled: !approveAndTradeInOneAction && quotesBaseEnabled,
     context: 'Bridge',
     pathname,
   });
-
+  const quotesDataV2 = useQuotesV2({
+    address: singleAddressNormalized,
+    currency,
+    formState,
+    enabled: approveAndTradeInOneAction && quotesBaseEnabled,
+    context: 'Bridge',
+    pathname,
+  });
+  const quotesData = approveAndTradeInOneAction ? quotesDataV2 : quotesDataV1;
   const { refetch: refetchQuotes } = quotesData;
 
   const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
@@ -712,15 +725,19 @@ function BridgeFormComponent() {
       inputNetwork?.supports_sponsored_transactions,
   });
 
-  const currentTransaction =
-    selectedQuote?.transactionApprove || selectedQuote?.transactionSwap || null;
+  const currentTransaction = approveAndTradeInOneAction
+    ? selectedQuote?.transactionSwap || null
+    : selectedQuote?.transactionApprove ||
+      selectedQuote?.transactionSwap ||
+      null;
 
   const [selectedForSignQuote, setSelectedForSignQuote] =
     useState<Quote2 | null>(null);
-  const selectedForSignTransaction =
-    selectedForSignQuote?.transactionApprove ||
-    selectedForSignQuote?.transactionSwap ||
-    null;
+  const selectedForSignTransaction = approveAndTradeInOneAction
+    ? selectedForSignQuote?.transactionSwap || null
+    : selectedForSignQuote?.transactionApprove ||
+      selectedForSignQuote?.transactionSwap ||
+      null;
 
   const [allowanceBase, setAllowanceBase] = useState<string | null>(null);
 
@@ -817,12 +834,14 @@ function BridgeFormComponent() {
     }
   }, [resetApproveMutation, approveTxStatus, refetchQuotes]);
 
-  const isApproveMode =
-    approveMutation.isLoading ||
-    Boolean(selectedQuote?.transactionApprove) ||
-    approveTxStatus === 'pending';
-  const showApproveHintLine =
-    Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
+  const isApproveMode = approveAndTradeInOneAction
+    ? false
+    : approveMutation.isLoading ||
+      Boolean(selectedQuote?.transactionApprove) ||
+      approveTxStatus === 'pending';
+  const showApproveHintLine = approveAndTradeInOneAction
+    ? false
+    : Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
 
   const snapshotRef = useRef<BridgeFormState | null>(null);
   const onBeforeSubmit = () => {
@@ -886,7 +905,7 @@ function BridgeFormComponent() {
       : null;
   }, [priceImpact, selectedQuote]);
 
-  const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
+  const { mutate: sendTransaction, ...sendMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
     ): Promise<SignTransactionResult> => {
@@ -960,6 +979,154 @@ function BridgeFormComponent() {
     },
   });
 
+  const [showSuccessState, setShowSuccessState] = useState(false);
+  const [approveHash, setApproveHash] = useState<string | null>(null);
+
+  const { mutate: approveAndSendTransaction, ...approveAndSendMutation } =
+    useMutation({
+      mutationFn: async (
+        interpretationAction: AddressAction | null
+      ): Promise<SignTransactionResult> => {
+        let approveHash = null;
+        if (selectedForSignQuote?.transactionApprove) {
+          invariant(inputNetwork, 'Network must be defined to sign the tx');
+          invariant(spendChain, 'Chain must be defined to sign the tx');
+          invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
+          invariant(inputPosition, 'Spend position must be defined');
+          invariant(formState.inputAmount, 'inputAmount must be set');
+          invariant(
+            selectedForSignQuote.transactionApprove.evm,
+            'EVM transaction must be defined for approval'
+          );
+
+          const evmTx = selectedForSignQuote.transactionApprove.evm;
+          const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
+          const approvalTx =
+            allowanceBase && !isPaymasterTx
+              ? await modifyApproveAmount(evmTx, allowanceBase)
+              : evmTx;
+
+          const fallbackAddressAction = selectedForSignQuote.transactionApprove
+            .evm
+            ? createApproveAddressAction({
+                transaction: toIncomingTransaction(
+                  selectedForSignQuote.transactionApprove.evm
+                ),
+                hash: null,
+                explorerUrl: null,
+                amount: {
+                  currency,
+                  quantity: formState.inputAmount,
+                  value: inputPosition.asset.price?.value
+                    ? new BigNumber(formState.inputAmount)
+                        .multipliedBy(inputPosition.asset.price.value)
+                        .toNumber()
+                    : null,
+                  usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible
+                    .meta.price
+                    ? new BigNumber(formState.inputAmount)
+                        .multipliedBy(
+                          inputFungibleUsdInfoForAnalytics.data.fungible.meta
+                            .price
+                        )
+                        .toNumber()
+                    : null,
+                },
+                asset: inputPosition.asset,
+                network: inputNetwork,
+              })
+            : null;
+
+          const txResponse = await sendTxBtnRef.current.sendTransaction({
+            transaction: { evm: toIncomingTransaction(approvalTx) },
+            chain: spendChain.toString(),
+            initiator: INTERNAL_ORIGIN,
+            clientScope: 'Bridge',
+            feeValueCommon:
+              selectedForSignQuote.networkFee?.amount?.quantity || '0',
+            addressAction: fallbackAddressAction,
+          });
+          invariant(txResponse.evm?.hash);
+          approveHash = txResponse.evm.hash;
+        }
+
+        setApproveHash(approveHash);
+        setShowSuccessState(true);
+        if (approveHash) {
+          await waitForTransactionResolve(approveHash);
+        }
+
+        setApproveHash(null);
+        invariant(
+          selectedForSignQuote?.transactionSwap,
+          'Cannot submit transaction without a quote'
+        );
+        invariant(spendChain, 'Chain must be defined to sign the tx');
+        invariant(inputNetwork, 'Network must be defined to sign the tx');
+        invariant(
+          outputNetwork,
+          'Output network must be defined to sign the tx'
+        );
+        invariant(formState.inputAmount, 'inputAmount must be set');
+        invariant(
+          inputPosition && outputPosition,
+          'Trade positions must be defined'
+        );
+        invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
+        const fallbackAddressAction = createBridgeAddressAction({
+          hash: null,
+          address,
+          explorerUrl: null,
+          inputNetwork,
+          outputNetwork,
+          receiverAddress: to || null,
+          spendAsset: inputPosition.asset,
+          receiveAsset: outputPosition.asset,
+          spendAmount: {
+            currency,
+            quantity: formState.inputAmount,
+            value: inputPosition.asset.price?.value
+              ? new BigNumber(formState.inputAmount)
+                  .multipliedBy(inputPosition.asset.price.value)
+                  .toNumber()
+              : null,
+            usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta
+              .price
+              ? new BigNumber(formState.inputAmount)
+                  .multipliedBy(
+                    inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                  )
+                  .toNumber()
+              : null,
+          },
+          receiveAmount: selectedForSignQuote.outputAmount,
+          transaction: toMultichainTransaction(
+            selectedForSignQuote.transactionSwap
+          ),
+        });
+        const txResponse = await sendTxBtnRef.current.sendTransaction({
+          transaction: toMultichainTransaction(
+            selectedForSignQuote.transactionSwap
+          ),
+          chain: spendChain.toString(),
+          initiator: INTERNAL_ORIGIN,
+          clientScope: 'Bridge',
+          feeValueCommon:
+            selectedForSignQuote.networkFee?.amount?.quantity || '0',
+          addressAction: interpretationAction ?? fallbackAddressAction,
+          quote: selectedForSignQuote,
+          outputChain: outputChain ?? null,
+          warningWasShown: Boolean(showPriceImpactCallout),
+          outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+        });
+        return txResponse;
+      },
+      onMutate: () => {
+        onBeforeSubmit();
+        return 'approveAndSendTransaction';
+      },
+    });
+
   const gasbackValueRef = useRef<number | null>(null);
   const handleGasbackReady = useCallback((value: number) => {
     gasbackValueRef.current = value;
@@ -979,10 +1146,19 @@ function BridgeFormComponent() {
     [outputEcosystem]
   );
 
-  if (sendTransactionMutation.isSuccess) {
-    const result = sendTransactionMutation.data;
+  if (
+    sendMutation.isSuccess ||
+    (approveAndTradeInOneAction && showSuccessState)
+  ) {
+    const result = !approveAndTradeInOneAction
+      ? sendMutation.isSuccess
+        ? sendMutation.data
+        : null
+      : approveAndSendMutation.isSuccess
+      ? approveAndSendMutation.data
+      : null;
     invariant(
-      inputPosition && outputPosition && result,
+      inputPosition && outputPosition,
       'Missing Form State View values'
     );
     invariant(
@@ -990,20 +1166,42 @@ function BridgeFormComponent() {
       'State snapshot must be taken before submit'
     );
     return (
-      <SuccessState
-        hash={result.evm?.hash ?? ensureSolanaResult(result).signature}
-        explorer={selectedQuote?.contractMetadata?.explorer ?? null}
-        inputPosition={inputPosition}
-        outputPosition={outputPosition}
-        formState={snapshotRef.current}
-        gasbackValue={gasbackValueRef.current}
-        onDone={() => {
-          sendTransactionMutation.reset();
-          snapshotRef.current = null;
-          gasbackValueRef.current = null;
-          navigate('/overview/history');
-        }}
-      />
+      <>
+        <SuccessState
+          hash={
+            result
+              ? result.evm?.hash ?? ensureSolanaResult(result).signature
+              : null
+          }
+          explorer={selectedQuote?.contractMetadata?.explorer ?? null}
+          inputPosition={inputPosition}
+          outputPosition={outputPosition}
+          formState={snapshotRef.current}
+          gasbackValue={gasbackValueRef.current}
+          approveHash={approveHash}
+          onDone={() => {
+            sendMutation.reset();
+            approveAndSendMutation.reset();
+            setShowSuccessState(false);
+            setApproveHash(null);
+            snapshotRef.current = null;
+            gasbackValueRef.current = null;
+            navigate('/overview/history');
+          }}
+        />
+        {wallet && globalPreferences && approveAndTradeInOneAction ? (
+          <div style={{ display: 'none' }}>
+            <SignTransactionButton
+              ref={sendTxBtnRef}
+              wallet={wallet}
+              holdToSign={false}
+              bluetoothSupportEnabled={
+                globalPreferences.bluetoothSupportEnabled
+              }
+            />
+          </div>
+        ) : null}
+      </>
     );
   }
 
@@ -1459,12 +1657,10 @@ function BridgeFormComponent() {
               form={formId}
             />
             <VStack gap={8} style={{ marginTop: 'auto', textAlign: 'center' }}>
-              {sendTransactionMutation.isError ? (
+              {sendMutation.isError ? (
                 <ErrorMessage
-                  error={getError(sendTransactionMutation.error)}
-                  hardwareError={getHardwareError(
-                    sendTransactionMutation.error
-                  )}
+                  error={getError(sendMutation.error)}
+                  hardwareError={getHardwareError(sendMutation.error)}
                 />
               ) : null}
               {wallet && globalPreferences ? (
@@ -1484,7 +1680,7 @@ function BridgeFormComponent() {
                       wallet={wallet}
                       style={{ marginTop: 'auto' }}
                       disabled={
-                        sendTransactionMutation.isLoading ||
+                        sendMutation.isLoading ||
                         showQuotesLoadingState ||
                         !inputChainAddressMatch ||
                         !outputChainAddressMatch ||
@@ -1509,7 +1705,7 @@ function BridgeFormComponent() {
                         {hint ||
                           (showQuotesLoadingState
                             ? 'Fetching offers'
-                            : sendTransactionMutation.isLoading
+                            : sendMutation.isLoading
                             ? 'Sending...'
                             : 'Send')}
                       </span>

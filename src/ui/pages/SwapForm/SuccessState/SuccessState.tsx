@@ -37,6 +37,7 @@ export function SuccessState({
   invariant(inputChain, 'Required Form values are missing');
 
   const actionStatus = useActionStatusByHash(hash);
+  const approveStatus = useActionStatusByHash(approveHash || null);
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
@@ -92,7 +93,13 @@ export function SuccessState({
             />
           )
         }
-        status={approveHash ? 'pending' : actionStatus}
+        status={
+          approveHash
+            ? approveStatus === 'failed' || approveStatus === 'dropped'
+              ? approveStatus
+              : 'pending'
+            : actionStatus
+        }
         pendingTitle={approveHash ? 'Approving' : 'Swapping'}
         failedTitle="Swap failed"
         dropppedTitle="Swap cancelled"

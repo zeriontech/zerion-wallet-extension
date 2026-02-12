@@ -22,16 +22,16 @@ export function SuccessState({
   explorer,
   onDone,
   gasbackValue,
-  approvePending = false,
+  approveHash,
 }: {
   formState: BridgeFormState;
   inputPosition: BareAddressPosition;
   outputPosition: BareAddressPosition;
-  hash: string;
+  hash: string | null;
   explorer: ContractMetadata2['explorer'] | null;
   gasbackValue: number | null;
   onDone: () => void;
-  approvePending?: boolean;
+  approveHash?: string | null;
 }) {
   const { networks } = useNetworks();
 
@@ -43,6 +43,7 @@ export function SuccessState({
   );
 
   const actionStatus = useActionStatusByHash(hash);
+  const approveStatus = useActionStatusByHash(approveHash || null);
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
@@ -63,8 +64,12 @@ export function SuccessState({
 
   const explorerFallbackUrl = hash
     ? networks.getExplorerTxUrlByName(spendChain, hash)
+    : approveHash
+    ? networks.getExplorerTxUrlByName(spendChain, approveHash)
     : undefined;
-  const explorerUrl = explorer?.txUrl.replace('{HASH}', hash);
+  const explorerUrl = hash
+    ? explorer?.txUrl.replace('{HASH}', hash)
+    : undefined;
 
   return (
     <>
@@ -86,9 +91,14 @@ export function SuccessState({
             chainIconUrl={receiveChainIconUrl}
           />
         }
-        status={approvePending ? 'pending' : actionStatus}
-        pendingTitle={approvePending ? 'Approving' : 'Transferring'}
-        pendingSubtitle={approvePending ? 'Approve in progress' : undefined}
+        status={
+          approveHash
+            ? approveStatus === 'failed' || approveStatus === 'dropped'
+              ? approveStatus
+              : 'pending'
+            : actionStatus
+        }
+        pendingTitle={approveHash ? 'Approving' : 'Transferring'}
         failedTitle="Transfer failed"
         dropppedTitle="Transfer cancelled"
         explorerUrl={explorerUrl ?? explorerFallbackUrl}
