@@ -325,7 +325,7 @@ export function HistoryList({
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
       >
-        <div style={{ position: 'absolute', width: '100%' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
           {actionFilters}
         </div>
         {isLoading ? (

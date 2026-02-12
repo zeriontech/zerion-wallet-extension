@@ -58,19 +58,19 @@ export function CenteredFillViewportView({
   wrapperStyle?: React.CSSProperties;
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [overflows, setOverflows] = useState(false);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [overflows, setOverflows] = useState(true);
 
   const updateLayout = useCallback(() => {
-    if (!containerRef.current || !wrapperRef.current) {
+    if (!wrapperRef.current || !contentRef.current) {
       return;
     }
     const availableHeight =
       window.innerHeight -
       wrapperRef.current.getBoundingClientRect().top -
       BUG_REPORT_BUTTON_HEIGHT;
-    containerRef.current.style.height = `${availableHeight}px`;
-    setOverflows(containerRef.current.scrollHeight > availableHeight);
+    wrapperRef.current.style.height = `${availableHeight}px`;
+    setOverflows(contentRef.current.scrollHeight > availableHeight);
   }, []);
 
   useEffect(() => {
@@ -87,11 +87,11 @@ export function CenteredFillViewportView({
   }, [updateLayout]);
 
   useEffect(() => {
-    if (!containerRef.current) {
+    if (!contentRef.current) {
       return;
     }
     const observer = new ResizeObserver(() => updateLayout());
-    observer.observe(containerRef.current);
+    observer.observe(contentRef.current);
     return () => observer.disconnect();
   }, [updateLayout]);
 
@@ -108,19 +108,17 @@ export function CenteredFillViewportView({
       }}
     >
       <div
-        ref={containerRef}
-        {...props}
         className={cx(className, s.hideScrollbar)}
         style={{
           display: 'grid',
           alignContent: overflows ? 'start' : 'center',
           justifyItems: 'center',
           position: 'relative',
-          overflowY: 'auto',
           ...style,
         }}
+        {...props}
       >
-        {children}
+        <div ref={contentRef}>{children}</div>
       </div>
     </div>
   );
