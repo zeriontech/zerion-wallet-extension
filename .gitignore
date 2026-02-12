@@ -9,3 +9,4 @@ dist-firefox
 /blob-report/
 /playwright/.cache/
 /src/manifest.json
+settings.local.json
