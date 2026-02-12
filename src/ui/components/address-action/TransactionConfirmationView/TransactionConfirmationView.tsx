@@ -152,6 +152,7 @@ export function TransactionConfirmationView({
                       ? { value: txInterpretQuery.data?.data.action.gasback }
                       : null
                   }
+                  interactiveNetworkFee={true}
                 />
               ) : txInterpretQuery.data?.data.action?.fee ? (
                 <AddressActionNetworkFee

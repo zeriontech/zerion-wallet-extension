@@ -284,7 +284,7 @@ export function TransactionConfiguration({
   /** Hacky, experimental and only needed on SendTransaction View because list is stuck to the bottom */
   listViewTransitions?: boolean;
   interpretation?: InterpretResponse | null;
-  interactiveNetworkFee?: boolean;
+  interactiveNetworkFee: boolean;
   networkFee?: NetworkFeeType | null;
   networkFeeIsLoading?: boolean;
 }) {

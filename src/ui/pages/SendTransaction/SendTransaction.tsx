@@ -503,6 +503,7 @@ function TransactionDefaultView({
                     }
                     interpretation={interpretation}
                     listViewTransitions={true}
+                    interactiveNetworkFee={true}
                   />
                 </React.Suspense>
               ) : null}

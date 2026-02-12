@@ -575,6 +575,7 @@ function SendFormComponent() {
                 setUserFormState((state) => ({ ...state, ...partial }));
               }}
               gasback={gasbackEstimation}
+              interactiveNetworkFee={true}
             />
           </React.Suspense>
         ) : addressType === 'solana' ? (
