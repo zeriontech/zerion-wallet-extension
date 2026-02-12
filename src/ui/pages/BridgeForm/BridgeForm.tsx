@@ -1397,7 +1397,9 @@ function BridgeFormComponent() {
                     rawInterpretationAction !== 'confirm'
                       ? (JSON.parse(rawInterpretationAction) as AddressAction)
                       : null;
-                  if (submitType === 'approve') {
+                  if (approveAndTradeInOneAction) {
+                    approveAndSendTransaction(interpretationAction);
+                  } else if (submitType === 'approve') {
                     sendApproveTransaction(interpretationAction);
                   } else if (submitType === 'bridge') {
                     sendTransaction(interpretationAction);
@@ -1671,6 +1673,12 @@ function BridgeFormComponent() {
                   hardwareError={getHardwareError(sendMutation.error)}
                 />
               ) : null}
+              {approveAndSendMutation.isError ? (
+                <ErrorMessage
+                  error={getError(approveAndSendMutation.error)}
+                  hardwareError={getHardwareError(approveAndSendMutation.error)}
+                />
+              ) : null}
               {wallet && globalPreferences ? (
                 <FormHint
                   formState={formState}
@@ -1689,6 +1697,7 @@ function BridgeFormComponent() {
                       style={{ marginTop: 'auto' }}
                       disabled={
                         sendMutation.isLoading ||
+                        approveAndSendMutation.isLoading ||
                         showQuotesLoadingState ||
                         !inputChainAddressMatch ||
                         !outputChainAddressMatch ||
@@ -1713,7 +1722,8 @@ function BridgeFormComponent() {
                         {hint ||
                           (showQuotesLoadingState
                             ? 'Fetching offers'
-                            : sendMutation.isLoading
+                            : sendMutation.isLoading ||
+                              approveAndSendMutation.isLoading
                             ? 'Sending...'
                             : 'Send')}
                       </span>
