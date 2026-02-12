@@ -5,6 +5,10 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import {
+  APPROVE_AND_TRADE_EXPERIMENT,
+  ONRAMP_EXPERIMENT_NAME,
+} from 'src/modules/statsig/statsig.client';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Frame } from 'src/ui/ui-kit/Frame';
@@ -13,6 +17,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { VStack } from 'src/ui/ui-kit/VStack';
+
+const EXPERIMENT_NAMES = [
+  ONRAMP_EXPERIMENT_NAME,
+  APPROVE_AND_TRADE_EXPERIMENT,
+  'extension-entry_point_premium_purchase',
+] as const;
 
 const inputStyle: React.CSSProperties = {
   padding: '8px 12px',
@@ -105,12 +115,18 @@ export function StatsigOverrides() {
           <VStack gap={12}>
             <VStack gap={4}>
               <UIText kind="small/accent">Experiment Name</UIText>
-              <UnstyledInput
+              <select
                 value={experimentName}
                 onChange={(e) => setExperimentName(e.target.value)}
-                placeholder="e.g. extension-approve_and_trade_in_1_action"
                 style={inputStyle}
-              />
+              >
+                <option value="">Select experiment...</option>
+                {EXPERIMENT_NAMES.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
             </VStack>
             <VStack gap={4}>
               <UIText kind="small/accent">Group Name</UIText>

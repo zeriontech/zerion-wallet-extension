@@ -41,7 +41,10 @@ import { walletPort } from 'src/ui/shared/channels';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
+import {
+  useTransactionStatus,
+  waitForTransactionResolve,
+} from 'src/ui/transactions/useLocalTransactionStatus';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -717,15 +720,7 @@ function SwapFormComponent() {
       : null;
   }, [priceImpact, selectedQuote]);
 
-  // State for the combined approve-then-swap flow
-  const [combinedFlowApproveHash, setCombinedFlowApproveHash] = useState<
-    string | null
-  >(null);
-  const combinedFlowApproveTxStatus = useTransactionStatus(
-    combinedFlowApproveHash
-  );
-
-  const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
+  const { mutate: sendTransaction, ...sendMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
     ): Promise<SignTransactionResult> => {
@@ -741,34 +736,6 @@ function SwapFormComponent() {
         'Trade positions must be defined'
       );
       invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-
-      // When feature is on and approve is needed, send only the approve tx
-      // The swap tx will be sent after approve is mined (via effect below)
-      if (
-        approveAndTradeInOneAction &&
-        selectedForSignQuote.transactionApprove?.evm
-      ) {
-        const evmApproveTx = selectedForSignQuote.transactionApprove.evm;
-        const isPaymasterTx = Boolean(evmApproveTx.customData?.paymasterParams);
-        const approvalTx =
-          allowanceBase && !isPaymasterTx
-            ? await modifyApproveAmount(evmApproveTx, allowanceBase)
-            : evmApproveTx;
-
-        const approveResponse = await sendTxBtnRef.current.sendTransaction({
-          transaction: { evm: toIncomingTransaction(approvalTx) },
-          chain: spendChain.toString(),
-          initiator: INTERNAL_ORIGIN,
-          clientScope: 'Swap',
-          feeValueCommon:
-            selectedForSignQuote.networkFee?.amount?.quantity || '0',
-          addressAction: null,
-        });
-        invariant(approveResponse.evm?.hash, 'Approve tx hash is missing');
-        setCombinedFlowApproveHash(approveResponse.evm.hash);
-        return approveResponse;
-      }
-
       const fallbackAddressAction = createTradeAddressAction({
         hash: null,
         address,
@@ -826,13 +793,87 @@ function SwapFormComponent() {
     },
   });
 
-  // Mutation for sending the swap tx after approve is confirmed
-  const { mutate: sendSwapAfterApprove, ...sendSwapAfterApproveMutation } =
+  const [showSuccessState, setShowSuccessState] = useState(false);
+  const [approveHash, setApproveHash] = useState<string | null>(null);
+
+  const { mutate: approveAndSendTransaction, ...approveAndSendMutation } =
     useMutation({
-      mutationFn: async (): Promise<SignTransactionResult> => {
+      mutationFn: async (
+        interpretationAction: AddressAction | null
+      ): Promise<SignTransactionResult> => {
+        let approveHash = null;
+        if (selectedForSignQuote?.transactionApprove) {
+          invariant(network, 'Network must be defined to sign the tx');
+          invariant(spendChain, 'Chain must be defined to sign the tx');
+          invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
+          invariant(inputPosition, 'Spend position must be defined');
+          invariant(formState.inputAmount, 'inputAmount must be set');
+          invariant(
+            selectedForSignQuote.transactionApprove.evm,
+            'EVM transaction must be defined for approval'
+          );
+
+          const evmTx = selectedForSignQuote.transactionApprove.evm;
+          const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
+          const approvalTx =
+            allowanceBase && !isPaymasterTx
+              ? await modifyApproveAmount(evmTx, allowanceBase)
+              : evmTx;
+
+          const fallbackAddressAction = selectedForSignQuote.transactionApprove
+            .evm
+            ? createApproveAddressAction({
+                transaction: toIncomingTransaction(
+                  selectedForSignQuote.transactionApprove.evm
+                ),
+                hash: null,
+                explorerUrl: null,
+                amount: {
+                  currency,
+                  quantity: formState.inputAmount,
+                  value: inputPosition.asset.price?.value
+                    ? new BigNumber(formState.inputAmount)
+                        .multipliedBy(inputPosition.asset.price.value)
+                        .toNumber()
+                    : null,
+                  usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible
+                    .meta.price
+                    ? new BigNumber(formState.inputAmount)
+                        .multipliedBy(
+                          inputFungibleUsdInfoForAnalytics.data.fungible.meta
+                            .price
+                        )
+                        .toNumber()
+                    : null,
+                },
+                asset: inputPosition.asset,
+                network,
+              })
+            : null;
+
+          const txResponse = await sendTxBtnRef.current.sendTransaction({
+            transaction: { evm: toIncomingTransaction(approvalTx) },
+            chain: spendChain.toString(),
+            initiator: INTERNAL_ORIGIN,
+            clientScope: 'Swap',
+            feeValueCommon:
+              selectedForSignQuote.networkFee?.amount?.quantity || '0',
+            addressAction: fallbackAddressAction,
+          });
+          invariant(txResponse.evm?.hash);
+          approveHash = txResponse.evm.hash;
+        }
+
+        setApproveHash(approveHash);
+        setShowSuccessState(true);
+        if (approveHash) {
+          await waitForTransactionResolve(approveHash);
+        }
+
+        setApproveHash(null);
         invariant(
           selectedForSignQuote?.transactionSwap,
-          'Cannot submit swap without a quote'
+          'Cannot submit transaction without a quote'
         );
         invariant(spendChain, 'Chain must be defined to sign the tx');
         invariant(network, 'Network must be defined to sign the tx');
@@ -842,7 +883,6 @@ function SwapFormComponent() {
           'Trade positions must be defined'
         );
         invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
-
         const fallbackAddressAction = createTradeAddressAction({
           hash: null,
           address,
@@ -883,7 +923,7 @@ function SwapFormComponent() {
           clientScope: 'Swap',
           feeValueCommon:
             selectedForSignQuote.networkFee?.amount?.quantity || '0',
-          addressAction: fallbackAddressAction,
+          addressAction: interpretationAction ?? fallbackAddressAction,
           quote: selectedForSignQuote,
           outputChain: inputChain ?? null,
           warningWasShown: Boolean(showPriceImpactCallout),
@@ -891,25 +931,11 @@ function SwapFormComponent() {
         });
         return txResponse;
       },
+      onMutate: () => {
+        onBeforeSubmit();
+        return 'approveAndSendTransaction';
+      },
     });
-
-  // Auto-send swap tx after approve is mined
-  useEffect(() => {
-    if (
-      combinedFlowApproveHash &&
-      combinedFlowApproveTxStatus === 'confirmed' &&
-      !sendSwapAfterApproveMutation.isLoading &&
-      !sendSwapAfterApproveMutation.isSuccess
-    ) {
-      sendSwapAfterApprove();
-    }
-  }, [
-    combinedFlowApproveHash,
-    combinedFlowApproveTxStatus,
-    sendSwapAfterApprove,
-    sendSwapAfterApproveMutation.isLoading,
-    sendSwapAfterApproveMutation.isSuccess,
-  ]);
 
   const gasbackValueRef = useRef<number | null>(null);
   const handleGasbackReady = useCallback((value: number) => {
@@ -919,62 +945,18 @@ function SwapFormComponent() {
   const navigate = useNavigate();
   const { isUK } = useUKDetection();
 
-  // Show success state for combined approve-then-swap flow
-  // if (
-  //   combinedFlowApproveHash &&
-  //   sendTransactionMutation.isSuccess &&
-  //   !sendSwapAfterApproveMutation.isSuccess
-  // ) {
-  //   invariant(
-  //     inputPosition && outputPosition,
-  //     'Missing Form State View values'
-  //   );
-  //   invariant(
-  //     snapshotRef.current,
-  //     'State snapshot must be taken before submit'
-  //   );
-  //   return (
-  //     <>
-  //       <SuccessState
-  //         hash={combinedFlowApproveHash}
-  //         inputPosition={inputPosition}
-  //         outputPosition={outputPosition}
-  //         swapFormState={snapshotRef.current.state}
-  //         gasbackValue={null}
-  //         approvePending={true}
-  //         onDone={() => {
-  //           navigate('/overview/history');
-  //         }}
-  //       />
-  //       {wallet && globalPreferences ? (
-  //         <div style={{ display: 'none' }}>
-  //           <SignTransactionButton
-  //             ref={sendTxBtnRef}
-  //             wallet={wallet}
-  //             holdToSign={false}
-  //             bluetoothSupportEnabled={
-  //               globalPreferences.bluetoothSupportEnabled
-  //             }
-  //           />
-  //         </div>
-  //       ) : null}
-  //     </>
-  //   );
-  // }
-
   // Show success state for swap (either direct or after approve)
   if (
-    sendSwapAfterApproveMutation.isSuccess ||
-    (sendTransactionMutation.isSuccess && !combinedFlowApproveHash)
+    sendMutation.isSuccess ||
+    (approveAndTradeInOneAction && showSuccessState)
   ) {
-    const result = sendSwapAfterApproveMutation.isSuccess
-      ? sendSwapAfterApproveMutation.data
+    const result = !approveAndTradeInOneAction
+      ? sendMutation.isSuccess
+        ? sendMutation.data
+        : null
+      : approveAndSendMutation.isSuccess
+      ? approveAndSendMutation.data
       : null;
-    console.log(
-      'Swap transaction successful',
-      result,
-      sendSwapAfterApproveMutation.data
-    );
     invariant(
       inputPosition && outputPosition,
       'Missing Form State View values'
@@ -984,25 +966,41 @@ function SwapFormComponent() {
       'State snapshot must be taken before submit'
     );
     return (
-      <SuccessState
-        hash={
-          result
-            ? result.evm?.hash ?? ensureSolanaResult(result).signature
-            : null
-        }
-        inputPosition={inputPosition}
-        outputPosition={outputPosition}
-        swapFormState={snapshotRef.current.state}
-        gasbackValue={gasbackValueRef.current}
-        onDone={() => {
-          sendTransactionMutation.reset();
-          sendSwapAfterApproveMutation.reset();
-          setCombinedFlowApproveHash(null);
-          snapshotRef.current = null;
-          gasbackValueRef.current = null;
-          navigate('/overview/history');
-        }}
-      />
+      <>
+        <SuccessState
+          hash={
+            result
+              ? result.evm?.hash ?? ensureSolanaResult(result).signature
+              : null
+          }
+          inputPosition={inputPosition}
+          outputPosition={outputPosition}
+          swapFormState={snapshotRef.current.state}
+          gasbackValue={gasbackValueRef.current}
+          approveHash={approveHash}
+          onDone={() => {
+            sendMutation.reset();
+            approveAndSendMutation.reset();
+            setShowSuccessState(false);
+            setApproveHash(null);
+            snapshotRef.current = null;
+            gasbackValueRef.current = null;
+            navigate('/overview/history');
+          }}
+        />
+        {wallet && globalPreferences && approveAndTradeInOneAction ? (
+          <div style={{ display: 'none' }}>
+            <SignTransactionButton
+              ref={sendTxBtnRef}
+              wallet={wallet}
+              holdToSign={false}
+              bluetoothSupportEnabled={
+                globalPreferences.bluetoothSupportEnabled
+              }
+            />
+          </div>
+        ) : null}
+      </>
     );
   }
 
@@ -1232,8 +1230,9 @@ function SwapFormComponent() {
                     rawInterpretationAction !== 'confirm'
                       ? (JSON.parse(rawInterpretationAction) as AddressAction)
                       : null;
-
-                  if (submitType === 'approve') {
+                  if (approveAndTradeInOneAction) {
+                    approveAndSendTransaction(interpretationAction);
+                  } else if (submitType === 'approve') {
                     sendApproveTransaction(interpretationAction);
                   } else if (submitType === 'swap') {
                     sendTransaction(interpretationAction);
@@ -1493,12 +1492,16 @@ function SwapFormComponent() {
               gap={8}
               style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 12 }}
             >
-              {sendTransactionMutation.isError ? (
+              {sendMutation.isError ? (
                 <ErrorMessage
-                  error={getError(sendTransactionMutation.error)}
-                  hardwareError={getHardwareError(
-                    sendTransactionMutation.error
-                  )}
+                  error={getError(sendMutation.error)}
+                  hardwareError={getHardwareError(sendMutation.error)}
+                />
+              ) : null}
+              {approveAndSendMutation.isError ? (
+                <ErrorMessage
+                  error={getError(approveAndSendMutation.error)}
+                  hardwareError={getHardwareError(approveAndSendMutation.error)}
                 />
               ) : null}
               {wallet && globalPreferences ? (
@@ -1515,7 +1518,8 @@ function SwapFormComponent() {
                       wallet={wallet}
                       style={{ marginTop: 'auto' }}
                       disabled={
-                        sendTransactionMutation.isLoading ||
+                        sendMutation.isLoading ||
+                        approveAndSendMutation.isLoading ||
                         showQuotesLoadingState ||
                         Boolean(
                           (selectedQuote && !selectedQuote.transactionSwap) ||
@@ -1538,7 +1542,8 @@ function SwapFormComponent() {
                         {hint ||
                           (showQuotesLoadingState
                             ? 'Fetching offers'
-                            : sendTransactionMutation.isLoading
+                            : sendMutation.isLoading ||
+                              approveAndSendMutation.isLoading
                             ? 'Sending...'
                             : 'Swap')}
                       </span>

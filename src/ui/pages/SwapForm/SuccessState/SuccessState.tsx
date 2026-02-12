@@ -20,7 +20,7 @@ export function SuccessState({
   hash,
   onDone,
   gasbackValue,
-  approvePending = false,
+  approveHash,
 }: {
   swapFormState: SwapFormState;
   inputPosition: BareAddressPosition;
@@ -28,7 +28,7 @@ export function SuccessState({
   hash: string | null;
   gasbackValue: number | null;
   onDone: () => void;
-  approvePending?: boolean;
+  approveHash?: string | null;
 }) {
   const { networks } = useNetworks();
   const { inputChain } = swapFormState;
@@ -62,20 +62,25 @@ export function SuccessState({
           />
         }
         endItem={
-          <SuccessStateToken
-            iconUrl={outputPosition.asset.icon_url}
-            symbol={outputPosition.asset.symbol}
-            chainName={chainName}
-            chainIconUrl={chainIconUrl}
-          />
+          approveHash ? null : (
+            <SuccessStateToken
+              iconUrl={outputPosition.asset.icon_url}
+              symbol={outputPosition.asset.symbol}
+              chainName={chainName}
+              chainIconUrl={chainIconUrl}
+            />
+          )
         }
-        status={approvePending ? 'pending' : actionStatus}
-        pendingTitle={approvePending ? 'Approving' : 'Swapping'}
-        pendingSubtitle={approvePending ? 'Approve in progress' : undefined}
+        status={approveHash ? 'pending' : actionStatus}
+        pendingTitle={approveHash ? 'Approve' : 'Swapping'}
         failedTitle="Swap failed"
         dropppedTitle="Swap cancelled"
         explorerUrl={
-          hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
+          hash
+            ? networks.getExplorerTxUrlByName(chain, hash)
+            : approveHash
+            ? networks.getExplorerTxUrlByName(chain, approveHash)
+            : undefined
         }
         confirmedContent={
           gasbackValue && FEATURE_GASBACK ? (

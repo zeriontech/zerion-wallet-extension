@@ -108,7 +108,7 @@ function AnimatedIcons({
             ...startItemStyle,
             position: 'absolute',
             inset: '0 0 0 0',
-            zIndex: playExitAnimation ? 1 : 0,
+            zIndex: playExitAnimation ? 0 : 1,
           }}
         >
           {startItem}
@@ -118,7 +118,7 @@ function AnimatedIcons({
             ...endItemStyle,
             position: 'absolute',
             inset: '0 0 0 0',
-            zIndex: playExitAnimation ? 0 : 1,
+            zIndex: playExitAnimation ? 1 : 0,
           }}
         >
           {endItem}
@@ -178,7 +178,6 @@ export function SuccessStateLoader({
   confirmedTitle = 'Done',
   failedTitle = 'Failed',
   dropppedTitle = 'Dropped',
-  pendingSubtitle,
   explorerUrl,
   error,
   confirmedContent,
@@ -191,13 +190,12 @@ export function SuccessStateLoader({
   confirmedTitle?: string;
   failedTitle?: string;
   dropppedTitle?: string;
-  pendingSubtitle?: string;
   explorerUrl?: string;
   error?: string;
   confirmedContent?: React.ReactNode;
   onDone?: () => void;
 }) {
-  const showLongWaitNotice = useRenderDelay(5000);
+  const showLongWaitNotice = useRenderDelay(10000);
 
   const backgroundColor =
     status === 'confirmed'
@@ -229,11 +227,15 @@ export function SuccessStateLoader({
           gap={32}
           style={{ justifyItems: 'center', justifySelf: 'center' }}
         >
-          <AnimatedIcons
-            startItem={startItem}
-            endItem={endItem}
-            status={status}
-          />
+          {endItem ? (
+            <AnimatedIcons
+              startItem={startItem}
+              endItem={endItem}
+              status={status}
+            />
+          ) : (
+            startItem
+          )}
           <VStack gap={16} style={{ justifyItems: 'center' }}>
             <VStack gap={8} style={{ justifyItems: 'center' }}>
               <UIText kind="headline/hero" style={{ position: 'relative' }}>
@@ -276,15 +278,7 @@ export function SuccessStateLoader({
                   {dropppedTitle}
                 </UIText>
               </UIText>
-              {status === 'pending' && pendingSubtitle ? (
-                <UIText
-                  kind="small/regular"
-                  color="var(--neutral-500)"
-                  style={{ textAlign: 'center' }}
-                >
-                  {pendingSubtitle}
-                </UIText>
-              ) : status === 'pending' && showLongWaitNotice ? (
+              {status === 'pending' && showLongWaitNotice ? (
                 <UIText
                   kind="small/regular"
                   color="var(--neutral-500)"
@@ -317,7 +311,9 @@ export function SuccessStateLoader({
                 View in Explorer
               </TextAnchor>
             </UIText>
-          ) : null}
+          ) : (
+            <UIText kind="caption/accent">{NBSP}</UIText>
+          )}
         </VStack>
         <Button kind="regular" style={{ width: '100%' }} onClick={onDone}>
           Done
