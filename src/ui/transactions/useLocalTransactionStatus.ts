@@ -25,12 +25,13 @@ export function waitForTransactionResolve(
     );
   }
   return new Promise((resolve) => {
-    localTransactionsStore.on('change', (transactions) => {
+    const unsub = localTransactionsStore.on('change', (transactions) => {
       const tx = transactions.find((tx) => tx.hash === hash);
       if (tx) {
         const status = getTransactionObjectStatus(tx);
         if (status !== 'pending') {
           resolve(status);
+          unsub();
           return;
         }
       }
