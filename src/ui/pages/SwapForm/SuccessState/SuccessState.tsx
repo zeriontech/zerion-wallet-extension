@@ -11,6 +11,8 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon/NetworkIcon';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { SwapFormState } from '../shared/SwapFormState';
 
 export function SuccessState({
@@ -54,12 +56,31 @@ export function SuccessState({
       <NavigationTitle urlBar="none" title="Swap Success" />
       <SuccessStateLoader
         startItem={
-          <SuccessStateToken
-            iconUrl={inputPosition.asset.icon_url}
-            symbol={inputPosition.asset.symbol}
-            chainName={chainName}
-            chainIconUrl={chainIconUrl}
-          />
+          approveHash ? (
+            <div style={{ position: 'relative' }}>
+              <CircleSpinner size="72px" />
+              {chainName ? (
+                <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
+                  <NetworkIcon
+                    size={32}
+                    style={{
+                      borderRadius: 8,
+                      border: '2px solid var(--white)',
+                    }}
+                    name={chainName}
+                    src={chainIconUrl}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <SuccessStateToken
+              iconUrl={inputPosition.asset.icon_url}
+              symbol={inputPosition.asset.symbol}
+              chainName={chainName}
+              chainIconUrl={chainIconUrl}
+            />
+          )
         }
         endItem={
           approveHash ? null : (
@@ -72,7 +93,7 @@ export function SuccessState({
           )
         }
         status={approveHash ? 'pending' : actionStatus}
-        pendingTitle={approveHash ? 'Approve' : 'Swapping'}
+        pendingTitle={approveHash ? 'Approving' : 'Swapping'}
         failedTitle="Swap failed"
         dropppedTitle="Swap cancelled"
         explorerUrl={
