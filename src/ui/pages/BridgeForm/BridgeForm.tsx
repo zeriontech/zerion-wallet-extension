@@ -105,6 +105,7 @@ import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo'
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { isTruthy } from 'is-truthy-ts';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -739,6 +740,16 @@ function BridgeFormComponent() {
       selectedForSignQuote?.transactionSwap ||
       null;
 
+  const selectedForSimulationsTransactions = approveAndTradeInOneAction
+    ? [
+        selectedForSignQuote?.transactionApprove,
+        selectedForSignQuote?.transactionSwap,
+      ].filter(isTruthy)
+    : [
+        selectedForSignQuote?.transactionApprove ||
+          selectedForSignQuote?.transactionSwap,
+      ].filter(isTruthy);
+
   const [allowanceBase, setAllowanceBase] = useState<string | null>(null);
 
   useEffect(
@@ -1130,6 +1141,10 @@ function BridgeFormComponent() {
         onBeforeSubmit();
         return 'approveAndSendTransaction';
       },
+      onError: () => {
+        setShowSuccessState(false);
+        setApproveHash(null);
+      },
     });
 
   const gasbackValueRef = useRef<number | null>(null);
@@ -1275,8 +1290,8 @@ function BridgeFormComponent() {
                 }
                 wallet={wallet}
                 chain={spendChain}
-                transaction={toMultichainTransaction(
-                  selectedForSignTransaction
+                transactions={selectedForSimulationsTransactions.map(
+                  toMultichainTransaction
                 )}
                 configuration={toConfiguration(formState)}
                 customAllowanceValueBase={allowanceBase || undefined}

@@ -105,6 +105,7 @@ import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-a
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { isTruthy } from 'is-truthy-ts';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -545,6 +546,16 @@ function SwapFormComponent() {
       selectedForSignQuote?.transactionSwap ||
       null;
 
+  const selectedForSimulationsTransactions = approveAndTradeInOneAction
+    ? [
+        selectedForSignQuote?.transactionApprove,
+        selectedForSignQuote?.transactionSwap,
+      ].filter(isTruthy)
+    : [
+        selectedForSignQuote?.transactionApprove ||
+          selectedForSignQuote?.transactionSwap,
+      ].filter(isTruthy);
+
   const [allowanceBase, setAllowanceBase] = useState<string | null>(null);
 
   useEffect(() => setAllowanceBase(null), [inputAmount, inputFungibleId]);
@@ -940,6 +951,10 @@ function SwapFormComponent() {
         onBeforeSubmit();
         return 'approveAndSendTransaction';
       },
+      onError: () => {
+        setShowSuccessState(false);
+        setApproveHash(null);
+      },
     });
 
   const gasbackValueRef = useRef<number | null>(null);
@@ -1113,8 +1128,8 @@ function SwapFormComponent() {
                 }
                 wallet={wallet}
                 chain={spendChain}
-                transaction={toMultichainTransaction(
-                  selectedForSignTransaction
+                transactions={selectedForSimulationsTransactions.map(
+                  toMultichainTransaction
                 )}
                 configuration={toConfiguration(formState)}
                 customAllowanceValueBase={allowanceBase || undefined}

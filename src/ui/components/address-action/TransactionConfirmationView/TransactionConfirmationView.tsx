@@ -18,6 +18,7 @@ import type { MultichainTransaction } from 'src/shared/types/MultichainTransacti
 import { SecurityStatusBackground } from 'src/ui/shared/security-check';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { AddressActionNetworkFee } from 'src/ui/pages/SendTransaction/TransactionConfiguration/TransactionConfiguration';
+import { invariant } from 'src/shared/invariant';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -25,7 +26,7 @@ import { TransactionSimulation } from '../TransactionSimulation';
 export function TransactionConfirmationView({
   title,
   wallet,
-  transaction,
+  transactions,
   chain,
   configuration,
   paymasterEligible,
@@ -37,7 +38,7 @@ export function TransactionConfirmationView({
 }: {
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
-  transaction: MultichainTransaction;
+  transactions: MultichainTransaction[];
   chain: Chain;
   configuration: CustomConfiguration;
   paymasterEligible: boolean;
@@ -49,10 +50,14 @@ export function TransactionConfirmationView({
   onGasbackReady: null | ((value: number) => void);
 }) {
   const { preferences, query } = usePreferences();
+  invariant(
+    transactions.length,
+    'At least one transaction is required for interpretation'
+  );
 
   const txInterpretQuery = useInterpretTxBasedOnEligibility({
     address: wallet.address,
-    transaction,
+    transactions,
     eligibilityQuery,
     origin: 'https://app.zerion.io',
   });
@@ -118,7 +123,7 @@ export function TransactionConfirmationView({
             customAllowanceValueBase={customAllowanceValueBase}
             onOpenAllowanceForm={onOpenAllowanceForm}
             address={wallet.address}
-            transaction={transaction}
+            transaction={transactions.at(-1)!} // guarded by invariant above
             txInterpretQuery={txInterpretQuery}
           />
           <Spacer height={20} />
@@ -136,9 +141,9 @@ export function TransactionConfirmationView({
             }
           >
             <div style={{ marginTop: 'auto' }}>
-              {transaction.evm ? (
+              {transactions.length === 1 && transactions[0].evm ? (
                 <TransactionConfiguration
-                  transaction={transaction.evm}
+                  transaction={transactions[0].evm}
                   from={wallet.address}
                   chain={chain}
                   configuration={configuration}
