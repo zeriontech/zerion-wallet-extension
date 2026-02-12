@@ -1549,6 +1549,9 @@ function BridgeFormComponent() {
                   setUserFormState((state) => ({ ...state, ...partial }));
                 }}
                 gasback={gasbackEstimation}
+                interactiveNetworkFee={!approveAndTradeInOneAction}
+                networkFee={selectedQuote?.networkFee || null}
+                networkFeeIsLoading={quotesData.isPreviousData}
               />
             </React.Suspense>
           ) : null}

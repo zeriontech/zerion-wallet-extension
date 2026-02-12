@@ -12,6 +12,8 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
 import type { ContractMetadata2 } from 'src/shared/types/Quote';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner/CircleSpinner';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import type { BridgeFormState } from '../types';
 
 export function SuccessState({
@@ -76,20 +78,41 @@ export function SuccessState({
       <NavigationTitle urlBar="none" title="Bridge Success" />
       <SuccessStateLoader
         startItem={
-          <SuccessStateToken
-            iconUrl={inputPosition.asset.icon_url}
-            symbol={inputPosition.asset.symbol}
-            chainName={spendChainName}
-            chainIconUrl={spendChainIconUrl}
-          />
+          approveHash ? (
+            <div style={{ position: 'relative' }}>
+              <CircleSpinner size="72px" />
+              {spendChain ? (
+                <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
+                  <NetworkIcon
+                    size={32}
+                    style={{
+                      borderRadius: 8,
+                      border: '2px solid var(--white)',
+                    }}
+                    name={spendChainName}
+                    src={spendChainIconUrl}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <SuccessStateToken
+              iconUrl={inputPosition.asset.icon_url}
+              symbol={inputPosition.asset.symbol}
+              chainName={spendChainName}
+              chainIconUrl={spendChainIconUrl}
+            />
+          )
         }
         endItem={
-          <SuccessStateToken
-            iconUrl={outputPosition.asset.icon_url}
-            symbol={outputPosition.asset.symbol}
-            chainName={receiveChainName}
-            chainIconUrl={receiveChainIconUrl}
-          />
+          approveHash ? null : (
+            <SuccessStateToken
+              iconUrl={outputPosition.asset.icon_url}
+              symbol={outputPosition.asset.symbol}
+              chainName={receiveChainName}
+              chainIconUrl={receiveChainIconUrl}
+            />
+          )
         }
         status={
           approveHash

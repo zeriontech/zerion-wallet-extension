@@ -1336,14 +1336,7 @@ function SwapFormComponent() {
             />
           ) : null}
           {isEthereumAddress(address) && spendChain ? (
-            approveAndTradeInOneAction ? (
-              selectedQuote?.networkFee ? (
-                <NetworkFeeLineInfo
-                  networkFee={selectedQuote.networkFee}
-                  isLoading={quotesData.isPreviousData}
-                />
-              ) : null
-            ) : currentTransaction?.evm ? (
+            currentTransaction?.evm ? (
               <React.Suspense
                 fallback={
                   <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -1370,6 +1363,9 @@ function SwapFormComponent() {
                     setUserFormState((state) => ({ ...state, ...partial }));
                   }}
                   gasback={gasbackEstimation}
+                  interactiveNetworkFee={!approveAndTradeInOneAction}
+                  networkFee={selectedQuote?.networkFee || null}
+                  networkFeeIsLoading={quotesData.isPreviousData}
                 />
               </React.Suspense>
             ) : null
