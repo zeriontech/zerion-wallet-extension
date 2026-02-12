@@ -1053,7 +1053,12 @@ function BridgeFormComponent() {
         setApproveHash(approveHash);
         setShowSuccessState(true);
         if (approveHash) {
-          await waitForTransactionResolve(approveHash);
+          const approveStatus = await waitForTransactionResolve(approveHash);
+          if (approveStatus !== 'confirmed') {
+            throw new Error(
+              `Approval transaction failed with status: ${approveStatus}`
+            );
+          }
         }
 
         setApproveHash(null);
