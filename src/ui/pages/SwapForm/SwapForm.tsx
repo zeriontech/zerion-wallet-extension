@@ -824,46 +824,39 @@ function SwapFormComponent() {
             'EVM transaction must be defined for approval'
           );
 
-          const evmTx = selectedForSignQuote.transactionApprove.evm;
-          const isPaymasterTx = Boolean(evmTx.customData?.paymasterParams);
-          const approvalTx =
-            allowanceBase && !isPaymasterTx
-              ? await modifyApproveAmount(evmTx, allowanceBase)
-              : evmTx;
-
-          const fallbackAddressAction = selectedForSignQuote.transactionApprove
-            .evm
-            ? createApproveAddressAction({
-                transaction: toIncomingTransaction(
-                  selectedForSignQuote.transactionApprove.evm
-                ),
-                hash: null,
-                explorerUrl: null,
-                amount: {
-                  currency,
-                  quantity: formState.inputAmount,
-                  value: inputPosition.asset.price?.value
-                    ? new BigNumber(formState.inputAmount)
-                        .multipliedBy(inputPosition.asset.price.value)
-                        .toNumber()
-                    : null,
-                  usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible
-                    .meta.price
-                    ? new BigNumber(formState.inputAmount)
-                        .multipliedBy(
-                          inputFungibleUsdInfoForAnalytics.data.fungible.meta
-                            .price
-                        )
-                        .toNumber()
-                    : null,
-                },
-                asset: inputPosition.asset,
-                network,
-              })
-            : null;
+          const fallbackAddressAction = createApproveAddressAction({
+            transaction: toIncomingTransaction(
+              selectedForSignQuote.transactionApprove.evm
+            ),
+            hash: null,
+            explorerUrl: null,
+            amount: {
+              currency,
+              quantity: formState.inputAmount,
+              value: inputPosition.asset.price?.value
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(inputPosition.asset.price.value)
+                    .toNumber()
+                : null,
+              usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta
+                .price
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(
+                      inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                    )
+                    .toNumber()
+                : null,
+            },
+            asset: inputPosition.asset,
+            network,
+          });
 
           const txResponse = await sendTxBtnRef.current.sendTransaction({
-            transaction: { evm: toIncomingTransaction(approvalTx) },
+            transaction: {
+              evm: toIncomingTransaction(
+                selectedForSignQuote.transactionApprove.evm
+              ),
+            },
             chain: spendChain.toString(),
             initiator: INTERNAL_ORIGIN,
             clientScope: 'Swap',
