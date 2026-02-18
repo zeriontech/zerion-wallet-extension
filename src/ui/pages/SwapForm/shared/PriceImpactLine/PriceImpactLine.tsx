@@ -15,10 +15,6 @@ export function PriceImpactLine({
     ? getPriceImpactPercentage(priceImpact)
     : null;
 
-  if (!priceImpactPercentage) {
-    return null;
-  }
-
   if (priceImpact?.kind === 'n/a') {
     return (
       <TransactionWarning
@@ -27,6 +23,10 @@ export function PriceImpactLine({
         style={style}
       />
     );
+  }
+
+  if (!priceImpactPercentage) {
+    return null;
   }
 
   return (
