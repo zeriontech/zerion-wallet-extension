@@ -23,6 +23,7 @@ export function SuccessState({
   onDone,
   gasbackValue,
   approveHash,
+  needsManualSign,
 }: {
   swapFormState: SwapFormState;
   inputPosition: BareAddressPosition;
@@ -31,6 +32,7 @@ export function SuccessState({
   gasbackValue: number | null;
   onDone: () => void;
   approveHash?: string | null;
+  needsManualSign: boolean;
 }) {
   const { networks } = useNetworks();
   const { inputChain } = swapFormState;
@@ -57,7 +59,7 @@ export function SuccessState({
       <NavigationTitle urlBar="none" title="Swap Success" />
       <SuccessStateLoader
         startItem={
-          approveHash ? (
+          approveHash || (needsManualSign && !hash) ? (
             <div style={{ position: 'relative' }}>
               <CircleSpinner size="72px" />
               {chainName ? (
@@ -84,7 +86,7 @@ export function SuccessState({
           )
         }
         endItem={
-          approveHash ? null : (
+          approveHash || (needsManualSign && !hash) ? null : (
             <SuccessStateToken
               iconUrl={outputPosition.asset.icon_url}
               symbol={outputPosition.asset.symbol}
@@ -100,7 +102,13 @@ export function SuccessState({
               : 'pending'
             : actionStatus
         }
-        pendingTitle={approveHash ? 'Approving' : 'Swapping'}
+        pendingTitle={
+          approveHash
+            ? 'Approving'
+            : !hash && needsManualSign
+            ? 'Approved'
+            : 'Swapping'
+        }
         failedTitle="Swap failed"
         dropppedTitle="Swap cancelled"
         explorerUrl={

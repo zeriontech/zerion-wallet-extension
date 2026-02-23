@@ -25,6 +25,7 @@ export function SuccessState({
   onDone,
   gasbackValue,
   approveHash,
+  needsManualSign,
 }: {
   formState: BridgeFormState;
   inputPosition: BareAddressPosition;
@@ -34,6 +35,7 @@ export function SuccessState({
   gasbackValue: number | null;
   onDone: () => void;
   approveHash?: string | null;
+  needsManualSign: boolean;
 }) {
   const { networks } = useNetworks();
 
@@ -78,7 +80,7 @@ export function SuccessState({
       <NavigationTitle urlBar="none" title="Bridge Success" />
       <SuccessStateLoader
         startItem={
-          approveHash ? (
+          approveHash || (needsManualSign && !hash) ? (
             <div style={{ position: 'relative' }}>
               <CircleSpinner size="72px" />
               {spendChain ? (
@@ -105,7 +107,7 @@ export function SuccessState({
           )
         }
         endItem={
-          approveHash ? null : (
+          approveHash || (needsManualSign && !hash) ? null : (
             <SuccessStateToken
               iconUrl={outputPosition.asset.icon_url}
               symbol={outputPosition.asset.symbol}
@@ -121,7 +123,13 @@ export function SuccessState({
               : 'pending'
             : actionStatus
         }
-        pendingTitle={approveHash ? 'Approving' : 'Transferring'}
+        pendingTitle={
+          approveHash
+            ? 'Approving'
+            : !hash && needsManualSign
+            ? 'Approved'
+            : 'Transferring'
+        }
         failedTitle="Transfer failed"
         dropppedTitle="Transfer cancelled"
         explorerUrl={explorerUrl ?? explorerFallbackUrl}

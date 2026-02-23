@@ -195,7 +195,7 @@ export function SuccessStateLoader({
   confirmedContent?: React.ReactNode;
   onDone?: () => void;
 }) {
-  const showLongWaitNotice = useRenderDelay(10000);
+  const showLongWaitNotice = useRenderDelay(endItem ? 10000 : 1000000000);
 
   const backgroundColor =
     status === 'confirmed'

@@ -106,6 +106,7 @@ import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo'
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { isTruthy } from 'is-truthy-ts';
+import { isDeviceAccount } from 'src/shared/types/validators';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -869,7 +870,7 @@ function SwapFormComponent() {
         }
 
         setApproveHash(approveHash);
-        setShowSuccessState(true);
+        setShowSuccessState(Boolean(approveHash));
         if (approveHash) {
           const approveStatus = await waitForTransactionResolve(approveHash);
           if (approveStatus !== 'confirmed') {
@@ -938,6 +939,7 @@ function SwapFormComponent() {
           warningWasShown: Boolean(showPriceImpactCallout),
           outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
         });
+        setShowSuccessState(true);
         return txResponse;
       },
       onMutate: () => {
@@ -1000,9 +1002,10 @@ function SwapFormComponent() {
             gasbackValueRef.current = null;
             navigate('/overview/history');
           }}
+          needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
         />
         {wallet && globalPreferences && approveAndTradeInOneAction ? (
-          <div style={{ display: 'none' }}>
+          <div style={{ position: 'absolute', top: '100%' }}>
             <SignTransactionButton
               ref={sendTxBtnRef}
               wallet={wallet}

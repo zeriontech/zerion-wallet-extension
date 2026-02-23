@@ -106,6 +106,7 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { isTruthy } from 'is-truthy-ts';
+import { isDeviceAccount } from 'src/shared/types/validators';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { ApproveHintLine } from '../SwapForm/ApproveHintLine';
 import { getQuotesErrorMessage } from '../SwapForm/Quotes/getQuotesErrorMessage';
@@ -1053,7 +1054,7 @@ function BridgeFormComponent() {
         }
 
         setApproveHash(approveHash);
-        setShowSuccessState(true);
+        setShowSuccessState(Boolean(approveHash));
         if (approveHash) {
           const approveStatus = await waitForTransactionResolve(approveHash);
           if (approveStatus !== 'confirmed') {
@@ -1126,6 +1127,7 @@ function BridgeFormComponent() {
           warningWasShown: Boolean(showPriceImpactCallout),
           outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
         });
+        setShowSuccessState(true);
         return txResponse;
       },
       onMutate: () => {
@@ -1199,9 +1201,10 @@ function BridgeFormComponent() {
             gasbackValueRef.current = null;
             navigate('/overview/history');
           }}
+          needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
         />
         {wallet && globalPreferences && approveAndTradeInOneAction ? (
-          <div style={{ display: 'none' }}>
+          <div style={{ position: 'absolute', top: '100%' }}>
             <SignTransactionButton
               ref={sendTxBtnRef}
               wallet={wallet}
