@@ -141,7 +141,11 @@ export function RateLine({
                   </div>
                 ) : null}
                 {selectedQuote.rate ? (
-                  <UIText kind="small/accent" color="var(--primary)">
+                  <UIText
+                    kind="small/accent"
+                    color="var(--primary)"
+                    style={{ textAlign: 'right' }}
+                  >
                     {`${selectedQuote.rate[0].value} ${
                       selectedQuote.rate[0].symbol
                     } = ${formatTokenValue(

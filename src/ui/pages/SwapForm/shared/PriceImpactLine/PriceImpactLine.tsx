@@ -11,14 +11,6 @@ export function PriceImpactLine({
   priceImpact: PriceImpact;
   style?: React.CSSProperties;
 }) {
-  const priceImpactPercentage = priceImpact
-    ? getPriceImpactPercentage(priceImpact)
-    : null;
-
-  if (!priceImpactPercentage) {
-    return null;
-  }
-
   if (priceImpact?.kind === 'n/a') {
     return (
       <TransactionWarning
@@ -27,6 +19,14 @@ export function PriceImpactLine({
         style={style}
       />
     );
+  }
+
+  const priceImpactPercentage = priceImpact
+    ? getPriceImpactPercentage(priceImpact)
+    : null;
+
+  if (!priceImpactPercentage) {
+    return null;
   }
 
   return (
