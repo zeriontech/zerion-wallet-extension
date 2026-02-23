@@ -138,7 +138,7 @@ export function SuccessState({
             <GasbackDecorated value={gasbackValue} />
           ) : null
         }
-        onDone={onDone}
+        onDone={hash ? onDone : undefined}
       />
     </>
   );

@@ -20,6 +20,7 @@ import ArrowRight from 'jsx:src/ui/assets/caret-right.svg';
 import SuccessIcon from 'jsx:./success.svg';
 import ErrorIcon from 'jsx:./error.svg';
 import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import * as styles from './SuccessStateLoader.module.css';
 
 const x_break = 0.08;
@@ -196,6 +197,7 @@ export function SuccessStateLoader({
   onDone?: () => void;
 }) {
   const showLongWaitNotice = useRenderDelay(endItem ? 10000 : 1000000000);
+  const canBeClosed = Boolean(onDone);
 
   const backgroundColor =
     status === 'confirmed'
@@ -315,8 +317,25 @@ export function SuccessStateLoader({
             <UIText kind="caption/accent">{NBSP}</UIText>
           )}
         </VStack>
-        <Button kind="regular" style={{ width: '100%' }} onClick={onDone}>
-          Done
+        <Button
+          disabled={!canBeClosed}
+          kind="regular"
+          style={{ width: '100%' }}
+          onClick={onDone}
+        >
+          {canBeClosed ? (
+            <span>Done</span>
+          ) : (
+            <HStack
+              gap={8}
+              alignItems="center"
+              justifyContent="center"
+              style={{ color: 'var(--neutral-600)' }}
+            >
+              <span>Loading</span>
+              <CircleSpinner color="var(--neutral-600)" />
+            </HStack>
+          )}
         </Button>
         <Spacer height={24} />
       </VStack>
