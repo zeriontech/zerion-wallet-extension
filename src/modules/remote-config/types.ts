@@ -19,4 +19,8 @@ export interface RemoteConfig {
   zerion_fee_learn_more_link: string;
   premium_page_feedback_link: string;
   quotes_refetch_interval: number;
+  tx_polling_preferences: {
+    interval_ms: number;
+    max_attempts: number;
+  };
 }

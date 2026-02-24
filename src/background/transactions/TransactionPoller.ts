@@ -6,6 +6,10 @@ import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { SignatureStatus } from '@solana/web3.js';
 import { Connection } from '@solana/web3.js';
 import { invariant } from 'src/shared/invariant';
+import {
+  getRemoteConfigValue,
+  type RemoteConfig,
+} from 'src/modules/remote-config';
 
 class Interval {
   private cb: () => void;
@@ -273,8 +277,23 @@ export class TransactionsPoller {
         this.map.set(item.signature, item);
       }
     }
+    let interval = 1000;
+    try {
+      interval =
+        (
+          getRemoteConfigValue(
+            'tx_polling_preferences'
+          ) as RemoteConfig['tx_polling_preferences']
+        )?.interval_ms ?? 1000;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'Failed to get tx_polling_preferences from remote config, using default interval',
+        e
+      );
+    }
     if (this.map.size) {
-      this.interval.start();
+      this.interval.start(interval);
     }
   }
 }
