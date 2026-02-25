@@ -33,6 +33,7 @@ import { getActionApproval } from 'src/modules/ethereum/transactions/addressActi
 import { baseToCommon } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
+import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -226,6 +227,15 @@ export function TransactionSimulation({
             </HStack>
           </Button>
         </HStack>
+        {addressAction.status === 'failed' ? (
+          <>
+            <TransactionWarning
+              title="Transaction may fail"
+              message="This transaction can not be broadcasted or it may fail during
+                  execution. Proceed with caution."
+            />
+          </>
+        ) : null}
         <RenderArea name="transaction-warning-section" />
       </VStack>
     </>
