@@ -153,7 +153,7 @@ export function createSendTokenAddressAction({
   sendAsset: Asset;
   sendAmount: Amount;
   address: string;
-  receiverAddress: string;
+  receiverAddress: string | null;
   explorerUrl: string | null;
 }): LocalAddressAction {
   const content = {
@@ -186,11 +186,13 @@ export function createSendTokenAddressAction({
         status: 'pending',
         label: {
           contract: null,
-          wallet: {
-            address: receiverAddress,
-            name: null,
-            iconUrl: null,
-          },
+          wallet: receiverAddress
+            ? {
+                address: receiverAddress,
+                name: null,
+                iconUrl: null,
+              }
+            : null,
         },
         rate: null,
         transaction: actionTransaction,
@@ -207,11 +209,13 @@ export function createSendTokenAddressAction({
     },
     label: {
       contract: null,
-      wallet: {
-        address: receiverAddress,
-        name: null,
-        iconUrl: null,
-      },
+      wallet: receiverAddress
+        ? {
+            address: receiverAddress,
+            name: null,
+            iconUrl: null,
+          }
+        : null,
     },
     fee: null,
     gasback: null,

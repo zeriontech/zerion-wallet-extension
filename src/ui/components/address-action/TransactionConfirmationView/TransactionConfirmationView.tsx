@@ -19,6 +19,7 @@ import { SecurityStatusBackground } from 'src/ui/shared/security-check';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { AddressActionNetworkFee } from 'src/ui/pages/SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { invariant } from 'src/shared/invariant';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -35,6 +36,7 @@ export function TransactionConfirmationView({
   customAllowanceValueBase,
   onOpenAllowanceForm,
   onGasbackReady,
+  fallbackAddressAction,
 }: {
   title: React.ReactNode;
   wallet: ExternallyOwnedAccount;
@@ -48,6 +50,7 @@ export function TransactionConfirmationView({
   customAllowanceValueBase?: string;
   onOpenAllowanceForm?: () => void;
   onGasbackReady: null | ((value: number) => void);
+  fallbackAddressAction: LocalAddressAction | null;
 }) {
   const { preferences, query } = usePreferences();
   invariant(
@@ -125,6 +128,7 @@ export function TransactionConfirmationView({
             address={wallet.address}
             transaction={transactions.at(-1)!} // guarded by invariant above
             txInterpretQuery={txInterpretQuery}
+            fallbackAddressAction={fallbackAddressAction}
           />
           <Spacer height={20} />
           <React.Suspense

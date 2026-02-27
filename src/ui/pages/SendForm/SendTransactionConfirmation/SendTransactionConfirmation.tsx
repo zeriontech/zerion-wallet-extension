@@ -53,6 +53,7 @@ export function SendTransactionConfirmation({
         },
       }}
       onGasbackReady={onGasbackReady}
+      fallbackAddressAction={null}
     />
   );
 }

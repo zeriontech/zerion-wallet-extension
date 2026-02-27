@@ -567,6 +567,84 @@ function SwapFormComponent() {
     { enabled: Boolean(inputPosition?.asset.id) }
   );
 
+  const fallbackAddressAction = useMemo(() => {
+    if (
+      !inputPosition ||
+      !formState.inputAmount ||
+      !outputPosition ||
+      !network
+    ) {
+      return null;
+    }
+    if (selectedForSignQuote?.transactionSwap) {
+      return createTradeAddressAction({
+        hash: null,
+        address,
+        explorerUrl: null,
+        network,
+        rate: selectedForSignQuote.rate,
+        spendAsset: inputPosition.asset,
+        receiveAsset: outputPosition.asset,
+        spendAmount: {
+          currency,
+          quantity: formState.inputAmount,
+          value: inputPosition.asset.price?.value
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(inputPosition.asset.price.value)
+                .toNumber()
+            : null,
+          usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta.price
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(
+                  inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                )
+                .toNumber()
+            : null,
+        },
+        receiveAmount: selectedForSignQuote.outputAmount,
+        transaction: toMultichainTransaction(
+          selectedForSignQuote.transactionSwap
+        ),
+      });
+    } else if (selectedForSignQuote?.transactionApprove?.evm) {
+      return createApproveAddressAction({
+        transaction: toIncomingTransaction(
+          selectedForSignQuote.transactionApprove.evm
+        ),
+        hash: null,
+        explorerUrl: null,
+        amount: {
+          currency,
+          quantity: formState.inputAmount,
+          value: inputPosition.asset.price?.value
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(inputPosition.asset.price.value)
+                .toNumber()
+            : null,
+          usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta.price
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(
+                  inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                )
+                .toNumber()
+            : null,
+        },
+        asset: inputPosition.asset,
+        network,
+      });
+    }
+    return null;
+  }, [
+    inputPosition,
+    formState.inputAmount,
+    outputPosition,
+    network,
+    selectedForSignQuote,
+    inputFungibleUsdInfoForAnalytics,
+    address,
+    currency,
+  ]);
+
   const {
     mutate: sendApproveTransaction,
     data: approveData,
@@ -1153,6 +1231,7 @@ function SwapFormComponent() {
                   },
                 }}
                 onGasbackReady={handleGasbackReady}
+                fallbackAddressAction={fallbackAddressAction}
               />
             </ViewLoadingSuspense>
           );
