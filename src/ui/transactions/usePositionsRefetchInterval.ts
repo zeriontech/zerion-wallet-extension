@@ -18,7 +18,7 @@ localTransactionsStore.on('change', (state) => {
 });
 
 const TWO_MINUTES = 1000 * 60 * 2;
-const URGENT_REFETCH_INTERVAl = 4000; // 4 seconds
+const URGENT_REFETCH_INTERVAl = 1000; // 4 seconds
 
 function useNow(enabled: boolean) {
   const [now, setNow] = useState(() => Date.now());
