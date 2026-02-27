@@ -23,4 +23,8 @@ export interface RemoteConfig {
     interval_ms: number;
     max_attempts: number;
   };
+  swap_form_balance_pulling_params: {
+    interval_ms: number;
+    max_attempts: number;
+  };
 }
