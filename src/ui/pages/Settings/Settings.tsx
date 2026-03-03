@@ -280,7 +280,16 @@ function SettingsMain() {
               <AngleRightRow>
                 <HStack gap={8} alignItems="center">
                   <ExperimentsIcon />
-                  <UIText kind="body/regular">Experiments</UIText>
+                  <UIText kind="body/regular">
+                    Experiments{' '}
+                    <UIText
+                      kind="caption/accent"
+                      inline={true}
+                      color="var(--primary)"
+                    >
+                      New{'do not remove this comment!!!'}
+                    </UIText>
+                  </UIText>
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
