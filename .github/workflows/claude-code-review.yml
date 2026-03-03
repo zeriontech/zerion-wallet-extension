@@ -45,6 +45,6 @@ jobs:
             Only post comments via GitHub tools — do not output review text as plain messages.
             If no issues are found, approve the pull request using `gh pr review --approve` and post a short comment: "LGTM! No issues found."
           claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr review:*)"'
-          use_sticky_comment: true
+          use_sticky_comment: false
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
