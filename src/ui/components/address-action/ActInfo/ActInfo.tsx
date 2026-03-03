@@ -52,19 +52,13 @@ function AssetContent({
               alignItems="center"
               style={{ gridTemplateColumns: 'auto 1fr' }}
             >
-              <span>
-                {unlimited || isUnlimitedApproval(amount?.quantity)
-                  ? 'Unlimited'
-                  : amount?.quantity
-                  ? `${
-                      direction === 'out'
-                        ? minus
-                        : direction === 'in'
-                        ? '+'
-                        : ''
-                    }${formatTokenValue(amount?.quantity || '0', '')}`
-                  : null}
-              </span>
+              {unlimited || isUnlimitedApproval(amount?.quantity) ? (
+                <span>Unlimited</span>
+              ) : amount?.quantity ? (
+                <span>{`${
+                  direction === 'out' ? minus : direction === 'in' ? '+' : ''
+                }${formatTokenValue(amount?.quantity || '0', '')}`}</span>
+              ) : null}
               <AssetAnchor
                 asset={fungible}
                 address={address}

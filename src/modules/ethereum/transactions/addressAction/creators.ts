@@ -87,6 +87,32 @@ export async function createActionContent(
         ],
       };
     }
+    case 'revoke': {
+      const asset = await fetchAssetFromCacheOrAPI(
+        {
+          isNative: false,
+          chain: action.chain,
+          address: action.assetAddress,
+          currency,
+        },
+        client
+      );
+      if (!asset) {
+        return null;
+      }
+      return {
+        transfers: null,
+        approvals: [
+          {
+            fungible: convertAssetToFungible(asset),
+            nft: null,
+            collection: null,
+            unlimited: false,
+            amount: null,
+          },
+        ],
+      };
+    }
     case 'approve': {
       const asset = await fetchAssetFromCacheOrAPI(
         {
@@ -138,6 +164,7 @@ const actionTypeToLabelType: Record<
   send: 'to',
   execute: 'application',
   approve: 'application',
+  revoke: 'application',
 };
 
 function createActionLabel(
