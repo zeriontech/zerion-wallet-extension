@@ -44,5 +44,6 @@ jobs:
             - If issues are found: post the review summary as a PR comment using `gh pr comment` and use `mcp__github_inline_comment__create_inline_comment` for line-specific issues.
             - If no issues are found: approve the PR using `gh pr review --approve` and post a short "LGTM! No issues found." comment using `gh pr comment`.
             Only post results via GitHub tools — do not output review text as plain messages.
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh:*),Bash(git:*),Read,Grep,Glob,Write,Edit"'
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
