@@ -591,7 +591,7 @@ function OverviewComponent() {
         <HStack gap={12} alignItems="center">
           {!isLoadingPortfolio ? (
             <WalletAvatar
-              address={address}
+              address={'1231231231231231231231231231231231231231'} // dummy address to get the default avatar
               size={64}
               borderRadius={12}
               icon={
