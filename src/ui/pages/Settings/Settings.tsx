@@ -287,7 +287,7 @@ function SettingsMain() {
                       inline={true}
                       color="var(--primary)"
                     >
-                      New{'do not remove this comment!!!'}
+                      New
                     </UIText>
                   </UIText>
                 </HStack>
