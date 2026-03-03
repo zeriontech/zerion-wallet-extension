@@ -28,9 +28,7 @@ const PNL_OPTIONS: Array<{ id: PnlMode; label: string; shortLabel: string }> = [
 
 interface PercentChangeInfo {
   isPositive: boolean;
-  isNegative: boolean;
   isNonNegative: boolean;
-  isZero: boolean;
   formatted: string;
 }
 
@@ -38,8 +36,6 @@ function formatPercentChange(value: number, locale: string): PercentChangeInfo {
   return {
     isPositive: value > 0,
     isNonNegative: value >= 0,
-    isNegative: value < 0,
-    isZero: value === 0,
     formatted: `${formatPercent(value, locale)}%`,
   };
 }
@@ -222,16 +218,12 @@ export function PercentageChange({
                 <li
                   key={option.id}
                   {...getItemProps({ item: option, index })}
+                  className={styles.menuItem}
                   style={{
                     backgroundColor:
                       highlightedIndex === index
                         ? 'var(--neutral-100)'
                         : undefined,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
                   }}
                 >
                   <div>
