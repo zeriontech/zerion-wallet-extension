@@ -26,6 +26,7 @@ import { walletSimulateSignature } from './requests/wallet-simulate-signature';
 import { walletSimulateTransaction } from './requests/wallet-simulate-transaction';
 import { searchQueryFungibles } from './requests/search-query-fungibles';
 import { assetListFungibles } from './requests/asset-list-fungibles';
+import { walletGetPnl } from './requests/wallet-get-pnl';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -56,6 +57,7 @@ export const ZerionApiBare = {
   assetGetChart,
   searchQuery,
   searchQueryFungibles,
+  walletGetPnl,
 };
 
 export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;

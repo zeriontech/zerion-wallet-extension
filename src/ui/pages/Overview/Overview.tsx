@@ -18,14 +18,10 @@ import {
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useWalletPnl } from 'src/modules/zerion-api/hooks/useWalletPnl';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import {
-  formatCurrencyToParts,
-  formatCurrencyValue,
-} from 'src/shared/units/formatCurrencyValue';
-import { formatPercent } from 'src/shared/units/formatPercent';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
@@ -47,14 +43,12 @@ import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupBy
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
-import { NBSP } from 'src/ui/shared/typography';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useProfileName } from 'src/ui/shared/useProfileName';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import {
   SegmentedControlGroup,
   SegmentedControlLink,
@@ -67,7 +61,6 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
-import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { Networks } from 'src/modules/networks/Networks';
 import { ViewSuspense } from '../../components/ViewSuspense';
@@ -76,6 +69,7 @@ import { HistoryList } from '../History/History';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { SearchLinkIcon } from '../Search';
 import { ActionButtonsRow } from './ActionButtonsRow';
+import { PercentageChange } from './PercentageChange';
 import { BackupReminder } from './BackupReminder';
 import { Banners } from './Banners';
 import { ConnectionHeader } from './ConnectionHeader';
@@ -332,24 +326,6 @@ function ReadonlyMode() {
   );
 }
 
-interface PercentChangeInfo {
-  isPositive: boolean;
-  isNegative: boolean;
-  isNonNegative: boolean;
-  isZero: boolean;
-  formatted: string;
-}
-
-function formatPercentChange(value: number, locale: string): PercentChangeInfo {
-  return {
-    isPositive: value > 0,
-    isNonNegative: value >= 0,
-    isNegative: value < 0,
-    isZero: value === 0,
-    formatted: `${formatPercent(value, locale)}%`,
-  };
-}
-
 function OverviewComponent() {
   useBodyStyle(
     useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
@@ -394,14 +370,12 @@ function OverviewComponent() {
   );
   const walletPortfolio = data?.data;
 
-  const percentageChangeValue = walletPortfolio?.change24h.relative;
-  const percentageChange = useMemo(
-    () =>
-      percentageChangeValue
-        ? formatPercentChange(percentageChangeValue, 'en')
-        : null,
-    [percentageChangeValue]
+  const { data: pnlData } = useWalletPnl(
+    { addresses: [params.address], currency },
+    { source: useHttpClientSource() },
+    { enabled: ready, refetchInterval: 40000 }
   );
+  const walletPnl = pnlData?.data;
 
   const offsetValuesState = useStore(offsetValues);
 
@@ -605,59 +579,11 @@ function OverviewComponent() {
               }
             />
           ) : null}
-          <VStack gap={0}>
-            <BlurrableBalance kind="headline/h1" color="var(--black)">
-              <UIText kind="headline/h1">
-                {walletPortfolio?.totalValue != null ? (
-                  <NeutralDecimals
-                    parts={formatCurrencyToParts(
-                      walletPortfolio.totalValue,
-                      'en',
-                      currency
-                    )}
-                  />
-                ) : (
-                  NBSP
-                )}
-              </UIText>
-            </BlurrableBalance>
-            {percentageChange ? (
-              <UIText
-                kind="small/regular"
-                color={
-                  percentageChange.isNonNegative
-                    ? 'var(--positive-500)'
-                    : 'var(--negative-500)'
-                }
-                style={{ display: 'flex', gap: 4 }}
-              >
-                <span>
-                  {`${percentageChange.isPositive ? '+' : ''}${
-                    percentageChange.formatted
-                  }`}
-                </span>
-                <BlurrableBalance
-                  kind="small/regular"
-                  color={
-                    percentageChange.isNonNegative
-                      ? 'var(--positive-500)'
-                      : 'var(--negative-500)'
-                  }
-                >
-                  {walletPortfolio?.change24h.absolute
-                    ? `(${formatCurrencyValue(
-                        Math.abs(walletPortfolio.change24h.absolute),
-                        'en',
-                        currency
-                      )})`
-                    : ''}
-                </BlurrableBalance>{' '}
-                Today
-              </UIText>
-            ) : (
-              <UIText kind="small/regular">{NBSP}</UIText>
-            )}
-          </VStack>
+          <PercentageChange
+            walletPortfolio={walletPortfolio}
+            walletPnl={walletPnl}
+            currency={currency}
+          />
         </HStack>
       </div>
       <Spacer height={16} />
