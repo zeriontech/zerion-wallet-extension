@@ -855,7 +855,7 @@ export class WalletRecordModel {
       enableHoldToSignButton: null,
       showTransactionsOnAssetChart: true,
       walletsOrder: DEFAULT_WALLET_LIST_GROUPS,
-      pnlMode: null,
+      pnlMode: 'pnl',
     };
     if (!record) {
       return defaults;

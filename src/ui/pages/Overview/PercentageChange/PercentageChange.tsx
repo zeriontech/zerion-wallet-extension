@@ -96,7 +96,7 @@ export function PercentageChange({
   currency,
 }: Props) {
   const { preferences, setPreferences } = usePreferences();
-  const selectedMode: PnlMode = preferences?.pnlMode ?? '1day';
+  const selectedMode: PnlMode = preferences?.pnlMode ?? 'pnl';
 
   const currentOption = PNL_OPTIONS.find((o) => o.id === selectedMode)!;
 

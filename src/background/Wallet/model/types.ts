@@ -73,7 +73,7 @@ interface PublicPreferences {
    * Selected mode for the percentage-change display on the Overview page.
    * `null` and `undefined` both mean "use the default", which is '1day'.
    */
-  pnlMode?: 'pnl' | 'rpnl' | 'upnl' | '1day' | null;
+  pnlMode?: 'pnl' | 'rpnl' | 'upnl' | '1day';
 }
 
 export interface Permission {
