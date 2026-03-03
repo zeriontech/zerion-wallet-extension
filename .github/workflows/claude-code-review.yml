@@ -43,7 +43,8 @@ jobs:
             After running the code review, post a top-level summary comment on the PR using `gh pr comment`.
             For specific code issues found in the review, use the `mcp__github_inline_comment__create_inline_comment` tool to create inline comments on the exact lines in the diff.
             Only post comments via GitHub tools — do not output review text as plain messages.
-          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"'
+            If no issues are found, approve the pull request using `gh pr review --approve` and post a short comment: "LGTM! No issues found."
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr review:*)"'
           use_sticky_comment: true
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
