@@ -69,6 +69,11 @@ interface PublicPreferences {
   enableHoldToSignButton?: boolean | null;
   showTransactionsOnAssetChart?: boolean;
   walletsOrder?: WalletListGroup[];
+  /**
+   * Selected mode for the percentage-change display on the Overview page.
+   * `null` and `undefined` both mean "use the default", which is '1day'.
+   */
+  pnlMode?: 'pnl' | 'rpnl' | 'upnl' | '1day' | null;
 }
 
 export interface Permission {

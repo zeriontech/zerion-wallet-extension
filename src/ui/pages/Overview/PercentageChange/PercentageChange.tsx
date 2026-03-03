@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { useSelect } from 'downshift';
 import {
@@ -14,6 +14,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import type { WalletPnL } from 'src/modules/zerion-api/requests/wallet-get-pnl';
+import { usePreferences } from 'src/ui/features/preferences';
 import { BadgeTrigger } from './BadgeTrigger';
 
 type PnlMode = 'pnl' | 'rpnl' | 'upnl' | '1day';
@@ -94,7 +95,8 @@ export function PercentageChange({
   walletPnl,
   currency,
 }: Props) {
-  const [selectedMode, setSelectedMode] = useState<PnlMode>('1day');
+  const { preferences, setPreferences } = usePreferences();
+  const selectedMode: PnlMode = preferences?.pnlMode ?? '1day';
 
   const currentOption = PNL_OPTIONS.find((o) => o.id === selectedMode)!;
 
@@ -109,7 +111,7 @@ export function PercentageChange({
     selectedItem: currentOption,
     onSelectedItemChange: ({ selectedItem }) => {
       if (selectedItem) {
-        setSelectedMode(selectedItem.id);
+        setPreferences({ pnlMode: selectedItem.id });
       }
     },
     itemToString: (item) => item?.label ?? '',
@@ -202,7 +204,7 @@ export function PercentageChange({
               display: isOpen ? 'block' : 'none',
               position: 'absolute',
               top: 'calc(100% + 4px)',
-              left: 0,
+              right: 0,
               zIndex: 100,
               backgroundColor: 'var(--white)',
               border: '1px solid var(--neutral-200)',
