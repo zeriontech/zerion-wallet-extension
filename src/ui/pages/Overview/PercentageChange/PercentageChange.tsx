@@ -22,7 +22,7 @@ const PNL_OPTIONS: Array<{ id: PnlMode; label: string; shortLabel: string }> = [
   { id: 'pnl', label: 'Total PnL', shortLabel: 'PnL' },
   { id: 'rpnl', label: 'Realized PnL', shortLabel: 'rPnL' },
   { id: 'upnl', label: 'Unrealized PnL', shortLabel: 'uPnL' },
-  { id: '1day', label: '1 Day', shortLabel: '1Day' },
+  { id: '1day', label: '1 Day', shortLabel: '24h' },
 ];
 
 interface PercentChangeInfo {
@@ -50,13 +50,36 @@ function getRelativeValue(
 ): number | null {
   switch (mode) {
     case 'pnl':
-      return walletPnl?.relativeTotalPnl ?? null;
+      return walletPnl?.relativeTotalPnl != null
+        ? walletPnl.relativeTotalPnl * 100
+        : null;
     case 'rpnl':
-      return walletPnl?.relativeRealizedPnl ?? null;
+      return walletPnl?.relativeRealizedPnl != null
+        ? walletPnl.relativeRealizedPnl * 100
+        : null;
     case 'upnl':
-      return walletPnl?.relativeUnrealizedPnl ?? null;
+      return walletPnl?.relativeUnrealizedPnl != null
+        ? walletPnl.relativeUnrealizedPnl * 100
+        : null;
     case '1day':
       return walletPortfolio?.change24h.relative ?? null;
+  }
+}
+
+function getAbsoluteValue(
+  mode: PnlMode,
+  walletPortfolio: WalletPortfolio | undefined,
+  walletPnl: WalletPnL | null | undefined
+): number | null {
+  switch (mode) {
+    case 'pnl':
+      return walletPnl?.totalPnl ?? null;
+    case 'rpnl':
+      return walletPnl?.realizedPnl ?? null;
+    case 'upnl':
+      return walletPnl?.unrealizedPnl ?? null;
+    case '1day':
+      return walletPortfolio?.change24h.absolute ?? null;
   }
 }
 
@@ -100,6 +123,12 @@ export function PercentageChange({
   const percentageChange =
     relativeValue != null ? formatPercentChange(relativeValue, 'en') : null;
 
+  const absoluteValue = getAbsoluteValue(
+    selectedMode,
+    walletPortfolio,
+    walletPnl
+  );
+
   return (
     <VStack gap={0}>
       <BlurrableBalance kind="headline/h1" color="var(--black)">
@@ -133,7 +162,7 @@ export function PercentageChange({
                 percentageChange.formatted
               }`}
             </span>
-            {selectedMode === '1day' && walletPortfolio?.change24h.absolute ? (
+            {absoluteValue != null ? (
               <BlurrableBalance
                 kind="small/regular"
                 color={
@@ -143,7 +172,7 @@ export function PercentageChange({
                 }
               >
                 {`(${formatCurrencyValue(
-                  Math.abs(walletPortfolio.change24h.absolute),
+                  Math.abs(absoluteValue),
                   'en',
                   currency
                 )})`}
@@ -185,34 +214,61 @@ export function PercentageChange({
               padding: '4px 0',
             }}
           >
-            {PNL_OPTIONS.map((option, index) => (
-              <li
-                key={option.id}
-                {...getItemProps({ item: option, index })}
-                style={{
-                  backgroundColor:
-                    highlightedIndex === index
-                      ? 'var(--neutral-100)'
-                      : undefined,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                }}
-              >
-                <UIText kind="small/regular">{option.label}</UIText>
-                {selectedMode === option.id ? (
-                  <CheckIcon
-                    style={{
-                      width: 16,
-                      height: 16,
-                      color: 'var(--primary)',
-                    }}
-                  />
-                ) : null}
-              </li>
-            ))}
+            {PNL_OPTIONS.map((option, index) => {
+              const optionAbsoluteValue = getAbsoluteValue(
+                option.id,
+                walletPortfolio,
+                walletPnl
+              );
+              return (
+                <li
+                  key={option.id}
+                  {...getItemProps({ item: option, index })}
+                  style={{
+                    backgroundColor:
+                      highlightedIndex === index
+                        ? 'var(--neutral-100)'
+                        : undefined,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div>
+                    <UIText kind="small/regular">{option.label}</UIText>
+                    {optionAbsoluteValue != null ? (
+                      <UIText
+                        kind="caption/regular"
+                        color={
+                          optionAbsoluteValue >= 0
+                            ? 'var(--positive-500)'
+                            : 'var(--negative-500)'
+                        }
+                      >
+                        {`${
+                          optionAbsoluteValue >= 0 ? '+' : '-'
+                        }${formatCurrencyValue(
+                          Math.abs(optionAbsoluteValue),
+                          'en',
+                          currency
+                        )}`}
+                      </UIText>
+                    ) : null}
+                  </div>
+                  {selectedMode === option.id ? (
+                    <CheckIcon
+                      style={{
+                        width: 16,
+                        height: 16,
+                        color: 'var(--primary)',
+                      }}
+                    />
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         </div>
       </HStack>
