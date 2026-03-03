@@ -26,6 +26,8 @@ interface WalletManager {
 type Origin = string;
 type Address = string;
 
+export type PnlMode = 'pnl' | 'rpnl' | 'upnl' | '1day';
+
 /**
  * Named "Public" because these preferences aren't supposed contain any private info
  * and it's okay to query them from content script (meaning they are technically available to DApps)
@@ -71,9 +73,9 @@ interface PublicPreferences {
   walletsOrder?: WalletListGroup[];
   /**
    * Selected mode for the percentage-change display on the Overview page.
-   * `null` and `undefined` both mean "use the default", which is '1day'.
+   * `undefined` means "use the default", which is 'pnl'.
    */
-  pnlMode?: 'pnl' | 'rpnl' | 'upnl' | '1day';
+  pnlMode?: PnlMode;
 }
 
 export interface Permission {

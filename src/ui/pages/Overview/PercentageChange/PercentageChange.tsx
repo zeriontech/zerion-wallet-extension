@@ -12,12 +12,12 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import type { PnlMode } from 'src/background/Wallet/model/types';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import type { WalletPnL } from 'src/modules/zerion-api/requests/wallet-get-pnl';
 import { usePreferences } from 'src/ui/features/preferences';
 import { BadgeTrigger } from './BadgeTrigger';
-
-type PnlMode = 'pnl' | 'rpnl' | 'upnl' | '1day';
+import * as styles from './PercentageChange.module.css';
 
 const PNL_OPTIONS: Array<{ id: PnlMode; label: string; shortLabel: string }> = [
   { id: 'pnl', label: 'Total PnL', shortLabel: 'PnL' },
@@ -200,21 +200,8 @@ export function PercentageChange({
           </button>
           <ul
             {...getMenuProps()}
-            style={{
-              display: isOpen ? 'block' : 'none',
-              position: 'absolute',
-              top: 'calc(100% + 4px)',
-              right: 0,
-              zIndex: 100,
-              backgroundColor: 'var(--white)',
-              border: '1px solid var(--neutral-200)',
-              borderRadius: 8,
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-              minWidth: 160,
-              listStyle: 'none',
-              margin: 0,
-              padding: '4px 0',
-            }}
+            className={styles.menu}
+            style={{ display: isOpen ? 'block' : 'none' }}
           >
             {PNL_OPTIONS.map((option, index) => {
               const optionRelativeValue = getRelativeValue(
