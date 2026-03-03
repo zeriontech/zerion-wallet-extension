@@ -166,7 +166,7 @@ export function parseApprove<T extends IncomingTransaction>(transaction: T) {
     args
   );
   const contractAddress = transaction.to || '0x';
-  if (Number(amount) === 0) {
+  if (amount === 0n) {
     return {
       type: 'revoke' as const,
       spenderAddress,
@@ -179,7 +179,7 @@ export function parseApprove<T extends IncomingTransaction>(transaction: T) {
     type: 'approve' as const,
     contractAddress,
     spenderAddress,
-    amount: amountToString(amount as number | bigint),
+    amount: amountToString(amount),
     isNativeAsset: true,
     assetAddress: contractAddress,
   };
