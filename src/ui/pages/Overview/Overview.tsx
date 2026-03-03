@@ -662,6 +662,7 @@ function OverviewComponent() {
       </div>
       <Spacer height={16} />
       <div>Here is something strange!</div>
+      <div>But what about now?!</div>
       <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
         {isReadonlyGroup ? <ReadonlyMode /> : <ActionButtonsRow />}
       </div>
