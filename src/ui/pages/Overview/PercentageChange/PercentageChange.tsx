@@ -43,7 +43,7 @@ function formatPercentChange(value: number, locale: string): PercentChangeInfo {
 function getRelativeValue(
   mode: PnlMode,
   walletPortfolio: WalletPortfolio | undefined,
-  walletPnl: WalletPnL | null | undefined
+  walletPnl: WalletPnL | undefined
 ): number | null {
   switch (mode) {
     case 'pnl':
@@ -60,7 +60,7 @@ function getRelativeValue(
 function getAbsoluteValue(
   mode: PnlMode,
   walletPortfolio: WalletPortfolio | undefined,
-  walletPnl: WalletPnL | null | undefined
+  walletPnl: WalletPnL | undefined
 ): number | null {
   switch (mode) {
     case 'pnl':
@@ -76,7 +76,7 @@ function getAbsoluteValue(
 
 interface Props {
   walletPortfolio: WalletPortfolio | undefined;
-  walletPnl: WalletPnL | null | undefined;
+  walletPnl: WalletPnL | undefined;
   currency: string;
 }
 
@@ -88,7 +88,8 @@ export function PercentageChange({
   const { preferences, setPreferences } = usePreferences();
   const selectedMode: PnlMode = preferences?.pnlMode ?? 'pnl';
 
-  const currentOption = PNL_OPTIONS.find((o) => o.id === selectedMode)!;
+  const currentOption =
+    PNL_OPTIONS.find((o) => o.id === selectedMode) ?? PNL_OPTIONS[0];
 
   const {
     isOpen,
@@ -212,13 +213,11 @@ export function PercentageChange({
                 <li
                   key={option.id}
                   {...getItemProps({ item: option, index })}
-                  className={styles.menuItem}
-                  style={{
-                    backgroundColor:
-                      highlightedIndex === index
-                        ? 'var(--neutral-100)'
-                        : undefined,
-                  }}
+                  className={
+                    highlightedIndex === index
+                      ? `${styles.menuItem} ${styles.menuItemHighlighted}`
+                      : styles.menuItem
+                  }
                 >
                   <div>
                     <UIText kind="small/regular">{option.label}</UIText>

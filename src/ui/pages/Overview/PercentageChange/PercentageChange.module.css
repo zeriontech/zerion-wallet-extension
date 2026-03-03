@@ -20,3 +20,7 @@
   padding: 8px 12px;
   cursor: pointer;
 }
+
+.menuItemHighlighted {
+  background-color: var(--neutral-100);
+}
