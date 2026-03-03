@@ -217,11 +217,20 @@ export function PercentageChange({
             }}
           >
             {PNL_OPTIONS.map((option, index) => {
+              const optionRelativeValue = getRelativeValue(
+                option.id,
+                walletPortfolio,
+                walletPnl
+              );
               const optionAbsoluteValue = getAbsoluteValue(
                 option.id,
                 walletPortfolio,
                 walletPnl
               );
+              const optionPercentageChange =
+                optionRelativeValue != null
+                  ? formatPercentChange(optionRelativeValue, 'en')
+                  : null;
               return (
                 <li
                   key={option.id}
@@ -240,22 +249,30 @@ export function PercentageChange({
                 >
                   <div>
                     <UIText kind="small/regular">{option.label}</UIText>
-                    {optionAbsoluteValue != null ? (
+                    {optionPercentageChange ? (
                       <UIText
                         kind="caption/regular"
                         color={
-                          optionAbsoluteValue >= 0
+                          optionPercentageChange.isNonNegative
                             ? 'var(--positive-500)'
                             : 'var(--negative-500)'
                         }
+                        style={{ display: 'flex', gap: 4 }}
                       >
-                        {`${
-                          optionAbsoluteValue >= 0 ? '+' : '-'
-                        }${formatCurrencyValue(
-                          Math.abs(optionAbsoluteValue),
-                          'en',
-                          currency
-                        )}`}
+                        <span>
+                          {`${optionPercentageChange.isPositive ? '+' : ''}${
+                            optionPercentageChange.formatted
+                          }`}
+                        </span>
+                        {optionAbsoluteValue != null ? (
+                          <span>
+                            {`(${formatCurrencyValue(
+                              Math.abs(optionAbsoluteValue),
+                              'en',
+                              currency
+                            )})`}
+                          </span>
+                        ) : null}
                       </UIText>
                     ) : null}
                   </div>
