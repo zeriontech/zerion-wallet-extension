@@ -47,17 +47,11 @@ function getRelativeValue(
 ): number | null {
   switch (mode) {
     case 'pnl':
-      return walletPnl?.relativeTotalPnl != null
-        ? walletPnl.relativeTotalPnl * 100
-        : null;
+      return walletPnl != null ? walletPnl.relativeTotalPnl * 100 : null;
     case 'rpnl':
-      return walletPnl?.relativeRealizedPnl != null
-        ? walletPnl.relativeRealizedPnl * 100
-        : null;
+      return walletPnl != null ? walletPnl.relativeRealizedPnl * 100 : null;
     case 'upnl':
-      return walletPnl?.relativeUnrealizedPnl != null
-        ? walletPnl.relativeUnrealizedPnl * 100
-        : null;
+      return walletPnl != null ? walletPnl.relativeUnrealizedPnl * 100 : null;
     case '1day':
       return walletPortfolio?.change24h.relative ?? null;
   }

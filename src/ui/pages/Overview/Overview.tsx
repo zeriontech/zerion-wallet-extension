@@ -363,16 +363,17 @@ function OverviewComponent() {
     }
   }, [address, network, setSelectedChain]);
 
+  const httpSource = useHttpClientSource();
   const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
     { addresses: [params.address], currency },
-    { source: useHttpClientSource() },
+    { source: httpSource },
     { enabled: ready, refetchInterval: 40000 }
   );
   const walletPortfolio = data?.data;
 
   const { data: pnlData } = useWalletPnl(
     { addresses: [params.address], currency },
-    { source: useHttpClientSource() },
+    { source: httpSource },
     { enabled: ready, refetchInterval: 40000 }
   );
   const walletPnl = pnlData?.data;
