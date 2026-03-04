@@ -4,7 +4,12 @@ import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
-export type TransactionActionType = 'deploy' | 'send' | 'execute' | 'approve';
+export type TransactionActionType =
+  | 'deploy'
+  | 'send'
+  | 'execute'
+  | 'approve'
+  | 'revoke';
 
 interface OutgoingValue {
   isNativeAsset: boolean;
@@ -31,6 +36,11 @@ export type TransactionAction = OutgoingValue &
         spenderAddress: string;
         contractAddress: string;
         amount: string;
+      }
+    | {
+        type: 'revoke';
+        spenderAddress: string;
+        contractAddress: string;
       }
   );
 
@@ -156,11 +166,20 @@ export function parseApprove<T extends IncomingTransaction>(transaction: T) {
     args
   );
   const contractAddress = transaction.to || '0x';
+  if (amount === 0n) {
+    return {
+      type: 'revoke' as const,
+      spenderAddress,
+      contractAddress,
+      isNativeAsset: true,
+      assetAddress: contractAddress,
+    };
+  }
   return {
     type: 'approve' as const,
     contractAddress,
     spenderAddress,
-    amount: amountToString(amount as number | bigint),
+    amount: amountToString(amount),
     isNativeAsset: true,
     assetAddress: contractAddress,
   };

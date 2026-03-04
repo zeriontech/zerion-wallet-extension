@@ -124,7 +124,8 @@ export function TransactionSimulation({
 
   const maybeApproval = addressAction ? getActionApproval(addressAction) : null;
   const requestedAllowanceQuantityCommon =
-    maybeApproval?.amount?.quantity ?? UNLIMITED_APPROVAL_AMOUNT.toFixed();
+    maybeApproval?.amount?.quantity ??
+    (maybeApproval?.unlimited ? UNLIMITED_APPROVAL_AMOUNT.toFixed() : null);
 
   const chain = transaction.evm ? evmChain : solanaChain;
 

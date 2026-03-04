@@ -767,7 +767,9 @@ function SendTransactionContent({
   const requestedAllowanceQuantityCommon =
     maybeApproval?.amount?.quantity ??
     maybeLocalApproval?.amount?.quantity ??
-    UNLIMITED_APPROVAL_AMOUNT.toFixed();
+    (maybeApproval?.unlimited || maybeLocalApproval?.unlimited
+      ? UNLIMITED_APPROVAL_AMOUNT.toFixed()
+      : null);
 
   const requestedAllowanceQuantityBase =
     requestedAllowanceQuantityCommon && fungibleDecimals
