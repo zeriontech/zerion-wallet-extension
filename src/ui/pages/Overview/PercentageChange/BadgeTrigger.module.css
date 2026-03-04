@@ -1,0 +1,14 @@
+.trigger {
+  height: 24px;
+  padding: 0 6px 0 8px;
+  border-radius: 24px;
+  background-color: var(--neutral-200);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background-color: var(--neutral-300);
+}

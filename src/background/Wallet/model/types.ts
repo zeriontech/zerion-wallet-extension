@@ -26,6 +26,8 @@ interface WalletManager {
 type Origin = string;
 type Address = string;
 
+export type PnlMode = 'pnl' | 'rpnl' | 'upnl' | '1day';
+
 /**
  * Named "Public" because these preferences aren't supposed contain any private info
  * and it's okay to query them from content script (meaning they are technically available to DApps)
@@ -69,6 +71,11 @@ interface PublicPreferences {
   enableHoldToSignButton?: boolean | null;
   showTransactionsOnAssetChart?: boolean;
   walletsOrder?: WalletListGroup[];
+  /**
+   * Selected mode for the percentage-change display on the Overview page.
+   * `undefined` means "use the default", which is 'pnl'.
+   */
+  pnlMode?: PnlMode;
 }
 
 export interface Permission {
