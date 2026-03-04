@@ -37,7 +37,7 @@ export function useWalletPnl(
   } = {}
 ) {
   return useQuery({
-    queryKey: persistentQuery([QUERY_KEY, params, source]),
+    queryKey: persistentQuery([QUERY_KEY, params, { source }]),
     queryFn: () => ZerionAPI.walletGetPnl(params, { source }),
     retry: 0, // if not 0, there are too many rerenders if the queryFn throws synchronously
     suspense,
