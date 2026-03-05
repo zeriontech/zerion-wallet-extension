@@ -1820,7 +1820,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('passwordChangeError');
   }
-  
+
   async reportLedgerError({
     context,
     params,
@@ -2614,6 +2614,7 @@ class PublicController {
         search: `?${searchParams}`,
         tabId: context.tabId || null,
         onResolve: (signature) => {
+          console.log({ signature });
           resolve(signature);
         },
         onDismiss: () => {
