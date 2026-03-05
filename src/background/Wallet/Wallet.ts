@@ -2614,7 +2614,6 @@ class PublicController {
         search: `?${searchParams}`,
         tabId: context.tabId || null,
         onResolve: (signature) => {
-          console.log({ signature });
           resolve(signature);
         },
         onDismiss: () => {
