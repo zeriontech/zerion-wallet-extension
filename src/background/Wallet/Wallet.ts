@@ -1820,7 +1820,7 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     emitter.emit('passwordChangeError');
   }
-  
+
   async reportLedgerError({
     context,
     params,

@@ -2,9 +2,11 @@ import { nanoid } from 'nanoid';
 import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
+import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { Button, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
@@ -19,6 +21,9 @@ import {
   deniedByUser,
   parseLedgerError,
 } from '@zeriontech/hardware-wallet-connection';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import { ToggleSettingLine } from 'src/ui/pages/Settings/ToggleSettingsLine';
+import { Frame } from 'src/ui/ui-kit/Frame/Frame';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -29,6 +34,8 @@ type Props = {
   buttonKind?: ButtonKind;
   ecosystem: BlockchainType;
   bluetoothSupportEnabled: boolean;
+  legacySigning: boolean;
+  onLegacySigningChange: (value: boolean) => void;
 };
 
 export interface SignMessageHandle {
@@ -47,6 +54,8 @@ export const HardwareSignMessage = React.forwardRef(
       buttonTitle,
       ecosystem,
       bluetoothSupportEnabled,
+      legacySigning,
+      onLegacySigningChange,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & Props,
     ref: React.Ref<SignMessageHandle>
@@ -55,6 +64,7 @@ export const HardwareSignMessage = React.forwardRef(
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+    const settingsDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
     const { mutateAsync: personalSign, ...personalSignMutation } = useMutation({
       mutationFn: async (message: string) => {
@@ -229,30 +239,69 @@ export const HardwareSignMessage = React.forwardRef(
             height={300}
           />
         </BottomSheetDialog>
-        {isLoading ? (
-          <Button
-            kind="loading-border"
-            disabled={true}
-            title="Follow instructions on your ledger device"
-          >
-            <TextPulse>Sign on Device</TextPulse>
-          </Button>
-        ) : (
-          <Button
-            kind={buttonKind}
-            disabled={isLoading || isSigning}
+        <BottomSheetDialog ref={settingsDialogRef} height="fit-content">
+          <VStack gap={16} style={{ textAlign: 'left' }}>
+            <Frame>
+              <ToggleSettingLine
+                checked={legacySigning}
+                onChange={(event) =>
+                  onLegacySigningChange(event.target.checked)
+                }
+                text="Legacy Signing"
+                detailText="Enable this only if you previously signed a message with Ledger on a dapp and now the signature produces different results. This may happen with dapps that derive secondary keys or addresses from your signature."
+              />
+            </Frame>
+            <Button
+              kind="primary"
+              onClick={() => settingsDialogRef.current?.close()}
+              style={{ width: '100%' }}
+            >
+              Done
+            </Button>
+          </VStack>
+        </BottomSheetDialog>
+        <div style={{ position: 'relative' }}>
+          <UnstyledButton
+            aria-label="Signing settings"
+            onClick={() => settingsDialogRef.current?.showModal()}
             style={{
-              paddingInline: 16, // fit longer button label
+              position: 'absolute',
+              right: 0,
+              bottom: '100%',
+              marginBottom: 14,
+              padding: 4,
+              color: 'var(--neutral-500)',
             }}
-            {...buttonProps}
           >
-            <HStack gap={8} alignItems="center" justifyContent="center">
-              <LedgerIcon />
-              {children ||
-                (isSigning ? 'Sending' : buttonTitle || 'Sign with Ledger')}
-            </HStack>
-          </Button>
-        )}
+            <SettingsIcon style={{ width: 20, height: 20 }} />
+          </UnstyledButton>
+          {isLoading ? (
+            <Button
+              kind="loading-border"
+              disabled={true}
+              title="Follow instructions on your ledger device"
+              style={{ width: '100%' }}
+            >
+              <TextPulse>Sign on Device</TextPulse>
+            </Button>
+          ) : (
+            <Button
+              kind={buttonKind}
+              disabled={isLoading || isSigning}
+              style={{
+                paddingInline: 16, // fit longer button label
+                width: '100%',
+              }}
+              {...buttonProps}
+            >
+              <HStack gap={8} alignItems="center" justifyContent="center">
+                <LedgerIcon />
+                {children ||
+                  (isSigning ? 'Sending' : buttonTitle || 'Sign with Ledger')}
+              </HStack>
+            </Button>
+          )}
+        </div>
       </>
     );
   }

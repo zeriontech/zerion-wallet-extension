@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import React, { useImperativeHandle, useRef } from 'react';
+import React, { useImperativeHandle, useRef, useState } from 'react';
+import { ethers } from 'ethers';
 import { invariant } from 'src/shared/invariant';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import type { MessageContextParams } from 'src/shared/types/SignatureContextParams';
@@ -17,6 +18,16 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
+
+/**
+ * Converts a signature to the legacy format where v is 0 or 1 instead of 27 or 28.
+ * The previous version of the extension used (v-27) as the last byte.
+ */
+function applyLegacySignature(signature: string): string {
+  const sig = ethers.Signature.from(signature);
+  const v = sig.v - 27;
+  return sig.r + sig.s.slice(2) + v.toString(16).padStart(2, '0');
+}
 
 type PersonalSignParams = MessageContextParams & {
   params: [string];
@@ -58,6 +69,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   ref: React.Ref<SignMsgBtnHandle>
 ) {
   const hardwareSignRef = useRef<SignMessageHandle | null>(null);
+  const [legacySigning, setLegacySigning] = useState(false);
 
   const personalSignMutation = useMutation({
     mutationFn: async (params: PersonalSignParams) => {
@@ -68,7 +80,10 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
           hardwareSignRef.current,
           'HardwareSignMessage must be mounted'
         );
-        const signature = await hardwareSignRef.current.personalSign(message);
+        let signature = await hardwareSignRef.current.personalSign(message);
+        if (legacySigning) {
+          signature = applyLegacySignature(signature);
+        }
         walletPort.request('registerPersonalSign', {
           message,
           address: wallet.address,
@@ -89,9 +104,12 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
           hardwareSignRef.current,
           'HardwareSignMessage must be mounted'
         );
-        const signature = await hardwareSignRef.current.signTypedData_v4(
+        let signature = await hardwareSignRef.current.signTypedData_v4(
           typedData
         );
+        if (legacySigning) {
+          signature = applyLegacySignature(signature);
+        }
         walletPort.request('registerTypedDataSign', {
           typedData,
           address: wallet.address,
@@ -157,6 +175,8 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
       onClick={onClick}
       disabled={disabled}
       bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
+      legacySigning={legacySigning}
+      onLegacySigningChange={setLegacySigning}
       {...buttonProps}
     />
   ) : (
