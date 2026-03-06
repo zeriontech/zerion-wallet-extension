@@ -125,10 +125,10 @@ export async function setupAccountPasskey(password: string) {
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
         challenge: getRandomUint8Array(32),
         // Use platform authenticator (Apple Keychain on macOS, Windows Hello on Windows, etc.)
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform' as AuthenticatorAttachment,
-          userVerification: 'required' as UserVerificationRequirement,
-        },
+        // authenticatorSelection: {
+        //   authenticatorAttachment: 'platform' as AuthenticatorAttachment,
+        //   userVerification: 'required' as UserVerificationRequirement,
+        // },
         extensions: {
           prf: {
             eval: {
@@ -139,6 +139,7 @@ export async function setupAccountPasskey(password: string) {
       },
     });
   } catch (error) {
+    console.log(error);
     // Handle user cancellation or other creation errors
     if (error instanceof Error) {
       if (
