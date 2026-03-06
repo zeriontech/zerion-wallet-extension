@@ -11,6 +11,8 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon/NetworkIcon';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { SwapFormState } from '../shared/SwapFormState';
 
 export function SuccessState({
@@ -20,19 +22,24 @@ export function SuccessState({
   hash,
   onDone,
   gasbackValue,
+  approveHash,
+  needsManualSign,
 }: {
   swapFormState: SwapFormState;
   inputPosition: BareAddressPosition;
   outputPosition: BareAddressPosition;
-  hash: string;
+  hash: string | null;
   gasbackValue: number | null;
   onDone: () => void;
+  approveHash?: string | null;
+  needsManualSign: boolean;
 }) {
   const { networks } = useNetworks();
   const { inputChain } = swapFormState;
   invariant(inputChain, 'Required Form values are missing');
 
   const actionStatus = useActionStatusByHash(hash);
+  const approveStatus = useActionStatusByHash(approveHash || null);
 
   const { data: loyaltyEnabled } = useRemoteConfigValue(
     'extension_loyalty_enabled'
@@ -52,34 +59,71 @@ export function SuccessState({
       <NavigationTitle urlBar="none" title="Swap Success" />
       <SuccessStateLoader
         startItem={
-          <SuccessStateToken
-            iconUrl={inputPosition.asset.icon_url}
-            symbol={inputPosition.asset.symbol}
-            chainName={chainName}
-            chainIconUrl={chainIconUrl}
-          />
+          approveHash || (needsManualSign && !hash) ? (
+            <div style={{ position: 'relative' }}>
+              <CircleSpinner size="72px" />
+              {chainName ? (
+                <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
+                  <NetworkIcon
+                    size={32}
+                    style={{
+                      borderRadius: 8,
+                      border: '2px solid var(--white)',
+                    }}
+                    name={chainName}
+                    src={chainIconUrl}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <SuccessStateToken
+              iconUrl={inputPosition.asset.icon_url}
+              symbol={inputPosition.asset.symbol}
+              chainName={chainName}
+              chainIconUrl={chainIconUrl}
+            />
+          )
         }
         endItem={
-          <SuccessStateToken
-            iconUrl={outputPosition.asset.icon_url}
-            symbol={outputPosition.asset.symbol}
-            chainName={chainName}
-            chainIconUrl={chainIconUrl}
-          />
+          approveHash || (needsManualSign && !hash) ? null : (
+            <SuccessStateToken
+              iconUrl={outputPosition.asset.icon_url}
+              symbol={outputPosition.asset.symbol}
+              chainName={chainName}
+              chainIconUrl={chainIconUrl}
+            />
+          )
         }
-        status={actionStatus}
-        pendingTitle="Swapping"
+        status={
+          approveHash
+            ? approveStatus === 'failed' || approveStatus === 'dropped'
+              ? approveStatus
+              : 'pending'
+            : actionStatus
+        }
+        pendingTitle={
+          approveHash
+            ? 'Approving'
+            : !hash && needsManualSign
+            ? 'Approved'
+            : 'Swapping'
+        }
         failedTitle="Swap failed"
         dropppedTitle="Swap cancelled"
         explorerUrl={
-          hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
+          hash
+            ? networks.getExplorerTxUrlByName(chain, hash)
+            : approveHash
+            ? networks.getExplorerTxUrlByName(chain, approveHash)
+            : undefined
         }
         confirmedContent={
           gasbackValue && FEATURE_GASBACK ? (
             <GasbackDecorated value={gasbackValue} />
           ) : null
         }
-        onDone={onDone}
+        onDone={hash ? onDone : undefined}
       />
     </>
   );

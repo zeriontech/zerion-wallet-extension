@@ -4,7 +4,6 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { SlidingRectangle } from 'src/ui/components/SlidingRectangle';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { noValueDash } from 'src/ui/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -133,11 +132,13 @@ export function BridgeLine({
                   <UIText kind="small/accent" color="var(--primary)">
                     {selectedQuote?.time
                       ? `~${formatSeconds(Number(selectedQuote.time))}`
-                      : noValueDash}
+                      : null}
                   </UIText>
-                  <UIText kind="small/accent" color="var(--primary)">
-                    ·
-                  </UIText>
+                  {selectedQuote?.time ? (
+                    <UIText kind="small/accent" color="var(--primary)">
+                      ·
+                    </UIText>
+                  ) : null}
                   {feeAsset && feeAmount?.usdValue ? (
                     <HStack gap={4} alignItems="center">
                       <UIText kind="small/accent" color="var(--primary)">

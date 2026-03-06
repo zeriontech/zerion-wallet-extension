@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   interpretSignature,
-  interpretTransaction,
+  interpretTransactions,
 } from 'src/ui/shared/requests/interpret';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { invariant } from 'src/shared/invariant';
@@ -25,14 +25,14 @@ import { walletPort } from '../channels';
  */
 export async function interpretTxBasedOnEligibility({
   address,
-  transaction,
+  transactions,
   eligibilityQueryData,
   eligibilityQueryStatus,
   currency,
   origin,
 }: {
   address: string;
-  transaction: MultichainTransaction;
+  transactions: MultichainTransaction[];
   eligibilityQueryData: boolean | undefined;
   eligibilityQueryStatus: 'error' | 'success' | 'loading';
   currency: string;
@@ -42,17 +42,17 @@ export async function interpretTxBasedOnEligibility({
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const networksStore = await getNetworksStore();
   let network: NetworkConfig | null = null;
-  if (transaction.evm) {
+  if (transactions[0].evm) {
     const networks = await networksStore.loadNetworksByChainId(
-      normalizeChainId(transaction.evm.chainId)
+      normalizeChainId(transactions[0].evm.chainId)
     );
     const chain = networks.getChainById(
-      normalizeChainId(transaction.evm.chainId)
+      normalizeChainId(transactions[0].evm.chainId)
     );
     network = chain ? networks?.getNetworkByName(chain) || null : null;
-    invariant(network, `Unidentified network: ${transaction.evm.chainId}`);
+    invariant(network, `Unidentified network: ${transactions[0].evm.chainId}`);
   }
-  if (transaction.solana) {
+  if (transactions[0].solana) {
     network = await networksStore.fetchNetworkById(NetworkId.Solana);
   }
   invariant(network, 'Network must be defined for transaction interpretation');
@@ -65,11 +65,11 @@ export async function interpretTxBasedOnEligibility({
     eligibilityQueryStatus === 'error';
 
   if (shouldDoRegularInterpret) {
-    return interpretTransaction(
+    return interpretTransactions(
       {
         address,
         chain: network.id,
-        transaction,
+        transactions,
         origin,
         currency,
       },
@@ -77,10 +77,10 @@ export async function interpretTxBasedOnEligibility({
     );
   } else if (network.supports_sponsored_transactions && eligibilityQueryData) {
     invariant(
-      transaction.evm,
+      transactions[0].evm,
       'Only EVM transactions are supported for paymaster'
     );
-    const toSign = await fetchAndAssignPaymaster(transaction.evm, {
+    const toSign = await fetchAndAssignPaymaster(transactions[0].evm, {
       source,
       apiClient: ZerionAPI,
     });
@@ -104,12 +104,12 @@ export async function interpretTxBasedOnEligibility({
 
 export function useInterpretTxBasedOnEligibility({
   address,
-  transaction,
+  transactions,
   eligibilityQuery,
   origin,
 }: {
   address: string;
-  transaction: MultichainTransaction;
+  transactions: MultichainTransaction[];
   eligibilityQuery: EligibilityQuery;
   origin: string;
 }) {
@@ -129,7 +129,7 @@ export function useInterpretTxBasedOnEligibility({
       'interpretSignature',
       address,
       currency,
-      transaction,
+      transactions,
       source,
       origin,
       eligibilityQuery.data?.data.eligible,
@@ -138,7 +138,7 @@ export function useInterpretTxBasedOnEligibility({
     queryFn: () => {
       return interpretTxBasedOnEligibility({
         address,
-        transaction: transaction,
+        transactions,
         eligibilityQueryData: eligibilityQuery.data?.data.eligible,
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,

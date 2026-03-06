@@ -1,6 +1,7 @@
 import { useStore } from '@store-unit/react';
 import { useEffect, useState } from 'react';
 import { Store } from 'store-unit';
+import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { localTransactionsStore } from './transactions-store';
 
 const latestTxTimeStore = new Store(0);
@@ -18,7 +19,7 @@ localTransactionsStore.on('change', (state) => {
 });
 
 const TWO_MINUTES = 1000 * 60 * 2;
-const URGENT_REFETCH_INTERVAl = 4000; // 4 seconds
+const URGENT_REFETCH_INTERVAl = 1000; // 4 seconds
 
 function useNow(enabled: boolean) {
   const [now, setNow] = useState(() => Date.now());
@@ -46,6 +47,8 @@ let handledTimestamp: number | null = null;
  */
 export function usePositionsRefetchInterval(fallback: number | false) {
   const latest = useStore(latestTxTimeStore);
+  const { data } = useRemoteConfigValue('swap_form_balance_pulling_params');
+  const interval = data?.interval_ms ?? URGENT_REFETCH_INTERVAl;
   const nowEnabled = Boolean(latest && latest !== handledTimestamp);
   const now = useNow(nowEnabled);
   if (!latest) {
@@ -53,7 +56,7 @@ export function usePositionsRefetchInterval(fallback: number | false) {
   }
 
   if (now - latest < TWO_MINUTES) {
-    return URGENT_REFETCH_INTERVAl;
+    return interval;
   } else {
     handledTimestamp = latest;
     return fallback;

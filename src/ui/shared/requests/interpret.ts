@@ -9,77 +9,83 @@ import type { TransactionEVM } from 'src/shared/types/Quote';
 import type { TypedData } from '../../../modules/ethereum/message-signing/TypedData';
 import { getGas } from '../../../modules/ethereum/transactions/getGas';
 
-export function interpretTransaction(
+export function interpretTransactions(
   {
     address,
     chain,
-    transaction,
+    transactions,
     origin,
     currency,
   }: {
     address: string;
     chain: string;
-    transaction: MultichainTransaction;
+    transactions: MultichainTransaction[];
     origin: string;
     currency: string;
   },
   { source }: BackendSourceParams
 ): Promise<InterpretResponse | null> {
   let normalizedEvmTx: TransactionEVM | undefined = undefined;
-  if (transaction.evm) {
-    invariant(
-      transaction.evm.nonce,
-      'EVM transaction nonce is required for simulation'
-    );
-    invariant(
-      transaction.evm.from,
-      'EVM transaction from is required for simulation'
-    );
-    invariant(
-      transaction.evm.to,
-      'EVM transaction to is required for simulation'
-    );
-    const gas = getGas(transaction.evm);
-    invariant(gas, 'EVM transaction gas is required for simulation');
-    normalizedEvmTx = {
-      ...transaction.evm,
-      from: transaction.evm.from,
-      to: transaction.evm.to,
-      gas: valueToHex(gas),
-      gasPrice:
-        transaction.evm.gasPrice != null
-          ? valueToHex(transaction.evm.gasPrice)
-          : null,
-      chainId: valueToHex(transaction.evm.chainId),
-      type:
-        transaction.evm.type != null ? valueToHex(transaction.evm.type) : '0x2',
-      nonce: valueToHex(transaction.evm.nonce),
-      maxFee:
-        transaction.evm.maxFeePerGas != null
-          ? valueToHex(transaction.evm.maxFeePerGas)
-          : null,
-      maxPriorityFee:
-        transaction.evm.maxPriorityFeePerGas != null
-          ? valueToHex(transaction.evm.maxPriorityFeePerGas)
-          : null,
-      value:
-        transaction.evm.value != null
-          ? valueToHex(transaction.evm.value)
-          : '0x0',
-      data: transaction.evm.data != null ? transaction.evm.data : '0x',
-      customData: transaction.evm.customData || null,
-    };
-  }
-  return ZerionAPI.walletSimulateTransaction(
+  const normalizedTxs = transactions.map((transaction) => {
+    if (transaction.evm) {
+      invariant(
+        transaction.evm.nonce,
+        'EVM transaction nonce is required for simulation'
+      );
+      invariant(
+        transaction.evm.from,
+        'EVM transaction from is required for simulation'
+      );
+      invariant(
+        transaction.evm.to,
+        'EVM transaction to is required for simulation'
+      );
+      const gas = getGas(transaction.evm);
+      invariant(gas, 'EVM transaction gas is required for simulation');
+      normalizedEvmTx = {
+        ...transaction.evm,
+        from: transaction.evm.from,
+        to: transaction.evm.to,
+        gas: valueToHex(gas),
+        gasPrice:
+          transaction.evm.gasPrice != null
+            ? valueToHex(transaction.evm.gasPrice)
+            : null,
+        chainId: valueToHex(transaction.evm.chainId),
+        type:
+          transaction.evm.type != null
+            ? valueToHex(transaction.evm.type)
+            : transaction.evm.maxFeePerGas ||
+              transaction.evm.maxPriorityFeePerGas
+            ? '0x2'
+            : '0x1',
+        nonce: valueToHex(transaction.evm.nonce),
+        maxFee:
+          transaction.evm.maxFeePerGas != null
+            ? valueToHex(transaction.evm.maxFeePerGas)
+            : null,
+        maxPriorityFee:
+          transaction.evm.maxPriorityFeePerGas != null
+            ? valueToHex(transaction.evm.maxPriorityFeePerGas)
+            : null,
+        value:
+          transaction.evm.value != null
+            ? valueToHex(transaction.evm.value)
+            : '0x0',
+        data: transaction.evm.data != null ? transaction.evm.data : '0x',
+        customData: transaction.evm.customData || null,
+      };
+      return { evm: normalizedEvmTx };
+    }
+    return { solana: transaction.solana };
+  });
+  return ZerionAPI.walletSimulateTransactions(
     {
       address,
       chain,
       currency,
       domain: origin,
-      transaction: {
-        evm: normalizedEvmTx,
-        solana: transaction.solana,
-      },
+      transactions: normalizedTxs,
     },
     { source }
   );

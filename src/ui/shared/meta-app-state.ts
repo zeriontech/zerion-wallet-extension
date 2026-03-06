@@ -1,6 +1,7 @@
 import { Store } from 'store-unit';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { isReadonlyContainer } from 'src/shared/types/validators';
 
 const testAddress = process.env.TEST_WALLET_ADDRESS as string;
 
@@ -26,11 +27,12 @@ export function checkForTestAddress(groups: WalletGroup[] | null) {
   }
   if (
     testAddress &&
-    groups?.some((group) =>
-      group.walletContainer.wallets.some(
-        (wallet) =>
-          normalizeAddress(wallet.address) === normalizeAddress(testAddress)
-      )
+    groups?.some(
+      (group) =>
+        group.walletContainer.wallets.some(
+          (wallet) =>
+            normalizeAddress(wallet.address) === normalizeAddress(testAddress)
+        ) && !isReadonlyContainer(group.walletContainer)
     )
   ) {
     metaAppState.updateState({ hasTestWallet: true });

@@ -20,6 +20,7 @@ import ArrowRight from 'jsx:src/ui/assets/caret-right.svg';
 import SuccessIcon from 'jsx:./success.svg';
 import ErrorIcon from 'jsx:./error.svg';
 import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import * as styles from './SuccessStateLoader.module.css';
 
 const x_break = 0.08;
@@ -108,7 +109,7 @@ function AnimatedIcons({
             ...startItemStyle,
             position: 'absolute',
             inset: '0 0 0 0',
-            zIndex: playExitAnimation ? 1 : 0,
+            zIndex: playExitAnimation ? 0 : 1,
           }}
         >
           {startItem}
@@ -118,7 +119,7 @@ function AnimatedIcons({
             ...endItemStyle,
             position: 'absolute',
             inset: '0 0 0 0',
-            zIndex: playExitAnimation ? 0 : 1,
+            zIndex: playExitAnimation ? 1 : 0,
           }}
         >
           {endItem}
@@ -195,7 +196,9 @@ export function SuccessStateLoader({
   confirmedContent?: React.ReactNode;
   onDone?: () => void;
 }) {
-  const showLongWaitNotice = useRenderDelay(5000);
+  const longWaitNotice = useRenderDelay(endItem ? 10000 : 10000000000);
+  const showLongWaitNotice = Boolean(endItem && longWaitNotice);
+  const canBeClosed = Boolean(onDone);
 
   const backgroundColor =
     status === 'confirmed'
@@ -227,11 +230,15 @@ export function SuccessStateLoader({
           gap={32}
           style={{ justifyItems: 'center', justifySelf: 'center' }}
         >
-          <AnimatedIcons
-            startItem={startItem}
-            endItem={endItem}
-            status={status}
-          />
+          {endItem ? (
+            <AnimatedIcons
+              startItem={startItem}
+              endItem={endItem}
+              status={status}
+            />
+          ) : (
+            startItem
+          )}
           <VStack gap={16} style={{ justifyItems: 'center' }}>
             <VStack gap={8} style={{ justifyItems: 'center' }}>
               <UIText kind="headline/hero" style={{ position: 'relative' }}>
@@ -307,10 +314,29 @@ export function SuccessStateLoader({
                 View in Explorer
               </TextAnchor>
             </UIText>
-          ) : null}
+          ) : (
+            <UIText kind="caption/accent">{NBSP}</UIText>
+          )}
         </VStack>
-        <Button kind="regular" style={{ width: '100%' }} onClick={onDone}>
-          Done
+        <Button
+          disabled={!canBeClosed}
+          kind="regular"
+          style={{ width: '100%' }}
+          onClick={onDone}
+        >
+          {canBeClosed ? (
+            <span>Done</span>
+          ) : (
+            <HStack
+              gap={8}
+              alignItems="center"
+              justifyContent="center"
+              style={{ color: 'var(--neutral-600)' }}
+            >
+              <span>Loading</span>
+              <CircleSpinner color="var(--neutral-600)" />
+            </HStack>
+          )}
         </Button>
         <Spacer height={24} />
       </VStack>
