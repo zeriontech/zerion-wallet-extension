@@ -39,7 +39,7 @@ export function SendTransactionConfirmation({
       title="Send"
       wallet={wallet}
       chain={chain}
-      transaction={transaction}
+      transactions={[transaction]}
       configuration={toConfiguration(formState)}
       paymasterEligible={paymasterEligible}
       paymasterPossible={paymasterPossible}
@@ -53,6 +53,7 @@ export function SendTransactionConfirmation({
         },
       }}
       onGasbackReady={onGasbackReady}
+      fallbackAddressAction={null}
     />
   );
 }

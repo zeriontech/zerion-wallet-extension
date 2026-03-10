@@ -41,7 +41,10 @@ import { walletPort } from 'src/ui/shared/channels';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { useTransactionStatus } from 'src/ui/transactions/useLocalTransactionStatus';
+import {
+  useTransactionStatus,
+  waitForTransactionResolve,
+} from 'src/ui/transactions/useLocalTransactionStatus';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -74,7 +77,8 @@ import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/r
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { useQuotes2 } from 'src/ui/shared/requests/useQuotes';
+import { useQuotes2, useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
+import { useApproveAndTradeInOneAction } from 'src/modules/statsig/statsig.client';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import { getDefaultChain } from 'src/ui/shared/forms/trading/getDefaultChain';
@@ -101,6 +105,8 @@ import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-a
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { isTruthy } from 'is-truthy-ts';
+import { isDeviceAccount } from 'src/shared/types/validators';
 import { NetworkSelect } from '../Networks/NetworkSelect';
 import { TransactionConfiguration } from '../SendTransaction/TransactionConfiguration';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -448,17 +454,28 @@ function SwapFormComponent() {
   const inputChainAddressMismatch = network && !inputChainAddressMatch;
 
   const { pathname } = useLocation();
-  const quotesData = useQuotes2({
+  const approveAndTradeInOneAction = useApproveAndTradeInOneAction();
+  const quotesBaseEnabled =
+    defaultStateQuery.isFetched &&
+    !defaultStateQuery.isPreviousData &&
+    inputChainAddressMatch;
+  const quotesDataV1 = useQuotes2({
     address: singleAddressNormalized,
     currency,
     formState,
-    enabled:
-      defaultStateQuery.isFetched &&
-      !defaultStateQuery.isPreviousData &&
-      inputChainAddressMatch,
+    enabled: !approveAndTradeInOneAction && quotesBaseEnabled,
     context: 'Swap',
     pathname,
   });
+  const quotesDataV2 = useQuotesV2({
+    address: singleAddressNormalized,
+    currency,
+    formState,
+    enabled: approveAndTradeInOneAction && quotesBaseEnabled,
+    context: 'Swap',
+    pathname,
+  });
+  const quotesData = approveAndTradeInOneAction ? quotesDataV2 : quotesDataV1;
   const { refetch: refetchQuotes } = quotesData;
 
   const [userQuoteId, setUserQuoteId] = useState<string | null>(null);
@@ -516,15 +533,29 @@ function SwapFormComponent() {
     supportsSponsoredTransactions: network?.supports_sponsored_transactions,
   });
 
-  const currentTransaction =
-    selectedQuote?.transactionApprove || selectedQuote?.transactionSwap || null;
+  const currentTransaction = approveAndTradeInOneAction
+    ? selectedQuote?.transactionSwap || null
+    : selectedQuote?.transactionApprove ||
+      selectedQuote?.transactionSwap ||
+      null;
 
   const [selectedForSignQuote, setSelectedForSignQuote] =
     useState<Quote2 | null>(null);
-  const selectedForSignTransaction =
-    selectedForSignQuote?.transactionApprove ||
-    selectedForSignQuote?.transactionSwap ||
-    null;
+  const selectedForSignTransaction = approveAndTradeInOneAction
+    ? selectedForSignQuote?.transactionSwap || null
+    : selectedForSignQuote?.transactionApprove ||
+      selectedForSignQuote?.transactionSwap ||
+      null;
+
+  const selectedForSimulationsTransactions = approveAndTradeInOneAction
+    ? [
+        selectedForSignQuote?.transactionApprove,
+        selectedForSignQuote?.transactionSwap,
+      ].filter(isTruthy)
+    : [
+        selectedForSignQuote?.transactionApprove ||
+          selectedForSignQuote?.transactionSwap,
+      ].filter(isTruthy);
 
   const [allowanceBase, setAllowanceBase] = useState<string | null>(null);
 
@@ -535,6 +566,84 @@ function SwapFormComponent() {
     { source: useHttpClientSource() },
     { enabled: Boolean(inputPosition?.asset.id) }
   );
+
+  const fallbackAddressAction = useMemo(() => {
+    if (
+      !inputPosition ||
+      !formState.inputAmount ||
+      !outputPosition ||
+      !network
+    ) {
+      return null;
+    }
+    if (selectedForSignQuote?.transactionSwap) {
+      return createTradeAddressAction({
+        hash: null,
+        address,
+        explorerUrl: null,
+        network,
+        rate: selectedForSignQuote.rate,
+        spendAsset: inputPosition.asset,
+        receiveAsset: outputPosition.asset,
+        spendAmount: {
+          currency,
+          quantity: formState.inputAmount,
+          value: inputPosition.asset.price?.value
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(inputPosition.asset.price.value)
+                .toNumber()
+            : null,
+          usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta.price
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(
+                  inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                )
+                .toNumber()
+            : null,
+        },
+        receiveAmount: selectedForSignQuote.outputAmount,
+        transaction: toMultichainTransaction(
+          selectedForSignQuote.transactionSwap
+        ),
+      });
+    } else if (selectedForSignQuote?.transactionApprove?.evm) {
+      return createApproveAddressAction({
+        transaction: toIncomingTransaction(
+          selectedForSignQuote.transactionApprove.evm
+        ),
+        hash: null,
+        explorerUrl: null,
+        amount: {
+          currency,
+          quantity: formState.inputAmount,
+          value: inputPosition.asset.price?.value
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(inputPosition.asset.price.value)
+                .toNumber()
+            : null,
+          usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta.price
+            ? new BigNumber(formState.inputAmount)
+                .multipliedBy(
+                  inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                )
+                .toNumber()
+            : null,
+        },
+        asset: inputPosition.asset,
+        network,
+      });
+    }
+    return null;
+  }, [
+    inputPosition,
+    formState.inputAmount,
+    outputPosition,
+    network,
+    selectedForSignQuote,
+    inputFungibleUsdInfoForAnalytics,
+    address,
+    currency,
+  ]);
 
   const {
     mutate: sendApproveTransaction,
@@ -618,12 +727,14 @@ function SwapFormComponent() {
     }
   }, [resetApproveMutation, approveTxStatus, refetchQuotes]);
 
-  const isApproveMode =
-    approveMutation.isLoading ||
-    Boolean(selectedQuote?.transactionApprove) ||
-    approveTxStatus === 'pending';
-  const showApproveHintLine =
-    Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
+  const isApproveMode = approveAndTradeInOneAction
+    ? false
+    : approveMutation.isLoading ||
+      Boolean(selectedQuote?.transactionApprove) ||
+      approveTxStatus === 'pending';
+  const showApproveHintLine = approveAndTradeInOneAction
+    ? false
+    : Boolean(selectedQuote?.transactionApprove) || !approveMutation.isIdle;
 
   const snapshotRef = useRef<{ state: SwapFormState } | null>(null);
   const onBeforeSubmit = () => {
@@ -699,7 +810,7 @@ function SwapFormComponent() {
       : null;
   }, [priceImpact, selectedQuote]);
 
-  const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
+  const { mutate: sendTransaction, ...sendMutation } = useMutation({
     mutationFn: async (
       interpretationAction: AddressAction | null
     ): Promise<SignTransactionResult> => {
@@ -772,6 +883,153 @@ function SwapFormComponent() {
     },
   });
 
+  const [showSuccessState, setShowSuccessState] = useState(false);
+  const [approveHash, setApproveHash] = useState<string | null>(null);
+
+  const { mutate: approveAndSendTransaction, ...approveAndSendMutation } =
+    useMutation({
+      mutationFn: async (
+        interpretationAction: AddressAction | null
+      ): Promise<SignTransactionResult> => {
+        let approveHash = null;
+        if (selectedForSignQuote?.transactionApprove) {
+          invariant(network, 'Network must be defined to sign the tx');
+          invariant(spendChain, 'Chain must be defined to sign the tx');
+          invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
+          invariant(inputPosition, 'Spend position must be defined');
+          invariant(formState.inputAmount, 'inputAmount must be set');
+          invariant(
+            selectedForSignQuote.transactionApprove.evm,
+            'EVM transaction must be defined for approval'
+          );
+
+          const fallbackAddressAction = createApproveAddressAction({
+            transaction: toIncomingTransaction(
+              selectedForSignQuote.transactionApprove.evm
+            ),
+            hash: null,
+            explorerUrl: null,
+            amount: {
+              currency,
+              quantity: formState.inputAmount,
+              value: inputPosition.asset.price?.value
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(inputPosition.asset.price.value)
+                    .toNumber()
+                : null,
+              usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta
+                .price
+                ? new BigNumber(formState.inputAmount)
+                    .multipliedBy(
+                      inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                    )
+                    .toNumber()
+                : null,
+            },
+            asset: inputPosition.asset,
+            network,
+          });
+
+          const txResponse = await sendTxBtnRef.current.sendTransaction({
+            transaction: {
+              evm: toIncomingTransaction(
+                selectedForSignQuote.transactionApprove.evm
+              ),
+            },
+            chain: spendChain.toString(),
+            initiator: INTERNAL_ORIGIN,
+            clientScope: 'Swap',
+            feeValueCommon:
+              selectedForSignQuote.networkFee?.amount?.quantity || '0',
+            addressAction: fallbackAddressAction,
+          });
+          invariant(txResponse.evm?.hash);
+          approveHash = txResponse.evm.hash;
+        }
+
+        setApproveHash(approveHash);
+        setShowSuccessState(Boolean(approveHash));
+        if (approveHash) {
+          const approveStatus = await waitForTransactionResolve(approveHash);
+          if (approveStatus !== 'confirmed') {
+            throw new Error(
+              `Approval transaction failed with status: ${approveStatus}`
+            );
+          }
+        }
+
+        setApproveHash(null);
+        invariant(
+          selectedForSignQuote?.transactionSwap,
+          'Cannot submit transaction without a quote'
+        );
+        invariant(spendChain, 'Chain must be defined to sign the tx');
+        invariant(network, 'Network must be defined to sign the tx');
+        invariant(formState.inputAmount, 'inputAmount must be set');
+        invariant(
+          inputPosition && outputPosition,
+          'Trade positions must be defined'
+        );
+        invariant(sendTxBtnRef.current, 'SignTransactionButton not found');
+        const fallbackAddressAction = createTradeAddressAction({
+          hash: null,
+          address,
+          explorerUrl: null,
+          network,
+          rate: selectedForSignQuote.rate,
+          spendAsset: inputPosition.asset,
+          receiveAsset: outputPosition.asset,
+          spendAmount: {
+            currency,
+            quantity: formState.inputAmount,
+            value: inputPosition.asset.price?.value
+              ? new BigNumber(formState.inputAmount)
+                  .multipliedBy(inputPosition.asset.price.value)
+                  .toNumber()
+              : null,
+            usdValue: inputFungibleUsdInfoForAnalytics?.data?.fungible.meta
+              .price
+              ? new BigNumber(formState.inputAmount)
+                  .multipliedBy(
+                    inputFungibleUsdInfoForAnalytics.data.fungible.meta.price
+                  )
+                  .toNumber()
+              : null,
+          },
+          receiveAmount: selectedForSignQuote.outputAmount,
+          transaction: toMultichainTransaction(
+            selectedForSignQuote.transactionSwap
+          ),
+        });
+
+        const txResponse = await sendTxBtnRef.current.sendTransaction({
+          transaction: toMultichainTransaction(
+            selectedForSignQuote.transactionSwap
+          ),
+          chain: spendChain.toString(),
+          initiator: INTERNAL_ORIGIN,
+          clientScope: 'Swap',
+          feeValueCommon:
+            selectedForSignQuote.networkFee?.amount?.quantity || '0',
+          addressAction: interpretationAction ?? fallbackAddressAction,
+          quote: selectedForSignQuote,
+          outputChain: inputChain ?? null,
+          warningWasShown: Boolean(showPriceImpactCallout),
+          outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+        });
+        setShowSuccessState(true);
+        return txResponse;
+      },
+      onMutate: () => {
+        onBeforeSubmit();
+        return 'approveAndSendTransaction';
+      },
+      onError: () => {
+        setShowSuccessState(false);
+        setApproveHash(null);
+      },
+    });
+
   const gasbackValueRef = useRef<number | null>(null);
   const handleGasbackReady = useCallback((value: number) => {
     gasbackValueRef.current = value;
@@ -780,10 +1038,20 @@ function SwapFormComponent() {
   const navigate = useNavigate();
   const { isUK } = useUKDetection();
 
-  if (sendTransactionMutation.isSuccess) {
-    const result = sendTransactionMutation.data;
+  // Show success state for swap (either direct or after approve)
+  if (
+    sendMutation.isSuccess ||
+    (approveAndTradeInOneAction && showSuccessState)
+  ) {
+    const result = !approveAndTradeInOneAction
+      ? sendMutation.isSuccess
+        ? sendMutation.data
+        : null
+      : approveAndSendMutation.isSuccess
+      ? approveAndSendMutation.data
+      : null;
     invariant(
-      inputPosition && outputPosition && result,
+      inputPosition && outputPosition,
       'Missing Form State View values'
     );
     invariant(
@@ -791,19 +1059,42 @@ function SwapFormComponent() {
       'State snapshot must be taken before submit'
     );
     return (
-      <SuccessState
-        hash={result.evm?.hash ?? ensureSolanaResult(result).signature}
-        inputPosition={inputPosition}
-        outputPosition={outputPosition}
-        swapFormState={snapshotRef.current.state}
-        gasbackValue={gasbackValueRef.current}
-        onDone={() => {
-          sendTransactionMutation.reset();
-          snapshotRef.current = null;
-          gasbackValueRef.current = null;
-          navigate('/overview/history');
-        }}
-      />
+      <>
+        <SuccessState
+          hash={
+            result
+              ? result.evm?.hash ?? ensureSolanaResult(result).signature
+              : null
+          }
+          inputPosition={inputPosition}
+          outputPosition={outputPosition}
+          swapFormState={snapshotRef.current.state}
+          gasbackValue={gasbackValueRef.current}
+          approveHash={approveHash}
+          onDone={() => {
+            sendMutation.reset();
+            approveAndSendMutation.reset();
+            setShowSuccessState(false);
+            setApproveHash(null);
+            snapshotRef.current = null;
+            gasbackValueRef.current = null;
+            navigate('/overview/history');
+          }}
+          needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
+        />
+        {wallet && globalPreferences && approveAndTradeInOneAction ? (
+          <div style={{ position: 'absolute', top: '100%' }}>
+            <SignTransactionButton
+              ref={sendTxBtnRef}
+              wallet={wallet}
+              holdToSign={false}
+              bluetoothSupportEnabled={
+                globalPreferences.bluetoothSupportEnabled
+              }
+            />
+          </div>
+        ) : null}
+      </>
     );
   }
 
@@ -880,7 +1171,13 @@ function SwapFormComponent() {
       />
       <BottomSheetDialog
         ref={confirmDialogRef}
-        key={selectedForSignQuote?.transactionApprove ? 'approve' : 'swap'}
+        key={
+          approveAndTradeInOneAction
+            ? 'key'
+            : selectedForSignQuote?.transactionApprove
+            ? 'approve'
+            : 'swap'
+        }
         height="min-content"
         displayGrid={true}
         style={{ minHeight: innerHeight >= 750 ? '70vh' : '90vh' }}
@@ -897,12 +1194,16 @@ function SwapFormComponent() {
             <ViewLoadingSuspense>
               <TransactionConfirmationView
                 title={
-                  selectedForSignQuote?.transactionApprove ? 'Approve' : 'Trade'
+                  approveAndTradeInOneAction
+                    ? 'Trade'
+                    : selectedForSignQuote?.transactionApprove
+                    ? 'Approve'
+                    : 'Trade'
                 }
                 wallet={wallet}
                 chain={spendChain}
-                transaction={toMultichainTransaction(
-                  selectedForSignTransaction
+                transactions={selectedForSimulationsTransactions.map(
+                  toMultichainTransaction
                 )}
                 configuration={toConfiguration(formState)}
                 customAllowanceValueBase={allowanceBase || undefined}
@@ -930,6 +1231,7 @@ function SwapFormComponent() {
                   },
                 }}
                 onGasbackReady={handleGasbackReady}
+                fallbackAddressAction={fallbackAddressAction}
               />
             </ViewLoadingSuspense>
           );
@@ -1023,8 +1325,9 @@ function SwapFormComponent() {
                     rawInterpretationAction !== 'confirm'
                       ? (JSON.parse(rawInterpretationAction) as AddressAction)
                       : null;
-
-                  if (submitType === 'approve') {
+                  if (approveAndTradeInOneAction) {
+                    approveAndSendTransaction(interpretationAction);
+                  } else if (submitType === 'approve') {
                     sendApproveTransaction(interpretationAction);
                   } else if (submitType === 'swap') {
                     sendTransaction(interpretationAction);
@@ -1122,37 +1425,40 @@ function SwapFormComponent() {
               outputAmount={selectedQuote?.outputAmount.quantity ?? null}
             />
           ) : null}
-          {isEthereumAddress(address) &&
-          currentTransaction?.evm &&
-          spendChain ? (
-            <React.Suspense
-              fallback={
-                <div style={{ display: 'flex', justifyContent: 'end' }}>
-                  <CircleSpinner />
-                </div>
-              }
-            >
-              <TransactionConfiguration
-                keepPreviousData={true}
-                transaction={toIncomingTransaction(currentTransaction.evm)}
-                from={address}
-                chain={spendChain}
-                paymasterEligible={Boolean(
-                  currentTransaction.evm.customData?.paymasterParams
-                )}
-                paymasterPossible={Boolean(
-                  network?.supports_sponsored_transactions
-                )}
-                paymasterWaiting={false}
-                onFeeValueCommonReady={null}
-                configuration={toConfiguration(formState)}
-                onConfigurationChange={(value) => {
-                  const partial = fromConfiguration(value);
-                  setUserFormState((state) => ({ ...state, ...partial }));
-                }}
-                gasback={gasbackEstimation}
-              />
-            </React.Suspense>
+          {isEthereumAddress(address) && spendChain ? (
+            currentTransaction?.evm ? (
+              <React.Suspense
+                fallback={
+                  <div style={{ display: 'flex', justifyContent: 'end' }}>
+                    <CircleSpinner />
+                  </div>
+                }
+              >
+                <TransactionConfiguration
+                  keepPreviousData={true}
+                  transaction={toIncomingTransaction(currentTransaction.evm)}
+                  from={address}
+                  chain={spendChain}
+                  paymasterEligible={Boolean(
+                    currentTransaction.evm.customData?.paymasterParams
+                  )}
+                  paymasterPossible={Boolean(
+                    network?.supports_sponsored_transactions
+                  )}
+                  paymasterWaiting={false}
+                  onFeeValueCommonReady={null}
+                  configuration={toConfiguration(formState)}
+                  onConfigurationChange={(value) => {
+                    const partial = fromConfiguration(value);
+                    setUserFormState((state) => ({ ...state, ...partial }));
+                  }}
+                  gasback={gasbackEstimation}
+                  interactiveNetworkFee={!approveAndTradeInOneAction}
+                  networkFee={selectedQuote?.networkFee || null}
+                  networkFeeIsLoading={quotesData.isPreviousData}
+                />
+              </React.Suspense>
+            ) : null
           ) : null}
 
           {isSolanaAddress(address) && selectedQuote?.networkFee ? (
@@ -1277,12 +1583,16 @@ function SwapFormComponent() {
               gap={8}
               style={{ marginTop: 'auto', textAlign: 'center', paddingTop: 12 }}
             >
-              {sendTransactionMutation.isError ? (
+              {sendMutation.isError ? (
                 <ErrorMessage
-                  error={getError(sendTransactionMutation.error)}
-                  hardwareError={getHardwareError(
-                    sendTransactionMutation.error
-                  )}
+                  error={getError(sendMutation.error)}
+                  hardwareError={getHardwareError(sendMutation.error)}
+                />
+              ) : null}
+              {approveAndSendMutation.isError ? (
+                <ErrorMessage
+                  error={getError(approveAndSendMutation.error)}
+                  hardwareError={getHardwareError(approveAndSendMutation.error)}
                 />
               ) : null}
               {wallet && globalPreferences ? (
@@ -1299,7 +1609,8 @@ function SwapFormComponent() {
                       wallet={wallet}
                       style={{ marginTop: 'auto' }}
                       disabled={
-                        sendTransactionMutation.isLoading ||
+                        sendMutation.isLoading ||
+                        approveAndSendMutation.isLoading ||
                         showQuotesLoadingState ||
                         Boolean(
                           (selectedQuote && !selectedQuote.transactionSwap) ||
@@ -1322,7 +1633,8 @@ function SwapFormComponent() {
                         {hint ||
                           (showQuotesLoadingState
                             ? 'Fetching offers'
-                            : sendTransactionMutation.isLoading
+                            : sendMutation.isLoading ||
+                              approveAndSendMutation.isLoading
                             ? 'Sending...'
                             : 'Swap')}
                       </span>

@@ -266,6 +266,9 @@ export function TransactionConfiguration({
   gasback: gasbackData,
   listViewTransitions = false,
   interpretation,
+  interactiveNetworkFee,
+  networkFee,
+  networkFeeIsLoading,
 }: {
   transaction: IncomingTransaction;
   from: string;
@@ -281,6 +284,9 @@ export function TransactionConfiguration({
   /** Hacky, experimental and only needed on SendTransaction View because list is stuck to the bottom */
   listViewTransitions?: boolean;
   interpretation?: InterpretResponse | null;
+  interactiveNetworkFee: boolean;
+  networkFee?: NetworkFeeType | null;
+  networkFeeIsLoading?: boolean;
 }) {
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
@@ -350,17 +356,24 @@ export function TransactionConfiguration({
             ['viewTransitionName' as string]: `network-fee-default-line-${id}`,
           }}
         >
-          <NetworkFeeLine
-            configuration={configuration}
-            onConfigurationChange={onConfigurationChange}
-            transaction={transactionWithFrom}
-            chain={chain}
-            keepPreviousData={keepPreviousData}
-            onFeeValueCommonReady={onFeeValueCommonReady}
-            paymasterPossible={paymasterPossible}
-            paymasterEligible={paymasterEligible}
-            interpretation={interpretation}
-          />
+          {interactiveNetworkFee ? (
+            <NetworkFeeLine
+              configuration={configuration}
+              onConfigurationChange={onConfigurationChange}
+              transaction={transactionWithFrom}
+              chain={chain}
+              keepPreviousData={keepPreviousData}
+              onFeeValueCommonReady={onFeeValueCommonReady}
+              paymasterPossible={paymasterPossible}
+              paymasterEligible={paymasterEligible}
+              interpretation={interpretation}
+            />
+          ) : networkFee ? (
+            <NetworkFeeLineInfo
+              networkFee={networkFee}
+              isLoading={Boolean(networkFeeIsLoading)}
+            />
+          ) : null}
         </div>
       )}
       {preferences?.configurableNonce && isEthereumAddress(from) ? (

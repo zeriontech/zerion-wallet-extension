@@ -15,6 +15,14 @@ const defaultConfig: RemoteConfig = {
   fee_comparison_config: [],
   premium_page_feedback_link: '',
   quotes_refetch_interval: 20000,
+  tx_polling_preferences: {
+    interval_ms: 1000,
+    max_attempts: 60,
+  },
+  swap_form_balance_pulling_params: {
+    interval_ms: 1000,
+    max_attempts: 10,
+  },
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
@@ -26,6 +34,8 @@ const knownKeys: (keyof RemoteConfig)[] = [
   'fee_comparison_config',
   'premium_page_feedback_link',
   'quotes_refetch_interval',
+  'tx_polling_preferences',
+  'swap_form_balance_pulling_params',
 ];
 
 export async function fetchRemoteConfig<T extends keyof RemoteConfig>(

@@ -503,6 +503,7 @@ function TransactionDefaultView({
                     }
                     interpretation={interpretation}
                     listViewTransitions={true}
+                    interactiveNetworkFee={true}
                   />
                 </React.Suspense>
               ) : null}
@@ -675,7 +676,7 @@ function SendTransactionContent({
       );
       return interpretTxBasedOnEligibility({
         address: wallet.address,
-        transaction: { evm: configuredTx },
+        transactions: [{ evm: configuredTx }],
         eligibilityQueryData: eligibilityQuery.data?.data.eligible,
         eligibilityQueryStatus: eligibilityQuery.status,
         currency,
@@ -1266,7 +1267,7 @@ function SolSendTransaction() {
     queryFn: async () => {
       return interpretTxBasedOnEligibility({
         address: wallet.address,
-        transaction: { solana: firstTx },
+        transactions: [{ solana: firstTx }],
         eligibilityQueryData: false,
         eligibilityQueryStatus: 'success',
         currency,

@@ -285,3 +285,239 @@ export function useQuotes2({
     refetch,
   };
 }
+
+function createSwapQuotesV2Url({
+  address,
+  currency,
+  formState,
+}: {
+  address: string;
+  currency: string;
+  formState: SwapFormState;
+}) {
+  const searchParams = new URLSearchParams();
+  searchParams.set('currency', currency);
+  if (formState.inputChain) {
+    searchParams.set('inputChain', formState.inputChain);
+  }
+  if (formState.outputChain) {
+    searchParams.set('outputChain', formState.outputChain);
+  }
+  searchParams.set('from', address);
+  if (formState.to) {
+    searchParams.set('to', formState.to);
+  }
+  if (formState.inputFungibleId) {
+    searchParams.set('inputFungibleId', formState.inputFungibleId);
+  }
+  if (formState.outputFungibleId) {
+    searchParams.set('outputFungibleId', formState.outputFungibleId);
+  }
+  if (formState.inputAmount) {
+    searchParams.set('inputAmount', formState.inputAmount);
+  }
+  if (formState.slippage) {
+    searchParams.set('slippage', formState.slippage);
+  }
+  return createUrl({
+    base: ZERION_API_URL,
+    pathname: '/transaction/stream-swap-quotes/v2',
+    searchParams,
+  }).toString();
+}
+
+export function useQuotesV2({
+  address,
+  currency,
+  formState,
+  enabled = true,
+  context,
+  pathname,
+}: {
+  address: string;
+  currency: string;
+  formState: SwapFormState;
+  enabled?: boolean;
+  context: 'Swap' | 'Bridge';
+  pathname: string;
+}) {
+  const [refetchHash, setRefetchHash] = useState(0);
+  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
+  const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
+
+  const chain = formState.inputChain ? createChain(formState.inputChain) : null;
+
+  const slippage = useMemo(() => {
+    if (!chain) {
+      return null;
+    }
+    return String(
+      getSlippageOptions({
+        chain,
+        userSlippage:
+          formState.slippage != null ? Number(formState.slippage) : null,
+      }).slippagePercent
+    );
+  }, [chain, formState.slippage]);
+
+  const url = useMemo(() => {
+    if (!chain || !slippage) {
+      return null;
+    }
+    return createSwapQuotesV2Url({
+      address,
+      currency,
+      formState: { ...formState, slippage },
+    });
+  }, [address, currency, formState, chain, slippage]);
+
+  const handleQuoteError = useCallback(
+    ({
+      message,
+      code,
+      backendMessage,
+      requestParams,
+    }: {
+      message: string;
+      code?: number;
+      backendMessage?: string;
+      requestParams: Partial<SwapFormState> & { from: string };
+    }) => {
+      invariant(
+        requestParams.inputFungibleId,
+        'Unable to find inputFungibleId in quotes request'
+      );
+      invariant(
+        requestParams.outputFungibleId,
+        'Unable to find outputFungibleId in quotes request'
+      );
+      invariant(
+        requestParams.inputAmount,
+        'Unable to find inputAmount in quotes request'
+      );
+      walletPort.request('quoteError', {
+        message,
+        errorCode: code,
+        backendMessage,
+        context,
+        actionType: context === 'Swap' ? 'Trade' : 'Send',
+        type: context === 'Swap' ? 'Trade form error' : 'Bridge form error',
+        address: requestParams.from,
+        inputFungibleId: requestParams.inputFungibleId,
+        outputFungibleId: requestParams.outputFungibleId,
+        inputAmount: requestParams.inputAmount,
+        inputChain: requestParams.inputChain || null,
+        outputAmount: null,
+        outputChain: requestParams.outputChain || null,
+        contractType: null,
+        pathname,
+        slippage: requestParams.slippage
+          ? Number(requestParams.slippage)
+          : null,
+      });
+    },
+    [context, pathname]
+  );
+
+  const {
+    value: quotes,
+    isLoading,
+    error,
+    done,
+  } = useEventSource<Quote2[]>(
+    `${url ?? 'no-url'}-${refetchHash}`,
+    url ?? null,
+    {
+      headers: createHeaders({}),
+      enabled:
+        enabled &&
+        Boolean(
+          address &&
+            formState.inputChain &&
+            formState.inputAmount &&
+            isNumeric(formState.inputAmount) &&
+            Number(formState.inputAmount) > 0 &&
+            formState.inputFungibleId &&
+            formState.outputFungibleId
+        ),
+      mergeResponse: (currentValue, nextValue) => {
+        if (!currentValue) {
+          return nextValue;
+        }
+        if (!nextValue) {
+          return currentValue;
+        }
+        return currentValue.map((item) => {
+          const updatedItem = nextValue.find(
+            (nextItem) =>
+              nextItem.contractMetadata &&
+              item.contractMetadata &&
+              nextItem.contractMetadata.id === item.contractMetadata.id
+          );
+          return updatedItem || item;
+        });
+      },
+      eventCodeToMessage: QUOTES_EVENT_CODE_TO_MESSAGE,
+      onError: ({ parsedError, rawEvent, requestUrl }) => {
+        handleQuoteError({
+          message: parsedError.message,
+          code: rawEvent.code,
+          backendMessage: rawEvent.message,
+          requestParams: Object.fromEntries(
+            requestUrl.searchParams.entries()
+          ) as Partial<SwapFormState> & {
+            from: string;
+          },
+        });
+      },
+    }
+  );
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
+    }
+
+    if (done) {
+      timeoutRef.current = setTimeout(() => {
+        refetch();
+      }, refetchInterval);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [done, refetch, refetchInterval]);
+
+  const resultRef = useRef(quotes);
+  const urlRef = useRef(url);
+
+  const usePreviousData = url === urlRef.current && !done;
+
+  if (url !== urlRef.current) {
+    urlRef.current = url;
+    resultRef.current = null;
+  }
+
+  if (done && quotes && !error) {
+    resultRef.current = quotes;
+  }
+  if (error) {
+    resultRef.current = null;
+  }
+
+  return {
+    quotes: usePreviousData && resultRef.current ? resultRef.current : quotes,
+    isPreviousData: Boolean(usePreviousData && resultRef.current),
+    isLoading,
+    error,
+    done,
+    refetch,
+  };
+}

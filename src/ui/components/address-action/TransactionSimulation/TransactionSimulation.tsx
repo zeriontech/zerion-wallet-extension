@@ -29,10 +29,14 @@ import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  getActionApproval,
+  type LocalAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { baseToCommon } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
+import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
 import { AddressActionDetails } from '../AddressActionDetails';
 
 export function TransactionSimulation({
@@ -41,12 +45,14 @@ export function TransactionSimulation({
   txInterpretQuery,
   customAllowanceValueBase,
   onOpenAllowanceForm,
+  fallbackAddressAction,
 }: {
   address: string;
   transaction: MultichainTransaction;
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   customAllowanceValueBase?: string;
   onOpenAllowanceForm?: () => void;
+  fallbackAddressAction: LocalAddressAction | null;
 }) {
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const toastRef = useRef<PopoverToastHandle>(null);
@@ -120,7 +126,10 @@ export function TransactionSimulation({
 
   const interpretAddressAction = interpretation?.data.action;
   const addressAction =
-    interpretAddressAction || localEvmAddressAction || localSolanaAddressAction;
+    interpretAddressAction ||
+    fallbackAddressAction ||
+    localEvmAddressAction ||
+    localSolanaAddressAction;
 
   const maybeApproval = addressAction ? getActionApproval(addressAction) : null;
   const requestedAllowanceQuantityCommon =
@@ -226,6 +235,15 @@ export function TransactionSimulation({
             </HStack>
           </Button>
         </HStack>
+        {addressAction.status === 'failed' ? (
+          <>
+            <TransactionWarning
+              title="Transaction may fail"
+              message="This transaction can not be broadcasted or it may fail during
+                  execution. Proceed with caution."
+            />
+          </>
+        ) : null}
         <RenderArea name="transaction-warning-section" />
       </VStack>
     </>

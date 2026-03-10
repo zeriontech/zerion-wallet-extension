@@ -53,7 +53,17 @@ function NetworksDisclosureButton({
             <UIText kind="caption/regular" color="var(--neutral-600)">
               {title}
             </UIText>
-            <UIText kind="small/accent" color="var(--black)">
+            <UIText
+              kind="small/accent"
+              color="var(--black)"
+              title={network.name}
+              style={{
+                width: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {networks.getChainName(chain)}
             </UIText>
           </VStack>
