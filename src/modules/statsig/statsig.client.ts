@@ -35,7 +35,7 @@ export function useStatsigExperiment(
 
 export function useApproveAndTradeInOneAction() {
   const { data } = useStatsigExperiment(APPROVE_AND_TRADE_EXPERIMENT);
-  return data?.group_name === 'test';
+  return data?.group_name === 'Group1';
 }
 
 export function useStatsigFeatureGate(
