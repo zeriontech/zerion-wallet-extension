@@ -76,6 +76,7 @@ import { openUrl } from '../shared/openUrl';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
 import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
+import { SelectConnectedWallet } from '../pages/SelectConnectedWallet/SelectConnectedWallet';
 import { urlContext } from '../../shared/UrlContext';
 import { BackupPage } from '../pages/Backup/Backup';
 import { AssetInfo } from '../pages/AssetInfo';
@@ -318,6 +319,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
                 <RequestAccounts />
               </RequireAuth>
             </ChooseGlobalProviderGuard>
+          }
+        />
+        <Route
+          path="/selectConnectedWallet"
+          element={
+            <RequireAuth>
+              <SelectConnectedWallet />
+            </RequireAuth>
           }
         />
         <Route

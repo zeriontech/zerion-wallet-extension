@@ -114,6 +114,7 @@ import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
+import { wait } from 'src/shared/wait';
 import type {
   AssetClickedParams,
   DaylightEventParams,
@@ -2102,6 +2103,48 @@ class PublicController {
       });
   }
 
+  async showCorrectEcosystemWalletSelection({
+    context,
+    ecosystem,
+  }: {
+    context?: Partial<ChannelContext>;
+    ecosystem: BlockchainType;
+  }): Promise<void> {
+    const currentAddress = this.wallet.readCurrentAddress();
+    if (currentAddress && isMatchForEcosystem(currentAddress, ecosystem)) {
+      return;
+    }
+    invariant(context?.origin, 'This method requires origin');
+    const origin = context.origin;
+
+    await new Promise<void>((resolve, reject) => {
+      this.safeOpenDialogWindow(origin, {
+        route: '/selectConnectedWallet',
+        search: `?origin=${encodeURIComponent(origin)}&ecosystem=${ecosystem}`,
+        requestId: `${origin}:ecosystem-switch:${nanoid()}`,
+        tabId: context.tabId || null,
+        onResolve: async ({ address }: { address: string }) => {
+          invariant(
+            isMatchForEcosystem(address, ecosystem),
+            'Selected address does not match required ecosystem'
+          );
+          if (!this.wallet.allowedOrigin(context, address)) {
+            throw new OriginNotAllowed();
+          }
+          await this.wallet.setCurrentAddress({
+            params: { address },
+            context: INTERNAL_SYMBOL_CONTEXT,
+          });
+          resolve();
+        },
+        onDismiss: () => {
+          reject(new UserRejected('User rejected ecosystem wallet switch'));
+        },
+      });
+    });
+    await wait(100); // wait a little bit so the flow is continued in the Sidepanel
+  }
+
   async eth_accounts({ context }: PublicMethodParams) {
     const currentAddress = this.wallet.readCurrentAddress();
     if (!currentAddress) {
@@ -2156,6 +2199,10 @@ class PublicController {
     method?: 'signAndSendTransaction' | 'signTransaction';
   }>): Promise<SolSignTransactionResult> {
     const currentAddress = this.wallet.ensureCurrentAddress();
+    await this.showCorrectEcosystemWalletSelection({
+      context,
+      ecosystem: 'solana',
+    });
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
@@ -2204,6 +2251,10 @@ class PublicController {
     clientScope?: string;
   }>): Promise<SolSignTransactionResult[]> {
     const currentAddress = this.wallet.ensureCurrentAddress();
+    await this.showCorrectEcosystemWalletSelection({
+      context,
+      ecosystem: 'solana',
+    });
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
@@ -2252,6 +2303,10 @@ class PublicController {
     clientScope?: string;
   }>) {
     const currentAddress = this.wallet.ensureCurrentAddress();
+    await this.showCorrectEcosystemWalletSelection({
+      context,
+      ecosystem: 'solana',
+    });
     invariant(isSolanaAddress(currentAddress));
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
@@ -2412,6 +2467,10 @@ class PublicController {
     ]
   >) {
     const currentAddress = this.wallet.ensureCurrentAddress();
+    await this.showCorrectEcosystemWalletSelection({
+      context,
+      ecosystem: 'evm',
+    });
     // NOTE: I switched to synchronous method in an attempt to
     // synchronously open sidepanel in response to a dapp request
     // because browser only allows to open sidepanel synchronously after
@@ -2480,6 +2539,10 @@ class PublicController {
     id,
   }: PublicMethodParams<[string, TypedData | string]>) {
     const currentAddress = this.wallet.ensureCurrentAddress();
+    await this.showCorrectEcosystemWalletSelection({
+      context,
+      ecosystem: 'evm',
+    });
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
       throw new OriginNotAllowed();
     }
@@ -2555,6 +2618,10 @@ class PublicController {
       { clientScope } = { clientScope: undefined },
     ] = params;
     const currentAddress = this.wallet.ensureCurrentAddress();
+    await this.showCorrectEcosystemWalletSelection({
+      context,
+      ecosystem: 'evm',
+    });
 
     let address = '';
     let message = '';
