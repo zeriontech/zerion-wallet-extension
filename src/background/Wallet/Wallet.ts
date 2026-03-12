@@ -2127,9 +2127,6 @@ class PublicController {
             isMatchForEcosystem(address, ecosystem),
             'Selected address does not match required ecosystem'
           );
-          if (!this.wallet.allowedOrigin(context, address)) {
-            throw new OriginNotAllowed();
-          }
           await this.wallet.setCurrentAddress({
             params: { address },
             context: INTERNAL_SYMBOL_CONTEXT,
