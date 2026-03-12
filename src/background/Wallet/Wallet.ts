@@ -2121,7 +2121,7 @@ class PublicController {
         route: '/selectConnectedWallet',
         search: `?origin=${encodeURIComponent(origin)}&ecosystem=${ecosystem}`,
         requestId: `${origin}:ecosystem-switch:${nanoid()}`,
-        tabId: context.tabId || null,
+        tabId: context.tabId ?? null,
         onResolve: async ({ address }: { address: string }) => {
           invariant(
             isMatchForEcosystem(address, ecosystem),
