@@ -254,7 +254,6 @@ async function pendingEvmTxToAddressAction(
     label,
     type,
     refund: null,
-    gasback: null,
     fee: null,
     acts: [
       {
@@ -372,7 +371,6 @@ export async function incomingTxToIncomingAddressAction(
     type,
     content,
     fee: null,
-    gasback: null,
     refund: null,
     transaction: actionTransaction,
     acts: [

@@ -1,7 +1,6 @@
 import React, { useId, useRef } from 'react';
 import type { Quote2 } from 'src/shared/types/Quote';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import TickIcon from 'jsx:src/ui/assets/check_double.svg';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -10,7 +9,10 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import {
+  formatCurrencyValue,
+  formatCurrencyValueExtra,
+} from 'src/shared/units/formatCurrencyValue';
 import { noValueDash } from 'src/ui/shared/typography';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
@@ -26,10 +28,11 @@ function QuoteNetworkFee({ quote }: { quote: Quote2 }) {
   return (
     <span>
       {networkFee?.amount?.value != null
-        ? formatCurrencyValue(
+        ? formatCurrencyValueExtra(
             networkFee.amount.value,
             'en',
-            networkFee.amount.currency
+            networkFee.amount.currency,
+            { zeroRoundingFallback: 0.01 }
           )
         : networkFee?.amount?.quantity
         ? formatTokenValue(
@@ -65,14 +68,6 @@ function QuoteComponent({ quote }: { quote: Quote2 }) {
                 )
               : 'N/A'}
           </UIText>
-          {quote.transactionSwap ? (
-            <HStack gap={4} alignItems="center">
-              <TickIcon />
-              <UIText kind="caption/regular" style={{ whiteSpace: 'nowrap' }}>
-                Approved for {quote.contractMetadata.name}
-              </UIText>
-            </HStack>
-          ) : null}
         </VStack>
         <UIText kind="small/accent">
           {quote.transactionSwap ? (
@@ -87,6 +82,7 @@ function QuoteComponent({ quote }: { quote: Quote2 }) {
         alt={quote.contractMetadata.name}
         width={32}
         height={32}
+        style={{ borderRadius: 8 }}
         title={quote.contractMetadata.name}
       />
     </HStack>
@@ -125,7 +121,7 @@ export function QuoteList({
         <VStack gap={8}>
           <HStack gap={0} style={{ gridTemplateColumns: '1fr 1fr 40px' }}>
             <UIText kind="small/accent" color="var(--neutral-500)">
-              Min. Received
+              Received
             </UIText>
             <UIText kind="small/accent" color="var(--neutral-500)">
               Network fee

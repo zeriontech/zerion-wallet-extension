@@ -130,6 +130,7 @@ export function RateLine({
                               width: 20,
                               height: 20,
                               zIndex: index,
+                              borderRadius: 6,
                             }}
                             src={src}
                             // The alt here may be from a sibling image, but hopefully it doesn't matter

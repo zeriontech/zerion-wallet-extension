@@ -3,15 +3,12 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { invariant } from 'src/shared/invariant';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { SuccessStateToken } from 'src/ui/shared/forms/SuccessState/SuccessStateToken';
 import { SuccessStateLoader } from 'src/ui/shared/forms/SuccessState/SuccessStateLoader';
 import { SuccessStateAddress } from 'src/ui/shared/forms/SuccessState/SuccessStateAddress';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { SuccessStateNft } from 'src/ui/shared/forms/SuccessState/SuccessStateNft';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { AddressPosition } from 'defi-sdk';
 import { useCurrentPosition } from '../shared/useCurrentPosition';
 import type { NftId } from '../shared/useNftPosition';
@@ -26,14 +23,12 @@ export function SuccessState({
   address,
   sendFormSnapshot,
   positions,
-  gasbackValue,
   hash,
   onDone,
 }: {
   address: string;
   sendFormSnapshot: SendFormSnapshot;
   positions: AddressPosition[];
-  gasbackValue: number | null;
   hash: string;
   onDone: () => void;
 }) {
@@ -51,10 +46,6 @@ export function SuccessState({
 
   const actionStatus = useActionStatusByHash(hash);
 
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
-  const FEATURE_GASBACK = loyaltyEnabled && FEATURE_LOYALTY_FLOW === 'on';
   if (!networks) {
     return <ViewLoading />;
   }
@@ -85,11 +76,6 @@ export function SuccessState({
         dropppedTitle="Transfer cancelled"
         explorerUrl={
           hash ? networks.getExplorerTxUrlByName(chain, hash) : undefined
-        }
-        confirmedContent={
-          gasbackValue && FEATURE_GASBACK ? (
-            <GasbackDecorated value={gasbackValue} />
-          ) : null
         }
         onDone={onDone}
       />

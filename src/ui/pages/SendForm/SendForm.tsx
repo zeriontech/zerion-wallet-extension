@@ -48,7 +48,6 @@ import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { DisableTestnetShortcuts } from 'src/ui/features/testnet-mode/DisableTestnetShortcuts';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
@@ -204,18 +203,9 @@ function SendFormComponent() {
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
-  const gasbackValueRef = useRef<number | null>(null);
-  const handleGasbackReady = useCallback((value: number) => {
-    gasbackValueRef.current = value;
-  }, []);
 
   const { data: network } = useNetworkConfig(tokenChain ?? '', {
     enabled: Boolean(tokenChain),
-  });
-  const { data: gasbackEstimation } = useGasbackEstimation({
-    paymasterEligible: sendData?.paymasterEligibility?.data.eligible ?? null,
-    suppportsSimulations: network?.supports_simulations ?? false,
-    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
   });
 
   const nativeAssetId = network?.native_asset?.id;
@@ -341,13 +331,11 @@ function SendFormComponent() {
         hash={result.evm?.hash ?? ensureSolanaResult(result).signature}
         address={address}
         sendFormSnapshot={snapshotRef.current}
-        gasbackValue={gasbackValueRef.current}
         positions={currentPositions}
         onDone={() => {
           sendTxMutation.reset();
           snapshotRef.current = null;
           feeValueCommonRef.current = null;
-          gasbackValueRef.current = null;
           navigate('/overview/history');
         }}
       />
@@ -574,19 +562,13 @@ function SendFormComponent() {
                 const { slippage: _, ...partial } = fromConfiguration(value);
                 setUserFormState((state) => ({ ...state, ...partial }));
               }}
-              gasback={gasbackEstimation}
               interactiveNetworkFee={true}
             />
           </React.Suspense>
         ) : addressType === 'solana' ? (
           <div style={{ display: 'grid' }}>
             {sendData?.transaction?.solana && sendData.networkFee ? (
-              <NetworkFeeLineInfo
-                networkFee={sendData.networkFee}
-                isLoading={
-                  sendDataQuery.isFetching || sendDataQuery.isPreviousData
-                }
-              />
+              <NetworkFeeLineInfo networkFee={sendData.networkFee} />
             ) : sendDataQuery.isLoading ? (
               <div style={{ display: 'flex', justifyContent: 'end' }}>
                 <CircleSpinner />
@@ -611,7 +593,6 @@ function SendFormComponent() {
                     formState={formState}
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={sendData.paymasterPossible}
-                    onGasbackReady={handleGasbackReady}
                   />
                 </ViewLoadingSuspense>
               </>

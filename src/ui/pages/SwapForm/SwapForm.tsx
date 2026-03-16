@@ -73,7 +73,6 @@ import {
   useHttpAddressPositions,
 } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import { HiddenValidationInput } from 'src/ui/shared/forms/HiddenValidationInput';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
@@ -524,14 +523,6 @@ function SwapFormComponent() {
       handleQuoteErrorEvent(errorMessage, selectedQuote);
     }
   }, [selectedQuote, quotesData.done, handleQuoteErrorEvent]);
-
-  const { data: gasbackEstimation } = useGasbackEstimation({
-    paymasterEligible: Boolean(
-      selectedQuote?.transactionSwap?.evm?.customData?.paymasterParams
-    ),
-    suppportsSimulations: network?.supports_simulations ?? false,
-    supportsSponsoredTransactions: network?.supports_sponsored_transactions,
-  });
 
   const currentTransaction = approveAndTradeInOneAction
     ? selectedQuote?.transactionSwap || null
@@ -1030,11 +1021,6 @@ function SwapFormComponent() {
       },
     });
 
-  const gasbackValueRef = useRef<number | null>(null);
-  const handleGasbackReady = useCallback((value: number) => {
-    gasbackValueRef.current = value;
-  }, []);
-
   const navigate = useNavigate();
   const { isUK } = useUKDetection();
 
@@ -1061,6 +1047,7 @@ function SwapFormComponent() {
     return (
       <>
         <SuccessState
+          explorer={selectedQuote?.contractMetadata?.explorer ?? null}
           hash={
             result
               ? result.evm?.hash ?? ensureSolanaResult(result).signature
@@ -1069,7 +1056,6 @@ function SwapFormComponent() {
           inputPosition={inputPosition}
           outputPosition={outputPosition}
           swapFormState={snapshotRef.current.state}
-          gasbackValue={gasbackValueRef.current}
           approveHash={approveHash}
           onDone={() => {
             sendMutation.reset();
@@ -1077,7 +1063,6 @@ function SwapFormComponent() {
             setShowSuccessState(false);
             setApproveHash(null);
             snapshotRef.current = null;
-            gasbackValueRef.current = null;
             navigate('/overview/history');
           }}
           needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
@@ -1230,7 +1215,6 @@ function SwapFormComponent() {
                     },
                   },
                 }}
-                onGasbackReady={handleGasbackReady}
                 fallbackAddressAction={fallbackAddressAction}
               />
             </ViewLoadingSuspense>
@@ -1452,20 +1436,15 @@ function SwapFormComponent() {
                     const partial = fromConfiguration(value);
                     setUserFormState((state) => ({ ...state, ...partial }));
                   }}
-                  gasback={gasbackEstimation}
                   interactiveNetworkFee={!approveAndTradeInOneAction}
                   networkFee={selectedQuote?.networkFee || null}
-                  networkFeeIsLoading={quotesData.isPreviousData}
                 />
               </React.Suspense>
             ) : null
           ) : null}
 
           {isSolanaAddress(address) && selectedQuote?.networkFee ? (
-            <NetworkFeeLineInfo
-              networkFee={selectedQuote.networkFee}
-              isLoading={quotesData.isPreviousData}
-            />
+            <NetworkFeeLineInfo networkFee={selectedQuote.networkFee} />
           ) : null}
           {selectedQuote?.protocolFee.percentage === 0 ? (
             <HStack gap={8} justifyContent="space-between">

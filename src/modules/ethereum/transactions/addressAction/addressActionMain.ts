@@ -41,7 +41,6 @@ export type LocalAddressAction = Omit<AddressAction, 'transaction' | 'acts'> & {
     nonce: number;
     hash: string;
     chain: string;
-    gasback?: number | null;
   } | null;
   local: true;
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
@@ -218,7 +217,6 @@ export function createSendTokenAddressAction({
         : null,
     },
     fee: null,
-    gasback: null,
     refund: null,
     local: true,
     rawTransaction: transaction.evm
@@ -299,7 +297,6 @@ export function createSendNFTAddressAction({
       },
     },
     fee: null,
-    gasback: null,
     refund: null,
     local: true,
     rawTransaction: transaction.evm
@@ -381,7 +378,6 @@ export function createTradeAddressAction({
     },
     label: null,
     fee: null,
-    gasback: null,
     refund: null,
     local: true,
     rawTransaction: transaction.evm
@@ -530,7 +526,6 @@ export function createBridgeAddressAction({
         }
       : null,
     fee: null,
-    gasback: null,
     refund: null,
     local: true,
     rawTransaction: transaction.evm
@@ -599,7 +594,6 @@ export function createApproveAddressAction({
     },
     label: null,
     fee: null,
-    gasback: null,
     refund: null,
     local: true,
     rawTransaction: toActionTx(transaction, network.id),
@@ -646,7 +640,6 @@ export function createCancelAddressAction(
     rawTransaction: toActionTx(transaction, chain),
     relatedTransaction: originalAddressAction.rawTransaction.hash,
     fee: null,
-    gasback: null,
     refund: null,
     status: 'pending',
     transaction: originalAddressAction.transaction,

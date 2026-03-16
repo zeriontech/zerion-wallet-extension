@@ -262,8 +262,6 @@ type Action = {
     amount: Amount;
     fungible: null | Fungible;
   };
-  /** @description Gasback amount if applicable (when network fee is not free) */
-  gasback: null | number;
   acts: Act[] | null;
   content: Content | null;
   transaction: ActionTransaction | null;
