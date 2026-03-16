@@ -25,10 +25,8 @@ export function AddressActionDetails({
   singleAssetElementEnd: React.ReactNode;
 }) {
   const recipientAddress = addressAction?.label?.wallet?.address;
-  const showRecipientLine =
-    recipientAddress && addressAction?.type.value === 'send';
   const applicationLineVisible =
-    showApplicationLine && addressAction?.label?.contract && !showRecipientLine;
+    showApplicationLine && addressAction?.label?.contract && !recipientAddress;
 
   const actionWithAppliedAllowance = useMemo(
     () =>
@@ -47,7 +45,7 @@ export function AddressActionDetails({
 
   return (
     <>
-      {showRecipientLine ? (
+      {recipientAddress ? (
         <RecipientLine
           recipientAddress={recipientAddress}
           recipientName={addressAction.label?.wallet?.name || null}
