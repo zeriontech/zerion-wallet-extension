@@ -1,4 +1,4 @@
-import React, { useId, useMemo, useRef } from 'react';
+import React, { useId, useRef } from 'react';
 import type { AddressPosition } from 'defi-sdk';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import {
@@ -19,7 +19,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import {
-  getQuickAmounts,
+  QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -98,13 +98,6 @@ export function TokenTransferInput<
       : '',
   });
 
-  const quickAmounts = useMemo(() => {
-    if (!currentItem || !network) {
-      return [];
-    }
-    return getQuickAmounts(currentItem.asset, network);
-  }, [currentItem, network]);
-
   const chain = network ? createChain(network.id) : null;
 
   return (
@@ -114,7 +107,7 @@ export function TokenTransferInput<
         endTitle={
           currentItem && positionBalanceCommon ? (
             <HStack gap={16} alignItems="center">
-              {quickAmounts.map(({ factor, title }) => (
+              {QUICK_AMOUNTS.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
                   onClick={() => {
@@ -186,7 +179,9 @@ export function TokenTransferInput<
                 inputMode="decimal"
                 onChange={(event) =>
                   handleChange(
-                    event.currentTarget.value.replace(',', '.').replace(/\s/g, '')
+                    event.currentTarget.value
+                      .replace(',', '.')
+                      .replace(/\s/g, '')
                   )
                 }
                 pattern={FLOAT_INPUT_PATTERN}
