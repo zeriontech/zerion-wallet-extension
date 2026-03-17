@@ -1,7 +1,6 @@
 import {
   Navigate,
   useLocation,
-  useNavigate,
   useNavigationType,
   useSearchParams,
 } from 'react-router-dom';
@@ -1035,7 +1034,6 @@ function SwapFormComponent() {
     gasbackValueRef.current = value;
   }, []);
 
-  const navigate = useNavigate();
   const { isUK } = useUKDetection();
 
   // Show success state for swap (either direct or after approve)
@@ -1076,9 +1074,9 @@ function SwapFormComponent() {
             approveAndSendMutation.reset();
             setShowSuccessState(false);
             setApproveHash(null);
+            handleChange('inputAmount', '');
             snapshotRef.current = null;
             gasbackValueRef.current = null;
-            navigate('/overview/history');
           }}
           needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
         />

@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -1226,7 +1226,6 @@ function BridgeFormComponent() {
     gasbackValueRef.current = value;
   }, []);
 
-  const navigate = useNavigate();
   const { isUK } = useUKDetection();
 
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -1277,10 +1276,10 @@ function BridgeFormComponent() {
             sendMutation.reset();
             approveAndSendMutation.reset();
             setShowSuccessState(false);
+            handleChange('inputAmount', '');
             setApproveHash(null);
             snapshotRef.current = null;
             gasbackValueRef.current = null;
-            navigate('/overview/history');
           }}
           needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
         />

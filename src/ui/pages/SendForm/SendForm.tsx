@@ -1,5 +1,4 @@
 import React, { useCallback, useId, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import type { AddressPosition } from 'defi-sdk';
 import { Client } from 'defi-sdk';
@@ -318,8 +317,6 @@ function SendFormComponent() {
     },
   });
 
-  const navigate = useNavigate();
-
   const addressType = getAddressType(address);
 
   const addressFilterPredicate = useCallback(
@@ -345,10 +342,11 @@ function SendFormComponent() {
         positions={currentPositions}
         onDone={() => {
           sendTxMutation.reset();
+          handleChange('nftAmount', '');
+          handleChange('tokenValue', '');
           snapshotRef.current = null;
           feeValueCommonRef.current = null;
           gasbackValueRef.current = null;
-          navigate('/overview/history');
         }}
       />
     );
