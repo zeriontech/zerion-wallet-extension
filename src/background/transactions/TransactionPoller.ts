@@ -18,12 +18,22 @@ class Interval {
     this.cb = cb;
     this.intervalId = null;
   }
-  start(ms = 3000) {
+
+  start(ms = 3000, maxRetries = 120) {
     if (this.intervalId) {
       return;
     }
-    this.intervalId = setInterval(this.cb, ms);
+    let retries = 0;
+    this.intervalId = setInterval(() => {
+      if (retries >= maxRetries) {
+        this.stop();
+        return;
+      }
+      this.cb();
+      retries++;
+    }, ms);
   }
+
   stop() {
     if (!this.intervalId) {
       return;
@@ -278,13 +288,13 @@ export class TransactionsPoller {
       }
     }
     let interval = 1000;
+    let maxRetries = 120;
     try {
-      interval =
-        (
-          getRemoteConfigValue(
-            'tx_polling_preferences'
-          ) as RemoteConfig['tx_polling_preferences']
-        )?.interval_ms ?? 1000;
+      const remoteConfig = getRemoteConfigValue(
+        'tx_polling_preferences'
+      ) as RemoteConfig['tx_polling_preferences'];
+      interval = remoteConfig?.interval_ms ?? 1000;
+      maxRetries = remoteConfig?.max_attempts ?? 120;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -293,7 +303,7 @@ export class TransactionsPoller {
       );
     }
     if (this.map.size) {
-      this.interval.start(interval);
+      this.interval.start(interval, maxRetries);
     }
   }
 }
