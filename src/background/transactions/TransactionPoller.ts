@@ -19,7 +19,7 @@ class Interval {
     this.intervalId = null;
   }
 
-  start(ms = 3000, maxRetries = 120) {
+  start(ms = 3000, maxRetries = 180) {
     if (this.intervalId) {
       return;
     }
@@ -294,7 +294,7 @@ export class TransactionsPoller {
         'tx_polling_preferences'
       ) as RemoteConfig['tx_polling_preferences'];
       interval = remoteConfig?.interval_ms ?? 1000;
-      maxRetries = remoteConfig?.max_attempts ?? 120;
+      maxRetries = remoteConfig?.max_attempts ?? 180;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn(
