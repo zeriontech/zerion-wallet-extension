@@ -30,7 +30,7 @@ export function PerpsBalanceBanner({
         alignItems="center"
         style={{
           gridTemplateColumns: 'auto auto 1fr',
-          padding: 12,
+          padding: '12px 16px 12px 12px',
           background: 'var(--neutral-100)',
           borderRadius: 8,
         }}
@@ -63,7 +63,7 @@ export function PerpsBalanceBanner({
             </UIText>
           </div>
         </HStack>
-        <HStack gap={4} alignItems="center" justifyContent="end">
+        <HStack gap={8} alignItems="center" justifyContent="end">
           <BlurrableBalance kind="body/regular" color="var(--black)">
             <UIText kind="body/regular">
               {formatCurrencyValue(balance, 'en', currency, {
@@ -72,7 +72,9 @@ export function PerpsBalanceBanner({
               })}
             </UIText>
           </BlurrableBalance>
-          <ArrowLeftTop style={{ color: 'var(--neutral-600)' }} />
+          <ArrowLeftTop
+            style={{ color: 'var(--neutral-600)', width: 12, height: 12 }}
+          />
         </HStack>
       </HStack>
     </UnstyledAnchor>
