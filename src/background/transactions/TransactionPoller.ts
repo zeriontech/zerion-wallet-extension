@@ -11,6 +11,9 @@ import {
   type RemoteConfig,
 } from 'src/modules/remote-config';
 
+const DEFAULT_MAX_RETRIES = 180;
+const DEFAULT_INTERVAL_MS = 1000;
+
 class Interval {
   private cb: () => void;
   private intervalId: NodeJS.Timeout | null = null;
@@ -19,7 +22,7 @@ class Interval {
     this.intervalId = null;
   }
 
-  start(ms = 3000, maxRetries = 180) {
+  start(ms = DEFAULT_INTERVAL_MS, maxRetries = DEFAULT_MAX_RETRIES) {
     if (this.intervalId) {
       return;
     }
@@ -287,14 +290,14 @@ export class TransactionsPoller {
         this.map.set(item.signature, item);
       }
     }
-    let interval = 1000;
-    let maxRetries = 120;
+    let interval = DEFAULT_INTERVAL_MS;
+    let maxRetries = DEFAULT_MAX_RETRIES;
     try {
       const remoteConfig = getRemoteConfigValue(
         'tx_polling_preferences'
       ) as RemoteConfig['tx_polling_preferences'];
-      interval = remoteConfig?.interval_ms ?? 1000;
-      maxRetries = remoteConfig?.max_attempts ?? 180;
+      interval = remoteConfig?.interval_ms ?? DEFAULT_INTERVAL_MS;
+      maxRetries = remoteConfig?.max_attempts ?? DEFAULT_MAX_RETRIES;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn(
