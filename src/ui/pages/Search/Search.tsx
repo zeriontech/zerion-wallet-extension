@@ -10,6 +10,8 @@ import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput/SearchInput';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
+import { formatPercent } from 'src/shared/units/formatPercent';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -19,7 +21,6 @@ import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { EmptyView } from 'src/ui/components/EmptyView';
-import { Media } from 'src/ui/ui-kit/Media';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { walletPort } from 'src/ui/shared/channels';
@@ -34,6 +35,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { useSearchQuery } from './useSearchQuery';
 
+const COMPACT_FORMAT: Intl.NumberFormatOptions = {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+};
+
 const FungibleView = React.forwardRef<
   HTMLAnchorElement,
   {
@@ -44,6 +50,16 @@ const FungibleView = React.forwardRef<
   }
 >(({ fungible, highlighted, onClick }, ref) => {
   const { currency } = useCurrency();
+  const { relativeChange1d } = fungible.meta;
+  const changeColor =
+    relativeChange1d == null
+      ? 'var(--neutral-500)'
+      : relativeChange1d >= 0
+      ? 'var(--positive-500)'
+      : 'var(--negative-500)';
+  const changePrefix =
+    relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
+
   return (
     <SurfaceItemLink
       ref={ref}
@@ -52,45 +68,84 @@ const FungibleView = React.forwardRef<
       highlighted={highlighted}
       onClick={onClick}
     >
-      <Media
-        image={
-          <TokenIcon
-            src={fungible.iconUrl}
-            symbol={fungible.symbol}
-            size={36}
-            title={fungible.name}
-          />
-        }
-        vGap={0}
+      <HStack
+        gap={8}
         alignItems="center"
-        text={
+        style={{ gridTemplateColumns: 'auto 1fr' }}
+      >
+        <TokenIcon
+          src={fungible.iconUrl}
+          symbol={fungible.symbol}
+          size={36}
+          title={fungible.name}
+        />
+        <VStack gap={0} style={{ overflow: 'hidden' }}>
           <HStack
             gap={4}
             alignItems="center"
-            style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}
+            justifyContent="space-between"
+            style={{ gridTemplateColumns: '1fr auto' }}
           >
-            <UIText
-              kind="body/accent"
+            <HStack
+              gap={4}
+              alignItems="center"
               style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                gridTemplateColumns: '1fr auto',
+                minWidth: 0,
+                maxWidth: 'max-content',
               }}
-              title={fungible.name}
             >
-              {fungible.name}
-            </UIText>
-            {fungible.verified ? <VerifiedIcon /> : null}
+              <UIText
+                kind="body/accent"
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title={fungible.name}
+              >
+                {fungible.symbol}
+              </UIText>
+              {fungible.verified ? <VerifiedIcon /> : null}
+            </HStack>
+            {fungible.meta.price != null ? (
+              <UIText kind="body/accent">
+                {formatPriceValue(fungible.meta.price, 'en', currency)}
+              </UIText>
+            ) : null}
           </HStack>
-        }
-        detailText={
-          fungible.meta.price ? (
+          <HStack gap={4} alignItems="center" justifyContent="space-between">
             <UIText kind="small/regular" color="var(--neutral-500)">
-              {formatPriceValue(fungible.meta.price, 'en', currency)}
+              {[
+                fungible.meta.fullyDilutedValuation != null
+                  ? `FDV ${formatCurrencyValue(
+                      fungible.meta.fullyDilutedValuation,
+                      'en',
+                      currency,
+                      COMPACT_FORMAT
+                    )}`
+                  : null,
+                fungible.meta.marketCap != null
+                  ? `${formatCurrencyValue(
+                      fungible.meta.marketCap,
+                      'en',
+                      currency,
+                      COMPACT_FORMAT
+                    )} MCAP`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </UIText>
-          ) : null
-        }
-      />
+            {relativeChange1d != null ? (
+              <UIText kind="small/regular" color={changeColor}>
+                {changePrefix}
+                {formatPercent(relativeChange1d, 'en')}%
+              </UIText>
+            ) : null}
+          </HStack>
+        </VStack>
+      </HStack>
     </SurfaceItemLink>
   );
 });
