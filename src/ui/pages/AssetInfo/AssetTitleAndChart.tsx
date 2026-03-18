@@ -180,9 +180,21 @@ export function AssetTitleAndChart({
               </UIText>
             </VStack>
           ) : (
-            <VStack gap={0}>
-              <HStack gap={8} alignItems="end">
-                <UIText kind="headline/hero" ref={priceElementRef} />
+            <VStack gap={0} style={{ justifyItems: 'start' }}>
+              <HStack
+                gap={8}
+                alignItems="end"
+                style={{ gridTemplateColumns: '1fr auto', maxWidth: '90vw' }}
+              >
+                <UIText
+                  kind="headline/hero"
+                  ref={priceElementRef}
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                />
                 <UIText
                   kind="body/accent"
                   style={{ paddingBottom: 4 }}
