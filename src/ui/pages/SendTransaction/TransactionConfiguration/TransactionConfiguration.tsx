@@ -140,16 +140,28 @@ export function AddressActionNetworkFee({
         <HStack gap={8} alignItems="center">
           {isLoading ? <CircleSpinner /> : null}
 
-          {fee.amount.value != null
-            ? formatCurrencyValueExtra(
-                fee.amount.value,
-                'en',
-                fee.amount.currency,
-                {
-                  zeroRoundingFallback: 0.01,
-                }
-              )
-            : formatTokenValue(fee.amount.quantity, fee.fungible?.symbol)}
+          {fee.free ? (
+            <div
+              style={{
+                background: 'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Free
+            </div>
+          ) : fee.amount.value != null ? (
+            formatCurrencyValueExtra(
+              fee.amount.value,
+              'en',
+              fee.amount.currency,
+              {
+                zeroRoundingFallback: 0.01,
+              }
+            )
+          ) : (
+            formatTokenValue(fee.amount.quantity, fee.fungible?.symbol)
+          )}
         </HStack>
       </UIText>
     </HStack>
