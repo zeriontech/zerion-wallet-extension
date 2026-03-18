@@ -13,10 +13,19 @@ const upgrades: Record<string | number, () => Promise<null | number>> = {
     // and then continue
     return null; // null means stop upgrading. This is used when a UI interaction is needed to continue
   },
+  // Version where we moved from BrowserStorage to SessionStorage for credentials, except for the infinite autolock timer
   '0.3': async () => {
     await Account.migrateCredentialsIfNeeded();
     await clearStorageArtefacts();
     const next = 0.4;
+    await BrowserStorage.set('STORAGE_VERSION', next);
+    return next;
+  },
+  // Version where we moved from BrowserStorage to SessionStorage for an infinite autolock timer as well.
+  '0.4': async () => {
+    await Account.migrateCredentialsIfNeeded();
+    await clearStorageArtefacts();
+    const next = 0.5;
     await BrowserStorage.set('STORAGE_VERSION', next);
     return next;
   },

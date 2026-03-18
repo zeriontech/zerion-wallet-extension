@@ -180,12 +180,7 @@ export class Account extends EventEmitter<AccountEvents> {
         await params.from.remove(credentialsKey);
       }
     }
-    const preferences = await globalPreferences.getPreferences();
-    if (preferences.autoLockTimeout === 'none') {
-      await move({ from: SessionStorage, to: BrowserStorage });
-    } else {
-      await move({ from: BrowserStorage, to: SessionStorage });
-    }
+    await move({ from: BrowserStorage, to: SessionStorage });
   }
 
   static async ensureUserAndWallet() {
@@ -221,11 +216,6 @@ export class Account extends EventEmitter<AccountEvents> {
     this.on('authenticated', () => {
       if (this.encryptionKey) {
         Account.writeCredentials({ encryptionKey: this.encryptionKey });
-      }
-    });
-    globalPreferences.on('change', (prevState, newState) => {
-      if (newState.autoLockTimeout !== prevState.autoLockTimeout) {
-        Account.migrateCredentialsIfNeeded();
       }
     });
   }
