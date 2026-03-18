@@ -12,14 +12,12 @@ export function SendTransactionConfirmation({
   transaction,
   paymasterEligible,
   paymasterPossible,
-  onGasbackReady,
   formState,
 }: {
   transaction: MultichainTransaction;
   formState: SendFormState;
   paymasterEligible: boolean;
   paymasterPossible: boolean;
-  onGasbackReady: null | ((value: number) => void);
 }) {
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -52,7 +50,6 @@ export function SendTransactionConfirmation({
           },
         },
       }}
-      onGasbackReady={onGasbackReady}
       fallbackAddressAction={null}
     />
   );

@@ -192,8 +192,6 @@ export interface Quote2 {
     value: number;
     symbol: string;
   }[];
-  /** @description Gas back amount if applicable (when network fee is not free) */
-  gasback: null | number;
   /** @description Estimated time if applicable (when it's a bridge transaction) */
   time?: null | number;
   /** @description Network fee information */

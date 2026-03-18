@@ -13,7 +13,6 @@ export interface RemoteConfig {
   }>;
   loyalty_config: Partial<{
     referrerXpPercent: number;
-    gasbackValue: number;
     rewardIconLevel: number;
   }>;
   zerion_fee_learn_more_link: string;

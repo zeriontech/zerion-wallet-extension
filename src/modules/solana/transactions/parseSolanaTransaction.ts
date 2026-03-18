@@ -128,7 +128,6 @@ export function parseSolanaTransaction(
       transaction,
       label,
       fee: null,
-      gasback: null,
       refund: null,
       content,
       acts: [
@@ -175,7 +174,6 @@ export function parseSolanaTransaction(
     acts: [],
     content: null,
     fee: null,
-    gasback: null,
     refund: null,
     status: 'confirmed',
   };

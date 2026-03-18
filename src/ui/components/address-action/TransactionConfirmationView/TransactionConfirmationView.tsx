@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -35,7 +35,6 @@ export function TransactionConfirmationView({
   eligibilityQuery,
   customAllowanceValueBase,
   onOpenAllowanceForm,
-  onGasbackReady,
   fallbackAddressAction,
 }: {
   title: React.ReactNode;
@@ -49,7 +48,6 @@ export function TransactionConfirmationView({
   eligibilityQuery: EligibilityQuery;
   customAllowanceValueBase?: string;
   onOpenAllowanceForm?: () => void;
-  onGasbackReady: null | ((value: number) => void);
   fallbackAddressAction: LocalAddressAction | null;
 }) {
   const { preferences, query } = usePreferences();
@@ -64,12 +62,6 @@ export function TransactionConfirmationView({
     eligibilityQuery,
     origin: 'https://app.zerion.io',
   });
-  const gasbackValue = txInterpretQuery.data?.data.action?.gasback ?? null;
-  useEffect(() => {
-    if (gasbackValue != null) {
-      onGasbackReady?.(gasbackValue);
-    }
-  }, [gasbackValue, onGasbackReady]);
 
   const interpretationString = useMemo(() => {
     return JSON.stringify(txInterpretQuery.data?.data.action);
@@ -156,11 +148,6 @@ export function TransactionConfirmationView({
                   paymasterEligible={paymasterEligible}
                   paymasterPossible={paymasterPossible}
                   paymasterWaiting={false}
-                  gasback={
-                    txInterpretQuery.data?.data.action?.gasback != null
-                      ? { value: txInterpretQuery.data?.data.action.gasback }
-                      : null
-                  }
                   interactiveNetworkFee={true}
                 />
               ) : txInterpretQuery.data?.data.action?.fee ? (

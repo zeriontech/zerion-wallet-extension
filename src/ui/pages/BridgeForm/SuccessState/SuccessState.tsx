@@ -3,13 +3,10 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { invariant } from 'src/shared/invariant';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { SuccessStateLoader } from 'src/ui/shared/forms/SuccessState/SuccessStateLoader';
 import { SuccessStateToken } from 'src/ui/shared/forms/SuccessState/SuccessStateToken';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
 import type { ContractMetadata2 } from 'src/shared/types/Quote';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner/CircleSpinner';
@@ -23,7 +20,6 @@ export function SuccessState({
   hash,
   explorer,
   onDone,
-  gasbackValue,
   approveHash,
   needsManualSign,
 }: {
@@ -32,7 +28,6 @@ export function SuccessState({
   outputPosition: BareAddressPosition;
   hash: string | null;
   explorer: ContractMetadata2['explorer'] | null;
-  gasbackValue: number | null;
   onDone: () => void;
   approveHash?: string | null;
   needsManualSign: boolean;
@@ -48,11 +43,6 @@ export function SuccessState({
 
   const actionStatus = useActionStatusByHash(hash);
   const approveStatus = useActionStatusByHash(approveHash || null);
-
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
-  const FEATURE_GASBACK = loyaltyEnabled && FEATURE_LOYALTY_FLOW === 'on';
 
   if (!networks) {
     return <ViewLoading />;
@@ -133,11 +123,6 @@ export function SuccessState({
         failedTitle="Transfer failed"
         dropppedTitle="Transfer cancelled"
         explorerUrl={explorerUrl ?? explorerFallbackUrl}
-        confirmedContent={
-          gasbackValue && FEATURE_GASBACK ? (
-            <GasbackDecorated value={gasbackValue} />
-          ) : null
-        }
         onDone={hash ? onDone : undefined}
       />
     </>

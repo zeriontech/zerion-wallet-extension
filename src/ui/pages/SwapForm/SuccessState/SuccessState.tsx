@@ -3,16 +3,14 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { invariant } from 'src/shared/invariant';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { SuccessStateLoader } from 'src/ui/shared/forms/SuccessState/SuccessStateLoader';
 import { SuccessStateToken } from 'src/ui/shared/forms/SuccessState/SuccessStateToken';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { GasbackDecorated } from 'src/ui/components/GasbackDecorated';
 import type { BareAddressPosition } from 'src/shared/types/BareAddressPosition';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon/NetworkIcon';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import type { ContractMetadata2 } from 'src/shared/types/Quote';
 import type { SwapFormState } from '../shared/SwapFormState';
 
 export function SuccessState({
@@ -21,18 +19,18 @@ export function SuccessState({
   outputPosition,
   hash,
   onDone,
-  gasbackValue,
   approveHash,
   needsManualSign,
+  explorer,
 }: {
   swapFormState: SwapFormState;
   inputPosition: BareAddressPosition;
   outputPosition: BareAddressPosition;
   hash: string | null;
-  gasbackValue: number | null;
   onDone: () => void;
   approveHash?: string | null;
   needsManualSign: boolean;
+  explorer: ContractMetadata2['explorer'] | null;
 }) {
   const { networks } = useNetworks();
   const { inputChain } = swapFormState;
@@ -41,11 +39,6 @@ export function SuccessState({
   const actionStatus = useActionStatusByHash(hash);
   const approveStatus = useActionStatusByHash(approveHash || null);
 
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
-  const FEATURE_GASBACK = loyaltyEnabled && FEATURE_LOYALTY_FLOW === 'on';
-
   if (!networks) {
     return <ViewLoading />;
   }
@@ -53,6 +46,15 @@ export function SuccessState({
   const chain = createChain(inputChain);
   const chainName = networks.getChainName(chain);
   const chainIconUrl = networks.getByNetworkId(chain)?.icon_url;
+
+  const explorerFallbackUrl = hash
+    ? networks.getExplorerTxUrlByName(chain, hash)
+    : approveHash
+    ? networks.getExplorerTxUrlByName(chain, approveHash)
+    : undefined;
+  const explorerUrl = hash
+    ? explorer?.txUrl.replace('{HASH}', hash)
+    : undefined;
 
   return (
     <>
@@ -111,18 +113,7 @@ export function SuccessState({
         }
         failedTitle="Swap failed"
         dropppedTitle="Swap cancelled"
-        explorerUrl={
-          hash
-            ? networks.getExplorerTxUrlByName(chain, hash)
-            : approveHash
-            ? networks.getExplorerTxUrlByName(chain, approveHash)
-            : undefined
-        }
-        confirmedContent={
-          gasbackValue && FEATURE_GASBACK ? (
-            <GasbackDecorated value={gasbackValue} />
-          ) : null
-        }
+        explorerUrl={explorerUrl ?? explorerFallbackUrl}
         onDone={hash ? onDone : undefined}
       />
     </>

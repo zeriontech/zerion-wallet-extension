@@ -496,13 +496,7 @@ function TransactionDefaultView({
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
                     paymasterWaiting={paymasterWaiting}
-                    gasback={
-                      interpretation?.data.action?.gasback != null
-                        ? { value: interpretation.data.action.gasback }
-                        : null
-                    }
                     interpretation={interpretation}
-                    listViewTransitions={true}
                     interactiveNetworkFee={true}
                   />
                 </React.Suspense>

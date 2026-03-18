@@ -72,7 +72,6 @@ import { AnimatedAppear } from 'src/ui/components/AnimatedAppear';
 import { isNumeric } from 'src/shared/isNumeric';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
-import { useGasbackEstimation } from 'src/modules/ethereum/account-abstraction/rewards';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { useQuotes2, useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import { useApproveAndTradeInOneAction } from 'src/modules/statsig/statsig.client';
@@ -719,15 +718,6 @@ function BridgeFormComponent() {
     }));
   });
 
-  const { data: gasbackEstimation } = useGasbackEstimation({
-    paymasterEligible: Boolean(
-      selectedQuote?.transactionSwap?.evm?.customData?.paymasterParams
-    ),
-    suppportsSimulations: inputNetwork?.supports_simulations ?? false,
-    supportsSponsoredTransactions:
-      inputNetwork?.supports_sponsored_transactions,
-  });
-
   const currentTransaction = approveAndTradeInOneAction
     ? selectedQuote?.transactionSwap || null
     : selectedQuote?.transactionApprove ||
@@ -1221,11 +1211,6 @@ function BridgeFormComponent() {
       },
     });
 
-  const gasbackValueRef = useRef<number | null>(null);
-  const handleGasbackReady = useCallback((value: number) => {
-    gasbackValueRef.current = value;
-  }, []);
-
   const navigate = useNavigate();
   const { isUK } = useUKDetection();
 
@@ -1271,7 +1256,6 @@ function BridgeFormComponent() {
           inputPosition={inputPosition}
           outputPosition={outputPosition}
           formState={snapshotRef.current}
-          gasbackValue={gasbackValueRef.current}
           approveHash={approveHash}
           onDone={() => {
             sendMutation.reset();
@@ -1279,7 +1263,6 @@ function BridgeFormComponent() {
             setShowSuccessState(false);
             setApproveHash(null);
             snapshotRef.current = null;
-            gasbackValueRef.current = null;
             navigate('/overview/history');
           }}
           needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
@@ -1393,7 +1376,6 @@ function BridgeFormComponent() {
                     },
                   },
                 }}
-                onGasbackReady={handleGasbackReady}
                 fallbackAddressAction={fallbackAddressAction}
               />
             </ViewLoadingSuspense>
@@ -1641,19 +1623,14 @@ function BridgeFormComponent() {
                   const partial = fromConfiguration(value);
                   setUserFormState((state) => ({ ...state, ...partial }));
                 }}
-                gasback={gasbackEstimation}
                 interactiveNetworkFee={!approveAndTradeInOneAction}
                 networkFee={selectedQuote?.networkFee || null}
-                networkFeeIsLoading={quotesData.isPreviousData}
               />
             </React.Suspense>
           ) : null}
 
           {isSolanaAddress(address) && selectedQuote?.networkFee ? (
-            <NetworkFeeLineInfo
-              networkFee={selectedQuote.networkFee}
-              isLoading={quotesData.isPreviousData}
-            />
+            <NetworkFeeLineInfo networkFee={selectedQuote.networkFee} />
           ) : null}
         </VStack>
         {isUK ? <UKDisclaimer /> : null}
