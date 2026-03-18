@@ -81,6 +81,7 @@ import {
 import { DappLink } from './DappLink';
 import { NetworkBalance } from './NetworkBalance';
 import { EmptyPositionsView } from './EmptyPositionsView';
+import { PerpsBalanceBanner } from './PerpsBalanceBanner';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -709,6 +710,7 @@ function MultiChainPositions({
   renderEmptyView,
   renderLoadingView,
   portfolioDecomposition,
+  hyperliquidBalance,
   ...positionListProps
 }: {
   address: string;
@@ -718,6 +720,7 @@ function MultiChainPositions({
   selectedChain: string | null;
   onChainChange: (value: string | null) => void;
   portfolioDecomposition: WalletPortfolio | null;
+  hyperliquidBalance: number | null;
 } & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
   const { currency } = useCurrency();
   const { data, isLoading } = useHttpAddressPositions(
@@ -754,29 +757,42 @@ function MultiChainPositions({
       ? portfolioDecomposition?.totalValue
       : portfolioDecomposition?.positionsChainsDistribution[chainValue];
 
+  const portfolioTotalValue = portfolioDecomposition?.totalValue ?? 0;
+
   return (
-    <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
-      <div style={{ paddingInline: 16 }}>
-        <NetworkBalance
-          standard={getAddressType(address)}
+    <VStack gap={16}>
+      {hyperliquidBalance != null && hyperliquidBalance > 0 ? (
+        <div style={{ paddingInline: 16 }}>
+          <PerpsBalanceBanner
+            balance={hyperliquidBalance}
+            percentage={(hyperliquidBalance / (portfolioTotalValue || 1)) * 100}
+            currency={currency}
+          />
+        </div>
+      ) : null}
+      <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
+        <div style={{ paddingInline: 16 }}>
+          <NetworkBalance
+            standard={getAddressType(address)}
+            dappChain={dappChain}
+            selectedChain={selectedChain}
+            onChange={onChainChange}
+            value={
+              chainTotalValue ? (
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(chainTotalValue, 'en', currency)}
+                />
+              ) : null
+            }
+          />
+        </div>
+        <PositionList
+          items={items}
           dappChain={dappChain}
-          selectedChain={selectedChain}
-          onChange={onChainChange}
-          value={
-            chainTotalValue ? (
-              <NeutralDecimals
-                parts={formatCurrencyToParts(chainTotalValue, 'en', currency)}
-              />
-            ) : null
-          }
+          address={address}
+          {...positionListProps}
         />
-      </div>
-      <PositionList
-        items={items}
-        dappChain={dappChain}
-        address={address}
-        {...positionListProps}
-      />
+      </VStack>
     </VStack>
   );
 }
@@ -875,7 +891,7 @@ export function Positions({
   const { currency } = useCurrency();
   const { ready, params, singleAddressNormalized } = useAddressParams();
   const addrIsSolana = isSolanaAddress(singleAddressNormalized);
-  const { data, ...portfolioQuery } = useWalletPortfolio(
+  const { data, hyperliquidBalance, ...portfolioQuery } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
     { enabled: ready && !addrIsSolana }
@@ -981,6 +997,7 @@ export function Positions({
         renderEmptyView={renderEmptyViewForNetwork}
         renderLoadingView={renderLoadingViewForNetwork}
         portfolioDecomposition={walletPortfolio || null}
+        hyperliquidBalance={hyperliquidBalance ?? null}
       />
     );
   } else {
