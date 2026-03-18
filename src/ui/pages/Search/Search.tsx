@@ -71,7 +71,7 @@ const FungibleView = React.forwardRef<
       <HStack
         gap={8}
         alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr auto' }}
+        style={{ gridTemplateColumns: 'auto 1fr' }}
       >
         <TokenIcon
           src={fungible.iconUrl}
@@ -80,54 +80,70 @@ const FungibleView = React.forwardRef<
           title={fungible.name}
         />
         <VStack gap={0} style={{ overflow: 'hidden' }}>
-          <HStack gap={4} alignItems="center">
-            <UIText
-              kind="body/accent"
+          <HStack
+            gap={4}
+            alignItems="center"
+            justifyContent="space-between"
+            style={{ gridTemplateColumns: '1fr auto' }}
+          >
+            <HStack
+              gap={4}
+              alignItems="center"
               style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                gridTemplateColumns: '1fr auto',
+                minWidth: 0,
+                maxWidth: 'max-content',
               }}
             >
-              {fungible.symbol}
-            </UIText>
-            {fungible.verified ? <VerifiedIcon /> : null}
+              <UIText
+                kind="body/accent"
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title={fungible.name}
+              >
+                {fungible.symbol}
+              </UIText>
+              {fungible.verified ? <VerifiedIcon /> : null}
+            </HStack>
+            {fungible.meta.price != null ? (
+              <UIText kind="body/accent">
+                {formatPriceValue(fungible.meta.price, 'en', currency)}
+              </UIText>
+            ) : null}
           </HStack>
-          <UIText kind="small/regular" color="var(--neutral-500)">
-            {[
-              fungible.meta.fullyDilutedValuation != null
-                ? `FDV ${formatCurrencyValue(
-                    fungible.meta.fullyDilutedValuation,
-                    'en',
-                    currency,
-                    COMPACT_FORMAT
-                  )}`
-                : null,
-              fungible.meta.marketCap != null
-                ? `${formatCurrencyValue(
-                    fungible.meta.marketCap,
-                    'en',
-                    currency,
-                    COMPACT_FORMAT
-                  )} MCAP`
-                : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </UIText>
-        </VStack>
-        <VStack gap={0} style={{ textAlign: 'right', flexShrink: 0 }}>
-          {fungible.meta.price != null ? (
-            <UIText kind="body/accent">
-              {formatPriceValue(fungible.meta.price, 'en', currency)}
+          <HStack gap={4} alignItems="center" justifyContent="space-between">
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              {[
+                fungible.meta.fullyDilutedValuation != null
+                  ? `FDV ${formatCurrencyValue(
+                      fungible.meta.fullyDilutedValuation,
+                      'en',
+                      currency,
+                      COMPACT_FORMAT
+                    )}`
+                  : null,
+                fungible.meta.marketCap != null
+                  ? `${formatCurrencyValue(
+                      fungible.meta.marketCap,
+                      'en',
+                      currency,
+                      COMPACT_FORMAT
+                    )} MCAP`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </UIText>
-          ) : null}
-          {relativeChange1d != null ? (
-            <UIText kind="small/regular" color={changeColor}>
-              {changePrefix}
-              {formatPercent(relativeChange1d, 'en')}%
-            </UIText>
-          ) : null}
+            {relativeChange1d != null ? (
+              <UIText kind="small/regular" color={changeColor}>
+                {changePrefix}
+                {formatPercent(relativeChange1d, 'en')}%
+              </UIText>
+            ) : null}
+          </HStack>
         </VStack>
       </HStack>
     </SurfaceItemLink>
