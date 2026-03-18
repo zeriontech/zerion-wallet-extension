@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useMemo } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import type { AddressPosition } from 'defi-sdk';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import {
@@ -19,18 +19,16 @@ import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useCustomValidity } from 'src/ui/shared/forms/useCustomValidity';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import {
-  getQuickAmounts,
+  QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { SpendFiatInputValue } from 'src/ui/components/FiatInputValue/FiatInputValue';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import type { SwapFormState } from '../../shared/SwapFormState';
 
 export function SpendTokenField({
   formState,
   spendPosition,
-  spendNetwork,
   receivePosition,
   positions,
   onChange,
@@ -39,7 +37,6 @@ export function SpendTokenField({
   formState: SwapFormState;
   onChange: (key: keyof SwapFormState, value: string) => void;
   spendPosition: AddressPosition | EmptyAddressPosition | null;
-  spendNetwork?: NetworkConfig;
   receivePosition: AddressPosition | EmptyAddressPosition | null;
   positions: AddressPosition[];
   outputAmount: string | null;
@@ -88,13 +85,6 @@ export function SpendTokenField({
     primaryInputRef.current = primaryInput;
   }, [primaryInput, inputAmount, onChange]);
 
-  const quickAmounts = useMemo(() => {
-    if (!spendPosition || !spendNetwork) {
-      return [];
-    }
-    return getQuickAmounts(spendPosition.asset, spendNetwork);
-  }, [spendPosition, spendNetwork]);
-
   const inputId = useId();
   return (
     <>
@@ -103,7 +93,7 @@ export function SpendTokenField({
         endTitle={
           spendPosition && positionBalanceCommon ? (
             <HStack gap={16} alignItems="center">
-              {quickAmounts.map(({ factor, title }) => (
+              {QUICK_AMOUNTS.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
                   onClick={() => {
@@ -185,7 +175,9 @@ export function SpendTokenField({
                 placeholder="0"
                 onChange={(event) =>
                   handleChange(
-                    event.currentTarget.value.replace(',', '.').replace(/\s/g, '')
+                    event.currentTarget.value
+                      .replace(',', '.')
+                      .replace(/\s/g, '')
                   )
                 }
                 pattern={FLOAT_INPUT_PATTERN}

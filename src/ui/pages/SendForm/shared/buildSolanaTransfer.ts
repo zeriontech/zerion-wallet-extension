@@ -46,7 +46,9 @@ export async function buildSolanaTransfer(
   const isNativeAsset = Networks.isNativeAsset(position.asset, network);
   if (isNativeAsset) {
     // Convert SOL (in lamports)
-    const lamports = BigInt(Number(formState.tokenValue) * 1e9);
+    let lamports = BigInt(Number(formState.tokenValue) * 1e9);
+    const isSendingMax =
+      position.quantity != null && lamports === BigInt(position.quantity);
     tx.add(
       SystemProgram.transfer({
         fromPubkey,
@@ -54,6 +56,36 @@ export async function buildSolanaTransfer(
         lamports,
       })
     );
+    if (isSendingMax) {
+      const simulatedTx = await connection.simulateTransaction(tx);
+      const computeUnits = simulatedTx.value.unitsConsumed ?? 100_000;
+      const adjustedUnits = Math.max(
+        Math.min(1_400_000, computeUnits * 1.2),
+        500
+      );
+      const tempTx = new Transaction();
+      tempTx.feePayer = fromPubkey;
+      tempTx.recentBlockhash = latestBlockhash.blockhash;
+      tempTx.add(
+        SystemProgram.transfer({ fromPubkey, toPubkey, lamports }),
+        ComputeBudgetProgram.setComputeUnitLimit({ units: adjustedUnits }),
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: Math.floor((100_000 / adjustedUnits) * 1000_000),
+        })
+      );
+      const estimatedFee = await tempTx.getEstimatedFee(connection);
+      if (estimatedFee != null && estimatedFee > 0) {
+        lamports = lamports - BigInt(estimatedFee);
+        // Replace the transfer instruction with the adjusted amount
+        tx.instructions = [
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports,
+          }),
+        ];
+      }
+    }
   } else {
     const tokenAddressInChain = getAddress({
       asset: position.asset,

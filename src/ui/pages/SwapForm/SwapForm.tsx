@@ -1,7 +1,6 @@
 import {
   Navigate,
   useLocation,
-  useNavigate,
   useNavigationType,
   useSearchParams,
 } from 'react-router-dom';
@@ -1021,7 +1020,6 @@ function SwapFormComponent() {
       },
     });
 
-  const navigate = useNavigate();
   const { isUK } = useUKDetection();
 
   // Show success state for swap (either direct or after approve)
@@ -1062,8 +1060,8 @@ function SwapFormComponent() {
             approveAndSendMutation.reset();
             setShowSuccessState(false);
             setApproveHash(null);
+            handleChange('inputAmount', '');
             snapshotRef.current = null;
-            navigate('/overview/history');
           }}
           needsManualSign={Boolean(wallet && isDeviceAccount(wallet))}
         />
@@ -1344,7 +1342,6 @@ function SwapFormComponent() {
                   outputAmount={outputAmount}
                   positions={availablePositions}
                   spendPosition={inputPosition}
-                  spendNetwork={network}
                   receivePosition={outputPosition}
                 />
                 <BottomArc />

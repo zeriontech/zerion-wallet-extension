@@ -38,6 +38,10 @@ import { getAddressType } from 'src/shared/wallet/classifiers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { SOL_ASSET_FUNGIBLE } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
+import BigNumber from 'bignumber.js';
+import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
+import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
+import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { applyConfiguration } from '../../SendTransaction/TransactionConfiguration/applyConfiguration';
 import { parseNftId } from './useNftPosition';
 import type { SendFormState } from './SendFormState';
@@ -95,6 +99,26 @@ function createNetworkFee(
   };
 }
 
+function getGasPriceFromTransaction(
+  transaction: IncomingTransaction
+): GasPriceObject | null {
+  const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = transaction;
+  if (gasPrice) {
+    return { classic: Number(gasPrice), eip1559: null, optimistic: null };
+  }
+  if (maxPriorityFeePerGas && maxFeePerGas) {
+    return {
+      eip1559: {
+        priorityFee: Number(maxPriorityFeePerGas),
+        maxFee: Number(maxFeePerGas),
+      },
+      classic: null,
+      optimistic: null,
+    };
+  }
+  return null;
+}
+
 async function applyConfigurationAsync<T extends IncomingTransaction>({
   transaction,
   formState,
@@ -106,7 +130,10 @@ async function applyConfigurationAsync<T extends IncomingTransaction>({
 }) {
   const chainGasPrices = await queryGasPrices(chain);
   const configuration = toConfiguration(formState);
-  return applyConfiguration(transaction, configuration, chainGasPrices);
+  return {
+    transaction: applyConfiguration(transaction, configuration, chainGasPrices),
+    chainGasPrices,
+  };
 }
 
 async function getEligibility(tx: IncomingTransaction) {
@@ -248,16 +275,51 @@ export async function prepareSendData(
       });
       nonce = String(latestNonce);
     }
-    tx = await applyConfigurationAsync({
+    const applied = await applyConfigurationAsync({
       chain,
       formState: { ...formState, nonce },
       transaction: tx,
     });
+    tx = applied.transaction;
     let eligibility: SendSubmitData['paymasterEligibility'] = null;
     if (network.supports_sponsored_transactions) {
       eligibility = await getEligibility(tx);
       if (eligibility.data.eligible) {
         tx = await getPaymasterTx(tx);
+      }
+    }
+    if (!eligibility) {
+      const isNative =
+        type !== 'nft' &&
+        position &&
+        Networks.isNativeAsset(position.asset, network);
+      if (isNative && tokenValue && position.quantity) {
+        const decimals = getDecimals({ asset: position.asset, chain });
+        const sendAmountBase = commonToBase(tokenValue, decimals);
+        const positionQuantity = new BigNumber(position.quantity);
+        if (sendAmountBase.isEqualTo(positionQuantity)) {
+          const gas = getGas(tx);
+          const gasPrice = getGasPriceFromTransaction(tx);
+          const feeEstimation = await getNetworkFeeEstimation({
+            address: from,
+            gas: gas ? Number(gas) : null,
+            gasPrices: applied.chainGasPrices,
+            gasPrice,
+            transaction: tx,
+          });
+          if (feeEstimation) {
+            const networkFee = new BigNumber(
+              String(feeEstimation.maxFee ?? feeEstimation.estimatedFee)
+            );
+            const adjustedValue = positionQuantity.minus(networkFee);
+            if (adjustedValue.isGreaterThan(0)) {
+              tx = {
+                ...tx,
+                value: valueToHex(adjustedValue.toFixed(0)),
+              };
+            }
+          }
+        }
       }
     }
     assertProp(tx, 'chainId');

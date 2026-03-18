@@ -1,6 +1,6 @@
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import type { AddressPosition, Asset } from 'defi-sdk';
-import React, { useId, useMemo, useRef } from 'react';
+import React, { useId, useRef } from 'react';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
@@ -12,7 +12,7 @@ import {
 } from 'src/ui/components/Positions/helpers';
 import { AssetSelect } from 'src/ui/pages/SendForm/AssetSelect';
 import {
-  getQuickAmounts,
+  QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
@@ -64,13 +64,6 @@ export function SpendTokenField({
 
   const inputId = useId();
 
-  const quickAmounts = useMemo(() => {
-    if (!spendPosition || !spendNetwork) {
-      return [];
-    }
-    return getQuickAmounts(spendPosition.asset, spendNetwork);
-  }, [spendPosition, spendNetwork]);
-
   const spendChain = spendNetwork ? createChain(spendNetwork.id) : null;
 
   return (
@@ -79,7 +72,7 @@ export function SpendTokenField({
       endTitle={
         spendPosition && positionBalanceCommon ? (
           <HStack gap={16} alignItems="center">
-            {quickAmounts.map(({ factor, title }) => (
+            {QUICK_AMOUNTS.map(({ factor, title }) => (
               <QuickAmountButton
                 key={factor}
                 onClick={() => {
