@@ -23,7 +23,7 @@ const PNL_OPTIONS: Array<{ id: PnlMode; label: string; shortLabel: string }> = [
   { id: 'pnl', label: 'Total PnL', shortLabel: 'PnL' },
   { id: 'rpnl', label: 'Realized PnL', shortLabel: 'rPnL' },
   { id: 'upnl', label: 'Unrealized PnL', shortLabel: 'uPnL' },
-  { id: '1day', label: '1 Day', shortLabel: '24h' },
+  { id: '1day', label: '24h Return', shortLabel: '24h' },
 ];
 
 interface PercentChangeInfo {
