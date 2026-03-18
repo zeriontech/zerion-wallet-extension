@@ -23,7 +23,6 @@ import { produce } from 'immer';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState, WalletStore } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
-import { globalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
@@ -141,18 +140,10 @@ export class Account extends EventEmitter<AccountEvents> {
   }
 
   private static async writeCredentials(credentials: Credentials) {
-    const preferences = await globalPreferences.getPreferences();
-    if (preferences.autoLockTimeout === 'none') {
-      await Promise.all([
-        BrowserStorage.set(credentialsKey, credentials),
-        SessionStorage.remove(credentialsKey), // make sure other storage doesn't have a duplicate
-      ]);
-    } else {
-      await Promise.all([
-        SessionStorage.set(credentialsKey, credentials),
-        BrowserStorage.remove(credentialsKey), // make sure other storage doesn't have a duplicate
-      ]);
-    }
+    await Promise.all([
+      SessionStorage.set(credentialsKey, credentials),
+      BrowserStorage.remove(credentialsKey), // make sure other storage doesn't have a duplicate
+    ]);
     await LoginActivity.recordLogin();
   }
 
@@ -180,12 +171,7 @@ export class Account extends EventEmitter<AccountEvents> {
         await params.from.remove(credentialsKey);
       }
     }
-    const preferences = await globalPreferences.getPreferences();
-    if (preferences.autoLockTimeout === 'none') {
-      await move({ from: SessionStorage, to: BrowserStorage });
-    } else {
-      await move({ from: BrowserStorage, to: SessionStorage });
-    }
+    await move({ from: BrowserStorage, to: SessionStorage });
   }
 
   static async ensureUserAndWallet() {
@@ -221,11 +207,6 @@ export class Account extends EventEmitter<AccountEvents> {
     this.on('authenticated', () => {
       if (this.encryptionKey) {
         Account.writeCredentials({ encryptionKey: this.encryptionKey });
-      }
-    });
-    globalPreferences.on('change', (prevState, newState) => {
-      if (newState.autoLockTimeout !== prevState.autoLockTimeout) {
-        Account.migrateCredentialsIfNeeded();
       }
     });
   }
