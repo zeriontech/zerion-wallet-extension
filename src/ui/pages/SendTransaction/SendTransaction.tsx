@@ -683,6 +683,7 @@ function SendTransactionContent({
         origin,
       });
     },
+    refetchOnWindowFocus: false,
   });
 
   const interpretationHasCriticalWarning = hasCriticalWarning(
@@ -1274,6 +1275,7 @@ function SolSendTransaction() {
         origin,
       });
     },
+    refetchOnWindowFocus: false,
   });
 
   const addressAction = interpretQuery.data?.data.action || localAddressAction;
