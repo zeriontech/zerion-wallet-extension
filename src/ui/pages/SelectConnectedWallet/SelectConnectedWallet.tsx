@@ -188,7 +188,7 @@ function SelectConnectedWalletView({
               color="var(--neutral-600)"
               style={{ textAlign: 'center' }}
             >
-              This signature requires{' '}
+              This request requires{' '}
               {ecosystem === 'evm' ? 'an Ethereum' : 'a Solana'} wallet.
               <br />
               Please select one of your connected wallets.
@@ -348,7 +348,7 @@ export function SelectConnectedWallet() {
     },
     [windowId]
   );
-  const handleReject = () => windowPort.reject(windowId);
+  const handleReject = useCallback(() => windowPort.reject(windowId), [windowId]);
 
   if (isError) {
     if (error instanceof NoConnectedWalletForEcosystemError) {
