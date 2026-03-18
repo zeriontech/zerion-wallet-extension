@@ -40,7 +40,7 @@ export async function prepareStorage() {
   } else if (storageVersion !== STORAGE_VERSION) {
     let next: null | number | string = storageVersion;
     while (next && next in upgrades) {
-      next = await upgrades[storageVersion]();
+      next = await upgrades[next]();
     }
   }
   return 'ok';
