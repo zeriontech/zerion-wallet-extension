@@ -40,6 +40,7 @@ export function NetworkSelect({
   value,
   standard = 'evm',
   onChange,
+  onChangeEffect,
   renderButton,
   dialogRootNode,
   filterPredicate,
@@ -49,6 +50,10 @@ export function NetworkSelect({
   value: string;
   standard?: BlockchainType | 'all';
   onChange: (value: string) => void;
+  /**
+   * For side effect when network is selected. Do not use for updating the network in the app, use `onChange` for that.
+   */
+  onChangeEffect?: (value: string) => void;
   renderButton?(params: {
     value: string;
     openDialog(): void;
@@ -73,6 +78,9 @@ export function NetworkSelect({
   function handleDialogOpen() {
     invariant(dialogRef.current, 'Dialog element not found');
     showConfirmDialog(dialogRef.current).then(async (chain) => {
+      if (onChangeEffect) {
+        onChangeEffect(chain === 'all' ? NetworkSelectValue.All : chain);
+      }
       if (chain !== 'all') {
         // TODO: should we combine these calls?
         await walletPort.request('uiChainSelected', { chain });

@@ -349,7 +349,17 @@ function OverviewComponent() {
   const selectedChain = searchParams.get('chain') || null;
   const setSelectedChain = useEvent((value: string | null) => {
     // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
-    setSearchParams(value ? [['chain', value]] : '');
+    setSearchParams(
+      (current) => {
+        if (value) {
+          current.set('chain', value);
+        } else {
+          current.delete('chain');
+        }
+        return current;
+      },
+      { replace: true }
+    );
   });
   const addressType = address ? getAddressType(address) : null;
   const { data: network } = useNetworkConfig(selectedChain ?? null);
@@ -730,7 +740,6 @@ function OverviewComponent() {
                     renderGuard={() => testnetGuardView}
                   >
                     <HistoryList
-                      dappChain={dappChain || null}
                       selectedChain={selectedChain}
                       onChainChange={setSelectedChain}
                     />

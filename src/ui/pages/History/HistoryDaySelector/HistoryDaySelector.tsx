@@ -241,7 +241,10 @@ export function HistoryDaySelector({
         height="min-content"
         renderWhenOpen={() => (
           <>
-            <DialogTitle alignTitle="start" title="Jump to date" />
+            <DialogTitle
+              alignTitle="start"
+              title={<UIText kind="headline/h3">Jump to date</UIText>}
+            />
             <form method="dialog">
               <Spacer height={24} />
               <DayPicker

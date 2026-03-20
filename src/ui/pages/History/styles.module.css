@@ -7,3 +7,24 @@
 .updateIconLoading {
   animation: spin 1s linear infinite;
 }
+
+.filterOption {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  padding: 12px 16px;
+  outline: none;
+  border-radius: 12px;
+}
+
+@media (hover: hover) {
+  .filterOption:hover {
+    background-color: var(--neutral-200);
+  }
+}
+
+.filterOption:focus-visible {
+  background-color: var(--neutral-200);
+}
