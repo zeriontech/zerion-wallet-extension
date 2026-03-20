@@ -124,30 +124,22 @@ export function useHistoryFilterParams() {
   };
 }
 
-function getActionTypeLabel(keys: string[]): string | null {
-  if (!keys.length) return null;
+function getActionTypeLabel(keys: string[]): string {
+  if (!keys.length) return 'All Types';
   if (keys.length === 1) {
     const option = ACTION_TYPE_OPTIONS.find((o) => o.value === keys[0]);
-    return option?.label ?? null;
+    return option?.label ?? 'All Types';
   }
-  return String(keys.length);
+  return `${keys.length} Types`;
 }
 
-function getAssetTypeLabel(param?: string): string | null {
-  if (!param || param === 'all') return null;
+function getAssetTypeLabel(param?: string): string {
+  if (!param || param === 'all') return 'All Assets';
   const option = ASSET_TYPE_OPTIONS.find((o) => o.value === param);
-  return option?.label ?? null;
+  return option?.label ?? 'All Assets';
 }
 
-function FilterRow({
-  label,
-  value,
-  onClick,
-}: {
-  label: string;
-  value?: string | null;
-  onClick: () => void;
-}) {
+function FilterRow({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <UnstyledButton
       onClick={onClick}
@@ -160,31 +152,14 @@ function FilterRow({
         style={{ gridTemplateColumns: '1fr auto' }}
       >
         <UIText kind="body/regular">{label}</UIText>
-        <HStack gap={4} alignItems="center">
-          {value ? (
-            <span
-              style={{
-                display: 'inline-block',
-                padding: '2px 8px',
-                borderRadius: 8,
-                backgroundColor: 'var(--primary)',
-                color: 'var(--always-white)',
-              }}
-            >
-              <UIText kind="caption/accent" color="var(--always-white)">
-                {value}
-              </UIText>
-            </span>
-          ) : null}
-          <ChevronRightIcon
-            style={{
-              display: 'block',
-              width: 24,
-              height: 24,
-              color: 'var(--neutral-400)',
-            }}
-          />
-        </HStack>
+        <ChevronRightIcon
+          style={{
+            display: 'block',
+            width: 24,
+            height: 24,
+            color: 'var(--neutral-400)',
+          }}
+        />
       </HStack>
     </UnstyledButton>
   );
@@ -213,11 +188,7 @@ function AssetTypeDialog({
 
   return (
     <>
-      <FilterRow
-        label="All Assets"
-        value={getAssetTypeLabel(value)}
-        onClick={open}
-      />
+      <FilterRow label={getAssetTypeLabel(value)} onClick={open} />
       <BottomSheetDialog
         ref={dialogRef}
         height="min-content"
@@ -395,11 +366,7 @@ function ActionTypeDialog({
 
   return (
     <>
-      <FilterRow
-        label="All Types"
-        value={getActionTypeLabel(selectedKeys)}
-        onClick={open}
-      />
+      <FilterRow label={getActionTypeLabel(selectedKeys)} onClick={open} />
       <BottomSheetDialog
         ref={dialogRef}
         height="min-content"
