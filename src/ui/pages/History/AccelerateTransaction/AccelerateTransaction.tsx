@@ -77,7 +77,11 @@ export function AccelerateTransaction({
                 ) : null}
               </HStack>
               <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
-                <Button kind="primary" onClick={() => setView('speedup')}>
+                <Button
+                  kind="primary"
+                  onClick={() => setView('speedup')}
+                  style={{ paddingInline: 6 }}
+                >
                   <HStack gap={8} justifyContent="center">
                     <img
                       alt=""
