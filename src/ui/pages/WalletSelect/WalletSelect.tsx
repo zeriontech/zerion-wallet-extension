@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { FillView } from 'src/ui/components/FillView';
@@ -34,7 +34,6 @@ import { getWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
-import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
@@ -46,10 +45,13 @@ import {
   DEFAULT_WALLET_LIST_GROUPS,
   getWalletId,
 } from 'src/shared/wallet/wallet-list';
+import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
+import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 import { WalletListEdit } from './WalletListEdit';
 import { getFullWalletList } from './shared';
+import { useWalletSearchPredicate } from './useWalletSearchPredicate';
 
 function PortfolioRow({
   walletGroups,
@@ -146,6 +148,8 @@ export function WalletSelect() {
     [searchParams, setSearchParams]
   );
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
@@ -166,14 +170,28 @@ export function WalletSelect() {
     [ownedGroups]
   );
 
-  const { data: walletsMeta, isLoading: isLoadingWalletsMeta } =
-    useWalletsMetaByChunks({
-      addresses: ownedAddresses,
-      useErrorBoundary: false,
-      suspense: false,
-    });
+  const allWallets = useMemo(
+    () => walletGroups?.flatMap((g) => g.walletContainer.wallets) ?? [],
+    [walletGroups]
+  );
+  const totalWalletCount = allWallets.length;
+  const allAddresses = useMemo(
+    () => allWallets.map((w) => w.address),
+    [allWallets]
+  );
+
+  const { data: walletsMeta } = useWalletsMetaByChunks({
+    addresses: allAddresses,
+    useErrorBoundary: false,
+    suspense: false,
+  });
 
   const ownedAddressesCount = ownedAddresses.length;
+
+  const matchesSearch = useWalletSearchPredicate({
+    searchQuery,
+    walletsMeta,
+  });
 
   const { singleAddress, refetch } = useAddressParams();
   const setCurrentAddressMutation = useMutation({
@@ -193,9 +211,7 @@ export function WalletSelect() {
     },
   });
 
-  const isLoadingForTooLong = useStaleTime(isLoadingWalletsMeta, 4000).isStale;
-  const waitForWalletsMeta = isLoadingWalletsMeta && !isLoadingForTooLong;
-  const isLoading = isLoadingWalletGroups || waitForWalletsMeta;
+  const isLoading = isLoadingWalletGroups;
 
   if (isLoading) {
     return <ViewLoading kind="network" />;
@@ -285,6 +301,26 @@ export function WalletSelect() {
           walletsOrder={preferences?.walletsOrder}
         />
       ) : null}
+      {ownedAddressesCount > 1 && totalWalletCount >= 5 && !editMode ? (
+        <Spacer height={16} />
+      ) : null}
+      {totalWalletCount >= 5 && !editMode ? (
+        <DebouncedInput
+          value={searchQuery}
+          delay={300}
+          onChange={setSearchQuery}
+          render={({ value, handleChange }) => (
+            <SearchInput
+              boxHeight={40}
+              type="search"
+              placeholder="Search wallets"
+              autoFocus={true}
+              value={value}
+              onChange={(event) => handleChange(event.currentTarget.value)}
+            />
+          )}
+        />
+      ) : null}
       <VStack
         gap={2}
         style={{
@@ -313,7 +349,8 @@ export function WalletSelect() {
             selectedAddress={singleAddress}
             showAddressValues={true}
             predicate={(wallet) =>
-              !ecosystem || isMatchForEcosystem(wallet.address, ecosystem)
+              (!ecosystem || isMatchForEcosystem(wallet.address, ecosystem)) &&
+              matchesSearch(wallet)
             }
             renderItemFooter={({ wallet }) => {
               const walletMeta = walletsMeta?.find(
