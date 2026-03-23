@@ -3,6 +3,7 @@ import type {
   EthersV5TransactionResponse,
 } from 'src/background/Wallet/model/ethers-v5-types';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
+import type { AnyAddressAction } from './addressAction';
 
 type CombineUnion<A, B> =
   | ({ [P in keyof A]: A[P] } & { [K in keyof B]?: undefined })
@@ -55,6 +56,7 @@ export type TransactionObject = CombineUnion<EvmObject, SolanaObject> & {
   timestamp: number;
   initiator: string;
   dropped?: boolean;
+  addressAction?: AnyAddressAction; // local saved simulation result to show full info while transaction is pending
 };
 
 export type StoredTransactions = Array<TransactionObject>;

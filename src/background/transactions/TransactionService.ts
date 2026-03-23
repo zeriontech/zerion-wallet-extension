@@ -13,7 +13,10 @@ import {
   isPendingTransaction,
 } from 'src/modules/ethereum/transactions/model';
 import { registerTransaction } from 'src/modules/defi-sdk/registerTransaction';
-import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  isLocalAddressAction,
+  type AnyAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
@@ -265,7 +268,10 @@ export class TransactionService {
 
   static toTransactionObject(
     result: SignTransactionResult,
-    { initiator }: { initiator: string }
+    {
+      initiator,
+      addressAction,
+    }: { initiator: string; addressAction?: AnyAddressAction }
   ): TransactionObject {
     const timestamp = Date.now();
     if (result.evm) {
@@ -274,6 +280,7 @@ export class TransactionService {
         hash: result.evm.hash,
         initiator,
         timestamp,
+        addressAction,
       };
     } else if (result.solana) {
       const solResult = ensureSolanaResult(result);
@@ -284,6 +291,7 @@ export class TransactionService {
         signatureStatus: null,
         initiator,
         timestamp,
+        addressAction,
       };
     } else {
       throw new Error('Unexpected result type');
@@ -294,6 +302,7 @@ export class TransactionService {
     emitter.on('transactionSent', (result, { initiator, addressAction }) => {
       const newItem = TransactionService.toTransactionObject(result, {
         initiator,
+        addressAction: addressAction ?? undefined,
       });
       if (
         addressAction &&

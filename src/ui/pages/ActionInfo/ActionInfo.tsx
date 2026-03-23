@@ -1,8 +1,7 @@
 import { capitalize } from 'capitalize-ts';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type {
-  AddressAction,
   ActionDirection,
   Amount,
   Collection,
@@ -26,6 +25,16 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { NFTLink } from 'src/ui/components/NFTLink';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import {
+  isLocalAddressAction,
+  type AnyAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
+import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
+import { AccelerateTransaction } from '../History/AccelerateTransaction';
+import {
+  PopoverToast,
+  type PopoverToastHandle,
+} from '../Settings/PopoverToast/PopoverToast';
 import { RateLine } from './RateLine';
 import { LabelLine } from './LabelLine';
 import { FeeLine } from './FeeLine';
@@ -209,7 +218,7 @@ function ActContent({
   act,
   showActType,
 }: {
-  act: NonNullable<AddressAction['acts']>[number];
+  act: NonNullable<AnyAddressAction['acts']>[number];
   showActType: boolean;
 }) {
   const approvals = act.content?.approvals;
@@ -314,13 +323,14 @@ export function ActionInfo() {
   const navigate = useNavigate();
   const { act_index } = useParams();
   const { state } = useLocation();
+  const toastRef = useRef<PopoverToastHandle>(null);
 
   invariant(
     !act_index || isNumeric(act_index),
     'actIndex should be a number or be empty'
   );
   const actIndex = act_index ? Number(act_index) : undefined;
-  const addressAction = state?.addressAction as AddressAction | undefined;
+  const addressAction = state?.addressAction as AnyAddressAction | undefined;
   const targetObject =
     actIndex != null ? addressAction?.acts?.at(actIndex) : addressAction;
 
@@ -329,6 +339,22 @@ export function ActionInfo() {
       ? dateFormatter.format(new Date(addressAction.timestamp))
       : null;
   }, [addressAction?.timestamp]);
+
+  const localStatus = useActionStatusByHash(
+    targetObject?.transaction?.hash || ''
+  );
+
+  const initialPending = useRef(
+    addressAction &&
+      isLocalAddressAction(addressAction) &&
+      localStatus === 'pending'
+  );
+
+  useEffect(() => {
+    if (localStatus === 'confirmed' && initialPending.current) {
+      toastRef.current?.showToast();
+    }
+  }, [localStatus]);
 
   if (!addressAction || !targetObject) {
     return (
@@ -339,8 +365,12 @@ export function ActionInfo() {
     );
   }
 
-  const { type, status, label, transaction } = targetObject;
+  const { type, status: externalStatus, label, transaction } = targetObject;
+  const status = isLocalAddressAction(addressAction)
+    ? localStatus
+    : externalStatus;
   const isFailed = status === 'failed' || status === 'dropped';
+  const isPending = status === 'pending';
 
   return (
     <PageColumn>
@@ -395,6 +425,12 @@ export function ActionInfo() {
             ))
           )}
         </VStack>
+        {isLocalAddressAction(addressAction) && isPending && !actIndex ? (
+          <AccelerateTransaction
+            addressAction={addressAction}
+            onSuccess={() => navigate(-1)}
+          />
+        ) : null}
         <VStack
           gap={20}
           style={{
@@ -411,6 +447,14 @@ export function ActionInfo() {
           {addressAction.fee ? <FeeLine fee={addressAction.fee} /> : null}
         </VStack>
       </VStack>
+      <PopoverToast
+        ref={toastRef}
+        style={{
+          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
+        }}
+      >
+        Transaction Confirmed
+      </PopoverToast>
     </PageColumn>
   );
 }
