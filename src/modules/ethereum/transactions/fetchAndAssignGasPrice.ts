@@ -97,7 +97,7 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
 ) {
   const [gas, networkFeeInfo] = await Promise.all([
-    hasGasEstimation(transaction) ? null : estimateGas(transaction, networks),
+    estimateGas(transaction, networks),
     hasNetworkFee(transaction)
       ? null
       : fetchGasPriceForTransaction(transaction, networks, {
