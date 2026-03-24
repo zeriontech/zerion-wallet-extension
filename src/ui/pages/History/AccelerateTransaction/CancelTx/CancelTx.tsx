@@ -230,6 +230,9 @@ function CancelTxContent({
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
                 }
+                keyboardShortcutEnabled={
+                  preferences.enableKeyboardShortcutToSign
+                }
               />
             ) : null}
           </div>

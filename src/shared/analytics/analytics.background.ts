@@ -710,6 +710,19 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack('Experiments: Hold Sign Button', mixpanelParams);
   });
 
+  emitter.on('keyboardShortcutToSignPreferenceChange', async (active) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'keyboard_shortcut_to_sign_preference',
+      active,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('Experiments: Keyboard Shortcut Sign', mixpanelParams);
+  });
+
   emitter.on('walletCreated', async ({ walletContainer, origin }) => {
     const preferences = await globalPreferences.getPreferences();
     if (!preferences.analyticsEnabled) {
@@ -861,7 +874,7 @@ function trackAppEvents({ account }: { account: Account }) {
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack('General: Password Change Failed', mixpanelParams);
   });
-  
+
   emitter.on('reportLedgerError', async (errorMessage: string) => {
     const preferences = await globalPreferences.getPreferences();
     if (!preferences.analyticsEnabled) {

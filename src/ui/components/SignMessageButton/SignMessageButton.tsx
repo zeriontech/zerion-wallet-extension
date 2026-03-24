@@ -15,7 +15,10 @@ import {
 } from 'src/ui/ui-kit/Button';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { UIText } from 'src/ui/ui-kit/UIText';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { isMacOS } from 'src/ui/shared/isMacos';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
 
@@ -58,6 +61,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     onClick,
     holdToSign,
     bluetoothSupportEnabled,
+    keyboardShortcutEnabled,
     ...buttonProps
   }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
     wallet: ExternallyOwnedAccount;
@@ -65,6 +69,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     buttonKind?: ButtonKind;
     holdToSign: boolean | null;
     bluetoothSupportEnabled: boolean | null;
+    keyboardShortcutEnabled?: boolean | null;
   },
   ref: React.Ref<SignMsgBtnHandle>
 ) {
@@ -162,63 +167,115 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   // button should be disabled after successful sign to prevent a duplicating call
   const disabled = isLoading || Boolean(holdToSign && isSuccess);
   const title = buttonTitle || 'Sign';
+  const shortcutActive =
+    Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled;
+  const shortcutHint = (
+    <UIText
+      kind="caption/accent"
+      style={{
+        padding: '1px 3px',
+        borderRadius: 6,
+        color: 'var(--neutral-500)',
+        backgroundColor: 'var(--neutral-800)',
+      }}
+    >
+      {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
+    </UIText>
+  );
 
   return isDeviceAccount(wallet) ? (
-    <HardwareSignMessage
-      ref={hardwareSignRef}
-      ecosystem={getAddressType(wallet.address)}
-      derivationPath={wallet.derivationPath}
-      isSigning={isLoading}
-      children={children}
-      buttonTitle={isSuccess ? 'Signed' : buttonTitle}
-      buttonKind={buttonKind}
-      onClick={onClick}
-      disabled={disabled}
-      bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
-      legacySigning={legacySigning}
-      onLegacySigningChange={setLegacySigning}
-      {...buttonProps}
-    />
+    <>
+      <KeyboardShortcut
+        combination="mod+enter"
+        onKeyDown={() => {
+          if (onClick) {
+            (onClick as React.MouseEventHandler<HTMLButtonElement>)(
+              {} as React.MouseEvent<HTMLButtonElement>
+            );
+          }
+        }}
+        disabled={!shortcutActive}
+      />
+      <HardwareSignMessage
+        ref={hardwareSignRef}
+        ecosystem={getAddressType(wallet.address)}
+        derivationPath={wallet.derivationPath}
+        isSigning={isLoading}
+        children={children}
+        buttonTitle={isSuccess ? 'Signed' : buttonTitle}
+        buttonKind={buttonKind}
+        onClick={onClick}
+        disabled={disabled}
+        bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
+        legacySigning={legacySigning}
+        onLegacySigningChange={setLegacySigning}
+        {...buttonProps}
+      />
+    </>
   ) : (
     <WithReadonlyWarningDialog
       address={wallet.address}
       onClick={onClick}
-      render={({ handleClick }) =>
-        holdToSign ? (
-          <HoldableButton
-            text={`Hold to ${title}`}
-            successText={
-              <HStack gap={4} alignItems="center">
-                <CheckIcon
-                  style={{
-                    width: 20,
-                    height: 20,
-                    color: 'var(--positive-500)',
-                  }}
-                />
-                <span>Signed</span>
-              </HStack>
+      render={({ handleClick }) => (
+        <>
+          <KeyboardShortcut
+            combination="mod+enter"
+            onKeyDown={() =>
+              handleClick?.({} as React.MouseEvent<HTMLButtonElement>)
             }
-            submittingText="Sending..."
-            onClick={handleClick}
-            success={isSuccess}
-            submitting={isLoading}
-            disabled={disabled}
-            error={isError}
-            kind={buttonKind}
-            {...buttonProps}
+            disabled={!shortcutActive}
           />
-        ) : (
-          <Button
-            disabled={disabled}
-            onClick={handleClick}
-            kind={buttonKind}
-            {...buttonProps}
-          >
-            {children || (isLoading ? 'Signing...' : title)}
-          </Button>
-        )
-      }
+          {holdToSign ? (
+            <HoldableButton
+              text={
+                <HStack gap={4} alignItems="center" justifyContent="center">
+                  {`Hold to ${title}`}
+                  {shortcutActive ? shortcutHint : null}
+                </HStack>
+              }
+              successText={
+                <HStack gap={4} alignItems="center">
+                  <CheckIcon
+                    style={{
+                      width: 20,
+                      height: 20,
+                      color: 'var(--positive-500)',
+                    }}
+                  />
+                  <span>Signed</span>
+                </HStack>
+              }
+              submittingText="Sending..."
+              onClick={handleClick}
+              success={isSuccess}
+              submitting={isLoading}
+              disabled={disabled}
+              error={isError}
+              kind={buttonKind}
+              style={shortcutActive ? { paddingInline: 0 } : undefined}
+              {...buttonProps}
+            />
+          ) : (
+            <Button
+              disabled={disabled}
+              onClick={handleClick}
+              kind={buttonKind}
+              style={shortcutActive ? { paddingInline: 0 } : undefined}
+              {...buttonProps}
+            >
+              {children ||
+                (isLoading ? (
+                  'Signing...'
+                ) : (
+                  <HStack gap={4} alignItems="center" justifyContent="center">
+                    {title}
+                    {shortcutActive ? shortcutHint : null}
+                  </HStack>
+                ))}
+            </Button>
+          )}
+        </>
+      )}
     />
   );
 });

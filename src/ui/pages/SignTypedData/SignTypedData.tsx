@@ -467,6 +467,9 @@ function TypedDataDefaultView({
                   bluetoothSupportEnabled={
                     globalPreferences.bluetoothSupportEnabled
                   }
+                  keyboardShortcutEnabled={
+                    preferences.enableKeyboardShortcutToSign
+                  }
                 />
               ) : null}
             </div>

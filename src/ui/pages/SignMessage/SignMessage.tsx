@@ -310,6 +310,9 @@ function SignMessageContent({
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
                 }
+                keyboardShortcutEnabled={
+                  preferences.enableKeyboardShortcutToSign
+                }
               />
             ) : null}
           </div>

@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { Button, HoldableButton } from 'src/ui/ui-kit/Button';
+import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
+import { isMacOS } from 'src/ui/shared/isMacos';
 import type { Chain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration';
@@ -67,6 +69,23 @@ export function TransactionConfirmationView({
     return JSON.stringify(txInterpretQuery.data?.data.action);
   }, [txInterpretQuery]);
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const shortcutActive =
+    Boolean(preferences?.enableKeyboardShortcutToSign) && !query.isLoading;
+  const shortcutHint = (
+    <UIText
+      kind="caption/accent"
+      style={{
+        padding: '1px 3px',
+        borderRadius: 6,
+        color: 'var(--neutral-500)',
+        backgroundColor: 'var(--neutral-800)',
+      }}
+    >
+      {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
+    </UIText>
+  );
+
   if (query.isLoading) {
     return null;
   }
@@ -111,6 +130,7 @@ export function TransactionConfirmationView({
           </HStack>
         </VStack>
         <form
+          ref={formRef}
           method="dialog"
           style={{ display: 'flex', flexDirection: 'column' }}
         >
@@ -167,30 +187,56 @@ export function TransactionConfirmationView({
             <Button value="cancel" kind="regular" ref={focusNode}>
               Cancel
             </Button>
+            <KeyboardShortcut
+              combination="mod+enter"
+              onKeyDown={() => {
+                const btn = formRef.current?.querySelector<HTMLButtonElement>(
+                  'button[value]:not([value="cancel"])'
+                );
+                btn?.click();
+              }}
+              disabled={!shortcutActive}
+            />
             {isDeviceAccount(wallet) ? (
               <Button
                 kind="primary"
                 value={interpretationString ?? 'confirm'}
-                style={{ whiteSpace: 'nowrap' }}
+                style={{
+                  whiteSpace: 'nowrap',
+                  paddingInline: shortcutActive ? 0 : undefined,
+                }}
               >
                 <HStack gap={8} alignItems="center" justifyContent="center">
                   <LedgerIcon />
                   Sign and Send
+                  {shortcutActive ? shortcutHint : null}
                 </HStack>
               </Button>
             ) : preferences?.enableHoldToSignButton ? (
               <HoldableButton
-                text="Hold to Sign"
+                text={
+                  <HStack gap={4} alignItems="center" justifyContent="center">
+                    Hold to Sign
+                    {shortcutActive ? shortcutHint : null}
+                  </HStack>
+                }
                 submittingText="Signing..."
                 value={interpretationString ?? 'confirm'}
+                style={shortcutActive ? { paddingInline: 0 } : undefined}
               />
             ) : (
               <Button
                 kind="primary"
                 value={interpretationString ?? 'confirm'}
-                style={{ whiteSpace: 'nowrap' }}
+                style={{
+                  whiteSpace: 'nowrap',
+                  paddingInline: shortcutActive ? 0 : undefined,
+                }}
               >
-                Sign and Send
+                <HStack gap={4} alignItems="center" justifyContent="center">
+                  Sign and Send
+                  {shortcutActive ? shortcutHint : null}
+                </HStack>
               </Button>
             )}
           </HStack>

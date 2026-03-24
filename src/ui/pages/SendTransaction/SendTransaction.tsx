@@ -919,6 +919,9 @@ function SendTransactionContent({
                   bluetoothSupportEnabled={
                     globalPreferences.bluetoothSupportEnabled
                   }
+                  keyboardShortcutEnabled={
+                    preferences.enableKeyboardShortcutToSign
+                  }
                 />
               ) : null}
             </div>
@@ -1357,6 +1360,9 @@ function SolSendTransaction() {
                 holdToSign={preferences.enableHoldToSignButton}
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
+                }
+                keyboardShortcutEnabled={
+                  preferences.enableKeyboardShortcutToSign
                 }
               />
             ) : null}
