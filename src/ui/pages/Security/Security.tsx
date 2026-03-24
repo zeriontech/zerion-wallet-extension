@@ -550,6 +550,12 @@ function RequirePasswordToSign() {
           setGlobalPreferences({
             requirePasswordToSign: enabling,
           });
+          if (enabling) {
+            // Immediately clear credentials and private keys from memory
+            await accountPublicRPCPort.request('scheduleCredentialsClearance', {
+              delay: 0,
+            });
+          }
         }}
         detailText="Require password or passkey confirmation before every transaction signing"
       />
