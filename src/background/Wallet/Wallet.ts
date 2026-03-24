@@ -111,7 +111,6 @@ import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
-import { isSignerContainer } from 'src/shared/types/validators';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
@@ -337,14 +336,7 @@ export class Wallet {
     if (!this.record) {
       return;
     }
-    for (const group of this.record.walletManager.groups) {
-      if (isSignerContainer(group.walletContainer)) {
-        for (const wallet of group.walletContainer.wallets) {
-          wallet.privateKey = null;
-          wallet.mnemonic = null;
-        }
-      }
-    }
+    this.record = Model.clearPrivateKeys(this.record);
   }
 
   async testMethod({ params: value }: WalletMethodParams<number>) {

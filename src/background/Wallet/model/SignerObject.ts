@@ -1,9 +1,8 @@
-import type { ethers } from 'ethers';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 
 export interface SignerObject {
   mnemonic: { phrase: string; path: string } | null;
-  privateKey: ethers.Wallet['privateKey'] | null;
+  privateKey: string | null;
 }
 
 export interface MaskedSignerObject {

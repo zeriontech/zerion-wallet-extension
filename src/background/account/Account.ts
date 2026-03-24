@@ -23,6 +23,7 @@ import { produce } from 'immer';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState, WalletStore } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
+import { globalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
@@ -91,11 +92,15 @@ async function deriveUserKeys({
     seedPhraseEncryptionKey_deprecated,
   };
 }
+const CREDENTIALS_CLEARANCE_DELAY = 60_000; // 1 minute
+
 export class Account extends EventEmitter<AccountEvents> {
   private user: User | null;
   private encryptionKey: string | null;
   private wallet: Wallet;
   private notificationWindow: NotificationWindow;
+  private credentialsClearanceTimer: ReturnType<typeof setTimeout> | null =
+    null;
 
   isPendingNewUser: boolean;
 
@@ -264,6 +269,27 @@ export class Account extends EventEmitter<AccountEvents> {
       throw new Error('Incorrect password');
     }
     await this.setUser(user, { password }, { isNewUser: false });
+    this.scheduleCredentialsClearanceIfNeeded();
+  }
+
+  scheduleCredentialsClearance(delay: number) {
+    if (this.credentialsClearanceTimer) {
+      clearTimeout(this.credentialsClearanceTimer);
+    }
+    this.credentialsClearanceTimer = setTimeout(async () => {
+      this.credentialsClearanceTimer = null;
+      await Account.clearSessionCredentials();
+      this.clearInMemoryCredentials();
+    }, delay);
+  }
+
+  private async scheduleCredentialsClearanceIfNeeded() {
+    await globalPreferences.ready();
+    const prefs = await globalPreferences.getPreferences();
+    if (!prefs.requirePasswordToSign) {
+      return;
+    }
+    this.scheduleCredentialsClearance(CREDENTIALS_CLEARANCE_DELAY);
   }
 
   isAuthenticated(): boolean {
@@ -513,20 +539,10 @@ export class AccountPublicRPC {
     return this.account.removeEncryptedPassword();
   }
 
-  private credentialsClearanceTimer: ReturnType<typeof setTimeout> | null =
-    null;
-
   async scheduleCredentialsClearance({
     params: { delay },
   }: PublicMethodParams<{ delay: number }>) {
-    if (this.credentialsClearanceTimer) {
-      clearTimeout(this.credentialsClearanceTimer);
-    }
-    this.credentialsClearanceTimer = setTimeout(async () => {
-      this.credentialsClearanceTimer = null;
-      await Account.clearSessionCredentials();
-      this.account.clearInMemoryCredentials();
-    }, delay);
+    this.account.scheduleCredentialsClearance(delay);
   }
 
   async changePassword({

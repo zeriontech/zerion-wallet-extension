@@ -922,4 +922,17 @@ export class WalletRecordModel {
       draft.activityRecord[address].lastSwapChain = chain;
     });
   }
+
+  static clearPrivateKeys(record: WalletRecord) {
+    return produce(record, (draft) => {
+      for (const group of draft.walletManager.groups) {
+        if (isSignerContainer(group.walletContainer)) {
+          for (const wallet of group.walletContainer.wallets) {
+            wallet.privateKey = null;
+            wallet.mnemonic = null;
+          }
+        }
+      }
+    });
+  }
 }

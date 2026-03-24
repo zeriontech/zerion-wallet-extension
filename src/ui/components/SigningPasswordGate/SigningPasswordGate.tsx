@@ -24,8 +24,6 @@ import {
 } from 'src/ui/pages/Security/passkey';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 
-const CREDENTIALS_CLEARANCE_DELAY = 60_000; // 1 minute
-
 export interface SigningPasswordGateHandle {
   confirm(): Promise<void>;
 }
@@ -161,9 +159,6 @@ export const SigningPasswordGate = React.forwardRef(
 
     const handleSuccess = useCallback(() => {
       zeroizeAfterSubmission();
-      accountPublicRPCPort.request('scheduleCredentialsClearance', {
-        delay: CREDENTIALS_CLEARANCE_DELAY,
-      });
       resolveRef.current?.();
       resolveRef.current = null;
       rejectRef.current = null;
