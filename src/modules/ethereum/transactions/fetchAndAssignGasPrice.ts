@@ -106,7 +106,10 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
         }),
   ]);
   return produce(transaction, (draft) => {
-    if (gas) {
+    const localGasEstimationIsBigger =
+      gas &&
+      (!hasGasEstimation(transaction) || gas > Number(getGas(transaction)));
+    if (localGasEstimationIsBigger) {
       delete draft.gas;
       draft.gasLimit = gas;
     }
