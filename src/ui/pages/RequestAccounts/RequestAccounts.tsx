@@ -49,8 +49,10 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import { isMacOS } from 'src/ui/shared/isMacos';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { WalletList } from '../WalletSelect/WalletList';
 import { useWalletSearchPredicate } from '../WalletSelect/useWalletSearchPredicate';
@@ -217,19 +219,6 @@ function RequestAccountsView({
   const { preferences } = usePreferences();
   const windowFocused = useWindowFocus();
   const shortcutActive = Boolean(preferences?.enableKeyboardShortcutToSign);
-  const shortcutHint = (
-    <UIText
-      kind="caption/accent"
-      style={{
-        padding: '1px 3px',
-        borderRadius: 6,
-        color: 'var(--neutral-500)',
-        backgroundColor: 'var(--neutral-800)',
-      }}
-    >
-      {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
-    </UIText>
-  );
 
   return (
     <>
@@ -392,7 +381,7 @@ function RequestAccountsView({
           >
             <HStack gap={4} alignItems="center" justifyContent="center">
               Connect
-              {shortcutActive && windowFocused ? shortcutHint : null}
+              {shortcutActive && windowFocused ? <ShortcutHint /> : null}
             </HStack>
           </Button>
         </div>

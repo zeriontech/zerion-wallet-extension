@@ -17,9 +17,10 @@ import {
 } from 'src/ui/ui-kit/Button';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { UIText } from 'src/ui/ui-kit/UIText';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import { isMacOS } from 'src/ui/shared/isMacos';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
@@ -179,20 +180,10 @@ export const SignTransactionButton = React.forwardRef(
     const title = buttonTitle || 'Confirm';
     const windowFocused = useWindowFocus();
     const shortcutActive =
-      Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled;
-    const shortcutHint = (
-      <UIText
-        kind="caption/accent"
-        style={{
-          padding: '1px 3px',
-          borderRadius: 6,
-          color: 'var(--neutral-500)',
-          backgroundColor: 'var(--neutral-800)',
-        }}
-      >
-        {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
-      </UIText>
-    );
+      Boolean(keyboardShortcutEnabled) &&
+      buttonKind !== 'danger' &&
+      !disabled &&
+      !isLoading;
 
     return isDeviceAccount(wallet) ? (
       <>
@@ -246,7 +237,9 @@ export const SignTransactionButton = React.forwardRef(
                   text={
                     <HStack gap={4} alignItems="center" justifyContent="center">
                       {`Hold to ${title}`}
-                      {shortcutActive && windowFocused ? shortcutHint : null}
+                      {shortcutActive && windowFocused ? (
+                        <ShortcutHint />
+                      ) : null}
                     </HStack>
                   }
                   successText={
@@ -289,7 +282,9 @@ export const SignTransactionButton = React.forwardRef(
                         justifyContent="center"
                       >
                         {title}
-                        {shortcutActive && windowFocused ? shortcutHint : null}
+                        {shortcutActive && windowFocused ? (
+                          <ShortcutHint />
+                        ) : null}
                       </HStack>
                     ))}
                 </Button>

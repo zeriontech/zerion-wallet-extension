@@ -5,8 +5,10 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { Button, HoldableButton } from 'src/ui/ui-kit/Button';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import { isMacOS } from 'src/ui/shared/isMacos';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import type { Chain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -74,19 +76,6 @@ export function TransactionConfirmationView({
   const windowFocused = useWindowFocus();
   const shortcutActive =
     Boolean(preferences?.enableKeyboardShortcutToSign) && !query.isLoading;
-  const shortcutHint = (
-    <UIText
-      kind="caption/accent"
-      style={{
-        padding: '1px 3px',
-        borderRadius: 6,
-        color: 'var(--neutral-500)',
-        backgroundColor: 'var(--neutral-800)',
-      }}
-    >
-      {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
-    </UIText>
-  );
 
   if (query.isLoading) {
     return null;
@@ -211,7 +200,7 @@ export function TransactionConfirmationView({
                 <HStack gap={8} alignItems="center" justifyContent="center">
                   <LedgerIcon />
                   Sign and Send
-                  {shortcutActive && windowFocused ? shortcutHint : null}
+                  {shortcutActive && windowFocused ? <ShortcutHint /> : null}
                 </HStack>
               </Button>
             ) : preferences?.enableHoldToSignButton ? (
@@ -219,7 +208,7 @@ export function TransactionConfirmationView({
                 text={
                   <HStack gap={4} alignItems="center" justifyContent="center">
                     Hold to Sign
-                    {shortcutActive && windowFocused ? shortcutHint : null}
+                    {shortcutActive && windowFocused ? <ShortcutHint /> : null}
                   </HStack>
                 }
                 submittingText="Signing..."
@@ -237,7 +226,7 @@ export function TransactionConfirmationView({
               >
                 <HStack gap={4} alignItems="center" justifyContent="center">
                   Sign and Send
-                  {shortcutActive && windowFocused ? shortcutHint : null}
+                  {shortcutActive && windowFocused ? <ShortcutHint /> : null}
                 </HStack>
               </Button>
             )}

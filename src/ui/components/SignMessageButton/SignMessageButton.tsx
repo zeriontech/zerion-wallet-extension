@@ -15,10 +15,11 @@ import {
 } from 'src/ui/ui-kit/Button';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { UIText } from 'src/ui/ui-kit/UIText';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
-import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import { isMacOS } from 'src/ui/shared/isMacos';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
@@ -170,20 +171,10 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   const title = buttonTitle || 'Sign';
   const windowFocused = useWindowFocus();
   const shortcutActive =
-    Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled;
-  const shortcutHint = (
-    <UIText
-      kind="caption/accent"
-      style={{
-        padding: '1px 3px',
-        borderRadius: 6,
-        color: 'var(--neutral-500)',
-        backgroundColor: 'var(--neutral-800)',
-      }}
-    >
-      {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
-    </UIText>
-  );
+    Boolean(keyboardShortcutEnabled) &&
+    buttonKind !== 'danger' &&
+    !disabled &&
+    !isLoading;
 
   return isDeviceAccount(wallet) ? (
     <>
@@ -232,7 +223,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
               text={
                 <HStack gap={4} alignItems="center" justifyContent="center">
                   {`Hold to ${title}`}
-                  {shortcutActive && windowFocused ? shortcutHint : null}
+                  {shortcutActive && windowFocused ? <ShortcutHint /> : null}
                 </HStack>
               }
               successText={
@@ -271,7 +262,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
                 ) : (
                   <HStack gap={4} alignItems="center" justifyContent="center">
                     {title}
-                    {shortcutActive && windowFocused ? shortcutHint : null}
+                    {shortcutActive && windowFocused ? <ShortcutHint /> : null}
                   </HStack>
                 ))}
             </Button>
