@@ -97,7 +97,12 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
 ) {
   const [gas, networkFeeInfo] = await Promise.all([
-    estimateGas(transaction, networks),
+    hasGasEstimation(transaction)
+      ? Promise.race([
+          estimateGas(transaction, networks).catch(() => null),
+          new Promise<null>((resolve) => setTimeout(resolve, 2000)),
+        ])
+      : estimateGas(transaction, networks),
     hasNetworkFee(transaction)
       ? null
       : fetchGasPriceForTransaction(transaction, networks, {
@@ -106,10 +111,7 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
         }),
   ]);
   return produce(transaction, (draft) => {
-    const localGasEstimationIsBigger =
-      gas &&
-      (!hasGasEstimation(transaction) || gas > Number(getGas(transaction)));
-    if (localGasEstimationIsBigger) {
+    if (gas && gas > Number(getGas(transaction))) {
       delete draft.gas;
       draft.gasLimit = gas;
     }
