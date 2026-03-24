@@ -466,6 +466,9 @@ function TypedDataDefaultView({
                       : undefined
                   }
                   holdToSign={preferences.enableHoldToSignButton}
+                  requirePasswordToSign={
+                    globalPreferences.requirePasswordToSign ?? false
+                  }
                   bluetoothSupportEnabled={
                     globalPreferences.bluetoothSupportEnabled
                   }

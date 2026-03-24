@@ -309,6 +309,9 @@ function SignMessageContent({
                 onClick={() => confirmRequest()}
                 disabled={confirmMutation.isLoading}
                 holdToSign={preferences.enableHoldToSignButton}
+                requirePasswordToSign={
+                  globalPreferences.requirePasswordToSign ?? false
+                }
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
                 }

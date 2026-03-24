@@ -161,6 +161,15 @@ export class Account extends EventEmitter<AccountEvents> {
     await clearStorageArtefacts();
   }
 
+  static async clearSessionCredentials() {
+    await SessionStorage.remove(credentialsKey);
+  }
+
+  clearInMemoryCredentials() {
+    this.encryptionKey = null;
+    this.wallet.resetCredentials();
+  }
+
   /** Migrates credentials from storage.local to storage.session if needed */
   static async migrateCredentialsIfNeeded() {
     type AnyStorage = typeof BrowserStorage | typeof SessionStorage;
@@ -502,6 +511,22 @@ export class AccountPublicRPC {
 
   async removePasskey() {
     return this.account.removeEncryptedPassword();
+  }
+
+  private credentialsClearanceTimer: ReturnType<typeof setTimeout> | null =
+    null;
+
+  async scheduleCredentialsClearance({
+    params: { delay },
+  }: PublicMethodParams<{ delay: number }>) {
+    if (this.credentialsClearanceTimer) {
+      clearTimeout(this.credentialsClearanceTimer);
+    }
+    this.credentialsClearanceTimer = setTimeout(async () => {
+      this.credentialsClearanceTimer = null;
+      await Account.clearSessionCredentials();
+      this.account.clearInMemoryCredentials();
+    }, delay);
   }
 
   async changePassword({

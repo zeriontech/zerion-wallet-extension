@@ -34,6 +34,10 @@ import { getError } from 'get-error';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { isMacOS } from 'src/ui/shared/isMacos';
+import {
+  SigningPasswordGate,
+  type SigningPasswordGateHandle,
+} from 'src/ui/components/SigningPasswordGate';
 import { ToggleSettingLine } from '../Settings/ToggleSettingsLine';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
@@ -520,6 +524,39 @@ function AutoLockTimerLink() {
   );
 }
 
+function RequirePasswordToSign() {
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
+  const passwordGateRef = useRef<SigningPasswordGateHandle | null>(null);
+  if (!globalPreferences) {
+    return null;
+  }
+  const checked = globalPreferences.requirePasswordToSign ?? false;
+  return (
+    <>
+      <SigningPasswordGate ref={passwordGateRef} requirePasswordToSign={true} />
+      <ToggleSettingLine
+        text="Password to Sign"
+        checked={checked}
+        onChange={async (event) => {
+          const enabling = event.target.checked;
+          if (!enabling) {
+            // When disabling, re-authenticate to restore credentials and private keys
+            try {
+              await passwordGateRef.current?.confirm();
+            } catch {
+              return; // User cancelled — keep the setting enabled
+            }
+          }
+          setGlobalPreferences({
+            requirePasswordToSign: enabling,
+          });
+        }}
+        detailText="Require password or passkey confirmation before every transaction signing"
+      />
+    </>
+  );
+}
+
 function SecurityMain() {
   useBackgroundKind({ kind: 'white' });
 
@@ -529,6 +566,7 @@ function SecurityMain() {
       <Frame>
         <VStack gap={0}>
           <TouchIdSettings />
+          <RequirePasswordToSign />
           <AutoLockTimerLink />
           <ChangePassword />
         </VStack>

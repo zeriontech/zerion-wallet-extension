@@ -213,6 +213,9 @@ export function NonFungibleToken() {
                     }
                     disabled={promoteTokenMutation.isLoading}
                     holdToSign={false}
+                    requirePasswordToSign={
+                      globalPreferences.requirePasswordToSign ?? false
+                    }
                     bluetoothSupportEnabled={
                       globalPreferences.bluetoothSupportEnabled
                     }

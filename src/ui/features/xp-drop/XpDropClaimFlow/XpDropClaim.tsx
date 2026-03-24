@@ -537,6 +537,9 @@ export function XpDropClaim() {
               }}
               buttonKind="primary"
               holdToSign={false}
+              requirePasswordToSign={
+                globalPreferences.requirePasswordToSign ?? false
+              }
               bluetoothSupportEnabled={
                 globalPreferences.bluetoothSupportEnabled
               }

@@ -27,6 +27,7 @@ export interface State {
   recognizableConnectButtons?: boolean;
   providerInjection?: ProviderInjection;
   autoLockTimeout?: number | 'none';
+  requirePasswordToSign?: boolean;
   analyticsEnabled?: boolean | null;
   bluetoothSupportEnabled?: boolean | null;
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
@@ -70,6 +71,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     analyticsEnabled: PLATFORM === 'firefox' ? null : true,
     bluetoothSupportEnabled: null,
     autoLockTimeout: HALF_DAY,
+    requirePasswordToSign: false,
     statsigOverrides: {},
   };
 

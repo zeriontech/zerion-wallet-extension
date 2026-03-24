@@ -14,6 +14,7 @@ import {
   encodeForMasking,
 } from 'src/shared/wallet/encode-locally';
 import { fromSolanaKeypair } from 'src/modules/solana/keypairs';
+import { invariant } from 'src/shared/invariant';
 
 export interface Params {
   /**
@@ -29,6 +30,7 @@ export interface Params {
 export type Result = MaskedBareWallet[];
 
 function locallyMaskWallet(wallet: BareWallet | HDNode) {
+  invariant(wallet.privateKey, 'Expected wallet to have a private key');
   return {
     mnemonic: wallet.mnemonic
       ? { ...wallet.mnemonic, phrase: encodeForMasking(wallet.mnemonic.phrase) }

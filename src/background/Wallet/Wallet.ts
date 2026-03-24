@@ -111,6 +111,7 @@ import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
+import { isSignerContainer } from 'src/shared/types/validators';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
@@ -325,6 +326,25 @@ export class Wallet {
 
   async resetCredentials() {
     this.userCredentials = null;
+    await globalPreferences.ready();
+    const prefs = await globalPreferences.getPreferences();
+    if (prefs.requirePasswordToSign) {
+      this.clearPrivateKeys();
+    }
+  }
+
+  private clearPrivateKeys() {
+    if (!this.record) {
+      return;
+    }
+    for (const group of this.record.walletManager.groups) {
+      if (isSignerContainer(group.walletContainer)) {
+        for (const wallet of group.walletContainer.wallets) {
+          wallet.privateKey = null;
+          wallet.mnemonic = null;
+        }
+      }
+    }
   }
 
   async testMethod({ params: value }: WalletMethodParams<number>) {
@@ -1170,6 +1190,10 @@ export class Wallet {
     const signerWallet = Model.getSignerWalletByAddress(this.record, address);
     invariant(signerWallet, `Signer wallet not found for ${address}`);
 
+    invariant(
+      signerWallet.privateKey,
+      'Private key is not available. Please re-enter your password.'
+    );
     return fromSecretKeyToEd25519(signerWallet.privateKey);
   }
 

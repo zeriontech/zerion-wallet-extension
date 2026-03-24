@@ -559,6 +559,11 @@ export class WalletRecordModel {
     if (!wallet) {
       throw new Error('Wallet with given address not found');
     }
+    if (!wallet.privateKey) {
+      throw new Error(
+        'Private key is not available. Please re-enter your password.'
+      );
+    }
     return encodeForMasking(wallet.privateKey);
   }
 
