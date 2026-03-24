@@ -19,6 +19,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
 
@@ -167,6 +168,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   // button should be disabled after successful sign to prevent a duplicating call
   const disabled = isLoading || Boolean(holdToSign && isSuccess);
   const title = buttonTitle || 'Sign';
+  const windowFocused = useWindowFocus();
   const shortcutActive =
     Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled;
   const shortcutHint = (
@@ -230,7 +232,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
               text={
                 <HStack gap={4} alignItems="center" justifyContent="center">
                   {`Hold to ${title}`}
-                  {shortcutActive ? shortcutHint : null}
+                  {shortcutActive && windowFocused ? shortcutHint : null}
                 </HStack>
               }
               successText={
@@ -269,7 +271,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
                 ) : (
                   <HStack gap={4} alignItems="center" justifyContent="center">
                     {title}
-                    {shortcutActive ? shortcutHint : null}
+                    {shortcutActive && windowFocused ? shortcutHint : null}
                   </HStack>
                 ))}
             </Button>

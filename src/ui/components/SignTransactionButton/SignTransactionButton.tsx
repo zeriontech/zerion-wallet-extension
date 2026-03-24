@@ -20,6 +20,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
@@ -176,6 +177,7 @@ export const SignTransactionButton = React.forwardRef(
     const disabled =
       isLoading || (holdToSign && activeMutation.isSuccess) || disabledAttr;
     const title = buttonTitle || 'Confirm';
+    const windowFocused = useWindowFocus();
     const shortcutActive =
       Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled;
     const shortcutHint = (
@@ -244,7 +246,7 @@ export const SignTransactionButton = React.forwardRef(
                   text={
                     <HStack gap={4} alignItems="center" justifyContent="center">
                       {`Hold to ${title}`}
-                      {shortcutActive ? shortcutHint : null}
+                      {shortcutActive && windowFocused ? shortcutHint : null}
                     </HStack>
                   }
                   successText={
@@ -287,7 +289,7 @@ export const SignTransactionButton = React.forwardRef(
                         justifyContent="center"
                       >
                         {title}
-                        {shortcutActive ? shortcutHint : null}
+                        {shortcutActive && windowFocused ? shortcutHint : null}
                       </HStack>
                     ))}
                 </Button>
