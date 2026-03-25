@@ -33,7 +33,7 @@ import {
 import { getError } from 'get-error';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
-import { isMacOS } from 'src/ui/shared/isMacos';
+// import { isMacOS } from 'src/ui/shared/isMacos';
 import {
   SigningPasswordGate,
   type SigningPasswordGateHandle,
@@ -147,26 +147,26 @@ function TouchIdSettings() {
     <>
       {/* Currently, Windos Hello doesn't support PRF extension for passkeys */}
       {/* TODO: Research other passkey providers and enable them */}
-      {isMacOS() ? (
-        <ToggleSettingLine
-          text={`Unlock with ${passkeyTitle}`}
-          checked={checked}
-          disabled={disabled}
-          onChange={(event) => {
-            if (event.target.checked) {
-              handleSetupClick();
-            } else {
-              if (!disablePasskeyDialogRef.current) {
-                return;
-              }
-              showConfirmDialog(disablePasskeyDialogRef.current).then(() => {
-                removeTouchIdMutation.mutate();
-              });
+      {/* {isMacOS() ? ( */}
+      <ToggleSettingLine
+        text={`Unlock with ${passkeyTitle}`}
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => {
+          if (event.target.checked) {
+            handleSetupClick();
+          } else {
+            if (!disablePasskeyDialogRef.current) {
+              return;
             }
-          }}
-          detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
-        />
-      ) : null}
+            showConfirmDialog(disablePasskeyDialogRef.current).then(() => {
+              removeTouchIdMutation.mutate();
+            });
+          }
+        }}
+        detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
+      />
+      {/* ) : null} */}
       <BottomSheetDialog ref={disablePasskeyDialogRef} height="fit-content">
         <VStack gap={8}>
           <form method="dialog">
