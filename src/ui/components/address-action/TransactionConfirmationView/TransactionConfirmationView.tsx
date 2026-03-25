@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -74,7 +74,6 @@ export function TransactionConfirmationView({
     return JSON.stringify(txInterpretQuery.data?.data.action);
   }, [txInterpretQuery]);
 
-  const formRef = useRef<HTMLFormElement>(null);
   const windowFocused = useWindowFocus();
   const shortcutActive =
     Boolean(preferences?.enableKeyboardShortcutToSign) && !query.isLoading;
@@ -123,7 +122,6 @@ export function TransactionConfirmationView({
           </HStack>
         </VStack>
         <form
-          ref={formRef}
           method="dialog"
           style={{ display: 'flex', flexDirection: 'column' }}
         >
