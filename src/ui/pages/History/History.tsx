@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -13,7 +13,6 @@ import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { useStore } from '@store-unit/react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { NetworkBalance } from 'src/ui/pages/Overview/Positions/NetworkBalance';
 import {
   getCurrentTabsOffset,
   getGrownTabMaxHeight,
@@ -23,7 +22,10 @@ import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type {
+  ActionType,
+  AddressAction,
+} from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { hashQueryKey, useQuery } from '@tanstack/react-query';
@@ -33,13 +35,13 @@ import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import dayjs from 'dayjs';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
 import * as styles from './styles.module.css';
 import { getAddressActionsCursor } from './getAddressActionCursor';
+import { useHistoryFilterParams, HistoryFiltersButton } from './HistoryFilters';
 
 function sortActions<T extends { timestamp?: number }>(actions: T[]) {
   return actions.sort((a, b) => {
@@ -86,10 +88,14 @@ function useMinedAndPendingAddressActions({
   chain,
   searchQuery,
   startDate,
+  actionTypes,
+  assetTypes,
 }: {
   chain: Chain | null;
   searchQuery?: string;
   startDate?: string;
+  actionTypes?: ActionType[];
+  assetTypes?: ('fungible' | 'nft')[];
 }) {
   const { params } = useAddressParams();
   const { networks, loadNetworkByChainId } = useNetworks();
@@ -109,6 +115,10 @@ function useMinedAndPendingAddressActions({
       searchQuery,
       client,
       startDate,
+      actionTypes,
+      actionTypes?.length,
+      assetTypes?.length,
+      assetTypes?.[0],
     ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -138,6 +148,16 @@ function useMinedAndPendingAddressActions({
           dayjs(item.timestamp).isBefore(dayjs(startDate))
         );
       }
+      if (actionTypes?.length) {
+        items = items.filter(
+          (item) =>
+            actionTypes.includes(item.type.value) ||
+            item.acts?.some((act) => actionTypes.includes(act.type.value))
+        );
+      }
+      if (assetTypes?.length === 1 && assetTypes?.[0] === 'nft') {
+        items = items.filter(() => false);
+      }
       return items;
     },
     useErrorBoundary: true,
@@ -150,6 +170,8 @@ function useMinedAndPendingAddressActions({
       chain: chain && isSupportedByBackend ? chain.toString() : undefined,
       searchQuery,
       cursor: startDate ? getAddressActionsCursor(startDate) : undefined,
+      actionTypes: actionTypes?.length ? actionTypes : undefined,
+      assetTypes: assetTypes?.length ? assetTypes : undefined,
       limit: 10,
     },
     { source: useHttpClientSource() },
@@ -224,21 +246,24 @@ function formatDate(date: Date): string {
 }
 
 export function HistoryList({
-  dappChain,
   selectedChain,
   onChainChange,
 }: {
-  dappChain: string | null;
   selectedChain: string | null;
   onChainChange: (value: string | null) => void;
 }) {
-  const { params, singleAddress: address } = useAddressParams();
-  const [searchParams, setSearchParams] = useSearchParamsObj<{
-    date?: string;
-  }>();
+  const { singleAddress: address } = useAddressParams();
+  const {
+    searchParams,
+    setSearchParams,
+    actionTypes,
+    actionTypeKeys,
+    assetTypes,
+    assetTypeParam,
+    hasActiveFilters,
+  } = useHistoryFilterParams();
   const offsetValuesState = useStore(offsetValues);
   const addressType = getAddressType(address);
-  const showNetworkSelector = addressType === 'evm';
 
   const chainValue = selectedChain || NetworkSelectValue.All;
   const chain =
@@ -252,71 +277,116 @@ export function HistoryList({
       chain,
       searchQuery,
       startDate: searchParams.date,
+      actionTypes: actionTypes.length ? actionTypes : undefined,
+      assetTypes: assetTypes.length ? assetTypes : undefined,
     });
+
+  const handleActionTypesChange = useCallback(
+    (keys: string[]) => {
+      setSearchParams((current) => ({
+        ...current,
+        actionTypes: keys.length ? keys.join(',') : undefined,
+      }));
+    },
+    [setSearchParams]
+  );
+
+  const handleAssetTypeChange = useCallback(
+    (value: string) => {
+      setSearchParams((current) => ({
+        ...current,
+        assetTypes: value === 'all' ? undefined : value,
+      }));
+    },
+    [setSearchParams]
+  );
+
+  const handleDateChange = useCallback(
+    (date: Date | null) => {
+      setSearchParams((current) => ({
+        ...current,
+        date: date ? formatDate(date) : undefined,
+      }));
+    },
+    [setSearchParams]
+  );
+
+  const handleResetAll = useCallback(() => {
+    setSearchParams((current) => {
+      const next = { ...current };
+      delete next.actionTypes;
+      delete next.assetTypes;
+      delete next.date;
+      delete next.chain;
+      return next;
+    });
+  }, [setSearchParams]);
 
   const actionFilters = (
     <div style={{ paddingInline: 16 }}>
-      <VStack gap={8}>
-        {showNetworkSelector ? (
-          <NetworkBalance
-            standard={getAddressType(params.address)}
-            dappChain={dappChain}
-            selectedChain={selectedChain}
-            onChange={onChainChange}
-            value={null}
-          />
-        ) : null}
-        <HStack
-          gap={8}
-          alignItems="center"
-          style={{ gridTemplateColumns: '1fr auto' }}
+      <HStack
+        gap={8}
+        alignItems="center"
+        style={{ gridTemplateColumns: '1fr auto auto' }}
+      >
+        <ActionSearch
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onFocus={() => {
+            window.scrollTo({
+              behavior: 'smooth',
+              top: getCurrentTabsOffset(offsetValuesState),
+            });
+          }}
+        />
+        <HistoryFiltersButton
+          hasActiveFilters={hasActiveFilters}
+          selectedChain={selectedChain}
+          onChainChange={onChainChange}
+          addressType={addressType}
+          date={searchParams.date}
+          onDateChange={handleDateChange}
+          actionTypeKeys={actionTypeKeys}
+          assetTypeParam={assetTypeParam}
+          onActionTypesChange={handleActionTypesChange}
+          onAssetTypeChange={handleAssetTypeChange}
+          onResetAll={handleResetAll}
+        />
+        <Button
+          onClick={refetch}
+          size={40}
+          kind="neutral"
+          style={{ paddingInline: 8 }}
+          disabled={isLoading}
+          title="Reload History (⌃R)"
         >
-          <ActionSearch
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onFocus={() => {
-              window.scrollTo({
-                behavior: 'smooth',
-                top: getCurrentTabsOffset(offsetValuesState),
-              });
+          <SyncIcon
+            style={{
+              display: 'block',
+              width: 24,
+              height: 24,
+              transition: 'transform 0.5s linear',
             }}
+            className={isLoading ? styles.updateIconLoading : undefined}
           />
-          <Button
-            onClick={refetch}
-            size={40}
-            kind="neutral"
-            style={{ paddingInline: 8 }}
-            disabled={isLoading}
-            title="Reload History (⌃R)"
-          >
-            <SyncIcon
-              style={{
-                display: 'block',
-                width: 24,
-                height: 24,
-                transition: 'transform 0.5s linear',
-              }}
-              className={isLoading ? styles.updateIconLoading : undefined}
-            />
-          </Button>
-          <KeyboardShortcut
-            combination="cmd+r"
-            onKeyDown={() => {
-              if (!isLoading) {
-                refetch();
-              }
-            }}
-          />
-          <KeyboardShortcut
-            combination="ctrl+r"
-            onKeyDown={() => {
-              if (!isLoading) {
-                refetch();
-              }
-            }}
-          />
-        </HStack>
-      </VStack>
+        </Button>
+        <KeyboardShortcut
+          combination="cmd+r"
+          onKeyDown={() => {
+            if (!isLoading) {
+              refetch();
+            }
+          }}
+        />
+        <KeyboardShortcut
+          combination="ctrl+r"
+          onKeyDown={() => {
+            if (!isLoading) {
+              refetch();
+            }
+          }}
+        />
+      </HStack>
     </div>
   );
 
@@ -332,10 +402,15 @@ export function HistoryList({
           <ViewLoading kind="network" />
         ) : (
           <HistoryEmptyView
-            hasFilters={Boolean(searchQuery || selectedChain)}
+            hasFilters={Boolean(
+              searchQuery ||
+                selectedChain ||
+                hasActiveFilters ||
+                searchParams.date
+            )}
             onReset={() => {
               setSearchQuery(undefined);
-              onChainChange(null);
+              handleResetAll();
             }}
           />
         )}
@@ -356,7 +431,7 @@ export function HistoryList({
         onChangeDate={(date) =>
           setSearchParams((state) => ({
             ...state,
-            date: date ? formatDate(date) : '',
+            date: date ? formatDate(date) : undefined,
           }))
         }
       />
