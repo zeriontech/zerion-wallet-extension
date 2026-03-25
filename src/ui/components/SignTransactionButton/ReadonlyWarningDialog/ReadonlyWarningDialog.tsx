@@ -63,9 +63,9 @@ export function WithReadonlyWarningDialog({
   render,
 }: {
   address: string;
-  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
+  onClick?: () => void;
   render: (props: {
-    handleClick: React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
+    handleClick: (event: React.MouseEvent<HTMLButtonElement> | null) => void;
   }) => React.ReactNode;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -87,10 +87,11 @@ export function WithReadonlyWarningDialog({
         handleClick: (event) => {
           if (isReadonlyGroup) {
             invariant(dialogRef.current, 'Dialog not mounted');
-            event.preventDefault?.();
+            // when we use keyboard shortcut, event can be simplified to {}
+            event?.preventDefault();
             dialogRef.current.showModal();
           } else {
-            onClick?.(event);
+            onClick?.();
           }
         },
       })}

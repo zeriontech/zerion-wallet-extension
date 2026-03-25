@@ -72,6 +72,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     holdToSign: boolean | null;
     bluetoothSupportEnabled: boolean | null;
     keyboardShortcutEnabled?: boolean | null;
+    onClick?: () => void;
   },
   ref: React.Ref<SignMsgBtnHandle>
 ) {
@@ -180,13 +181,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     <>
       <KeyboardShortcut
         combination="mod+enter"
-        onKeyDown={() => {
-          if (onClick) {
-            (onClick as React.MouseEventHandler<HTMLButtonElement>)(
-              {} as React.MouseEvent<HTMLButtonElement>
-            );
-          }
-        }}
+        onKeyDown={() => onClick?.()}
         disabled={!shortcutActive}
       />
       <HardwareSignMessage
@@ -214,9 +209,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         <>
           <KeyboardShortcut
             combination="mod+enter"
-            onKeyDown={() =>
-              handleClick?.({} as React.MouseEvent<HTMLButtonElement>)
-            }
+            onKeyDown={() => handleClick(null)}
             disabled={!shortcutActive}
           />
           {holdToSign ? (
