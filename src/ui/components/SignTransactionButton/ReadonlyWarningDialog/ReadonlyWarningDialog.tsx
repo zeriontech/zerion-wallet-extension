@@ -87,7 +87,6 @@ export function WithReadonlyWarningDialog({
         handleClick: (event) => {
           if (isReadonlyGroup) {
             invariant(dialogRef.current, 'Dialog not mounted');
-            // when we use keyboard shortcut, event can be simplified to {}
             event?.preventDefault();
             dialogRef.current.showModal();
           } else {
