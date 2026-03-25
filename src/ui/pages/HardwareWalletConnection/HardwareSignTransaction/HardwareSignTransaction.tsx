@@ -33,6 +33,8 @@ import { urlContext } from 'src/shared/UrlContext';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useNavigate } from 'react-router-dom';
+import { ShortcutHint } from 'src/ui/components/KeyboardShortcut/ShortcutHint';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -170,6 +172,7 @@ export const HardwareSignTransaction = React.forwardRef(
       children,
       buttonTitle,
       bluetoothSupportEnabled,
+      keyboardShortcutEnabled,
       buttonKind = 'primary',
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -179,6 +182,7 @@ export const HardwareSignTransaction = React.forwardRef(
       buttonTitle?: React.ReactNode;
       buttonKind?: ButtonKind;
       bluetoothSupportEnabled: boolean;
+      keyboardShortcutEnabled: boolean;
     },
     ref: React.Ref<SignTransactionHandle>
   ) {
@@ -298,6 +302,8 @@ export const HardwareSignTransaction = React.forwardRef(
       solana_signTransaction,
     }));
 
+    const windowFocused = useWindowFocus();
+
     return (
       <>
         <BottomSheetDialog
@@ -340,7 +346,7 @@ export const HardwareSignTransaction = React.forwardRef(
               isSending
             }
             style={{
-              paddingInline: 16, // fit longer button label
+              paddingInline: keyboardShortcutEnabled ? 0 : 16, // fit longer button label
             }}
             {...buttonProps}
           >
@@ -348,6 +354,9 @@ export const HardwareSignTransaction = React.forwardRef(
               <LedgerIcon />
               {children || // all this will definitely be refactored soon
                 (isSending ? 'Sending' : buttonTitle || 'Sign with Ledger')}
+              {!isSending && keyboardShortcutEnabled && windowFocused ? (
+                <ShortcutHint />
+              ) : null}
             </HStack>
           </Button>
         )}

@@ -173,7 +173,9 @@ export function TransactionConfirmationView({
           <HStack
             gap={12}
             justifyContent="center"
-            style={{ gridTemplateColumns: '1fr 1fr' }}
+            style={{
+              gridTemplateColumns: shortcutActive ? '1fr 2fr' : '1fr 1fr',
+            }}
           >
             <Button value="cancel" kind="regular" ref={focusNode}>
               Cancel

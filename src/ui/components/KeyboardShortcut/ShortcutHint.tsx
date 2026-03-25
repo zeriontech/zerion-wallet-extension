@@ -13,7 +13,7 @@ export function ShortcutHint() {
         backgroundColor: 'var(--neutral-800)',
       }}
     >
-      {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
+      {isMacOS() ? '⌘↵' : '^↵'}
     </UIText>
   );
 }

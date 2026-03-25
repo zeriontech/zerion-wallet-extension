@@ -200,6 +200,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         onClick={onClick}
         disabled={disabled}
         bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
+        keyboardShortcutEnabled={Boolean(keyboardShortcutEnabled)}
         legacySigning={legacySigning}
         onLegacySigningChange={setLegacySigning}
         {...buttonProps}

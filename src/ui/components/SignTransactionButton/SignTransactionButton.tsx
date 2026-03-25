@@ -215,6 +215,7 @@ export const SignTransactionButton = React.forwardRef(
           onClick={onClick}
           disabled={disabled}
           bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
+          keyboardShortcutEnabled={Boolean(keyboardShortcutEnabled)}
           {...buttonProps}
         />
       </>

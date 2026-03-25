@@ -24,6 +24,8 @@ import {
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { ToggleSettingLine } from 'src/ui/pages/Settings/ToggleSettingsLine';
 import { Frame } from 'src/ui/ui-kit/Frame/Frame';
+import { ShortcutHint } from 'src/ui/components/KeyboardShortcut/ShortcutHint';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { isAllowedMessage } from '../shared/isAllowedMessage';
 import { hardwareMessageHandler } from '../shared/messageHandler';
 
@@ -34,6 +36,7 @@ type Props = {
   buttonKind?: ButtonKind;
   ecosystem: BlockchainType;
   bluetoothSupportEnabled: boolean;
+  keyboardShortcutEnabled: boolean;
   legacySigning: boolean;
   onLegacySigningChange: (value: boolean) => void;
 };
@@ -54,6 +57,7 @@ export const HardwareSignMessage = React.forwardRef(
       buttonTitle,
       ecosystem,
       bluetoothSupportEnabled,
+      keyboardShortcutEnabled,
       legacySigning,
       onLegacySigningChange,
       ...buttonProps
@@ -214,6 +218,8 @@ export const HardwareSignMessage = React.forwardRef(
       signTypedData_v4Mutation.isLoading ||
       solana_signMessageMutation.isLoading;
 
+    const windowFocused = useWindowFocus();
+
     return (
       <>
         <BottomSheetDialog
@@ -289,7 +295,7 @@ export const HardwareSignMessage = React.forwardRef(
               kind={buttonKind}
               disabled={isLoading || isSigning}
               style={{
-                paddingInline: 16, // fit longer button label
+                paddingInline: keyboardShortcutEnabled ? 0 : 16, // fit longer button label
                 width: '100%',
               }}
               {...buttonProps}
@@ -298,6 +304,9 @@ export const HardwareSignMessage = React.forwardRef(
                 <LedgerIcon />
                 {children ||
                   (isSigning ? 'Sending' : buttonTitle || 'Sign with Ledger')}
+                {!isSigning && keyboardShortcutEnabled && windowFocused ? (
+                  <ShortcutHint />
+                ) : null}
               </HStack>
             </Button>
           )}
