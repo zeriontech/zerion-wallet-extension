@@ -115,6 +115,10 @@ function useMinedAndPendingAddressActions({
       searchQuery,
       client,
       startDate,
+      actionTypes,
+      actionTypes?.length,
+      assetTypes?.length,
+      assetTypes?.[0],
     ],
     queryKeyHashFn: (queryKey) => {
       const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
@@ -143,6 +147,16 @@ function useMinedAndPendingAddressActions({
         items = items.filter((item) =>
           dayjs(item.timestamp).isBefore(dayjs(startDate))
         );
+      }
+      if (actionTypes?.length) {
+        items = items.filter(
+          (item) =>
+            actionTypes.includes(item.type.value) ||
+            item.acts?.some((act) => actionTypes.includes(act.type.value))
+        );
+      }
+      if (assetTypes?.length === 1 && assetTypes?.[0] === 'nft') {
+        items = items.filter(() => false);
       }
       return items;
     },
