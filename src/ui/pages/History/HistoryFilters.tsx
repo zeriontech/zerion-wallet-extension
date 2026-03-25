@@ -570,7 +570,7 @@ export function HistoryFiltersButton({
                       style: { padding: 0 },
                       component: (
                         <HistoryDaySelector
-                          selectedDate={date ? new Date(date) : undefined}
+                          selectedDate={date ? new Date(`${date}T12:00:00`) : undefined}
                           minDate={new Date(2018, 0, 1)}
                           maxDate={new Date()}
                           onDateSelect={(date: Date | null) => {
