@@ -228,9 +228,7 @@ export function SpeedUp({
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
                 }
-                keyboardShortcutEnabled={
-                  preferences.enableKeyboardShortcutToSign
-                }
+                keyboardShortcutEnabled={false}
               />
             ) : null}
           </div>
