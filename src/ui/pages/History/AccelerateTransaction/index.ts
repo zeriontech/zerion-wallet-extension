@@ -1,0 +1,1 @@
+export { AccelerateTransaction } from './AccelerateTransaction';

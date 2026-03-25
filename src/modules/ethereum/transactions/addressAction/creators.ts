@@ -205,7 +205,7 @@ async function pendingEvmTxToAddressAction(
   client: Client
 ): Promise<LocalAddressAction> {
   invariant(transactionObject.hash, 'Must be evm tx');
-  const { transaction, hash, timestamp } = transactionObject;
+  const { transaction, hash, timestamp, addressAction } = transactionObject;
   let network: NetworkConfig | null;
   const chainId = normalizeChainId(transaction.chainId);
   const networks = await loadNetworkByChainId(chainId);
@@ -245,27 +245,22 @@ async function pendingEvmTxToAddressAction(
     value: action?.type || 'execute',
     displayValue: capitalize(action?.type || 'execute'),
   };
+  const acts = [
+    {
+      content,
+      rate: null,
+      status: getTransactionObjectStatus(transactionObject),
+      label,
+      type,
+      transaction: actionTransaction,
+    },
+  ];
   return {
     id: hash,
     address: transaction.from,
+    timestamp: timestamp ?? Date.now(),
     status: getTransactionObjectStatus(transactionObject),
     transaction: actionTransaction,
-    timestamp: timestamp ?? Date.now(),
-    label,
-    type,
-    refund: null,
-    fee: null,
-    acts: [
-      {
-        content,
-        rate: null,
-        status: getTransactionObjectStatus(transactionObject),
-        label,
-        type,
-        transaction: actionTransaction,
-      },
-    ],
-    content,
     rawTransaction: {
       ...normalizedTx,
       hash,
@@ -278,6 +273,12 @@ async function pendingEvmTxToAddressAction(
     },
     local: true,
     relatedTransaction: transactionObject.relatedTransactionHash,
+    label: addressAction?.label || label,
+    type: addressAction?.type || type,
+    refund: addressAction?.refund || null,
+    fee: addressAction?.fee || null,
+    acts: addressAction?.acts || acts,
+    content: addressAction?.content || content,
   };
 }
 
@@ -287,11 +288,9 @@ function pendingSolanaTxToAddressAction(
 ): LocalAddressAction {
   invariant(transactionObject.signature, 'Must be solana tx');
   const tx = solFromBase64(transactionObject.solanaBase64);
-  const action = parseSolanaTransaction(
-    transactionObject.publicKey,
-    tx,
-    currency
-  );
+  const action =
+    transactionObject.addressAction ||
+    parseSolanaTransaction(transactionObject.publicKey, tx, currency);
   return {
     ...action,
     timestamp: transactionObject.timestamp,

@@ -1,5 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import { useNetworks } from 'src/modules/networks/useNetworks';
+import React, { useMemo } from 'react';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Media } from 'src/ui/ui-kit/Media';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -8,24 +7,16 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
-import ZerionIcon from 'jsx:src/ui/assets/zerion-squircle.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type {
-  AnyAddressAction,
-  LocalAddressAction,
-} from 'src/modules/ethereum/transactions/addressAction';
-import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useNavigate } from 'react-router-dom';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
-import { AccelerateTransactionDialog } from '../AccelerateTransactionDialog';
 import {
   HistoryApprovalValue,
   HistoryItemValue,
@@ -36,7 +27,6 @@ import {
 import {
   transactionIconStyle,
   TransactionItemIcon,
-  TRANSACTION_ICON_SIZE,
 } from './TransactionTypeIcon';
 import * as styles from './styles.module.css';
 
@@ -150,11 +140,11 @@ function ActionDetail({ addressAction }: { addressAction: AnyAddressAction }) {
   );
 }
 
-function ActionItemBackend({
+export function ActionItem({
   addressAction,
   testnetMode,
 }: {
-  addressAction: AddressAction;
+  addressAction: AnyAddressAction;
   testnetMode: boolean;
 }) {
   const { currency } = useCurrency();
@@ -215,16 +205,7 @@ function ActionItemBackend({
           addressAction.status === 'failed' ? (
             <FailedIcon style={transactionIconStyle} />
           ) : addressAction.status === 'pending' ? (
-            <CircleSpinner
-              size="38px"
-              trackWidth="7%"
-              color="var(--primary)"
-              style={{
-                position: 'absolute',
-                top: -1,
-                left: -1,
-              }}
-            />
+            <CircleSpinner size="38px" trackWidth="7%" color="var(--primary)" />
           ) : (
             <TransactionItemIcon addressAction={addressAction} />
           )
@@ -317,165 +298,5 @@ function ActionItemBackend({
         </UIText>
       </VStack>
     </HStack>
-  );
-}
-
-function ActionItemLocal({
-  addressAction,
-}: {
-  addressAction: LocalAddressAction;
-}) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-
-  const handleDialogOpen = useCallback(() => {
-    dialogRef.current?.showModal();
-  }, []);
-
-  const isMintingDna = checkIsDnaMint(addressAction);
-  const isPending = addressAction.status === 'pending';
-
-  const incomingTransfers = useMemo(
-    () =>
-      addressAction.content?.transfers?.filter(
-        (transfer) => transfer.direction === 'in'
-      ),
-    [addressAction.content?.transfers]
-  );
-  const outgoingTransfers = useMemo(
-    () =>
-      addressAction.content?.transfers?.filter(
-        (transfer) => transfer.direction === 'out'
-      ),
-    [addressAction.content?.transfers]
-  );
-  const approvals = useMemo(
-    () => addressAction.content?.approvals || [],
-    [addressAction]
-  );
-  const shouldUsePositiveColor = incomingTransfers?.length === 1;
-
-  return (
-    <>
-      {isPending ? (
-        <AccelerateTransactionDialog
-          ref={dialogRef}
-          addressAction={addressAction}
-          onDismiss={() => dialogRef.current?.close()}
-        />
-      ) : null}
-      <HStack
-        className={isPending ? styles.actionItem : undefined}
-        gap={24}
-        justifyContent="space-between"
-        style={{ position: 'relative', height: 42 }}
-        alignItems="center"
-        onClick={
-          isPending
-            ? (event) => {
-                if (isInteractiveElement(event.target)) {
-                  return;
-                }
-                handleDialogOpen();
-              }
-            : undefined
-        }
-      >
-        {isPending ? (
-          <UnstyledButton
-            className={styles.actionItemBackdropButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDialogOpen();
-            }}
-          />
-        ) : null}
-        <Media
-          vGap={0}
-          gap={12}
-          image={
-            <div style={{ position: 'relative', ...transactionIconStyle }}>
-              {isPending ? (
-                <CircleSpinner
-                  size={`${TRANSACTION_ICON_SIZE + 2}px`}
-                  trackWidth="7%"
-                  color="var(--primary)"
-                  style={{
-                    position: 'absolute',
-                    top: -1,
-                    left: -1,
-                  }}
-                />
-              ) : null}
-              {isMintingDna ? (
-                <ZerionIcon
-                  width={TRANSACTION_ICON_SIZE}
-                  height={TRANSACTION_ICON_SIZE}
-                />
-              ) : (
-                <TransactionItemIcon addressAction={addressAction} />
-              )}
-            </div>
-          }
-          text={
-            <ActionTitle
-              addressAction={addressAction}
-              explorerUrl={addressAction.transaction?.explorerUrl}
-            />
-          }
-          detailText={<ActionDetail addressAction={addressAction} />}
-        />
-        <UIText
-          kind="body/regular"
-          color={
-            shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
-          }
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            maxWidth: '100%',
-          }}
-        >
-          {incomingTransfers?.length ? (
-            <HistoryItemValue
-              actionType={addressAction.type.value}
-              transfers={incomingTransfers}
-              withLink={false}
-              kind="body/regular"
-            />
-          ) : outgoingTransfers?.length ? (
-            <HistoryItemValue
-              actionType={addressAction.type.value}
-              transfers={outgoingTransfers}
-              withLink={false}
-              kind="body/regular"
-            />
-          ) : approvals.length ? (
-            <HistoryApprovalValue approvals={approvals} withLink={false} />
-          ) : null}
-        </UIText>
-      </HStack>
-    </>
-  );
-}
-
-export function ActionItem({
-  addressAction,
-  testnetMode,
-}: {
-  addressAction: AnyAddressAction;
-  testnetMode: boolean;
-}) {
-  const { networks } = useNetworks();
-
-  if (!networks || !addressAction) {
-    return null;
-  }
-  return isLocalAddressAction(addressAction) ? (
-    <ActionItemLocal addressAction={addressAction} />
-  ) : (
-    <ActionItemBackend
-      addressAction={addressAction}
-      testnetMode={testnetMode}
-    />
   );
 }
