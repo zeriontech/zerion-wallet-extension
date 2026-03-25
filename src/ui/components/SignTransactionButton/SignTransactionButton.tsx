@@ -17,6 +17,11 @@ import {
 } from 'src/ui/ui-kit/Button';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
@@ -50,6 +55,7 @@ export const SignTransactionButton = React.forwardRef(
       disabled: disabledAttr,
       holdToSign,
       bluetoothSupportEnabled,
+      keyboardShortcutEnabled,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
       wallet: ExternallyOwnedAccount;
@@ -58,6 +64,8 @@ export const SignTransactionButton = React.forwardRef(
       isLoading?: boolean;
       holdToSign: boolean | null;
       bluetoothSupportEnabled: boolean | null;
+      keyboardShortcutEnabled?: boolean | null;
+      onClick?: () => void;
     },
     ref: React.Ref<SendTxBtnHandle>
   ) {
@@ -171,66 +179,111 @@ export const SignTransactionButton = React.forwardRef(
     const disabled =
       isLoading || (holdToSign && activeMutation.isSuccess) || disabledAttr;
     const title = buttonTitle || 'Confirm';
+    const windowFocused = useWindowFocus();
+    const shortcutActive =
+      Boolean(keyboardShortcutEnabled) &&
+      buttonKind !== 'danger' &&
+      !disabled &&
+      !isLoading;
 
     return isDeviceAccount(wallet) ? (
-      <HardwareSignTransaction
-        ref={hardwareSignRef}
-        ecosystem={getAddressType(wallet.address)}
-        derivationPath={wallet.derivationPath}
-        isSending={isSending}
-        children={children}
-        buttonTitle={
-          activeMutation.isSuccess
-            ? 'Sent'
-            : isLoadingProp
-            ? 'Preparing...'
-            : buttonTitle
-        }
-        buttonKind={buttonKind}
-        onClick={onClick}
-        disabled={disabled}
-        bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
-        {...buttonProps}
-      />
+      <>
+        <KeyboardShortcut
+          combination="mod+enter"
+          onKeyDown={() => onClick?.()}
+          disabled={!shortcutActive}
+        />
+        <HardwareSignTransaction
+          ref={hardwareSignRef}
+          ecosystem={getAddressType(wallet.address)}
+          derivationPath={wallet.derivationPath}
+          isSending={isSending}
+          children={children}
+          buttonTitle={
+            activeMutation.isSuccess
+              ? 'Sent'
+              : isLoadingProp
+              ? 'Preparing...'
+              : buttonTitle
+          }
+          buttonKind={buttonKind}
+          onClick={onClick}
+          disabled={disabled}
+          bluetoothSupportEnabled={Boolean(bluetoothSupportEnabled)}
+          keyboardShortcutEnabled={Boolean(keyboardShortcutEnabled)}
+          {...buttonProps}
+        />
+      </>
     ) : (
       <WithReadonlyWarningDialog
         address={wallet.address}
         onClick={onClick}
         render={({ handleClick }) => {
-          return holdToSign ? (
-            <HoldableButton
-              text={`Hold to ${title}`}
-              successText={
-                <HStack gap={4} alignItems="center">
-                  <CheckIcon
-                    style={{
-                      width: 20,
-                      height: 20,
-                      color: 'var(--positive-500)',
-                    }}
-                  />
-                  <span>Sent</span>
-                </HStack>
-              }
-              submittingText="Sending..."
-              onClick={handleClick}
-              success={activeMutation.isSuccess}
-              submitting={activeMutation.isLoading}
-              error={activeMutation.isError}
-              disabled={disabled}
-              kind={buttonKind}
-              {...buttonProps}
-            />
-          ) : (
-            <Button
-              disabled={disabled}
-              onClick={handleClick}
-              kind={buttonKind}
-              {...buttonProps}
-            >
-              {children ||
-                (isLoading ? 'Sending...' : buttonTitle || 'Confirm')}
-            </Button>
+          return (
+            <>
+              <KeyboardShortcut
+                combination="mod+enter"
+                onKeyDown={() => handleClick(null)}
+                disabled={!shortcutActive}
+              />
+              {holdToSign ? (
+                <HoldableButton
+                  text={
+                    <HStack gap={4} alignItems="center" justifyContent="center">
+                      {`Hold to ${title}`}
+                      {shortcutActive && windowFocused ? (
+                        <ShortcutHint />
+                      ) : null}
+                    </HStack>
+                  }
+                  successText={
+                    <HStack gap={4} alignItems="center">
+                      <CheckIcon
+                        style={{
+                          width: 20,
+                          height: 20,
+                          color: 'var(--positive-500)',
+                        }}
+                      />
+                      <span>Sent</span>
+                    </HStack>
+                  }
+                  submittingText="Sending..."
+                  onClick={handleClick}
+                  success={activeMutation.isSuccess}
+                  submitting={activeMutation.isLoading}
+                  error={activeMutation.isError}
+                  disabled={disabled}
+                  kind={buttonKind}
+                  style={shortcutActive ? { paddingInline: 0 } : undefined}
+                  {...buttonProps}
+                />
+              ) : (
+                <Button
+                  disabled={disabled}
+                  onClick={handleClick}
+                  kind={buttonKind}
+                  style={shortcutActive ? { paddingInline: 0 } : undefined}
+                  {...buttonProps}
+                >
+                  {children ||
+                    (isLoading ? (
+                      'Sending...'
+                    ) : (
+                      <HStack
+                        gap={4}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        {title}
+                        {shortcutActive && windowFocused ? (
+                          <ShortcutHint />
+                        ) : null}
+                      </HStack>
+                    ))}
+                </Button>
+              )}
+            </>
           );
         }}
       />

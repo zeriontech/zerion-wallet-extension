@@ -853,6 +853,7 @@ export class WalletRecordModel {
       enableTestnets: false,
       testnetMode: null,
       enableHoldToSignButton: null,
+      enableKeyboardShortcutToSign: null,
       showTransactionsOnAssetChart: true,
       walletsOrder: DEFAULT_WALLET_LIST_GROUPS,
       pnlMode: 'pnl',
@@ -872,6 +873,12 @@ export class WalletRecordModel {
       emitter.emit(
         'holdToSignPreferenceChange',
         preferences.enableHoldToSignButton
+      );
+    }
+    if (preferences.enableKeyboardShortcutToSign != null) {
+      emitter.emit(
+        'keyboardShortcutToSignPreferenceChange',
+        preferences.enableKeyboardShortcutToSign
       );
     }
     return produce(record, (draft) => {

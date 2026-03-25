@@ -886,6 +886,8 @@ function SendTransactionContent({
                 display: 'grid',
                 gridTemplateColumns: interpretationHasCriticalWarning
                   ? '1fr'
+                  : preferences?.enableKeyboardShortcutToSign
+                  ? '1fr 2fr'
                   : '1fr 1fr',
                 gap: 8,
               }}
@@ -918,6 +920,9 @@ function SendTransactionContent({
                   holdToSign={preferences.enableHoldToSignButton}
                   bluetoothSupportEnabled={
                     globalPreferences.bluetoothSupportEnabled
+                  }
+                  keyboardShortcutEnabled={
+                    preferences.enableKeyboardShortcutToSign
                   }
                 />
               ) : null}
@@ -1336,7 +1341,13 @@ function SolSendTransaction() {
             />
           ) : null}
           <div
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: preferences?.enableKeyboardShortcutToSign
+                ? '1fr 2fr'
+                : '1fr 1fr',
+              gap: 8,
+            }}
           >
             <Button
               ref={focusNode}
@@ -1357,6 +1368,9 @@ function SolSendTransaction() {
                 holdToSign={preferences.enableHoldToSignButton}
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
+                }
+                keyboardShortcutEnabled={
+                  preferences.enableKeyboardShortcutToSign
                 }
               />
             ) : null}

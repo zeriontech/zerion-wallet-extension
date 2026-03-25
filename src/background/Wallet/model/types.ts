@@ -69,6 +69,7 @@ interface PublicPreferences {
    */
   testnetMode?: null | { on: boolean };
   enableHoldToSignButton?: boolean | null;
+  enableKeyboardShortcutToSign?: boolean | null;
   showTransactionsOnAssetChart?: boolean;
   walletsOrder?: WalletListGroup[];
   /**

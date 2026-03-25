@@ -95,6 +95,7 @@ export const emitter = createNanoEvents<{
     prevState: GlobalPreferencesState
   ) => void;
   holdToSignPreferenceChange: (active: boolean) => void;
+  keyboardShortcutToSignPreferenceChange: (active: boolean) => void;
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;

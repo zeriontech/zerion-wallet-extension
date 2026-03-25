@@ -614,6 +614,34 @@ function Experiments() {
             }
           />
         </Frame>
+        <Frame>
+          <ToggleSettingLine
+            text="Keyboard Shortcut to Sign"
+            checked={preferences?.enableKeyboardShortcutToSign || false}
+            onChange={(event) => {
+              setPreferences({
+                enableKeyboardShortcutToSign: event.target.checked,
+              });
+            }}
+            detailText={
+              <span>
+                Use{' '}
+                <span
+                  style={{
+                    display: 'inline-block',
+                    padding: '1px 6px',
+                    borderRadius: 6,
+                    backgroundColor: 'var(--neutral-200)',
+                    fontWeight: 500,
+                  }}
+                >
+                  {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
+                </span>{' '}
+                to quickly confirm transactions and sign messages
+              </span>
+            }
+          />
+        </Frame>
         {isMacOS() ? (
           <Frame>
             <ToggleSettingLine

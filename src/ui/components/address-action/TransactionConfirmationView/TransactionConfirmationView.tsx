@@ -5,6 +5,11 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { Button, HoldableButton } from 'src/ui/ui-kit/Button';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import type { Chain } from 'src/modules/networks/Chain';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { TransactionConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration';
@@ -23,6 +28,8 @@ import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addre
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
+
+const TRANSACTION_CONFIRMATION_BUTTON_ID = 'transaction-confirmation-button';
 
 export function TransactionConfirmationView({
   title,
@@ -66,6 +73,10 @@ export function TransactionConfirmationView({
   const interpretationString = useMemo(() => {
     return JSON.stringify(txInterpretQuery.data?.data.action);
   }, [txInterpretQuery]);
+
+  const windowFocused = useWindowFocus();
+  const shortcutActive =
+    Boolean(preferences?.enableKeyboardShortcutToSign) && !query.isLoading;
 
   if (query.isLoading) {
     return null;
@@ -162,35 +173,64 @@ export function TransactionConfirmationView({
           <HStack
             gap={12}
             justifyContent="center"
-            style={{ gridTemplateColumns: '1fr 1fr' }}
+            style={{
+              gridTemplateColumns: shortcutActive ? '1fr 2fr' : '1fr 1fr',
+            }}
           >
             <Button value="cancel" kind="regular" ref={focusNode}>
               Cancel
             </Button>
+            <KeyboardShortcut
+              combination="mod+enter"
+              onKeyDown={() => {
+                const btn = document.getElementById(
+                  TRANSACTION_CONFIRMATION_BUTTON_ID
+                );
+                btn?.click();
+              }}
+              disabled={!shortcutActive}
+            />
             {isDeviceAccount(wallet) ? (
               <Button
                 kind="primary"
                 value={interpretationString ?? 'confirm'}
-                style={{ whiteSpace: 'nowrap' }}
+                style={{
+                  whiteSpace: 'nowrap',
+                  paddingInline: shortcutActive ? 0 : undefined,
+                }}
               >
                 <HStack gap={8} alignItems="center" justifyContent="center">
                   <LedgerIcon />
                   Sign and Send
+                  {shortcutActive && windowFocused ? <ShortcutHint /> : null}
                 </HStack>
               </Button>
             ) : preferences?.enableHoldToSignButton ? (
               <HoldableButton
-                text="Hold to Sign"
+                text={
+                  <HStack gap={4} alignItems="center" justifyContent="center">
+                    Hold to Sign
+                    {shortcutActive && windowFocused ? <ShortcutHint /> : null}
+                  </HStack>
+                }
                 submittingText="Signing..."
                 value={interpretationString ?? 'confirm'}
+                style={shortcutActive ? { paddingInline: 0 } : undefined}
               />
             ) : (
               <Button
                 kind="primary"
+                id={TRANSACTION_CONFIRMATION_BUTTON_ID}
                 value={interpretationString ?? 'confirm'}
-                style={{ whiteSpace: 'nowrap' }}
+                style={{
+                  whiteSpace: 'nowrap',
+                  paddingInline: shortcutActive ? 0 : undefined,
+                }}
               >
-                Sign and Send
+                <HStack gap={4} alignItems="center" justifyContent="center">
+                  Sign and Send
+                  {shortcutActive && windowFocused ? <ShortcutHint /> : null}
+                </HStack>
               </Button>
             )}
           </HStack>

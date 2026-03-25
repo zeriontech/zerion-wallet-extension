@@ -22,6 +22,7 @@ type MetabaseEvent =
   | 'add_wallet'
   | 'background_script_reloaded'
   | 'hold_to_sign_prerefence'
+  | 'keyboard_shortcut_to_sign_preference'
   | 'cloudflare_challenge_issued'
   | 'button_clicked'
   | 'banner_clicked'

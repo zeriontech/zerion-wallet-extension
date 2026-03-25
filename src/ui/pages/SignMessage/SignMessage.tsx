@@ -288,7 +288,9 @@ function SignMessageContent({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              gridTemplateColumns: preferences?.enableKeyboardShortcutToSign
+                ? '1fr 2fr'
+                : '1fr 1fr',
               gap: 8,
             }}
           >
@@ -309,6 +311,9 @@ function SignMessageContent({
                 holdToSign={preferences.enableHoldToSignButton}
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
+                }
+                keyboardShortcutEnabled={
+                  preferences.enableKeyboardShortcutToSign
                 }
               />
             ) : null}
