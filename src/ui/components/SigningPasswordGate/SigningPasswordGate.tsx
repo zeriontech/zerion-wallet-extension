@@ -75,7 +75,12 @@ function PasskeyView({
           {error.message || 'unknown error'}
         </UIText>
       ) : null}
-      <Button kind="regular" type="button" onClick={onUsePassword}>
+      <Button
+        kind="regular"
+        type="button"
+        onClick={onUsePassword}
+        style={{ paddingInline: 20 }}
+      >
         Use Password Instead
       </Button>
     </VStack>
