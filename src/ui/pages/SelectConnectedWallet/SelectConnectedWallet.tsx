@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -32,8 +32,13 @@ import { EmptyView2 } from 'src/ui/components/EmptyView';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { usePreferences } from 'src/ui/features/preferences';
+import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
+import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
+import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { WalletList } from '../WalletSelect/WalletList';
+import { useWalletSearchPredicate } from '../WalletSelect/useWalletSearchPredicate';
+import type { AnyWallet } from '../WalletSelect/shared';
 
 const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
   {
@@ -68,6 +73,35 @@ function WalletSelectDialog({
   onSelect(wallet: ExternallyOwnedAccount | BareWallet | DeviceAccount): void;
 }) {
   const { preferences } = usePreferences();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const allAddresses = useMemo(
+    () =>
+      walletGroups?.flatMap((g) =>
+        g.walletContainer.wallets.map((w) => w.address)
+      ) ?? [],
+    [walletGroups]
+  );
+  const totalWalletCount = allAddresses.length;
+
+  const { data: walletsMeta } = useWalletsMetaByChunks({
+    addresses: allAddresses,
+    useErrorBoundary: false,
+    suspense: false,
+  });
+
+  const matchesSearch = useWalletSearchPredicate({
+    searchQuery,
+    walletsMeta,
+  });
+
+  const walletListPredicate = useCallback(
+    (item: AnyWallet) =>
+      isMatchForEcosystem(item.address, ecosystem) &&
+      connectedAddresses.has(normalizeAddress(item.address)) &&
+      matchesSearch(item),
+    [ecosystem, connectedAddresses, matchesSearch]
+  );
 
   return walletGroups?.length ? (
     <VStack gap={24} style={{ paddingTop: 72 }}>
@@ -81,16 +115,29 @@ function WalletSelectDialog({
           Select a connected {ECOSYSTEM_NAMES[ecosystem]} wallet
         </UIText>
       </VStack>
+      {totalWalletCount >= 5 ? (
+        <DebouncedInput
+          value={searchQuery}
+          delay={300}
+          onChange={setSearchQuery}
+          render={({ value, handleChange }) => (
+            <SearchInput
+              boxHeight={40}
+              type="search"
+              placeholder="Search wallets"
+              value={value}
+              onChange={(event) => handleChange(event.currentTarget.value)}
+            />
+          )}
+        />
+      ) : null}
       <WalletList
         walletsOrder={preferences?.walletsOrder}
         selectedAddress={value}
         walletGroups={walletGroups}
         onSelect={onSelect}
         showAddressValues={true}
-        predicate={(item) =>
-          isMatchForEcosystem(item.address, ecosystem) &&
-          connectedAddresses.has(normalizeAddress(item.address))
-        }
+        predicate={walletListPredicate}
       />
     </VStack>
   ) : (
@@ -348,7 +395,10 @@ export function SelectConnectedWallet() {
     },
     [windowId]
   );
-  const handleReject = useCallback(() => windowPort.reject(windowId), [windowId]);
+  const handleReject = useCallback(
+    () => windowPort.reject(windowId),
+    [windowId]
+  );
 
   if (isError) {
     if (error instanceof NoConnectedWalletForEcosystemError) {

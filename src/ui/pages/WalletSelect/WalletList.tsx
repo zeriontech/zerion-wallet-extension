@@ -25,7 +25,6 @@ import {
   getWalletId,
   type WalletListGroup,
 } from 'src/shared/wallet/wallet-list';
-import { useEvent } from 'src/ui/shared/useEvent';
 import * as styles from './styles.module.css';
 import type { AnyWallet, WalletGroupInfo } from './shared';
 import { getFullWalletList } from './shared';
@@ -255,15 +254,14 @@ export function WalletList({
   onSelect(wallet: AnyWallet): void;
   predicate?: (item: AnyWallet) => boolean;
 }) {
-  const predicateEvent = useEvent(predicate);
   const groups = useMemo(
     () =>
       getFullWalletList({
         walletsOrder,
         walletGroups,
-        predicate: predicateEvent,
+        predicate,
       }),
-    [walletsOrder, walletGroups, predicateEvent]
+    [walletsOrder, walletGroups, predicate]
   );
   const walletMap = useMemo(() => {
     const map = new Map<
@@ -288,6 +286,18 @@ export function WalletList({
    * nesting buttons, which is invalid per html spec, but still works ¯\_(ツ)_/¯
    */
   const supportsCssAnchor = CSS.supports('anchor-name: --name');
+
+  if (groups.length === 0) {
+    return (
+      <UIText
+        kind="small/regular"
+        color="var(--neutral-500)"
+        style={{ textAlign: 'center', paddingBlock: 24 }}
+      >
+        No wallets found
+      </UIText>
+    );
+  }
 
   return (
     <VStack gap={4}>
