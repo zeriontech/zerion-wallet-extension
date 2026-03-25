@@ -87,7 +87,7 @@ export function WithReadonlyWarningDialog({
         handleClick: (event) => {
           if (isReadonlyGroup) {
             invariant(dialogRef.current, 'Dialog not mounted');
-            event.preventDefault();
+            event.preventDefault?.();
             dialogRef.current.showModal();
           } else {
             onClick?.(event);
