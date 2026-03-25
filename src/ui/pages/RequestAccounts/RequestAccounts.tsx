@@ -51,6 +51,7 @@ import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { WalletList } from '../WalletSelect/WalletList';
 import { useWalletSearchPredicate } from '../WalletSelect/useWalletSearchPredicate';
+import type { AnyWallet } from '../WalletSelect/shared';
 
 const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
   {
@@ -100,6 +101,12 @@ function WalletSelectDialog({
     walletsMeta,
   });
 
+  const walletListPredicate = useCallback(
+    (item: AnyWallet) =>
+      isMatchForEcosystem(item.address, ecosystem) && matchesSearch(item),
+    [ecosystem, matchesSearch]
+  );
+
   return walletGroups?.length ? (
     <VStack gap={24} style={{ paddingTop: 72 }}>
       <VStack gap={12} style={{ justifyItems: 'center' }}>
@@ -136,9 +143,7 @@ function WalletSelectDialog({
         walletGroups={walletGroups}
         onSelect={onSelect}
         showAddressValues={true}
-        predicate={(item) =>
-          isMatchForEcosystem(item.address, ecosystem) && matchesSearch(item)
-        }
+        predicate={walletListPredicate}
       />
     </VStack>
   ) : (

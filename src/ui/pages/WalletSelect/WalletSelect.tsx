@@ -50,7 +50,7 @@ import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import * as styles from './styles.module.css';
 import { WalletList } from './WalletList';
 import { WalletListEdit } from './WalletListEdit';
-import { getFullWalletList } from './shared';
+import { getFullWalletList, type AnyWallet } from './shared';
 import { useWalletSearchPredicate } from './useWalletSearchPredicate';
 
 function PortfolioRow({
@@ -213,6 +213,13 @@ export function WalletSelect() {
 
   const isLoading = isLoadingWalletGroups;
 
+  const walletListPredicate = useCallback(
+    (wallet: AnyWallet) =>
+      (!ecosystem || isMatchForEcosystem(wallet.address, ecosystem)) &&
+      matchesSearch(wallet),
+    [ecosystem, matchesSearch]
+  );
+
   if (isLoading) {
     return <ViewLoading kind="network" />;
   }
@@ -348,10 +355,7 @@ export function WalletSelect() {
             }}
             selectedAddress={singleAddress}
             showAddressValues={true}
-            predicate={(wallet) =>
-              (!ecosystem || isMatchForEcosystem(wallet.address, ecosystem)) &&
-              matchesSearch(wallet)
-            }
+            predicate={walletListPredicate}
             renderItemFooter={({ wallet }) => {
               const walletMeta = walletsMeta?.find(
                 (meta) =>
