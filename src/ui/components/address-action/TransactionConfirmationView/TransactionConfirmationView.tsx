@@ -29,6 +29,8 @@ import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
 
+const TRANSACTION_CONFIRMATION_BUTTON_ID = 'transaction-confirmation-button';
+
 export function TransactionConfirmationView({
   title,
   wallet,
@@ -183,8 +185,8 @@ export function TransactionConfirmationView({
             <KeyboardShortcut
               combination="mod+enter"
               onKeyDown={() => {
-                const btn = formRef.current?.querySelector<HTMLButtonElement>(
-                  'button[value]:not([value="cancel"])'
+                const btn = document.getElementById(
+                  TRANSACTION_CONFIRMATION_BUTTON_ID
                 );
                 btn?.click();
               }}
@@ -220,6 +222,7 @@ export function TransactionConfirmationView({
             ) : (
               <Button
                 kind="primary"
+                id={TRANSACTION_CONFIRMATION_BUTTON_ID}
                 value={interpretationString ?? 'confirm'}
                 style={{
                   whiteSpace: 'nowrap',
