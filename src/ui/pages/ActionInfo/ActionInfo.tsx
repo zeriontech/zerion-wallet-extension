@@ -377,7 +377,10 @@ export function ActionInfo() {
       <NavigationTitle
         title={
           <VStack style={{ justifyItems: 'center' }} gap={0}>
-            <UIText kind="body/accent">{`${type.displayValue}${
+            <UIText
+              kind="body/accent"
+              color={isFailed ? 'var(--negative-500)' : 'var(--black)'}
+            >{`${type.displayValue}${
               isFailed ? ` (${capitalize(status)})` : ''
             }`}</UIText>
             <UIText kind="small/regular" color="var(--neutral-500)">
