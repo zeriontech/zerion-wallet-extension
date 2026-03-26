@@ -11,6 +11,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { usePreferences } from 'src/ui/features/preferences';
 import { Frame } from 'src/ui/ui-kit/Frame';
+import SignIcon from 'jsx:src/ui/assets/signature.svg';
 import {
   FrameListItemButton,
   FrameListItemLink,
@@ -626,14 +627,17 @@ function SecurityMain() {
         <Frame>
           <TouchIdSettings />
         </Frame>
-        <VStack gap={8}>
-          <UIText
-            kind="small/regular"
-            color="var(--neutral-500)"
-            style={{ paddingInline: 16 }}
-          >
-            Signing Options
-          </UIText>
+        <VStack gap={4}>
+          <HStack gap={4} alignItems="center" style={{ paddingInline: 16 }}>
+            <SignIcon
+              width={24}
+              height={24}
+              style={{ color: 'var(--neutral-500)' }}
+            />
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              Signing Experience
+            </UIText>
+          </HStack>
           <Frame>
             <VStack gap={0}>
               <RequirePasswordToSign />
