@@ -193,6 +193,7 @@ export function TransactionConfirmationView({
             {isDeviceAccount(wallet) ? (
               <Button
                 kind="primary"
+                id={TRANSACTION_CONFIRMATION_BUTTON_ID}
                 value={interpretationString ?? 'confirm'}
                 style={{
                   whiteSpace: 'nowrap',
@@ -207,6 +208,7 @@ export function TransactionConfirmationView({
               </Button>
             ) : preferences?.enableHoldToSignButton ? (
               <HoldableButton
+                id={TRANSACTION_CONFIRMATION_BUTTON_ID}
                 text={
                   <HStack gap={4} alignItems="center" justifyContent="center">
                     Hold to Sign
