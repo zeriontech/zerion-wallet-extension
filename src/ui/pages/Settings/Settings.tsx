@@ -589,7 +589,6 @@ function Privacy() {
 }
 
 function Experiments() {
-  const { preferences, setPreferences } = usePreferences();
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
   useBackgroundKind({ kind: 'white' });
 
@@ -598,50 +597,6 @@ function Experiments() {
       <NavigationTitle title="Experiments" />
       <PageTop />
       <VStack gap={16}>
-        <Frame>
-          <ToggleSettingLine
-            text="Hold to Sign"
-            checked={preferences?.enableHoldToSignButton || false}
-            onChange={(event) => {
-              setPreferences({
-                enableHoldToSignButton: event.target.checked,
-              });
-            }}
-            detailText={
-              <span>
-                Sign transactions with a long click to avoid accidental signing
-              </span>
-            }
-          />
-        </Frame>
-        <Frame>
-          <ToggleSettingLine
-            text="Keyboard Shortcut to Sign"
-            checked={preferences?.enableKeyboardShortcutToSign || false}
-            onChange={(event) => {
-              setPreferences({
-                enableKeyboardShortcutToSign: event.target.checked,
-              });
-            }}
-            detailText={
-              <span>
-                Use{' '}
-                <span
-                  style={{
-                    display: 'inline-block',
-                    padding: '1px 6px',
-                    borderRadius: 6,
-                    backgroundColor: 'var(--neutral-200)',
-                    fontWeight: 500,
-                  }}
-                >
-                  {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
-                </span>{' '}
-                to quickly confirm transactions and sign messages
-              </span>
-            }
-          />
-        </Frame>
         {isMacOS() ? (
           <Frame>
             <ToggleSettingLine

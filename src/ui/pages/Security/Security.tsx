@@ -9,6 +9,7 @@ import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { usePreferences } from 'src/ui/features/preferences';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import {
   FrameListItemButton,
@@ -33,7 +34,7 @@ import {
 import { getError } from 'get-error';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
-// import { isMacOS } from 'src/ui/shared/isMacos';
+import { isMacOS } from 'src/ui/shared/isMacos';
 import {
   SigningPasswordGate,
   type SigningPasswordGateHandle,
@@ -563,20 +564,91 @@ function RequirePasswordToSign() {
   );
 }
 
+function HoldToSignToggle() {
+  const { preferences, setPreferences } = usePreferences();
+  return (
+    <ToggleSettingLine
+      text="Hold to Sign"
+      checked={preferences?.enableHoldToSignButton || false}
+      onChange={(event) => {
+        setPreferences({
+          enableHoldToSignButton: event.target.checked,
+        });
+      }}
+      detailText={
+        <span>
+          Sign transactions with a long click to avoid accidental signing
+        </span>
+      }
+    />
+  );
+}
+
+function KeyboardShortcutToSignToggle() {
+  const { preferences, setPreferences } = usePreferences();
+  return (
+    <ToggleSettingLine
+      text="Keyboard Shortcut to Sign"
+      checked={preferences?.enableKeyboardShortcutToSign || false}
+      onChange={(event) => {
+        setPreferences({
+          enableKeyboardShortcutToSign: event.target.checked,
+        });
+      }}
+      detailText={
+        <span>
+          Use{' '}
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '1px 6px',
+              borderRadius: 6,
+              backgroundColor: 'var(--neutral-200)',
+              fontWeight: 500,
+            }}
+          >
+            {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
+          </span>{' '}
+          to quickly confirm transactions and sign messages
+        </span>
+      }
+    />
+  );
+}
+
 function SecurityMain() {
   useBackgroundKind({ kind: 'white' });
 
   return (
     <PageColumn>
       <PageTop />
-      <Frame>
-        <VStack gap={0}>
+      <VStack gap={16}>
+        <Frame>
           <TouchIdSettings />
-          <RequirePasswordToSign />
-          <AutoLockTimerLink />
-          <ChangePassword />
+        </Frame>
+        <VStack gap={8}>
+          <UIText
+            kind="small/regular"
+            color="var(--neutral-500)"
+            style={{ paddingInline: 16 }}
+          >
+            Signing Options
+          </UIText>
+          <Frame>
+            <VStack gap={0}>
+              <RequirePasswordToSign />
+              <HoldToSignToggle />
+              <KeyboardShortcutToSignToggle />
+            </VStack>
+          </Frame>
         </VStack>
-      </Frame>
+        <Frame>
+          <VStack gap={0}>
+            <AutoLockTimerLink />
+            <ChangePassword />
+          </VStack>
+        </Frame>
+      </VStack>
     </PageColumn>
   );
 }
