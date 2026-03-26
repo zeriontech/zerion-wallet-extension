@@ -65,6 +65,7 @@ import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
 import { StatsigOverrides } from './StatsigOverrides';
+import { WhatsNew } from './WhatsNew';
 import type { PopoverToastHandle } from './PopoverToast';
 import { PopoverToast } from './PopoverToast';
 import { ToggleSettingLine } from './ToggleSettingsLine';
@@ -126,6 +127,18 @@ function SettingsMain() {
       <PageTop />
       <VStack gap={16}>
         <BackupFlowSettingsSection />
+        <Frame>
+          <VStack gap={0}>
+            <FrameListItemLink to="/settings/whats-new">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <BulbIcon />
+                  <UIText kind="body/regular">What{apostrophe}s New</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+          </VStack>
+        </Frame>
         <Frame>
           <VStack gap={0}>
             <FrameListItemLink to="/wallets">
@@ -314,18 +327,6 @@ function SettingsMain() {
               </AngleRightRow>
             </FrameListItemAnchor>
             <BugReportButton />
-            <FrameListItemAnchor
-              href="https://app.getbeamer.com/zerion/en?category=extension"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <AngleRightRow kind="link">
-                <HStack gap={8} alignItems="center">
-                  <BulbIcon />
-                  <UIText kind="body/regular">What{apostrophe}s New</UIText>
-                </HStack>
-              </AngleRightRow>
-            </FrameListItemAnchor>
           </VStack>
         </Frame>
         {ENABLE_DNA_BANNERS ? (
@@ -678,6 +679,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <Experiments />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/whats-new"
+        element={
+          <ViewSuspense>
+            <WhatsNew />
           </ViewSuspense>
         }
       />

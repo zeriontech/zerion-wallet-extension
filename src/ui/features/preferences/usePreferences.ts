@@ -77,3 +77,7 @@ export function useGlobalPreferences() {
     setGlobalPreferencesAsync: mutation.mutateAsync,
   };
 }
+
+export function useFeatureOnboarding() {
+  return { visible: true, hide: () => null };
+}
