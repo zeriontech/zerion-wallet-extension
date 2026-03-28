@@ -22,9 +22,14 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { StrengthChecks } from 'src/ui/pages/CreateAccount/StrengthChecks';
 import { CheckmarkBadge } from 'src/ui/pages/CreateAccount/StrengthChecks/StrengthChecks';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
+import { isMacOS } from 'src/ui/shared/isMacos';
+import TouchIdIcon from 'jsx:src/ui/assets/touch-id.svg';
+import { usePasskeyAvailability } from 'src/ui/pages/Security/Security';
 import { ViewParam } from '../Import/ImportSearchParams';
 import { PasswordFAQ } from '../FAQ';
 import { PasswordStep } from './passwordSearchParams';
+
+const macOsDetected = isMacOS();
 
 function WeakPasswordWarning() {
   const goBack = useGoBack();
@@ -140,7 +145,7 @@ function ConfirmPasswordForm({
   onSubmit,
 }: {
   password: string;
-  onSubmit: () => void;
+  onSubmit: ({ passkey }: { passkey?: boolean }) => void;
 }) {
   invariant(Boolean(password), 'Password must be a non-empty string');
   const [value, setValue] = useState('');
@@ -148,12 +153,17 @@ function ConfirmPasswordForm({
     type: string;
     message: string;
   }>(null);
+  const passkeyAvailabilityQuery = usePasskeyAvailability();
 
   return (
     <form
       onChange={() => setFormError(null)}
       onSubmit={(event) => {
         event.preventDefault();
+        const submitter = (event.nativeEvent as SubmitEvent)
+          .submitter as HTMLButtonElement | null;
+        const action = submitter?.value as 'password' | 'passkey' | undefined;
+
         const formData = new FormData(event.currentTarget);
         const repeatedPassword = formData.get('confirmPassword') as
           | string
@@ -169,7 +179,7 @@ function ConfirmPasswordForm({
           });
           return;
         }
-        onSubmit();
+        onSubmit({ passkey: action === 'passkey' });
       }}
     >
       <VStack gap={24}>
@@ -197,9 +207,67 @@ function ConfirmPasswordForm({
         </div>
       </VStack>
       <Spacer height={74} />
-      <Button kind="primary" style={{ width: '100%' }}>
-        Set Password
-      </Button>
+      <HStack
+        gap={16}
+        alignItems="center"
+        style={{
+          gridTemplateColumns: passkeyAvailabilityQuery.data
+            ? '1fr 1fr'
+            : '1fr',
+        }}
+      >
+        {macOsDetected && passkeyAvailabilityQuery.data ? (
+          <Button
+            kind="primary"
+            style={{ width: '100%', paddingInline: 12 }}
+            type="submit"
+            value="passkey"
+          >
+            <HStack gap={8} justifyContent="center" alignItems="center">
+              <TouchIdIcon width={24} height={24} />
+              <span>Set Touch ID</span>
+            </HStack>
+          </Button>
+        ) : null}
+        <Button
+          kind={
+            macOsDetected && passkeyAvailabilityQuery.data
+              ? 'regular'
+              : 'primary'
+          }
+          style={{ width: '100%', paddingInline: 12 }}
+          type="submit"
+          value="password"
+        >
+          Set Password
+        </Button>
+        {!macOsDetected && passkeyAvailabilityQuery.data ? (
+          <div style={{ width: '100%', position: 'relative' }}>
+            <Button
+              kind="regular"
+              style={{ width: '100%', paddingInline: 12 }}
+              type="submit"
+              value="passkey"
+            >
+              Set Passkey
+            </Button>
+            <div
+              style={{
+                position: 'absolute',
+                top: -8,
+                right: -8,
+                borderRadius: 8,
+                backgroundColor: 'var(--primary)',
+                padding: '2px 8px',
+              }}
+            >
+              <UIText kind="caption/accent" color="var(--always-white)">
+                Beta
+              </UIText>
+            </div>
+          </div>
+        ) : null}
+      </HStack>
     </form>
   );
 }
@@ -213,7 +281,7 @@ export function Password({
   title: string;
   step: PasswordStep | null;
   defaultValue: string | null;
-  onSubmit(value: string): void;
+  onSubmit(value: string, passkey?: boolean): void;
 }) {
   const navigate = useNavigate();
   const [value, setValue] = useState(defaultValue || '');
@@ -252,8 +320,8 @@ export function Password({
           ) : step === PasswordStep.confirm ? (
             <ConfirmPasswordForm
               password={value}
-              onSubmit={() => {
-                onSubmit(value);
+              onSubmit={({ passkey }) => {
+                onSubmit(value, passkey);
               }}
             />
           ) : null}

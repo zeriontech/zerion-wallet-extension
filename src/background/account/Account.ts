@@ -20,6 +20,7 @@ import type { Passkey, PublicUser, User } from 'src/shared/types/User';
 import { payloadId } from '@walletconnect/jsonrpc-utils';
 import { sha256 } from 'src/modules/crypto/sha256';
 import { produce } from 'immer';
+import { invariant } from 'src/shared/invariant';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState, WalletStore } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
@@ -122,14 +123,18 @@ export class Account extends EventEmitter<AccountEvents> {
 
   async setEncryptedPassword(passkey: Passkey) {
     const user = await getCurrentUser();
-    if (!user) {
-      throw new Error('No user found');
+    if (user) {
+      await Account.writeCurrentUser(
+        produce(user, (draft) => {
+          draft.passkey = passkey;
+        })
+      );
     }
-    await Account.writeCurrentUser(
-      produce(user, (draft) => {
-        draft.passkey = passkey;
-      })
-    );
+    const unsavedUser = this.user;
+    invariant(unsavedUser, 'No user found in memory');
+    this.user = produce(unsavedUser, (draft) => {
+      draft.passkey = passkey;
+    });
   }
 
   async removeEncryptedPassword() {

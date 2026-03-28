@@ -47,13 +47,8 @@ import { StrengthIndicator } from '../CreateAccount/StrengthIndicator';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
 import { setupAccountPasskey, getPasskeyTitle } from './passkey';
 
-function TouchIdSettings() {
-  const toastRef = useRef<PopoverToastHandle>(null);
-  const [userValue, setUserValue] = useState<boolean | null>(null);
-  const passkeyTitle = getPasskeyTitle();
-
-  // Check if passkeys are supported on this device
-  const passkeyAvailabilityQuery = useQuery({
+export function usePasskeyAvailability() {
+  return useQuery({
     queryKey: ['passkey/isSupported'],
     queryFn: async () => {
       if (!window.PublicKeyCredential) {
@@ -70,6 +65,13 @@ function TouchIdSettings() {
     staleTime: Infinity,
     cacheTime: Infinity,
   });
+}
+
+function TouchIdSettings() {
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const [userValue, setUserValue] = useState<boolean | null>(null);
+  const passkeyTitle = getPasskeyTitle();
+  const passkeyAvailabilityQuery = usePasskeyAvailability();
 
   const defaultValueQuery = useQuery({
     queryKey: ['account/getPasskeyEnabled'],
