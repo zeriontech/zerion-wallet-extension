@@ -25,8 +25,6 @@
   border-radius: 50%;
   background-color: var(--primary);
   flex-shrink: 0;
-  position: relative;
-  z-index: 1;
 }
 
 .timelineConnector {
@@ -47,6 +45,7 @@
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
+  margin-left: 3px;
 }
 
 /* Item list */

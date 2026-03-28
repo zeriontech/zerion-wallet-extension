@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { useBackgroundKind } from 'src/ui/components/Background';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -13,7 +14,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import type { ChangelogEntry, ChangelogItem } from './changelog-data';
-import { changelog } from './changelog-data';
+import { changelog, latestChangelogVersion } from './changelog-data';
 import * as styles from './WhatsNew.module.css';
 
 const SECTION_CONFIG = {
@@ -148,6 +149,11 @@ function ReleaseCard({ entry }: { entry: ChangelogEntry }) {
 
 export function WhatsNew() {
   useBackgroundKind({ kind: 'white' });
+  const { setGlobalPreferences } = useGlobalPreferences();
+
+  useEffect(() => {
+    setGlobalPreferences({ lastVisitedChangelog: latestChangelogVersion });
+  }, [setGlobalPreferences]);
 
   return (
     <PageColumn>
@@ -173,7 +179,7 @@ export function WhatsNew() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Button as="span" kind="neutral" style={{ width: '100%' }}>
+            <Button as="span" kind="primary" style={{ width: '100%' }}>
               View all updates on Beamer
             </Button>
           </UnstyledAnchor>

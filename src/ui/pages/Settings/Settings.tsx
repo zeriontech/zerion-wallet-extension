@@ -65,7 +65,7 @@ import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
 import { StatsigOverrides } from './StatsigOverrides';
-import { WhatsNew } from './WhatsNew';
+import { WhatsNew, latestChangelogVersion } from './WhatsNew';
 import type { PopoverToastHandle } from './PopoverToast';
 import { PopoverToast } from './PopoverToast';
 import { ToggleSettingLine } from './ToggleSettingsLine';
@@ -117,6 +117,10 @@ function SettingsMain() {
   const { pathname } = useLocation();
   useBackgroundKind({ kind: 'white' });
 
+  const { globalPreferences } = useGlobalPreferences();
+  const hasUnseenChangelog =
+    globalPreferences?.lastVisitedChangelog !== latestChangelogVersion;
+
   const { hasTestWallet } = useStore(metaAppState);
   const evmAddress = currentWallet
     ? isEthereumAddress(currentWallet.address)
@@ -131,9 +135,31 @@ function SettingsMain() {
           <VStack gap={0}>
             <FrameListItemLink to="/settings/whats-new">
               <AngleRightRow>
-                <HStack gap={8} alignItems="center">
-                  <BulbIcon />
-                  <UIText kind="body/regular">What{apostrophe}s New</UIText>
+                <HStack
+                  gap={8}
+                  alignItems="center"
+                  justifyContent="space-between"
+                  style={{ gridTemplateColumns: '1fr auto' }}
+                >
+                  <HStack gap={8} alignItems="center">
+                    <BulbIcon />
+                    <UIText kind="body/regular">What{apostrophe}s New</UIText>
+                  </HStack>
+                  <UIText
+                    kind="caption/accent"
+                    style={
+                      hasUnseenChangelog
+                        ? {
+                            color: 'var(--white)',
+                            backgroundColor: 'var(--primary)',
+                            padding: '2px 8px',
+                            borderRadius: 1000,
+                          }
+                        : { color: 'var(--neutral-500)' }
+                    }
+                  >
+                    v{latestChangelogVersion}
+                  </UIText>
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
@@ -187,7 +213,7 @@ function SettingsMain() {
                   <AngleRightRow>
                     <HStack gap={8} alignItems="center">
                       <ExperimentsIcon />
-                      <UIText kind="body/regular">Statsig Overrides</UIText>
+                      <UIText kind="body/regular">Dev Menu</UIText>
                     </HStack>
                   </AngleRightRow>
                 </FrameListItemLink>

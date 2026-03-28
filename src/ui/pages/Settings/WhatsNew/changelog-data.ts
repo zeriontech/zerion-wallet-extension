@@ -95,3 +95,5 @@ export const changelog: ChangelogEntry[] = [
     ],
   },
 ];
+
+export const latestChangelogVersion = changelog[0].version;

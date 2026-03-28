@@ -35,6 +35,8 @@ export interface State {
     string,
     { group: string; group_name: string | null }
   >;
+  lastVisitedChangelog?: string;
+  lastSeenPromoId?: string;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -73,6 +75,8 @@ export class GlobalPreferences extends PersistentStore<State> {
     autoLockTimeout: HALF_DAY,
     requirePasswordToSign: false,
     statsigOverrides: {},
+    lastVisitedChangelog: '',
+    lastSeenPromoId: '',
   };
 
   private async fetchDefaultWalletNameFlags() {
