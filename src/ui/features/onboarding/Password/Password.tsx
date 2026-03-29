@@ -23,8 +23,10 @@ import { StrengthChecks } from 'src/ui/pages/CreateAccount/StrengthChecks';
 import { CheckmarkBadge } from 'src/ui/pages/CreateAccount/StrengthChecks/StrengthChecks';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { isMacOS } from 'src/ui/shared/isMacos';
-import TouchIdIcon from 'jsx:src/ui/assets/touch-id.svg';
 import { usePasskeyAvailability } from 'src/ui/pages/Security/Security';
+import { getPasskeyTitle } from 'src/ui/pages/Security/passkey';
+import { ToggleSettingLine } from 'src/ui/pages/Settings/ToggleSettingsLine';
+import { Frame } from 'src/ui/ui-kit/Frame';
 import { ViewParam } from '../Import/ImportSearchParams';
 import { PasswordFAQ } from '../FAQ';
 import { PasswordStep } from './passwordSearchParams';
@@ -149,20 +151,19 @@ function ConfirmPasswordForm({
 }) {
   invariant(Boolean(password), 'Password must be a non-empty string');
   const [value, setValue] = useState('');
+  const [passkeyEnabled, setPasskeyEnabled] = useState(false);
   const [formError, setFormError] = useState<null | {
     type: string;
     message: string;
   }>(null);
   const passkeyAvailabilityQuery = usePasskeyAvailability();
+  const passkeyTitle = getPasskeyTitle();
 
   return (
     <form
       onChange={() => setFormError(null)}
       onSubmit={(event) => {
         event.preventDefault();
-        const submitter = (event.nativeEvent as SubmitEvent)
-          .submitter as HTMLButtonElement | null;
-        const action = submitter?.value as 'password' | 'passkey' | undefined;
 
         const formData = new FormData(event.currentTarget);
         const repeatedPassword = formData.get('confirmPassword') as
@@ -179,7 +180,7 @@ function ConfirmPasswordForm({
           });
           return;
         }
-        onSubmit({ passkey: action === 'passkey' });
+        onSubmit({ passkey: passkeyEnabled });
       }}
     >
       <VStack gap={24}>
@@ -206,55 +207,22 @@ function ConfirmPasswordForm({
           />
         </div>
       </VStack>
-      <Spacer height={74} />
-      <HStack
-        gap={16}
-        alignItems="center"
-        style={{
-          gridTemplateColumns: passkeyAvailabilityQuery.data
-            ? '1fr 1fr'
-            : '1fr',
-        }}
-      >
-        {macOsDetected && passkeyAvailabilityQuery.data ? (
-          <Button
-            kind="primary"
-            style={{ width: '100%', paddingInline: 12 }}
-            type="submit"
-            value="passkey"
-          >
-            <HStack gap={8} justifyContent="center" alignItems="center">
-              <TouchIdIcon width={24} height={24} />
-              <span>Set Touch ID</span>
-            </HStack>
-          </Button>
-        ) : null}
-        <Button
-          kind={
-            macOsDetected && passkeyAvailabilityQuery.data
-              ? 'regular'
-              : 'primary'
-          }
-          style={{ width: '100%', paddingInline: 12 }}
-          type="submit"
-          value="password"
-        >
-          Set Password
-        </Button>
-        {!macOsDetected && passkeyAvailabilityQuery.data ? (
-          <div style={{ width: '100%', position: 'relative' }}>
-            <Button
-              kind="regular"
-              style={{ width: '100%', paddingInline: 12 }}
-              type="submit"
-              value="passkey"
-            >
-              Set Passkey
-            </Button>
+      {passkeyAvailabilityQuery.data ? (
+        <div style={{ position: 'relative' }}>
+          <Spacer height={24} />
+          <Frame>
+            <ToggleSettingLine
+              text={`Unlock with ${passkeyTitle}`}
+              checked={passkeyEnabled}
+              onChange={(event) => setPasskeyEnabled(event.target.checked)}
+              detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
+            />
+          </Frame>
+          {!macOsDetected ? (
             <div
               style={{
                 position: 'absolute',
-                top: -8,
+                top: 16,
                 right: -8,
                 borderRadius: 8,
                 backgroundColor: 'var(--primary)',
@@ -265,9 +233,17 @@ function ConfirmPasswordForm({
                 Beta
               </UIText>
             </div>
-          </div>
-        ) : null}
-      </HStack>
+          ) : null}
+        </div>
+      ) : null}
+      <Spacer height={24} />
+      <Button
+        kind="primary"
+        style={{ width: '100%', paddingInline: 12 }}
+        type="submit"
+      >
+        Set Password
+      </Button>
     </form>
   );
 }
