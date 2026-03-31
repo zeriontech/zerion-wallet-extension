@@ -323,8 +323,14 @@ export class Wallet {
     await this.syncWithWalletStore();
   }
 
-  async resetCredentials() {
-    this.userCredentials = null;
+  async resetCredentials({
+    clearInMemoryCredentials = true,
+  }: {
+    clearInMemoryCredentials?: boolean;
+  }) {
+    if (clearInMemoryCredentials) {
+      this.userCredentials = null;
+    }
     await globalPreferences.ready();
     const prefs = await globalPreferences.getPreferences();
     if (prefs.requirePasswordToSign) {
