@@ -8,10 +8,7 @@ import {
   useGlobalPreferences,
   usePreferences,
 } from 'src/ui/features/preferences/usePreferences';
-import {
-  APPROVE_AND_TRADE_EXPERIMENT,
-  ONRAMP_EXPERIMENT_NAME,
-} from 'src/modules/statsig/statsig.client';
+import { APPROVE_AND_TRADE_EXPERIMENT } from 'src/modules/statsig/statsig.client';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Frame } from 'src/ui/ui-kit/Frame';
@@ -22,7 +19,6 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
 const EXPERIMENT_NAMES = [
-  ONRAMP_EXPERIMENT_NAME,
   APPROVE_AND_TRADE_EXPERIMENT,
   'extension-entry_point_premium_purchase',
 ] as const;
