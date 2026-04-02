@@ -181,7 +181,9 @@ export class Account extends EventEmitter<AccountEvents> {
     clearInMemoryCredentials?: boolean;
   }) {
     this.encryptionKey = null;
-    this.wallet.resetCredentials({ clearInMemoryCredentials });
+    if (clearInMemoryCredentials) {
+      this.wallet.resetCredentials();
+    }
   }
 
   /** Migrates credentials from storage.local to storage.session if needed */
@@ -249,7 +251,7 @@ export class Account extends EventEmitter<AccountEvents> {
   private reset() {
     this.user = null;
     this.encryptionKey = null;
-    this.wallet.resetCredentials({ clearInMemoryCredentials: true });
+    this.wallet.resetCredentials();
     this.wallet.destroy();
     this.wallet = new Wallet(TEMPORARY_ID, null, this.notificationWindow);
     this.emit('reset');

@@ -323,26 +323,8 @@ export class Wallet {
     await this.syncWithWalletStore();
   }
 
-  async resetCredentials({
-    clearInMemoryCredentials = true,
-  }: {
-    clearInMemoryCredentials?: boolean;
-  }) {
-    if (clearInMemoryCredentials) {
-      this.userCredentials = null;
-    }
-    await globalPreferences.ready();
-    const prefs = await globalPreferences.getPreferences();
-    if (prefs.requirePasswordToSign) {
-      this.clearPrivateKeys();
-    }
-  }
-
-  private clearPrivateKeys() {
-    if (!this.record) {
-      return;
-    }
-    this.record = Model.clearPrivateKeys(this.record);
+  resetCredentials() {
+    this.userCredentials = null;
   }
 
   async testMethod({ params: value }: WalletMethodParams<number>) {

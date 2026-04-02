@@ -461,6 +461,7 @@ export class WalletRecordModel {
       encryptedRecord
     )) as WalletRecord;
     const entry = upgradeRecord(persistedEntry, walletRecordUpgrades);
+    console.log({ entry, persistedEntry, walletRecordUpgrades });
 
     entry.walletManager.groups = await Promise.all(
       entry.walletManager.groups.map(async (group) => {
