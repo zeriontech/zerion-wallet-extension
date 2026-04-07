@@ -1,0 +1,29 @@
+.formContainer {
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--white);
+}
+
+.reverseButton {
+  position: absolute;
+  /* half self height and half gap between inputs */
+  bottom: calc(50% - 20px);
+  left: calc(50% - 20px);
+  background-color: var(--white);
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  border: 2px solid var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+@media (hover: hover) {
+  .reverseButton:hover {
+    background-color: var(--neutral-100);
+  }
+}

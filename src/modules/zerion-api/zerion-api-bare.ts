@@ -27,6 +27,7 @@ import { walletSimulateTransaction } from './requests/wallet-simulate-transactio
 import { searchQueryFungibles } from './requests/search-query-fungibles';
 import { assetListFungibles } from './requests/asset-list-fungibles';
 import { walletGetPnl } from './requests/wallet-get-pnl';
+import { walletGetSimplePositions } from './requests/wallet-get-simple-positions';
 import { walletSimulateTransactions } from './requests/wallet-simulate-transactions';
 
 export interface ZerionApiContext {
@@ -60,6 +61,7 @@ export const ZerionApiBare = {
   searchQuery,
   searchQueryFungibles,
   walletGetPnl,
+  walletGetSimplePositions,
 };
 
 export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;
