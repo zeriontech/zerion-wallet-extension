@@ -1,0 +1,190 @@
+import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useNavigationType } from 'react-router';
+import { useSearchParams } from 'react-router-dom';
+import { Content } from 'react-area';
+import { useCurrency } from 'src/modules/currency/useCurrency';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
+import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
+import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
+import { usePreferences } from 'src/ui/features/preferences/usePreferences';
+import { walletPort } from 'src/ui/shared/channels';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import type { Networks } from 'src/modules/networks/Networks';
+import { PageColumn } from 'src/ui/components/PageColumn/PageColumn';
+import { PageTop } from 'src/ui/components/PageTop/PageTop';
+import { NavigationTitle } from 'src/ui/components/NavigationTitle/NavigationTitle';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink/UnstyledLink';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { Button } from 'src/ui/ui-kit/Button';
+import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
+import { HStack } from 'src/ui/ui-kit/HStack/HStack';
+import { VStack } from 'src/ui/ui-kit/VStack';
+import { useSwapQuote } from './useSwapQuote';
+import { useFormState } from './useFormState';
+import { useFormPositions } from './useFormPositions';
+import { MiddleLine, ReverseButton } from './ReverseButton';
+import { InputPosition } from './InputPosition';
+import { OutputPosition } from './OutputPosition';
+import * as styles from './styles.module.css';
+
+function SwapFormComponent({
+  address,
+  positions,
+  networks,
+}: {
+  address: string;
+  positions: FungiblePosition[];
+  networks: Networks;
+}) {
+  const [formState, setFormState, reverseTokens] = useFormState({
+    address,
+    positions,
+    networks,
+  });
+
+  const { inputPosition, outputPosition } = useFormPositions({
+    formState,
+    positions,
+    networks,
+  });
+
+  const { quote, quotesQuery, setUserQuoteId } = useSwapQuote({
+    address,
+    formState,
+    inputPosition,
+    outputPosition,
+  });
+
+  return (
+    <>
+      <Content name="navigation-bar-end">
+        <HStack
+          gap={8}
+          alignItems="center"
+          style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
+        >
+          <Button
+            kind="ghost"
+            size={36}
+            style={{ padding: 6 }}
+            title="Swap settings"
+          >
+            <SettingsIcon style={{ display: 'block' }} />
+          </Button>
+          <UnstyledLink to="/wallet-select" title="Change Wallet">
+            <WalletAvatar
+              active={false}
+              address={address}
+              size={24}
+              borderRadius={6}
+            />
+          </UnstyledLink>
+        </HStack>
+      </Content>
+      <VStack gap={24} style={{ position: 'relative', flex: 1 }}>
+        <div className={styles.formContainer}>
+          <InputPosition
+            formState={formState}
+            onChange={setFormState}
+            position={inputPosition}
+          />
+          <MiddleLine />
+          <ReverseButton onClick={reverseTokens} />
+          <OutputPosition
+            formState={formState}
+            onChange={setFormState}
+            position={outputPosition}
+          />
+        </div>
+      </VStack>
+    </>
+  );
+}
+
+function SwapFormSkeleton() {
+  return <div>Loading...</div>;
+}
+
+function SwapFormError() {
+  return <div>Error loading swap form</div>;
+}
+
+/** Sets initial chainInput to last used chain for current address */
+function SwapFormWrapper({
+  address,
+  ready,
+}: {
+  address: string;
+  ready: boolean;
+}) {
+  const { currency } = useCurrency();
+  const navigationType = useNavigationType();
+  const isBackOrForward = navigationType === 'POP';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [prepared, setPrepared] = useState(
+    isBackOrForward || searchParams.has('inputChain')
+  );
+  const { data: lastUsedChain, isFetchedAfterMount } = useQuery({
+    enabled: ready && !prepared,
+    // Avoid using stale value. Leaving form and coming back should use new value instantly
+    staleTime: 0,
+    queryKey: ['wallet/getLastSwapChainByAddress', address],
+    queryFn: () => walletPort.request('getLastSwapChainByAddress', { address }),
+  });
+
+  const { data, isError } = useWalletSimplePositions(
+    { address, currency },
+    { source: useHttpClientSource() },
+    { enabled: ready }
+  );
+
+  const positions = data?.data;
+
+  const { networks, isFetching } = useNetworks();
+
+  useEffect(() => {
+    if (prepared || !isFetchedAfterMount) {
+      return;
+    }
+    if (lastUsedChain) {
+      searchParams.set('inputChain', lastUsedChain);
+      setSearchParams(searchParams, { replace: true });
+    }
+    setPrepared(true);
+  }, [
+    isFetchedAfterMount,
+    lastUsedChain,
+    prepared,
+    searchParams,
+    setSearchParams,
+  ]);
+
+  return isError ? (
+    <SwapFormError />
+  ) : prepared && positions && networks && !isFetching ? (
+    <SwapFormComponent
+      address={address}
+      positions={positions}
+      networks={networks}
+    />
+  ) : (
+    <SwapFormSkeleton />
+  );
+}
+
+export function SwapForm2() {
+  const { preferences } = usePreferences();
+  const { singleAddress: address, ready } = useAddressParams();
+  if (preferences?.testnetMode?.on) {
+    return <Navigate to="/" />;
+  }
+  return (
+    <PageColumn>
+      <PageTop />
+      <NavigationTitle title="Swap" />
+      <SwapFormWrapper address={address} ready={ready} />
+    </PageColumn>
+  );
+}

@@ -67,7 +67,7 @@ import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarni
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 import { SendForm } from '../pages/SendForm';
-import { SwapForm } from '../pages/SwapForm';
+// import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
@@ -83,7 +83,7 @@ import { AssetInfo } from '../pages/AssetInfo';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
-import { BridgeForm } from '../pages/BridgeForm';
+// import { BridgeForm } from '../pages/BridgeForm';
 import { ActionInfo } from '../pages/ActionInfo';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
@@ -91,6 +91,7 @@ import { ScreenViewTracker } from '../shared/ScreenViewTracker';
 import { PremiumPage } from '../pages/Premium';
 import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
+import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -407,7 +408,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           path="/swap-form/*"
           element={
             <RequireAuth>
-              <SwapForm />
+              <SwapForm2 />
             </RequireAuth>
           }
         />
@@ -415,7 +416,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           path="/bridge-form/*"
           element={
             <RequireAuth>
-              <BridgeForm />
+              <SwapForm2 />
             </RequireAuth>
           }
         />
