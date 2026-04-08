@@ -5,12 +5,12 @@ export type SwapFormState2 = {
   inputChain: string;
   /** @description ID of the fungible token to swap from */
   inputFungibleId: string;
-  /** @description Destination blockchain for bridge transactions */
-  inputAmount?: string;
-  /** @description ID of the fungible token to swap to */
-
-  outputChain?: string;
   /** @description Unchanged UI input value in common units */
+  inputAmount?: string;
+
+  /** @description Destination blockchain for bridge transactions */
+  outputChain?: string;
+  /** @description ID of the fungible token to swap to */
   outputFungibleId?: string;
 
   /** @description Parsed receiver address */

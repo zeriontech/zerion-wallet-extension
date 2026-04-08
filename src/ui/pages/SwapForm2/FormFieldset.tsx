@@ -22,12 +22,7 @@ export function FormFieldset({
 }) {
   return (
     <fieldset
-      style={{
-        backgroundColor: 'none',
-        border: 'none',
-        padding: 16,
-        margin: 0,
-      }}
+      style={{ background: 'none', border: 'none', padding: 16, margin: 0 }}
       onClick={(event) => {
         const target = event.target as Node;
         const container = event.currentTarget;
