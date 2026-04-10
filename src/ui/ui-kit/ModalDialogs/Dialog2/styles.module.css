@@ -1,0 +1,80 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--over-layout-index);
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dialog {
+  position: fixed;
+  z-index: var(--over-layout-index);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--white);
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.dialogFullscreen {
+  inset: 0;
+  border-radius: 0;
+}
+
+.dialogCentered {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 480px;
+  width: calc(100% - 32px);
+  max-height: 70vh;
+  border-radius: 16px;
+  box-shadow: 0 0 500px 50px rgba(0, 0, 0, 0.14);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  flex-shrink: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--black);
+  padding: 0;
+}
+
+.closeButton:hover {
+  background-color: var(--neutral-200);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+}
+
+.content::-webkit-scrollbar {
+  visibility: hidden;
+  width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .backdrop {
+    animation: none;
+    transition: none;
+  }
+}

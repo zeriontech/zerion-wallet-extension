@@ -136,18 +136,30 @@ export function useFormState({
   );
 
   const reverseTokens = useCallback(() => {
-    setUserFormState((state) => ({
-      ...state,
-      inputChain: state.outputChain || defaultFormState.outputChain,
-      outputChain: state.inputChain || defaultFormState.inputChain,
-      inputFungibleId:
-        state.outputFungibleId || defaultFormState.outputFungibleId,
-      outputFungibleId:
-        state.inputFungibleId || defaultFormState.inputFungibleId,
-      inputAmount: undefined,
-      outputAmount: undefined,
-    }));
+    setUserFormState((state) => {
+      const newInputChain = state.outputChain || defaultFormState.outputChain;
+      const newOutputChain = state.inputChain || defaultFormState.inputChain;
+      const isSameChain = newInputChain === newOutputChain;
+      return {
+        ...state,
+        inputChain: newInputChain,
+        outputChain: newOutputChain,
+        inputFungibleId:
+          state.outputFungibleId || defaultFormState.outputFungibleId,
+        outputFungibleId:
+          state.inputFungibleId || defaultFormState.inputFungibleId,
+        inputAmount: undefined,
+        outputAmount: undefined,
+        ...(isSameChain
+          ? {
+              to: undefined,
+              receiverAddressInput: undefined,
+              showReceiverAddressInput: undefined,
+            }
+          : null),
+      };
+    });
   }, [defaultFormState, setUserFormState]);
 
-  return [formState, handleChange, reverseTokens] as const;
+  return [formState, handleChange, reverseTokens, setUserFormState] as const;
 }

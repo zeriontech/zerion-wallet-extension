@@ -1,0 +1,43 @@
+.container {
+  background-color: var(--white);
+  border: 2px solid var(--background);
+  border-radius: 16px;
+  padding-inline: 16px;
+  padding-block: 12px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.addressRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.chevronDown {
+  transform: rotate(90deg);
+  color: var(--neutral-500);
+  display: block;
+}
+
+.chevronRight {
+  color: var(--neutral-500);
+  display: block;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-500);
+}
+
+.comboboxWrapper {
+  padding-top: 12px;
+}

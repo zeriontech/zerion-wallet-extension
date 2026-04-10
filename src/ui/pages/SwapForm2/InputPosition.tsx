@@ -12,23 +12,32 @@ import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-ge
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import BigNumber from 'bignumber.js';
+import type { Networks } from 'src/modules/networks/Networks';
+import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { FormFieldset } from './FormFieldset';
 import type { HandleChangeFunction, SwapFormState2 } from './types';
+import { AssetSelectorButton } from './AssetSelectorButton';
+import { SpendPositionSelector } from './PositionSelector/SpendPositionSelector';
 
 export function InputPosition({
   formState,
   onChange,
   position,
+  positions,
+  networks,
 }: {
   formState: SwapFormState2;
   onChange: HandleChangeFunction;
   position: FungiblePosition | null;
+  positions: FungiblePosition[];
+  networks: Networks;
 }) {
   const { currency } = useCurrency();
   const { inputAmount } = formState;
   const tokenValueInputRef = useRef<InputHandle | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const inputId = useId();
+  const selectorDialog = useDialog2();
 
   const positionBalance = position?.amount.quantity ?? null;
   const notEnoughBalance =
@@ -39,66 +48,86 @@ export function InputPosition({
   );
 
   return (
-    <FormFieldset
-      inputId={inputId}
-      startTitle={<UIText kind="small/regular">Pay with</UIText>}
-      endTitle={<div />}
-      startContent={<div>Start Content</div>}
-      endContent={
-        <DebouncedInput
-          ref={tokenValueInputRef}
-          delay={300}
-          value={inputAmount ?? ''}
-          onChange={(value) => {
-            onChange('inputAmount', value);
-          }}
-          render={({ value, handleChange }) => (
-            <UnstyledInput
-              autoFocus={true}
-              id={inputId}
-              ref={inputRef}
-              style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
-              inputMode="decimal"
-              name="inputAmount"
-              value={value}
-              placeholder="0"
-              onChange={(event) =>
-                handleChange(
-                  event.currentTarget.value.replace(',', '.').replace(/\s/g, '')
-                )
-              }
-              pattern={FLOAT_INPUT_PATTERN}
-              required={true}
-            />
-          )}
-        />
-      }
-      startDescription={
-        <div
-          style={{
-            color: notEnoughBalance
-              ? 'var(--negative-500)'
-              : 'var(--neutral-600)',
-            display: 'flex',
-            gap: 4,
-          }}
-        >
-          <span>Balance:</span>
-          <BlurrableBalance
-            kind="small/regular"
-            color={
-              notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)'
-            }
+    <>
+      <FormFieldset
+        inputId={inputId}
+        startTitle={<UIText kind="small/regular">Pay with</UIText>}
+        endTitle={<div />}
+        startContent={
+          <AssetSelectorButton
+            position={position}
+            onClick={selectorDialog.openDialog}
+          />
+        }
+        endContent={
+          <DebouncedInput
+            ref={tokenValueInputRef}
+            delay={300}
+            value={inputAmount ?? ''}
+            onChange={(value) => {
+              onChange('inputAmount', value);
+            }}
+            render={({ value, handleChange }) => (
+              <UnstyledInput
+                autoFocus={true}
+                id={inputId}
+                ref={inputRef}
+                style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
+                inputMode="decimal"
+                name="inputAmount"
+                value={value}
+                placeholder="0"
+                onChange={(event) =>
+                  handleChange(
+                    event.currentTarget.value
+                      .replace(',', '.')
+                      .replace(/\s/g, '')
+                  )
+                }
+                pattern={FLOAT_INPUT_PATTERN}
+                required={true}
+              />
+            )}
+          />
+        }
+        startDescription={
+          <div
+            style={{
+              color: notEnoughBalance
+                ? 'var(--negative-500)'
+                : 'var(--neutral-600)',
+              display: 'flex',
+              gap: 4,
+            }}
           >
-            {positionBalance ? formatTokenValue(positionBalance) : null}
-          </BlurrableBalance>
-        </div>
-      }
-      endDescription={
-        <UIText kind="small/regular">
-          {formatCurrencyValue(inputValue, 'en', currency)}
-        </UIText>
-      }
-    />
+            <span>Balance:</span>
+            <BlurrableBalance
+              kind="small/regular"
+              color={
+                notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)'
+              }
+            >
+              {positionBalance ? formatTokenValue(positionBalance) : null}
+            </BlurrableBalance>
+          </div>
+        }
+        endDescription={
+          <UIText kind="small/regular">
+            {formatCurrencyValue(inputValue, 'en', currency)}
+          </UIText>
+        }
+      />
+      <SpendPositionSelector
+        open={selectorDialog.open}
+        onClose={selectorDialog.closeDialog}
+        positions={positions}
+        networks={networks}
+        currentChain={formState.inputChain}
+        onSelect={(selected) => {
+          onChange('inputChain', selected.chain.id);
+          onChange('inputFungibleId', selected.fungible.id);
+        }}
+      />
+    </>
   );
 }

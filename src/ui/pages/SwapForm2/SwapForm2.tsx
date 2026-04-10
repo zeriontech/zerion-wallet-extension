@@ -27,6 +27,8 @@ import { useFormPositions } from './useFormPositions';
 import { MiddleLine, ReverseButton } from './ReverseButton';
 import { InputPosition } from './InputPosition';
 import { OutputPosition } from './OutputPosition';
+import { QuoteDetails } from './QuoteDetails';
+import { ReceiverAddressSelector } from './ReceiverAddressSelector';
 import * as styles from './styles.module.css';
 
 function SwapFormComponent({
@@ -38,11 +40,12 @@ function SwapFormComponent({
   positions: FungiblePosition[];
   networks: Networks;
 }) {
-  const [formState, setFormState, reverseTokens] = useFormState({
-    address,
-    positions,
-    networks,
-  });
+  const [formState, setFormState, reverseTokens, setUserFormState] =
+    useFormState({
+      address,
+      positions,
+      networks,
+    });
 
   const { inputPosition, outputPosition } = useFormPositions({
     formState,
@@ -83,21 +86,42 @@ function SwapFormComponent({
           </UnstyledLink>
         </HStack>
       </Content>
-      <VStack gap={24} style={{ position: 'relative', flex: 1 }}>
+      <VStack
+        gap={24}
+        style={{ position: 'relative', flex: 1, alignContent: 'start' }}
+      >
         <div className={styles.formContainer}>
           <InputPosition
             formState={formState}
             onChange={setFormState}
             position={inputPosition}
+            positions={positions}
+            networks={networks}
           />
           <MiddleLine />
           <ReverseButton onClick={reverseTokens} />
           <OutputPosition
-            formState={formState}
             onChange={setFormState}
             position={outputPosition}
+            outputAmount={quote?.outputAmount?.quantity ?? null}
+            outputChain={formState.outputChain}
+            positions={positions}
+            networks={networks}
           />
         </div>
+        <ReceiverAddressSelector
+          formState={formState}
+          onChange={setFormState}
+          onBatchChange={setUserFormState}
+          networks={networks}
+        />
+        <QuoteDetails
+          quote={quote}
+          quotesQuery={quotesQuery}
+          formState={formState}
+          networks={networks}
+          onProviderChange={setUserQuoteId}
+        />
       </VStack>
     </>
   );

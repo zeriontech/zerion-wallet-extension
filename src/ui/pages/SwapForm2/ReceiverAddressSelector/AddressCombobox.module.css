@@ -1,0 +1,60 @@
+.popover {
+  position: absolute;
+  z-index: var(--max-layout-index);
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: var(--z-index-1);
+  box-shadow: var(--elevation-200);
+  max-height: 50vh;
+  overflow: auto;
+  padding-block: 8px;
+  border-radius: 12px;
+  outline: none;
+}
+
+.input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+}
+
+.input::placeholder {
+  color: var(--neutral-500);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  outline: none;
+}
+
+.item[data-active-item] {
+  background-color: var(--neutral-100);
+}
+
+@media (hover: hover) {
+  .item:hover {
+    background-color: var(--neutral-100);
+  }
+}
+
+.sectionTitle {
+  padding: 8px 12px 4px;
+  color: var(--neutral-500);
+}
+
+.sectionTitle:first-child {
+  padding-top: 0;
+}

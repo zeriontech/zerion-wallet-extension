@@ -1,0 +1,154 @@
+.chipsContainer {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 8px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.chipsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.chipsScroll {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chipsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 32px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--neutral-300);
+  background: var(--white);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--black);
+}
+
+.chip:hover {
+  background-color: var(--neutral-100);
+}
+
+.chipActive,
+.chip[aria-selected='true'] {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.globeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--neutral-300);
+  background: var(--white);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.globeButton:hover {
+  background-color: var(--neutral-100);
+}
+
+.sectionHeader {
+  padding: 8px 16px 4px;
+}
+
+.tokenList {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.tokenList::-webkit-scrollbar {
+  display: none;
+}
+
+.tokenRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  min-height: 48px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+}
+
+.tokenRow:hover {
+  background-color: var(--neutral-100);
+}
+
+.tokenRow[data-active-item] {
+  background-color: var(--neutral-100);
+}
+
+.tokenIconWrapper {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.networkBadge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border-radius: 4px;
+  border: 2px solid var(--white);
+  overflow: hidden;
+  line-height: 0;
+}
+
+.tokenInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tokenValues {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  gap: 8px;
+}
+
+.searchWrapper {
+  padding: 0 16px 8px;
+  flex-shrink: 0;
+}
