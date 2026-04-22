@@ -323,7 +323,7 @@ export class Wallet {
     await this.syncWithWalletStore();
   }
 
-  async resetCredentials() {
+  resetCredentials() {
     this.userCredentials = null;
   }
 
@@ -1170,6 +1170,10 @@ export class Wallet {
     const signerWallet = Model.getSignerWalletByAddress(this.record, address);
     invariant(signerWallet, `Signer wallet not found for ${address}`);
 
+    invariant(
+      signerWallet.privateKey,
+      'Private key is not available. Please re-enter your password.'
+    );
     return fromSecretKeyToEd25519(signerWallet.privateKey);
   }
 

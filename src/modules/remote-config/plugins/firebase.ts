@@ -23,6 +23,13 @@ const defaultConfig: RemoteConfig = {
     interval_ms: 1000,
     max_attempts: 10,
   },
+  extension_promo_config: {
+    id: '',
+    version: 0,
+    title: '',
+    ctaTitle: '',
+    ctaLink: '',
+  },
 };
 
 const knownKeys: (keyof RemoteConfig)[] = [
@@ -36,6 +43,7 @@ const knownKeys: (keyof RemoteConfig)[] = [
   'quotes_refetch_interval',
   'tx_polling_preferences',
   'swap_form_balance_pulling_params',
+  'extension_promo_config',
 ];
 
 export async function fetchRemoteConfig<T extends keyof RemoteConfig>(

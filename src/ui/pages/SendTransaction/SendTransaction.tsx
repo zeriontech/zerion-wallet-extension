@@ -918,6 +918,9 @@ function SendTransactionContent({
                       : undefined
                   }
                   holdToSign={preferences.enableHoldToSignButton}
+                  requirePasswordToSign={
+                    globalPreferences.requirePasswordToSign ?? false
+                  }
                   bluetoothSupportEnabled={
                     globalPreferences.bluetoothSupportEnabled
                   }
@@ -1366,6 +1369,9 @@ function SolSendTransaction() {
                 disabled={sendTransactionMutation.isLoading}
                 buttonKind="primary"
                 holdToSign={preferences.enableHoldToSignButton}
+                requirePasswordToSign={
+                  globalPreferences.requirePasswordToSign ?? false
+                }
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
                 }

@@ -65,6 +65,7 @@ import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
 import { StatsigOverrides } from './StatsigOverrides';
+import { WhatsNew, latestChangelogVersion } from './WhatsNew';
 import type { PopoverToastHandle } from './PopoverToast';
 import { PopoverToast } from './PopoverToast';
 import { ToggleSettingLine } from './ToggleSettingsLine';
@@ -116,6 +117,10 @@ function SettingsMain() {
   const { pathname } = useLocation();
   useBackgroundKind({ kind: 'white' });
 
+  const { globalPreferences } = useGlobalPreferences();
+  const hasUnseenChangelog =
+    globalPreferences?.lastVisitedChangelog !== latestChangelogVersion;
+
   const { hasTestWallet } = useStore(metaAppState);
   const evmAddress = currentWallet
     ? isEthereumAddress(currentWallet.address)
@@ -126,6 +131,40 @@ function SettingsMain() {
       <PageTop />
       <VStack gap={16}>
         <BackupFlowSettingsSection />
+        <Frame>
+          <VStack gap={0}>
+            <FrameListItemLink to="/settings/whats-new">
+              <AngleRightRow>
+                <HStack
+                  gap={8}
+                  alignItems="center"
+                  justifyContent="space-between"
+                  style={{ gridTemplateColumns: '1fr auto' }}
+                >
+                  <HStack gap={8} alignItems="center">
+                    <BulbIcon />
+                    <UIText kind="body/regular">What{apostrophe}s New</UIText>
+                  </HStack>
+                  <UIText
+                    kind="caption/accent"
+                    style={
+                      hasUnseenChangelog
+                        ? {
+                            color: 'var(--white)',
+                            backgroundColor: 'var(--primary)',
+                            padding: '2px 8px',
+                            borderRadius: 1000,
+                          }
+                        : { color: 'var(--neutral-500)' }
+                    }
+                  >
+                    v{latestChangelogVersion}
+                  </UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+          </VStack>
+        </Frame>
         <Frame>
           <VStack gap={0}>
             <FrameListItemLink to="/wallets">
@@ -174,7 +213,7 @@ function SettingsMain() {
                   <AngleRightRow>
                     <HStack gap={8} alignItems="center">
                       <ExperimentsIcon />
-                      <UIText kind="body/regular">Statsig Overrides</UIText>
+                      <UIText kind="body/regular">Dev Menu</UIText>
                     </HStack>
                   </AngleRightRow>
                 </FrameListItemLink>
@@ -314,18 +353,6 @@ function SettingsMain() {
               </AngleRightRow>
             </FrameListItemAnchor>
             <BugReportButton />
-            <FrameListItemAnchor
-              href="https://app.getbeamer.com/zerion/en?category=extension"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <AngleRightRow kind="link">
-                <HStack gap={8} alignItems="center">
-                  <BulbIcon />
-                  <UIText kind="body/regular">What{apostrophe}s New</UIText>
-                </HStack>
-              </AngleRightRow>
-            </FrameListItemAnchor>
           </VStack>
         </Frame>
         {ENABLE_DNA_BANNERS ? (
@@ -589,7 +616,6 @@ function Privacy() {
 }
 
 function Experiments() {
-  const { preferences, setPreferences } = usePreferences();
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
   useBackgroundKind({ kind: 'white' });
 
@@ -598,50 +624,6 @@ function Experiments() {
       <NavigationTitle title="Experiments" />
       <PageTop />
       <VStack gap={16}>
-        <Frame>
-          <ToggleSettingLine
-            text="Hold to Sign"
-            checked={preferences?.enableHoldToSignButton || false}
-            onChange={(event) => {
-              setPreferences({
-                enableHoldToSignButton: event.target.checked,
-              });
-            }}
-            detailText={
-              <span>
-                Sign transactions with a long click to avoid accidental signing
-              </span>
-            }
-          />
-        </Frame>
-        <Frame>
-          <ToggleSettingLine
-            text="Keyboard Shortcut to Sign"
-            checked={preferences?.enableKeyboardShortcutToSign || false}
-            onChange={(event) => {
-              setPreferences({
-                enableKeyboardShortcutToSign: event.target.checked,
-              });
-            }}
-            detailText={
-              <span>
-                Use{' '}
-                <span
-                  style={{
-                    display: 'inline-block',
-                    padding: '1px 6px',
-                    borderRadius: 6,
-                    backgroundColor: 'var(--neutral-200)',
-                    fontWeight: 500,
-                  }}
-                >
-                  {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
-                </span>{' '}
-                to quickly confirm transactions and sign messages
-              </span>
-            }
-          />
-        </Frame>
         {isMacOS() ? (
           <Frame>
             <ToggleSettingLine
@@ -723,6 +705,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <Experiments />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/whats-new"
+        element={
+          <ViewSuspense>
+            <WhatsNew />
           </ViewSuspense>
         }
       />

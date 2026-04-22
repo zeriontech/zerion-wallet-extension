@@ -461,6 +461,7 @@ export class WalletRecordModel {
       encryptedRecord
     )) as WalletRecord;
     const entry = upgradeRecord(persistedEntry, walletRecordUpgrades);
+    console.log({ entry, persistedEntry, walletRecordUpgrades });
 
     entry.walletManager.groups = await Promise.all(
       entry.walletManager.groups.map(async (group) => {
@@ -558,6 +559,11 @@ export class WalletRecordModel {
     }
     if (!wallet) {
       throw new Error('Wallet with given address not found');
+    }
+    if (!wallet.privateKey) {
+      throw new Error(
+        'Private key is not available. Please re-enter your password.'
+      );
     }
     return encodeForMasking(wallet.privateKey);
   }
@@ -915,6 +921,19 @@ export class WalletRecordModel {
     return produce(record, (draft) => {
       draft.activityRecord[address] ??= {};
       draft.activityRecord[address].lastSwapChain = chain;
+    });
+  }
+
+  static clearPrivateKeys(record: WalletRecord) {
+    return produce(record, (draft) => {
+      for (const group of draft.walletManager.groups) {
+        if (isSignerContainer(group.walletContainer)) {
+          for (const wallet of group.walletContainer.wallets) {
+            wallet.privateKey = null;
+            wallet.mnemonic = null;
+          }
+        }
+      }
     });
   }
 }

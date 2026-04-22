@@ -7,7 +7,6 @@ import { isSessionCredentials } from 'src/background/account/Credentials';
 import { encrypt } from 'src/modules/crypto';
 import { invariant } from 'src/shared/invariant';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import {
   generateWalletsForEcosystems,
   restoreBareWallet,
@@ -245,7 +244,7 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
   seedType = SeedType.privateKey;
   seedHash = undefined;
 
-  constructor(wallets: Array<PartiallyRequired<BareWallet, 'privateKey'>>) {
+  constructor(wallets: Array<Pick<BareWallet, 'privateKey'>>) {
     super();
     if (!wallets || wallets.length > 1) {
       throw new Error(

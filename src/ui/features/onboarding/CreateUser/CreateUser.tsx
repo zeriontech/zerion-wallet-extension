@@ -22,6 +22,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { FEATURE_SOLANA } from 'src/env/config';
+import { setupAccountPasskey } from 'src/ui/pages/Security/passkey';
 import { Password } from '../Password';
 import { assertPasswordStep } from '../Password/passwordSearchParams';
 import * as helperStyles from '../shared/helperStyles.module.css';
@@ -53,9 +54,14 @@ export function CreateUser() {
   const goBack = useGoBack();
 
   const [password, setPassword] = useState<string | null>(null);
-  const handlePasswordSubmit = useCallback((value: string) => {
-    setPassword(value);
-  }, []);
+  const [passkey, setPasskey] = useState(false);
+  const handlePasswordSubmit = useCallback(
+    (value: string, passkey?: boolean) => {
+      setPassword(value);
+      setPasskey(passkey ?? false);
+    },
+    []
+  );
 
   const [values, toggleValueOriginal] = useToggledValues(
     () =>
@@ -73,6 +79,9 @@ export function CreateUser() {
       await walletPort.request('uiGenerateMnemonic', {
         ecosystems: Array.from(values),
       });
+      if (passkey) {
+        await setupAccountPasskey(password);
+      }
     },
     onSuccess: () => {
       zeroizeAfterSubmission();
@@ -135,8 +144,8 @@ export function CreateUser() {
               title="Create Your Password"
               step={step}
               defaultValue={password}
-              onSubmit={(password) => {
-                handlePasswordSubmit(password);
+              onSubmit={(password, passkey) => {
+                handlePasswordSubmit(password, passkey);
                 setSearchParams(`view=${ViewParam['select-wallets']}`);
               }}
             />

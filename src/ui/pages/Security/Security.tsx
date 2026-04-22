@@ -9,7 +9,9 @@ import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { usePreferences } from 'src/ui/features/preferences';
 import { Frame } from 'src/ui/ui-kit/Frame';
+import SignIcon from 'jsx:src/ui/assets/signature.svg';
 import {
   FrameListItemButton,
   FrameListItemLink,
@@ -34,6 +36,10 @@ import { getError } from 'get-error';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { isMacOS } from 'src/ui/shared/isMacos';
+import {
+  SigningPasswordGate,
+  type SigningPasswordGateHandle,
+} from 'src/ui/components/SigningPasswordGate';
 import { ToggleSettingLine } from '../Settings/ToggleSettingsLine';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
@@ -41,13 +47,8 @@ import { StrengthIndicator } from '../CreateAccount/StrengthIndicator';
 import { AUTO_LOCK_TIMER_OPTIONS_TITLES, AutoLockTimer } from './AutoLockTimer';
 import { setupAccountPasskey, getPasskeyTitle } from './passkey';
 
-function TouchIdSettings() {
-  const toastRef = useRef<PopoverToastHandle>(null);
-  const [userValue, setUserValue] = useState<boolean | null>(null);
-  const passkeyTitle = getPasskeyTitle();
-
-  // Check if passkeys are supported on this device
-  const passkeyAvailabilityQuery = useQuery({
+export function usePasskeyAvailability() {
+  return useQuery({
     queryKey: ['passkey/isSupported'],
     queryFn: async () => {
       if (!window.PublicKeyCredential) {
@@ -64,6 +65,13 @@ function TouchIdSettings() {
     staleTime: Infinity,
     cacheTime: Infinity,
   });
+}
+
+function TouchIdSettings() {
+  const toastRef = useRef<PopoverToastHandle>(null);
+  const [userValue, setUserValue] = useState<boolean | null>(null);
+  const passkeyTitle = getPasskeyTitle();
+  const passkeyAvailabilityQuery = usePasskeyAvailability();
 
   const defaultValueQuery = useQuery({
     queryKey: ['account/getPasskeyEnabled'],
@@ -143,26 +151,26 @@ function TouchIdSettings() {
     <>
       {/* Currently, Windos Hello doesn't support PRF extension for passkeys */}
       {/* TODO: Research other passkey providers and enable them */}
-      {isMacOS() ? (
-        <ToggleSettingLine
-          text={`Unlock with ${passkeyTitle}`}
-          checked={checked}
-          disabled={disabled}
-          onChange={(event) => {
-            if (event.target.checked) {
-              handleSetupClick();
-            } else {
-              if (!disablePasskeyDialogRef.current) {
-                return;
-              }
-              showConfirmDialog(disablePasskeyDialogRef.current).then(() => {
-                removeTouchIdMutation.mutate();
-              });
+      {/* {isMacOS() ? ( */}
+      <ToggleSettingLine
+        text={`Unlock with ${passkeyTitle}`}
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => {
+          if (event.target.checked) {
+            handleSetupClick();
+          } else {
+            if (!disablePasskeyDialogRef.current) {
+              return;
             }
-          }}
-          detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
-        />
-      ) : null}
+            showConfirmDialog(disablePasskeyDialogRef.current).then(() => {
+              removeTouchIdMutation.mutate();
+            });
+          }
+        }}
+        detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
+      />
+      {/* ) : null} */}
       <BottomSheetDialog ref={disablePasskeyDialogRef} height="fit-content">
         <VStack gap={8}>
           <form method="dialog">
@@ -520,19 +528,133 @@ function AutoLockTimerLink() {
   );
 }
 
+function RequirePasswordToSign() {
+  const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();
+  const passwordGateRef = useRef<SigningPasswordGateHandle | null>(null);
+  if (!globalPreferences) {
+    return null;
+  }
+  const checked = globalPreferences.requirePasswordToSign ?? false;
+  return (
+    <>
+      <SigningPasswordGate ref={passwordGateRef} requirePasswordToSign={true} />
+      <ToggleSettingLine
+        text="Password to Sign"
+        checked={checked}
+        onChange={async (event) => {
+          const enabling = event.target.checked;
+          if (!enabling) {
+            // When disabling, re-authenticate to restore credentials and private keys
+            try {
+              await passwordGateRef.current?.confirm();
+            } catch {
+              return; // User cancelled — keep the setting enabled
+            }
+          }
+          setGlobalPreferences({
+            requirePasswordToSign: enabling,
+          });
+          if (enabling) {
+            // Immediately clear credentials and private keys from memory
+            await accountPublicRPCPort.request('scheduleCredentialsClearance', {
+              delay: 0,
+            });
+          }
+        }}
+        detailText="Require password or passkey confirmation before every transaction signing"
+      />
+    </>
+  );
+}
+
+function HoldToSignToggle() {
+  const { preferences, setPreferences } = usePreferences();
+  return (
+    <ToggleSettingLine
+      text="Hold to Sign"
+      checked={preferences?.enableHoldToSignButton || false}
+      onChange={(event) => {
+        setPreferences({
+          enableHoldToSignButton: event.target.checked,
+        });
+      }}
+      detailText={
+        <span>
+          Sign transactions with a long click to avoid accidental signing
+        </span>
+      }
+    />
+  );
+}
+
+function KeyboardShortcutToSignToggle() {
+  const { preferences, setPreferences } = usePreferences();
+  return (
+    <ToggleSettingLine
+      text="Keyboard Shortcut to Sign"
+      checked={preferences?.enableKeyboardShortcutToSign || false}
+      onChange={(event) => {
+        setPreferences({
+          enableKeyboardShortcutToSign: event.target.checked,
+        });
+      }}
+      detailText={
+        <span>
+          Use{' '}
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '1px 6px',
+              borderRadius: 6,
+              backgroundColor: 'var(--neutral-200)',
+              fontWeight: 500,
+            }}
+          >
+            {isMacOS() ? '⌘↵' : 'Ctrl+↵'}
+          </span>{' '}
+          to quickly confirm transactions and sign messages
+        </span>
+      }
+    />
+  );
+}
+
 function SecurityMain() {
   useBackgroundKind({ kind: 'white' });
 
   return (
     <PageColumn>
       <PageTop />
-      <Frame>
-        <VStack gap={0}>
+      <VStack gap={16}>
+        <Frame>
           <TouchIdSettings />
-          <AutoLockTimerLink />
-          <ChangePassword />
+        </Frame>
+        <VStack gap={4}>
+          <HStack gap={4} alignItems="center" style={{ paddingInline: 16 }}>
+            <SignIcon
+              width={24}
+              height={24}
+              style={{ color: 'var(--neutral-500)' }}
+            />
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              Signing Experience
+            </UIText>
+          </HStack>
+          <Frame>
+            <VStack gap={0}>
+              <RequirePasswordToSign />
+              <HoldToSignToggle />
+              <KeyboardShortcutToSignToggle />
+            </VStack>
+          </Frame>
         </VStack>
-      </Frame>
+        <Frame>
+          <VStack gap={0}>
+            <AutoLockTimerLink />
+            <ChangePassword />
+          </VStack>
+        </Frame>
+      </VStack>
     </PageColumn>
   );
 }

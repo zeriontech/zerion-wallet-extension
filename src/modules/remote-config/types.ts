@@ -26,4 +26,12 @@ export interface RemoteConfig {
     interval_ms: number;
     max_attempts: number;
   };
+  extension_promo_config: {
+    id: string;
+    version: number;
+    imgSrc?: string;
+    title: string;
+    ctaTitle: string;
+    ctaLink: string;
+  };
 }

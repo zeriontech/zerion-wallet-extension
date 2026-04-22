@@ -2,6 +2,7 @@ import {
   generateRandomRecoveryPhrase,
   generateRandomWallet,
 } from 'e2e/utils/wallet';
+import { invariant } from 'src/shared/invariant';
 import {
   CreateNewWalletFlow,
   ImportPrivateKeyFlow,
@@ -102,6 +103,7 @@ describe('Onboarding', () => {
     await welcomePage.importExistingWalletLink.click();
     await flow.start();
     const { privateKey } = generateRandomWallet();
+    invariant(privateKey, 'Generated wallet does not have a private key');
     await flow.importPrivateKey(privateKey);
     await setPassword(page, password);
     await flow.expectSuccess();

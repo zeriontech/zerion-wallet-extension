@@ -20,9 +20,11 @@ import type { Passkey, PublicUser, User } from 'src/shared/types/User';
 import { payloadId } from '@walletconnect/jsonrpc-utils';
 import { sha256 } from 'src/modules/crypto/sha256';
 import { produce } from 'immer';
+import { invariant } from 'src/shared/invariant';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState, WalletStore } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
+import { globalPreferences } from '../Wallet/GlobalPreferences';
 import { credentialsKey } from './storage-keys';
 
 const TEMPORARY_ID = 'temporary';
@@ -91,11 +93,15 @@ async function deriveUserKeys({
     seedPhraseEncryptionKey_deprecated,
   };
 }
+const CREDENTIALS_CLEARANCE_DELAY = 60_000; // 1 minute
+
 export class Account extends EventEmitter<AccountEvents> {
   private user: User | null;
   private encryptionKey: string | null;
   private wallet: Wallet;
   private notificationWindow: NotificationWindow;
+  private credentialsClearanceTimer: ReturnType<typeof setTimeout> | null =
+    null;
 
   isPendingNewUser: boolean;
 
@@ -117,14 +123,18 @@ export class Account extends EventEmitter<AccountEvents> {
 
   async setEncryptedPassword(passkey: Passkey) {
     const user = await getCurrentUser();
-    if (!user) {
-      throw new Error('No user found');
+    if (user) {
+      await Account.writeCurrentUser(
+        produce(user, (draft) => {
+          draft.passkey = passkey;
+        })
+      );
     }
-    await Account.writeCurrentUser(
-      produce(user, (draft) => {
-        draft.passkey = passkey;
-      })
-    );
+    const unsavedUser = this.user;
+    invariant(unsavedUser, 'No user found in memory');
+    this.user = produce(unsavedUser, (draft) => {
+      draft.passkey = passkey;
+    });
   }
 
   async removeEncryptedPassword() {
@@ -159,6 +169,21 @@ export class Account extends EventEmitter<AccountEvents> {
     await SessionStorage.remove(credentialsKey);
     await LoginActivity.recordLogout();
     await clearStorageArtefacts();
+  }
+
+  static async clearSessionCredentials() {
+    await SessionStorage.remove(credentialsKey);
+  }
+
+  clearInMemoryCredentials({
+    clearInMemoryCredentials = true,
+  }: {
+    clearInMemoryCredentials?: boolean;
+  }) {
+    this.encryptionKey = null;
+    if (clearInMemoryCredentials) {
+      this.wallet.resetCredentials();
+    }
   }
 
   /** Migrates credentials from storage.local to storage.session if needed */
@@ -255,6 +280,27 @@ export class Account extends EventEmitter<AccountEvents> {
       throw new Error('Incorrect password');
     }
     await this.setUser(user, { password }, { isNewUser: false });
+    this.scheduleCredentialsClearanceIfNeeded();
+  }
+
+  scheduleCredentialsClearance(delay: number) {
+    if (this.credentialsClearanceTimer) {
+      clearTimeout(this.credentialsClearanceTimer);
+    }
+    this.credentialsClearanceTimer = setTimeout(async () => {
+      this.credentialsClearanceTimer = null;
+      await Account.clearSessionCredentials();
+      this.clearInMemoryCredentials({ clearInMemoryCredentials: false });
+    }, delay);
+  }
+
+  private async scheduleCredentialsClearanceIfNeeded() {
+    await globalPreferences.ready();
+    const prefs = await globalPreferences.getPreferences();
+    if (!prefs.requirePasswordToSign) {
+      return;
+    }
+    this.scheduleCredentialsClearance(CREDENTIALS_CLEARANCE_DELAY);
   }
 
   isAuthenticated(): boolean {
@@ -502,6 +548,12 @@ export class AccountPublicRPC {
 
   async removePasskey() {
     return this.account.removeEncryptedPassword();
+  }
+
+  async scheduleCredentialsClearance({
+    params: { delay },
+  }: PublicMethodParams<{ delay: number }>) {
+    this.account.scheduleCredentialsClearance(delay);
   }
 
   async changePassword({

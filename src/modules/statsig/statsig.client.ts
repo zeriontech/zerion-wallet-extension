@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { getStatsigExperiment, getStatsigFeatureGate } from './shared';
 
-export const ONRAMP_EXPERIMENT_NAME = 'web-onramp_flow';
 export const APPROVE_AND_TRADE_EXPERIMENT =
   'extension-approve_and_trade_in_1_action';
 
