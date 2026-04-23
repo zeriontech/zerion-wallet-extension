@@ -78,12 +78,6 @@
 
 .tokenList {
   flex: 1;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-}
-
-.tokenList::-webkit-scrollbar {
-  display: none;
 }
 
 .tokenRow {
@@ -130,6 +124,12 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+.tokenName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tokenValues {

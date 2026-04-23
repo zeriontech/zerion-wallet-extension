@@ -1,10 +1,11 @@
-import React, { startTransition, useEffect, useRef, useState } from 'react';
-import {
-  ComboboxProvider,
-  Combobox,
-  ComboboxList,
-  TabProvider,
-} from '@ariakit/react';
+import React, {
+  startTransition,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { ComboboxProvider, Combobox, TabProvider } from '@ariakit/react';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
@@ -16,11 +17,37 @@ import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
-import { NetworkChips, TabPanelWrapper } from './NetworkChips';
+import {
+  ALL_NETWORKS_TAB_ID,
+  NetworkChips,
+  TabPanelWrapper,
+} from './NetworkChips';
 import { TokenRow } from './TokenRow';
 import { useTopNetworks } from './useTopNetworks';
 import { NetworkSelectorDialog } from './NetworkSelectorDialog';
+import type { VirtualListItem } from './VirtualizedTokenList';
+import { VirtualizedTokenList } from './VirtualizedTokenList';
 import * as styles from './styles.module.css';
+
+type RowItem = { fungible: Fungible; chainId: string };
+
+function renderFungibleRow(
+  { fungible, chainId }: RowItem,
+  currency: string,
+  onSelect: (fungible: Fungible, chainId: string) => void
+) {
+  return (
+    <TokenRow
+      fungible={fungible}
+      chainIconUrl=""
+      chainName=""
+      fiatValue={null}
+      tokenQuantity={null}
+      currency={currency}
+      onSelect={() => onSelect(fungible, chainId)}
+    />
+  );
+}
 
 function ReceiveFungiblesList({
   chain,
@@ -36,6 +63,44 @@ function ReceiveFungiblesList({
     currency,
   });
 
+  const selectChain = (fungible: Fungible) => {
+    if (chain && fungible.implementations[chain]) {
+      return chain;
+    }
+    const chains = Object.keys(fungible.implementations);
+    return chains[0] || chain || '';
+  };
+
+  const virtualItems = useMemo<VirtualListItem<RowItem>[]>(() => {
+    if (!data) {
+      return [];
+    }
+    const { popular, others } = data.data;
+    const result: VirtualListItem<RowItem>[] = [];
+    if (popular.length > 0) {
+      result.push({ kind: 'header', key: 'popular', label: 'Popular' });
+      for (const fungible of popular) {
+        result.push({
+          kind: 'item',
+          key: `popular-${fungible.id}`,
+          data: { fungible, chainId: selectChain(fungible) },
+        });
+      }
+    }
+    if (others.length > 0) {
+      result.push({ kind: 'header', key: 'others', label: 'Others' });
+      for (const fungible of others) {
+        result.push({
+          kind: 'item',
+          key: `others-${fungible.id}`,
+          data: { fungible, chainId: selectChain(fungible) },
+        });
+      }
+    }
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, chain]);
+
   if (!data) {
     return (
       <div className={styles.emptyState}>
@@ -46,10 +111,7 @@ function ReceiveFungiblesList({
     );
   }
 
-  const { popular, others } = data.data;
-  const hasResults = popular.length > 0 || others.length > 0;
-
-  if (!hasResults) {
+  if (virtualItems.length === 0) {
     return (
       <div className={styles.emptyState}>
         <UIText kind="body/regular" color="var(--neutral-500)">
@@ -59,59 +121,18 @@ function ReceiveFungiblesList({
     );
   }
 
-  const selectChain = (fungible: Fungible) => {
-    if (chain && fungible.implementations[chain]) {
-      return chain;
-    }
-    const chains = Object.keys(fungible.implementations);
-    return chains[0] || chain || '';
-  };
-
   return (
-    <>
-      {popular.length > 0 ? (
-        <>
-          <div className={styles.sectionHeader}>
-            <UIText kind="small/accent" color="var(--neutral-500)">
-              Popular
-            </UIText>
-          </div>
-          {popular.map((fungible) => (
-            <TokenRow
-              key={fungible.id}
-              fungible={fungible}
-              chainIconUrl=""
-              chainName=""
-              fiatValue={null}
-              tokenQuantity={null}
-              currency={currency}
-              onSelect={() => onSelect(fungible, selectChain(fungible))}
-            />
-          ))}
-        </>
-      ) : null}
-      {others.length > 0 ? (
-        <>
-          <div className={styles.sectionHeader}>
-            <UIText kind="small/accent" color="var(--neutral-500)">
-              Others
-            </UIText>
-          </div>
-          {others.map((fungible) => (
-            <TokenRow
-              key={fungible.id}
-              fungible={fungible}
-              chainIconUrl=""
-              chainName=""
-              fiatValue={null}
-              tokenQuantity={null}
-              currency={currency}
-              onSelect={() => onSelect(fungible, selectChain(fungible))}
-            />
-          ))}
-        </>
-      ) : null}
-    </>
+    <VirtualizedTokenList
+      items={virtualItems}
+      renderItem={(row) => renderFungibleRow(row, currency, onSelect)}
+      renderHeader={(label) => (
+        <div className={styles.sectionHeader}>
+          <UIText kind="small/accent" color="var(--neutral-500)">
+            {label}
+          </UIText>
+        </div>
+      )}
+    />
   );
 }
 
@@ -133,6 +154,23 @@ function SearchResults({
     limit: 50,
   });
 
+  const virtualItems = useMemo<VirtualListItem<RowItem>[]>(() => {
+    if (!fungibles) {
+      return [];
+    }
+    return fungibles.map((fungible) => {
+      const chainId =
+        chain && fungible.implementations[chain]
+          ? chain
+          : Object.keys(fungible.implementations)[0] || '';
+      return {
+        kind: 'item',
+        key: fungible.id,
+        data: { fungible, chainId },
+      };
+    });
+  }, [fungibles, chain]);
+
   if (!fungibles || fungibles.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -144,26 +182,10 @@ function SearchResults({
   }
 
   return (
-    <>
-      {fungibles.map((fungible) => {
-        const chainId =
-          chain && fungible.implementations[chain]
-            ? chain
-            : Object.keys(fungible.implementations)[0] || '';
-        return (
-          <TokenRow
-            key={fungible.id}
-            fungible={fungible}
-            chainIconUrl=""
-            chainName=""
-            fiatValue={null}
-            tokenQuantity={null}
-            currency={currency}
-            onSelect={() => onSelect(fungible, chainId)}
-          />
-        );
-      })}
-    </>
+    <VirtualizedTokenList
+      items={virtualItems}
+      renderItem={(row) => renderFungibleRow(row, currency, onSelect)}
+    />
   );
 }
 
@@ -184,18 +206,24 @@ export function ReceivePositionSelector({
 }) {
   const { currency } = useCurrency();
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(
-    currentChain || null
-  );
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
   const networkSelector = useDialog2();
   const comboboxRef = useRef<HTMLInputElement>(null);
+  const chipsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      setSelectedNetwork(currentChain || null);
+      setSelectedNetwork(null);
       setDebouncedQuery('');
     }
   }, [open, currentChain]);
+
+  const scrollChipIntoView = (chainId: string) => {
+    const el = chipsRef.current?.querySelector<HTMLElement>(
+      `[data-chain-id="${chainId}"]`
+    );
+    el?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  };
 
   const topNetworks = useTopNetworks(positions, selectedNetwork);
 
@@ -213,11 +241,11 @@ export function ReceivePositionSelector({
         }}
       >
         <TabProvider
-          selectedId={selectedNetwork}
+          selectedId={selectedNetwork ?? ALL_NETWORKS_TAB_ID}
           setSelectedId={(id) => {
             startTransition(() => {
               setSelectedNetwork(
-                id === selectedNetwork ? null : (id as string | null)
+                id === ALL_NETWORKS_TAB_ID ? null : (id as string | null)
               );
             });
           }}
@@ -229,32 +257,31 @@ export function ReceivePositionSelector({
             />
           </div>
           <NetworkChips
+            ref={chipsRef}
             networks={topNetworks}
             onOpenNetworkSelector={networkSelector.openDialog}
           />
           <TabPanelWrapper>
-            <ComboboxList alwaysVisible className={styles.tokenList}>
-              {debouncedQuery ? (
-                <SearchResults
-                  query={debouncedQuery}
-                  chain={selectedNetwork}
-                  currency={currency}
-                  onSelect={(fungible, chainId) => {
-                    onSelect(fungible, chainId);
-                    onClose();
-                  }}
-                />
-              ) : (
-                <ReceiveFungiblesList
-                  chain={selectedNetwork}
-                  currency={currency}
-                  onSelect={(fungible, chainId) => {
-                    onSelect(fungible, chainId);
-                    onClose();
-                  }}
-                />
-              )}
-            </ComboboxList>
+            {debouncedQuery ? (
+              <SearchResults
+                query={debouncedQuery}
+                chain={selectedNetwork}
+                currency={currency}
+                onSelect={(fungible, chainId) => {
+                  onSelect(fungible, chainId);
+                  onClose();
+                }}
+              />
+            ) : (
+              <ReceiveFungiblesList
+                chain={selectedNetwork}
+                currency={currency}
+                onSelect={(fungible, chainId) => {
+                  onSelect(fungible, chainId);
+                  onClose();
+                }}
+              />
+            )}
           </TabPanelWrapper>
         </TabProvider>
       </ComboboxProvider>
@@ -267,7 +294,10 @@ export function ReceivePositionSelector({
         onSelect={(chainId) => {
           setSelectedNetwork(chainId);
           networkSelector.closeDialog();
-          requestAnimationFrame(() => comboboxRef.current?.focus());
+          requestAnimationFrame(() => {
+            comboboxRef.current?.focus();
+            scrollChipIntoView(chainId);
+          });
         }}
       />
     </Dialog2>

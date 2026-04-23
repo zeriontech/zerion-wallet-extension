@@ -93,7 +93,7 @@ export function Dialog2({
                 initial={
                   isNarrow
                     ? {
-                        transform: 'translateY(16px)',
+                        transform: 'translateY(32px) scale(0.98)',
                         opacity: 0,
                         filter: 'blur(4px)',
                       }
@@ -104,7 +104,7 @@ export function Dialog2({
                       }
                 }
                 animate={{
-                  transform: isNarrow ? 'translateY(0px)' : undefined,
+                  transform: isNarrow ? 'translateY(0px) scale(1)' : undefined,
                   opacity: 1,
                   scale: isNarrow ? undefined : 1,
                   filter: 'blur(0px)',
@@ -112,7 +112,7 @@ export function Dialog2({
                 exit={
                   isNarrow
                     ? {
-                        transform: 'translateY(16px)',
+                        transform: 'translateY(32px) scale(0.98)',
                         opacity: 0,
                         filter: 'blur(4px)',
                       }

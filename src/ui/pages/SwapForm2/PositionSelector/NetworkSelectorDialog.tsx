@@ -12,6 +12,8 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { filterAndSortNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
 import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { useCurrency } from 'src/modules/currency/useCurrency';
+import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import * as styles from './styles.module.css';
 
 export function NetworkSelectorDialog({
@@ -30,6 +32,15 @@ export function NetworkSelectorDialog({
   onSelect: (chainId: string) => void;
 }) {
   const [searchValue, setSearchValue] = useState('');
+  const { currency } = useCurrency();
+
+  const chainValueMap = useMemo(() => {
+    return positions.reduce<Record<string, number>>((acc, position) => {
+      acc[position.chain.id] =
+        (acc[position.chain.id] || 0) + (position.amount.value || 0);
+      return acc;
+    }, {});
+  }, [positions]);
 
   const networkList = useMemo(() => {
     if (mode === 'spend') {
@@ -46,11 +57,13 @@ export function NetworkSelectorDialog({
   }, [networks, positions, mode]);
 
   const filteredNetworks = useMemo(() => {
-    if (!searchValue) {
-      return networkList;
-    }
-    return filterAndSortNetworksByQuery(networkList, searchValue);
-  }, [networkList, searchValue]);
+    const list = searchValue
+      ? filterAndSortNetworksByQuery(networkList, searchValue)
+      : networkList;
+    return [...list].sort(
+      (a, b) => (chainValueMap[b.id] || 0) - (chainValueMap[a.id] || 0)
+    );
+  }, [networkList, searchValue, chainValueMap]);
 
   return (
     <Dialog2 open={open} onClose={onClose} title="Select Network">
@@ -71,26 +84,33 @@ export function NetworkSelectorDialog({
               </UIText>
             </div>
           ) : (
-            filteredNetworks.map((network) => (
-              <ComboboxItem
-                key={network.id}
-                value={network.name}
-                focusOnHover
-                setValueOnClick={false}
-                onClick={() => onSelect(network.id)}
-                className={styles.tokenRow}
-              >
-                <NetworkIcon
-                  src={network.icon_url}
-                  name={network.name}
-                  size={32}
-                  style={{ borderRadius: 8 }}
-                />
-                <div className={styles.tokenInfo}>
-                  <UIText kind="body/accent">{network.name}</UIText>
-                </div>
-              </ComboboxItem>
-            ))
+            filteredNetworks.map((network) => {
+              const value = chainValueMap[network.id];
+              return (
+                <ComboboxItem
+                  key={network.id}
+                  value={network.name}
+                  focusOnHover
+                  setValueOnClick={false}
+                  onClick={() => onSelect(network.id)}
+                  className={styles.tokenRow}
+                >
+                  <NetworkIcon
+                    src={network.icon_url}
+                    name={network.name}
+                    size={24}
+                  />
+                  <div className={styles.tokenInfo}>
+                    <UIText kind="body/accent">{network.name}</UIText>
+                  </div>
+                  {value ? (
+                    <UIText kind="small/regular" color="var(--neutral-500)">
+                      {formatCurrencyValue(value, 'en', currency)}
+                    </UIText>
+                  ) : null}
+                </ComboboxItem>
+              );
+            })
           )}
         </ComboboxList>
       </ComboboxProvider>

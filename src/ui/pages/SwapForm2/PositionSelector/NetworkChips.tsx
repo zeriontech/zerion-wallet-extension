@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import {
   TabList,
   Tab,
@@ -8,7 +8,10 @@ import {
 } from '@ariakit/react';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
+import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import * as styles from './styles.module.css';
+
+export const ALL_NETWORKS_TAB_ID = 'all';
 
 export interface NetworkOption {
   chainId: string;
@@ -16,20 +19,34 @@ export interface NetworkOption {
   iconUrl: string;
 }
 
-export function NetworkChips({
-  networks,
-  onOpenNetworkSelector,
-}: {
-  networks: NetworkOption[];
-  onOpenNetworkSelector: () => void;
-}) {
+export const NetworkChips = forwardRef<
+  HTMLDivElement,
+  {
+    networks: NetworkOption[];
+    onOpenNetworkSelector: () => void;
+  }
+>(function NetworkChips({ networks, onOpenNetworkSelector }, ref) {
   return (
     <div className={styles.chipsContainer}>
-      <TabList className={styles.chipsScroll} aria-label="Filter by network">
+      <TabList
+        ref={ref}
+        className={styles.chipsScroll}
+        aria-label="Filter by network"
+      >
+        <Tab
+          key={ALL_NETWORKS_TAB_ID}
+          id={ALL_NETWORKS_TAB_ID}
+          data-chain-id={ALL_NETWORKS_TAB_ID}
+          className={styles.chip}
+        >
+          <AllNetworksIcon style={{ width: 16, height: 16 }} />
+          All
+        </Tab>
         {networks.map((network) => (
           <Tab
             key={network.chainId}
             id={network.chainId}
+            data-chain-id={network.chainId}
             className={styles.chip}
           >
             <NetworkIcon
@@ -52,7 +69,7 @@ export function NetworkChips({
       </button>
     </div>
   );
-}
+});
 
 /**
  * Connects a TabPanel to the currently selected tab.

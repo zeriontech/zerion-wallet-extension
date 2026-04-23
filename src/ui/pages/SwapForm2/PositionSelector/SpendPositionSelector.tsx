@@ -5,12 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  ComboboxProvider,
-  Combobox,
-  ComboboxList,
-  TabProvider,
-} from '@ariakit/react';
+import { ComboboxProvider, Combobox, TabProvider } from '@ariakit/react';
 import { normalizedContains } from 'normalized-contains';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
@@ -19,10 +14,16 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
-import { NetworkChips, TabPanelWrapper } from './NetworkChips';
+import {
+  ALL_NETWORKS_TAB_ID,
+  NetworkChips,
+  TabPanelWrapper,
+} from './NetworkChips';
 import { TokenRow } from './TokenRow';
 import { useTopNetworks } from './useTopNetworks';
 import { NetworkSelectorDialog } from './NetworkSelectorDialog';
+import type { VirtualListItem } from './VirtualizedTokenList';
+import { VirtualizedTokenList } from './VirtualizedTokenList';
 import * as styles from './styles.module.css';
 
 export function SpendPositionSelector({
@@ -42,19 +43,25 @@ export function SpendPositionSelector({
 }) {
   const { currency } = useCurrency();
   const [searchValue, setSearchValue] = useState('');
-  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(
-    currentChain
-  );
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
   const networkSelector = useDialog2();
   const comboboxRef = useRef<HTMLInputElement>(null);
+  const chipsRef = useRef<HTMLDivElement>(null);
 
-  // Reset to current chain each time the dialog opens
+  // Reset to "All" each time the dialog opens
   useEffect(() => {
     if (open) {
-      setSelectedNetwork(currentChain);
+      setSelectedNetwork(null);
       setSearchValue('');
     }
   }, [open, currentChain]);
+
+  const scrollChipIntoView = (chainId: string) => {
+    const el = chipsRef.current?.querySelector<HTMLElement>(
+      `[data-chain-id="${chainId}"]`
+    );
+    el?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  };
 
   const topNetworks = useTopNetworks(positions, selectedNetwork);
 
@@ -75,6 +82,16 @@ export function SpendPositionSelector({
     return result.sort((a, b) => (b.amount.value || 0) - (a.amount.value || 0));
   }, [positions, selectedNetwork, searchValue]);
 
+  const virtualItems = useMemo<VirtualListItem<FungiblePosition>[]>(
+    () =>
+      filteredPositions.map((position) => ({
+        kind: 'item',
+        key: `${position.chain.id}-${position.fungible.id}`,
+        data: position,
+      })),
+    [filteredPositions]
+  );
+
   return (
     <Dialog2 open={open} onClose={onClose} title="Pay with">
       <div style={{ height: 2 }} />
@@ -85,11 +102,11 @@ export function SpendPositionSelector({
         }}
       >
         <TabProvider
-          selectedId={selectedNetwork}
+          selectedId={selectedNetwork ?? ALL_NETWORKS_TAB_ID}
           setSelectedId={(id) => {
             startTransition(() => {
               setSelectedNetwork(
-                id === selectedNetwork ? null : (id as string | null)
+                id === ALL_NETWORKS_TAB_ID ? null : (id as string | null)
               );
             });
           }}
@@ -101,21 +118,22 @@ export function SpendPositionSelector({
             />
           </div>
           <NetworkChips
+            ref={chipsRef}
             networks={topNetworks}
             onOpenNetworkSelector={networkSelector.openDialog}
           />
           <TabPanelWrapper>
-            <ComboboxList alwaysVisible className={styles.tokenList}>
-              {filteredPositions.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <UIText kind="body/regular" color="var(--neutral-500)">
-                    No tokens found
-                  </UIText>
-                </div>
-              ) : (
-                filteredPositions.map((position) => (
+            {virtualItems.length === 0 ? (
+              <div className={styles.emptyState}>
+                <UIText kind="body/regular" color="var(--neutral-500)">
+                  No tokens found
+                </UIText>
+              </div>
+            ) : (
+              <VirtualizedTokenList
+                items={virtualItems}
+                renderItem={(position) => (
                   <TokenRow
-                    key={`${position.chain.id}-${position.fungible.id}`}
                     fungible={position.fungible}
                     chainIconUrl={position.chain.iconUrl}
                     chainName={position.chain.name}
@@ -127,9 +145,9 @@ export function SpendPositionSelector({
                       onClose();
                     }}
                   />
-                ))
-              )}
-            </ComboboxList>
+                )}
+              />
+            )}
           </TabPanelWrapper>
         </TabProvider>
       </ComboboxProvider>
@@ -142,7 +160,10 @@ export function SpendPositionSelector({
         onSelect={(chainId) => {
           setSelectedNetwork(chainId);
           networkSelector.closeDialog();
-          requestAnimationFrame(() => comboboxRef.current?.focus());
+          requestAnimationFrame(() => {
+            comboboxRef.current?.focus();
+            scrollChipIntoView(chainId);
+          });
         }}
       />
     </Dialog2>

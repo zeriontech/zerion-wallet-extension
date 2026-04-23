@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image } from 'src/ui/ui-kit/MediaFallback';
+import { Image2 } from 'src/ui/ui-kit/MediaFallback';
 import { UIText } from '../UIText';
 
 interface BaseProps {
@@ -32,7 +32,7 @@ export function TokenIcon({ src, symbol, size = 32, style, title }: Props) {
     </UIText>
   );
   return src ? (
-    <Image
+    <Image2
       src={src}
       alt=""
       title={title}

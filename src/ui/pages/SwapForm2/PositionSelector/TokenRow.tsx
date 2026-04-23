@@ -58,7 +58,9 @@ export function TokenRow({
         </div>
       </div>
       <div className={styles.tokenInfo}>
-        <UIText kind="body/accent">{fungible.name}</UIText>
+        <UIText kind="body/accent" className={styles.tokenName}>
+          {fungible.name}
+        </UIText>
         <UIText kind="caption/regular" color="var(--neutral-500)">
           {mcap ? `MCAP ${mcap}` : fungible.symbol}
         </UIText>
