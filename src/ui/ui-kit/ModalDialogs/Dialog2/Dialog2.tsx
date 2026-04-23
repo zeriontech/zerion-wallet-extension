@@ -10,8 +10,6 @@ import * as styles from './styles.module.css';
 const NARROW_BREAKPOINT = 500;
 
 /** ease-out-quart: fast start, gentle settle — ideal for elements entering */
-const EASE_OUT: [number, number, number, number] = [0.165, 0.84, 0.44, 1];
-
 function useIsNarrow() {
   const [isNarrow, setIsNarrow] = React.useState(
     () => window.innerWidth < NARROW_BREAKPOINT
@@ -30,11 +28,20 @@ export function Dialog2({
   onClose,
   title,
   children,
+  size = 'full',
+  autoFocusInput = true,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  /**
+   * 'full' — dialog fills available space (full screen on narrow, 70vh centered).
+   * 'content' — dialog sizes to its content height.
+   */
+  size?: 'full' | 'content';
+  /** When false, the dialog won't auto-focus the first text input on open. */
+  autoFocusInput?: boolean;
 }) {
   const isNarrow = useIsNarrow();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -55,7 +62,7 @@ export function Dialog2({
 
   // Focus the first input after ariakit's Dialog has finished its own focus setup
   useEffect(() => {
-    if (!open) {
+    if (!open || !autoFocusInput) {
       return;
     }
     const raf = requestAnimationFrame(() => {
@@ -65,20 +72,23 @@ export function Dialog2({
       input?.focus();
     });
     return () => cancelAnimationFrame(raf);
-  }, [open]);
+  }, [open, autoFocusInput]);
+
+  const isFullscreen = isNarrow && size === 'full';
 
   return createPortal(
     <AnimatePresence>
       {open ? (
         <>
-          {/* Backdrop: only on wide screens with blur */}
-          {!isNarrow ? (
+          {/* Backdrop: shown whenever the dialog doesn't cover the whole screen */}
+          {!isFullscreen ? (
             <motion.div
               className={styles.backdrop}
+              // style={{ backdropFilter }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2, ease: EASE_OUT }}
+              transition={{ duration: 0.2 }}
               onClick={onClose}
             />
           ) : null}
@@ -89,7 +99,7 @@ export function Dialog2({
               <motion.div
                 className={`${styles.dialog} ${
                   isNarrow ? styles.dialogFullscreen : styles.dialogCentered
-                }`}
+                } ${size === 'content' ? styles.dialogContentHeight : ''}`}
                 initial={
                   isNarrow
                     ? {
@@ -97,16 +107,26 @@ export function Dialog2({
                         opacity: 0,
                         filter: 'blur(4px)',
                       }
-                    : {
+                    : size === 'content'
+                    ? {
+                        transform:
+                          'translate(-50%, calc(-50% + 24px)) scale(0.96)',
                         opacity: 0,
-                        scale: 0.96,
+                        filter: 'blur(4px)',
+                      }
+                    : {
+                        transform: 'translate(-50%, 24px) scale(0.96)',
+                        opacity: 0,
                         filter: 'blur(4px)',
                       }
                 }
                 animate={{
-                  transform: isNarrow ? 'translateY(0px) scale(1)' : undefined,
+                  transform: isNarrow
+                    ? 'translateY(0px) scale(1)'
+                    : size === 'content'
+                    ? 'translate(-50%, -50%) scale(1)'
+                    : 'translate(-50%, 0px) scale(1)',
                   opacity: 1,
-                  scale: isNarrow ? undefined : 1,
                   filter: 'blur(0px)',
                 }}
                 exit={
@@ -116,16 +136,20 @@ export function Dialog2({
                         opacity: 0,
                         filter: 'blur(4px)',
                       }
-                    : {
+                    : size === 'content'
+                    ? {
+                        transform:
+                          'translate(-50%, calc(-50% + 24px)) scale(0.96)',
                         opacity: 0,
-                        scale: 0.96,
+                        filter: 'blur(4px)',
+                      }
+                    : {
+                        transform: 'translate(-50%, 24px) scale(0.96)',
+                        opacity: 0,
                         filter: 'blur(4px)',
                       }
                 }
-                transition={{
-                  duration: 0.25,
-                  ease: EASE_OUT,
-                }}
+                transition={{ duration: 0.2 }}
               />
             }
             portal={false}

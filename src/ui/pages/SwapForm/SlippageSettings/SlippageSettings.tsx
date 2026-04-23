@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { Input } from 'src/ui/ui-kit/Input';
@@ -137,10 +137,13 @@ export function SlippageSettings({
   chain,
   configuration,
   onConfigurationChange,
+  includeAuto = false,
 }: {
   chain: Chain;
   configuration: CustomConfiguration;
   onConfigurationChange: (value: CustomConfiguration) => void;
+  /** When true, shows an "Auto" option that maps to a null slippage value. */
+  includeAuto?: boolean;
 }) {
   const { slippage: userSlippage } = configuration;
   const {
@@ -152,22 +155,39 @@ export function SlippageSettings({
     userSlippage,
   });
 
+  const [isAuto, setIsAuto] = useState(
+    () => includeAuto && userSlippage == null
+  );
   const [percentValue, setPercentValue] = useState(String(slippagePercent));
   const [isCustomValue, setIsCustomValue] = useState(
-    () => !slippageOptions.includes(Number(percentValue))
+    () => !isAuto && !slippageOptions.includes(Number(percentValue))
   );
   const [isCustomValueFocused, setIsCustomValueFocused] = useState(false);
   const { isOptimal } = getSlippageWarning(percentValue);
 
+  const optionColumns = (includeAuto ? 1 : 0) + slippageOptions.length + 1;
+
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      const checked = formRef.current?.querySelector<HTMLInputElement>(
+        'input[name="slippage"]:checked'
+      );
+      checked?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   return (
     <form
+      ref={formRef}
       style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
       onSubmit={(event) => {
         event.preventDefault();
         if (event.currentTarget.checkValidity()) {
           onConfigurationChange({
             ...configuration,
-            slippage: fromPercents(Number(percentValue)),
+            slippage: isAuto ? null : fromPercents(Number(percentValue)),
           });
         }
       }}
@@ -176,21 +196,46 @@ export function SlippageSettings({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${slippageOptions.length}, 1fr) 1fr`,
+            gridTemplateColumns: `repeat(${optionColumns}, 1fr)`,
             gap: 8,
+            paddingTop: 12,
+            paddingBottom: 8,
           }}
         >
+          {includeAuto ? (
+            <Radio
+              name="slippage"
+              value="auto"
+              checked={isAuto}
+              onChange={() => {
+                setIsAuto(true);
+                setIsCustomValue(false);
+                setPercentValue(String(defaultSlippagePercent));
+              }}
+              onFocus={() => {
+                setIsAuto(true);
+                setIsCustomValue(false);
+              }}
+              required={!isCustomValue}
+            >
+              <UIText kind={INPUT_TEXT_KIND}>Auto</UIText>
+            </Radio>
+          ) : null}
           {slippageOptions.map((value) => (
             <Radio
               key={value}
               name="slippage"
               value={value}
-              checked={!isCustomValue && String(value) === percentValue}
+              checked={
+                !isAuto && !isCustomValue && String(value) === percentValue
+              }
               onChange={() => {
+                setIsAuto(false);
                 setPercentValue(String(value));
                 setIsCustomValue(false);
               }}
               onFocus={() => {
+                setIsAuto(false);
                 setIsCustomValue(false);
               }}
               required={!isCustomValue}
@@ -215,6 +260,7 @@ export function SlippageSettings({
                 if (!isCustomValue) {
                   setPercentValue('');
                 }
+                setIsAuto(false);
                 setIsCustomValue(true);
               }}
               onBlur={() => {
@@ -235,8 +281,12 @@ export function SlippageSettings({
             />
           </div>
         </div>
-        <SlippageWarning percentValue={percentValue} />
-        <UIText kind="body/regular" color="var(--neutral-500)">
+        {isAuto ? null : <SlippageWarning percentValue={percentValue} />}
+        <UIText
+          kind="body/regular"
+          color="var(--neutral-500)"
+          style={{ paddingBottom: 24 }}
+        >
           Your transaction will fail if the price changes more than the
           slippage.
         </UIText>
@@ -246,6 +296,9 @@ export function SlippageSettings({
           kind="neutral"
           type="button"
           onClick={() => {
+            if (includeAuto) {
+              setIsAuto(true);
+            }
             setIsCustomValue(false);
             setPercentValue(String(defaultSlippagePercent));
           }}

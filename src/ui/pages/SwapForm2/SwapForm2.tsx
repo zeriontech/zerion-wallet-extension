@@ -12,6 +12,7 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
+import { createChain } from 'src/modules/networks/Chain';
 import { PageColumn } from 'src/ui/components/PageColumn/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop/PageTop';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle/NavigationTitle';
@@ -21,6 +22,9 @@ import { Button } from 'src/ui/ui-kit/Button';
 import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { SlippageSettings } from '../SwapForm/SlippageSettings';
+import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
 import { useSwapQuote } from './useSwapQuote';
 import { useFormState } from './useFormState';
 import { useFormPositions } from './useFormPositions';
@@ -60,6 +64,11 @@ function SwapFormComponent({
     outputPosition,
   });
 
+  const slippageDialog = useDialog2();
+  const spendChain = formState.inputChain
+    ? createChain(formState.inputChain)
+    : null;
+
   return (
     <>
       <Content name="navigation-bar-end">
@@ -73,6 +82,7 @@ function SwapFormComponent({
             size={36}
             style={{ padding: 6 }}
             title="Swap settings"
+            onClick={slippageDialog.openDialog}
           >
             <SettingsIcon style={{ display: 'block' }} />
           </Button>
@@ -86,6 +96,28 @@ function SwapFormComponent({
           </UnstyledLink>
         </HStack>
       </Content>
+      <Dialog2
+        open={slippageDialog.open}
+        onClose={slippageDialog.closeDialog}
+        title="Slippage"
+        size="content"
+        autoFocusInput={false}
+      >
+        {spendChain ? (
+          <div style={{ padding: 16, paddingTop: 0 }}>
+            <SlippageSettings
+              chain={spendChain}
+              includeAuto
+              configuration={toConfiguration(formState)}
+              onConfigurationChange={(value) => {
+                const partial = fromConfiguration(value);
+                setUserFormState((state) => ({ ...state, ...partial }));
+                slippageDialog.closeDialog();
+              }}
+            />
+          </div>
+        ) : null}
+      </Dialog2>
       <VStack
         gap={24}
         style={{ position: 'relative', flex: 1, alignContent: 'start' }}

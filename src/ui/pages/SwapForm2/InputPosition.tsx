@@ -14,10 +14,23 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import BigNumber from 'bignumber.js';
 import type { Networks } from 'src/modules/networks/Networks';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import {
+  QUICK_AMOUNTS,
+  QuickAmountButton,
+} from 'src/ui/shared/forms/QuickAmounts';
+import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { FormFieldset } from './FormFieldset';
 import type { HandleChangeFunction, SwapFormState2 } from './types';
 import { AssetSelectorButton } from './AssetSelectorButton';
 import { SpendPositionSelector } from './PositionSelector/SpendPositionSelector';
+
+function getPartialBalance(balance: string, factor: number): string {
+  if (factor === 1) return balance;
+  const value = new BigNumber(balance).multipliedBy(factor);
+  return value.gt(100)
+    ? value.dp(0, BigNumber.ROUND_DOWN).toFixed()
+    : value.precision(3, BigNumber.ROUND_DOWN).toFixed();
+}
 
 export function InputPosition({
   formState,
@@ -52,7 +65,30 @@ export function InputPosition({
       <FormFieldset
         inputId={inputId}
         startTitle={<UIText kind="small/regular">Pay with</UIText>}
-        endTitle={<div />}
+        endTitle={
+          positionBalance ? (
+            <HStack gap={16} alignItems="center">
+              {QUICK_AMOUNTS.map(({ factor, title }) => (
+                <QuickAmountButton
+                  key={factor}
+                  onClick={() => {
+                    const value = getPartialBalance(positionBalance, factor);
+                    onChange('inputAmount', value);
+                    tokenValueInputRef.current?.setValue(value);
+                    if (inputRef.current) {
+                      inputRef.current.value = value;
+                      inputRef.current.focus();
+                    }
+                  }}
+                >
+                  {title}
+                </QuickAmountButton>
+              ))}
+            </HStack>
+          ) : (
+            <div />
+          )
+        }
         startContent={
           <AssetSelectorButton
             position={position}

@@ -2,9 +2,10 @@
   position: fixed;
   inset: 0;
   z-index: var(--over-layout-index);
-  background-color: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  opacity: 1;
+  /* background-color: rgba(0, 0, 0, 0.2); */
+  /* backdrop-filter is animated inline via Motion to sync with open/close */
+  backdrop-filter: blur(4px);
 }
 
 .dialog {
@@ -14,7 +15,7 @@
   flex-direction: column;
   background-color: var(--white);
   overflow: hidden;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
 }
 
 .dialogFullscreen {
@@ -23,14 +24,34 @@
 }
 
 .dialogCentered {
-  top: 50%;
+  top: max(10vh, 100px);
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   max-width: 480px;
   width: calc(100% - 32px);
   max-height: 70vh;
   border-radius: 16px;
   box-shadow: 0 0 500px 50px rgba(0, 0, 0, 0.14);
+}
+
+/* Dialog sizes to the height of its content rather than filling the viewport.
+   On narrow screens, pins to the bottom so it reads as a sheet. */
+.dialogContentHeight.dialogFullscreen {
+  inset: auto 0 0 0;
+  height: auto;
+  border-radius: 16px 16px 0 0;
+}
+
+/* Content-sized centered dialog stays vertically centered */
+.dialogContentHeight.dialogCentered {
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-height: min(70vh, max-content);
+  height: auto;
+}
+
+.dialogContentHeight .content {
+  flex: 0 1 auto;
 }
 
 .header {
