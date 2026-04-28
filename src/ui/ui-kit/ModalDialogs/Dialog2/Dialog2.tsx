@@ -149,7 +149,7 @@ export function Dialog2({
                         filter: 'blur(4px)',
                       }
                 }
-                transition={{ duration: 0.2 }}
+                transition={{ duration: size === 'content' ? 0.1 : 0.2 }}
               />
             }
             portal={false}

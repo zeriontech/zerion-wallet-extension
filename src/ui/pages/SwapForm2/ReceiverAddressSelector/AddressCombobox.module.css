@@ -1,9 +1,52 @@
-.popover {
+.root {
+  position: relative;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarSlot {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarContent {
   position: absolute;
+  inset: 0;
+}
+
+.skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--neutral-200) 0%,
+    var(--neutral-300) 50%,
+    var(--neutral-200) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.skeleton[data-loading='true'] {
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.popover {
   z-index: var(--max-layout-index);
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
   background-color: var(--z-index-1);
   box-shadow: var(--elevation-200);
   max-height: 50vh;
@@ -48,6 +91,12 @@
   .item:hover {
     background-color: var(--neutral-100);
   }
+}
+
+.itemAvatar {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .sectionTitle {

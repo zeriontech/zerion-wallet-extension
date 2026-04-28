@@ -42,6 +42,14 @@ export function TokenRow({
   onSelect: () => void;
 }) {
   const mcap = formatMarketCap(fungible.meta.marketCap);
+  const fdv = formatMarketCap(fungible.meta.fullyDilutedValuation);
+  const metaParts: { label: string; value: string }[] = [];
+  if (mcap) {
+    metaParts.push({ label: 'MCAP', value: mcap });
+  }
+  if (fdv) {
+    metaParts.push({ label: 'FDV', value: fdv });
+  }
 
   return (
     <ComboboxItem
@@ -62,7 +70,17 @@ export function TokenRow({
           {fungible.name}
         </UIText>
         <UIText kind="caption/regular" color="var(--neutral-500)">
-          {mcap ? `MCAP ${mcap}` : fungible.symbol}
+          {metaParts.length > 0
+            ? metaParts.map((part, i) => (
+                <React.Fragment key={part.label}>
+                  {i > 0 ? ' · ' : null}
+                  {part.label}{' '}
+                  <UIText kind="caption/accent" as="span" color="var(--black)">
+                    {part.value}
+                  </UIText>
+                </React.Fragment>
+              ))
+            : fungible.symbol}
         </UIText>
       </div>
       <div className={styles.tokenValues}>

@@ -10,6 +10,16 @@ interface Props {
 
 const inputTagNames = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'OPTION']);
 
+function isEditableElement(element: Element | null): boolean {
+  if (!element) {
+    return false;
+  }
+  if (inputTagNames.has(element.tagName)) {
+    return true;
+  }
+  return element instanceof HTMLElement && element.isContentEditable;
+}
+
 export function KeyboardShortcut({
   combination,
   onKeyDown,
@@ -25,12 +35,15 @@ export function KeyboardShortcut({
       return;
     }
     function handleKeyDown(event: KeyboardEvent) {
+      // do not activate single-letter keyboard shortcuts when user
+      // is focused in a text field or another form control. Check both
+      // event.target and document.activeElement — with portalled popovers
+      // or virtual-focus widgets, event.target may not be the focused input.
+      const target = event.target instanceof Element ? event.target : null;
       if (
-        event.target instanceof Element &&
-        inputTagNames.has(event.target.tagName)
+        isEditableElement(target) ||
+        isEditableElement(document.activeElement)
       ) {
-        // do not activate single-letter keyboard shortcuts when user
-        // is focused in a text field or another form control
         return;
       }
       if (isHotkey(combination, event)) {

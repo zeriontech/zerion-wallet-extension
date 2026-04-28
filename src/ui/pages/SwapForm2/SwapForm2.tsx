@@ -23,6 +23,9 @@ import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { useBackgroundKind } from 'src/ui/components/Background';
+import { PageBottom } from 'src/ui/components/PageBottom';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { SlippageSettings } from '../SwapForm/SlippageSettings';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
 import { useSwapQuote } from './useSwapQuote';
@@ -33,6 +36,9 @@ import { InputPosition } from './InputPosition';
 import { OutputPosition } from './OutputPosition';
 import { QuoteDetails } from './QuoteDetails';
 import { ReceiverAddressSelector } from './ReceiverAddressSelector';
+import { TransactionWarning } from './TransactionWarning';
+import { UKDisclaimer } from './UKDisclaimer';
+import { SwapButton, type SimulationResult } from './SwapButton';
 import * as styles from './styles.module.css';
 
 function SwapFormComponent({
@@ -68,6 +74,10 @@ function SwapFormComponent({
   const spendChain = formState.inputChain
     ? createChain(formState.inputChain)
     : null;
+
+  const handleSimulationCompleted = (_result: SimulationResult) => {
+    // TODO: handle simulation result (open confirmation view)
+  };
 
   return (
     <>
@@ -118,43 +128,70 @@ function SwapFormComponent({
           </div>
         ) : null}
       </Dialog2>
-      <VStack
-        gap={24}
-        style={{ position: 'relative', flex: 1, alignContent: 'start' }}
-      >
-        <div className={styles.formContainer}>
-          <InputPosition
+      <PageColumn>
+        <PageTop />
+        <NavigationTitle title="Swap" />
+        <VStack
+          gap={24}
+          style={{
+            position: 'relative',
+            flex: 1,
+            alignContent: 'start',
+            paddingBottom: 100,
+          }}
+        >
+          <div className={styles.formContainer}>
+            <InputPosition
+              formState={formState}
+              onChange={setFormState}
+              position={inputPosition}
+              positions={positions}
+              networks={networks}
+            />
+            <MiddleLine />
+            <ReverseButton onClick={reverseTokens} />
+            <OutputPosition
+              onChange={setFormState}
+              position={outputPosition}
+              outputAmount={quote?.outputAmount?.quantity ?? null}
+              outputChain={formState.outputChain}
+              positions={positions}
+              networks={networks}
+            />
+          </div>
+          <ReceiverAddressSelector
             formState={formState}
             onChange={setFormState}
-            position={inputPosition}
-            positions={positions}
+            onBatchChange={setUserFormState}
             networks={networks}
           />
-          <MiddleLine />
-          <ReverseButton onClick={reverseTokens} />
-          <OutputPosition
-            onChange={setFormState}
-            position={outputPosition}
-            outputAmount={quote?.outputAmount?.quantity ?? null}
-            outputChain={formState.outputChain}
-            positions={positions}
+          <QuoteDetails
+            quote={quote}
+            quotesQuery={quotesQuery}
+            formState={formState}
             networks={networks}
+            onProviderChange={setUserQuoteId}
+            onSlippageClick={slippageDialog.openDialog}
           />
-        </div>
-        <ReceiverAddressSelector
+          <TransactionWarning
+            quote={quote}
+            quotesQuery={quotesQuery}
+            formState={formState}
+          />
+          <UKDisclaimer />
+        </VStack>
+      </PageColumn>
+      <div className={styles.absoluteFooter}>
+        <Spacer height={16} />
+        <SwapButton
+          address={address}
           formState={formState}
-          onChange={setFormState}
-          onBatchChange={setUserFormState}
-          networks={networks}
-        />
-        <QuoteDetails
           quote={quote}
           quotesQuery={quotesQuery}
-          formState={formState}
-          networks={networks}
-          onProviderChange={setUserQuoteId}
+          onSimulationCompleted={handleSimulationCompleted}
         />
-      </VStack>
+        <PageBottom />
+      </div>
     </>
   );
 }
@@ -191,27 +228,37 @@ function FieldsetSkeleton() {
 
 function SwapFormSkeleton() {
   return (
-    <VStack
-      gap={24}
-      style={{ position: 'relative', flex: 1, alignContent: 'start' }}
-    >
-      <div className={styles.formContainer}>
-        <FieldsetSkeleton />
-        <MiddleLine />
-        <div className={styles.reverseButton}>
-          <div
-            className={styles.skeletonCircle}
-            style={{ width: 20, height: 20 }}
-          />
+    <PageColumn>
+      <PageTop />
+      <NavigationTitle title="Swap" />
+      <VStack
+        gap={24}
+        style={{ position: 'relative', flex: 1, alignContent: 'start' }}
+      >
+        <div className={styles.formContainer}>
+          <FieldsetSkeleton />
+          <MiddleLine />
+          <div className={styles.reverseButton}>
+            <div
+              className={styles.skeletonCircle}
+              style={{ width: 20, height: 20 }}
+            />
+          </div>
+          <FieldsetSkeleton />
         </div>
-        <FieldsetSkeleton />
-      </div>
-    </VStack>
+      </VStack>
+    </PageColumn>
   );
 }
 
 function SwapFormError() {
-  return <div>Error loading swap form</div>;
+  return (
+    <PageColumn>
+      <PageTop />
+      <NavigationTitle title="Swap" />
+      <div>Error loading swap form</div>
+    </PageColumn>
+  );
 }
 
 /** Sets initial chainInput to last used chain for current address */
@@ -278,16 +325,11 @@ function SwapFormWrapper({
 }
 
 export function SwapForm2() {
+  useBackgroundKind({ kind: 'white' });
   const { preferences } = usePreferences();
   const { singleAddress: address, ready } = useAddressParams();
   if (preferences?.testnetMode?.on) {
     return <Navigate to="/" />;
   }
-  return (
-    <PageColumn>
-      <PageTop />
-      <NavigationTitle title="Swap" />
-      <SwapFormWrapper address={address} ready={ready} />
-    </PageColumn>
-  );
+  return <SwapFormWrapper address={address} ready={ready} />;
 }

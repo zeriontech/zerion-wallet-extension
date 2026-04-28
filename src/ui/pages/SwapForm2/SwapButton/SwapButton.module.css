@@ -1,0 +1,79 @@
+.button {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 16px;
+  padding-inline: 48px;
+  background-color: var(--black);
+  color: var(--white);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.button:disabled {
+  cursor: default;
+  background-color: var(--neutral-600);
+  color: var(--neutral-400);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .button:not(:disabled):hover {
+    background-color: var(--neutral-800);
+  }
+}
+
+.shieldWrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.shieldMask {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  mask-image: var(--shield-mask);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: var(--shield-mask);
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.shieldGradient {
+  position: absolute;
+  inset: -25%;
+  background: conic-gradient(
+    from 0deg,
+    var(--neutral-500) 0deg,
+    #ffffff 120deg,
+    var(--neutral-500) 240deg,
+    var(--neutral-500) 360deg
+  );
+  animation: spinGradient 1.2s linear infinite;
+}
+
+@keyframes spinGradient {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

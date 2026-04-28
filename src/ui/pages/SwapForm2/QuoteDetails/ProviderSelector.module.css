@@ -1,0 +1,123 @@
+.wrapper {
+  padding: 0 16px 96px;
+}
+
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0,
+    var(--white) 16px
+  );
+}
+
+.sortChipWrapper {
+  display: flex;
+}
+
+.sortChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 16px;
+  border: 2px solid var(--neutral-200);
+  background-color: var(--white);
+  color: var(--black);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.sortChip:hover {
+  background-color: var(--neutral-100);
+}
+
+.sortChipChevron {
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: var(--black);
+}
+
+.card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  border-radius: 24px;
+  border: 2px solid var(--neutral-200);
+  background-color: var(--white);
+  transition: border-color 0.15s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.card:hover {
+  border-color: var(--neutral-300);
+}
+
+.card:active {
+  transform: scale(0.99);
+}
+
+.cardSelected {
+  border-color: var(--primary);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.cardSelected:hover {
+  border-color: var(--primary);
+}
+
+.icon {
+  display: block;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.rankBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: var(--neutral-200);
+  color: var(--black);
+  flex-shrink: 0;
+}
+
+.rankBadgeSelected {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.rankCheck {
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: var(--white);
+}
+
+.sortOptions {
+  padding: 0 16px 16px;
+}
+
+.sortOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background-color: var(--neutral-100);
+  text-align: left;
+}
+
+.sortOptionCheck {
+  display: block;
+  width: 20px;
+  height: 20px;
+  color: var(--primary);
+}

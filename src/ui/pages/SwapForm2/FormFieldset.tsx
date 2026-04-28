@@ -54,9 +54,12 @@ export function FormFieldset({
         <HStack
           gap={16}
           justifyContent="space-between"
+          alignItems="center"
           style={{ width: '100%' }}
         >
-          <UIText kind="headline/h3">{startContent}</UIText>
+          <UIText kind="headline/h3" style={{ display: 'flex' }}>
+            {startContent}
+          </UIText>
           <UIText kind="headline/h3"> {endContent}</UIText>
         </HStack>
         <HStack

@@ -167,6 +167,8 @@ export interface Quote2 {
   contractMetadata: ContractMetadata2;
   /** @description Expected output amount for the swap */
   outputAmount: Amount;
+  /** @description Expected output amount for the swap after all fees are deducted */
+  outputAmountAfterFees: Amount;
   /** @description Minimum expected output amount for the swap */
   minimumOutputAmount: Amount;
   /** @description Error information if the swap cannot proceed.

@@ -53,7 +53,10 @@ export const NetworkChips = forwardRef<
               src={network.iconUrl}
               name={network.name}
               size={16}
-              style={{ borderRadius: 4 }}
+              style={{
+                borderRadius: 4,
+                background: 'var(--neutral-100)',
+              }}
             />
             {network.name}
           </Tab>

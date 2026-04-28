@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { ComboboxProvider, Combobox, TabProvider } from '@ariakit/react';
 import type { Networks } from 'src/modules/networks/Networks';
+import { createChain } from 'src/modules/networks/Chain';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -29,18 +30,54 @@ import type { VirtualListItem } from './VirtualizedTokenList';
 import { VirtualizedTokenList } from './VirtualizedTokenList';
 import * as styles from './styles.module.css';
 
-type RowItem = { fungible: Fungible; chainId: string };
+type RowItem = {
+  fungible: Fungible;
+  chainId: string;
+  chainIconUrl: string;
+  chainName: string;
+};
+
+function resolveChain(networks: Networks, chainId: string) {
+  if (!chainId) {
+    return { chainIconUrl: '', chainName: '' };
+  }
+  const network = networks.getByNetworkId(createChain(chainId));
+  return {
+    chainIconUrl: network?.icon_url ?? '',
+    chainName: network?.name ?? '',
+  };
+}
+
+function TokenListSkeleton({ count }: { count: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={styles.skeletonRow}>
+          <div className={styles.skeletonIcon} />
+          <div className={styles.skeletonInfo}>
+            <div className={styles.skeletonLineLg} />
+            <div className={styles.skeletonLineSm} />
+          </div>
+          <div className={styles.skeletonValues}>
+            <div className={styles.skeletonValueLg} />
+            <div className={styles.skeletonValueSm} />
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
 
 function renderFungibleRow(
-  { fungible, chainId }: RowItem,
+  { fungible, chainId, chainIconUrl, chainName }: RowItem,
   currency: string,
   onSelect: (fungible: Fungible, chainId: string) => void
 ) {
   return (
     <TokenRow
       fungible={fungible}
-      chainIconUrl=""
-      chainName=""
+      chainIconUrl={chainIconUrl}
+      chainName={chainName}
       fiatValue={null}
       tokenQuantity={null}
       currency={currency}
@@ -52,10 +89,12 @@ function renderFungibleRow(
 function ReceiveFungiblesList({
   chain,
   currency,
+  networks,
   onSelect,
 }: {
   chain: string | null;
   currency: string;
+  networks: Networks;
   onSelect: (fungible: Fungible, chainId: string) => void;
 }) {
   const { data } = useReceiveFungibles({
@@ -77,13 +116,17 @@ function ReceiveFungiblesList({
     }
     const { popular, others } = data.data;
     const result: VirtualListItem<RowItem>[] = [];
+    const toRow = (fungible: Fungible): RowItem => {
+      const chainId = selectChain(fungible);
+      return { fungible, chainId, ...resolveChain(networks, chainId) };
+    };
     if (popular.length > 0) {
       result.push({ kind: 'header', key: 'popular', label: 'Popular' });
       for (const fungible of popular) {
         result.push({
           kind: 'item',
           key: `popular-${fungible.id}`,
-          data: { fungible, chainId: selectChain(fungible) },
+          data: toRow(fungible),
         });
       }
     }
@@ -93,22 +136,16 @@ function ReceiveFungiblesList({
         result.push({
           kind: 'item',
           key: `others-${fungible.id}`,
-          data: { fungible, chainId: selectChain(fungible) },
+          data: toRow(fungible),
         });
       }
     }
     return result;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, chain]);
+  }, [data, chain, networks]);
 
   if (!data) {
-    return (
-      <div className={styles.emptyState}>
-        <UIText kind="body/regular" color="var(--neutral-500)">
-          Loading...
-        </UIText>
-      </div>
-    );
+    return <TokenListSkeleton count={5} />;
   }
 
   if (virtualItems.length === 0) {
@@ -140,11 +177,13 @@ function SearchResults({
   query,
   chain,
   currency,
+  networks,
   onSelect,
 }: {
   query: string;
   chain: string | null;
   currency: string;
+  networks: Networks;
   onSelect: (fungible: Fungible, chainId: string) => void;
 }) {
   const { fungibles } = useSearchQueryFungibles({
@@ -166,10 +205,10 @@ function SearchResults({
       return {
         kind: 'item',
         key: fungible.id,
-        data: { fungible, chainId },
+        data: { fungible, chainId, ...resolveChain(networks, chainId) },
       };
     });
-  }, [fungibles, chain]);
+  }, [fungibles, chain, networks]);
 
   if (!fungibles || fungibles.length === 0) {
     return (
@@ -234,6 +273,7 @@ export function ReceivePositionSelector({
 
   return (
     <Dialog2 open={open} onClose={onClose} title="Receive">
+      <div style={{ height: 2 }} />
       <ComboboxProvider
         resetValueOnHide
         setValue={(value) => {
@@ -267,6 +307,7 @@ export function ReceivePositionSelector({
                 query={debouncedQuery}
                 chain={selectedNetwork}
                 currency={currency}
+                networks={networks}
                 onSelect={(fungible, chainId) => {
                   onSelect(fungible, chainId);
                   onClose();
@@ -276,6 +317,7 @@ export function ReceivePositionSelector({
               <ReceiveFungiblesList
                 chain={selectedNetwork}
                 currency={currency}
+                networks={networks}
                 onSelect={(fungible, chainId) => {
                   onSelect(fungible, chainId);
                   onClose();

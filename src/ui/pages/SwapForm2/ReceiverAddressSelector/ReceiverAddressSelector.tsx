@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { Networks } from 'src/modules/networks/Networks';
 import type { Networks as NetworksType } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { useMeasure } from 'src/ui/shared/useMeasure';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
@@ -52,6 +52,9 @@ export function ReceiverAddressSelector({
     ecosystem: ecosystem || 'evm',
   });
 
+  const [measureRef, { height: contentHeight }] = useMeasure<HTMLDivElement>();
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const isExpanded = formState.showReceiverAddressInput === 'on';
 
   const handleOpen = useCallback(() => {
@@ -59,7 +62,8 @@ export function ReceiverAddressSelector({
   }, [onChange]);
 
   const handleClose = useCallback(() => {
-    onBatchChange(() => ({
+    onBatchChange((state) => ({
+      ...state,
       showReceiverAddressInput: 'off',
       to: undefined,
       receiverAddressInput: undefined,
@@ -84,60 +88,63 @@ export function ReceiverAddressSelector({
     return null;
   }
 
-  if (!isExpanded) {
-    return (
-      <UnstyledButton
-        type="button"
-        className={styles.container}
-        onClick={handleOpen}
-        style={{ width: '100%' }}
-      >
-        <div className={styles.headerRow}>
-          <UIText kind="small/regular">{title}</UIText>
-          <ChevronRightIcon
-            className={styles.chevronDown}
-            style={{ width: 20, height: 20 }}
-          />
-        </div>
-      </UnstyledButton>
-    );
-  }
-
   return (
-    <div className={styles.container}>
-      <div className={styles.headerRow}>
-        <UIText kind="small/regular">{title}</UIText>
-        <UnstyledButton
-          type="button"
-          className={styles.closeButton}
-          onClick={handleClose}
-        >
-          <CloseIcon style={{ width: 20, height: 20 }} />
-        </UnstyledButton>
-      </div>
-      {formState.to ? (
-        <div className={styles.addressRow}>
-          <WalletAvatar address={formState.to} size={24} borderRadius={6} />
-          <UIText
-            kind="small/accent"
-            style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
+    <MotionConfig transition={{ duration: 0.15 }}>
+      <div className={styles.container} ref={containerRef}>
+        {isExpanded ? (
+          <div className={styles.headerRow}>
+            <UIText kind="small/regular">{title}</UIText>
+            <UnstyledButton
+              type="button"
+              className={styles.closeButton}
+              onClick={handleClose}
+            >
+              <CloseIcon style={{ width: 20, height: 20 }} />
+            </UnstyledButton>
+          </div>
+        ) : (
+          <UnstyledButton
+            type="button"
+            className={styles.headerButton}
+            onClick={handleOpen}
           >
-            {truncateAddress(formState.to, 5)}
-          </UIText>
-          <ChevronRightIcon
-            className={styles.chevronRight}
-            style={{ width: 24, height: 24 }}
-          />
-        </div>
-      ) : null}
-      <div className={styles.comboboxWrapper}>
-        <AddressCombobox
-          items={items}
-          value={formState.receiverAddressInput ?? ''}
-          onChange={handleAddressInputChange}
-          onResolvedChange={handleResolvedChange}
-        />
+            <UIText kind="small/regular">{title}</UIText>
+            <ChevronRightIcon
+              className={styles.chevronDown}
+              style={{ width: 20, height: 20 }}
+            />
+          </UnstyledButton>
+        )}
+        <AnimatePresence initial={false}>
+          {isExpanded ? (
+            <motion.div
+              key="receiver-expanded"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: contentHeight || 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <motion.div
+                ref={measureRef}
+                initial={{ y: 6, filter: 'blur(3px)', opacity: 0 }}
+                animate={{ y: 0, filter: 'blur(0px)', opacity: 1 }}
+                exit={{ y: 6, filter: 'blur(3px)', opacity: 0 }}
+                style={{ transformOrigin: 'top center' }}
+              >
+                <div className={styles.comboboxWrapper}>
+                  <AddressCombobox
+                    items={items}
+                    value={formState.receiverAddressInput ?? ''}
+                    onChange={handleAddressInputChange}
+                    onResolvedChange={handleResolvedChange}
+                    anchorRef={containerRef}
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
-    </div>
+    </MotionConfig>
   );
 }

@@ -1,4 +1,5 @@
-import React, { useId, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
+import { motion, useAnimationControls } from 'motion/react';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import {
   DebouncedInput,
@@ -60,6 +61,18 @@ export function InputPosition({
     position?.fungible.meta.price || 0
   );
 
+  const shakeControls = useAnimationControls();
+  const prevNotEnoughBalanceRef = useRef(notEnoughBalance);
+  useEffect(() => {
+    if (!prevNotEnoughBalanceRef.current && notEnoughBalance) {
+      shakeControls.start({
+        x: [0, -4, 4, -3, 3, -2, 2, 0],
+        transition: { duration: 0.4, ease: 'easeInOut' },
+      });
+    }
+    prevNotEnoughBalanceRef.current = notEnoughBalance;
+  }, [notEnoughBalance, shakeControls]);
+
   return (
     <>
       <FormFieldset
@@ -96,38 +109,41 @@ export function InputPosition({
           />
         }
         endContent={
-          <DebouncedInput
-            ref={tokenValueInputRef}
-            delay={300}
-            value={inputAmount ?? ''}
-            onChange={(value) => {
-              onChange('inputAmount', value);
-            }}
-            render={({ value, handleChange }) => (
-              <UnstyledInput
-                autoFocus={true}
-                id={inputId}
-                ref={inputRef}
-                style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
-                inputMode="decimal"
-                name="inputAmount"
-                value={value}
-                placeholder="0"
-                onChange={(event) =>
-                  handleChange(
-                    event.currentTarget.value
-                      .replace(',', '.')
-                      .replace(/\s/g, '')
-                  )
-                }
-                pattern={FLOAT_INPUT_PATTERN}
-                required={true}
-              />
-            )}
-          />
+          <UIText kind="headline/h3">
+            <DebouncedInput
+              ref={tokenValueInputRef}
+              delay={300}
+              value={inputAmount ?? ''}
+              onChange={(value) => {
+                onChange('inputAmount', value);
+              }}
+              render={({ value, handleChange }) => (
+                <UnstyledInput
+                  autoFocus={true}
+                  id={inputId}
+                  ref={inputRef}
+                  style={{ textAlign: 'end', textOverflow: 'ellipsis' }}
+                  inputMode="decimal"
+                  name="inputAmount"
+                  value={value}
+                  placeholder="0"
+                  onChange={(event) =>
+                    handleChange(
+                      event.currentTarget.value
+                        .replace(',', '.')
+                        .replace(/\s/g, '')
+                    )
+                  }
+                  pattern={FLOAT_INPUT_PATTERN}
+                  required={true}
+                />
+              )}
+            />
+          </UIText>
         }
         startDescription={
-          <div
+          <motion.div
+            animate={shakeControls}
             style={{
               color: notEnoughBalance
                 ? 'var(--negative-500)'
@@ -145,7 +161,7 @@ export function InputPosition({
             >
               {positionBalance ? formatTokenValue(positionBalance) : null}
             </BlurrableBalance>
-          </div>
+          </motion.div>
         }
         endDescription={
           <UIText kind="small/regular">
