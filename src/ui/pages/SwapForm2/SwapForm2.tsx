@@ -39,6 +39,7 @@ import { ReceiverAddressSelector } from './ReceiverAddressSelector';
 import { TransactionWarning } from './TransactionWarning';
 import { UKDisclaimer } from './UKDisclaimer';
 import { SwapButton, type SimulationResult } from './SwapButton';
+import { UnverifiedWarning } from './UnverifiedWarning/UnverifiedWarning';
 import * as styles from './styles.module.css';
 
 function SwapFormComponent({
@@ -75,9 +76,54 @@ function SwapFormComponent({
     ? createChain(formState.inputChain)
     : null;
 
-  const handleSimulationCompleted = (_result: SimulationResult) => {
-    // TODO: handle simulation result (open confirmation view)
+  const [simulationResult, setSimulationResult] =
+    useState<SimulationResult>(null);
+  const [hasSimulated, setHasSimulated] = useState(false);
+
+  useEffect(() => {
+    setSimulationResult(null);
+    setHasSimulated(false);
+  }, [
+    formState.inputAmount,
+    formState.inputFungibleId,
+    formState.outputFungibleId,
+    formState.inputChain,
+  ]);
+
+  useEffect(() => {
+    if (!hasSimulated) return;
+    const id = setTimeout(() => {
+      setSimulationResult(null);
+      setHasSimulated(false);
+    }, 20_000);
+    return () => clearTimeout(id);
+  }, [hasSimulated]);
+
+  const handleSignTransaction = () => {
+    // eslint-disable-next-line no-console
+    console.log('handleSignTransaction', {
+      result: simulationResult,
+      quote,
+      address,
+    });
   };
+
+  const handleSimulationCompleted = (result: SimulationResult) => {
+    const isUnverified =
+      result == null ||
+      (result.data?.warnings ?? []).some((w) => w.severity === 'Gray');
+    if (isUnverified) {
+      setSimulationResult(result);
+      setHasSimulated(true);
+      return;
+    }
+    setSimulationResult(result);
+    handleSignTransaction();
+  };
+
+  const isUnverified = simulationResult?.data?.warnings.some(
+    (w) => w.severity === 'Gray'
+  );
 
   return (
     <>
@@ -178,6 +224,7 @@ function SwapFormComponent({
             quotesQuery={quotesQuery}
             formState={formState}
           />
+          {isUnverified ? <UnverifiedWarning /> : null}
           <UKDisclaimer />
         </VStack>
       </PageColumn>
@@ -188,7 +235,9 @@ function SwapFormComponent({
           formState={formState}
           quote={quote}
           quotesQuery={quotesQuery}
+          simulated={hasSimulated}
           onSimulationCompleted={handleSimulationCompleted}
+          onSign={handleSignTransaction}
         />
         <PageBottom />
       </div>

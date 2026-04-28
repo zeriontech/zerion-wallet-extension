@@ -27,14 +27,19 @@ function resolveLabel({
   quote,
   quotesQuery,
   state,
+  simulated,
 }: {
   formState: SwapFormState2;
   quote: Quote2 | null;
   quotesQuery: QuotesData<Quote2>;
   state: ButtonState;
+  simulated: boolean;
 }): string {
   if (state === 'simulating') {
     return 'Verifying Transaction';
+  }
+  if (simulated) {
+    return 'Confirm swap';
   }
   if (!formState.outputFungibleId) {
     return 'Select token';
@@ -53,22 +58,22 @@ function resolveLabel({
 
 function isDisabled({
   quote,
-  quotesQuery,
   formState,
   state,
+  simulated,
 }: {
   quote: Quote2 | null;
-  quotesQuery: QuotesData<Quote2>;
   formState: SwapFormState2;
   state: ButtonState;
+  simulated: boolean;
 }) {
   if (state === 'simulating') return true;
+  if (simulated) return false;
   if (!formState.outputFungibleId) return true;
   if (!formState.inputAmount || Number(formState.inputAmount) === 0)
     return true;
   if (!quote) return true;
   if (quote.error) return true;
-  if (quotesQuery.isLoading) return true;
   return false;
 }
 
@@ -90,13 +95,17 @@ export function SwapButton({
   formState,
   quote,
   quotesQuery,
+  simulated,
   onSimulationCompleted,
+  onSign,
 }: {
   address: string;
   formState: SwapFormState2;
   quote: Quote2 | null;
   quotesQuery: QuotesData<Quote2>;
+  simulated: boolean;
   onSimulationCompleted: (result: SimulationResult) => void;
+  onSign: () => void;
 }) {
   const [state, setState] = useState<ButtonState>('idle');
   const { currency } = useCurrency();
@@ -155,8 +164,14 @@ export function SwapButton({
     onSimulationCompleted,
   ]);
 
-  const label = resolveLabel({ formState, quote, quotesQuery, state });
-  const disabled = isDisabled({ quote, quotesQuery, formState, state });
+  const label = resolveLabel({
+    formState,
+    quote,
+    quotesQuery,
+    state,
+    simulated,
+  });
+  const disabled = isDisabled({ quote, formState, state, simulated });
 
   return (
     <button
@@ -164,6 +179,10 @@ export function SwapButton({
       className={styles.button}
       disabled={disabled}
       onClick={() => {
+        if (simulated) {
+          onSign();
+          return;
+        }
         if (!quote || transactions.length === 0) return;
         setState('simulating');
       }}

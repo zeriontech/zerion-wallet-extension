@@ -30,6 +30,7 @@ export function Dialog2({
   children,
   size = 'full',
   autoFocusInput = true,
+  style,
 }: {
   open: boolean;
   onClose: () => void;
@@ -42,6 +43,8 @@ export function Dialog2({
   size?: 'full' | 'content';
   /** When false, the dialog won't auto-focus the first text input on open. */
   autoFocusInput?: boolean;
+  /** Inline style applied to the outermost dialog surface (e.g. to override its background). */
+  style?: React.CSSProperties;
 }) {
   const isNarrow = useIsNarrow();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -100,6 +103,7 @@ export function Dialog2({
                 className={`${styles.dialog} ${
                   isNarrow ? styles.dialogFullscreen : styles.dialogCentered
                 } ${size === 'content' ? styles.dialogContentHeight : ''}`}
+                style={style}
                 initial={
                   isNarrow
                     ? {

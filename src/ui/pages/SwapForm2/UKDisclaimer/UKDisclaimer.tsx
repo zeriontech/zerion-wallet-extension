@@ -2,10 +2,10 @@ import React from 'react';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useUKDetection } from 'src/ui/components/UKDisclaimer/useUKDetection';
+// import { useUKDetection } from 'src/ui/components/UKDisclaimer/useUKDetection';
 
 export function UKDisclaimer() {
-  const { isUK } = useUKDetection();
+  // const { isUK } = useUKDetection();
 
   // if (!isUK) {
   //   return null;
