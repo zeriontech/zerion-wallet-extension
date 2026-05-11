@@ -45,8 +45,8 @@ jobs:
         id: qa-repo-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ secrets.ZERION_DEPLOY_APP_ID }}
-          private-key: ${{ secrets.ZERION_DEPLOY_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.QA_REPO_APP_ID }}
+          private-key: ${{ secrets.QA_REPO_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: zerion-wallet-extension-qa
 
