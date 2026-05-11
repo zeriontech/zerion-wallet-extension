@@ -10,7 +10,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
-import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import FlagIcon from 'jsx:src/ui/assets/flag.svg';
 import ShareIcon from 'jsx:src/ui/assets/share.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -279,28 +278,16 @@ export function AssetInfo() {
               </HStack>
             </Button>
             {isEmptyBalance ? null : (
-              <>
-                <Button
-                  as={UnstyledLink}
-                  kind="primary"
-                  size={48}
-                  to={`/send-form?tokenAssetCode=${asset_code}&tokenChain=${chainWithTheBiggestBalance}`}
-                  style={{ padding: 14 }}
-                  aria-label="Send Token"
-                >
-                  <SendIcon style={{ width: 20, height: 20 }} />
-                </Button>
-                <Button
-                  kind="primary"
-                  as={UnstyledLink}
-                  to={`/bridge-form?inputFungibleId=${asset_code}&inputChain=${chainWithTheBiggestBalance}`}
-                  size={48}
-                  style={{ padding: 14 }}
-                  aria-label="Bridge Token"
-                >
-                  <BridgeIcon style={{ width: 20, height: 20 }} />
-                </Button>
-              </>
+              <Button
+                as={UnstyledLink}
+                kind="primary"
+                size={48}
+                to={`/send-form?tokenAssetCode=${asset_code}&tokenChain=${chainWithTheBiggestBalance}`}
+                style={{ padding: 14 }}
+                aria-label="Send Token"
+              >
+                <SendIcon style={{ width: 20, height: 20 }} />
+              </Button>
             )}
           </HStack>
         </StickyBottomPanel>

@@ -6,6 +6,7 @@ import { baseToCommon } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { createChain } from 'src/modules/networks/Chain';
 import BigNumber from 'bignumber.js';
+import type { AggregatedAddressPosition } from './types';
 
 export type ProtocolFrameColumns = 'price' | 'apy' | 'balance' | 'value' | '';
 
@@ -23,8 +24,13 @@ export function getPositionValue(position: AddressPosition) {
 }
 
 export function getPositionBalance(
-  position: Pick<AddressPosition, 'asset' | 'quantity' | 'chain'>
+  position:
+    | Pick<AddressPosition, 'asset' | 'quantity' | 'chain'>
+    | Pick<AggregatedAddressPosition, 'normalizedQuantity'>
 ) {
+  if ('normalizedQuantity' in position) {
+    return new BigNumber(position.normalizedQuantity);
+  }
   return baseToCommon(
     position.quantity || 0,
     getDecimals({
@@ -65,4 +71,17 @@ export function getFullPositionsValue(positions?: AddressPosition[] | null) {
         0
       )
     : 0;
+}
+
+export function getFullPositionsBalance(positions?: AddressPosition[] | null) {
+  const zero = new BigNumber(0);
+  return positions
+    ? positions.reduce(
+        (acc, position) =>
+          position.type === 'loan'
+            ? acc.minus(getPositionBalance(position))
+            : acc.plus(getPositionBalance(position)),
+        zero
+      )
+    : zero;
 }

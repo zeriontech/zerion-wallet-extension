@@ -6,7 +6,6 @@ import classNames from 'classnames';
 import { useQuery } from '@tanstack/react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
-import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import FundIcon from 'jsx:src/ui/assets/actions/fund.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { walletPort } from 'src/ui/shared/channels';
@@ -98,22 +97,15 @@ export function ActionButtonsRow() {
     />
   );
 
-  const bridgeButton = (
-    <WithMainnetOnlyWarningDialog<'a'>
-      message="Testnets are not supported in Bridge"
-      render={({ handleClick }) => (
-        <ActionButton
-          title="Bridge"
-          as={UnstyledLink}
-          icon={<BridgeIcon />}
-          to="/bridge-form"
-          onClick={(event) => {
-            handleClick(event);
-          }}
-        />
-      )}
+  const swapOldButton = (
+    <ActionButton
+      title="Swap (Old)"
+      as={UnstyledLink}
+      icon={<SwapIcon />}
+      to="/swap-form-old"
     />
   );
+
   const fundButton = (
     <ActionButton
       title="Fund"
@@ -149,7 +141,7 @@ export function ActionButtonsRow() {
       >
         <li>{fundButton}</li>
         <li>{sendButton}</li>
-        <li>{bridgeButton}</li>
+        <li>{swapOldButton}</li>
         <li style={{ flexGrow: 1, minWidth: 0 }}>
           <WithMainnetOnlyWarningDialog<'a'>
             message="Testnets are not supported in Swap"

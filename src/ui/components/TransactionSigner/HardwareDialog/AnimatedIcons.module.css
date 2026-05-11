@@ -1,0 +1,60 @@
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 72px;
+  overflow: visible;
+}
+
+.singleIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.itemsRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.iconItem {
+  position: absolute;
+  will-change: transform;
+}
+
+.arrowIcon {
+  color: var(--neutral-500);
+  flex-shrink: 0;
+}
+
+.resultIcon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.statusBadge {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.statusBadgeSuccess {
+  background: var(--positive-500, #1cba75);
+}
+
+.statusBadgeFailed {
+  background: var(--negative-500, #ff4242);
+}
