@@ -1,22 +1,22 @@
 name: 'Push build to QA repository'
 
 inputs:
-  branch_name: 
+  branch_name:
     description: 'Branch name to push to'
     required: true
-  commit_message: 
+  commit_message:
     description: 'Commit message for the push'
     required: true
-  pat_token:
-    description: "QA repository PAT token"
+  repo_token:
+    description: "Token with contents:write on zerion-wallet-extension-qa (GitHub App installation token)"
     required: true
-    
+
 runs:
   using: "composite"
   steps:
     - name: Create branch in another repository and copy files
       env:
-        REPO_TOKEN: ${{ inputs.pat_token }}
+        REPO_TOKEN: ${{ inputs.repo_token }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         COMMIT_MESSAGE: ${{ inputs.commit_message }}
       run: |
@@ -27,7 +27,7 @@ runs:
         git config --global user.name "QA Bot"
 
         # Clone the target repository
-        git clone "https://${REPO_TOKEN}@${TARGET_REPO}" qa-repository
+        git clone "https://x-access-token:${REPO_TOKEN}@${TARGET_REPO}" qa-repository
         cd qa-repository
 
         # Create or switch to the new branch

@@ -90,10 +90,19 @@ jobs:
           GIT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: node ./scripts/update-dev-manifest.js
 
+      - name: Get QA repo token
+        id: qa-repo-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.QA_REPO_APP_ID }}
+          private-key: ${{ secrets.QA_REPO_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: zerion-wallet-extension-qa
+
       - name: Push Build to QA Repository
         if: ${{ success() }}
         uses: ./.github/actions/push_qa_repo
         with:
           branch_name: ${{ github.head_ref || github.ref_name }}
           commit_message: 'PR #${{ github.event.pull_request.number }} - COMMIT ${{ github.event.head_commit.message }}'
-          pat_token: ${{ secrets.QA_REPOSITORY_PAT }}
+          repo_token: ${{ steps.qa-repo-token.outputs.token }}

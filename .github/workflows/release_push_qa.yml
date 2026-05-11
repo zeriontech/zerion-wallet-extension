@@ -41,10 +41,19 @@ jobs:
           npm install
           npm run build:production
 
+      - name: Get QA repo token
+        id: qa-repo-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.QA_REPO_APP_ID }}
+          private-key: ${{ secrets.QA_REPO_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: zerion-wallet-extension-qa
+
       - name: Push Build to QA Repository
         if: ${{ success() }}
         uses: ./.github/actions/push_qa_repo
         with:
           branch_name: 'release-${{ github.ref_name }}'
           commit_message: 'release-candidate-${{ github.ref_name }}'
-          pat_token: ${{ secrets.QA_REPOSITORY_PAT }}
+          repo_token: ${{ steps.qa-repo-token.outputs.token }}
