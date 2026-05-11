@@ -956,6 +956,7 @@ export class WalletRecordModel {
       showTransactionsOnAssetChart: true,
       walletsOrder: DEFAULT_WALLET_LIST_GROUPS,
       pnlMode: 'pnl',
+      receiveToAnotherAddress: false,
     };
     if (!record) {
       return defaults;

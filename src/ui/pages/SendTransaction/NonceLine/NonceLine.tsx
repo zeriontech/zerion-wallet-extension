@@ -30,7 +30,7 @@ function parseNonce(untypedValue: unknown) {
   }
 }
 
-function NonceDialogForm({
+export function NonceDialogForm({
   defaultValue,
   placeholder,
   onSubmit,
@@ -60,7 +60,9 @@ function NonceDialogForm({
       }}
     >
       <VStack gap={16}>
-        <UIText kind="body/regular">Advanced Feature: Use with Caution</UIText>
+        <UIText kind="small/accent" color="var(--neutral-600)">
+          Advanced Feature: Use with Caution
+        </UIText>
         <InnerLabelInput
           id={id}
           label="Nonce"
@@ -79,12 +81,7 @@ function NonceDialogForm({
       </VStack>
       <HStack
         gap={8}
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          marginTop: 'auto',
-          gridTemplateColumns: '1fr 1fr',
-        }}
+        style={{ paddingTop: 24, gridTemplateColumns: '1fr 1fr' }}
       >
         <Button
           kind="regular"

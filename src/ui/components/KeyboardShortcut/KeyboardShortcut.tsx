@@ -6,14 +6,26 @@ interface Props {
   combination: string;
   onKeyDown: (event: KeyboardEvent, combination: string) => void;
   disabled?: boolean;
+  availableDuringInputs?: boolean;
 }
 
 const inputTagNames = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'OPTION']);
+
+function isEditableElement(element: Element | null): boolean {
+  if (!element) {
+    return false;
+  }
+  if (inputTagNames.has(element.tagName)) {
+    return true;
+  }
+  return element instanceof HTMLElement && element.isContentEditable;
+}
 
 export function KeyboardShortcut({
   combination,
   onKeyDown,
   disabled = false,
+  availableDuringInputs = false,
 }: Props) {
   const handler = useRef(onKeyDown);
   useEffect(() => {
@@ -25,13 +37,18 @@ export function KeyboardShortcut({
       return;
     }
     function handleKeyDown(event: KeyboardEvent) {
-      if (
-        event.target instanceof Element &&
-        inputTagNames.has(event.target.tagName)
-      ) {
-        // do not activate single-letter keyboard shortcuts when user
-        // is focused in a text field or another form control
-        return;
+      // do not activate single-letter keyboard shortcuts when user
+      // is focused in a text field or another form control. Check both
+      // event.target and document.activeElement — with portalled popovers
+      // or virtual-focus widgets, event.target may not be the focused input.
+      if (!availableDuringInputs) {
+        const target = event.target instanceof Element ? event.target : null;
+        if (
+          isEditableElement(target) ||
+          isEditableElement(document.activeElement)
+        ) {
+          return;
+        }
       }
       if (isHotkey(combination, event)) {
         if (!handler.current) {
@@ -47,6 +64,6 @@ export function KeyboardShortcut({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [combination, disabled]);
+  }, [combination, disabled, availableDuringInputs]);
   return null;
 }

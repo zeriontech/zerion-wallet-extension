@@ -1,5 +1,6 @@
 import type { AddressPosition, AddressPositionDappInfo } from 'defi-sdk';
 import React, { useCallback, useMemo, useState } from 'react';
+import { Tooltip, TooltipAnchor, TooltipProvider } from 'src/ui/ui-kit/Tooltip';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -12,6 +13,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
+import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
 // import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import {
@@ -25,10 +27,12 @@ import {
   DEFAULT_PROTOCOL_NAME,
   PositionsGroupType,
 } from 'src/ui/components/Positions/types';
+import type { AnyAddressPosition } from 'src/ui/components/Positions/types';
 import {
   clearMissingParentIds,
   groupPositionsByName,
   groupPositionsByDapp,
+  groupPositionsByToken,
   sortPositionGroupsByTotalValue,
   sortPositionsByParentId,
   sortPositionsByValue,
@@ -82,6 +86,7 @@ import { DappLink } from './DappLink';
 import { NetworkBalance } from './NetworkBalance';
 import { EmptyPositionsView } from './EmptyPositionsView';
 import { PerpsBalanceBanner } from './PerpsBalanceBanner';
+import * as styles from './styles.module.css';
 
 function LineToParent({
   hasPreviosNestedPosition,
@@ -145,7 +150,7 @@ function AddressPositionItem({
   groupType,
   showGasIcon,
 }: {
-  position: AddressPosition;
+  position: AnyAddressPosition;
   groupType: PositionsGroupType;
   hasPreviosNestedPosition?: boolean;
   showGasIcon?: boolean;
@@ -155,6 +160,16 @@ function AddressPositionItem({
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(createChain(position.chain));
   const chain = createChain(position.chain);
+  const isMultiChain =
+    'chainDistribution' in position && position.chainDistribution.length > 1;
+  const sortedChainDistribution = useMemo(() => {
+    if (!('chainDistribution' in position)) {
+      return null;
+    }
+    return [...position.chainDistribution].sort(
+      (a, b) => (Number(b.value) || 0) - (Number(a.value) || 0)
+    );
+  }, [position]);
 
   const relativeChange = (position.asset.price?.relative_change_24h || 0) / 100;
   const absoluteChange = Math.abs(
@@ -217,7 +232,92 @@ function AddressPositionItem({
                 alignItems: 'center',
               }}
             >
-              {position.chain !== NetworkId.Ethereum ? (
+              {isMultiChain && sortedChainDistribution ? (
+                <TooltipProvider placement="top" timeout={300}>
+                  <TooltipAnchor
+                    render={
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          width: 16,
+                          height: 16,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <PieChartIcon
+                          style={{ display: 'block', width: 16, height: 16 }}
+                        />
+                      </span>
+                    }
+                  />
+                  <Tooltip className={styles.networksTooltip} gutter={8}>
+                    <UIText kind="caption/regular">
+                      <VStack gap={8}>
+                        {sortedChainDistribution.map(
+                          ({ chain: chainId, quantity, value }) => {
+                            const chainNetwork = networks?.getNetworkByName(
+                              createChain(chainId)
+                            );
+                            return (
+                              <HStack
+                                gap={4}
+                                key={chainId}
+                                justifyContent="space-between"
+                              >
+                                <HStack gap={4}>
+                                  <NetworkIcon
+                                    size={16}
+                                    name={chainNetwork?.name || chainId}
+                                    src={chainNetwork?.icon_url}
+                                  />
+
+                                  <UIText
+                                    kind="caption/regular"
+                                    color="var(--white)"
+                                    style={textOverflowStyle}
+                                  >
+                                    {chainNetwork?.name || chainId}
+                                  </UIText>
+                                </HStack>
+                                <span className={styles.networksTooltipAmounts}>
+                                  {quantity ? (
+                                    <BlurrableBalance
+                                      kind="small/regular"
+                                      color="var(--white)"
+                                    >
+                                      {formatTokenValue(
+                                        getCommonQuantity({
+                                          asset: position.asset,
+                                          chain: createChain(chainId),
+                                          baseQuantity: quantity,
+                                        }),
+                                        position.asset.symbol
+                                      )}
+                                    </BlurrableBalance>
+                                  ) : null}
+                                  {value != null ? (
+                                    <BlurrableBalance
+                                      kind="small/regular"
+                                      color="var(--neutral-300)"
+                                    >
+                                      {` (${formatCurrencyValue(
+                                        value,
+                                        'en',
+                                        currency
+                                      )})`}
+                                    </BlurrableBalance>
+                                  ) : null}
+                                </span>
+                              </HStack>
+                            );
+                          }
+                        )}
+                      </VStack>
+                    </UIText>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : position.chain !== NetworkId.Ethereum ? (
                 <NetworkIcon
                   size={16}
                   name={network?.name || position.chain}
@@ -241,6 +341,21 @@ function AddressPositionItem({
                       }
                     >
                       {positionTypeToStringMap[position.type]}
+                    </span>
+                  ) : 'normalizedQuantity' in position ? (
+                    <span
+                      key="position-quantity"
+                      style={{ ...textOverflowStyle, display: 'flex' }}
+                    >
+                      <BlurrableBalance
+                        kind="small/regular"
+                        color="var(--neutral-700)"
+                      >
+                        {formatTokenValue(
+                          position.normalizedQuantity,
+                          position.asset.symbol
+                        )}
+                      </BlurrableBalance>
                     </span>
                   ) : position.quantity ? (
                     <span
@@ -315,7 +430,7 @@ function AddressPositionItem({
 }
 
 interface PreparedPositions {
-  gasPositionId: string | null;
+  gasAssetId: string | null;
   items: AddressPosition[];
   totalValue: number;
   dappIds: string[];
@@ -324,9 +439,9 @@ interface PreparedPositions {
     {
       totalValue: number;
       relativeValue: number;
-      items: AddressPosition[];
+      items: AnyAddressPosition[];
       names: string[];
-      nameIndex: Record<string, AddressPosition[]>;
+      nameIndex: Record<string, AnyAddressPosition[]>;
     }
   >;
 }
@@ -336,11 +451,13 @@ function usePreparedPositions({
   groupType,
   moveGasPositionToFront,
   dappChain,
+  isAllNetworks,
 }: {
   items: AddressPosition[];
   groupType: PositionsGroupType;
   moveGasPositionToFront: boolean;
   dappChain: string | null;
+  isAllNetworks: boolean;
 }): PreparedPositions {
   const { networks } = useNetworks();
   const nativeAssetId = useMemo(() => {
@@ -350,18 +467,6 @@ function usePreparedPositions({
     const network = networks?.getNetworkByName(createChain(dappChain));
     return network?.native_asset?.id || null;
   }, [networks, dappChain]);
-
-  const gasPositionId = useMemo(() => {
-    return (
-      items.find(
-        (item) =>
-          !item.dapp &&
-          item.type === 'asset' &&
-          item.chain === dappChain?.toString() &&
-          item.asset.id === nativeAssetId
-      )?.id || null
-    );
-  }, [dappChain, nativeAssetId, items]);
 
   const totalValue = useMemo(() => getFullPositionsValue(items), [items]);
   return useMemo(() => {
@@ -383,19 +488,31 @@ function usePreparedPositions({
 
     const dappIndex: PreparedPositions['dappIndex'] = {};
     for (const dappId of dappIds) {
-      const dappItems = sortPositionsByValue(byDapp[dappId]);
-      const currentTotalValue = getFullPositionsValue(dappItems);
-      const byName = groupPositionsByName(dappItems);
+      const rawDappItems = byDapp[dappId];
+      const aggregatedDappItems: AnyAddressPosition[] =
+        dappId === DEFAULT_PROTOCOL_ID && isAllNetworks
+          ? groupPositionsByToken(rawDappItems)
+          : rawDappItems;
+      const dappItems = sortPositionsByValue(
+        aggregatedDappItems as AddressPosition[]
+      ) as AnyAddressPosition[];
+      const currentTotalValue = getFullPositionsValue(
+        dappItems as AddressPosition[]
+      );
+      const byName = groupPositionsByName(dappItems as AddressPosition[]);
       const byNameSorted = sortPositionGroupsByTotalValue(byName);
       const names = byNameSorted.map(([name]) => name);
       const nameIndex: PreparedPositions['dappIndex'][string]['nameIndex'] = {};
       for (const name of names) {
         nameIndex[name] = sortPositionsByParentId(
           clearMissingParentIds(byName[name])
-        );
+        ) as AnyAddressPosition[];
         if (moveGasPositionToFront) {
           const gasPositionIndex = nameIndex[name].findIndex(
-            (item) => item.id === gasPositionId
+            (item) =>
+              !item.dapp &&
+              item.asset.id === nativeAssetId &&
+              item.chain === dappChain?.toString()
           );
           if (gasPositionIndex >= 0) {
             const gasPosition = nameIndex[name][gasPositionIndex];
@@ -416,13 +533,21 @@ function usePreparedPositions({
       };
     }
     return {
-      gasPositionId,
+      gasAssetId: nativeAssetId,
       items,
       totalValue,
       dappIds,
       dappIndex,
     };
-  }, [groupType, items, gasPositionId, totalValue, moveGasPositionToFront]);
+  }, [
+    groupType,
+    items,
+    nativeAssetId,
+    dappChain,
+    totalValue,
+    moveGasPositionToFront,
+    isAllNetworks,
+  ]);
 }
 
 function ProtocolHeading({
@@ -466,11 +591,13 @@ function PositionList({
   address,
   moveGasPositionToFront,
   dappChain,
+  isAllNetworks,
 }: {
   items: AddressPosition[];
   address: string | null;
   moveGasPositionToFront: boolean;
   dappChain: string | null;
+  isAllNetworks: boolean;
 }) {
   const COLLAPSED_COUNT = 5;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -499,6 +626,7 @@ function PositionList({
     groupType,
     moveGasPositionToFront,
     dappChain,
+    isAllNetworks,
   });
   const offsetValuesState = useStore(offsetValues);
   const { currency } = useCurrency();
@@ -558,7 +686,10 @@ function PositionList({
                   namePositionCounter > 0 &&
                   Boolean(nameIndex[name][namePositionCounter - 1].parent_id)
                 }
-                showGasIcon={preparedPositions.gasPositionId === position.id}
+                showGasIcon={
+                  preparedPositions.gasAssetId != null &&
+                  position.asset.id === preparedPositions.gasAssetId
+                }
               />
             );
             items.push({
@@ -721,7 +852,10 @@ function MultiChainPositions({
   onChainChange: (value: string | null) => void;
   portfolioDecomposition: WalletPortfolio | null;
   hyperliquidBalance: number | null;
-} & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
+} & Omit<
+  React.ComponentProps<typeof PositionList>,
+  'items' | 'isAllNetworks'
+>) {
   const { currency } = useCurrency();
   const { data, isLoading } = useHttpAddressPositions(
     { addresses: [address], currency },
@@ -790,6 +924,7 @@ function MultiChainPositions({
           items={items}
           dappChain={dappChain}
           address={address}
+          isAllNetworks={chainValue === NetworkSelectValue.All}
           {...positionListProps}
         />
       </VStack>
@@ -814,7 +949,10 @@ function RawChainPositions({
   dappChain: string | null;
   selectedChain: string | null;
   onChainChange: (value: string | null) => void;
-} & Omit<React.ComponentProps<typeof PositionList>, 'items'>) {
+} & Omit<
+  React.ComponentProps<typeof PositionList>,
+  'items' | 'isAllNetworks'
+>) {
   const { currency } = useCurrency();
   invariant(
     selectedChain !== NetworkSelectValue.All,
@@ -873,6 +1011,7 @@ function RawChainPositions({
         address={address}
         items={addressPositions}
         dappChain={dappChain}
+        isAllNetworks={false}
         {...positionListProps}
       />
     </VStack>

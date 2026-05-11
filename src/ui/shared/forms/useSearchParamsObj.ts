@@ -12,10 +12,10 @@ export function useSearchParamsObj<
   // setSearchParams is not a stable reference: https://github.com/remix-run/react-router/issues/9304
   const setSearchParamsStable = useEvent(setSearchParams);
   const setValue = useCallback(
-    (setStateAction: (value: T) => T) => {
+    (setStateAction: (value: Partial<T>) => Partial<T>) => {
       setSearchParamsStable(
         (current) => {
-          const asObj = Object.fromEntries(current) as T;
+          const asObj = Object.fromEntries(current) as Partial<T>;
           const value = setStateAction(asObj);
           for (const key in asObj) {
             // TODO: Investigate — using `for (const key of current.keys())` doesn't iterate over all keys found in obj??

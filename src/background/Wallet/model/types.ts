@@ -79,6 +79,13 @@ interface PublicPreferences {
    * `undefined` means "use the default", which is 'pnl'.
    */
   pnlMode?: PnlMode;
+  /**
+   * When enabled, the Swap form exposes the recipient address selector for
+   * same-ecosystem cross-network swaps (so the user can send the received
+   * tokens to a different wallet of theirs). Cross-ecosystem swaps require
+   * the selector regardless of this flag.
+   */
+  receiveToAnotherAddress?: boolean;
 }
 
 export interface Permission {

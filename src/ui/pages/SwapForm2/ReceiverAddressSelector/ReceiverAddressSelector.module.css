@@ -1,0 +1,40 @@
+.container {
+  background-color: var(--white);
+  border: 2px solid var(--neutral-200);
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.containerError {
+  border-color: var(--negative-500);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.chevronDown {
+  transform: rotate(90deg);
+  color: var(--neutral-500);
+  display: block;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-500);
+}
+
+.comboboxWrapper {
+  padding-top: 12px;
+}
