@@ -3,73 +3,28 @@ import type { Quote2 } from 'src/shared/types/Quote';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getError } from 'src/shared/errors/getError';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
-import type {
-  InterpretResponse,
-  Warning as SimulationWarning,
-  WarningSeverity,
-} from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
-import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
 import type { SwapFormState2 } from '../types';
+import {
+  pickHighestNonGray,
+  readSimulationStatus,
+  readSimulationWarnings,
+  severityToVariant,
+} from './simulationWarningHelpers';
+import type {
+  ResolvedTransactionWarning,
+  SimulationResult,
+  WarningContent,
+  WarningVariant,
+} from './simulationWarningHelpers';
 
-export type WarningVariant = 'warning' | 'error';
-
-export interface WarningContent {
-  variant: WarningVariant;
-  title: string;
-  description?: string;
-}
-
-export type SimulationResult =
-  | InterpretResponse
-  | SignatureInterpretResponse
-  | null;
-
-export interface ResolvedTransactionWarning {
-  /** Content to display in <TransactionWarning />. Null = no card. */
-  warning: WarningContent | null;
-  /** Trigger for <UnverifiedWarning />. Extends today's `isUnverified`. */
-  unverified: boolean;
-  /** When true, handleSimulationCompleted must NOT auto-sign. */
-  blocksAutoSign: boolean;
-  /** When set, overrides the form-state-derived 'Swap Despite Warning' label. */
-  dangerTitle: 'Proceed Anyway' | null;
-}
-
-/**
- * Floor for the output mismatch threshold. Absorbs BigNumber serialization /
- * decimal-scaling artifacts. The actual threshold is `max(epsilon, slippage)`
- * — see priority 3 in resolveTransactionWarning.
- */
-const OUTPUT_MISMATCH_EPSILON = 0.01;
-
-const SEVERITY_RANK: Record<WarningSeverity, number> = {
-  Red: 3,
-  Orange: 2,
-  Yellow: 1,
-  Gray: 0,
+export type {
+  ResolvedTransactionWarning,
+  SimulationResult,
+  WarningContent,
+  WarningVariant,
 };
 
-function pickHighestNonGray(
-  warnings: SimulationWarning[]
-): SimulationWarning | null {
-  let best: SimulationWarning | null = null;
-  for (const w of warnings) {
-    if (w.severity === 'Gray') continue;
-    if (
-      best == null ||
-      SEVERITY_RANK[w.severity] > SEVERITY_RANK[best.severity]
-    ) {
-      best = w;
-    }
-  }
-  return best;
-}
-
-function severityToVariant(severity: WarningSeverity): WarningVariant {
-  // Red and Orange both render as 'error'; Yellow as 'warning'.
-  // Gray never reaches this function (handled separately by UnverifiedWarning).
-  return severity === 'Yellow' ? 'warning' : 'error';
-}
+const OUTPUT_MISMATCH_EPSILON = 0.01;
 
 interface SimulatedOutput {
   /** Sum of incoming transfers matching the output fungible. */
@@ -127,21 +82,6 @@ function readSimulatedOutput(
     matchCount: incoming.length,
     inspectable: true,
   };
-}
-
-function readSimulationStatus(result: SimulationResult): string | null {
-  if (!result || !('data' in result) || !result.data) return null;
-  const action = (result.data as { action?: unknown }).action as
-    | { status?: string }
-    | null
-    | undefined;
-  return action?.status ?? null;
-}
-
-function readSimulationWarnings(result: SimulationResult): SimulationWarning[] {
-  if (!result || !('data' in result) || !result.data) return [];
-  const data = result.data as { warnings?: SimulationWarning[] };
-  return data.warnings ?? [];
 }
 
 function resolveFormStateWarning({

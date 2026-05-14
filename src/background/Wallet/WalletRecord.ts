@@ -842,12 +842,14 @@ export class WalletRecordModel {
       configurableTransactionData: false,
       invitationBannerDismissed: false,
       recentAddresses: [],
+      addressBook: [],
       mintDnaBannerDismissed: false,
       upgradeDnaBannerDismissed: false,
       inviteFriendsBannerDismissed: false,
       solanaBannerDismissed: false,
       premiumBannerDismissed: false,
       formPremiumBannerDismissed: false,
+      usDisclaimerDismissed: false,
       exploreZeroBannerDismissed: false,
       backupReminderDismissedTime: 0,
       enableTestnets: false,
@@ -858,6 +860,7 @@ export class WalletRecordModel {
       walletsOrder: DEFAULT_WALLET_LIST_GROUPS,
       pnlMode: 'pnl',
       receiveToAnotherAddress: false,
+      addressesExcludedFromReceiverReadonlyWarning: [],
     };
     if (!record) {
       return defaults;

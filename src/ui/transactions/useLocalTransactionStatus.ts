@@ -8,7 +8,9 @@ export function useTransactionStatus(hash: string | null) {
   const transactions = useStore(localTransactionsStore);
   return useMemo(() => {
     if (hash) {
-      const tx = transactions.find((tx) => tx.hash === hash);
+      const tx = transactions.find(
+        (tx) => tx.hash === hash || tx.signature === hash
+      );
       return tx ? getTransactionObjectStatus(tx) : null;
     } else {
       return null;
@@ -26,7 +28,9 @@ export function waitForTransactionResolve(
   }
   return new Promise((resolve) => {
     const unsub = localTransactionsStore.on('change', (transactions) => {
-      const tx = transactions.find((tx) => tx.hash === hash);
+      const tx = transactions.find(
+        (tx) => tx.hash === hash || tx.signature === hash
+      );
       if (tx) {
         const status = getTransactionObjectStatus(tx);
         if (status !== 'pending') {

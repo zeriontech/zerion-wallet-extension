@@ -11,6 +11,7 @@ export function WalletAvatar({
   borderWidth,
   icon,
   onReady,
+  disablePremiumHighlight = false,
 }: {
   active?: boolean;
   address: string;
@@ -20,6 +21,7 @@ export function WalletAvatar({
   // TODO: should these be nullable instead of optional?
   icon?: React.ReactNode;
   onReady?(): void;
+  disablePremiumHighlight?: boolean;
 }) {
   const { data, isLoading } = useWalletsMetaByChunks({
     addresses: [normalizeAddress(address)],
@@ -27,7 +29,8 @@ export function WalletAvatar({
     useErrorBoundary: false,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
-  const isPremium = Boolean(data?.at(0)?.membership.premium);
+  const isPremium =
+    !disablePremiumHighlight && Boolean(data?.at(0)?.membership.premium);
 
   if (isLoading) {
     return (

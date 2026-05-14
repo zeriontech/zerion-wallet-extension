@@ -1,0 +1,64 @@
+.nameInputWrapper {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.nameField {
+  display: inline-grid;
+  min-width: 1ch;
+  max-width: 100%;
+}
+
+/* Input and the sizing mirror share the same grid cell so the input
+   stretches to match the mirror's intrinsic width. Typography is
+   inherited from the surrounding UIText. */
+.nameField::after,
+.nameField > input {
+  grid-area: 1 / 1;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+.nameField::after {
+  content: attr(data-value) ' ';
+  visibility: hidden;
+  white-space: pre;
+}
+
+.nameInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  width: 100%;
+  min-width: 1ch;
+}
+
+.nameInput::placeholder {
+  color: var(--neutral-500);
+}
+
+.clearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: var(--neutral-300);
+  color: var(--always-white);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.clearButton:hover {
+  background: var(--neutral-400);
+}

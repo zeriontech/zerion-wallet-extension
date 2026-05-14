@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { RenderArea } from 'react-area';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
@@ -22,7 +22,10 @@ import { useWalletPnl } from 'src/modules/zerion-api/hooks/useWalletPnl';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import { useBodyStyle } from 'src/ui/components/Background/Background';
+import {
+  useBackgroundKind,
+  whiteBackgroundKind,
+} from 'src/ui/components/Background/Background';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
@@ -327,9 +330,7 @@ function ReadonlyMode() {
 }
 
 function OverviewComponent() {
-  useBodyStyle(
-    useMemo(() => ({ ['--background' as string]: 'var(--z-index-0)' }), [])
-  );
+  useBackgroundKind(whiteBackgroundKind);
   const { currency } = useCurrency();
   const location = useLocation();
   const {

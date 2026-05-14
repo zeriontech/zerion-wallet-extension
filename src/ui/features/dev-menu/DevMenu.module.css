@@ -218,6 +218,37 @@
   color: #4a4a4a;
 }
 
+.navLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: #111;
+  border: 1px solid #1f1f1f;
+  color: #00ff9c;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.navLink:hover {
+  background: #161616;
+  border-color: rgba(0, 255, 156, 0.4);
+  color: #00ffaa;
+}
+
+.navLink::before {
+  content: '> ';
+  color: #4a4a4a;
+}
+
 .kbd {
   display: inline-flex;
   align-items: center;

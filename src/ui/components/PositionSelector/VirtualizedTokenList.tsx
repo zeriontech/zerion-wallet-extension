@@ -3,12 +3,17 @@ import { ComboboxList } from '@ariakit/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import * as styles from './styles.module.css';
 
-const TOKEN_ROW_HEIGHT = 68;
+const DEFAULT_TOKEN_ROW_HEIGHT = 68;
 const SECTION_HEADER_HEIGHT = 32;
 
 export type VirtualListItem<T> =
   | { kind: 'item'; key: string; data: T }
-  | { kind: 'header'; key: string; label: string };
+  | {
+      kind: 'header';
+      key: string;
+      label: string;
+      icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    };
 
 function findScrollParent(element: HTMLElement | null): HTMLElement | null {
   let node: HTMLElement | null = element?.parentElement ?? null;
@@ -26,10 +31,15 @@ export function VirtualizedTokenList<T>({
   items,
   renderItem,
   renderHeader,
+  rowHeight = DEFAULT_TOKEN_ROW_HEIGHT,
 }: {
   items: VirtualListItem<T>[];
   renderItem: (data: T, index: number) => React.ReactNode;
-  renderHeader?: (label: string) => React.ReactNode;
+  renderHeader?: (
+    label: string,
+    Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  ) => React.ReactNode;
+  rowHeight?: number;
 }) {
   const listRef = useRef<HTMLDivElement | null>(null);
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
@@ -42,7 +52,7 @@ export function VirtualizedTokenList<T>({
     count: items.length,
     getScrollElement: () => scrollElement,
     estimateSize: (index) =>
-      items[index].kind === 'header' ? SECTION_HEADER_HEIGHT : TOKEN_ROW_HEIGHT,
+      items[index].kind === 'header' ? SECTION_HEADER_HEIGHT : rowHeight,
     overscan: 6,
     scrollMargin: listRef.current?.offsetTop ?? 0,
     getItemKey: (index) => items[index].key,
@@ -75,7 +85,7 @@ export function VirtualizedTokenList<T>({
             }}
           >
             {item.kind === 'header'
-              ? renderHeader?.(item.label)
+              ? renderHeader?.(item.label, item.icon)
               : renderItem(item.data, virtualRow.index)}
           </div>
         );

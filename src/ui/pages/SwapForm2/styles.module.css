@@ -8,7 +8,7 @@
 
 .absoluteFooter {
   position: fixed;
-  bottom: 0;
+  bottom: var(--technical-panel-bottom-height, 0px);
   left: 50%;
   transform: translateX(-50%);
   width: var(--body-width);
@@ -16,6 +16,24 @@
   padding-inline: 16px;
   background-color: var(--light-background-transparent);
   backdrop-filter: blur(16px);
+}
+
+.absoluteHeader {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--body-width);
+  max-width: var(--body-max-width);
+  padding-inline: 12px;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.absoluteHeader > * {
+  pointer-events: auto;
 }
 
 .reverseButton {
