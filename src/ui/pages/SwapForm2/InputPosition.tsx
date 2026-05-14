@@ -13,28 +13,27 @@ import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-ge
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import BigNumber from 'bignumber.js';
-import type { Networks } from 'src/modules/networks/Networks';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import {
   QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
-import { FormFieldset } from './FormFieldset';
-import type { HandleChangeFunction, SwapFormState2 } from './types';
-import { AssetSelectorButton } from './AssetSelectorButton';
-import * as assetSelectorStyles from './AssetSelectorButton.module.css';
-import { SpendPositionSelector } from './PositionSelector/SpendPositionSelector';
-import { InputKindToggle } from './InputKindToggle';
-import { getCurrencySymbol } from './shared/getCurrencySymbol';
-import { convertOnToggle } from './shared/inputKind';
-import { roundTokenDisplayValue } from './shared/roundDisplayValue';
+import { InputKindToggle } from 'src/ui/components/AmountInput/InputKindToggle';
+import { getCurrencySymbol } from 'src/ui/components/AmountInput/getCurrencySymbol';
+import { convertOnToggle } from 'src/ui/components/AmountInput/inputKind';
+import { roundTokenDisplayValue } from 'src/ui/components/AmountInput/roundDisplayValue';
 import {
   CurrencySymbolOverlay,
   HiddenMirror,
   useMeasure,
   useValueScaling,
-} from './ValueWithSymbol';
+} from 'src/ui/components/AmountInput/ValueWithSymbol';
+import { FormFieldset } from './FormFieldset';
+import type { HandleChangeFunction, SwapFormState2 } from './types';
+import { AssetSelectorButton } from './AssetSelectorButton';
+import * as assetSelectorStyles from './AssetSelectorButton.module.css';
+import { SpendPositionSelector } from './PositionSelector/SpendPositionSelector';
 
 function getPartialBalance(balance: string, factor: number): string {
   if (factor === 1) return new BigNumber(balance).toFixed();
@@ -50,7 +49,6 @@ export function InputPosition({
   onSelectFungible,
   position,
   positions,
-  networks,
   resolvedInputAmount,
 }: {
   formState: SwapFormState2;
@@ -58,7 +56,6 @@ export function InputPosition({
   onSelectFungible: (chainId: string, fungibleId: string) => void;
   position: FungiblePosition | null;
   positions: FungiblePosition[];
-  networks: Networks;
   resolvedInputAmount: string | null;
 }) {
   const { currency } = useCurrency();
@@ -301,7 +298,6 @@ export function InputPosition({
         open={selectorDialog.open}
         onClose={selectorDialog.closeDialog}
         positions={positions}
-        networks={networks}
         defaultSelectedTab={lastSelectedTab}
         onSelect={(selected, selectedTab) => {
           onSelectFungible(selected.chain.id, selected.fungible.id);

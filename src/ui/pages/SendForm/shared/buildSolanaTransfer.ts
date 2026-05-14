@@ -19,6 +19,7 @@ import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { getAddress } from 'src/modules/networks/asset';
 import { createChain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
+import BigNumber from 'bignumber.js';
 import { commonToBase } from 'src/shared/units/convert';
 import type { SendFormState } from './SendFormState';
 
@@ -46,7 +47,9 @@ export async function buildSolanaTransfer(
   const isNativeAsset = Networks.isNativeAsset(position.asset, network);
   if (isNativeAsset) {
     // Convert SOL (in lamports)
-    let lamports = BigInt(Number(formState.tokenValue) * 1e9);
+    let lamports = BigInt(
+      commonToBase(formState.tokenValue, 9).toFixed(0, BigNumber.ROUND_DOWN)
+    );
     const isSendingMax =
       position.quantity != null && lamports === BigInt(position.quantity);
     tx.add(
@@ -124,7 +127,7 @@ export async function buildSolanaTransfer(
         fromTokenAccount,
         toTokenAccount,
         fromPubkey,
-        BigInt(amount.toFixed())
+        BigInt(amount.toFixed(0, BigNumber.ROUND_DOWN))
       )
     );
 

@@ -23,6 +23,7 @@ export interface WalletPortfolio {
     lastPrice: number;
     floorPrice: number;
   };
+  nftChainsDistribution: Record<string, number>;
   change24h: {
     absolute: number;
     relative: number;

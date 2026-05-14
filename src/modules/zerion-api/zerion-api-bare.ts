@@ -30,6 +30,9 @@ import { walletGetPnl } from './requests/wallet-get-pnl';
 import { walletGetSimplePositions } from './requests/wallet-get-simple-positions';
 import { walletSimulateTransactions } from './requests/wallet-simulate-transactions';
 import { assetGetReceiveFungibles } from './requests/asset-get-receive-fungibles';
+import { walletGetNftPositions } from './requests/wallet-get-nft-positions';
+import { walletGetNftPosition } from './requests/wallet-get-nft-position';
+import { transactionGetSend } from './requests/transaction-get-send';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -64,6 +67,9 @@ export const ZerionApiBare = {
   walletGetPnl,
   walletGetSimplePositions,
   assetGetReceiveFungibles,
+  walletGetNftPositions,
+  walletGetNftPosition,
+  transactionGetSend,
 };
 
 export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;

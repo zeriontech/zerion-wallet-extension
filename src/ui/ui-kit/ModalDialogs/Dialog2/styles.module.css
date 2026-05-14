@@ -54,11 +54,21 @@
 }
 
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
   align-items: center;
-  justify-content: space-between;
   padding: 16px;
   flex-shrink: 0;
+}
+
+.headerTitle {
+  grid-column: 2;
+  text-align: center;
+}
+
+.header > .closeButton {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .closeButton {
@@ -80,7 +90,10 @@
 }
 
 .content {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior-y: contain;

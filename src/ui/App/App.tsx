@@ -43,6 +43,7 @@ import { Search } from '../pages/Search';
 import { Networks } from '../pages/Networks';
 import { ManageWallets } from '../pages/ManageWallets';
 import { WalletSelect } from '../pages/WalletSelect';
+import { AddressBook } from '../pages/AddressBook';
 import { NotFoundPage } from '../components/NotFoundPage';
 import { UIText } from '../ui-kit/UIText';
 import { defaultUIContextValue, UIContext } from '../components/UIContext';
@@ -69,6 +70,7 @@ import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarni
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 import { SendForm } from '../pages/SendForm';
+import { SendForm2 } from '../pages/SendForm2/SendForm2';
 // import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
@@ -96,6 +98,7 @@ import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
 import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
 import { SwapForm } from '../pages/SwapForm/SwapForm';
+import { BridgeForm } from '../pages/BridgeForm';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -393,6 +396,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           }
         />
         <Route
+          path="/address-book/*"
+          element={
+            <RequireAuth>
+              <AddressBook />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/connected-sites/*"
           element={
             <RequireAuth>
@@ -405,6 +416,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           path="/send-form/*"
           element={
             <RequireAuth>
+              <SendForm2 />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/send-form-old/*"
+          element={
+            <RequireAuth>
               <SendForm />
             </RequireAuth>
           }
@@ -414,6 +433,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           element={
             <RequireAuth>
               <SwapForm />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/bridge-form-old/*"
+          element={
+            <RequireAuth>
+              <BridgeForm />
             </RequireAuth>
           }
         />

@@ -106,11 +106,28 @@
   padding: 8px 16px 4px;
 }
 
-.stickyHeader {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+.panelRoot {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.fixedHeader {
+  flex-shrink: 0;
   background: var(--white);
+}
+
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.scrollArea::-webkit-scrollbar {
+  visibility: hidden;
+  width: 0;
 }
 
 .tokenList {

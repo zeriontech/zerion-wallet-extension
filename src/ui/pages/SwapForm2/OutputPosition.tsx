@@ -13,6 +13,18 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Networks } from 'src/modules/networks/Networks';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { formatPercent } from 'src/shared/units/formatPercent';
+import type { InputKind } from 'src/ui/components/AmountInput/inputKind';
+import { getCurrencySymbol } from 'src/ui/components/AmountInput/getCurrencySymbol';
+import {
+  roundCurrencyDisplayValue,
+  roundTokenDisplayValue,
+} from 'src/ui/components/AmountInput/roundDisplayValue';
+import {
+  CurrencySymbolOverlay,
+  HiddenMirror,
+  useMeasure,
+  useValueScaling,
+} from 'src/ui/components/AmountInput/ValueWithSymbol';
 import {
   getPriceImpactPercentage,
   type PriceImpact,
@@ -22,18 +34,6 @@ import { AssetSelectorButton } from './AssetSelectorButton';
 import * as assetSelectorStyles from './AssetSelectorButton.module.css';
 import * as styles from './styles.module.css';
 import { ReceivePositionSelector } from './PositionSelector/ReceivePositionSelector';
-import type { InputKind } from './shared/inputKind';
-import { getCurrencySymbol } from './shared/getCurrencySymbol';
-import {
-  roundCurrencyDisplayValue,
-  roundTokenDisplayValue,
-} from './shared/roundDisplayValue';
-import {
-  CurrencySymbolOverlay,
-  HiddenMirror,
-  useMeasure,
-  useValueScaling,
-} from './ValueWithSymbol';
 
 function OutputDescription({
   outputAmount,

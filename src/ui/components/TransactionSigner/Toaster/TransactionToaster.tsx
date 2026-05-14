@@ -82,7 +82,7 @@ function getSubtitle(
   if (view.kind === 'approve') return view.token.symbol;
   if (view.kind === 'send') {
     const target =
-      view.recipient.name ?? truncateAddress(view.recipient.address);
+      view.recipient.name ?? truncateAddress(view.recipient.address, 4);
     return `${view.token.symbol} → ${target}`;
   }
   return `${view.sent.symbol} → ${view.received.symbol}`;

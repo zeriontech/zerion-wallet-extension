@@ -26,6 +26,16 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 **Receiver ecosystem mismatch**: The state where a resolved receiver address (`to`) belongs to a different ecosystem than the output network. Only meaningful inside a Cross-ecosystem swap. Blocks quote fetching and surfaces as an inline error on the address input. Distinct from a malformed/unresolvable address (which never produces a `to` at all). _Avoid_: Wrong address, invalid recipient (too generic).
 
+### Recipient picker
+
+**Receiver picker dialog**: A full-screen Dialog2 that lets the user pick a recipient address from grouped suggestions. Decoupled from any specific form — the trigger (e.g. SwapForm2's `ReceiverAddressSelector`) owns the open/close state and the resolved `to`. Distinct from the SendForm's inline popover-style picker, which lives inside a form fieldset and renders an anchored dropdown. _Avoid_: Address picker (ambiguous between dialog and inline forms), recipient modal.
+
+**Exact match**: A section at the top of the Receiver picker dialog that surfaces the address resolved from the user's typed query (raw EVM/Solana address, ENS, Lens, or UD). Always rendered as a single row when a `resolvedAddress` exists and passes the dialog's `predicate`. Distinct from a row in Recents / My wallets / Watchlist that happens to also match the query — Exact match wins, and the same address is deduped out of the lower sections. _Avoid_: Match, top result, resolved address row.
+
+**My wallets**: Section in the Receiver picker dialog showing wallets the user **owns** (i.e. has private keys for). Distinct from **Watchlist**. Sourced from `walletGroups` minus the `WATCHLIST_WALLET_LIST_GROUP_ID` group.
+
+**Watchlist**: Section in the Receiver picker dialog showing **readonly** wallets the user has added without keys. Sourced from `walletGroups` filtered to `WATCHLIST_WALLET_LIST_GROUP_ID`. iOS designs may call this "Following"; in the extension, the canonical term is Watchlist. _Avoid_: Following (iOS-only), saved addresses (too generic).
+
 ## Relationships
 
 - A **Quote** produces zero or more transactions (`transactionApprove`, `transactionSwap`).
@@ -42,6 +52,32 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 > **Dev:** "What if the **Simulation** comes back with no transfers at all?"
 >
 > **Domain expert:** "Then we treat it as an **Unverified transaction** — same UX as a `Gray` **Severity** warning. We can't see what's happening, so we don't auto-confirm; the user has to click again."
+
+### Address Book
+
+**Address Book**: A user-curated, per-WalletRecord list of saved external addresses with optional names. Surfaced at `/address-book` and (eventually) inside address selectors as a quick-pick list. Stored on `PublicPreferences.addressBook` alongside `recentAddresses`. Distinct from **Manage Wallets**, which lists the user's _own_ wallets — the Address Book is for _external_ contacts (other people's addresses the user transacts with). _Avoid_: Contacts, Saved Wallets, Favorites.
+
+**Address Book entry**: `{ address: string; name?: string }`. Uniqueness within the book is by `normalizeAddress(address)` (case-insensitive for EVM). `name` is optional — when absent, the UI falls back to the same display chain used elsewhere: social handle from wallet meta → ENS/SNS domain → truncated address. An entry with a name is no more "real" than one without; the empty-name state is intentional and expected.
+
+**Recent addresses (in Address Book context)**: The same `PublicPreferences.recentAddresses` array that powers the Send form's recipient suggestions. On the `/address-book` settings page, filtered to exclude addresses already saved in the Address Book — shown in a separate section at the bottom of the page so the user can quickly promote a recent recipient into a saved contact. In the Receiver picker dialog, the Recents section is NOT filtered against the Address Book (an address can appear in both), but capped to the last 3 entries to keep the dialog scannable. _Avoid_: Suggested contacts (recents are not suggested _by us_ — they're a usage trail).
+
+## Relationships
+
+- An **Address Book entry** and a **Recent address** behave differently on each surface. On the `/address-book` settings page they never coexist — saving a recent removes it from the visible recents section (it stays in `recentAddresses` storage, but the filter hides it). In the Receiver picker dialog they CAN coexist — the picker shows both Recents (capped to the last 3) and the Address Book section independently, so the user sees the same address twice if it's in both.
+- An **Address Book entry** and a **My wallets** / **Watchlist** row CAN coexist for the same address in the Receiver picker dialog — no dedupe between Address Book and the wallet-ownership sections. Each section has a distinct lens (saved contact vs. owned/watched wallet) and the user may intentionally surface an address in both.
+- The **Address Book** lives on `PublicPreferences` (per-WalletRecord, behind login), _not_ on `ChainConfigStore` (global). The initial framing of "same level as chain configs" was overridden in favor of consistency with `recentAddresses`, which we cross-reference.
+
+### Network picker
+
+**NetworkSelect2**: A full-screen Dialog2 + ariakit Combobox that lets the user pick a chain. Lives at `src/ui/components/NetworkSelect2`. Dialog-only — the caller owns the trigger button and the `open` state (mirrors [[Receiver picker dialog]]). Replaces the per-form `NetworkSelectorDialog` inside the SwapForm2 and SendForm2 asset selectors. Distinct from the legacy `NetworkSelect` (`ui/pages/Networks/NetworkSelect`), which bundles a trigger button + bottom-sheet dialog and is still used by Overview / History / legacy SendForm/SwapForm/BridgeForm — those are not in scope for this migration. _Avoid_: NetworkSelectDialog (legacy), chain picker.
+
+**Network predicate (NetworkSelect2)**: The capability filter the caller passes (`(network) => boolean`). Encodes "what kind of operation am I picking a chain for" — e.g. `supports_sending`, `supports_nft_positions`, `supports_trading || supports_bridging`, or "chains the wallet has positions on". Layered on top of two filters the dialog applies internally: (1) `standard` (ecosystem — EVM / Solana / all), (2) testnet visibility, derived from `preferences.testnetMode.on`. Callers should _not_ duplicate testnet/ecosystem filtering in the predicate; the dialog owns those. _Avoid_: filterPredicate (legacy term that conflates capability with testnet/ecosystem).
+
+**ChainDistribution (NetworkSelect2 input)**: The wallet's per-chain fiat values, sourced from `WalletPortfolio` (`useWalletPortfolio`). Drives both the right-side balance display on each row and the sort order in the "Main" section. Passed in by the caller — the dialog does not fetch it. When a row's chain isn't in the distribution, the dialog falls back to a per-row `useNativeBalance` query so the user still sees a balance for chains they haven't yet held positions on. _Avoid_: portfolio (too generic), balances (ambiguous between row-level and aggregate).
+
+**`NetworkSelectValue.All` sentinel**: The string `'all'` that `onSelect` emits when the user picks the "All Networks" row. Only emitted when the caller passes `showAllNetworksOption: true`. Callers translate it to their own local sentinel (e.g. SwapForm2's `ALL_NETWORKS_TAB_ID` → `null` for "no chain filter"). The sentinel-in-the-value shape is intentional and matches the rest of the codebase (URL params, global current-network preference). _Avoid_: null/undefined for "all" (the sentinel is the convention).
+
+**Side effects on pick**: When a chain is selected, NetworkSelect2 always fires `addVisitedEthereumChain` + `updateNetworks` (mainnet + testnet stores). These are about chain-config hydration — making sure a newly-added or rarely-used chain is fully loaded. Notably it does _not_ fire `walletPort.request('uiChainSelected')` — that would update the global "current network" preference (used by the dapp connection UI / overview page), and form-local chain selection should not leak into that global state. The old `NetworkSelect` does fire `uiChainSelected`; NetworkSelect2 deliberately diverges. _Avoid_: "current network" (means global pref, not form selection).
 
 ## Flagged ambiguities
 

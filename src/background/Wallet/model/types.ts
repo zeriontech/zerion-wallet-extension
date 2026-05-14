@@ -28,6 +28,11 @@ type Address = string;
 
 export type PnlMode = 'pnl' | 'rpnl' | 'upnl' | '1day';
 
+export interface AddressBookEntry {
+  address: string;
+  name?: string;
+}
+
 /**
  * Named "Public" because these preferences aren't supposed contain any private info
  * and it's okay to query them from content script (meaning they are technically available to DApps)
@@ -49,12 +54,14 @@ interface PublicPreferences {
   configurableTransactionData?: boolean;
   invitationBannerDismissed?: boolean;
   recentAddresses?: string[];
+  addressBook?: AddressBookEntry[];
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
   inviteFriendsBannerDismissed?: boolean;
   solanaBannerDismissed?: boolean;
   premiumBannerDismissed?: boolean;
   formPremiumBannerDismissed?: boolean;
+  usDisclaimerDismissed?: boolean;
   /** @deprecated */
   exploreZeroBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
@@ -86,6 +93,12 @@ interface PublicPreferences {
    * the selector regardless of this flag.
    */
   receiveToAnotherAddress?: boolean;
+  /**
+   * Normalized recipient addresses for which the user has opted out of the
+   * "sending to a read-only wallet" confirmation dialog. Populated by toggling
+   * "Don't show for this wallet" when proceeding past the gate.
+   */
+  addressesExcludedFromReceiverReadonlyWarning?: string[];
 }
 
 export interface Permission {

@@ -28,6 +28,7 @@ import {
   ShortcutHint,
 } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
+import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
 import type { SwapFormState2 } from '../types';
 import * as styles from './SwapButton.module.css';
 
@@ -88,9 +89,9 @@ function resolveLabel({
     return 'Getting quote';
   }
   if (formState.to) {
-    return isCrossChain ? 'Bridge & Send' : 'Send';
+    return isCrossChain ? 'Bridge & Send Now' : 'Send Now';
   }
-  return isCrossChain ? 'Bridge' : 'Swap';
+  return isCrossChain ? 'Bridge Now' : 'Swap Now';
 }
 
 function isDisabled({
@@ -123,7 +124,7 @@ function isDisabled({
   return false;
 }
 
-function SimulatingIcon() {
+export function SimulatingIcon() {
   return (
     <div
       className={styles.shieldWrapper}
@@ -136,7 +137,7 @@ function SimulatingIcon() {
   );
 }
 
-function HoldHint() {
+export function HoldHint() {
   return (
     <div className={styles.holdHintContainer}>
       <UIText kind="caption/accent" className={styles.holdHint}>
@@ -237,7 +238,7 @@ function useSimulation({
   return { state, fire, label, disabled };
 }
 
-function useHoldToFire({
+export function useHoldToFire({
   onFire,
   holdEnabled,
   disabled,
@@ -363,7 +364,7 @@ function useHoldToFire({
   return { isHolding, holdCompleted, showHoldHint, buttonHandlers };
 }
 
-function RegularSwapButton({
+export function RegularSignButton({
   state,
   fire,
   label,
@@ -432,7 +433,7 @@ function RegularSwapButton({
   );
 }
 
-function DangerSwapButton({
+export function DangerSignButton({
   state,
   fire,
   dangerTitle,
@@ -574,42 +575,49 @@ export function SwapButton({
     onSign,
   });
 
+  const { guardedFire, dialog: readonlyReceiverDialog } =
+    useReadonlyReceiverGate({ to: formState.to, fire });
+  const effectiveFire = simulated ? fire : guardedFire;
+
   const isDanger =
     Boolean(dangerTitle) && (state === 'simulating' || !disabled);
 
   return (
-    <AnimatePresence mode="popLayout" initial={false}>
-      {isDanger ? (
-        <motion.div
-          key="danger"
-          transition={{ duration: 0.2 }}
-          initial={{ opacity: 0, y: 30, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -30, filter: 'blur(4px)' }}
-        >
-          <DangerSwapButton
-            state={state}
-            fire={fire}
-            dangerTitle={dangerTitle as string}
-            onCancel={onCancel}
-          />
-        </motion.div>
-      ) : (
-        <motion.div
-          key="regular"
-          transition={{ duration: 0.2 }}
-          initial={{ opacity: 0, y: 30, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -30, filter: 'blur(4px)' }}
-        >
-          <RegularSwapButton
-            state={state}
-            fire={fire}
-            label={label}
-            disabled={disabled}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <>
+      {readonlyReceiverDialog}
+      <AnimatePresence mode="popLayout" initial={false}>
+        {isDanger ? (
+          <motion.div
+            key="danger"
+            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 30, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -30, filter: 'blur(4px)' }}
+          >
+            <DangerSignButton
+              state={state}
+              fire={effectiveFire}
+              dangerTitle={dangerTitle as string}
+              onCancel={onCancel}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="regular"
+            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 30, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -30, filter: 'blur(4px)' }}
+          >
+            <RegularSignButton
+              state={state}
+              fire={effectiveFire}
+              label={label}
+              disabled={disabled}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

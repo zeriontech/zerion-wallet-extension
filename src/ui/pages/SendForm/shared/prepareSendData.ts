@@ -251,7 +251,7 @@ export async function prepareSendData(
         value: commonToBase(
           tokenValue,
           getDecimals({ asset: position.asset, chain })
-        ).toFixed(),
+        ).toFixed(0, BigNumber.ROUND_DOWN),
       });
       if (data && isNativeAsset) {
         tx = { ...tx, data };
@@ -288,30 +288,36 @@ export async function prepareSendData(
         tx = await getPaymasterTx(tx);
       }
     }
+
+    const gas = getGas(tx);
+    const gasPrice = getGasPriceFromTransaction(tx);
+    const feeEstimation = await getNetworkFeeEstimation({
+      address: from,
+      gas: gas ? Number(gas) : null,
+      gasPrices: applied.chainGasPrices,
+      gasPrice,
+      transaction: tx,
+    });
+
     if (!eligibility) {
       const isNative =
         type !== 'nft' &&
         position &&
         Networks.isNativeAsset(position.asset, network);
       if (isNative && tokenValue && position.quantity) {
-        const decimals = getDecimals({ asset: position.asset, chain });
-        const sendAmountBase = commonToBase(tokenValue, decimals);
+        const sendAmountBase = new BigNumber(
+          commonToBase(
+            tokenValue,
+            getDecimals({ asset: position.asset, chain })
+          ).toFixed(0, BigNumber.ROUND_DOWN)
+        );
         const positionQuantity = new BigNumber(position.quantity);
         if (sendAmountBase.isEqualTo(positionQuantity)) {
-          const gas = getGas(tx);
-          const gasPrice = getGasPriceFromTransaction(tx);
-          const feeEstimation = await getNetworkFeeEstimation({
-            address: from,
-            gas: gas ? Number(gas) : null,
-            gasPrices: applied.chainGasPrices,
-            gasPrice,
-            transaction: tx,
-          });
           if (feeEstimation) {
-            const networkFee = new BigNumber(
+            const networkFeeBase = new BigNumber(
               String(feeEstimation.maxFee ?? feeEstimation.estimatedFee)
             );
-            const adjustedValue = positionQuantity.minus(networkFee);
+            const adjustedValue = positionQuantity.minus(networkFeeBase);
             if (adjustedValue.isGreaterThan(0)) {
               tx = {
                 ...tx,
@@ -322,6 +328,26 @@ export async function prepareSendData(
         }
       }
     }
+
+    let networkFee: NetworkFeeType | null = null;
+    if (feeEstimation && network.native_asset) {
+      const feeBase = new BigNumber(
+        String(feeEstimation.maxFee ?? feeEstimation.estimatedFee)
+      );
+      networkFee = {
+        free: false,
+        amount: {
+          quantity: baseToCommon(
+            feeBase,
+            network.native_asset.decimals
+          ).toFixed(),
+          value: null,
+          usdValue: null,
+        },
+        fungible: null,
+      };
+    }
+
     assertProp(tx, 'chainId');
     assertProp(tx, 'from');
     return {
@@ -329,7 +355,7 @@ export async function prepareSendData(
       paymasterPossible: network.supports_sponsored_transactions,
       paymasterEligibility: eligibility,
       transaction: { evm: tx },
-      networkFee: null, // TODO: Currently calculated in UI, calculate here instead
+      networkFee,
       nftPosition,
     };
   } else {

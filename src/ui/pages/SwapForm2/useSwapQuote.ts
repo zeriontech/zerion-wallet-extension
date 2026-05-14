@@ -4,8 +4,8 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
+import { resolveTokenValue } from 'src/ui/components/AmountInput/inputKind';
 import type { SwapFormState2 } from './types';
-import { resolveTokenValue } from './shared/inputKind';
 import { isReceiverReadyForQuote } from './shared/getCrossEcosystemState';
 
 export function useSwapQuote({

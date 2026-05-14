@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React, { useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
 import { useQuery } from '@tanstack/react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
@@ -18,6 +18,8 @@ import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/Mainn
 import { type HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { emitter } from 'src/ui/shared/events';
+import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { ReceiverAddressDialog } from 'src/ui/components/ReceiverAddressDialog';
 import { AddFundsOptionsDialog } from '../../Receive/AddFundsOptionsDialog';
 import * as s from './styles.module.css';
 
@@ -75,6 +77,7 @@ export function useOpenAndConnectToZerion({
 
 export function ActionButtonsRow() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
@@ -83,6 +86,7 @@ export function ActionButtonsRow() {
   });
   const addWalletParams = useWalletParams(wallet);
   const fundOptionsDialogRef = useRef<HTMLDialogElementInterface>(null);
+  const recipientDialog = useDialog2();
 
   if (!addWalletParams || !wallet) {
     return null;
@@ -91,18 +95,9 @@ export function ActionButtonsRow() {
   const sendButton = (
     <ActionButton
       title="Send"
-      as={UnstyledLink}
+      as={UnstyledButton}
       icon={<SendIcon />}
-      to="/send-form"
-    />
-  );
-
-  const swapOldButton = (
-    <ActionButton
-      title="Swap (Old)"
-      as={UnstyledLink}
-      icon={<SwapIcon />}
-      to="/swap-form-old"
+      onClick={() => recipientDialog.openDialog()}
     />
   );
 
@@ -131,6 +126,14 @@ export function ActionButtonsRow() {
         wallet={wallet}
         analytics={{ pathname, address: wallet.address }}
       />
+      <ReceiverAddressDialog
+        open={recipientDialog.open}
+        onClose={recipientDialog.closeDialog}
+        title="Recipient"
+        onSelect={(address) => {
+          navigate(`/send-form?to=${address}`);
+        }}
+      />
       <ul
         className={s.list}
         style={{
@@ -141,7 +144,6 @@ export function ActionButtonsRow() {
       >
         <li>{fundButton}</li>
         <li>{sendButton}</li>
-        <li>{swapOldButton}</li>
         <li style={{ flexGrow: 1, minWidth: 0 }}>
           <WithMainnetOnlyWarningDialog<'a'>
             message="Testnets are not supported in Swap"

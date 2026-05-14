@@ -3,7 +3,7 @@ import ReverseIcon from 'jsx:src/ui/assets/reverse.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
-import type { InputKind } from './shared/inputKind';
+import type { InputKind } from './inputKind';
 
 export function InputKindToggle({
   inputKind,

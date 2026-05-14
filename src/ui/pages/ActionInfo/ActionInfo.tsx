@@ -30,6 +30,7 @@ import {
   type AnyAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
+import { useBackgroundKind } from 'src/ui/components/Background';
 import { AccelerateTransaction } from '../History/AccelerateTransaction';
 import {
   PopoverToast,
@@ -320,6 +321,7 @@ function ActContent({
 }
 
 export function ActionInfo() {
+  useBackgroundKind({ kind: 'neutral' });
   const navigate = useNavigate();
   const { act_index } = useParams();
   const { state } = useLocation();

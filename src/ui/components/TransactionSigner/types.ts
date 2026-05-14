@@ -32,6 +32,7 @@ export type ToasterView =
       token: ToasterAsset;
       chain: ToasterChain;
       recipient: { address: string; name?: string };
+      isNft?: boolean;
     };
 
 export type SignStep =
