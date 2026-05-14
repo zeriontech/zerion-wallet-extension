@@ -1,0 +1,10 @@
+<svg width="14" height="16" viewBox="0 0 14 15.8022" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 8.54042C0 13.58 4.56296 15.7582 6.84444 15.8022C10.2667 15.8022 14 13.0295 14 9.13457C14 6.41291 12.1228 3.50229 10.8323 1.90006C10.5603 1.56245 10.0585 1.55047 9.75348 1.85853L8.50869 3.11573C8.13672 3.4914 7.50359 3.377 7.28662 2.8949L6.17823 0.432143C6.01785 0.075792 5.61122 -0.10159 5.25557 0.0603522C3.22945 0.982947 0 3.42003 0 8.54042Z" fill="url(#fire_gradient)"/>
+<defs>
+<linearGradient id="fire_gradient" x1="7" y1="-0.197759" x2="7" y2="15.8022" gradientUnits="userSpaceOnUse">
+<stop stop-color="#DB3A48"/>
+<stop offset="0.444479" stop-color="#FF4A36"/>
+<stop offset="1" stop-color="#FF9D1C"/>
+</linearGradient>
+</defs>
+</svg>

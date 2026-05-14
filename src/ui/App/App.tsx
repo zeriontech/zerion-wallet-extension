@@ -96,6 +96,12 @@ import { PremiumPage } from '../pages/Premium';
 import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
 import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
+import {
+  PerpPage,
+  PerpsDeposit,
+  PerpsTrade,
+  PerpsWithdraw,
+} from '../pages/Perps';
 import { SwapForm } from '../pages/SwapForm/SwapForm';
 import { BridgeForm } from '../pages/BridgeForm';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
@@ -276,6 +282,38 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           element={
             <RequireAuth>
               <AssetInfo />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/perps/deposit"
+          element={
+            <RequireAuth>
+              <PerpsDeposit />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/perps/withdraw"
+          element={
+            <RequireAuth>
+              <PerpsWithdraw />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/perps/:perp_id/trade"
+          element={
+            <RequireAuth>
+              <PerpsTrade />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/perps/:perp_id"
+          element={
+            <RequireAuth>
+              <PerpPage />
             </RequireAuth>
           }
         />

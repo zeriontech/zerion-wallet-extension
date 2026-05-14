@@ -1,0 +1,216 @@
+.amountInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: var(--neutral-900);
+  padding: 0;
+}
+
+.amountInput::placeholder {
+  color: var(--neutral-400);
+}
+
+.usdLabel {
+  color: var(--neutral-600);
+  font-size: 14px;
+}
+
+.sideSelector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 4px;
+  background-color: var(--neutral-100);
+  border-radius: 12px;
+}
+
+.sideButton {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--neutral-700);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+
+.sideButton:hover {
+  background-color: var(--neutral-200);
+}
+
+.sideButtonLongActive {
+  background-color: var(--positive-200);
+  color: var(--positive-500);
+}
+
+.sideButtonShortActive {
+  background-color: var(--negative-200);
+  color: var(--negative-500);
+}
+
+.sideButtonLongActive:hover,
+.sideButtonShortActive:hover {
+  filter: brightness(0.95);
+}
+
+.percentRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.percentChip {
+  padding: 10px 0;
+  border-radius: 8px;
+  background-color: var(--neutral-100);
+  color: var(--neutral-800);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+
+.percentChip:hover {
+  background-color: var(--neutral-200);
+}
+
+.percentChipActive {
+  background-color: var(--neutral-300);
+  color: var(--neutral-900);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background-color: var(--neutral-100);
+  border-radius: 12px;
+}
+
+.rowAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background-color: var(--neutral-100);
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+}
+
+.rowAction:hover {
+  background-color: var(--neutral-200);
+}
+
+.rowActionRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--neutral-700);
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.statsList {
+  padding: 0 4px;
+}
+
+.error {
+  color: var(--negative-500);
+}
+
+.slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: var(--neutral-200);
+  border-radius: 2px;
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  cursor: pointer;
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  cursor: pointer;
+  border: 2px solid var(--white);
+}
+
+.leverageChip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background-color: var(--neutral-100);
+  color: var(--neutral-800);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.leverageChip:hover {
+  background-color: var(--neutral-200);
+}
+
+.leverageChipActive {
+  background-color: var(--neutral-900);
+  color: var(--white);
+}
+
+.leverageChipActive:hover {
+  background-color: var(--neutral-900);
+}
+
+.autoCloseRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--neutral-100);
+  border-radius: 12px;
+}
+
+.autoCloseUnit {
+  color: var(--neutral-600);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.autoCloseInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: var(--neutral-900);
+}
+
+.autoCloseFooter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}

@@ -46,12 +46,60 @@ type Wallet = {
   premium?: boolean;
 };
 
+export type Perp = {
+  /** @example BTC */
+  id: string;
+  /**
+   * @description Name of the perpetual market
+   * @example BTC
+   */
+  name: string;
+  /**
+   * @description Symbol of the perpetual market
+   * @example BTC
+   */
+  symbol: string;
+  /**
+   * @description URL to the market icon
+   * @example https://app.hyperliquid.xyz/coins/BTC.svg
+   */
+  iconUrl?: string | null;
+  /** @example true */
+  verified: boolean;
+  /** @example false */
+  new: boolean;
+  meta: {
+    /**
+     * @description Current mark price in the requested currency
+     * @example 65000
+     */
+    price?: number | null;
+    /**
+     * @description 24h relative price change (e.g. 0.03 = +3%)
+     * @example 0.03
+     */
+    relativeChange1d?: number | null;
+    /**
+     * @description Maximum leverage allowed for this market
+     * @example 50
+     */
+    maxLeverage: number;
+    /**
+     * @description 24h trading volume in the requested currency
+     * @example 1200000000
+     */
+    volume24h?: number | null;
+  };
+};
+
 export interface Response {
   data: {
     /** @description The array will contain DApps that satisfy the search query. */
     dapps?: DApp[];
     /** @description The array with contain Fungibles (Assets) that satisfy the search query. */
     fungibles?: Fungible[];
+    /** @description The array will contain Perpetual futures markets that satisfy the search query. */
+    perps?: Perp[];
     /** @description The array with contain Wallets that satisfy the search query. */
     wallets?: Wallet[];
   };

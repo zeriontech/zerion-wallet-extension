@@ -1,0 +1,46 @@
+.amountInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: var(--neutral-900);
+  padding: 0;
+}
+
+.amountInput::placeholder {
+  color: var(--neutral-400);
+}
+
+.usdLabel {
+  color: var(--neutral-600);
+}
+
+.maxButton {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background-color: var(--neutral-200);
+  color: var(--neutral-800);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.maxButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.maxButton:not(:disabled):hover {
+  background-color: var(--neutral-300);
+}
+
+.destinationCard {
+  padding: 16px;
+  background-color: var(--neutral-100);
+  border-radius: 12px;
+}
+
+.error {
+  color: var(--negative-500);
+}
