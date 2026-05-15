@@ -8,8 +8,8 @@ import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { CenteredAmountInput } from './CenteredAmountInput';
 import * as s from './styles.module.css';
 import type { TradeFormState } from './useTradeFormState';
 
@@ -78,42 +78,36 @@ export function ClosePositionForm({
 
   return (
     <VStack gap={16}>
-      <div className={s.row}>
-        <UIText kind="caption/regular" color="var(--neutral-600)">
-          Closing {isLong ? 'Long' : 'Short'} · {positionLeverage}x
-        </UIText>
-        <HStack gap={8} alignItems="baseline">
-          <UIText kind="body/accent">
-            {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
-            {asset.universe.name}
-          </UIText>
+      <div className={s.borderedFrame}>
+        <VStack gap={4}>
           <UIText kind="caption/regular" color="var(--neutral-600)">
-            @ {formatPriceValue(Number(position.entryPx), 'en', currency)}
+            Closing {isLong ? 'Long' : 'Short'} · {positionLeverage}x
           </UIText>
-        </HStack>
+          <HStack gap={8} alignItems="baseline">
+            <UIText kind="body/accent">
+              {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
+              {asset.universe.name}
+            </UIText>
+            <UIText kind="caption/regular" color="var(--neutral-600)">
+              @ {formatPriceValue(Number(position.entryPx), 'en', currency)}
+            </UIText>
+          </HStack>
+        </VStack>
       </div>
 
-      <div className={s.row}>
-        <UIText kind="caption/regular" color="var(--neutral-600)">
-          Close (USD)
-        </UIText>
-        <HStack gap={8} alignItems="center">
-          <UIText kind="headline/h2" style={{ flex: 1 }}>
-            <UnstyledInput
-              inputMode="decimal"
-              placeholder="0"
-              autoFocus={true}
-              value={formState.inputAmount}
-              onChange={(e) => handleAmountChange(e.currentTarget.value)}
-              className={s.amountInput}
-            />
-          </UIText>
-          <span className={s.usdLabel}>USD</span>
-        </HStack>
-        <UIText kind="caption/regular" color="var(--neutral-600)">
+      <VStack gap={4}>
+        <CenteredAmountInput
+          value={formState.inputAmount}
+          onChange={handleAmountChange}
+        />
+        <UIText
+          kind="caption/regular"
+          color="var(--neutral-600)"
+          style={{ textAlign: 'center' }}
+        >
           Position {formatCurrencyValue(positionValueAbs, 'en', currency)}
         </UIText>
-      </div>
+      </VStack>
 
       <div className={s.percentRow}>
         {PRESET_PERCENTS.map((percent) => (
@@ -128,7 +122,7 @@ export function ClosePositionForm({
         ))}
       </div>
 
-      <VStack gap={4} className={s.statsList}>
+      <VStack gap={4} className={s.borderedFrame}>
         <div className={s.detailRow}>
           <UIText kind="caption/regular" color="var(--neutral-600)">
             Closing size

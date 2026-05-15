@@ -23,7 +23,7 @@ export function Toolbar({
         size={32}
         style={{ borderRadius: 8 }}
       />
-      <UIText kind="body/accent">{displayName}-PERP</UIText>
+      <UIText kind="body/accent">{displayName}</UIText>
     </HStack>
   );
 }

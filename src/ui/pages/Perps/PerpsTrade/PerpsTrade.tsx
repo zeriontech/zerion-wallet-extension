@@ -32,9 +32,14 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
+import { usePreferences } from 'src/ui/features/preferences/usePreferences';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { Button } from 'src/ui/ui-kit/Button';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Toolbar } from '../Blocks/Toolbar';
@@ -45,8 +50,48 @@ import { LeverageOverlay } from './LeverageOverlay';
 import { AutoCloseOverlay } from './AutoCloseOverlay';
 import { usePerpsTradingContext } from './usePerpsTradingContext';
 import { useTradeFormState } from './useTradeFormState';
+import * as s from './styles.module.css';
 
 const DEFAULT_LEVERAGE = 5;
+
+function SubmitFooter({
+  label,
+  disabled,
+  onSubmit,
+}: {
+  label: string;
+  disabled: boolean;
+  onSubmit: () => void;
+}) {
+  const { preferences } = usePreferences();
+  const windowFocused = useWindowFocus();
+  const shortcutActive =
+    Boolean(preferences?.enableKeyboardShortcutToSign) && !disabled;
+
+  return (
+    <div className={s.absoluteFooter}>
+      <Spacer height={16} />
+      <KeyboardShortcut
+        combination="mod+enter"
+        onKeyDown={() => onSubmit()}
+        disabled={!shortcutActive}
+        availableDuringInputs={true}
+      />
+      <button
+        type="button"
+        className={s.submitButton}
+        onClick={onSubmit}
+        disabled={disabled}
+      >
+        <HStack gap={8} alignItems="center" justifyContent="center">
+          <span>{label}</span>
+          {shortcutActive && windowFocused ? <ShortcutHint /> : null}
+        </HStack>
+      </button>
+      <PageBottom />
+    </div>
+  );
+}
 
 export function PerpsTrade() {
   useBackgroundKind({ kind: 'white' });
@@ -169,6 +214,14 @@ export function PerpsTrade() {
         dexIndex: builderDexIndex,
       });
 
+      // Margin-type rule: Hyperliquid rejects flipping cross/isolated while a
+      // position is open. If a position already exists on this coin (e.g. user
+      // is "opening" another long on top of an existing one, or `add`/`close`),
+      // we MUST match the existing margin type. Greenfield opens default to
+      // cross.
+      const existingIsCross =
+        position != null ? position.leverage.type === 'cross' : true;
+
       if (effectiveMode === 'open') {
         invariant(state.inputAmount, 'Amount is required');
         const marginUsd = Number(state.inputAmount);
@@ -245,8 +298,9 @@ export function PerpsTrade() {
           intent: {
             kind: 'open',
             coin: parsed.coin,
+            dexIdentifier: parsed.dexIdentifier,
             asset: assetId,
-            isCross: true,
+            isCross: existingIsCross,
             desiredLeverage: effectiveLeverage,
             order: action,
             successText: 'Position opened',
@@ -296,8 +350,9 @@ export function PerpsTrade() {
           intent: {
             kind: 'add',
             coin: parsed.coin,
+            dexIdentifier: parsed.dexIdentifier,
             asset: assetId,
-            isCross: true,
+            isCross: existingIsCross,
             desiredLeverage: positionLeverage,
             order: action,
             successText: 'Position updated',
@@ -347,8 +402,9 @@ export function PerpsTrade() {
           intent: {
             kind: 'close',
             coin: parsed.coin,
+            dexIdentifier: parsed.dexIdentifier,
             asset: assetId,
-            isCross: true,
+            isCross: existingIsCross,
             desiredLeverage: position.leverage.value,
             order: action,
             successText:
@@ -407,6 +463,34 @@ export function PerpsTrade() {
     if (closeUsd > positionValueAbs) closeBlocker = true;
   }
 
+  // Open/Add validation: after szDecimals rounding the lot-quantised notional
+  // can land below Hyperliquid's $10 minimum (worst case: low-precision,
+  // high-priced assets like SP500 where each lot is ~$7.50 at 1x). Compute the
+  // *quantised* notional — not the raw user input — and block submit when it
+  // would be rejected on-chain. This mirrors the iOS app's behaviour.
+  let minNotionalBlocker = false;
+  if (
+    asset &&
+    inputValid &&
+    (effectiveMode === 'open' || effectiveMode === 'add')
+  ) {
+    const marginUsd = Number(state.inputAmount);
+    const leverage =
+      effectiveMode === 'add' && position
+        ? position.leverage.value
+        : effectiveLeverage;
+    const plannedSize = calculatePositionSize({
+      margin: marginUsd,
+      leverage,
+      entryPrice: markPrice,
+      szDecimals: asset.universe.szDecimals,
+    });
+    const plannedNotional = plannedSize * markPrice;
+    if (plannedNotional > 0 && plannedNotional < MIN_ORDER_NOTIONAL_USD) {
+      minNotionalBlocker = true;
+    }
+  }
+
   // For builder-DEX assets the assetId depends on the dex's position in the
   // perpDexs list; block submit until the list has resolved so we don't fall
   // back to the raw asset index and place an order against the wrong market.
@@ -417,6 +501,7 @@ export function PerpsTrade() {
     !tradingContext.isReady ||
     !inputValid ||
     closeBlocker ||
+    minNotionalBlocker ||
     dexIndexMissing ||
     submitMutation.isLoading;
 
@@ -433,7 +518,7 @@ export function PerpsTrade() {
         documentTitle={`Trade ${displayName} Perps`}
       />
       <PageTop />
-      <VStack gap={16}>
+      <VStack gap={16} style={{ paddingBottom: 96 }}>
         {asset && effectiveMode === 'open' ? (
           <OpenPositionForm
             asset={asset}
@@ -479,19 +564,11 @@ export function PerpsTrade() {
         ) : null}
       </VStack>
 
-      <Spacer height={24} />
-      <PageStickyFooter>
-        <Spacer height={16} />
-        <Button
-          kind="primary"
-          size={48}
-          onClick={handleSubmit}
-          disabled={submitDisabled}
-        >
-          {submitLabel}
-        </Button>
-        <PageBottom />
-      </PageStickyFooter>
+      <SubmitFooter
+        label={submitLabel}
+        disabled={submitDisabled}
+        onSubmit={handleSubmit}
+      />
 
       {asset ? (
         <LeverageOverlay

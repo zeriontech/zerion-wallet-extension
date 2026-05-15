@@ -5,11 +5,11 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
 import { calculateIsolatedLiquidationPrice } from 'src/modules/hyperliquid/calc/calculateLiquidationPrice';
-import { HStack } from 'src/ui/ui-kit/HStack';
+import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { CenteredAmountInput } from './CenteredAmountInput';
 import * as s from './styles.module.css';
 import type { TradeFormState, TradeSide } from './useTradeFormState';
 
@@ -123,27 +123,19 @@ export function OpenPositionForm({
         </UnstyledButton>
       </div>
 
-      <div className={s.row}>
-        <UIText kind="caption/regular" color="var(--neutral-600)">
-          Amount (USD)
-        </UIText>
-        <HStack gap={8} alignItems="center">
-          <UIText kind="headline/h2" style={{ flex: 1 }}>
-            <UnstyledInput
-              inputMode="decimal"
-              placeholder="0"
-              autoFocus={true}
-              value={inputAmount}
-              onChange={(e) => handleAmountChange(e.currentTarget.value)}
-              className={s.amountInput}
-            />
-          </UIText>
-          <span className={s.usdLabel}>USD</span>
-        </HStack>
-        <UIText kind="caption/regular" color="var(--neutral-600)">
+      <VStack gap={4}>
+        <CenteredAmountInput
+          value={inputAmount}
+          onChange={handleAmountChange}
+        />
+        <UIText
+          kind="caption/regular"
+          color="var(--neutral-600)"
+          style={{ textAlign: 'center' }}
+        >
           Available {formatCurrencyValue(availableToTrade, 'en', currency)}
         </UIText>
-      </div>
+      </VStack>
 
       <div className={s.percentRow}>
         {PRESET_PERCENTS.map((percent) => (
@@ -160,7 +152,7 @@ export function OpenPositionForm({
 
       <UnstyledButton
         type="button"
-        className={s.rowAction}
+        className={s.borderedFrameButton}
         onClick={onOpenLeverage}
       >
         <UIText kind="body/accent">Leverage</UIText>
@@ -171,7 +163,7 @@ export function OpenPositionForm({
 
       <UnstyledButton
         type="button"
-        className={s.rowAction}
+        className={s.borderedFrameButton}
         onClick={onOpenAutoClose}
       >
         <UIText kind="body/accent">Take Profit / Stop Loss</UIText>
@@ -182,7 +174,7 @@ export function OpenPositionForm({
         </span>
       </UnstyledButton>
 
-      <VStack gap={4} className={s.statsList}>
+      <VStack gap={4} className={s.borderedFrame}>
         <div className={s.detailRow}>
           <UIText kind="caption/regular" color="var(--neutral-600)">
             Order size
@@ -220,6 +212,13 @@ export function OpenPositionForm({
           </UIText>
         </UnstyledButton>
       </VStack>
+
+      {notional > 0 && notional < MIN_ORDER_NOTIONAL_USD ? (
+        <UIText kind="caption/regular" className={s.error}>
+          Order must be at least ${MIN_ORDER_NOTIONAL_USD}. Increase the amount
+          or leverage.
+        </UIText>
+      ) : null}
     </VStack>
   );
 }

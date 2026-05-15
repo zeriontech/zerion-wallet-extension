@@ -63,48 +63,86 @@ describe('derivePreflightState', () => {
     expect(state.builderFeeApproved).toBe(false);
   });
 
+  function clearinghouseWithPosition(
+    coin: string,
+    leverage: { type: 'cross' | 'isolated'; value: number }
+  ): PreflightRawState['clearinghouseState'] {
+    return {
+      marginSummary: {
+        accountValue: '0',
+        totalNtlPos: '0',
+        totalRawUsd: '0',
+        totalMarginUsed: '0',
+      },
+      crossMarginSummary: {
+        accountValue: '0',
+        totalNtlPos: '0',
+        totalRawUsd: '0',
+        totalMarginUsed: '0',
+      },
+      withdrawable: '0',
+      assetPositions: [
+        {
+          type: 'oneWay',
+          position: {
+            coin,
+            szi: '0.001',
+            entryPx: '50000',
+            positionValue: '50',
+            leverage,
+            marginUsed: '0',
+            unrealizedPnl: '0',
+            returnOnEquity: '0',
+            liquidationPx: null,
+            maxLeverage: 50,
+            cumFunding: { allTime: '0', sinceChange: '0', sinceOpen: '0' },
+          },
+        },
+      ],
+      time: 0,
+    };
+  }
+
   test('currentLeverage read from clearinghouse position when coin matches', () => {
     const state = derivePreflightState(
       {
         ...EMPTY_RAW,
-        clearinghouseState: {
-          marginSummary: {
-            accountValue: '0',
-            totalNtlPos: '0',
-            totalRawUsd: '0',
-            totalMarginUsed: '0',
-          },
-          crossMarginSummary: {
-            accountValue: '0',
-            totalNtlPos: '0',
-            totalRawUsd: '0',
-            totalMarginUsed: '0',
-          },
-          withdrawable: '0',
-          assetPositions: [
-            {
-              type: 'oneWay',
-              position: {
-                coin: 'BTC',
-                szi: '0.001',
-                entryPx: '50000',
-                positionValue: '50',
-                leverage: { type: 'cross', value: 7 },
-                marginUsed: '0',
-                unrealizedPnl: '0',
-                returnOnEquity: '0',
-                liquidationPx: null,
-                maxLeverage: 50,
-                cumFunding: { allTime: '0', sinceChange: '0', sinceOpen: '0' },
-              },
-            },
-          ],
-          time: 0,
-        },
+        clearinghouseState: clearinghouseWithPosition('BTC', {
+          type: 'cross',
+          value: 7,
+        }),
       },
       { requiredMaxBuilderFee: 100, coin: 'BTC' }
     );
-    expect(state.currentLeverage).toBe(7);
+    expect(state.currentLeverage).toEqual({ value: 7, isCross: true });
+  });
+
+  test('isolated position → currentLeverage.isCross = false', () => {
+    const state = derivePreflightState(
+      {
+        ...EMPTY_RAW,
+        clearinghouseState: clearinghouseWithPosition('xyz:SP500', {
+          type: 'isolated',
+          value: 1,
+        }),
+      },
+      { requiredMaxBuilderFee: 100, coin: 'xyz:SP500' }
+    );
+    expect(state.currentLeverage).toEqual({ value: 1, isCross: false });
+  });
+
+  test('coin lookup is case-insensitive (builder-DEX prefix casing)', () => {
+    const state = derivePreflightState(
+      {
+        ...EMPTY_RAW,
+        clearinghouseState: clearinghouseWithPosition('xyz:SP500', {
+          type: 'isolated',
+          value: 3,
+        }),
+      },
+      { requiredMaxBuilderFee: 100, coin: 'XYZ:sp500' }
+    );
+    expect(state.currentLeverage).toEqual({ value: 3, isCross: false });
   });
 
   test('no coin provided → currentLeverage = null even with positions present', () => {

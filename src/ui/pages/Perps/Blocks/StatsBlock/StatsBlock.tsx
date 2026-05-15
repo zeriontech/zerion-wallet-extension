@@ -5,6 +5,7 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import * as styles from './styles.module.css';
 
 function StatPill({ label, value }: { label: string; value: string }) {
   return (
@@ -36,7 +37,7 @@ export function StatsBlock({ asset }: { asset: PerpAssetEntry }) {
   const openInterestUsd = openInterest * markPx;
 
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <div className={styles.scrollContainer}>
       <HStack
         gap={8}
         style={{ width: 'max-content', gridAutoColumns: 'max-content' }}

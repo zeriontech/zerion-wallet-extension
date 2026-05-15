@@ -22,7 +22,7 @@ function DetailRow({
       gap={8}
       justifyContent="space-between"
       style={{
-        padding: '12px 0',
+        padding: '8px 0',
         borderBottom: '1px solid var(--neutral-200)',
       }}
     >
@@ -84,14 +84,14 @@ export function PositionBlock({
     : 'var(--negative-500)';
 
   return (
-    <VStack gap={12}>
+    <VStack gap={8}>
       <Frame>
-        <VStack gap={16} style={{ padding: '16px' }}>
+        <VStack gap={8} style={{ padding: 8 }}>
           <VStack gap={4}>
             <UIText kind="caption/regular" color="var(--neutral-600)">
               Position
             </UIText>
-            <HStack gap={12} alignItems="center">
+            <HStack gap={8} alignItems="center">
               <UIText kind="headline/h2">
                 {formatCurrencyValue(marginUsed, 'en', currency)}
               </UIText>
@@ -116,7 +116,7 @@ export function PositionBlock({
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: 16,
+              gap: 12,
             }}
           >
             <GridCell
@@ -171,9 +171,9 @@ export function PositionBlock({
 
 export function PositionBlockSkeleton() {
   return (
-    <VStack gap={12}>
+    <VStack gap={8}>
       <Frame>
-        <VStack gap={16} style={{ padding: 16 }}>
+        <VStack gap={12} style={{ padding: 12 }}>
           <VStack gap={4}>
             <div
               style={{
@@ -206,7 +206,7 @@ export function PositionBlockSkeleton() {
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: 16,
+              gap: 12,
             }}
           >
             {[0, 1].map((i) => (
@@ -239,7 +239,7 @@ export function PositionBlockSkeleton() {
             gap={8}
             justifyContent="space-between"
             style={{
-              padding: '12px 0',
+              padding: '8px 0',
               borderBottom: '1px solid var(--neutral-200)',
             }}
           >

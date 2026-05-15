@@ -14,7 +14,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { CandleChart } from './CandleChart';
 
-const CHART_HEIGHT = 252;
+const CHART_HEIGHT = 176;
 
 export function ChartBlock({
   coin,
@@ -46,9 +46,6 @@ export function ChartBlock({
           position: 'relative',
           width: '100%',
           height: CHART_HEIGHT,
-          borderRadius: 16,
-          backgroundColor: 'var(--neutral-100)',
-          overflow: 'hidden',
         }}
       >
         {isError ? (

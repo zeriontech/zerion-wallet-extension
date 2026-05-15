@@ -41,17 +41,24 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useBackgroundKind } from 'src/ui/components/Background';
-import { Button } from 'src/ui/ui-kit/Button';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { getError } from 'get-error';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
+import {
+  KeyboardShortcut,
+  ShortcutHint,
+} from 'src/ui/components/KeyboardShortcut';
+import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { InputPosition } from 'src/ui/pages/SwapForm2/InputPosition';
 import type { SwapFormState2 } from 'src/ui/pages/SwapForm2/types';
+import * as swapButtonStyles from 'src/ui/pages/SwapForm2/SwapButton/SwapButton.module.css';
 import { PerpsOnboarding } from '../PerpsOnboarding';
+import { RiskDisclosureBlock } from '../Blocks/RiskDisclosureBlock';
 import * as s from './styles.module.css';
 
 const HYPERCORE_CHAIN_ID = 'hypercore';
@@ -129,6 +136,8 @@ function DepositFormBody({
   const { currency } = useCurrency();
   const { networks } = useNetworks();
   const { globalPreferences } = useGlobalPreferences();
+  const { preferences } = usePreferences();
+  const windowFocused = useWindowFocus();
 
   const [userFormState, setUserFormState] = useUserFormState();
 
@@ -413,28 +422,41 @@ function DepositFormBody({
     quotesQuery.isLoading ||
     signMutation.isLoading;
 
+  const buttonLabel = insufficientBalance
+    ? 'Insufficient balance'
+    : quotesQuery.isLoading && !quote
+    ? 'Fetching offers…'
+    : signMutation.isLoading
+    ? 'Sending…'
+    : 'Deposit';
+
+  const shortcutActive =
+    Boolean(preferences?.enableKeyboardShortcutToSign) && !submitDisabled;
+
   return (
     <PageColumn>
       <NavigationTitle title="Deposit" documentTitle="Deposit to Hyperliquid" />
       <PageTop />
       <VStack gap={24} className={s.root}>
         <div className={s.formContainer}>
-          <InputPosition
-            formState={formState}
-            onChange={(key, value) =>
-              setUserFormState({ [key]: value } as Partial<SwapFormState2>)
-            }
-            onSelectFungible={(chainId, fungibleId) =>
-              setUserFormState({
-                inputChain: chainId,
-                inputFungibleId: fungibleId,
-                inputAmount: undefined,
-              })
-            }
-            position={inputPosition}
-            positions={positions}
-            resolvedInputAmount={resolvedInputAmount}
-          />
+          <div className={s.inputCard}>
+            <InputPosition
+              formState={formState}
+              onChange={(key, value) =>
+                setUserFormState({ [key]: value } as Partial<SwapFormState2>)
+              }
+              onSelectFungible={(chainId, fungibleId) =>
+                setUserFormState({
+                  inputChain: chainId,
+                  inputFungibleId: fungibleId,
+                  inputAmount: undefined,
+                })
+              }
+              position={inputPosition}
+              positions={positions}
+              resolvedInputAmount={resolvedInputAmount}
+            />
+          </div>
           <div className={s.outputCard}>
             <div className={s.outputIconWrapper}>
               <TokenIcon src={usdcFungible?.iconUrl} symbol="USDC" size={32} />
@@ -462,6 +484,7 @@ function DepositFormBody({
         >
           Funds may take a few minutes to settle on Hyperliquid.
         </UIText>
+        <RiskDisclosureBlock />
       </VStack>
 
       <div className={s.absoluteFooter}>
@@ -475,20 +498,25 @@ function DepositFormBody({
             />
           </VStack>
         ) : null}
-        <Button
-          kind="primary"
-          size={48}
-          onClick={() => handleDeposit()}
+        <KeyboardShortcut
+          combination="mod+enter"
+          onKeyDown={() => handleDeposit()}
+          disabled={!shortcutActive}
+          availableDuringInputs={true}
+        />
+        <button
+          type="button"
+          className={swapButtonStyles.button}
           disabled={submitDisabled}
+          onClick={() => handleDeposit()}
         >
-          {insufficientBalance
-            ? 'Insufficient balance'
-            : quotesQuery.isLoading && !quote
-            ? 'Fetching offers…'
-            : signMutation.isLoading
-            ? 'Sending…'
-            : 'Deposit'}
-        </Button>
+          <span className={swapButtonStyles.label}>
+            <HStack gap={8} alignItems="center" justifyContent="center">
+              <span>{buttonLabel}</span>
+              {shortcutActive && windowFocused ? <ShortcutHint /> : null}
+            </HStack>
+          </span>
+        </button>
         <PageBottom />
       </div>
     </PageColumn>

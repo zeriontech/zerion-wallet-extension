@@ -112,7 +112,7 @@ export function PerpPage() {
         documentTitle={`${displayName} Perps`}
       />
       <PageTop />
-      <VStack gap={16}>
+      <VStack gap={12}>
         {asset ? <Heading asset={asset} /> : <HeadingSkeleton />}
         <ChartBlock
           coin={parsed.coin}
@@ -121,7 +121,7 @@ export function PerpPage() {
         />
         {asset ? <StatsBlock asset={asset} /> : <StatsBlockSkeleton />}
       </VStack>
-      <Spacer height={24} />
+      <Spacer height={12} />
       {address && positionLoading && !position ? (
         <>
           <PositionBlockSkeleton />

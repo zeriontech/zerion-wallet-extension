@@ -1,10 +1,11 @@
 import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatPercent } from 'src/shared/units/formatPercent';
-import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import { formatPriceValueToParts } from 'src/shared/units/formatPriceValue';
 import { minus } from 'src/ui/shared/typography';
 import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { UIText } from 'src/ui/ui-kit/UIText';
 
 function getChangeColor(value: number) {
@@ -27,7 +28,9 @@ export function Heading({ asset }: { asset: PerpAssetEntry }) {
   return (
     <HStack gap={8} alignItems="end">
       <UIText kind="headline/h1">
-        {formatPriceValue(markPx, 'en', currency)}
+        <NeutralDecimals
+          parts={formatPriceValueToParts(markPx, 'en', currency)}
+        />
       </UIText>
       {change != null ? (
         <UIText

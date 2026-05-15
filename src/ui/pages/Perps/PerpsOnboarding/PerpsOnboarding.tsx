@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -12,24 +12,41 @@ import * as s from './styles.module.css';
 interface Slide {
   title: string;
   body: string;
-  emoji: string;
+  imageSrc: string;
+  imageSrcSet: string;
+  alt: string;
 }
+
+const SLIDE_VARIANTS = {
+  enter: (dir: number) => ({ opacity: 0, x: 64 * dir, filter: 'blur(3px)' }),
+  center: { opacity: 1, x: 0, filter: 'blur(0px)' },
+  exit: (dir: number) => ({ opacity: 0, x: -64 * dir, filter: 'blur(3px)' }),
+};
 
 const SLIDES: Slide[] = [
   {
-    emoji: '📈',
-    title: 'Trade perpetual futures',
-    body: 'Perpetuals (perps) let you go long or short on an asset with leverage. Unlike spot, you never take delivery — your P&L settles in USDC.',
+    title: 'Perpetual Futures',
+    body: 'Trade on whether you expect the price to move up or down, with no expiration date.',
+    imageSrc: 'https://cdn.zerion.io/images/dna-assets/perps_onboarding_1.png',
+    imageSrcSet:
+      'https://cdn.zerion.io/images/dna-assets/perps_onboarding_1.png 1x, https://cdn.zerion.io/images/dna-assets/perps_onboarding_1_2x.png 2x',
+    alt: 'Perpetual futures illustration',
   },
   {
-    emoji: '⚡️',
-    title: 'Leverage amplifies both sides',
-    body: 'Leverage multiplies gains and losses against your collateral. Pick a level you can stomach: smaller leverage gives you more room before liquidation.',
+    title: 'Go Long or Short',
+    body: 'Go long if you expect the price to rise, or short if you expect it to fall.',
+    imageSrc: 'https://cdn.zerion.io/images/dna-assets/perps_onboarding_2.png',
+    imageSrcSet:
+      'https://cdn.zerion.io/images/dna-assets/perps_onboarding_2.png 1x, https://cdn.zerion.io/images/dna-assets/perps_onboarding_2_2x.png 2x',
+    alt: 'Long or short illustration',
   },
   {
-    emoji: '⚠️',
-    title: 'Watch the liquidation price',
-    body: 'If price moves against your position past the liquidation threshold, your margin is wiped and the position closes. The trade form shows this price live before you confirm.',
+    title: 'Trade with Leverage',
+    body: 'Leverage amplifies gains and losses. If the price hits your liquidation level, your position closes.',
+    imageSrc: 'https://cdn.zerion.io/images/dna-assets/perps_onboarding_3.png',
+    imageSrcSet:
+      'https://cdn.zerion.io/images/dna-assets/perps_onboarding_3.png 1x, https://cdn.zerion.io/images/dna-assets/perps_onboarding_3_2.png 2x',
+    alt: 'Leverage illustration',
   },
 ];
 
@@ -41,14 +58,29 @@ export function PerpsOnboarding({
   onDismiss: () => void;
 }) {
   const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
   const isLast = index === SLIDES.length - 1;
   const slide = SLIDES[index];
+  const buttonLabel = isLast ? 'Got it' : 'Next';
+
+  useEffect(() => {
+    if (!open) {
+      setIndex(0);
+      setDirection(1);
+    }
+  }, [open]);
+
+  function goTo(next: number) {
+    if (next === index) return;
+    setDirection(next > index ? 1 : -1);
+    setIndex(next);
+  }
 
   function handleNext() {
     if (isLast) {
       onDismiss();
     } else {
-      setIndex((i) => i + 1);
+      goTo(index + 1);
     }
   }
 
@@ -67,19 +99,30 @@ export function PerpsOnboarding({
         </div>
 
         <div className={s.slideArea}>
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
-              transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+              custom={direction}
+              variants={SLIDE_VARIANTS}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: 'spring', stiffness: 280, damping: 30, mass: 0.8 },
+                opacity: { duration: 0.2, ease: [0.32, 0.72, 0, 1] },
+                filter: { duration: 0.2, ease: [0.32, 0.72, 0, 1] },
+              }}
               className={s.slide}
             >
-              <div className={s.emoji} aria-hidden="true">
-                {slide.emoji}
-              </div>
-              <VStack gap={12}>
+              <img
+                src={slide.imageSrc}
+                srcSet={slide.imageSrcSet}
+                alt={slide.alt}
+                width={220}
+                height={220}
+                className={s.illustration}
+              />
+              <VStack gap={12} style={{ textAlign: 'center' }}>
                 <UIText kind="headline/h2">{slide.title}</UIText>
                 <UIText kind="body/regular" color="var(--neutral-700)">
                   {slide.body}
@@ -92,15 +135,29 @@ export function PerpsOnboarding({
         <VStack gap={20} className={s.footer}>
           <HStack gap={8} justifyContent="center">
             {SLIDES.map((_, i) => (
-              <div
+              <UnstyledButton
                 key={i}
+                type="button"
+                onClick={() => goTo(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                aria-current={i === index ? 'true' : undefined}
                 className={`${s.dot} ${i === index ? s.dotActive : ''}`}
-                aria-hidden="true"
               />
             ))}
           </HStack>
           <Button kind="primary" size={48} onClick={handleNext}>
-            {isLast ? 'Got it' : 'Next'}
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={buttonLabel}
+                style={{ display: 'inline-block' }}
+                transition={{ duration: 0.15 }}
+                initial={{ opacity: 0, y: -30, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: 30, filter: 'blur(4px)' }}
+              >
+                {buttonLabel}
+              </motion.span>
+            </AnimatePresence>
           </Button>
         </VStack>
       </div>

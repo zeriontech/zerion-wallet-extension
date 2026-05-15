@@ -14,12 +14,19 @@
   gap: 8px;
 }
 
+.inputCard {
+  background: var(--white);
+  border-radius: 24px;
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.08);
+}
+
 .outputCard {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background-color: var(--neutral-100);
+  background-color: var(--frame-background-color);
+  border: 2px solid var(--neutral-200);
   border-radius: 16px;
 }
 

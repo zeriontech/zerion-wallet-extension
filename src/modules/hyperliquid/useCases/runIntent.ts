@@ -31,6 +31,8 @@ import {
 type PlaceOrderIntent = {
   kind: 'open' | 'add' | 'close';
   coin: string;
+  /** Builder-DEX identifier (e.g. "xyz"); omitted for main-DEX coins. */
+  dexIdentifier?: string;
   asset: number;
   isCross: boolean;
   desiredLeverage: number;
@@ -42,6 +44,7 @@ type PlaceOrderIntent = {
 type UpdateLeverageIntent = {
   kind: 'updateLeverage';
   coin: string;
+  dexIdentifier?: string;
   asset: number;
   isCross: boolean;
   desiredLeverage: number;
@@ -152,12 +155,16 @@ function buildPreflightSteps(
     });
   }
 
-  const needsLeverage =
-    state.currentLeverage !== intent.desiredLeverage &&
-    // Closing an open position never re-sets leverage (size shrinks, not grows).
-    intent.kind !== 'close' &&
-    // updateLeverage IS the main step; don't pre-run it during preflight.
-    intent.kind !== 'updateLeverage';
+  // Margin-type flips ('cross' ↔ 'isolated') are rejected by Hyperliquid while
+  // a position is open. For `add` and `close`, the existing position dictates
+  // leverage and type — never push an updateLeverage step on those flows.
+  // For `open` (a new position into the same coin), only update when value OR
+  // type differs from what's currently set on-chain.
+  const leverageMatches =
+    state.currentLeverage != null &&
+    state.currentLeverage.value === intent.desiredLeverage &&
+    state.currentLeverage.isCross === intent.isCross;
+  const needsLeverage = !leverageMatches && intent.kind === 'open';
 
   if (needsLeverage) {
     steps.push({
@@ -215,6 +222,8 @@ function intentToPreflightInput(
     builder: context.builder,
     requiredMaxBuilderFee: context.requiredMaxBuilderFee,
     coin: intent.kind === 'withdraw' ? undefined : intent.coin,
+    dexIdentifier:
+      intent.kind === 'withdraw' ? undefined : intent.dexIdentifier,
   };
 }
 

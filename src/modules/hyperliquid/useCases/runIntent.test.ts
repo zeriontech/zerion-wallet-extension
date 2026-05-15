@@ -35,7 +35,7 @@ const FULLY_CONFIGURED: PreflightState = {
   hyperliquidEnabled: true,
   referrerSet: true,
   builderFeeApproved: true,
-  currentLeverage: 5,
+  currentLeverage: { value: 5, isCross: true },
 };
 
 const BRAND_NEW: PreflightState = {
@@ -185,13 +185,13 @@ describe('runIntent', () => {
     expect(store.succeed).toHaveBeenCalledTimes(1);
   });
 
-  test('returning user with mismatched leverage: only updateLeverage + order run', async () => {
+  test('open intent with mismatched leverage value: updateLeverage + order run', async () => {
     const store = makeStoreMock();
     const submit = makeSubmit();
     const signTypedData = makeSign();
     const fetchPreflightState = makeFetchPreflight({
       ...FULLY_CONFIGURED,
-      currentLeverage: 10,
+      currentLeverage: { value: 10, isCross: true },
     });
 
     await runIntent({
@@ -203,13 +203,78 @@ describe('runIntent', () => {
     expect(submittedTypes(submit)).toEqual(['updateLeverage', 'order']);
   });
 
+  test('open intent with matching value but mismatched margin type: updateLeverage + order run', async () => {
+    // Hyperliquid rejects flipping cross↔isolated while a position is open, but
+    // for a new "open" without an existing position the type can still be set.
+    // The orchestrator's job is to push the leverage action whenever value OR
+    // type differs from what's currently on-chain.
+    const store = makeStoreMock();
+    const submit = makeSubmit();
+    const signTypedData = makeSign();
+    const fetchPreflightState = makeFetchPreflight({
+      ...FULLY_CONFIGURED,
+      currentLeverage: { value: 5, isCross: false },
+    });
+
+    await runIntent({
+      intent: makeOrderIntent(),
+      context: TEST_CONTEXT,
+      deps: { signTypedData, submit, fetchPreflightState, store },
+    });
+
+    expect(submittedTypes(submit)).toEqual(['updateLeverage', 'order']);
+  });
+
+  test('add intent: never re-sets leverage even on value mismatch (position dictates leverage)', async () => {
+    const store = makeStoreMock();
+    const submit = makeSubmit();
+    const signTypedData = makeSign();
+    const fetchPreflightState = makeFetchPreflight({
+      ...FULLY_CONFIGURED,
+      currentLeverage: { value: 10, isCross: true },
+    });
+
+    await runIntent({
+      intent: makeOrderIntent({ kind: 'add' } as Partial<PerpsIntent>),
+      context: TEST_CONTEXT,
+      deps: { signTypedData, submit, fetchPreflightState, store },
+    });
+
+    expect(submittedTypes(submit)).toEqual(['order']);
+  });
+
+  test('add intent on an isolated position: no margin-type flip (no updateLeverage)', async () => {
+    // Regression: previously the orchestrator pushed updateLeverage with
+    // isCross=true while the user held an isolated position, which Hyperliquid
+    // rejects with "Cannot switch leverage type with open position."
+    const store = makeStoreMock();
+    const submit = makeSubmit();
+    const signTypedData = makeSign();
+    const fetchPreflightState = makeFetchPreflight({
+      ...FULLY_CONFIGURED,
+      currentLeverage: { value: 1, isCross: false },
+    });
+
+    await runIntent({
+      intent: makeOrderIntent({
+        kind: 'add',
+        isCross: false,
+        desiredLeverage: 1,
+      } as Partial<PerpsIntent>),
+      context: TEST_CONTEXT,
+      deps: { signTypedData, submit, fetchPreflightState, store },
+    });
+
+    expect(submittedTypes(submit)).toEqual(['order']);
+  });
+
   test('close intent: never re-sets leverage even if mismatch', async () => {
     const store = makeStoreMock();
     const submit = makeSubmit();
     const signTypedData = makeSign();
     const fetchPreflightState = makeFetchPreflight({
       ...FULLY_CONFIGURED,
-      currentLeverage: 10,
+      currentLeverage: { value: 10, isCross: true },
     });
 
     await runIntent({
@@ -406,7 +471,7 @@ describe('runIntent', () => {
     const signTypedData = makeSign();
     const fetchPreflightState = makeFetchPreflight({
       ...FULLY_CONFIGURED,
-      currentLeverage: 2,
+      currentLeverage: { value: 2, isCross: true },
     });
 
     await runIntent({
@@ -423,5 +488,27 @@ describe('runIntent', () => {
     });
 
     expect(submittedTypes(submit)).toEqual(['updateLeverage']);
+  });
+
+  test('preflight input forwards dexIdentifier so builder-DEX coins read the right account', async () => {
+    const store = makeStoreMock();
+    const submit = makeSubmit();
+    const signTypedData = makeSign();
+    const fetchPreflightState = makeFetchPreflight(FULLY_CONFIGURED);
+
+    await runIntent({
+      intent: makeOrderIntent({
+        coin: 'xyz:SP500',
+        dexIdentifier: 'xyz',
+      } as Partial<PerpsIntent>),
+      context: TEST_CONTEXT,
+      deps: { signTypedData, submit, fetchPreflightState, store },
+    });
+
+    expect(fetchPreflightState).toHaveBeenCalledTimes(1);
+    expect(fetchPreflightState.mock.calls[0][0]).toMatchObject({
+      coin: 'xyz:SP500',
+      dexIdentifier: 'xyz',
+    });
   });
 });

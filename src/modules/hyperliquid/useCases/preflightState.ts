@@ -6,6 +6,11 @@ import { perpReferral } from '../api/requests/perp-referral.client';
 import { perpMaxBuilderFee } from '../api/requests/perp-max-builder-fee.client';
 import { perpClearinghouseState } from '../api/requests/perp-clearinghouse-state.client';
 
+export interface PreflightLeverage {
+  value: number;
+  isCross: boolean;
+}
+
 export interface PreflightState {
   /** Hyperliquid account exists (user role !== 'missing'). */
   hyperliquidEnabled: boolean;
@@ -17,11 +22,13 @@ export interface PreflightState {
    */
   builderFeeApproved: boolean;
   /**
-   * For a given perp coin, the current cross-margin leverage matches the desired
-   * leverage. Null when no position exists OR when leverage matches.
-   * Populated by the orchestrator before running, not by /info evaluation.
+   * For a given perp coin, the current leverage value and margin type of the
+   * open position. Null when no position exists for that coin. Both fields
+   * matter for preflight: Hyperliquid rejects margin-type flips while a
+   * position is open, so the orchestrator needs to know the type, not just
+   * the numeric value.
    */
-  currentLeverage: number | null;
+  currentLeverage: PreflightLeverage | null;
 }
 
 export interface PreflightFetchInput {
@@ -29,8 +36,9 @@ export interface PreflightFetchInput {
   builder: string;
   /** Required max builder fee (1e6-denominated). Approved value must be >= this. */
   requiredMaxBuilderFee: number;
-  /** Asset coin (e.g. "BTC") whose leverage we want to read; optional for flows that don't touch leverage. */
+  /** Asset coin (e.g. "BTC", "xyz:SP500") whose leverage we want to read; optional for flows that don't touch leverage. */
   coin?: string;
+  /** Builder-DEX identifier; required to read clearinghouseState from the correct perp account for builder-DEX coins. */
   dexIdentifier?: string;
 }
 
@@ -51,10 +59,17 @@ export function derivePreflightState(
   const builderFeeApproved =
     raw.maxBuilderFee != null &&
     raw.maxBuilderFee >= input.requiredMaxBuilderFee;
-  const currentLeverage = input.coin
+  const coin = input.coin;
+  const matchedPosition = coin
     ? raw.clearinghouseState?.assetPositions.find(
-        (entry) => entry.position.coin === input.coin
-      )?.position.leverage.value ?? null
+        (entry) => entry.position.coin.toLowerCase() === coin.toLowerCase()
+      )?.position
+    : undefined;
+  const currentLeverage: PreflightLeverage | null = matchedPosition
+    ? {
+        value: matchedPosition.leverage.value,
+        isCross: matchedPosition.leverage.type === 'cross',
+      }
     : null;
   return {
     hyperliquidEnabled,

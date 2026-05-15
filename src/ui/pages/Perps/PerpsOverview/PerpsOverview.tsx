@@ -1,4 +1,5 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useClearinghouseStates } from 'src/modules/hyperliquid/hooks/useClearinghouseStates';
 import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useHyperliquidAccountSummary';
 import { useNonFundingLedger } from 'src/modules/hyperliquid/hooks/useNonFundingLedger';
@@ -12,15 +13,16 @@ import type { PerpFill } from 'src/modules/hyperliquid/api/requests/perp-user-fi
 import type { NonFundingLedgerUpdate } from 'src/modules/hyperliquid/api/requests/perp-non-funding-ledger.types';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { Frame } from 'src/ui/ui-kit/Frame';
+import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import skeletonStyles from 'src/ui/pages/SwapForm2/styles.module.css';
+import { PerpsOnboarding } from '../PerpsOnboarding';
 import { PerpsPositionCard } from './PerpsPositionCard';
 import { PerpsPositionsListSkeleton } from './PerpsPositionCardSkeleton';
 import {
@@ -83,13 +85,43 @@ function PerpsPositionsList({ address }: { address: string }) {
 
   if (positions.length === 0) {
     return (
-      <UIText
-        kind="body/regular"
-        color="var(--neutral-500)"
-        style={{ padding: 24, textAlign: 'center' }}
-      >
-        No open perps positions
-      </UIText>
+      <div style={{ paddingInline: 16 }}>
+        <Frame style={{ padding: '16px' }}>
+          <VStack
+            gap={16}
+            style={{ justifyItems: 'stretch', textAlign: 'center' }}
+          >
+            <VStack gap={8} style={{ justifyItems: 'center' }}>
+              <img
+                src="https://cdn.zerion.io/images/dna-assets/perps_onboarding_1.png"
+                srcSet="https://cdn.zerion.io/images/dna-assets/perps_onboarding_1.png 1x, https://cdn.zerion.io/images/dna-assets/perps_onboarding_1_2x.png 2x"
+                alt="Perpetual futures illustration"
+                style={{
+                  display: 'block',
+                  width: 120,
+                  height: 60,
+                  objectFit: 'cover',
+                  filter: 'drop-shadow(0px 8px 24px rgba(32, 24, 50, 0.12))',
+                }}
+              />
+              <VStack gap={4}>
+                <UIText kind="headline/h3">Fund your wallet</UIText>
+                <UIText kind="small/regular" color="var(--neutral-600)">
+                  Trade with up to 40x Leverage
+                </UIText>
+              </VStack>
+            </VStack>
+            <Button
+              size={40}
+              kind="primary"
+              as={UnstyledLink}
+              to="/perps/deposit"
+            >
+              Deposit
+            </Button>
+          </VStack>
+        </Frame>
+      </div>
     );
   }
 
@@ -229,7 +261,8 @@ function PerpsHistoryList({ address }: { address: string }) {
 export function PerpsOverview() {
   const { singleAddress: address } = useAddressParams();
   const { currency } = useCurrency();
-  const historyDialogRef = useRef<HTMLDialogElementInterface>(null);
+  const historyDialog = useDialog2();
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
 
   const { effectiveAccountValueUSD, isModeReady } =
     useHyperliquidAccountSummary({ address });
@@ -246,24 +279,43 @@ export function PerpsOverview() {
         justifyContent="space-between"
         style={{ paddingInline: 16 }}
       >
-        {isModeReady ? (
-          <UIText kind="headline/h3">
-            <BlurrableBalance kind="body/accent" color="var(--black)">
-              <NeutralDecimals
-                parts={formatCurrencyToParts(
-                  effectiveAccountValueUSD,
-                  'en',
-                  currency
-                )}
-              />
-            </BlurrableBalance>
-          </UIText>
-        ) : (
-          <div
-            className={skeletonStyles.skeleton}
-            style={{ width: 128, height: 24 }}
-          />
-        )}
+        <HStack gap={6} alignItems="center">
+          {isModeReady ? (
+            <UIText kind="headline/h3">
+              <BlurrableBalance kind="body/accent" color="var(--black)">
+                <NeutralDecimals
+                  parts={formatCurrencyToParts(
+                    effectiveAccountValueUSD,
+                    'en',
+                    currency
+                  )}
+                />
+              </BlurrableBalance>
+            </UIText>
+          ) : (
+            <div
+              className={skeletonStyles.skeleton}
+              style={{ width: 128, height: 24 }}
+            />
+          )}
+          <UnstyledButton
+            type="button"
+            onClick={() => setOnboardingOpen(true)}
+            aria-label="What are perps?"
+            title="What are perps?"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+              color: 'var(--neutral-500)',
+            }}
+          >
+            <QuestionHintIcon style={{ width: 18, height: 18 }} />
+          </UnstyledButton>
+        </HStack>
         <HStack gap={4} alignItems="center">
           <Button
             kind="ghost"
@@ -293,7 +345,7 @@ export function PerpsOverview() {
             title="History"
             aria-label="History"
             style={{ paddingInline: 8 }}
-            onClick={() => historyDialogRef.current?.showModal()}
+            onClick={historyDialog.openDialog}
           >
             <UIText kind="small/accent">History</UIText>
           </Button>
@@ -301,26 +353,17 @@ export function PerpsOverview() {
       </HStack>
       <PerpsPositionsList address={address} />
       <Spacer height={16} />
-      <CenteredDialog
-        ref={historyDialogRef}
-        containerStyle={{
-          paddingInline: 0,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-        renderWhenOpen={() => (
-          <VStack gap={16} style={{ height: '100%', minHeight: 0 }}>
-            <div style={{ paddingInline: 16 }}>
-              <DialogTitle
-                title={<UIText kind="body/accent">History</UIText>}
-              />
-            </div>
-            <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-              <PerpsHistoryList address={address} />
-              <Spacer height={16} />
-            </div>
-          </VStack>
-        )}
+      <Dialog2
+        open={historyDialog.open}
+        onClose={historyDialog.closeDialog}
+        title="History"
+      >
+        <PerpsHistoryList address={address} />
+        <Spacer height={16} />
+      </Dialog2>
+      <PerpsOnboarding
+        open={onboardingOpen}
+        onDismiss={() => setOnboardingOpen(false)}
       />
     </VStack>
   );
