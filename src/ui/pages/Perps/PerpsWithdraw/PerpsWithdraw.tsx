@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { usePerpsRemoteConfig } from 'src/modules/hyperliquid/hooks/usePerpsRemoteConfig';
 import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useHyperliquidAccountSummary';
 import { runPerpsIntent } from 'src/modules/hyperliquid/useCases';
-import { showSuccessToast } from 'src/ui/components/SuccessToast';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -29,7 +28,9 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import * as s from './styles.module.css';
 
 const MIN_WITHDRAW_USD = 5;
@@ -112,12 +113,21 @@ export function PerpsWithdraw() {
       });
     },
     onSuccess: () => {
-      showSuccessToast({
-        text: 'Withdrawal submitted',
-        subtitle: 'Funds may take a few minutes to settle',
-      });
+      // Withdrawal originates from the main perps DEX (dexIdentifier=undefined);
+      // only that variant's clearinghouseState needs refreshing. Keyed
+      // `[name, payload]`, so partial-match needs predicate form.
       queryClient.invalidateQueries({
-        queryKey: ['hyperliquid/clearinghouseState'],
+        predicate: (q) => {
+          const [name, payload] = q.queryKey as [
+            string,
+            { address?: string; dexIdentifier?: string } | undefined
+          ];
+          return (
+            name === 'hyperliquid/clearinghouseState' &&
+            payload?.address === address &&
+            payload?.dexIdentifier === undefined
+          );
+        },
       });
       queryClient.invalidateQueries({ queryKey: ['walletPortfolio'] });
       queryClient.invalidateQueries({ queryKey: ['hyperliquidBalance'] });
@@ -167,7 +177,26 @@ export function PerpsWithdraw() {
 
   return (
     <PageColumn>
-      <NavigationTitle title="Withdraw" documentTitle="Withdraw USDC" />
+      <NavigationTitle
+        title="Withdraw"
+        documentTitle="Withdraw USDC"
+        elementEnd={
+          address ? (
+            <UnstyledLink
+              style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
+              to="/wallet-select"
+              title="Change Wallet"
+            >
+              <WalletAvatar
+                active={false}
+                address={address}
+                size={24}
+                borderRadius={6}
+              />
+            </UnstyledLink>
+          ) : undefined
+        }
+      />
       <PageTop />
       <VStack gap={16} style={{ paddingBottom: 112 }}>
         <fieldset

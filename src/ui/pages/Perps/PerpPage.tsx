@@ -26,6 +26,7 @@ import { StickyBottomPanel } from 'src/ui/ui-kit/BottomPanel';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { Heading, HeadingSkeleton } from './Blocks/Heading';
 import { Toolbar } from './Blocks/Toolbar';
 import { PerpScrolledHeader } from './PerpScrolledHeader';
@@ -110,6 +111,22 @@ export function PerpPage() {
           </div>
         }
         documentTitle={`${displayName} Perps`}
+        elementEnd={
+          address ? (
+            <UnstyledLink
+              style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
+              to="/wallet-select"
+              title="Change Wallet"
+            >
+              <WalletAvatar
+                active={false}
+                address={address}
+                size={24}
+                borderRadius={6}
+              />
+            </UnstyledLink>
+          ) : undefined
+        }
       />
       <PageTop />
       <VStack gap={12}>

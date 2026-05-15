@@ -2,6 +2,7 @@ import React from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
+import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import type { PerpPosition } from 'src/modules/hyperliquid/api/requests/perp-clearinghouse-state.types';
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
@@ -96,34 +97,20 @@ export function AddToPositionForm({
 
   return (
     <VStack gap={16}>
-      <div className={s.borderedFrame}>
-        <VStack gap={4}>
-          <UIText kind="caption/regular" color="var(--neutral-600)">
-            Adding to {isLong ? 'Long' : 'Short'} · {positionLeverage}x
-          </UIText>
-          <HStack gap={8} alignItems="baseline">
-            <UIText kind="body/accent">
-              {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
-              {asset.universe.name}
-            </UIText>
-            <UIText kind="caption/regular" color="var(--neutral-600)">
-              @ {formatPriceValue(Number(position.entryPx), 'en', currency)}
-            </UIText>
-          </HStack>
-        </VStack>
-      </div>
-
       <VStack gap={4}>
         <CenteredAmountInput
           value={inputAmount}
           onChange={handleAmountChange}
         />
         <UIText
-          kind="caption/regular"
+          kind="small/accent"
           color="var(--neutral-600)"
           style={{ textAlign: 'center' }}
         >
-          Available {formatCurrencyValue(availableToTrade, 'en', currency)}
+          Size {formatCurrencyValue(marginUsd, 'en', currency)}
+          {addSize > 0
+            ? ` · ${formatTokenValue(addSize, asset.universe.name)}`
+            : ''}
         </UIText>
       </VStack>
 
@@ -140,39 +127,62 @@ export function AddToPositionForm({
         ))}
       </div>
 
-      <VStack gap={4} className={s.borderedFrame}>
-        <div className={s.detailRow}>
-          <UIText kind="caption/regular" color="var(--neutral-600)">
+      <VStack gap={12} className={s.controlGroupFrame}>
+        <HStack gap={8} justifyContent="space-between" alignItems="center">
+          <UIText kind="small/regular" color="var(--neutral-600)">
+            Available
+          </UIText>
+          <UIText kind="small/accent">
+            {formatCurrencyValue(availableToTrade, 'en', currency)}
+          </UIText>
+        </HStack>
+        <div className={s.frameDivider} />
+        <HStack gap={8} justifyContent="space-between" alignItems="center">
+          <UIText kind="small/regular" color="var(--neutral-600)">
+            Adding to {isLong ? 'Long' : 'Short'}
+          </UIText>
+          <UIText kind="small/accent">
+            {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
+            {asset.universe.name} · {positionLeverage}x
+          </UIText>
+        </HStack>
+      </VStack>
+
+      <VStack gap={12} className={s.controlGroupFrame}>
+        <HStack gap={8} justifyContent="space-between" alignItems="center">
+          <UIText kind="small/regular" color="var(--neutral-600)">
             Add size
           </UIText>
-          <UIText kind="caption/accent">
+          <UIText kind="small/accent">
             {addSize > 0
               ? `${addSize.toFixed(Math.max(szDecimals, 2))} ${
                   asset.universe.name
                 }`
               : '—'}
           </UIText>
-        </div>
-        <div className={s.detailRow}>
-          <UIText kind="caption/regular" color="var(--neutral-600)">
+        </HStack>
+        <div className={s.frameDivider} />
+        <HStack gap={8} justifyContent="space-between" alignItems="center">
+          <UIText kind="small/regular" color="var(--neutral-600)">
             New liquidation price
           </UIText>
-          <UIText kind="caption/accent">
+          <UIText kind="small/accent">
             {newLiquidationPrice != null
               ? formatPriceValue(newLiquidationPrice, 'en', currency)
               : '—'}
           </UIText>
-        </div>
+        </HStack>
+        <div className={s.frameDivider} />
         <UnstyledButton
           type="button"
-          className={s.detailRow}
+          className={s.controlGroupRow}
           onClick={onFeeBreakdownClick}
           style={{ cursor: onFeeBreakdownClick ? 'pointer' : 'default' }}
         >
-          <UIText kind="caption/regular" color="var(--neutral-600)">
+          <UIText kind="small/regular" color="var(--neutral-600)">
             Fee
           </UIText>
-          <UIText kind="caption/accent">
+          <UIText kind="small/accent">
             {(totalFeeRate * 100).toFixed(3)}% (
             {formatCurrencyValue(feeCost, 'en', currency)})
           </UIText>

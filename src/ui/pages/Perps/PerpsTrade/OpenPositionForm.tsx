@@ -1,4 +1,5 @@
 import React from 'react';
+import PlusIcon from 'jsx:src/ui/assets/plus.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
@@ -6,6 +7,7 @@ import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
 import { calculateIsolatedLiquidationPrice } from 'src/modules/hyperliquid/calc/calculateLiquidationPrice';
 import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -61,6 +63,9 @@ export function OpenPositionForm({
   const inputAmount = formState.inputAmount;
   const marginUsd = Number(inputAmount) || 0;
   const szDecimals = asset.universe.szDecimals;
+  const hasAutoClose = Boolean(
+    formState.takeProfitPrice || formState.stopLossPrice
+  );
 
   const positionSize = calculatePositionSize({
     margin: marginUsd,
@@ -150,63 +155,69 @@ export function OpenPositionForm({
         ))}
       </div>
 
-      <UnstyledButton
-        type="button"
-        className={s.borderedFrameButton}
-        onClick={onOpenLeverage}
-      >
-        <UIText kind="body/accent">Leverage</UIText>
-        <span className={s.rowActionRight}>
-          <UIText kind="body/accent">{leverage}x</UIText>
-        </span>
-      </UnstyledButton>
+      <VStack gap={12} className={s.controlGroupFrame}>
+        <UnstyledButton
+          type="button"
+          className={s.controlGroupRow}
+          onClick={onOpenLeverage}
+        >
+          <VStack gap={0} className={s.controlGroupRowLeft}>
+            <UIText kind="small/accent">Leverage</UIText>
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Liquidation at{' '}
+              {liquidationPrice != null
+                ? formatPriceValue(liquidationPrice, 'en', currency)
+                : '$0'}
+            </UIText>
+          </VStack>
+          <HStack gap={4} alignItems="center" className={s.controlChip}>
+            <UIText kind="small/accent">{leverage}x</UIText>
+          </HStack>
+        </UnstyledButton>
 
-      <UnstyledButton
-        type="button"
-        className={s.borderedFrameButton}
-        onClick={onOpenAutoClose}
-      >
-        <UIText kind="body/accent">Take Profit / Stop Loss</UIText>
-        <span className={s.rowActionRight}>
-          <UIText kind="caption/regular" color="var(--neutral-600)">
-            {summarizeAutoClose(formState)}
-          </UIText>
-        </span>
-      </UnstyledButton>
+        <div className={s.frameDivider} />
 
-      <VStack gap={4} className={s.borderedFrame}>
-        <div className={s.detailRow}>
-          <UIText kind="caption/regular" color="var(--neutral-600)">
+        <UnstyledButton
+          type="button"
+          className={s.controlGroupRow}
+          onClick={onOpenAutoClose}
+        >
+          <UIText kind="small/accent">Take Profit / Stop Loss</UIText>
+          <HStack gap={4} alignItems="center" className={s.controlChip}>
+            {hasAutoClose ? null : (
+              <PlusIcon style={{ width: 16, height: 16 }} />
+            )}
+            <UIText kind="small/accent">
+              {hasAutoClose ? summarizeAutoClose(formState) : 'Set Up'}
+            </UIText>
+          </HStack>
+        </UnstyledButton>
+      </VStack>
+
+      <VStack gap={12} className={s.controlGroupFrame}>
+        <HStack gap={8} justifyContent="space-between" alignItems="center">
+          <UIText kind="small/regular" color="var(--neutral-600)">
             Order size
           </UIText>
-          <UIText kind="caption/accent">
+          <UIText kind="small/accent">
             {positionSize > 0
               ? `${positionSize.toFixed(Math.max(szDecimals, 2))} ${
                   asset.universe.name
                 }`
               : '—'}
           </UIText>
-        </div>
-        <div className={s.detailRow}>
-          <UIText kind="caption/regular" color="var(--neutral-600)">
-            Liquidation price
-          </UIText>
-          <UIText kind="caption/accent">
-            {liquidationPrice != null
-              ? formatPriceValue(liquidationPrice, 'en', currency)
-              : '—'}
-          </UIText>
-        </div>
+        </HStack>
+        <div className={s.frameDivider} />
         <UnstyledButton
           type="button"
-          className={s.detailRow}
+          className={s.controlGroupRow}
           onClick={onFeeBreakdownClick}
           style={{ cursor: onFeeBreakdownClick ? 'pointer' : 'default' }}
         >
-          <UIText kind="caption/regular" color="var(--neutral-600)">
+          <UIText kind="small/regular" color="var(--neutral-600)">
             Fee
           </UIText>
-          <UIText kind="caption/accent">
+          <UIText kind="small/accent">
             {(totalFeeRate * 100).toFixed(3)}% (
             {formatCurrencyValue(feeCost, 'en', currency)})
           </UIText>

@@ -41,8 +41,10 @@ import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { Toolbar } from '../Blocks/Toolbar';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { TradeNavTitle } from './TradeNavTitle';
 import { OpenPositionForm } from './OpenPositionForm';
 import { AddToPositionForm } from './AddToPositionForm';
 import { ClosePositionForm } from './ClosePositionForm';
@@ -204,9 +206,20 @@ export function PerpsTrade() {
       invariant(tradingContext.isReady, 'Trading context not ready');
 
       // JIT verification: refresh ctxs right before we serialize the order so
-      // the price/size we sign reflects current state.
+      // the price/size we sign reflects current state. Keyed `[name, payload]`
+      // where payload is `{dexIdentifier}`, so partial-match needs the predicate
+      // form — scope to the DEX we're about to trade on, not all DEXes.
       await queryClient.invalidateQueries({
-        queryKey: ['hyperliquid/metaAndAssetCtxs', parsed.dexIdentifier],
+        predicate: (q) => {
+          const [name, payload] = q.queryKey as [
+            string,
+            { dexIdentifier?: string } | undefined
+          ];
+          return (
+            name === 'hyperliquid/metaAndAssetCtxs' &&
+            payload?.dexIdentifier === parsed.dexIdentifier
+          );
+        },
       });
 
       const assetId = computeAssetId({
@@ -420,16 +433,41 @@ export function PerpsTrade() {
       }
     },
     onSuccess: () => {
+      // Scope each invalidation to (this address, this DEX, this coin) so we
+      // don't refetch every cached DEX variant. `clearinghouseState`,
+      // `metaAndAssetCtxs`, and `userFills` are keyed `[name, payload]` so we
+      // need predicate-matching; `activeAssetData` and `spotClearinghouseState`
+      // use flat keys and can use the array form.
       queryClient.invalidateQueries({
-        queryKey: ['hyperliquid/clearinghouseState'],
+        predicate: (q) => {
+          const [name, payload] = q.queryKey as [
+            string,
+            { address?: string; dexIdentifier?: string } | undefined
+          ];
+          return (
+            name === 'hyperliquid/clearinghouseState' &&
+            payload?.address === address &&
+            payload?.dexIdentifier === parsed.dexIdentifier
+          );
+        },
       });
       queryClient.invalidateQueries({
-        queryKey: ['hyperliquid/activeAssetData'],
+        queryKey: ['hyperliquid/activeAssetData', address, parsed.coin],
       });
       queryClient.invalidateQueries({
-        queryKey: ['hyperliquid/spotClearinghouseState'],
+        queryKey: ['hyperliquid/spotClearinghouseState', address],
       });
-      queryClient.invalidateQueries({ queryKey: ['hyperliquid/userFills'] });
+      queryClient.invalidateQueries({
+        predicate: (q) => {
+          const [name, payload] = q.queryKey as [
+            string,
+            { address?: string } | undefined
+          ];
+          return (
+            name === 'hyperliquid/userFills' && payload?.address === address
+          );
+        },
+      });
     },
   });
 
@@ -509,13 +547,32 @@ export function PerpsTrade() {
     <PageColumn>
       <NavigationTitle
         title={
-          <Toolbar
+          <TradeNavTitle
             coin={parsed.coin}
             displayName={displayName}
-            style={{ paddingLeft: 8 }}
+            mode={state.mode}
+            side={effectiveSide}
+            positionIsLong={position ? Number(position.szi) >= 0 : null}
+            markPrice={markPrice}
           />
         }
         documentTitle={`Trade ${displayName} Perps`}
+        elementEnd={
+          address ? (
+            <UnstyledLink
+              style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
+              to="/wallet-select"
+              title="Change Wallet"
+            >
+              <WalletAvatar
+                active={false}
+                address={address}
+                size={24}
+                borderRadius={6}
+              />
+            </UnstyledLink>
+          ) : undefined
+        }
       />
       <PageTop />
       <VStack gap={16} style={{ paddingBottom: 96 }}>

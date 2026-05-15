@@ -235,13 +235,19 @@
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 12px;
   text-decoration: none;
+  cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
-.navLink:hover {
+.navLink:hover:not(:disabled) {
   background: #161616;
   border-color: rgba(0, 255, 156, 0.4);
   color: #00ffaa;
+}
+
+.navLink:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .navLink::before {

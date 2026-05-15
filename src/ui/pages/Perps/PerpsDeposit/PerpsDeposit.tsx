@@ -35,7 +35,6 @@ import {
   usePreferences,
 } from 'src/ui/features/preferences/usePreferences';
 import { walletPort } from 'src/ui/shared/channels';
-import { showSuccessToast } from 'src/ui/components/SuccessToast';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -46,6 +45,8 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { getError } from 'get-error';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
@@ -380,12 +381,21 @@ function DepositFormBody({
       });
     },
     onSuccess: () => {
-      showSuccessToast({
-        text: 'Deposit submitted',
-        subtitle: 'Funds may take a few minutes to settle',
-      });
+      // Deposit lands on the main perps DEX (dexIdentifier=undefined), so only
+      // invalidate that variant's clearinghouseState — leave builder-DEX caches
+      // alone. Keyed `[name, payload]`, so partial-match needs predicate form.
       queryClient.invalidateQueries({
-        queryKey: ['hyperliquid/clearinghouseState'],
+        predicate: (q) => {
+          const [name, payload] = q.queryKey as [
+            string,
+            { address?: string; dexIdentifier?: string } | undefined
+          ];
+          return (
+            name === 'hyperliquid/clearinghouseState' &&
+            payload?.address === address &&
+            payload?.dexIdentifier === undefined
+          );
+        },
       });
       queryClient.invalidateQueries({ queryKey: ['walletPortfolio'] });
       queryClient.invalidateQueries({ queryKey: ['hyperliquidBalance'] });
@@ -435,7 +445,24 @@ function DepositFormBody({
 
   return (
     <PageColumn>
-      <NavigationTitle title="Deposit" documentTitle="Deposit to Hyperliquid" />
+      <NavigationTitle
+        title="Deposit"
+        documentTitle="Deposit to Hyperliquid"
+        elementEnd={
+          <UnstyledLink
+            style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
+            to="/wallet-select"
+            title="Change Wallet"
+          >
+            <WalletAvatar
+              active={false}
+              address={address}
+              size={24}
+              borderRadius={6}
+            />
+          </UnstyledLink>
+        }
+      />
       <PageTop />
       <VStack gap={24} className={s.root}>
         <div className={s.formContainer}>

@@ -21,7 +21,6 @@ import {
   getLedgerIframeController,
   postLedgerSignParams,
 } from 'src/ui/hardware-wallet/useLedgerIframeController';
-import { SuccessToast } from '../SuccessToast';
 import { PerpsActivityToaster } from '../PerpsActivity';
 import {
   QueueAbortError,
@@ -345,7 +344,6 @@ export function TransactionSigner() {
     <>
       <TransactionToaster />
       <PerpsActivityToaster />
-      <SuccessToast />
       <HardwareDialog ledgerDialogOpen={ledgerDialogOpen} />
       <LedgerDialogWrapper
         ref={iframeRef}

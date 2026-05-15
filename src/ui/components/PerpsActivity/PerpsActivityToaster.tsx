@@ -19,7 +19,6 @@ import {
   type PerpsActivitySession,
 } from 'src/modules/hyperliquid/perpsActivityStore';
 import { useReducedMotion } from '../TransactionSigner/Toaster/useReducedMotion';
-import { showSuccessToast } from '../SuccessToast';
 import * as s from './styles.module.css';
 
 const ENTRANCE_SPRING = {
@@ -40,8 +39,13 @@ const SUCCESS_TITLE: Record<PerpsActivityKind, string> = {
   'perps-open': 'Position opened',
   'perps-add': 'Position updated',
   'perps-close': 'Position closed',
-  'perps-deposit': 'Deposited',
-  'perps-withdraw': 'Withdrawn',
+  'perps-deposit': 'Deposit submitted',
+  'perps-withdraw': 'Withdrawal submitted',
+};
+
+const SUCCESS_SUBTITLE: Partial<Record<PerpsActivityKind, string>> = {
+  'perps-deposit': 'Funds may take a few minutes to settle',
+  'perps-withdraw': 'Funds may take a few minutes to settle',
 };
 
 const FAILED_TITLE: Record<PerpsActivityKind, string> = {
@@ -140,10 +144,10 @@ function getSubtitle(session: PerpsActivitySession): string | null {
   if (session.terminal.state === 'failed') {
     return session.terminal.error.message || null;
   }
-  // Running state surfaces the per-step label; success shows nothing
-  // (the global SuccessToast carries the success copy).
-  if (session.terminal.state === 'running') return session.label;
-  return null;
+  if (session.terminal.state === 'success') {
+    return SUCCESS_SUBTITLE[session.kind] ?? null;
+  }
+  return session.label;
 }
 
 export function PerpsActivityToaster() {
@@ -340,11 +344,6 @@ const PREVIEW_SUCCESS_TEXT: Record<PerpsActivityKind, string> = {
   'perps-withdraw': 'Withdrawal submitted',
 };
 
-const PREVIEW_SETTLE_SUBTITLE: Partial<Record<PerpsActivityKind, string>> = {
-  'perps-deposit': 'May take a few minutes',
-  'perps-withdraw': 'May take a few minutes',
-};
-
 function PerpsActivityToasterPreview() {
   const [kind, setKind] = useState<PerpsActivityKind>('perps-open');
   const [running, setRunning] = useState(false);
@@ -358,10 +357,6 @@ function PerpsActivityToasterPreview() {
     }, 1500);
     setTimeout(() => {
       succeed({ text: PREVIEW_SUCCESS_TEXT[kind] });
-      showSuccessToast({
-        text: PREVIEW_SUCCESS_TEXT[kind],
-        subtitle: PREVIEW_SETTLE_SUBTITLE[kind],
-      });
       setRunning(false);
     }, 3000);
   }
@@ -409,18 +404,6 @@ function PerpsActivityToasterPreview() {
           disabled={running}
         >
           Run fail path
-        </Button>
-        <Button
-          kind="regular"
-          size={36}
-          onClick={() =>
-            showSuccessToast({
-              text: PREVIEW_SUCCESS_TEXT[kind],
-              subtitle: PREVIEW_SETTLE_SUBTITLE[kind],
-            })
-          }
-        >
-          Success toast only
         </Button>
         <Button kind="regular" size={36} onClick={reset}>
           Reset

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useClearinghouseStates } from 'src/modules/hyperliquid/hooks/useClearinghouseStates';
 import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useHyperliquidAccountSummary';
@@ -20,6 +20,7 @@ import { Frame } from 'src/ui/ui-kit/Frame';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import skeletonStyles from 'src/ui/pages/SwapForm2/styles.module.css';
 import { PerpsOnboarding } from '../PerpsOnboarding';
@@ -262,7 +263,13 @@ export function PerpsOverview() {
   const { singleAddress: address } = useAddressParams();
   const { currency } = useCurrency();
   const historyDialog = useDialog2();
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const { preferences, setPreferences } = usePreferences();
+  const onboardingDismissed = preferences?.perpsOnboardingDismissed === true;
+  const [onboardingOpen, setOnboardingOpen] = useState(!onboardingDismissed);
+
+  useEffect(() => {
+    if (onboardingDismissed) setOnboardingOpen(false);
+  }, [onboardingDismissed]);
 
   const { effectiveAccountValueUSD, isModeReady } =
     useHyperliquidAccountSummary({ address });
@@ -363,7 +370,12 @@ export function PerpsOverview() {
       </Dialog2>
       <PerpsOnboarding
         open={onboardingOpen}
-        onDismiss={() => setOnboardingOpen(false)}
+        onDismiss={() => {
+          setOnboardingOpen(false);
+          if (!onboardingDismissed) {
+            setPreferences({ perpsOnboardingDismissed: true });
+          }
+        }}
       />
     </VStack>
   );
