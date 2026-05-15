@@ -12,17 +12,12 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { useReceiverDisplayName } from 'src/ui/components/ReceiverAddressDialog';
-import {
-  KeyboardShortcut,
-  ShortcutHint,
-} from 'src/ui/components/KeyboardShortcut';
-import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
-import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { invariant } from 'src/shared/invariant';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { Button } from 'src/ui/ui-kit/Button';
+import { markHyperliquidOpSubmitted } from 'src/modules/hyperliquid/useHyperliquidRefetchInterval';
+import { HoldableButton } from 'src/ui/pages/SwapForm2/SwapButton/HoldableButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -113,6 +108,7 @@ export function PerpsWithdraw() {
       });
     },
     onSuccess: () => {
+      markHyperliquidOpSubmitted();
       // Withdrawal originates from the main perps DEX (dexIdentifier=undefined);
       // only that variant's clearinghouseState needs refreshing. Keyed
       // `[name, payload]`, so partial-match needs predicate form.
@@ -146,13 +142,6 @@ export function PerpsWithdraw() {
   }
 
   const submitDisabled = !address || !amountValid || withdrawMutation.isLoading;
-
-  const { preferences } = usePreferences();
-  const keyboardShortcutEnabled = Boolean(
-    preferences?.enableKeyboardShortcutToSign
-  );
-  const windowFocused = useWindowFocus();
-  const shortcutActive = keyboardShortcutEnabled && !submitDisabled;
 
   const errorText = amountTooHigh
     ? 'Exceeds available balance'
@@ -359,24 +348,11 @@ export function PerpsWithdraw() {
       </VStack>
       <div className={s.absoluteFooter}>
         <Spacer height={16} />
-        <KeyboardShortcut
-          combination="mod+enter"
-          onKeyDown={handleSubmit}
-          disabled={!shortcutActive}
-          availableDuringInputs={true}
-        />
-        <Button
-          kind="primary"
-          size={48}
-          onClick={handleSubmit}
+        <HoldableButton
+          label="Withdraw"
           disabled={submitDisabled}
-          style={{ width: '100%' }}
-        >
-          <HStack gap={8} alignItems="center" justifyContent="center">
-            <span>Withdraw</span>
-            {shortcutActive && windowFocused ? <ShortcutHint /> : null}
-          </HStack>
-        </Button>
+          onFire={handleSubmit}
+        />
         <PageBottom />
       </div>
     </PageColumn>

@@ -19,8 +19,7 @@ export const PERP_DEXS_QUERY_KEY = 'hyperliquid/perpDexs';
 export const perpDexsQueryOptions = {
   queryKey: [PERP_DEXS_QUERY_KEY] as const,
   queryFn: fetchDexList,
-  staleTime: 10_000,
-  refetchInterval: 10_000,
+  staleTime: 1000 * 60 * 5,
   keepPreviousData: true,
   retry: 1,
   suspense: false,

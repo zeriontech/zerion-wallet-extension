@@ -10,7 +10,11 @@ export function useMetaAndAssetCtxs(
     suspense = false,
     enabled = true,
     refetchInterval,
-  }: { suspense?: boolean; enabled?: boolean; refetchInterval?: number } = {}
+  }: {
+    suspense?: boolean;
+    enabled?: boolean;
+    refetchInterval?: number | false;
+  } = {}
 ) {
   return useQuery({
     queryKey: [META_AND_ASSET_CTXS_QUERY_KEY, payload],
@@ -18,7 +22,7 @@ export function useMetaAndAssetCtxs(
     retry: 0,
     suspense,
     enabled,
-    staleTime: 5_000,
+    staleTime: 10_000,
     refetchInterval,
   });
 }

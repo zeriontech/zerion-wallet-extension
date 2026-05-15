@@ -23,7 +23,7 @@ export function useSpotClearinghouseState(
   {
     enabled = true,
     refetchInterval,
-  }: { enabled?: boolean; refetchInterval?: number } = {}
+  }: { enabled?: boolean; refetchInterval?: number | false } = {}
 ) {
   return useQuery({
     queryKey: [SPOT_CLEARINGHOUSE_STATE_QUERY_KEY, payload.address],

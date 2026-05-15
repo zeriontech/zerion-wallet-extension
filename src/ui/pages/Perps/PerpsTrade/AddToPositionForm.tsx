@@ -8,6 +8,8 @@ import type { PerpPosition } from 'src/modules/hyperliquid/api/requests/perp-cle
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
 import { calculateIsolatedLiquidationPrice } from 'src/modules/hyperliquid/calc/calculateLiquidationPrice';
 import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
+import { getPerpDisplayName } from 'src/modules/hyperliquid/parsePerpId';
+import { Frame } from 'src/ui/ui-kit/Frame';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -127,67 +129,79 @@ export function AddToPositionForm({
         ))}
       </div>
 
-      <VStack gap={12} className={s.controlGroupFrame}>
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Available
-          </UIText>
-          <UIText kind="small/accent">
-            {formatCurrencyValue(availableToTrade, 'en', currency)}
-          </UIText>
-        </HStack>
-        <div className={s.frameDivider} />
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Adding to {isLong ? 'Long' : 'Short'}
-          </UIText>
-          <UIText kind="small/accent">
-            {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
-            {asset.universe.name} · {positionLeverage}x
-          </UIText>
-        </HStack>
-      </VStack>
+      <Frame>
+        <VStack gap={12} className={s.controlGroupBody}>
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Available
+            </UIText>
+            <UIText kind="small/accent">
+              {formatCurrencyValue(availableToTrade, 'en', currency)}
+            </UIText>
+          </HStack>
+          <div className={s.frameDivider} />
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Adding to {isLong ? 'Long' : 'Short'}
+            </UIText>
+            <UIText kind="small/accent">
+              {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
+              {getPerpDisplayName(asset.universe.name)} ·{' '}
+              {formatCurrencyValue(Number(position.marginUsed), 'en', currency)}
+            </UIText>
+          </HStack>
+          <div className={s.frameDivider} />
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Leverage
+            </UIText>
+            <UIText kind="small/accent">{positionLeverage}x</UIText>
+          </HStack>
+        </VStack>
+      </Frame>
 
-      <VStack gap={12} className={s.controlGroupFrame}>
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Add size
-          </UIText>
-          <UIText kind="small/accent">
-            {addSize > 0
-              ? `${addSize.toFixed(Math.max(szDecimals, 2))} ${
-                  asset.universe.name
-                }`
-              : '—'}
-          </UIText>
-        </HStack>
-        <div className={s.frameDivider} />
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            New liquidation price
-          </UIText>
-          <UIText kind="small/accent">
-            {newLiquidationPrice != null
-              ? formatPriceValue(newLiquidationPrice, 'en', currency)
-              : '—'}
-          </UIText>
-        </HStack>
-        <div className={s.frameDivider} />
-        <UnstyledButton
-          type="button"
-          className={s.controlGroupRow}
-          onClick={onFeeBreakdownClick}
-          style={{ cursor: onFeeBreakdownClick ? 'pointer' : 'default' }}
-        >
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Fee
-          </UIText>
-          <UIText kind="small/accent">
-            {(totalFeeRate * 100).toFixed(3)}% (
-            {formatCurrencyValue(feeCost, 'en', currency)})
-          </UIText>
-        </UnstyledButton>
-      </VStack>
+      <Frame>
+        <VStack gap={12} className={s.controlGroupBody}>
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Add size
+            </UIText>
+            <UIText kind="small/accent">
+              {addSize > 0
+                ? `${addSize.toFixed(Math.max(szDecimals, 2))} ${
+                    asset.universe.name
+                  }`
+                : '—'}
+            </UIText>
+          </HStack>
+          <div className={s.frameDivider} />
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              New liquidation price
+            </UIText>
+            <UIText kind="small/accent">
+              {newLiquidationPrice != null
+                ? formatPriceValue(newLiquidationPrice, 'en', currency)
+                : '—'}
+            </UIText>
+          </HStack>
+          <div className={s.frameDivider} />
+          <UnstyledButton
+            type="button"
+            className={s.controlGroupRow}
+            onClick={onFeeBreakdownClick}
+            style={{ cursor: onFeeBreakdownClick ? 'pointer' : 'default' }}
+          >
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Fee
+            </UIText>
+            <UIText kind="small/accent">
+              {(totalFeeRate * 100).toFixed(3)}% (
+              {formatCurrencyValue(feeCost, 'en', currency)})
+            </UIText>
+          </UnstyledButton>
+        </VStack>
+      </Frame>
 
       {addNotional > 0 && addNotional < MIN_ORDER_NOTIONAL_USD ? (
         <UIText kind="caption/regular" className={s.error}>

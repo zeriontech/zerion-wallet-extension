@@ -30,7 +30,11 @@ export function useClearinghouseState(
     suspense = false,
     enabled = true,
     refetchInterval,
-  }: { suspense?: boolean; enabled?: boolean; refetchInterval?: number } = {}
+  }: {
+    suspense?: boolean;
+    enabled?: boolean;
+    refetchInterval?: number | false;
+  } = {}
 ) {
   return useQuery({
     queryKey: [CLEARINGHOUSE_STATE_QUERY_KEY, payload],

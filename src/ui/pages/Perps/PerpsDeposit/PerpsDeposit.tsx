@@ -14,6 +14,7 @@ import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetList
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
+import { markHyperliquidOpSubmitted } from 'src/modules/hyperliquid/useHyperliquidRefetchInterval';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -41,7 +42,6 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
@@ -50,14 +50,9 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { getError } from 'get-error';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import {
-  KeyboardShortcut,
-  ShortcutHint,
-} from 'src/ui/components/KeyboardShortcut';
-import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { InputPosition } from 'src/ui/pages/SwapForm2/InputPosition';
 import type { SwapFormState2 } from 'src/ui/pages/SwapForm2/types';
-import * as swapButtonStyles from 'src/ui/pages/SwapForm2/SwapButton/SwapButton.module.css';
+import { HoldableButton } from 'src/ui/pages/SwapForm2/SwapButton/HoldableButton';
 import { PerpsOnboarding } from '../PerpsOnboarding';
 import { RiskDisclosureBlock } from '../Blocks/RiskDisclosureBlock';
 import * as s from './styles.module.css';
@@ -137,8 +132,6 @@ function DepositFormBody({
   const { currency } = useCurrency();
   const { networks } = useNetworks();
   const { globalPreferences } = useGlobalPreferences();
-  const { preferences } = usePreferences();
-  const windowFocused = useWindowFocus();
 
   const [userFormState, setUserFormState] = useUserFormState();
 
@@ -381,6 +374,7 @@ function DepositFormBody({
       });
     },
     onSuccess: () => {
+      markHyperliquidOpSubmitted();
       // Deposit lands on the main perps DEX (dexIdentifier=undefined), so only
       // invalidate that variant's clearinghouseState — leave builder-DEX caches
       // alone. Keyed `[name, payload]`, so partial-match needs predicate form.
@@ -439,9 +433,6 @@ function DepositFormBody({
     : signMutation.isLoading
     ? 'Sending…'
     : 'Deposit';
-
-  const shortcutActive =
-    Boolean(preferences?.enableKeyboardShortcutToSign) && !submitDisabled;
 
   return (
     <PageColumn>
@@ -525,25 +516,11 @@ function DepositFormBody({
             />
           </VStack>
         ) : null}
-        <KeyboardShortcut
-          combination="mod+enter"
-          onKeyDown={() => handleDeposit()}
-          disabled={!shortcutActive}
-          availableDuringInputs={true}
-        />
-        <button
-          type="button"
-          className={swapButtonStyles.button}
+        <HoldableButton
+          label={buttonLabel}
           disabled={submitDisabled}
-          onClick={() => handleDeposit()}
-        >
-          <span className={swapButtonStyles.label}>
-            <HStack gap={8} alignItems="center" justifyContent="center">
-              <span>{buttonLabel}</span>
-              {shortcutActive && windowFocused ? <ShortcutHint /> : null}
-            </HStack>
-          </span>
-        </button>
+          onFire={() => handleDeposit()}
+        />
         <PageBottom />
       </div>
     </PageColumn>

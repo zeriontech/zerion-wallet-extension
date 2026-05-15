@@ -207,13 +207,7 @@
   background-color: var(--neutral-200);
 }
 
-.controlGroupFrame {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border: 1px solid var(--neutral-200);
-  background: var(--white);
-  border-radius: 16px;
+.controlGroupBody {
   padding: 12px 16px;
   width: 100%;
   box-sizing: border-box;

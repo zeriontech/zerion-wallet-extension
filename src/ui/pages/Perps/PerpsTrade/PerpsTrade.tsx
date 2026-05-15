@@ -12,6 +12,10 @@ import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useH
 import { useMetaAndAssetCtxs } from 'src/modules/hyperliquid/hooks/useMetaAndAssetCtxs';
 import { usePerpActiveAssetData } from 'src/modules/hyperliquid/hooks/usePerpActiveAssetData';
 import { usePerpDexs } from 'src/modules/hyperliquid/hooks/usePerpDexs';
+import {
+  markHyperliquidOpSubmitted,
+  useHyperliquidRefetchInterval,
+} from 'src/modules/hyperliquid/useHyperliquidRefetchInterval';
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
 import { calculatePriceWithSlippage } from 'src/modules/hyperliquid/calc/calculatePriceWithSlippage';
 import { computeAssetId } from 'src/modules/hyperliquid/calc/computeAssetId';
@@ -32,14 +36,8 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import {
-  KeyboardShortcut,
-  ShortcutHint,
-} from 'src/ui/components/KeyboardShortcut';
-import { usePreferences } from 'src/ui/features/preferences/usePreferences';
-import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { HStack } from 'src/ui/ui-kit/HStack';
+import { HoldableButton } from 'src/ui/pages/SwapForm2/SwapButton/HoldableButton';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -65,31 +63,10 @@ function SubmitFooter({
   disabled: boolean;
   onSubmit: () => void;
 }) {
-  const { preferences } = usePreferences();
-  const windowFocused = useWindowFocus();
-  const shortcutActive =
-    Boolean(preferences?.enableKeyboardShortcutToSign) && !disabled;
-
   return (
     <div className={s.absoluteFooter}>
       <Spacer height={16} />
-      <KeyboardShortcut
-        combination="mod+enter"
-        onKeyDown={() => onSubmit()}
-        disabled={!shortcutActive}
-        availableDuringInputs={true}
-      />
-      <button
-        type="button"
-        className={s.submitButton}
-        onClick={onSubmit}
-        disabled={disabled}
-      >
-        <HStack gap={8} alignItems="center" justifyContent="center">
-          <span>{label}</span>
-          {shortcutActive && windowFocused ? <ShortcutHint /> : null}
-        </HStack>
-      </button>
+      <HoldableButton label={label} disabled={disabled} onFire={onSubmit} />
       <PageBottom />
     </div>
   );
@@ -110,9 +87,10 @@ export function PerpsTrade() {
   const [leverageOpen, setLeverageOpen] = useState(false);
   const [autoCloseOpen, setAutoCloseOpen] = useState(false);
 
+  const ctxRefetchInterval = useHyperliquidRefetchInterval(10_000);
   const { data: ctxData } = useMetaAndAssetCtxs(
     { dexIdentifier: parsed.dexIdentifier },
-    { refetchInterval: 5000 }
+    { refetchInterval: ctxRefetchInterval }
   );
   const asset = useMemo(
     () => findPerpAsset(ctxData, parsed.coin),
@@ -157,9 +135,10 @@ export function PerpsTrade() {
   const { effectiveWithdrawableUSDC, isUnified } = useHyperliquidAccountSummary(
     { address }
   );
+  const activeAssetDataRefetchInterval = useHyperliquidRefetchInterval(10_000);
   const { data: activeAssetData } = usePerpActiveAssetData(
     { address, coin: parsed.coin },
-    { refetchInterval: 10_000 }
+    { refetchInterval: activeAssetDataRefetchInterval }
   );
   const availableToTrade: [number, number] = (() => {
     if (!activeAssetData) {
@@ -433,6 +412,7 @@ export function PerpsTrade() {
       }
     },
     onSuccess: () => {
+      markHyperliquidOpSubmitted();
       // Scope each invalidation to (this address, this DEX, this coin) so we
       // don't refetch every cached DEX variant. `clearinghouseState`,
       // `metaAndAssetCtxs`, and `userFills` are keyed `[name, payload]` so we

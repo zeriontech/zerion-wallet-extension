@@ -41,7 +41,7 @@ export function useClearinghouseStates(
               dexIdentifier: dex,
             }),
             enabled: enabled && Boolean(address) && Boolean(dexs),
-            refetchInterval: 10_000,
+            refetchInterval: 20_000,
           }
         : {
             ...clearinghouseStateQueryOptions({

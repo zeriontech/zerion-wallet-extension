@@ -10,7 +10,11 @@ export function useUserFills(
     suspense = false,
     enabled = true,
     refetchInterval,
-  }: { suspense?: boolean; enabled?: boolean; refetchInterval?: number } = {}
+  }: {
+    suspense?: boolean;
+    enabled?: boolean;
+    refetchInterval?: number | false;
+  } = {}
 ) {
   return useQuery({
     queryKey: [USER_FILLS_QUERY_KEY, payload],

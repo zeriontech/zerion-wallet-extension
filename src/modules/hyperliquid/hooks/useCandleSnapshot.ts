@@ -10,7 +10,11 @@ export function useCandleSnapshot(
     suspense = false,
     enabled = true,
     refetchInterval,
-  }: { suspense?: boolean; enabled?: boolean; refetchInterval?: number } = {}
+  }: {
+    suspense?: boolean;
+    enabled?: boolean;
+    refetchInterval?: number | false;
+  } = {}
 ) {
   return useQuery({
     queryKey: [CANDLE_SNAPSHOT_QUERY_KEY, payload],

@@ -5,6 +5,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import type { PerpPosition } from 'src/modules/hyperliquid/api/requests/perp-clearinghouse-state.types';
 import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
+import { Frame } from 'src/ui/ui-kit/Frame';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -115,78 +116,82 @@ export function ClosePositionForm({
         ))}
       </div>
 
-      <VStack gap={12} className={s.controlGroupFrame}>
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/accent">PnL</UIText>
-          <HStack
-            gap={4}
-            alignItems="center"
-            className={s.pnlChip}
-            style={{
-              backgroundColor: isPnlPositive
-                ? 'var(--positive-200)'
-                : 'var(--negative-200)',
-              color: isPnlPositive
-                ? 'var(--positive-500)'
-                : 'var(--negative-500)',
-            }}
-          >
-            <UIText kind="small/accent" color="inherit">
-              {isPnlPositive ? '+' : '-'}
-              {formatCurrencyValue(Math.abs(pnlOnClose), 'en', currency)}
+      <Frame>
+        <VStack gap={12} className={s.controlGroupBody}>
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/accent">PnL</UIText>
+            <HStack
+              gap={4}
+              alignItems="center"
+              className={s.pnlChip}
+              style={{
+                backgroundColor: isPnlPositive
+                  ? 'var(--positive-200)'
+                  : 'var(--negative-200)',
+                color: isPnlPositive
+                  ? 'var(--positive-500)'
+                  : 'var(--negative-500)',
+              }}
+            >
+              <UIText kind="small/accent" color="inherit">
+                {isPnlPositive ? '+' : '-'}
+                {formatCurrencyValue(Math.abs(pnlOnClose), 'en', currency)}
+              </UIText>
+            </HStack>
+          </HStack>
+          <div className={s.frameDivider} />
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/accent">Receive</UIText>
+            <UIText kind="small/accent">
+              {formatCurrencyValue(receiveUsd, 'en', currency)}
+              {closeSize > 0
+                ? ` (${formatTokenValue(closeSize, asset.universe.name)})`
+                : ''}
             </UIText>
           </HStack>
-        </HStack>
-        <div className={s.frameDivider} />
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/accent">Receive</UIText>
-          <UIText kind="small/accent">
-            {formatCurrencyValue(receiveUsd, 'en', currency)}
-            {closeSize > 0
-              ? ` (${formatTokenValue(closeSize, asset.universe.name)})`
-              : ''}
-          </UIText>
-        </HStack>
-      </VStack>
+        </VStack>
+      </Frame>
 
-      <VStack gap={12} className={s.controlGroupFrame}>
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Closing size
-          </UIText>
-          <UIText kind="small/accent">
-            {closeSize > 0
-              ? `${closeSize.toFixed(Math.max(szDecimals, 2))} ${
-                  asset.universe.name
-                }`
-              : '—'}
-          </UIText>
-        </HStack>
-        <div className={s.frameDivider} />
-        <HStack gap={8} justifyContent="space-between" alignItems="center">
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Remaining
-          </UIText>
-          <UIText kind="small/accent">
-            {formatCurrencyValue(remainingUsd, 'en', currency)}
-          </UIText>
-        </HStack>
-        <div className={s.frameDivider} />
-        <UnstyledButton
-          type="button"
-          className={s.controlGroupRow}
-          onClick={onFeeBreakdownClick}
-          style={{ cursor: onFeeBreakdownClick ? 'pointer' : 'default' }}
-        >
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            Fee
-          </UIText>
-          <UIText kind="small/accent">
-            {(totalFeeRate * 100).toFixed(3)}% (
-            {formatCurrencyValue(feeCost, 'en', currency)})
-          </UIText>
-        </UnstyledButton>
-      </VStack>
+      <Frame>
+        <VStack gap={12} className={s.controlGroupBody}>
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Closing size
+            </UIText>
+            <UIText kind="small/accent">
+              {closeSize > 0
+                ? `${closeSize.toFixed(Math.max(szDecimals, 2))} ${
+                    asset.universe.name
+                  }`
+                : '—'}
+            </UIText>
+          </HStack>
+          <div className={s.frameDivider} />
+          <HStack gap={8} justifyContent="space-between" alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Remaining
+            </UIText>
+            <UIText kind="small/accent">
+              {formatCurrencyValue(remainingUsd, 'en', currency)}
+            </UIText>
+          </HStack>
+          <div className={s.frameDivider} />
+          <UnstyledButton
+            type="button"
+            className={s.controlGroupRow}
+            onClick={onFeeBreakdownClick}
+            style={{ cursor: onFeeBreakdownClick ? 'pointer' : 'default' }}
+          >
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Fee
+            </UIText>
+            <UIText kind="small/accent">
+              {(totalFeeRate * 100).toFixed(3)}% (
+              {formatCurrencyValue(feeCost, 'en', currency)})
+            </UIText>
+          </UnstyledButton>
+        </VStack>
+      </Frame>
 
       {remainderTooSmall ? (
         <UIText kind="caption/regular" className={s.error}>
