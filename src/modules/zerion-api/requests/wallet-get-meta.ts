@@ -149,6 +149,7 @@ export interface WalletMeta {
     chain: string;
     contractAddress: string;
     tokenId: string;
+    previewUrl: string | null;
     metadata: {
       name: string | null;
       content: WalletMetaMediaContent | null;

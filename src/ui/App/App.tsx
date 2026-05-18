@@ -49,6 +49,7 @@ import { defaultUIContextValue, UIContext } from '../components/UIContext';
 import { ConnectedSites } from '../pages/ConnectedSites';
 import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
+import { TransactionSigner } from '../components/TransactionSigner';
 import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
@@ -67,13 +68,14 @@ import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarni
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 import { SendForm } from '../pages/SendForm';
-import { SwapForm } from '../pages/SwapForm';
+// import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
 import { usePreferences } from '../features/preferences';
 import { openUrl } from '../shared/openUrl';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
+import { DevMenu } from '../features/dev-menu';
 import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { SelectConnectedWallet } from '../pages/SelectConnectedWallet/SelectConnectedWallet';
@@ -83,7 +85,7 @@ import { AssetInfo } from '../pages/AssetInfo';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
-import { BridgeForm } from '../pages/BridgeForm';
+// import { BridgeForm } from '../pages/BridgeForm';
 import { ActionInfo } from '../pages/ActionInfo';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
@@ -91,6 +93,8 @@ import { ScreenViewTracker } from '../shared/ScreenViewTracker';
 import { PremiumPage } from '../pages/Premium';
 import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
+import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
+import { SwapForm } from '../pages/SwapForm/SwapForm';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -211,6 +215,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
   return (
     <ViewArea>
       <URLBar />
+      <TransactionSigner />
       {isPopup ? <RouteRestoration /> : null}
       <Routes>
         {initialRoute ? (
@@ -404,7 +409,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           }
         />
         <Route
-          path="/swap-form/*"
+          path="/swap-form-old/*"
           element={
             <RequireAuth>
               <SwapForm />
@@ -412,10 +417,18 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           }
         />
         <Route
+          path="/swap-form/*"
+          element={
+            <RequireAuth>
+              <SwapForm2 />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/bridge-form/*"
           element={
             <RequireAuth>
-              <BridgeForm />
+              <SwapForm2 />
             </RequireAuth>
           }
         />
@@ -594,6 +607,7 @@ export function App({ initialView, inspect }: AppProps) {
                   // Render above <ViewSuspense /> so that it doesn't flicker
                   <MaybeTestModeDecoration />
                 ) : null}
+                {!isOnboardingView ? <DevMenu /> : null}
                 <ViewSuspense logDelays={true}>
                   <Routes>
                     <Route path="/playground/*" element={<Playground />} />

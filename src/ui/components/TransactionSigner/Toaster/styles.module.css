@@ -1,0 +1,263 @@
+.root {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  inset: 0;
+}
+
+.dragArea {
+  position: absolute;
+  inset: 16px;
+  pointer-events: none;
+}
+
+.pill {
+  position: fixed;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border-radius: 40px;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.12);
+  border: none;
+  outline: none;
+  text-align: left;
+  font-family: inherit;
+  color: var(--black);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.pill:active {
+  cursor: grabbing;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+.pill img {
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.measureWrap {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  width: max-content;
+  flex-shrink: 0;
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.iconSlot {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.spinnerCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-500);
+}
+
+.iconBack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.iconFront {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--white);
+  border: 1.5px solid var(--white);
+}
+
+.iconSingle {
+  position: absolute;
+  inset: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.chainBadge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--white);
+  border: 1px solid var(--white);
+}
+
+/* Chain badge anchored to the back token (top-left position) */
+.chainBadgeBack {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--white);
+  border: 1px solid var(--white);
+  z-index: 1;
+}
+
+/* Chain badge anchored to the front token (bottom-right position) */
+.chainBadgeFront {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--white);
+  border: 1px solid var(--white);
+  z-index: 1;
+}
+
+.statusBadge {
+  position: absolute;
+  inset: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+}
+
+.statusBadgeOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconLayer {
+  position: absolute;
+  inset: 0;
+}
+
+.statusBadgeSuccess {
+  background: var(--positive-500, #1cba75);
+}
+
+.statusBadgeFailed {
+  background: var(--negative-500, #ff4242);
+}
+
+.body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.iconWrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.18px;
+}
+
+.subtitle {
+  color: var(--neutral-700);
+}
+
+.counter {
+  margin-left: 8px;
+  padding: 2px 8px 3px;
+  border-radius: 999px;
+  color: var(--neutral-200);
+  background-color: var(--neutral-800);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.loaderLine {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.loaderBlob {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 50% 50% at center,
+    var(--neutral-400) 0%,
+    transparent 100%
+  );
+}
+
+.loaderStretch {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 50% 50% at center,
+    var(--neutral-400) 0%,
+    transparent 100%
+  );
+}
+
+.loaderSolid {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 50% 50% at center,
+    var(--solid-color, transparent) 0%,
+    transparent 100%
+  );
+}

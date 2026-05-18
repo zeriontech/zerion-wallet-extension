@@ -167,6 +167,8 @@ export interface Quote2 {
   contractMetadata: ContractMetadata2;
   /** @description Expected output amount for the swap */
   outputAmount: Amount;
+  /** @description Expected output amount for the swap after all fees are deducted */
+  outputAmountAfterFees: Amount;
   /** @description Minimum expected output amount for the swap */
   minimumOutputAmount: Amount;
   /** @description Error information if the swap cannot proceed.
@@ -206,6 +208,10 @@ export interface Quote2 {
   transactionApprove: null | TransactionMultichain;
   /** @description Main swap transaction */
   transactionSwap: null | TransactionMultichain;
+  /** @description Slippage chosen by the backend when the request omits one (auto mode). */
+  autoSlippage: number | null;
+  /** @description Final slippage applied to the quote, in percent (e.g. 0.5 = 0.5%). */
+  finalSlippage: number | null;
 }
 
 export function toMultichainTransaction(

@@ -12,6 +12,9 @@ import { createHeaders } from 'src/modules/zerion-api/shared';
 import { weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { invariant } from 'src/shared/invariant';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
+import { useStore } from '@store-unit/react';
+import { devMenuStore } from 'src/ui/features/dev-menu/store';
+import { applyPriceImpactOverride } from 'src/ui/features/dev-menu/applyPriceImpactOverride';
 import { walletPort } from '../channels';
 import { useGasPrices } from './useGasPrices';
 import { useEventSource } from './useEventSource';
@@ -333,6 +336,7 @@ export function useQuotesV2({
   enabled = true,
   context,
   pathname,
+  inputFiatValue = null,
 }: {
   address: string;
   currency: string;
@@ -340,6 +344,7 @@ export function useQuotesV2({
   enabled?: boolean;
   context: 'Swap' | 'Bridge';
   pathname: string;
+  inputFiatValue?: number | null;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
@@ -351,23 +356,25 @@ export function useQuotesV2({
     if (!chain) {
       return null;
     }
+    if (formState.slippage === 'auto' || formState.slippage == null) {
+      return null;
+    }
     return String(
       getSlippageOptions({
         chain,
-        userSlippage:
-          formState.slippage != null ? Number(formState.slippage) : null,
+        userSlippage: Number(formState.slippage),
       }).slippagePercent
     );
   }, [chain, formState.slippage]);
 
   const url = useMemo(() => {
-    if (!chain || !slippage) {
+    if (!chain) {
       return null;
     }
     return createSwapQuotesV2Url({
       address,
       currency,
-      formState: { ...formState, slippage },
+      formState: { ...formState, slippage: slippage ?? undefined },
     });
   }, [address, currency, formState, chain, slippage]);
 
@@ -512,8 +519,21 @@ export function useQuotesV2({
     resultRef.current = null;
   }
 
+  const { priceImpactOverride } = useStore(devMenuStore);
+  const baseQuotes =
+    usePreviousData && resultRef.current ? resultRef.current : quotes;
+  const overriddenQuotes = useMemo(
+    () =>
+      applyPriceImpactOverride({
+        quotes: baseQuotes,
+        inputFiatValue,
+        override: priceImpactOverride,
+      }),
+    [baseQuotes, inputFiatValue, priceImpactOverride]
+  );
+
   return {
-    quotes: usePreviousData && resultRef.current ? resultRef.current : quotes,
+    quotes: overriddenQuotes,
     isPreviousData: Boolean(usePreviousData && resultRef.current),
     isLoading,
     error,
