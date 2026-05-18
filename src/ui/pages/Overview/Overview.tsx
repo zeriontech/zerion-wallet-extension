@@ -1,6 +1,7 @@
 import { useStore } from '@store-unit/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import FireIcon from 'jsx:src/ui/assets/fire.svg';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 import React, { useEffect, useRef } from 'react';
@@ -69,6 +70,7 @@ import { Networks } from 'src/modules/networks/Networks';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { HistoryList } from '../History/History';
+import { PerpsOverview } from '../Perps/PerpsOverview/PerpsOverview';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { SearchLinkIcon } from '../Search';
 import { ActionButtonsRow } from './ActionButtonsRow';
@@ -661,6 +663,17 @@ function OverviewComponent() {
             >
               History <PendingTransactionsIndicator />
             </SegmentedControlLink>
+            {currentWallet && addressType === 'evm' && !isReadonlyGroup ? (
+              <SegmentedControlLink
+                to="/overview/perps"
+                onClick={() => handleTabChange('/overview/perps')}
+              >
+                <HStack gap={4} alignItems="center">
+                  <FireIcon style={{ width: 16, height: 16 }} />
+                  <span>Perps</span>
+                </HStack>
+              </SegmentedControlLink>
+            ) : null}
           </SegmentedControlGroup>
         </div>
       </PageFullBleedColumn>
@@ -745,6 +758,16 @@ function OverviewComponent() {
                       onChainChange={setSelectedChain}
                     />
                   </TestnetworkGuard>
+                </ViewSuspense>
+              }
+            />
+            <Route
+              path="/perps"
+              element={
+                <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <NavigationTitle title={null} documentTitle="Perps" />
+                  <Spacer height={TAB_TOP_PADDING} />
+                  <PerpsOverview />
                 </ViewSuspense>
               }
             />

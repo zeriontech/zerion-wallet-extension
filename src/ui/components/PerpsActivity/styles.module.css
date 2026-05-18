@@ -1,0 +1,78 @@
+.root {
+  position: fixed;
+  z-index: 1050;
+  pointer-events: none;
+  inset: 0;
+}
+
+.pill {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  translate: -50% 0;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 8px 12px;
+  background: var(--white);
+  border-radius: 40px;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.12);
+  border: none;
+  outline: none;
+  font-family: inherit;
+  color: var(--black);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+.iconWrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  color: var(--neutral-500);
+}
+
+.statusBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+}
+
+.statusBadgeSuccess {
+  background: var(--positive-500, #1cba75);
+}
+
+.statusBadgeFailed {
+  background: var(--negative-500, #ff4242);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.18px;
+}
+
+.subtitle {
+  color: var(--neutral-700);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 16px;
+}

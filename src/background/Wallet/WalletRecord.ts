@@ -861,6 +861,7 @@ export class WalletRecordModel {
       pnlMode: 'pnl',
       receiveToAnotherAddress: false,
       addressesExcludedFromReceiverReadonlyWarning: [],
+      perpsOnboardingDismissed: false,
     };
     if (!record) {
       return defaults;

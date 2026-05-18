@@ -97,6 +97,7 @@ interface PublicPreferences {
    * "Don't show for this wallet" when proceeding past the gate.
    */
   addressesExcludedFromReceiverReadonlyWarning?: string[];
+  perpsOnboardingDismissed?: boolean;
 }
 
 export interface Permission {
