@@ -19,7 +19,7 @@ jobs:
       actions: read
     steps:
       - name: 'Download PR number'
-        uses: actions/github-script@v6
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6
         with:
           script: |
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -64,7 +64,7 @@ jobs:
 
       - name: Attach build artifacts to the PR thread
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@ffc2c79a5b2490bd33e0a41c1de74b877714d736 # v3
         with:
           script: |
             const pr_number = "${{ steps.get-build-artifacts.outputs.pr_number }}";

@@ -40,15 +40,22 @@ on:
 
 jobs:
   build_pull_request:
+    # Do not run on fork PRs — this job builds with production secrets injected
+    # as env vars, so it must only execute against trusted code.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup NodeJS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24.x'
 
@@ -87,7 +94,7 @@ jobs:
         run: |
           mkdir -p ./pr
           echo $PR_NUMBER > ./pr/pr_number
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pr_number
           path: pr/
@@ -101,7 +108,7 @@ jobs:
 
       - name: Upload build
         if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: zerion-wallet-extension
           path: zerion-wallet-extension-${{github.sha}}.zip
@@ -109,7 +116,7 @@ jobs:
       - name: Notify build succeeded
         id: notify-build-succeeded
         if: ${{ success() }}
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844 # v1.23.0
         with:
           channel-id: 'C04JLLQRB43'
           payload: |
@@ -141,7 +148,7 @@ jobs:
       - name: Notify build failed
         id: notify-build-failed
         if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844 # v1.23.0
         with:
           channel-id: 'C04JLLQRB43'
           payload: |

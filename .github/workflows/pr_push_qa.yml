@@ -40,15 +40,22 @@ on:
 
 jobs:
   build_pull_request:
+    # Critical: this job mints a GitHub App token with write access to the
+    # QA repo. It must never run on code from a fork.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Setup NodeJS
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24.x'
 
@@ -92,7 +99,7 @@ jobs:
 
       - name: Get QA repo token
         id: qa-repo-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         with:
           app-id: ${{ secrets.QA_REPO_APP_ID }}
           private-key: ${{ secrets.QA_REPO_APP_PRIVATE_KEY }}
