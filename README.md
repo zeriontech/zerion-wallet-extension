@@ -24,10 +24,11 @@ You can also download the latest build of the Zerion Extension from [here](https
 
 ### 1. Set Up Node
 
-This project requires Node.js version >=16. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org/). After installation, you can verify the Node version using the following command:
+This project requires Node.js version >=20.10 and npm >=11.10. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org/). After installation, you can verify the versions using the following commands:
 
 ```shell
 node --version
+npm --version
 ```
 
 ### 2. Install Project Dependencies
@@ -37,6 +38,22 @@ Run the following command to install all the required dependencies. This command
 ```shell
 npm install
 ```
+
+### Supply-chain cooldown
+
+To reduce exposure to npm supply-chain attacks, this project enforces a **15-day cooldown**: `npm install` will only resolve dependency versions that were published more than 15 days ago. Compromised "fresh" releases are usually detected and unpublished within that window.
+
+This is configured via `min-release-age=15` in the project's `.npmrc` and requires **npm >=11.10** (older npm silently ignores it). It applies to every `npm install` here and in CI.
+
+The cooldown only affects version _resolution_ (i.e. updating `package-lock.json`); a plain install from an existing lockfile is unaffected.
+
+**Overriding for an urgent fix.** If you need a security patch newer than 15 days, bypass the window for a single install and commit the result:
+
+```shell
+npm install <package>@<version> --min-release-age=0
+```
+
+Then commit the updated `package-lock.json` with a note explaining why.
 
 ### 3. Set Up Your .env File
 
