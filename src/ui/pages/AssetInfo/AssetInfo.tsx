@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
+import {
+  NavigationType,
+  useNavigate,
+  useNavigationType,
+  useParams,
+} from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -35,6 +40,8 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
+import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { ReceiverAddressDialog } from 'src/ui/components/ReceiverAddressDialog';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -103,6 +110,8 @@ function ShareAssetLink({ asset }: { asset: Asset }) {
 export function AssetInfo() {
   const { asset_code } = useParams();
   invariant(asset_code, 'Asset Code is required');
+  const navigate = useNavigate();
+  const recipientDialog = useDialog2();
   const navigationType = useNavigationType();
   useEffect(() => {
     if (navigationType === NavigationType.Push) {
@@ -279,10 +288,9 @@ export function AssetInfo() {
             </Button>
             {isEmptyBalance ? null : (
               <Button
-                as={UnstyledLink}
                 kind="primary"
                 size={48}
-                to={`/send-form?tokenAssetCode=${asset_code}&tokenChain=${chainWithTheBiggestBalance}`}
+                onClick={() => recipientDialog.openDialog()}
                 style={{ padding: 14 }}
                 aria-label="Send Token"
               >
@@ -290,6 +298,16 @@ export function AssetInfo() {
               </Button>
             )}
           </HStack>
+          <ReceiverAddressDialog
+            open={recipientDialog.open}
+            onClose={recipientDialog.closeDialog}
+            title="Recipient"
+            onSelect={(address) => {
+              navigate(
+                `/send-form?to=${address}&inputFungibleId=${asset_code}&inputChain=${chainWithTheBiggestBalance}`
+              );
+            }}
+          />
         </StickyBottomPanel>
       )}
     </PageColumn>

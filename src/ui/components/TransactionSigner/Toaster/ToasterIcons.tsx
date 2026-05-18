@@ -37,22 +37,26 @@ export function ToasterIcons({ view }: { view: ToasterView | undefined }) {
   if (view.kind === 'send') {
     return (
       <div className={s.iconSlot}>
-        <div className={s.iconBack}>
+        <div
+          className={s.iconBack}
+          style={view.isNft ? { borderRadius: 6 } : undefined}
+        >
           <TokenIcon
             src={view.token.iconUrl ?? undefined}
             symbol={view.token.symbol}
             size={28}
           />
         </div>
-        <div className={s.chainBadgeBack}>
-          <NetworkIcon src={view.chain.iconUrl} name={null} size={14} />
-        </div>
-        <div className={s.iconFront}>
+        <div className={s.iconFront} style={{ borderRadius: 6 }}>
           <WalletAvatar
             address={view.recipient.address}
-            size={28}
-            borderRadius={14}
+            size={26}
+            borderRadius={6}
+            disablePremiumHighlight
           />
+        </div>
+        <div className={s.chainBadgeFront}>
+          <NetworkIcon src={view.chain.iconUrl} name={null} size={14} />
         </div>
       </div>
     );

@@ -13,6 +13,7 @@ import {
 } from 'src/ui/ui-kit/SegmentedControl';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import {
   devMenuStore,
   hasAnyOverride,
@@ -20,12 +21,14 @@ import {
   setSimulationOutputDiscrepancy,
   setSimulationStatusOverride,
   setSimulationWarningOverride,
+  setUSDisclaimerOverride,
 } from './store';
 import type {
   PriceImpactOverride,
   SimulationOutputDiscrepancy,
   SimulationStatusOverride,
   SimulationWarningOverride,
+  USDisclaimerOverride,
 } from './store-types';
 import * as styles from './DevMenu.module.css';
 
@@ -55,6 +58,13 @@ const OUTPUT_DISCREPANCY_OPTIONS: {
   { value: 'off', label: 'Off' },
   { value: '50', label: '50%' },
 ];
+
+const US_DISCLAIMER_OPTIONS: { value: USDisclaimerOverride; label: string }[] =
+  [
+    { value: 'off', label: 'Off' },
+    { value: 'force-on', label: 'On' },
+    { value: 'force-off', label: 'Hide' },
+  ];
 
 function ShortcutHint() {
   const modKey = isMacOS() ? '⌘' : 'Ctrl';
@@ -205,6 +215,62 @@ export function DevMenu() {
                       </SegmentedControlRadio>
                     ))}
                   </SegmentedControlGroup>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>disclaimers</span>
+                  <span className={styles.sectionRule} />
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>us_disclaimer</span>
+                  <SegmentedControlGroup kind="secondary">
+                    {US_DISCLAIMER_OPTIONS.map((option) => (
+                      <SegmentedControlRadio
+                        key={option.value}
+                        name="dev-menu-us-disclaimer"
+                        value={option.value}
+                        checked={state.usDisclaimerOverride === option.value}
+                        onChange={() => setUSDisclaimerOverride(option.value)}
+                      >
+                        {option.label}
+                      </SegmentedControlRadio>
+                    ))}
+                  </SegmentedControlGroup>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>navigation</span>
+                  <span className={styles.sectionRule} />
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>legacy_forms</span>
+                  <div className={styles.navLinks}>
+                    <UnstyledLink
+                      to="/send-form-old"
+                      className={styles.navLink}
+                      onClick={() => popoverStore.hide()}
+                    >
+                      send (old)
+                    </UnstyledLink>
+                    <UnstyledLink
+                      to="/swap-form-old"
+                      className={styles.navLink}
+                      onClick={() => popoverStore.hide()}
+                    >
+                      swap (old)
+                    </UnstyledLink>
+                    <UnstyledLink
+                      to="/bridge-form-old"
+                      className={styles.navLink}
+                      onClick={() => popoverStore.hide()}
+                    >
+                      bridge
+                    </UnstyledLink>
+                  </div>
                 </div>
               </div>
             </VStack>

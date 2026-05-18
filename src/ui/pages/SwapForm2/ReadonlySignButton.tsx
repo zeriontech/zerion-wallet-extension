@@ -9,7 +9,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { emitter } from 'src/ui/shared/events';
 
-export function ReadonlySwapButton({
+export function ReadonlySignButton({
   wallet,
 }: {
   wallet: ExternallyOwnedAccount;

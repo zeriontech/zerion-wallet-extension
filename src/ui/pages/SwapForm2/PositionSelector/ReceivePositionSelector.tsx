@@ -19,14 +19,17 @@ import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { Input } from 'src/ui/ui-kit/Input';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
-import { NetworkChips, TabPanelWrapper } from './NetworkChips';
-import { TokenRow } from './TokenRow';
-import { useTopNetworks } from './useTopNetworks';
-import type { TopNetworksEntry } from './useTopNetworks';
-import { NetworkSelectorDialog } from './NetworkSelectorDialog';
-import type { VirtualListItem } from './VirtualizedTokenList';
-import { VirtualizedTokenList } from './VirtualizedTokenList';
-import * as styles from './styles.module.css';
+import {
+  NetworkChips,
+  TabPanelWrapper,
+} from 'src/ui/components/PositionSelector/NetworkChips';
+import { TokenRow } from 'src/ui/components/PositionSelector/TokenRow';
+import { useTopNetworks } from 'src/ui/components/PositionSelector/useTopNetworks';
+import type { TopNetworksEntry } from 'src/ui/components/PositionSelector/useTopNetworks';
+import type { VirtualListItem } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
+import { VirtualizedTokenList } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
+import * as styles from 'src/ui/components/PositionSelector/styles.module.css';
+import { NetworkSelect2 } from 'src/ui/components/NetworkSelect2';
 
 const SOLANA_CHAIN_ID = 'solana';
 const ETHEREUM_CHAIN_ID = 'ethereum';
@@ -439,6 +442,23 @@ export function ReceivePositionSelector({
     [topNetworks]
   );
 
+  const chainDistribution = useMemo(() => {
+    const distribution: Record<string, number> = {};
+    const chains: Record<string, true> = {};
+    let totalValue = 0;
+    for (const p of positions) {
+      const value = p.amount.value || 0;
+      distribution[p.chain.id] = (distribution[p.chain.id] || 0) + value;
+      chains[p.chain.id] = true;
+      totalValue += value;
+    }
+    return {
+      positionsChainsDistribution: distribution,
+      chains,
+      totalValue,
+    };
+  }, [positions]);
+
   const positionLookup = useMemo(() => {
     const map = new Map<string, FungiblePosition>();
     for (const p of receiverPositions) {
@@ -462,79 +482,92 @@ export function ReceivePositionSelector({
             onKeyDown={networkSelector.openDialog}
           />
         ) : null}
-        <ComboboxProvider
-          open={true}
-          focusLoop={false}
-          focusShift
-          focusWrap="horizontal"
-          resetValueOnHide
-          setValue={(value) => {
-            debouncedSetQuery(value);
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            minHeight: 0,
           }}
         >
-          <TabProvider
-            selectedId={selectedNetwork}
-            setSelectedId={(id) => {
-              if (!id) return;
-              setSelectedNetwork(id);
+          <ComboboxProvider
+            open={true}
+            focusLoop={false}
+            focusShift
+            focusWrap="horizontal"
+            resetValueOnHide
+            setValue={(value) => {
+              debouncedSetQuery(value);
             }}
           >
-            <div className={styles.stickyHeader}>
-              <div className={styles.searchWrapper}>
-                <SearchCombobox ref={comboboxRef} />
+            <TabProvider
+              selectedId={selectedNetwork}
+              setSelectedId={(id) => {
+                if (!id) return;
+                setSelectedNetwork(id);
+              }}
+            >
+              <div className={styles.panelRoot}>
+                <div className={styles.fixedHeader}>
+                  <div className={styles.searchWrapper}>
+                    <SearchCombobox ref={comboboxRef} />
+                  </div>
+                  <NetworkChips
+                    ref={chipsRef}
+                    networks={topNetworks}
+                    showAllTab={false}
+                    onOpenNetworkSelector={networkSelector.openDialog}
+                  />
+                </div>
+                <div className={styles.scrollArea}>
+                  <TabPanelWrapper>
+                    {debouncedQuery ? (
+                      <SearchResults
+                        query={debouncedQuery}
+                        activeChain={selectedNetwork}
+                        chipOrder={chipOrder}
+                        currency={currency}
+                        networks={networks}
+                        positionLookup={positionLookup}
+                        onSelect={(fungible, chainId) => {
+                          onSelect(fungible, chainId);
+                          onClose();
+                        }}
+                      />
+                    ) : (
+                      <ReceiveFungiblesList
+                        chain={selectedNetwork}
+                        currency={currency}
+                        networks={networks}
+                        positionLookup={positionLookup}
+                        onSelect={(fungible, chainId) => {
+                          onSelect(fungible, chainId);
+                          onClose();
+                        }}
+                      />
+                    )}
+                  </TabPanelWrapper>
+                </div>
               </div>
-              <NetworkChips
-                ref={chipsRef}
-                networks={topNetworks}
-                showAllTab={false}
-                onOpenNetworkSelector={networkSelector.openDialog}
-              />
-            </div>
-            <TabPanelWrapper>
-              {debouncedQuery ? (
-                <SearchResults
-                  query={debouncedQuery}
-                  activeChain={selectedNetwork}
-                  chipOrder={chipOrder}
-                  currency={currency}
-                  networks={networks}
-                  positionLookup={positionLookup}
-                  onSelect={(fungible, chainId) => {
-                    onSelect(fungible, chainId);
-                    onClose();
-                  }}
-                />
-              ) : (
-                <ReceiveFungiblesList
-                  chain={selectedNetwork}
-                  currency={currency}
-                  networks={networks}
-                  positionLookup={positionLookup}
-                  onSelect={(fungible, chainId) => {
-                    onSelect(fungible, chainId);
-                    onClose();
-                  }}
-                />
-              )}
-            </TabPanelWrapper>
-          </TabProvider>
-        </ComboboxProvider>
+            </TabProvider>
+          </ComboboxProvider>
+        </div>
       </Dialog2>
-      <NetworkSelectorDialog
+      <NetworkSelect2
         open={networkSelector.open}
         onClose={networkSelector.closeDialog}
-        networks={networks}
-        positions={positions}
-        mode="receive"
-        onSelect={(chainId) => {
-          setSelectedNetwork(chainId);
-          setPinnedFromDialog(chainId);
-          networkSelector.closeDialog();
+        value={selectedNetwork}
+        chainDistribution={chainDistribution}
+        standard="all"
+        filterPredicate={(network) =>
+          network.supports_trading || network.supports_bridging
+        }
+        onSelect={(value) => {
+          setSelectedNetwork(value);
+          setPinnedFromDialog(value);
           requestAnimationFrame(() => {
-            scrollChipIntoView(chainId);
+            scrollChipIntoView(value);
           });
-          // Defer past Ariakit's focus restoration (which would otherwise
-          // pull focus back to the globe trigger that opened this dialog).
           setTimeout(() => {
             comboboxRef.current?.focus();
           }, 300);

@@ -17,10 +17,6 @@ export type SwapFormState2 = {
 
   /** @description Parsed receiver address */
   to?: string;
-  /** @description Raw input value from receiver input */
-  receiverAddressInput?: string;
-  /** @description Whether to show receiver address input */
-  showReceiverAddressInput?: 'on' | 'off';
 
   /** @description Maximum acceptable slippage in percents */
   slippage?: 'auto' | string;

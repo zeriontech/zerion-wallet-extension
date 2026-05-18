@@ -286,13 +286,7 @@ export function useFormState({
           state.inputFungibleId || defaultFormState.inputFungibleId,
         inputAmount: undefined,
         outputAmount: undefined,
-        ...(isSameChain
-          ? {
-              to: undefined,
-              receiverAddressInput: undefined,
-              showReceiverAddressInput: undefined,
-            }
-          : null),
+        ...(isSameChain ? { to: undefined } : null),
       };
     });
   }, [defaultFormState, setUserFormState]);

@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigationType } from 'react-router';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
   createApproveAddressAction2,
@@ -72,15 +72,29 @@ import {
   resolveTransactionWarning,
 } from './TransactionWarning';
 import { UKDisclaimer } from './UKDisclaimer';
+import { USDisclaimer } from './USDisclaimer';
 import { SwapButton, type SimulationResult } from './SwapButton';
 import { TopUpWalletCTA } from './TopUpWalletCTA';
-import { ReadonlySwapButton } from './ReadonlySwapButton';
+import { ReadonlySignButton } from './ReadonlySignButton';
 import { UnverifiedWarning } from './UnverifiedWarning/UnverifiedWarning';
 import { PriceImpactWarning } from './PriceImpactWarning';
 import { SwapFormError, SwapFormSkeleton } from './SwapFormSkeleton';
 import { getCrossEcosystemState } from './shared/getCrossEcosystemState';
 import { SwapSettingsDialog } from './SwapSettingsDialog';
+import type { SwapFormState2 } from './types';
 import * as styles from './styles.module.css';
+
+const SWAP_FORM_SEARCH_PARAM_KEYS: (keyof SwapFormState2)[] = [
+  'inputChain',
+  'inputFungibleId',
+  'inputAmount',
+  'inputKind',
+  'outputChain',
+  'outputFungibleId',
+  'to',
+  'slippage',
+  'nonce',
+];
 
 function SwapFormComponent({
   address,
@@ -141,12 +155,8 @@ function SwapFormComponent({
   // (the address is no longer required) or when the output ecosystem itself
   // changes (an address from one ecosystem can never be valid for another).
   useEffect(() => {
-    if (!formState.to && !formState.receiverAddressInput) return;
-    setUserFormState((state) => ({
-      ...state,
-      to: undefined,
-      receiverAddressInput: undefined,
-    }));
+    if (!formState.to) return;
+    setUserFormState((state) => ({ ...state, to: undefined }));
     // Intentionally keyed only on the ecosystem-relevant signals — chain-
     // within-ecosystem switches must not clear the user's input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,6 +227,13 @@ function SwapFormComponent({
     (priceImpact.level === 'medium' || priceImpact.level === 'high');
 
   const isCrossChain = formState.inputChain !== formState.outputChain;
+
+  const hasZeroInputBalance =
+    !inputPosition || new BigNumber(inputPosition.amount.quantity).isZero();
+  const shouldShowTopUpCTA =
+    quote?.error?.code === 2 ||
+    (quote?.error?.code === 1 && hasZeroInputBalance);
+
   const trackTransactionFormed = useEvent(() => {
     if (!quote) return;
     walletPort.request('transactionFormed', {
@@ -496,6 +513,7 @@ function SwapFormComponent({
                   ...s,
                   inputAmount: '',
                   nonce: undefined,
+                  to: undefined,
                 }));
                 resolve();
               });
@@ -515,6 +533,7 @@ function SwapFormComponent({
               ...s,
               inputAmount: '',
               nonce: undefined,
+              to: undefined,
             }));
             resolve();
           });
@@ -601,14 +620,23 @@ function SwapFormComponent({
     cancelToastRef.current?.showToast();
   };
 
+  const location = useLocation();
+  const walletSelectTo = useMemo(() => {
+    const params = new URLSearchParams();
+    for (const key of SWAP_FORM_SEARCH_PARAM_KEYS) {
+      params.append('clearSearchParams', key);
+    }
+    return { pathname: '/wallet-select', search: `?${params.toString()}` };
+  }, []);
+  const walletSelectState = useMemo(
+    () => ({ from: `${location.pathname}${location.search}` }),
+    [location.pathname, location.search]
+  );
+
   return (
     <>
-      <div style={{ position: 'fixed', top: 16, right: 12, zIndex: 1 }}>
-        <HStack
-          gap={8}
-          alignItems="center"
-          style={{ placeSelf: 'center end', marginRight: 16 - 8 }}
-        >
+      <div className={styles.absoluteHeader}>
+        <HStack gap={8} alignItems="center">
           <Button
             kind="ghost"
             size={36}
@@ -618,7 +646,11 @@ function SwapFormComponent({
           >
             <SettingsIcon style={{ display: 'block' }} />
           </Button>
-          <UnstyledLink to="/wallet-select" title="Change Wallet">
+          <UnstyledLink
+            to={walletSelectTo}
+            state={walletSelectState}
+            title="Change Wallet"
+          >
             <WalletAvatar
               active={false}
               address={address}
@@ -651,7 +683,6 @@ function SwapFormComponent({
               onSelectFungible={selectInput}
               position={inputPosition}
               positions={positions}
-              networks={networks}
               resolvedInputAmount={resolvedInputAmount}
             />
             <MiddleLine />
@@ -673,7 +704,6 @@ function SwapFormComponent({
           <ReceiverAddressSelector
             formState={formState}
             onChange={setFormState}
-            onBatchChange={setUserFormState}
             networks={networks}
             isCrossEcosystem={isCrossEcosystem}
             receiverEcosystemMismatch={receiverEcosystemMismatch}
@@ -700,6 +730,7 @@ function SwapFormComponent({
           ) : null}
           {isUnverified ? <UnverifiedWarning /> : null}
           <UKDisclaimer />
+          <USDisclaimer />
         </VStack>
       </PageColumn>
       <PopoverToast
@@ -722,8 +753,8 @@ function SwapFormComponent({
           </VStack>
         ) : null}
         {wallet && isReadonlyAccount(wallet) ? (
-          <ReadonlySwapButton wallet={wallet} />
-        ) : quote?.error?.code === 2 && wallet ? (
+          <ReadonlySignButton wallet={wallet} />
+        ) : wallet && shouldShowTopUpCTA ? (
           <TopUpWalletCTA wallet={wallet} />
         ) : (
           <SwapButton

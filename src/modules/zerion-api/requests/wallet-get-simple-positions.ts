@@ -2,21 +2,12 @@ import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
 import type { Fungible } from '../types/Fungible';
+import type { Amount } from '../types/Amount';
 
 export interface Params {
   address: string;
   currency: string;
 }
-
-type Amount = {
-  currency: string;
-  /** @description Amount in common units (like token units) */
-  quantity: string;
-  /** @description Amount in fiat units */
-  value: number | null;
-  /** @description Amount in USD */
-  usdValue: number | null;
-};
 
 type Chain = {
   id: string;

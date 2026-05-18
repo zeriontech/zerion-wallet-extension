@@ -1,24 +1,32 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import cn from 'classnames';
-import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { Networks } from 'src/modules/networks/Networks';
 import type { Networks as NetworksType } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
-import { useMeasure } from 'src/ui/shared/useMeasure';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { isMatchForEcosystem } from 'src/shared/wallet/shared';
+import { truncateAddress } from 'src/ui/shared/truncateAddress';
+import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
+import {
+  ReceiverAddressDialog,
+  useReceiverDisplayName,
+} from 'src/ui/components/ReceiverAddressDialog';
+import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import type { SwapFormState2, HandleChangeFunction } from '../types';
-import { useReceiverAddressItems } from './useReceiverAddressItems';
 import { getEcosystemLabel } from './getEcosystemLabel';
-import { AddressCombobox } from './AddressCombobox';
 import * as styles from './ReceiverAddressSelector.module.css';
+
+const AVATAR_SIZE = 36;
+const AVATAR_RADIUS = 10;
 
 export function ReceiverAddressSelector({
   formState,
   onChange,
-  onBatchChange,
   networks,
   isCrossEcosystem,
   receiverEcosystemMismatch,
@@ -26,149 +34,194 @@ export function ReceiverAddressSelector({
 }: {
   formState: SwapFormState2;
   onChange: HandleChangeFunction;
-  onBatchChange: (
-    updater: (state: Partial<SwapFormState2>) => Partial<SwapFormState2>
-  ) => void;
   networks: NetworksType;
   isCrossEcosystem: boolean;
   receiverEcosystemMismatch: boolean;
   receiveToAnotherAddress: boolean;
 }) {
   const isCrossChain = formState.inputChain !== formState.outputChain;
+  const dialog = useDialog2();
 
   const outputNetwork = useMemo(() => {
     return networks.getByNetworkId(createChain(formState.outputChain));
   }, [formState.outputChain, networks]);
 
   const ecosystem = useMemo(() => {
-    if (!outputNetwork) {
-      return null;
-    }
+    if (!outputNetwork) return null;
     return Networks.getEcosystem(outputNetwork);
   }, [outputNetwork]);
 
-  const title = ecosystem
+  const triggerTitle = ecosystem
     ? `${getEcosystemLabel(ecosystem)} Recipient Address`
     : 'Recipient Address';
 
-  const mismatchMessage =
-    receiverEcosystemMismatch && ecosystem && outputNetwork
-      ? `This is a ${
-          ecosystem === 'evm' ? 'Solana' : 'Ethereum'
-        } address. Enter a ${getEcosystemLabel(ecosystem)} address for ${
-          outputNetwork.name
-        }.`
-      : null;
+  const dialogTitle = ecosystem
+    ? `${getEcosystemLabel(ecosystem)} Recipient`
+    : 'Recipient';
 
-  const { items } = useReceiverAddressItems({
-    ecosystem: ecosystem || 'evm',
-  });
+  const normalizedTo = formState.to ? normalizeAddress(formState.to) : null;
+  const display = useReceiverDisplayName(normalizedTo);
+  const previewUrl = display.avatarUrl;
+  const resolvedTitle = normalizedTo
+    ? display.addressBookName ||
+      display.walletName ||
+      display.handle ||
+      truncateAddress(normalizedTo, 4)
+    : null;
 
-  const [measureRef, { height: contentHeight }] = useMeasure<HTMLDivElement>();
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const isExpanded = formState.showReceiverAddressInput === 'on';
-
-  const handleOpen = useCallback(() => {
-    onChange('showReceiverAddressInput', 'on');
-  }, [onChange]);
-
-  const handleClose = useCallback(() => {
-    onBatchChange((state) => ({
-      ...state,
-      showReceiverAddressInput: 'off',
-      to: undefined,
-      receiverAddressInput: undefined,
-    }));
-  }, [onBatchChange]);
-
-  const handleAddressInputChange = useCallback(
-    (value: string) => {
-      onChange('receiverAddressInput', value);
+  const handleSelect = useCallback(
+    (address: string) => {
+      onChange('to', address);
     },
     [onChange]
   );
 
-  const handleResolvedChange = useCallback(
-    (resolved: string | null) => {
-      onChange('to', resolved ?? undefined);
+  const handleClear = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      onChange('to', undefined);
     },
     [onChange]
   );
 
-  // Cross-ecosystem swaps require an explicit recipient address (different
-  // address formats), so the selector is always shown. For same-ecosystem
-  // cross-chain swaps the selector is opt-in via the Swap settings toggle.
-  // Single-chain swaps never need the selector.
+  const predicate = useCallback(
+    (address: string) => {
+      if (!ecosystem) return true;
+      return isMatchForEcosystem(address, ecosystem);
+    },
+    [ecosystem]
+  );
+
+  const validateMatch = useCallback(
+    (address: string): string => {
+      if (!ecosystem || !outputNetwork) return '';
+      if (isMatchForEcosystem(address, ecosystem)) return '';
+      const wrongLabel = ecosystem === 'evm' ? 'Solana' : 'Ethereum';
+      return `This is a ${wrongLabel} address. Enter a ${getEcosystemLabel(
+        ecosystem
+      )} address for ${outputNetwork.name}.`;
+    },
+    [ecosystem, outputNetwork]
+  );
+
   const visible = isCrossEcosystem || (isCrossChain && receiveToAnotherAddress);
-
   if (!visible) {
     return null;
   }
 
+  const hasValue = Boolean(formState.to);
+  const addressHead = normalizedTo ? normalizedTo.slice(0, -6) : '';
+  const addressTail = normalizedTo ? normalizedTo.slice(-6) : '';
+
   return (
-    <MotionConfig transition={{ duration: 0.15 }}>
+    <>
       <div
         className={cn(styles.container, {
           [styles.containerError]: receiverEcosystemMismatch,
         })}
-        ref={containerRef}
       >
-        {isExpanded ? (
-          <div className={styles.headerRow}>
-            <UIText kind="small/regular">{title}</UIText>
-            <UnstyledButton
-              type="button"
-              className={styles.closeButton}
-              onClick={handleClose}
-            >
-              <CloseIcon style={{ width: 20, height: 20 }} />
-            </UnstyledButton>
+        <UnstyledButton
+          type="button"
+          className={styles.triggerOverlay}
+          onClick={dialog.openDialog}
+          aria-label={triggerTitle}
+        />
+        {hasValue && normalizedTo ? (
+          <div className={styles.contentLayer}>
+            <div className={styles.valueRow}>
+              <div
+                style={{
+                  width: AVATAR_SIZE,
+                  height: AVATAR_SIZE,
+                  borderRadius: AVATAR_RADIUS,
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                }}
+              >
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt=""
+                    width={AVATAR_SIZE}
+                    height={AVATAR_SIZE}
+                    style={{
+                      width: AVATAR_SIZE,
+                      height: AVATAR_SIZE,
+                      borderRadius: AVATAR_RADIUS,
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
+                  />
+                ) : (
+                  <BlockieImg
+                    address={normalizedTo}
+                    size={AVATAR_SIZE}
+                    borderRadius={AVATAR_RADIUS}
+                  />
+                )}
+              </div>
+              <VStack
+                gap={0}
+                style={{
+                  overflow: 'hidden',
+                  minWidth: 0,
+                  flex: 1,
+                  paddingRight: 28,
+                }}
+              >
+                <UIText
+                  kind="body/accent"
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {resolvedTitle}
+                </UIText>
+                <div className={styles.addressRow} title={normalizedTo}>
+                  <UIText
+                    kind="caption/regular"
+                    color="var(--neutral-500)"
+                    className={styles.addressHead}
+                  >
+                    {addressHead}
+                  </UIText>
+                  <UIText
+                    kind="caption/regular"
+                    color="var(--neutral-500)"
+                    className={styles.addressTail}
+                  >
+                    {addressTail}
+                  </UIText>
+                </div>
+              </VStack>
+            </div>
+            <div className={styles.actions}>
+              <UnstyledButton
+                type="button"
+                className={styles.closeButton}
+                onClick={handleClear}
+              >
+                <CloseIcon style={{ width: 20, height: 20 }} />
+              </UnstyledButton>
+            </div>
           </div>
         ) : (
-          <UnstyledButton
-            type="button"
-            className={styles.headerButton}
-            onClick={handleOpen}
-          >
-            <UIText kind="small/regular">{title}</UIText>
-            <ChevronRightIcon
-              className={styles.chevronDown}
-              style={{ width: 20, height: 20 }}
-            />
-          </UnstyledButton>
+          <div className={cn(styles.contentLayer, styles.headerRow)}>
+            <UIText kind="small/regular">{triggerTitle}</UIText>
+            <ChevronRightIcon className={styles.chevron} />
+          </div>
         )}
-        <AnimatePresence initial={false}>
-          {isExpanded ? (
-            <motion.div
-              key="receiver-expanded"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: contentHeight || 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{ overflow: 'hidden' }}
-            >
-              <motion.div
-                ref={measureRef}
-                initial={{ y: 6, filter: 'blur(3px)', opacity: 0 }}
-                animate={{ y: 0, filter: 'blur(0px)', opacity: 1 }}
-                exit={{ y: 6, filter: 'blur(3px)', opacity: 0 }}
-                style={{ transformOrigin: 'top center' }}
-              >
-                <div className={styles.comboboxWrapper}>
-                  <AddressCombobox
-                    items={items}
-                    value={formState.receiverAddressInput ?? ''}
-                    onChange={handleAddressInputChange}
-                    onResolvedChange={handleResolvedChange}
-                    anchorRef={containerRef}
-                    errorMessage={mismatchMessage}
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
       </div>
-    </MotionConfig>
+      <ReceiverAddressDialog
+        open={dialog.open}
+        onClose={dialog.closeDialog}
+        title={dialogTitle}
+        predicate={predicate}
+        validateMatch={validateMatch}
+        onSelect={handleSelect}
+      />
+    </>
   );
 }

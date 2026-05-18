@@ -6,6 +6,7 @@ import {
   type SimulationOutputDiscrepancy,
   type SimulationStatusOverride,
   type SimulationWarningOverride,
+  type USDisclaimerOverride,
 } from './store-types';
 import { retrieve, save } from './persistence';
 
@@ -48,11 +49,19 @@ export function setSimulationOutputDiscrepancy(
   }));
 }
 
+export function setUSDisclaimerOverride(value: USDisclaimerOverride) {
+  devMenuStore.setState((state) => ({
+    ...state,
+    usDisclaimerOverride: value,
+  }));
+}
+
 export function hasAnyOverride(state: DevMenuState): boolean {
   return (
     state.priceImpactOverride !== 'off' ||
     state.simulationWarningOverride !== 'off' ||
     state.simulationStatusOverride !== 'off' ||
-    state.simulationOutputDiscrepancy !== 'off'
+    state.simulationOutputDiscrepancy !== 'off' ||
+    state.usDisclaimerOverride !== 'off'
   );
 }

@@ -1,0 +1,1 @@
+export { SendDetails } from './SendDetails';

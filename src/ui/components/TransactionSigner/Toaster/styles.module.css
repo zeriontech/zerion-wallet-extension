@@ -114,20 +114,6 @@
   border: 1px solid var(--white);
 }
 
-/* Chain badge anchored to the back token (top-left position) */
-.chainBadgeBack {
-  position: absolute;
-  left: 18px;
-  top: 18px;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--white);
-  border: 1px solid var(--white);
-  z-index: 1;
-}
-
 /* Chain badge anchored to the front token (bottom-right position) */
 .chainBadgeFront {
   position: absolute;

@@ -1,37 +1,10 @@
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
+import type { Amount } from 'src/modules/zerion-api/types/Amount';
+import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
 import type { PartiallyRequired } from '../type-utils/PartiallyRequired';
 import type { MultichainTransaction } from './MultichainTransaction';
 import type { StringBase64 } from './StringBase64';
-
-type Error = {
-  /**
-   * @description Error code with the following cases: // [!code link {"token":"Error","href":"/docs-v2/swap/entities.html#error"}]
-   *     1 - Not enough input asset balance
-   *     2 - Not enough base (gas) asset balance
-   *
-   * @enum {integer}
-   */
-  code: 1 | 2;
-  /** @description Detailed error message, should be used only if client cannot handle the error */
-  message: string;
-  /**
-   * @description Possible ways to resolve the error:
-   *     1 - Top up the wallet
-   *
-   * @enum {integer|null}
-   */
-  hint: 1 | null;
-};
-type Amount = {
-  currency: string;
-  /** @description Amount in common units (like token units) */
-  quantity: string;
-  /** @description Amount in fiat units */
-  value: number | null;
-  /** @description Amount in USD */
-  usdValue: number | null;
-};
 
 export type TransactionEVM = {
   /**
@@ -126,10 +99,12 @@ export function toIncomingTransaction(
 
 type TransactionSolana = string;
 
-type TransactionMultichain = {
+export type TransactionMultichainBackend = {
   evm: null | TransactionEVM;
   solana: null | TransactionSolana;
 };
+
+type TransactionMultichain = TransactionMultichainBackend;
 
 export type ContractMetadata2 = {
   /**
@@ -174,7 +149,7 @@ export interface Quote2 {
   /** @description Error information if the swap cannot proceed.
    *     If both transactionApprove and transactionSwap props are null, this object must be defined.
    *      */
-  error: null | Error;
+  error: null | TransactionPrepareError;
   /** @description Protocol fee information */
   protocolFee: {
     /** @description Base percentage for the fee (5 means 5%) */

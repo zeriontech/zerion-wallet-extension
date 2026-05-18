@@ -105,7 +105,7 @@ export function Dialog2({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: size === 'content' ? 0.1 : 0.15 }}
               onClick={onClose}
             />
           ) : null}
@@ -167,7 +167,7 @@ export function Dialog2({
                         filter: 'blur(4px)',
                       }
                 }
-                transition={{ duration: size === 'content' ? 0.1 : 0.2 }}
+                transition={{ duration: size === 'content' ? 0.1 : 0.15 }}
               />
             }
             portal={false}
@@ -176,7 +176,9 @@ export function Dialog2({
           >
             {title == null ? null : (
               <div className={styles.header}>
-                <UIText kind="headline/h3">{title}</UIText>
+                <UIText kind="body/accent" className={styles.headerTitle}>
+                  {title}
+                </UIText>
                 <DialogDismiss className={styles.closeButton}>
                   <CloseIcon style={{ width: 20, height: 20 }} />
                 </DialogDismiss>

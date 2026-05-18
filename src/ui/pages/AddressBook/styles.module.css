@@ -1,0 +1,7 @@
+.row {
+  border: 2px solid var(--neutral-200);
+  border-radius: 20px;
+  width: 100%;
+  margin-block: 4px;
+  background-color: var(--white);
+}

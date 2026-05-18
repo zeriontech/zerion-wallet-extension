@@ -6,6 +6,7 @@ import {
   useStoreState,
   TabPanel,
   Role,
+  SelectItem,
 } from '@ariakit/react';
 import { Tooltip, TooltipAnchor, TooltipProvider } from 'src/ui/ui-kit/Tooltip';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
@@ -15,11 +16,56 @@ import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import * as styles from './styles.module.css';
 
 export const ALL_NETWORKS_TAB_ID = 'all';
+const TABS_ROW_ID = 'tabs';
 
 export interface NetworkOption {
   chainId: string;
   name: string;
   iconUrl: string;
+}
+
+/**
+ * `mode="grid"` makes each chip a `SelectItem` composed with `Tab`, so the
+ * chip participates in an enclosing `SelectProvider`'s keyboard nav space.
+ * Only valid inside a SelectProvider whose grid items use `rowId` for rows.
+ */
+function ChipTab({
+  id,
+  children,
+  mode,
+}: {
+  id: string;
+  children: React.ReactNode;
+  mode: 'tablist' | 'grid';
+}) {
+  if (mode === 'grid') {
+    return (
+      <SelectItem
+        render={
+          <Tab
+            id={id}
+            data-chain-id={id}
+            accessibleWhenDisabled={false}
+            rowId={TABS_ROW_ID}
+            className={styles.chip}
+          />
+        }
+      >
+        {children}
+      </SelectItem>
+    );
+  }
+  return (
+    <Tab
+      id={id}
+      data-chain-id={id}
+      accessibleWhenDisabled={false}
+      render={<Role.div />}
+      className={styles.chip}
+    >
+      {children}
+    </Tab>
+  );
 }
 
 export const NetworkChips = forwardRef<
@@ -29,6 +75,7 @@ export const NetworkChips = forwardRef<
     onOpenNetworkSelector: () => void;
     showAllTab?: boolean;
     showNetworkSelectorTrigger?: boolean;
+    mode?: 'tablist' | 'grid';
   }
 >(function NetworkChips(
   {
@@ -36,6 +83,7 @@ export const NetworkChips = forwardRef<
     onOpenNetworkSelector,
     showAllTab = true,
     showNetworkSelectorTrigger = true,
+    mode = 'tablist',
   },
   ref
 ) {
@@ -47,27 +95,17 @@ export const NetworkChips = forwardRef<
         aria-label="Filter by network"
       >
         {showAllTab ? (
-          <Tab
+          <ChipTab
             key={ALL_NETWORKS_TAB_ID}
             id={ALL_NETWORKS_TAB_ID}
-            data-chain-id={ALL_NETWORKS_TAB_ID}
-            accessibleWhenDisabled={false}
-            render={<Role.div />}
-            className={styles.chip}
+            mode={mode}
           >
             <AllNetworksIcon style={{ width: 16, height: 16 }} />
             All
-          </Tab>
+          </ChipTab>
         ) : null}
         {networks.map((network) => (
-          <Tab
-            key={network.chainId}
-            id={network.chainId}
-            data-chain-id={network.chainId}
-            accessibleWhenDisabled={false}
-            render={<Role.div />}
-            className={styles.chip}
-          >
+          <ChipTab key={network.chainId} id={network.chainId} mode={mode}>
             <NetworkIcon
               src={network.iconUrl}
               name={network.name}
@@ -78,7 +116,7 @@ export const NetworkChips = forwardRef<
               }}
             />
             {network.name}
-          </Tab>
+          </ChipTab>
         ))}
       </TabList>
       {showNetworkSelectorTrigger ? (

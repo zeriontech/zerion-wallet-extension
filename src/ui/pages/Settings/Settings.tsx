@@ -11,6 +11,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import WalletIcon from 'jsx:src/ui/assets/wallet.svg';
+import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import GiftIcon from 'jsx:src/ui/assets/gift.svg';
 import LockIcon from 'jsx:src/ui/assets/lock-outline.svg';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
@@ -133,6 +134,14 @@ function SettingsMain() {
                 <HStack gap={8} alignItems="center">
                   <WalletIcon />
                   <UIText kind="body/regular">Manage Wallets</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+            <FrameListItemLink to="/address-book">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <PersonIcon />
+                  <UIText kind="body/regular">Address Book</UIText>
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
