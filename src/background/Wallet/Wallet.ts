@@ -414,6 +414,9 @@ export class Wallet {
         continue;
       }
 
+      // Affected users share one password-change bug, so the first mnemonic
+      // group decrypting (or not) with the initial credentials is a reliable
+      // signal — no need to try every group.
       try {
         await decryptMnemonic(encryptedMnemonic.phrase, credentials);
         return;
