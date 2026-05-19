@@ -431,6 +431,11 @@ export class Account extends EventEmitter<AccountEvents> {
     });
 
     await this.wallet.reloadWalletStore();
+    await this.setUser(
+      user,
+      { password: currentPassword },
+      { isNewUser: false }
+    );
 
     /**
      * Remove backup in the end after successful password change
