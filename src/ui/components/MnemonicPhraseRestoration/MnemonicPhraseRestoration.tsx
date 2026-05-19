@@ -8,6 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
+import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { emitter } from 'src/ui/shared/events';
 import { getError } from 'src/shared/errors/getError';
@@ -35,17 +36,14 @@ function IntroView({
         Your funds are safe and your wallets work normally — but to view or
         restore your recovery phrase, you'll need your original password. Need
         help? Contact support at{' '}
-        <UIText
-          kind="small/regular"
-          as="a"
+        <TextAnchor
           href="https://help.zerion.io"
           target="_blank"
           rel="noopener noreferrer"
-          color="var(--primary)"
-          style={{ display: 'inline' }}
+          style={{ color: 'var(--primary)' }}
         >
           help.zerion.io
-        </UIText>
+        </TextAnchor>
         .
       </UIText>
       <VStack gap={8}>
@@ -91,17 +89,14 @@ function RecoverView({
         Enter the password you used when you first set up the wallet, and your
         current password. We'll re-encrypt your recovery phrase so it matches.{' '}
         Need help? Contact support at{' '}
-        <UIText
-          kind="small/regular"
-          as="a"
+        <TextAnchor
           href="https://help.zerion.io"
           target="_blank"
           rel="noopener noreferrer"
-          color="var(--primary)"
-          style={{ display: 'inline' }}
+          style={{ color: 'var(--primary)' }}
         >
           help.zerion.io
-        </UIText>
+        </TextAnchor>
         .
       </UIText>
       <form
@@ -205,17 +200,14 @@ function NoPasswordView({
         phrase available. If you need to access them right away, you can export
         each wallet's private key individually from Manage Wallets. Need help?
         Contact support at{' '}
-        <UIText
-          kind="small/regular"
-          as="a"
+        <TextAnchor
           href="https://help.zerion.io"
           target="_blank"
           rel="noopener noreferrer"
-          color="var(--primary)"
-          style={{ display: 'inline' }}
+          style={{ color: 'var(--primary)' }}
         >
           help.zerion.io
-        </UIText>
+        </TextAnchor>
         .
       </UIText>
       <VStack gap={8}>
