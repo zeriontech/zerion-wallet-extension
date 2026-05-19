@@ -850,6 +850,8 @@ export class WalletRecordModel {
       formPremiumBannerDismissed: false,
       exploreZeroBannerDismissed: false,
       backupReminderDismissedTime: 0,
+      restoreRecoveryPhraseReminderDismissedTime: 0,
+      restoreRecoveryPhraseSuccess: false,
       enableTestnets: false,
       testnetMode: null,
       enableHoldToSignButton: null,

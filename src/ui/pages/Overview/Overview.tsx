@@ -71,6 +71,7 @@ import { SearchLinkIcon } from '../Search';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import { PercentageChange } from './PercentageChange';
 import { BackupReminder } from './BackupReminder';
+import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
 import { Banners } from './Banners';
 import { ConnectionHeader } from './ConnectionHeader';
 import { NonFungibleTokens } from './NonFungibleTokens';
@@ -540,6 +541,7 @@ function OverviewComponent() {
       >
         <ConnectionHeader />
         <BackupReminder />
+        <RestoreRecoveryPhraseReminder />
         <div style={{ backgroundColor: 'var(--white)' }}>
           <Spacer height={16} />
           <div
