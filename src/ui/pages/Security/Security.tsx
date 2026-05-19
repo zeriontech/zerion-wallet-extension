@@ -22,10 +22,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
-import {
-  isMnemonicRestorationError,
-  maybeTriggerMnemonicRestoration,
-} from 'src/ui/components/MnemonicPhraseRestoration';
+import { maybeTriggerMnemonicRestoration } from 'src/ui/components/MnemonicPhraseRestoration';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -323,9 +320,6 @@ function ChangePassword() {
     },
     onError: (error) => {
       walletPort.request('passwordChangeError');
-      if (isMnemonicRestorationError(error)) {
-        dialogRef.current?.close();
-      }
       maybeTriggerMnemonicRestoration(error);
     },
   });
@@ -453,10 +447,7 @@ function ChangePassword() {
                           minLength={PASSWORD_MIN_LENGTH}
                         />
                       </VStack>
-                      {changePasswordMutation.error &&
-                      !isMnemonicRestorationError(
-                        changePasswordMutation.error
-                      ) ? (
+                      {changePasswordMutation.error ? (
                         <UIText
                           kind="caption/regular"
                           color="var(--negative-500)"

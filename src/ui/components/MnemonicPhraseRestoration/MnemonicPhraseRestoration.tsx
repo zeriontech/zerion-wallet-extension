@@ -33,7 +33,20 @@ function IntroView({
         An issue in a previous app version left some users' recovery phrases
         encrypted with their original password instead of their current one.
         Your funds are safe and your wallets work normally — but to view or
-        restore your recovery phrase, you'll need your original password.
+        restore your recovery phrase, you'll need your original password. Need
+        help? Contact support at{' '}
+        <UIText
+          kind="small/regular"
+          as="a"
+          href="https://help.zerion.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          color="var(--primary)"
+          style={{ display: 'inline' }}
+        >
+          help.zerion.io
+        </UIText>
+        .
       </UIText>
       <VStack gap={8}>
         <Button kind="primary" onClick={onRemember} style={{ width: '100%' }}>
@@ -76,7 +89,20 @@ function RecoverView({
       <UIText kind="body/accent">Restore Recovery Phrase</UIText>
       <UIText kind="small/regular" color="var(--neutral-800)">
         Enter the password you used when you first set up the wallet, and your
-        current password. We'll re-encrypt your recovery phrase so it matches.
+        current password. We'll re-encrypt your recovery phrase so it matches.{' '}
+        Need help? Contact support at{' '}
+        <UIText
+          kind="small/regular"
+          as="a"
+          href="https://help.zerion.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          color="var(--primary)"
+          style={{ display: 'inline' }}
+        >
+          help.zerion.io
+        </UIText>
+        .
       </UIText>
       <form
         onSubmit={(event) => {
@@ -177,7 +203,20 @@ function NoPasswordView({
       <UIText kind="small/regular" color="var(--neutral-800)">
         The cleanest fix is to reimport your wallets when you have your recovery
         phrase available. If you need to access them right away, you can export
-        each wallet's private key individually from Manage Wallets.
+        each wallet's private key individually from Manage Wallets. Need help?
+        Contact support at{' '}
+        <UIText
+          kind="small/regular"
+          as="a"
+          href="https://help.zerion.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          color="var(--primary)"
+          style={{ display: 'inline' }}
+        >
+          help.zerion.io
+        </UIText>
+        .
       </UIText>
       <VStack gap={8}>
         <Button
