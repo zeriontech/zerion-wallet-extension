@@ -53,7 +53,7 @@ function useMnenomicPhraseForLocation({
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    useErrorBoundary: true,
+    useErrorBoundary: false,
   });
   useEffect(() => {
     if (getRecoveryPhraseQuery.error) {

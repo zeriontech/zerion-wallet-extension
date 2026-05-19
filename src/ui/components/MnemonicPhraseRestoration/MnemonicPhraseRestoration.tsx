@@ -276,6 +276,11 @@ export function MnemonicPhraseRestoration() {
     dialogRef.current?.close();
   }, []);
 
+  const handleDone = useCallback(() => {
+    dialogRef.current?.close();
+    window.location.reload();
+  }, []);
+
   const handleGoToManageWallets = useCallback(() => {
     dialogRef.current?.close();
     navigate('/wallets');
@@ -310,7 +315,7 @@ export function MnemonicPhraseRestoration() {
           );
         }
         if (view === 'success') {
-          return <SuccessView onDone={handleClose} />;
+          return <SuccessView onDone={handleDone} />;
         }
         return (
           <NoPasswordView
