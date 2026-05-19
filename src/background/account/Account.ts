@@ -24,6 +24,7 @@ import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState, WalletStore } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
 import { credentialsKey } from './storage-keys';
+import { isSessionCredentials } from './Credentials';
 
 const TEMPORARY_ID = 'temporary';
 
@@ -347,13 +348,22 @@ export class Account extends EventEmitter<AccountEvents> {
 
     const backup = await BrowserStorage.get(WalletStore.key);
     await BrowserStorage.set(WalletStore.backupKey, backup);
-
-    const { encryptionKey } = await deriveUserKeys({
+    const oldCredentials = await deriveUserKeys({
+      user,
+      credentials: { password: oldPassword },
+    });
+    const newCredentials = await deriveUserKeys({
       user,
       credentials: { password: newPassword },
     });
+    if (
+      !isSessionCredentials(oldCredentials) ||
+      !isSessionCredentials(newCredentials)
+    ) {
+      throw new Error('Full credentials are expected');
+    }
     const updatedWalletRecord = await this.wallet.reencodeWalletWithNewPassword(
-      { encryptionKey }
+      { oldCredentials, newCredentials }
     );
     /**
      * We don't use WalletStore.save here to make Storage change strictly before the next operation.
@@ -365,6 +375,54 @@ export class Account extends EventEmitter<AccountEvents> {
 
     await this.wallet.reloadWalletStore();
     await this.setUser(user, { password: newPassword }, { isNewUser: false });
+
+    /**
+     * Remove backup in the end after successful password change
+     * To ensure that backup is not removed if something goes wrong
+     */
+    await BrowserStorage.remove(WalletStore.backupKey);
+  }
+
+  async restoreMnemonicWithInitialPassword(
+    user: User,
+    initialPassword: string,
+    currentPassword: string
+  ) {
+    const passwordIsCorrect = await this.verifyPassword(user, currentPassword);
+    if (!passwordIsCorrect) {
+      throw new Error('Incorrect password');
+    }
+
+    const backup = await BrowserStorage.get(WalletStore.key);
+    await BrowserStorage.set(WalletStore.backupKey, backup);
+    const initialCredentials = await deriveUserKeys({
+      user,
+      credentials: { password: initialPassword },
+    });
+    const currentCredentials = await deriveUserKeys({
+      user,
+      credentials: { password: currentPassword },
+    });
+    if (
+      !isSessionCredentials(initialCredentials) ||
+      !isSessionCredentials(currentCredentials)
+    ) {
+      throw new Error('Full credentials are expected');
+    }
+    const updatedWalletRecord =
+      await this.wallet.restoreMnemonicWithInitialPassword({
+        initialCredentials,
+        currentCredentials,
+      });
+    /**
+     * We don't use WalletStore.save here to make Storage change strictly before the next operation.
+     * The save function for the PersistentStore is not blocking.
+     */
+    await BrowserStorage.set(WalletStore.key, {
+      [user.id]: updatedWalletRecord,
+    });
+
+    await this.wallet.reloadWalletStore();
 
     /**
      * Remove backup in the end after successful password change
@@ -530,5 +588,31 @@ export class AccountPublicRPC {
      */
     await this.account.removeEncryptedPassword();
     return this.account.changePassword(currentUser, oldPassword, newPassword);
+  }
+
+  async restoreMnemonicWithInitialPassword({
+    params: { user, initialPassword, currentPassword },
+  }: PublicMethodParams<{
+    initialPassword: string;
+    currentPassword: string;
+    user: PublicUser;
+  }>) {
+    const currentUser = await Account.readCurrentUser();
+    if (!currentUser || currentUser.id !== user.id) {
+      throw new Error(`User ${user.id} not found`);
+    }
+    const passwordIsCorrect = await this.account.verifyPassword(
+      currentUser,
+      currentPassword
+    );
+    if (!passwordIsCorrect) {
+      throw new Error('The current password is incorrect.');
+    }
+    await this.account.login(currentUser, currentPassword);
+    return this.account.restoreMnemonicWithInitialPassword(
+      currentUser,
+      initialPassword,
+      currentPassword
+    );
   }
 }

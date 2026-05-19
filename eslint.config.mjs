@@ -10,7 +10,7 @@ import tseslint from 'typescript-eslint';
 import previewsPlugin from './src/ui-lab/previews/eslint-rules/previews-plugin.mjs';
 
 export default tseslint.config(
-  { ignores: ['node_modules', 'dist', 'e2e-report', 'playwright/.cache'] },
+  { ignores: ['node_modules', 'dist', 'dist-firefox', 'e2e-report', 'playwright/.cache'] },
   // Base JS rules for all files
   {
     ...js.configs.recommended,

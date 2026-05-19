@@ -106,7 +106,11 @@ import {
 import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
 import type { SolSignTransactionResult } from 'src/modules/solana/transactions/SolTransactionResponse';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
-import { base64ToUint8Array, uint8ArrayToBase64 } from 'src/modules/crypto';
+import {
+  base64ToUint8Array,
+  encrypt,
+  uint8ArrayToBase64,
+} from 'src/modules/crypto';
 import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
@@ -114,6 +118,8 @@ import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
+import { createDraft, finishDraft } from 'immer';
+import { decryptMnemonic } from 'src/shared/wallet/encryption';
 import type {
   AssetClickedParams,
   DaylightEventParams,
@@ -351,15 +357,88 @@ export class Wallet {
   }
 
   async reencodeWalletWithNewPassword({
-    encryptionKey,
+    oldCredentials,
+    newCredentials,
   }: {
-    encryptionKey: string;
+    oldCredentials: SessionCredentials;
+    newCredentials: SessionCredentials;
   }): Promise<string> {
     this.ensureActiveSession(this.userCredentials);
     this.ensureRecord(this.record);
+    const draft = createDraft(this.record);
+    for (const group of draft.walletManager.groups) {
+      if (!isMnemonicContainer(group.walletContainer)) {
+        continue;
+      }
+      const { mnemonic: encryptedMnemonic } =
+        group.walletContainer.getFirstWallet();
+      if (!encryptedMnemonic) {
+        continue;
+      }
+      const phrase = await decryptMnemonic(
+        encryptedMnemonic.phrase,
+        oldCredentials
+      );
+      const { seedPhraseEncryptionKey } = newCredentials;
+      const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
+      for (const wallet of group.walletContainer.wallets) {
+        if (wallet.mnemonic) {
+          wallet.mnemonic.phrase = updatedPhrase;
+        }
+      }
+    }
+    const recordWithUpdatedMnemonics = finishDraft(draft);
+
     const encryptedRecord = await Model.encryptRecord(
-      encryptionKey,
-      this.record
+      newCredentials.encryptionKey,
+      recordWithUpdatedMnemonics
+    );
+    return encryptedRecord;
+  }
+
+  async restoreMnemonicWithInitialPassword({
+    initialCredentials,
+    currentCredentials,
+  }: {
+    initialCredentials: SessionCredentials;
+    currentCredentials: SessionCredentials;
+  }): Promise<string> {
+    this.ensureActiveSession(this.userCredentials);
+    this.ensureRecord(this.record);
+    const draft = createDraft(this.record);
+    for (const group of draft.walletManager.groups) {
+      if (!isMnemonicContainer(group.walletContainer)) {
+        continue;
+      }
+      const { mnemonic: encryptedMnemonic } =
+        group.walletContainer.getFirstWallet();
+      if (!encryptedMnemonic) {
+        continue;
+      }
+      let phrase: string | null;
+      try {
+        phrase = await decryptMnemonic(
+          encryptedMnemonic.phrase,
+          initialCredentials
+        );
+      } catch {
+        continue;
+      }
+      if (phrase) {
+        const { seedPhraseEncryptionKey } = currentCredentials;
+        const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
+        for (const wallet of group.walletContainer.wallets) {
+          if (wallet.mnemonic) {
+            wallet.mnemonic.phrase = updatedPhrase;
+          }
+        }
+      }
+    }
+    const recordWithUpdatedMnemonics = finishDraft(draft);
+
+    const encryptedRecord = await Model.encryptRecord(
+      currentCredentials.encryptionKey,
+      recordWithUpdatedMnemonics
     );
     return encryptedRecord;
   }
