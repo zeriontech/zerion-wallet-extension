@@ -393,20 +393,28 @@ export class Account extends EventEmitter<AccountEvents> {
       throw new Error('Incorrect password');
     }
 
-    const backup = await BrowserStorage.get(WalletStore.key);
-    await BrowserStorage.set(WalletStore.backupKey, backup);
     const initialCredentials = await deriveUserKeys({
       user,
       credentials: { password: initialPassword },
     });
+    if (!isSessionCredentials(initialCredentials)) {
+      throw new Error('Full credentials are expected');
+    }
+    try {
+      await this.wallet.verifyRecoveryPhraseCredentials({
+        credentials: initialCredentials,
+      });
+    } catch {
+      throw new Error('The initial password is incorrect.');
+    }
+
+    const backup = await BrowserStorage.get(WalletStore.key);
+    await BrowserStorage.set(WalletStore.backupKey, backup);
     const currentCredentials = await deriveUserKeys({
       user,
       credentials: { password: currentPassword },
     });
-    if (
-      !isSessionCredentials(initialCredentials) ||
-      !isSessionCredentials(currentCredentials)
-    ) {
+    if (!isSessionCredentials(currentCredentials)) {
       throw new Error('Full credentials are expected');
     }
     const updatedWalletRecord =

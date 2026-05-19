@@ -48,7 +48,6 @@ export function useRecoveryPhrase({
     refetchOnWindowFocus: false,
     useErrorBoundary: false,
   });
-  console.log('useRecoveryPhrase', { groupId, enabled, error: query.error });
   useEffect(() => {
     if (query.error) {
       maybeTriggerMnemonicRestoration(query.error);

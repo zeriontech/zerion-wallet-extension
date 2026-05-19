@@ -396,6 +396,32 @@ export class Wallet {
     return encryptedRecord;
   }
 
+  async verifyRecoveryPhraseCredentials({
+    credentials,
+  }: {
+    credentials: SessionCredentials;
+  }) {
+    this.ensureActiveSession(this.userCredentials);
+    this.ensureRecord(this.record);
+    for (const group of this.record.walletManager.groups) {
+      if (!isMnemonicContainer(group.walletContainer)) {
+        continue;
+      }
+      const { mnemonic: encryptedMnemonic } =
+        group.walletContainer.getFirstWallet();
+      if (!encryptedMnemonic) {
+        continue;
+      }
+
+      try {
+        await decryptMnemonic(encryptedMnemonic.phrase, credentials);
+        return;
+      } catch {
+        throw new Error('The recovery phrase password is incorrect.');
+      }
+    }
+  }
+
   async restoreMnemonicWithInitialPassword({
     initialCredentials,
     currentCredentials,
