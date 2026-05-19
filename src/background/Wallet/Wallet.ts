@@ -1900,6 +1900,21 @@ export class Wallet {
     emitter.emit('passwordChangeError');
   }
 
+  async mnemonicRestorationShown({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('mnemonicRestorationShown');
+  }
+
+  async mnemonicRestorationSuccess({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('mnemonicRestorationSuccess');
+  }
+
+  async mnemonicRestorationError({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('mnemonicRestorationError');
+  }
+
   async reportLedgerError({
     context,
     params,

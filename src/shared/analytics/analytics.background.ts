@@ -875,6 +875,30 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack('General: Password Change Failed', mixpanelParams);
   });
 
+  emitter.on('mnemonicRestorationShown', () => {
+    const params = createParams({
+      request_name: 'mnemonic_restoration_shown',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Mnemonic Restoration Shown', mixpanelParams);
+  });
+
+  emitter.on('mnemonicRestorationSuccess', () => {
+    const params = createParams({
+      request_name: 'mnemonic_restoration_success',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Mnemonic Restoration Success', mixpanelParams);
+  });
+
+  emitter.on('mnemonicRestorationError', () => {
+    const params = createParams({
+      request_name: 'mnemonic_restoration_error',
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('General: Mnemonic Restoration Failed', mixpanelParams);
+  });
+
   emitter.on('reportLedgerError', async (errorMessage: string) => {
     const preferences = await globalPreferences.getPreferences();
     if (!preferences.analyticsEnabled) {

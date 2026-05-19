@@ -106,5 +106,8 @@ export const emitter = createNanoEvents<{
   passkeyLoginDisabled: () => void;
   passwordChangeSuccess: () => void;
   passwordChangeError: () => void; // we do not pass error body to analytics to avoid sensitive data leaks
+  mnemonicRestorationShown: () => void;
+  mnemonicRestorationSuccess: () => void;
+  mnemonicRestorationError: () => void; // we do not pass error body to analytics to avoid sensitive data leaks
   reportLedgerError: (errorMessage: string) => void;
 }>();

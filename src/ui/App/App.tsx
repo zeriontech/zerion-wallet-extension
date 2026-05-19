@@ -49,6 +49,7 @@ import { defaultUIContextValue, UIContext } from '../components/UIContext';
 import { ConnectedSites } from '../pages/ConnectedSites';
 import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
+import { MnemonicPhraseRestoration } from '../components/MnemonicPhraseRestoration';
 import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
@@ -574,6 +575,7 @@ export function App({ initialView, inspect }: AppProps) {
               <ScreenViewTracker />
               <InactivityDetector />
               <SessionResetHandler />
+              <MnemonicPhraseRestoration />
               <TurnstileTokenHandler />
               <ProgrammaticNavigationHelper />
               <ThemeDecoration />
