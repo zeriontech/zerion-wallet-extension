@@ -375,12 +375,13 @@ export class Wallet {
       if (!encryptedMnemonic) {
         continue;
       }
-      const phrase = await decryptMnemonic(
+      let phrase: string | null = await decryptMnemonic(
         encryptedMnemonic.phrase,
         oldCredentials
       );
       const { seedPhraseEncryptionKey } = newCredentials;
       const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
+      phrase = null; // zeroize
       for (const wallet of group.walletContainer.wallets) {
         if (wallet.mnemonic) {
           wallet.mnemonic.phrase = updatedPhrase;
@@ -453,6 +454,7 @@ export class Wallet {
       if (phrase) {
         const { seedPhraseEncryptionKey } = currentCredentials;
         const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
+        phrase = null; // zeroize
         for (const wallet of group.walletContainer.wallets) {
           if (wallet.mnemonic) {
             wallet.mnemonic.phrase = updatedPhrase;
