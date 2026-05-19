@@ -27,8 +27,8 @@ function IntroView({
 }) {
   return (
     <VStack gap={24}>
-      <UIText kind="headline/h3">Recovery Phrase Needs Re-encryption</UIText>
-      <UIText kind="body/regular">
+      <UIText kind="body/accent">Recovery Phrase Needs Re-encryption</UIText>
+      <UIText kind="small/regular" color="var(--neutral-800)">
         An issue in a previous app version left some users' recovery phrases
         encrypted with their original password instead of their current one.
         Your funds are safe and your wallets work normally — but to view or
@@ -72,8 +72,8 @@ function RecoverView({
 
   return (
     <VStack gap={24}>
-      <UIText kind="headline/h3">Restore Recovery Phrase</UIText>
-      <UIText kind="body/regular">
+      <UIText kind="body/accent">Restore Recovery Phrase</UIText>
+      <UIText kind="small/regular" color="var(--neutral-800)">
         Enter the password you used when you first set up the wallet, and your
         current password. We'll re-encrypt your recovery phrase so it matches.
       </UIText>
@@ -147,8 +147,8 @@ function RecoverView({
 function SuccessView({ onDone }: { onDone: () => void }) {
   return (
     <VStack gap={24}>
-      <UIText kind="headline/h3">Recovery Phrase Restored</UIText>
-      <UIText kind="body/regular">
+      <UIText kind="body/accent">Recovery Phrase Restored</UIText>
+      <UIText kind="small/regular" color="var(--neutral-800)">
         Your recovery phrase is now encrypted with your current password. You
         can view or back it up normally.
       </UIText>
@@ -168,12 +168,12 @@ function NoPasswordView({
 }) {
   return (
     <VStack gap={24}>
-      <UIText kind="headline/h3">Manage Your Wallets</UIText>
-      <UIText kind="body/regular">
+      <UIText kind="body/accent">Manage Your Wallets</UIText>
+      <UIText kind="small/regular" color="var(--neutral-800)">
         Without your original password, your recovery phrase can't be
         re-encrypted. Your wallets and funds remain safe and fully usable.
       </UIText>
-      <UIText kind="body/regular">
+      <UIText kind="small/regular" color="var(--neutral-800)">
         The cleanest fix is to reimport your wallets when you have your recovery
         phrase available. If you need to access them right away, you can export
         each wallet's private key individually from Manage Wallets.
