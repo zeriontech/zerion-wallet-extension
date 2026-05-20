@@ -14,6 +14,9 @@ import { emitter } from 'src/ui/shared/events';
 import { getError } from 'src/shared/errors/getError';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
 import { usePreferences } from 'src/ui/features/preferences';
+import { urlContext } from 'src/shared/UrlContext';
+import { openUrl } from 'src/ui/shared/openUrl';
+import { getPopupUrl } from 'src/shared/getPopupUrl';
 import { isMnemonicRestorationError } from './isMnemonicRestorationError';
 
 type View = 'intro' | 'recover' | 'success' | 'no-password';
@@ -308,7 +311,9 @@ export function MnemonicPhraseRestoration() {
 
   const handleClose = useCallback(() => {
     dialogRef.current?.close();
-    navigate('/');
+    if (urlContext.windowLayout === 'column') {
+      navigate('/');
+    }
   }, [navigate]);
 
   const handleDone = useCallback(() => {
@@ -319,7 +324,14 @@ export function MnemonicPhraseRestoration() {
   const handleGoToManageWallets = useCallback(() => {
     setPreferences({ restoreRecoveryPhraseSuccess: true });
     dialogRef.current?.close();
-    navigate('/wallets');
+    if (urlContext.windowLayout === 'page') {
+      openUrl(new URL('#/wallets', getPopupUrl()), {
+        windowType: 'tab',
+        windowLayout: 'column',
+      });
+    } else {
+      navigate('/wallets');
+    }
   }, [navigate, setPreferences]);
 
   return (
