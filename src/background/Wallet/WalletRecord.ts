@@ -294,7 +294,7 @@ export class WalletRecordModel {
       );
       const { seedPhraseEncryptionKey } = newCredentials;
       const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
-      phrase = null; // zeroize
+      phrase = null;
       for (const wallet of group.walletContainer.wallets) {
         if (wallet.mnemonic) {
           wallet.mnemonic.phrase = updatedPhrase;
@@ -358,7 +358,7 @@ export class WalletRecordModel {
       if (phrase) {
         const { seedPhraseEncryptionKey } = newCredentials;
         const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
-        phrase = null; // zeroize
+        phrase = null;
         for (const wallet of group.walletContainer.wallets) {
           if (wallet.mnemonic) {
             wallet.mnemonic.phrase = updatedPhrase;

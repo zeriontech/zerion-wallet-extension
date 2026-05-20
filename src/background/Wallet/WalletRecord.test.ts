@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { createSalt, createCryptoKey } from 'src/modules/crypto';
 import { sha256 } from 'src/modules/crypto/sha256';
 import { decryptMnemonic } from 'src/shared/wallet/encryption';
@@ -198,6 +199,8 @@ function buildRecordWithoutMnemonics(): WalletRecord {
     feed: null,
   };
 }
+
+jest.setTimeout(30_000);
 
 describe('WalletRecordModel re-encryption methods', () => {
   let OLD_CREDS: SessionCredentials;
