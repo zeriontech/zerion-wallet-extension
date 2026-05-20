@@ -119,7 +119,7 @@ function createGroup({
   };
 }
 
-function toPlainObject(record: WalletRecord) {
+export function toPlainObject(record: WalletRecord) {
   return produce(record, (draft) => {
     // @ts-ignore
     draft.walletManager.groups = draft.walletManager.groups.map((group) => ({
