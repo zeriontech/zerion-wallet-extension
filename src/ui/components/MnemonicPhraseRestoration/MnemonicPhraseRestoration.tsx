@@ -121,7 +121,7 @@ function RecoverView({
               autoFocus={true}
               type="password"
               name="initialPassword"
-              placeholder="Original password"
+              placeholder="Initial password"
               required={true}
             />
             <Input
@@ -308,7 +308,8 @@ export function MnemonicPhraseRestoration() {
 
   const handleClose = useCallback(() => {
     dialogRef.current?.close();
-  }, []);
+    navigate('/');
+  }, [navigate]);
 
   const handleDone = useCallback(() => {
     dialogRef.current?.close();
