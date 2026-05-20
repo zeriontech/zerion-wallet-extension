@@ -83,7 +83,7 @@ class MixpanelApi {
 
   constructor({
     token,
-    url = 'https://api-eu.mixpanel.com',
+    url = 'https://api.mixpanel.com',
     debugMode = false,
     sendRequestsOverTheNetwork = true,
     resolveDeviceId,
