@@ -1,6 +1,6 @@
 import { decrypt, encrypt } from 'src/modules/crypto';
 import type { Draft } from 'immer';
-import { produce } from 'immer';
+import { createDraft, finishDraft, produce } from 'immer';
 import { nanoid } from 'nanoid';
 import sortBy from 'lodash/sortBy';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
@@ -271,6 +271,103 @@ export class WalletRecordModel {
         );
       });
     }
+  }
+
+  static async reEncryptRecord(
+    record: WalletRecord,
+    oldCredentials: SessionCredentials,
+    newCredentials: SessionCredentials
+  ): Promise<WalletRecord> {
+    const draft = createDraft(record);
+    for (const group of draft.walletManager.groups) {
+      if (!isMnemonicContainer(group.walletContainer)) {
+        continue;
+      }
+      const { mnemonic: encryptedMnemonic } =
+        group.walletContainer.getFirstWallet();
+      if (!encryptedMnemonic) {
+        continue;
+      }
+      let phrase: string | null = await decryptMnemonic(
+        encryptedMnemonic.phrase,
+        oldCredentials
+      );
+      const { seedPhraseEncryptionKey } = newCredentials;
+      const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
+      phrase = null; // zeroize
+      for (const wallet of group.walletContainer.wallets) {
+        if (wallet.mnemonic) {
+          wallet.mnemonic.phrase = updatedPhrase;
+        }
+      }
+    }
+    const result = finishDraft(draft);
+    return result;
+  }
+
+  static async ensureSeedPhraseCredentials(
+    record: WalletRecord,
+    credentials: SessionCredentials
+  ) {
+    for (const group of record.walletManager.groups) {
+      if (!isMnemonicContainer(group.walletContainer)) {
+        continue;
+      }
+      const { mnemonic: encryptedMnemonic } =
+        group.walletContainer.getFirstWallet();
+      if (!encryptedMnemonic) {
+        continue;
+      }
+
+      // Affected users share one password-change bug, so the first mnemonic
+      // group decrypting (or not) with the initial credentials is a reliable
+      // signal — no need to try every group.
+      try {
+        await decryptMnemonic(encryptedMnemonic.phrase, credentials);
+        return;
+      } catch {
+        throw new Error('The recovery phrase password is incorrect.');
+      }
+    }
+  }
+
+  static async reEncryptMnemonicWithNewCredentialsIfNeeded(
+    record: WalletRecord,
+    oldCredentials: SessionCredentials,
+    newCredentials: SessionCredentials
+  ) {
+    const draft = createDraft(record);
+    for (const group of draft.walletManager.groups) {
+      if (!isMnemonicContainer(group.walletContainer)) {
+        continue;
+      }
+      const { mnemonic: encryptedMnemonic } =
+        group.walletContainer.getFirstWallet();
+      if (!encryptedMnemonic) {
+        continue;
+      }
+      let phrase: string | null;
+      try {
+        phrase = await decryptMnemonic(
+          encryptedMnemonic.phrase,
+          oldCredentials
+        );
+      } catch {
+        continue;
+      }
+      if (phrase) {
+        const { seedPhraseEncryptionKey } = newCredentials;
+        const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
+        phrase = null; // zeroize
+        for (const wallet of group.walletContainer.wallets) {
+          if (wallet.mnemonic) {
+            wallet.mnemonic.phrase = updatedPhrase;
+          }
+        }
+      }
+    }
+    const result = finishDraft(draft);
+    return result;
   }
 
   static createOrUpdateRecord(
