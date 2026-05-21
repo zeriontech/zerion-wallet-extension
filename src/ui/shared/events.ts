@@ -24,6 +24,7 @@ export const emitter = createNanoEvents<{
   'sidepanel/activeTabUpdated': () => void;
   buttonClicked: (data: ButtonClickedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
+  mnemonicRestorationNeeded: () => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

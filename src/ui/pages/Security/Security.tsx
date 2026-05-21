@@ -22,6 +22,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { invariant } from 'src/shared/invariant';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
+import { maybeTriggerMnemonicRestoration } from 'src/ui/components/MnemonicPhraseRestoration';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -317,8 +318,9 @@ function ChangePassword() {
       zeroizeAfterSubmission();
       queryClient.refetchQueries(['account/getPasskeyEnabled']);
     },
-    onError: () => {
+    onError: (error) => {
       walletPort.request('passwordChangeError');
+      maybeTriggerMnemonicRestoration(error);
     },
   });
 

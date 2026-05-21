@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
+import { maybeTriggerMnemonicRestoration } from 'src/ui/components/MnemonicPhraseRestoration';
 import { walletPort } from 'src/ui/shared/channels';
 
 export function usePendingRecoveryPhrase({ enabled }: { enabled: boolean }) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['getPendingRecoveryPhrase'],
     queryFn: () => walletPort.request('getPendingRecoveryPhrase'),
     enabled,
@@ -14,6 +16,12 @@ export function usePendingRecoveryPhrase({ enabled }: { enabled: boolean }) {
     refetchOnWindowFocus: false,
     useErrorBoundary: false,
   });
+  useEffect(() => {
+    if (query.error) {
+      maybeTriggerMnemonicRestoration(query.error);
+    }
+  }, [query.error]);
+  return query;
 }
 
 export function useRecoveryPhrase({
@@ -23,7 +31,7 @@ export function useRecoveryPhrase({
   groupId: string | null;
   enabled: boolean;
 }) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['getRecoveryPhrase', groupId],
     queryFn: async () => {
       invariant(groupId, 'groupId is not set');
@@ -40,4 +48,10 @@ export function useRecoveryPhrase({
     refetchOnWindowFocus: false,
     useErrorBoundary: false,
   });
+  useEffect(() => {
+    if (query.error) {
+      maybeTriggerMnemonicRestoration(query.error);
+    }
+  }, [query.error]);
+  return query;
 }

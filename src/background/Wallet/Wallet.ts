@@ -351,15 +351,54 @@ export class Wallet {
   }
 
   async reencodeWalletWithNewPassword({
-    encryptionKey,
+    oldCredentials,
+    newCredentials,
   }: {
-    encryptionKey: string;
+    oldCredentials: SessionCredentials;
+    newCredentials: SessionCredentials;
   }): Promise<string> {
     this.ensureActiveSession(this.userCredentials);
     this.ensureRecord(this.record);
+    const reEncryptedRecord = await Model.reEncryptRecord(
+      this.record,
+      oldCredentials,
+      newCredentials
+    );
     const encryptedRecord = await Model.encryptRecord(
-      encryptionKey,
-      this.record
+      newCredentials.encryptionKey,
+      reEncryptedRecord
+    );
+    return encryptedRecord;
+  }
+
+  async verifyRecoveryPhraseCredentials({
+    credentials,
+  }: {
+    credentials: SessionCredentials;
+  }) {
+    this.ensureActiveSession(this.userCredentials);
+    this.ensureRecord(this.record);
+    await Model.ensureSeedPhraseCredentials(this.record, credentials);
+  }
+
+  async restoreMnemonicWithInitialPassword({
+    initialCredentials,
+    currentCredentials,
+  }: {
+    initialCredentials: SessionCredentials;
+    currentCredentials: SessionCredentials;
+  }): Promise<string> {
+    this.ensureActiveSession(this.userCredentials);
+    this.ensureRecord(this.record);
+    const recordWithUpdatedMnemonics =
+      await Model.reEncryptMnemonicWithNewCredentialsIfNeeded(
+        this.record,
+        initialCredentials,
+        currentCredentials
+      );
+    const encryptedRecord = await Model.encryptRecord(
+      currentCredentials.encryptionKey,
+      recordWithUpdatedMnemonics
     );
     return encryptedRecord;
   }
@@ -1819,6 +1858,21 @@ export class Wallet {
   async passwordChangeError({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     emitter.emit('passwordChangeError');
+  }
+
+  async mnemonicRestorationShown({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('mnemonicRestorationShown');
+  }
+
+  async mnemonicRestorationSuccess({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('mnemonicRestorationSuccess');
+  }
+
+  async mnemonicRestorationError({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('mnemonicRestorationError');
   }
 
   async reportLedgerError({

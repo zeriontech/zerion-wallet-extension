@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -6,6 +6,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
+import { maybeTriggerMnemonicRestoration } from 'src/ui/components/MnemonicPhraseRestoration';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
@@ -52,8 +53,13 @@ function useMnenomicPhraseForLocation({
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    useErrorBoundary: true,
+    useErrorBoundary: false,
   });
+  useEffect(() => {
+    if (getRecoveryPhraseQuery.error) {
+      maybeTriggerMnemonicRestoration(getRecoveryPhraseQuery.error);
+    }
+  }, [getRecoveryPhraseQuery.error]);
   if (phraseFromState) {
     return { phrase: phraseFromState, isLoading: false, isError: false };
   } else {
