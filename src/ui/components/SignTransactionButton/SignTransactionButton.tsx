@@ -26,6 +26,10 @@ import type { SignTransactionResult } from 'src/shared/types/SignTransactionResu
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import {
+  SigningPasswordGate,
+  type SigningPasswordGateHandle,
+} from 'src/ui/components/SigningPasswordGate';
 import { WithReadonlyWarningDialog } from './ReadonlyWarningDialog';
 
 type SendTxParams = TransactionContextParams & {
@@ -54,6 +58,7 @@ export const SignTransactionButton = React.forwardRef(
       isLoading: isLoadingProp,
       disabled: disabledAttr,
       holdToSign,
+      requirePasswordToSign = false,
       bluetoothSupportEnabled,
       keyboardShortcutEnabled,
       ...buttonProps
@@ -63,6 +68,7 @@ export const SignTransactionButton = React.forwardRef(
       buttonKind?: ButtonKind;
       isLoading?: boolean;
       holdToSign: boolean | null;
+      requirePasswordToSign?: boolean;
       bluetoothSupportEnabled: boolean | null;
       keyboardShortcutEnabled?: boolean | null;
       onClick?: () => void;
@@ -70,12 +76,16 @@ export const SignTransactionButton = React.forwardRef(
     ref: React.Ref<SendTxBtnHandle>
   ) {
     const hardwareSignRef = useRef<SignTransactionHandle | null>(null);
+    const passwordGateRef = useRef<SigningPasswordGateHandle | null>(null);
 
     const sendTxMutation = useMutation({
       mutationFn: async ({
         transaction,
         ...txContext
       }: SendTxParams): Promise<SignTransactionResult> => {
+        if (!isDeviceAccount(wallet)) {
+          await passwordGateRef.current?.confirm();
+        }
         if (transaction.evm) {
           // ethereum flow
           if (isDeviceAccount(wallet)) {
@@ -154,6 +164,7 @@ export const SignTransactionButton = React.forwardRef(
         if (isDeviceAccount(wallet)) {
           throw new Error('TODO: Support hardware signing for Solana');
         }
+        await passwordGateRef.current?.confirm();
         const result = await walletPort.request('solana_signAllTransactions', {
           transactions: solana,
           params,
@@ -215,78 +226,88 @@ export const SignTransactionButton = React.forwardRef(
         />
       </>
     ) : (
-      <WithReadonlyWarningDialog
-        address={wallet.address}
-        onClick={onClick}
-        render={({ handleClick }) => {
-          return (
-            <>
-              <KeyboardShortcut
-                combination="mod+enter"
-                onKeyDown={() => handleClick(null)}
-                disabled={!shortcutActive}
-              />
-              {holdToSign ? (
-                <HoldableButton
-                  text={
-                    <HStack gap={4} alignItems="center" justifyContent="center">
-                      {`Hold to ${title}`}
-                      {shortcutActive && windowFocused ? (
-                        <ShortcutHint />
-                      ) : null}
-                    </HStack>
-                  }
-                  successText={
-                    <HStack gap={4} alignItems="center">
-                      <CheckIcon
-                        style={{
-                          width: 20,
-                          height: 20,
-                          color: 'var(--positive-500)',
-                        }}
-                      />
-                      <span>Sent</span>
-                    </HStack>
-                  }
-                  submittingText="Sending..."
-                  onClick={handleClick}
-                  success={activeMutation.isSuccess}
-                  submitting={activeMutation.isLoading}
-                  error={activeMutation.isError}
-                  disabled={disabled}
-                  kind={buttonKind}
-                  style={shortcutActive ? { paddingInline: 0 } : undefined}
-                  {...buttonProps}
+      <>
+        <SigningPasswordGate
+          ref={passwordGateRef}
+          requirePasswordToSign={requirePasswordToSign}
+        />
+        <WithReadonlyWarningDialog
+          address={wallet.address}
+          onClick={onClick}
+          render={({ handleClick }) => {
+            return (
+              <>
+                <KeyboardShortcut
+                  combination="mod+enter"
+                  onKeyDown={() => handleClick(null)}
+                  disabled={!shortcutActive}
                 />
-              ) : (
-                <Button
-                  disabled={disabled}
-                  onClick={handleClick}
-                  kind={buttonKind}
-                  style={shortcutActive ? { paddingInline: 0 } : undefined}
-                  {...buttonProps}
-                >
-                  {children ||
-                    (isLoading ? (
-                      'Sending...'
-                    ) : (
+                {holdToSign ? (
+                  <HoldableButton
+                    text={
                       <HStack
                         gap={4}
                         alignItems="center"
                         justifyContent="center"
                       >
-                        {title}
+                        {`Hold to ${title}`}
                         {shortcutActive && windowFocused ? (
                           <ShortcutHint />
                         ) : null}
                       </HStack>
-                    ))}
-                </Button>
-              )}
-            </>
-          );
-        }}
-      />
+                    }
+                    successText={
+                      <HStack gap={4} alignItems="center">
+                        <CheckIcon
+                          style={{
+                            width: 20,
+                            height: 20,
+                            color: 'var(--positive-500)',
+                          }}
+                        />
+                        <span>Sent</span>
+                      </HStack>
+                    }
+                    submittingText="Sending..."
+                    onClick={handleClick}
+                    success={activeMutation.isSuccess}
+                    submitting={activeMutation.isLoading}
+                    error={activeMutation.isError}
+                    disabled={disabled}
+                    kind={buttonKind}
+                    style={shortcutActive ? { paddingInline: 0 } : undefined}
+                    {...buttonProps}
+                  />
+                ) : (
+                  <Button
+                    disabled={disabled}
+                    onClick={handleClick}
+                    kind={buttonKind}
+                    style={shortcutActive ? { paddingInline: 0 } : undefined}
+                    {...buttonProps}
+                  >
+                    {children ||
+                      (isLoading ? (
+                        'Sending...'
+                      ) : (
+                        <HStack
+                          gap={4}
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          {title}
+                          {shortcutActive && windowFocused ? (
+                            <ShortcutHint />
+                          ) : null}
+                        </HStack>
+                      ))}
+                  </Button>
+                )}
+              </>
+            );
+          }}
+        />
+      </>
     );
   }
 );

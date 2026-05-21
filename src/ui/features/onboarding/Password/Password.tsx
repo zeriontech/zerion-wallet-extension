@@ -22,9 +22,16 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { StrengthChecks } from 'src/ui/pages/CreateAccount/StrengthChecks';
 import { CheckmarkBadge } from 'src/ui/pages/CreateAccount/StrengthChecks/StrengthChecks';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
+import { isMacOS } from 'src/ui/shared/isMacos';
+import { usePasskeyAvailability } from 'src/ui/pages/Security/Security';
+import { getPasskeyTitle } from 'src/ui/pages/Security/passkey';
+import { ToggleSettingLine } from 'src/ui/pages/Settings/ToggleSettingsLine';
+import { Frame } from 'src/ui/ui-kit/Frame';
 import { ViewParam } from '../Import/ImportSearchParams';
 import { PasswordFAQ } from '../FAQ';
 import { PasswordStep } from './passwordSearchParams';
+
+const macOsDetected = isMacOS();
 
 function WeakPasswordWarning() {
   const goBack = useGoBack();
@@ -140,20 +147,24 @@ function ConfirmPasswordForm({
   onSubmit,
 }: {
   password: string;
-  onSubmit: () => void;
+  onSubmit: ({ passkey }: { passkey?: boolean }) => void;
 }) {
   invariant(Boolean(password), 'Password must be a non-empty string');
   const [value, setValue] = useState('');
+  const [passkeyEnabled, setPasskeyEnabled] = useState(false);
   const [formError, setFormError] = useState<null | {
     type: string;
     message: string;
   }>(null);
+  const passkeyAvailabilityQuery = usePasskeyAvailability();
+  const passkeyTitle = getPasskeyTitle();
 
   return (
     <form
       onChange={() => setFormError(null)}
       onSubmit={(event) => {
         event.preventDefault();
+
         const formData = new FormData(event.currentTarget);
         const repeatedPassword = formData.get('confirmPassword') as
           | string
@@ -169,7 +180,7 @@ function ConfirmPasswordForm({
           });
           return;
         }
-        onSubmit();
+        onSubmit({ passkey: passkeyEnabled });
       }}
     >
       <VStack gap={24}>
@@ -196,8 +207,41 @@ function ConfirmPasswordForm({
           />
         </div>
       </VStack>
-      <Spacer height={74} />
-      <Button kind="primary" style={{ width: '100%' }}>
+      {passkeyAvailabilityQuery.data ? (
+        <div style={{ position: 'relative' }}>
+          <Spacer height={24} />
+          <Frame>
+            <ToggleSettingLine
+              text={`Unlock with ${passkeyTitle}`}
+              checked={passkeyEnabled}
+              onChange={(event) => setPasskeyEnabled(event.target.checked)}
+              detailText={`Use biometrics (${passkeyTitle}) to securely sign in without typing in your password`}
+            />
+          </Frame>
+          {!macOsDetected ? (
+            <div
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: -8,
+                borderRadius: 8,
+                backgroundColor: 'var(--primary)',
+                padding: '2px 8px',
+              }}
+            >
+              <UIText kind="caption/accent" color="var(--always-white)">
+                Beta
+              </UIText>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      <Spacer height={24} />
+      <Button
+        kind="primary"
+        style={{ width: '100%', paddingInline: 12 }}
+        type="submit"
+      >
         Set Password
       </Button>
     </form>
@@ -213,7 +257,7 @@ export function Password({
   title: string;
   step: PasswordStep | null;
   defaultValue: string | null;
-  onSubmit(value: string): void;
+  onSubmit(value: string, passkey?: boolean): void;
 }) {
   const navigate = useNavigate();
   const [value, setValue] = useState(defaultValue || '');
@@ -252,8 +296,8 @@ export function Password({
           ) : step === PasswordStep.confirm ? (
             <ConfirmPasswordForm
               password={value}
-              onSubmit={() => {
-                onSubmit(value);
+              onSubmit={({ passkey }) => {
+                onSubmit(value, passkey);
               }}
             />
           ) : null}

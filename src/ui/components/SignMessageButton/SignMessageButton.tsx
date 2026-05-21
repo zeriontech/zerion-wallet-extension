@@ -22,6 +22,10 @@ import {
 } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import {
+  SigningPasswordGate,
+  type SigningPasswordGateHandle,
+} from 'src/ui/components/SigningPasswordGate';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
 
 /**
@@ -62,6 +66,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     buttonKind = 'primary',
     onClick,
     holdToSign,
+    requirePasswordToSign = false,
     bluetoothSupportEnabled,
     keyboardShortcutEnabled,
     ...buttonProps
@@ -70,6 +75,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     buttonTitle?: React.ReactNode;
     buttonKind?: ButtonKind;
     holdToSign: boolean | null;
+    requirePasswordToSign?: boolean;
     bluetoothSupportEnabled: boolean | null;
     keyboardShortcutEnabled?: boolean | null;
     onClick?: () => void;
@@ -77,6 +83,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   ref: React.Ref<SignMsgBtnHandle>
 ) {
   const hardwareSignRef = useRef<SignMessageHandle | null>(null);
+  const passwordGateRef = useRef<SigningPasswordGateHandle | null>(null);
   const [legacySigning, setLegacySigning] = useState(false);
 
   const personalSignMutation = useMutation({
@@ -99,6 +106,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         });
         return signature;
       } else {
+        await passwordGateRef.current?.confirm();
         return await walletPort.request('personalSign', params);
       }
     },
@@ -125,6 +133,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         });
         return signature;
       } else {
+        await passwordGateRef.current?.confirm();
         return await walletPort.request('signTypedData_v4', {
           typedData,
           typedDataContext,
@@ -146,6 +155,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         );
         return signature;
       } else {
+        await passwordGateRef.current?.confirm();
         const result = await walletPort.request('solana_signMessage', params);
         return result.signatureSerialized;
       }
@@ -202,67 +212,75 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
       />
     </>
   ) : (
-    <WithReadonlyWarningDialog
-      address={wallet.address}
-      onClick={onClick}
-      render={({ handleClick }) => (
-        <>
-          <KeyboardShortcut
-            combination="mod+enter"
-            onKeyDown={() => handleClick(null)}
-            disabled={!shortcutActive}
-          />
-          {holdToSign ? (
-            <HoldableButton
-              text={
-                <HStack gap={4} alignItems="center" justifyContent="center">
-                  {`Hold to ${title}`}
-                  {shortcutActive && windowFocused ? <ShortcutHint /> : null}
-                </HStack>
-              }
-              successText={
-                <HStack gap={4} alignItems="center">
-                  <CheckIcon
-                    style={{
-                      width: 20,
-                      height: 20,
-                      color: 'var(--positive-500)',
-                    }}
-                  />
-                  <span>Signed</span>
-                </HStack>
-              }
-              submittingText="Sending..."
-              onClick={handleClick}
-              success={isSuccess}
-              submitting={isLoading}
-              disabled={disabled}
-              error={isError}
-              kind={buttonKind}
-              style={shortcutActive ? { paddingInline: 0 } : undefined}
-              {...buttonProps}
+    <>
+      <SigningPasswordGate
+        ref={passwordGateRef}
+        requirePasswordToSign={requirePasswordToSign}
+      />
+      <WithReadonlyWarningDialog
+        address={wallet.address}
+        onClick={onClick}
+        render={({ handleClick }) => (
+          <>
+            <KeyboardShortcut
+              combination="mod+enter"
+              onKeyDown={() => handleClick(null)}
+              disabled={!shortcutActive}
             />
-          ) : (
-            <Button
-              disabled={disabled}
-              onClick={handleClick}
-              kind={buttonKind}
-              style={shortcutActive ? { paddingInline: 0 } : undefined}
-              {...buttonProps}
-            >
-              {children ||
-                (isLoading ? (
-                  'Signing...'
-                ) : (
+            {holdToSign ? (
+              <HoldableButton
+                text={
                   <HStack gap={4} alignItems="center" justifyContent="center">
-                    {title}
+                    {`Hold to ${title}`}
                     {shortcutActive && windowFocused ? <ShortcutHint /> : null}
                   </HStack>
-                ))}
-            </Button>
-          )}
-        </>
-      )}
-    />
+                }
+                successText={
+                  <HStack gap={4} alignItems="center">
+                    <CheckIcon
+                      style={{
+                        width: 20,
+                        height: 20,
+                        color: 'var(--positive-500)',
+                      }}
+                    />
+                    <span>Signed</span>
+                  </HStack>
+                }
+                submittingText="Sending..."
+                onClick={handleClick}
+                success={isSuccess}
+                submitting={isLoading}
+                disabled={disabled}
+                error={isError}
+                kind={buttonKind}
+                style={shortcutActive ? { paddingInline: 0 } : undefined}
+                {...buttonProps}
+              />
+            ) : (
+              <Button
+                disabled={disabled}
+                onClick={handleClick}
+                kind={buttonKind}
+                style={shortcutActive ? { paddingInline: 0 } : undefined}
+                {...buttonProps}
+              >
+                {children ||
+                  (isLoading ? (
+                    'Signing...'
+                  ) : (
+                    <HStack gap={4} alignItems="center" justifyContent="center">
+                      {title}
+                      {shortcutActive && windowFocused ? (
+                        <ShortcutHint />
+                      ) : null}
+                    </HStack>
+                  ))}
+              </Button>
+            )}
+          </>
+        )}
+      />
+    </>
   );
 });

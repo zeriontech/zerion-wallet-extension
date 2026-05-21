@@ -227,6 +227,9 @@ function CancelTxContent({
                 ref={signTxBtnRef}
                 onClick={() => sendTransaction()}
                 holdToSign={preferences.enableHoldToSignButton}
+                requirePasswordToSign={
+                  globalPreferences.requirePasswordToSign ?? false
+                }
                 bluetoothSupportEnabled={
                   globalPreferences.bluetoothSupportEnabled
                 }

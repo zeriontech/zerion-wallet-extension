@@ -34,6 +34,7 @@ import { Stack } from 'src/ui/ui-kit/Stack';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import keyIconSrc from 'url:../assets/key.png';
 import dialogIconSrc from 'url:../assets/dialog.png';
+import { setupAccountPasskey } from 'src/ui/pages/Security/passkey';
 import { Password } from '../Password';
 import { assertPasswordStep } from '../Password/passwordSearchParams';
 import * as helperStyles from '../shared/helperStyles.module.css';
@@ -87,9 +88,11 @@ function ImportWallet() {
     mutationFn: async ({
       password,
       wallets,
+      passkey,
     }: {
       password: string | null;
       wallets: MaskedBareWallet[];
+      passkey: boolean;
     }) => {
       setShowError(false);
       return Promise.race([
@@ -102,6 +105,9 @@ function ImportWallet() {
             await accountPublicRPCPort.request('createUser', {
               password,
             });
+            if (passkey) {
+              await setupAccountPasskey(password);
+            }
           }
           let data: BareWallet | ExternallyOwnedAccount | null = null;
           if (type === 'mnemonic') {
@@ -134,12 +140,12 @@ function ImportWallet() {
   const showErrorBoundary = useErrorBoundary();
 
   const handlePasswordSubmit = useCallback(
-    (password: string | null) => {
+    (password: string | null, passkey?: boolean) => {
       if (!wallets?.length) {
         showErrorBoundary(new Error('No wallets created'));
         return;
       }
-      createUserAndWallet({ password, wallets });
+      createUserAndWallet({ password, wallets, passkey: passkey ?? false });
     },
     [wallets, createUserAndWallet, showErrorBoundary]
   );

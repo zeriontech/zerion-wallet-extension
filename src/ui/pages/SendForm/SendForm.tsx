@@ -617,6 +617,7 @@ function SendFormComponent() {
               wallet={wallet}
               disabled={sendTxMutation.isLoading}
               holdToSign={false}
+              requirePasswordToSign={false}
               bluetoothSupportEnabled={
                 globalPreferences.bluetoothSupportEnabled
               }

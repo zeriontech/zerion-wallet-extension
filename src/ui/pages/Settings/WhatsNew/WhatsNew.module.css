@@ -1,0 +1,107 @@
+.page {
+  --timeline-color: var(--neutral-300);
+}
+
+/* Version header */
+.versionHeader {
+  padding: 8px 0 12px;
+}
+
+/* Release card */
+.releaseCard {
+  padding: 0 2px 4px;
+}
+
+.releaseImage {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+
+/* Timeline connector between cards */
+.timelineDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  flex-shrink: 0;
+}
+
+.timelineConnector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 6px;
+}
+
+.timelineLine {
+  flex: 1;
+  height: 1px;
+  background-color: var(--timeline-color);
+}
+
+.sectionDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 3px;
+}
+
+/* Item list */
+.itemList {
+  list-style: none;
+  padding: 0 0 0 2px;
+  margin: 0;
+}
+
+.itemRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.itemDash {
+  color: var(--neutral-400);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.itemContent {
+  line-height: 1.4;
+}
+
+/* Link badge — interactive pill */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 7px;
+  margin-left: 4px;
+  border-radius: 6px;
+  background-color: var(--neutral-200);
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  position: relative;
+  top: -0.5px;
+}
+
+@media (hover: hover) {
+  .badge:hover {
+    background-color: var(--primary-200);
+  }
+}
+
+.badgeArrow {
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.5;
+}
+
+/* Beamer link */
+.beamerLink {
+  text-decoration: none;
+  display: block;
+}

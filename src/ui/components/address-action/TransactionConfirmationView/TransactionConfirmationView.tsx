@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -18,6 +18,7 @@ import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
 import { usePreferences } from 'src/ui/features/preferences';
+import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { SecurityStatusBackground } from 'src/ui/shared/security-check';
@@ -25,6 +26,10 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { AddressActionNetworkFee } from 'src/ui/pages/SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { invariant } from 'src/shared/invariant';
 import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import {
+  SigningPasswordGate,
+  type SigningPasswordGateHandle,
+} from '../../SigningPasswordGate';
 import { WalletAvatar } from '../../WalletAvatar';
 import { WalletDisplayName } from '../../WalletDisplayName';
 import { TransactionSimulation } from '../TransactionSimulation';
@@ -58,6 +63,45 @@ export function TransactionConfirmationView({
   fallbackAddressAction: LocalAddressAction | null;
 }) {
   const { preferences, query } = usePreferences();
+  const { globalPreferences } = useGlobalPreferences();
+  const passwordGateRef = useRef<SigningPasswordGateHandle | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const pendingSubmitValueRef = useRef<string | null>(null);
+
+  const handleFormSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      const submitter = (event.nativeEvent as SubmitEvent)
+        .submitter as HTMLButtonElement | null;
+      const value = submitter?.value;
+      if (
+        !value ||
+        value === 'cancel' ||
+        isDeviceAccount(wallet) ||
+        !globalPreferences?.requirePasswordToSign
+      ) {
+        return; // let the form submit normally
+      }
+      event.preventDefault();
+      pendingSubmitValueRef.current = value;
+      passwordGateRef.current
+        ?.confirm()
+        .then(() => {
+          // After successful auth, programmatically close the dialog
+          const dialog = formRef.current?.closest('dialog');
+          if (dialog) {
+            (dialog as HTMLDialogElement).returnValue =
+              pendingSubmitValueRef.current ?? 'confirm';
+            (dialog as HTMLDialogElement).close();
+          }
+          pendingSubmitValueRef.current = null;
+        })
+        .catch(() => {
+          pendingSubmitValueRef.current = null;
+        });
+    },
+    [wallet, globalPreferences?.requirePasswordToSign]
+  );
+
   invariant(
     transactions.length,
     'At least one transaction is required for interpretation'
@@ -121,8 +165,16 @@ export function TransactionConfirmationView({
             </UIText>
           </HStack>
         </VStack>
+        <SigningPasswordGate
+          ref={passwordGateRef}
+          requirePasswordToSign={
+            globalPreferences?.requirePasswordToSign ?? false
+          }
+        />
         <form
+          ref={formRef}
           method="dialog"
+          onSubmit={handleFormSubmit}
           style={{ display: 'flex', flexDirection: 'column' }}
         >
           <TransactionSimulation

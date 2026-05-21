@@ -76,6 +76,7 @@ import { Banners } from './Banners';
 import { ConnectionHeader } from './ConnectionHeader';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
+import { PromoToaster } from './PromoToaster';
 import {
   TABS_OFFSET_METER_ID,
   TAB_SELECTOR_HEIGHT,
@@ -753,6 +754,7 @@ function OverviewComponent() {
           <PageBottom />
         </div>
       </PageFullBleedColumn>
+      <PromoToaster />
     </PageColumn>
   );
 }

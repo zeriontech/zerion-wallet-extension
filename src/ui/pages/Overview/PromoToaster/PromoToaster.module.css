@@ -1,0 +1,121 @@
+@property --glow-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes glow-rotate {
+  to {
+    --glow-angle: 360deg;
+  }
+}
+
+.container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 200;
+  width: 250px;
+  border-radius: 16px;
+  background-color: var(--white);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.updateContainer {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 200;
+  width: 270px;
+  border-radius: 16px;
+  background-color: var(--white);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background: conic-gradient(
+    from var(--glow-angle),
+    var(--primary) 0%,
+    #a855f7 25%,
+    #ec4899 50%,
+    #f97316 75%,
+    var(--primary) 100%
+  );
+  filter: blur(12px);
+  opacity: 0.45;
+  animation: glow-rotate 6s linear infinite;
+}
+
+.image {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.content {
+  padding: 16px;
+}
+
+.titleRow {
+  padding-right: 24px;
+}
+
+.closeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  transition: background-color 150ms ease;
+}
+
+.closeButtonWithImage {
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--white);
+}
+
+.closeButtonNoImage {
+  background: var(--neutral-200);
+  color: var(--neutral-600);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .closeButtonWithImage:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .closeButtonNoImage:hover {
+    background: var(--neutral-300);
+  }
+}
+
+.closeIcon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .container {
+    will-change: auto;
+  }
+
+  .glow {
+    animation: none;
+  }
+}

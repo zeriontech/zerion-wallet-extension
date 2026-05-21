@@ -3,6 +3,11 @@ import type { BareWallet } from '../model/BareWallet';
 
 export function toEthersWallet(wallet: BareWallet): ethers.Wallet {
   const { privateKey } = wallet;
+  if (!privateKey) {
+    throw new Error(
+      'Private key is not available. Please re-enter your password.'
+    );
+  }
   // NOTE:
   // ethers Wallet can be created from either privateKey or a mnemonic
   // but because we keep mnemonic phrases encrypted, this helper is used
