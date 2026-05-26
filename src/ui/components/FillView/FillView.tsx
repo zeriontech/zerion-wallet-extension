@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import cx from 'classnames';
 import { NAVIGATION_BAR_HEIGHT } from '../URLBar';
-import { BUG_REPORT_BUTTON_HEIGHT } from '../BugReportButton';
 import * as s from './styles.module.css';
 
 export const FillView = React.forwardRef(
@@ -66,9 +65,7 @@ export function CenteredFillViewportView({
       return;
     }
     const availableHeight =
-      window.innerHeight -
-      wrapperRef.current.getBoundingClientRect().top -
-      BUG_REPORT_BUTTON_HEIGHT;
+      window.innerHeight - wrapperRef.current.getBoundingClientRect().top;
     wrapperRef.current.style.height = `${availableHeight}px`;
     setOverflows(contentRef.current.scrollHeight > availableHeight);
   }, []);

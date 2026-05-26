@@ -36,7 +36,6 @@ import {
   SettingsDnaBanners,
 } from 'src/ui/DNA/components/DnaBanners';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import { BugReportButton } from 'src/ui/components/BugReportButton';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import {
   FrameListItemAnchor,
@@ -313,7 +312,6 @@ function SettingsMain() {
                 </HStack>
               </AngleRightRow>
             </FrameListItemAnchor>
-            <BugReportButton />
             <FrameListItemAnchor
               href="https://app.getbeamer.com/zerion/en?category=extension"
               target="_blank"
