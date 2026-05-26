@@ -88,7 +88,11 @@ function AssetContent({
         />
         <VStack gap={0}>
           <UIText kind="headline/h3">
-            <HStack gap={4} alignItems="center">
+            <HStack
+              gap={4}
+              alignItems="center"
+              style={{ gridTemplateColumns: 'auto 1fr' }}
+            >
               <span>
                 {amount?.quantity
                   ? `${
