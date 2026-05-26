@@ -1,14 +1,11 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import BugIcon from 'jsx:src/ui/assets/bug.svg';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import TickIcon from 'jsx:src/ui/assets/check_double.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
@@ -17,7 +14,6 @@ import { emitter } from 'src/ui/shared/events';
 import { resetPersistedRoutes } from 'src/ui/App/RouteRestoration';
 import { urlContext } from 'src/shared/UrlContext';
 import { WarningIcon } from '../WarningIcon';
-import { getBugButtonUrl } from '../BugReportButton/getBugReportURL';
 import { PageStickyFooter } from '../PageStickyFooter';
 import { PageColumn } from '../PageColumn';
 import { PageTop } from '../PageTop';
@@ -36,12 +32,8 @@ export function ViewError({
   error?: Error | null;
 }) {
   const navigate = useNavigate();
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   const isDialog = urlContext.windowType === 'dialog';
-  const bugReportURL = useMemo(
-    () => getBugButtonUrl(pathname, search),
-    [pathname, search]
-  );
   const { handleCopy, isSuccess } = useCopyToClipboard({
     text: error?.message,
   });
@@ -119,39 +111,19 @@ export function ViewError({
       </PageColumn>
       <PageStickyFooter>
         <Spacer height={16} />
-        <HStack
-          gap={8}
-          style={{
-            gridTemplateColumns: '1fr 1fr',
+        <Button
+          kind="regular"
+          onClick={async () => {
+            await resetPersistedRoutes();
+            if (!isDialog) {
+              navigate('/');
+            }
+            window.location.reload();
           }}
+          style={{ paddingInline: 8 }}
         >
-          <Button
-            kind="regular"
-            onClick={async () => {
-              await resetPersistedRoutes();
-              if (!isDialog) {
-                navigate('/');
-              }
-              window.location.reload();
-            }}
-            style={{ paddingInline: 8 }}
-          >
-            {isDialog ? 'Try Again' : 'Back to Home'}
-          </Button>
-          <Button
-            as={UnstyledAnchor}
-            onClick={openInNewWindow}
-            href={bugReportURL}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ paddingInline: 8 }}
-          >
-            <HStack gap={8} alignItems="center">
-              Bug Report
-              <BugIcon />
-            </HStack>
-          </Button>
-        </HStack>
+          {isDialog ? 'Try Again' : 'Back to Home'}
+        </Button>
         <PageBottom />
       </PageStickyFooter>
     </ViewArea>
