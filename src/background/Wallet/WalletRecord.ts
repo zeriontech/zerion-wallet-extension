@@ -955,7 +955,6 @@ export class WalletRecordModel {
       enableKeyboardShortcutToSign: null,
       showTransactionsOnAssetChart: true,
       walletsOrder: DEFAULT_WALLET_LIST_GROUPS,
-      pnlMode: 'pnl',
     };
     if (!record) {
       return defaults;
