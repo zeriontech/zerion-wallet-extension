@@ -61,7 +61,15 @@ function NativeBalance({ address, chain }: { address: string; chain: Chain }) {
     return null;
   }
   const { valueCommon, position } = balance;
-  return <span>{formatTokenValue(valueCommon, position?.asset.symbol)}</span>;
+  // Native balances on testnets / RPC-only chains can be enormous (e.g. faucet
+  // funds), which would render as a very long string and overflow the selector
+  // row. Show large balances using compact notation, e.g. "1.2M TEMPO".
+  const notation = valueCommon.abs().gte(1e6) ? 'compact' : undefined;
+  return (
+    <span>
+      {formatTokenValue(valueCommon, position?.asset.symbol, { notation })}
+    </span>
+  );
 }
 
 function NetworkItem({
@@ -123,6 +131,11 @@ function NetworkItem({
           <UIText
             kind="small/regular"
             color={selected ? 'var(--primary)' : 'var(--neutral-500)'}
+            style={{
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+            }}
           >
             {address &&
             ecosystem &&
