@@ -18,7 +18,6 @@ import {
 import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
-import { useWalletPnl } from 'src/modules/zerion-api/hooks/useWalletPnl';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { isReadonlyContainer } from 'src/shared/types/validators';
@@ -76,6 +75,7 @@ import { Banners } from './Banners';
 import { ConnectionHeader } from './ConnectionHeader';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
+import { Pnl } from './PnL';
 import {
   TABS_OFFSET_METER_ID,
   TAB_SELECTOR_HEIGHT,
@@ -382,13 +382,6 @@ function OverviewComponent() {
   );
   const walletPortfolio = data?.data;
 
-  const { data: pnlData } = useWalletPnl(
-    { addresses: [params.address], currency },
-    { source: httpSource },
-    { enabled: ready, refetchInterval: 40000 }
-  );
-  const walletPnl = pnlData?.data;
-
   const offsetValuesState = useStore(offsetValues);
 
   const handleTabChange = (to: string) => {
@@ -594,7 +587,6 @@ function OverviewComponent() {
           ) : null}
           <PercentageChange
             walletPortfolio={walletPortfolio}
-            walletPnl={walletPnl}
             currency={currency}
           />
         </HStack>
@@ -651,16 +643,22 @@ function OverviewComponent() {
               Tokens
             </SegmentedControlLink>
             <SegmentedControlLink
-              to={createTo('/overview/nfts')}
-              onClick={() => handleTabChange('/overview/nfts')}
-            >
-              NFTs
-            </SegmentedControlLink>
-            <SegmentedControlLink
               to={createTo('/overview/history')}
               onClick={() => handleTabChange('/overview/history')}
             >
               History <PendingTransactionsIndicator />
+            </SegmentedControlLink>
+            <SegmentedControlLink
+              to={createTo('/overview/pnl')}
+              onClick={() => handleTabChange('/overview/pnl')}
+            >
+              PnL
+            </SegmentedControlLink>
+            <SegmentedControlLink
+              to={createTo('/overview/nfts')}
+              onClick={() => handleTabChange('/overview/nfts')}
+            >
+              NFTs
             </SegmentedControlLink>
           </SegmentedControlGroup>
         </div>
@@ -745,6 +743,21 @@ function OverviewComponent() {
                       selectedChain={selectedChain}
                       onChainChange={setSelectedChain}
                     />
+                  </TestnetworkGuard>
+                </ViewSuspense>
+              }
+            />
+            <Route
+              path="/pnl"
+              element={
+                <ViewSuspense logDelays={true} fallback={tabFallback}>
+                  <NavigationTitle title={null} documentTitle="PnL" />
+                  <Spacer height={TAB_TOP_PADDING} />
+                  <TestnetworkGuard
+                    dappChain={dappChain || null}
+                    renderGuard={() => testnetGuardView}
+                  >
+                    <Pnl />
                   </TestnetworkGuard>
                 </ViewSuspense>
               }
