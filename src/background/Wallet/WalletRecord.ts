@@ -960,6 +960,8 @@ export class WalletRecordModel {
       pnlMode: 'pnl',
       receiveToAnotherAddress: false,
       addressesExcludedFromReceiverReadonlyWarning: [],
+      crossChainSwapOnboardingShown: false,
+      oneTapCrossChainSwapOnboardingShown: false,
     };
     if (!record) {
       return defaults;

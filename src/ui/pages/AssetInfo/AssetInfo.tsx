@@ -27,6 +27,8 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { useWalletAssetDetails } from 'src/modules/zerion-api/hooks/useWalletAssetDetails';
+import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
+import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
@@ -146,6 +148,11 @@ export function AssetInfo() {
     { source: useHttpClientSource() },
     { enabled: ready }
   );
+  const { data: simplePositionsData } = useWalletSimplePositions(
+    { address: params.address, currency },
+    { source: useHttpClientSource() },
+    { enabled: ready }
+  );
 
   const { isPremium, walletsMetaQuery } = usePremiumStatus({
     address: params.address,
@@ -218,6 +225,28 @@ export function AssetInfo() {
     ? assetFullInfo.extra.mainChain
     : chainWithTheBiggestBalance;
 
+  const biggestInputPosition = isEmptyBalance
+    ? (simplePositionsData?.data ?? [])
+        .filter((p) => p.fungible.id !== asset_code)
+        .reduce<FungiblePosition | null>(
+          (max, p) =>
+            (p.amount.value ?? 0) > (max?.amount.value ?? 0) ? p : max,
+          null
+        )
+    : null;
+  const inputChainForBuy = biggestInputPosition?.chain.id ?? chainForSwap;
+
+  const outputChainForBuy =
+    inputChainForBuy in assetFullInfo.fungible.implementations
+      ? inputChainForBuy
+      : assetFullInfo.extra.mainChain;
+
+  const swapUrl = isEmptyBalance
+    ? biggestInputPosition
+      ? `/swap-form?inputChain=${inputChainForBuy}&inputFungibleId=${biggestInputPosition.fungible.id}&outputChain=${outputChainForBuy}&outputFungibleId=${asset_code}`
+      : `/swap-form?outputChain=${assetFullInfo.extra.mainChain}&outputFungibleId=${asset_code}`
+    : `/swap-form?inputChain=${chainForSwap}&inputFungibleId=${asset_code}`;
+
   return (
     <PageColumn>
       <NavigationTitle
@@ -271,19 +300,12 @@ export function AssetInfo() {
               gridTemplateColumns: isEmptyBalance ? '1fr' : '1fr auto auto',
             }}
           >
-            <Button
-              kind="primary"
-              size={48}
-              as={UnstyledLink}
-              to={
-                isEmptyBalance
-                  ? `/swap-form?inputChain=${chainForSwap}&outputFungibleId=${asset_code}`
-                  : `/swap-form?inputChain=${chainForSwap}&inputFungibleId=${asset_code}`
-              }
-            >
+            <Button kind="primary" size={48} as={UnstyledLink} to={swapUrl}>
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <SwapIcon style={{ width: 20, height: 20 }} />
-                <UIText kind="body/accent">Swap</UIText>
+                <UIText kind="body/accent">
+                  {isEmptyBalance ? 'Buy' : 'Swap'}
+                </UIText>
               </HStack>
             </Button>
             {isEmptyBalance ? null : (

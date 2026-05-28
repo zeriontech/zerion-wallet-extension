@@ -99,6 +99,20 @@ interface PublicPreferences {
    * "Don't show for this wallet" when proceeding past the gate.
    */
   addressesExcludedFromReceiverReadonlyWarning?: string[];
+  /**
+   * Whether the user has already seen (and dismissed) the cross-chain swap
+   * onboarding Dialog2 on /swap-form. `undefined` means "not yet shown" —
+   * the dialog opens on next visit. Set to `true` on explicit dismissal
+   * (Continue / backdrop / Escape), not on navigation-away.
+   */
+  crossChainSwapOnboardingShown?: boolean;
+  /**
+   * Whether the user has already seen the SwapButton onboarding Dialog2
+   * ("Set. Tap. Swap.") that interrupts the first pre-simulation tap of
+   * the SwapButton. Written to `true` ONLY on the Continue Swap CTA; Cancel /
+   * backdrop / Escape leave it unset so the dialog re-shows on the next tap.
+   */
+  oneTapCrossChainSwapOnboardingShown?: boolean;
 }
 
 export interface Permission {

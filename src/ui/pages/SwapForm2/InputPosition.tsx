@@ -318,6 +318,7 @@ export function InputPosition({
         open={selectorDialog.open}
         onClose={selectorDialog.closeDialog}
         positions={positions}
+        networks={networks}
         defaultSelectedTab={lastSelectedTab}
         onSelect={(selected, selectedTab) => {
           onSelectFungible(selected.chain.id, selected.fungible.id);

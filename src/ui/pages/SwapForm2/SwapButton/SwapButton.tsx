@@ -29,6 +29,7 @@ import {
 } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
+import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSwapButtonOnboardingGate';
 import type { SwapFormState2 } from '../types';
 import * as styles from './SwapButton.module.css';
 
@@ -575,9 +576,11 @@ export function SwapButton({
     onSign,
   });
 
-  const { guardedFire, dialog: readonlyReceiverDialog } =
+  const { guardedFire: readonlyGuardedFire, dialog: readonlyReceiverDialog } =
     useReadonlyReceiverGate({ to: formState.to, fire });
-  const effectiveFire = simulated ? fire : guardedFire;
+  const { guardedFire: onboardingGuardedFire, dialog: onboardingDialog } =
+    useSwapButtonOnboardingGate({ fire: readonlyGuardedFire, simulated });
+  const effectiveFire = simulated ? fire : onboardingGuardedFire;
 
   const isDanger =
     Boolean(dangerTitle) && (state === 'simulating' || !disabled);
@@ -585,6 +588,7 @@ export function SwapButton({
   return (
     <>
       {readonlyReceiverDialog}
+      {onboardingDialog}
       <AnimatePresence mode="popLayout" initial={false}>
         {isDanger ? (
           <motion.div

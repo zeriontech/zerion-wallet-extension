@@ -7,6 +7,8 @@ import {
 } from '@ariakit/react';
 import { normalizedContains } from 'normalized-contains';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
+import type { Networks } from 'src/modules/networks/Networks';
+import { createChain } from 'src/modules/networks/Chain';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
@@ -68,12 +70,14 @@ const SearchCombobox = React.forwardRef<HTMLInputElement>(
 
 export function SpendPositionSelector({
   positions,
+  networks,
   defaultSelectedTab,
   onSelect,
   open,
   onClose,
 }: {
   positions: FungiblePosition[];
+  networks: Networks | null;
   defaultSelectedTab?: string | null;
   onSelect: (position: FungiblePosition, selectedTab: string | null) => void;
   open: boolean;
@@ -81,10 +85,28 @@ export function SpendPositionSelector({
 }) {
   const { currency } = useCurrency();
   const [searchValue, setSearchValue] = useState('');
+
+  const tradablePositions = useMemo(() => {
+    const resolvedNetworks = networks;
+    if (!resolvedNetworks) return positions;
+    const cache = new Map<string, boolean>();
+    const isTradable = (chainId: string) => {
+      const cached = cache.get(chainId);
+      if (cached !== undefined) return cached;
+      const network = resolvedNetworks.getByNetworkId(createChain(chainId));
+      const ok = Boolean(
+        network?.supports_trading || network?.supports_bridging
+      );
+      cache.set(chainId, ok);
+      return ok;
+    };
+    return positions.filter((p) => isTradable(p.chain.id));
+  }, [positions, networks]);
+
   const [selectedNetwork, setSelectedNetwork] = useState<string | null>(() => {
     const tabExists =
       defaultSelectedTab != null &&
-      positions.some((p) => p.chain.id === defaultSelectedTab);
+      tradablePositions.some((p) => p.chain.id === defaultSelectedTab);
     return tabExists ? defaultSelectedTab : null;
   });
   const [pinnedFromDialog, setPinnedFromDialog] = useState<string | null>(null);
@@ -112,7 +134,7 @@ export function SpendPositionSelector({
   }, [open]);
 
   const topNetworks = useTopNetworks(
-    positions,
+    tradablePositions,
     selectedNetwork,
     pinnedFromDialog
   );
@@ -120,15 +142,15 @@ export function SpendPositionSelector({
   const showNetworkSelectorTrigger = topNetworks.length >= 4;
 
   const chainIdsInPositions = useMemo(
-    () => new Set(positions.map((p) => p.chain.id)),
-    [positions]
+    () => new Set(tradablePositions.map((p) => p.chain.id)),
+    [tradablePositions]
   );
 
   const chainDistribution = useMemo(() => {
     const distribution: Record<string, number> = {};
     const chains: Record<string, true> = {};
     let totalValue = 0;
-    for (const p of positions) {
+    for (const p of tradablePositions) {
       const value = p.amount.value || 0;
       distribution[p.chain.id] = (distribution[p.chain.id] || 0) + value;
       chains[p.chain.id] = true;
@@ -139,10 +161,10 @@ export function SpendPositionSelector({
       chains,
       totalValue,
     };
-  }, [positions]);
+  }, [tradablePositions]);
 
   const filteredPositions = useMemo(() => {
-    let result = positions;
+    let result = tradablePositions;
     const networkFilter = selectedNetwork || null;
     if (networkFilter) {
       result = result.filter((p) => p.chain.id === networkFilter);
@@ -156,7 +178,7 @@ export function SpendPositionSelector({
       );
     }
     return result.sort((a, b) => (b.amount.value || 0) - (a.amount.value || 0));
-  }, [positions, selectedNetwork, searchValue]);
+  }, [tradablePositions, selectedNetwork, searchValue]);
 
   const virtualItems = useMemo<VirtualListItem<FungiblePosition>[]>(
     () =>
@@ -254,7 +276,10 @@ export function SpendPositionSelector({
         value={selectedNetwork ?? NetworkSelectValue.All}
         chainDistribution={chainDistribution}
         showAllNetworksOption={true}
-        filterPredicate={(network) => chainIdsInPositions.has(network.id)}
+        filterPredicate={(network) =>
+          chainIdsInPositions.has(network.id) &&
+          (network.supports_trading || network.supports_bridging)
+        }
         onSelect={(value) => {
           const isAll = value === NetworkSelectValue.All;
           const nextChainId = isAll ? null : value;

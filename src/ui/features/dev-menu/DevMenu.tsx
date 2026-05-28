@@ -14,6 +14,8 @@ import {
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
+import { devForceShowSwapOnboarding } from 'src/ui/pages/SwapForm2/SwapOnboardingDialog/devForceShowStore';
+import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import {
   devMenuStore,
   hasAnyOverride,
@@ -81,6 +83,7 @@ export function DevMenu() {
   const state = useStore(devMenuStore);
   const active = hasAnyOverride(state);
   const popoverStore = usePopoverStore({ placement: 'top-end' });
+  const { setPreferences } = usePreferences();
 
   return (
     <>
@@ -238,6 +241,40 @@ export function DevMenu() {
                       </SegmentedControlRadio>
                     ))}
                   </SegmentedControlGroup>
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>swap_onboarding</span>
+                  <div className={styles.navLinks}>
+                    <button
+                      type="button"
+                      className={styles.navLink}
+                      onClick={() => {
+                        devForceShowSwapOnboarding();
+                        popoverStore.hide();
+                      }}
+                    >
+                      show
+                    </button>
+                  </div>
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>
+                    swap_button_onboarding
+                  </span>
+                  <div className={styles.navLinks}>
+                    <button
+                      type="button"
+                      className={styles.navLink}
+                      onClick={() => {
+                        setPreferences({
+                          oneTapCrossChainSwapOnboardingShown: false,
+                        });
+                        popoverStore.hide();
+                      }}
+                    >
+                      reset
+                    </button>
+                  </div>
                 </div>
               </div>
 

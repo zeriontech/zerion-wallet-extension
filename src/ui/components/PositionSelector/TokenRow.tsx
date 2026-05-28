@@ -10,6 +10,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
+import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import * as styles from './styles.module.css';
 
 function formatMarketCap(value: number | null): string | null {
@@ -94,6 +95,8 @@ export function TokenRow({
             <div title="Token is used to cover gas fees">
               <GasIcon style={{ display: 'block', width: 20, height: 20 }} />
             </div>
+          ) : fungible.verified ? (
+            <VerifiedIcon style={{ display: 'block' }} />
           ) : null}
         </HStack>
         <UIText
@@ -119,6 +122,8 @@ export function TokenRow({
           <UIText kind="body/regular">
             {formatCurrencyValue(fiatValue, 'en', currency)}
           </UIText>
+        ) : tokenQuantity != null && tokenQuantity !== '0' ? (
+          <UIText kind="body/regular">&nbsp;</UIText>
         ) : null}
         {tokenQuantity != null && tokenQuantity !== '0' ? (
           <UIText kind="small/regular" color="var(--neutral-500)">

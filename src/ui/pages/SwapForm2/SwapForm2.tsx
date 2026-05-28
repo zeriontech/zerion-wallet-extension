@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useStore } from '@store-unit/react';
 import BigNumber from 'bignumber.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigationType } from 'react-router';
@@ -27,6 +28,7 @@ import {
   QueueAbortError,
   QueueError,
   type SignStep,
+  type ToasterView,
 } from 'src/ui/components/TransactionSigner';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
@@ -78,6 +80,11 @@ import { TopUpWalletCTA } from './TopUpWalletCTA';
 import { ReadonlySignButton } from './ReadonlySignButton';
 import { UnverifiedWarning } from './UnverifiedWarning/UnverifiedWarning';
 import { PriceImpactWarning } from './PriceImpactWarning';
+import { SwapOnboardingDialog } from './SwapOnboardingDialog/SwapOnboardingDialog';
+import {
+  clearSwapOnboardingDevForceShow,
+  swapOnboardingDevForceShowStore,
+} from './SwapOnboardingDialog/devForceShowStore';
 import { SwapFormError, SwapFormSkeleton } from './SwapFormSkeleton';
 import { getCrossEcosystemState } from './shared/getCrossEcosystemState';
 import { SwapSettingsDialog } from './SwapSettingsDialog';
@@ -269,8 +276,20 @@ function SwapFormComponent({
   const settingsDialog = useDialog2();
 
   const { currency } = useCurrency();
-  const { preferences } = usePreferences();
+  const { preferences, setPreferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
+  const devForceShowOnboarding = useStore(swapOnboardingDevForceShowStore);
+  const showSwapOnboarding =
+    devForceShowOnboarding ||
+    preferences?.crossChainSwapOnboardingShown !== true;
+  const closeSwapOnboarding = useEvent(() => {
+    if (devForceShowOnboarding) {
+      // Dev-triggered open: just close locally, don't write the flag.
+      clearSwapOnboardingDevForceShow();
+      return;
+    }
+    setPreferences({ crossChainSwapOnboardingShown: true });
+  });
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -381,6 +400,23 @@ function SwapFormComponent({
 
       const steps: SignStep[] = [];
 
+      // Both Approve and Swap steps share the same toaster view so the user
+      // sees a single continuous "Swapping" / "Bridging" pill across the
+      // two-tx flow — the approve step is an implementation detail and
+      // shouldn't surface as a distinct "Approving" stage.
+      const swapToasterView: ToasterView = {
+        kind: isCrossChain ? 'bridge' : 'swap',
+        sent: {
+          symbol: inputPosition.fungible.symbol,
+          iconUrl: inputPosition.fungible.iconUrl,
+        },
+        received: {
+          symbol: outputPosition.fungible.symbol,
+          iconUrl: outputPosition.fungible.iconUrl,
+        },
+        receivedChain: { iconUrl: outputNetwork.icon_url ?? null },
+      };
+
       if (quote.transactionApprove) {
         const approveTx = quote.transactionApprove;
         invariant(
@@ -411,14 +447,7 @@ function SwapFormComponent({
             warningWasShown: Boolean(showPriceImpactCallout),
             outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
           },
-          toaster: {
-            kind: 'approve',
-            token: {
-              symbol: inputPosition.fungible.symbol,
-              iconUrl: inputPosition.fungible.iconUrl,
-            },
-            chain: { iconUrl: inputNetwork.icon_url ?? null },
-          },
+          toaster: swapToasterView,
         });
       }
 
@@ -472,18 +501,7 @@ function SwapFormComponent({
           warningWasShown: Boolean(showPriceImpactCallout),
           outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
         },
-        toaster: {
-          kind: isCrossChain ? 'bridge' : 'swap',
-          sent: {
-            symbol: inputPosition.fungible.symbol,
-            iconUrl: inputPosition.fungible.iconUrl,
-          },
-          received: {
-            symbol: outputPosition.fungible.symbol,
-            iconUrl: outputPosition.fungible.iconUrl,
-          },
-          receivedChain: { iconUrl: outputNetwork.icon_url ?? null },
-        },
+        toaster: swapToasterView,
       });
 
       // Resolves on step-1 broadcast (form reset + button unblock); rejects
@@ -663,6 +681,10 @@ function SwapFormComponent({
       <SwapSettingsDialog
         open={settingsDialog.open}
         onClose={settingsDialog.closeDialog}
+      />
+      <SwapOnboardingDialog
+        open={showSwapOnboarding}
+        onClose={closeSwapOnboarding}
       />
       <PageColumn>
         <PageTop />

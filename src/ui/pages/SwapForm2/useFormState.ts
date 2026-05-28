@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import type { Networks } from 'src/modules/networks/Networks';
 import { getAddressType } from 'src/shared/wallet/classifiers';
@@ -228,6 +228,41 @@ export function useFormState({
       ...userFormState,
     };
   }, [defaultFormState, userFormState]);
+
+  // Promote resolved input defaults into the URL so the URL reflects what
+  // the user sees. Scoped to inputChain/inputFungibleId only — outputs stay
+  // out of the URL so they can keep recomputing from fresh data per the
+  // spread-merge contract. Only fills keys that are missing; never
+  // overwrites existing URL values.
+  // Motivation: without this, the resolved input default is recomputed from
+  // positions on every balance refetch. If the user hasn't picked an input
+  // explicitly, a fresh balance snapshot can shift `defaultInputFungibleId`
+  // (e.g. a different position is now top by value) and the displayed input
+  // position changes underfoot. Pinning the first resolved default into the
+  // URL freezes it for the session.
+  useEffect(() => {
+    const missingInputChain =
+      userFormState.inputChain == null && defaultFormState.inputChain != null;
+    const missingInputFungibleId =
+      userFormState.inputFungibleId == null &&
+      defaultFormState.inputFungibleId != null;
+    if (!missingInputChain && !missingInputFungibleId) return;
+    setUserFormState((state) => ({
+      ...state,
+      ...(missingInputChain
+        ? { inputChain: defaultFormState.inputChain }
+        : null),
+      ...(missingInputFungibleId
+        ? { inputFungibleId: defaultFormState.inputFungibleId }
+        : null),
+    }));
+  }, [
+    userFormState.inputChain,
+    userFormState.inputFungibleId,
+    defaultFormState.inputChain,
+    defaultFormState.inputFungibleId,
+    setUserFormState,
+  ]);
 
   const handleChange = useCallback<HandleChangeFunction>(
     (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),

@@ -426,15 +426,39 @@ export function ReceivePositionSelector({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const isTradableChainId = useMemo(() => {
+    const cache = new Map<string, boolean>();
+    return (chainId: string) => {
+      const cached = cache.get(chainId);
+      if (cached !== undefined) return cached;
+      const network = networks.getByNetworkId(createChain(chainId));
+      const ok = Boolean(
+        network?.supports_trading || network?.supports_bridging
+      );
+      cache.set(chainId, ok);
+      return ok;
+    };
+  }, [networks]);
+
+  const tradablePositions = useMemo(
+    () => positions.filter((p) => isTradableChainId(p.chain.id)),
+    [positions, isTradableChainId]
+  );
+
+  const tradablePadChainIds = useMemo(
+    () => RECEIVE_PAD_CHAIN_IDS.filter((id) => isTradableChainId(id)),
+    [isTradableChainId]
+  );
+
   const topNetworks: TopNetworksEntry[] = useTopNetworks(
-    positions,
+    tradablePositions,
     selectedNetwork,
     pinnedFromDialog,
     {
       pinnedFirstChainId: SOLANA_CHAIN_ID,
       fallbackChainId: ETHEREUM_CHAIN_ID,
       networks,
-      padChainIds: RECEIVE_PAD_CHAIN_IDS,
+      padChainIds: tradablePadChainIds,
     }
   );
 
