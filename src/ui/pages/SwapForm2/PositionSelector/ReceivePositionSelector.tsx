@@ -144,6 +144,7 @@ function renderFungibleRow(
   return (
     <TokenRow
       fungible={fungible}
+      chainId={chainId}
       chainIconUrl={chainIconUrl}
       chainName={chainName}
       fiatValue={match?.amount.value ?? null}

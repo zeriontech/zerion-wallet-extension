@@ -227,6 +227,7 @@ export function SpendPositionSelector({
                         renderItem={(position) => (
                           <TokenRow
                             fungible={position.fungible}
+                            chainId={position.chain.id}
                             chainIconUrl={position.chain.iconUrl}
                             chainName={position.chain.name}
                             fiatValue={position.amount.value}

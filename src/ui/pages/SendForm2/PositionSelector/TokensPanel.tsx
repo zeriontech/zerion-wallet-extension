@@ -143,6 +143,7 @@ function NodePositionsForChain({
       renderItem={(position) => (
         <TokenRow
           fungible={position.fungible}
+          chainId={position.chain.id}
           chainIconUrl={position.chain.iconUrl || networks.getChainName(chain)}
           chainName={position.chain.name}
           fiatValue={position.amount.value}
@@ -330,6 +331,7 @@ export function TokensPanel({
                     renderItem={(position) => (
                       <TokenRow
                         fungible={position.fungible}
+                        chainId={position.chain.id}
                         chainIconUrl={position.chain.iconUrl}
                         chainName={position.chain.name}
                         fiatValue={position.amount.value}

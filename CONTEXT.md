@@ -79,6 +79,10 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 **Side effects on pick**: When a chain is selected, NetworkSelect2 always fires `addVisitedEthereumChain` + `updateNetworks` (mainnet + testnet stores). These are about chain-config hydration — making sure a newly-added or rarely-used chain is fully loaded. Notably it does _not_ fire `walletPort.request('uiChainSelected')` — that would update the global "current network" preference (used by the dapp connection UI / overview page), and form-local chain selection should not leak into that global state. The old `NetworkSelect` does fire `uiChainSelected`; NetworkSelect2 deliberately diverges. _Avoid_: "current network" (means global pref, not form selection).
 
+### Onboarding
+
+**Cross-chain swap onboarding**: A one-time, full-bleed Dialog2 shown on first visit to `/swap-form` (SwapForm2) that introduces the new cross-network swap flow. Persisted as `PublicPreferences.crossChainSwapOnboardingShown` — `undefined` means "not yet shown" (default → show). Written to `true` on explicit dismissal (Continue button / backdrop click / Escape) but NOT on navigation-away or on dev-menu-triggered dismissal. Scoped to `/swap-form` only — does not trigger on legacy `/swap-form-old` or `/bridge-form-old`. The dev menu's `disclaimers` section exposes a `show_swap_onboarding` button that opens the dialog via an in-memory `store-unit` signal without touching the persisted flag. _Avoid_: "swap onboarding" (ambiguous between this and any future swap-related guidance), "first-run dialog" (too generic).
+
 ## Flagged ambiguities
 
 - "Slippage" was used by some contributors to mean both the user's tolerance setting (the slippage parameter on the swap) and any output divergence — resolved: the latter is **Output mismatch**, the former is just "slippage setting / tolerance".

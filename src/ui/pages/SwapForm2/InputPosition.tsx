@@ -18,6 +18,8 @@ import {
   QUICK_AMOUNTS,
   QuickAmountButton,
 } from 'src/ui/shared/forms/QuickAmounts';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { InputKindToggle } from 'src/ui/components/AmountInput/InputKindToggle';
 import { getCurrencySymbol } from 'src/ui/components/AmountInput/getCurrencySymbol';
@@ -34,6 +36,12 @@ import type { HandleChangeFunction, SwapFormState2 } from './types';
 import { AssetSelectorButton } from './AssetSelectorButton';
 import * as assetSelectorStyles from './AssetSelectorButton.module.css';
 import { SpendPositionSelector } from './PositionSelector/SpendPositionSelector';
+
+const QUICK_AMOUNTS_NATIVE = [
+  { title: '30%', factor: 0.3 },
+  { title: '50%', factor: 0.5 },
+  { title: '80%', factor: 0.8 },
+];
 
 function getPartialBalance(balance: string, factor: number): string {
   if (factor === 1) return new BigNumber(balance).toFixed();
@@ -65,11 +73,23 @@ export function InputPosition({
   const inputId = useId();
   const selectorDialog = useDialog2();
   const [lastSelectedTab, setLastSelectedTab] = useState<string | null>(null);
+  const { networks } = useNetworks();
 
   const positionBalance = position?.amount.quantity ?? null;
   const inputPrice = position?.fungible.meta.price ?? null;
   const tokenSymbol = position?.fungible.symbol ?? '';
   const currencySymbol = getCurrencySymbol(currency);
+
+  // For native assets, drop MAX (which would zero out gas) and offer 80% instead.
+  const isNative = (() => {
+    if (!position || !networks) return false;
+    const network = networks.getByNetworkId(createChain(position.chain.id));
+    const nativeAddress = network?.native_asset?.id;
+    if (!nativeAddress) return false;
+    const implAddress = position.fungible.id;
+    return implAddress === nativeAddress;
+  })();
+  const quickAmounts = isNative ? QUICK_AMOUNTS_NATIVE : QUICK_AMOUNTS;
 
   const notEnoughBalance =
     positionBalance !== null &&
@@ -161,7 +181,7 @@ export function InputPosition({
         endTitle={
           positionBalance ? (
             <HStack gap={16} alignItems="center">
-              {QUICK_AMOUNTS.map(({ factor, title }) => (
+              {quickAmounts.map(({ factor, title }) => (
                 <QuickAmountButton
                   key={factor}
                   onClick={() => handleQuickAmount(factor)}

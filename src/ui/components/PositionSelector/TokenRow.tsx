@@ -6,6 +6,10 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
+import { useNetworks } from 'src/modules/networks/useNetworks';
+import { createChain } from 'src/modules/networks/Chain';
+import { HStack } from 'src/ui/ui-kit/HStack';
+import GasIcon from 'jsx:src/ui/assets/gas.svg';
 import * as styles from './styles.module.css';
 
 function formatMarketCap(value: number | null): string | null {
@@ -26,6 +30,7 @@ function formatMarketCap(value: number | null): string | null {
 
 export function TokenRow({
   fungible,
+  chainId,
   chainIconUrl,
   chainName,
   fiatValue,
@@ -34,6 +39,7 @@ export function TokenRow({
   onSelect,
 }: {
   fungible: Fungible;
+  chainId: string;
   chainIconUrl: string;
   chainName: string;
   fiatValue: number | null;
@@ -41,13 +47,25 @@ export function TokenRow({
   currency: string;
   onSelect: () => void;
 }) {
-  const mcap = formatMarketCap(fungible.meta.marketCap);
-  const fdv = formatMarketCap(fungible.meta.fullyDilutedValuation);
+  const { networks } = useNetworks();
+  const isGasAsset =
+    networks?.getNetworkByName(createChain(chainId))?.native_asset?.id ===
+    fungible.id;
+  const marketCap = fungible.meta.marketCap;
+  const fullyDilutedValuation = fungible.meta.fullyDilutedValuation;
+  const mcap = formatMarketCap(marketCap);
+  const fdv = formatMarketCap(fullyDilutedValuation);
+  const showFdv =
+    fdv != null &&
+    (marketCap == null ||
+      fullyDilutedValuation == null ||
+      marketCap === 0 ||
+      Math.abs(fullyDilutedValuation - marketCap) / marketCap > 0.3);
   const metaParts: { label: string; value: string }[] = [];
   if (mcap) {
     metaParts.push({ label: 'MCAP', value: mcap });
   }
-  if (fdv) {
+  if (showFdv && fdv) {
     metaParts.push({ label: 'FDV', value: fdv });
   }
 
@@ -68,9 +86,16 @@ export function TokenRow({
         </div>
       </div>
       <div className={styles.tokenInfo}>
-        <UIText kind="body/accent" className={styles.tokenName}>
-          {fungible.name}
-        </UIText>
+        <HStack gap={4} alignItems="center">
+          <UIText kind="body/accent" className={styles.tokenName}>
+            {fungible.name}
+          </UIText>
+          {isGasAsset ? (
+            <div title="Token is used to cover gas fees">
+              <GasIcon style={{ display: 'block', width: 20, height: 20 }} />
+            </div>
+          ) : null}
+        </HStack>
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
