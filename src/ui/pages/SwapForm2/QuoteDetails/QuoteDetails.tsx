@@ -189,24 +189,47 @@ export function QuoteDetails({
 
   const isVisible = quotesQuery.isLoading || quote != null;
 
+  const isAutoSlippage =
+    formState.slippage == null || formState.slippage === 'auto';
+  const showAutoSlippageInCollapsed =
+    isAutoSlippage && quote?.finalSlippage != null && quote.finalSlippage > 1;
+
   return (
     <MotionConfig transition={{ duration: 0.15 }}>
       {isVisible ? (
         <VStack gap={0}>
           <div className={styles.detailsContainer}>
             <VStack gap={0}>
-              <DetailRow
-                label="Network Fee"
-                value={
-                  quote ? (
-                    formatNetworkFee(quote)
-                  ) : quotesQuery.isLoading ? (
-                    <CircleSpinner />
-                  ) : (
-                    noValueDash
-                  )
-                }
-              />
+              <VStack gap={16}>
+                <DetailRow
+                  label="Network Fee"
+                  value={
+                    quote ? (
+                      formatNetworkFee(quote)
+                    ) : quotesQuery.isLoading ? (
+                      <CircleSpinner />
+                    ) : (
+                      noValueDash
+                    )
+                  }
+                />
+                {showAutoSlippageInCollapsed ? (
+                  <DetailRow
+                    label="Slippage"
+                    onClick={slippageDialog.openDialog}
+                    value={
+                      <HStack gap={4} alignItems="center">
+                        <UIText kind="small/accent">
+                          {getSlippageDisplay(formState, quote)}
+                        </UIText>
+                        <ChevronRightIcon
+                          className={styles.detailLinkChevron}
+                        />
+                      </HStack>
+                    }
+                  />
+                ) : null}
+              </VStack>
               <AnimatePresence initial={false}>
                 {isExpanded ? (
                   <motion.div
@@ -228,6 +251,22 @@ export function QuoteDetails({
                     >
                       <VStack gap={16}>
                         <div />
+                        {showAutoSlippageInCollapsed ? null : (
+                          <DetailRow
+                            label="Slippage"
+                            onClick={slippageDialog.openDialog}
+                            value={
+                              <HStack gap={4} alignItems="center">
+                                <UIText kind="small/accent">
+                                  {getSlippageDisplay(formState, quote)}
+                                </UIText>
+                                <ChevronRightIcon
+                                  className={styles.detailLinkChevron}
+                                />
+                              </HStack>
+                            }
+                          />
+                        )}
                         {showNonce ? (
                           <React.Suspense
                             fallback={
@@ -251,20 +290,6 @@ export function QuoteDetails({
                             )}
                           </React.Suspense>
                         ) : null}
-                        <DetailRow
-                          label="Slippage"
-                          onClick={slippageDialog.openDialog}
-                          value={
-                            <HStack gap={4} alignItems="center">
-                              <UIText kind="small/accent">
-                                {getSlippageDisplay(formState, quote)}
-                              </UIText>
-                              <ChevronRightIcon
-                                className={styles.detailLinkChevron}
-                              />
-                            </HStack>
-                          }
-                        />
                         <DetailRow
                           label="Provider"
                           onClick={
