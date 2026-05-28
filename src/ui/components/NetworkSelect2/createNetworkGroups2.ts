@@ -2,7 +2,6 @@ import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
-import { bringToFront } from 'src/shared/array-mutations';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import type { NetworkSelectDistribution } from './types';
 
@@ -49,8 +48,7 @@ export function createGroups2({
     .filter((item) => Boolean(item.is_testnet) === testnetMode)
     .filter((item) => !item.hidden)
     .filter(filterPredicate);
-  const pinnedNetworkId =
-    standard === 'evm' ? NetworkId.Zero : NetworkId.Solana;
+  const pinnedNetworkId = standard === 'solana' ? NetworkId.Solana : null;
   const otherNetworkPredicate = (network: NetworkConfig) =>
     network.id !== pinnedNetworkId &&
     (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id));
@@ -58,12 +56,13 @@ export function createGroups2({
     {
       key: 'main',
       name: null,
-      items: bringToFront(
-        allNetworks
-          .filter((network) => !otherNetworkPredicate(network))
-          .sort((a, b) => compareNetworks(a, b, chainDistribution)),
-        (item) => item.id === pinnedNetworkId
-      ),
+      items: allNetworks
+        .filter((network) => !otherNetworkPredicate(network))
+        .sort((a, b) => {
+          if (a.id === pinnedNetworkId) return -1;
+          if (b.id === pinnedNetworkId) return 1;
+          return compareNetworks(a, b, chainDistribution);
+        }),
     },
     {
       key: 'other',
