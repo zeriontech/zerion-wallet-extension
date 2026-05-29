@@ -58,16 +58,17 @@ export function SwapOnboardingDialog({
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
         overflow: 'hidden',
+        maxHeight: '100vh',
       }}
     >
-      <VStack gap={40}>
+      <VStack gap={24}>
         <OnboardingAnimation />
-        <VStack gap={40} style={{ paddingInline: 16 }}>
-          <VStack gap={16}>
-            <UIText kind="headline/h1" style={{ textAlign: 'center' }}>
+        <VStack gap={24} style={{ paddingInline: 16 }}>
+          <VStack gap={12}>
+            <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
               One swap, every chain.
             </UIText>
-            <VStack gap={16} style={{ paddingInline: 16 }}>
+            <VStack gap={12} style={{ paddingInline: 16 }}>
               {BULLETS.map((bullet) => (
                 <HStack
                   key={bullet.title}
@@ -83,8 +84,8 @@ export function SwapOnboardingDialog({
                     style={{ flexShrink: 0, objectFit: 'contain' }}
                   />
                   <VStack gap={0} style={{ flex: 1, minWidth: 0 }}>
-                    <UIText kind="body/accent">{bullet.title}</UIText>
-                    <UIText kind="body/regular" color="var(--neutral-500)">
+                    <UIText kind="small/accent">{bullet.title}</UIText>
+                    <UIText kind="small/regular" color="var(--neutral-500)">
                       {bullet.body}
                     </UIText>
                   </VStack>
@@ -92,7 +93,7 @@ export function SwapOnboardingDialog({
               ))}
             </VStack>
           </VStack>
-          <div style={{ paddingTop: 16, paddingBottom: 34 }}>
+          <div style={{ paddingTop: 8, paddingBottom: 20 }}>
             <Button
               kind="primary"
               onClick={onClose}

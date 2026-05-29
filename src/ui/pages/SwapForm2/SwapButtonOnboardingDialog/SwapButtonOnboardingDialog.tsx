@@ -51,7 +51,7 @@ export function SwapButtonOnboardingDialog({
     >
       <VStack
         gap={8}
-        style={{ paddingInline: 16, paddingTop: 16, paddingBottom: 50 }}
+        style={{ paddingInline: 16, paddingTop: 16, paddingBottom: 25 }}
       >
         <VStack gap={32} style={{ paddingBlock: 24 }}>
           <UIText kind="headline/h1" style={{ paddingInline: 24 }}>

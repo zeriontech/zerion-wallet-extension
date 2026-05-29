@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { useReducedMotion } from 'src/ui/components/TransactionSigner/Toaster/useReducedMotion';
+import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import rotateSrc from 'url:./assets/rotate.png';
 import token01 from 'url:./assets/token-01.png';
 import token02 from 'url:./assets/token-02.png';
@@ -179,8 +180,14 @@ function TokenIcon({
   );
 }
 
+const COMPACT_HEIGHT_THRESHOLD = 700;
+const COMPACT_CROP = 52;
+
 export function OnboardingAnimation() {
   const reducedMotion = useReducedMotion();
+  const { innerHeight } = useWindowSizeStore();
+  const isCompact = innerHeight < COMPACT_HEIGHT_THRESHOLD;
+  const cropAmount = isCompact ? COMPACT_CROP : 0;
   const [animationStarted, setAnimationStarted] = useState(reducedMotion);
 
   useEffect(() => {
@@ -210,7 +217,7 @@ export function OnboardingAnimation() {
       style={{
         position: 'relative',
         width: '100%',
-        height: FRAME_HEIGHT,
+        height: FRAME_HEIGHT - cropAmount,
         overflow: 'hidden',
       }}
     >
@@ -218,7 +225,7 @@ export function OnboardingAnimation() {
         style={{
           position: 'absolute',
           left: '50%',
-          top: 0,
+          top: -cropAmount / 2,
           width: FRAME_WIDTH,
           height: FRAME_HEIGHT,
           transform: 'translateX(-50%)',
