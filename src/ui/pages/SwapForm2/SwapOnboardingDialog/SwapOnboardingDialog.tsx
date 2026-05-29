@@ -65,7 +65,7 @@ export function SwapOnboardingDialog({
         <OnboardingAnimation />
         <VStack gap={24} style={{ paddingInline: 16 }}>
           <VStack gap={12}>
-            <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
+            <UIText kind="headline/h1" style={{ paddingLeft: 32 }}>
               One swap, every chain.
             </UIText>
             <VStack gap={12} style={{ paddingInline: 16 }}>
@@ -93,7 +93,7 @@ export function SwapOnboardingDialog({
               ))}
             </VStack>
           </VStack>
-          <div style={{ paddingTop: 8, paddingBottom: 20 }}>
+          <div style={{ paddingTop: 0, paddingBottom: 20 }}>
             <Button
               kind="primary"
               onClick={onClose}
