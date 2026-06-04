@@ -26,8 +26,6 @@ interface WalletManager {
 type Origin = string;
 type Address = string;
 
-export type PnlMode = 'pnl' | 'rpnl' | 'upnl' | '1day';
-
 export interface AddressBookEntry {
   address: string;
   name?: string;
@@ -81,11 +79,6 @@ interface PublicPreferences {
   enableKeyboardShortcutToSign?: boolean | null;
   showTransactionsOnAssetChart?: boolean;
   walletsOrder?: WalletListGroup[];
-  /**
-   * Selected mode for the percentage-change display on the Overview page.
-   * `undefined` means "use the default", which is 'pnl'.
-   */
-  pnlMode?: PnlMode;
   /**
    * When enabled, the Swap form exposes the recipient address selector for
    * same-ecosystem cross-network swaps (so the user can send the received
