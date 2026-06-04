@@ -672,7 +672,7 @@ function OverviewComponent() {
               to={createTo('/overview/nfts')}
               onClick={() => handleTabChange('/overview/nfts')}
             >
-              Collectibles
+              NFTs
             </SegmentedControlLink>
           </SegmentedControlGroup>
         </div>
@@ -728,7 +728,7 @@ function OverviewComponent() {
               path="/nfts"
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
-                  <NavigationTitle title={null} documentTitle="Collectibles" />
+                  <NavigationTitle title={null} documentTitle="NFTs" />
                   <Spacer height={TAB_TOP_PADDING} />
                   <TestnetworkGuard
                     dappChain={dappChain || null}

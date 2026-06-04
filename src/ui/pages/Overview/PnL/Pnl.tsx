@@ -1,4 +1,5 @@
 import React from 'react';
+import PnlChartIcon from 'jsx:src/ui/assets/pnl-chart.svg';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -128,9 +129,12 @@ export function Pnl() {
         }}
       >
         <VStack gap={8}>
-          <UIText kind="body/accent" color="var(--black)">
-            All-time PnL
-          </UIText>
+          <HStack gap={8} alignItems="center">
+            <PnlChartIcon style={{ width: 24, height: 24 }} />
+            <UIText kind="body/accent" color="var(--black)">
+              All-time PnL
+            </UIText>
+          </HStack>
           {isLoading ? (
             <UIText kind="headline/h2" color="var(--neutral-500)">
               {NBSP}
