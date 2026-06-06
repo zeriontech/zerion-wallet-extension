@@ -1,0 +1,99 @@
+.container {
+  position: relative;
+  background-color: var(--white);
+  border: 2px solid var(--neutral-200);
+  border-radius: 20px;
+  padding: 16px;
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.containerError {
+  border-color: var(--negative-500);
+}
+
+.triggerOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.contentLayer {
+  position: relative;
+  pointer-events: none;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.valueRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chevron {
+  display: block;
+  width: 20px;
+  height: 20px;
+  color: var(--neutral-400);
+  transition: color 0.15s ease;
+}
+
+.container:hover .chevron {
+  color: var(--black);
+}
+
+.actions {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-500);
+  flex-shrink: 0;
+  pointer-events: auto;
+  transition: color 0.15s ease;
+}
+
+.closeButton:hover {
+  color: var(--black);
+}
+
+.valueColumn {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  padding-right: 36px;
+}
+
+.addressRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.addressHead {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addressTail {
+  white-space: nowrap;
+}

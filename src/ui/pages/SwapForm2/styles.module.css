@@ -1,0 +1,139 @@
+.formContainer {
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--z-index-1);
+}
+
+.absoluteFooter {
+  position: fixed;
+  bottom: var(--technical-panel-bottom-height, 0px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--body-width);
+  max-width: var(--body-max-width);
+  padding-inline: 16px;
+  background-color: var(--light-background-transparent);
+  backdrop-filter: blur(16px);
+}
+
+.absoluteHeader {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--body-width);
+  max-width: var(--body-max-width);
+  padding-inline: 12px;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.absoluteHeader > * {
+  pointer-events: auto;
+}
+
+.reverseButton {
+  position: absolute;
+  /* half self height and half gap between inputs */
+  bottom: calc(50% - 20px);
+  left: calc(50% - 20px);
+  background-color: var(--white);
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  border: 2px solid var(--z-index-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* z-index: 1; */
+}
+
+@media (hover: hover) {
+  .reverseButton:hover {
+    background-color: var(--z-index-2);
+  }
+}
+
+.skeleton {
+  background-color: var(--neutral-100);
+  border-radius: 6px;
+}
+
+.skeletonCircle {
+  background-color: var(--neutral-100);
+  border-radius: 50%;
+}
+
+.errorTint .skeleton,
+.errorTint .skeletonCircle {
+  background-color: var(--negative-200);
+}
+
+.errorCard {
+  padding: 12px 16px;
+  border-radius: 24px;
+  border: 1px solid var(--negative-300);
+  background-image: linear-gradient(
+    113deg,
+    var(--negative-200) 0%,
+    var(--negative-300) 100%
+  );
+  color: var(--negative-500);
+}
+
+.errorReloadButton {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--negative-500);
+  background-color: rgba(255, 255, 255, 0.4);
+  transition: background-color 120ms ease, transform 120ms ease;
+}
+
+@media (hover: hover) {
+  .errorReloadButton:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+.errorReloadButton:active svg {
+  transform: rotate(-90deg);
+  transition: transform 200ms ease;
+}
+
+.errorReloadButton svg {
+  transition: transform 200ms ease;
+}
+
+.skeletonDetails {
+  border: 2px solid var(--neutral-200);
+  border-radius: 20px;
+  padding: 16px;
+  background-color: var(--white);
+}
+
+.skeletonDetailsToggleWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: -14px;
+}
+
+.skeletonDetailsToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  border: 2px solid var(--neutral-200);
+  background-color: var(--white);
+  height: 24px;
+}

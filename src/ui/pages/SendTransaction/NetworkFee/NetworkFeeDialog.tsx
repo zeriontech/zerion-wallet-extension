@@ -75,7 +75,7 @@ function getCustomFeeDescription({
   }${formatGasPrice(gasPrice)}${fiat ? ')' : ''}`;
 }
 
-function formDataToGasConfiguration(
+export function formDataToGasConfiguration(
   formData: FormData
 ): NetworkFeeConfiguration {
   const priorityFee = (formData.get('priorityFee') ?? '') as string;

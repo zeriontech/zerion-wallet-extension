@@ -1310,10 +1310,13 @@ export class Wallet {
     const networks = await networksStore.loadNetworksByChainId(chainId);
     const network = networks.getNetworkById(chainId);
     const prepared = prepareTransaction(incomingTransaction);
-    const txWithFee = await prepareGasAndNetworkFee(prepared, networks, {
-      source: mode === 'testnet' ? 'testnet' : 'mainnet',
-      apiClient: ZerionAPI,
-    });
+    const txWithFee =
+      initiator === INTERNAL_ORIGIN
+        ? prepared
+        : await prepareGasAndNetworkFee(prepared, networks, {
+            source: mode === 'testnet' ? 'testnet' : 'mainnet',
+            apiClient: ZerionAPI,
+          });
     const transaction = await prepareNonce(txWithFee, network);
 
     const paymasterEligible = Boolean(transaction.customData?.paymasterParams);

@@ -3,13 +3,15 @@ import { formatCurrencyValueExtra } from './formatCurrencyValueExtra';
 describe('formatCurrencyValueExtra', () => {
   const testCases = [
     {
+      // Amount rule: 0.001 now shows real digits, so it never rounds to zero
+      // and the "<" fallback no longer triggers for fiat (PRD: never use "<").
       input: {
         value: 0.001,
         locale: 'en',
         currency: 'usd',
         opts: { zeroRoundingFallback: 0.01 },
       },
-      output: '<$0.01',
+      output: '$0.001',
     },
     {
       input: {
@@ -18,7 +20,7 @@ describe('formatCurrencyValueExtra', () => {
         currency: 'usd',
         opts: { zeroRoundingFallback: 0 },
       },
-      output: '$0.00',
+      output: '$0.001',
     },
     {
       input: {
@@ -27,7 +29,7 @@ describe('formatCurrencyValueExtra', () => {
         currency: 'rub',
         opts: { zeroRoundingFallback: 0 },
       },
-      output: '₽0.00',
+      output: '₽0.001',
     },
     {
       input: {
@@ -40,14 +42,14 @@ describe('formatCurrencyValueExtra', () => {
     },
     {
       description:
-        'when zeroRoundingFallback is less than value, output is expected to be adjusted',
+        'amount rule floors tiny fiat values at 0.001, so the "<" fallback no longer triggers',
       input: {
         value: 0.000004093,
         locale: 'en',
         currency: 'usd',
         opts: { zeroRoundingFallback: 0.000000001 },
       },
-      output: '<$0.00001',
+      output: '$0.001',
     },
     {
       description:
@@ -61,24 +63,26 @@ describe('formatCurrencyValueExtra', () => {
       output: '$0.02',
     },
     {
-      description: 'zeroRoundingFallback can be larger than one',
+      description:
+        'amount rule: tiny eur value shows real digits, fallback not used',
       input: {
         value: 0.000293,
         locale: 'en',
         currency: 'eur',
         opts: { zeroRoundingFallback: 10 },
       },
-      output: '<€10',
+      output: '€0.001',
     },
     {
-      description: 'zeroRoundingFallback does not need to be a power of 10',
+      description:
+        'amount rule: tiny eur value shows real digits, fallback not used',
       input: {
         value: 0.000293,
         locale: 'en',
         currency: 'eur',
         opts: { zeroRoundingFallback: 0.035 },
       },
-      output: '<€0.035',
+      output: '€0.001',
     },
     {
       description: 'handle locales other than EN',
@@ -88,7 +92,7 @@ describe('formatCurrencyValueExtra', () => {
         currency: 'eur',
         opts: { zeroRoundingFallback: 0.035 },
       },
-      output: '<0,035 €',
+      output: '0,001 €',
     },
     {
       input: {

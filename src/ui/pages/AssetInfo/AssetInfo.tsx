@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { NavigationType, useNavigationType, useParams } from 'react-router-dom';
+import {
+  NavigationType,
+  useNavigate,
+  useNavigationType,
+  useParams,
+} from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -10,7 +15,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
-import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
 import FlagIcon from 'jsx:src/ui/assets/flag.svg';
 import ShareIcon from 'jsx:src/ui/assets/share.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -23,6 +27,8 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { useWalletAssetDetails } from 'src/modules/zerion-api/hooks/useWalletAssetDetails';
+import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
+import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
@@ -36,6 +42,8 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
+import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { ReceiverAddressDialog } from 'src/ui/components/ReceiverAddressDialog';
 import { AssetHistory } from './AssetHistory';
 import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
@@ -104,6 +112,8 @@ function ShareAssetLink({ asset }: { asset: Asset }) {
 export function AssetInfo() {
   const { asset_code } = useParams();
   invariant(asset_code, 'Asset Code is required');
+  const navigate = useNavigate();
+  const recipientDialog = useDialog2();
   const navigationType = useNavigationType();
   useEffect(() => {
     if (navigationType === NavigationType.Push) {
@@ -135,6 +145,11 @@ export function AssetInfo() {
       groupBy: ['by-app'],
       addresses: [params.address],
     },
+    { source: useHttpClientSource() },
+    { enabled: ready }
+  );
+  const { data: simplePositionsData } = useWalletSimplePositions(
+    { address: params.address, currency },
     { source: useHttpClientSource() },
     { enabled: ready }
   );
@@ -210,6 +225,28 @@ export function AssetInfo() {
     ? assetFullInfo.extra.mainChain
     : chainWithTheBiggestBalance;
 
+  const biggestInputPosition = isEmptyBalance
+    ? (simplePositionsData?.data ?? [])
+        .filter((p) => p.fungible.id !== asset_code)
+        .reduce<FungiblePosition | null>(
+          (max, p) =>
+            (p.amount.value ?? 0) > (max?.amount.value ?? 0) ? p : max,
+          null
+        )
+    : null;
+  const inputChainForBuy = biggestInputPosition?.chain.id ?? chainForSwap;
+
+  const outputChainForBuy =
+    inputChainForBuy in assetFullInfo.fungible.implementations
+      ? inputChainForBuy
+      : assetFullInfo.extra.mainChain;
+
+  const swapUrl = isEmptyBalance
+    ? biggestInputPosition
+      ? `/swap-form?inputChain=${inputChainForBuy}&inputFungibleId=${biggestInputPosition.fungible.id}&outputChain=${outputChainForBuy}&outputFungibleId=${asset_code}`
+      : `/swap-form?outputChain=${assetFullInfo.extra.mainChain}&outputFungibleId=${asset_code}`
+    : `/swap-form?inputChain=${chainForSwap}&inputFungibleId=${asset_code}`;
+
   return (
     <PageColumn>
       <NavigationTitle
@@ -263,46 +300,36 @@ export function AssetInfo() {
               gridTemplateColumns: isEmptyBalance ? '1fr' : '1fr auto auto',
             }}
           >
-            <Button
-              kind="primary"
-              size={48}
-              as={UnstyledLink}
-              to={
-                isEmptyBalance
-                  ? `/swap-form?inputChain=${chainForSwap}&outputFungibleId=${asset_code}`
-                  : `/swap-form?inputChain=${chainForSwap}&inputFungibleId=${asset_code}`
-              }
-            >
+            <Button kind="primary" size={48} as={UnstyledLink} to={swapUrl}>
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <SwapIcon style={{ width: 20, height: 20 }} />
-                <UIText kind="body/accent">Swap</UIText>
+                <UIText kind="body/accent">
+                  {isEmptyBalance ? 'Buy' : 'Swap'}
+                </UIText>
               </HStack>
             </Button>
             {isEmptyBalance ? null : (
-              <>
-                <Button
-                  as={UnstyledLink}
-                  kind="primary"
-                  size={48}
-                  to={`/send-form?tokenAssetCode=${asset_code}&tokenChain=${chainWithTheBiggestBalance}`}
-                  style={{ padding: 14 }}
-                  aria-label="Send Token"
-                >
-                  <SendIcon style={{ width: 20, height: 20 }} />
-                </Button>
-                <Button
-                  kind="primary"
-                  as={UnstyledLink}
-                  to={`/bridge-form?inputFungibleId=${asset_code}&inputChain=${chainWithTheBiggestBalance}`}
-                  size={48}
-                  style={{ padding: 14 }}
-                  aria-label="Bridge Token"
-                >
-                  <BridgeIcon style={{ width: 20, height: 20 }} />
-                </Button>
-              </>
+              <Button
+                kind="primary"
+                size={48}
+                onClick={() => recipientDialog.openDialog()}
+                style={{ padding: 14 }}
+                aria-label="Send Token"
+              >
+                <SendIcon style={{ width: 20, height: 20 }} />
+              </Button>
             )}
           </HStack>
+          <ReceiverAddressDialog
+            open={recipientDialog.open}
+            onClose={recipientDialog.closeDialog}
+            title="Recipient"
+            onSelect={(address) => {
+              navigate(
+                `/send-form?to=${address}&inputFungibleId=${asset_code}&inputChain=${chainWithTheBiggestBalance}`
+              );
+            }}
+          />
         </StickyBottomPanel>
       )}
     </PageColumn>

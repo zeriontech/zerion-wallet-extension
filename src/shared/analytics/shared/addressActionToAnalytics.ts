@@ -1,5 +1,6 @@
 import { isTruthy } from 'is-truthy-ts';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { Transfer } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { Quote2 } from 'src/shared/types/Quote';
 
 interface AnalyticsTransactionData {
@@ -25,6 +26,34 @@ export function toMaybeArr<T>(
   return arr?.length ? arr.filter(isTruthy) : undefined;
 }
 
+/**
+ * Resolves the on-chain contract address of a transfer's asset.
+ *
+ * `fungible.id` is the backend's fungibleId (often a UUID like
+ * `41c0a219-…`), NOT an asset address — sending it as `asset_address` was the
+ * bug behind WLT-1357. The real contract address lives in
+ * `fungible.implementations[chain].address`. We prefer the implementation on
+ * the action's own chain; if it's missing (or the chain is unknown) we fall
+ * back to any non-null implementation address. Native assets (e.g. ETH on
+ * Ethereum) have no contract address, so this returns `null` for them rather
+ * than a bogus value.
+ */
+function getTransferAssetAddress(
+  transfer: Transfer,
+  chain: string | null
+): string | null {
+  const implementations = transfer.fungible?.implementations;
+  if (!implementations) {
+    return null;
+  }
+  if (chain && implementations[chain]?.address) {
+    return implementations[chain].address;
+  }
+  return (
+    Object.values(implementations).find((impl) => impl.address)?.address ?? null
+  );
+}
+
 export function addressActionToAnalytics({
   addressAction,
   quote,
@@ -42,12 +71,14 @@ export function addressActionToAnalytics({
       usd_amount_sent: null,
     };
   }
-  const outgoing = addressAction.acts
-    ?.at(0)
-    ?.content?.transfers?.filter(({ direction }) => direction === 'out');
-  const incoming = addressAction.acts
-    ?.at(0)
-    ?.content?.transfers?.filter(({ direction }) => direction === 'in');
+  const act = addressAction.acts?.at(0);
+  const actChain = act?.transaction?.chain?.id ?? null;
+  const outgoing = act?.content?.transfers?.filter(
+    ({ direction }) => direction === 'out'
+  );
+  const incoming = act?.content?.transfers?.filter(
+    ({ direction }) => direction === 'in'
+  );
 
   const value = {
     action_type: addressAction.type.displayValue || 'Execute',
@@ -67,9 +98,16 @@ export function addressActionToAnalytics({
     asset_name_received: toMaybeArr(
       incoming?.map((item) => item.fungible?.name)
     ),
-    asset_address_sent: toMaybeArr(outgoing?.map((item) => item.fungible?.id)),
+    asset_address_sent: toMaybeArr(
+      outgoing?.map((item) => getTransferAssetAddress(item, actChain))
+    ),
+    // For cross-chain (bridge) actions the received asset lives on the output
+    // chain, not the act's (source) chain — prefer it when resolving its
+    // implementation address.
     asset_address_received: toMaybeArr(
-      incoming?.map((item) => item.fungible?.id)
+      incoming?.map((item) =>
+        getTransferAssetAddress(item, outputChain ?? actChain)
+      )
     ),
   };
   if (quote) {

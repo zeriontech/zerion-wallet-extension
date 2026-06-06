@@ -310,6 +310,8 @@ function trackAppEvents({ account }: { account: Account }) {
       outputChain,
       warningWasShown = false,
       outputAmountColor = 'grey',
+      autoslippageTestGroup,
+      actionType,
     } = context;
 
     const initiatorURL = new URL(initiator);
@@ -344,6 +346,12 @@ function trackAppEvents({ account }: { account: Account }) {
       output_amount_color: outputAmountColor,
       transaction_success: status === 'success',
       backend_error_message: quote?.error?.message || null,
+      // Effective slippage applied to the quote (manual or auto), in percent.
+      slippage: quote?.finalSlippage ?? null,
+      // Value computed by the autoslippage engine; present only in Auto mode.
+      autoslippage: quote?.autoSlippage ?? null,
+      autoslippage_test_group: autoslippageTestGroup ?? null,
+      action_type: actionType ?? null,
       ...omitNullParams(addressActionAnalytics),
     });
 
@@ -497,10 +505,10 @@ function trackAppEvents({ account }: { account: Account }) {
       formState,
       quote,
       enoughBalance,
-      slippagePercent,
       warningWasShown,
       outputAmountColor,
       scope,
+      autoslippageTestGroup,
     } = context;
 
     // We query fungible info for input and output assets
@@ -528,6 +536,30 @@ function trackAppEvents({ account }: { account: Account }) {
       'Unable to fetch output asset data for transactionFormed event'
     );
 
+    // Resolve the actual on-chain contract address for the relevant chain,
+    // matching the logic used by getTransferAssetAddress in
+    // addressActionToAnalytics so the Swap Form Filled Out and Transaction
+    // Signed events report the same asset addresses (not the fungible id).
+    const getFungibleAddress = (
+      fungible: typeof inputAsset,
+      chain: string | null | undefined
+    ): string | null => {
+      const implementations = fungible.implementations;
+      if (chain && implementations[chain]?.address) {
+        return implementations[chain].address;
+      }
+      return (
+        Object.values(implementations).find((impl) => impl.address)?.address ??
+        null
+      );
+    };
+    const outputChain = formState.outputChain ?? formState.inputChain;
+    const assetAddressSent = getFungibleAddress(
+      inputAsset,
+      formState.inputChain
+    );
+    const assetAddressReceived = getFungibleAddress(outputAsset, outputChain);
+
     const params = createParams({
       request_name: 'swap_form_filled_out',
       client_scope: scope,
@@ -537,13 +569,13 @@ function trackAppEvents({ account }: { account: Account }) {
       usd_amount_received: quote.outputAmount.usdValue ?? undefined,
       asset_amount_received: toMaybeArr([Number(quote.outputAmount.quantity)]),
       asset_name_received: toMaybeArr([outputAsset.name]),
-      asset_address_received: toMaybeArr([outputAsset.id]),
+      asset_address_received: toMaybeArr([assetAddressReceived]),
 
       usd_amount_sent:
         Number(formState.inputAmount) * (inputAsset.meta.price || 0),
       asset_amount_sent: toMaybeArr([Number(formState.inputAmount)]),
       asset_name_sent: toMaybeArr([inputAsset.name]),
-      asset_address_sent: toMaybeArr([inputAsset.id]),
+      asset_address_sent: toMaybeArr([assetAddressSent]),
 
       gas: quote.transactionSwap?.evm
         ? Number(getGas(quote.transactionSwap.evm))
@@ -555,7 +587,11 @@ function trackAppEvents({ account }: { account: Account }) {
       zerion_fee_usd_amount: quote.protocolFee.amount.usdValue ?? 0,
       input_chain: formState.inputChain,
       output_chain: formState.outputChain ?? formState.inputChain,
-      slippage: slippagePercent,
+      // Effective slippage applied to the quote (manual or auto), in percent.
+      slippage: quote.finalSlippage ?? undefined,
+      // Value computed by the autoslippage engine; present only in Auto mode.
+      autoslippage: quote.autoSlippage ?? undefined,
+      autoslippage_test_group: autoslippageTestGroup,
       contract_type: quote.contractMetadata.name,
 
       fdv_asset_sent: inputAsset.meta.fullyDilutedValuation ?? undefined,

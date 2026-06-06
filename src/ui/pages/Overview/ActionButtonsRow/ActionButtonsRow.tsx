@@ -1,25 +1,24 @@
 import browser from 'webextension-polyfill';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
-import React, { useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
 import { useQuery } from '@tanstack/react-query';
-import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
-import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
-import BridgeIcon from 'jsx:src/ui/assets/actions/bridge.svg';
-import FundIcon from 'jsx:src/ui/assets/actions/fund.svg';
+import SwapIcon from 'jsx:src/ui/assets/actions/swap-2.svg';
+import SendIcon from 'jsx:src/ui/assets/actions/send-2.svg';
+import BuyIcon from 'jsx:src/ui/assets/actions/card.svg';
+import ReceiveIcon from 'jsx:src/ui/assets/actions/qr-code.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { walletPort } from 'src/ui/shared/channels';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
-import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Button } from 'src/ui/ui-kit/Button';
 import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
-import { type HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { emitter } from 'src/ui/shared/events';
-import { AddFundsOptionsDialog } from '../../Receive/AddFundsOptionsDialog';
+import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { ReceiverAddressDialog } from 'src/ui/components/ReceiverAddressDialog';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import * as s from './styles.module.css';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
@@ -33,14 +32,15 @@ function ActionButton<As extends ElementType = 'a'>({
 }: {
   className?: string;
   icon: React.ReactNode;
-  title: React.AnchorHTMLAttributes<HTMLAnchorElement>['title'];
+  title: string;
 } & { as?: As } & ComponentPropsWithoutRef<As>) {
   const Element = as || UnstyledAnchor;
   return (
     <Element {...props} className={classNames(s.actionButton, className)}>
-      <div className={s.icon} title={title}>
-        {icon}
-      </div>
+      <VStack gap={0} style={{ justifyItems: 'center' }}>
+        <div className={s.icon}>{icon}</div>
+        <UIText kind="caption/accent">{title}</UIText>
+      </VStack>
     </Element>
   );
 }
@@ -76,6 +76,7 @@ export function useOpenAndConnectToZerion({
 
 export function ActionButtonsRow() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
@@ -83,47 +84,28 @@ export function ActionButtonsRow() {
     },
   });
   const addWalletParams = useWalletParams(wallet);
-  const fundOptionsDialogRef = useRef<HTMLDialogElementInterface>(null);
+  const recipientDialog = useDialog2();
+  const { handleAnchorClick } = useOpenAndConnectToZerion({
+    address: wallet?.address ?? null,
+  });
 
   if (!addWalletParams || !wallet) {
     return null;
   }
 
-  const sendButton = (
-    <ActionButton
-      title="Send"
-      as={UnstyledLink}
-      icon={<SendIcon />}
-      to="/send-form"
-    />
-  );
+  const buyCryptoHref = `${ZERION_ORIGIN}/deposit?${addWalletParams}`;
 
-  const bridgeButton = (
-    <WithMainnetOnlyWarningDialog<'a'>
-      message="Testnets are not supported in Bridge"
-      render={({ handleClick }) => (
-        <ActionButton
-          title="Bridge"
-          as={UnstyledLink}
-          icon={<BridgeIcon />}
-          to="/bridge-form"
-          onClick={(event) => {
-            handleClick(event);
-          }}
-        />
-      )}
-    />
-  );
-  const fundButton = (
+  const buyButton = (
     <ActionButton
-      title="Fund"
-      as={UnstyledButton}
-      icon={<FundIcon />}
-      onClick={() => {
-        fundOptionsDialogRef.current?.showModal();
-
+      title="Buy"
+      icon={<BuyIcon />}
+      href={buyCryptoHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
+        handleAnchorClick(event);
         emitter.emit('buttonClicked', {
-          buttonName: 'Fund',
+          buttonName: 'Buy Crypto',
           buttonScope: 'General',
           pathname,
           walletAddress: wallet.address,
@@ -132,12 +114,41 @@ export function ActionButtonsRow() {
     />
   );
 
+  const receiveButton = (
+    <ActionButton
+      title="Receive"
+      as={UnstyledLink}
+      icon={<ReceiveIcon />}
+      to={`/receive?address=${wallet.address}`}
+      onClick={() => {
+        emitter.emit('buttonClicked', {
+          buttonName: 'Receive Crypto',
+          buttonScope: 'General',
+          pathname,
+          walletAddress: wallet.address,
+        });
+      }}
+    />
+  );
+
+  const sendButton = (
+    <ActionButton
+      title="Send"
+      as={UnstyledButton}
+      icon={<SendIcon />}
+      onClick={() => recipientDialog.openDialog()}
+    />
+  );
+
   return (
     <div>
-      <AddFundsOptionsDialog
-        dialogRef={fundOptionsDialogRef}
-        wallet={wallet}
-        analytics={{ pathname, address: wallet.address }}
+      <ReceiverAddressDialog
+        open={recipientDialog.open}
+        onClose={recipientDialog.closeDialog}
+        title="Recipient"
+        onSelect={(address) => {
+          navigate(`/send-form?to=${address}`);
+        }}
       />
       <ul
         className={s.list}
@@ -147,37 +158,23 @@ export function ActionButtonsRow() {
           listStyle: 'none',
         }}
       >
-        <li>{fundButton}</li>
+        <li>{buyButton}</li>
+        <li>{receiveButton}</li>
         <li>{sendButton}</li>
-        <li>{bridgeButton}</li>
-        <li style={{ flexGrow: 1, minWidth: 0 }}>
+        <li>
           <WithMainnetOnlyWarningDialog<'a'>
             message="Testnets are not supported in Swap"
             render={({ handleClick }) => (
-              <Button
-                aria-label="Swap"
-                size={48}
+              <ActionButton
+                title="Swap"
                 as={UnstyledLink}
-                onClick={(event) => {
+                className={s.actionButtonPrimary}
+                icon={<SwapIcon />}
+                to="/swap-form"
+                onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
                   handleClick(event);
                 }}
-                to="/swap-form"
-                style={{
-                  borderRadius: 24,
-                  width: '100%',
-                  paddingInline: 0,
-                  ['--button-background' as string]: 'var(--black)',
-                  ['--button-text' as string]: 'var(--white)',
-                  ['--button-background-hover' as string]: 'var(--neutral-800)',
-                }}
-              >
-                <HStack gap={6} alignItems="center">
-                  <div style={{ display: 'flex' }}>
-                    <SwapIcon />
-                  </div>
-                  <UIText kind="small/accent">Swap</UIText>
-                </HStack>
-              </Button>
+              />
             )}
           />
         </li>

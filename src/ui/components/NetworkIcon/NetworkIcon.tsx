@@ -1,7 +1,7 @@
 import React from 'react';
 import { registerPreviewPermanent } from 'src/ui-lab/previews/registerPreview';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { Image } from 'src/ui/ui-kit/MediaFallback';
+import { Image2 } from 'src/ui/ui-kit/MediaFallback';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
@@ -49,9 +49,9 @@ function TextFallback({
 export function NetworkIcon({ src, name, size = 32, style }: Props) {
   return src ? (
     <div style={{ width: size, height: size }} title={name || undefined}>
-      <Image
+      <Image2
         src={src}
-        alt=""
+        alt={name || undefined}
         style={{ width: '100%', display: 'block', ...style }}
         renderError={() => (
           <TextFallback name={name} size={size} style={style} src={src} />

@@ -1,0 +1,63 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  /* Sit above Dialog2 so the troubleshooting iframe overlays the
+     hardware-signing dialog when both are open. */
+  z-index: calc(var(--over-layout-index) + 1);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.container {
+  position: fixed;
+  /* Sit above Dialog2 (and its backdrop) — see backdrop note above. */
+  z-index: calc(var(--over-layout-index) + 1);
+  background-color: var(--white);
+  overflow: hidden;
+  padding: 24px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  /* Narrow screens: pin to bottom edge, full width, top-rounded sheet. */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px 16px 0 0;
+}
+
+/* Wide screens: float at bottom-center with horizontal margins. */
+@media (min-width: 500px) {
+  .container {
+    left: 50%;
+    right: auto;
+    bottom: 24px;
+    transform: translateX(-50%);
+    max-width: 480px;
+    width: calc(100% - 32px);
+    border-radius: 16px;
+  }
+}
+
+.container[data-open='false'] {
+  opacity: 0;
+  pointer-events: none;
+  /* Keep iframe mounted but visually offscreen so layout doesn't reflow. */
+  visibility: hidden;
+  transform: translateY(16px);
+}
+
+@media (min-width: 500px) {
+  .container[data-open='false'] {
+    transform: translate(-50%, 16px) scale(0.96);
+  }
+}
+
+.container[data-open='true'] {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+@media (min-width: 500px) {
+  .container[data-open='true'] {
+    transform: translateX(-50%);
+  }
+}

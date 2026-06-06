@@ -1,0 +1,210 @@
+.button {
+  position: relative;
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 16px;
+  padding-inline: 48px;
+  background-color: var(--black);
+  color: var(--white);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.holdOverlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--neutral-600);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 200ms ease-out;
+  pointer-events: none;
+}
+
+.holdOverlayActive {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1000ms linear;
+}
+
+.label {
+  position: relative;
+}
+
+.button:disabled {
+  cursor: default;
+  background-color: var(--neutral-600);
+  color: var(--neutral-400);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--black);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .button:not(:disabled):hover {
+    background-color: var(--neutral-800);
+  }
+}
+
+.shieldWrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.shieldMask {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  mask-image: var(--shield-mask);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: var(--shield-mask);
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.shieldGradient {
+  position: absolute;
+  inset: -25%;
+  background: conic-gradient(
+    from 0deg,
+    var(--neutral-500) 0deg,
+    #ffffff 120deg,
+    var(--neutral-500) 240deg,
+    var(--neutral-500) 360deg
+  );
+  animation: spinGradient 1.2s linear infinite;
+}
+
+@keyframes spinGradient {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.holdHintContainer {
+  position: fixed;
+  bottom: 92px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--over-layout-index);
+  pointer-events: none;
+}
+
+.holdHint {
+  padding: 12px 24px;
+  border-radius: 100px;
+  background-color: var(--neutral-300);
+  animation: holdHintAppear 200ms both ease-out;
+}
+
+@keyframes holdHintAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dangerRow {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.dangerButton {
+  position: relative;
+  flex: 1 0 0;
+  min-width: 0;
+  height: 52px;
+  border: none;
+  border-radius: 16px;
+  padding-inline: 24px;
+  background-color: var(--negative-200);
+  color: var(--negative-500);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-align: center;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.dangerButton:focus-visible {
+  outline: 2px solid var(--negative-500);
+  outline-offset: 2px;
+}
+
+.dangerHoldFill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--negative-500);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 200ms ease-out;
+  pointer-events: none;
+}
+
+.dangerHoldFillActive {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1000ms linear;
+}
+
+.dangerLabelBase {
+  position: relative;
+  pointer-events: none;
+}
+
+.dangerLabelOverlay {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 200ms ease-out;
+  pointer-events: none;
+}
+
+.dangerLabelOverlayActive {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1000ms linear;
+}
+
+.dangerLabelInner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancelWrap {
+  flex: 1 0 0;
+  min-width: 0;
+}

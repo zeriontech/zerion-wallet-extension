@@ -24,7 +24,7 @@
   border: 1px solid var(--primary);
 }
 
-/* .radio:focus-within { */
-/*   outline: 1px solid var(--primary); */
-/*   outline-offset: 2px; */
-/* } */
+/* .radio:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+} */

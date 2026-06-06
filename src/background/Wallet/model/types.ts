@@ -28,6 +28,11 @@ type Address = string;
 
 export type PnlMode = 'pnl' | 'rpnl' | 'upnl' | '1day';
 
+export interface AddressBookEntry {
+  address: string;
+  name?: string;
+}
+
 /**
  * Named "Public" because these preferences aren't supposed contain any private info
  * and it's okay to query them from content script (meaning they are technically available to DApps)
@@ -49,12 +54,14 @@ interface PublicPreferences {
   configurableTransactionData?: boolean;
   invitationBannerDismissed?: boolean;
   recentAddresses?: string[];
+  addressBook?: AddressBookEntry[];
   mintDnaBannerDismissed?: boolean;
   upgradeDnaBannerDismissed?: boolean;
   inviteFriendsBannerDismissed?: boolean;
   solanaBannerDismissed?: boolean;
   premiumBannerDismissed?: boolean;
   formPremiumBannerDismissed?: boolean;
+  usDisclaimerDismissed?: boolean;
   /** @deprecated */
   exploreZeroBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
@@ -79,6 +86,33 @@ interface PublicPreferences {
    * `undefined` means "use the default", which is 'pnl'.
    */
   pnlMode?: PnlMode;
+  /**
+   * When enabled, the Swap form exposes the recipient address selector for
+   * same-ecosystem cross-network swaps (so the user can send the received
+   * tokens to a different wallet of theirs). Cross-ecosystem swaps require
+   * the selector regardless of this flag.
+   */
+  receiveToAnotherAddress?: boolean;
+  /**
+   * Normalized recipient addresses for which the user has opted out of the
+   * "sending to a read-only wallet" confirmation dialog. Populated by toggling
+   * "Don't show for this wallet" when proceeding past the gate.
+   */
+  addressesExcludedFromReceiverReadonlyWarning?: string[];
+  /**
+   * Whether the user has already seen (and dismissed) the cross-chain swap
+   * onboarding Dialog2 on /swap-form. `undefined` means "not yet shown" —
+   * the dialog opens on next visit. Set to `true` on explicit dismissal
+   * (Continue / backdrop / Escape), not on navigation-away.
+   */
+  crossChainSwapOnboardingShown?: boolean;
+  /**
+   * Whether the user has already seen the SwapButton onboarding Dialog2
+   * ("Set. Tap. Swap.") that interrupts the first pre-simulation tap of
+   * the SwapButton. Written to `true` ONLY on the Continue Swap CTA; Cancel /
+   * backdrop / Escape leave it unset so the dialog re-shows on the next tap.
+   */
+  oneTapCrossChainSwapOnboardingShown?: boolean;
 }
 
 export interface Permission {

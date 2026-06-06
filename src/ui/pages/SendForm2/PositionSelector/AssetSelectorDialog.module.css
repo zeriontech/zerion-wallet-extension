@@ -1,0 +1,10 @@
+.shortcutBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background-color: var(--neutral-200);
+  color: var(--neutral-700);
+  font-size: 11px;
+  line-height: 16px;
+}

@@ -1,53 +1,71 @@
 .list {
   display: flex;
-  gap: 8;
-  justify-content: space-between;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.list > li {
+  flex: 1 0 0;
+  min-width: 0;
 }
 
 .actionButton {
   --btn-bg-color: var(--neutral-100);
   --btn-active-bg-color: var(--neutral-300);
-  --btn-color: var(--neutral-800);
+  --btn-icon-color: var(--black);
+  --btn-text-color: var(--neutral-700);
+  --btn-hover-text-color: var(--black);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 16px;
+  background-color: var(--btn-bg-color);
+  color: var(--btn-text-color);
 }
 
 .actionButtonPrimary {
   --btn-bg-color: var(--black);
-  --btn-active-bg-color: var(--black);
-  --btn-color: var(--white);
+  --btn-active-bg-color: var(--neutral-800);
+  --btn-icon-color: var(--white);
+  --btn-text-color: var(--white);
+  --btn-hover-text-color: var(--white);
 }
 
 .icon {
-  height: 48px;
-  padding: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  border: none;
-  background-color: var(--btn-bg-color);
-  color: var(--btn-color);
+  width: 24px;
+  height: 24px;
+  color: var(--btn-icon-color);
 }
 
 .icon svg {
-  height: 20px;
-  width: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .actionButton:focus {
   outline: none;
 }
 
-.actionButton:focus:focus-visible .icon {
+.actionButton:focus:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-.actionButton:active .icon {
+.actionButton:active {
   background-color: var(--btn-active-bg-color);
 }
 
 @media (hover: hover) {
-  .actionButton:not(:disabled):hover .icon {
+  .actionButton:not(:disabled):hover {
     background-color: var(--btn-active-bg-color);
+    --btn-text-color: var(--btn-hover-text-color);
   }
 }
