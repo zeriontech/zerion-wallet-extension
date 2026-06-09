@@ -4,11 +4,9 @@ import { formatPercent } from 'src/shared/units/formatPercent';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import HyperliquidLogo from 'jsx:src/ui/assets/hyperliquid-logo.svg';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
-
-const HYPERLIQUID_URL = 'https://app.hyperliquid.xyz/join/ZERS';
 
 export function PerpsBalanceBanner({
   balance,
@@ -20,11 +18,7 @@ export function PerpsBalanceBanner({
   currency: string;
 }) {
   return (
-    <UnstyledAnchor
-      href={HYPERLIQUID_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+    <UnstyledLink to="/overview/perps">
       <HStack
         gap={8}
         alignItems="center"
@@ -77,6 +71,6 @@ export function PerpsBalanceBanner({
           />
         </HStack>
       </HStack>
-    </UnstyledAnchor>
+    </UnstyledLink>
   );
 }

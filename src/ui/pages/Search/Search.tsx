@@ -18,6 +18,8 @@ import { PageTop } from 'src/ui/components/PageTop';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import { SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
+import type { Perp } from 'src/modules/zerion-api/requests/search-query';
+import { getPerpIconUrl } from 'src/modules/hyperliquid/getPerpIconUrl';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { EmptyView } from 'src/ui/components/EmptyView';
@@ -170,6 +172,98 @@ const SearchResultItem = React.forwardRef<
   );
 });
 
+const PerpView = React.forwardRef<
+  HTMLAnchorElement,
+  {
+    perp: Perp;
+    highlighted?: boolean;
+    onClick: () => void;
+  }
+>(({ perp, highlighted, onClick }, ref) => {
+  const { currency } = useCurrency();
+  const { relativeChange1d, price, maxLeverage } = perp.meta;
+  const changeColor =
+    relativeChange1d == null
+      ? 'var(--neutral-500)'
+      : relativeChange1d >= 0
+      ? 'var(--positive-500)'
+      : 'var(--negative-500)';
+  const changePrefix =
+    relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
+
+  return (
+    <SurfaceItemLink
+      ref={ref}
+      to={`/perps/${encodeURIComponent(perp.name)}`}
+      style={{ padding: '4px 0' }}
+      highlighted={highlighted}
+      onClick={onClick}
+    >
+      <HStack
+        gap={8}
+        alignItems="center"
+        style={{ gridTemplateColumns: 'auto 1fr' }}
+      >
+        <TokenIcon
+          src={perp.iconUrl || getPerpIconUrl(perp.id)}
+          symbol={perp.symbol}
+          size={36}
+          title={perp.name}
+        />
+        <VStack gap={0} style={{ overflow: 'hidden' }}>
+          <HStack
+            gap={4}
+            alignItems="center"
+            justifyContent="space-between"
+            style={{ gridTemplateColumns: '1fr auto' }}
+          >
+            <HStack gap={4} alignItems="center" style={{ minWidth: 0 }}>
+              <UIText
+                kind="body/accent"
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+                title={perp.name}
+              >
+                {perp.symbol}
+              </UIText>
+              <UIText
+                kind="caption/accent"
+                color="var(--neutral-600)"
+                style={{
+                  padding: '0 6px',
+                  borderRadius: 4,
+                  backgroundColor: 'var(--neutral-200)',
+                }}
+              >
+                PERP
+              </UIText>
+            </HStack>
+            {price != null ? (
+              <UIText kind="body/accent">
+                {formatPriceValue(price, 'en', currency)}
+              </UIText>
+            ) : null}
+          </HStack>
+          <HStack gap={4} alignItems="center" justifyContent="space-between">
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              Up to {maxLeverage}× leverage
+            </UIText>
+            {relativeChange1d != null ? (
+              <UIText kind="small/regular" color={changeColor}>
+                {changePrefix}
+                {formatPercent(relativeChange1d, 'en')}%
+              </UIText>
+            ) : null}
+          </HStack>
+        </VStack>
+      </HStack>
+    </SurfaceItemLink>
+  );
+});
+
 const RecentItem = React.forwardRef<
   HTMLAnchorElement,
   {
@@ -237,7 +331,13 @@ const RecentItem = React.forwardRef<
 
 type SearchPageItem =
   | { kind: 'recent'; fungibleId: string }
-  | { kind: 'result'; fungibleId: string; fungible: Fungible };
+  | { kind: 'result'; fungibleId: string; fungible: Fungible }
+  | { kind: 'perp'; perpId: string; perp: Perp };
+
+function itemId(item: SearchPageItem): string {
+  if (item.kind === 'perp') return `perp:${item.perpId}`;
+  return item.fungibleId;
+}
 
 export function Search() {
   useBackgroundKind(whiteBackgroundKind);
@@ -276,13 +376,19 @@ export function Search() {
   }, [searchHistory]);
 
   const searchItems = useMemo<SearchPageItem[]>(() => {
-    return (
+    const fungibleItems: SearchPageItem[] =
       searchResults?.data.fungibles?.map((fungible) => ({
         kind: 'result',
         fungibleId: fungible.id,
         fungible,
-      })) || []
-    );
+      })) || [];
+    const perpItems: SearchPageItem[] =
+      searchResults?.data.perps?.map((perp) => ({
+        kind: 'perp',
+        perpId: perp.name,
+        perp,
+      })) || [];
+    return [...perpItems, ...fungibleItems];
   }, [searchResults]);
 
   const items = normalizedQuery ? searchItems : recentItems;
@@ -309,18 +415,21 @@ export function Search() {
     useCombobox<SearchPageItem>({
       isOpen: true,
       items,
-      itemToString: (item) => item?.fungibleId || '',
+      itemToString: (item) => (item ? itemId(item) : ''),
       onInputValueChange: ({ inputValue }) => {
         debouncedSetSearchParams(inputValue || '');
       },
       defaultInputValue: urlQuery,
       onSelectedItemChange: ({ selectedItem }) => {
-        const fungibleId = selectedItem?.fungibleId;
-        if (!fungibleId) {
+        if (!selectedItem) {
           return;
         }
-        handleFungibleClick(fungibleId);
-        navigate(`/asset/${fungibleId}`);
+        if (selectedItem.kind === 'perp') {
+          navigate(`/perps/${encodeURIComponent(selectedItem.perpId)}`);
+          return;
+        }
+        handleFungibleClick(selectedItem.fungibleId);
+        navigate(`/asset/${selectedItem.fungibleId}`);
       },
       stateReducer: (state, actionAndChanges) => {
         const { changes, type } = actionAndChanges;
@@ -345,7 +454,7 @@ export function Search() {
     return items.map((item, index) => {
       if (item.kind === 'recent') {
         return {
-          key: item.fungibleId,
+          key: itemId(item),
           isInteractive: true,
           pad: false,
           component: (
@@ -360,24 +469,40 @@ export function Search() {
             />
           ),
         } as Item;
-      } else {
+      }
+      if (item.kind === 'perp') {
         return {
-          key: item.fungibleId,
+          key: itemId(item),
           isInteractive: true,
           pad: false,
           component: (
-            <SearchResultItem
-              fungible={item.fungible}
+            <PerpView
+              perp={item.perp}
               highlighted={highlightedIndex === index}
               {...getItemProps({
                 item,
                 index,
-                onClick: () => handleFungibleClick(item.fungibleId),
               })}
             />
           ),
         } as Item;
       }
+      return {
+        key: itemId(item),
+        isInteractive: true,
+        pad: false,
+        component: (
+          <SearchResultItem
+            fungible={item.fungible}
+            highlighted={highlightedIndex === index}
+            {...getItemProps({
+              item,
+              index,
+              onClick: () => handleFungibleClick(item.fungibleId),
+            })}
+          />
+        ),
+      } as Item;
     });
   }, [items, getItemProps, highlightedIndex, handleFungibleClick]);
 

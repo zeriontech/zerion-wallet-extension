@@ -10,7 +10,7 @@
 }
 
 .actionButton {
-  --btn-bg-color: var(--neutral-100);
+  --btn-bg-color: var(--z-index-2);
   --btn-active-bg-color: var(--neutral-300);
   --btn-icon-color: var(--black);
   --btn-text-color: var(--neutral-700);

@@ -28,6 +28,7 @@ const URLBarBlacklist = new Set([
   '/overview',
   '/overview/nfts',
   '/overview/history',
+  '/overview/perps',
   '/login',
   '/addEthereumChain',
   '/switchEthereumChain',

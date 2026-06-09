@@ -116,3 +116,24 @@ export function formatPriceValue(
     formatter
   )}`;
 }
+
+export function formatPriceValueToParts(
+  value: BigNumber.Value,
+  locale: string,
+  currency: string,
+  opts: Intl.NumberFormatOptions | null = null
+) {
+  const number = value instanceof BigNumber ? value.toNumber() : Number(value);
+  const absValue = Math.abs(number);
+  const isSmallValue = absValue < SMALL_VALUE_THRESHOLD;
+
+  const config = CURRENCIES[currency] as CurrencyConfig | undefined;
+  const numberFormatOptions = resolveOptions(number, config || null, opts);
+  const formatter = isSmallValue
+    ? getSmallPriceCurrencyFormatter(locale, currency, numberFormatOptions)
+    : getCurrencyFormatter(locale, currency, numberFormatOptions);
+
+  const parts = formatter.formatToParts(number);
+  const modifyParts = config?.modifyParts;
+  return modifyParts ? modifyParts(parts) : parts;
+}
