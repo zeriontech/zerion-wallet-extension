@@ -113,6 +113,7 @@ interface PublicPreferences {
    * backdrop / Escape leave it unset so the dialog re-shows on the next tap.
    */
   oneTapCrossChainSwapOnboardingShown?: boolean;
+  perpsOnboardingDismissed?: boolean;
 }
 
 export interface Permission {

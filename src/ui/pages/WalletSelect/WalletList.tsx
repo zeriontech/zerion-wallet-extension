@@ -36,6 +36,7 @@ function WalletListItem({
   useCssAnchors,
   isSelected,
   renderFooter,
+  listIndex,
   ...buttonProps
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   wallet: ExternallyOwnedAccount;
@@ -44,6 +45,8 @@ function WalletListItem({
   useCssAnchors: boolean;
   isSelected: boolean;
   renderFooter: (() => React.ReactNode) | null;
+  /** Flat position across all groups, used to stagger per-wallet HL requests. */
+  listIndex: number;
 }) {
   const id = useId();
   const { currency } = useCurrency();
@@ -194,6 +197,8 @@ function WalletListItem({
               detailText={
                 <PortfolioValue
                   address={wallet.address}
+                  listIndex={listIndex}
+                  staggerHyperliquid={true}
                   render={(query) => (
                     <UIText kind="headline/h3" style={{ display: 'flex' }}>
                       {query.data ? (
@@ -299,6 +304,10 @@ export function WalletList({
     );
   }
 
+  // Flat counter across all groups so the per-wallet HL requests stagger
+  // continuously (group 1's last row → group 2's first row), not restart per
+  // group.
+  let listIndex = -1;
   return (
     <VStack gap={4}>
       {groups.map((group) => (
@@ -316,6 +325,7 @@ export function WalletList({
               if (!wallet || !group) {
                 return null;
               }
+              listIndex += 1;
               const key = getWalletId({
                 address: wallet.address,
                 groupId: group.id,
@@ -323,6 +333,7 @@ export function WalletList({
               return (
                 <WalletListItem
                   key={key}
+                  listIndex={listIndex}
                   onClick={() => onSelect(wallet)}
                   wallet={wallet}
                   groupId={group.id}

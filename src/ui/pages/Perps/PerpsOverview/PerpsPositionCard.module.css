@@ -1,0 +1,13 @@
+.card {
+  display: block;
+  padding: 16px;
+  margin-inline: 8px;
+  border-radius: 13px;
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    background-color: var(--neutral-100);
+  }
+}

@@ -1,0 +1,177 @@
+.root {
+  position: fixed;
+  z-index: 1050;
+  pointer-events: none;
+  inset: 0;
+}
+
+.pill {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  translate: -50% 0;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  background: var(--z-index-1);
+  border-radius: 40px;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.12);
+  border: none;
+  outline: none;
+  font-family: inherit;
+  color: var(--black);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+.pill img {
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Holds the icon + text at full content width so useMeasure reports the
+   expanded width from the first frame; the pill clips it behind COMPACT_WIDTH
+   during the icon-only entrance phase. */
+.measureWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px 8px 24px;
+  width: max-content;
+  flex-shrink: 0;
+}
+
+.iconWrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coinIcon {
+  position: absolute;
+  inset: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-500);
+}
+
+/* Withdraw flow: the downward marching arrow occupies the icon slot in place
+   of the spinner/token icon. Centered within the 28px icon wrap. */
+.withdrawArrow {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-500);
+}
+
+.statusBadge {
+  position: absolute;
+  inset: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+}
+
+.statusBadgeSuccess {
+  background: var(--positive-500, #1cba75);
+}
+
+.statusBadgeFailed {
+  background: var(--negative-500, #ff4242);
+}
+
+/* Wraps the text column so it reveals as one unit after the icon-only
+   entrance. transform-origin:left keeps the icon pinned while the block scales
+   into place; the pill's centered anchor handles the symmetric width growth. */
+.textReveal {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.18px;
+}
+
+.subtitle {
+  color: var(--neutral-700);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 16px;
+}
+
+/* Vertical clipping slot for the downward marching arrow (withdraw flow).
+   overflow:hidden hides the arrows behind the gap borders so they slide out
+   the bottom and reappear from the top. */
+.arrowSlotDown {
+  position: relative;
+  width: 28px;
+  height: 40px;
+  flex-shrink: 0;
+  overflow: hidden;
+  color: var(--neutral-500);
+}
+
+/* Soft edge fades that repeat the toaster background, so the marching arrow
+   dissolves into the gap borders instead of being cut by a sharp clip. */
+.arrowSlotDown::before,
+.arrowSlotDown::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.arrowSlotDown::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--z-index-1) 0%, transparent 100%);
+}
+
+.arrowSlotDown::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--z-index-1) 0%, transparent 100%);
+}
+
+.arrowGlyphDown {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+}

@@ -94,9 +94,12 @@ function DroppableContainer({
 function WalletListEditItem({
   wallet,
   groupId,
+  listIndex = 0,
 }: {
   wallet: AnyWallet;
   groupId: string;
+  /** Flat position across all groups, used to stagger per-wallet HL requests. */
+  listIndex?: number;
 }) {
   const { currency } = useCurrency();
   const ecosystemPrefix =
@@ -160,6 +163,8 @@ function WalletListEditItem({
             detailText={
               <PortfolioValue
                 address={wallet.address}
+                listIndex={listIndex}
+                staggerHyperliquid={true}
                 render={(query) => (
                   <UIText kind="headline/h3" style={{ display: 'flex' }}>
                     {query.data ? (
@@ -200,10 +205,12 @@ function DraggableWalletItem({
   walletId,
   wallet,
   groupId,
+  listIndex,
 }: {
   walletId: string;
   wallet: AnyWallet;
   groupId: string;
+  listIndex: number;
 }) {
   const {
     attributes,
@@ -225,7 +232,11 @@ function DraggableWalletItem({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <WalletListEditItem wallet={wallet} groupId={groupId} />
+      <WalletListEditItem
+        wallet={wallet}
+        groupId={groupId}
+        listIndex={listIndex}
+      />
     </div>
   );
 }
@@ -470,6 +481,9 @@ function WalletListEditInner({
     return [...containerIds, ...itemIds];
   }, [items]);
 
+  // Flat counter across all groups so the per-wallet HL requests stagger
+  // continuously rather than restarting per group.
+  let listIndex = -1;
   return (
     <DndContext
       sensors={sensors}
@@ -503,12 +517,14 @@ function WalletListEditInner({
                       {items[group.id].map((walletId) => {
                         const item = walletMap.get(walletId);
                         if (!item) return null;
+                        listIndex += 1;
                         return (
                           <DraggableWalletItem
                             key={walletId}
                             walletId={walletId}
                             wallet={item.wallet}
                             groupId={item.group.id}
+                            listIndex={listIndex}
                           />
                         );
                       })}
