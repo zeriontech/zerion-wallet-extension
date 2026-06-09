@@ -962,6 +962,7 @@ export class WalletRecordModel {
       addressesExcludedFromReceiverReadonlyWarning: [],
       crossChainSwapOnboardingShown: false,
       oneTapCrossChainSwapOnboardingShown: false,
+      perpsOnboardingDismissed: false,
     };
     if (!record) {
       return defaults;

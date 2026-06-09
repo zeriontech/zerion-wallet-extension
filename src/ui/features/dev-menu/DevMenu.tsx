@@ -91,7 +91,9 @@ export function DevMenu() {
   const state = useStore(devMenuStore);
   const active = hasAnyOverride(state);
   const popoverStore = usePopoverStore({ placement: 'top-end' });
-  const { setPreferences } = usePreferences();
+  const { preferences, setPreferences } = usePreferences();
+  const perpsOnboardingDismissed =
+    preferences?.perpsOnboardingDismissed === true;
 
   return (
     <>
@@ -299,6 +301,29 @@ export function DevMenu() {
                       </SegmentedControlRadio>
                     ))}
                   </SegmentedControlGroup>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>onboarding</span>
+                  <span className={styles.sectionRule} />
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>perps_onboarding</span>
+                  <div className={styles.navLinks}>
+                    <button
+                      type="button"
+                      className={styles.navLink}
+                      disabled={!perpsOnboardingDismissed}
+                      onClick={() => {
+                        setPreferences({ perpsOnboardingDismissed: false });
+                      }}
+                    >
+                      reset (dismissed:{' '}
+                      {perpsOnboardingDismissed ? 'yes' : 'no'})
+                    </button>
+                  </div>
                 </div>
               </div>
 
