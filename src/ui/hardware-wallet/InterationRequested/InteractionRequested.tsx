@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import type { UserInteractionRequested } from '@zeriontech/hardware-wallet-connection';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -67,20 +68,39 @@ export function InteractionRequested({
   }
 
   return (
-    <VStack gap={16} style={{ justifyItems: 'center' }}>
-      <div
-        className={config.shake ? styles.iconShake : undefined}
-        style={{ display: 'flex' }}
-      >
-        <IconComponent
-          style={{ width: 60, height: 60, color: 'var(--black)' }}
-        />
+    <VStack gap={10} style={{ justifyItems: 'center' }}>
+      <div style={{ display: 'flex', height: 44, position: 'relative' }}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={kind}
+            className={config.shake ? styles.iconShake : undefined}
+            style={{ display: 'flex' }}
+            initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -12, filter: 'blur(8px)' }}
+            transition={{ duration: 0.3 }}
+          >
+            <IconComponent
+              style={{ width: 44, height: 44, color: 'var(--black)' }}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
       <VStack gap={0} style={{ justifyItems: 'center' }}>
         <UIText kind="caption/regular" color="var(--neutral-500)">
           Action on your device:
         </UIText>
-        <UIText kind="body/accent">{config.title}</UIText>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={config.title}
+            initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
+            transition={{ duration: 0.3 }}
+          >
+            <UIText kind="body/accent">{config.title}</UIText>
+          </motion.div>
+        </AnimatePresence>
       </VStack>
     </VStack>
   );

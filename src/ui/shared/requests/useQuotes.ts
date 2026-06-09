@@ -6,14 +6,13 @@ import type { Quote2 } from 'src/shared/types/Quote';
 import { ZERION_API_URL } from 'src/env/config';
 import { createUrl } from 'src/shared/createUrl';
 import type { SwapFormState } from 'src/ui/pages/SwapForm/shared/SwapFormState';
-import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
-import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
 import { createHeaders } from 'src/modules/zerion-api/shared';
-import { weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { invariant } from 'src/shared/invariant';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
+import { useStore } from '@store-unit/react';
+import { devMenuStore } from 'src/ui/features/dev-menu/store';
+import { applyPriceImpactOverride } from 'src/ui/features/dev-menu/applyPriceImpactOverride';
 import { walletPort } from '../channels';
-import { useGasPrices } from './useGasPrices';
 import { useEventSource } from './useEventSource';
 export interface QuotesData<T> {
   quotes: T[] | null;
@@ -33,33 +32,6 @@ function createSwapQuotesUrl(address: string, formState: SwapFormState) {
     pathname: '/transaction/stream-swap-quotes/v1',
     searchParams,
   }).toString();
-}
-
-function applyGasPrices(
-  formState: SwapFormState,
-  gasPrices: ChainGasPrice | null
-): SwapFormState {
-  const { networkFeeSpeed = 'fast', ...restFormState } = formState;
-  if (networkFeeSpeed !== 'custom') {
-    const { gasLimit, gasPrice, maxFee, maxPriorityFee, ...withoutGasPrices } =
-      restFormState;
-    if (!gasPrices) {
-      return withoutGasPrices; // backend will automatically assign something and that's what we want
-    }
-    const x = assignGasPrice({}, gasPrices[networkFeeSpeed]);
-    if ('maxPriorityFeePerGas' in x) {
-      return {
-        ...withoutGasPrices,
-        maxFee: weiToGweiStr(x.maxFeePerGas),
-        maxPriorityFee: weiToGweiStr(x.maxPriorityFeePerGas),
-      };
-    } else if ('gasPrice' in x) {
-      return { ...withoutGasPrices, gasPrice: weiToGweiStr(x.gasPrice) };
-    }
-    return withoutGasPrices;
-  } else {
-    return restFormState;
-  }
 }
 
 const QUOTES_EVENT_CODE_TO_MESSAGE = {
@@ -89,10 +61,6 @@ export function useQuotes2({
   const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
 
   const chain = formState.inputChain ? createChain(formState.inputChain) : null;
-  const { data: gasPrices } = useGasPrices(chain, {
-    refetchInterval: 20000,
-    keepPreviousData: true,
-  });
 
   const formStateCompleted = useMemo(() => {
     if (!chain) {
@@ -110,23 +78,15 @@ export function useQuotes2({
     };
   }, [chain, currency, formState]);
 
-  const urlWithoutGasPrices = useMemo(() => {
+  // Gas params are intentionally never serialized into the request: the
+  // backend quotes at "fast" and ignores them. Changing the gas setting must
+  // not refetch the quote — it's scaled locally instead.
+  const url = useMemo(() => {
     if (!formStateCompleted) {
       return null;
     }
     return createSwapQuotesUrl(address, formStateCompleted);
   }, [formStateCompleted, address]);
-
-  const url = useMemo(() => {
-    if (!formStateCompleted) {
-      return null;
-    }
-    const formStateWithGasPrices = applyGasPrices(
-      formStateCompleted,
-      gasPrices || null
-    );
-    return createSwapQuotesUrl(address, formStateWithGasPrices);
-  }, [formStateCompleted, gasPrices, address]);
 
   const handleQuoteError = useCallback(
     ({
@@ -182,7 +142,7 @@ export function useQuotes2({
     error,
     done,
   } = useEventSource<Quote2[]>(
-    `${urlWithoutGasPrices ?? 'no-url'}-${refetchHash}`,
+    `${url ?? 'no-url'}-${refetchHash}`,
     url ?? null,
     {
       headers: createHeaders({}),
@@ -252,20 +212,16 @@ export function useQuotes2({
     };
   }, [done, refetch, refetchInterval]);
 
-  /**
-   * The following is a very hacky way to create "keepPreviousData"
-   * behavior. We do this because gasPrices get updates every ~20 seconds and this
-   * leads to a new request, which loses old request and shows loading the UI.
-   * But gas prices change by very little so they don't justify the flicker of the UI.
-   */
+  // keepPreviousData across periodic refetches: while the same `url` is being
+  // re-streamed, keep showing the last completed result rather than flickering
+  // to a loading state.
   const resultRef = useRef(quotes);
-  const urlWithoutGasPricesRef = useRef(urlWithoutGasPrices);
+  const urlRef = useRef(url);
 
-  const usePreviousData =
-    urlWithoutGasPrices === urlWithoutGasPricesRef.current && !done;
+  const usePreviousData = url === urlRef.current && !done;
 
-  if (urlWithoutGasPrices !== urlWithoutGasPricesRef.current) {
-    urlWithoutGasPricesRef.current = urlWithoutGasPrices;
+  if (url !== urlRef.current) {
+    urlRef.current = url;
     resultRef.current = null;
   }
 
@@ -333,6 +289,7 @@ export function useQuotesV2({
   enabled = true,
   context,
   pathname,
+  inputFiatValue = null,
 }: {
   address: string;
   currency: string;
@@ -340,6 +297,7 @@ export function useQuotesV2({
   enabled?: boolean;
   context: 'Swap' | 'Bridge';
   pathname: string;
+  inputFiatValue?: number | null;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
@@ -351,23 +309,25 @@ export function useQuotesV2({
     if (!chain) {
       return null;
     }
+    if (formState.slippage === 'auto' || formState.slippage == null) {
+      return null;
+    }
     return String(
       getSlippageOptions({
         chain,
-        userSlippage:
-          formState.slippage != null ? Number(formState.slippage) : null,
+        userSlippage: Number(formState.slippage),
       }).slippagePercent
     );
   }, [chain, formState.slippage]);
 
   const url = useMemo(() => {
-    if (!chain || !slippage) {
+    if (!chain) {
       return null;
     }
     return createSwapQuotesV2Url({
       address,
       currency,
-      formState: { ...formState, slippage },
+      formState: { ...formState, slippage: slippage ?? undefined },
     });
   }, [address, currency, formState, chain, slippage]);
 
@@ -512,8 +472,21 @@ export function useQuotesV2({
     resultRef.current = null;
   }
 
+  const { priceImpactOverride } = useStore(devMenuStore);
+  const baseQuotes =
+    usePreviousData && resultRef.current ? resultRef.current : quotes;
+  const overriddenQuotes = useMemo(
+    () =>
+      applyPriceImpactOverride({
+        quotes: baseQuotes,
+        inputFiatValue,
+        override: priceImpactOverride,
+      }),
+    [baseQuotes, inputFiatValue, priceImpactOverride]
+  );
+
   return {
-    quotes: usePreviousData && resultRef.current ? resultRef.current : quotes,
+    quotes: overriddenQuotes,
     isPreviousData: Boolean(usePreviousData && resultRef.current),
     isLoading,
     error,

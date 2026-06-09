@@ -1,10 +1,57 @@
 import { formatCurrencyValue } from './formatCurrencyValue';
 
 describe('formatCurrencyValue', () => {
+  // USD formatting — Style 1 ("amount"). The amount rule lives in
+  // formatCurrencyValue and applies to plain fiat currencies (see USD
+  // formatting PRD).
+  describe('amount rule (USD formatting — Style 1)', () => {
+    const cases: Array<[number, string]> = [
+      [0, '$0'],
+      [0.0000004, '$0.001'],
+      [0.000055, '$0.001'],
+      [0.001148, '$0.001'],
+      [0.0045, '$0.005'],
+      [0.0099, '$0.01'],
+      [0.01, '$0.01'],
+      [0.05, '$0.05'],
+      [0.100029, '$0.10'],
+      [0.100000000000123, '$0.10'],
+      // binary float artifact must not leak into the output
+      [0.30000000000000004, '$0.30'],
+      [1.234, '$1.23'],
+      [1.00000000123, '$1.00'],
+      [5.7, '$5.70'],
+      [1444.45, '$1,444.45'],
+      [123456.78, '$123,456.78'],
+    ];
+    for (const [input, output] of cases) {
+      test(`${input} -> ${output}`, () => {
+        expect(formatCurrencyValue(input, 'en', 'usd')).toBe(output);
+      });
+    }
+
+    test('negative: sign goes before the symbol', () => {
+      // repo convention uses the typographic minus (U+2212)
+      expect(formatCurrencyValue(-1.23, 'en', 'usd')).toBe('−$1.23');
+    });
+
+    test('NaN -> en dash', () => {
+      expect(formatCurrencyValue(NaN, 'en', 'usd')).toBe('–');
+    });
+
+    test('never uses the subscript short form', () => {
+      expect(formatCurrencyValue(0.0000000012, 'en', 'usd')).toBe('$0.001');
+    });
+
+    test('never uses the < prefix', () => {
+      expect(formatCurrencyValue(0.0000004, 'en', 'usd')).not.toContain('<');
+    });
+  });
+
   const testCases = [
     {
       input: { value: 0.001, locale: 'en', currency: 'usd' },
-      output: '$0.00',
+      output: '$0.001',
     },
     {
       input: { value: 84520.92955176056, locale: 'ru', currency: 'rub' },
@@ -16,7 +63,7 @@ describe('formatCurrencyValue', () => {
     },
     {
       input: { value: 0.001, locale: 'en', currency: 'rub' },
-      output: '₽0.00',
+      output: '₽0.001',
     },
     {
       input: { value: 12345.039, locale: 'en', currency: 'rub' },
@@ -52,7 +99,7 @@ describe('formatCurrencyValue', () => {
     },
   ];
   for (const testCase of testCases) {
-    test(`${testCase.input.value} -> ${testCase.output}`, () => {
+    test(`${testCase.input.value} ${testCase.input.currency} -> ${testCase.output}`, () => {
       const { input, output } = testCase;
       const result = formatCurrencyValue(
         input.value,

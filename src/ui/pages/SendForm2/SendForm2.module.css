@@ -1,0 +1,11 @@
+.absoluteFooter {
+  position: fixed;
+  bottom: var(--technical-panel-bottom-height, 0px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--body-width);
+  max-width: var(--body-max-width);
+  padding-inline: 16px;
+  background-color: var(--light-background-transparent);
+  backdrop-filter: blur(16px);
+}

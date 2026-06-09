@@ -4,7 +4,12 @@
 import type { AddressPosition } from 'defi-sdk';
 import groupBy from 'lodash/groupBy';
 import type { Chain } from 'src/modules/networks/Chain';
-import { getPositionValue, getFullPositionsValue } from './helpers';
+import {
+  getPositionValue,
+  getFullPositionsValue,
+  getFullPositionsBalance,
+} from './helpers';
+import type { AggregatedAddressPosition } from './types';
 import { DEFAULT_NAME, DEFAULT_PROTOCOL_ID } from './types';
 
 const DEFAULT_PARENT_ID = 'root';
@@ -21,6 +26,60 @@ export function groupPositionsByDapp(positions?: AddressPosition[]) {
     positions || [],
     (position) => position.dapp?.id || DEFAULT_PROTOCOL_ID
   );
+}
+
+function createAggregatedPosition(
+  positions: AddressPosition[]
+): AggregatedAddressPosition {
+  return {
+    asset: positions[0].asset,
+    id: positions[0].asset.asset_code,
+    name: positions[0].name,
+    chain: positions[0].chain,
+    type: 'asset',
+    dapp: positions[0].dapp,
+    parent_id: null,
+    apy: null,
+    protocol: null,
+    is_displayable: true,
+    included_in_chart: false,
+    chainDistribution: positions.map(({ chain, quantity, value }) => ({
+      chain,
+      value,
+      quantity,
+    })),
+    value: getFullPositionsValue(positions).toString(),
+    normalizedQuantity: getFullPositionsBalance(positions).toFixed(),
+    // tokens can have different decimals across different chains
+    quantity: '0',
+  };
+}
+
+/**
+ * Aggregates `type === 'asset'` positions across chains by `asset.asset_code`.
+ * Non-asset and nested positions are passed through unchanged.
+ * Singletons are wrapped too (chainDistribution.length === 1) for shape uniformity.
+ */
+export function groupPositionsByToken(
+  positions: AddressPosition[]
+): (AddressPosition | AggregatedAddressPosition)[] {
+  const aggregatable: AddressPosition[] = [];
+  const passthrough: AddressPosition[] = [];
+  for (const position of positions) {
+    if (position.type === 'asset' && !position.parent_id) {
+      aggregatable.push(position);
+    } else {
+      passthrough.push(position);
+    }
+  }
+  const grouped = groupBy<AddressPosition>(
+    aggregatable,
+    (position) => position.asset.asset_code
+  );
+  const aggregated = Object.values(grouped).map((assetPositions) =>
+    createAggregatedPosition(assetPositions)
+  );
+  return [...aggregated, ...passthrough];
 }
 
 export function sortPositionsByValue(

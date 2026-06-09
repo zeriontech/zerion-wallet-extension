@@ -1,0 +1,119 @@
+.searchWrapper {
+  padding: 4px 16px 8px;
+  flex-shrink: 0;
+}
+
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.scrollArea::-webkit-scrollbar {
+  visibility: hidden;
+  width: 0;
+}
+
+.searchInputWrapper {
+  position: relative;
+}
+
+.searchIcon {
+  pointer-events: none;
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  width: 24px;
+  height: 24px;
+  color: var(--neutral-500);
+}
+
+.errorCaption {
+  padding: 6px 16px 0;
+}
+
+.list {
+  flex: 1;
+}
+
+.sectionHeader {
+  padding: 8px 16px 4px;
+}
+
+.row {
+  display: block;
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  outline: none;
+  padding: 0 8px;
+}
+
+.rowInner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  min-height: 60px;
+}
+
+.row[data-active-item] .rowInner {
+  background-color: var(--neutral-100);
+}
+
+@media (hover: hover) {
+  .row:hover .rowInner {
+    background-color: var(--neutral-100);
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  gap: 8px;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  min-height: 60px;
+}
+
+.skeletonAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--neutral-100);
+  flex-shrink: 0;
+}
+
+.skeletonInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.skeletonLineLg {
+  height: 14px;
+  width: 40%;
+  border-radius: 4px;
+  background: var(--neutral-100);
+}
+
+.skeletonLineSm {
+  height: 10px;
+  width: 24%;
+  border-radius: 4px;
+  background: var(--neutral-100);
+}

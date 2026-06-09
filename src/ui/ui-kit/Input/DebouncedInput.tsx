@@ -29,6 +29,7 @@ function DebouncedInputComponent(
   ref: React.Ref<InputHandle>
 ) {
   const [innerValue, setInnerValue] = useState(value);
+  const pendingRef = useRef(false);
   const onChangeRef = useRef(onChange);
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -40,6 +41,7 @@ function DebouncedInputComponent(
 
   const debouncedSetValue = useDebouncedCallback(
     useCallback((inputValue: string) => {
+      pendingRef.current = false;
       onChangeRef.current(inputValue);
     }, []),
     delay
@@ -47,11 +49,18 @@ function DebouncedInputComponent(
 
   const handleChange = useCallback(
     (newValue: string) => {
+      pendingRef.current = true;
       debouncedSetValue(newValue);
       setInnerValue(newValue);
     },
     [debouncedSetValue]
   );
+
+  useEffect(() => {
+    if (!pendingRef.current) {
+      setInnerValue(value);
+    }
+  }, [value]);
 
   return render({
     value: innerValue,

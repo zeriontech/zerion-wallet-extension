@@ -1,6 +1,7 @@
 import type { Asset } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { isNumeric } from 'src/shared/isNumeric';
+import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 
 const LOW_LOSS_RATIO = -0.05;
 const HIGH_LOSS_RATIO = -0.15;
@@ -69,6 +70,39 @@ export function calculatePriceImpact({
 
   const inputFiatValue = toFiatValue(inputValue, inputAsset.price.value);
   const outputFiatValue = toFiatValue(outputValue, outputAsset.price.value);
+
+  const ratio =
+    outputFiatValue.isGreaterThan(0) && inputFiatValue.isGreaterThan(0)
+      ? outputFiatValue.minus(inputFiatValue).div(inputFiatValue).toNumber()
+      : null;
+
+  return ratioToPriceImpact(ratio);
+}
+
+export function calculatePriceImpactFromPositions({
+  inputValue,
+  outputValue,
+  inputPosition,
+  outputPosition,
+}: {
+  inputValue: string | null;
+  outputValue: string | null;
+  inputPosition: FungiblePosition | null;
+  outputPosition: FungiblePosition | null;
+}): PriceImpact | null {
+  if (inputValue == null || !isNumeric(inputValue)) {
+    return null;
+  }
+
+  const inputPrice = inputPosition?.fungible.meta.price ?? null;
+  const outputPrice = outputPosition?.fungible.meta.price ?? null;
+
+  if (inputPrice == null || outputPrice == null) {
+    return ratioToPriceImpact(null);
+  }
+
+  const inputFiatValue = toFiatValue(inputValue, inputPrice);
+  const outputFiatValue = toFiatValue(outputValue, outputPrice);
 
   const ratio =
     outputFiatValue.isGreaterThan(0) && inputFiatValue.isGreaterThan(0)

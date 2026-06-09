@@ -348,10 +348,45 @@ export function SignConnector() {
     setInteractionRequested(null);
   }, [controller, interruptedRequest]);
 
-  const [params] = useSearchParams();
-  const ecosystem = (params.get('ecosystem') as BlockchainType) || 'evm';
-  const windowType = params.get('windowType') || 'popup';
-  const supportBluetooth = params.get('supportBluetooth') === 'true';
+  const [urlParams] = useSearchParams();
+  const windowType = urlParams.get('windowType') || 'popup';
+
+  // Stateful sign params, initialised from URL for backward compat. The
+  // parent (TransactionSigner host) can update them at any time via
+  // `ledger/setSignParams` postMessage so the iframe reflects the live
+  // ecosystem + bluetooth toggle without a remount.
+  const [signParams, setSignParams] = useState<{
+    ecosystem: BlockchainType;
+    supportBluetooth: boolean;
+  }>(() => ({
+    ecosystem: (urlParams.get('ecosystem') as BlockchainType) || 'evm',
+    supportBluetooth: urlParams.get('supportBluetooth') === 'true',
+  }));
+  const ecosystem = signParams.ecosystem;
+  const supportBluetooth = signParams.supportBluetooth;
+
+  useEffect(() => {
+    function listener(event: MessageEvent) {
+      if (
+        isRpcRequest(event.data) &&
+        event.data.method === 'ledger/setSignParams'
+      ) {
+        const partial = event.data.params as
+          | { ecosystem?: BlockchainType; supportBluetooth?: boolean }
+          | undefined;
+        if (!partial) return;
+        setSignParams((prev) => ({
+          ecosystem: partial.ecosystem ?? prev.ecosystem,
+          supportBluetooth:
+            typeof partial.supportBluetooth === 'boolean'
+              ? partial.supportBluetooth
+              : prev.supportBluetooth,
+        }));
+      }
+    }
+    window.addEventListener('message', listener);
+    return () => window.removeEventListener('message', listener);
+  }, []);
 
   const { mutate, isLoading } = useMutation({
     mutationFn: async (transport: TransportIdentifier) => {
@@ -389,7 +424,7 @@ export function SignConnector() {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              height: 300,
+              height: 200,
               width: '100%',
               maxWidth: 400,
             }}
@@ -399,13 +434,13 @@ export function SignConnector() {
             </UIText>
             <ConnectionOnIcon
               style={{
-                height: 60,
-                width: 60,
+                height: 40,
+                width: 40,
                 display: 'block',
                 alignSelf: 'center',
               }}
             />
-            <VStack gap={8}>
+            <VStack gap={6}>
               <Button onClick={() => mutate(transports.hid)}>
                 Sign via USB
               </Button>
@@ -426,7 +461,7 @@ export function SignConnector() {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            height: 300,
+            height: 200,
           }}
         >
           <UIText kind="body/accent" style={{ textAlign: 'center' }}>
@@ -436,14 +471,14 @@ export function SignConnector() {
             <>
               <ConnectionOffIcon
                 style={{
-                  height: 80,
-                  width: 80,
+                  height: 48,
+                  width: 48,
                   display: 'block',
                   alignSelf: 'center',
                   color: 'var(--notice-500)',
                 }}
               />
-              <VStack gap={8}>
+              <VStack gap={6}>
                 <Button
                   onClick={() => {
                     interruptRequest();
@@ -476,14 +511,14 @@ export function SignConnector() {
             <>
               <DisconnectIcon
                 style={{
-                  height: 80,
-                  width: 80,
+                  height: 48,
+                  width: 48,
                   display: 'block',
                   alignSelf: 'center',
                   color: 'var(--negative-500)',
                 }}
               />
-              <VStack gap={8}>
+              <VStack gap={6}>
                 <Button
                   onClick={() => {
                     window.postMessage(interruptedRequest);
@@ -510,15 +545,15 @@ export function SignConnector() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          height: 300,
+          height: 200,
         }}
       >
         <HStack
           gap={8}
-          style={{ padding: 24, width: '100%' }}
+          style={{ padding: 12, width: '100%' }}
           justifyContent="center"
         >
-          <CircleSpinner color="var(--primary)" size="24px" />
+          <CircleSpinner color="var(--primary)" size="20px" />
           <UIText kind="body/accent">Connecting...</UIText>
         </HStack>
       </div>
@@ -527,7 +562,7 @@ export function SignConnector() {
     <VStack
       style={{
         justifyContent: 'space-between',
-        height: 300,
+        height: 200,
         width: '100%',
         gridTemplateRows: '1fr auto',
         gridTemplateColumns: '1fr',

@@ -68,11 +68,8 @@ export function NonFungibleToken() {
       webAppUrlObject.searchParams.append('address', singleAddress);
     }
     const sendFormParams = new URLSearchParams({
-      type: 'nft',
-      nftContractAddress: nft.contract_address,
-      nftId: nft.token_id,
-      tokenChain: nft.chain,
-      // nftChain: nft.chain, // nftChain is synced with tokenChain
+      nftId: `${nft.contract_address}:${nft.token_id}`,
+      inputChain: nft.chain,
     });
     return {
       webAppLink: webAppUrlObject.toString(),

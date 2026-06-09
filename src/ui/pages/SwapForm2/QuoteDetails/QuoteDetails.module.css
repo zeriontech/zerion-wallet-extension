@@ -1,0 +1,70 @@
+.detailsContainer {
+  border: 2px solid var(--neutral-200);
+  border-radius: 20px;
+  padding: 16px;
+  background-color: var(--white);
+}
+
+.detailsToggleWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: -14px;
+}
+
+.detailsToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 4px 8px 4px 12px;
+  border-radius: 16px;
+  border: 2px solid var(--neutral-200);
+  background-color: var(--white);
+  color: var(--neutral-500);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.detailsToggle:hover {
+  background-color: var(--neutral-100);
+}
+
+.detailsToggle:active {
+  transform: scale(0.97);
+}
+
+.detailLinkButton {
+  display: flex;
+}
+
+.detailLinkRow {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.detailLinkRow > * {
+  width: 100%;
+}
+
+.detailLinkChevron {
+  display: block;
+  width: 20px;
+  height: 20px;
+  color: var(--neutral-400);
+  transition: color 0.15s ease;
+}
+
+.detailLinkButton:hover .detailLinkChevron,
+.detailLinkRow:hover .detailLinkChevron {
+  color: var(--black);
+}
+
+.tooltip {
+  max-width: 240px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: var(--black);
+  color: var(--white);
+  box-shadow: var(--elevation-200);
+  z-index: 10;
+}

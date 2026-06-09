@@ -130,7 +130,8 @@ const ZERION_ORIGIN = 'https://app.zerion.io';
 export function WalletSelect() {
   useBackgroundKind(whiteBackgroundKind);
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
 
   const { preferences, setPreferences } = usePreferences();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -194,11 +195,25 @@ export function WalletSelect() {
   });
 
   const { singleAddress, refetch } = useAddressParams();
+  const clearSearchParamsKeys = searchParams.getAll('clearSearchParams');
+  const fromLocation = (location.state as { from?: string } | null)?.from;
   const setCurrentAddressMutation = useMutation({
     mutationFn: (address: string) => setCurrentAddress({ address }),
     onSuccess() {
       refetch();
-      navigate(-1);
+      if (clearSearchParamsKeys.length && fromLocation) {
+        const [fromPathname, fromSearch = ''] = fromLocation.split('?');
+        const nextParams = new URLSearchParams(fromSearch);
+        for (const key of clearSearchParamsKeys) {
+          nextParams.delete(key);
+        }
+        const nextSearch = nextParams.toString();
+        navigate(nextSearch ? `${fromPathname}?${nextSearch}` : fromPathname, {
+          replace: true,
+        });
+      } else {
+        navigate(-1);
+      }
     },
   });
 

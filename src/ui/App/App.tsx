@@ -43,6 +43,7 @@ import { Search } from '../pages/Search';
 import { Networks } from '../pages/Networks';
 import { ManageWallets } from '../pages/ManageWallets';
 import { WalletSelect } from '../pages/WalletSelect';
+import { AddressBook } from '../pages/AddressBook';
 import { NotFoundPage } from '../components/NotFoundPage';
 import { UIText } from '../ui-kit/UIText';
 import { defaultUIContextValue, UIContext } from '../components/UIContext';
@@ -50,6 +51,7 @@ import { ConnectedSites } from '../pages/ConnectedSites';
 import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
 import { MnemonicPhraseRestoration } from '../components/MnemonicPhraseRestoration';
+import { TransactionSigner } from '../components/TransactionSigner';
 import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
@@ -68,13 +70,16 @@ import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarni
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 import { SendForm } from '../pages/SendForm';
-import { SwapForm } from '../pages/SwapForm';
+import { SendForm2 } from '../pages/SendForm2/SendForm2';
+// import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
 import { usePreferences } from '../features/preferences';
 import { openUrl } from '../shared/openUrl';
 import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration';
+import { DevMenu } from '../features/dev-menu';
+import { metaAppState } from '../shared/meta-app-state';
 import { Onboarding } from '../features/onboarding';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { SelectConnectedWallet } from '../pages/SelectConnectedWallet/SelectConnectedWallet';
@@ -84,7 +89,7 @@ import { AssetInfo } from '../pages/AssetInfo';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
-import { BridgeForm } from '../pages/BridgeForm';
+// import { BridgeForm } from '../pages/BridgeForm';
 import { ActionInfo } from '../pages/ActionInfo';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
@@ -92,6 +97,9 @@ import { ScreenViewTracker } from '../shared/ScreenViewTracker';
 import { PremiumPage } from '../pages/Premium';
 import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
+import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
+import { SwapForm } from '../pages/SwapForm/SwapForm';
+import { BridgeForm } from '../pages/BridgeForm';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -212,6 +220,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
   return (
     <ViewArea>
       <URLBar />
+      <TransactionSigner />
       {isPopup ? <RouteRestoration /> : null}
       <Routes>
         {initialRoute ? (
@@ -388,6 +397,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           }
         />
         <Route
+          path="/address-book/*"
+          element={
+            <RequireAuth>
+              <AddressBook />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/connected-sites/*"
           element={
             <RequireAuth>
@@ -400,12 +417,20 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           path="/send-form/*"
           element={
             <RequireAuth>
+              <SendForm2 />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/send-form-old/*"
+          element={
+            <RequireAuth>
               <SendForm />
             </RequireAuth>
           }
         />
         <Route
-          path="/swap-form/*"
+          path="/swap-form-old/*"
           element={
             <RequireAuth>
               <SwapForm />
@@ -413,10 +438,26 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           }
         />
         <Route
-          path="/bridge-form/*"
+          path="/bridge-form-old/*"
           element={
             <RequireAuth>
               <BridgeForm />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/swap-form/*"
+          element={
+            <RequireAuth>
+              <SwapForm2 />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/bridge-form/*"
+          element={
+            <RequireAuth>
+              <SwapForm2 />
             </RequireAuth>
           }
         />
@@ -556,6 +597,7 @@ export function App({ initialView, inspect }: AppProps) {
   }, [isOnboardingMode, isPageLayout]);
 
   const { connected } = useStore(runtimeStore);
+  const { hasTestWallet } = useStore(metaAppState);
 
   useBodyStyle(
     useMemo(() => ({ opacity: connected ? '' : '0.6' }), [connected])
@@ -596,6 +638,7 @@ export function App({ initialView, inspect }: AppProps) {
                   // Render above <ViewSuspense /> so that it doesn't flicker
                   <MaybeTestModeDecoration />
                 ) : null}
+                {!isOnboardingView && hasTestWallet ? <DevMenu /> : null}
                 <ViewSuspense logDelays={true}>
                   <Routes>
                     <Route path="/playground/*" element={<Playground />} />

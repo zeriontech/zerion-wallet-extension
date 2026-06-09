@@ -11,6 +11,8 @@ export type ButtonName =
   | 'Buy Crypto'
   | 'Receive Crypto'
   | 'Fund'
+  | 'Top Up Your Wallet'
+  | 'Import Wallet'
   | 'Buy Premium';
 
 export interface ButtonClickedParams {

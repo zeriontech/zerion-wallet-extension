@@ -1,0 +1,46 @@
+.button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  transition: transform 0.1s ease;
+}
+
+.chevron {
+  width: 20px;
+  height: 20px;
+  color: var(--neutral-500);
+  transition: color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .button:hover .chevron {
+    color: var(--neutral-800);
+  }
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.tooltip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-color: var(--black);
+  color: var(--white);
+  box-shadow: var(--elevation-200);
+  z-index: 10;
+}
+
+.tooltipKbd {
+  padding: 1px 3px;
+  border-radius: 4px;
+  background-color: var(--neutral-700);
+  color: var(--white);
+  font-size: 11px;
+  line-height: 16px;
+}

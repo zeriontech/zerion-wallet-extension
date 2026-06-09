@@ -12,6 +12,8 @@ import { NavigationBar } from 'src/ui/components/NavigationBar';
 import { DocumentTitle } from 'src/ui/components/URLBar/URLBar';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { previews } from './registerPreview';
+// Side-effect import: registers the currency-formatter preview.
+import './CurrencyFormatters.preview';
 
 function PreviewList() {
   return (

@@ -24,3 +24,24 @@
     background-color: var(--neutral-100);
   }
 }
+
+.networksTooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: var(--black);
+  color: var(--white);
+  box-shadow: var(--elevation-200);
+  z-index: 10;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.networksTooltipAmounts {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+}
