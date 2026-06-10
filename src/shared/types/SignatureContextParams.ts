@@ -28,12 +28,6 @@ export type TransactionContextParams = {
    */
   actionType?: string;
   /**
-   * Autoslippage A/B experiment group label (e.g. `'Group1'` / `'Control'`),
-   * resolved in the UI and forwarded so the background "Signed Transaction"
-   * event can report `autoslippage_test_group`. Only set for swap flows.
-   */
-  autoslippageTestGroup?: string;
-  /**
    * Currenly only applies to Solana dapp requests
    * This indicates the method that the dapp called originally
    * and dictates the strategy for the SendTransaction View flow.
@@ -66,6 +60,4 @@ export type TransactionFormedContext = {
   enoughBalance: boolean;
   warningWasShown: boolean;
   outputAmountColor: 'red' | 'grey';
-  /** Autoslippage A/B experiment group label (e.g. `'Group1'` / `'Control'`). */
-  autoslippageTestGroup?: string;
 };
