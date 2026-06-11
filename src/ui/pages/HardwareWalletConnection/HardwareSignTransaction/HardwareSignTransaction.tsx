@@ -133,7 +133,7 @@ export interface SignTransactionHandle {
   }: SolanaSignTransactionParams) => Promise<string>;
 }
 
-async function prepareForSignByLedger({
+export async function prepareForSignByLedger({
   transaction,
   address,
   network,

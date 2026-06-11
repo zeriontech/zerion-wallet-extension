@@ -17,7 +17,10 @@ import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWallet
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { invariant } from 'src/shared/invariant';
-import { isReadonlyAccount } from 'src/shared/types/validators';
+import {
+  isReadonlyAccount,
+  isDeviceAccount,
+} from 'src/shared/types/validators';
 import { isNumeric } from 'src/shared/isNumeric';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
@@ -58,6 +61,7 @@ import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import { NetworkId } from 'src/modules/networks/NetworkId';
 import { calculatePriceImpactFromPositions } from '../SwapForm/shared/price-impact';
 import { getSlippageOptions } from '../SwapForm/SlippageSettings/getSlippageOptions';
 import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
@@ -447,10 +451,14 @@ function SwapFormComponent({
 
       const steps: SignStep[] = [];
 
-      // Both Approve and Swap steps share the same toaster view so the user
-      // sees a single continuous "Swapping" / "Bridging" pill across the
-      // two-tx flow — the approve step is an implementation detail and
-      // shouldn't surface as a distinct "Approving" stage.
+      const approveToasterView: ToasterView = {
+        kind: 'approve',
+        token: {
+          symbol: inputPosition.fungible.symbol,
+          iconUrl: inputPosition.fungible.iconUrl,
+        },
+        chain: { iconUrl: inputNetwork.icon_url ?? null },
+      };
       const swapToasterView: ToasterView = {
         kind: isCrossChain ? 'bridge' : 'swap',
         sent: {
@@ -489,13 +497,17 @@ function SwapFormComponent({
             chain: formState.inputChain,
             initiator: INTERNAL_ORIGIN,
             clientScope: 'Swap',
-            actionType: 'Trade',
+            actionType: 'Approve',
             feeValueCommon: quote.networkFee?.amount?.quantity || '0',
             addressAction: interpretationAction ?? fallbackApproveAction,
             warningWasShown: Boolean(showPriceImpactCallout),
             outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
           },
-          toaster: swapToasterView,
+          toaster:
+            isDeviceAccount(wallet) ||
+            formState.inputChain === NetworkId.Ethereum
+              ? approveToasterView
+              : swapToasterView,
         });
       }
 

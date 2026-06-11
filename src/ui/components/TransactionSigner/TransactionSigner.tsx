@@ -12,6 +12,7 @@ import {
 } from '@zeriontech/hardware-wallet-connection';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import {
+  prepareForSignByLedger,
   signRegularOrPaymasterTx,
   signSolanaTransaction,
 } from 'src/ui/pages/HardwareWalletConnection/HardwareSignTransaction/HardwareSignTransaction';
@@ -21,6 +22,8 @@ import {
   getLedgerIframeController,
   postLedgerSignParams,
 } from 'src/ui/hardware-wallet/useLedgerIframeController';
+import { prepareTransaction } from 'src/modules/ethereum/transactions/prepareTransaction';
+import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { PerpsActivityToaster } from '../PerpsActivity';
 import {
   QueueAbortError,
@@ -90,12 +93,20 @@ async function signSendStepHardware({
   );
 
   if (transaction.evm) {
+    const networksStore = await getNetworksStore();
+    const network = await networksStore.fetchNetworkById(txContext.chain);
+    const txForLedger = await prepareForSignByLedger({
+      transaction: transaction.evm,
+      address: wallet.address,
+      network,
+    });
+    const normalizedTransaction = prepareTransaction(txForLedger);
     const controller = getLedgerIframeController();
     invariant(controller, 'Ledger iframe controller not mounted');
     const contentWindow = controller.getContentWindow();
     invariant(contentWindow, 'Ledger iframe contentWindow not available');
     const signed = await signRegularOrPaymasterTx({
-      transaction: transaction.evm,
+      transaction: normalizedTransaction,
       messageHandler: hardwareMessageHandler,
       derivationPath: wallet.derivationPath,
       contentWindow,
