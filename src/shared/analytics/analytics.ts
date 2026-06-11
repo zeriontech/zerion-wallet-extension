@@ -34,7 +34,10 @@ type MetabaseEvent =
   | 'mnemonic_restoration_shown'
   | 'mnemonic_restoration_success'
   | 'mnemonic_restoration_error'
-  | 'report_ledger_error';
+  | 'report_ledger_error'
+  | 'perps_screen_viewed'
+  | 'perps_button_pressed'
+  | 'perps_position_action';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

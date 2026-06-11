@@ -16,6 +16,7 @@ import {
   markHyperliquidOpSubmitted,
   useHyperliquidRefetchInterval,
 } from 'src/modules/hyperliquid/useHyperliquidRefetchInterval';
+import { calculateIsolatedLiquidationPrice } from 'src/modules/hyperliquid/calc/calculateLiquidationPrice';
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
 import { calculatePriceWithSlippage } from 'src/modules/hyperliquid/calc/calculatePriceWithSlippage';
 import { computeAssetId } from 'src/modules/hyperliquid/calc/computeAssetId';
@@ -31,6 +32,13 @@ import {
 import type { ExchangePlaceOrderPayload } from 'src/modules/hyperliquid/actions/types';
 import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
 import { runPerpsIntent } from 'src/modules/hyperliquid/useCases';
+import type { PerpsIntent } from 'src/modules/hyperliquid/useCases/runIntent';
+import { getError } from 'src/shared/errors/getError';
+import {
+  PERPS_SCREEN,
+  type PerpsPositionActionFormParams,
+} from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -214,6 +222,9 @@ export function PerpsTrade() {
       const existingIsCross =
         position != null ? position.leverage.type === 'cross' : true;
 
+      let intent: PerpsIntent;
+      let analytics: PerpsPositionActionFormParams;
+
       if (effectiveMode === 'open') {
         invariant(state.inputAmount, 'Amount is required');
         const marginUsd = Number(state.inputAmount);
@@ -286,24 +297,54 @@ export function PerpsTrade() {
           },
         });
 
-        await runPerpsIntent({
-          intent: {
-            kind: 'open',
-            coin: parsed.coin,
-            dexIdentifier: parsed.dexIdentifier,
-            asset: assetId,
-            isCross: existingIsCross,
-            desiredLeverage: effectiveLeverage,
-            order: action,
-            successText: 'Position opened',
-          },
-          context: {
-            address,
-            builder: tradingContext.builderAddress,
-            requiredMaxBuilderFee: tradingContext.maxApproveBuilderFeeUnits,
-            referralCode: tradingContext.referralCode,
-          },
-        });
+        intent = {
+          kind: 'open',
+          coin: parsed.coin,
+          dexIdentifier: parsed.dexIdentifier,
+          asset: assetId,
+          isCross: existingIsCross,
+          desiredLeverage: effectiveLeverage,
+          order: action,
+          successText: 'Position opened',
+        };
+
+        const notional = size * markPrice;
+        const floatSide = isLong ? 1 : -1;
+        const liqPrice =
+          size > 0
+            ? calculateIsolatedLiquidationPrice({
+                mid: markPrice,
+                floatSide,
+                leverage: { value: effectiveLeverage, rawUsd: 0 },
+                positionSzi: 0,
+                userSz: size,
+                totalNtlPos: notional,
+                updatedPosition: floatSide * size,
+                maxLeverage: asset.universe.maxLeverage,
+              })
+            : null;
+        const takeProfitUsd = Number(state.takeProfitPrice);
+        const stopLossUsd = Number(state.stopLossPrice);
+        analytics = {
+          position_side: isLong ? 'Long' : 'Short',
+          action_type: 'Open',
+          amount_usd: marginUsd,
+          asset_name: asset.universe.name,
+          leverage: effectiveLeverage,
+          zerion_fee_percentage: tradingContext.zerionRate * 100,
+          zerion_fee_usd_amount: notional * tradingContext.zerionRate,
+          provider_fee_percentage: tradingContext.hyperliquidRate * 100,
+          provider_fee_usd_amount: notional * tradingContext.hyperliquidRate,
+          entry_price_usd: markPrice,
+          liquidation_price_usd: liqPrice ?? 0,
+          size: notional,
+          margin: marginUsd,
+          delta_size: notional,
+          delta_margin: marginUsd,
+          screen_name: isLong ? PERPS_SCREEN.Long : PERPS_SCREEN.Short,
+          take_profit_usd: takeProfitUsd > 0 ? takeProfitUsd : undefined,
+          stop_loss_usd: stopLossUsd > 0 ? stopLossUsd : undefined,
+        };
       } else if (effectiveMode === 'add') {
         invariant(position, 'Position is required for add');
         invariant(state.inputAmount, 'Amount is required');
@@ -338,24 +379,42 @@ export function PerpsTrade() {
             f: tradingContext.builderFeeUnits,
           },
         });
-        await runPerpsIntent({
-          intent: {
-            kind: 'add',
-            coin: parsed.coin,
-            dexIdentifier: parsed.dexIdentifier,
-            asset: assetId,
-            isCross: existingIsCross,
-            desiredLeverage: positionLeverage,
-            order: action,
-            successText: 'Position updated',
-          },
-          context: {
-            address,
-            builder: tradingContext.builderAddress,
-            requiredMaxBuilderFee: tradingContext.maxApproveBuilderFeeUnits,
-            referralCode: tradingContext.referralCode,
-          },
-        });
+        intent = {
+          kind: 'add',
+          coin: parsed.coin,
+          dexIdentifier: parsed.dexIdentifier,
+          asset: assetId,
+          isCross: existingIsCross,
+          desiredLeverage: positionLeverage,
+          order: action,
+          successText: 'Position updated',
+        };
+
+        const notional = size * markPrice;
+        const existingSize = Math.abs(Number(position.positionValue));
+        const existingMargin = Number(position.marginUsed);
+        analytics = {
+          position_side: isLong ? 'Long' : 'Short',
+          action_type: 'Add',
+          amount_usd: marginUsd,
+          asset_name: asset.universe.name,
+          leverage: positionLeverage,
+          zerion_fee_percentage: tradingContext.zerionRate * 100,
+          zerion_fee_usd_amount: notional * tradingContext.zerionRate,
+          provider_fee_percentage: tradingContext.hyperliquidRate * 100,
+          provider_fee_usd_amount: notional * tradingContext.hyperliquidRate,
+          entry_price_usd: Number(position.entryPx),
+          liquidation_price_usd: position.liquidationPx
+            ? Number(position.liquidationPx)
+            : 0,
+          size: existingSize + notional,
+          margin: existingMargin + marginUsd,
+          delta_size: notional,
+          delta_margin: marginUsd,
+          screen_name: isLong
+            ? PERPS_SCREEN.AddToLong
+            : PERPS_SCREEN.AddToShort,
+        };
       } else if (effectiveMode === 'close') {
         invariant(position, 'Position is required for close');
         invariant(state.inputAmount, 'Amount is required');
@@ -390,18 +449,58 @@ export function PerpsTrade() {
             f: tradingContext.builderFeeUnits,
           },
         });
+        intent = {
+          kind: 'close',
+          coin: parsed.coin,
+          dexIdentifier: parsed.dexIdentifier,
+          asset: assetId,
+          isCross: existingIsCross,
+          desiredLeverage: position.leverage.value,
+          order: action,
+          successText:
+            closeFraction >= 1 ? 'Position closed' : 'Position updated',
+        };
+
+        const marginUsed = Number(position.marginUsed);
+        const marginBeingClosed = marginUsed * closeFraction;
+        const sizeBeingClosed = size * markPrice;
+        const totalPositionSize = positionAbsSize * markPrice;
+        const unrealizedPnl = Number(position.unrealizedPnl);
+        const scaledPnlRaw = unrealizedPnl * closeFraction;
+        // Snap to 0 to avoid misleading "-$0.00" residue from tiny floating-point math.
+        const scaledPnl = Math.abs(scaledPnlRaw) < 0.005 ? 0 : scaledPnlRaw;
+        analytics = {
+          position_side: isLong ? 'Long' : 'Short',
+          action_type: 'Close',
+          amount_usd: marginBeingClosed,
+          asset_name: asset.universe.name,
+          leverage: position.leverage.value,
+          zerion_fee_percentage: tradingContext.zerionRate * 100,
+          zerion_fee_usd_amount: sizeBeingClosed * tradingContext.zerionRate,
+          provider_fee_percentage: tradingContext.hyperliquidRate * 100,
+          provider_fee_usd_amount:
+            sizeBeingClosed * tradingContext.hyperliquidRate,
+          entry_price_usd: Number(position.entryPx),
+          liquidation_price_usd: position.liquidationPx
+            ? Number(position.liquidationPx)
+            : undefined,
+          size: totalPositionSize - sizeBeingClosed,
+          margin: marginUsed - marginBeingClosed,
+          delta_size: -sizeBeingClosed,
+          delta_margin: -marginBeingClosed,
+          screen_name: isLong
+            ? PERPS_SCREEN.CloseLong
+            : PERPS_SCREEN.CloseShort,
+          receive_usd_amount: marginBeingClosed + scaledPnl,
+          realized_pnl_usd: scaledPnl,
+        };
+      } else {
+        return;
+      }
+
+      try {
         await runPerpsIntent({
-          intent: {
-            kind: 'close',
-            coin: parsed.coin,
-            dexIdentifier: parsed.dexIdentifier,
-            asset: assetId,
-            isCross: existingIsCross,
-            desiredLeverage: position.leverage.value,
-            order: action,
-            successText:
-              closeFraction >= 1 ? 'Position closed' : 'Position updated',
-          },
+          intent,
           context: {
             address,
             builder: tradingContext.builderAddress,
@@ -409,6 +508,17 @@ export function PerpsTrade() {
             referralCode: tradingContext.referralCode,
           },
         });
+        emitter.emit('perpsPositionAction', {
+          ...analytics,
+          success_status: true,
+        });
+      } catch (error) {
+        emitter.emit('perpsPositionAction', {
+          ...analytics,
+          success_status: false,
+          backend_error_message: getError(error).message,
+        });
+        throw error;
       }
     },
     onSuccess: () => {

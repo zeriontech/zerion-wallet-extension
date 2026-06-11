@@ -237,6 +237,48 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
+  emitter.on('perpsScreenViewed', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'perps_screen_viewed',
+      screen_name: data.screen_name,
+      asset_name: data.asset_name,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('Perps: Screen Viewed', mixpanelParams);
+  });
+
+  emitter.on('perpsButtonPressed', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'perps_button_pressed',
+      button_name: data.button_name,
+      screen_name: data.screen_name,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('Perps: Button Pressed', mixpanelParams);
+  });
+
+  emitter.on('perpsPositionAction', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'perps_position_action',
+      ...data,
+    });
+    sendToMetabase('perps_position_action', params);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('Perps: Position Action', mixpanelParams);
+  });
+
   emitter.on('assetClicked', async (data) => {
     const preferences = await globalPreferences.getPreferences();
     if (!preferences.analyticsEnabled) {

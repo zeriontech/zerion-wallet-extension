@@ -4,6 +4,11 @@ import type {
   BannerClickedParams,
   ButtonClickedParams,
 } from 'src/shared/types/button-events';
+import type {
+  PerpsButtonPressedParams,
+  PerpsPositionActionParams,
+  PerpsScreenViewedParams,
+} from 'src/shared/types/perps-events';
 
 type EthersSignMethod = 'sendTransaction' | '_signTypedData' | 'signMessage';
 
@@ -25,6 +30,9 @@ export const emitter = createNanoEvents<{
   buttonClicked: (data: ButtonClickedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
   mnemonicRestorationNeeded: () => void;
+  perpsScreenViewed: (data: PerpsScreenViewedParams) => void;
+  perpsButtonPressed: (data: PerpsButtonPressedParams) => void;
+  perpsPositionAction: (data: PerpsPositionActionParams) => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

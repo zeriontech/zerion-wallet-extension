@@ -12,6 +12,11 @@ import type {
   BannerClickedParams,
   ButtonClickedParams,
 } from 'src/shared/types/button-events';
+import type {
+  PerpsButtonPressedParams,
+  PerpsPositionActionParams,
+  PerpsScreenViewedParams,
+} from 'src/shared/types/perps-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
@@ -110,4 +115,7 @@ export const emitter = createNanoEvents<{
   mnemonicRestorationSuccess: () => void;
   mnemonicRestorationError: () => void; // we do not pass error body to analytics to avoid sensitive data leaks
   reportLedgerError: (errorMessage: string) => void;
+  perpsScreenViewed: (data: PerpsScreenViewedParams) => void;
+  perpsButtonPressed: (data: PerpsButtonPressedParams) => void;
+  perpsPositionAction: (data: PerpsPositionActionParams) => void;
 }>();

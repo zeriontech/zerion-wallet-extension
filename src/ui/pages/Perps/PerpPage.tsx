@@ -19,6 +19,8 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { PERPS_BUTTON, PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -183,6 +185,12 @@ export function PerpPage() {
                 size={48}
                 as={UnstyledLink}
                 to={`${tradePath}?mode=add`}
+                onClick={() => {
+                  emitter.emit('perpsButtonPressed', {
+                    button_name: PERPS_BUTTON.Add,
+                    screen_name: PERPS_SCREEN.Asset,
+                  });
+                }}
               >
                 <UIText kind="body/accent">Add</UIText>
               </Button>
@@ -191,6 +199,12 @@ export function PerpPage() {
                 size={48}
                 as={UnstyledLink}
                 to={`${tradePath}?mode=close`}
+                onClick={() => {
+                  emitter.emit('perpsButtonPressed', {
+                    button_name: PERPS_BUTTON.Close,
+                    screen_name: PERPS_SCREEN.Asset,
+                  });
+                }}
               >
                 <UIText kind="body/accent">Close</UIText>
               </Button>
@@ -208,6 +222,12 @@ export function PerpPage() {
                 size={48}
                 as={UnstyledLink}
                 to={`${tradePath}?mode=open&side=long`}
+                onClick={() => {
+                  emitter.emit('perpsButtonPressed', {
+                    button_name: PERPS_BUTTON.Long,
+                    screen_name: PERPS_SCREEN.Asset,
+                  });
+                }}
               >
                 <UIText kind="body/accent">Long</UIText>
               </Button>
@@ -216,6 +236,12 @@ export function PerpPage() {
                 size={48}
                 as={UnstyledLink}
                 to={`${tradePath}?mode=open&side=short`}
+                onClick={() => {
+                  emitter.emit('perpsButtonPressed', {
+                    button_name: PERPS_BUTTON.Short,
+                    screen_name: PERPS_SCREEN.Asset,
+                  });
+                }}
               >
                 <UIText kind="body/accent">Short</UIText>
               </Button>

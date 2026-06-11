@@ -92,6 +92,11 @@ import type {
   BannerClickedParams,
   ButtonClickedParams,
 } from 'src/shared/types/button-events';
+import type {
+  PerpsButtonPressedParams,
+  PerpsPositionActionParams,
+  PerpsScreenViewedParams,
+} from 'src/shared/types/perps-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
 import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import {
@@ -1828,6 +1833,30 @@ export class Wallet {
   }: WalletMethodParams<BannerClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('bannerClicked', params);
+  }
+
+  async perpsScreenViewed({
+    context,
+    params,
+  }: WalletMethodParams<PerpsScreenViewedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('perpsScreenViewed', params);
+  }
+
+  async perpsButtonPressed({
+    context,
+    params,
+  }: WalletMethodParams<PerpsButtonPressedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('perpsButtonPressed', params);
+  }
+
+  async perpsPositionAction({
+    context,
+    params,
+  }: WalletMethodParams<PerpsPositionActionParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('perpsPositionAction', params);
   }
 
   async assetClicked({
