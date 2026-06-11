@@ -39,7 +39,6 @@ import {
 } from 'src/ui/features/preferences/usePreferences';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { walletPort } from 'src/ui/shared/channels';
-import { useAutoslippageExperiment } from 'src/modules/statsig/statsig.client';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -158,12 +157,6 @@ function SwapFormComponent({
     networks,
   });
 
-  // Autoslippage A/B experiment: Test group offers Auto mode (the default when
-  // slippage is untouched); Control (and any unresolved/failed state) hides Auto
-  // and falls back to the static chain default. `group` is reported to analytics.
-  const { group: autoslippageTestGroup, isTestGroup: isAutoslippageEnabled } =
-    useAutoslippageExperiment();
-
   const inputNetworkConfig = useMemo(
     () =>
       formState.inputChain
@@ -209,7 +202,6 @@ function SwapFormComponent({
       outputPosition,
       isCrossEcosystem,
       outputEcosystem,
-      isAutoslippageEnabled,
     });
 
   // Single shared gas-prices fetch for the input chain. Powers the local fee
@@ -292,7 +284,6 @@ function SwapFormComponent({
       formState,
       quote,
       scope: isCrossChain ? 'Bridge' : 'Swap',
-      autoslippageTestGroup,
       warningWasShown: Boolean(showPriceImpactCallout),
       outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
       enoughBalance:
@@ -557,7 +548,6 @@ function SwapFormComponent({
           addressAction: interpretationAction ?? fallbackSwapAction,
           quote,
           outputChain: formState.outputChain,
-          autoslippageTestGroup,
           warningWasShown: Boolean(showPriceImpactCallout),
           outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
         },
@@ -796,7 +786,6 @@ function SwapFormComponent({
               setUserFormState((state) => ({ ...state, ...partial }));
             }}
             onProviderChange={setUserQuoteId}
-            isAutoslippageEnabled={isAutoslippageEnabled}
           />
           <TransactionWarning warning={resolved.warning} />
           {showPriceImpactCallout ? (

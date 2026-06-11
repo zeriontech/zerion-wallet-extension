@@ -5,8 +5,6 @@ import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { resolveTokenValue } from 'src/ui/components/AmountInput/inputKind';
-import { createChain } from 'src/modules/networks/Chain';
-import { getSlippageOptions } from 'src/ui/pages/SwapForm/SlippageSettings/getSlippageOptions';
 import type { SwapFormState2 } from './types';
 import { isReceiverReadyForQuote } from './shared/getCrossEcosystemState';
 
@@ -17,7 +15,6 @@ export function useSwapQuote({
   outputPosition,
   isCrossEcosystem,
   outputEcosystem,
-  isAutoslippageEnabled,
 }: {
   address: string;
   formState: SwapFormState2;
@@ -25,12 +22,6 @@ export function useSwapQuote({
   outputPosition: FungiblePosition | null;
   isCrossEcosystem: boolean;
   outputEcosystem: BlockchainType | null;
-  /**
-   * Autoslippage A/B Test group. When `false` (Control / unresolved), an
-   * untouched slippage resolves to the static chain default instead of being
-   * omitted, so the backend never computes an auto slippage.
-   */
-  isAutoslippageEnabled: boolean;
 }) {
   const { currency } = useCurrency();
   const { pathname } = useLocation();
@@ -57,22 +48,8 @@ export function useSwapQuote({
       gasLimit: _gasLimit,
       ...rest
     } = formState;
-    // Autoslippage gating: in the Control group (or before the experiment
-    // resolves) an untouched slippage must resolve to the static chain default
-    // rather than being omitted — omitting it would let the backend compute an
-    // auto slippage, which is the Test-group behavior.
-    const slippageUntouched = rest.slippage == null || rest.slippage === 'auto';
-    const slippage =
-      !isAutoslippageEnabled && slippageUntouched && rest.inputChain
-        ? String(
-            getSlippageOptions({
-              chain: createChain(rest.inputChain),
-              userSlippage: null,
-            }).slippage
-          )
-        : rest.slippage;
-    return { ...rest, slippage, inputAmount: resolvedInputAmount };
-  }, [formState, resolvedInputAmount, isAutoslippageEnabled]);
+    return { ...rest, inputAmount: resolvedInputAmount };
+  }, [formState, resolvedInputAmount]);
 
   const inputFiatValue = useMemo(() => {
     if (!resolvedInputAmount || inputPrice == null) return null;

@@ -310,7 +310,6 @@ function trackAppEvents({ account }: { account: Account }) {
       outputChain,
       warningWasShown = false,
       outputAmountColor = 'grey',
-      autoslippageTestGroup,
       actionType,
     } = context;
 
@@ -350,7 +349,6 @@ function trackAppEvents({ account }: { account: Account }) {
       slippage: quote?.finalSlippage ?? null,
       // Value computed by the autoslippage engine; present only in Auto mode.
       autoslippage: quote?.autoSlippage ?? null,
-      autoslippage_test_group: autoslippageTestGroup ?? null,
       action_type: actionType ?? null,
       ...omitNullParams(addressActionAnalytics),
     });
@@ -508,7 +506,6 @@ function trackAppEvents({ account }: { account: Account }) {
       warningWasShown,
       outputAmountColor,
       scope,
-      autoslippageTestGroup,
     } = context;
 
     // We query fungible info for input and output assets
@@ -591,7 +588,6 @@ function trackAppEvents({ account }: { account: Account }) {
       slippage: quote.finalSlippage ?? undefined,
       // Value computed by the autoslippage engine; present only in Auto mode.
       autoslippage: quote.autoSlippage ?? undefined,
-      autoslippage_test_group: autoslippageTestGroup,
       contract_type: quote.contractMetadata.name,
 
       fdv_asset_sent: inputAsset.meta.fullyDilutedValuation ?? undefined,

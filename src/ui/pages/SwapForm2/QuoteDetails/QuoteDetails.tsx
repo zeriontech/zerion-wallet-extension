@@ -117,23 +117,13 @@ function ZerionFeeLabel() {
 
 function getSlippageDisplay(
   formState: SwapFormState2,
-  quote: Quote2 | null,
-  isAutoslippageEnabled: boolean
+  quote: Quote2 | null
 ): string {
   const chain = createChain(formState.inputChain);
   if (formState.slippage != null && formState.slippage !== 'auto') {
     const { slippagePercent } = getSlippageOptions({
       chain,
       userSlippage: Number(formState.slippage),
-    });
-    return `${slippagePercent}%`;
-  }
-  // Control (or unresolved experiment): no Auto mode \u2014 an untouched slippage
-  // resolves to the static chain default.
-  if (!isAutoslippageEnabled) {
-    const { slippagePercent } = getSlippageOptions({
-      chain,
-      userSlippage: null,
     });
     return `${slippagePercent}%`;
   }
@@ -153,7 +143,6 @@ export function QuoteDetails({
   gasPrices,
   onConfigurationChange,
   onProviderChange,
-  isAutoslippageEnabled,
 }: {
   quote: Quote2 | null;
   quotesQuery: QuotesData<Quote2>;
@@ -164,8 +153,6 @@ export function QuoteDetails({
   gasPrices: ChainGasPrice | null;
   onConfigurationChange: (configuration: CustomConfiguration) => void;
   onProviderChange: (quoteId: string | null) => void;
-  /** Autoslippage Test group: show the "Auto" option and Auto-mode display. */
-  isAutoslippageEnabled: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const providerDialog = useDialog2();
@@ -214,8 +201,7 @@ export function QuoteDetails({
   const isVisible = quotesQuery.isLoading || quote != null;
 
   const isAutoSlippage =
-    isAutoslippageEnabled &&
-    (formState.slippage == null || formState.slippage === 'auto');
+    formState.slippage == null || formState.slippage === 'auto';
   const showAutoSlippageInCollapsed =
     isAutoSlippage && quote?.finalSlippage != null && quote.finalSlippage > 1;
 
@@ -255,11 +241,7 @@ export function QuoteDetails({
                     value={
                       <HStack gap={4} alignItems="center">
                         <UIText kind="small/accent">
-                          {getSlippageDisplay(
-                            formState,
-                            quote,
-                            isAutoslippageEnabled
-                          )}
+                          {getSlippageDisplay(formState, quote)}
                         </UIText>
                         <ChevronRightIcon
                           className={styles.detailLinkChevron}
@@ -297,11 +279,7 @@ export function QuoteDetails({
                             value={
                               <HStack gap={4} alignItems="center">
                                 <UIText kind="small/accent">
-                                  {getSlippageDisplay(
-                                    formState,
-                                    quote,
-                                    isAutoslippageEnabled
-                                  )}
+                                  {getSlippageDisplay(formState, quote)}
                                 </UIText>
                                 <ChevronRightIcon
                                   className={styles.detailLinkChevron}
@@ -525,7 +503,7 @@ export function QuoteDetails({
         <div style={{ padding: 16, paddingTop: 0 }}>
           <SlippageSettings
             chain={inputChain}
-            includeAuto={isAutoslippageEnabled}
+            includeAuto={true}
             configuration={configuration}
             onConfigurationChange={(value) => {
               onConfigurationChange(value);
