@@ -1,4 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { Button } from 'src/ui/ui-kit/Button';
 import {
   SegmentedControlGroup,
@@ -112,6 +114,12 @@ function AutoCloseDialogBody({
   onConfirm,
   onClose,
 }: DialogProps) {
+  useEffect(() => {
+    emitter.emit('perpsScreenViewed', {
+      screen_name: PERPS_SCREEN.TakeProfitStopLoss,
+    });
+  }, []);
+
   // The overlay always opens in PnL view, hydrated from the stored prices.
   const [mode, setMode] = useState<Mode>('pnl');
   const [tp, setTp] = useState(() =>

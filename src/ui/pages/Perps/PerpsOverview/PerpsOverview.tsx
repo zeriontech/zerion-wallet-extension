@@ -22,6 +22,8 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
+import { PERPS_BUTTON, PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import skeletonStyles from 'src/ui/pages/SwapForm2/styles.module.css';
 import { PerpsOnboarding } from '../PerpsOnboarding';
@@ -119,6 +121,12 @@ function PerpsPositionsList({
               kind="primary"
               as={UnstyledLink}
               to="/perps/deposit"
+              onClick={() => {
+                emitter.emit('perpsButtonPressed', {
+                  button_name: PERPS_BUTTON.Deposit,
+                  screen_name: PERPS_SCREEN.Overview,
+                });
+              }}
             >
               Deposit
             </Button>
@@ -339,6 +347,12 @@ export function PerpsOverview() {
             title="Deposit"
             aria-label="Deposit"
             style={{ paddingInline: 8 }}
+            onClick={() => {
+              emitter.emit('perpsButtonPressed', {
+                button_name: PERPS_BUTTON.Deposit,
+                screen_name: PERPS_SCREEN.Overview,
+              });
+            }}
           >
             <UIText kind="small/accent">Deposit</UIText>
           </Button>
@@ -350,6 +364,12 @@ export function PerpsOverview() {
             title="Withdraw"
             aria-label="Withdraw"
             style={{ paddingInline: 8 }}
+            onClick={() => {
+              emitter.emit('perpsButtonPressed', {
+                button_name: PERPS_BUTTON.Withdraw,
+                screen_name: PERPS_SCREEN.Overview,
+              });
+            }}
           >
             <UIText kind="small/accent">Withdraw</UIText>
           </Button>

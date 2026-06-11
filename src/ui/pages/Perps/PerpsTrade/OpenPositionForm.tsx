@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PlusIcon from 'jsx:src/ui/assets/plus.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
@@ -7,6 +7,8 @@ import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
 import { calculateIsolatedLiquidationPrice } from 'src/modules/hyperliquid/calc/calculateLiquidationPrice';
 import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
+import { PERPS_BUTTON, PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -57,6 +59,15 @@ export function OpenPositionForm({
 }) {
   const { currency } = useCurrency();
   const side: TradeSide = formState.side ?? 'long';
+  const screenName = side === 'long' ? PERPS_SCREEN.Long : PERPS_SCREEN.Short;
+  const assetName = asset.universe.name;
+  useEffect(() => {
+    emitter.emit('perpsScreenViewed', {
+      screen_name: screenName,
+      asset_name: assetName,
+    });
+  }, [screenName, assetName]);
+
   const leverage = formState.leverage ?? 1;
   const inputAmount = formState.inputAmount;
   const marginUsd = Number(inputAmount) || 0;
@@ -160,7 +171,13 @@ export function OpenPositionForm({
           <UnstyledButton
             type="button"
             className={s.controlGroupRow}
-            onClick={onOpenLeverage}
+            onClick={() => {
+              emitter.emit('perpsButtonPressed', {
+                button_name: PERPS_BUTTON.AdjustLeverage,
+                screen_name: screenName,
+              });
+              onOpenLeverage();
+            }}
           >
             <VStack gap={0} className={s.controlGroupRowLeft}>
               <UIText kind="small/accent">Leverage</UIText>
@@ -181,7 +198,13 @@ export function OpenPositionForm({
           <UnstyledButton
             type="button"
             className={s.controlGroupRow}
-            onClick={onOpenAutoClose}
+            onClick={() => {
+              emitter.emit('perpsButtonPressed', {
+                button_name: PERPS_BUTTON.TakeProfitStopLoss,
+                screen_name: screenName,
+              });
+              onOpenAutoClose();
+            }}
           >
             <VStack gap={2} className={s.controlGroupRowLeft}>
               <UIText kind="small/accent">Take Profit / Stop Loss</UIText>

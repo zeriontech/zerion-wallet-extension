@@ -97,6 +97,18 @@ function trackAppEvents({
     walletPort.request('bannerClicked', data);
   });
 
+  emitter.on('perpsScreenViewed', async (data) => {
+    walletPort.request('perpsScreenViewed', data);
+  });
+
+  emitter.on('perpsButtonPressed', async (data) => {
+    walletPort.request('perpsButtonPressed', data);
+  });
+
+  emitter.on('perpsPositionAction', async (data) => {
+    walletPort.request('perpsPositionAction', data);
+  });
+
   emitter.on('errorScreenView', async (data) => {
     const preferences = await fetchGlobalPreferences();
     if (!preferences.analyticsEnabled) {

@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import React, { useId, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePerpsRemoteConfig } from 'src/modules/hyperliquid/hooks/usePerpsRemoteConfig';
 import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useHyperliquidAccountSummary';
@@ -14,6 +14,8 @@ import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { useReceiverDisplayName } from 'src/ui/components/ReceiverAddressDialog';
 import { invariant } from 'src/shared/invariant';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { markHyperliquidOpSubmitted } from 'src/modules/hyperliquid/useHyperliquidRefetchInterval';
@@ -61,6 +63,12 @@ function parseAmount(value: string): BigNumber {
 
 export function PerpsWithdraw() {
   useBackgroundKind({ kind: 'white' });
+  useEffect(() => {
+    emitter.emit('perpsScreenViewed', {
+      screen_name: PERPS_SCREEN.Withdraw,
+    });
+  }, []);
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { singleAddress: address } = useAddressParams();

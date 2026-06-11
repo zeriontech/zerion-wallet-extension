@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import type { PerpAssetEntry } from 'src/modules/hyperliquid/findPerpAsset';
 import type { PerpPosition } from 'src/modules/hyperliquid/api/requests/perp-clearinghouse-state.types';
 import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
+import { PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -45,6 +47,18 @@ export function ClosePositionForm({
 }) {
   const { currency } = useCurrency();
   const positionSzi = Number(position.szi);
+  const isPositionLong = positionSzi >= 0;
+  const screenName = isPositionLong
+    ? PERPS_SCREEN.CloseLong
+    : PERPS_SCREEN.CloseShort;
+  const assetName = asset.universe.name;
+  useEffect(() => {
+    emitter.emit('perpsScreenViewed', {
+      screen_name: screenName,
+      asset_name: assetName,
+    });
+  }, [screenName, assetName]);
+
   const positionAbsSize = Math.abs(positionSzi);
   const positionValueAbs = Math.abs(Number(position.positionValue));
   const positionLeverage = position.leverage.value;

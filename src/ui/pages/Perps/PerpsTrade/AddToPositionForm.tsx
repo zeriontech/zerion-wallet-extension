@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
@@ -9,6 +9,8 @@ import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePos
 import { calculateIsolatedLiquidationPrice } from 'src/modules/hyperliquid/calc/calculateLiquidationPrice';
 import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
 import { getPerpDisplayName } from 'src/modules/hyperliquid/parsePerpId';
+import { PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -52,6 +54,15 @@ export function AddToPositionForm({
   const { currency } = useCurrency();
   const positionSzi = Number(position.szi);
   const isLong = positionSzi >= 0;
+  const screenName = isLong ? PERPS_SCREEN.AddToLong : PERPS_SCREEN.AddToShort;
+  const assetName = asset.universe.name;
+  useEffect(() => {
+    emitter.emit('perpsScreenViewed', {
+      screen_name: screenName,
+      asset_name: assetName,
+    });
+  }, [screenName, assetName]);
+
   const positionAbsSize = Math.abs(positionSzi);
   const positionLeverage = position.leverage.value;
   const inputAmount = formState.inputAmount;

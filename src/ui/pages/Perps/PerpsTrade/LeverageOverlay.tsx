@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { PERPS_SCREEN } from 'src/shared/types/perps-events';
+import { emitter } from 'src/ui/shared/events';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -32,6 +34,14 @@ export function LeverageOverlay({
   React.useEffect(() => {
     if (open) setValue(clamp(initialLeverage, 1, maxLeverage));
   }, [open, initialLeverage, maxLeverage]);
+
+  React.useEffect(() => {
+    if (open) {
+      emitter.emit('perpsScreenViewed', {
+        screen_name: PERPS_SCREEN.AdjustLeverage,
+      });
+    }
+  }, [open]);
 
   const chips = Array.from(
     new Set([...PRESETS.filter((p) => p <= maxLeverage), maxLeverage])
