@@ -1,1 +1,0 @@
-export { Banners } from './Banners';
