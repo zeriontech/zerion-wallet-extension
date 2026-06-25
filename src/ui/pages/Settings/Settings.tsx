@@ -61,6 +61,7 @@ import { useStore } from '@store-unit/react';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isMacOS } from 'src/ui/shared/isMacos';
+import { DisableWalletProviderSettingsItem } from 'src/ui/components/PauseInjection';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -295,6 +296,7 @@ function SettingsMain() {
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
+            <DisableWalletProviderSettingsItem />
             <FrameListItemLink to="/settings/experiments">
               <AngleRightRow>
                 <HStack gap={8} alignItems="center">
