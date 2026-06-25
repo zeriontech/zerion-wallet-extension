@@ -15,6 +15,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
 function getDirectionLabel(fill: PerpFill): string {
   const lowered = fill.dir.toLowerCase();
@@ -119,7 +120,12 @@ export function PerpsHistoryTradeRow({
             color={trailingColor}
             style={{ flexShrink: 0 }}
           >
-            {trailing}
+            <BlurrableBalance
+              kind="body/regular"
+              color={trailingColor ?? 'var(--black)'}
+            >
+              {trailing}
+            </BlurrableBalance>
           </UIText>
         </HStack>
       </HStack>
@@ -288,7 +294,12 @@ export function PerpsHistoryLedgerRow({
           color={trailing.color}
           style={{ flexShrink: 0 }}
         >
-          {trailing.text}
+          <BlurrableBalance
+            kind="body/regular"
+            color={trailing.color ?? 'var(--black)'}
+          >
+            {trailing.text}
+          </BlurrableBalance>
         </UIText>
       </HStack>
     </HStack>

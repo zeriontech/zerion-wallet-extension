@@ -16,6 +16,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { CenteredAmountInput } from './CenteredAmountInput';
 import * as s from './styles.module.css';
 import type { TradeFormState } from './useTradeFormState';
@@ -118,12 +119,20 @@ export function AddToPositionForm({
         <UIText
           kind="small/accent"
           color="var(--neutral-600)"
-          style={{ textAlign: 'center' }}
+          style={{
+            display: 'flex',
+            gap: 4,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
         >
-          Size {formatCurrencyValue(marginUsd, 'en', currency)}
-          {addSize > 0
-            ? ` · ${formatTokenValue(addSize, asset.universe.name)}`
-            : ''}
+          <span>Size</span>
+          <BlurrableBalance kind="small/accent" color="var(--neutral-600)">
+            {formatCurrencyValue(marginUsd, 'en', currency)}
+            {addSize > 0
+              ? ` · ${formatTokenValue(addSize, asset.universe.name)}`
+              : ''}
+          </BlurrableBalance>
         </UIText>
       </VStack>
 
@@ -147,7 +156,9 @@ export function AddToPositionForm({
               Available
             </UIText>
             <UIText kind="small/accent">
-              {formatCurrencyValue(availableToTrade, 'en', currency)}
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                {formatCurrencyValue(availableToTrade, 'en', currency)}
+              </BlurrableBalance>
             </UIText>
           </HStack>
           <div className={s.frameDivider} />
@@ -156,9 +167,15 @@ export function AddToPositionForm({
               Adding to {isLong ? 'Long' : 'Short'}
             </UIText>
             <UIText kind="small/accent">
-              {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
-              {getPerpDisplayName(asset.universe.name)} ·{' '}
-              {formatCurrencyValue(Number(position.marginUsed), 'en', currency)}
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
+                {getPerpDisplayName(asset.universe.name)} ·{' '}
+                {formatCurrencyValue(
+                  Number(position.marginUsed),
+                  'en',
+                  currency
+                )}
+              </BlurrableBalance>
             </UIText>
           </HStack>
           <div className={s.frameDivider} />
@@ -178,11 +195,15 @@ export function AddToPositionForm({
               Add size
             </UIText>
             <UIText kind="small/accent">
-              {addSize > 0
-                ? `${addSize.toFixed(Math.max(szDecimals, 2))} ${
+              {addSize > 0 ? (
+                <BlurrableBalance kind="small/accent" color="var(--black)">
+                  {`${addSize.toFixed(Math.max(szDecimals, 2))} ${
                     asset.universe.name
-                  }`
-                : '—'}
+                  }`}
+                </BlurrableBalance>
+              ) : (
+                '—'
+              )}
             </UIText>
           </HStack>
           <div className={s.frameDivider} />
@@ -206,9 +227,11 @@ export function AddToPositionForm({
             <UIText kind="small/regular" color="var(--neutral-600)">
               Fee
             </UIText>
-            <UIText kind="small/accent">
-              {(totalFeeRate * 100).toFixed(3)}% (
-              {formatCurrencyValue(feeCost, 'en', currency)})
+            <UIText kind="small/accent" style={{ display: 'flex', gap: 4 }}>
+              <span>{(totalFeeRate * 100).toFixed(3)}%</span>
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                ({formatCurrencyValue(feeCost, 'en', currency)})
+              </BlurrableBalance>
             </UIText>
           </UnstyledButton>
         </VStack>

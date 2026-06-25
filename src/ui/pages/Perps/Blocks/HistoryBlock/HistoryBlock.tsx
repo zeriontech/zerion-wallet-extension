@@ -9,6 +9,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
 const PAGE_SIZE = 50;
 
@@ -74,14 +75,20 @@ function FillRow({
         <UIText
           kind="small/regular"
           style={{
+            display: 'flex',
+            gap: 4,
+            alignItems: 'center',
+            minWidth: 0,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
           }}
         >
-          {formatTokenValue(sz, displayName)}{' '}
-          <span style={{ color: 'var(--neutral-600)' }}>@</span>{' '}
-          {formatPriceValue(px, 'en', currency)}
+          <BlurrableBalance kind="small/regular" color="var(--black)">
+            {formatTokenValue(sz, displayName)}
+          </BlurrableBalance>
+          <span style={{ color: 'var(--neutral-600)' }}>@</span>
+          <span>{formatPriceValue(px, 'en', currency)}</span>
         </UIText>
       </HStack>
       <VStack gap={0} style={{ textAlign: 'end', flexShrink: 0 }}>
@@ -92,7 +99,14 @@ function FillRow({
               isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
             }
           >
-            {formatCurrencyValue(closedPnl, 'en', currency)}
+            <BlurrableBalance
+              kind="caption/accent"
+              color={
+                isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
+              }
+            >
+              {formatCurrencyValue(closedPnl, 'en', currency)}
+            </BlurrableBalance>
           </UIText>
         ) : null}
         <UIText kind="caption/regular" color="var(--neutral-600)">

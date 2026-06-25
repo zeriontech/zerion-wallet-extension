@@ -28,6 +28,7 @@ import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import * as s from './styles.module.css';
 
 const MIN_WITHDRAW_USD = 5;
@@ -269,8 +270,18 @@ export function PerpsWithdraw() {
                   style={{ width: 132, height: 16 }}
                 />
               ) : (
-                <UIText kind="small/regular" color="var(--neutral-600)">
-                  {`Available ${formatUsd(withdrawable.toFixed())}`}
+                <UIText
+                  kind="small/regular"
+                  color="var(--neutral-600)"
+                  style={{ display: 'flex', gap: 4 }}
+                >
+                  <span>Available</span>
+                  <BlurrableBalance
+                    kind="small/regular"
+                    color="var(--neutral-600)"
+                  >
+                    {formatUsd(withdrawable.toFixed())}
+                  </BlurrableBalance>
                 </UIText>
               )}
               {errorText ? (

@@ -9,6 +9,7 @@ import { Frame } from 'src/ui/ui-kit/Frame';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
 function DetailRow({
   label,
@@ -93,7 +94,9 @@ export function PositionBlock({
             </UIText>
             <HStack gap={8} alignItems="center">
               <UIText kind="headline/h2">
-                {formatCurrencyValue(marginUsed, 'en', currency)}
+                <BlurrableBalance kind="headline/h2" color="var(--black)">
+                  {formatCurrencyValue(marginUsed, 'en', currency)}
+                </BlurrableBalance>
               </UIText>
               <UIText
                 kind="caption/accent"
@@ -123,26 +126,46 @@ export function PositionBlock({
               label="PnL"
               valueColor={pnlColor}
               value={
-                <>
-                  {isPositivePnl ? '+' : '-'}
-                  {formatPercent(Math.abs(roe), 'en', {
-                    maximumFractionDigits: 2,
-                  })}
-                  % (
-                  {formatCurrencyValue(Math.abs(unrealizedPnl), 'en', currency)}
-                  )
-                </>
+                <span style={{ display: 'flex', gap: 4 }}>
+                  <span>
+                    {isPositivePnl ? '+' : '-'}
+                    {formatPercent(Math.abs(roe), 'en', {
+                      maximumFractionDigits: 2,
+                    })}
+                    %
+                  </span>
+                  <BlurrableBalance kind="body/accent" color={pnlColor}>
+                    (
+                    {formatCurrencyValue(
+                      Math.abs(unrealizedPnl),
+                      'en',
+                      currency
+                    )}
+                    )
+                  </BlurrableBalance>
+                </span>
               }
             />
             <GridCell
               label="Notional"
-              value={formatCurrencyValue(positionValue, 'en', currency)}
+              value={
+                <BlurrableBalance kind="body/accent" color="var(--black)">
+                  {formatCurrencyValue(positionValue, 'en', currency)}
+                </BlurrableBalance>
+              }
             />
           </div>
         </VStack>
       </Frame>
       <VStack gap={0} style={{ paddingInline: 16 }}>
-        <DetailRow label="Size" value={formatTokenValue(size, displayName)} />
+        <DetailRow
+          label="Size"
+          value={
+            <BlurrableBalance kind="body/accent" color="var(--black)">
+              {formatTokenValue(size, displayName)}
+            </BlurrableBalance>
+          }
+        />
         <DetailRow
           label="Entry Price"
           value={formatPriceValue(entryPx, 'en', currency)}
@@ -158,10 +181,10 @@ export function PositionBlock({
         <DetailRow
           label="Funding Payments"
           value={
-            <>
+            <BlurrableBalance kind="body/accent" color="var(--black)">
               {isPositiveFunding ? '' : '-'}
               {formatCurrencyValue(Math.abs(fundingSinceOpen), 'en', currency)}
-            </>
+            </BlurrableBalance>
           }
         />
       </VStack>
