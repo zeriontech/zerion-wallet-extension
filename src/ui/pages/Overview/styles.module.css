@@ -1,8 +1,18 @@
 .tabsScrollArea {
+  /* Horizontal scroll so every tab stays reachable when the row overflows the
+   * narrow popup width. `overflow-x: auto` forces `overflow-y` to clip (it can't
+   * stay `visible`), which would otherwise shave the bottom half off the 2px
+   * active-tab underline and grey baseline: both sit at `bottom: -1px`, i.e. 1px
+   * below the 32px (TAB_SELECTOR_HEIGHT) row. So switch to content-box and extend
+   * the clip box down with a 2px bottom pad to fully contain those decorations,
+   * then pull it back with a matching -2px margin so the row still occupies
+   * exactly 32px in the sticky layout (getStickyOffset + TAB_SELECTOR_HEIGHT). */
+  box-sizing: content-box;
   overflow-x: auto;
   overflow-y: hidden;
-  /* Hide the scrollbar but keep the row scrollable (trackpad/wheel/drag) so
-   * all tabs stay reachable when the row overflows the narrow popup width. */
+  padding-bottom: 2px;
+  margin-bottom: -2px;
+  /* Hide the scrollbar but keep the row scrollable (trackpad/wheel/drag). */
   scrollbar-width: none;
 }
 
