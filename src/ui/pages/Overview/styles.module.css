@@ -1,0 +1,11 @@
+.tabsScrollArea {
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Hide the scrollbar but keep the row scrollable (trackpad/wheel/drag) so
+   * all tabs stay reachable when the row overflows the narrow popup width. */
+  scrollbar-width: none;
+}
+
+.tabsScrollArea::-webkit-scrollbar {
+  display: none;
+}
