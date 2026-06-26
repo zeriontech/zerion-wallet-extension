@@ -185,6 +185,7 @@ class MixpanelApi {
 
 const mixpanelApi = new MixpanelApi({
   token: mixPanelToken ?? null,
+  url: 'https://api-eu.mixpanel.com',
   resolveDeviceId: () => deviceIdStore.getSavedState(),
   debugMode: process.env.NODE_ENV !== 'production',
   sendRequestsOverTheNetwork: process.env.NODE_ENV === 'production',
