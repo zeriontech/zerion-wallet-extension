@@ -14,6 +14,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { CenteredAmountInput } from './CenteredAmountInput';
 import * as s from './styles.module.css';
 import type { TradeFormState, TradeSide } from './useTradeFormState';
@@ -147,9 +148,17 @@ export function OpenPositionForm({
         <UIText
           kind="caption/regular"
           color="var(--neutral-600)"
-          style={{ textAlign: 'center' }}
+          style={{
+            display: 'flex',
+            gap: 4,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
         >
-          Available {formatCurrencyValue(availableToTrade, 'en', currency)}
+          <span>Available</span>
+          <BlurrableBalance kind="caption/regular" color="var(--neutral-600)">
+            {formatCurrencyValue(availableToTrade, 'en', currency)}
+          </BlurrableBalance>
         </UIText>
       </VStack>
 
@@ -229,11 +238,15 @@ export function OpenPositionForm({
               Order size
             </UIText>
             <UIText kind="small/accent">
-              {positionSize > 0
-                ? `${positionSize.toFixed(Math.max(szDecimals, 2))} ${
+              {positionSize > 0 ? (
+                <BlurrableBalance kind="small/accent" color="var(--black)">
+                  {`${positionSize.toFixed(Math.max(szDecimals, 2))} ${
                     asset.universe.name
-                  }`
-                : '—'}
+                  }`}
+                </BlurrableBalance>
+              ) : (
+                '—'
+              )}
             </UIText>
           </HStack>
           <div className={s.frameDivider} />
@@ -246,9 +259,11 @@ export function OpenPositionForm({
             <UIText kind="small/regular" color="var(--neutral-600)">
               Fee
             </UIText>
-            <UIText kind="small/accent">
-              {(totalFeeRate * 100).toFixed(3)}% (
-              {formatCurrencyValue(feeCost, 'en', currency)})
+            <UIText kind="small/accent" style={{ display: 'flex', gap: 4 }}>
+              <span>{(totalFeeRate * 100).toFixed(3)}%</span>
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                ({formatCurrencyValue(feeCost, 'en', currency)})
+              </BlurrableBalance>
             </UIText>
           </UnstyledButton>
         </VStack>

@@ -12,6 +12,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { CenteredAmountInput } from './CenteredAmountInput';
 import * as s from './styles.module.css';
 import type { TradeFormState } from './useTradeFormState';
@@ -108,12 +109,20 @@ export function ClosePositionForm({
         <UIText
           kind="small/accent"
           color="var(--neutral-600)"
-          style={{ textAlign: 'center' }}
+          style={{
+            display: 'flex',
+            gap: 4,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
         >
-          Size {formatCurrencyValue(closeUsd, 'en', currency)}
-          {closeSize > 0
-            ? ` · ${formatTokenValue(closeSize, asset.universe.name)}`
-            : ''}
+          <span>Size</span>
+          <BlurrableBalance kind="small/accent" color="var(--neutral-600)">
+            {formatCurrencyValue(closeUsd, 'en', currency)}
+            {closeSize > 0
+              ? ` · ${formatTokenValue(closeSize, asset.universe.name)}`
+              : ''}
+          </BlurrableBalance>
         </UIText>
       </VStack>
 
@@ -148,8 +157,17 @@ export function ClosePositionForm({
               }}
             >
               <UIText kind="small/accent" color="inherit">
-                {isPnlPositive ? '+' : '-'}
-                {formatCurrencyValue(Math.abs(pnlOnClose), 'en', currency)}
+                <BlurrableBalance
+                  kind="small/accent"
+                  color={
+                    isPnlPositive
+                      ? 'var(--positive-500)'
+                      : 'var(--negative-500)'
+                  }
+                >
+                  {isPnlPositive ? '+' : '-'}
+                  {formatCurrencyValue(Math.abs(pnlOnClose), 'en', currency)}
+                </BlurrableBalance>
               </UIText>
             </HStack>
           </HStack>
@@ -157,10 +175,12 @@ export function ClosePositionForm({
           <HStack gap={8} justifyContent="space-between" alignItems="center">
             <UIText kind="small/accent">Receive</UIText>
             <UIText kind="small/accent">
-              {formatCurrencyValue(receiveUsd, 'en', currency)}
-              {closeSize > 0
-                ? ` (${formatTokenValue(closeSize, asset.universe.name)})`
-                : ''}
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                {formatCurrencyValue(receiveUsd, 'en', currency)}
+                {closeSize > 0
+                  ? ` (${formatTokenValue(closeSize, asset.universe.name)})`
+                  : ''}
+              </BlurrableBalance>
             </UIText>
           </HStack>
         </VStack>
@@ -173,11 +193,15 @@ export function ClosePositionForm({
               Closing size
             </UIText>
             <UIText kind="small/accent">
-              {closeSize > 0
-                ? `${closeSize.toFixed(Math.max(szDecimals, 2))} ${
+              {closeSize > 0 ? (
+                <BlurrableBalance kind="small/accent" color="var(--black)">
+                  {`${closeSize.toFixed(Math.max(szDecimals, 2))} ${
                     asset.universe.name
-                  }`
-                : '—'}
+                  }`}
+                </BlurrableBalance>
+              ) : (
+                '—'
+              )}
             </UIText>
           </HStack>
           <div className={s.frameDivider} />
@@ -186,7 +210,9 @@ export function ClosePositionForm({
               Remaining
             </UIText>
             <UIText kind="small/accent">
-              {formatCurrencyValue(remainingUsd, 'en', currency)}
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                {formatCurrencyValue(remainingUsd, 'en', currency)}
+              </BlurrableBalance>
             </UIText>
           </HStack>
           <div className={s.frameDivider} />
@@ -199,9 +225,11 @@ export function ClosePositionForm({
             <UIText kind="small/regular" color="var(--neutral-600)">
               Fee
             </UIText>
-            <UIText kind="small/accent">
-              {(totalFeeRate * 100).toFixed(3)}% (
-              {formatCurrencyValue(feeCost, 'en', currency)})
+            <UIText kind="small/accent" style={{ display: 'flex', gap: 4 }}>
+              <span>{(totalFeeRate * 100).toFixed(3)}%</span>
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                ({formatCurrencyValue(feeCost, 'en', currency)})
+              </BlurrableBalance>
             </UIText>
           </UnstyledButton>
         </VStack>

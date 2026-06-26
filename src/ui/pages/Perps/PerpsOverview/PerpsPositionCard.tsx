@@ -11,6 +11,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import styles from './PerpsPositionCard.module.css';
 
 function StatColumn({
@@ -99,19 +100,32 @@ export function PerpsPositionCard({
           </HStack>
           <VStack gap={0} style={{ alignItems: 'flex-end', flexShrink: 0 }}>
             <UIText kind="small/accent">
-              {formatCurrencyValue(marginUsed, 'en', currency)}
+              <BlurrableBalance kind="small/accent" color="var(--black)">
+                {formatCurrencyValue(marginUsed, 'en', currency)}
+              </BlurrableBalance>
             </UIText>
             <UIText
               kind="small/regular"
               color={
                 isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
               }
+              style={{ display: 'flex', gap: 4 }}
             >
-              {isPositivePnl ? '+' : '-'}
-              {formatPercent(Math.abs(roe), 'en', {
-                maximumFractionDigits: 2,
-              })}
-              % ({formatCurrencyValue(Math.abs(unrealizedPnl), 'en', currency)})
+              <span>
+                {isPositivePnl ? '+' : '-'}
+                {formatPercent(Math.abs(roe), 'en', {
+                  maximumFractionDigits: 2,
+                })}
+                %
+              </span>
+              <BlurrableBalance
+                kind="small/regular"
+                color={
+                  isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
+                }
+              >
+                ({formatCurrencyValue(Math.abs(unrealizedPnl), 'en', currency)})
+              </BlurrableBalance>
             </UIText>
           </VStack>
         </HStack>
