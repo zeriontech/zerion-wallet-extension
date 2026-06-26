@@ -83,13 +83,13 @@ class MixpanelApi {
 
   constructor({
     token,
-    url = 'https://api.mixpanel.com',
+    url,
     debugMode = false,
     sendRequestsOverTheNetwork = true,
     resolveDeviceId,
   }: {
     token: string | null;
-    url?: string;
+    url: string;
     debugMode?: boolean;
     sendRequestsOverTheNetwork?: boolean;
     resolveDeviceId: () => Promise<string>;
@@ -185,6 +185,7 @@ class MixpanelApi {
 
 const mixpanelApi = new MixpanelApi({
   token: mixPanelToken ?? null,
+  url: 'https://api-eu.mixpanel.com',
   resolveDeviceId: () => deviceIdStore.getSavedState(),
   debugMode: process.env.NODE_ENV !== 'production',
   sendRequestsOverTheNetwork: process.env.NODE_ENV === 'production',
