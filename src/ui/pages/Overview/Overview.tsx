@@ -1,7 +1,6 @@
 import { useStore } from '@store-unit/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import FireIcon from 'jsx:src/ui/assets/fire.svg';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 import React, { useEffect, useRef } from 'react';
@@ -88,6 +87,7 @@ import {
   getStickyOffset,
   offsetValues,
 } from './getTabsOffset';
+import * as styles from './styles.module.css';
 
 function PendingTransactionsIndicator() {
   const pendingTxs = usePendingTransactions();
@@ -611,6 +611,7 @@ function OverviewComponent() {
         }}
       >
         <div
+          className={styles.tabsScrollArea}
           style={{
             backgroundColor: 'var(--white)',
             height: TAB_SELECTOR_HEIGHT,
@@ -647,10 +648,7 @@ function OverviewComponent() {
                 to="/overview/perps"
                 onClick={() => handleTabChange('/overview/perps')}
               >
-                <HStack gap={4} alignItems="center">
-                  <FireIcon style={{ width: 16, height: 16 }} />
-                  <span>Perps</span>
-                </HStack>
+                Perps
               </SegmentedControlLink>
             ) : null}
             <SegmentedControlLink
