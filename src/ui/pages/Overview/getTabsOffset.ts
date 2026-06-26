@@ -1,4 +1,3 @@
-import { BUG_REPORT_BUTTON_HEIGHT } from 'src/ui/components/BugReportButton';
 import { Store } from 'store-unit';
 
 const CONTROLS_HEADER_HEIGHT = 56;
@@ -19,9 +18,7 @@ export const TAB_TOP_PADDING = 16;
 const TAB_BOTTOM_PADDING = 24; // similar to <PageBottom /> height
 
 export function getTabScrollContentHeight(state: State) {
-  return (
-    getStickyOffset(state) + TAB_SELECTOR_HEIGHT + BUG_REPORT_BUTTON_HEIGHT
-  );
+  return getStickyOffset(state) + TAB_SELECTOR_HEIGHT;
 }
 
 export function getMinTabContentHeight(state: State) {

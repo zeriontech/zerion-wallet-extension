@@ -35,7 +35,6 @@ export class SettingsPage extends ExtensionPage {
   readonly supportAndFeedbackLink = this.page.getByRole('link', {
     name: /Support & Feedback/i,
   });
-  readonly bugReportLink = this.page.getByRole('link', { name: /Bug Report/i });
   readonly whatsNewLink = this.page.getByRole('link', { name: /What's New/i });
 
   readonly privacyLink = this.page.getByRole('link', { name: /Privacy/i });
@@ -87,9 +86,6 @@ export class SettingsPage extends ExtensionPage {
           - img
           - img
         - link "Support & Feedback":
-          - img
-          - img
-        - link "Bug Report":
           - img
           - img
         - link "What’s New":

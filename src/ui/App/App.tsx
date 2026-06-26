@@ -56,7 +56,6 @@ import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
 import { ForgotPassword } from '../pages/ForgotPassword';
-import { FooterBugReportButton } from '../components/BugReportButton';
 import { Receive } from '../pages/Receive';
 import { KeyboardShortcut } from '../components/KeyboardShortcut';
 import { initialize as initializeApperance } from '../features/appearance';
@@ -705,7 +704,6 @@ export function App({ initialView, inspect }: AppProps) {
                 </ViewSuspense>
               </VersionUpgrade>
             </ErrorBoundary>
-            <FooterBugReportButton />
           </Router>
         </QueryClientProvider>
       </UIContext.Provider>
