@@ -83,13 +83,13 @@ class MixpanelApi {
 
   constructor({
     token,
-    url = 'https://api.mixpanel.com',
+    url,
     debugMode = false,
     sendRequestsOverTheNetwork = true,
     resolveDeviceId,
   }: {
     token: string | null;
-    url?: string;
+    url: string;
     debugMode?: boolean;
     sendRequestsOverTheNetwork?: boolean;
     resolveDeviceId: () => Promise<string>;
