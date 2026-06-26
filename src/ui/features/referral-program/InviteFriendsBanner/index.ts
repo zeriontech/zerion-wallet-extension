@@ -1,1 +1,0 @@
-export { InviteFriendsBanner } from './InviteFriendsBanner';

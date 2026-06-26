@@ -38,7 +38,6 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { usePreferences } from 'src/ui/features/preferences';
-import { XpDropBanner } from 'src/ui/features/xp-drop/components/XpDropBanner';
 import { walletPort } from 'src/ui/shared/channels';
 import { emitter } from 'src/ui/shared/events';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
@@ -76,7 +75,6 @@ import { ActionButtonsRow } from './ActionButtonsRow';
 import { PercentageChange } from './PercentageChange';
 import { BackupReminder } from './BackupReminder';
 import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
-import { Banners } from './Banners';
 import { ConnectionHeader } from './ConnectionHeader';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
@@ -602,7 +600,6 @@ function OverviewComponent() {
         <RenderTimeMeasure />
       </DevelopmentOnly>
       <Spacer height={16} />
-      <Banners address={singleAddressNormalized} />
       <div id={TABS_OFFSET_METER_ID} />
       <PageFullBleedColumn
         paddingInline={false}
@@ -710,16 +707,11 @@ function OverviewComponent() {
                     dappChain={dappChain || null}
                     renderGuard={() => testnetGuardView}
                   >
-                    <VStack gap={20}>
-                      {!isReadonlyGroup && loyaltyEnabled ? (
-                        <XpDropBanner address={params.address} />
-                      ) : null}
-                      <Positions
-                        dappChain={dappChain || null}
-                        selectedChain={selectedChain}
-                        onChainChange={setSelectedChain}
-                      />
-                    </VStack>
+                    <Positions
+                      dappChain={dappChain || null}
+                      selectedChain={selectedChain}
+                      onChainChange={setSelectedChain}
+                    />
                   </TestnetworkGuard>
                 </ViewSuspense>
               }

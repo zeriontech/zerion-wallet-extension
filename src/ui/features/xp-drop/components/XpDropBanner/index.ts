@@ -1,1 +1,0 @@
-export { XpDropBanner } from './XpDropBanner';
