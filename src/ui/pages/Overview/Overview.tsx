@@ -13,7 +13,6 @@ import {
   useNetworkConfig,
   useNetworks,
 } from 'src/modules/networks/useNetworks';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
@@ -358,10 +357,6 @@ function OverviewComponent() {
     useErrorBoundary: true,
     suspense: false,
   });
-
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
 
   // Update backend record with 'platform: extension'
   useEffect(() => {
