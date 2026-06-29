@@ -67,6 +67,10 @@ import { SearchLinkIcon } from '../Search';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import { PercentageChange } from './PercentageChange';
 import { WalletPositionsChart } from './WalletPositionsChart';
+import {
+  NetworkDistributionChart,
+  ProtocolDistributionChart,
+} from './DistributionCharts';
 import { BackupReminder } from './BackupReminder';
 import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -697,6 +701,8 @@ function OverviewComponent() {
                     <VStack gap={20}>
                       <WalletPositionsChart address={address} />
                       <Pnl />
+                      <NetworkDistributionChart address={address} />
+                      <ProtocolDistributionChart address={address} />
                     </VStack>
                   </TestnetworkGuard>
                 </ViewSuspense>

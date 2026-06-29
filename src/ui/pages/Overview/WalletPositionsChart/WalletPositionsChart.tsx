@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { useStore } from '@store-unit/react';
+import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletChart } from 'src/modules/zerion-api/hooks/useWalletChart';
 import type { ChartPeriod } from 'src/modules/zerion-api/requests/asset-get-chart';
@@ -188,6 +189,10 @@ export function WalletPositionsChart({ address }: { address: string }) {
 
   return (
     <VStack gap={16} style={{ padding: '0 16px 16px' }}>
+      <HStack gap={8} alignItems="center">
+        <WalletIcon style={{ width: 24, height: 24 }} />
+        <UIText kind="body/accent">Wallet Balance</UIText>
+      </HStack>
       {showSkeleton ? <ChartSkeleton /> : null}
       {showSkeleton ? null : (
         <>
