@@ -39,7 +39,7 @@ export function PriceImpactWarning({
     }
     return (
       <div className={styles.pillNeutral}>
-        <UIText kind="small/accent" color="var(--black)">
+        <UIText kind="small/accent" color="var(--always-black)">
           High Price Impact
         </UIText>
         <UIText kind="small/accent" color="var(--negative-500)">
