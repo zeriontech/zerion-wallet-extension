@@ -616,7 +616,7 @@ function PositionList({
   dappChain: string | null;
   isAllNetworks: boolean;
 }) {
-  const COLLAPSED_COUNT = 5;
+  const COLLAPSED_COUNT = 6;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const showMore = useCallback(
     (key: string) => setExpanded((expanded) => new Set(expanded).add(key)),
@@ -782,7 +782,7 @@ function PositionList({
 
         return (
           <VStack gap={0} key={dappId}>
-            {preparedPositions.dappIds.length > 1 ? (
+            {preparedPositions.dappIds.length > 1 && dappInfo.url ? (
               <>
                 <div
                   style={{
@@ -882,8 +882,6 @@ function MultiChainPositions({
     [chainValue, positions]
   );
 
-  const groupedPositions = groupPositionsByDapp(items);
-
   if (isLoading) {
     return renderLoadingView() as JSX.Element;
   }
@@ -898,7 +896,7 @@ function MultiChainPositions({
 
   return (
     <VStack gap={16}>
-      <VStack gap={Object.keys(groupedPositions).length > 1 ? 12 : 8}>
+      <VStack gap={4}>
         <div style={{ paddingInline: 16 }}>
           <NetworkBalance
             standard={getAddressType(address)}
