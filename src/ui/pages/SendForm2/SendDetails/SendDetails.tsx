@@ -93,6 +93,9 @@ export function SendDetails({
   onConfigurationChange,
   userNonce,
   onNonceChange,
+  isNativeAsset,
+  customData,
+  onCustomDataChange,
   isLoading,
   receivedAmount,
   typedAmount,
@@ -109,6 +112,9 @@ export function SendDetails({
   onConfigurationChange: (configuration: CustomConfiguration) => void;
   userNonce: string | null;
   onNonceChange: (nonce: string | null) => void;
+  isNativeAsset: boolean;
+  customData: string | null;
+  onCustomDataChange: (value: string) => void;
   isLoading: boolean;
   receivedAmount?: Amount | null;
   typedAmount?: string | null;
@@ -124,6 +130,14 @@ export function SendDetails({
   const customDefaults = getCustomFormDefaults(sendQuote);
   const showNonce = Boolean(
     preferences?.configurableNonce && isEthereumAddress(address)
+  );
+  // Custom data: gated behind the Developer Tools toggle, EVM native-asset
+  // sends only (mirrors the old SendForm's `configurableTransactionData &&
+  // isNativeAsset && addressType === 'evm'`).
+  const showData = Boolean(
+    preferences?.configurableTransactionData &&
+      isNativeAsset &&
+      isEthereumAddress(address)
   );
 
   const chain = createChain(inputChain);
@@ -241,6 +255,23 @@ export function SendDetails({
                             <DetailRow label="Nonce" value={noValueDash} />
                           )}
                         </React.Suspense>
+                      ) : null}
+                      {showData ? (
+                        <VStack gap={8}>
+                          <UIText kind="small/regular">Data</UIText>
+                          <textarea
+                            name="data"
+                            value={customData ?? ''}
+                            onChange={(event) =>
+                              onCustomDataChange(event.currentTarget.value)
+                            }
+                            className={styles.dataInput}
+                            rows={2}
+                            placeholder="0x..."
+                            spellCheck={false}
+                            autoComplete="off"
+                          />
+                        </VStack>
                       ) : null}
                       <DetailRow
                         label="Network"
