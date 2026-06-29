@@ -20,6 +20,7 @@ import { assetGetFungibleFullInfo } from './requests/asset-get-fungible-full-inf
 import { walletGetAssetDetails } from './requests/wallet-get-asset-details';
 import { assetGetFungiblePnl } from './requests/asset-get-fungible-pnl';
 import { assetGetChart } from './requests/asset-get-chart';
+import { walletGetChart } from './requests/wallet-get-chart';
 import { searchQuery } from './requests/search-query';
 import { walletGetActions } from './requests/wallet-get-actions';
 import { walletSimulateSignature } from './requests/wallet-simulate-signature';
@@ -62,6 +63,7 @@ export const ZerionApiBare = {
   assetListFungibles,
   walletGetAssetDetails,
   assetGetChart,
+  walletGetChart,
   searchQuery,
   searchQueryFungibles,
   walletGetPnl,

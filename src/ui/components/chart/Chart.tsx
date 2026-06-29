@@ -153,6 +153,7 @@ export function Chart<T>({
   interaction,
   theme,
   currency,
+  showValueLabels = true,
 }: {
   chartPoints: ChartPoint<T>[];
   onRangeSelect: ({
@@ -169,6 +170,12 @@ export function Chart<T>({
   interaction?: ChartInteraction;
   theme: Theme;
   currency: string;
+  /**
+   * Min/max value labels in the corners. Defaults to `true` (asset chart). The
+   * wallet chart turns these off when hide-balances is on so absolute balances
+   * don't leak.
+   */
+  showValueLabels?: boolean;
 }) {
   const onRangeSelectEvent = useEvent(onRangeSelect);
 
@@ -224,6 +231,11 @@ export function Chart<T>({
       },
       options: {
         ...DEFAULT_CONFIG.options,
+        // No entry animation on first load: Chart.js short-circuits all
+        // transitions (including the `show` y/color fade) when the base
+        // animation is false. Period switches still animate because
+        // updateChartPoints sets options.animation explicitly before updating.
+        animation: false,
         interaction,
         onHover: (_, __, chart) => {
           chart.update();
@@ -301,7 +313,7 @@ export function Chart<T>({
 
   return (
     <div style={{ position: 'relative', height: CHART_HEIGHT, ...style }}>
-      {maxChartPointValue != null ? (
+      {showValueLabels && maxChartPointValue != null ? (
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"
@@ -310,7 +322,7 @@ export function Chart<T>({
           {formatPriceValue(maxChartPointValue, 'en', currency)}
         </UIText>
       ) : null}
-      {minChartPointValue != null ? (
+      {showValueLabels && minChartPointValue != null ? (
         <UIText
           kind="caption/regular"
           color="var(--neutral-500)"

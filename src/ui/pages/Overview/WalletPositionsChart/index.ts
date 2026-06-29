@@ -1,0 +1,1 @@
+export { WalletPositionsChart } from './WalletPositionsChart';

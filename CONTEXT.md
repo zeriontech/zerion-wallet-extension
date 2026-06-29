@@ -56,6 +56,14 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 **Watchlist**: Section in the Receiver picker dialog showing **readonly** wallets the user has added without keys. Sourced from `walletGroups` filtered to `WATCHLIST_WALLET_LIST_GROUP_ID`. iOS designs may call this "Following"; in the extension, the canonical term is Watchlist. _Avoid_: Following (iOS-only), saved addresses (too generic).
 
+### Charts
+
+**Chart leaf**: The generic, data-agnostic chart component `src/ui/components/chart/Chart.tsx` (a Chart.js scatter line). It owns all of the shared interaction machinery — hover, drag range-selection, the previous-points cross-fade animation, and up/down segment coloring (`getChartColor`) — over a `ChartPoint<T> = [timestamp(ms), value, extra]` tuple, reporting selections through `onRangeSelect({ startRangeIndex, endRangeIndex })`. It is reused as-is by every chart; only the `extra` payload and the orchestrator around it differ. _Avoid_: Chart component (ambiguous with the orchestrators), graph.
+
+**Asset chart orchestrator**: `AssetTitleAndChart` + `AssetChart` on the asset-info page. Wraps the **Chart leaf** with asset-only concerns — the transactions-on-chart overlay (`extra` carries `AssetChartActions`), magnetic interaction, action tooltips, a live asset price as the rest value, an untracked-asset state, and the transactions-toggle settings sheet. _Avoid_: Asset chart (bare — that's the leaf-with-asset-config); price chart.
+
+**Wallet Positions Chart**: The Overview feature (`src/ui/pages/Overview/WalletPositionsChart/`) showing a wallet's **total balance over time**, opened from an icon-only trigger next to the avatar/balance row into a content-height `Dialog2`. It **forks** a thin orchestrator over the shared **Chart leaf** (no transaction overlay, no magnetic interaction, no settings gear) and adds a new data layer: the `walletGetChart` request (`POST wallet/get-chart/v1`, body `{ addresses, currency, period }`) and `useWalletChart` hook (`keepPreviousData`, ~20s stale). It represents the **whole portfolio across all chains** for the single viewed address — no chain filter. The top readout (balance + change + date) is computed by the pure `computeChartRangeDisplay` helper; the balance is a fiat amount formatted with `formatCurrencyValue` (not the asset chart's `formatPriceValue`). _Avoid_: Portfolio chart, balance chart, PnL chart (PnL is a separate concept).
+
 ## Relationships
 
 - A **Quote** produces zero or more transactions (`transactionApprove`, `transactionSwap`).
