@@ -15,7 +15,7 @@
   --avatar-end-size: 28px;
   --avatar-size-diff: 56px;
   --avatar-initial-y-offset: 8px;
-  --avatar-end-y-offset: 4px;
+  --avatar-end-y-offset: 6px;
   --overview-header-progress: 0;
   --overview-avatar-size: calc(
     var(--avatar-start-size) -
@@ -44,7 +44,7 @@
   grid-template-columns: var(--overview-avatar-size) minmax(0, 1fr);
   gap: 12px;
   align-items: start;
-  padding: 16px 16px 0 8px;
+  padding: 16px 16px 0 16px;
 }
 
 .overviewAvatarPlaceholder {
@@ -77,7 +77,7 @@
   grid-template-columns: 83px minmax(0, 1fr);
   gap: 12px;
   align-items: start;
-  padding-inline: 8px 16px;
+  padding-inline: 16px;
   background-color: var(--white);
 }
 

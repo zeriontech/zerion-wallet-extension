@@ -813,7 +813,7 @@ function PositionList({
                 <Spacer height={16} />
               </>
             ) : (
-              <Spacer height={8} />
+              <Spacer height={4} />
             )}
             <SurfaceList
               style={{ position: 'relative', zIndex: 0 }}
@@ -898,7 +898,7 @@ function MultiChainPositions({
 
   return (
     <VStack gap={16}>
-      <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
+      <VStack gap={Object.keys(groupedPositions).length > 1 ? 12 : 8}>
         <div style={{ paddingInline: 16 }}>
           <NetworkBalance
             standard={getAddressType(address)}
