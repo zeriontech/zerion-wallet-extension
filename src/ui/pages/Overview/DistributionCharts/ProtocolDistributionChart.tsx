@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -13,6 +13,8 @@ import {
   DistributionChart,
   type DistributionItem,
 } from 'src/ui/components/DistributionChart';
+import { PositionsListDialog } from './PositionsListDialog';
+import { DistributionItemTitle } from './DistributionItemTitle';
 
 /**
  * Protocol allocation on the Stats tab. Backend positions carry `dapp`, so we
@@ -23,7 +25,7 @@ import {
 export function ProtocolDistributionChart({ address }: { address: string }) {
   const { currency } = useCurrency();
   const source = useHttpClientSource();
-  const { data } = useHttpAddressPositions(
+  const { data, isLoading } = useHttpAddressPositions(
     { addresses: [address], currency },
     { source },
     { enabled: Boolean(address) }
@@ -54,12 +56,25 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
     });
   }, [data]);
 
+  const [selected, setSelected] = useState<DistributionItem | null>(null);
+
   return (
-    <DistributionChart
-      title="Protocol Distribution"
-      titleIcon={<PieChartIcon style={{ width: 24, height: 24 }} />}
-      items={items}
-      currency={currency}
-    />
+    <>
+      <DistributionChart
+        title="Protocol Distribution"
+        titleIcon={<PieChartIcon style={{ width: 24, height: 24 }} />}
+        items={items}
+        currency={currency}
+        isLoading={isLoading}
+        onSelect={setSelected}
+      />
+      <PositionsListDialog
+        open={selected != null}
+        onClose={() => setSelected(null)}
+        address={address}
+        title={selected ? <DistributionItemTitle item={selected} /> : null}
+        filter={selected ? { type: 'protocol', dappId: selected.id } : null}
+      />
+    </>
   );
 }

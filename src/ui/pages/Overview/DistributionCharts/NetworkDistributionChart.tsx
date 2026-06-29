@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import NetworkIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -8,6 +8,8 @@ import {
   HARDCODED_CHAIN_ACCENTS,
   type DistributionItem,
 } from 'src/ui/components/DistributionChart';
+import { PositionsListDialog } from './PositionsListDialog';
+import { DistributionItemTitle } from './DistributionItemTitle';
 
 /**
  * Network allocation on the Stats tab. Source is the ready-made
@@ -18,7 +20,7 @@ import {
 export function NetworkDistributionChart({ address }: { address: string }) {
   const { currency } = useCurrency();
   const source = useHttpClientSource();
-  const { data } = useWalletPortfolio(
+  const { data, isLoading } = useWalletPortfolio(
     { addresses: [address], currency },
     { source },
     { enabled: Boolean(address), refetchInterval: 40000 }
@@ -44,12 +46,25 @@ export function NetworkDistributionChart({ address }: { address: string }) {
       });
   }, [data]);
 
+  const [selected, setSelected] = useState<DistributionItem | null>(null);
+
   return (
-    <DistributionChart
-      title="Network Distribution"
-      titleIcon={<NetworkIcon style={{ width: 24, height: 24 }} />}
-      items={items}
-      currency={currency}
-    />
+    <>
+      <DistributionChart
+        title="Network Distribution"
+        titleIcon={<NetworkIcon style={{ width: 24, height: 24 }} />}
+        items={items}
+        currency={currency}
+        isLoading={isLoading}
+        onSelect={setSelected}
+      />
+      <PositionsListDialog
+        open={selected != null}
+        onClose={() => setSelected(null)}
+        address={address}
+        title={selected ? <DistributionItemTitle item={selected} /> : null}
+        filter={selected ? { type: 'network', chainId: selected.id } : null}
+      />
+    </>
   );
 }

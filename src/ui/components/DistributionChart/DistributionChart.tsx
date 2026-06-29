@@ -216,21 +216,94 @@ function TileContent({
   );
 }
 
+function ChartHeading({
+  title,
+  titleIcon,
+}: {
+  title: string;
+  titleIcon?: ReactNode;
+}) {
+  return (
+    <HStack gap={8} alignItems="center">
+      {titleIcon}
+      <UIText kind="body/accent">{title}</UIText>
+    </HStack>
+  );
+}
+
+/**
+ * Placeholder shown while the data is loading. Mimics the slice-and-dice
+ * treemap with a few static, rounded neutral tiles so the section keeps its
+ * shape instead of collapsing to an empty gap.
+ */
+function DistributionChartSkeleton({
+  title,
+  titleIcon,
+}: {
+  title: string;
+  titleIcon?: ReactNode;
+}) {
+  const tile = {
+    borderRadius: RADIUS,
+    backgroundColor: 'var(--neutral-200)',
+  } as const;
+  return (
+    <VStack gap={12} style={{ padding: '0 16px' }}>
+      <ChartHeading title={title} titleIcon={titleIcon} />
+      <div style={{ display: 'flex', gap: GAP, width: '100%', height: HEIGHT }}>
+        <div style={{ ...tile, flex: 3 }} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: GAP,
+            flex: 2,
+          }}
+        >
+          <div style={{ ...tile, flex: 3 }} />
+          <div style={{ ...tile, flex: 2 }} />
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: GAP,
+            flex: 1,
+          }}
+        >
+          <div style={{ ...tile, flex: 2 }} />
+          <div style={{ ...tile, flex: 1 }} />
+          <div style={{ ...tile, flex: 1 }} />
+        </div>
+      </div>
+    </VStack>
+  );
+}
+
 /**
  * Generic, data-agnostic distribution treemap: a single `W×100px` bar carved
- * into rounded, gapped tiles by the alternating slice-and-dice layout. Renders
- * nothing until its data passes the {MIN_TILES} gate.
+ * into rounded, gapped tiles by the alternating slice-and-dice layout. Shows a
+ * skeleton while `isLoading`; otherwise renders nothing until its data passes
+ * the {MIN_TILES} gate.
  */
 export function DistributionChart({
   title,
   titleIcon,
   items: rawItems,
   currency,
+  isLoading,
+  onSelect,
 }: {
   title: string;
   titleIcon?: ReactNode;
   items: DistributionItem[];
   currency: string;
+  isLoading?: boolean;
+  /**
+   * Called when a tile is clicked. The aggregated "Others" tile is inert (it
+   * maps to no single network/protocol), so it never fires this.
+   */
+  onSelect?: (item: DistributionItem) => void;
 }) {
   const items = useMemo(() => buildDistributionItems(rawItems), [rawItems]);
   const accents = useAccentColors(items);
@@ -264,9 +337,12 @@ export function DistributionChart({
     y: number;
   } | null>(null);
 
-  // Gate: render nothing until the data resolves to enough tiles.
+  // Gate: while loading, hold the section's shape with a skeleton; once
+  // settled, render nothing until the data resolves to enough tiles.
   if (items.length < MIN_TILES) {
-    return null;
+    return isLoading ? (
+      <DistributionChartSkeleton title={title} titleIcon={titleIcon} />
+    ) : null;
   }
 
   const hoveredTile = hovered
@@ -275,10 +351,7 @@ export function DistributionChart({
 
   return (
     <VStack gap={12} style={{ padding: '0 16px' }}>
-      <HStack gap={8} alignItems="center">
-        {titleIcon}
-        <UIText kind="body/accent">{title}</UIText>
-      </HStack>
+      <ChartHeading title={title} titleIcon={titleIcon} />
       <div
         ref={containerRef}
         style={{ position: 'relative', width: '100%', height: HEIGHT }}
@@ -297,9 +370,12 @@ export function DistributionChart({
             !tile.item.isOthers &&
             (tile.item.iconUrl || tile.item.iconNode) &&
             iconSize > 0;
+          const clickable = Boolean(onSelect) && !tile.item.isOthers;
           return (
             <div
               key={tile.item.id}
+              role={clickable ? 'button' : undefined}
+              onClick={clickable ? () => onSelect?.(tile.item) : undefined}
               onMouseEnter={() =>
                 setHovered({ id: tile.item.id, x: tile.x, y: tile.y })
               }
@@ -328,6 +404,7 @@ export function DistributionChart({
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
+                cursor: clickable ? 'pointer' : undefined,
               }}
             >
               {showLabel ? (
