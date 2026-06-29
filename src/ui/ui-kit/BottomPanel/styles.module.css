@@ -1,6 +1,10 @@
 .stickyBottomSheet {
   position: sticky;
   bottom: 0;
+  /* Float above scrolling content, including sticky group titles (z-index: 1)
+   * in lists like the Overview positions, which would otherwise paint over the
+   * panel as they stick toward the bottom of the viewport. */
+  z-index: 2;
   padding-bottom: calc(16px + var(--technical-panel-bottom-height, 0px));
 }
 

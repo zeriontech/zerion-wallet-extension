@@ -157,7 +157,7 @@ function CurrentAccountControls() {
   }
   const addressToCopy = wallet.address || singleAddress;
   return (
-    <HStack gap={0} alignItems="center">
+    <HStack gap={0} alignItems="center" style={{ flex: 1 }}>
       <Button
         kind="text-primary"
         size={36}
@@ -479,41 +479,32 @@ function OverviewComponent() {
         }}
       >
         <div className={styles.overviewHeader}>
-          <div className={styles.overviewHeaderInner}>
-            <div className={styles.overviewAvatarPlaceholder}>
-              <div className={styles.overviewAvatar}>
-                <WalletAvatar
-                  address={address}
-                  size={84}
-                  borderRadius={12}
-                  icon={
-                    <WalletSourceIcon
-                      address={address}
-                      groupId={null}
-                      style={{ width: 24, height: 24 }}
-                      borderRadius={8}
-                      cutoutStroke={3}
-                    />
-                  }
-                />
-              </div>
-            </div>
-            <div className={styles.overviewHeaderContent}>
-              <div className={styles.overviewHeaderTopLine}>
-                <CurrentAccountControls />
-                <HStack gap={0} alignItems="center">
-                  <SearchLinkIcon />
-                  <SettingsLinkIcon />
-                  <SidepanelOptionsButton />
-                </HStack>
-              </div>
-            </div>
+          <div className={styles.overviewHeaderTopLine}>
+            <CurrentAccountControls />
+            <HStack gap={0} alignItems="center">
+              <SearchLinkIcon />
+              <SettingsLinkIcon />
+              <SidepanelOptionsButton />
+            </HStack>
           </div>
         </div>
       </PageFullBleedColumn>
       <PageFullBleedColumn paddingInline={true} style={{ paddingInline: 0 }}>
         <div className={styles.overviewBalanceRow}>
-          <div className={styles.overviewBalanceAvatarPlaceholder} />
+          <WalletAvatar
+            address={address}
+            size={56}
+            borderRadius={12}
+            icon={
+              <WalletSourceIcon
+                address={address}
+                groupId={null}
+                style={{ width: 20, height: 20 }}
+                borderRadius={6}
+                cutoutStroke={3}
+              />
+            }
+          />
           <PercentageChange
             walletPortfolio={walletPortfolio}
             currency={currency}

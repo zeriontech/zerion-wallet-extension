@@ -8,6 +8,7 @@ import {
 } from 'src/modules/networks/useNetworks';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { usePreferences } from 'src/ui/features/preferences';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
@@ -109,14 +110,14 @@ export function ConnectionBanner() {
             justifyContent="space-between"
             style={{ gridTemplateColumns: 'auto 1fr auto' }}
           >
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                backgroundColor: 'var(--positive-500)',
-              }}
-            />
+            <div style={{ position: 'relative', top: 4 }}>
+              <SiteFaviconImg
+                url={activeTabOrigin}
+                priorityUrl={tabData?.tab?.favIconUrl}
+                size={24}
+                style={{ borderRadius: 6 }}
+              />
+            </div>
             <VStack gap={0} style={{ justifyItems: 'start', minWidth: 0 }}>
               <UIText
                 kind="small/accent"
