@@ -291,7 +291,7 @@ export function AssetInfo() {
       {isWatchedAddress || !portfolioData ? null : (
         <StickyBottomPanel
           style={{ padding: 0, background: 'none', boxShadow: 'none' }}
-          backdropStyle={{ inset: '-16px -16px 0' }}
+          backdropStyle={{ top: -16 }}
         >
           <HStack
             gap={8}

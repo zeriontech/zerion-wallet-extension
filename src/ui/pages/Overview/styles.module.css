@@ -1,3 +1,91 @@
+@property --overview-header-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@keyframes overviewHeaderTransition {
+  to {
+    --overview-header-progress: 1;
+  }
+}
+
+.overviewHeader {
+  --avatar-start-size: 84px;
+  --avatar-end-size: 28px;
+  --avatar-size-diff: 56px;
+  --avatar-initial-y-offset: 8px;
+  --avatar-end-y-offset: 4px;
+  --overview-header-progress: 0;
+  --overview-avatar-size: calc(
+    var(--avatar-start-size) -
+      (var(--overview-header-progress) * var(--avatar-size-diff))
+  );
+  --overview-avatar-scale: calc(
+    1 - var(--overview-header-progress) * 0.6666666667
+  );
+  --overview-avatar-y-offset: calc(
+    var(--avatar-initial-y-offset) * (1 - var(--overview-header-progress)) +
+      var(--avatar-end-y-offset) * var(--overview-header-progress)
+  );
+
+  height: 52px;
+  overflow: visible;
+  background-color: var(--white);
+  animation-range: 0 64px;
+  animation-timeline: scroll();
+  animation-fill-mode: both;
+  animation-name: overviewHeaderTransition;
+  animation-duration: 1ms;
+}
+
+.overviewHeaderInner {
+  display: grid;
+  grid-template-columns: var(--overview-avatar-size) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 16px 16px 0 8px;
+}
+
+.overviewAvatarPlaceholder {
+  width: var(--overview-avatar-size);
+  height: var(--overview-avatar-size);
+}
+
+.overviewAvatar {
+  width: var(--avatar-start-size);
+  height: var(--avatar-start-size);
+  transform: translateY(var(--overview-avatar-y-offset))
+    scale(var(--overview-avatar-scale));
+  transform-origin: 0 0;
+}
+
+.overviewHeaderContent {
+  min-width: 0;
+}
+
+.overviewHeaderTopLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  min-width: 0;
+}
+
+.overviewBalanceRow {
+  display: grid;
+  grid-template-columns: 83px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding-inline: 8px 16px;
+  background-color: var(--white);
+}
+
+.overviewBalanceAvatarPlaceholder {
+  width: 83px;
+  height: 56px;
+}
+
 .tabsScrollArea {
   /* Horizontal scroll so every tab stays reachable when the row overflows the
    * narrow popup width. `overflow-x: auto` forces `overflow-y` to clip (it can't

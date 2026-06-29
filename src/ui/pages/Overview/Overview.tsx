@@ -68,7 +68,7 @@ import { ActionButtonsRow } from './ActionButtonsRow';
 import { PercentageChange } from './PercentageChange';
 import { BackupReminder } from './BackupReminder';
 import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
-import { ConnectionDot } from './ConnectionDot';
+import { ConnectionBanner } from './ConnectionBanner';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { Pnl } from './PnL';
@@ -158,16 +158,15 @@ function CurrentAccountControls() {
   const addressToCopy = wallet.address || singleAddress;
   return (
     <HStack gap={0} alignItems="center">
-      <ConnectionDot />
       <Button
         kind="text-primary"
-        size={40}
+        size={36}
         as={UnstyledLink}
         to="/wallet-select"
         title="Select Account"
         className="parent-hover"
         style={{
-          paddingInline: '8px 4px',
+          paddingInline: '0 4px',
           ['--button-text-hover' as string]: 'var(--neutral-800)',
           ['--parent-content-color' as string]: 'var(--neutral-500)',
           ['--parent-hovered-content-color' as string]: 'var(--black)',
@@ -322,7 +321,7 @@ function OverviewComponent() {
   }, [address, network, setSelectedChain]);
 
   const httpSource = useHttpClientSource();
-  const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
+  const { data } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: httpSource },
     { enabled: ready, refetchInterval: 40000 }
@@ -466,67 +465,61 @@ function OverviewComponent() {
         ['--background' as string]: 'var(--neutral-100)',
       }}
     >
+      <PageFullBleedColumn paddingInline={true} style={{ paddingInline: 0 }}>
+        <BackupReminder />
+        <RestoreRecoveryPhraseReminder />
+      </PageFullBleedColumn>
       <PageFullBleedColumn
         paddingInline={true}
         style={{
           position: 'sticky',
           top: 0,
-          zIndex: 'var(--navbar-index)',
+          zIndex: 'var(--max-layout-index)',
           paddingInline: 0,
         }}
       >
-        <BackupReminder />
-        <RestoreRecoveryPhraseReminder />
-        <div style={{ backgroundColor: 'var(--white)' }}>
-          <Spacer height={16} />
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingInline: '8px 16px',
-              height: 24,
-            }}
-          >
-            <CurrentAccountControls />
-            <HStack gap={0} alignItems="center">
-              <SearchLinkIcon />
-              <SettingsLinkIcon />
-              <SidepanelOptionsButton />
-            </HStack>
+        <div className={styles.overviewHeader}>
+          <div className={styles.overviewHeaderInner}>
+            <div className={styles.overviewAvatarPlaceholder}>
+              <div className={styles.overviewAvatar}>
+                <WalletAvatar
+                  address={address}
+                  size={84}
+                  borderRadius={12}
+                  icon={
+                    <WalletSourceIcon
+                      address={address}
+                      groupId={null}
+                      style={{ width: 24, height: 24 }}
+                      borderRadius={8}
+                      cutoutStroke={3}
+                    />
+                  }
+                />
+              </div>
+            </div>
+            <div className={styles.overviewHeaderContent}>
+              <div className={styles.overviewHeaderTopLine}>
+                <CurrentAccountControls />
+                <HStack gap={0} alignItems="center">
+                  <SearchLinkIcon />
+                  <SettingsLinkIcon />
+                  <SidepanelOptionsButton />
+                </HStack>
+              </div>
+            </div>
           </div>
-          <Spacer height={16} />
         </div>
       </PageFullBleedColumn>
-      <div
-        style={{
-          height: isLoadingPortfolio ? 68 : undefined,
-          paddingInline: 8,
-        }}
-      >
-        <HStack gap={12} alignItems="center">
-          {!isLoadingPortfolio ? (
-            <WalletAvatar
-              address={address}
-              size={64}
-              borderRadius={12}
-              icon={
-                <WalletSourceIcon
-                  address={address}
-                  groupId={null}
-                  style={{ width: 24, height: 24 }}
-                  borderRadius={8}
-                  cutoutStroke={3}
-                />
-              }
-            />
-          ) : null}
+      <PageFullBleedColumn paddingInline={true} style={{ paddingInline: 0 }}>
+        <div className={styles.overviewBalanceRow}>
+          <div className={styles.overviewBalanceAvatarPlaceholder} />
           <PercentageChange
             walletPortfolio={walletPortfolio}
             currency={currency}
           />
-        </HStack>
-      </div>
+        </div>
+      </PageFullBleedColumn>
       <Spacer height={16} />
       <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
         {isReadonlyGroup ? <ReadonlyMode /> : <ActionButtonsRow />}
@@ -715,6 +708,7 @@ function OverviewComponent() {
           <PageBottom />
         </div>
       </PageFullBleedColumn>
+      <ConnectionBanner />
       <PausedBanner />
     </PageColumn>
   );
