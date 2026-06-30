@@ -197,6 +197,14 @@ function SendFormComponent({
     return networks.getNetworkByName(createChain(formState.inputChain)) ?? null;
   }, [networks, formState.inputChain]);
 
+  // Custom data is only meaningful for native-asset EVM sends — for ERC-20 the
+  // `data` field already carries the transfer calldata. Same comparison the old
+  // SendForm used (selected fungible id === the network's native asset id).
+  const isNativeAsset = Boolean(
+    sendNetwork?.native_asset?.id &&
+      formState.inputFungibleId === sendNetwork.native_asset.id
+  );
+
   const { data: sendData, isLoading: sendDataLoading } = useSendTransaction({
     address,
     formState,
@@ -236,6 +244,13 @@ function SendFormComponent({
     if (!clientTx.evm) {
       return clientTx;
     }
+    // Inject user-entered custom data (native EVM sends only). Done here, not at
+    // sign time, so the simulated tx reflects the data too. This is the
+    // backend-tx analog of how the old SendForm merged data in prepareSendData.
+    const evmWithData =
+      isNativeAsset && formState.data
+        ? { ...clientTx.evm, data: formState.data }
+        : clientTx.evm;
     // Only apply the network-fee configuration when the user has actually
     // overridden a fee field. With everything default, the backend tx already
     // carries the right gas, so applying would just re-derive it (and would
@@ -247,15 +262,15 @@ function SendFormComponent({
       formState.gasLimit ||
       formState.networkFeeSpeed;
     if (!hasNetworkFeeOverride) {
-      return { evm: clientTx.evm };
+      return { evm: evmWithData };
     }
     const configured = applyConfiguration(
-      clientTx.evm,
+      evmWithData,
       toConfiguration(formState),
       gasPrices ?? null
     );
     return { evm: configured };
-  }, [sendQuote, formState, gasPrices]);
+  }, [sendQuote, formState, gasPrices, isNativeAsset]);
 
   // Reset simulation/sign state when form state changes meaningfully.
   const [simulationResult, setSimulationResult] =
@@ -625,6 +640,11 @@ function SendFormComponent({
               userNonce={formState.nonce ?? null}
               onNonceChange={(nonce) =>
                 handleChange('nonce', nonce ?? undefined)
+              }
+              isNativeAsset={isNativeAsset}
+              customData={formState.data ?? null}
+              onCustomDataChange={(value) =>
+                handleChange('data', value || undefined)
               }
               isLoading={sendDataLoading}
               receivedAmount={sendInputAmount}

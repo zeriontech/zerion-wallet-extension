@@ -174,7 +174,9 @@ export function useSendTransaction({
 
   // Gas overrides are applied at sign time (via applyConfiguration), not in the
   // prep query — strip them here so the local path stays gas-unapplied and
-  // matches the backend path's shape.
+  // matches the backend path's shape. Custom `data` is likewise injected later
+  // (in SendForm2's clientTransaction memo) so both paths inject it in one
+  // place; strip it here to avoid prepareSendData merging it a second time.
   const legacyFormState = useMemo(() => {
     const base = toLegacySendFormState(formState, resolvedInputAmount);
     return {
@@ -185,6 +187,7 @@ export function useSendTransaction({
       gasPrice: undefined,
       gasLimit: undefined,
       nonce: undefined,
+      data: undefined,
     };
   }, [formState, resolvedInputAmount]);
 

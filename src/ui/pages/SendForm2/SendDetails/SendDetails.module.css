@@ -53,3 +53,27 @@
 .detailLinkRow:hover .detailLinkChevron {
   color: var(--black);
 }
+
+.dataInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 2px solid var(--neutral-200);
+  border-radius: 12px;
+  background-color: var(--white);
+  color: var(--black);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.dataInput:focus {
+  border-color: var(--primary);
+}
+
+.dataInput::placeholder {
+  color: var(--neutral-500);
+}
