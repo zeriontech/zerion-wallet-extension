@@ -78,6 +78,7 @@ import { getAddressType } from 'src/shared/wallet/classifiers';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import type { SendFormState2 } from './types';
 import { useFormState } from './useFormState';
 import { useInputPosition } from './useInputPosition';
 import { useSendTransaction } from './useSendTransaction';
@@ -93,6 +94,31 @@ import { SendButton } from './SendButton';
 import { resolveSendTransactionWarning } from './TransactionWarning';
 import { SendFormSkeleton } from './SendFormSkeleton';
 import * as styles from './SendForm2.module.css';
+
+/**
+ * Clears transient per-send inputs after a successful broadcast: the amount,
+ * custom data, nonce, and all network-fee overrides. The token/NFT/chain
+ * selection and the recipient are preserved (and stay in the URL) so the user
+ * keeps the asset and recipient they just used instead of the form snapping
+ * back to the highest-value position with an empty recipient.
+ */
+function resetAfterBroadcast(
+  state: Partial<SendFormState2>
+): Partial<SendFormState2> {
+  return {
+    ...state,
+    inputAmount: undefined,
+    inputKind: undefined,
+    nftAmount: undefined,
+    data: undefined,
+    nonce: undefined,
+    networkFeeSpeed: undefined,
+    maxPriorityFee: undefined,
+    maxFee: undefined,
+    gasPrice: undefined,
+    gasLimit: undefined,
+  };
+}
 
 function SendFormComponent({
   address,
@@ -308,7 +334,7 @@ function SendFormComponent({
 
   const cancelToastRef = useRef<PopoverToastHandle>(null);
   const handleCancel = () => {
-    setUserFormState((s) => ({ to: s.to }));
+    setUserFormState(resetAfterBroadcast);
     queryClient.invalidateQueries(['transactionGetSend']);
     cancelToastRef.current?.showToast();
   };
@@ -462,7 +488,7 @@ function SendFormComponent({
                     ),
                   });
                 }
-                setUserFormState((s) => ({ to: s.to }));
+                setUserFormState(resetAfterBroadcast);
                 queryClient.invalidateQueries(['transactionGetSend']);
                 resolve();
               });
@@ -484,7 +510,7 @@ function SendFormComponent({
                 ),
               });
             }
-            setUserFormState((s) => ({ to: s.to }));
+            setUserFormState(resetAfterBroadcast);
             queryClient.invalidateQueries(['transactionGetSend']);
             resolve();
           });

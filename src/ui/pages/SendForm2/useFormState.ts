@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { NetworkId } from 'src/modules/networks/NetworkId';
@@ -66,6 +66,37 @@ export function useFormState({
     () => ({ ...defaultFormState, ...userFormState }),
     [defaultFormState, userFormState]
   );
+
+  // Pin the resolved input defaults into the URL so the displayed asset stays
+  // stable for the session. Without this, `defaultFormState` is recomputed from
+  // positions on every balance refetch; a fresh snapshot can shift the
+  // highest-value position so the selected asset changes underfoot — and after
+  // a send completes the cleared form would resolve to the new highest-value
+  // asset instead of the one the user just sent. Only fills missing keys; never
+  // overwrites an existing URL value. Mirrors SwapForm2's useFormState.
+  useEffect(() => {
+    const missingInputChain =
+      userFormState.inputChain == null && defaultFormState.inputChain != null;
+    const missingInputFungibleId =
+      userFormState.inputFungibleId == null &&
+      defaultFormState.inputFungibleId != null;
+    if (!missingInputChain && !missingInputFungibleId) return;
+    setUserFormState((state) => ({
+      ...state,
+      ...(missingInputChain
+        ? { inputChain: defaultFormState.inputChain }
+        : null),
+      ...(missingInputFungibleId
+        ? { inputFungibleId: defaultFormState.inputFungibleId }
+        : null),
+    }));
+  }, [
+    userFormState.inputChain,
+    userFormState.inputFungibleId,
+    defaultFormState.inputChain,
+    defaultFormState.inputFungibleId,
+    setUserFormState,
+  ]);
 
   const handleChange = useCallback<HandleChangeFunction>(
     (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),
