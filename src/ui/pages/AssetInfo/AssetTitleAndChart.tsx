@@ -193,11 +193,15 @@ export function AssetTitleAndChart({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    fontVariantNumeric: 'tabular-nums',
                   }}
                 />
                 <UIText
                   kind="body/accent"
-                  style={{ paddingBottom: 4 }}
+                  style={{
+                    paddingBottom: 4,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
                   ref={priceChangeElementRef}
                 />
               </HStack>
