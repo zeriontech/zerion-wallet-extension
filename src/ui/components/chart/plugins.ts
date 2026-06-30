@@ -1,6 +1,84 @@
 import type { Plugin } from 'chart.js/auto';
 import { Theme } from 'src/ui/features/appearance';
 
+/**
+ * Draws a dashed vertical guide line at the currently hovered point, mirroring
+ * the asset chart's hover affordance. Generic — works for any scatter chart.
+ */
+export function drawVerticalLinePlugin({
+  getTheme,
+}: {
+  getTheme: () => Theme;
+}): Plugin<'scatter'> {
+  return {
+    id: 'verticalLine',
+    afterDraw: (chart) => {
+      const activeElement = chart.getActiveElements()?.[0];
+      const { ctx } = chart;
+
+      if (!activeElement || !ctx) {
+        return;
+      }
+
+      const { x, y } = activeElement.element.tooltipPosition(false);
+
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.moveTo(x, chart.chartArea.top);
+      ctx.lineTo(x, y - 10);
+      ctx.moveTo(x, y + 10);
+      ctx.lineTo(x, chart.chartArea.bottom);
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = getTheme() === Theme.light ? '#e1e1e1' : '#4b4b4d';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.closePath();
+
+      ctx.restore();
+    },
+  };
+}
+
+/**
+ * Draws a dot at the currently hovered point. Generic — works for any scatter
+ * chart.
+ */
+export function drawDotPlugin({
+  getTheme,
+}: {
+  getTheme: () => Theme;
+}): Plugin<'scatter'> {
+  return {
+    id: 'drawDot',
+    afterDraw: (chart) => {
+      const activeElement = chart.getActiveElements()?.[0];
+      const { ctx } = chart;
+
+      if (!activeElement || !ctx) {
+        return;
+      }
+
+      const { x, y } = activeElement.element.tooltipPosition(false);
+
+      const color = getTheme() === Theme.light ? '#9c9fa8' : '#70737b';
+
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.strokeStyle = getTheme() === Theme.light ? '#ffffff' : '#16161a';
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      ctx.closePath();
+
+      ctx.restore();
+    },
+  };
+}
+
 export function drawRangePlugin({
   getStartRangeX,
   getTheme,

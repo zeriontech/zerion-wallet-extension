@@ -603,18 +603,25 @@ function ProtocolHeading({
   );
 }
 
-function PositionList({
+export function PositionList({
   items,
   address,
   moveGasPositionToFront,
   dappChain,
   isAllNetworks,
+  stickyOffset,
 }: {
   items: AddressPosition[];
   address: string | null;
   moveGasPositionToFront: boolean;
   dappChain: string | null;
   isAllNetworks: boolean;
+  /**
+   * Top offset for the sticky protocol headings. Defaults to the Overview
+   * tab's layout offset; pass `0` when rendering inside a scroll container of
+   * its own (e.g. a dialog) so headings stick to that container's top.
+   */
+  stickyOffset?: number;
 }) {
   const COLLAPSED_COUNT = 6;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -790,9 +797,10 @@ function PositionList({
                     paddingInline: 16,
                     position: 'sticky',
                     top:
+                      stickyOffset ??
                       getStickyOffset(offsetValuesState) +
-                      TAB_SELECTOR_HEIGHT +
-                      TAB_TOP_PADDING,
+                        TAB_SELECTOR_HEIGHT +
+                        TAB_TOP_PADDING,
                     zIndex: 1,
                     backgroundColor: 'var(--white)',
                   }}

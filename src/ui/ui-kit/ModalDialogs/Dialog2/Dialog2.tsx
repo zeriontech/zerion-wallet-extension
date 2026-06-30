@@ -33,6 +33,8 @@ export function Dialog2({
   open,
   onClose,
   title,
+  titleAlign = 'center',
+  headerStyle,
   children,
   size = 'full',
   autoFocusInput = true,
@@ -41,8 +43,12 @@ export function Dialog2({
 }: {
   open: boolean;
   onClose: () => void;
-  /** When omitted, the header (title + close X) is not rendered and the dismiss affordance becomes the consumer's responsibility. */
-  title?: string;
+  /** When omitted, the header (title + close X) is not rendered and the dismiss affordance becomes the consumer's responsibility. A string is wrapped in the standard title UIText; a node is rendered as-is (e.g. to prefix the title with an icon). */
+  title?: React.ReactNode;
+  /** Title horizontal alignment within the header. Defaults to `center`. */
+  titleAlign?: 'center' | 'start';
+  /** Inline style applied to the header row (e.g. to tighten its padding). */
+  headerStyle?: React.CSSProperties;
   children: React.ReactNode;
   /**
    * 'full' — dialog fills available space (full screen on narrow, 70vh centered).
@@ -180,10 +186,29 @@ export function Dialog2({
             autoFocusOnShow={false}
           >
             {title == null ? null : (
-              <div className={styles.header}>
-                <UIText kind="body/accent" className={styles.headerTitle}>
-                  {title}
-                </UIText>
+              <div className={styles.header} style={headerStyle}>
+                {typeof title === 'string' ? (
+                  <UIText
+                    kind="body/accent"
+                    className={
+                      titleAlign === 'start'
+                        ? styles.headerTitleStart
+                        : styles.headerTitle
+                    }
+                  >
+                    {title}
+                  </UIText>
+                ) : (
+                  <div
+                    className={
+                      titleAlign === 'start'
+                        ? styles.headerTitleStart
+                        : styles.headerTitle
+                    }
+                  >
+                    {title}
+                  </div>
+                )}
                 <DialogDismiss className={styles.closeButton}>
                   <CloseIcon style={{ width: 20, height: 20 }} />
                 </DialogDismiss>

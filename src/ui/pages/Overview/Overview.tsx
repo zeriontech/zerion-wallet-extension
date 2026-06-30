@@ -2,6 +2,7 @@ import { useStore } from '@store-unit/react';
 import { useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
+import FireIcon from 'jsx:src/ui/assets/fire.svg';
 import React, { useEffect, useRef } from 'react';
 import { RenderArea } from 'react-area';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
@@ -66,6 +67,11 @@ import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { SearchLinkIcon } from '../Search';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import { PercentageChange } from './PercentageChange';
+import { WalletPositionsChart } from './WalletPositionsChart';
+import {
+  NetworkDistributionChart,
+  ProtocolDistributionChart,
+} from './DistributionCharts';
 import { BackupReminder } from './BackupReminder';
 import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -580,7 +586,10 @@ function OverviewComponent() {
               to={createTo('/overview/pnl')}
               onClick={() => handleTabChange('/overview/pnl')}
             >
-              PnL
+              <HStack gap={4} alignItems="center">
+                <FireIcon style={{ width: 16, height: 16 }} />
+                <span>Stats</span>
+              </HStack>
             </SegmentedControlLink>
             <SegmentedControlLink
               to={createTo('/overview/nfts')}
@@ -684,13 +693,18 @@ function OverviewComponent() {
               path="/pnl"
               element={
                 <ViewSuspense logDelays={true} fallback={tabFallback}>
-                  <NavigationTitle title={null} documentTitle="PnL" />
+                  <NavigationTitle title={null} documentTitle="Stats" />
                   <Spacer height={TAB_TOP_PADDING} />
                   <TestnetworkGuard
                     dappChain={dappChain || null}
                     renderGuard={() => testnetGuardView}
                   >
-                    <Pnl />
+                    <VStack gap={20}>
+                      <WalletPositionsChart address={address} />
+                      <Pnl />
+                      <NetworkDistributionChart address={address} />
+                      <ProtocolDistributionChart address={address} />
+                    </VStack>
                   </TestnetworkGuard>
                 </ViewSuspense>
               }

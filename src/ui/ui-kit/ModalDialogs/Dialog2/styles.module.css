@@ -66,6 +66,13 @@
   text-align: center;
 }
 
+/* Left-aligned title spans from the header's left edge up to the close button. */
+.headerTitleStart {
+  grid-column: 1 / 3;
+  text-align: left;
+  justify-self: start;
+}
+
 .header > .closeButton {
   grid-column: 3;
   justify-self: end;
