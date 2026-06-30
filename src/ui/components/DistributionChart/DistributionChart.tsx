@@ -1,5 +1,5 @@
 import React, {
-  useLayoutEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -312,18 +312,25 @@ export function DistributionChart({
     [items]
   );
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<ResizeObserver | null>(null);
   const [width, setWidth] = useState(0);
-  useLayoutEffect(() => {
-    const element = containerRef.current;
+  // Measure via a callback ref rather than an effect: the container only mounts
+  // once the `items.length < MIN_TILES` gate below opens, which can happen on a
+  // later render than mount. A `useLayoutEffect([])` would fire while the node
+  // is still null and never re-run, leaving width=0 and an empty chart. The
+  // callback ref instead attaches the observer exactly when the node appears.
+  const setContainer = useCallback((element: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    containerRef.current = element;
     if (!element) {
+      observerRef.current = null;
       return;
     }
-    const update = () => setWidth(element.clientWidth);
-    update();
-    const observer = new ResizeObserver(update);
+    setWidth(element.clientWidth);
+    const observer = new ResizeObserver(() => setWidth(element.clientWidth));
     observer.observe(element);
-    return () => observer.disconnect();
+    observerRef.current = observer;
   }, []);
 
   const tiles = useMemo(
@@ -353,7 +360,7 @@ export function DistributionChart({
     <VStack gap={12} style={{ padding: '0 16px' }}>
       <ChartHeading title={title} titleIcon={titleIcon} />
       <div
-        ref={containerRef}
+        ref={setContainer}
         style={{ position: 'relative', width: '100%', height: HEIGHT }}
         onMouseLeave={() => setHovered(null)}
       >

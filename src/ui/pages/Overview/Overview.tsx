@@ -2,6 +2,7 @@ import { useStore } from '@store-unit/react';
 import { useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
+import FireIcon from 'jsx:src/ui/assets/fire.svg';
 import React, { useEffect, useRef } from 'react';
 import { RenderArea } from 'react-area';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
