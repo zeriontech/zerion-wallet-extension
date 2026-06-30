@@ -74,11 +74,7 @@ export function useFormState({
   // a send completes the cleared form would resolve to the new highest-value
   // asset instead of the one the user just sent. Only fills missing keys; never
   // overwrites an existing URL value. Mirrors SwapForm2's useFormState.
-  // Scoped to fungible (token) mode: in NFT mode `inputFungibleId` is
-  // intentionally absent and `nftId` already pins the selection, so writing a
-  // default fungible id would pollute the URL.
   useEffect(() => {
-    if (userFormState.nftId != null) return;
     const missingInputChain =
       userFormState.inputChain == null && defaultFormState.inputChain != null;
     const missingInputFungibleId =
@@ -95,7 +91,6 @@ export function useFormState({
         : null),
     }));
   }, [
-    userFormState.nftId,
     userFormState.inputChain,
     userFormState.inputFungibleId,
     defaultFormState.inputChain,

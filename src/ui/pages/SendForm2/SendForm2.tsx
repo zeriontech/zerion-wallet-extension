@@ -97,10 +97,10 @@ import * as styles from './SendForm2.module.css';
 
 /**
  * Clears transient per-send inputs after a successful broadcast: the amount,
- * recipient, custom data, nonce, and all network-fee overrides. The
- * token/NFT/chain selection is preserved so the user keeps the asset they just
- * sent instead of the form snapping back to the highest-value position.
- * Mirrors SwapForm2's resetAfterBroadcast.
+ * custom data, nonce, and all network-fee overrides. The token/NFT/chain
+ * selection and the recipient are preserved (and stay in the URL) so the user
+ * keeps the asset and recipient they just used instead of the form snapping
+ * back to the highest-value position with an empty recipient.
  */
 function resetAfterBroadcast(
   state: Partial<SendFormState2>
@@ -110,7 +110,6 @@ function resetAfterBroadcast(
     inputAmount: undefined,
     inputKind: undefined,
     nftAmount: undefined,
-    to: undefined,
     data: undefined,
     nonce: undefined,
     networkFeeSpeed: undefined,
