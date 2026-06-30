@@ -551,11 +551,14 @@ function usePreparedPositions({
 
 function ProtocolHeading({
   dappInfo,
+  value,
   relativeValue,
+  currency,
 }: {
   dappInfo: AddressPositionDappInfo;
   value: number;
   relativeValue: number;
+  currency: string;
 }) {
   return (
     <HStack gap={8} alignItems="center">
@@ -569,7 +572,22 @@ function ProtocolHeading({
           style={{ borderRadius: 6 }}
         />
       )}
-      <UIText kind="body/accent">{dappInfo.name || dappInfo.id}</UIText>
+      <UIText
+        kind="body/accent"
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <span>{dappInfo.name || dappInfo.id}</span>
+        <span style={{ color: 'var(--neutral-500)' }}> · </span>
+        <BlurrableBalance kind="body/accent" color="var(--black)">
+          <NeutralDecimals
+            parts={formatCurrencyToParts(value, 'en', currency)}
+          />
+        </BlurrableBalance>
+      </UIText>
       <UIText
         inline={true}
         kind="caption/accent"
@@ -598,7 +616,7 @@ function PositionList({
   dappChain: string | null;
   isAllNetworks: boolean;
 }) {
-  const COLLAPSED_COUNT = 5;
+  const COLLAPSED_COUNT = 6;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const showMore = useCallback(
     (key: string) => setExpanded((expanded) => new Set(expanded).add(key)),
@@ -783,19 +801,9 @@ function PositionList({
                     dappInfo={dappInfo}
                     value={totalValue}
                     relativeValue={relativeValue}
+                    currency={currency}
                   />
                 </div>
-                <Spacer height={4} />
-                <UIText
-                  style={{ paddingInline: 16, display: 'flex' }}
-                  kind="headline/h2"
-                >
-                  <BlurrableBalance kind="headline/h2" color="var(--black)">
-                    <NeutralDecimals
-                      parts={formatCurrencyToParts(totalValue, 'en', currency)}
-                    />
-                  </BlurrableBalance>
-                </UIText>
               </>
             ) : null}
             {dappInfo.url ? (
@@ -805,7 +813,7 @@ function PositionList({
                 <Spacer height={16} />
               </>
             ) : (
-              <Spacer height={8} />
+              <Spacer height={4} />
             )}
             <SurfaceList
               style={{ position: 'relative', zIndex: 0 }}
@@ -874,8 +882,6 @@ function MultiChainPositions({
     [chainValue, positions]
   );
 
-  const groupedPositions = groupPositionsByDapp(items);
-
   if (isLoading) {
     return renderLoadingView() as JSX.Element;
   }
@@ -890,7 +896,7 @@ function MultiChainPositions({
 
   return (
     <VStack gap={16}>
-      <VStack gap={Object.keys(groupedPositions).length > 1 ? 16 : 8}>
+      <VStack gap={12}>
         <div style={{ paddingInline: 16 }}>
           <NetworkBalance
             standard={getAddressType(address)}

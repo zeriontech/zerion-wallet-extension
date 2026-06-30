@@ -1,12 +1,10 @@
 import { useStore } from '@store-unit/react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 import React, { useEffect, useRef } from 'react';
 import { RenderArea } from 'react-area';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
-import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { createChain } from 'src/modules/networks/Chain';
@@ -15,11 +13,9 @@ import {
   useNetworkConfig,
   useNetworks,
 } from 'src/modules/networks/useNetworks';
-import { useRemoteConfigValue } from 'src/modules/remote-config/useRemoteConfigValue';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
-import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import {
   useBackgroundKind,
@@ -38,16 +34,15 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { usePreferences } from 'src/ui/features/preferences';
 import { walletPort } from 'src/ui/shared/channels';
-import { emitter } from 'src/ui/shared/events';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
 import { useIsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
-import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useProfileName } from 'src/ui/shared/useProfileName';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactions';
+import { PausedBanner } from 'src/ui/components/PauseInjection';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import {
@@ -57,7 +52,6 @@ import {
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -74,7 +68,7 @@ import { ActionButtonsRow } from './ActionButtonsRow';
 import { PercentageChange } from './PercentageChange';
 import { BackupReminder } from './BackupReminder';
 import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
-import { ConnectionHeader } from './ConnectionHeader';
+import { ConnectionBanner } from './ConnectionBanner';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { Pnl } from './PnL';
@@ -163,16 +157,16 @@ function CurrentAccountControls() {
   }
   const addressToCopy = wallet.address || singleAddress;
   return (
-    <HStack gap={0} alignItems="center">
+    <HStack gap={0} alignItems="center" style={{ flex: 1 }}>
       <Button
         kind="text-primary"
-        size={40}
+        size={36}
         as={UnstyledLink}
         to="/wallet-select"
         title="Select Account"
         className="parent-hover"
         style={{
-          paddingInline: '8px 4px',
+          paddingInline: '0 4px',
           ['--button-text-hover' as string]: 'var(--neutral-800)',
           ['--parent-content-color' as string]: 'var(--neutral-500)',
           ['--parent-hovered-content-color' as string]: 'var(--black)',
@@ -217,55 +211,6 @@ function CurrentAccountControls() {
 
       <RenderArea name="wallet-name-end" />
     </HStack>
-  );
-}
-
-const ZERION_ORIGIN = 'https://app.zerion.io';
-
-function RewardsLinkIcon({
-  currentWallet,
-}: {
-  currentWallet: ExternallyOwnedAccount;
-}) {
-  const { pathname } = useLocation();
-  const { mutate: acceptZerionOrigin } = useMutation({
-    mutationFn: async () => {
-      return walletPort.request('acceptOrigin', {
-        origin: ZERION_ORIGIN,
-        address: currentWallet.address,
-      });
-    },
-  });
-
-  const addWalletParams = useWalletParams(currentWallet);
-
-  return (
-    <Button
-      kind="ghost"
-      as={UnstyledAnchor}
-      href={`${ZERION_ORIGIN}/rewards?${addWalletParams}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      size={36}
-      title="Rewards"
-      style={{ paddingInline: 8 }}
-      onClick={() => {
-        emitter.emit('buttonClicked', {
-          buttonScope: 'Loaylty',
-          buttonName: 'Rewards',
-          pathname,
-        });
-        acceptZerionOrigin();
-      }}
-    >
-      <RewardsIcon
-        style={{
-          width: 20,
-          height: 20,
-          color: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
-        }}
-      />
-    </Button>
   );
 }
 
@@ -376,7 +321,7 @@ function OverviewComponent() {
   }, [address, network, setSelectedChain]);
 
   const httpSource = useHttpClientSource();
-  const { data, isLoading: isLoadingPortfolio } = useWalletPortfolio(
+  const { data } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: httpSource },
     { enabled: ready, refetchInterval: 40000 }
@@ -411,10 +356,6 @@ function OverviewComponent() {
     useErrorBoundary: true,
     suspense: false,
   });
-
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
 
   // Update backend record with 'platform: extension'
   useEffect(() => {
@@ -524,74 +465,52 @@ function OverviewComponent() {
         ['--background' as string]: 'var(--neutral-100)',
       }}
     >
+      <PageFullBleedColumn paddingInline={true} style={{ paddingInline: 0 }}>
+        <BackupReminder />
+        <RestoreRecoveryPhraseReminder />
+      </PageFullBleedColumn>
       <PageFullBleedColumn
         paddingInline={true}
         style={{
           position: 'sticky',
           top: 0,
-          zIndex: 'var(--navbar-index)',
+          zIndex: 'var(--max-layout-index)',
           paddingInline: 0,
         }}
       >
-        <ConnectionHeader />
-        <BackupReminder />
-        <RestoreRecoveryPhraseReminder />
-        <div style={{ backgroundColor: 'var(--white)' }}>
-          <Spacer height={16} />
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingInline: '8px 16px',
-              height: 24,
-            }}
-          >
+        <div className={styles.overviewHeader}>
+          <div className={styles.overviewHeaderTopLine}>
             <CurrentAccountControls />
             <HStack gap={0} alignItems="center">
-              {FEATURE_LOYALTY_FLOW === 'on' &&
-              loyaltyEnabled &&
-              currentWallet &&
-              addressType === 'evm' ? (
-                <RewardsLinkIcon currentWallet={currentWallet} />
-              ) : null}
               <SearchLinkIcon />
               <SettingsLinkIcon />
               <SidepanelOptionsButton />
             </HStack>
           </div>
-          <Spacer height={16} />
         </div>
       </PageFullBleedColumn>
-      <div
-        style={{
-          height: isLoadingPortfolio ? 68 : undefined,
-          paddingInline: 8,
-        }}
-      >
-        <HStack gap={12} alignItems="center">
-          {!isLoadingPortfolio ? (
-            <WalletAvatar
-              address={address}
-              size={64}
-              borderRadius={12}
-              icon={
-                <WalletSourceIcon
-                  address={address}
-                  groupId={null}
-                  style={{ width: 24, height: 24 }}
-                  borderRadius={8}
-                  cutoutStroke={3}
-                />
-              }
-            />
-          ) : null}
+      <PageFullBleedColumn paddingInline={true} style={{ paddingInline: 0 }}>
+        <div className={styles.overviewBalanceRow}>
+          <WalletAvatar
+            address={address}
+            size={56}
+            borderRadius={12}
+            icon={
+              <WalletSourceIcon
+                address={address}
+                groupId={null}
+                style={{ width: 20, height: 20 }}
+                borderRadius={6}
+                cutoutStroke={3}
+              />
+            }
+          />
           <PercentageChange
             walletPortfolio={walletPortfolio}
             currency={currency}
           />
-        </HStack>
-      </div>
+        </div>
+      </PageFullBleedColumn>
       <Spacer height={16} />
       <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
         {isReadonlyGroup ? <ReadonlyMode /> : <ActionButtonsRow />}
@@ -780,6 +699,8 @@ function OverviewComponent() {
           <PageBottom />
         </div>
       </PageFullBleedColumn>
+      <ConnectionBanner />
+      <PausedBanner />
     </PageColumn>
   );
 }

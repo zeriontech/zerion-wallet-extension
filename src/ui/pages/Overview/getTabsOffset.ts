@@ -1,15 +1,13 @@
 import { Store } from 'store-unit';
 
-const CONTROLS_HEADER_HEIGHT = 56;
-
 export const offsetValues = new Store({
-  connectionHeaderHeight: 0,
+  stickyOffset: 52,
 });
 
 type State = (typeof offsetValues)['state'];
 
 export function getStickyOffset(state: State) {
-  return state.connectionHeaderHeight + CONTROLS_HEADER_HEIGHT;
+  return state.stickyOffset;
 }
 
 export const TABS_OFFSET_METER_ID = 'overview-tabs-offset-meter';

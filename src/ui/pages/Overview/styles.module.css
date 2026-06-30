@@ -1,3 +1,25 @@
+.overviewHeader {
+  height: 52px;
+  background-color: var(--white);
+  padding: 16px 16px 0 16px;
+}
+
+.overviewHeaderTopLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  min-width: 0;
+}
+
+.overviewBalanceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 16px;
+  background-color: var(--white);
+}
+
 .tabsScrollArea {
   /* Horizontal scroll so every tab stays reachable when the row overflows the
    * narrow popup width. `overflow-x: auto` forces `overflow-y` to clip (it can't

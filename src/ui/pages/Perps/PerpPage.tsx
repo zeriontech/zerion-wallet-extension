@@ -170,7 +170,7 @@ export function PerpPage() {
       {showFooter ? (
         <StickyBottomPanel
           style={{ padding: 0, background: 'none', boxShadow: 'none' }}
-          backdropStyle={{ inset: '-16px -16px 0' }}
+          backdropStyle={{ top: -16 }}
         >
           {hasPosition ? (
             <HStack

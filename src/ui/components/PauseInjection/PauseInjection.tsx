@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import ConnectionIconOn from 'jsx:src/ui/assets/pause-feature-on.svg';
-import ConnectionIconOff from 'jsx:src/ui/assets/pause-feature-off.svg';
-import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
+import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
+import { AngleRightRow } from 'src/ui/components/AngleRightRow';
+import { FrameListItemButton } from 'src/ui/ui-kit/FrameList';
+import { StickyBottomPanel } from 'src/ui/ui-kit/BottomPanel';
 import { invariant } from 'src/shared/invariant';
 import { getActiveTabOrigin } from 'src/ui/shared/requests/getActiveTabOrigin';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -14,7 +14,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { naiveFormDataToObject } from 'src/ui/shared/form-data';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { reloadActiveTab } from 'src/ui/shared/reloadActiveTab';
-import { ViewLoading } from '../ViewLoading';
 import type { SubmitData } from './actions';
 import {
   TESTING,
@@ -75,13 +74,7 @@ function PauseInjectionDialog({
   }, []);
 
   return (
-    <VStack
-      gap={24}
-      style={{
-        position: 'relative',
-        minHeight: '100%',
-      }}
-    >
+    <VStack gap={24}>
       <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
         Disable Zerion for
         <br />
@@ -140,7 +133,12 @@ export function usePausedData() {
   };
 }
 
-export function PauseInjectionControl() {
+/**
+ * Settings-list row that opens the disable-provider duration chooser
+ * (For 1 Hour / Forever), scoped to the active tab's origin. Relocated here
+ * from the (retired) Overview connection header.
+ */
+export function DisableWalletProviderSettingsItem() {
   const {
     isPaused,
     isPausedForAll,
@@ -148,81 +146,51 @@ export function PauseInjectionControl() {
     globalPreferences,
     setGlobalPreferences,
   } = usePausedData();
-  const [showPauseDialog, setShowPauseDialog] = useState(false);
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
 
-  const handleDialogDismiss = useCallback(() => {
-    dialogRef.current?.close();
-    setShowPauseDialog(false);
-  }, []);
-
-  if (!globalPreferences) {
-    return <ViewLoading />;
+  if (!globalPreferences || !tabUrl) {
+    return null;
   }
   return (
     <>
-      <BottomSheetDialog
-        ref={dialogRef}
-        height="fit-content"
-        onClosed={handleDialogDismiss}
-        containerStyle={{ backgroundColor: 'var(--z-index-0)' }}
+      <FrameListItemButton
+        onClick={() => setShowDialog(true)}
+        disabled={isPaused}
       >
-        {showPauseDialog ? (
-          <>
-            <PauseInjectionDialog
-              activeTabUrl={tabUrl || null}
-              onSubmit={(formData) => {
-                setGlobalPreferences(
-                  createInjectionPreference(globalPreferences, formData)
-                ).then(reloadActiveTab);
-                handleDialogDismiss();
+        <AngleRightRow>
+          <HStack gap={8} alignItems="center">
+            <ConnectionIconOn
+              style={{
+                width: 24,
+                height: 24,
+                color: isPausedForAll
+                  ? 'var(--notice-600)'
+                  : isPaused
+                  ? 'var(--neutral-500)'
+                  : undefined,
               }}
             />
-            <Button
-              onClick={handleDialogDismiss}
-              kind="ghost"
-              size={40}
-              aria-label="Close"
-              style={{
-                position: 'absolute',
-                width: 40,
-                top: 8,
-                right: 8,
-                padding: 8,
-              }}
-            >
-              <CloseIcon style={{ display: 'block' }} />
-            </Button>
-          </>
-        ) : null}
-      </BottomSheetDialog>
-
-      <Button
-        kind="neutral"
-        size={36}
-        type="button"
-        title="Disable Wallet Provider"
-        style={{ padding: 0, cursor: isPaused ? 'auto' : undefined }}
-        disabled={isPaused}
-        onClick={() => {
-          invariant(dialogRef.current, 'Dialog element must be mounted');
-          dialogRef.current.showModal();
-          setShowPauseDialog(true);
-        }}
+            <UIText kind="body/regular">Disable Zerion</UIText>
+          </HStack>
+        </AngleRightRow>
+      </FrameListItemButton>
+      <Dialog2
+        open={showDialog}
+        onClose={() => setShowDialog(false)}
+        size="content"
       >
-        {React.createElement(isPaused ? ConnectionIconOff : ConnectionIconOn, {
-          style: {
-            display: 'block',
-            width: 36,
-            height: 36,
-            color: isPausedForAll
-              ? 'var(--notice-600)'
-              : isPaused
-              ? 'var(--neutral-500)'
-              : undefined,
-          },
-        })}
-      </Button>
+        <div style={{ paddingInline: 16, paddingBlock: 24 }}>
+          <PauseInjectionDialog
+            activeTabUrl={tabUrl || null}
+            onSubmit={(formData) => {
+              setGlobalPreferences(
+                createInjectionPreference(globalPreferences, formData)
+              ).then(reloadActiveTab);
+              setShowDialog(false);
+            }}
+          />
+        </div>
+      </Dialog2>
     </>
   );
 }
@@ -290,5 +258,27 @@ export function PausedHeader() {
         <UIText kind="small/accent">Resume</UIText>
       </Button>
     </HStack>
+  );
+}
+
+/**
+ * Floating "Paused for X · Resume" banner pinned over the bottom of Overview
+ * (same sticky panel as the Settings Lock Wallet button). Renders nothing when
+ * provider injection isn't paused.
+ */
+export function PausedBanner() {
+  const { isPaused, globalPreferences } = usePausedData();
+  if (!isPaused || !globalPreferences) {
+    return null;
+  }
+  return (
+    <StickyBottomPanel
+      style={{
+        padding: '12px 16px',
+        ['--background-color' as string]: 'var(--neutral-100)',
+      }}
+    >
+      <PausedHeader />
+    </StickyBottomPanel>
   );
 }

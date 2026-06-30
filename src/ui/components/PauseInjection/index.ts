@@ -1,5 +1,6 @@
 export {
-  PauseInjectionControl,
+  DisableWalletProviderSettingsItem,
+  PausedBanner,
   PausedHeader,
   usePausedData,
 } from './PauseInjection';
