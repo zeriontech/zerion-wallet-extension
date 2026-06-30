@@ -782,7 +782,7 @@ function PositionList({
 
         return (
           <VStack gap={0} key={dappId}>
-            {preparedPositions.dappIds.length > 1 && dappInfo.url ? (
+            {preparedPositions.dappIds.length > 1 ? (
               <>
                 <div
                   style={{
@@ -896,7 +896,7 @@ function MultiChainPositions({
 
   return (
     <VStack gap={16}>
-      <VStack gap={4}>
+      <VStack gap={12}>
         <div style={{ paddingInline: 16 }}>
           <NetworkBalance
             standard={getAddressType(address)}
