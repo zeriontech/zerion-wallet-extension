@@ -188,7 +188,7 @@ export function WalletPositionsChart({ address }: { address: string }) {
   const showSkeleton = !chartData && !isError;
 
   return (
-    <VStack gap={16} style={{ padding: '0 16px 16px' }}>
+    <VStack gap={8} style={{ paddingInline: 16 }}>
       <HStack gap={8} alignItems="center">
         <WalletIcon style={{ width: 24, height: 24 }} />
         <UIText kind="body/accent">Wallet Balance</UIText>
