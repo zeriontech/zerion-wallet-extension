@@ -37,6 +37,23 @@ export function prepareTypedData(data: string | Partial<TypedData>): TypedData {
   };
 }
 
+/**
+ * A whitespace-padded domain chainId (e.g. " 1") is tolerated during signing
+ * (ethers coerces it with BigInt, which trims whitespace), but breaks the
+ * interpretation backend. Sanitize it so interpretation runs on the same
+ * value that gets signed. Well-formed payloads are returned unchanged.
+ */
+export function sanitizeTypedData(typedData: TypedData): TypedData {
+  const { chainId } = typedData.domain;
+  if (typeof chainId === 'string' && chainId.trim() !== chainId) {
+    return {
+      ...typedData,
+      domain: { ...typedData.domain, chainId: chainId.trim() },
+    };
+  }
+  return typedData;
+}
+
 const ESCAPE_ARRAY_SYMBOLS_PATTERN = /^([^\x5b]*)(\x5b|$)/;
 
 // based on https://github.com/ethers-io/ethers.js/blob/13593809bd61ef24c01d79de82563540d77098db/src.ts/hash/typed-data.ts#L210
