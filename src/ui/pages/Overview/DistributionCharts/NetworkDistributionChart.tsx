@@ -3,6 +3,7 @@ import NetworkIcon from 'jsx:src/ui/assets/all-networks.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { usePreferences } from 'src/ui/features/preferences';
 import {
   DistributionChart,
   HARDCODED_CHAIN_ACCENTS,
@@ -19,6 +20,7 @@ import { DistributionItemTitle } from './DistributionItemTitle';
  */
 export function NetworkDistributionChart({ address }: { address: string }) {
   const { currency } = useCurrency();
+  const { preferences, setPreferences } = usePreferences();
   const source = useHttpClientSource();
   const { data, isLoading } = useWalletPortfolio(
     { addresses: [address], currency },
@@ -57,6 +59,10 @@ export function NetworkDistributionChart({ address }: { address: string }) {
         currency={currency}
         isLoading={isLoading}
         onSelect={setSelected}
+        view={preferences?.networkDistributionChartView ?? 'grid'}
+        onViewChange={(view) =>
+          setPreferences({ networkDistributionChartView: view })
+        }
       />
       <PositionsListDialog
         open={selected != null}

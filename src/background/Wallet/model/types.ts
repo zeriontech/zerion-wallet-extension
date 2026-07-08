@@ -107,6 +107,17 @@ interface PublicPreferences {
    */
   oneTapCrossChainSwapOnboardingShown?: boolean;
   perpsOnboardingDismissed?: boolean;
+  /**
+   * View mode for the Network Distribution chart on the Stats tab:
+   * `'grid'` (treemap) or `'lines'` (sorted list with a proportional accent
+   * fill). Defaults to `'grid'`. Kept independent from the Protocol chart.
+   */
+  networkDistributionChartView?: 'grid' | 'lines';
+  /**
+   * View mode for the Protocol Distribution chart on the Stats tab. Mirrors
+   * {networkDistributionChartView} but tracked separately. Defaults to `'grid'`.
+   */
+  protocolDistributionChartView?: 'grid' | 'lines';
 }
 
 export interface Permission {

@@ -4,6 +4,7 @@ import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { usePreferences } from 'src/ui/features/preferences';
 import { groupPositionsByDapp } from 'src/ui/components/Positions/groupPositions';
 import {
   DEFAULT_PROTOCOL_ID,
@@ -24,6 +25,7 @@ import { DistributionItemTitle } from './DistributionItemTitle';
  */
 export function ProtocolDistributionChart({ address }: { address: string }) {
   const { currency } = useCurrency();
+  const { preferences, setPreferences } = usePreferences();
   const source = useHttpClientSource();
   const { data, isLoading } = useHttpAddressPositions(
     { addresses: [address], currency },
@@ -67,6 +69,10 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
         currency={currency}
         isLoading={isLoading}
         onSelect={setSelected}
+        view={preferences?.protocolDistributionChartView ?? 'grid'}
+        onViewChange={(view) =>
+          setPreferences({ protocolDistributionChartView: view })
+        }
       />
       <PositionsListDialog
         open={selected != null}

@@ -962,6 +962,8 @@ export class WalletRecordModel {
       crossChainSwapOnboardingShown: false,
       oneTapCrossChainSwapOnboardingShown: false,
       perpsOnboardingDismissed: false,
+      networkDistributionChartView: 'grid',
+      protocolDistributionChartView: 'grid',
     };
     if (!record) {
       return defaults;

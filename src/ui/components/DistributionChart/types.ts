@@ -1,6 +1,12 @@
 import type React from 'react';
 
 /**
+ * How a {DistributionChart} renders its items: `'grid'` is the squarified
+ * treemap; `'lines'` is a sorted list with a proportional accent fill per row.
+ */
+export type DistributionView = 'grid' | 'lines';
+
+/**
  * One group fed into a {DistributionChart}. The generic chart is
  * data-agnostic: adapters (network / protocol) translate their domain data
  * into these items.
