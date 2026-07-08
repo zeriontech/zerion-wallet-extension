@@ -4,6 +4,8 @@ import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useTransactionGetSend } from 'src/modules/zerion-api/hooks/useTransactionGetSend';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
@@ -22,6 +24,7 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import { prepareSendData } from 'src/ui/pages/SendForm/shared/prepareSendData';
 import { fungiblePositionToAddressPosition } from './shared/fungiblePositionToAddressPosition';
 import { toLegacySendFormState } from './shared/toLegacySendFormState';
+import { hexlifyTransactionData } from './shared/hexlifyTransactionData';
 import type { SendFormState2 } from './types';
 
 /**
@@ -118,8 +121,26 @@ export function useSendTransaction({
   const client = useDefiSdkClient();
   const { currency } = useCurrency();
   const source = useHttpClientSource();
+  const { preferences } = usePreferences();
 
   const isNftMode = Boolean(formState.nftId);
+
+  // Custom transaction data — gated behind the Developer Tools "Custom Data"
+  // toggle and EVM senders only. Stored raw (as typed) in the URL form state so
+  // the editor round-trips; hexlified here at the backend boundary so the API
+  // (and the local prep path) always receive a valid hex string. Fed to the
+  // backend `get-send` `data` param and injected into the local prep path so
+  // both send routes carry it identically.
+  const customData = useMemo(() => {
+    if (
+      !preferences?.configurableTransactionData ||
+      !isEthereumAddress(address) ||
+      !formState.data
+    ) {
+      return undefined;
+    }
+    return hexlifyTransactionData(formState.data);
+  }, [preferences?.configurableTransactionData, address, formState.data]);
 
   const isMax = useMemo(() => {
     if (isNftMode || !resolvedInputAmount || !position) return false;
@@ -156,6 +177,7 @@ export function useSendTransaction({
       assetId: assetId ?? '',
       amount: isMax ? undefined : effectiveAmount ?? undefined,
       max: isMax ? true : undefined,
+      data: customData,
     },
     { source },
     {
@@ -174,7 +196,9 @@ export function useSendTransaction({
 
   // Gas overrides are applied at sign time (via applyConfiguration), not in the
   // prep query — strip them here so the local path stays gas-unapplied and
-  // matches the backend path's shape.
+  // matches the backend path's shape. `data` is replaced with the gated,
+  // hexlified value so the local `prepareSendData` merge stays consistent with
+  // the backend param (and never carries a raw, non-hex string).
   const legacyFormState = useMemo(() => {
     const base = toLegacySendFormState(formState, resolvedInputAmount);
     return {
@@ -185,8 +209,9 @@ export function useSendTransaction({
       gasPrice: undefined,
       gasLimit: undefined,
       nonce: undefined,
+      data: customData,
     };
-  }, [formState, resolvedInputAmount]);
+  }, [formState, resolvedInputAmount, customData]);
 
   const localEnabled =
     enabledParam && baseGatesPass && !useBackend && Boolean(addressPosition);

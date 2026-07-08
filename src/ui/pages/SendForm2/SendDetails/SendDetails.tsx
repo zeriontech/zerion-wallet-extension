@@ -33,6 +33,7 @@ import {
 } from 'src/ui/pages/SwapForm2/getNetworkFeeForSpeed';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import type { SendQuote } from '../useSendTransaction';
+import { SendDataLine } from './SendDataLine';
 import * as styles from './SendDetails.module.css';
 
 function DetailRow({
@@ -93,6 +94,8 @@ export function SendDetails({
   onConfigurationChange,
   userNonce,
   onNonceChange,
+  customData,
+  onCustomDataChange,
   isLoading,
   receivedAmount,
   typedAmount,
@@ -109,6 +112,8 @@ export function SendDetails({
   onConfigurationChange: (configuration: CustomConfiguration) => void;
   userNonce: string | null;
   onNonceChange: (nonce: string | null) => void;
+  customData: string | null;
+  onCustomDataChange: (value: string | undefined) => void;
   isLoading: boolean;
   receivedAmount?: Amount | null;
   typedAmount?: string | null;
@@ -124,6 +129,12 @@ export function SendDetails({
   const customDefaults = getCustomFormDefaults(sendQuote);
   const showNonce = Boolean(
     preferences?.configurableNonce && isEthereumAddress(address)
+  );
+  // Custom data: gated behind the Developer Tools "Custom Data" toggle, EVM
+  // senders only. Shown for any EVM send (native + ERC-20); the backend owns
+  // how it attaches the data to the built transaction.
+  const showData = Boolean(
+    preferences?.configurableTransactionData && isEthereumAddress(address)
   );
 
   const chain = createChain(inputChain);
@@ -241,6 +252,12 @@ export function SendDetails({
                             <DetailRow label="Nonce" value={noValueDash} />
                           )}
                         </React.Suspense>
+                      ) : null}
+                      {showData ? (
+                        <SendDataLine
+                          value={customData}
+                          onChange={onCustomDataChange}
+                        />
                       ) : null}
                       <DetailRow
                         label="Network"

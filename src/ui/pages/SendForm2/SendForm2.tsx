@@ -652,6 +652,8 @@ function SendFormComponent({
               onNonceChange={(nonce) =>
                 handleChange('nonce', nonce ?? undefined)
               }
+              customData={formState.data ?? null}
+              onCustomDataChange={(value) => handleChange('data', value)}
               isLoading={sendDataLoading}
               receivedAmount={sendInputAmount}
               typedAmount={resolvedInputAmount}
