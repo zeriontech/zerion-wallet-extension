@@ -220,7 +220,7 @@ export class TransactionService {
 
     for (const item of transactions) {
       if (!item.hash) {
-        return; // Do not handle Solana items
+        continue; // Do not handle Solana items
       }
       const chainId = normalizeChainId(item.transaction.chainId);
       const key = `${item.transaction.from}:${chainId}` as const;

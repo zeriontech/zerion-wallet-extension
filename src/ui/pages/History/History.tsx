@@ -53,8 +53,7 @@ function sortActions<T extends { timestamp?: number }>(actions: T[]) {
 
 function mergeLocalAndBackendActions(
   local: AnyAddressAction[],
-  backend: AddressAction[],
-  hasMoreBackendActions: boolean
+  backend: AddressAction[]
 ) {
   const backendHashes = new Set(
     backend.flatMap(
@@ -63,11 +62,13 @@ function mergeLocalAndBackendActions(
     )
   );
 
-  const lastBackendActionDatetime = backend.at(-1)?.timestamp;
-  const lastBackendTimestamp =
-    lastBackendActionDatetime && hasMoreBackendActions
-      ? new Date(lastBackendActionDatetime).getTime()
-      : 0;
+  // Backend actions are sorted newest-first. A mined local action that is
+  // older than the newest backend action already belongs to the backend
+  // history, so rendering it would duplicate the backend entry even when the
+  // hashes don't match (e.g. replaced or accelerated transactions). Pending
+  // actions are kept regardless: they aren't indexed yet, and hiding them
+  // would remove the entry point for speeding up or cancelling them.
+  const newestBackendTimestamp = backend.at(0)?.timestamp ?? 0;
 
   const merged = local
     .filter(
@@ -78,7 +79,7 @@ function mergeLocalAndBackendActions(
           (act) =>
             act.transaction.hash && backendHashes.has(act.transaction.hash)
         ) &&
-        tx.timestamp >= lastBackendTimestamp
+        (tx.status === 'pending' || tx.timestamp > newestBackendTimestamp)
     )
     .concat(backend);
   return sortActions(merged);
@@ -157,6 +158,14 @@ function useMinedAndPendingAddressActions({
       }
       if (assetTypes?.length === 1 && assetTypes?.[0] === 'nft') {
         items = items.filter(() => false);
+      } else if (assetTypes?.length === 1 && assetTypes?.[0] === 'fungible') {
+        items = items.filter((item) =>
+          [item.content, ...(item.acts?.map((act) => act.content) ?? [])].some(
+            (content) =>
+              content?.transfers?.some((transfer) => transfer.fungible) ||
+              content?.approvals?.some((approval) => approval.fungible)
+          )
+        );
       }
       return items;
     },
@@ -180,14 +189,9 @@ function useMinedAndPendingAddressActions({
 
   return useMemo(() => {
     const backendItems = isSupportedByBackend && actions ? actions : [];
-    const hasMore = Boolean(isSupportedByBackend && queryData.hasNextPage);
     return {
       actions: localAddressActions
-        ? mergeLocalAndBackendActions(
-            localAddressActions,
-            backendItems,
-            hasMore
-          )
+        ? mergeLocalAndBackendActions(localAddressActions, backendItems)
         : null,
       ...localActionsQuery,
       isLoading:
