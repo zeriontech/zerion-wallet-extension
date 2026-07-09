@@ -1,6 +1,5 @@
 import { BigNumber } from 'bignumber.js';
-
-const HEX_STRING_PATTERN = /^0x[0-9a-f]+$/i;
+import { isHexString } from 'ethers';
 
 /**
  * bignumber.js parses all-uppercase or all-lowercase 0x-hex strings, but
@@ -11,7 +10,9 @@ const HEX_STRING_PATTERN = /^0x[0-9a-f]+$/i;
  * bignumber.js.
  */
 export function normalizeNumberValue(value: BigNumber.Value): BigNumber.Value {
-  if (typeof value === 'string' && HEX_STRING_PATTERN.test(value)) {
+  // isHexString also returns true for a bare '0x', which BigInt can't parse,
+  // so require at least one hex digit.
+  if (isHexString(value) && value.length > 2) {
     return BigInt(value).toString();
   }
   return value;
