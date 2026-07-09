@@ -6,19 +6,25 @@ import React, {
   type ReactNode,
 } from 'react';
 import { useStore } from '@store-unit/react';
+import GridIcon from 'jsx:src/ui/assets/distribution-grid.svg';
+import ListIcon from 'jsx:src/ui/assets/distribution-list.svg';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue/formatCurrencyValue';
 import { preferenceStore } from 'src/ui/features/appearance/preference-store';
 import { Image2 } from 'src/ui/ui-kit/MediaFallback/MediaFallback2';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
+import {
+  SegmentedControlGroup,
+  SegmentedControlRadio,
+} from 'src/ui/ui-kit/SegmentedControl';
 import { useAccentColors, tintBackground } from './accentColor';
 import {
   buildDistributionItems,
   computeTiles,
   MIN_TILES,
 } from './sliceAndDice';
-import type { DistributionItem } from './types';
+import type { DistributionItem, DistributionView } from './types';
 
 const HEIGHT = 180;
 const GAP = 4;
@@ -216,18 +222,200 @@ function TileContent({
   );
 }
 
+const VIEW_OPTIONS: {
+  value: DistributionView;
+  Icon: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
+  label: string;
+}[] = [
+  { value: 'grid', Icon: GridIcon, label: 'Grid view' },
+  { value: 'lines', Icon: ListIcon, label: 'List view' },
+];
+
+/**
+ * Grid ⇄ lines toggle shown to the right of the chart title. Each chart needs
+ * a distinct radio `name` so Network and Protocol don't form a single group.
+ */
+function DistributionViewSwitch({
+  view,
+  onChange,
+  name,
+}: {
+  view: DistributionView;
+  onChange: (view: DistributionView) => void;
+  name: string;
+}) {
+  return (
+    <SegmentedControlGroup kind="secondary" childrenLayout="start">
+      {VIEW_OPTIONS.map(({ value, Icon, label }) => {
+        const checked = view === value;
+        return (
+          <SegmentedControlRadio
+            key={value}
+            name={name}
+            value={value}
+            checked={checked}
+            onChange={() => onChange(value)}
+            style={{ paddingLeft: 10, paddingRight: 10 }}
+          >
+            <Icon
+              role="img"
+              aria-label={label}
+              style={{
+                display: 'block',
+                width: 18,
+                height: 18,
+                color: checked ? 'var(--black)' : 'var(--neutral-500)',
+              }}
+            />
+          </SegmentedControlRadio>
+        );
+      })}
+    </SegmentedControlGroup>
+  );
+}
+
 function ChartHeading({
   title,
   titleIcon,
+  view,
+  onViewChange,
+  switchName,
 }: {
   title: string;
   titleIcon?: ReactNode;
+  view: DistributionView;
+  onViewChange?: (view: DistributionView) => void;
+  switchName: string;
 }) {
   return (
-    <HStack gap={8} alignItems="center">
-      {titleIcon}
-      <UIText kind="body/accent">{title}</UIText>
+    <HStack gap={8} justifyContent="space-between" alignItems="center">
+      <HStack gap={8} alignItems="center">
+        {titleIcon}
+        <UIText kind="body/accent">{title}</UIText>
+      </HStack>
+      {onViewChange ? (
+        <DistributionViewSwitch
+          view={view}
+          onChange={onViewChange}
+          name={switchName}
+        />
+      ) : null}
     </HStack>
+  );
+}
+
+const ROW_RADIUS = 10;
+const ROW_ICON_SIZE = 24;
+
+/**
+ * One row of the lines view: an accent fill anchored to the right whose width
+ * is the item's share of the total, with `icon + label` on the left and
+ * `value + share` on the right laid over it. Clickable (like a tile) unless
+ * it's the inert `Others` bucket.
+ */
+function DistributionListRow({
+  item,
+  share,
+  accent,
+  currency,
+  onSelect,
+}: {
+  item: DistributionItem;
+  share: number;
+  accent: [number, number, number] | null | undefined;
+  currency: string;
+  onSelect?: (item: DistributionItem) => void;
+}) {
+  const { hideBalances } = useStore(preferenceStore);
+  const clickable = Boolean(onSelect) && !item.isOthers;
+  const hasIcon = Boolean(item.iconUrl || item.iconNode);
+  return (
+    <div
+      role={clickable ? 'button' : undefined}
+      onClick={clickable ? () => onSelect?.(item) : undefined}
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: ROW_RADIUS,
+        backgroundColor: 'var(--neutral-100)',
+        cursor: clickable ? 'pointer' : undefined,
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: `${Math.min(100, Math.max(0, share))}%`,
+          backgroundColor: item.isOthers
+            ? 'var(--neutral-200)'
+            : tintBackground(accent),
+        }}
+      />
+      {/* Flex (not HStack) so the label can shrink below its content width and
+          ellipsize; the numbers column never shrinks. */}
+      <div
+        style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+          padding: '10px 12px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            minWidth: 0,
+          }}
+        >
+          {hasIcon ? (
+            <TileIcon
+              src={item.iconUrl}
+              label={item.label}
+              node={item.iconNode}
+              size={ROW_ICON_SIZE}
+            />
+          ) : null}
+          <UIText
+            kind="body/accent"
+            color="var(--black)"
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {item.label}
+          </UIText>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            flexShrink: 0,
+          }}
+        >
+          {hideBalances ? null : (
+            <UIText kind="body/regular" color="var(--neutral-800)">
+              {formatCurrencyValue(item.value, 'en', currency)}
+            </UIText>
+          )}
+          <UIText
+            kind="body/regular"
+            color="var(--neutral-500)"
+            style={{ textAlign: 'right' }}
+          >
+            {formatShare(share)}
+          </UIText>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -239,9 +427,15 @@ function ChartHeading({
 function DistributionChartSkeleton({
   title,
   titleIcon,
+  view,
+  onViewChange,
+  switchName,
 }: {
   title: string;
   titleIcon?: ReactNode;
+  view: DistributionView;
+  onViewChange?: (view: DistributionView) => void;
+  switchName: string;
 }) {
   const tile = {
     borderRadius: RADIUS,
@@ -249,7 +443,13 @@ function DistributionChartSkeleton({
   } as const;
   return (
     <VStack gap={12} style={{ padding: '0 16px' }}>
-      <ChartHeading title={title} titleIcon={titleIcon} />
+      <ChartHeading
+        title={title}
+        titleIcon={titleIcon}
+        view={view}
+        onViewChange={onViewChange}
+        switchName={switchName}
+      />
       <div style={{ display: 'flex', gap: GAP, width: '100%', height: HEIGHT }}>
         <div style={{ ...tile, flex: 3 }} />
         <div
@@ -293,6 +493,8 @@ export function DistributionChart({
   currency,
   isLoading,
   onSelect,
+  view = 'grid',
+  onViewChange,
 }: {
   title: string;
   titleIcon?: ReactNode;
@@ -300,11 +502,21 @@ export function DistributionChart({
   currency: string;
   isLoading?: boolean;
   /**
-   * Called when a tile is clicked. The aggregated "Others" tile is inert (it
-   * maps to no single network/protocol), so it never fires this.
+   * Called when a tile/row is clicked. The aggregated "Others" entry is inert
+   * (it maps to no single network/protocol), so it never fires this.
    */
   onSelect?: (item: DistributionItem) => void;
+  /** Active view. Defaults to `'grid'` (the treemap). */
+  view?: DistributionView;
+  /**
+   * When provided, a grid ⇄ lines switch is rendered in the header. Omit to
+   * lock the chart to {view} with no switcher.
+   */
+  onViewChange?: (view: DistributionView) => void;
 }) {
+  const switchName = `distribution-view-${title
+    .replace(/\s+/g, '-')
+    .toLowerCase()}`;
   const items = useMemo(() => buildDistributionItems(rawItems), [rawItems]);
   const accents = useAccentColors(items);
   const total = useMemo(
@@ -348,8 +560,40 @@ export function DistributionChart({
   // settled, render nothing until the data resolves to enough tiles.
   if (items.length < MIN_TILES) {
     return isLoading ? (
-      <DistributionChartSkeleton title={title} titleIcon={titleIcon} />
+      <DistributionChartSkeleton
+        title={title}
+        titleIcon={titleIcon}
+        view={view}
+        onViewChange={onViewChange}
+        switchName={switchName}
+      />
     ) : null;
+  }
+
+  if (view === 'lines') {
+    return (
+      <VStack gap={12} style={{ padding: '0 16px' }}>
+        <ChartHeading
+          title={title}
+          titleIcon={titleIcon}
+          view={view}
+          onViewChange={onViewChange}
+          switchName={switchName}
+        />
+        <VStack gap={6}>
+          {items.map((item) => (
+            <DistributionListRow
+              key={item.id}
+              item={item}
+              share={total > 0 ? (item.value / total) * 100 : 0}
+              accent={accents[item.id]}
+              currency={currency}
+              onSelect={onSelect}
+            />
+          ))}
+        </VStack>
+      </VStack>
+    );
   }
 
   const hoveredTile = hovered
@@ -358,7 +602,13 @@ export function DistributionChart({
 
   return (
     <VStack gap={12} style={{ padding: '0 16px' }}>
-      <ChartHeading title={title} titleIcon={titleIcon} />
+      <ChartHeading
+        title={title}
+        titleIcon={titleIcon}
+        view={view}
+        onViewChange={onViewChange}
+        switchName={switchName}
+      />
       <div
         ref={setContainer}
         style={{ position: 'relative', width: '100%', height: HEIGHT }}
