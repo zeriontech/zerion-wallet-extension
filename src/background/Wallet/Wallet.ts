@@ -45,7 +45,10 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
+import {
+  prepareTypedData,
+  sanitizeTypedDataRaw,
+} from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -2646,8 +2649,7 @@ class PublicController {
         `Address parameter is different from currently selected address. Expected: ${currentAddress}, received: ${address}`
       );
     }
-    const stringifiedData =
-      typeof data === 'string' ? data : JSON.stringify(data);
+    const stringifiedData = sanitizeTypedDataRaw(data);
     const currentWallet = await this.wallet.uiGetCurrentWallet({
       context: INTERNAL_SYMBOL_CONTEXT,
     });

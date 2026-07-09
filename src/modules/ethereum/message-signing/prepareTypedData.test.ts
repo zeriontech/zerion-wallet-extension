@@ -1,5 +1,5 @@
 import type { TypedData } from './TypedData';
-import { sanitizeTypedData } from './prepareTypedData';
+import { sanitizeTypedData, sanitizeTypedDataRaw } from './prepareTypedData';
 
 function createTypedData(chainId?: string | number): TypedData {
   return {
@@ -53,5 +53,31 @@ describe('sanitizeTypedData', () => {
     expect(sanitizeTypedData(asHexString)).toBe(asHexString);
     const withoutChainId = createTypedData();
     expect(sanitizeTypedData(withoutChainId)).toBe(withoutChainId);
+  });
+});
+
+describe('sanitizeTypedDataRaw', () => {
+  test('trims whitespace-padded string chainId in a stringified payload', () => {
+    const raw = JSON.stringify(createTypedData(' 1'));
+    expect(JSON.parse(sanitizeTypedDataRaw(raw)).domain.chainId).toBe('1');
+  });
+
+  test('accepts typedData objects', () => {
+    const sanitized = sanitizeTypedDataRaw(createTypedData(' 0x89 '));
+    expect(JSON.parse(sanitized).domain.chainId).toBe('0x89');
+  });
+
+  test('preserves well-formed payloads', () => {
+    const typedData = createTypedData(1);
+    expect(sanitizeTypedDataRaw(JSON.stringify(typedData))).toBe(
+      JSON.stringify(typedData)
+    );
+    expect(sanitizeTypedDataRaw(typedData)).toBe(JSON.stringify(typedData));
+  });
+
+  test('returns malformed payloads unchanged', () => {
+    expect(sanitizeTypedDataRaw('not json')).toBe('not json');
+    expect(sanitizeTypedDataRaw('{"domain":{}}')).toBe('{"domain":{}}');
+    expect(sanitizeTypedDataRaw({ domain: {} })).toBe('{"domain":{}}');
   });
 });

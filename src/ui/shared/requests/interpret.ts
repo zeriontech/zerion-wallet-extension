@@ -6,7 +6,6 @@ import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { invariant } from 'src/shared/invariant';
 import type { TransactionEVM } from 'src/shared/types/Quote';
-import { sanitizeTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import type { TypedData } from '../../../modules/ethereum/message-signing/TypedData';
 import { getGas } from '../../../modules/ethereum/transactions/getGas';
 
@@ -114,7 +113,7 @@ export function interpretSignature(
       chain,
       currency,
       domain: origin,
-      signature: { typedData: sanitizeTypedData(typedData) },
+      signature: { typedData },
     },
     { source }
   );

@@ -54,6 +54,18 @@ export function sanitizeTypedData(typedData: TypedData): TypedData {
   return typedData;
 }
 
+export function sanitizeTypedDataRaw(
+  data: string | Partial<TypedData>
+): string {
+  try {
+    return JSON.stringify(sanitizeTypedData(toTypedData(data)));
+  } catch {
+    // Malformed payloads pass through unchanged so that downstream
+    // validation reports the error to the user as before
+    return typeof data === 'string' ? data : JSON.stringify(data);
+  }
+}
+
 const ESCAPE_ARRAY_SYMBOLS_PATTERN = /^([^\x5b]*)(\x5b|$)/;
 
 // based on https://github.com/ethers-io/ethers.js/blob/13593809bd61ef24c01d79de82563540d77098db/src.ts/hash/typed-data.ts#L210
