@@ -21,6 +21,10 @@ export interface Params {
   amount?: string;
   /** @description Send maximum available amount */
   max?: boolean;
+  /** @description Optional arbitrary data attached to the transfer. A valid hex
+   * string (with or without `0x`) is used as raw bytes; otherwise the string is
+   * UTF-8 encoded. Lets users attach a message or calldata to a transfer. */
+  data?: string;
 }
 
 export interface Response {
@@ -56,6 +60,9 @@ export async function transactionGetSend(
     searchParams.set('max', 'true');
   } else if (params.amount != null) {
     searchParams.set('amount', params.amount);
+  }
+  if (params.data != null) {
+    searchParams.set('data', params.data);
   }
   const endpoint = `transaction/get-send/v1?${searchParams}`;
   return ZerionHttpClient.get<Response>(
