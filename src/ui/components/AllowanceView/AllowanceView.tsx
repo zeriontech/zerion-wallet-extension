@@ -11,6 +11,7 @@ import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRef
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { createChain } from 'src/modules/networks/Chain';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import { normalizeNumberValue } from 'src/shared/units/convert';
 import { AllowanceForm } from '../AllowanceForm';
 import { NavigationBar } from '../NavigationBar';
 
@@ -82,9 +83,13 @@ export function AllowanceView({
         address={address}
         balance={balance}
         requestedAllowanceQuantityBase={
-          new BigNumber(requestedAllowanceQuantityBase)
+          new BigNumber(normalizeNumberValue(requestedAllowanceQuantityBase))
         }
-        value={new BigNumber(value || requestedAllowanceQuantityBase)}
+        value={
+          new BigNumber(
+            normalizeNumberValue(value || requestedAllowanceQuantityBase)
+          )
+        }
         onSubmit={onChange}
         footerRenderArea="sign-transaction-footer"
         addressAction={addressAction}
