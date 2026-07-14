@@ -1,15 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePreferences } from 'src/ui/features/preferences';
 import { groupPositionsByDapp } from 'src/ui/components/Positions/groupPositions';
-import {
-  DEFAULT_PROTOCOL_ID,
-  DEFAULT_PROTOCOL_NAME,
-} from 'src/ui/components/Positions/types';
+import { DEFAULT_PROTOCOL_ID } from 'src/ui/components/Positions/types';
 import {
   DistributionChart,
   type DistributionItem,
@@ -18,10 +14,13 @@ import { PositionsListDialog } from './PositionsListDialog';
 import { DistributionItemTitle } from './DistributionItemTitle';
 
 /**
- * Protocol allocation on the Stats tab. Backend positions carry `dapp`, so we
- * group by `dapp.id` (the no-dapp bucket is `wallet` / "Wallet"). Each group is
- * summed **gross** — loans are added, not subtracted — so every tile area is
- * positive (diverging from the positions view's net `getFullPositionsValue`).
+ * DeFi protocol allocation on the Stats tab. Backend positions carry `dapp`, so
+ * we group by `dapp.id` and drop the synthetic no-dapp bucket (`wallet`) — plain
+ * token holdings aren't a protocol, so the chart reflects DeFi allocation only,
+ * with the remaining protocols re-normalized to 100% by the shared chart. Each
+ * group is summed **gross** — loans are added, not subtracted — so every tile
+ * area is positive (diverging from the positions view's net
+ * `getFullPositionsValue`).
  */
 export function ProtocolDistributionChart({ address }: { address: string }) {
   const { currency } = useCurrency();
@@ -39,23 +38,25 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
       return [];
     }
     const groups = groupPositionsByDapp(positions);
-    return Object.entries(groups).map(([dappId, groupPositions]) => {
-      const value = groupPositions.reduce(
-        (sum, position) => sum + (Number(position.value) || 0),
-        0
-      );
-      const isWallet = dappId === DEFAULT_PROTOCOL_ID;
-      const dapp = groupPositions.find((position) => position.dapp)?.dapp;
-      return {
-        id: dappId,
-        label: isWallet ? DEFAULT_PROTOCOL_NAME : dapp?.name ?? dappId,
-        value,
-        iconUrl: isWallet ? null : dapp?.icon_url ?? null,
-        iconNode: isWallet ? (
-          <WalletIcon style={{ width: 24, height: 24 }} />
-        ) : undefined,
-      };
-    });
+    return (
+      Object.entries(groups)
+        // Exclude the synthetic "Wallet" bucket (positions not in any dapp) so the
+        // chart reflects DeFi protocol allocation only.
+        .filter(([dappId]) => dappId !== DEFAULT_PROTOCOL_ID)
+        .map(([dappId, groupPositions]) => {
+          const value = groupPositions.reduce(
+            (sum, position) => sum + (Number(position.value) || 0),
+            0
+          );
+          const dapp = groupPositions.find((position) => position.dapp)?.dapp;
+          return {
+            id: dappId,
+            label: dapp?.name ?? dappId,
+            value,
+            iconUrl: dapp?.icon_url ?? null,
+          };
+        })
+    );
   }, [data]);
 
   const [selected, setSelected] = useState<DistributionItem | null>(null);
@@ -63,7 +64,7 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
   return (
     <>
       <DistributionChart
-        title="Protocol Distribution"
+        title="DeFi Distribution"
         titleIcon={<PieChartIcon style={{ width: 24, height: 24 }} />}
         items={items}
         currency={currency}
