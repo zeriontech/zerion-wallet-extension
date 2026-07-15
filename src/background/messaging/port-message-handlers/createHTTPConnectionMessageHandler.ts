@@ -11,6 +11,7 @@ import {
 } from 'src/shared/custom-rpc';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { invariant } from 'src/shared/invariant';
+import { isWhitelistedForZerionRpc } from 'src/shared/dapps/zerion-rpc-whitelist';
 import { getPortContext } from '../getPortContext';
 import { HttpConnection } from '../HttpConnection';
 import type { PortMessageHandler } from '../PortRegistry';
@@ -31,7 +32,10 @@ export function createHttpConnectionMessageHandler(
           .eth_chainId({ context, id: msg.id })
           .then((chainIdStr) => {
             const chainId = normalizeChainId(chainIdStr);
-            return wallet.getRpcUrlByChainId({ chainId, type: 'public' });
+            const type = isWhitelistedForZerionRpc(context.origin)
+              ? 'internal'
+              : 'public';
+            return wallet.getRpcUrlByChainId({ chainId, type });
           })
           .then((url) => {
             invariant(url, `HttpConnection: No RpcUrl for ${context.origin}`);
