@@ -24,6 +24,7 @@ import {
   TabPanelWrapper,
 } from 'src/ui/components/PositionSelector/NetworkChips';
 import { TokenRow } from 'src/ui/components/PositionSelector/TokenRow';
+import { TokenListSkeleton } from 'src/ui/components/PositionSelector/TokenListSkeleton';
 import { useTopNetworks } from 'src/ui/components/PositionSelector/useTopNetworks';
 import type { TopNetworksEntry } from 'src/ui/components/PositionSelector/useTopNetworks';
 import type { VirtualListItem } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
@@ -108,26 +109,6 @@ function resolveChain(networks: Networks, chainId: string) {
     chainIconUrl: network?.icon_url ?? '',
     chainName: network?.name ?? '',
   };
-}
-
-function TokenListSkeleton({ count }: { count: number }) {
-  return (
-    <>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={styles.skeletonRow}>
-          <div className={styles.skeletonIcon} />
-          <div className={styles.skeletonInfo}>
-            <div className={styles.skeletonLineLg} />
-            <div className={styles.skeletonLineSm} />
-          </div>
-          <div className={styles.skeletonValues}>
-            <div className={styles.skeletonValueLg} />
-            <div className={styles.skeletonValueSm} />
-          </div>
-        </div>
-      ))}
-    </>
-  );
 }
 
 function positionKey(chainId: string, fungibleId: string): string {
