@@ -113,6 +113,25 @@ function heldRow(position: FungiblePosition): RowItem {
 }
 
 /**
+ * Matches a fungible by contract address on any of its implementation chains,
+ * so that pasting an address surfaces held rows and not only the backend
+ * search results (which match addresses across all chains). Skipped for short
+ * queries: single hex chars occur in almost every address and would defeat
+ * the name/symbol filter.
+ */
+function matchesAddressQuery(fungible: Fungible, query: string): boolean {
+  if (query.length < 4) {
+    return false;
+  }
+  return (
+    fungible.id.toLowerCase().includes(query) ||
+    Object.values(fungible.implementations).some((impl) =>
+      impl.address ? impl.address.toLowerCase().includes(query) : false
+    )
+  );
+}
+
+/**
  * Orders a fungible's implementation chains so the ones already surfaced as
  * network chips come first (in chip order), then the rest in backend order.
  */
@@ -267,7 +286,8 @@ export function InputPositionSelector({
       result = result.filter(
         (p) =>
           normalizedContains(p.fungible.name.toLowerCase(), query) ||
-          normalizedContains(p.fungible.symbol.toLowerCase(), query)
+          normalizedContains(p.fungible.symbol.toLowerCase(), query) ||
+          matchesAddressQuery(p.fungible, query)
       );
     }
     return result.sort((a, b) => (b.amount.value || 0) - (a.amount.value || 0));
