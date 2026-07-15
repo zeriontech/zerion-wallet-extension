@@ -5,15 +5,13 @@ import type { Response } from 'src/modules/zerion-api/requests/search-query-fung
 import { isTruthy } from 'is-truthy-ts';
 import type { Params } from '../requests/search-query-fungibles';
 
-export function useSearchQueryFungibles({
-  query,
-  currency,
-  chain,
-  sort,
-  limit = 5,
-}: Params) {
+export function useSearchQueryFungibles(
+  { query, currency, chain, sort, limit = 5 }: Params,
+  { enabled = true }: { enabled?: boolean } = {}
+) {
   const queryData = useInfiniteQuery<Response | null>({
     queryKey: ['searchQueryFungibles', query, currency, chain, limit, sort],
+    enabled,
     queryFn: ({ pageParam }) => {
       return ZerionAPI.searchQueryFungibles({
         query,

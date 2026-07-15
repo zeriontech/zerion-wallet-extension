@@ -320,8 +320,8 @@ export function InputPosition({
         positions={positions}
         networks={networks}
         defaultSelectedTab={lastSelectedTab}
-        onSelect={(selected, selectedTab) => {
-          onSelectFungible(selected.chain.id, selected.fungible.id);
+        onSelect={(chainId, fungibleId, selectedTab) => {
+          onSelectFungible(chainId, fungibleId);
           setLastSelectedTab(selectedTab);
         }}
       />
