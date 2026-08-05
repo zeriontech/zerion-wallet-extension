@@ -29,5 +29,5 @@ export function usePreloadImages(urls: string[]) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urls.join(',')]);
+  }, [JSON.stringify(urls)]);
 }
