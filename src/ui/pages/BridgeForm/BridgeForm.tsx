@@ -25,6 +25,8 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { usePreferences } from 'src/ui/features/preferences';
+import { usePreloadImages } from 'src/ui/shared/usePreloadImages';
+import { PROTOCOL_ICONS_TO_PRELOAD } from 'src/ui/shared/protocolIconsToPreload';
 import { walletPort } from 'src/ui/shared/channels';
 import WarningIcon from 'jsx:src/ui/assets/warning.svg';
 import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
@@ -1819,6 +1821,7 @@ function BridgeFormComponent() {
 }
 
 export function BridgeForm() {
+  usePreloadImages(PROTOCOL_ICONS_TO_PRELOAD);
   const { preferences } = usePreferences();
   if (preferences?.testnetMode?.on) {
     return <Navigate to="/" />;

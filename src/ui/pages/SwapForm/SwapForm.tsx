@@ -65,6 +65,8 @@ import {
 import { AllowanceForm } from 'src/ui/components/AllowanceForm';
 import BigNumber from 'bignumber.js';
 import { usePreferences } from 'src/ui/features/preferences';
+import { usePreloadImages } from 'src/ui/shared/usePreloadImages';
+import { PROTOCOL_ICONS_TO_PRELOAD } from 'src/ui/shared/protocolIconsToPreload';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import {
@@ -1674,6 +1676,7 @@ function SwapFormPrepareChain({ children }: React.PropsWithChildren) {
 }
 
 export function SwapForm() {
+  usePreloadImages(PROTOCOL_ICONS_TO_PRELOAD);
   const { preferences } = usePreferences();
   if (preferences?.testnetMode?.on) {
     return <Navigate to="/" />;

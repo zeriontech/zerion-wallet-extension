@@ -58,6 +58,8 @@ import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { useBackgroundKind } from 'src/ui/components/Background';
+import { usePreloadImages } from 'src/ui/shared/usePreloadImages';
+import { PROTOCOL_ICONS_TO_PRELOAD } from 'src/ui/shared/protocolIconsToPreload';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
@@ -927,6 +929,7 @@ function SwapFormWrapper({
 }
 
 export function SwapForm2() {
+  usePreloadImages(PROTOCOL_ICONS_TO_PRELOAD);
   useBackgroundKind({ kind: 'white' });
   const { preferences } = usePreferences();
   const { singleAddress: address, ready } = useAddressParams();
