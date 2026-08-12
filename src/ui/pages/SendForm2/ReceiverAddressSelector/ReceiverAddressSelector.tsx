@@ -6,6 +6,7 @@ import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
+import { FullAddress } from 'src/ui/components/FullAddress';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -88,9 +89,6 @@ export function ReceiverAddressSelector({
       truncateAddress(normalizedTo, 4)
     );
   }, [normalizedTo, display]);
-
-  const addressHead = normalizedTo ? normalizedTo.slice(0, -6) : '';
-  const addressTail = normalizedTo ? normalizedTo.slice(-6) : '';
 
   const handleOpenAddToBook = useCallback(
     (event: React.MouseEvent) => {
@@ -185,22 +183,7 @@ export function ReceiverAddressSelector({
                 {renderRightAction()}
               </div>
               <div style={{ height: 4 }} />
-              <div className={styles.addressRow} title={normalizedTo}>
-                <UIText
-                  kind="caption/regular"
-                  color="var(--neutral-500)"
-                  className={styles.addressHead}
-                >
-                  {addressHead}
-                </UIText>
-                <UIText
-                  kind="caption/regular"
-                  color="var(--neutral-500)"
-                  className={styles.addressTail}
-                >
-                  {addressTail}
-                </UIText>
-              </div>
+              <FullAddress address={normalizedTo} />
             </>
           ) : (
             <>

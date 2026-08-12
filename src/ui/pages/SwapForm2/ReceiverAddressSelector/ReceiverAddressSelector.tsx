@@ -7,6 +7,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
+import { FullAddress } from 'src/ui/components/FullAddress';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -110,8 +111,6 @@ export function ReceiverAddressSelector({
   }
 
   const hasValue = Boolean(formState.to);
-  const addressHead = normalizedTo ? normalizedTo.slice(0, -6) : '';
-  const addressTail = normalizedTo ? normalizedTo.slice(-6) : '';
 
   return (
     <>
@@ -171,22 +170,7 @@ export function ReceiverAddressSelector({
                 >
                   {resolvedTitle}
                 </UIText>
-                <div className={styles.addressRow}>
-                  <UIText
-                    kind="caption/regular"
-                    color="var(--neutral-500)"
-                    className={styles.addressHead}
-                  >
-                    {addressHead}
-                  </UIText>
-                  <UIText
-                    kind="caption/regular"
-                    color="var(--neutral-500)"
-                    className={styles.addressTail}
-                  >
-                    {addressTail}
-                  </UIText>
-                </div>
+                <FullAddress address={normalizedTo} />
               </VStack>
             </div>
             <div className={styles.actions}>

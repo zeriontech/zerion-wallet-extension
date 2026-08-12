@@ -1,0 +1,17 @@
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(min-content, 1fr);
+  align-items: center;
+  min-width: 0;
+  justify-content: start;
+}
+
+.head {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tail {
+  white-space: nowrap;
+}

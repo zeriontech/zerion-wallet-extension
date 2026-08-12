@@ -4,6 +4,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
+import { FullAddress } from 'src/ui/components/FullAddress';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 
@@ -64,9 +65,9 @@ export function AddressListItem({
   const previewUrl = meta?.nft?.previewUrl ?? null;
   const firstHandle = meta?.identities?.[0]?.handle ?? null;
 
-  const truncated = truncateAddress(normalizeAddress(address), 5);
-  const title = localName || firstHandle || truncated;
-  const subtitle = truncated;
+  const normalizedAddress = normalizeAddress(address);
+  const title =
+    localName || firstHandle || truncateAddress(normalizedAddress, 5);
 
   return (
     <>
@@ -105,17 +106,7 @@ export function AddressListItem({
         >
           {title}
         </UIText>
-        <UIText
-          kind="caption/regular"
-          color="var(--neutral-500)"
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {subtitle}
-        </UIText>
+        <FullAddress address={normalizedAddress} />
       </VStack>
     </>
   );
