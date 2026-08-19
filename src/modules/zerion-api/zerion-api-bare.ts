@@ -39,6 +39,7 @@ import { depositGetQuotes } from './requests/deposit-get-quotes';
 import { depositGetPaymentLink } from './requests/deposit-get-payment-link';
 import { depositGetSupportedCountries } from './requests/deposit-get-supported-countries';
 import { geoGetCountry } from './requests/geo-get-country';
+import { transactionCollect } from './requests/transaction-collect';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -82,6 +83,7 @@ export const ZerionApiBare = {
   depositGetPaymentLink,
   depositGetSupportedCountries,
   geoGetCountry,
+  transactionCollect,
 };
 
 export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;

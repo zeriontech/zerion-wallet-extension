@@ -12,7 +12,7 @@ import {
   getPendingTransactions,
   isPendingTransaction,
 } from 'src/modules/ethereum/transactions/model';
-import { registerTransaction } from 'src/modules/defi-sdk/registerTransaction';
+import { registerTransaction } from 'src/modules/ethereum/transactions/registerTransaction';
 import {
   isLocalAddressAction,
   type AnyAddressAction,
