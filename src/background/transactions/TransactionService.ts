@@ -21,7 +21,7 @@ import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { getLatestNonceKnownByBackend } from 'src/modules/ethereum/transactions/getLatestNonceKnownByBackend';
+import { backendKnowsTransaction } from 'src/modules/ethereum/transactions/backendKnowsTransaction';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { invariant } from 'src/shared/invariant';
 import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
@@ -37,7 +37,6 @@ import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
 
 const FOUR_MINUTES_IN_MS = 1000 * 60 * 4;
-const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
 const ONE_DAY_IN_MINUTES = 1 * 60 * 24;
 
 class TransactionsStore extends PersistentStore<StoredTransactions> {
@@ -216,7 +215,7 @@ export class TransactionService {
 
     type Address = string;
     type Key = `${Address}:${ChainId}`;
-    const map = new Map<Key, { hash: string; timestamp: number }>();
+    const map = new Map<Key, { hash: string; nonce: number }>();
 
     for (const item of transactions) {
       if (!item.hash) {
@@ -224,33 +223,34 @@ export class TransactionService {
       }
       const chainId = normalizeChainId(item.transaction.chainId);
       const key = `${item.transaction.from}:${chainId}` as const;
-      map.set(key, { hash: item.hash, timestamp: item.timestamp });
+      map.set(key, { hash: item.hash, nonce: item.transaction.nonce });
     }
 
     const wallet = this.options?.getWallet();
     const preferences = await wallet?.getPreferences({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
-    const client = getDefiSdkClient({
-      on: Boolean(preferences?.testnetMode?.on),
-    });
+    const testnetMode = Boolean(preferences?.testnetMode?.on);
+    // Still needed by getNetworkByChainId; networks move off the defi-sdk
+    // client in WLT-2395.
+    const client = getDefiSdkClient({ on: testnetMode });
+    const source = testnetMode ? 'testnet' : 'mainnet';
 
-    for (const [key, { hash, timestamp }] of map.entries()) {
+    for (const [key, { hash, nonce }] of map.entries()) {
       const [address, chainIdStr] = key.split(':');
       const chainId = chainIdStr as ChainId;
       const network = await getNetworkByChainId(chainId, client);
       if (network?.supports_actions) {
-        const knownNonce = await getLatestNonceKnownByBackend({
+        // The nonce comes from the local store: the backend is only asked
+        // whether it has seen this hash yet.
+        const known = await backendKnowsTransaction({
           address,
           hash,
           chain: network.id,
-          // subtract one day to create a bigger search window
-          // to account for possible client-time/server-time inconsistencies
-          actions_since: new Date(timestamp - ONE_DAY_IN_MS - 1).toISOString(),
-          client,
+          source,
         });
-        if (knownNonce != null) {
-          this.purgeEntries({ address, chainId, fromNonce: knownNonce });
+        if (known) {
+          this.purgeEntries({ address, chainId, fromNonce: nonce });
         }
       }
     }
