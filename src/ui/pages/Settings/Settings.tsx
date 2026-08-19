@@ -31,11 +31,6 @@ import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { preferenceStore } from 'src/ui/features/appearance';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
-import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import {
-  ENABLE_DNA_BANNERS,
-  SettingsDnaBanners,
-} from 'src/ui/DNA/components/DnaBanners';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import {
@@ -104,7 +99,6 @@ function VersionButton() {
 }
 
 function SettingsMain() {
-  const { singleAddressNormalized } = useAddressParams();
   const navigate = useNavigate();
   const logout = useMutation({
     mutationFn: () => accountPublicRPCPort.request('logout'),
@@ -360,9 +354,6 @@ function SettingsMain() {
             </FrameListItemAnchor>
           </VStack>
         </Frame>
-        {ENABLE_DNA_BANNERS ? (
-          <SettingsDnaBanners address={singleAddressNormalized} />
-        ) : null}
         <UIText kind="small/regular" color="var(--neutral-500)">
           <HStack gap={4} alignItems="center" justifyContent="center">
             <UnstyledAnchor

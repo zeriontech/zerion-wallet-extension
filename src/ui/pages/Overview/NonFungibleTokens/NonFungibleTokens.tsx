@@ -29,10 +29,6 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import {
-  ENABLE_DNA_BANNERS,
-  NftTabDnaBanner,
-} from 'src/ui/DNA/components/DnaBanners';
 import { useStore } from '@store-unit/react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getAddressType } from 'src/shared/wallet/classifiers';
@@ -310,24 +306,7 @@ export function NonFungibleTokens({
             </div>
           ) : (
             <>
-              {ENABLE_DNA_BANNERS ? (
-                <NftTabDnaBanner
-                  address={singleAddressNormalized}
-                  style={{
-                    paddingInline: 16,
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: 36,
-                  }}
-                />
-              ) : null}
-              <div
-                style={{
-                  width: '100%',
-                  paddingTop: ENABLE_DNA_BANNERS ? 164 : 0,
-                }}
-              >
+              <div style={{ width: '100%' }}>
                 <VStack gap={6} style={{ textAlign: 'center', padding: 20 }}>
                   <UIText kind="headline/hero">🥺</UIText>
                   <UIText kind="small/accent" color="var(--neutral-500)">
@@ -360,13 +339,6 @@ export function NonFungibleTokens({
           />
         </div>
       ) : null}
-      {ENABLE_DNA_BANNERS ? (
-        <NftTabDnaBanner
-          address={singleAddressNormalized}
-          style={{ paddingInline: 16 }}
-        />
-      ) : null}
-
       <div
         style={{
           display: 'grid',
