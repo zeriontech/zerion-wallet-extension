@@ -13,10 +13,8 @@ import { SquareElement } from 'src/ui/ui-kit/SquareElement';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  useAddressNFTDistribution,
-  useNftsTotalValue,
-} from 'src/ui/shared/requests/addressNfts/useNftsTotalValue';
+import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import {
   getNftId,
   useAddressNfts,
@@ -189,11 +187,14 @@ export function NonFungibleTokens({
     singleAddressNormalized,
     singleAddress: address,
   } = useAddressParams();
-  const { value: nftDistribution } = useAddressNFTDistribution({
-    ...params,
-    currency,
-  });
-  const { value: nftTotalValue } = useNftsTotalValue(params);
+  const source = useHttpClientSource();
+  const { data: portfolioResponse } = useWalletPortfolio(
+    { addresses: [params.address], currency },
+    { source },
+    { enabled: ready }
+  );
+  const walletPortfolio = portfolioResponse?.data;
+  const nftTotalValue = walletPortfolio?.nfts.floorPrice ?? null;
   const chainValue = selectedChain || NetworkSelectValue.All;
   const addressType = getAddressType(address);
   const showNetworkSelector = addressType === 'evm';
@@ -240,7 +241,7 @@ export function NonFungibleTokens({
   const nftChainValue =
     chainValue === NetworkSelectValue.All
       ? nftTotalValue
-      : nftDistribution?.floor_price[chainValue];
+      : walletPortfolio?.nftChainsDistribution[chainValue];
 
   const emptyNetworkBalance = showNetworkSelector ? (
     <div
