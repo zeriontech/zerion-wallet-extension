@@ -1,45 +1,31 @@
-import type { CachePolicy } from 'defi-sdk';
-import { createDomainHook, client } from 'defi-sdk';
+import { useQuery } from '@tanstack/react-query';
+import type { Params } from 'src/modules/zerion-api/requests/wallet-check-activity';
+import type { BackendSourceParams } from 'src/modules/zerion-api/shared';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 
-const namespace = 'address';
-const scope = 'activity';
-
-type Params = { addresses: string[] };
-type Response = Record<string, { address: string; active: boolean }>;
-
-export const useAddressActivity = createDomainHook<
-  Params,
-  Response,
-  typeof namespace,
-  typeof scope
->({
-  namespace,
-  scope,
-});
-
-export async function getAddressActivity(
+/**
+ * `source` is required and has no default on purpose: this hook used to read the
+ * testnet/mainnet channel implicitly from `DefiSdkClientProvider`, so a default
+ * here would silently serve mainnet data in testnet mode.
+ */
+export function useAddressActivity(
   params: Params,
-  options?: { cachePolicy?: CachePolicy }
+  { source }: BackendSourceParams,
+  {
+    enabled = true,
+    keepPreviousData = false,
+  }: { enabled?: boolean; keepPreviousData?: boolean } = {}
 ) {
-  return new Promise<Response | null>((resolve, reject) => {
-    const rejectTimerId = setTimeout(
-      () => reject(new Error('Request timed out: getAddressActivity')),
-      10000
-    );
-    client.cachedSubscribe<Response, typeof namespace, typeof scope>({
-      method: 'get',
-      namespace,
-      body: {
-        scope: [scope],
-        payload: params,
-      },
-      onData: ({ value }) => {
-        if (value != null) {
-          resolve(value);
-          clearTimeout(rejectTimerId);
-        }
-      },
-      ...options,
-    });
+  const query = useQuery({
+    queryKey: ['walletCheckActivity', params, source],
+    queryFn: () => ZerionAPI.walletCheckActivity(params, { source }),
+    enabled: enabled && params.addresses.length > 0,
+    keepPreviousData,
+    staleTime: 20000,
   });
+  return {
+    ...query,
+    isLoading: query.isInitialLoading,
+    value: query.data ?? null,
+  };
 }
