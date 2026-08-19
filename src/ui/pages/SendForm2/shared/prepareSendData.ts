@@ -1,6 +1,7 @@
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { createSendNativeOrContractTransaction } from '@zeriontech/transactions';
-import type { AddressPosition, Client } from 'defi-sdk';
+import type { Client } from 'defi-sdk';
+import type { AddressPosition } from 'src/defi-sdk.types';
 import {
   adjustedCheckEligibility,
   fetchAndAssignPaymaster,

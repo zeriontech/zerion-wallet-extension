@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { AddressPositionDappInfo } from 'defi-sdk';
+import type { AddressPositionDappInfo } from 'src/defi-sdk.types';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';

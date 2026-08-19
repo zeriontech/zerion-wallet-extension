@@ -1,5 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js';
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'src/defi-sdk.types';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Networks } from 'src/modules/networks/Networks';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';

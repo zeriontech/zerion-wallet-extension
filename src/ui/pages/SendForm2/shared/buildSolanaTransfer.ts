@@ -12,7 +12,7 @@ import {
   getMint,
   createAssociatedTokenAccountInstruction,
 } from '@solana/spl-token';
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'src/defi-sdk.types';
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { Networks } from 'src/modules/networks/Networks';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';

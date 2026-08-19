@@ -8,7 +8,7 @@ import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import UnknownIcon from 'jsx:src/ui/assets/actionTypes/unknown.svg';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
-import type { Asset } from 'defi-sdk';
+import type { Asset } from 'src/defi-sdk.types';
 import BigNumber from 'bignumber.js';
 import { collectData } from 'src/ui/shared/form-data';
 import { Spacer } from 'src/ui/ui-kit/Spacer';

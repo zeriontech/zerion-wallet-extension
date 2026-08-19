@@ -1,4 +1,4 @@
-import type { Asset } from 'defi-sdk';
+import type { Asset } from 'src/defi-sdk.types';
 import React from 'react';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { usePreferences } from 'src/ui/features/preferences';

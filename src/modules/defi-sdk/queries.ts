@@ -1,4 +1,4 @@
-import type { AddressPosition, Asset } from 'defi-sdk';
+import type { AddressPosition, Asset } from 'src/defi-sdk.types';
 import { type Client, type client as clientType } from 'defi-sdk';
 import type { ResponseData as AssetsPricesReponseData } from 'defi-sdk/lib/domains/assetsPrices';
 import { backgroundCache } from 'src/modules/defi-sdk';

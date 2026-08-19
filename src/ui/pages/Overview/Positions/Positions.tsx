@@ -1,4 +1,7 @@
-import type { AddressPosition, AddressPositionDappInfo } from 'defi-sdk';
+import type {
+  AddressPosition,
+  AddressPositionDappInfo,
+} from 'src/defi-sdk.types';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Tooltip, TooltipAnchor, TooltipProvider } from 'src/ui/ui-kit/Tooltip';
 import {

@@ -1,5 +1,5 @@
 import { capitalize } from 'capitalize-ts';
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'src/defi-sdk.types';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 
 export function createAddressPosition({

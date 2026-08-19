@@ -1,4 +1,4 @@
-import type { NFT } from 'defi-sdk';
+import type { NFT } from 'src/defi-sdk.types';
 import type { NftPosition } from 'src/modules/zerion-api/requests/wallet-get-nft-positions';
 
 /**

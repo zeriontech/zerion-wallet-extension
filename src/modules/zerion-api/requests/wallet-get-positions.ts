@@ -3,7 +3,7 @@ import type {
   Asset as DefiSdkAsset,
   AddressPositionDappInfo as DefiSdkAddressPositionDappInfo,
   PositionType,
-} from 'defi-sdk';
+} from 'src/defi-sdk.types';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { ClientOptions } from '../shared';
 import { ZerionHttpClient } from '../shared';

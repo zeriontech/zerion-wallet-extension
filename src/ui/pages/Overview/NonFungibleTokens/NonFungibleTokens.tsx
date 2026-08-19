@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { AddressNFT } from 'defi-sdk';
+import type { AddressNFT } from 'src/defi-sdk.types';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import TickIcon from 'jsx:src/ui/assets/check.svg';
 import comingSoonImgSrc from 'url:src/ui/assets/coming-soon@2x.png';

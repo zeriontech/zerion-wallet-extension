@@ -1,4 +1,4 @@
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'src/defi-sdk.types';
 
 export enum PositionsGroupType {
   platform = 'platform',

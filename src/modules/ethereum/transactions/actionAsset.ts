@@ -1,4 +1,4 @@
-import type { ActionAsset, Asset, NFTAsset } from 'defi-sdk';
+import type { ActionAsset, Asset, NFTAsset } from 'src/defi-sdk.types';
 
 export function getFungibleAsset(asset?: ActionAsset) {
   if (

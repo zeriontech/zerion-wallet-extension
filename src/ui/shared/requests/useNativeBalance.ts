@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { type AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'src/defi-sdk.types';
 import type { Chain } from 'src/modules/networks/Chain';
 import { baseToCommon } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';
