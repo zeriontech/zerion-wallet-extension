@@ -1,1 +1,0 @@
-export { MarketAssetSelect } from './MarketAssetSelect';

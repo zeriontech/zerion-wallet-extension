@@ -1,1 +1,0 @@
-export { SendForm } from './SendForm';

@@ -26,7 +26,7 @@ import { applyConfiguration } from 'src/ui/pages/SendTransaction/TransactionConf
 import {
   fromConfiguration,
   toConfiguration,
-} from 'src/ui/pages/SendForm/shared/helpers';
+} from 'src/ui/shared/forms/networkFeeConfiguration';
 import { PageColumn } from 'src/ui/components/PageColumn/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -73,12 +73,12 @@ import { ReadonlySignButton } from 'src/ui/pages/SwapForm2/ReadonlySignButton';
 import { useReceiverName } from 'src/ui/components/ReceiverAddressDialog';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
-import { updateRecentAddresses } from 'src/ui/pages/SendForm/fieldsets/AddressInput/updateRecentAddresses';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import { updateRecentAddresses } from './shared/updateRecentAddresses';
 import type { SendFormState2 } from './types';
 import { useFormState } from './useFormState';
 import { useInputPosition } from './useInputPosition';

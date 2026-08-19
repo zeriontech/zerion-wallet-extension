@@ -1,1 +1,0 @@
-export { TransactionConfirmationView } from './TransactionConfirmationView';

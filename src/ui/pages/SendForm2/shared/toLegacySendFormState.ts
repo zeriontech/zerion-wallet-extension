@@ -1,5 +1,5 @@
-import type { SendFormState } from 'src/ui/pages/SendForm/shared/SendFormState';
 import type { SendFormState2 } from '../types';
+import type { SendFormState } from './SendFormState';
 
 export function toLegacySendFormState(
   s: SendFormState2,

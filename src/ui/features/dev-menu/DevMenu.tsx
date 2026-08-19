@@ -13,7 +13,6 @@ import {
 } from 'src/ui/ui-kit/SegmentedControl';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { devForceShowSwapOnboarding } from 'src/ui/pages/SwapForm2/SwapOnboardingDialog/devForceShowStore';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import {
@@ -323,39 +322,6 @@ export function DevMenu() {
                       reset (dismissed:{' '}
                       {perpsOnboardingDismissed ? 'yes' : 'no'})
                     </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <span className={styles.sectionTitle}>navigation</span>
-                  <span className={styles.sectionRule} />
-                </div>
-                <div className={styles.row}>
-                  <span className={styles.rowLabel}>legacy_forms</span>
-                  <div className={styles.navLinks}>
-                    <UnstyledLink
-                      to="/send-form-old"
-                      className={styles.navLink}
-                      onClick={() => popoverStore.hide()}
-                    >
-                      send (old)
-                    </UnstyledLink>
-                    <UnstyledLink
-                      to="/swap-form-old"
-                      className={styles.navLink}
-                      onClick={() => popoverStore.hide()}
-                    >
-                      swap (old)
-                    </UnstyledLink>
-                    <UnstyledLink
-                      to="/bridge-form-old"
-                      className={styles.navLink}
-                      onClick={() => popoverStore.hide()}
-                    >
-                      bridge
-                    </UnstyledLink>
                   </div>
                 </div>
               </div>

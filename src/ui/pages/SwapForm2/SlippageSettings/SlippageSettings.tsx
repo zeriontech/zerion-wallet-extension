@@ -10,8 +10,8 @@ import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { isNumeric } from 'src/shared/isNumeric';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { Chain } from 'src/modules/networks/Chain';
+import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import * as styles from './styles.module.css';
-import { getSlippageOptions } from './getSlippageOptions';
 
 function Radio({
   name,

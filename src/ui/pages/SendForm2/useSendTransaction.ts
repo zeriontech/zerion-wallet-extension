@@ -21,7 +21,7 @@ import type {
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
-import { prepareSendData } from 'src/ui/pages/SendForm/shared/prepareSendData';
+import { prepareSendData } from './shared/prepareSendData';
 import { isAmountEntered, isZeroAmount } from './shared/amount';
 import { fungiblePositionToAddressPosition } from './shared/fungiblePositionToAddressPosition';
 import { toLegacySendFormState } from './shared/toLegacySendFormState';

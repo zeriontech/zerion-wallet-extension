@@ -5,7 +5,7 @@ import { formatPercent } from 'src/shared/units/formatPercent';
 import {
   getPriceImpactPercentage,
   type PriceImpact,
-} from '../../SwapForm/shared/price-impact';
+} from '../shared/price-impact';
 import * as styles from './PriceImpactWarning.module.css';
 
 export function PriceImpactWarning({

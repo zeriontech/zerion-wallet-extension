@@ -68,9 +68,7 @@ import { useBodyStyle } from '../components/Background/Background';
 import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarningPage';
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
-import { SendForm } from '../pages/SendForm';
 import { SendForm2 } from '../pages/SendForm2/SendForm2';
-// import { SwapForm } from '../pages/SwapForm';
 import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
 import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
@@ -88,7 +86,6 @@ import { AssetInfo } from '../pages/AssetInfo';
 import { ProgrammaticNavigationHelper } from '../shared/routing/ProgrammaticNavigationHelper';
 import { Invite } from '../features/referral-program';
 import { XpDrop } from '../features/xp-drop';
-// import { BridgeForm } from '../pages/BridgeForm';
 import { ActionInfo } from '../pages/ActionInfo';
 import { TurnstileTokenHandler } from '../features/turnstile';
 import { AnalyticsIdHandler } from '../shared/analytics/AnalyticsIdHandler';
@@ -104,8 +101,6 @@ import {
   PerpsTrade,
   PerpsWithdraw,
 } from '../pages/Perps';
-import { SwapForm } from '../pages/SwapForm/SwapForm';
-import { BridgeForm } from '../pages/BridgeForm';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -456,30 +451,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           element={
             <RequireAuth>
               <SendForm2 />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/send-form-old/*"
-          element={
-            <RequireAuth>
-              <SendForm />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/swap-form-old/*"
-          element={
-            <RequireAuth>
-              <SwapForm />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/bridge-form-old/*"
-          element={
-            <RequireAuth>
-              <BridgeForm />
             </RequireAuth>
           }
         />

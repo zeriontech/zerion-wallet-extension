@@ -62,11 +62,14 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { calculatePriceImpactFromPositions } from '../SwapForm/shared/price-impact';
-import { getSlippageOptions } from '../SwapForm/SlippageSettings/getSlippageOptions';
-import { fromConfiguration, toConfiguration } from '../SendForm/shared/helpers';
+import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
+import {
+  fromConfiguration,
+  toConfiguration,
+} from 'src/ui/shared/forms/networkFeeConfiguration';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
+import { calculatePriceImpactFromPositions } from './shared/price-impact';
 import { applyTransactionConfiguration } from './applyTransactionConfiguration';
 import { useSwapQuote } from './useSwapQuote';
 import { useFormState } from './useFormState';
