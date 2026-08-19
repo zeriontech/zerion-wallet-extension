@@ -34,6 +34,7 @@ import {
 } from 'src/shared/units/formatGasPrice';
 import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
@@ -164,7 +165,8 @@ function CustomNetworkFeeForm({
   const { currency } = useCurrency();
   const [configuration, setConfiguration] = useState(value);
 
-  const { value: nativeAsset } = useNativeAsset(chain);
+  const source = useHttpClientSource();
+  const { value: nativeAsset } = useNativeAsset(chain, { source });
   const { data: gasEstimation, isError: isGasEstimationError } = useEstimateGas(
     { transaction }
   );

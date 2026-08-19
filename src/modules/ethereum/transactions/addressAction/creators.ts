@@ -1,10 +1,7 @@
 import type { Client } from 'defi-sdk';
 import { nanoid } from 'nanoid';
+import { isTestClient } from 'src/modules/defi-sdk/isTestClient';
 import { capitalize } from 'capitalize-ts';
-import {
-  fetchAssetFromCacheOrAPI,
-  type CachedAssetQuery,
-} from 'src/modules/defi-sdk/queries';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { valueToHex } from 'src/shared/units/valueToHex';
@@ -27,6 +24,7 @@ import {
 } from '../describeTransaction';
 import type { ChainId } from '../ChainId';
 import { getTransactionObjectStatus } from '../getTransactionObjectStatus';
+import { fetchAssetFromAPI, type AssetQuery } from './fetchAssetFromAPI';
 import {
   convertAssetToFungible,
   getExplorerUrl,
@@ -39,27 +37,28 @@ export async function createActionContent(
   currency: string,
   client: Client
 ): Promise<AddressAction['content']> {
+  // The callers still thread the defi-sdk client (WLT-2395 converts them to
+  // NetworksSource threading); translate here so the asset lookup is pure ZPI.
+  const source = isTestClient(client) ? 'testnet' : 'mainnet';
   switch (action.type) {
     case 'execute':
     case 'send': {
       if (!action.amount) {
         return null;
       }
-      const query: CachedAssetQuery = action.isNativeAsset
+      const query: AssetQuery = action.isNativeAsset
         ? {
             isNative: true,
-            chain: action.chain,
             id: action.assetId,
             address: action.assetAddress,
             currency,
           }
         : {
             isNative: false,
-            chain: action.chain,
             address: action.assetAddress,
             currency,
           };
-      const asset = await fetchAssetFromCacheOrAPI(query, client);
+      const asset = await fetchAssetFromAPI(query, source);
       if (!asset || !action.amount) {
         return null;
       }
@@ -88,14 +87,13 @@ export async function createActionContent(
       };
     }
     case 'revoke': {
-      const asset = await fetchAssetFromCacheOrAPI(
+      const asset = await fetchAssetFromAPI(
         {
           isNative: false,
-          chain: action.chain,
           address: action.assetAddress,
           currency,
         },
-        client
+        source
       );
       if (!asset) {
         return null;
@@ -114,14 +112,13 @@ export async function createActionContent(
       };
     }
     case 'approve': {
-      const asset = await fetchAssetFromCacheOrAPI(
+      const asset = await fetchAssetFromAPI(
         {
           isNative: false,
-          chain: action.chain,
           address: action.assetAddress,
           currency,
         },
-        client
+        source
       );
       if (!asset) {
         return null;

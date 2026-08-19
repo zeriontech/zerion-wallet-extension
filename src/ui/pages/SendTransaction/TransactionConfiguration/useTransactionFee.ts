@@ -9,6 +9,7 @@ import type {
 } from '@zeriontech/transactions';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -255,8 +256,9 @@ export function useTransactionFee({
     [chainGasPrices, transactionGasPrice]
   );
 
+  const source = useHttpClientSource();
   const { value: nativeAsset, isLoading: isLoadingNativeAsset } =
-    useNativeAsset(chain);
+    useNativeAsset(chain, { source });
   const { networks } = useNetworks();
 
   const { data: nativeBalance } = useNativeBalance({
