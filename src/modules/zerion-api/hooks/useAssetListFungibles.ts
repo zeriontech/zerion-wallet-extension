@@ -4,12 +4,16 @@ import { type Params } from '../requests/asset-list-fungibles';
 
 export function useAssetListFungibles(
   params: Params,
-  { suspense = false }: { suspense?: boolean } = {}
+  {
+    suspense = false,
+    enabled = true,
+  }: { suspense?: boolean; enabled?: boolean } = {}
 ) {
   return useQuery({
     queryKey: ['assetListFungibles', params],
     queryFn: () => ZerionAPI.assetListFungibles(params),
     suspense,
+    enabled,
     staleTime: 20000,
   });
 }
