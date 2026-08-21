@@ -99,6 +99,22 @@ function DepositFormView({ address }: { address: string }) {
     setUserPaymentMethodId(null);
   }, [currency, outputFungibleId, outputChain, countryId]);
 
+  const handoffMutation = useDepositHandoff({ address, formState });
+
+  // A failed hand-off is about one specific quote, so any input that re-prices
+  // makes the error stale — otherwise the callout outlives what it describes
+  const resetHandoff = handoffMutation.reset;
+  useEffect(() => {
+    resetHandoff();
+  }, [
+    resetHandoff,
+    currency,
+    outputFungibleId,
+    outputChain,
+    countryId,
+    fiatValue,
+  ]);
+
   const quotes = quotesQuery.data?.data.quotes ?? null;
 
   const selectedQuote = useMemo(() => {
@@ -118,8 +134,6 @@ function DepositFormView({ address }: { address: string }) {
     );
     return userMethod ?? methods?.at(0) ?? null;
   }, [selectedQuote, userPaymentMethodId]);
-
-  const handoffMutation = useDepositHandoff({ address, formState });
 
   const outputPreview = useOutputAssetPreview({
     address,

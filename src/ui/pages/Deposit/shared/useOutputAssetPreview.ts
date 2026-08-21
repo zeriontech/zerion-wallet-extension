@@ -68,7 +68,11 @@ export function useOutputAssetPreview({
 
     // The quote is authoritative: it echoes back the asset and chain the
     // provider actually priced
-    if (quote && quote.asset.id === outputFungibleId) {
+    if (
+      quote &&
+      quote.asset.id === outputFungibleId &&
+      quote.chain.id === outputChain
+    ) {
       return fromOnrampAsset({ asset: quote.asset, chain: quote.chain });
     }
 

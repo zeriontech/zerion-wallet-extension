@@ -31,11 +31,11 @@ export function CountryFlag({
       role="presentation"
       style={{
         display: 'block',
-        width: size,
+        // Reserves the emoji's width so rows line up, but does not clip: on
+        // Windows the fallback is two letters, which are wider than one flag
+        minWidth: size,
         fontSize: size,
         lineHeight: 1,
-        // Keeps the two-letter Windows fallback from pushing the row wider
-        overflow: 'hidden',
         whiteSpace: 'nowrap',
       }}
     >
