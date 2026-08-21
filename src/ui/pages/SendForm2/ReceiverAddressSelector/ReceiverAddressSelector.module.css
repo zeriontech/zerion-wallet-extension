@@ -61,24 +61,6 @@
   pointer-events: auto;
 }
 
-.addressRow {
-  display: grid;
-  grid-template-columns: auto minmax(min-content, 1fr);
-  align-items: center;
-  min-width: 0;
-  justify-content: start;
-}
-
-.addressHead {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.addressTail {
-  white-space: nowrap;
-}
-
 .skeletonAvatar {
   width: 24px;
   height: 24px;

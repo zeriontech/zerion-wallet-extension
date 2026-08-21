@@ -80,20 +80,3 @@
   flex: 1;
   padding-right: 36px;
 }
-
-.addressRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  min-width: 0;
-}
-
-.addressHead {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.addressTail {
-  white-space: nowrap;
-}
