@@ -6,14 +6,11 @@ import { getAddressType } from 'src/shared/wallet/classifiers';
 import { usePreferences } from 'src/ui/features/preferences';
 import { walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
-import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
+import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-
-const ZERION_ORIGIN = 'https://app.zerion.io';
 
 export function EmptyPositionsViewLegacy() {
   const { data: wallet } = useQuery({
@@ -31,7 +28,6 @@ export function EmptyPositionsViewLegacy() {
   });
 
   const { preferences } = usePreferences();
-  const addWalletParams = useWalletParams(wallet);
   const navigate = useNavigate();
 
   const isTestnetMode = preferences?.testnetMode?.on;
@@ -107,16 +103,22 @@ export function EmptyPositionsViewLegacy() {
         </VStack>
       </VStack>
       <VStack gap={8}>
-        <Button
-          size={48}
-          kind="primary"
-          as={UnstyledAnchor}
-          href={`${ZERION_ORIGIN}/deposit?${addWalletParams}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Buy Crypto with Card
-        </Button>
+        <WithMainnetOnlyWarningDialog<'a'>
+          message="Testnets are not supported in Buy Crypto"
+          render={({ handleClick }) => (
+            <Button
+              size={48}
+              kind="primary"
+              as={UnstyledLink}
+              to="/deposit"
+              onClick={(event: React.MouseEvent<HTMLAnchorElement>) =>
+                handleClick(event)
+              }
+            >
+              Buy Crypto with Card
+            </Button>
+          )}
+        />
         <Button
           size={44}
           kind="regular"
