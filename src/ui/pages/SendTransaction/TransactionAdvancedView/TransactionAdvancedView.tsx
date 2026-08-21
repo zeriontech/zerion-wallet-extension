@@ -23,11 +23,22 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import { Networks } from 'src/modules/networks/Networks';
 import { RecipientLine } from 'src/ui/components/address-action/RecipientLine';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
+import type { StringBase64 } from 'src/shared/types/StringBase64';
+import type { OneOf } from 'src/shared/type-utils/OneOf';
+
+/**
+ * Unlike {MultichainTransaction}, the solana variant holds a _list_ of raw
+ * transactions, because a `signAllTransactions` request signs a batch and the
+ * user must be able to inspect every transaction in it, not just the first.
+ */
+export type AdvancedViewTransaction = OneOf<{
+  evm: IncomingTransaction;
+  solana: StringBase64[];
+}>;
 
 function maybeHexValue(value?: BigNumberish | null): string | null {
   return value ? valueToHex(value) : null;
@@ -182,16 +193,19 @@ export function TransactionAdvancedView({
   onCopyData,
 }: {
   network: NetworkConfig;
-  transaction: MultichainTransaction;
+  transaction: AdvancedViewTransaction;
   interpretation?: InterpretResponse | null;
-  addressAction: AnyAddressAction;
+  /** `null` when the transaction could not be interpreted */
+  addressAction: AnyAddressAction | null;
   onCopyData?: () => void;
 }) {
   const transactionFormatted = useMemo(() => {
     if (transaction.evm) {
       return JSON.stringify(transaction.evm, null, 2);
+    } else if (transaction.solana.length === 1) {
+      return transaction.solana[0];
     } else {
-      return transaction.solana;
+      return JSON.stringify(transaction.solana, null, 2);
     }
   }, [transaction]);
 
@@ -209,7 +223,7 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {addressAction.label?.wallet ? (
+        {addressAction?.label?.wallet ? (
           <RecipientLine
             recipientAddress={addressAction.label.wallet.address}
             recipientName={addressAction.label.wallet.name || null}
@@ -217,7 +231,7 @@ export function TransactionAdvancedView({
             showNetworkIcon={true}
           />
         ) : null}
-        {addressAction.label?.contract ? (
+        {addressAction?.label?.contract ? (
           <ApplicationLine addressAction={addressAction} network={network} />
         ) : null}
         {transaction.evm ? (
@@ -227,9 +241,18 @@ export function TransactionAdvancedView({
             interpretation={interpretation}
           />
         ) : (
-          <Surface style={{ padding: 12, overflowWrap: 'break-word' }}>
-            {transaction.solana}
-          </Surface>
+          transaction.solana.map((rawTransaction, index) => (
+            <VStack gap={4} key={`${index}-${rawTransaction}`}>
+              {transaction.solana.length > 1 ? (
+                <UIText kind="small/regular" color="var(--neutral-500)">
+                  {`Transaction ${index + 1} of ${transaction.solana.length}`}
+                </UIText>
+              ) : null}
+              <Surface style={{ padding: 12, overflowWrap: 'break-word' }}>
+                {rawTransaction}
+              </Surface>
+            </VStack>
+          ))
         )}
       </VStack>
       <Spacer height={24} />

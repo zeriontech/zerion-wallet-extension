@@ -18,7 +18,8 @@ export function TransactionWarnings({
 }: {
   address: string;
   transaction: IncomingTransaction;
-  addressAction: AnyAddressAction;
+  /** `null` when the transaction could not be interpreted */
+  addressAction: AnyAddressAction | null;
   network: NetworkConfig;
   networkFeeConfiguration: NetworkFeeConfiguration;
   paymasterEligible: boolean;
@@ -26,7 +27,7 @@ export function TransactionWarnings({
   return (
     <ZStack hideLowerElements={true}>
       <RenderArea name="transaction-warning-section" />
-      {addressAction.status === 'failed' ? (
+      {addressAction?.status === 'failed' ? (
         <>
           <TransactionWarning
             title="Transaction may fail"
