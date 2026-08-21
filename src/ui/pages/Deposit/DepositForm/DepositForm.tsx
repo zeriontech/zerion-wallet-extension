@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getError } from 'get-error';
+import { useLocation } from 'react-router-dom';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import { CURRENCIES } from 'src/modules/currency/currencies';
@@ -7,12 +8,14 @@ import { useDepositQuotes } from 'src/modules/zerion-api/hooks/useDepositQuotes'
 import { isNumeric } from 'src/shared/isNumeric';
 import { Background } from 'src/ui/components/Background';
 import { Callout } from 'src/ui/components/Callout';
+import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { TokenAndNetworkIcon } from 'src/ui/components/TokenAndNetworkIcon';
 import { Button } from 'src/ui/ui-kit/Button';
+import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
@@ -23,9 +26,12 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { DepositSettingsDialog } from '../DepositSettings';
+import { getCountryName } from '../shared/country';
 import { FormFieldset } from '../shared/FormFieldset';
 import { useApplePaySupported } from '../shared/useApplePaySupported';
 import { useDepositFormState } from '../shared/useDepositFormState';
+import { useDepositHandoff } from '../shared/useDepositHandoff';
 import { useOutputAssetPreview } from '../shared/useOutputAssetPreview';
 import { CurrencySelectDialog } from './CurrencySelectDialog';
 import { DepositFormSkeleton } from './DepositFormSkeleton';
@@ -37,6 +43,8 @@ function DepositFormView({ address }: { address: string }) {
   const {
     formState,
     handleChange,
+    setCountryId,
+    countries,
     countryIsSupported,
     isLoading: isFormStateLoading,
   } = useDepositFormState({ address });
@@ -44,7 +52,9 @@ function DepositFormView({ address }: { address: string }) {
   const { fiatValue, currency, outputFungibleId, outputChain, countryId } =
     formState;
 
+  const { search } = useLocation();
   const currencyDialog = useDialog2();
+  const settingsDialog = useDialog2();
 
   // Resolved before the quote is requested so the answer is part of its query
   // key rather than an invisible dependency of it
@@ -109,12 +119,31 @@ function DepositFormView({ address }: { address: string }) {
     return userMethod ?? methods?.at(0) ?? null;
   }, [selectedQuote, userPaymentMethodId]);
 
+  const handoffMutation = useDepositHandoff({ address, formState });
+
   const outputPreview = useOutputAssetPreview({
     address,
     outputFungibleId,
     outputChain,
     quote: selectedQuote,
   });
+
+  /**
+   * The money lands on whichever address is selected, including one the user
+   * merely watches. That is a legitimate way to top up a cold wallet, so this
+   * warns rather than blocks — reusing the same gate the send and swap forms
+   * put in front of a watch-only recipient.
+   */
+  const fireHandoff = useCallback(() => {
+    if (selectedQuote && selectedPaymentMethod) {
+      handoffMutation.mutate({
+        quote: selectedQuote,
+        paymentMethodId: selectedPaymentMethod.id,
+      });
+    }
+  }, [handoffMutation, selectedQuote, selectedPaymentMethod]);
+  const { guardedFire: guardedHandoff, dialog: readonlyReceiverDialog } =
+    useReadonlyReceiverGate({ to: address, fire: fireHandoff });
 
   const noQuotes = quotesQuery.isSuccess && quotes?.length === 0;
 
@@ -143,7 +172,9 @@ function DepositFormView({ address }: { address: string }) {
     <Background backgroundKind="white">
       <PageColumn>
         <PageTop />
-        <NavigationTitle title="Buy Crypto" backTo="/deposit" />
+        {/* Both directions carry the search string, so switching the token
+            doesn't wipe the amount already typed */}
+        <NavigationTitle title="Buy Crypto" backTo={`/deposit${search}`} />
         <form onSubmit={(event) => event.preventDefault()}>
           <VStack gap={16}>
             <HStack
@@ -161,9 +192,7 @@ function DepositFormView({ address }: { address: string }) {
                 size={32}
                 title="Change provider"
                 aria-label="Change provider"
-                onClick={() => {
-                  // Wired up in the settings slice
-                }}
+                onClick={settingsDialog.openDialog}
               >
                 <SettingsIcon
                   style={{ display: 'block', width: 20, height: 20 }}
@@ -226,7 +255,7 @@ function DepositFormView({ address }: { address: string }) {
                 endTitle={null}
                 startContent={
                   <UnstyledLink
-                    to="/deposit"
+                    to={`/deposit${search}`}
                     className={styles.currencyButton}
                     title="Change token"
                   >
@@ -284,6 +313,15 @@ function DepositFormView({ address }: { address: string }) {
               />
             </VStack>
 
+            {countryId && !countryIsSupported ? (
+              <Callout
+                title={`No providers in ${getCountryName(countryId)}`}
+                description="We have no on-ramp partner covering that country. If your card was issued somewhere else, change the country below."
+              />
+            ) : null}
+            {!countryId ? (
+              <Callout description="Tell us the country of your card or bank account so we can find providers that serve it." />
+            ) : null}
             {clampedToMinimum != null && selectedQuote ? (
               <Callout
                 description={`${
@@ -291,7 +329,8 @@ function DepositFormView({ address }: { address: string }) {
                 } has a minimum of ${clampedToMinimum} ${currency?.toUpperCase()}. That is what you will be charged.`}
               />
             ) : null}
-            {noQuotes ? (
+            {/* An unsupported country already explains the empty quote list */}
+            {noQuotes && countryIsSupported ? (
               <Callout description="No providers support this purchase. Try a different amount or currency." />
             ) : null}
             {quotesQuery.isError ? (
@@ -300,32 +339,53 @@ function DepositFormView({ address }: { address: string }) {
                 description={getError(quotesQuery.error).message}
               />
             ) : null}
+            {handoffMutation.isError ? (
+              <Callout
+                kind="negative"
+                title="Could not reach the provider"
+                description={getError(handoffMutation.error).message}
+              />
+            ) : null}
 
-            <Button
-              kind="primary"
-              disabled={
-                !countryIsSupported || !selectedQuote || quotesQuery.isFetching
-              }
-              onClick={() => {
-                // Wired up in the hand-off slice
-              }}
-            >
-              {selectedQuote
-                ? `Continue with ${selectedQuote.provider.name}`
-                : !countryIsSupported
-                ? 'Change country settings'
-                : noQuotes
-                ? 'No Providers Available'
-                : 'Enter Amount'}
-            </Button>
+            {countryIsSupported ? (
+              <Button
+                kind="primary"
+                disabled={
+                  !selectedQuote ||
+                  !selectedPaymentMethod ||
+                  quotesQuery.isFetching ||
+                  handoffMutation.isLoading
+                }
+                onClick={guardedHandoff}
+              >
+                {handoffMutation.isLoading ? (
+                  <HStack gap={8} alignItems="center">
+                    <CircleSpinner color="currentColor" />
+                    <span>Opening {selectedQuote?.provider.name}…</span>
+                  </HStack>
+                ) : selectedQuote ? (
+                  `Continue with ${selectedQuote.provider.name}`
+                ) : noQuotes ? (
+                  'No Providers Available'
+                ) : (
+                  'Enter Amount'
+                )}
+              </Button>
+            ) : (
+              <Button
+                kind="primary"
+                type="button"
+                onClick={settingsDialog.openDialog}
+              >
+                {countryId ? 'Change Country' : 'Select Country'}
+              </Button>
+            )}
 
             {selectedQuote ? (
               <UnstyledButton
                 type="button"
                 className={styles.settingsSummary}
-                onClick={() => {
-                  // Wired up in the settings slice
-                }}
+                onClick={settingsDialog.openDialog}
               >
                 <HStack gap={8} alignItems="center" justifyContent="center">
                   <UIText
@@ -347,11 +407,28 @@ function DepositFormView({ address }: { address: string }) {
         <Spacer height={16} />
         <PageBottom />
       </PageColumn>
+      {readonlyReceiverDialog}
       <CurrencySelectDialog
         open={currencyDialog.open}
         onClose={currencyDialog.closeDialog}
         value={currency}
         onSelect={(code) => handleChange('currency', code)}
+      />
+      <DepositSettingsDialog
+        open={settingsDialog.open}
+        onClose={settingsDialog.closeDialog}
+        countries={countries}
+        countryId={countryId}
+        onCountryChange={setCountryId}
+        quotes={quotes}
+        selectedQuote={selectedQuote}
+        onProviderChange={(providerId) => {
+          setUserProviderId(providerId);
+          // The new provider may not accept the method chosen for the old one
+          setUserPaymentMethodId(null);
+        }}
+        selectedPaymentMethodId={selectedPaymentMethod?.id}
+        onPaymentMethodChange={setUserPaymentMethodId}
       />
     </Background>
   );

@@ -4,6 +4,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useDepositSuggestedTokens } from 'src/modules/zerion-api/hooks/useDepositSuggestedTokens';
 import { useDepositSupportedCountries } from 'src/modules/zerion-api/hooks/useDepositSupportedCountries';
 import { useDetectedCountry } from 'src/modules/zerion-api/hooks/useDetectedCountry';
+import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import { getOnrampEcosystem } from './ecosystem';
 import type { DepositFormState } from './types';
@@ -18,9 +19,12 @@ export function useDepositFormState({ address }: { address: string }) {
     useSearchParamsObj<DepositFormState>();
 
   const { currency: preferredCurrency } = useCurrency();
+  const { preferences, setPreferences } = usePreferences();
 
-  // Only ask where the user is if they haven't already told us
-  const hasCountryId = Boolean(userFormState.countryId);
+  // Only ask where the user is if they haven't already told us — this visit
+  // (the URL) or any previous one (their preferences)
+  const savedCountryId = preferences?.depositCountryId || undefined;
+  const hasCountryId = Boolean(userFormState.countryId || savedCountryId);
   const detectedCountryQuery = useDetectedCountry({ enabled: !hasCountryId });
   const countriesQuery = useDepositSupportedCountries();
 
@@ -37,9 +41,14 @@ export function useDepositFormState({ address }: { address: string }) {
       currency: toFiatCurrencyCode(preferredCurrency),
       outputFungibleId: featuredAsset?.asset.id,
       outputChain: featuredAsset?.chain.id,
-      countryId: detectedCountryQuery.data?.data.countryCode,
+      countryId: savedCountryId ?? detectedCountryQuery.data?.data.countryCode,
     }),
-    [preferredCurrency, featuredAsset, detectedCountryQuery.data]
+    [
+      preferredCurrency,
+      featuredAsset,
+      savedCountryId,
+      detectedCountryQuery.data,
+    ]
   );
 
   const formState = useMemo(
@@ -53,6 +62,19 @@ export function useDepositFormState({ address }: { address: string }) {
     [setUserFormState]
   );
 
+  /**
+   * The country goes to two places: the URL, so the rest of the form reacts to
+   * it like every other field, and preferences, so the next visit starts from
+   * the answer the user gave rather than from their IP again.
+   */
+  const setCountryId = useCallback(
+    (countryId: string) => {
+      handleChange('countryId', countryId);
+      setPreferences({ depositCountryId: countryId });
+    },
+    [handleChange, setPreferences]
+  );
+
   const countries = countriesQuery.data?.data.countries;
   const supportedCountry = useMemo(
     () => countries?.find((country) => country.id === formState.countryId),
@@ -62,6 +84,7 @@ export function useDepositFormState({ address }: { address: string }) {
   return {
     formState,
     handleChange,
+    setCountryId,
     countries: countries ?? null,
     /**
      * `deposit/quotes/v1` returns an empty list for an unsupported country, an

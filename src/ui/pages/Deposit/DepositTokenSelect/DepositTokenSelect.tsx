@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Combobox,
   ComboboxItem,
@@ -27,11 +28,14 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { getOnrampEcosystem } from '../shared/ecosystem';
 import * as styles from './styles.module.css';
 
-function formPathFor(asset: OnrampAsset) {
-  const params = new URLSearchParams({
-    outputFungibleId: asset.asset.id,
-    outputChain: asset.chain.id,
-  });
+/**
+ * Carries whatever the form already had — the typed amount, most importantly —
+ * so that coming here to change the token doesn't clear it.
+ */
+function formPathFor(asset: OnrampAsset, search: string) {
+  const params = new URLSearchParams(search);
+  params.set('outputFungibleId', asset.asset.id);
+  params.set('outputChain', asset.chain.id);
   return `/deposit/form?${params}`;
 }
 
@@ -45,9 +49,18 @@ function assetKey(asset: OnrampAsset) {
  * side-by-side tiles: passing `ecosystem` narrows the list to a single entry,
  * so there is nothing to sit beside.
  */
-function FeaturedAsset({ asset }: { asset: OnrampAsset }) {
+function FeaturedAsset({
+  asset,
+  search,
+}: {
+  asset: OnrampAsset;
+  search: string;
+}) {
   return (
-    <UnstyledLink to={formPathFor(asset)} className={styles.featuredTile}>
+    <UnstyledLink
+      to={formPathFor(asset, search)}
+      className={styles.featuredTile}
+    >
       <HStack gap={12} alignItems="center">
         <TokenAndNetworkIcon
           size={48}
@@ -69,7 +82,7 @@ function FeaturedAsset({ asset }: { asset: OnrampAsset }) {
   );
 }
 
-function AssetRow({ asset }: { asset: OnrampAsset }) {
+function AssetRow({ asset, search }: { asset: OnrampAsset; search: string }) {
   return (
     <ComboboxItem
       // Ariakit does not filter for us — the backend does, via `query` — but the
@@ -79,7 +92,7 @@ function AssetRow({ asset }: { asset: OnrampAsset }) {
       hideOnClick={false}
       focusOnHover
       className={styles.assetRow}
-      render={<UnstyledLink to={formPathFor(asset)} />}
+      render={<UnstyledLink to={formPathFor(asset, search)} />}
     >
       <HStack gap={12} alignItems="center">
         <TokenAndNetworkIcon
@@ -147,6 +160,7 @@ function GasTokenHint() {
 
 export function DepositTokenSelect() {
   const { singleAddress } = useAddressParams();
+  const { search } = useLocation();
   // Tracked twice on purpose: the raw value branches the layout on the very
   // first keystroke, while the debounced one drives the request
   const [inputValue, setInputValue] = useState('');
@@ -220,7 +234,11 @@ export function DepositTokenSelect() {
               {!isSearching && featuredAssets?.length ? (
                 <VStack gap={8}>
                   {featuredAssets.map((asset) => (
-                    <FeaturedAsset key={assetKey(asset)} asset={asset} />
+                    <FeaturedAsset
+                      key={assetKey(asset)}
+                      asset={asset}
+                      search={search}
+                    />
                   ))}
                 </VStack>
               ) : null}
@@ -249,7 +267,11 @@ export function DepositTokenSelect() {
                   ))
                 ) : assets?.length ? (
                   assets.map((asset) => (
-                    <AssetRow key={assetKey(asset)} asset={asset} />
+                    <AssetRow
+                      key={assetKey(asset)}
+                      asset={asset}
+                      search={search}
+                    />
                   ))
                 ) : isSearching ? (
                   <div className={styles.emptyState}>

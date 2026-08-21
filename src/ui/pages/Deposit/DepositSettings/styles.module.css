@@ -1,0 +1,147 @@
+.card {
+  background-color: var(--neutral-100);
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.selectorButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 16px;
+  background-color: var(--white);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.selectorChevron {
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  color: var(--neutral-500);
+  flex-shrink: 0;
+}
+
+/* Keeps the search field in view while the 200-odd rows scroll past it */
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 8px;
+  background-color: var(--white);
+}
+
+.searchWrapper {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--neutral-500);
+  pointer-events: none;
+}
+
+.listRow {
+  display: block;
+  width: 100%;
+  padding: 10px 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.listRow[data-active-item] {
+  background-color: var(--neutral-100);
+}
+
+.emptyState {
+  padding: 24px 0;
+  text-align: center;
+}
+
+.providerIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.methodList {
+  border-radius: 16px;
+  background-color: var(--white);
+  overflow: hidden;
+}
+
+.methodDivider {
+  height: 1px;
+  margin-left: 12px;
+  background-color: var(--neutral-200);
+}
+
+.methodRow {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .methodRow:hover {
+    background-color: var(--neutral-100);
+  }
+}
+
+.methodIcon {
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.methodStrip {
+  display: flex;
+  gap: 4px;
+  height: 16px;
+}
+
+.methodChip {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  border: 1px solid var(--neutral-200);
+  border-radius: 2px;
+}
+
+.methodChip > img {
+  display: block;
+  height: 8px;
+}
+
+.providerRow {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 16px;
+  border: 2px solid var(--neutral-200);
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.providerRow[aria-pressed='true'] {
+  border-color: var(--primary);
+}
+
+@media (hover: hover) {
+  .providerRow:hover {
+    background-color: var(--neutral-100);
+  }
+}

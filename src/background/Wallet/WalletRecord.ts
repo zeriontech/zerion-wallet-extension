@@ -964,6 +964,7 @@ export class WalletRecordModel {
       perpsOnboardingDismissed: false,
       networkDistributionChartView: 'grid',
       protocolDistributionChartView: 'grid',
+      depositCountryId: '',
     };
     if (!record) {
       return defaults;
