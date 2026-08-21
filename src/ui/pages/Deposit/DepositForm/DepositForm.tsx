@@ -345,7 +345,15 @@ function DepositFormView({ address }: { address: string }) {
             ) : null}
             {/* An unsupported country already explains the empty quote list */}
             {noQuotes && countryIsSupported ? (
-              <Callout description="No providers support this purchase. Try a different amount or currency." />
+              <Callout
+                description={
+                  /* Measured: SOL is unquotable at $100 in GB but fine at $200
+                     in the US, and USDT-on-Solana quotes where SOL does not.
+                     Amount and token are the real levers — a user's country is
+                     a fact about their card, not a dial to turn. */
+                  'No providers support this purchase right now. Try a different amount or token.'
+                }
+              />
             ) : null}
             {quotesQuery.isError ? (
               <Callout
