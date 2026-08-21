@@ -628,20 +628,12 @@ function SendTransactionContent({
    * The interpretation is the _only_ source of the address action: we no longer
    * derive one locally from the raw transaction, because parsing an untrusted
    * dapp payload client-side produced confident-but-wrong summaries (WLT-2189).
+   * It stays `null` while the request is in flight, which is fine: the view
+   * renders in its uninterpreted form right away and fills in when the
+   * interpretation arrives. We never hold the whole screen back — the security
+   * check button is what carries the "Simulating..." state.
    */
   const addressAction = interpretQuery.data?.data.action ?? null;
-
-  /**
-   * Render nothing until we know what we're showing. `isInitialLoading` is
-   * `false` for a _disabled_ query, which is what we want for a network without
-   * simulation support (the request never runs, so we go straight to the
-   * uninterpreted state) but not while we're deliberately holding the request
-   * back waiting for gas prices — hence the extra check.
-   */
-  const interpretationPending = Boolean(
-    network?.supports_simulations &&
-      (isWaitingForGasrices || interpretQuery.isInitialLoading)
-  );
 
   const view = params.get('view') || View.default;
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -722,10 +714,6 @@ function SendTransactionContent({
     fungibleDecimals && allowanceQuantityBase
       ? baseToCommon(allowanceQuantityBase, fungibleDecimals).toFixed()
       : requestedAllowanceQuantityCommon;
-
-  if (interpretationPending) {
-    return null;
-  }
 
   const handleChangeAllowance = (value: string) => {
     setAllowanceQuantityBase(value);
@@ -1233,7 +1221,9 @@ function SolSendTransaction() {
   /**
    * The interpretation is the _only_ source of the address action: we no longer
    * parse the raw transaction locally, because doing so on an untrusted dapp
-   * payload produced confident-but-wrong summaries (WLT-2189).
+   * payload produced confident-but-wrong summaries (WLT-2189). It stays `null`
+   * while the request is in flight, which is fine: the view renders in its
+   * uninterpreted form right away and fills in when the interpretation arrives.
    */
   const addressAction = interpretQuery.data?.data.action ?? null;
 
@@ -1277,7 +1267,7 @@ function SolSendTransaction() {
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {networks && !interpretQuery.isInitialLoading ? (
+        {networks ? (
           <SolDefaultView
             rawTransactions={transactions}
             wallet={wallet}

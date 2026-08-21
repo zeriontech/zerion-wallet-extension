@@ -1456,10 +1456,16 @@ export class Wallet {
     const keypair = this.getKeypairByAddress(currentAddress);
     const results = SolanaSigning.signAllTransactions(transactions, keypair);
 
-    results.forEach((result, index) => {
+    results.forEach((result) => {
       const contextParamsCopy = { ...transactionContextParams };
-      if (index > 0) {
-        /** TODO: Temporarily assume that addressAction describes only first tx */
+      if (results.length > 1) {
+        /**
+         * The addressAction the UI hands us interprets the batch as a whole
+         * (WLT-2189), so it doesn't belong to any single transaction in it:
+         * attaching it to one would make that transaction's pending history row
+         * and its analytics report the asset movements of all the others. Each
+         * transaction falls back to its own parse instead.
+         */
         contextParamsCopy.addressAction = null;
       }
       emitter.emit(
