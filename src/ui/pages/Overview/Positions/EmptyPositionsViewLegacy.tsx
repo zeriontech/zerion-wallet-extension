@@ -7,6 +7,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { walletPort } from 'src/ui/shared/channels';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
+import { isReadonlyAccount } from 'src/shared/types/validators';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -31,6 +32,8 @@ export function EmptyPositionsViewLegacy() {
   const navigate = useNavigate();
 
   const isTestnetMode = preferences?.testnetMode?.on;
+  // Annotated `boolean`: the predicate's narrowing would make `wallet` `never`
+  const isWatchedAddress: boolean = wallet ? isReadonlyAccount(wallet) : false;
 
   const goToBridgeMutation = useMutation({
     mutationFn: async () => {
@@ -103,25 +106,29 @@ export function EmptyPositionsViewLegacy() {
         </VStack>
       </VStack>
       <VStack gap={8}>
-        <WithMainnetOnlyWarningDialog<'a'>
-          message="Testnets are not supported in Buy Crypto"
-          render={({ handleClick }) => (
-            <Button
-              size={48}
-              kind="primary"
-              as={UnstyledLink}
-              to="/deposit"
-              onClick={(event: React.MouseEvent<HTMLAnchorElement>) =>
-                handleClick(event)
-              }
-            >
-              Buy Crypto with Card
-            </Button>
-          )}
-        />
+        {/* See the note in ActionButtonsRow: no buying to a watched address.
+            Receive takes over as the primary action when it is the only one. */}
+        {isWatchedAddress ? null : (
+          <WithMainnetOnlyWarningDialog<'a'>
+            message="Testnets are not supported in Buy Crypto"
+            render={({ handleClick }) => (
+              <Button
+                size={48}
+                kind="primary"
+                as={UnstyledLink}
+                to="/deposit"
+                onClick={(event: React.MouseEvent<HTMLAnchorElement>) =>
+                  handleClick(event)
+                }
+              >
+                Buy Crypto with Card
+              </Button>
+            )}
+          />
+        )}
         <Button
-          size={44}
-          kind="regular"
+          size={isWatchedAddress ? 48 : 44}
+          kind={isWatchedAddress ? 'primary' : 'regular'}
           as={UnstyledLink}
           to={`/receive?address=${wallet.address}`}
         >

@@ -8,6 +8,7 @@ import SendIcon from 'jsx:src/ui/assets/actions/send-2.svg';
 import BuyIcon from 'jsx:src/ui/assets/actions/card.svg';
 import ReceiveIcon from 'jsx:src/ui/assets/actions/qr-code.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
+import { isReadonlyAccount } from 'src/shared/types/validators';
 import { walletPort } from 'src/ui/shared/channels';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -56,7 +57,16 @@ export function ActionButtonsRow() {
     return null;
   }
 
-  const buyButton = (
+  /**
+   * Buying sends real money to this address. For one the user only watches, we
+   * cannot know they hold its keys — so the affordance is absent rather than
+   * disabled-with-an-explainer. Receive stays: transferring in from a wallet
+   * they do control is the sane way to fund an address they are watching.
+   */
+  // Annotated `boolean` on purpose: `isReadonlyAccount` is a type predicate, and
+  // letting it narrow would make `wallet` `never` in the non-readonly branch
+  const isWatchedAddress: boolean = isReadonlyAccount(wallet);
+  const buyButton = isWatchedAddress ? null : (
     <WithMainnetOnlyWarningDialog<'a'>
       message="Testnets are not supported in Buy Crypto"
       render={({ handleClick }) => (
@@ -123,7 +133,7 @@ export function ActionButtonsRow() {
           listStyle: 'none',
         }}
       >
-        <li>{buyButton}</li>
+        {buyButton ? <li>{buyButton}</li> : null}
         <li>{receiveButton}</li>
         <li>{sendButton}</li>
         <li>
