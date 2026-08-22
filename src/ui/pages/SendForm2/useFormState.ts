@@ -127,6 +127,9 @@ export function useFormState({
         inputFungibleId: undefined,
         inputAmount: undefined,
         inputKind: undefined,
+        // Custom data is a token-mode field and isn't rendered for NFT sends,
+        // so a value left over from a token send must not linger in the URL.
+        data: undefined,
       }));
     },
     [setUserFormState]

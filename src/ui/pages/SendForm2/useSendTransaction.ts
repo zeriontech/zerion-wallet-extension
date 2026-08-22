@@ -22,6 +22,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { prepareSendData } from 'src/ui/pages/SendForm/shared/prepareSendData';
+import { isAmountEntered, isZeroAmount } from './shared/amount';
 import { fungiblePositionToAddressPosition } from './shared/fungiblePositionToAddressPosition';
 import { toLegacySendFormState } from './shared/toLegacySendFormState';
 import { hexlifyTransactionData } from './shared/hexlifyTransactionData';
@@ -126,24 +127,37 @@ export function useSendTransaction({
   const isNftMode = Boolean(formState.nftId);
 
   // Custom transaction data — gated behind the Developer Tools "Custom Data"
-  // toggle and EVM senders only. Stored raw (as typed) in the URL form state so
-  // the editor round-trips; hexlified here at the backend boundary so the API
-  // (and the local prep path) always receive a valid hex string. Fed to the
-  // backend `get-send` `data` param and injected into the local prep path so
-  // both send routes carry it identically.
+  // toggle, EVM senders only, and token mode only (the field isn't rendered for
+  // NFT sends, so a leftover value must never be attached invisibly). Stored raw
+  // (as typed) in the URL form state so the editor round-trips; hexlified here
+  // at the backend boundary so the API (and the local prep path) always receive
+  // a valid hex string. Fed to the backend `get-send` `data` param and injected
+  // into the local prep path so both send routes carry it identically.
   const customData = useMemo(() => {
     if (
       !preferences?.configurableTransactionData ||
       !isEthereumAddress(address) ||
+      isNftMode ||
       !formState.data
     ) {
       return undefined;
     }
     return hexlifyTransactionData(formState.data);
-  }, [preferences?.configurableTransactionData, address, formState.data]);
+  }, [
+    preferences?.configurableTransactionData,
+    address,
+    isNftMode,
+    formState.data,
+  ]);
 
+  // A typed zero is never a max-send. On a zero-balance position (the synthetic
+  // one built for a token the wallet doesn't hold — the calldata-claim case)
+  // `0` would otherwise equal the balance and flip the request to `max=true`,
+  // which the backend answers with an insufficient-balance error instead of a
+  // valid zero-value transaction.
   const isMax = useMemo(() => {
     if (isNftMode || !resolvedInputAmount || !position) return false;
+    if (isZeroAmount(resolvedInputAmount)) return false;
     try {
       return new BigNumber(resolvedInputAmount).eq(position.amount.quantity);
     } catch {
@@ -157,12 +171,18 @@ export function useSendTransaction({
     ? formState.nftAmount ?? '1'
     : resolvedInputAmount;
 
+  // Token mode prepares a send for any entered amount, including `0`; NFT mode
+  // still requires at least one unit.
+  const amountGatePasses = isNftMode
+    ? Boolean(effectiveAmount && Number(effectiveAmount) > 0)
+    : isMax || isAmountEntered(effectiveAmount);
+
   const baseGatesPass = Boolean(
     address &&
       formState.inputChain &&
       formState.to &&
       assetId &&
-      (isMax || (effectiveAmount && Number(effectiveAmount) > 0)) &&
+      amountGatePasses &&
       network
   );
 

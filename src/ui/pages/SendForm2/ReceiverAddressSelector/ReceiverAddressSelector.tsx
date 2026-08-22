@@ -19,6 +19,7 @@ import { AddToAddressBookDialog } from 'src/ui/components/AddToAddressBookDialog
 import { useAddressBook } from 'src/ui/features/address-book';
 import PersonAddIcon from 'jsx:src/ui/assets/person-add.svg';
 import PersonSuccessIcon from 'jsx:src/ui/assets/person-success.svg';
+import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import type { HandleChangeFunction, SendFormState2 } from '../types';
 import * as styles from './ReceiverAddressSelector.module.css';
 
@@ -177,9 +178,12 @@ export function ReceiverAddressSelector({
                     />
                   )}
                 </div>
-                <UIText kind="body/accent" className={styles.name}>
-                  {resolvedName}
-                </UIText>
+                <div className={styles.nameGroup}>
+                  <UIText kind="body/accent" className={styles.name}>
+                    {resolvedName}
+                  </UIText>
+                  <ChevronDownIcon className={styles.chevron} />
+                </div>
                 {renderRightAction()}
               </div>
               <div style={{ height: 4 }} />
@@ -196,7 +200,10 @@ export function ReceiverAddressSelector({
                   To:
                 </UIText>
                 <div className={styles.skeletonAvatar} />
-                <div className={styles.skeletonLineLg} />
+                <div className={styles.nameGroup}>
+                  <div className={styles.skeletonLineLg} />
+                  <ChevronDownIcon className={styles.chevron} />
+                </div>
               </div>
               <div style={{ height: 8 }} />
               <div className={styles.skeletonLineSm} />

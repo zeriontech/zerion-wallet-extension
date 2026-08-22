@@ -45,6 +45,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { invariant } from 'src/shared/invariant';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { isNumeric } from 'src/shared/isNumeric';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import {
   useGlobalPreferences,
   usePreferences,
@@ -88,6 +89,7 @@ import { InputPosition } from './InputPosition';
 import { InputNftPosition } from './InputNftPosition';
 import { NftPreview } from './NftPreview';
 import { AssetSelectorDialog } from './PositionSelector/AssetSelectorDialog';
+import { CustomDataField } from './CustomDataField';
 import { ReceiverAddressSelector } from './ReceiverAddressSelector';
 import { SendDetails } from './SendDetails';
 import { SendButton } from './SendButton';
@@ -185,6 +187,16 @@ function SendFormComponent({
 
   const isNftMode = Boolean(formState.nftId);
   const defaultMode = isNftMode ? 'nfts' : 'tokens';
+
+  // Custom data lives in a standing frame under the asset fieldset whenever the
+  // Developer Tools "Custom Data" preference is on. Token mode only: appending
+  // calldata to an NFT transfer has no use case, and `selectNft` clears the
+  // value so nothing can be attached while the field is hidden.
+  const showCustomData = Boolean(
+    preferences?.configurableTransactionData &&
+      isEthereumAddress(address) &&
+      !isNftMode
+  );
 
   const handleSelectFungible = useCallback(
     (chainId: string, fungibleId: string) => {
@@ -634,6 +646,12 @@ function SendFormComponent({
               />
             )}
           </VStack>
+          {showCustomData ? (
+            <CustomDataField
+              value={formState.data ?? null}
+              onChange={(value) => handleChange('data', value)}
+            />
+          ) : null}
           {sendTransaction || sendDataLoading ? (
             <SendDetails
               inputChain={formState.inputChain}
@@ -652,8 +670,6 @@ function SendFormComponent({
               onNonceChange={(nonce) =>
                 handleChange('nonce', nonce ?? undefined)
               }
-              customData={formState.data ?? null}
-              onCustomDataChange={(value) => handleChange('data', value)}
               isLoading={sendDataLoading}
               receivedAmount={sendInputAmount}
               typedAmount={resolvedInputAmount}

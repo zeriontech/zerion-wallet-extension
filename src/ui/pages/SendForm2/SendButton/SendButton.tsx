@@ -7,6 +7,7 @@ import {
   type SimulationResult,
 } from 'src/ui/pages/SwapForm2/SwapButton';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
+import { isAmountEntered } from '../shared/amount';
 import type { SendFormState2 } from '../types';
 import { useSendSimulation } from './useSendSimulation';
 
@@ -31,7 +32,9 @@ function resolveLabel({
     if (!formState.nftAmount || Number(formState.nftAmount) === 0) {
       return 'Enter an Amount';
     }
-  } else if (!formState.inputAmount || Number(formState.inputAmount) === 0) {
+    // Token mode accepts a typed `0` — non-payable calls (claims, approvals)
+    // need it. Only an untouched (or not-yet-numeric) input is "no amount".
+  } else if (!isAmountEntered(formState.inputAmount)) {
     return 'Enter an Amount';
   }
   if (isPreparingTransaction && !transaction) return 'Preparing Transaction';
@@ -58,7 +61,7 @@ function isDisabled({
   const isNft = Boolean(formState.nftId);
   if (isNft) {
     if (!formState.nftAmount || Number(formState.nftAmount) === 0) return true;
-  } else if (!formState.inputAmount || Number(formState.inputAmount) === 0) {
+  } else if (!isAmountEntered(formState.inputAmount)) {
     return true;
   }
   if (!transaction) return true;
