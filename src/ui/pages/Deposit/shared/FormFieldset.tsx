@@ -16,10 +16,12 @@ export function FormFieldset({
   endTitle: React.ReactNode;
   startContent: React.ReactNode;
   endContent: React.ReactNode;
-  startDescription: React.ReactNode;
-  endDescription: React.ReactNode;
+  /** Omit both and the fieldset drops the row instead of reserving it. */
+  startDescription?: React.ReactNode;
+  endDescription?: React.ReactNode;
   inputId: string;
 }) {
+  const hasDescription = Boolean(startDescription || endDescription);
   return (
     <fieldset
       style={{
@@ -75,18 +77,20 @@ export function FormFieldset({
             {endContent}
           </UIText>
         </HStack>
-        <HStack
-          gap={16}
-          justifyContent="space-between"
-          style={{ width: '100%' }}
-        >
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            {startDescription}
-          </UIText>
-          <UIText kind="small/regular" color="var(--neutral-600)">
-            {endDescription}
-          </UIText>
-        </HStack>
+        {hasDescription ? (
+          <HStack
+            gap={16}
+            justifyContent="space-between"
+            style={{ width: '100%' }}
+          >
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              {startDescription}
+            </UIText>
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              {endDescription}
+            </UIText>
+          </HStack>
+        ) : null}
       </VStack>
     </fieldset>
   );

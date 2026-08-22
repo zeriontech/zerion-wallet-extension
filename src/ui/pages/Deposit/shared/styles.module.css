@@ -1,0 +1,21 @@
+/* Floats the flow's controls over the URL bar's right edge, exactly as
+   SwapForm2 does. Being out of the URL bar's own grid is the point: two
+   controls don't fit its 40px end slot, and widening that slot would drag the
+   centred title off-centre. */
+.absoluteHeader {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--body-width);
+  max-width: var(--body-max-width);
+  padding-inline: 12px;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.absoluteHeader > * {
+  pointer-events: auto;
+}

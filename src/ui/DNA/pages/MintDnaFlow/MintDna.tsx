@@ -242,7 +242,7 @@ export function MintDna() {
 
   return (
     <>
-      <CenteredDialog ref={dialogRef} style={{ width: 425, height: 460 }}>
+      <CenteredDialog ref={dialogRef} style={{ width: 425, height: 560 }}>
         <VStack gap={32} style={{ justifyItems: 'center' }}>
           <UIText kind="headline/h3">Wallet Details</UIText>
           <AddressDetails address={address} />

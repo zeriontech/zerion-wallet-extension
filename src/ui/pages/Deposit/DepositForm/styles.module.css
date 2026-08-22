@@ -3,6 +3,8 @@
   background-color: var(--z-index-1);
   border-radius: 24px;
   box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.08);
+  /* Clips the divider between the fieldsets to the rounded corners */
+  overflow: hidden;
 }
 
 .optionRow {
@@ -74,14 +76,27 @@
   }
 }
 
-.skeletonFieldset {
-  height: 104px;
-  border-radius: 24px;
+.skeleton {
+  background-color: var(--neutral-100);
+  border-radius: 6px;
+}
+
+.skeletonCircle {
+  background-color: var(--neutral-100);
+  border-radius: 50%;
+}
+
+/* The dimensions of the primary Button at its default size 44 */
+.skeletonButton {
+  height: 44px;
+  border-radius: 16px;
   background-color: var(--neutral-100);
 }
 
-.skeletonButton {
-  height: 48px;
-  border-radius: 16px;
-  background-color: var(--neutral-100);
+/* A rule between the two fieldsets, matching SwapForm2's MiddleLine. The
+   surface clips it so it spans the full width without escaping the corners. */
+.divider {
+  height: 2px;
+  width: 100%;
+  background-color: var(--z-index-2);
 }

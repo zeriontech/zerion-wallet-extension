@@ -1,0 +1,92 @@
+/*
+ * A piece flies on two elements so its axes can carry different easings:
+ * the wrapper drifts sideways, the image inside rises and falls.
+ * Everything animates `translate` / `rotate` / `scale` only, so the whole
+ * burst stays on the compositor and never touches layout or paint.
+ */
+
+@keyframes confetti-drift {
+  from {
+    translate: 0;
+  }
+  to {
+    translate: var(--tx);
+  }
+}
+
+/*
+ * A real projectile arc: both halves are quadratic, which is what a constant
+ * downward acceleration looks like — velocity bleeds off linearly on the way
+ * up and builds linearly on the way down. The apex sits at 46% rather than the
+ * symmetric 50% so the drop gets slightly less time than the climb, which is
+ * what sells the weight.
+ */
+@keyframes confetti-arc {
+  0% {
+    translate: 0 0;
+    animation-timing-function: cubic-bezier(0.5, 1, 0.89, 1);
+  }
+  46% {
+    translate: 0 var(--peak);
+    animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
+  }
+  100% {
+    translate: 0 15vh;
+  }
+}
+
+@keyframes confetti-spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: var(--spin);
+  }
+}
+
+/* Overshoots past 1 so each piece snaps out of the cannon instead of growing. */
+@keyframes confetti-pop {
+  from {
+    scale: 0.3;
+  }
+  to {
+    scale: 1;
+  }
+}
+
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/*
+ * Light drag, so the piece reads as having mass: it leaves the cannon at 3.2x
+ * its average speed but is still travelling outward at 44% of it when it
+ * lands, instead of dumping all its horizontal speed in the first quarter of
+ * the flight. Momentum kept this way is why `--tx` in Confetti.tsx has to
+ * reach much further than a hard ease-out would need.
+ */
+.piece {
+  position: absolute;
+  bottom: 20px;
+  animation: confetti-drift var(--dur) cubic-bezier(0.1, 0.45, 0.55, 0.8)
+    var(--delay) both;
+}
+
+.body {
+  display: block;
+  width: var(--size);
+  height: auto;
+  animation: confetti-arc var(--dur) linear var(--delay) both,
+    confetti-spin var(--dur) linear var(--delay) both,
+    confetti-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) var(--delay) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    display: none;
+  }
+}

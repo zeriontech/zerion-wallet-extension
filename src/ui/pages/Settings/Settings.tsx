@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
@@ -62,6 +62,7 @@ import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isMacOS } from 'src/ui/shared/isMacos';
 import { DisableWalletProviderSettingsItem } from 'src/ui/components/PauseInjection';
+import { Confetti, useTapStreak } from 'src/ui/components/Confetti/Confetti';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
@@ -71,6 +72,36 @@ import { PopoverToast } from './PopoverToast';
 import { ToggleSettingLine } from './ToggleSettingsLine';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
+
+/**
+ * Double-click copies the user id. Five quick clicks is an easter egg: the same
+ * logo confetti the web app fires from its settings version label.
+ */
+function VersionButton() {
+  const { data: currentUserId } = useQuery({
+    queryKey: ['getCurrentUserId'],
+    queryFn: async () => (await getCurrentUser())?.id,
+    suspense: false,
+  });
+
+  const { handleCopy, isSuccess } = useCopyToClipboard({ text: currentUserId });
+
+  const [celebrating, setCelebrating] = useState(false);
+  const countTap = useTapStreak(5, () => setCelebrating(true));
+
+  return (
+    <>
+      <UnstyledButton
+        className="hover:underline"
+        onClick={countTap}
+        onDoubleClick={currentUserId ? handleCopy : undefined}
+      >
+        {isSuccess ? 'ID Copied' : `v${version}`}
+      </UnstyledButton>
+      {celebrating ? <Confetti onDone={() => setCelebrating(false)} /> : null}
+    </>
+  );
+}
 
 function SettingsMain() {
   const { singleAddressNormalized } = useAddressParams();
@@ -103,14 +134,6 @@ function SettingsMain() {
       });
     },
   });
-
-  const { data: currentUserId } = useQuery({
-    queryKey: ['getCurrentUserId'],
-    queryFn: async () => (await getCurrentUser())?.id,
-    suspense: false,
-  });
-
-  const { handleCopy, isSuccess } = useCopyToClipboard({ text: currentUserId });
 
   const addWalletParams = useWalletParams(currentWallet);
 
@@ -360,13 +383,7 @@ function SettingsMain() {
               Terms of use
             </UnstyledAnchor>
             <span>{middot}</span>
-            <UnstyledButton
-              className="hover:underline"
-              disabled={!currentUserId}
-              onDoubleClick={handleCopy}
-            >
-              {isSuccess ? 'ID Copied' : `v${version}`}
-            </UnstyledButton>
+            <VersionButton />
           </HStack>
         </UIText>
       </VStack>

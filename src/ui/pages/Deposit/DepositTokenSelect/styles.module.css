@@ -18,23 +18,35 @@
   color: inherit;
   text-decoration: none;
   outline: none;
-  transition: background-color 0.15s ease;
 }
 
 @media (hover: hover) {
   .featuredTile:hover {
     background-color: var(--primary-200);
   }
-
-  .assetRow:hover {
-    background-color: var(--neutral-300);
-  }
 }
 
-/* Ariakit marks the keyboard-highlighted item; without this, arrow-key
-   navigation through search results is invisible */
+/* Ariakit marks the keyboard-highlighted item, and `focusOnHover` means the
+   pointer marks it too — so this ring is the row's only highlight, hover
+   included. A tint underneath it would say nothing the ring doesn't. Inset so
+   it costs no layout. */
 .assetRow[data-active-item] {
-  background-color: var(--neutral-300);
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+/* Pins the search field under the URL bar so it stays reachable however far the
+   token list is scrolled. `top` is set at the call site from
+   NAVIGATION_BAR_HEIGHT, and the block padding does two jobs: it holds the
+   field 16px clear of the header controls once pinned, and it paints over the
+   16px column gaps either side, so rows slide out of sight behind the field
+   rather than showing through beside it. The negative margins cancel the
+   padding, leaving the unpinned layout exactly where it was. */
+.stickySearch {
+  position: sticky;
+  z-index: 1;
+  background-color: var(--background);
+  padding-block: 16px;
+  margin-block: -16px;
 }
 
 .searchWrapper {

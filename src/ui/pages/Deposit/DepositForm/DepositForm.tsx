@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getError } from 'get-error';
 import { useLocation } from 'react-router-dom';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
-import SettingsIcon from 'jsx:src/ui/assets/settings-sliders.svg';
-import { CURRENCIES } from 'src/modules/currency/currencies';
 import { useDepositQuotes } from 'src/modules/zerion-api/hooks/useDepositQuotes';
 import { isNumeric } from 'src/shared/isNumeric';
 import { Background } from 'src/ui/components/Background';
@@ -12,7 +10,6 @@ import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialo
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { TokenAndNetworkIcon } from 'src/ui/components/TokenAndNetworkIcon';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -22,12 +19,15 @@ import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { FLOAT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
+import { useBackTo } from 'src/ui/shared/navigation/useBackTo';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { DepositSettingsDialog } from '../DepositSettings';
+import { DEPOSIT_PAGE_TOP } from '../shared/constants';
 import { getCountryName } from '../shared/country';
+import { DepositHeaderControls } from '../shared/DepositHeaderControls';
+import { DepositSubtitle } from '../shared/DepositSubtitle';
 import { FormFieldset } from '../shared/FormFieldset';
 import { useApplePaySupported } from '../shared/useApplePaySupported';
 import { useDepositFormState } from '../shared/useDepositFormState';
@@ -53,6 +53,12 @@ function DepositFormView({ address }: { address: string }) {
     formState;
 
   const { search } = useLocation();
+  // Falls back to navigating when the token step isn't behind us, which is how
+  // a popup reopened straight onto this form arrives
+  const backToTokenStep = useBackTo({
+    hashPathname: '/deposit',
+    to: `/deposit${search}`,
+  });
   const currencyDialog = useDialog2();
   const settingsDialog = useDialog2();
 
@@ -177,44 +183,28 @@ function DepositFormView({ address }: { address: string }) {
   }, [selectedQuote, fiatValue]);
 
   if (isFormStateLoading) {
-    return <DepositFormSkeleton />;
+    return <DepositFormSkeleton address={address} />;
   }
-
-  const currencyConfig = currency ? CURRENCIES[currency] : undefined;
 
   return (
     <Background backgroundKind="white">
+      <DepositHeaderControls
+        address={address}
+        onSettings={settingsDialog.openDialog}
+      />
       <PageColumn>
-        <PageTop />
-        {/* Both directions carry the search string, so switching the token
-            doesn't wipe the amount already typed */}
-        <NavigationTitle title="Buy Crypto" backTo={`/deposit${search}`} />
+        <Spacer height={DEPOSIT_PAGE_TOP} />
+        {/* No `backTo`: the URL bar's own back button pops, which returns to
+            the token step *and* keeps the flow two entries deep. Navigating
+            there instead — by push or by replace — leaves a second token-step
+            entry behind on every round trip, and leaving the flow then costs a
+            back-click per token the user tried. */}
+        <NavigationTitle title="Buy Crypto" />
         <form onSubmit={(event) => event.preventDefault()}>
           <VStack gap={16}>
-            <HStack
-              gap={12}
-              alignItems="start"
-              justifyContent="space-between"
-              style={{ gridTemplateColumns: '1fr auto' }}
-            >
-              <UIText kind="body/accent">
-                Use credit/debit card, or bank transfer to buy crypto
-              </UIText>
-              <Button
-                type="button"
-                kind="ghost"
-                size={32}
-                title="Change provider"
-                aria-label="Change provider"
-                onClick={settingsDialog.openDialog}
-              >
-                <SettingsIcon
-                  style={{ display: 'block', width: 20, height: 20 }}
-                />
-              </Button>
-            </HStack>
+            <DepositSubtitle />
 
-            <VStack gap={4} className={styles.fieldsetSurface}>
+            <VStack gap={0} className={styles.fieldsetSurface}>
               <FormFieldset
                 inputId={FIAT_INPUT_ID}
                 startTitle="Pay with"
@@ -258,18 +248,20 @@ function DepositFormView({ address }: { address: string }) {
                     )}
                   />
                 }
-                startDescription={
-                  currencyConfig ? currencyConfig.name : <span />
-                }
-                endDescription={<span />}
               />
+              {/* Same 2px rule SwapForm2 draws between its two positions */}
+              <div className={styles.divider} />
               <FormFieldset
                 inputId="deposit-output-amount"
                 startTitle="Receive"
                 endTitle={null}
                 startContent={
-                  <UnstyledLink
-                    to={`/deposit${search}`}
+                  <UnstyledButton
+                    type="button"
+                    // A button rather than a link because this goes *back* to
+                    // the token step rather than onward to it — see the
+                    // navigation note above the title
+                    onClick={backToTokenStep}
                     className={styles.currencyButton}
                     title="Change token"
                   >
@@ -304,7 +296,7 @@ function DepositFormView({ address }: { address: string }) {
                       </HStack>
                     )}
                     <ChevronDownIcon className={styles.chevron} />
-                  </UnstyledLink>
+                  </UnstyledButton>
                 }
                 endContent={
                   <input
@@ -320,10 +312,6 @@ function DepositFormView({ address }: { address: string }) {
                     value={selectedQuote?.amount.quantity ?? ''}
                   />
                 }
-                startDescription={
-                  outputPreview ? `on ${outputPreview.chainName}` : <span />
-                }
-                endDescription={<span />}
               />
             </VStack>
 

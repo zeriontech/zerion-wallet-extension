@@ -14,23 +14,32 @@ import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
-import { PageTop } from 'src/ui/components/PageTop';
 import { TokenAndNetworkIcon } from 'src/ui/components/TokenAndNetworkIcon';
+import { NAVIGATION_BAR_HEIGHT } from 'src/ui/components/URLBar';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Input } from 'src/ui/ui-kit/Input';
+import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Tooltip, TooltipAnchor, TooltipProvider } from 'src/ui/ui-kit/Tooltip';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { DEPOSIT_PAGE_TOP } from '../shared/constants';
+import { DepositHeaderControls } from '../shared/DepositHeaderControls';
+import { DepositSubtitle } from '../shared/DepositSubtitle';
 import { getOnrampEcosystem } from '../shared/ecosystem';
 import * as styles from './styles.module.css';
 
 /**
  * Carries whatever the form already had — the typed amount, most importantly —
  * so that coming here to change the token doesn't clear it.
+ *
+ * Pushes, so that back from the form returns here. The form's own way back is a
+ * *pop*, which is what keeps the flow two entries deep however many tokens get
+ * tried: leave by pushing and each round trip strands another entry for the
+ * user to click through on the way out.
  */
 function formPathFor(asset: OnrampAsset, search: string) {
   const params = new URLSearchParams(search);
@@ -192,8 +201,9 @@ export function DepositTokenSelect() {
 
   return (
     <Background backgroundKind="white">
+      <DepositHeaderControls address={singleAddress || null} />
       <PageColumn>
-        <PageTop />
+        <Spacer height={DEPOSIT_PAGE_TOP} />
         <NavigationTitle title="Buy Crypto" />
         {noFundingOptions ? (
           <div className={styles.emptyState}>
@@ -212,27 +222,18 @@ export function DepositTokenSelect() {
             }}
           >
             <VStack gap={16}>
-              <VStack gap={4}>
-                <HStack
-                  gap={8}
-                  alignItems="start"
-                  justifyContent="space-between"
-                  style={{ gridTemplateColumns: '1fr auto' }}
-                >
-                  <UIText kind="body/accent">
-                    Use credit/debit card, or bank transfer to buy crypto
-                  </UIText>
-                  <GasTokenHint />
-                </HStack>
-                {isSearching ? null : (
-                  <UIText kind="caption/regular" color="var(--neutral-500)">
-                    To get started select one of these gas tokens.
-                  </UIText>
-                )}
-              </VStack>
+              <DepositSubtitle end={<GasTokenHint />} />
 
               {!isSearching && featuredAssets?.length ? (
                 <VStack gap={8}>
+                  {/* Labels the tile it sits above rather than trailing the
+                      caption as a second line of grey — 14px and 12px of the
+                      same neutral read as one mumbled paragraph. Black at 16px
+                      puts it between that caption and the 20px section
+                      headings, which is the rank an instruction wants. */}
+                  <UIText kind="body/accent">
+                    To get started, select one of these gas tokens
+                  </UIText>
                   {featuredAssets.map((asset) => (
                     <FeaturedAsset
                       key={assetKey(asset)}
@@ -243,13 +244,21 @@ export function DepositTokenSelect() {
                 </VStack>
               ) : null}
 
-              <div className={styles.searchWrapper}>
-                <SearchIcon role="presentation" className={styles.searchIcon} />
-                <Combobox
-                  autoSelect="always"
-                  placeholder="Search tokens..."
-                  render={<Input style={{ paddingLeft: 40 }} />}
-                />
+              <div
+                className={styles.stickySearch}
+                style={{ top: NAVIGATION_BAR_HEIGHT }}
+              >
+                <div className={styles.searchWrapper}>
+                  <SearchIcon
+                    role="presentation"
+                    className={styles.searchIcon}
+                  />
+                  <Combobox
+                    autoSelect="always"
+                    placeholder="Search tokens..."
+                    render={<Input style={{ paddingLeft: 40 }} />}
+                  />
+                </div>
               </div>
 
               {!isSearching && assets?.length ? (
