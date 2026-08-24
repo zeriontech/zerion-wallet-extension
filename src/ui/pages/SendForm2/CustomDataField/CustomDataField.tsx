@@ -71,10 +71,6 @@ export function CustomDataField({
             />
           )}
         />
-        <UIText kind="caption/regular" color="var(--neutral-600)">
-          Appended to the end of the transaction data. Advanced feature — use
-          with caution.
-        </UIText>
       </VStack>
     </div>
   );
