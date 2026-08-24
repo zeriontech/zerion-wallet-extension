@@ -39,12 +39,35 @@
   flex-shrink: 0;
 }
 
+/* Keeps the chevron hugging the name instead of drifting to the row's edge,
+   matching the `ETH ⌄` treatment in the asset selector. */
+.nameGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
 .name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
   min-width: 0;
+}
+
+.chevron {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--neutral-500);
+  transition: color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .container:hover .chevron {
+    color: var(--neutral-800);
+  }
 }
 
 .rightAction {
