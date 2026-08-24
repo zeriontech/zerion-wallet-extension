@@ -1,0 +1,152 @@
+/* The element that carries the theme-resolved custom properties (see
+   surface.ts) and wraps both the tint and the page content. */
+.surface {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* ── The tint ─────────────────────────────────────────────────────────────
+  `z-index: -1` rather than a wrapper around the page content: a negative
+  z-index child paints above its container's own background but below every
+  in-flow sibling, so the tint covers the whole surface — the sticky URL bar
+  included, since that bar is transparent on this page — without any of the
+  content needing to be positioned.
+
+  Fixed to the body column rather than to `inset: 0`: in a tab the window is
+  wider than the column, and a full-viewport tint would bleed across the whole
+  page. `left: 0` rather than the centring transform SwapForm2's floating
+  header uses — a late `body { margin: 0 }` in the global stylesheet beats the
+  `margin-inline: auto` above it, so the column is flush left at every width.
+*/
+.background {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--body-width);
+  max-width: var(--body-max-width);
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--quest-background-color);
+}
+
+.backgroundGradient {
+  position: absolute;
+  /*
+    Quest cards stop the gradient at 50% so it reads as a header treatment on a
+    card in a list. Here it runs the full height: the colour is an attribute of
+    the wallet, not of the top of the screen.
+  */
+  inset: 0;
+  opacity: var(--quest-gradient-opacity);
+}
+
+.backgroundPattern {
+  position: absolute;
+  inset: 0;
+  opacity: var(--quest-pattern-opacity);
+}
+
+/* ── Frosted glass ────────────────────────────────────────────────────────
+  Everything below the code sits on this instead of a solid fill, so the
+  wallet's colour stays visible through the whole screen.
+*/
+.glass {
+  /* The fallbacks are for the DNA mint flow, which renders `AddressDetails`
+     in a plain dialog with no quest tint under it — there the rows fall back to
+     the app's ordinary surfaces instead of turning invisible. */
+  background-color: var(--glass-fill, var(--neutral-100));
+  border: 1px solid var(--glass-line, var(--neutral-200));
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+}
+
+.qrPlate {
+  /*
+    Not `var(--white)`: the code's ink is always black, so a plate that follows
+    the theme would be an unscannable code on dark. Only the shadow changes.
+  */
+  background-color: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  line-height: 0;
+  box-shadow: var(--glass-shadow, 0 8px 24px rgba(0, 0, 0, 0.08));
+}
+
+.walletName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A ring in the same material as the glass below, so the avatar reads as
+   sitting on the tint rather than punched into it. */
+.avatarRing {
+  display: flex;
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px var(--glass-line, var(--neutral-200));
+}
+
+.payloadPanel {
+  width: 100%;
+  padding: 4px;
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+
+.payloadRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  text-align: left;
+  color: var(--black);
+  transition: transform 0.15s ease-in-out;
+}
+
+.payloadRow:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .payloadRow:hover {
+    background-color: var(--glass-fill-hover, var(--neutral-200));
+  }
+}
+
+.payloadDivider {
+  height: 1px;
+  margin-inline: 12px;
+  background-color: var(--glass-line);
+}
+
+/* Both icons stay mounted and cross-fade in place — see the note on
+   `CopyStateIcon`. */
+.copyIcon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.copyIconLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+
+.networksButton {
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: var(--black);
+}
+
+@media (hover: hover) {
+  .networksButton:hover {
+    background-color: var(--glass-fill-hover, var(--neutral-200));
+  }
+}

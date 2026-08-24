@@ -2,8 +2,7 @@ import React, { forwardRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import cn from 'classnames';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
-import { NetworkIcon } from 'src/ui/components/NetworkIcon';
+import { TokenAndNetworkIcon } from 'src/ui/components/TokenAndNetworkIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
@@ -50,31 +49,13 @@ export const AssetSelectorButton = forwardRef<
             <HStack gap={8} alignItems="center">
               {position ? (
                 <>
-                  <div style={{ position: 'relative', width: 32, height: 32 }}>
-                    <TokenIcon
-                      src={position.fungible.iconUrl}
-                      symbol={position.fungible.symbol}
-                      size={32}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: -2,
-                        right: -2,
-                        borderRadius: 4,
-                        border: '2px solid var(--white)',
-                        overflow: 'hidden',
-                        lineHeight: 0,
-                        backgroundColor: 'var(--neutral-200)',
-                      }}
-                    >
-                      <NetworkIcon
-                        src={position.chain.iconUrl}
-                        name={position.chain.name}
-                        size={14}
-                      />
-                    </div>
-                  </div>
+                  <TokenAndNetworkIcon
+                    size={32}
+                    symbol={position.fungible.symbol}
+                    iconUrl={position.fungible.iconUrl}
+                    networkIconUrl={position.chain.iconUrl}
+                    networkName={position.chain.name}
+                  />
                   <UIText
                     kind="headline/h3"
                     style={{

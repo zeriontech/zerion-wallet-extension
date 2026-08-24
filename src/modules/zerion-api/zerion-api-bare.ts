@@ -34,6 +34,11 @@ import { assetGetReceiveFungibles } from './requests/asset-get-receive-fungibles
 import { walletGetNftPositions } from './requests/wallet-get-nft-positions';
 import { walletGetNftPosition } from './requests/wallet-get-nft-position';
 import { transactionGetSend } from './requests/transaction-get-send';
+import { depositGetSuggestedTokens } from './requests/deposit-get-suggested-tokens';
+import { depositGetQuotes } from './requests/deposit-get-quotes';
+import { depositGetPaymentLink } from './requests/deposit-get-payment-link';
+import { depositGetSupportedCountries } from './requests/deposit-get-supported-countries';
+import { geoGetCountry } from './requests/geo-get-country';
 
 export interface ZerionApiContext {
   getAddressProviderHeader(address: string): Promise<string>;
@@ -72,6 +77,11 @@ export const ZerionApiBare = {
   walletGetNftPositions,
   walletGetNftPosition,
   transactionGetSend,
+  depositGetSuggestedTokens,
+  depositGetQuotes,
+  depositGetPaymentLink,
+  depositGetSupportedCountries,
+  geoGetCountry,
 };
 
 export type ZerionApiClient = ZerionApiContext & typeof ZerionApiBare;

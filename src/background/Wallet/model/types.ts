@@ -118,6 +118,13 @@ interface PublicPreferences {
    * {networkDistributionChartView} but tracked separately. Defaults to `'grid'`.
    */
   protocolDistributionChartView?: 'grid' | 'lines';
+  /**
+   * The country the deposit (fiat on-ramp) form quotes against. Worth
+   * remembering rather than re-detecting on every visit: IP geolocation gets it
+   * wrong for anyone behind a VPN, and which country issued your card is a
+   * stable fact about you.
+   */
+  depositCountryId?: string;
 }
 
 export interface Permission {

@@ -34,10 +34,14 @@
 }
 
 /* Dialog sizes to the height of its content rather than filling the viewport.
-   On narrow screens, pins to the bottom so it reads as a sheet. */
+   On narrow screens, pins to the bottom so it reads as a sheet.
+   The max-height is what makes a taller-than-viewport sheet scroll: without it
+   the sheet simply grows past the top of the screen, putting its first rows out
+   of reach with nothing to scroll. */
 .dialogContentHeight.dialogFullscreen {
   inset: auto 0 0 0;
   height: auto;
+  max-height: 90vh;
   border-radius: 16px 16px 0 0;
 }
 

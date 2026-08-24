@@ -1,0 +1,122 @@
+.featuredTile {
+  display: block;
+  padding: 16px;
+  border-radius: 20px;
+  /* Tinted rather than neutral so the one recommended gas token doesn't read
+     as just another row in the popular list below it */
+  background-color: var(--primary-100);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.assetRow {
+  display: block;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--neutral-200);
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+@media (hover: hover) {
+  .featuredTile:hover {
+    background-color: var(--primary-200);
+  }
+}
+
+/* Ariakit marks the keyboard-highlighted item, and `focusOnHover` means the
+   pointer marks it too — so this ring is the row's only highlight, hover
+   included. A tint underneath it would say nothing the ring doesn't. Inset so
+   it costs no layout. */
+.assetRow[data-active-item] {
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+/* Pins the search field under the URL bar so it stays reachable however far the
+   token list is scrolled. `top` is set at the call site from
+   NAVIGATION_BAR_HEIGHT, and the block padding does two jobs: it holds the
+   field 16px clear of the header controls once pinned, and it paints over the
+   16px column gaps either side, so rows slide out of sight behind the field
+   rather than showing through beside it. The negative margins cancel the
+   padding, leaving the unpinned layout exactly where it was. */
+.stickySearch {
+  position: sticky;
+  z-index: 1;
+  background-color: var(--background);
+  padding-block: 16px;
+  margin-block: -16px;
+}
+
+.searchWrapper {
+  position: relative;
+}
+
+.searchIcon {
+  pointer-events: none;
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  width: 24px;
+  height: 24px;
+  color: var(--neutral-500);
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--neutral-200);
+}
+
+.skeletonIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--neutral-300);
+  flex-shrink: 0;
+}
+
+.skeletonLines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.skeletonLineLg {
+  height: 14px;
+  width: 40%;
+  border-radius: 4px;
+  background-color: var(--neutral-300);
+}
+
+.skeletonLineSm {
+  height: 12px;
+  width: 20%;
+  border-radius: 4px;
+  background-color: var(--neutral-300);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.tooltip {
+  padding: 20px 24px;
+  max-width: 240px;
+  border-radius: 8px;
+  background-color: var(--z-index-1);
+  color: var(--black);
+  box-shadow: 0 16px 32px 1px rgba(22, 22, 26, 0.24);
+  z-index: 10;
+}

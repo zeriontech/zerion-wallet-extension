@@ -97,6 +97,7 @@ import { PremiumPage } from '../pages/Premium';
 import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
 import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
+import { Deposit } from '../pages/Deposit';
 import {
   PerpPage,
   PerpsDeposit,
@@ -491,6 +492,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           }
         />
         <Route
+          path="/deposit/*"
+          element={
+            <RequireAuth>
+              <Deposit />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/bridge-form/*"
           element={
             <RequireAuth>
@@ -546,6 +555,10 @@ initializeApperance();
 dayjs.extend(relativeTime);
 registerPersistentRoute('/send-form');
 registerPersistentRoute('/swap-form');
+// Both deposit steps are restored: RouteRestoration persists the search string
+// too, so a half-filled form survives the popup closing on provider hand-off
+registerPersistentRoute('/deposit');
+registerPersistentRoute('/deposit/form');
 registerPersistentRoute('/perps/deposit');
 registerPersistentRoute('/perps/withdraw');
 
