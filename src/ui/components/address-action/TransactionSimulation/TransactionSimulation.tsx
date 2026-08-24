@@ -177,7 +177,11 @@ export function TransactionSimulation({
               <TransactionAdvancedView
                 network={network}
                 interpretation={interpretation}
-                transaction={transaction}
+                transaction={
+                  transaction.evm
+                    ? { evm: transaction.evm }
+                    : { solana: [transaction.solana] }
+                }
                 addressAction={addressAction}
                 onCopyData={() => toastRef.current?.showToast()}
               />

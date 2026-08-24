@@ -1,13 +1,11 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { hashQueryKey, useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Client } from 'defi-sdk';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import {
   getActionApproval,
   type AnyAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
-import { incomingTxToIncomingAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
 import type {
   IncomingTransaction,
   IncomingTransactionWithChainId,
@@ -72,7 +70,6 @@ import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transaction
 import { resolveChainId } from 'src/modules/ethereum/transactions/resolveChainId';
 import { normalizeTransactionChainId } from 'src/modules/ethereum/transactions/normalizeTransactionChainId';
 import { usePreferences } from 'src/ui/features/preferences';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import {
   adjustedCheckEligibility,
   fetchAndAssignPaymaster,
@@ -86,11 +83,9 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
-import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
-import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import {
   hasCriticalWarning,
   InterpretationSecurityCheck,
@@ -243,51 +238,6 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   };
 }
 
-function useLocalAction({
-  address: from,
-  transactionAction,
-  transaction,
-  networks,
-}: {
-  address: string;
-  transactionAction: TransactionAction;
-  transaction: IncomingTransactionWithChainId;
-  networks: Networks;
-}) {
-  const client = useDefiSdkClient();
-  const { currency } = useCurrency();
-  return useQuery({
-    queryKey: [
-      'incomingTxToIncomingAddressAction',
-      transaction,
-      transactionAction,
-      networks,
-      from,
-      client,
-      currency,
-    ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
-    queryFn: () => {
-      return incomingTxToIncomingAddressAction(
-        { transaction: { ...transaction, from }, hash: '', timestamp: 0 },
-        transactionAction,
-        networks,
-        currency,
-        client
-      );
-    },
-    keepPreviousData: true,
-    useErrorBoundary: true,
-    retry: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-  });
-}
-
 enum View {
   default = 'default',
   customAllowance = 'customAllowance',
@@ -316,7 +266,8 @@ function TransactionDefaultView({
   chain: Chain;
   origin: string;
   wallet: ExternallyOwnedAccount;
-  addressAction: AnyAddressAction;
+  /** `null` when the transaction could not be interpreted */
+  addressAction: AnyAddressAction | null;
   allowanceQuantityCommon: string | null;
   customAllowanceQuantityBase: string | null;
   interpretation: InterpretResponse | null | undefined;
@@ -367,7 +318,9 @@ function TransactionDefaultView({
             url={origin}
             alt={`Logo for ${origin}`}
           />
-          <UIText kind="headline/h2">{addressAction.type.displayValue}</UIText>
+          <UIText kind="headline/h2">
+            {addressAction?.type.displayValue ?? 'Sign Transaction'}
+          </UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
@@ -395,34 +348,36 @@ function TransactionDefaultView({
             </UIText>
           </HStack>
         </VStack>
-        <VStack
-          gap={4}
-          style={{
-            ['--surface-background-color' as string]: 'var(--neutral-100)',
-          }}
-        >
-          <AddressActionDetails
-            address={wallet.address}
-            addressAction={addressAction}
-            network={network}
-            allowanceQuantityCommon={allowanceQuantityCommon}
-            customAllowanceQuantityBase={customAllowanceQuantityBase}
-            showApplicationLine={true}
-            singleAssetElementEnd={
-              allowanceQuantityCommon &&
-              addressAction.type.value === 'approve' ? (
-                <UIText
-                  as={TextLink}
-                  kind="small/accent"
-                  style={{ color: 'var(--primary)' }}
-                  to={allowanceViewHref}
-                >
-                  Edit
-                </UIText>
-              ) : null
-            }
-          />
-        </VStack>
+        {addressAction ? (
+          <VStack
+            gap={4}
+            style={{
+              ['--surface-background-color' as string]: 'var(--neutral-100)',
+            }}
+          >
+            <AddressActionDetails
+              address={wallet.address}
+              addressAction={addressAction}
+              network={network}
+              allowanceQuantityCommon={allowanceQuantityCommon}
+              customAllowanceQuantityBase={customAllowanceQuantityBase}
+              showApplicationLine={true}
+              singleAssetElementEnd={
+                allowanceQuantityCommon &&
+                addressAction.type.value === 'approve' ? (
+                  <UIText
+                    as={TextLink}
+                    kind="small/accent"
+                    style={{ color: 'var(--primary)' }}
+                    to={allowanceViewHref}
+                  >
+                    Edit
+                  </UIText>
+                ) : null
+              }
+            />
+          </VStack>
+        ) : null}
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
             interpretation={interpretation}
@@ -546,14 +501,6 @@ function SendTransactionContent({
     chain,
   });
 
-  const { data: localAddressAction, ...localAddressActionQuery } =
-    useLocalAction({
-      address: singleAddress,
-      transactionAction,
-      transaction: populatedTransaction,
-      networks,
-    });
-
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
   const configureTransactionToBeSigned = useEvent(
@@ -614,8 +561,6 @@ function SendTransactionContent({
   const paymasterWaiting =
     paymasterPossible && eligibilityQuery.isLoading && !isStale;
 
-  const client = useDefiSdkClient();
-
   const gasPricesReady = Boolean(chainGasPrices);
   const { isStale: isStaleGasPricesValue } = useStaleTime(gasPricesReady, 2000);
   /**
@@ -642,7 +587,6 @@ function SendTransactionContent({
       singleAddress,
       networks,
       transactionAction,
-      client,
       currency,
       source,
       eligibilityQuery.data?.data.eligible,
@@ -650,10 +594,6 @@ function SendTransactionContent({
       origin,
       wallet.address,
     ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
     queryFn: async () => {
       const configuredTx = await configureTransactionToSign(
         populatedTransaction,
@@ -684,9 +624,16 @@ function SendTransactionContent({
     interpretQuery.data?.data.warnings
   );
 
-  const interpretAddressAction = interpretQuery.data?.data.action;
-
-  const addressAction = interpretAddressAction || localAddressAction || null;
+  /**
+   * The interpretation is the _only_ source of the address action: we no longer
+   * derive one locally from the raw transaction, because parsing an untrusted
+   * dapp payload client-side produced confident-but-wrong summaries (WLT-2189).
+   * It stays `null` while the request is in flight, which is fine: the view
+   * renders in its uninterpreted form right away and fills in when the
+   * interpretation arrives. We never hold the whole screen back — the security
+   * check button is what carries the "Simulating..." state.
+   */
+  const addressAction = interpretQuery.data?.data.action ?? null;
 
   const view = params.get('view') || View.default;
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
@@ -742,16 +689,7 @@ function SendTransactionContent({
     onSuccess: (tx) => handleSentTransaction(tx),
   });
 
-  if (localAddressActionQuery.isSuccess && !localAddressAction) {
-    throw new Error('Unexpected missing localAddressAction');
-  }
-
-  const maybeApproval = interpretQuery.data?.data.action
-    ? getActionApproval(interpretQuery.data.data.action)
-    : null;
-  const maybeLocalApproval = localAddressAction
-    ? getActionApproval(localAddressAction)
-    : null;
+  const maybeApproval = addressAction ? getActionApproval(addressAction) : null;
 
   const fungibleDecimals = maybeApproval?.fungible
     ? getDecimals({
@@ -762,10 +700,7 @@ function SendTransactionContent({
 
   const requestedAllowanceQuantityCommon =
     maybeApproval?.amount?.quantity ??
-    maybeLocalApproval?.amount?.quantity ??
-    (maybeApproval?.unlimited || maybeLocalApproval?.unlimited
-      ? UNLIMITED_APPROVAL_AMOUNT.toFixed()
-      : null);
+    (maybeApproval?.unlimited ? UNLIMITED_APPROVAL_AMOUNT.toFixed() : null);
 
   const requestedAllowanceQuantityBase =
     requestedAllowanceQuantityCommon && fungibleDecimals
@@ -779,10 +714,6 @@ function SendTransactionContent({
     fungibleDecimals && allowanceQuantityBase
       ? baseToCommon(allowanceQuantityBase, fungibleDecimals).toFixed()
       : requestedAllowanceQuantityCommon;
-
-  if (!addressAction) {
-    return null;
-  }
 
   const handleChangeAllowance = (value: string) => {
     setAllowanceQuantityBase(value);
@@ -982,20 +913,23 @@ function EthSendTransaction() {
 
 function SolDefaultView({
   addressAction,
-  rawTransaction,
+  rawTransactions,
   txInterpretQuery,
   origin,
   wallet,
   networks,
 }: {
   origin: string;
-  addressAction: AnyAddressAction;
-  rawTransaction: StringBase64;
+  /** `null` when the transaction could not be interpreted */
+  addressAction: AnyAddressAction | null;
+  /** The whole batch for `signAllTransactions`, a single-item list otherwise */
+  rawTransactions: StringBase64[];
   txInterpretQuery: ReturnType<typeof useInterpretTxBasedOnEligibility>;
   wallet: ExternallyOwnedAccount;
   networks: Networks;
 }) {
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
+  const isBatch = rawTransactions.length > 1;
 
   const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
 
@@ -1026,7 +960,15 @@ function SolDefaultView({
             url={origin}
             alt={`Logo for ${origin}`}
           />
-          <UIText kind="headline/h2">{addressAction.type.displayValue}</UIText>
+          <UIText kind="headline/h2">
+            {addressAction?.type.displayValue ??
+              (isBatch ? 'Sign Transactions' : 'Sign Transaction')}
+          </UIText>
+          {isBatch ? (
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              {`${rawTransactions.length} transactions`}
+            </UIText>
+          ) : null}
           <UIText kind="small/accent" color="var(--neutral-500)">
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
@@ -1054,22 +996,24 @@ function SolDefaultView({
             </UIText>
           </HStack>
         </VStack>
-        <VStack
-          gap={4}
-          style={{
-            ['--surface-background-color' as string]: 'var(--neutral-100)',
-          }}
-        >
-          <AddressActionDetails
-            address={wallet.address}
-            addressAction={addressAction}
-            network={network}
-            showApplicationLine={false}
-            allowanceQuantityCommon={null}
-            customAllowanceQuantityBase={null}
-            singleAssetElementEnd={null}
-          />
-        </VStack>
+        {addressAction ? (
+          <VStack
+            gap={4}
+            style={{
+              ['--surface-background-color' as string]: 'var(--neutral-100)',
+            }}
+          >
+            <AddressActionDetails
+              address={wallet.address}
+              addressAction={addressAction}
+              network={network}
+              showApplicationLine={false}
+              allowanceQuantityCommon={null}
+              customAllowanceQuantityBase={null}
+              singleAssetElementEnd={null}
+            />
+          </VStack>
+        ) : null}
         <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
           <InterpretationSecurityCheck
             interpretation={txInterpretQuery.data}
@@ -1102,7 +1046,7 @@ function SolDefaultView({
         <RenderArea name="transaction-warning-section" />
       </VStack>
       <div style={{ marginTop: 'auto' }}>
-        {addressAction.fee ? (
+        {addressAction?.fee ? (
           <AddressActionNetworkFee
             fee={addressAction.fee}
             isLoading={txInterpretQuery.isLoading}
@@ -1122,7 +1066,7 @@ function SolDefaultView({
             <TransactionAdvancedView
               network={network}
               interpretation={txInterpretQuery.data}
-              transaction={{ solana: rawTransaction }}
+              transaction={{ solana: rawTransactions }}
               addressAction={addressAction}
               onCopyData={() => toastRef.current?.showToast()}
             />
@@ -1156,6 +1100,13 @@ function assertKnownSolanaMethodParam(
   );
 }
 
+/**
+ * `transactions` always holds the _whole_ payload — the full batch for
+ * `signAllTransactions`, a single-item list for the other methods — so that
+ * interpretation and the details view never have to reach for "the first one".
+ * `transaction` stays on the single-transaction methods only, because those are
+ * the ones whose signing call takes exactly one transaction.
+ */
 function normalizeTxParams(params: URLSearchParams):
   | {
       method: 'signAllTransactions';
@@ -1164,7 +1115,7 @@ function normalizeTxParams(params: URLSearchParams):
     }
   | {
       method: 'signTransaction' | 'signAndSendTransaction';
-      transactions: undefined;
+      transactions: StringBase64[];
       transaction: StringBase64;
     } {
   const method = params.get('method');
@@ -1173,18 +1124,16 @@ function normalizeTxParams(params: URLSearchParams):
   const base64Txs = params.get('transactions');
   if (method === 'signAllTransactions') {
     invariant(base64Txs, 'signAllTransactions: transactions param is required');
-    return {
-      method,
-      transaction: undefined,
-      transactions: JSON.parse(base64Txs) as StringBase64[],
-    };
+    const transactions = JSON.parse(base64Txs) as StringBase64[];
+    invariant(
+      transactions.length > 0,
+      'signAllTransactions: transactions param must not be empty'
+    );
+    return { method, transaction: undefined, transactions };
   } else {
     invariant(base64Tx, 'transaction param is required');
-    return {
-      method,
-      transaction: base64Tx as StringBase64,
-      transactions: undefined,
-    };
+    const transaction = base64Tx as StringBase64;
+    return { method, transaction, transactions: [transaction] };
   }
 }
 
@@ -1192,7 +1141,6 @@ function SolSendTransaction() {
   const [params] = useSearchParams();
   const { currency } = useCurrency();
   const { networks } = useNetworks();
-  const client = useDefiSdkClient();
   const origin = params.get('origin');
   const clientScope = params.get('clientScope');
   const txParams = useMemo(() => normalizeTxParams(params), [params]);
@@ -1207,6 +1155,10 @@ function SolSendTransaction() {
   });
   invariant(wallet, 'Wallet must be available');
   const { preferences } = usePreferences();
+  // `interpretTxBasedOnEligibility` reads the source from preferences itself,
+  // but it still has to take part in the query key so that toggling testnet
+  // mode refetches the interpretation
+  const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const { globalPreferences } = useGlobalPreferences();
   const sendTxBtnRef = useRef<SendTxBtnHandle | null>(null);
 
@@ -1236,38 +1188,27 @@ function SolSendTransaction() {
     }
   };
 
-  const firstTx =
-    txParams.method === 'signAllTransactions'
-      ? txParams.transactions[0]
-      : txParams.transaction;
-  const localAddressAction = useMemo(
-    () =>
-      parseSolanaTransaction(wallet.address, solFromBase64(firstTx), currency),
-    [firstTx, wallet.address, currency]
-  );
+  const { transactions } = txParams;
 
-  // TODO: support multiple transactions in simulation
   const interpretQuery = useQuery({
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
     keepPreviousData: true,
     suspense: false,
     queryKey: [
-      'interpretFirstSolanaTx',
-      client,
+      'interpretSolanaTransactions',
       currency,
+      source,
       origin,
       wallet.address,
-      firstTx,
+      transactions,
     ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
     queryFn: async () => {
       return interpretTxBasedOnEligibility({
         address: wallet.address,
-        transactions: [{ solana: firstTx }],
+        // The whole batch is interpreted, not just the first transaction —
+        // the user confirms all of them with a single click (WLT-2189)
+        transactions: transactions.map((solana) => ({ solana })),
         eligibilityQueryData: false,
         eligibilityQueryStatus: 'success',
         currency,
@@ -1277,7 +1218,14 @@ function SolSendTransaction() {
     refetchOnWindowFocus: false,
   });
 
-  const addressAction = interpretQuery.data?.data.action || localAddressAction;
+  /**
+   * The interpretation is the _only_ source of the address action: we no longer
+   * parse the raw transaction locally, because doing so on an untrusted dapp
+   * payload produced confident-but-wrong summaries (WLT-2189). It stays `null`
+   * while the request is in flight, which is fine: the view renders in its
+   * uninterpreted form right away and fills in when the interpretation arrives.
+   */
+  const addressAction = interpretQuery.data?.data.action ?? null;
 
   const { mutate: sendTransaction, ...sendTransactionMutation } = useMutation({
     mutationFn: async () => {
@@ -1319,9 +1267,9 @@ function SolSendTransaction() {
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {addressAction && networks ? (
+        {networks ? (
           <SolDefaultView
-            rawTransaction={firstTx}
+            rawTransactions={transactions}
             wallet={wallet}
             addressAction={addressAction}
             txInterpretQuery={interpretQuery}
