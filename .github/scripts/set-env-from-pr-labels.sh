@@ -8,12 +8,17 @@ if [ -z "$PR_NUMBER" ]; then
   exit 0 # exit without failing
 fi
 
-LABELS=$(gh pr view $PR_NUMBER --json labels -q '.labels[].name')
+if [[ ! "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+  echo "Invalid PR number."
+  exit 1
+fi
 
-while read -r line; do
-  if [[ "$line" == ENV_* ]]; then
+LABELS=$(gh pr view "$PR_NUMBER" --json labels -q '.labels[].name')
+
+while IFS= read -r line; do
+  if [[ "$line" =~ ^ENV_[A-Z0-9_]+$ ]]; then
     ENV_NAME="${line#ENV_}" # removes ENV_ prefix
-    echo "$ENV_NAME=on" >> $GITHUB_ENV
+    echo "$ENV_NAME=on" >> "$GITHUB_ENV"
     echo "Set env var found in PR label: $ENV_NAME=on"
   fi
 done <<< "$LABELS"

@@ -27,7 +27,7 @@ jobs:
           ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
           PROXY_URL: https://proxy.zerion.io/
           DEFI_SDK_TRANSACTIONS_API_URL: https://transactions.zerion.io
-          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
+          DEFI_SDK_API_TOKEN: ${{ secrets.DEFI_SDK_API_TOKEN }}
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}

@@ -68,7 +68,7 @@ jobs:
           BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
           PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
-          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
+          DEFI_SDK_API_TOKEN: ${{ secrets.DEFI_SDK_API_TOKEN }}
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
@@ -91,8 +91,12 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.inputs.PR_NUMBER || github.event.number }}
         run: |
+          if [[ ! "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "Invalid PR number."
+            exit 1
+          fi
           mkdir -p ./pr
-          echo $PR_NUMBER > ./pr/pr_number
+          printf '%s\n' "$PR_NUMBER" > ./pr/pr_number
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pr_number
