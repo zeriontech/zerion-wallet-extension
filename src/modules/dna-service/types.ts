@@ -1,12 +1,5 @@
 export type DnaActionPayload =
   | {
-      promoteToken: {
-        generation: 'OnePointO';
-        id: string;
-        signature: string;
-      };
-    }
-  | {
       registerWallet: {
         imported: boolean;
         platform: 'extension';
