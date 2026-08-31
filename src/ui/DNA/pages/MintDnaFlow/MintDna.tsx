@@ -35,9 +35,14 @@ import { SidePanel } from 'src/ui/features/onboarding/shared/SidePanel';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
+import { usePreloadImages } from 'src/ui/shared/usePreloadImages';
 import * as helpersStyles from '../../shared/styles.module.css';
 import { Step } from '../../shared/Step';
-import { DNA_MINT_CONTRACT_ADDRESS } from '../../shared/constants';
+import {
+  DNA_MINT_CONTRACT_ADDRESS,
+  MINT_DNA_IMAGES,
+  MINT_DNA_WAITING_IMAGES,
+} from '../../shared/constants';
 import * as styles from './styles.module.css';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
@@ -141,6 +146,11 @@ function MintDnaContent({
 }
 
 export function MintDna() {
+  // Preload the next screen's images in case the user landed here directly
+  // (e.g. a bookmarked link) instead of coming from MintBanner, which
+  // already preloads them ahead of time.
+  usePreloadImages(MINT_DNA_WAITING_IMAGES);
+
   const [animation, setAnimation] = useState(true);
   const firstAppearRef = useSpringRef();
   const firstAppearStyle = useSpring({
@@ -302,7 +312,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 128 }}>
           <animated.div style={chainAppearStyle[4]}>
             <img
-              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-6.png"
+              src={MINT_DNA_IMAGES[0]}
               alt="dna image"
               style={{ objectFit: 'contain', width: 202 }}
             />
@@ -311,7 +321,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 193 }}>
           <animated.div style={chainAppearStyle[3]}>
             <img
-              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-5.png"
+              src={MINT_DNA_IMAGES[1]}
               alt="dna image"
               style={{ objectFit: 'contain', width: 220 }}
             />
@@ -320,7 +330,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 250 }}>
           <animated.div style={chainAppearStyle[2]}>
             <img
-              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-4.png"
+              src={MINT_DNA_IMAGES[2]}
               alt="dna image"
               style={{ width: 248, height: 264 }}
             />
@@ -329,7 +339,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 330 }}>
           <animated.div style={chainAppearStyle[1]}>
             <img
-              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-3.png"
+              src={MINT_DNA_IMAGES[3]}
               alt="dna image"
               style={{ objectFit: 'contain', width: 244 }}
             />
@@ -338,7 +348,7 @@ export function MintDna() {
         <div style={{ position: 'absolute', bottom: -4, left: 385 }}>
           <animated.div style={chainAppearStyle[0]}>
             <img
-              src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-2.png"
+              src={MINT_DNA_IMAGES[4]}
               alt="dna image"
               style={{ objectFit: 'contain', width: 273 }}
             />
@@ -353,7 +363,7 @@ export function MintDna() {
               }}
             >
               <img
-                src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/dna-1.png"
+                src={MINT_DNA_IMAGES[5]}
                 alt="dna image"
                 style={{ objectFit: 'contain', width: 270 }}
               />

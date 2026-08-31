@@ -11,7 +11,10 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { getAddressNfts } from 'src/ui/shared/requests/addressNfts/useAddressNfts';
 import { invariant } from 'src/shared/invariant';
 import * as helpersStyles from '../../shared/styles.module.css';
-import { DNA_COLLECTION_ID } from '../../shared/constants';
+import {
+  DNA_COLLECTION_ID,
+  MINT_DNA_WAITING_IMAGES,
+} from '../../shared/constants';
 import { Step } from '../../shared/Step';
 import * as styles from './styles.module.css';
 
@@ -56,24 +59,24 @@ export function MintDnaWaiting() {
   return (
     <div className={helpersStyles.container} style={{ height: 600 }}>
       <img
-        src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-1.png"
+        src={MINT_DNA_WAITING_IMAGES[0]}
         alt="minting"
         className={styles.mintingImage}
       />
       <img
-        src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-2.png"
+        src={MINT_DNA_WAITING_IMAGES[1]}
         alt="minting"
         className={styles.mintingImage}
         style={{ animationDelay: '2000ms' }}
       />
       <img
-        src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-3.png"
+        src={MINT_DNA_WAITING_IMAGES[2]}
         alt="minting"
         className={styles.mintingImage}
         style={{ animationDelay: '4000ms' }}
       />
       <img
-        src="https://s3.amazonaws.com/cdn.zerion.io/images/dna-assets/minting-4.png"
+        src={MINT_DNA_WAITING_IMAGES[3]}
         alt="minting"
         className={styles.mintingImage}
         style={{ animationDelay: '6000ms' }}
