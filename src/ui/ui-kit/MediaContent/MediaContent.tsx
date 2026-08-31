@@ -1,6 +1,5 @@
 import React from 'react';
 import { Image, Audio, Video } from 'src/ui/ui-kit/MediaFallback';
-import type { WalletMetaMediaContent } from 'src/modules/zerion-api/requests/wallet-get-meta';
 
 export const MediaError = ({
   image = '🖼',
@@ -36,14 +35,22 @@ interface MediaContentValue {
   image_url?: string | null;
   audio_url?: string | null;
   video_url?: string | null;
-  type: 'video' | 'image' | 'audio';
+  /**
+   * ZPI declares NFT media type as a plain string; values other than
+   * 'video' | 'image' | 'audio' fall through to renderUnsupportedContent
+   */
+  type: string;
 }
 
-export function convertMediaContent(
-  content: WalletMetaMediaContent
-): MediaContentValue {
+export function convertMediaContent(content: {
+  imagePreviewUrl?: string | null;
+  imageUrl?: string | null;
+  audioUrl?: string | null;
+  videoUrl?: string | null;
+  type: string;
+}): MediaContentValue {
   return {
-    image_preview_url: content.imagePreviewUrl,
+    image_preview_url: content.imagePreviewUrl ?? undefined,
     image_url: content.imageUrl,
     audio_url: content.audioUrl,
     video_url: content.videoUrl,
