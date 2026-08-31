@@ -60,6 +60,8 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  position: relative;
+  top: 1px;
   color: var(--neutral-500);
   transition: color 0.15s ease;
 }

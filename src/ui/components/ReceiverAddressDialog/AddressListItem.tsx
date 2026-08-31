@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
@@ -11,6 +11,17 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 const AVATAR_SIZE = 36;
 const AVATAR_RADIUS = 10;
 
+const HIDDEN = { opacity: 0, filter: 'blur(6px)', scale: 0.92 };
+const VISIBLE = { opacity: 1, filter: 'blur(0px)', scale: 1 };
+
+/**
+ * Virtualized rows unmount when scrolled out of view, so a purely local
+ * `loaded` flag replays the reveal animation on every scroll pass. Remembering
+ * which sources were already revealed lets remounted rows appear instantly and
+ * keeps the animation for images that are genuinely loading for the first time.
+ */
+const revealedSources = new Set<string>();
+
 function AvatarImage({
   src,
   size,
@@ -20,22 +31,34 @@ function AvatarImage({
   size: number;
   borderRadius: number;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  // Stable for the lifetime of the mount: the caller keys this component by src
+  const [wasRevealed] = useState(() => revealedSources.has(src));
+  const [loaded, setLoaded] = useState(wasRevealed);
+
+  const markLoaded = useCallback(() => {
+    revealedSources.add(src);
+    setLoaded(true);
+  }, [src]);
+
+  // A cached image can finish loading before React attaches `onLoad`
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      markLoaded();
+    }
+  }, [markLoaded]);
+
   return (
     <motion.img
-      key={src}
+      ref={imgRef}
       src={src}
       alt=""
       width={size}
       height={size}
-      onLoad={() => setLoaded(true)}
-      onError={() => setLoaded(true)}
-      initial={{ opacity: 0, filter: 'blur(6px)', scale: 0.92 }}
-      animate={
-        loaded
-          ? { opacity: 1, filter: 'blur(0px)', scale: 1 }
-          : { opacity: 0, filter: 'blur(6px)', scale: 0.92 }
-      }
+      onLoad={markLoaded}
+      onError={markLoaded}
+      initial={wasRevealed ? false : HIDDEN}
+      animate={loaded ? VISIBLE : HIDDEN}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       style={{
         width: size,
@@ -83,6 +106,7 @@ export function AddressListItem({
       >
         {previewUrl ? (
           <AvatarImage
+            key={previewUrl}
             src={previewUrl}
             size={AVATAR_SIZE}
             borderRadius={AVATAR_RADIUS}
