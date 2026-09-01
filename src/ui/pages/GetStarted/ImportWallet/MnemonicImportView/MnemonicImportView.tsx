@@ -98,13 +98,13 @@ export function MnemonicImportView({
     useErrorBoundary: true,
   });
   const source = useHttpClientSource();
-  const { value } = useAddressActivity(
+  const { data: activityData } = useAddressActivity(
     { addresses: data?.addressesToCheck || [] },
     { source },
     { enabled: Boolean(data?.addressesToCheck), keepPreviousData: true }
   );
-  const { isStale: isStaleValue } = useStaleTime(value, 3000);
-  const shouldWaitForValue = value == null && !isStaleValue;
+  const { isStale: isStaleValue } = useStaleTime(activityData, 3000);
+  const shouldWaitForValue = activityData == null && !isStaleValue;
   useBackgroundKind(whiteBackgroundKind);
   useBodyStyle(bgStyle);
   return (
@@ -119,7 +119,7 @@ export function MnemonicImportView({
       ) : (
         <AddressImportFlow
           wallets={data.derivedWallets}
-          activeWallets={value ?? {}}
+          activeWallets={activityData ?? {}}
         />
       )}
     </>

@@ -16,16 +16,11 @@ export function useAddressActivity(
     keepPreviousData = false,
   }: { enabled?: boolean; keepPreviousData?: boolean } = {}
 ) {
-  const query = useQuery({
+  return useQuery({
     queryKey: ['walletCheckActivity', params, source],
     queryFn: () => ZerionAPI.walletCheckActivity(params, { source }),
     enabled: enabled && params.addresses.length > 0,
     keepPreviousData,
     staleTime: 20000,
   });
-  return {
-    ...query,
-    isLoading: query.isInitialLoading,
-    value: query.data ?? null,
-  };
 }

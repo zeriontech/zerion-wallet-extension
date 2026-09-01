@@ -180,7 +180,7 @@ export function SelectWallets({
   });
 
   const source = useHttpClientSource();
-  const { value: activeWallets, isLoading: activeWalletsAreLoading } =
+  const { data: activeWallets, isLoading: activeWalletsAreLoading } =
     useAddressActivity(
       { addresses: data?.addressesToCheck || [] },
       { source },
