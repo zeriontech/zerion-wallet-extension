@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Background } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -53,8 +53,6 @@ export function NonFungibleToken() {
       sendFormLink: `/send-form?${sendFormParams.toString()}`,
     };
   }, [singleAddress, nft]);
-
-  useEffect(() => window.scrollTo(0, 0), []);
 
   return (
     <Background backgroundKind="white">
