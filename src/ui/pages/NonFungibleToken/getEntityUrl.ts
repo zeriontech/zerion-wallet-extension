@@ -1,5 +1,5 @@
-import type { AddressNFT } from 'src/defi-sdk.types';
+import type { NFT } from 'src/modules/zerion-api/requests/wallet-get-nft-positions';
 
-export function getNftEntityUrl(nft: AddressNFT) {
-  return `/nft/${nft.chain}/${nft.contract_address}:${nft.token_id}`;
+export function getNftEntityUrl(nft: NFT) {
+  return `/nft/${nft.chain}/${nft.contractAddress}:${nft.tokenId}`;
 }

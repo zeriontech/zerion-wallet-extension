@@ -1,12 +1,10 @@
-import React, { useMemo } from 'react';
-import type { AddressNFT } from 'src/defi-sdk.types';
+import React from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import TickIcon from 'jsx:src/ui/assets/check.svg';
 import comingSoonImgSrc from 'url:src/ui/assets/coming-soon@2x.png';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
 import { NBSP } from 'src/ui/shared/typography';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { MediaContent } from 'src/ui/ui-kit/MediaContent';
+import { MediaContent, convertMediaContent } from 'src/ui/ui-kit/MediaContent';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { SquareElement } from 'src/ui/ui-kit/SquareElement';
@@ -15,15 +13,9 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import {
-  getNftId,
-  useAddressNfts,
-} from 'src/ui/shared/requests/addressNfts/useAddressNfts';
-import {
-  useNetworkConfig,
-  useNetworks,
-} from 'src/modules/networks/useNetworks';
-import { createChain } from 'src/modules/networks/Chain';
+import { useWalletNftPositions } from 'src/modules/zerion-api/hooks/useWalletNftPositions';
+import type { NftPosition } from 'src/modules/zerion-api/requests/wallet-get-nft-positions';
+import { useNetworkConfig } from 'src/modules/networks/useNetworks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
@@ -45,23 +37,16 @@ function NFTItem({
   showCollection = false,
   someHavePrice = false,
 }: {
-  item: AddressNFT;
+  item: NftPosition;
   showCollection?: boolean;
   someHavePrice?: boolean;
 }) {
   const { currency } = useCurrency();
-  const isPrimary = useMemo(() => {
-    return item.metadata.tags?.includes('#primary');
-  }, [item]);
-
-  const price = item.prices.converted?.total_floor_price;
-  const { networks } = useNetworks();
-
-  const network = networks?.getByNetworkId(createChain(item.chain));
+  const price = item.amount.value;
 
   return (
     <UnstyledLink
-      to={getNftEntityUrl(item)}
+      to={getNftEntityUrl(item.nft)}
       style={{ display: 'flex' }}
       className={s.link}
     >
@@ -73,8 +58,8 @@ function NFTItem({
             <>
               <MediaContent
                 forcePreview={true}
-                content={item.metadata.content}
-                alt={`${item.metadata.name} image`}
+                content={convertMediaContent(item.nft.metadata.content)}
+                alt={`${item.nft.metadata.name} image`}
                 errorStyle={
                   CSS.supports('aspect-ratio: 1 / 1')
                     ? undefined
@@ -86,24 +71,22 @@ function NFTItem({
                   objectFit: 'cover',
                 }}
               />
-              {network ? (
-                <div
-                  style={{
-                    borderRadius: 5,
-                    overflow: 'hidden',
-                    position: 'absolute',
-                    bottom: 8,
-                    left: 8,
-                    border: '1px solid var(--white)',
-                  }}
-                >
-                  <NetworkIcon
-                    size={12}
-                    name={network.name}
-                    src={network.icon_url}
-                  />
-                </div>
-              ) : null}
+              <div
+                style={{
+                  borderRadius: 5,
+                  overflow: 'hidden',
+                  position: 'absolute',
+                  bottom: 8,
+                  left: 8,
+                  border: '1px solid var(--white)',
+                }}
+              >
+                <NetworkIcon
+                  size={12}
+                  name={item.chain.name}
+                  src={item.chain.iconUrl}
+                />
+              </div>
             </>
           )}
         />
@@ -119,7 +102,7 @@ function NFTItem({
                 textOverflow: 'ellipsis',
               }}
             >
-              {item.collection?.name || 'Untitled collection'}
+              {item.nft.collection.name || 'Untitled collection'}
             </UIText>
           ) : null}
           <UIText
@@ -130,7 +113,7 @@ function NFTItem({
               overflow: 'hidden',
             }}
           >
-            {item.metadata.name || 'Untitled Asset'}
+            {item.nft.metadata.name || 'Untitled Asset'}
           </UIText>
           {price ? (
             <UIText kind="small/accent">
@@ -144,24 +127,6 @@ function NFTItem({
             <UIText kind="small/accent">{NBSP}</UIText>
           ) : null}
         </VStack>
-        {isPrimary ? (
-          <div
-            style={{
-              position: 'absolute',
-              color: 'var(--always-white)',
-              backgroundColor: 'var(--positive-500)',
-              borderRadius: 10,
-              height: 20,
-              width: 20,
-              padding: 2,
-              top: 0,
-              left: 0,
-              boxShadow: 'var(--elevation-100)',
-            }}
-          >
-            <TickIcon width={16} height={16} />
-          </div>
-        ) : null}
       </div>
     </UnstyledLink>
   );
@@ -207,25 +172,24 @@ export function NonFungibleTokens({
   const isSupportedByBackend = Boolean(network?.supports_nft_positions);
 
   const {
-    value: items,
+    data: items,
     isLoading,
-    fetchMore,
-    hasNext,
-  } = useAddressNfts(
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useWalletNftPositions(
     {
-      ...params,
-      chains:
-        isSupportedByBackend && chainValue !== NetworkSelectValue.All
-          ? [chainValue]
-          : undefined,
+      addresses: [params.address],
       currency,
-      sorted_by: 'floor_price_high',
-    },
-    {
+      sort: 'floor_price_high',
+      chain:
+        isSupportedByBackend && chainValue !== NetworkSelectValue.All
+          ? chainValue
+          : undefined,
       limit: 30,
-      paginatedCacheMode: 'first-page',
-      enabled: isSupportedByBackend,
-    }
+    },
+    { source },
+    { enabled: ready && isSupportedByBackend }
   );
 
   const offsetValuesState = useStore(offsetValues);
@@ -282,7 +246,7 @@ export function NonFungibleTokens({
     );
   }
 
-  if (!items) {
+  if (isLoading && !items.length) {
     return (
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
@@ -293,7 +257,7 @@ export function NonFungibleTokens({
     );
   }
 
-  if (!items?.length) {
+  if (!items.length) {
     return (
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
@@ -348,23 +312,19 @@ export function NonFungibleTokens({
           paddingInline: 16,
         }}
       >
-        {items.map((addressNft) => (
-          <NFTItem
-            key={getNftId(addressNft)}
-            item={addressNft}
-            showCollection={true}
-          />
+        {items.map((position) => (
+          <NFTItem key={position.id} item={position} showCollection={true} />
         ))}
       </div>
 
-      {hasNext ? (
+      {hasNextPage ? (
         <SurfaceList
           items={[
             {
               key: 0,
-              onClick: isLoading ? undefined : fetchMore,
+              onClick: isFetchingNextPage ? undefined : () => fetchNextPage(),
               style: { height: 40 },
-              component: isLoading ? (
+              component: isFetchingNextPage ? (
                 <DelayedRender delay={400}>
                   <ViewLoading />
                 </DelayedRender>
