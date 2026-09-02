@@ -1,7 +1,18 @@
-import type { AddressAction, Client } from 'defi-sdk';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 
-export async function getLatestNonceKnownByBackend(params: {
+/**
+ * Answers "has the backend seen transaction {hash} yet?".
+ *
+ * This used to be `getLatestNonceKnownByBackend`, which read
+ * `actions[0].transaction.nonce` off the same request. ZPI's `ActionTransaction`
+ * carries no nonce — but the caller never needed the round trip: it searches by
+ * the hash of a transaction it stored itself, so the nonce coming back was
+ * always the nonce it already had locally. The existence of the action is the
+ * only new information, so that is all this returns.
+ */
+export async function backendKnowsTransaction(params: {
   address: string;
   chain: string;
   /**
@@ -23,51 +34,25 @@ export async function getLatestNonceKnownByBackend(params: {
    * These downsides are edge-cases and should be eventually-resolvable when a newer transaction is submitted.
    */
   hash: string;
-  /**
-   * Format: "2024-06-20T16:56:56.345Z" ({Date.toISOString()})
-   * Pass this to backend to optimize search. It will not look further than the provided date
-   */
-  actions_since?: string;
-  client: Client;
-}): Promise<number | null> {
-  const { address, chain, hash, actions_since, client } = params;
-  const payload: Record<string, unknown> = {
-    address,
+  source: NetworksSource;
+}): Promise<boolean> {
+  const { address, chain, hash, source } = params;
+  // The socket request also carried {actions_since} to narrow the server-side
+  // search. ZPI has no equivalent; it was an optimisation, not a correctness
+  // bound, and this runs on a daily background alarm, so it is simply dropped.
+  const payload = {
     currency: 'usd',
-    actions_chains: [chain],
-    actions_search_query: hash,
-    actions_limit: 1,
+    addresses: [address],
+    chain,
+    searchQuery: hash,
+    limit: 1,
   };
-  if (actions_since) {
-    payload.actions_since = actions_since;
-  }
-  return Promise.race([
-    new Promise<AddressAction[]>((resolve) => {
-      const { unsubscribe } = client.cachedSubscribe<
-        AddressAction[],
-        'address',
-        'actions'
-      >({
-        method: 'get',
-        namespace: 'address',
-        body: { scope: ['actions'], payload },
-        onData: ({ value }) => {
-          if (value) {
-            resolve(value);
-            unsubscribe();
-          }
-        },
-      });
-    }),
+  const response = await Promise.race([
+    ZerionAPI.walletGetActions(payload, { source }),
     rejectAfterDelay(
       10000,
-      `getLatestNonceKnownByBackend(${JSON.stringify(payload)})`
+      `backendKnowsTransaction(${JSON.stringify(payload)})`
     ),
-  ]).then((actions) => {
-    if (actions.length) {
-      return actions[0].transaction.nonce;
-    } else {
-      return null;
-    }
-  });
+  ]);
+  return response.data.length > 0;
 }
