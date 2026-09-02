@@ -53,8 +53,6 @@ interface PublicPreferences {
   invitationBannerDismissed?: boolean;
   recentAddresses?: string[];
   addressBook?: AddressBookEntry[];
-  mintDnaBannerDismissed?: boolean;
-  upgradeDnaBannerDismissed?: boolean;
   inviteFriendsBannerDismissed?: boolean;
   solanaBannerDismissed?: boolean;
   premiumBannerDismissed?: boolean;

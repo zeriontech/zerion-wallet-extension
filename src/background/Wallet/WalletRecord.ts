@@ -940,8 +940,6 @@ export class WalletRecordModel {
       invitationBannerDismissed: false,
       recentAddresses: [],
       addressBook: [],
-      mintDnaBannerDismissed: false,
-      upgradeDnaBannerDismissed: false,
       inviteFriendsBannerDismissed: false,
       solanaBannerDismissed: false,
       premiumBannerDismissed: false,

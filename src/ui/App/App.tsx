@@ -69,8 +69,6 @@ import { PhishingWarningPage } from '../components/PhishingDefence/PhishingWarni
 import { HardwareWalletConnection } from '../pages/HardwareWalletConnection';
 import { ThemeDecoration } from '../components/DesignTheme/ThemeDecoration';
 import { SendForm2 } from '../pages/SendForm2/SendForm2';
-import { MintDnaFlow } from '../DNA/pages/MintDnaFlow';
-import { UpgradeDnaFlow } from '../DNA/pages/UpgradeDnaFlow';
 import { ChooseGlobalProviderGuard } from '../pages/RequestAccounts/ChooseGlobalProvider/ChooseGlobalProvider';
 import { usePreferences } from '../features/preferences';
 import { openUrl } from '../shared/openUrl';
@@ -194,9 +192,6 @@ function PageLayoutViews() {
   // TODO: Should these be a part of <Views />?
   return (
     <Routes>
-      <Route path="/mint-dna/*" element={<MintDnaFlow />} />
-      <Route path="/upgrade-dna/*" element={<UpgradeDnaFlow />} />
-
       <Route
         path="/backup/*"
         element={

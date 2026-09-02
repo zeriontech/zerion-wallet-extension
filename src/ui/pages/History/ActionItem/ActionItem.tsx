@@ -12,11 +12,11 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
-import { DNA_MINT_CONTRACT_ADDRESS } from 'src/ui/DNA/shared/constants';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useNavigate } from 'react-router-dom';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import { DNA_MINT_CONTRACT_ADDRESS } from './constants';
 import {
   HistoryApprovalValue,
   HistoryItemValue,
