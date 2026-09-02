@@ -1,7 +1,7 @@
 /**
  * Taken and adapted from pulse-frontend/Root/App/Main/tabs/Overview/Positions/groupPositions.ts
  */
-import type { AddressPosition } from 'defi-sdk';
+import type { AddressPosition } from 'src/defi-sdk.types';
 import groupBy from 'lodash/groupBy';
 import type { Chain } from 'src/modules/networks/Chain';
 import {

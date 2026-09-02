@@ -8,7 +8,7 @@ import type {
   NFTPreview,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { invariant } from 'src/shared/invariant';
-import type { Asset, NFT } from 'defi-sdk';
+import type { Asset, NFT } from 'src/defi-sdk.types';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';

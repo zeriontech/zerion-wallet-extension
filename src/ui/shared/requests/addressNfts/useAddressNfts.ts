@@ -1,4 +1,5 @@
-import type { AddressNFT, AddressParams, Result } from 'defi-sdk';
+import type { Result } from 'defi-sdk';
+import type { AddressNFT, AddressParams } from 'src/defi-sdk.types';
 import { client, createPaginatedDomainHook } from 'defi-sdk';
 
 export function getNftId(nft: AddressNFT) {

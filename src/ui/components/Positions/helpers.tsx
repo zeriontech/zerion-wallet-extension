@@ -1,7 +1,7 @@
 /**
  * Taken and adapted from pulse-frontend/Root/App/Main/tabs/Overview/Positions/helpers.ts
  */
-import type { AddressPosition, PositionType } from 'defi-sdk';
+import type { AddressPosition, PositionType } from 'src/defi-sdk.types';
 import { baseToCommon } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { createChain } from 'src/modules/networks/Chain';

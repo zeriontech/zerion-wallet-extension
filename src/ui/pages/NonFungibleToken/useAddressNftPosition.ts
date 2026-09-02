@@ -1,5 +1,6 @@
 import { client, createDomainHook } from 'defi-sdk';
-import type { AddressNFT, AddressParams, Result } from 'defi-sdk';
+import type { Result } from 'defi-sdk';
+import type { AddressNFT, AddressParams } from 'src/defi-sdk.types';
 
 type Payload = AddressParams & {
   currency: string;

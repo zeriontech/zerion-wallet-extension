@@ -1,4 +1,4 @@
-import type { AddressParams } from 'defi-sdk';
+import type { AddressParams } from 'src/defi-sdk.types';
 import type { TransactionObject } from 'src/modules/ethereum/transactions/types';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 

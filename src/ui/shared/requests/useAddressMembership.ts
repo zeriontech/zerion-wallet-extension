@@ -1,4 +1,4 @@
-import type { AddressParams } from 'defi-sdk';
+import type { AddressParams } from 'src/defi-sdk.types';
 import { createDomainHook } from 'defi-sdk';
 
 const namespace = 'address';

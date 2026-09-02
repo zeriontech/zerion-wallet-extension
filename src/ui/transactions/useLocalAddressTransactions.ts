@@ -1,5 +1,5 @@
 import { useStore } from '@store-unit/react';
-import type { AddressParams } from 'defi-sdk';
+import type { AddressParams } from 'src/defi-sdk.types';
 import { useMemo } from 'react';
 import { filterAddressTransactions } from './filterAddressTransactions';
 import { localTransactionsStore } from './transactions-store';

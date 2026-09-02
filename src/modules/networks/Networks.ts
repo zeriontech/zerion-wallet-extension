@@ -1,4 +1,4 @@
-import type { Asset } from 'defi-sdk';
+import type { Asset } from 'src/defi-sdk.types';
 import { isTruthy } from 'is-truthy-ts';
 import { capitalize } from 'capitalize-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';

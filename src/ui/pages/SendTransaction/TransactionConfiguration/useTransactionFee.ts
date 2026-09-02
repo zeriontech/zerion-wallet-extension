@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import type { Asset } from 'defi-sdk';
+import type { Asset } from 'src/defi-sdk.types';
 import { isTruthy } from 'is-truthy-ts';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';

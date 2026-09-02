@@ -1,4 +1,4 @@
-import type { Asset } from 'defi-sdk';
+import type { Asset } from 'src/defi-sdk.types';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import type BigNumber from 'bignumber.js';
 import type { Chain } from './Chain';
