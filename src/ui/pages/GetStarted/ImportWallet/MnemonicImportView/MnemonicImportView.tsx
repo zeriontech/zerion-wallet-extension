@@ -9,6 +9,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { maybeTriggerMnemonicRestoration } from 'src/ui/components/MnemonicPhraseRestoration';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import {
@@ -96,12 +97,14 @@ export function MnemonicImportView({
     enabled: Boolean(phrase),
     useErrorBoundary: true,
   });
-  const { value } = useAddressActivity(
+  const source = useHttpClientSource();
+  const { data: activityData } = useAddressActivity(
     { addresses: data?.addressesToCheck || [] },
-    { enabled: Boolean(data?.addressesToCheck), keepStaleData: true }
+    { source },
+    { enabled: Boolean(data?.addressesToCheck), keepPreviousData: true }
   );
-  const { isStale: isStaleValue } = useStaleTime(value, 3000);
-  const shouldWaitForValue = value == null && !isStaleValue;
+  const { isStale: isStaleValue } = useStaleTime(activityData, 3000);
+  const shouldWaitForValue = activityData == null && !isStaleValue;
   useBackgroundKind(whiteBackgroundKind);
   useBodyStyle(bgStyle);
   return (
@@ -116,7 +119,7 @@ export function MnemonicImportView({
       ) : (
         <AddressImportFlow
           wallets={data.derivedWallets}
-          activeWallets={value ?? {}}
+          activeWallets={activityData ?? {}}
         />
       )}
     </>

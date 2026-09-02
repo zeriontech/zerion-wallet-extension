@@ -1,5 +1,4 @@
 import type { Account } from 'src/background/account/Account';
-import { getAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
@@ -16,15 +15,18 @@ import type {
   Params,
   WalletPortfolio,
 } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
+import type { AddressActivity } from 'src/modules/zerion-api/requests/wallet-check-activity';
 import {
   getProviderForMixpanel,
   getProviderNameFromGroup,
 } from './getProviderNameFromGroup';
 import { omitNullParams } from './omitNullParams';
 
-function getFundedStatsByEcosystem(
-  activity: Awaited<ReturnType<typeof getAddressActivity>>
-): { totalCount: number; solanaFundedCount: number; evmFundedCount: number } {
+function getFundedStatsByEcosystem(activity: AddressActivity | null): {
+  totalCount: number;
+  solanaFundedCount: number;
+  evmFundedCount: number;
+} {
   if (!activity) {
     return {
       totalCount: 0,
@@ -47,6 +49,19 @@ function getFundedStatsByEcosystem(
   };
 }
 
+/**
+ * Runs outside React, so the mainnet pinning it used to get accidentally from
+ * the defi-sdk singleton is written out literally here.
+ */
+async function queryAddressActivity(addresses: string[]) {
+  const source = 'mainnet';
+  return backgroundQueryClient.fetchQuery({
+    queryKey: ['walletCheckActivity', addresses, source],
+    queryFn: () => ZerionAPI.walletCheckActivity({ addresses }, { source }),
+    staleTime: 20000,
+  });
+}
+
 async function queryWalletPortfolio(params: Params) {
   return backgroundQueryClient.fetchQuery({
     queryKey: ['walletGetPortfolio', params],
@@ -58,7 +73,7 @@ async function queryWalletPortfolio(params: Params) {
 async function getPortfolioStats(addresses: string[]) {
   return Promise.allSettled([
     queryWalletPortfolio({ addresses, currency: 'usd' }),
-    getAddressActivity({ addresses }, { cachePolicy: 'cache-first' }),
+    queryAddressActivity(addresses),
   ]).then(([result1, result2]) => {
     return {
       portfolio: result1.status === 'fulfilled' ? result1.value : null,

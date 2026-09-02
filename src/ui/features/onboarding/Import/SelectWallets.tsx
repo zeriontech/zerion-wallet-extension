@@ -18,6 +18,7 @@ import {
 } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/AddressImportFlow';
 import { WalletListPresentation } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
 import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -178,10 +179,12 @@ export function SelectWallets({
     suspense: false,
   });
 
-  const { value: activeWallets, isLoading: activeWalletsAreLoading } =
+  const source = useHttpClientSource();
+  const { data: activeWallets, isLoading: activeWalletsAreLoading } =
     useAddressActivity(
       { addresses: data?.addressesToCheck || [] },
-      { enabled: Boolean(data?.addressesToCheck), keepStaleData: true }
+      { source },
+      { enabled: Boolean(data?.addressesToCheck), keepPreviousData: true }
     );
 
   const { isStale: isStaleValue } = useStaleTime(activeWallets, 5000);
