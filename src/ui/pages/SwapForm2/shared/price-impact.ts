@@ -1,4 +1,3 @@
-import type { Asset } from 'defi-sdk';
 import BigNumber from 'bignumber.js';
 import { isNumeric } from 'src/shared/isNumeric';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
@@ -49,36 +48,6 @@ function toFiatValue(value: string | null, price: number) {
   return new BigNumber(value || 0).times(price);
 }
 
-export function calculatePriceImpact({
-  inputValue,
-  outputValue,
-  inputAsset,
-  outputAsset,
-}: {
-  inputValue: string | null;
-  outputValue: string | null;
-  inputAsset: Asset | null;
-  outputAsset: Asset | null;
-}): PriceImpact | null {
-  if (inputValue == null || !isNumeric(inputValue)) {
-    return null;
-  }
-
-  if (!inputAsset?.price || !outputAsset?.price) {
-    return ratioToPriceImpact(null);
-  }
-
-  const inputFiatValue = toFiatValue(inputValue, inputAsset.price.value);
-  const outputFiatValue = toFiatValue(outputValue, outputAsset.price.value);
-
-  const ratio =
-    outputFiatValue.isGreaterThan(0) && inputFiatValue.isGreaterThan(0)
-      ? outputFiatValue.minus(inputFiatValue).div(inputFiatValue).toNumber()
-      : null;
-
-  return ratioToPriceImpact(ratio);
-}
-
 export function calculatePriceImpactFromPositions({
   inputValue,
   outputValue,
@@ -111,9 +80,6 @@ export function calculatePriceImpactFromPositions({
 
   return ratioToPriceImpact(ratio);
 }
-
-// 2% allows us to unblock trade button while quotes are still loading
-export const NOT_BLOCKING_PRICE_IMPACT = 2;
 
 export function getPriceImpactPercentage(priceImpact: PriceImpact) {
   if (priceImpact.kind === 'zero') {

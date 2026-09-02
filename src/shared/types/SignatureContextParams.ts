@@ -1,6 +1,5 @@
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { SwapFormState } from 'src/ui/pages/SwapForm/shared/SwapFormState';
-import type { BridgeFormState } from 'src/ui/pages/BridgeForm/types';
+import type { SwapFormState } from './SwapFormState';
 import type { Quote2 } from './Quote';
 
 type ClientScope =
@@ -54,7 +53,7 @@ export interface MessageContextParams {
 
 export type TransactionFormedContext = {
   scope: 'Swap' | 'Bridge';
-  formState: SwapFormState | BridgeFormState;
+  formState: SwapFormState;
   slippagePercent?: number;
   quote: Quote2;
   enoughBalance: boolean;

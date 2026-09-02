@@ -1,9 +1,6 @@
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
-import {
-  createSendNativeOrContractTransaction,
-  createSendNFTTransaction,
-} from '@zeriontech/transactions';
-import type { AddressNFT, AddressPosition, Client } from 'defi-sdk';
+import { createSendNativeOrContractTransaction } from '@zeriontech/transactions';
+import type { AddressPosition, Client } from 'defi-sdk';
 import {
   adjustedCheckEligibility,
   fetchAndAssignPaymaster,
@@ -25,7 +22,6 @@ import { assertProp } from 'src/shared/assert-property';
 import { invariant } from 'src/shared/invariant';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isNumeric } from 'src/shared/isNumeric';
-import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { valueToHex } from 'src/shared/units/valueToHex';
@@ -42,43 +38,10 @@ import BigNumber from 'bignumber.js';
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
 import type { GasPriceObject } from 'src/modules/ethereum/transactions/gasPrices/GasPriceObject';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
+import { toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
 import { applyConfiguration } from '../../SendTransaction/TransactionConfiguration/applyConfiguration';
-import { parseNftId } from './useNftPosition';
 import type { SendFormState } from './SendFormState';
-import { toConfiguration } from './helpers';
 import { buildSolanaTransfer } from './buildSolanaTransfer';
-
-async function getNftPosition(
-  client: Client,
-  from: string,
-  formState: SendFormState
-) {
-  const { nftId, tokenChain } = formState;
-  invariant(nftId, 'Params missing: nftId');
-  invariant(tokenChain, 'Params missing: nftId');
-  const { contract_address, token_id } = parseNftId(nftId);
-
-  return Promise.race([
-    new Promise<AddressNFT>((resolve) => {
-      client.addressNftPosition(
-        {
-          address: from,
-          chain: tokenChain,
-          contract_address,
-          token_id,
-          currency: 'usd', // we don't care about currency here, but matching one from UI may be faster
-        },
-        {
-          cachePolicy: 'cache-first',
-          onData: (value) => {
-            resolve(value['nft-position']);
-          },
-        }
-      );
-    }),
-    rejectAfterDelay(20000, 'addressNftPosition'),
-  ]);
-}
 
 function createNetworkFee(
   fee: number,
@@ -171,14 +134,15 @@ type SendSubmitData = (
     ReturnType<typeof adjustedCheckEligibility>
   >;
   networkFee: null | NetworkFeeType;
-  nftPosition: null | AddressNFT;
 };
 
 export async function prepareSendData(
   from: string,
   position: AddressPosition | EmptyAddressPosition | null,
   formState: SendFormState,
-  client: Client
+  // Unused since the NFT branch was removed; kept so the call signature is
+  // stable for the NetworksSource threading slice (WLT-2184).
+  _client: Client
 ): Promise<SendSubmitData> {
   const EMPTY_SEND_DATA = {
     network: null,
@@ -186,19 +150,9 @@ export async function prepareSendData(
     paymasterEligibility: null,
     transaction: null,
     networkFee: null,
-    nftPosition: null,
   };
-  const {
-    type,
-    to,
-    tokenValue,
-    tokenChain,
-    tokenAssetCode,
-    gasLimit,
-    nftAmount,
-    nftId,
-    data,
-  } = formState;
+  const { type, to, tokenValue, tokenChain, tokenAssetCode, gasLimit, data } =
+    formState;
   if (!from || !to || !tokenChain) {
     return EMPTY_SEND_DATA;
   }
@@ -212,50 +166,35 @@ export async function prepareSendData(
     const chainId = Networks.getChainId(network);
 
     let tx: IncomingTransaction;
-    let nftPosition: AddressNFT | null = null;
-    if (type === 'nft') {
-      if (!nftAmount || !nftId) {
-        return EMPTY_SEND_DATA;
-      }
-      nftPosition = await getNftPosition(client, from, formState);
-      tx = createSendNFTTransaction({
-        chainId,
-        from,
-        to,
-        nft: nftPosition,
-        amount: nftAmount,
-      });
-    } else {
-      if (!tokenAssetCode || !tokenValue) {
-        return EMPTY_SEND_DATA;
-      }
-      invariant(
-        position?.asset.asset_code === tokenAssetCode,
-        'Position must match formState.tokenAssetCode'
-      );
-      invariant(
-        getAssetImplementationInChain({ asset: position.asset, chain }),
-        'Asset must exist on chain'
-      );
-      const tokenAddressInChain = getAddress({ asset: position.asset, chain });
-      if (tokenAddressInChain === undefined) {
-        throw new Error('Token implementation is unknown in selected chain');
-      }
-      const isNativeAsset = Networks.isNativeAsset(position.asset, network);
-      tx = createSendNativeOrContractTransaction({
-        chainId,
-        from,
-        to,
-        inputToken: tokenAddressInChain,
-        tokenInterface: isNativeAsset ? 'native' : 'erc20',
-        value: commonToBase(
-          tokenValue,
-          getDecimals({ asset: position.asset, chain })
-        ).toFixed(0, BigNumber.ROUND_DOWN),
-      });
-      if (data && isNativeAsset) {
-        tx = { ...tx, data };
-      }
+    if (!tokenAssetCode || !tokenValue) {
+      return EMPTY_SEND_DATA;
+    }
+    invariant(
+      position?.asset.asset_code === tokenAssetCode,
+      'Position must match formState.tokenAssetCode'
+    );
+    invariant(
+      getAssetImplementationInChain({ asset: position.asset, chain }),
+      'Asset must exist on chain'
+    );
+    const tokenAddressInChain = getAddress({ asset: position.asset, chain });
+    if (tokenAddressInChain === undefined) {
+      throw new Error('Token implementation is unknown in selected chain');
+    }
+    const isNativeAsset = Networks.isNativeAsset(position.asset, network);
+    tx = createSendNativeOrContractTransaction({
+      chainId,
+      from,
+      to,
+      inputToken: tokenAddressInChain,
+      tokenInterface: isNativeAsset ? 'native' : 'erc20',
+      value: commonToBase(
+        tokenValue,
+        getDecimals({ asset: position.asset, chain })
+      ).toFixed(0, BigNumber.ROUND_DOWN),
+    });
+    if (data && isNativeAsset) {
+      tx = { ...tx, data };
     }
     if (gasLimit) {
       invariant(isNumeric(gasLimit), 'Gas limit must be numeric');
@@ -356,7 +295,6 @@ export async function prepareSendData(
       paymasterEligibility: eligibility,
       transaction: { evm: tx },
       networkFee,
-      nftPosition,
     };
   } else {
     if (type === 'nft') {
@@ -378,7 +316,6 @@ export async function prepareSendData(
       paymasterEligibility: null,
       networkFee: fee != null ? createNetworkFee(fee, network) : null,
       transaction: { solana: solToBase64(tx) },
-      nftPosition: null,
     };
   }
 }

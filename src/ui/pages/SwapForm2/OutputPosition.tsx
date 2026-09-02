@@ -28,7 +28,7 @@ import {
 import {
   getPriceImpactPercentage,
   type PriceImpact,
-} from '../SwapForm/shared/price-impact';
+} from './shared/price-impact';
 import { FormFieldset } from './FormFieldset';
 import { AssetSelectorButton } from './AssetSelectorButton';
 import * as assetSelectorStyles from './AssetSelectorButton.module.css';

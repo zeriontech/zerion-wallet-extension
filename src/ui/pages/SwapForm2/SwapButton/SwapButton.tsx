@@ -30,7 +30,7 @@ import {
 } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
-import { toConfiguration } from '../../SendForm/shared/helpers';
+import { toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
 import { applyTransactionConfiguration } from '../applyTransactionConfiguration';
 import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSwapButtonOnboardingGate';
 import type { SwapFormState2 } from '../types';
