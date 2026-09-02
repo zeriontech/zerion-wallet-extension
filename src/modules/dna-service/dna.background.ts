@@ -3,7 +3,6 @@ import ky from 'ky';
 import omit from 'lodash/omit';
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { createNanoEvents } from 'nanoevents';
-import { ethers } from 'ethers';
 import { version } from 'src/shared/packageVersion';
 import { BrowserStorage } from 'src/background/webapis/storage';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
@@ -128,43 +127,6 @@ export class DnaService {
       return { success: false };
     }
     return this.registerAction(action);
-  }
-
-  async getPromoteDnaSigningMessage({
-    params: { collectionName, tokenName },
-  }: {
-    params: {
-      collectionName: string;
-      tokenName: string;
-    };
-  }) {
-    const actionId = uuidv4();
-    const rawMessage = `Make ${collectionName} #${tokenName} primary\n\n${actionId}`;
-    const message = ethers.hexlify(ethers.toUtf8Bytes(rawMessage));
-    return { message, actionId };
-  }
-
-  async promoteDnaToken({
-    params,
-  }: {
-    params: {
-      address: string;
-      actionId: string;
-      tokenName: string;
-      signature: string;
-    };
-  }) {
-    return this.pushAction({
-      address: normalizeAddress(params.address),
-      id: params.actionId,
-      payload: {
-        promoteToken: {
-          generation: 'OnePointO',
-          id: params.tokenName,
-          signature: params.signature,
-        },
-      },
-    });
   }
 
   async registerWallet({
