@@ -21,13 +21,34 @@ runs:
         COMMIT_MESSAGE: ${{ inputs.commit_message }}
       run: |
         TARGET_REPO="github.com/zeriontech/zerion-wallet-extension-qa.git"
-        BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+
+        if [[ ! "$BRANCH_NAME" =~ ^[A-Za-z0-9][A-Za-z0-9._/-]*$ ]] ||
+          [[ "$BRANCH_NAME" == *..* ]] ||
+          [[ "$BRANCH_NAME" == *//* ]] ||
+          [[ "$BRANCH_NAME" == *"@{"* ]] ||
+          [[ "$BRANCH_NAME" == */ ]] ||
+          [[ "$BRANCH_NAME" == *"." ]] ||
+          [[ "$BRANCH_NAME" == *.lock ]]; then
+          echo "Invalid branch name supplied to the QA repository action."
+          exit 1
+        fi
 
         git config --global user.email "zerts@zerion.io"
         git config --global user.name "QA Bot"
 
-        # Clone the target repository
-        git clone "https://x-access-token:${REPO_TOKEN}@${TARGET_REPO}" qa-repository
+        ASKPASS_SCRIPT="${RUNNER_TEMP}/qa-git-askpass.sh"
+        trap 'rm -f "$ASKPASS_SCRIPT"' EXIT
+        cat > "$ASKPASS_SCRIPT" <<'EOF'
+        #!/usr/bin/env bash
+        printf '%s\n' "$REPO_TOKEN"
+        EOF
+        chmod 700 "$ASKPASS_SCRIPT"
+        export GIT_ASKPASS="$ASKPASS_SCRIPT"
+        export GIT_TERMINAL_PROMPT=0
+
+        # Clone the target repository without placing the token in the command line.
+        git clone "https://x-access-token@${TARGET_REPO}" qa-repository
+
         cd qa-repository
 
         # Create or switch to the new branch
