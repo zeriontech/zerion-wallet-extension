@@ -1996,10 +1996,9 @@ export class Wallet {
   }
 
   /**
-   * Places an intent-swap Order: posts the signature(s) to
-   * `transaction/execute-order/v1`, registers the pending Order in the
-   * transactions store (ADR-0004) and emits `orderPlaced`. HTTP errors
-   * propagate unchanged so the UI can classify a 400 (stale quote).
+   * Places an intent-swap Order and registers it in the transactions store.
+   * HTTP errors are rethrown as OrderExecutionError so the UI can classify a
+   * 400 (stale quote).
    */
   async submitSwapOrder({
     params,
@@ -2043,7 +2042,6 @@ export class Wallet {
         mode,
         ...orderContext,
       });
-      // The response body tells a bad signature from an expired quote
       emitter.emit('globalError', {
         name: 'network_error',
         message: `execute-order failed: ${normalized.message}`,
@@ -2052,7 +2050,6 @@ export class Wallet {
     }
     transactionService.addOrder({
       orderId,
-      quoteId,
       from: order.from,
       chain: order.inputChain,
       explorerUrlTemplate: order.explorerUrlTemplate,

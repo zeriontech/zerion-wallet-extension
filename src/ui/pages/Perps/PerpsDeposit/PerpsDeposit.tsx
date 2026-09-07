@@ -280,7 +280,6 @@ function DepositFormBody({
 
       const steps = buildSwapSteps({
         quote,
-        // No local network-fee override on the deposit form
         configuredQuote: quote,
         wallet,
         address,

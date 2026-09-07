@@ -226,7 +226,6 @@ async function runStep({
   const isHardware = isDeviceAccount(queue.options.wallet);
 
   if (step.kind === 'order') {
-    // Emits its own step-signing (after an optional re-quote phase)
     return runOrderStepInQueue({ queue, params: step.params, index });
   }
 

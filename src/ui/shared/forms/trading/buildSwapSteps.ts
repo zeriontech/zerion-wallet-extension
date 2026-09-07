@@ -70,11 +70,10 @@ export interface BuildSwapStepsParams {
 }
 
 /**
- * Builds the signing queue for an Executable Quote (PRD §4.4). Step 0 is an
- * optional On-chain Approval (`send`); then either the On-chain Swap (`send`,
- * unchanged behaviour) or the Intent Swap (`order`, with a Re-quote iff an
- * approval was mined first). Both kinds are first-class: the branch keys off
- * the quote's own fields only.
+ * Builds the signing queue for an Executable Quote. Step 0 is an optional
+ * On-chain Approval (`send`); then either the On-chain Swap (`send`) or the
+ * Intent Swap (`order`, with a Re-quote iff an approval was mined first). The
+ * branch keys off the quote's own fields only.
  */
 export function buildSwapSteps({
   quote,

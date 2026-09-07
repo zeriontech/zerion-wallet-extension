@@ -7,9 +7,7 @@
 export const ORDER_EXECUTION_ERROR_CODE = 5400;
 
 export interface OrderExecutionErrorData {
-  /** HTTP status; 400 = stale quote or bad signature */
   status: number;
-  /** Raw response body, for analytics; may be null */
   body: string | null;
 }
 

@@ -294,15 +294,14 @@ function pendingSolanaTxToAddressAction(
 }
 
 /**
- * An intent-swap Order (ADR-0004) is rendered from the address action saved at
- * placement time; status comes from the Order, the hash from its first fill.
+ * An intent-swap Order is rendered from the address action saved at placement
+ * time; status comes from the Order, the hash from its first fill.
  */
 function pendingOrderToAddressAction(
   transactionObject: TransactionObject
 ): LocalAddressAction {
   invariant(transactionObject.orderId, 'Must be an order');
-  const { orderId, chain, from, fills, timestamp, addressAction } =
-    transactionObject;
+  const { orderId, from, fills, timestamp, addressAction } = transactionObject;
   const status = getTransactionObjectStatus(transactionObject);
   const fillHash = fills[0]?.hash ?? null;
   const base: LocalAddressAction = addressAction
@@ -344,9 +343,7 @@ function pendingOrderToAddressAction(
         ...act,
         status: act.status === 'pending' ? status : act.status,
       })) ?? null,
-    // `rawTransaction.hash` carries the orderId so status lookups resolve
-    // before a fill exists (ActionInfo → useActionStatusByHash)
-    rawTransaction: { hash: orderId, chain, nonce: -1, from },
+    orderId,
   };
 }
 

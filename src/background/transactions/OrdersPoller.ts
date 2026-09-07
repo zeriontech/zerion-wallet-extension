@@ -17,7 +17,6 @@ const MAX_CONSECUTIVE_CLIENT_ERRORS = 5;
 
 export interface PollingOrder {
   orderId: string;
-  /** Placement time; drives the fast → slow backoff */
   timestamp: number;
 }
 
@@ -37,9 +36,8 @@ function isClientError(error: unknown): boolean {
 }
 
 /**
- * Polls `transaction/get-order-status/v1` for pending intent-swap Orders
- * (ADR-0004). Sibling of TransactionsPoller: lives in the background so the
- * Order settles even when the popup is closed.
+ * Polls `transaction/get-order-status/v1` for pending intent-swap Orders.
+ * Lives in the background so the Order settles even when the popup is closed.
  */
 export class OrdersPoller {
   private map = new Map<string, PollingOrder>();

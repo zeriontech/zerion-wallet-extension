@@ -117,11 +117,10 @@ function runStream(
 }
 
 /**
- * Re-quote (CONTEXT.md): after an On-chain Approval is mined, re-open the v3
- * stream with the original request and wait for the same provider to return an
- * Intent Swap that needs no approval. Streams are retried every
- * REQUOTE_RETRY_INTERVAL_MS, at most MAX_REQUOTE_ATTEMPTS times, all within
- * REQUOTE_TIMEOUT_MS.
+ * Re-quote: after an On-chain Approval is mined, re-open the v3 stream with
+ * the original request and wait for the same provider to return an Intent Swap
+ * that needs no approval. Streams are retried every REQUOTE_RETRY_INTERVAL_MS,
+ * at most MAX_REQUOTE_ATTEMPTS times, all within REQUOTE_TIMEOUT_MS.
  */
 export async function requoteIntent(
   params: RequoteParams,

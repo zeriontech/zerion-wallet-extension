@@ -172,9 +172,9 @@ Touch points that must learn the third arm (each currently assumes hash|signatur
 | `model.ts` `isPendingTransaction` | works via the status helper |
 | `filterAddressTransactions.ts` | `txFromRaw = tx.transaction ? tx.transaction.from : tx.publicKey ?? tx.from` |
 | `useLocalAddressTransactions.ts` | unchanged (`relatedTransactionHash` undefined on orders) |
-| `addressAction/creators.ts` `pendingTransactionToAddressAction` | `orderId` branch → `pendingOrderToAddressAction`: returns the stored `addressAction` with `status` from the order, `transaction.hash` = fill hash or `ZERO_HASH`, `rawTransaction.hash` = `orderId`, `nonce: -1` |
+| `addressAction/creators.ts` `pendingTransactionToAddressAction` | `orderId` branch → `pendingOrderToAddressAction`: returns the stored `addressAction` with `status` from the order, `transaction.hash` = fill hash or `ZERO_HASH`, `rawTransaction: null`, `orderId` set |
 | `useLocalTransactionStatus.ts` | `useTransactionStatus(id)` / `waitForTransactionResolve(id)` also match `tx.orderId === id`; add `waitForOrderResolve(orderId, timeoutMs)` returning `'confirmed' \| 'failed' \| 'timeout'` |
-| `ActionInfo.tsx` | `useActionStatusByHash` receives `rawTransaction.hash` (= orderId) for local order actions so status resolves before a fill exists |
+| `ActionInfo.tsx` | `useActionStatusByHash` receives `addressAction.orderId` for local order actions so status resolves before a fill exists; Speed Up / Cancel is not rendered for Orders |
 
 Retention: orders have no nonce, so they age out on the existing time-based retention like Solana entries. Store key `transactions` unchanged; the arm is additive, no migration.
 

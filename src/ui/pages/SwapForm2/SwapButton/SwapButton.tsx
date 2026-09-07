@@ -133,7 +133,6 @@ function isDisabled({
   if (isCrossEcosystem && receiverEcosystemMismatch) return true;
   if (!quote) return true;
   if (quote.error) return true;
-  // Neither an On-chain Swap transaction nor a Swap Intent: nothing to sign
   if (!isExecutableQuote(quote)) return true;
   return false;
 }
@@ -287,7 +286,6 @@ function useSimulation({
       return;
     }
     if (!quote) return;
-    // An intent quote may carry no client transaction at all
     if (transactions.length === 0 && !isIntentQuote(quote)) return;
     simulationMutation.mutate({ txs: transactions, quote });
   }, [simulated, onSign, quote, transactions, simulationMutation]);

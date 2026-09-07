@@ -30,7 +30,6 @@ import {
   type AnyAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
-import { ZERO_HASH } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { AccelerateTransaction } from '../History/AccelerateTransaction';
 import {
@@ -343,16 +342,13 @@ export function ActionInfo() {
       : null;
   }, [addressAction?.timestamp]);
 
-  // Local intent-swap Orders have no hash until they fill; their
-  // rawTransaction.hash carries the orderId so the status resolves right away.
-  const localStatusKey =
-    (addressAction &&
-      isLocalAddressAction(addressAction) &&
-      addressAction.rawTransaction?.hash !== ZERO_HASH &&
-      addressAction.rawTransaction?.hash) ||
-    targetObject?.transaction?.hash ||
-    '';
-  const localStatus = useActionStatusByHash(localStatusKey);
+  const orderId =
+    addressAction && isLocalAddressAction(addressAction)
+      ? addressAction.orderId
+      : undefined;
+  const localStatus = useActionStatusByHash(
+    orderId || targetObject?.transaction?.hash || ''
+  );
 
   const initialPending = useRef(
     addressAction &&
@@ -438,7 +434,10 @@ export function ActionInfo() {
             ))
           )}
         </VStack>
-        {isLocalAddressAction(addressAction) && isPending && !actIndex ? (
+        {isLocalAddressAction(addressAction) &&
+        isPending &&
+        !actIndex &&
+        !orderId ? (
           <AccelerateTransaction
             addressAction={addressAction}
             onSuccess={() => navigate(-1)}

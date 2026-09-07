@@ -27,7 +27,6 @@ export function ToasterStatusBadge({
         aria-hidden="true"
       >
         {isProcessing ? (
-          // Neutral clock: the Order is still settling in the background
           <>
             <motion.circle
               cx={8}

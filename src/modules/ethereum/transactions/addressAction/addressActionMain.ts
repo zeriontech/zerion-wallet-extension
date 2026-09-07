@@ -44,6 +44,8 @@ export type LocalAddressAction = Omit<AddressAction, 'transaction' | 'acts'> & {
   } | null;
   local: true;
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
+  /** Set for an intent-swap Order; such actions cannot be sped up or cancelled */
+  orderId?: string;
 };
 
 export type AnyAddressAction = AddressAction | LocalAddressAction;

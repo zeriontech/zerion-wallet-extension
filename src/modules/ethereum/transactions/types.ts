@@ -59,21 +59,17 @@ export type OrderStatus = 'pending' | 'successful' | 'failed' | 'rejected';
 export type OrderFill = { chain: string; hash: string };
 
 /**
- * Intent-swap Order (ADR-0004): a hash-less entry keyed by the backend
- * `orderId`. Status comes from `transaction/get-order-status/v1`, never from
- * a receipt. `hash` is `fills[0].hash` once settled and is display-only.
+ * Intent-swap Order: a hash-less entry keyed by the backend `orderId`. Status
+ * comes from `transaction/get-order-status/v1`, never from a receipt. `hash`
+ * is `fills[0].hash` once settled and is display-only, never polled.
  */
 type OrderObject = {
   orderId: string;
   orderStatus: OrderStatus;
   fills: OrderFill[];
-  /** Signer address; used by filterAddressTransactions */
   from: string;
-  /** Input network id, for chain filters */
   chain: string;
-  /** `{HASH}` template used to link the fill once it exists */
   explorerUrlTemplate: string | null;
-  /** fills[0].hash once settled — display only, never polled */
   hash?: string;
 };
 

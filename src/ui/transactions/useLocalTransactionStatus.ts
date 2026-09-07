@@ -5,7 +5,6 @@ import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-ac
 import type { TransactionObject } from 'src/modules/ethereum/transactions/types';
 import { localTransactionsStore } from './transactions-store';
 
-/** Matches an EVM hash, a Solana signature or an intent-swap orderId */
 function matchesId(tx: TransactionObject, id: string) {
   return tx.hash === id || tx.signature === id || tx.orderId === id;
 }

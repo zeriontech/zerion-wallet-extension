@@ -105,7 +105,6 @@ function toPollingObj(value: TransactionObject): PollingTx {
 interface Options {
   getWallet: () => Wallet;
   getOrderStatus: (orderId: string) => Promise<OrderStatusResponse>;
-  /** Fire-and-forget: reports a settled fill to `transaction/collect/v1` */
   collectTransaction: (params: {
     hash: string;
     chain: string;
@@ -114,14 +113,11 @@ interface Options {
 
 export interface AddOrderParams {
   orderId: string;
-  quoteId: string;
   from: string;
-  /** Input network id */
   chain: string;
   explorerUrlTemplate: string | null;
   initiator: string;
   addressAction: AnyAddressAction | null;
-  /** Kept in memory only, for `transactionFailed` analytics on rejection */
   analyticsContext: { mode: 'default' | 'testnet' } & TransactionContextParams;
 }
 
@@ -318,10 +314,6 @@ export class TransactionService {
     return this.transactionsStore;
   }
 
-  /**
-   * Registers a freshly placed intent-swap Order (ADR-0004) as a pending,
-   * hash-less entry and starts polling its status.
-   */
   addOrder(params: AddOrderParams) {
     const timestamp = Date.now();
     const newItem: TransactionObject = {

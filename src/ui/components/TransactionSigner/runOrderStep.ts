@@ -16,7 +16,6 @@ import type {
   RequoteParams,
 } from './types';
 
-/** How long the queue waits for settlement before "Still processing" */
 export const ORDER_WAIT_MS = 5 * 60 * 1000;
 
 export type SubmitOrderParams = {
@@ -69,8 +68,8 @@ export function withFreshOutputAmount(
 }
 
 /**
- * Pure orchestration of an Intent Swap step (PRD §4.3). Side effects are
- * injected so the sequence is unit-testable.
+ * Pure orchestration of an Intent Swap step. Side effects are injected so the
+ * sequence is unit-testable.
  */
 export async function runOrderStep({
   params,
