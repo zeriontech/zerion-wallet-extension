@@ -3,9 +3,10 @@ import { createNanoEvents } from 'nanoevents';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
 import throttle from 'lodash/throttle';
-import type {
-  StoredTransactions,
-  TransactionObject,
+import {
+  getTransactionObjectId,
+  type StoredTransactions,
+  type TransactionObject,
 } from 'src/modules/ethereum/transactions/types';
 import { upsert } from 'src/shared/upsert';
 import {
@@ -27,6 +28,10 @@ import type { Wallet } from 'src/shared/types/Wallet';
 import { invariant } from 'src/shared/invariant';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import type { TransactionContextParams } from 'src/shared/types/SignatureContextParams';
+import { getExplorerUrl } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
+import type { Response as OrderStatusResponse } from 'src/modules/zerion-api/requests/transaction-get-order-status';
 import { emitter } from '../events';
 import { INTERNAL_SYMBOL_CONTEXT } from '../Wallet/Wallet';
 import {
@@ -35,6 +40,7 @@ import {
 } from '../Wallet/model/ethers-v5-types';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
+import { OrdersPoller, type OrderSettlement } from './OrdersPoller';
 
 const FOUR_MINUTES_IN_MS = 1000 * 60 * 4;
 const ONE_DAY_IN_MINUTES = 1 * 60 * 24;
@@ -43,23 +49,30 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
   upsertTransaction(value: TransactionObject) {
     this.setState((state) =>
       produce(state, (draft) => {
-        upsert(draft, value, (x) => x.hash ?? x.signature);
+        upsert(draft, value, getTransactionObjectId);
       })
     );
   }
 
+  /** EVM entries only: an Order's fill hash is display-only */
   getByHash(hash: string) {
-    return this.getState().find((item) => item.hash === hash);
+    return this.getState().find(
+      (item) => item.transaction && item.hash === hash
+    );
   }
 
   getBySignature(signature: string) {
     return this.getState().find((item) => item.signature === signature);
   }
 
+  getByOrderId(orderId: string) {
+    return this.getState().find((item) => item.orderId === orderId);
+  }
+
   bulkDeleteTransactionsById(ids: string[]) {
     const idsSet = new Set(ids);
     this.setState((state) =>
-      state.filter((item) => !idsSet.has(item.hash ?? item.signature))
+      state.filter((item) => !idsSet.has(getTransactionObjectId(item)))
     );
   }
 
@@ -91,11 +104,33 @@ function toPollingObj(value: TransactionObject): PollingTx {
 
 interface Options {
   getWallet: () => Wallet;
+  getOrderStatus: (orderId: string) => Promise<OrderStatusResponse>;
+  /** Fire-and-forget: reports a settled fill to `transaction/collect/v1` */
+  collectTransaction: (params: {
+    hash: string;
+    chain: string;
+  }) => Promise<unknown>;
+}
+
+export interface AddOrderParams {
+  orderId: string;
+  quoteId: string;
+  from: string;
+  /** Input network id */
+  chain: string;
+  explorerUrlTemplate: string | null;
+  initiator: string;
+  addressAction: AnyAddressAction | null;
+  /** Kept in memory only, for `transactionFailed` analytics on rejection */
+  analyticsContext: { mode: 'default' | 'testnet' } & TransactionContextParams;
 }
 
 export class TransactionService {
   private transactionsStore: TransactionsStore;
   private transactionsPoller: TransactionsPoller;
+  private ordersPoller: OrdersPoller;
+  /** orderId → analytics context; lost on service-worker restart (best effort) */
+  private orderContexts = new Map<string, AddOrderParams['analyticsContext']>();
   options: Options | null = null;
 
   static ALARM_NAME = 'TransactionService:performPurgeCheck';
@@ -123,6 +158,7 @@ export class TransactionService {
   constructor() {
     this.transactionsStore = new TransactionsStore([], 'transactions');
     this.transactionsPoller = new TransactionsPoller();
+    this.ordersPoller = new OrdersPoller();
     TransactionService.emitter.on('alarm', () => {
       // Just wondering... When a chrome alarm goes off, does this mean that
       // the whole background script runs from scratch? If it does, it means we
@@ -155,7 +191,23 @@ export class TransactionService {
         }
       },
     });
-    this.transactionsPoller.add(pending.map(toPollingObj));
+    this.transactionsPoller.add(
+      pending.filter((item) => !item.orderId).map(toPollingObj)
+    );
+    this.ordersPoller.setOptions({
+      getOrderStatus: (orderId) => {
+        invariant(this.options, "Options aren't expected to become null");
+        return this.options.getOrderStatus(orderId);
+      },
+    });
+    this.ordersPoller.add(
+      pending
+        .filter((item) => item.orderId)
+        .map((item) => ({
+          orderId: item.orderId as string,
+          timestamp: item.timestamp,
+        }))
+    );
     this.addListeners();
     if (transactions.length) {
       this.startPurgeInterval({ leading: true });
@@ -193,14 +245,14 @@ export class TransactionService {
     const transactions = await this.transactionsStore.getSavedState();
     const candidates = transactions.filter((item) => {
       return (
-        item.hash &&
+        item.transaction &&
         normalizeAddress(item.transaction.from) === normalizeAddress(address) &&
         normalizeChainId(item.transaction.chainId) === chainId &&
         item.transaction.nonce <= fromNonce
       );
     });
     this.transactionsStore.bulkDeleteTransactionsById(
-      candidates.map((item) => item.hash ?? item.signature)
+      candidates.map(getTransactionObjectId)
     );
   }
 
@@ -218,8 +270,8 @@ export class TransactionService {
     const map = new Map<Key, { hash: string; nonce: number }>();
 
     for (const item of transactions) {
-      if (!item.hash) {
-        return; // Do not handle Solana items
+      if (!item.transaction) {
+        continue; // Solana entries and intent-swap Orders have no nonce
       }
       const chainId = normalizeChainId(item.transaction.chainId);
       const key = `${item.transaction.from}:${chainId}` as const;
@@ -264,6 +316,83 @@ export class TransactionService {
 
   getTransactionsStore() {
     return this.transactionsStore;
+  }
+
+  /**
+   * Registers a freshly placed intent-swap Order (ADR-0004) as a pending,
+   * hash-less entry and starts polling its status.
+   */
+  addOrder(params: AddOrderParams) {
+    const timestamp = Date.now();
+    const newItem: TransactionObject = {
+      orderId: params.orderId,
+      orderStatus: 'pending',
+      fills: [],
+      from: params.from,
+      chain: params.chain,
+      explorerUrlTemplate: params.explorerUrlTemplate,
+      initiator: params.initiator,
+      timestamp,
+      addressAction: params.addressAction ?? undefined,
+    };
+    this.orderContexts.set(params.orderId, params.analyticsContext);
+    this.transactionsStore.setState((state) =>
+      produce(state, (draft) => {
+        draft.push(newItem);
+      })
+    );
+    this.ordersPoller.add([{ orderId: params.orderId, timestamp }]);
+    this.startPurgeInterval();
+  }
+
+  private handleOrderSettled(orderId: string, settlement: OrderSettlement) {
+    const item = this.transactionsStore.getByOrderId(orderId);
+    if (!item) {
+      return;
+    }
+    invariant(item.orderId, 'Item must be an order');
+    const { status, fills } = settlement;
+    const fillHash = fills[0]?.hash;
+    const explorerUrl = getExplorerUrl(
+      item.explorerUrlTemplate,
+      fillHash ?? null
+    );
+    let addressAction = item.addressAction;
+    if (addressAction && fillHash) {
+      const patchTx = <
+        T extends { hash: string | null; explorerUrl: string | null }
+      >(
+        tx: T | null
+      ) => (tx ? { ...tx, hash: fillHash, explorerUrl } : tx);
+      addressAction = {
+        ...addressAction,
+        transaction: patchTx(addressAction.transaction),
+        acts:
+          addressAction.acts?.map((act) => ({
+            ...act,
+            transaction: patchTx(act.transaction),
+          })) ?? null,
+      } as LocalAddressAction;
+    }
+    this.transactionsStore.upsertTransaction({
+      ...item,
+      orderStatus: status,
+      fills,
+      hash: fillHash,
+      addressAction,
+    });
+    const context = this.orderContexts.get(orderId);
+    this.orderContexts.delete(orderId);
+    if ((status === 'failed' || status === 'rejected') && context) {
+      emitter.emit('transactionFailed', `order ${status}`, context);
+    }
+    for (const fill of fills) {
+      this.options
+        ?.collectTransaction({ hash: fill.hash, chain: fill.chain })
+        .catch(() => {
+          // best effort: the backend indexes the fill on its own
+        });
+    }
   }
 
   static toTransactionObject(
@@ -331,7 +460,7 @@ export class TransactionService {
     this.transactionsPoller.emitter.on('evm:mined', (receipt) => {
       const item = this.transactionsStore.getByHash(receipt.hash);
       if (item) {
-        invariant(item.hash, 'Item must be evm');
+        invariant(item.transaction, 'Item must be evm');
         this.transactionsStore.upsertTransaction({
           ...item,
           receipt: toEthersV5Receipt(receipt),
@@ -360,6 +489,9 @@ export class TransactionService {
         }
       }
     );
+    this.ordersPoller.emitter.on('order:settled', (orderId, settlement) => {
+      this.handleOrderSettled(orderId, settlement);
+    });
     this.transactionsPoller.emitter.on('evm:dropped', (hash) => {
       const item = this.transactionsStore.getByHash(hash);
       this.markAsDropped(item);

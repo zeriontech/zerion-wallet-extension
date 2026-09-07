@@ -161,6 +161,10 @@
   background: var(--negative-500, #ff4242);
 }
 
+.statusBadgeProcessing {
+  background: var(--neutral-500, #8a8f9b);
+}
+
 .body {
   position: relative;
   display: flex;

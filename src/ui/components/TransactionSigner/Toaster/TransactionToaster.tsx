@@ -88,6 +88,9 @@ function getTitle(
     if (!view) return 'Failed';
     return FAILED_TITLE[view.kind];
   }
+  if (terminal === 'processing') {
+    return 'Still processing';
+  }
   if (terminal === 'success') {
     if (!view) return 'Done';
     if (view.kind === 'bridge') return 'Cross-chain swaps';
@@ -107,6 +110,9 @@ function getSubtitle(
   view: ToasterView | undefined,
   terminal: TerminalKind | null
 ): Subtitle | null {
+  if (terminal === 'processing') {
+    return { type: 'text', text: 'Track it in History' };
+  }
   if (!view) return null;
   if (terminal === 'success' && view.kind === 'bridge') {
     return { type: 'text', text: 'may take a few minutes' };

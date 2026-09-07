@@ -552,3 +552,58 @@ describe('resolveTransactionWarning', () => {
     });
   });
 });
+
+describe('resolveTransactionWarning: intent quotes', () => {
+  function makeIntentQuote(outputQuantity: string): Quote2 {
+    return {
+      ...makeQuote(outputQuantity),
+      quoteId: 'q-1',
+      transactionSwap: null,
+      intentSwap: {
+        evm: { types: {}, primaryType: 'Order', domain: {}, message: {} },
+        solana: null,
+      },
+    } as unknown as Quote2;
+  }
+
+  it('a null interpreted action alone does not make an intent unverified', () => {
+    const sim: SimulationResult = {
+      data: { action: null, warnings: [] },
+    } as unknown as InterpretResponse;
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.unverified).toBe(false);
+    expect(r.blocksAutoSign).toBe(false);
+  });
+
+  it('the output-mismatch check still runs when the signature simulation returns a matching transfer', () => {
+    const sim = makeSimulation({
+      incoming: [{ fungibleId: 'usdc', quantity: '50' }],
+    });
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.warning?.title).toBe('Output amount mismatch');
+    expect(r.blocksAutoSign).toBe(true);
+  });
+
+  it('Gray severity still marks an intent unverified', () => {
+    const sim = makeSimulation({
+      warnings: [
+        { severity: 'Gray', title: 'Unverified', description: '', details: '' },
+      ],
+      incoming: [{ fungibleId: 'usdc', quantity: '100' }],
+    });
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.unverified).toBe(true);
+  });
+});

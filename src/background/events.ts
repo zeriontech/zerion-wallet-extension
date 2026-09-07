@@ -66,6 +66,11 @@ export const emitter = createNanoEvents<{
     errorMessage: string,
     context: { mode: 'default' | 'testnet' } & TransactionContextParams
   ) => void;
+  /** An intent-swap Order was accepted by `transaction/execute-order/v1` */
+  orderPlaced: (
+    result: { orderId: string; quoteId: string; from: string },
+    context: { mode: 'default' | 'testnet' } & TransactionContextParams
+  ) => void;
   quoteError: (context: QuoteErrorContext, source: NetworksSource) => void;
   typedDataSigned: (
     data: { typedData: TypedData; address: string } & MessageContextParams

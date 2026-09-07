@@ -612,7 +612,8 @@ export function createTradeAddressAction2({
   rate,
   explorerUrl,
 }: {
-  transaction: MultichainTransaction;
+  /** null for an Intent Swap: there is no client transaction to describe */
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -675,7 +676,7 @@ export function createTradeAddressAction2({
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, network.id)
       : toEmptyActionTx(network.id),
   };
@@ -695,7 +696,8 @@ export function createBridgeAddressAction2({
   receiverAddress,
 }: {
   address: string;
-  transaction: MultichainTransaction;
+  /** null for an Intent Swap: there is no client transaction to describe */
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -823,7 +825,7 @@ export function createBridgeAddressAction2({
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, inputNetwork.id)
       : toEmptyActionTx(inputNetwork.id),
   };

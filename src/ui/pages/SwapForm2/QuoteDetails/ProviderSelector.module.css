@@ -76,6 +76,25 @@
   object-fit: cover;
 }
 
+/* Small marker on quotes executed by signing a Swap Intent (no broadcast) */
+.intentMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background-color: var(--neutral-200);
+  color: var(--neutral-600);
+  flex-shrink: 0;
+}
+
+.intentMarkIcon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
 .rankBadge {
   display: flex;
   align-items: center;

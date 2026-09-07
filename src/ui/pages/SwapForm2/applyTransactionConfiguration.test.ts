@@ -259,3 +259,25 @@ describe('applyTransactionConfiguration', () => {
     );
   });
 });
+
+describe('applyTransactionConfiguration: intent quotes', () => {
+  test('passes through when there is no swap transaction (approve + intent)', () => {
+    const approveEvm = makeEvm({ maxFee: hex(100), gas: hex(50) });
+    const quote = makeQuote({
+      transactionSwap: null,
+      transactionApprove: { evm: approveEvm, solana: null },
+      intentSwap: {
+        evm: { types: {}, primaryType: 'Order', domain: {}, message: {} },
+        solana: null,
+      },
+    });
+    const gasPrices = makeGasPrices({
+      maxFee: 400,
+      priorityFee: 20,
+      baseFee: 100,
+    });
+    const result = applyTransactionConfiguration(quote, PRESET_FAST, gasPrices);
+    expect(result).toBe(quote);
+    expect(result.transactionApprove?.evm?.maxFee).toBe(hex(100));
+  });
+});

@@ -3,6 +3,7 @@ import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { initialize as initializeLiteweightChainSupport } from './requests/liteweight-chain-support';
 import { InDappNotificationService } from './in-dapp-notifications';
 import { Account, AccountPublicRPC } from './account/Account';
@@ -42,6 +43,9 @@ export async function initialize() {
   dnaService.initialize({ account });
   await transactionService.initialize({
     getWallet: () => account.getCurrentWallet(),
+    getOrderStatus: (orderId) =>
+      ZerionAPI.transactionGetOrderStatus({ orderId }),
+    collectTransaction: (params) => ZerionAPI.transactionCollect(params),
   });
   initializeRemoteConfig().then(() => {
     globalPreferences.initialize();

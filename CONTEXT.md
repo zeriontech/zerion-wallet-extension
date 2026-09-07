@@ -6,7 +6,7 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 ### Pre-sign transaction state
 
-**Quote**: A swap router's offer: an expected `outputAmount`, a guaranteed `minimumOutputAmount`, and the EVM/Solana transaction(s) that realize the swap. _Avoid_: Offer, route, swap details
+**Quote**: One provider's priced offer for a swap or bridge: an expected `outputAmount`, a guaranteed `minimumOutputAmount`, and the means to realize it. A Quote is executed in exactly one of two ways, and the Quote itself says which: as an **On-chain Swap** (it carries a swap transaction) or as an **Intent Swap** (it carries a **Swap Intent**). Identified for display, selection and re-quoting by its provider id (`contractMetadata.id`), not by its per-stream `quoteId`. _Avoid_: Offer, route, swap details
 
 **Simulation**: A pre-flight execution of a transaction against a forked chain that predicts outcomes (transfers, approvals, status, gas). _Avoid_: Preview, dry run, interpretation (although the API endpoint is named `simulate-transactions`, the result is consumed via `interpretTxBasedOnEligibility`)
 
@@ -27,6 +27,32 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 **Transaction configuration (Swap)**: The gas override applied to a quote's transactions before simulation and signing, via `applyTransactionConfiguration(quote, config, gasPrices) → quote`. It rewrites `transactionSwap` gas fields directly (from preset or custom), then scales `transactionApprove` _proportionally_ by the swap's two relative changes — effective-gas-price ratio and gas-limit ratio (the latter is 1 unless a custom gas limit is set). EVM-only; Solana and null-gasPrices pass through unchanged. Distinct from `applyConfiguration` (single-tx, absolute values, used by SendTransaction _and_ SendForm2). _Avoid_: Apply config (ambiguous with the single-tx helper).
 
 **sendQuote (Send)**: A quote-shaped view of a prepared send, returned by `useSendTransaction` as `Pick<Quote2, 'networkFee' | 'transactionSwap'>` (plus Send-only `inputAmount`/`error`/`network`). It exists so SendForm2 can feed the _same_ shared network-fee dialog and fee helpers SwapForm2 uses, with no `Quote2`-vs-`NetworkFeeType` special-casing. `transactionSwap` carries the **backend** `TransactionEVM` (field names `gas`/`maxFee`/`maxPriorityFee`), _not_ the client `IncomingTransaction` (`gasLimit`/`maxFeePerGas`/…) — the helpers read backend names. Both the backend (`get-send`) and local (`prepareSendData`) prep paths are normalized to this single backend shape **inside `useSendTransaction`**, gas-unapplied; `prepareSendData` itself is left untouched (still shared with legacy SendForm). `networkFee.amount` is built as a real `Amount` by injecting the active `currency`; its `value` may stay null (backend often omits it) — SendDetails still recomputes the collapsed fiat display via its own fungible-price query. _Avoid_: send basis, fee basis (too generic), "the send quote" (there is no swap quote here — it's a synthesized shape).
+
+### Swaps: intent execution
+
+Vocabulary shared verbatim with the web app. **Disambiguation**: "Swap Intent" and "Order" in this section are the swap-provider concepts. A Hyperliquid perps action (`PerpsIntent`, `runIntent`) is a **Perps Intent** and a perps order is a **Perps order** — never shortened to "intent"/"order" where the two could be confused.
+
+**Executable Quote**: A Quote that can actually be signed: it has no per-quote error and carries either a swap transaction or a Swap Intent with a non-empty quote id. A priced Quote with an error (e.g. insufficient balance) is displayable but not executable. Sign-button gating and default-quote selection use this, not "has `transactionSwap`". _Avoid_: valid quote, signable quote
+
+**On-chain Swap**: Executing a Quote by having the wallet sign and broadcast the swap transaction itself; settlement is tracked by transaction hash. A first-class production path, not a legacy one. _Avoid_: classic swap, v2 swap, legacy swap (the API version is not the concept)
+
+**Intent Swap**: Executing a Quote by signing a Swap Intent off-chain and handing the signature to Zerion, which places an Order with the provider; the user never broadcasts the swap. Settlement is tracked by Order, not by hash. Available to every wallet type that can sign it (software and Ledger, EVM and Solana). _Avoid_: gasless swap (an Intent Swap may still require an On-chain Approval, and not every gasless provider is intent-based), intent-based swap in UI copy
+
+**Swap Intent**: The signable payload of an Intent Swap: an EIP-712 typed-data document on EVM (the API omits `EIP712Domain`; our ethers-based signer derives it), or a serialized transaction to sign-without-broadcasting on Solana (its signature is sent base64). _Avoid_: intent (bare), message, typed data (when you mean the swap payload)
+
+**Approval**: Granting the swap contract permission to spend the input token. Comes in exactly one of two shapes per Quote, never both: an **On-chain Approval** (a transaction the user broadcasts and waits to be mined) or a **Permit Approval** (an EIP-712 permit signed off-chain and submitted alongside the Swap Intent). A Quote may also need no Approval at all. _Avoid_: allowance for the user-facing step (allowance is the on-chain state the Approval produces)
+
+**Re-quote**: Obtaining a fresh Quote from the same provider after an On-chain Approval is mined, because the Swap Intent's deadline kept ticking during the wait and providers reject a stale intent (`META_TRANSACTION_EXPIRY_TOO_SOON`). The fresh Quote must itself be an Intent Swap carrying no Approval; a same-provider quote that came back as an On-chain Swap, still asks for an Approval, or carries an error is not a usable re-quote and the wait continues (web-app parity). Bounded: a re-quote that yields nothing usable in time fails the swap. Only Intent Swaps re-quote; On-chain Swaps sign the original Quote's transactions as before. Shown as "Refreshing quote" only in the HardwareDialog step list; the toaster keeps the step's verb ("Swapping") for the whole step. _Avoid_: repatching, refresh (bare), refetch (that is the form's periodic quotes refresh)
+
+**Order**: The provider-side record created when Zerion executes a signed Swap Intent; identified by an opaque order id issued by Zerion, not derivable from the quote id. An Order is Pending until it reaches exactly one terminal Order Status. Locally an Order is a pending history entry with no hash until it fills, owned and polled by the background so it survives the popup closing (see ADR-0004). _Avoid_: transaction (an Order has no hash until it fills), Perps order
+
+**Fill**: An on-chain transaction (chain + hash) through which an Order settled. An Order has no Fills while pending and may settle through more than one Fill on a multi-step route. The first Fill supplies the hash shown in History and the explorer link; every Fill is reported to the backend for indexing.
+
+**Order Status**: The lifecycle state of an Order: Pending (non-terminal), Successful, Failed (provider could not settle), or Rejected (provider declined the order). The last three are terminal and map to the history statuses confirmed / failed / failed.
+
+**Order placed**: The moment `execute-order` returns an order id. For the swap form this is the "sent" moment of an Intent Swap without an On-chain Approval (the form resets, like a broadcast today); for analytics it is the intent counterpart of "transaction sent". Failures before it surface in the form; failures after it surface only in the toaster and History. _Avoid_: order submitted, order created
+
+**Still processing**: The toaster's neutral terminal state when an Order is still Pending after the bounded wait (same budget as a transaction). Not a failure: only a terminal Order Status decides the outcome, and the background keeps polling. _Avoid_: timed out, stuck
 
 ### Slippage & autoslippage
 
@@ -78,7 +104,15 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 ## Relationships
 
-- A **Quote** produces zero or more transactions (`transactionApprove`, `transactionSwap`).
+- A **Quote** produces zero or more transactions (`transactionApprove`, `transactionSwap`) and, for an **Intent Swap**, a **Swap Intent** plus optionally a **Permit Approval**.
+- A **Quote** streamed to the form is either an **On-chain Swap** or an **Intent Swap**; both forms that consume quotes (Swap/Bridge and Perps deposit) serve both, and the user is not asked to choose. Both paths stay in production.
+- An **Intent Swap** executes as: perform the **Approval** the Quote asks for (On-chain Approval mined first, or Permit Approval signed), **Re-quote** if the Approval was on-chain, sign the **Swap Intent**, submit the signature(s) with the quote id, receive an **Order**. In the extension this is one signing-queue step after the optional approve step, so the toaster still counts one or two steps.
+- A **Permit Approval** and a **Swap Intent** are two wallet signatures under one user action; the user sees no separate permit step.
+- An **Order** is tracked by polling its **Order Status** in the background; when it settles, its **Fills** supply the hash used for the explorer link and History. A pending **Order** appears in History immediately, alongside pending transactions, and keeps being tracked after the popup is closed.
+- Failed and Rejected are both shown as a failed swap; a Rejected Order spent nothing but is still surfaced, not silently dropped.
+- Submitting a Swap Intent that Zerion refuses (stale quote, bad signature) fails at the Swap step with a "quote expired, try again" explanation in the form and refreshes quotes; there is no automatic re-sign.
+- A **Simulation** of an **Intent Swap** interprets the **Swap Intent** (signature simulation) rather than a transaction; absence of an interpreted action for an intent does not by itself make it an **Unverified transaction**.
+- Intent Swap quotes carry a small signature marker next to the provider name in the quote list; otherwise both kinds are presented identically. In the flow the difference is: no mined-wait after a Permit Approval, a re-quote after an On-chain Approval (labelled "Refreshing quote" in the HardwareDialog only, the toaster stays on "Swapping"), an Order wait instead of a transaction wait.
 - A **Simulation** runs against a Quote's transactions and returns an **Address Action** + a list of warnings (each with a **Severity**).
 - An **Output mismatch** is detected by comparing the Quote's `outputAmount` against the matching incoming transfer in the simulated **Address Action**.
 - An **Unverified transaction** is the absence of evidence — either the **Simulation** said "Gray" or it didn't return enough data to run the **Output mismatch** check.
@@ -93,6 +127,14 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 > **Dev:** "What if the **Simulation** comes back with no transfers at all?"
 >
 > **Domain expert:** "Then we treat it as an **Unverified transaction** — same UX as a `Gray` **Severity** warning. We can't see what's happening, so we don't auto-confirm; the user has to click again."
+>
+> **Dev:** "The user signed the intent and execute-order gave us an order id. Which hash do I put in History?"
+>
+> **Domain expert:** "None yet — an **Order** has no hash until it has a **Fill**. Show it as pending by order id; the Fill's hash arrives with the terminal **Order Status**. And the background owns that wait — the popup may be gone by then."
+>
+> **Dev:** "The quote has `transactionApprove` and `intentSwap`. Do I re-quote after the approval is mined?"
+>
+> **Domain expert:** "Yes, always. The **Swap Intent** you hold was minted before the approval and its deadline has been ticking the whole wait. Take the provider's fresh Quote — it won't ask for an Approval anymore — and sign that."
 
 ### Address Book
 
@@ -178,6 +220,9 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 **Wallet Positions Chart**: The wallet's total-balance-over-time chart, opened from an **icon-only trigger** (`pnl-chart.svg`) placed at the right end of the avatar + main-balance row on the Overview (`Overview.tsx` ~514, right of `PercentageChange`), rendered inside a content-height `Dialog2` titled "Wallet Positions Chart". A new orchestrator that **reuses the Chart leaf + `getColor`/`getSign` helpers** but is **forked** from the asset orchestrator (no transactions overlay, no `magneticActions`, no settings gear, no live price — the last chart point _is_ the current balance). Data comes from a new `useWalletChart` hook modeled on the web-app's (`wallet/get-chart/v1`, POST `{addresses: [params.address], currency, period}` → `{points: [{timestamp(s), value}]}`; **no chain filter** — it is the whole portfolio). Period set/default reuse the asset page (`1H/1D/1W/1M/1Y/Max`, default `1D`). The dialog's top balance + price-difference + date update on hover/range using the same refs pattern as `AssetTitleAndChart.handleRangeSelect`, **deriving the rest value from chart points** (balance = last point; change = `(last − first)/first` over the period — no `useWalletPortfolio` dependency, no 1D special case). Balance is fiat, so format with the currency formatter, not `formatPriceValue`. Respects `hideBalances`: top balance/diff use `BlurrableBalance` and hover tooltip numbers are suppressed; the (axis-less) line shape stays. _Avoid_: Portfolio chart, Address chart (web-app term), balance chart.
 
 ## Flagged ambiguities
+
+- "Intent" and "Order" are used by both the Hyperliquid perps module and the swap flow. Resolved: bare "Swap Intent"/"Order" belong to swaps (this document's Swaps section); perps concepts are always qualified as **Perps Intent** / **Perps order**.
+- "Repatching" / "refreshing" the quote were used for the post-approval fetch — resolved: **Re-quote** (UI copy "Refreshing quote", HardwareDialog only; the toaster never narrates it); "refetch" stays the form's periodic quotes refresh.
 
 - "Slippage" was used by some contributors to mean both the user's tolerance setting (the slippage parameter on the swap) and any output divergence — resolved: the latter is **Output mismatch**, the former is just "slippage setting / tolerance".
 - "Warning" overlaps with "error" in the API and the UI. Resolved: in the UI, `TransactionWarning` has two visual variants (`warning` and `error`), but both are types of "warnings" conceptually — the distinction is severity-driven, not categorical.

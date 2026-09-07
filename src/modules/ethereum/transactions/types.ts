@@ -5,11 +5,13 @@ import type {
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { AnyAddressAction } from './addressAction';
 
-type CombineUnion<A, B> =
-  | ({ [P in keyof A]: A[P] } & { [K in keyof B]?: undefined })
-  | ({
-      [K in keyof B]: B[K];
-    } & { [P in keyof A]?: undefined });
+/** Keys of `T` not shared with `Own`, all forced to `undefined` */
+type Absent<T, Own> = { [K in Exclude<keyof T, keyof Own>]?: undefined };
+
+type CombineUnion3<A, B, C> =
+  | ({ [P in keyof A]: A[P] } & Absent<B, A> & Absent<C, A>)
+  | ({ [P in keyof B]: B[P] } & Absent<A, B> & Absent<C, B>)
+  | ({ [P in keyof C]: C[P] } & Absent<A, C> & Absent<B, C>);
 
 type EvmObject = {
   hash: string;
@@ -52,7 +54,34 @@ type SolanaObject = {
   signatureStatus: SignatureStatus | null;
 };
 
-export type TransactionObject = CombineUnion<EvmObject, SolanaObject> & {
+export type OrderStatus = 'pending' | 'successful' | 'failed' | 'rejected';
+
+export type OrderFill = { chain: string; hash: string };
+
+/**
+ * Intent-swap Order (ADR-0004): a hash-less entry keyed by the backend
+ * `orderId`. Status comes from `transaction/get-order-status/v1`, never from
+ * a receipt. `hash` is `fills[0].hash` once settled and is display-only.
+ */
+type OrderObject = {
+  orderId: string;
+  orderStatus: OrderStatus;
+  fills: OrderFill[];
+  /** Signer address; used by filterAddressTransactions */
+  from: string;
+  /** Input network id, for chain filters */
+  chain: string;
+  /** `{HASH}` template used to link the fill once it exists */
+  explorerUrlTemplate: string | null;
+  /** fills[0].hash once settled — display only, never polled */
+  hash?: string;
+};
+
+export type TransactionObject = CombineUnion3<
+  EvmObject,
+  SolanaObject,
+  OrderObject
+> & {
   timestamp: number;
   initiator: string;
   dropped?: boolean;
@@ -60,3 +89,19 @@ export type TransactionObject = CombineUnion<EvmObject, SolanaObject> & {
 };
 
 export type StoredTransactions = Array<TransactionObject>;
+
+/**
+ * Store key of an entry: EVM hash, Solana signature or intent-swap orderId.
+ * The orderId wins over a fill hash so a settled Order upserts onto its
+ * pending entry instead of duplicating it.
+ */
+export function getTransactionObjectId(tx: TransactionObject): string {
+  if (tx.orderId) {
+    return tx.orderId;
+  } else if (tx.signature) {
+    return tx.signature;
+  } else if (tx.hash) {
+    return tx.hash;
+  }
+  throw new Error('TransactionObject has no identifier');
+}

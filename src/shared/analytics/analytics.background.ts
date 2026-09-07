@@ -329,12 +329,16 @@ function trackAppEvents({ account }: { account: Account }) {
     status: 'success';
     result: SignTransactionResult;
   };
+  type OrderPlacedContext = {
+    status: 'success';
+    order: { orderId: string; quoteId: string; from: string };
+  };
   type TransactionFailedContext = { status: 'failed'; errorMessage: string };
 
   const trackTransactionSign = async (
     props: {
       context: { mode: 'default' | 'testnet' } & TransactionContextParams;
-    } & (TransactionSentContext | TransactionFailedContext)
+    } & (TransactionSentContext | OrderPlacedContext | TransactionFailedContext)
   ) => {
     const { context, status } = props;
     const {
@@ -387,11 +391,23 @@ function trackAppEvents({ account }: { account: Account }) {
       // Value computed by the autoslippage engine; present only in Auto mode.
       autoslippage: quote?.autoSlippage ?? null,
       action_type: actionType ?? null,
+      // Intent Swaps are executed off-chain by placing an Order; everything
+      // else is a signed transaction
+      execution_type: 'order' in props ? 'intent' : 'transaction',
       ...omitNullParams(addressActionAnalytics),
     });
 
     let statusParams;
-    if (status === 'success') {
+    if (status === 'success' && 'order' in props) {
+      const address = props.order.from;
+      statusParams = {
+        wallet_address: address,
+        gas: null,
+        order_id: props.order.orderId,
+        quote_id: props.order.quoteId,
+        ecosystem: toEcosystemProperty(getAddressType(address)),
+      };
+    } else if (status === 'success') {
       const address = getTxSender(props.result);
       statusParams = {
         wallet_address: address, // transaction.from,
@@ -436,6 +452,14 @@ function trackAppEvents({ account }: { account: Account }) {
       return;
     }
     trackTransactionSign({ status: 'failed', errorMessage, context });
+  });
+
+  emitter.on('orderPlaced', async (order, context) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    trackTransactionSign({ status: 'success', order, context });
   });
 
   emitter.on('quoteError', async (quoteErrorContext, source) => {

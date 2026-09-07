@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Quote2 } from 'src/shared/types/Quote';
+import { isIntentQuote, type Quote2 } from 'src/shared/types/Quote';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -8,6 +8,7 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
+import SignatureIcon from 'jsx:src/ui/assets/signature.svg';
 import {
   formatCurrencyValue,
   formatCurrencyValueExtra,
@@ -85,6 +86,15 @@ function ProviderCard({
               className={styles.icon}
             />
             <UIText kind="body/accent">{quote.contractMetadata.name}</UIText>
+            {isIntentQuote(quote) ? (
+              <span
+                className={styles.intentMark}
+                title="Intent swap: you sign an order and the provider settles it on-chain"
+                aria-label="Intent swap"
+              >
+                <SignatureIcon className={styles.intentMarkIcon} />
+              </span>
+            ) : null}
           </HStack>
           <div
             className={`${styles.rankBadge} ${

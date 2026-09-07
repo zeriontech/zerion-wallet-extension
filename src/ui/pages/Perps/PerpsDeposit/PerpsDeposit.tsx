@@ -4,11 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
-import {
-  createApproveAddressAction2,
-  createBridgeAddressAction2,
-} from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -21,17 +16,19 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import { resolveTokenValue } from 'src/ui/components/AmountInput/inputKind';
-import {
-  toIncomingTransaction,
-  toMultichainTransaction,
-} from 'src/shared/types/Quote';
+import { isExecutableQuote } from 'src/shared/types/Quote';
+import { isStaleQuoteError } from 'src/shared/errors/OrderExecutionError';
 import {
   signTransactions,
   QueueAbortError,
   QueueError,
-  type SignStep,
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
+import {
+  buildSwapSteps,
+  isSentEvent,
+} from 'src/ui/shared/forms/trading/buildSwapSteps';
+import { toFormError } from 'src/ui/shared/forms/trading/orderErrors';
 import {
   useGlobalPreferences,
   usePreferences,
@@ -241,7 +238,7 @@ function DepositFormBody({
       invariant(wallet, 'Wallet must be loaded to sign');
       invariant(inputPosition, 'Input position must be defined');
       invariant(resolvedInputAmount, 'Input amount must be defined');
-      invariant(quote.transactionSwap, 'Quote must have a swap transaction');
+      invariant(isExecutableQuote(quote), 'Quote must be executable');
       invariant(inputNetwork, 'Input network must be defined');
 
       const spendAmount = {
@@ -281,66 +278,31 @@ function DepositFormBody({
         receivedChain: { iconUrl: inputNetwork.iconUrl ?? null },
       };
 
-      const steps: SignStep[] = [];
-      if (quote.transactionApprove) {
-        const approveTx = quote.transactionApprove;
-        invariant(approveTx.evm, 'Approve transaction must be EVM');
-        const approveMultichain = toMultichainTransaction(approveTx);
-        steps.push({
-          kind: 'send',
-          params: {
-            transaction: approveMultichain,
-            chain: formState.inputChain,
-            initiator: INTERNAL_ORIGIN,
-            clientScope: 'Swap',
-            feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-            addressAction: createApproveAddressAction2({
-              transaction: toIncomingTransaction(approveTx.evm),
-              hash: null,
-              explorerUrl: null,
-              fungible: inputPosition.fungible,
-              amount: spendAmount,
-              network: inputNetwork,
-            }),
-            warningWasShown: false,
-            outputAmountColor: 'grey',
-          },
-          toaster: depositToasterView,
-        });
-      }
-
-      const swapTx = quote.transactionSwap;
-      const swapMultichain = toMultichainTransaction(swapTx);
-
-      steps.push({
-        kind: 'send',
-        params: {
-          transaction: swapMultichain,
-          chain: formState.inputChain,
-          initiator: INTERNAL_ORIGIN,
-          clientScope: 'Bridge',
-          feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-          addressAction: createBridgeAddressAction2({
-            address,
-            transaction: toMultichainTransaction(swapTx),
-            hash: null,
-            explorerUrl: null,
-            spendFungible: inputPosition.fungible,
-            spendAmount,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            receiveFungible: usdcFakeFungible as any,
-            receiveAmount: quote.outputAmount,
-            inputNetwork,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            outputNetwork: inputNetwork as any,
-            receiverAddress: address,
-          }),
-          quote,
-          outputChain: HYPERCORE_CHAIN_ID,
-          warningWasShown: false,
-          outputAmountColor: 'grey',
-        },
-        toaster: depositToasterView,
+      const steps = buildSwapSteps({
+        quote,
+        // No local network-fee override on the deposit form
+        configuredQuote: quote,
+        wallet,
+        address,
+        currency,
+        quotesFormState,
+        inputFungible: inputPosition.fungible,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        outputFungible: usdcFakeFungible as any,
+        inputNetwork,
+        // Hypercore has no NetworkConfig of its own; the bridge lands there
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        outputNetwork: inputNetwork as any,
+        outputChain: HYPERCORE_CHAIN_ID,
+        spendAmount,
+        interpretationAction: null,
+        userNonce: null,
+        receiverAddress: address,
+        isCrossChain: true,
+        clientScope: { approve: 'Swap', swap: 'Bridge' },
+        warningWasShown: false,
+        outputAmountColor: 'grey',
+        toaster: { approve: depositToasterView, swap: depositToasterView },
       });
 
       return new Promise<void>((resolve, reject) => {
@@ -357,13 +319,13 @@ function DepositFormBody({
           bluetoothSupportEnabled:
             globalPreferences?.bluetoothSupportEnabled ?? null,
           onEvent: (event) => {
-            if (event.type === 'step-pending' && event.index === 0) {
+            if (isSentEvent(event)) {
               settle(() => {
                 setUserFormState({ inputAmount: '' });
                 resolve();
               });
             } else if (event.type === 'step-error' && event.index === 0) {
-              settle(() => reject(event.error));
+              settle(() => reject(toFormError(event.error)));
             } else if (event.type === 'queue-aborted' && event.index === 0) {
               settle(() => reject(new QueueAbortError(0, [])));
             }
@@ -372,7 +334,7 @@ function DepositFormBody({
         queuePromise.catch((err) => {
           const unwrapped =
             err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
-          settle(() => reject(unwrapped));
+          settle(() => reject(toFormError(unwrapped)));
         });
       });
     },
@@ -402,6 +364,9 @@ function DepositFormBody({
     },
     onError: (error) => {
       if (error instanceof QueueAbortError) return;
+      if (isStaleQuoteError((error as { cause?: unknown })?.cause)) {
+        quotesQuery.refetch();
+      }
       // eslint-disable-next-line no-console
       console.error('PerpsDeposit sign failed', error);
     },

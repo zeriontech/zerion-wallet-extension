@@ -8,7 +8,8 @@ import {
 } from '../store';
 import type { QueueEvent, SignStep, ToasterView } from '../types';
 
-export type TerminalKind = 'success' | 'failed';
+/** 'processing': an Order is still pending after the bounded wait (neutral) */
+export type TerminalKind = 'success' | 'failed' | 'processing';
 
 export interface ActiveStepView {
   toaster?: ToasterView;
@@ -57,6 +58,9 @@ export function useToasterSession(): ToasterSessionState {
   // We count a step the moment it starts, so user-dismissals/errors that
   // happened don't double-count when the next queue starts.
   const countedRef = useRef<Set<string>>(new Set());
+  // Order steps that hit the bounded wait: their step-success ends the
+  // session in the neutral "Still processing" terminal instead of "Swapped".
+  const stillProcessingRef = useRef<Set<string>>(new Set());
 
   // Pending dismiss timer — fires after terminal hold + dissolve completes.
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -84,6 +88,7 @@ export function useToasterSession(): ToasterSessionState {
           pendingQueueCount: 0,
         }));
         countedRef.current = new Set();
+        stillProcessingRef.current = new Set();
       }, delay);
     }
 
@@ -167,7 +172,7 @@ export function useToasterSession(): ToasterSessionState {
     function handleStepEnd(
       queueId: string,
       stepIndex: number,
-      kind: 'success' | 'failed' | 'dismissed'
+      kind: 'success' | 'failed' | 'dismissed' | 'processing'
     ) {
       const isLast = isLastStepInQueue(queueId, stepIndex);
       if (isLast) {
@@ -182,11 +187,16 @@ export function useToasterSession(): ToasterSessionState {
             pendingQueueCount: 0,
           }));
           countedRef.current = new Set();
+          stillProcessingRef.current = new Set();
           clearDismiss();
           return;
         }
         const terminal: TerminalKind =
-          kind === 'success' ? 'success' : 'failed';
+          kind === 'success'
+            ? 'success'
+            : kind === 'processing'
+            ? 'processing'
+            : 'failed';
         setState((s) => ({ ...s, terminal, contentKey: s.contentKey + 1 }));
         // dissolve plays, then 1s hold, then dismiss
         scheduleDismiss(DISSOLVE_MS + TERMINAL_HOLD_MS);
@@ -216,8 +226,25 @@ export function useToasterSession(): ToasterSessionState {
             startOrAdvanceTo(queueId, event.index);
             break;
           }
+          case 'step-signing':
+          case 'step-requoting':
+          case 'step-pending':
+          case 'step-order-pending': {
+            // Intra-step progress: the toaster keeps the step's verb
+            // ("Swapping") for the whole step, so nothing changes here.
+            break;
+          }
+          case 'step-still-processing': {
+            stillProcessingRef.current.add(`${queueId}:${event.index}`);
+            break;
+          }
           case 'step-success': {
-            handleStepEnd(queueId, event.index, 'success');
+            const slotKey = `${queueId}:${event.index}`;
+            handleStepEnd(
+              queueId,
+              event.index,
+              stillProcessingRef.current.has(slotKey) ? 'processing' : 'success'
+            );
             break;
           }
           case 'step-error': {

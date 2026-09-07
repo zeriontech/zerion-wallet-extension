@@ -8,7 +8,10 @@ export function useActionStatusByHash(hash: string | null) {
   const localActions = useStore(localTransactionsStore);
   const localStatus = useMemo(() => {
     const action = localActions.find(
-      (item) => item.transaction?.hash === hash || item.signature === hash
+      (item) =>
+        item.transaction?.hash === hash ||
+        item.signature === hash ||
+        item.orderId === hash
     );
     return action ? getTransactionObjectStatus(action) : null;
   }, [localActions, hash]);

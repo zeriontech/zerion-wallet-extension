@@ -11,12 +11,14 @@ export function ToasterStatusBadge({
   reducedMotion: boolean;
 }) {
   const isSuccess = kind === 'success';
+  const isProcessing = kind === 'processing';
+  const variantClass = isSuccess
+    ? s.statusBadgeSuccess
+    : isProcessing
+    ? s.statusBadgeProcessing
+    : s.statusBadgeFailed;
   return (
-    <div
-      className={`${s.statusBadge} ${
-        isSuccess ? s.statusBadgeSuccess : s.statusBadgeFailed
-      }`}
-    >
+    <div className={`${s.statusBadge} ${variantClass}`}>
       <motion.svg
         width={20}
         height={20}
@@ -24,7 +26,39 @@ export function ToasterStatusBadge({
         fill="none"
         aria-hidden="true"
       >
-        {isSuccess ? (
+        {isProcessing ? (
+          // Neutral clock: the Order is still settling in the background
+          <>
+            <motion.circle
+              cx={8}
+              cy={8}
+              r={5.5}
+              stroke="currentColor"
+              strokeWidth={2}
+              initial={reducedMotion ? { pathLength: 1 } : { pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={
+                reducedMotion
+                  ? { duration: 0.1 }
+                  : { duration: 0.3, ease: [0.32, 0.72, 0, 1], delay: 0.1 }
+              }
+            />
+            <motion.path
+              d="M8 5v3.2l2.2 1.3"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={reducedMotion ? { pathLength: 1 } : { pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={
+                reducedMotion
+                  ? { duration: 0.1 }
+                  : { duration: 0.2, ease: [0.32, 0.72, 0, 1], delay: 0.3 }
+              }
+            />
+          </>
+        ) : isSuccess ? (
           <motion.path
             d="M3.5 8.5l3 3 6-6"
             stroke="currentColor"
