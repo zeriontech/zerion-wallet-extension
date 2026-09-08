@@ -47,10 +47,10 @@ function DialogContent({
 
   return (
     <>
-      <VStack gap={20} style={{ padding: 24 }}>
-        <VStack gap={8} style={{ justifyItems: 'center', textAlign: 'center' }}>
-          <UIText kind="headline/h3">Sending to a new address</UIText>
-          <UIText kind="small/accent" color="var(--neutral-500)">
+      <VStack gap={20} style={{ padding: '32px 16px 24px' }}>
+        <VStack gap={4} style={{ justifyItems: 'center', textAlign: 'center' }}>
+          <UIText kind="headline/h3">Unknown Recepient</UIText>
+          <UIText kind="caption/regular" color="var(--neutral-500)">
             This address isn’t saved in your wallets or Address Book
           </UIText>
         </VStack>
@@ -95,7 +95,10 @@ function DialogContent({
               </UIText>
             </HStack>
           ) : (
-            <FrameListItemButton onClick={addToBookDialog.openDialog}>
+            <FrameListItemButton
+              onClick={addToBookDialog.openDialog}
+              style={{ width: '100%' }}
+            >
               <AngleRightRow>
                 <HStack gap={8} alignItems="center">
                   <PersonAddIcon style={{ width: 20, height: 20 }} />
