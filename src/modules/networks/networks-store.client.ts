@@ -9,7 +9,7 @@ export const mainNetworksStore = new NetworksStore(
     getOtherNetworkData: async () => {
       return walletPort.request('getOtherNetworkData');
     },
-    apiClient: ZerionAPI,
+    getApiClient: () => ZerionAPI,
     source: 'mainnet',
   }
 );
@@ -20,7 +20,7 @@ export const testenvNetworksStore = new NetworksStore(
     getOtherNetworkData: async () => {
       return walletPort.request('getOtherNetworkData');
     },
-    apiClient: ZerionAPI,
+    getApiClient: () => ZerionAPI,
     source: 'testnet',
   }
 );

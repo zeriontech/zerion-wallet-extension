@@ -43,7 +43,11 @@ export class NetworksStore extends Store<State> {
   private networkConfigs: NetworkConfig[] = [];
   private customNetworkConfigs: NetworkConfig[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
-  apiClient: ZerionApiClient;
+  /**
+   * Lazy on purpose: the ZerionAPI modules sit in import cycles with the
+   * background/UI entry points, so the binding must not be read at module load.
+   */
+  private getApiClient: () => ZerionApiClient;
   source: NetworksSource;
   private getOtherNetworkData:
     | null
@@ -53,18 +57,22 @@ export class NetworksStore extends Store<State> {
     state: State,
     {
       getOtherNetworkData,
-      apiClient,
+      getApiClient,
       source,
     }: {
       getOtherNetworkData?: NetworksStore['getOtherNetworkData'];
-      apiClient: ZerionApiClient;
+      getApiClient: () => ZerionApiClient;
       source: NetworksSource;
     }
   ) {
     super(state);
     this.getOtherNetworkData = getOtherNetworkData ?? null;
-    this.apiClient = apiClient;
+    this.getApiClient = getApiClient;
     this.source = source;
+  }
+
+  get apiClient() {
+    return this.getApiClient();
   }
 
   toString() {

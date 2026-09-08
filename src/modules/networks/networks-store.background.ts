@@ -15,7 +15,7 @@ export const mainNetworksStore = new NetworksStore(
         chainConfigStore.getState();
       return { ethereumChainConfigs, visitedChains };
     },
-    apiClient: ZerionAPI,
+    getApiClient: () => ZerionAPI,
     source: 'mainnet',
   }
 );
@@ -29,7 +29,7 @@ export const testenvNetworksStore = new NetworksStore(
         chainConfigStore.getState();
       return { ethereumChainConfigs, visitedChains };
     },
-    apiClient: ZerionAPI,
+    getApiClient: () => ZerionAPI,
     source: 'testnet',
   }
 );

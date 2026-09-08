@@ -117,5 +117,9 @@ export const networksStore = new NetworksStoreMock(
       visitedChains: [],
     }),
   },
-  { getOtherNetworkData: null, apiClient: ZerionAPI, source: 'mainnet' }
+  {
+    getOtherNetworkData: null,
+    getApiClient: () => ZerionAPI,
+    source: 'mainnet',
+  }
 );
