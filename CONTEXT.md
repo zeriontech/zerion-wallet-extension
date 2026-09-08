@@ -56,6 +56,8 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 **Watchlist**: Section in the Receiver picker dialog showing **readonly** wallets the user has added without keys. Sourced from `walletGroups` filtered to `WATCHLIST_WALLET_LIST_GROUP_ID`. iOS designs may call this "Following"; in the extension, the canonical term is Watchlist. _Avoid_: Following (iOS-only), saved addresses (too generic).
 
+**Unknown receiver**: A Send receiver (`formState.to`) that appears in none of **My wallets**, the **Watchlist**, or the **Address Book**. Sending to one interrupts the sign with a confirmation dialog that shows the interpreted **Address Action** next to the untruncated address and offers an "Add to Address Book" shortcut. **Recent addresses** deliberately do not make a receiver known, and there is no "don't show again" — saving the address is the opt-out. SendForm2 only. See [ADR-0005](./docs/adr/0005-unknown-receiver-gate-wraps-the-sign-call.md). _Avoid_: New address (that's the user-facing copy, not the concept), unrecognized recipient, untrusted address (we make no trust claim about the ones we do recognize).
+
 ### Charts
 
 **Chart leaf**: The generic, data-agnostic chart component `src/ui/components/chart/Chart.tsx` (a Chart.js scatter line). It owns all of the shared interaction machinery — hover, drag range-selection, the previous-points cross-fade animation, and up/down segment coloring (`getChartColor`) — over a `ChartPoint<T> = [timestamp(ms), value, extra]` tuple, reporting selections through `onRangeSelect({ startRangeIndex, endRangeIndex })`. It is reused as-is by every chart; only the `extra` payload and the orchestrator around it differ. _Avoid_: Chart component (ambiguous with the orchestrators), graph.
@@ -80,6 +82,7 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 - A **Simulation** runs against a Quote's transactions and returns an **Address Action** + a list of warnings (each with a **Severity**).
 - An **Output mismatch** is detected by comparing the Quote's `outputAmount` against the matching incoming transfer in the simulated **Address Action**.
 - An **Unverified transaction** is the absence of evidence — either the **Simulation** said "Gray" or it didn't return enough data to run the **Output mismatch** check.
+- The **Unknown receiver** confirmation is interposed _after_ the **Simulation** and before signing, so that it can show the interpreted **Address Action**. It fires on both sign paths: the clean auto-sign, and the second tap / hold that a **Severity** warning forces. When the **Simulation** returned nothing, the confirmation still appears — with the receiver only and no detail rows.
 
 ## Example dialogue
 
@@ -104,6 +107,7 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 - An **Address Book entry** and a **Recent address** behave differently on each surface. On the `/address-book` settings page they never coexist — saving a recent removes it from the visible recents section (it stays in `recentAddresses` storage, but the filter hides it). In the Receiver picker dialog they CAN coexist — the picker shows both Recents (capped to the last 3) and the Address Book section independently, so the user sees the same address twice if it's in both.
 - An **Address Book entry** and a **My wallets** / **Watchlist** row CAN coexist for the same address in the Receiver picker dialog — no dedupe between Address Book and the wallet-ownership sections. Each section has a distinct lens (saved contact vs. owned/watched wallet) and the user may intentionally surface an address in both.
 - The **Address Book** lives on `PublicPreferences` (per-WalletRecord, behind login), _not_ on `ChainConfigStore` (global). The initial framing of "same level as chain configs" was overridden in favor of consistency with `recentAddresses`, which we cross-reference.
+- An **Address Book entry** suppresses the **Unknown receiver** confirmation; a **Recent address** does not. `recentAddresses` is written on every successful broadcast, so counting recents would give the confirmation exactly one chance per address — the second send to a mistyped address would go through unchallenged.
 
 ### Chain model
 

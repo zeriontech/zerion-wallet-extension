@@ -71,6 +71,7 @@ import { TransactionWarning } from 'src/ui/pages/SwapForm2/TransactionWarning';
 import { UnverifiedWarning } from 'src/ui/pages/SwapForm2/UnverifiedWarning/UnverifiedWarning';
 import { ReadonlySignButton } from 'src/ui/pages/SwapForm2/ReadonlySignButton';
 import { useReceiverName } from 'src/ui/components/ReceiverAddressDialog';
+import { useUnknownReceiverGate } from 'src/ui/components/UnknownReceiverDialog';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
@@ -562,6 +563,22 @@ function SendFormComponent({
     formState.networkFeeSpeed,
   ]);
 
+  // An **Unknown receiver** gets one more confirmation before anything is
+  // signed. The gate wraps the sign call, not the button, so it covers both
+  // entry points below — the clean auto-sign and the post-warning second tap.
+  const { guardedSign, dialog: unknownReceiverDialog } = useUnknownReceiverGate(
+    {
+      senderAddress: address,
+      to: formState.to,
+      network: sendNetwork,
+      warning: resolved.warning,
+      sign: handleSignTransaction,
+      // Reaching the confirmation counts as having simulated: dismissing it
+      // leaves the footer on "Confirm Send" instead of re-simulating.
+      onIntercept: () => setHasSimulated(true),
+    }
+  );
+
   const handleSimulationCompleted = (result: SimulationResult) => {
     setSimulationResult(result);
     const fresh = resolveSendTransactionWarning({
@@ -574,7 +591,7 @@ function SendFormComponent({
       setHasSimulated(true);
       return;
     }
-    handleSignTransaction(result);
+    guardedSign(result);
   };
 
   const evmTx = clientTransaction?.evm ?? null;
@@ -705,6 +722,7 @@ function SendFormComponent({
       >
         Send cancelled! No funds were sent
       </PopoverToast>
+      {unknownReceiverDialog}
       <div className={styles.absoluteFooter}>
         <Spacer height={16} />
         {signMutation.isError &&
@@ -727,7 +745,7 @@ function SendFormComponent({
             signing={signMutation.isLoading}
             isPreparingTransaction={sendDataLoading}
             onSimulationCompleted={handleSimulationCompleted}
-            onSign={() => handleSignTransaction(simulationResult)}
+            onSign={() => guardedSign(simulationResult)}
             onCancel={handleCancel}
             dangerTitle={resolved.dangerTitle ?? undefined}
           />
