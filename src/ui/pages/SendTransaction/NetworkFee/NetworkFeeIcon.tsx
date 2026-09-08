@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { NetworkFeeSpeed } from '@zeriontech/transactions';
+import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
 import FastSrc from 'url:./assets/fast.png';
 import Fast2xSrc from 'url:./assets/fast_2x.png';
 import StandardSrc from 'url:./assets/standard.png';

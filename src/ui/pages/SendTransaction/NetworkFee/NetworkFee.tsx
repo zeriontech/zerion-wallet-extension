@@ -1,6 +1,6 @@
 import { isTruthy } from 'is-truthy-ts';
 import React, { useRef } from 'react';
-import type { NetworkFeeConfiguration } from '@zeriontech/transactions';
+import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';

@@ -3,7 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import type {
   NetworkFeeConfiguration,
   NetworkFeeSpeed,
-} from '@zeriontech/transactions';
+} from 'src/shared/types/TransactionConfiguration';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import {

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { Tooltip, TooltipAnchor, TooltipProvider } from 'src/ui/ui-kit/Tooltip';
-import type { CustomConfiguration } from '@zeriontech/transactions';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import { useMeasure } from 'src/ui/shared/useMeasure';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { toIncomingTransaction } from 'src/shared/types/Quote';

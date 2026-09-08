@@ -13,7 +13,6 @@ import {
   createAssociatedTokenAccountInstruction,
 } from '@solana/spl-token';
 import type { AddressPosition } from 'src/defi-sdk.types';
-import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { Networks } from 'src/modules/networks/Networks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { getAddress } from 'src/modules/networks/asset';
@@ -21,6 +20,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { invariant } from 'src/shared/invariant';
 import BigNumber from 'bignumber.js';
 import { commonToBase } from 'src/shared/units/convert';
+import type { EmptyAddressPosition } from './EmptyAddressPosition';
 import type { SendFormState } from './SendFormState';
 
 export async function buildSolanaTransfer(

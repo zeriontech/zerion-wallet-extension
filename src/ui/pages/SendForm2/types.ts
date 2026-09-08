@@ -1,4 +1,4 @@
-import type { NetworkFeeSpeed } from '@zeriontech/transactions';
+import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
 
 export type SendFormState2 = {
   /** @description Blockchain the send happens on */

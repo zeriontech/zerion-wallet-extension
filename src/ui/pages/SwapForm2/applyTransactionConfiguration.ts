@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import type { CustomConfiguration } from '@zeriontech/transactions';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import type { Quote2, TransactionEVM } from 'src/shared/types/Quote';
 

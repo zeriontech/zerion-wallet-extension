@@ -2,7 +2,7 @@ import React from 'react';
 import type {
   NetworkFeeConfiguration,
   NetworkFeeSpeed,
-} from '@zeriontech/transactions';
+} from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
