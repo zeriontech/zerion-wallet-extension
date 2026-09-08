@@ -3,11 +3,14 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { AddToAddressBookDialog } from 'src/ui/components/AddToAddressBookDialog';
 import { ActInfo } from 'src/ui/components/address-action/ActInfo';
+import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { useAddressBook } from 'src/ui/features/address-book';
 import type { WarningContent } from 'src/ui/pages/SwapForm2/TransactionWarning';
 import { TransactionWarning } from 'src/ui/pages/SwapForm2/TransactionWarning';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { Button } from 'src/ui/ui-kit/Button';
+import { Frame } from 'src/ui/ui-kit/Frame';
+import { FrameListItemButton } from 'src/ui/ui-kit/FrameList';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -51,7 +54,17 @@ function DialogContent({
             This address isn’t saved in your wallets or Address Book
           </UIText>
         </VStack>
-        <VStack gap={4}>
+        <VStack
+          gap={4}
+          style={{
+            // The detail blocks sit 12px from the dialog edge while everything
+            // else keeps the dialog's 24px padding, so they read as one framed
+            // group rather than another paragraph.
+            marginInline: -12,
+            ['--surface-background-color' as string]: 'var(--neutral-100)',
+            ['--act-info-padding-inline' as string]: '8px',
+          }}
+        >
           <ReceiverAddressBlock address={receiverAddress} network={network} />
           {acts.map((act, index) => (
             <ActInfo
@@ -64,45 +77,49 @@ function DialogContent({
           ))}
         </VStack>
         <TransactionWarning warning={warning} />
-        <VStack gap={8}>
+        {/* Framed like a Settings row, and a whole gap away from the button
+            row, so it can't be mistaken for a third choice alongside
+            Cancel and Send. */}
+        <Frame>
           {savedEntry ? (
-            <HStack gap={8} justifyContent="center" alignItems="center">
+            // A plain padded row, not a FrameListItem: the saved state is not
+            // interactive and FrameListItem highlights on hover.
+            <HStack gap={8} alignItems="center" style={{ padding: 12 }}>
               <PersonSuccessIcon
                 style={{ width: 20, height: 20, color: 'var(--positive-500)' }}
               />
-              <UIText kind="small/accent" color="var(--positive-500)">
+              <UIText kind="body/regular" color="var(--positive-500)">
                 {savedEntry.name
                   ? `Saved as ${savedEntry.name}`
                   : 'Saved to Address Book'}
               </UIText>
             </HStack>
           ) : (
-            // A text action rather than a button, so it doesn't compete with
-            // Send, and so it swaps for the "Saved as …" row above without
-            // changing the dialog's height.
-            <Button kind="text-primary" onClick={addToBookDialog.openDialog}>
-              <HStack gap={8} justifyContent="center" alignItems="center">
-                <PersonAddIcon style={{ width: 20, height: 20 }} />
-                <span>Add to Address Book</span>
-              </HStack>
-            </Button>
+            <FrameListItemButton onClick={addToBookDialog.openDialog}>
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <PersonAddIcon style={{ width: 20, height: 20 }} />
+                  <UIText kind="body/regular">Add to Address Book</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemButton>
           )}
-          <HStack
-            gap={8}
-            style={{ gridAutoColumns: '1fr', gridAutoFlow: 'column' }}
+        </Frame>
+        <HStack
+          gap={8}
+          style={{ gridAutoColumns: '1fr', gridAutoFlow: 'column' }}
+        >
+          <Button kind="regular" onClick={onCancel} ref={focusNode}>
+            Cancel
+          </Button>
+          <Button
+            kind={warning ? 'danger' : 'primary'}
+            onClick={onConfirm}
+            style={{ paddingInline: 0 }}
           >
-            <Button kind="regular" onClick={onCancel} ref={focusNode}>
-              Cancel
-            </Button>
-            <Button
-              kind={warning ? 'danger' : 'primary'}
-              onClick={onConfirm}
-              style={{ paddingInline: 0 }}
-            >
-              {warning ? 'Send Anyway' : 'Send'}
-            </Button>
-          </HStack>
-        </VStack>
+            {warning ? 'Send Anyway' : 'Send'}
+          </Button>
+        </HStack>
       </VStack>
       <AddToAddressBookDialog
         open={addToBookDialog.open}

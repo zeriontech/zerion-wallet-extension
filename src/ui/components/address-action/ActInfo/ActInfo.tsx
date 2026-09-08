@@ -171,6 +171,10 @@ export function ActInfo({
   );
   const approvals = act.content?.approvals;
 
+  // Overridable so a narrower container — the Unknown receiver confirmation
+  // dialog — can tighten the blocks without forking the component.
+  const paddingInline = 'var(--act-info-padding-inline, 12px)';
+
   const outgoingDelay = initialDelay + (approvals?.length ? 150 : 0);
   const incomingDelay =
     initialDelay +
@@ -192,7 +196,9 @@ export function ActInfo({
           <Surface
             style={{
               paddingBlock: 8,
-              paddingInline: elementEnd ? '12px 40px' : 12,
+              paddingInline: elementEnd
+                ? `${paddingInline} 40px`
+                : paddingInline,
             }}
           >
             <VStack gap={4}>
@@ -220,7 +226,9 @@ export function ActInfo({
           <Surface
             style={{
               paddingBlock: 8,
-              paddingInline: elementEnd ? '12px 40px' : 12,
+              paddingInline: elementEnd
+                ? `${paddingInline} 40px`
+                : paddingInline,
             }}
           >
             <UIText kind="caption/accent" color="var(--neutral-500)">
@@ -248,7 +256,9 @@ export function ActInfo({
           <Surface
             style={{
               paddingBlock: 8,
-              paddingInline: elementEnd ? '12px 40px' : 12,
+              paddingInline: elementEnd
+                ? `${paddingInline} 40px`
+                : paddingInline,
             }}
           >
             <UIText kind="caption/accent" color="var(--neutral-500)">

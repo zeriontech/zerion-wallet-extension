@@ -32,7 +32,7 @@ export function ReceiverAddressBlock({
   const name = display.addressBookName || display.walletName || display.handle;
 
   return (
-    <Surface style={{ padding: '12px 8px 12px 12px' }}>
+    <Surface style={{ padding: 8 }}>
       <div
         style={{
           display: 'grid',
@@ -71,7 +71,9 @@ export function ReceiverAddressBlock({
                 src={network.iconUrl ?? ''}
                 style={{
                   borderRadius: 8,
-                  border: '2px solid var(--white)',
+                  // Matches whatever the surrounding Surface is filled with,
+                  // the way ApplicationLine does it.
+                  border: '2px solid var(--surface-background-color)',
                 }}
               />
             </div>
