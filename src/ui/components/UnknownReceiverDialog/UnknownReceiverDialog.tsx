@@ -50,7 +50,7 @@ function DialogContent({
       <VStack gap={20} style={{ padding: 24 }}>
         <VStack gap={8} style={{ justifyItems: 'center', textAlign: 'center' }}>
           <UIText kind="headline/h3">Sending to a new address</UIText>
-          <UIText kind="body/regular" color="var(--neutral-500)">
+          <UIText kind="small/accent" color="var(--neutral-500)">
             This address isn’t saved in your wallets or Address Book
           </UIText>
         </VStack>
@@ -60,7 +60,7 @@ function DialogContent({
             // The detail blocks sit 12px from the dialog edge while everything
             // else keeps the dialog's 24px padding, so they read as one framed
             // group rather than another paragraph.
-            marginInline: -12,
+            // marginInline: -12,
             ['--surface-background-color' as string]: 'var(--neutral-100)',
             ['--act-info-padding-inline' as string]: '8px',
           }}
