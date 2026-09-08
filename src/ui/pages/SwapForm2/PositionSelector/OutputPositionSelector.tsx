@@ -106,7 +106,7 @@ function resolveChain(networks: Networks, chainId: string) {
   }
   const network = networks.getByNetworkId(createChain(chainId));
   return {
-    chainIconUrl: network?.icon_url ?? '',
+    chainIconUrl: network?.iconUrl ?? '',
     chainName: network?.name ?? '',
   };
 }
@@ -414,7 +414,7 @@ export function OutputPositionSelector({
       if (cached !== undefined) return cached;
       const network = networks.getByNetworkId(createChain(chainId));
       const ok = Boolean(
-        network?.supports_trading || network?.supports_bridging
+        network?.flags.supportsTrading || network?.flags.supportsBridging
       );
       cache.set(chainId, ok);
       return ok;
@@ -566,7 +566,7 @@ export function OutputPositionSelector({
         chainDistribution={chainDistribution}
         standard="all"
         filterPredicate={(network) =>
-          network.supports_trading || network.supports_bridging
+          network.flags.supportsTrading || network.flags.supportsBridging
         }
         onSelect={(value) => {
           setSelectedNetwork(value);

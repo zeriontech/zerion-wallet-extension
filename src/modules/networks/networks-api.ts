@@ -1,10 +1,9 @@
 import { HTTPError } from 'ky';
-import { isTruthy } from 'is-truthy-ts';
-import { chainFullInfoToNetworkConfig } from 'src/modules/zerion-api/requests/chainFullInfoToNetworkConfig';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { ChainFullInfo } from 'src/modules/zerion-api/types/ChainFullInfo';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
-import type { NetworkConfig } from './NetworkConfig';
+import type { NetworkInfo } from './NetworkInfo';
+import { Networks } from './Networks';
 import { networksFallbackInfo } from './networks-fallback';
 
 export interface NetworksApiParams {
@@ -12,8 +11,16 @@ export interface NetworksApiParams {
   source: NetworksSource;
 }
 
-function toNetworkConfigs(chains: ChainFullInfo[]) {
-  return chains.map(chainFullInfoToNetworkConfig).filter(isTruthy);
+/**
+ * {ChainFullInfo} is assignable to {NetworkInfo}; the only boundary work is
+ * dropping chains whose standard the extension does not model (e.g. tron).
+ */
+function toNetworkInfos(chains: ChainFullInfo[]): NetworkInfo[] {
+  return chains.filter((chain) => Networks.isSupportedEcosystem(chain));
+}
+
+function toNetworkInfo(chain: ChainFullInfo): NetworkInfo | null {
+  return Networks.isSupportedEcosystem(chain) ? chain : null;
 }
 
 /**
@@ -27,13 +34,13 @@ function toNetworkConfigs(chains: ChainFullInfo[]) {
 export async function getSupportedNetworks({
   apiClient,
   source,
-}: NetworksApiParams): Promise<NetworkConfig[]> {
+}: NetworksApiParams): Promise<NetworkInfo[]> {
   try {
     const { data } = await apiClient.chainList(
       { supportedOnly: true, includeTestnets: source === 'testnet' },
       { source }
     );
-    return toNetworkConfigs(data);
+    return toNetworkInfos(data);
   } catch (error) {
     if (source === 'testnet') {
       throw error;
@@ -46,13 +53,13 @@ export async function getSupportedNetworks({
 export async function getNetworkByChainId(
   chainId: string,
   { apiClient, source }: NetworksApiParams
-): Promise<NetworkConfig | null> {
+): Promise<NetworkInfo | null> {
   try {
     const { data } = await apiClient.chainGet(
       { eip155Id: Number(chainId) },
       { source }
     );
-    return chainFullInfoToNetworkConfig(data);
+    return toNetworkInfo(data);
   } catch (error) {
     if (error instanceof HTTPError && error.response.status === 404) {
       return null; // unknown chain, not a failure
@@ -68,13 +75,13 @@ export async function getNetworkByChainId(
 export async function getNetworkById(
   id: string,
   { apiClient, source }: NetworksApiParams
-): Promise<NetworkConfig | null> {
+): Promise<NetworkInfo | null> {
   const { data } = await apiClient.chainList(
     { searchQuery: id, supportedOnly: false, includeTestnets: true },
     { source }
   );
   const chain = data.find((item) => item.id === id);
-  return chain ? chainFullInfoToNetworkConfig(chain) : null;
+  return chain ? toNetworkInfo(chain) : null;
 }
 
 export async function getNetworksBySearch({
@@ -85,7 +92,7 @@ export async function getNetworksBySearch({
 }: NetworksApiParams & {
   query: string;
   includeTestnets: boolean;
-}): Promise<NetworkConfig[]> {
+}): Promise<NetworkInfo[]> {
   const { data } = await apiClient.chainList(
     {
       searchQuery: query.trim().toLowerCase(),
@@ -94,5 +101,5 @@ export async function getNetworksBySearch({
     },
     { source }
   );
-  return toNetworkConfigs(data);
+  return toNetworkInfos(data);
 }

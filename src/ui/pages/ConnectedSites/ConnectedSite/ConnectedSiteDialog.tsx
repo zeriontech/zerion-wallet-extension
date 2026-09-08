@@ -104,7 +104,7 @@ function NetworksDisclosureButton({
     >
       <HStack gap={8} alignItems="center">
         {network ? (
-          <NetworkIcon size={24} src={network.icon_url} name={network.name} />
+          <NetworkIcon size={24} src={network.iconUrl} name={network.name} />
         ) : null}
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>
           <span

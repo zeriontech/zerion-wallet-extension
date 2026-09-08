@@ -81,7 +81,7 @@ export function NetworkFee({
   const isLoading = feeEstimationQuery.isLoading || costsQuery.isLoading;
 
   const nativeAssetSymbol =
-    networks?.getNetworkByName(chain)?.native_asset?.symbol;
+    networks?.getNetworkByName(chain)?.baseAsset?.symbol;
 
   const disabled = isLoading || !onChange;
 

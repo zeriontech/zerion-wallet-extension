@@ -3,22 +3,24 @@ import { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
+import { getBaseAssetImplementation } from 'src/modules/networks/NetworkInfo';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { baseToCommon } from 'src/shared/units/convert';
 import { persistentQuery } from './queryClientPersistence';
 import { fetchAddressPositionFromRpcNode } from './fetchAddressPositionFromRpcNode';
 
 function toFungiblePosition(
-  network: NetworkConfig,
+  network: NetworkInfo,
   balanceBaseUnits: string,
   currency: string
 ): FungiblePosition | null {
-  const native = network.native_asset;
+  const native = network.baseAsset;
+  const implementation = getBaseAssetImplementation(network);
   if (!native?.id) {
     return null;
   }
-  const decimals = Number(native.decimals);
+  const decimals = Number(implementation?.decimals);
   const quantity = Number.isFinite(decimals)
     ? baseToCommon(new BigNumber(balanceBaseUnits), decimals).toFixed()
     : balanceBaseUnits;
@@ -35,12 +37,12 @@ function toFungiblePosition(
       id: native.id,
       name: native.name,
       symbol: native.symbol,
-      iconUrl: native.icon_url ?? null,
+      iconUrl: native.iconUrl ?? null,
       verified: true,
       new: false,
       implementations: {
         [network.id]: {
-          address: native.address,
+          address: implementation?.address ?? null,
           decimals,
         },
       },
@@ -59,7 +61,7 @@ function toFungiblePosition(
     chain: {
       id: network.id,
       name: network.name,
-      iconUrl: network.icon_url ?? '',
+      iconUrl: network.iconUrl ?? '',
     },
   };
 }

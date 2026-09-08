@@ -240,7 +240,7 @@ export function TokensPanel({
   const useNodePositions = Boolean(
     selectedNetwork &&
       selectedNetworkConfig &&
-      !selectedNetworkConfig.supports_positions
+      !selectedNetworkConfig.flags.supportsPositions
   );
 
   // All-chains view: simple positions only (no node-positions fan-out).
@@ -355,7 +355,7 @@ export function TokensPanel({
         standard={getAddressType(address)}
         showEcosystemHint={true}
         showAllNetworksOption={true}
-        // filterPredicate={(network) => network.supports_sending}
+        // filterPredicate={(network) => network.flags.supportsSending}
         onSelect={(value) => {
           const isAll = value === NetworkSelectValue.All;
           const nextChainId = isAll ? null : value;

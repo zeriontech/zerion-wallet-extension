@@ -8,7 +8,7 @@ import { invariant } from 'src/shared/invariant';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { createChain } from 'src/modules/networks/Chain';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { normalizeNumberValue } from 'src/shared/units/convert';
@@ -25,7 +25,7 @@ export function AllowanceView({
   addressAction,
 }: {
   address: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
   assetId?: string | null;
   value: string;
   requestedAllowanceQuantityBase: string | null;

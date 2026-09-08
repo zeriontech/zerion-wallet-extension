@@ -21,7 +21,8 @@
     "lint": "eslint . --cache --fix",
     "format": "prettier --loglevel warn --write \"**/*.{ts,tsx,css,md}\"",
     "prepare": "husky install",
-    "postversion": "node ./scripts/manifest-version.js"
+    "postversion": "node ./scripts/manifest-version.js",
+    "refresh-networks-fallback": "node scripts/refresh-networks-fallback.mjs"
   },
   "alias": {
     "src": "./src",

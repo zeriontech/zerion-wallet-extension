@@ -1,6 +1,6 @@
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type {
   InterpretResponse,
   Warning as SimulationWarning,
@@ -55,13 +55,15 @@ function makeQuotesQuery(quotes: Quote2[]): QuotesData<Quote2> {
 // form-state warning doesn't fire by default.
 const idleQuotesQuery: QuotesData<Quote2> = makeQuotesQuery([makeQuote('100')]);
 
-const ethereum: NetworkConfig = {
+const ethereum: NetworkInfo = {
   id: 'ethereum',
   name: 'Ethereum',
-  supports_trading: true,
-  supports_bridging: true,
-  supports_simulations: true,
-} as unknown as NetworkConfig;
+  flags: {
+    supportsTrading: true,
+    supportsBridging: true,
+    supportsSimulations: true,
+  },
+} as unknown as NetworkInfo;
 
 function makeSimulation({
   warnings = [],
@@ -542,8 +544,8 @@ describe('resolveTransactionWarning', () => {
           ...ethereum,
           id: 'unbridgeable',
           name: 'Unbridgeable',
-          supports_bridging: false,
-        } as NetworkConfig,
+          flags: { ...ethereum.flags, supportsBridging: false },
+        } as NetworkInfo,
         simulationResult: null,
       });
       expect(r.warning?.title).toContain('doesn’t support bridging');

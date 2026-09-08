@@ -50,7 +50,7 @@ export function TokenRow({
 }) {
   const { networks } = useNetworks();
   const isGasAsset =
-    networks?.getNetworkByName(createChain(chainId))?.native_asset?.id ===
+    networks?.getNetworkByName(createChain(chainId))?.baseAsset?.id ===
     fungible.id;
   const marketCap = fungible.meta.marketCap;
   const fullyDilutedValuation = fungible.meta.fullyDilutedValuation;

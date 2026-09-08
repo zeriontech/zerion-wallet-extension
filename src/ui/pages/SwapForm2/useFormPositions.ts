@@ -40,7 +40,7 @@ function useEmptyPosition({
       chain: {
         id: chainId,
         name: networkConfig?.name || '',
-        iconUrl: networkConfig?.icon_url || '',
+        iconUrl: networkConfig?.iconUrl || '',
       },
     };
   }, [chainId, currency, data, networks]);

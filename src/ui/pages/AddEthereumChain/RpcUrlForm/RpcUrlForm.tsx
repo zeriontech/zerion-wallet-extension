@@ -2,7 +2,7 @@ import React, { useId } from 'react';
 import { produce } from 'immer';
 import merge from 'lodash/merge';
 import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -27,8 +27,8 @@ export function RpcUrlForm({
   onKeepCurrent,
   rpcUrlHelpHref,
 }: {
-  network: NetworkConfig;
-  prevNetwork: NetworkConfig;
+  network: NetworkInfo;
+  prevNetwork: NetworkInfo;
   rpcUrlHelpHref: string;
   isSubmitting: boolean;
   onSubmit: (chain: string, result: AddEthereumChainParameter) => void;
@@ -82,18 +82,10 @@ export function RpcUrlForm({
         />
         <Field
           label="New RPC URL"
-          /**
-           * If network HAS `rpc_url_internal`, we introduce a `rpc_url_user` field
-           * as a mechanism to overwrite it,
-           * else - we use `rpc_url_public`
-           */
-          name={
-            prevNetwork.rpc_url_internal || prevNetwork.rpc_url_user
-              ? 'rpc_url_user'
-              : 'rpc_url_public[]'
-          }
+          /** A user-defined RPC URL wins over Zerion's and the public one */
+          name="rpcUrlUser"
           type="url"
-          defaultValue={network.rpc_url_public?.[0] || ''}
+          defaultValue={network.rpcUrlUser || network.publicRpcUrl || ''}
           required={true}
         />
         <UIText kind="small/regular" color="var(--neutral-500)">

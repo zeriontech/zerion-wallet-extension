@@ -99,7 +99,7 @@ export function useOutputAssetPreview({
         // The deposit endpoints know chains the wallet's registry may not, so
         // fall back to the raw id rather than rendering nothing
         chainName: network?.name ?? outputChain,
-        chainIconUrl: network?.icon_url ?? null,
+        chainIconUrl: network?.iconUrl ?? null,
       };
     }
     return null;

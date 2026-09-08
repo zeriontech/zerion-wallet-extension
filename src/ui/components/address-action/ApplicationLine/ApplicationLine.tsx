@@ -3,7 +3,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { ShuffleText } from 'src/ui/components/ShuffleText';
@@ -60,7 +60,7 @@ function ApplicationImage({
   network,
 }: {
   addressAction: Pick<AnyAddressAction, 'label'>;
-  network: NetworkConfig | null;
+  network: NetworkInfo | null;
 }) {
   return (
     <FadeOutAndIn
@@ -97,7 +97,7 @@ function ApplicationImage({
             <NetworkIcon
               size={20}
               name={network?.name || null}
-              src={network?.icon_url || ''}
+              src={network?.iconUrl || ''}
               style={{
                 borderRadius: 8,
                 border: '2px solid var(--surface-background-color)',
@@ -115,7 +115,7 @@ export function ApplicationLine({
   network,
 }: {
   addressAction: Pick<AnyAddressAction, 'label'>;
-  network: NetworkConfig;
+  network: NetworkInfo;
 }) {
   const applicationAddress = addressAction.label?.contract?.address
     ? toChecksumAddress(addressAction.label.contract.address)

@@ -2,16 +2,14 @@
 
 ### RPC Urls
 
-- `rpc_url_internal` is used to submit transactions and query tx data, such as allowance and gas estimations
-- `rpc_url_public` is used when an rpc request comes from the dapp
-- `rpc_url_user` is used as an override for the above values
-- [x] when an `AddEthereumChainParameter` comes from the dapp, its RPC Url is currently being set to both `rpc_url_internal` and to `rpc_url_public`. This is wrong, it should either always be set to `rpc_url_user`, OR:
-  - if `rpc_url_internal` exists, introduce `rpc_url_user`
-  - else set `rpc_url_public` (this is how current <NetworkForm /> works)
+- `rpcUrl` (Zerion's) is used to submit transactions and query tx data, such as allowance and gas estimations
+- `publicRpcUrl` is used when an rpc request comes from the dapp
+- `rpcUrlUser` is a user-defined override for both of the above; `applyChainConfig` sets it (and `publicRpcUrl`) from the saved `AddEthereumChainParameter.rpcUrls[0]`
+- for a synthesized chain (one the backend does not know) the user's URL is all three
 
 ### Chain, chainId and external_id
 
-- HEX chain id is stored in `specification` object inside NetworkConfig
+- the decimal chain id is stored in `specification.eip155.chainId` inside `NetworkInfo`; `Networks.getChainId()` normalizes it to HEX
 - for chain configs coming from dApps, `id` is queried from backend for the chain with the same `chainId` or derived directly from `chainId`
 - for manually added networks, `id` is currently deterministically created from `chainId` and will be updated if `chainId` is updated.
 
@@ -23,7 +21,7 @@
 
 ### Backend Updates
 
-- [ ] User has manually created a network `A` with chainId: `'a'` and a generated `id` value. Later our backend starts to support a network with chainId: `'a'`. We are going to merge updated config with locally saved. So saved data will remain the same, however extra data (like `'supports_...'` fields) will be updated.
+- [ ] User has manually created a network `A` with chainId: `'a'` and a generated `id` value. Later our backend starts to support a network with chainId: `'a'`. We are going to merge updated config with locally saved. So saved data will remain the same, however extra data (like the `flags`) will be updated.
 
 ### Edge cases
 

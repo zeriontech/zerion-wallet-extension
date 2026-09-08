@@ -521,7 +521,7 @@ export function HistoryFiltersButton({
                                     {network ? (
                                       <NetworkIcon
                                         size={24}
-                                        src={network.icon_url}
+                                        src={network.iconUrl}
                                         name={network.name}
                                       />
                                     ) : (

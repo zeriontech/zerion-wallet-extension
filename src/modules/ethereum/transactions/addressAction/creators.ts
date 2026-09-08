@@ -12,7 +12,7 @@ import { solFromBase64 } from 'src/modules/solana/transactions/create';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { IncomingTransactionWithChainId } from '../../types/IncomingTransaction';
 import type { TransactionObject } from '../types';
@@ -199,7 +199,7 @@ async function pendingEvmTxToAddressAction(
 ): Promise<LocalAddressAction> {
   invariant(transactionObject.hash, 'Must be evm tx');
   const { transaction, hash, timestamp, addressAction } = transactionObject;
-  let network: NetworkConfig | null;
+  let network: NetworkInfo | null;
   const chainId = normalizeChainId(transaction.chainId);
   const networks = await loadNetworkByChainId(chainId);
   try {
@@ -230,9 +230,9 @@ async function pendingEvmTxToAddressAction(
     chain: {
       id: network?.id || valueToHex(transaction.chainId),
       name: network?.name || valueToHex(transaction.chainId),
-      iconUrl: network?.icon_url || '',
+      iconUrl: network?.iconUrl || '',
     },
-    explorerUrl: getExplorerUrl(network?.explorer_tx_url || null, hash),
+    explorerUrl: getExplorerUrl(network?.explorer?.txUrl || null, hash),
   };
   const type = {
     value: action?.type || 'execute',
@@ -343,7 +343,7 @@ export async function incomingTxToIncomingAddressAction(
     chain: {
       id: network?.id || valueToHex(transaction.chainId),
       name: network?.name || valueToHex(transaction.chainId),
-      iconUrl: network?.icon_url || '',
+      iconUrl: network?.iconUrl || '',
     },
     explorerUrl: null,
   };

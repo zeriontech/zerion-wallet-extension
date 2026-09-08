@@ -62,7 +62,7 @@ import {
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
 import { baseToCommon } from 'src/shared/units/convert';
 import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
@@ -113,7 +113,7 @@ function TypedDataDefaultView({
   origin: string;
   clientScope: string | null;
   wallet: ExternallyOwnedAccount;
-  network: NetworkConfig;
+  network: NetworkInfo;
   typedDataRaw: string;
   typedData: TypedData;
   interpretQuery: {
@@ -569,7 +569,7 @@ function SignTypedDataContent({
             { source }
           )
         : null,
-    enabled: Boolean(chainId && network?.supports_simulations),
+    enabled: Boolean(chainId && network?.flags.supportsSimulations),
     suspense: false,
     retry: 1,
     refetchOnMount: false,

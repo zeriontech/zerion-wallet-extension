@@ -3,7 +3,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { chainConfigStore } from '../ethereum/chains/ChainConfigStore';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import { NetworksStore } from './networks-store';
-import type { NetworkConfig } from './NetworkConfig';
+import type { NetworkInfo } from './NetworkInfo';
 import type { Chain } from './Chain';
 
 export const mainNetworksStore = new NetworksStore(
@@ -54,7 +54,7 @@ export async function fetchNetworkById({
   networkId,
   preferences,
   apiEnv,
-}: { networkId: Chain } & FetchNetworkOptions): Promise<NetworkConfig | null> {
+}: { networkId: Chain } & FetchNetworkOptions): Promise<NetworkInfo | null> {
   const id = networkId.toString();
   if (
     preferences.testnetMode?.on &&
@@ -76,7 +76,7 @@ export async function fetchNetworkByChainId({
   chainId,
   preferences,
   apiEnv,
-}: { chainId: ChainId } & FetchNetworkOptions): Promise<NetworkConfig | null> {
+}: { chainId: ChainId } & FetchNetworkOptions): Promise<NetworkInfo | null> {
   if (
     preferences.testnetMode?.on &&
     (apiEnv === 'current' || apiEnv === 'testnet-first')

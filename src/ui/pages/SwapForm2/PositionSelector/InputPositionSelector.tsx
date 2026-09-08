@@ -96,7 +96,7 @@ function positionKey(chainId: string, fungibleId: string): string {
 function resolveChain(networks: Networks, chainId: string) {
   const network = networks.getByNetworkId(createChain(chainId));
   return {
-    chainIconUrl: network?.icon_url ?? '',
+    chainIconUrl: network?.iconUrl ?? '',
     chainName: network?.name ?? '',
   };
 }
@@ -192,7 +192,9 @@ export function InputPositionSelector({
     (chainId: string) => {
       if (!networks) return true;
       const network = networks.getByNetworkId(createChain(chainId));
-      return Boolean(network?.supports_trading || network?.supports_bridging);
+      return Boolean(
+        network?.flags.supportsTrading || network?.flags.supportsBridging
+      );
     },
     [networks]
   );
@@ -493,7 +495,7 @@ export function InputPositionSelector({
         showAllNetworksOption={true}
         filterPredicate={(network) =>
           chainIdsInPositions.has(network.id) &&
-          (network.supports_trading || network.supports_bridging)
+          (network.flags.supportsTrading || network.flags.supportsBridging)
         }
         onSelect={(value) => {
           const isAll = value === NetworkSelectValue.All;

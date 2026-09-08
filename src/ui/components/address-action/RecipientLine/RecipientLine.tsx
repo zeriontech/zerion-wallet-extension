@@ -7,7 +7,7 @@ import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 import { NetworkIcon } from '../../NetworkIcon';
 
@@ -19,7 +19,7 @@ export function RecipientLine({
 }: {
   recipientAddress: string;
   recipientName: string | null;
-  network: NetworkConfig;
+  network: NetworkInfo;
   showNetworkIcon: boolean;
 }) {
   const checksumAddress = useMemo(
@@ -40,7 +40,7 @@ export function RecipientLine({
                 <NetworkIcon
                   size={20}
                   name={network?.name || null}
-                  src={network?.icon_url || ''}
+                  src={network?.iconUrl || ''}
                   style={{
                     borderRadius: 8,
                     border: '2px solid var(--neutral-100)',

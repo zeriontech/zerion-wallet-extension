@@ -271,7 +271,7 @@ function AddressPositionItem({
                                   <NetworkIcon
                                     size={16}
                                     name={chainNetwork?.name || chainId}
-                                    src={chainNetwork?.icon_url}
+                                    src={chainNetwork?.iconUrl}
                                   />
 
                                   <UIText
@@ -323,7 +323,7 @@ function AddressPositionItem({
                 <NetworkIcon
                   size={16}
                   name={network?.name || position.chain}
-                  src={network?.icon_url}
+                  src={network?.iconUrl}
                 />
               ) : null}
               {intersperce(
@@ -467,7 +467,7 @@ function usePreparedPositions({
       return null;
     }
     const network = networks?.getNetworkByName(createChain(dappChain));
-    return network?.native_asset?.id || null;
+    return network?.baseAsset?.id || null;
   }, [networks, dappChain]);
 
   const totalValue = useMemo(() => getFullPositionsValue(items), [items]);
@@ -1067,7 +1067,7 @@ export function Positions({
     );
   }
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
-  const OVERRIDE_POSITIONS_SUPPORT = addrIsSolana; // todo: remove when backend updates NetworkConfig for Solana
+  const OVERRIDE_POSITIONS_SUPPORT = addrIsSolana; // todo: remove when backend updates NetworkInfo for Solana
   const isSupportedByBackend =
     chain == null
       ? true

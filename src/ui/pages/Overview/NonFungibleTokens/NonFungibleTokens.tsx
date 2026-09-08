@@ -15,7 +15,7 @@ import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfo
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletNftPositions } from 'src/modules/zerion-api/hooks/useWalletNftPositions';
 import type { NftPosition } from 'src/modules/zerion-api/requests/wallet-get-nft-positions';
-import { useNetworkConfig } from 'src/modules/networks/useNetworks';
+import { useNetworkInfo } from 'src/modules/networks/useNetworks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
@@ -167,9 +167,9 @@ export function NonFungibleTokens({
         ? NetworkId.Solana
         : NetworkId.Ethereum
       : chainValue;
-  const { data: network } = useNetworkConfig(referenceChain);
+  const { data: network } = useNetworkInfo(referenceChain);
 
-  const isSupportedByBackend = Boolean(network?.supports_nft_positions);
+  const isSupportedByBackend = Boolean(network?.flags.supportsNftPositions);
 
   const {
     data: items,

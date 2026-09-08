@@ -4,7 +4,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { TransactionWarning } from './TransactionWarning';
 
@@ -16,7 +16,7 @@ function useInsufficientFundsWarning({
 }: {
   address: string;
   transaction: IncomingTransaction;
-  network: NetworkConfig;
+  network: NetworkInfo;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
   const chain = createChain(network.id);
@@ -43,7 +43,7 @@ export function InsufficientFundsWarning({
 }: {
   address: string;
   transaction: IncomingTransaction;
-  network: NetworkConfig;
+  network: NetworkInfo;
   networkFeeConfiguration: NetworkFeeConfiguration;
 }) {
   const { networks } = useNetworks();
@@ -63,7 +63,7 @@ export function InsufficientFundsWarning({
     <TransactionWarning
       title="Insufficient balance"
       message={`You don't have enough ${
-        network.native_asset?.symbol || 'native token'
+        network.baseAsset?.symbol || 'native token'
       } to cover network fees`}
     />
   );

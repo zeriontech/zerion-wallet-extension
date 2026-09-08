@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { getError } from 'src/shared/errors/getError';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { SwapFormState2 } from '../types';
 import {
   pickHighestNonGray,
@@ -94,8 +94,8 @@ function resolveFormStateWarning({
   quote: Quote2 | null;
   quotesQuery: QuotesData<Quote2>;
   formState: SwapFormState2;
-  inputNetwork: NetworkConfig | null | undefined;
-  outputNetwork: NetworkConfig | null | undefined;
+  inputNetwork: NetworkInfo | null | undefined;
+  outputNetwork: NetworkInfo | null | undefined;
 }): WarningContent | null {
   if (!formState.inputAmount || Number(formState.inputAmount) === 0) {
     return null;
@@ -106,9 +106,9 @@ function resolveFormStateWarning({
     formState.inputChain === formState.outputChain;
 
   if (inputNetwork && outputNetwork && !sameChain) {
-    const unsupported = !inputNetwork.supports_bridging
+    const unsupported = !inputNetwork.flags.supportsBridging
       ? inputNetwork
-      : !outputNetwork.supports_bridging
+      : !outputNetwork.flags.supportsBridging
       ? outputNetwork
       : null;
     if (unsupported) {
@@ -124,7 +124,7 @@ function resolveFormStateWarning({
     inputNetwork &&
     outputNetwork &&
     sameChain &&
-    !inputNetwork.supports_trading
+    !inputNetwork.flags.supportsTrading
   ) {
     return {
       variant: 'warning',
@@ -216,8 +216,8 @@ export function resolveTransactionWarning({
   quotesQuery: QuotesData<Quote2>;
   formState: SwapFormState2;
   simulationResult: SimulationResult;
-  inputNetwork: NetworkConfig | null | undefined;
-  outputNetwork: NetworkConfig | null | undefined;
+  inputNetwork: NetworkInfo | null | undefined;
+  outputNetwork: NetworkInfo | null | undefined;
 }): ResolvedTransactionWarning {
   const warnings = readSimulationWarnings(simulationResult);
   const status = readSimulationStatus(simulationResult);

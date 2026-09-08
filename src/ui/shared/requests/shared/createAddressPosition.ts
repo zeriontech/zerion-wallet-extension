@@ -1,19 +1,21 @@
 import { capitalize } from 'capitalize-ts';
 import type { AddressPosition } from 'src/defi-sdk.types';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
+import { getBaseAssetImplementation } from 'src/modules/networks/NetworkInfo';
 
 export function createAddressPosition({
   balance,
   network,
 }: {
   balance: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
 }): AddressPosition {
+  const implementation = getBaseAssetImplementation(network);
   return {
     chain: network.id,
     value: null,
     apy: null,
-    id: `${network.native_asset?.symbol}-${network.id}-asset`,
+    id: `${network.baseAsset?.symbol}-${network.id}-asset`,
     included_in_chart: false,
     name: 'Asset',
     quantity: balance,
@@ -24,24 +26,24 @@ export function createAddressPosition({
     asset: {
       is_displayable: true,
       type: null,
-      name: network.native_asset?.name || `${capitalize(network.name)} Token`,
-      symbol: network.native_asset?.symbol || '<unknown-symbol>',
+      name: network.baseAsset?.name || `${capitalize(network.name)} Token`,
+      symbol: network.baseAsset?.symbol || '<unknown-symbol>',
       id:
-        network.native_asset?.id ||
-        network.native_asset?.symbol.toLowerCase() ||
+        network.baseAsset?.id ||
+        network.baseAsset?.symbol.toLowerCase() ||
         '<unknown-id>',
       asset_code:
-        network.native_asset?.address ||
-        network.native_asset?.symbol.toLowerCase() ||
+        implementation?.address ||
+        network.baseAsset?.symbol.toLowerCase() ||
         '<unknown-id>',
-      decimals: Number(network.native_asset?.decimals) || NaN,
-      icon_url: network.native_asset?.icon_url || network.icon_url,
+      decimals: Number(implementation?.decimals) || NaN,
+      icon_url: network.baseAsset?.iconUrl || network.iconUrl || null,
       is_verified: false,
       price: null,
       implementations: {
         [network.id]: {
-          address: network.native_asset?.address ?? null,
-          decimals: Number(network.native_asset?.decimals) || NaN,
+          address: implementation?.address ?? null,
+          decimals: Number(implementation?.decimals) || NaN,
         },
       },
     },

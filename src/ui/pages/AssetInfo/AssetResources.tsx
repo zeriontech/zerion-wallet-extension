@@ -1,7 +1,7 @@
 import { isTruthy } from 'is-truthy-ts';
 import React, { useMemo, useRef } from 'react';
 import { createChain } from 'src/modules/networks/Chain';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type {
   AssetFullInfo,
@@ -31,7 +31,7 @@ import { truncateAddress } from 'src/ui/shared/truncateAddress';
 function MainImplementationButton({
   implementation,
 }: {
-  implementation: { address: string | null; network: NetworkConfig };
+  implementation: { address: string | null; network: NetworkInfo };
 }) {
   const { address, network } = implementation;
   const { handleCopy, isSuccess } = useCopyToClipboard({
@@ -44,7 +44,7 @@ function MainImplementationButton({
         as={UnstyledAnchor}
         rel="noopener noreferrer"
         target="_blank"
-        href={network.explorer_home_url || ''}
+        href={network.explorer?.homeUrl || ''}
         aria-label="Copy token address"
         size={36}
         kind="neutral"
@@ -60,7 +60,7 @@ function MainImplementationButton({
         <HStack gap={4} alignItems="center">
           <HStack gap={6} alignItems="center">
             <img
-              src={network.icon_url}
+              src={network.iconUrl ?? undefined}
               alt={network.name}
               width={24}
               height={24}
@@ -93,7 +93,7 @@ function MainImplementationButton({
       <HStack gap={4} alignItems="center">
         <HStack gap={6} alignItems="center">
           <img
-            src={network.icon_url}
+            src={network.iconUrl ?? undefined}
             alt={network.name}
             width={24}
             height={24}
@@ -141,7 +141,7 @@ function CopyAddressButton({ address }: { address: string }) {
 function AssetImplementationsDialogContent({
   implementations,
 }: {
-  implementations: { address: string | null; network: NetworkConfig }[];
+  implementations: { address: string | null; network: NetworkInfo }[];
 }) {
   const { networks } = useNetworks();
   return (
@@ -160,7 +160,7 @@ function AssetImplementationsDialogContent({
                   createChain(network.id),
                   address
                 )
-              : network.explorer_home_url;
+              : network.explorer?.homeUrl;
           return (
             <HStack
               key={network.id}
@@ -171,7 +171,7 @@ function AssetImplementationsDialogContent({
             >
               <HStack gap={12} alignItems="center">
                 <img
-                  src={network.icon_url}
+                  src={network.iconUrl ?? undefined}
                   alt={network.name}
                   width={36}
                   height={36}

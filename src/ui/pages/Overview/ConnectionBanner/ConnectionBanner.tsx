@@ -57,7 +57,7 @@ function ConnectedNetworkBadge({
   }
   return (
     <HStack gap={4} alignItems="center">
-      <NetworkIcon size={20} src={network.icon_url} name={network.name} />
+      <NetworkIcon size={20} src={network.iconUrl} name={network.name} />
       <ArrowDownIcon
         style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
       />

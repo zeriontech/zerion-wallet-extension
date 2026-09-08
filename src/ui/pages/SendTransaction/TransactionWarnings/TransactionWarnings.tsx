@@ -4,7 +4,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { RenderArea } from 'react-area';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { InsufficientFundsWarning } from './InsufficientFundsWarning';
 import { TransactionWarning } from './TransactionWarning';
 
@@ -20,7 +20,7 @@ export function TransactionWarnings({
   transaction: IncomingTransaction;
   /** `null` when the transaction could not be interpreted */
   addressAction: AnyAddressAction | null;
-  network: NetworkConfig;
+  network: NetworkInfo;
   networkFeeConfiguration: NetworkFeeConfiguration;
   paymasterEligible: boolean;
 }) {

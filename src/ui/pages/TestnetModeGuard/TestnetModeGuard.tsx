@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { invariant } from 'src/shared/invariant';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -17,7 +17,7 @@ export function TestnetModeGuard() {
   const targetNetwork = params.get('targetNetwork');
   invariant(targetNetwork, 'targetNetwork get-parameter is required');
   const network = useMemo(
-    () => JSON.parse(targetNetwork) as NetworkConfig,
+    () => JSON.parse(targetNetwork) as NetworkInfo,
     [targetNetwork]
   );
 
@@ -37,7 +37,7 @@ export function TestnetModeGuard() {
             textAlign: 'center',
           }}
         >
-          <NetworkIcon size={36} name={network.name} src={network.icon_url} />
+          <NetworkIcon size={36} name={network.name} src={network.iconUrl} />
           <UIText kind="headline/h3">Switching to {network.name}?</UIText>
           <UIText kind="body/regular">
             Testnet mode is currently active. Would you like to disable it and

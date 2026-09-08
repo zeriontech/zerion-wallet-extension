@@ -11,17 +11,17 @@ import {
   getNetworkById,
   getSupportedNetworks,
 } from './networks-api';
-import type { NetworkConfig } from './NetworkConfig';
-import { toNetworkConfig } from './helpers';
+import type { NetworkInfo } from './NetworkInfo';
+import { toNetworkInfo } from './helpers';
 import { createChain } from './Chain';
 
 interface State {
   networks: Networks | null;
 }
 
-function mergeNetworkConfigs(
-  prevConfigs: NetworkConfig[],
-  nextConfigs: NetworkConfig[]
+function mergeNetworkInfos(
+  prevConfigs: NetworkInfo[],
+  nextConfigs: NetworkInfo[]
 ) {
   const nextConfigMap = Object.fromEntries(
     nextConfigs.map((config) => [config.id, config])
@@ -40,8 +40,8 @@ type OtherNetworkData = {
 
 export class NetworksStore extends Store<State> {
   private isReady = false;
-  private networkConfigs: NetworkConfig[] = [];
-  private customNetworkConfigs: NetworkConfig[] = [];
+  private networkConfigs: NetworkInfo[] = [];
+  private customNetworkConfigs: NetworkInfo[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
   /**
    * Lazy on purpose: the ZerionAPI modules sit in import cycles with the
@@ -84,7 +84,7 @@ export class NetworksStore extends Store<State> {
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
     const visitedChains = chainConfigs?.visitedChains;
     const networks = new Networks({
-      networks: mergeNetworkConfigs(
+      networks: mergeNetworkInfos(
         this.networkConfigs,
         this.customNetworkConfigs
       ),
@@ -118,8 +118,8 @@ export class NetworksStore extends Store<State> {
 
     const commonNetworkConfigs = update
       ? []
-      : await getSupportedNetworks(params).catch(() => [] as NetworkConfig[]);
-    const knownNetworkConfigs = mergeNetworkConfigs(
+      : await getSupportedNetworks(params).catch(() => [] as NetworkInfo[]);
+    const knownNetworkConfigs = mergeNetworkInfos(
       this.networkConfigs,
       commonNetworkConfigs
     );
@@ -152,7 +152,7 @@ export class NetworksStore extends Store<State> {
       result.status === 'fulfilled' && result.value ? [result.value] : []
     );
 
-    this.networkConfigs = mergeNetworkConfigs(
+    this.networkConfigs = mergeNetworkInfos(
       knownNetworkConfigs,
       extraNetworkConfigs
     );
@@ -161,7 +161,7 @@ export class NetworksStore extends Store<State> {
     );
     this.customNetworkConfigs = savedChainConfigs
       .filter((config) => !fulfilledNetworkIdSet.has(config.id))
-      .map((config) => toNetworkConfig(config.value, config.id));
+      .map((config) => toNetworkInfo(config.value, config.id));
 
     return this.updateNetworks();
   }
@@ -182,13 +182,13 @@ export class NetworksStore extends Store<State> {
       source: this.source,
     });
     if (network) {
-      this.networkConfigs = mergeNetworkConfigs(this.networkConfigs, [network]);
+      this.networkConfigs = mergeNetworkInfos(this.networkConfigs, [network]);
     }
     return this.updateNetworks();
   }
 
-  async pushConfigs(...extraNetworkConfigs: NetworkConfig[]) {
-    this.networkConfigs = mergeNetworkConfigs(
+  async pushConfigs(...extraNetworkConfigs: NetworkInfo[]) {
+    this.networkConfigs = mergeNetworkInfos(
       this.networkConfigs,
       extraNetworkConfigs
     );
@@ -206,7 +206,7 @@ export class NetworksStore extends Store<State> {
     return this.loaderPromises[key];
   }
 
-  async fetchNetworkById(id: string): Promise<NetworkConfig> {
+  async fetchNetworkById(id: string): Promise<NetworkInfo> {
     const networks = await this.load({ chains: [id] });
     const network = networks.getByNetworkId(createChain(id));
     invariant(network, `Could not load network for id: ${id}`);
@@ -225,7 +225,7 @@ export class NetworksStore extends Store<State> {
     return this.loaderPromises[key];
   }
 
-  async fetchNetworkByChainId(chainId: ChainId): Promise<NetworkConfig> {
+  async fetchNetworkByChainId(chainId: ChainId): Promise<NetworkInfo> {
     const networks = await this.loadNetworksByChainId(chainId);
     const network = networks.getNetworkById(chainId);
     invariant(network, `Could not load network for chainId: ${chainId}`);

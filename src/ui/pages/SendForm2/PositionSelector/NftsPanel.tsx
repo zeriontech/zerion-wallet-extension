@@ -217,7 +217,7 @@ export function NftsPanel({
         return {
           chainId,
           name: network?.name ?? chainId,
-          iconUrl: network?.icon_url ?? '',
+          iconUrl: network?.iconUrl ?? '',
         };
       });
   }, [nftChainsDistribution, networks]);
@@ -243,7 +243,7 @@ export function NftsPanel({
       new Set(
         networks
           .getMainnets()
-          .filter((n) => n.supports_nft_positions)
+          .filter((n) => n.flags.supportsNftPositions)
           .map((n) => n.id)
       ),
     [networks]

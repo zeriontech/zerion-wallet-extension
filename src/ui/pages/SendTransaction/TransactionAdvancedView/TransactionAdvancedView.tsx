@@ -23,7 +23,7 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 import { RecipientLine } from 'src/ui/components/address-action/RecipientLine';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
@@ -49,7 +49,7 @@ function AddressLine({
   label,
   address,
 }: {
-  network: NetworkConfig;
+  network: NetworkInfo;
   label: React.ReactNode;
   address: string;
 }) {
@@ -87,7 +87,7 @@ function TransactionDetails({
   network,
   transaction,
 }: {
-  network: NetworkConfig;
+  network: NetworkInfo;
   transaction: IncomingTransaction;
   interpretation?: InterpretResponse | null;
 }) {
@@ -192,7 +192,7 @@ export function TransactionAdvancedView({
   addressAction,
   onCopyData,
 }: {
-  network: NetworkConfig;
+  network: NetworkInfo;
   transaction: AdvancedViewTransaction;
   interpretation?: InterpretResponse | null;
   /** `null` when the transaction could not be interpreted */

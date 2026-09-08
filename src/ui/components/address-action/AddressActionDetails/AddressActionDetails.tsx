@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { applyCustomAllowance } from 'src/modules/ethereum/transactions/appovals';
 import { RecipientLine } from '../RecipientLine';
 import { ApplicationLine } from '../ApplicationLine';
@@ -18,7 +18,7 @@ export function AddressActionDetails({
 }: {
   address: string;
   addressAction?: AnyAddressAction;
-  network: NetworkConfig;
+  network: NetworkInfo;
   allowanceQuantityCommon: string | null;
   customAllowanceQuantityBase: string | null;
   showApplicationLine: boolean;

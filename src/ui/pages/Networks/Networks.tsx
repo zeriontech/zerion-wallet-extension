@@ -18,7 +18,7 @@ import {
 } from 'react-router-dom';
 import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks as NetworksModule } from 'src/modules/networks/Networks';
 import {
   mainNetworksStore,
@@ -177,7 +177,7 @@ const FORBIDDEN_FIELDS = new Set([
 function RemoveNetworkConfirmationDialog({
   network,
 }: {
-  network: NetworkConfig;
+  network: NetworkInfo;
 }) {
   return (
     <form
@@ -256,21 +256,21 @@ function NetworkPage() {
     onSuccess: goBack,
   });
   const removeMutation = useMutation({
-    mutationFn: async (network: NetworkConfig) => {
+    mutationFn: async (network: NetworkInfo) => {
       await walletPort.request('removeEthereumChain', { chain: network.id });
       await updateNetworks();
     },
     onSuccess: goBack,
   });
   const resetMutation = useMutation({
-    mutationFn: async (network: NetworkConfig) => {
+    mutationFn: async (network: NetworkInfo) => {
       await walletPort.request('resetEthereumChain', { chain: network.id });
       await updateNetworks();
     },
     onSuccess: goBack,
   });
   const removeFromVisitedMutation = useMutation({
-    mutationFn: async (network: NetworkConfig) => {
+    mutationFn: async (network: NetworkInfo) => {
       await walletPort.request('removeVisitedEthereumChain', {
         chain: network.id,
       });

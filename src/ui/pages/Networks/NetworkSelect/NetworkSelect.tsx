@@ -15,7 +15,7 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { noValueDash } from 'src/ui/shared/typography';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { Networks } from 'src/modules/networks/Networks';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -61,7 +61,7 @@ export function NetworkSelect({
     networksAreLoading: boolean;
   }): React.ReactNode;
   dialogRootNode?: HTMLElement;
-  filterPredicate?: (network: NetworkConfig) => boolean;
+  filterPredicate?: (network: NetworkInfo) => boolean;
   showAllNetworksOption?: boolean;
   showEcosystemHint: boolean;
 }) {
@@ -140,7 +140,7 @@ export function NetworkSelect({
           <HStack gap={8} alignItems="center">
             {!network ||
             value === NetworkSelectValue.All ||
-            !network.icon_url ? (
+            !network.iconUrl ? (
               <AllNetworksIcon
                 style={{ width: 24, height: 24 }}
                 role="presentation"
@@ -148,7 +148,7 @@ export function NetworkSelect({
             ) : (
               <NetworkIcon
                 size={24}
-                src={network.icon_url}
+                src={network.iconUrl}
                 name={network.name}
               />
             )}

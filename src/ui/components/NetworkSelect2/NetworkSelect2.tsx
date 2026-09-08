@@ -19,7 +19,7 @@ import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import { filterAndSortNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import {
@@ -68,7 +68,7 @@ type ListItem =
   | {
       kind: 'network';
       key: string;
-      network: NetworkConfig;
+      network: NetworkInfo;
       name: string;
       selected: boolean;
     };
@@ -241,7 +241,7 @@ function VirtualizedList({
               <NetworkRow
                 value={item.network.id}
                 name={item.name}
-                iconUrl={item.network.icon_url}
+                iconUrl={item.network.iconUrl}
                 selected={item.selected}
                 onSelect={onSelect}
                 chainDistribution={chainDistribution}
@@ -283,7 +283,7 @@ function NetworkSelect2Content({
   value: string;
   standard: BlockchainType | 'all';
   chainDistribution: NetworkSelectDistribution | null;
-  filterPredicate: (network: NetworkConfig) => boolean;
+  filterPredicate: (network: NetworkInfo) => boolean;
   showAllNetworksOption: boolean;
   showEcosystemHint: boolean;
   onSelect: (value: string) => void;
@@ -317,7 +317,7 @@ function NetworkSelect2Content({
     });
   }, [networks, standard, chainDistribution, testnetMode, filterPredicate]);
 
-  const searchItems = useMemo<NetworkConfig[]>(() => {
+  const searchItems = useMemo<NetworkInfo[]>(() => {
     if (!query || !searchNetworks) return [];
     const pool = testnetMode
       ? searchNetworks.getNetworks()
@@ -490,7 +490,7 @@ export function NetworkSelect2({
   value: string;
   standard?: BlockchainType | 'all';
   chainDistribution: NetworkSelectDistribution | null;
-  filterPredicate?: (network: NetworkConfig) => boolean;
+  filterPredicate?: (network: NetworkInfo) => boolean;
   showAllNetworksOption?: boolean;
   showEcosystemHint?: boolean;
 }) {
