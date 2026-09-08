@@ -10,7 +10,7 @@ import type { SwapFormState } from 'src/shared/types/SwapFormState';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import {
   createApproveAddressAction2,
@@ -52,8 +52,8 @@ export interface BuildSwapStepsParams {
   quotesFormState: SwapFormState;
   inputFungible: Fungible;
   outputFungible: Fungible;
-  inputNetwork: NetworkConfig;
-  outputNetwork: NetworkConfig;
+  inputNetwork: NetworkInfo;
+  outputNetwork: NetworkInfo;
   /** Output network id as reported to analytics / the Order */
   outputChain: string;
   spendAmount: Amount;
@@ -224,7 +224,7 @@ export function buildSwapSteps({
           outputChain,
           explorerUrlTemplate:
             quote.contractMetadata.explorer?.txUrl ??
-            inputNetwork.explorer_tx_url ??
+            inputNetwork.explorer?.txUrl ??
             null,
         },
       },
