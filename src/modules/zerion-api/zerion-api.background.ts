@@ -1,4 +1,4 @@
-import { ServiceLocator } from 'src/background/initialize';
+import { ServiceLocator } from 'src/background/ServiceLocator';
 import { invariant } from 'src/shared/invariant';
 import { getAddressProviderHeader } from './requests/shared.background';
 import type { ZerionApiContext } from './zerion-api-bare';

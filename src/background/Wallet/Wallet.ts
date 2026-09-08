@@ -29,6 +29,7 @@ import {
 import {
   INTERNAL_ORIGIN,
   INTERNAL_ORIGIN_SYMBOL,
+  INTERNAL_SYMBOL_CONTEXT,
 } from 'src/background/constants';
 import {
   fetchNetworkByChainId,
@@ -169,7 +170,9 @@ async function prepareNonce<
   }
 }
 
-export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
+// Defined in a leaf module so low-level services can use it without importing
+// this file (and its import tree); re-exported to keep existing import paths.
+export { INTERNAL_SYMBOL_CONTEXT };
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {

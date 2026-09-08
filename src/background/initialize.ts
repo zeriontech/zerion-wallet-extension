@@ -10,10 +10,9 @@ import { transactionService } from './transactions/TransactionService';
 import { globalPreferences } from './Wallet/GlobalPreferences';
 import { NotificationWindow } from './NotificationWindow/NotificationWindow';
 import { setUninstallURL } from './uninstall';
+import { ServiceLocator } from './ServiceLocator';
 
 let didInitialize = false;
-
-export const ServiceLocator: { account?: Account } = {};
 
 export async function initialize() {
   if (didInitialize) {
