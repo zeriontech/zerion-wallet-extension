@@ -240,7 +240,7 @@ export class TransactionService {
         apiClient: ZerionAPI,
         source,
       });
-      if (network?.supports_actions) {
+      if (network?.flags.supportsActions) {
         // The nonce comes from the local store: the backend is only asked
         // whether it has seen this hash yet.
         const known = await backendKnowsTransaction({

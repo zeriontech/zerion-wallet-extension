@@ -79,7 +79,7 @@ export function useNetworks(chains?: string[]) {
   };
 }
 
-export function useNetworkConfig(
+export function useNetworkInfo(
   id: string | null,
   {
     staleTime = 1000 * 60 * 5,

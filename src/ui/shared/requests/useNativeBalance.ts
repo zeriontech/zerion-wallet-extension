@@ -5,7 +5,7 @@ import { baseToCommon } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';
 import { getDecimals } from 'src/modules/networks/asset';
 import { isTruthy } from 'is-truthy-ts';
-import { useNetworkConfig } from 'src/modules/networks/useNetworks';
+import { useNetworkInfo } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -77,8 +77,8 @@ export function useNativeBalance({
   isLoading: boolean;
   data: { valueCommon: BigNumber | null; position: AddressPosition | null };
 } {
-  const { data: network } = useNetworkConfig(chain.toString(), { suspense });
-  const isSupportedByBackend = network?.supports_positions;
+  const { data: network } = useNetworkInfo(chain.toString(), { suspense });
+  const isSupportedByBackend = network?.flags.supportsPositions;
   const nativeAddressPosition = useNativeAddressPosition({
     address,
     chain,

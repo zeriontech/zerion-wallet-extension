@@ -1,12 +1,12 @@
 import { createChain } from 'src/modules/networks/Chain';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { Networks } from 'src/modules/networks/Networks';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import type { ChainGasPrice } from './types';
 
 export async function fetchGasPriceFromNode(
-  network: NetworkConfig
+  network: NetworkInfo
 ): Promise<ChainGasPrice> {
   const url = Networks.getNetworkRpcUrlInternal(network);
   if (!url) {
@@ -39,7 +39,7 @@ export async function fetchGasPrice({
   source,
   apiClient,
 }: {
-  network: NetworkConfig;
+  network: NetworkInfo;
   source: 'testnet' | 'mainnet';
   apiClient: ZerionApiClient;
 }) {

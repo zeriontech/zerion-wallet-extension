@@ -7,7 +7,8 @@ import {
   usePreferences,
 } from 'src/ui/features/preferences/usePreferences';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { useNetworkConfig } from 'src/modules/networks/useNetworks';
+import { useNetworkInfo } from 'src/modules/networks/useNetworks';
+import { Networks } from 'src/modules/networks/Networks';
 import { queryClient } from './queryClient';
 
 const QUERY_NAME = 'defi-sdk/gasPrices';
@@ -40,7 +41,7 @@ export function useGasPrices(
 ) {
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
-  const { data: network } = useNetworkConfig(chain?.toString() ?? null);
+  const { data: network } = useNetworkInfo(chain?.toString() ?? null);
   return useQuery({
     queryKey: [QUERY_NAME, source, network],
     queryFn: async () => {
@@ -50,7 +51,7 @@ export function useGasPrices(
       return fetchGasPrice({ network, source, apiClient: ZerionAPI });
     },
     useErrorBoundary: true,
-    enabled: Boolean(network && network.standard === 'eip155'),
+    enabled: Boolean(network && Networks.isEip155(network)),
     suspense,
     refetchInterval,
     keepPreviousData,

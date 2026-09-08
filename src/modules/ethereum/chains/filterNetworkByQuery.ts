@@ -1,5 +1,5 @@
 import { normalizedContains } from 'normalized-contains';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 
 function contains(str1?: string, str2?: string) {
@@ -10,14 +10,14 @@ function contains(str1?: string, str2?: string) {
 }
 
 export function filterNetworksByQuery(query: string) {
-  return (item: NetworkConfig) =>
+  return (item: NetworkInfo) =>
     contains(item.id, query) ||
     (Networks.isEip155(item) && contains(Networks.getChainId(item), query)) ||
     contains(item.name, query) ||
-    contains(item.native_asset?.name, query) ||
-    contains(item.native_asset?.symbol, query) ||
-    contains(item.rpc_url_public?.join(' '), query) ||
-    contains(item.explorer_home_url || '', query);
+    contains(item.baseAsset?.name, query) ||
+    contains(item.baseAsset?.symbol, query) ||
+    contains(item.publicRpcUrl, query) ||
+    contains(item.explorer?.homeUrl, query);
 }
 
 /**
@@ -27,17 +27,17 @@ export function filterNetworksByQuery(query: string) {
  * 3. Networks matching other fields via filterNetworksByQuery (lowest priority)
  */
 export function filterAndSortNetworksByQuery(
-  networks: NetworkConfig[],
+  networks: NetworkInfo[],
   query: string
-): NetworkConfig[] {
+): NetworkInfo[] {
   if (!query) {
     return networks;
   }
 
   const normalizedQuery = query.toLowerCase();
-  const startsWithMatches: NetworkConfig[] = [];
-  const nameContainsMatches: NetworkConfig[] = [];
-  const otherMatches: NetworkConfig[] = [];
+  const startsWithMatches: NetworkInfo[] = [];
+  const nameContainsMatches: NetworkInfo[] = [];
+  const otherMatches: NetworkInfo[] = [];
   const processedIds = new Set<string>();
 
   for (const network of networks) {
@@ -50,7 +50,10 @@ export function filterAndSortNetworksByQuery(
     const networkId = network.id.toLowerCase();
 
     // Priority 1: Name or ID starts with query
-    if (networkName.startsWith(normalizedQuery) || networkId.startsWith(normalizedQuery)) {
+    if (
+      networkName.startsWith(normalizedQuery) ||
+      networkId.startsWith(normalizedQuery)
+    ) {
       startsWithMatches.push(network);
       processedIds.add(network.id);
     }

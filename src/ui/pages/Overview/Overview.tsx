@@ -11,7 +11,7 @@ import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { createChain } from 'src/modules/networks/Chain';
 import {
   useMainnetNetwork,
-  useNetworkConfig,
+  useNetworkInfo,
   useNetworks,
 } from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -145,7 +145,7 @@ function TestnetworkGuard({
   if (
     dappChainStr &&
     network &&
-    testnetModeEnabled !== Boolean(network.is_testnet)
+    testnetModeEnabled !== Boolean(network.testnet)
   ) {
     return renderGuard({ testnetModeEnabled });
   }
@@ -315,7 +315,7 @@ function OverviewComponent() {
     );
   });
   const addressType = address ? getAddressType(address) : null;
-  const { data: network } = useNetworkConfig(selectedChain ?? null);
+  const { data: network } = useNetworkInfo(selectedChain ?? null);
 
   useEffect(() => {
     if (

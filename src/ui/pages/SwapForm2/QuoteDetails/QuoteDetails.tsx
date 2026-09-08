@@ -190,11 +190,11 @@ export function QuoteDetails({
 
   const inputChain = createChain(formState.inputChain);
   const inputChainName = networks.getChainName(inputChain);
-  const inputChainIconUrl = networks.getByNetworkId(inputChain)?.icon_url;
+  const inputChainIconUrl = networks.getByNetworkId(inputChain)?.iconUrl;
 
   const outputChain = createChain(formState.outputChain);
   const outputChainName = networks.getChainName(outputChain);
-  const outputChainIconUrl = networks.getByNetworkId(outputChain)?.icon_url;
+  const outputChainIconUrl = networks.getByNetworkId(outputChain)?.iconUrl;
 
   const isCrossChain = formState.outputChain !== formState.inputChain;
 

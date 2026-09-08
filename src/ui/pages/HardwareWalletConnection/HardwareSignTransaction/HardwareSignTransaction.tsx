@@ -12,7 +12,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { Chain } from 'src/modules/networks/Chain';
 import { Networks } from 'src/modules/networks/Networks';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { TextPulse } from 'src/ui/components/TextPulse';
 import {
@@ -140,7 +140,7 @@ export async function prepareForSignByLedger({
 }: {
   transaction: IncomingTransaction;
   address: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
 }) {
   const value = { ...transaction };
   if (value.nonce == null) {

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { isTruthy } from 'is-truthy-ts';
 import { createChain } from 'src/modules/networks/Chain';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { NetworkConfigMetaData } from 'src/modules/networks/Networks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
@@ -37,7 +37,7 @@ function NetworkDetail({
   network,
 }: {
   metadataRecord: Record<string, NetworkConfigMetaData | undefined>;
-  network: NetworkConfig;
+  network: NetworkInfo;
 }) {
   const metadata = metadataRecord[network.id];
   const originUrl = useMemo(() => {
@@ -105,9 +105,9 @@ export function NetworkList({
 }: {
   title?: string | null;
   networks: Networks;
-  networkList: NetworkConfig[];
-  getItemTo?: (item: NetworkConfig) => string;
-  getItemIconEnd?: (item: NetworkConfig) => React.ReactNode;
+  networkList: NetworkInfo[];
+  getItemTo?: (item: NetworkInfo) => string;
+  getItemIconEnd?: (item: NetworkInfo) => React.ReactNode;
   previousListLength?: number;
 }) {
   const metadataRecord = useMemo(
@@ -158,7 +158,7 @@ export function NetworkList({
               image={
                 <NetworkIcon
                   size={24}
-                  src={network.icon_url}
+                  src={network.iconUrl}
                   name={network.name}
                 />
               }

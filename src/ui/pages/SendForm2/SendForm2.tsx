@@ -326,7 +326,7 @@ function SendFormComponent({
         simulationResult,
         backendError: sendError,
         assetSymbol: position?.fungible.symbol ?? null,
-        nativeAssetSymbol: sendNetwork?.native_asset?.symbol ?? null,
+        nativeAssetSymbol: sendNetwork?.baseAsset?.symbol ?? null,
       }),
     [simulationResult, sendError, position, sendNetwork]
   );
@@ -466,7 +466,7 @@ function SendFormComponent({
           toaster: {
             kind: 'send',
             token: { symbol: tokenSymbol, iconUrl: tokenIconUrl },
-            chain: { iconUrl: sendNetwork.icon_url ?? null },
+            chain: { iconUrl: sendNetwork.iconUrl ?? null },
             recipient: {
               address: formState.to,
               name: recipientName ?? undefined,
@@ -568,7 +568,7 @@ function SendFormComponent({
       simulationResult: result,
       backendError: sendError,
       assetSymbol: position?.fungible.symbol ?? null,
-      nativeAssetSymbol: sendNetwork?.native_asset?.symbol ?? null,
+      nativeAssetSymbol: sendNetwork?.baseAsset?.symbol ?? null,
     });
     if (fresh.blocksAutoSign) {
       setHasSimulated(true);

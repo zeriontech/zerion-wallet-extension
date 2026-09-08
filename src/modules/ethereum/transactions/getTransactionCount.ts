@@ -1,6 +1,6 @@
 import { SLOW_MODE } from 'src/env/config';
 import { Networks } from 'src/modules/networks/Networks';
-import { type NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import { type NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import { wait } from 'src/shared/wait';
 import { invariant } from 'src/shared/invariant';
@@ -13,7 +13,7 @@ export async function getTransactionCount({
   defaultBlock = 'latest',
 }: {
   address: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
   defaultBlock?: 'latest' | 'earliest' | 'pending' | 'genesis';
 }) {
   const url = Networks.getNetworkRpcUrlInternal(network);

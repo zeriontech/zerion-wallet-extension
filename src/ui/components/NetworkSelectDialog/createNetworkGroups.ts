@@ -1,5 +1,5 @@
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
 import { bringToFront } from 'src/shared/array-mutations';
@@ -12,11 +12,11 @@ type ListGroup<T> = {
   items: T[];
 };
 
-export type NetworkGroups = ListGroup<NetworkConfig>[];
+export type NetworkGroups = ListGroup<NetworkInfo>[];
 
 function compareNetworks(
-  a: NetworkConfig,
-  b: NetworkConfig,
+  a: NetworkInfo,
+  b: NetworkInfo,
   chainDistribution: ChainDistribution | null
 ) {
   const aString = a.name.toString().toLowerCase();
@@ -44,16 +44,16 @@ export function createGroups({
   networks: Networks;
   chainDistribution: ChainDistribution | null;
   testnetMode: boolean;
-  filterPredicate?: (network: NetworkConfig) => boolean;
+  filterPredicate?: (network: NetworkInfo) => boolean;
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
   const allNetworks = networks
     .getDefaultNetworks(standard)
-    .filter((item) => Boolean(item.is_testnet) === testnetMode)
+    .filter((item) => Boolean(item.testnet) === testnetMode)
     .filter(filterPredicate);
   const pinnedNetworkId =
     standard === 'evm' ? NetworkId.Zero : NetworkId.Solana;
-  const otherNetworkPredicate = (network: NetworkConfig) => {
+  const otherNetworkPredicate = (network: NetworkInfo) => {
     return (
       network.id !== pinnedNetworkId &&
       (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id))

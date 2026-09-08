@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { isTruthy } from 'is-truthy-ts';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 import {
   useNetworks,
@@ -170,7 +170,7 @@ function NetworkList({
   title?: string | null;
   value: string;
   networks: Networks;
-  networkList: NetworkConfig[];
+  networkList: NetworkInfo[];
   chainDistribution: ChainDistribution | null;
   previousListLength?: number;
   showAllNetworksOption?: boolean;
@@ -229,7 +229,7 @@ function NetworkList({
             icon={
               <NetworkIcon
                 size={24}
-                src={network.icon_url}
+                src={network.iconUrl}
                 name={network.name}
               />
             }
@@ -331,7 +331,7 @@ function SearchView({
   query: string;
   chainDistribution: ChainDistribution | null;
   testnetMode: boolean;
-  filterPredicate: (network: NetworkConfig) => boolean;
+  filterPredicate: (network: NetworkInfo) => boolean;
 }) {
   const { networks, isLoading } = useSearchNetworks({ query });
   const items = useMemo(() => {
@@ -392,7 +392,7 @@ function AddressNetworkList({
   networks: Networks;
   standard: BlockchainType | 'all';
   chainDistribution: ChainDistribution | null;
-  filterPredicate: (network: NetworkConfig) => boolean;
+  filterPredicate: (network: NetworkInfo) => boolean;
   testnetMode: boolean;
   showAllNetworksOption?: boolean;
   showEcosystemHint: boolean;
@@ -557,7 +557,7 @@ export function NetworkSelectDialog({
   standard: BlockchainType | 'all';
   chainDistribution: ChainDistribution | null;
   showAllNetworksOption?: boolean;
-  filterPredicate?: (network: NetworkConfig) => boolean;
+  filterPredicate?: (network: NetworkInfo) => boolean;
   showEcosystemHint: boolean;
 }) {
   const chains = useMemo(

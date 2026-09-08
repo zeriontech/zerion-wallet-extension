@@ -1,0 +1,2754 @@
+[
+  {
+    "id": "ethereum",
+    "name": "Ethereum",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/ethereum.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1
+      }
+    },
+    "explorer": {
+      "name": "etherscan",
+      "txUrl": "https://etherscan.io/tx/{HASH}",
+      "tokenUrl": "https://etherscan.io/token/{ADDRESS}",
+      "homeUrl": "https://etherscan.io",
+      "addressUrl": "https://etherscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "ethereum": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/ethereum",
+    "publicRpcUrl": "https://ethereum-rpc.publicnode.com"
+  },
+  {
+    "id": "solana",
+    "name": "Solana",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/solana.png",
+    "testnet": false,
+    "specification": {
+      "solana": {
+        "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
+      }
+    },
+    "explorer": {
+      "name": "Solscan",
+      "txUrl": "https://solscan.io/tx/{HASH}",
+      "tokenUrl": "https://solscan.io/token/{ADDRESS}",
+      "homeUrl": "https://solscan.io",
+      "addressUrl": "https://solscan.io/account/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "11111111111111111111111111111111",
+      "name": "Solana",
+      "symbol": "SOL",
+      "iconUrl": "https://cdn.zerion.io/11111111111111111111111111111111.png",
+      "implementations": {
+        "solana": {
+          "address": null,
+          "decimals": 9
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": false,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/solana",
+    "publicRpcUrl": "https://free.rpcpool.com"
+  },
+  {
+    "id": "base",
+    "name": "Base",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/8453",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 8453
+      }
+    },
+    "explorer": {
+      "name": "basescan",
+      "txUrl": "https://basescan.org/tx/{HASH}",
+      "tokenUrl": "https://basescan.org/token/{ADDRESS}",
+      "homeUrl": "https://basescan.org",
+      "addressUrl": "https://basescan.org/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "base": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/base",
+    "publicRpcUrl": "https://mainnet.base.org/"
+  },
+  {
+    "id": "binance-smart-chain",
+    "name": "BNB Chain",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/bsc.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 56
+      }
+    },
+    "explorer": {
+      "name": "bscscan",
+      "txUrl": "https://bscscan.com/tx/{HASH}",
+      "tokenUrl": "https://bscscan.com/token/{ADDRESS}",
+      "homeUrl": "https://bscscan.com",
+      "addressUrl": "https://bscscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0xb8c77482e45f1f44de1745f52c74426c631bdd52",
+      "name": "BNB",
+      "symbol": "BNB",
+      "iconUrl": "https://cdn.zerion.io/0xb8c77482e45f1f44de1745f52c74426c631bdd52.png",
+      "implementations": {
+        "binance-smart-chain": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/binance-smart-chain",
+    "publicRpcUrl": "https://bsc-dataseed1.bnbchain.org"
+  },
+  {
+    "id": "hyperevm",
+    "name": "HyperEVM",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/999",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 999
+      }
+    },
+    "explorer": {
+      "name": "HyperEVM Explorer",
+      "txUrl": "https://hyperevmscan.io/tx/{HASH}",
+      "tokenUrl": "https://hyperevmscan.io/token/{ADDRESS}",
+      "homeUrl": "https://hyperevmscan.io",
+      "addressUrl": "https://hyperevmscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0bcc84bb-c150-4178-acaf-8e6ad58540b5",
+      "name": "Hyperliquid",
+      "symbol": "HYPE",
+      "iconUrl": "https://cdn.zerion.io/0bcc84bb-c150-4178-acaf-8e6ad58540b5.png",
+      "implementations": {
+        "hyperevm": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/hyperevm",
+    "publicRpcUrl": "https://rpc.hypurrscan.io"
+  },
+  {
+    "id": "arbitrum",
+    "name": "Arbitrum",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/arbitrum.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 42161
+      }
+    },
+    "explorer": {
+      "name": "Arbiscan",
+      "txUrl": "https://arbiscan.io/tx/{HASH}",
+      "tokenUrl": "https://arbiscan.io/token/{ADDRESS}",
+      "homeUrl": "https://arbiscan.io",
+      "addressUrl": "https://arbiscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "arbitrum": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/arbitrum",
+    "publicRpcUrl": "https://arb1.arbitrum.io/rpc"
+  },
+  {
+    "id": "monad",
+    "name": "Monad",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/monad.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 143
+      }
+    },
+    "explorer": {
+      "name": "Monad Vision",
+      "txUrl": "https://monadvision.com/tx/{HASH}",
+      "tokenUrl": "https://monadvision.com/token/{ADDRESS}",
+      "homeUrl": "https://monadvision.com",
+      "addressUrl": "https://monadvision.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "e25eb093-4540-456f-8067-8ffe2d85a278",
+      "name": "Monad",
+      "symbol": "MON",
+      "iconUrl": "https://cdn.zerion.io/e25eb093-4540-456f-8067-8ffe2d85a278.png",
+      "implementations": {
+        "monad": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/monad",
+    "publicRpcUrl": "https://rpc.monad.xyz"
+  },
+  {
+    "id": "ink",
+    "name": "Ink",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/ink.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 57073
+      }
+    },
+    "explorer": {
+      "name": "Ink Explorer",
+      "txUrl": "https://explorer.inkonchain.com/tx/{HASH}",
+      "tokenUrl": "https://explorer.inkonchain.com/token/{ADDRESS}",
+      "homeUrl": "https://explorer.inkonchain.com",
+      "addressUrl": "https://explorer.inkonchain.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "ink": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/ink",
+    "publicRpcUrl": "https://rpc-gel.inkonchain.com"
+  },
+  {
+    "id": "robinhood",
+    "name": "Robinhood",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/robinhood.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 4663
+      }
+    },
+    "explorer": {
+      "name": "robinscan",
+      "txUrl": "https://robinscan.io/tx/{HASH}",
+      "tokenUrl": "https://robinscan.io/token/{ADDRESS}",
+      "homeUrl": "https://robinscan.io",
+      "addressUrl": "https://robinscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "robinhood": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/robinhood",
+    "publicRpcUrl": "https://robinhood-rpc.publicnode.com"
+  },
+  {
+    "id": "avalanche",
+    "name": "Avalanche",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/avalanche.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 43114
+      }
+    },
+    "explorer": {
+      "name": "Etherscan",
+      "txUrl": "https://snowscan.xyz/tx/{HASH}",
+      "tokenUrl": "https://snowscan.xyz/token/{ADDRESS}",
+      "homeUrl": "https://snowscan.xyz",
+      "addressUrl": "https://snowscan.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "43e05303-bf43-48df-be45-352d7567ff39",
+      "name": "Avalanche",
+      "symbol": "AVAX",
+      "iconUrl": "https://cdn.zerion.io/43e05303-bf43-48df-be45-352d7567ff39.png",
+      "implementations": {
+        "avalanche": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/avalanche",
+    "publicRpcUrl": "https://api.avax.network/ext/bc/C/rpc"
+  },
+  {
+    "id": "plasma",
+    "name": "Plasma",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/plasma.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 9745
+      }
+    },
+    "explorer": {
+      "name": "Routescan",
+      "txUrl": "https://plasmascan.to/tx/{HASH}",
+      "tokenUrl": "https://plasmascan.to/token/{ADDRESS}",
+      "homeUrl": "https://plasmascan.to",
+      "addressUrl": "https://plasmascan.to/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "275ab283-4537-47eb-a590-0bd81e623dd6",
+      "name": "Plasma",
+      "symbol": "XPL",
+      "iconUrl": "https://cdn.zerion.io/275ab283-4537-47eb-a590-0bd81e623dd6.png",
+      "implementations": {
+        "plasma": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/plasma",
+    "publicRpcUrl": "https://rpc.plasma.to"
+  },
+  {
+    "id": "optimism",
+    "name": "Optimism",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/optimism.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 10
+      }
+    },
+    "explorer": {
+      "name": "etherscan",
+      "txUrl": "https://optimistic.etherscan.io/tx/{HASH}",
+      "tokenUrl": "https://optimistic.etherscan.io/token/{ADDRESS}",
+      "homeUrl": "https://optimistic.etherscan.io",
+      "addressUrl": "https://optimistic.etherscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "optimism": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/optimism",
+    "publicRpcUrl": "https://mainnet.optimism.io"
+  },
+  {
+    "id": "polygon",
+    "name": "Polygon",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/polygon.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 137
+      }
+    },
+    "explorer": {
+      "name": "polygonscan",
+      "txUrl": "https://polygonscan.com/tx/{HASH}",
+      "tokenUrl": "https://polygonscan.com/token/{ADDRESS}",
+      "homeUrl": "https://polygonscan.com",
+      "addressUrl": "https://polygonscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "7560001f-9b6d-4115-b14a-6c44c4334ef2",
+      "name": "Polygon",
+      "symbol": "POL",
+      "iconUrl": "https://cdn.zerion.io/7560001f-9b6d-4115-b14a-6c44c4334ef2.png",
+      "implementations": {
+        "polygon": {
+          "address": "0x0000000000000000000000000000000000001010",
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/polygon",
+    "publicRpcUrl": "https://polygon.drpc.org"
+  },
+  {
+    "id": "okbchain",
+    "name": "X Layer",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/okx.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 196
+      }
+    },
+    "explorer": {
+      "name": "OKLink",
+      "txUrl": "https://www.oklink.com/xlayer/tx/{HASH}",
+      "tokenUrl": "https://www.oklink.com/xlayer/token/{ADDRESS}",
+      "homeUrl": "https://www.oklink.com/xlayer",
+      "addressUrl": "https://www.oklink.com/xlayer/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0x75231f58b43240c9718dd58b4967c5114342a86c",
+      "name": "OKB",
+      "symbol": "OKB",
+      "iconUrl": "https://cdn.zerion.io/0x75231f58b43240c9718dd58b4967c5114342a86c.png",
+      "implementations": {
+        "okbchain": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/okbchain",
+    "publicRpcUrl": "https://rpc.xlayer.tech"
+  },
+  {
+    "id": "mantle",
+    "name": "Mantle",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/mantle.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 5000
+      }
+    },
+    "explorer": {
+      "name": "mantlescan",
+      "txUrl": "https://mantlescan.xyz/tx/{HASH}",
+      "tokenUrl": "https://mantlescan.xyz/token/{ADDRESS}",
+      "homeUrl": "https://mantlescan.xyz",
+      "addressUrl": "https://mantlescan.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "f8e50e85-dc0b-4820-a1d8-1f98db6e60f8",
+      "name": "Mantle",
+      "symbol": "MNT",
+      "iconUrl": "https://cdn.zerion.io/f8e50e85-dc0b-4820-a1d8-1f98db6e60f8.png",
+      "implementations": {
+        "mantle": {
+          "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/mantle",
+    "publicRpcUrl": "https://rpc.mantle.xyz"
+  },
+  {
+    "id": "xdai",
+    "name": "Gnosis Chain",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/xdai.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 100
+      }
+    },
+    "explorer": {
+      "name": "gnosisscan",
+      "txUrl": "https://gnosisscan.io/tx/{HASH}",
+      "tokenUrl": "https://gnosisscan.io/token/{ADDRESS}",
+      "homeUrl": "https://gnosisscan.io",
+      "addressUrl": "https://gnosisscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "b99ea659-0ab1-4832-bf44-3bf1cc1acac7",
+      "name": "xDAI",
+      "symbol": "XDAI",
+      "iconUrl": "https://cdn.zerion.io/b99ea659-0ab1-4832-bf44-3bf1cc1acac7.png",
+      "implementations": {
+        "xdai": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/xdai",
+    "publicRpcUrl": "https://gnosis-rpc.publicnode.com"
+  },
+  {
+    "id": "katana",
+    "name": "Katana",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/katana.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 747474
+      }
+    },
+    "explorer": {
+      "name": "katanascan",
+      "txUrl": "https://katanascan.com/tx/{HASH}",
+      "tokenUrl": "https://katanascan.com/token/{ADDRESS}",
+      "homeUrl": "https://katanascan.com",
+      "addressUrl": "https://katanascan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "katana": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/katana",
+    "publicRpcUrl": "https://rpc.katana.network"
+  },
+  {
+    "id": "tempo",
+    "name": "Tempo",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/tempo.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 4217
+      }
+    },
+    "explorer": {
+      "name": "tempo-explorer",
+      "txUrl": "https://explore.tempo.xyz/tx/{HASH}",
+      "tokenUrl": "https://explore.tempo.xyz/token/{ADDRESS}",
+      "homeUrl": "https://explore.tempo.xyz",
+      "addressUrl": "https://explore.tempo.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "",
+      "name": "USD",
+      "symbol": "USD",
+      "iconUrl": null,
+      "implementations": {
+        "tempo": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": false,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/tempo",
+    "publicRpcUrl": "https://rpc.mainnet.tempo.xyz"
+  },
+  {
+    "id": "berachain",
+    "name": "Berachain",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/berra.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 80094
+      }
+    },
+    "explorer": {
+      "name": "Berascan Berachain Block Explorer",
+      "txUrl": "https://berascan.com/tx/{HASH}",
+      "tokenUrl": "https://berascan.com/token/{ADDRESS}",
+      "homeUrl": "https://berascan.com",
+      "addressUrl": "https://berascan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "7795d362-16cd-4418-b715-03e99e360823",
+      "name": "Bera",
+      "symbol": "BERA",
+      "iconUrl": "https://cdn.zerion.io/7795d362-16cd-4418-b715-03e99e360823.png",
+      "implementations": {
+        "berachain": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/berachain",
+    "publicRpcUrl": "https://rpc.berachain.com"
+  },
+  {
+    "id": "sei",
+    "name": "Sei",
+    "iconUrl": "https://protocol-icons.s3.amazonaws.com/icons/sei.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1329
+      }
+    },
+    "explorer": {
+      "name": "Seiscan",
+      "txUrl": "https://seiscan.io/tx/{HASH}",
+      "tokenUrl": "https://seiscan.io/token/{ADDRESS}",
+      "homeUrl": "https://seiscan.io",
+      "addressUrl": "https://seiscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "d1706cbf-d14c-4065-8f8e-cf428dd5bd98",
+      "name": "Sei",
+      "symbol": "SEI",
+      "iconUrl": "https://cdn.zerion.io/d1706cbf-d14c-4065-8f8e-cf428dd5bd98.png",
+      "implementations": {
+        "sei": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/sei",
+    "publicRpcUrl": "https://evm-rpc.sei-apis.com"
+  },
+  {
+    "id": "world",
+    "name": "World Chain",
+    "iconUrl": "https://protocol-icons.s3.amazonaws.com/worldchain.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 480
+      }
+    },
+    "explorer": {
+      "name": "etherscan",
+      "txUrl": "https://worldscan.org/tx/{HASH}",
+      "tokenUrl": "https://worldscan.org/token/{ADDRESS}",
+      "homeUrl": "https://worldscan.org",
+      "addressUrl": "https://worldscan.org/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "world": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/world",
+    "publicRpcUrl": "https://worldchain-mainnet.g.alchemy.com/public"
+  },
+  {
+    "id": "linea",
+    "name": "Linea",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/59144",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 59144
+      }
+    },
+    "explorer": {
+      "name": "Etherscan",
+      "txUrl": "https://lineascan.build/tx/{HASH}",
+      "tokenUrl": "https://lineascan.build/token/{ADDRESS}",
+      "homeUrl": "https://lineascan.build",
+      "addressUrl": "https://lineascan.build/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "linea": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/linea",
+    "publicRpcUrl": "https://rpc.linea.build"
+  },
+  {
+    "id": "megaeth",
+    "name": "MegaETH",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/megaeth.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 4326
+      }
+    },
+    "explorer": {
+      "name": "MegaETH Etherscan",
+      "txUrl": "https://mega.etherscan.io/tx/{HASH}",
+      "tokenUrl": "https://mega.etherscan.io/token/{ADDRESS}",
+      "homeUrl": "https://mega.etherscan.io",
+      "addressUrl": "https://mega.etherscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "megaeth": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/megaeth",
+    "publicRpcUrl": "https://mainnet.megaeth.com/rpc"
+  },
+  {
+    "id": "bob",
+    "name": "BOB",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/bob.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 60808
+      }
+    },
+    "explorer": {
+      "name": "bobscout",
+      "txUrl": "https://explorer.gobob.xyz/tx/{HASH}",
+      "tokenUrl": "https://explorer.gobob.xyz/token/{ADDRESS}",
+      "homeUrl": "https://explorer.gobob.xyz",
+      "addressUrl": "https://explorer.gobob.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "bob": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/bob",
+    "publicRpcUrl": "https://rpc.gobob.xyz"
+  },
+  {
+    "id": "unichain",
+    "name": "Unichain",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/unichain.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 130
+      }
+    },
+    "explorer": {
+      "name": "Unichain Mainnet Explorer",
+      "txUrl": "https://uniscan.xyz/tx/{HASH}",
+      "tokenUrl": "https://uniscan.xyz/token/{ADDRESS}",
+      "homeUrl": "https://uniscan.xyz",
+      "addressUrl": "https://uniscan.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "unichain": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/unichain",
+    "publicRpcUrl": "https://mainnet.unichain.org"
+  },
+  {
+    "id": "blast",
+    "name": "Blast",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/81457",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 81457
+      }
+    },
+    "explorer": {
+      "name": "Blastscan",
+      "txUrl": "https://blastscan.io/tx/{HASH}",
+      "tokenUrl": "https://blastscan.io/token/{ADDRESS}",
+      "homeUrl": "https://blastscan.io",
+      "addressUrl": "https://blastscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "blast": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/blast",
+    "publicRpcUrl": "https://rpc.blast.io"
+  },
+  {
+    "id": "fraxtal",
+    "name": "Fraxtal",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/fraxtal.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 252
+      }
+    },
+    "explorer": {
+      "name": "fraxscan",
+      "txUrl": "https://fraxscan.com/tx/{HASH}",
+      "tokenUrl": "https://fraxscan.com/token/{ADDRESS}",
+      "homeUrl": "https://fraxscan.com",
+      "addressUrl": "https://fraxscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
+      "name": "Frax Share",
+      "symbol": "FXS",
+      "iconUrl": "https://cdn.zerion.io/0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0.png",
+      "implementations": {
+        "fraxtal": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/fraxtal",
+    "publicRpcUrl": "https://rpc.frax.com"
+  },
+  {
+    "id": "sonic",
+    "name": "Sonic",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/sonic_s.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 146
+      }
+    },
+    "explorer": {
+      "name": "etherscan",
+      "txUrl": "https://sonicscan.org/tx/{HASH}",
+      "tokenUrl": "https://sonicscan.org/token/{ADDRESS}",
+      "homeUrl": "https://sonicscan.org",
+      "addressUrl": "https://sonicscan.org/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "ee334614-0375-469e-b699-e2df1bf4185d",
+      "name": "S",
+      "symbol": "S",
+      "iconUrl": "https://cdn.zerion.io/ee334614-0375-469e-b699-e2df1bf4185d.png",
+      "implementations": {
+        "sonic": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/sonic",
+    "publicRpcUrl": "https://rpc.soniclabs.com"
+  },
+  {
+    "id": "celo",
+    "name": "Celo",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/42220",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 42220
+      }
+    },
+    "explorer": {
+      "name": "Celoscan",
+      "txUrl": "https://celoscan.io/tx/{HASH}",
+      "tokenUrl": "https://celoscan.io/token/{ADDRESS}",
+      "homeUrl": "https://celoscan.io",
+      "addressUrl": "https://celoscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0x471ece3750da237f93b8e339c536989b8978a438",
+      "name": "Celo",
+      "symbol": "celo",
+      "iconUrl": "https://cdn.zerion.io/0x471ece3750da237f93b8e339c536989b8978a438.png",
+      "implementations": {
+        "celo": {
+          "address": "0x471ece3750da237f93b8e339c536989b8978a438",
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/celo",
+    "publicRpcUrl": "https://forno.celo.org"
+  },
+  {
+    "id": "zksync-era",
+    "name": "ZKsync Era",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/324",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 324
+      }
+    },
+    "explorer": {
+      "name": "zkSync Era Block Explorer",
+      "txUrl": "https://explorer.zksync.io/tx/{HASH}",
+      "tokenUrl": "https://explorer.zksync.io/token/{ADDRESS}",
+      "homeUrl": "https://explorer.zksync.io",
+      "addressUrl": "https://explorer.zksync.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "zksync-era": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/zksync-era",
+    "publicRpcUrl": "https://mainnet.era.zksync.io"
+  },
+  {
+    "id": "xinfin-xdc",
+    "name": "XDC",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/xdc.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 50
+      }
+    },
+    "explorer": {
+      "name": "xdcscan",
+      "txUrl": "https://xdcscan.com/tx/{HASH}",
+      "tokenUrl": "https://xdcscan.com/token/{ADDRESS}",
+      "homeUrl": "https://xdcscan.com",
+      "addressUrl": "https://xdcscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "49d48cd0-5c09-4b3f-9695-d6f9ccc23c39",
+      "name": "XDC",
+      "symbol": "XDC",
+      "iconUrl": "https://cdn.zerion.io/49d48cd0-5c09-4b3f-9695-d6f9ccc23c39.png",
+      "implementations": {
+        "xinfin-xdc": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/xinfin-xdc",
+    "publicRpcUrl": "https://erpc.xinfin.network"
+  },
+  {
+    "id": "ronin",
+    "name": "Ronin",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/2020",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 2020
+      }
+    },
+    "explorer": {
+      "name": "Ronin Block Explorer",
+      "txUrl": "https://app.roninchain.com/tx/{HASH}",
+      "tokenUrl": "https://app.roninchain.com/token/{ADDRESS}",
+      "homeUrl": "https://app.roninchain.com",
+      "addressUrl": "https://app.roninchain.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "3e1f750c-aff1-4918-8a18-4e71f28ffa47",
+      "name": "Ronin",
+      "symbol": "RON",
+      "iconUrl": "https://cdn.zerion.io/3e1f750c-aff1-4918-8a18-4e71f28ffa47.png",
+      "implementations": {
+        "ronin": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/ronin",
+    "publicRpcUrl": "https://api.roninchain.com/rpc"
+  },
+  {
+    "id": "abstract",
+    "name": "Abstract",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/abstract.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 2741
+      }
+    },
+    "explorer": {
+      "name": "Etherscan",
+      "txUrl": "https://abscan.org/tx/{HASH}",
+      "tokenUrl": "https://abscan.org/token/{ADDRESS}",
+      "homeUrl": "https://abscan.org",
+      "addressUrl": "https://abscan.org/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "abstract": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/abstract",
+    "publicRpcUrl": "https://api.mainnet.abs.xyz"
+  },
+  {
+    "id": "scroll",
+    "name": "Scroll",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/scroll.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 534352
+      }
+    },
+    "explorer": {
+      "name": "Scrollscan",
+      "txUrl": "https://scrollscan.com/tx/{HASH}",
+      "tokenUrl": "https://scrollscan.com/token/{ADDRESS}",
+      "homeUrl": "https://scrollscan.com",
+      "addressUrl": "https://scrollscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "scroll": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/scroll",
+    "publicRpcUrl": "https://rpc.scroll.io"
+  },
+  {
+    "id": "fantom",
+    "name": "Fantom",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/fantom.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 250
+      }
+    },
+    "explorer": {
+      "name": "ftmscan",
+      "txUrl": "https://ftmscan.com/tx/{HASH}",
+      "tokenUrl": "https://ftmscan.com/token/{ADDRESS}",
+      "homeUrl": "https://ftmscan.com",
+      "addressUrl": "https://ftmscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0x4e15361fd6b4bb609fa63c81a2be19d873717870",
+      "name": "Fantom Token",
+      "symbol": "FTM",
+      "iconUrl": "https://cdn.zerion.io/0x4e15361fd6b4bb609fa63c81a2be19d873717870.png",
+      "implementations": {
+        "fantom": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/fantom",
+    "publicRpcUrl": "https://rpc.ftm.tools"
+  },
+  {
+    "id": "soneium",
+    "name": "Soneium",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/soneium.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1868
+      }
+    },
+    "explorer": {
+      "name": "blockscout",
+      "txUrl": "https://soneium.blockscout.com/tx/{HASH}",
+      "tokenUrl": "https://soneium.blockscout.com/token/{ADDRESS}",
+      "homeUrl": "https://soneium.blockscout.com",
+      "addressUrl": "https://soneium.blockscout.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "soneium": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/soneium",
+    "publicRpcUrl": "https://rpc.soneium.org"
+  },
+  {
+    "id": "0g",
+    "name": "0G Mainnet",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/0g.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 16661
+      }
+    },
+    "explorer": {
+      "name": "0G Chainscan",
+      "txUrl": "https://chainscan.0g.ai/tx/{HASH}",
+      "tokenUrl": "https://chainscan.0g.ai/token/{ADDRESS}",
+      "homeUrl": "https://chainscan.0g.ai",
+      "addressUrl": "https://chainscan.0g.ai/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "cfa3c748-e26a-4894-b168-8d1c9f0edcdb",
+      "name": "0G",
+      "symbol": "0G",
+      "iconUrl": "https://cdn.zerion.io/cfa3c748-e26a-4894-b168-8d1c9f0edcdb.png",
+      "implementations": {
+        "0g": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/0g",
+    "publicRpcUrl": "https://evmrpc.0g.ai"
+  },
+  {
+    "id": "manta-pacific",
+    "name": "Manta Pacific",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/manta.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 169
+      }
+    },
+    "explorer": {
+      "name": "manta-pacific Explorer",
+      "txUrl": "https://pacific-explorer.manta.network/tx/{HASH}",
+      "tokenUrl": "https://pacific-explorer.manta.network/token/{ADDRESS}",
+      "homeUrl": "https://pacific-explorer.manta.network",
+      "addressUrl": "https://pacific-explorer.manta.network/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "manta-pacific": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/manta-pacific",
+    "publicRpcUrl": "https://pacific-rpc.manta.network/http"
+  },
+  {
+    "id": "aurora",
+    "name": "Aurora",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/aurora.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1313161554
+      }
+    },
+    "explorer": {
+      "name": "Aurora Explorer",
+      "txUrl": "https://explorer.aurora.dev/tx/{HASH}",
+      "tokenUrl": "https://explorer.aurora.dev/token/{ADDRESS}",
+      "homeUrl": "https://explorer.aurora.dev",
+      "addressUrl": "https://explorer.aurora.dev/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "aurora": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/aurora",
+    "publicRpcUrl": "https://mainnet.aurora.dev"
+  },
+  {
+    "id": "cronos-zkevm",
+    "name": "Cronos zkEVM",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/cronoszkevm.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 388
+      }
+    },
+    "explorer": {
+      "name": "Cronos zkEVM",
+      "txUrl": "https://explorer.zkevm.cronos.org//tx/{HASH}",
+      "tokenUrl": "https://explorer.zkevm.cronos.org//token/{ADDRESS}",
+      "homeUrl": "https://explorer.zkevm.cronos.org/",
+      "addressUrl": "https://explorer.zkevm.cronos.org//address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "56f2a7d9-87e1-47da-90ab-ea0b5ae004c3",
+      "name": "Cronos zkEVM CRO",
+      "symbol": "zkCRO",
+      "iconUrl": "https://token-icons.s3.us-east-1.amazonaws.com/56f2a7d9-87e1-47da-90ab-ea0b5ae004c3.png",
+      "implementations": {
+        "cronos-zkevm": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/cronos-zkevm",
+    "publicRpcUrl": "https://mainnet.zkevm.cronos.org"
+  },
+  {
+    "id": "ape",
+    "name": "Ape Chain",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/apechain.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 33139
+      }
+    },
+    "explorer": {
+      "name": "ApeChain Explorer",
+      "txUrl": "https://apescan.io/tx/{HASH}",
+      "tokenUrl": "https://apescan.io/token/{ADDRESS}",
+      "homeUrl": "https://apescan.io",
+      "addressUrl": "https://apescan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0x4d224452801aced8b2f0aebe155379bb5d594381",
+      "name": "ApeCoin",
+      "symbol": "APE",
+      "iconUrl": "https://cdn.zerion.io/0x4d224452801aced8b2f0aebe155379bb5d594381.png",
+      "implementations": {
+        "ape": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/ape",
+    "publicRpcUrl": "https://rpc.apechain.com"
+  },
+  {
+    "id": "metis-andromeda",
+    "name": "Metis Andromeda",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/metis.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1088
+      }
+    },
+    "explorer": {
+      "name": "blockscout",
+      "txUrl": "https://andromeda-explorer.metis.io/tx/{HASH}",
+      "tokenUrl": "https://andromeda-explorer.metis.io/token/{ADDRESS}",
+      "homeUrl": "https://andromeda-explorer.metis.io",
+      "addressUrl": "https://andromeda-explorer.metis.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0x9e32b13ce7f2e80a01932b42553652e053d6ed8e",
+      "name": "Metis Token",
+      "symbol": "METIS",
+      "iconUrl": "https://cdn.zerion.io/0x9e32b13ce7f2e80a01932b42553652e053d6ed8e.png",
+      "implementations": {
+        "metis-andromeda": {
+          "address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/metis-andromeda",
+    "publicRpcUrl": "https://andromeda.metis.io/?owner=1088"
+  },
+  {
+    "id": "mode",
+    "name": "Mode",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/mode.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 34443
+      }
+    },
+    "explorer": {
+      "name": "Blockscout",
+      "txUrl": "https://explorer.mode.network/tx/{HASH}",
+      "tokenUrl": "https://explorer.mode.network/token/{ADDRESS}",
+      "homeUrl": "https://explorer.mode.network",
+      "addressUrl": "https://explorer.mode.network/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "mode": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/mode",
+    "publicRpcUrl": "https://mainnet.mode.network"
+  },
+  {
+    "id": "somnia",
+    "name": "Somnia",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/somnia.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 5031
+      }
+    },
+    "explorer": {
+      "name": "Somnia Mainnet",
+      "txUrl": "https://mainnet.somnia.w3us.site/tx/{HASH}",
+      "tokenUrl": "https://mainnet.somnia.w3us.site/token/{ADDRESS}",
+      "homeUrl": "https://mainnet.somnia.w3us.site",
+      "addressUrl": "https://mainnet.somnia.w3us.site/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "d8ea8d9c-ccd9-4e2a-ad7a-fa6dd5215446",
+      "name": "Somnia",
+      "symbol": "SOMI",
+      "iconUrl": "https://cdn.zerion.io/d8ea8d9c-ccd9-4e2a-ad7a-fa6dd5215446.png",
+      "implementations": {
+        "somnia": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/somnia",
+    "publicRpcUrl": "https://api.infra.mainnet.somnia.network"
+  },
+  {
+    "id": "opbnb",
+    "name": "opBNB",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/opBNB.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 204
+      }
+    },
+    "explorer": {
+      "name": "opbnbscan",
+      "txUrl": "https://mainnet.opbnbscan.com/tx/{HASH}",
+      "tokenUrl": "https://mainnet.opbnbscan.com/token/{ADDRESS}",
+      "homeUrl": "https://mainnet.opbnbscan.com",
+      "addressUrl": "https://mainnet.opbnbscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0xb8c77482e45f1f44de1745f52c74426c631bdd52",
+      "name": "BNB",
+      "symbol": "BNB",
+      "iconUrl": "https://cdn.zerion.io/0xb8c77482e45f1f44de1745f52c74426c631bdd52.png",
+      "implementations": {
+        "opbnb": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/opbnb",
+    "publicRpcUrl": "https://opbnb-mainnet-rpc.bnbchain.org"
+  },
+  {
+    "id": "cyber",
+    "name": "Cyber",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/cyber.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 7560
+      }
+    },
+    "explorer": {
+      "name": "Cyber Mainnet Explorer",
+      "txUrl": "https://cyberscan.co/tx/{HASH}",
+      "tokenUrl": "https://cyberscan.co/token/{ADDRESS}",
+      "homeUrl": "https://cyberscan.co",
+      "addressUrl": "https://cyberscan.co/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "cyber": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/cyber",
+    "publicRpcUrl": "https://cyber.alt.technology/"
+  },
+  {
+    "id": "polynomial",
+    "name": "Polynomial",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/polynomial.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 8008
+      }
+    },
+    "explorer": {
+      "name": "PolynomialExplorer",
+      "txUrl": "https://polynomialscan.io//tx/{HASH}",
+      "tokenUrl": "https://polynomialscan.io//token/{ADDRESS}",
+      "homeUrl": "https://polynomialscan.io/",
+      "addressUrl": "https://polynomialscan.io//address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "polynomial": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/polynomial",
+    "publicRpcUrl": "https://rpc.polynomial.fi"
+  },
+  {
+    "id": "lisk",
+    "name": "Lisk",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/lisk.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1135
+      }
+    },
+    "explorer": {
+      "name": "blockscout",
+      "txUrl": "https://blockscout.lisk.com/tx/{HASH}",
+      "tokenUrl": "https://blockscout.lisk.com/token/{ADDRESS}",
+      "homeUrl": "https://blockscout.lisk.com",
+      "addressUrl": "https://blockscout.lisk.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "lisk": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/lisk",
+    "publicRpcUrl": "https://rpc.api.lisk.com"
+  },
+  {
+    "id": "taiko",
+    "name": "Taiko",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/taiko.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 167000
+      }
+    },
+    "explorer": {
+      "name": "etherscan",
+      "txUrl": "https://taikoscan.io/tx/{HASH}",
+      "tokenUrl": "https://taikoscan.io/token/{ADDRESS}",
+      "homeUrl": "https://taikoscan.io",
+      "addressUrl": "https://taikoscan.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "taiko": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/taiko",
+    "publicRpcUrl": "https://rpc.mainnet.taiko.xyz"
+  },
+  {
+    "id": "tomochain",
+    "name": "Viction",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/viction.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 88
+      }
+    },
+    "explorer": {
+      "name": "VicScan",
+      "txUrl": "https://www.vicscan.xyz/tx/{HASH}",
+      "tokenUrl": "https://www.vicscan.xyz/token/{ADDRESS}",
+      "homeUrl": "https://www.vicscan.xyz",
+      "addressUrl": "https://www.vicscan.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "2912694c-c696-4549-acfb-f43a87938623",
+      "name": "Viction",
+      "symbol": "VIC",
+      "iconUrl": "https://cdn.zerion.io/2912694c-c696-4549-acfb-f43a87938623.png",
+      "implementations": {
+        "tomochain": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/tomochain",
+    "publicRpcUrl": "https://rpc.viction.xyz"
+  },
+  {
+    "id": "gravity-alpha",
+    "name": "Gravity Alpha",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/gravity.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1625
+      }
+    },
+    "explorer": {
+      "name": "Gravity Alpha Mainnet Explorer",
+      "txUrl": "https://explorer.gravity.xyz/tx/{HASH}",
+      "tokenUrl": "https://explorer.gravity.xyz/token/{ADDRESS}",
+      "homeUrl": "https://explorer.gravity.xyz",
+      "addressUrl": "https://explorer.gravity.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "21d6737a-ebfe-44f2-99b7-78e8282dc9ef",
+      "name": "Gravity",
+      "symbol": "G",
+      "iconUrl": "https://cdn.zerion.io/21d6737a-ebfe-44f2-99b7-78e8282dc9ef.png",
+      "implementations": {
+        "gravity-alpha": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/gravity-alpha",
+    "publicRpcUrl": "https://rpc.gravity.xyz"
+  },
+  {
+    "id": "zklink-nova",
+    "name": "ZkLink Nova",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/zklink.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 810180
+      }
+    },
+    "explorer": {
+      "name": "zkLink Nova Block Explorer",
+      "txUrl": "https://explorer.zklink.io/tx/{HASH}",
+      "tokenUrl": "https://explorer.zklink.io/token/{ADDRESS}",
+      "homeUrl": "https://explorer.zklink.io",
+      "addressUrl": "https://explorer.zklink.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "zklink-nova": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/zklink-nova",
+    "publicRpcUrl": "https://rpc.zklink.io"
+  },
+  {
+    "id": "lens",
+    "name": "Lens",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/lens.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 232
+      }
+    },
+    "explorer": {
+      "name": "Lens Block Explorer",
+      "txUrl": "https://explorer.lens.xyz/tx/{HASH}",
+      "tokenUrl": "https://explorer.lens.xyz/token/{ADDRESS}",
+      "homeUrl": "https://explorer.lens.xyz",
+      "addressUrl": "https://explorer.lens.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f",
+      "name": "Gho Token",
+      "symbol": "GHO",
+      "iconUrl": "https://cdn.zerion.io/0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f.png",
+      "implementations": {
+        "lens": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/lens",
+    "publicRpcUrl": "https://rpc.lens.xyz"
+  },
+  {
+    "id": "zora",
+    "name": "Zora",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/zora",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 7777777
+      }
+    },
+    "explorer": {
+      "name": "Zora Network Explorer",
+      "txUrl": "https://explorer.zora.energy/tx/{HASH}",
+      "tokenUrl": "https://explorer.zora.energy/token/{ADDRESS}",
+      "homeUrl": "https://explorer.zora.energy",
+      "addressUrl": "https://explorer.zora.energy/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "zora": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/zora",
+    "publicRpcUrl": "https://rpc.zora.energy/"
+  },
+  {
+    "id": "swellchain",
+    "name": "Swellchain",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/swellchain.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1923
+      }
+    },
+    "explorer": {
+      "name": "Swell Explorer",
+      "txUrl": "https://explorer.swellnetwork.io//tx/{HASH}",
+      "tokenUrl": "https://explorer.swellnetwork.io//token/{ADDRESS}",
+      "homeUrl": "https://explorer.swellnetwork.io/",
+      "addressUrl": "https://explorer.swellnetwork.io//address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "swellchain": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/swellchain",
+    "publicRpcUrl": "https://swell-mainnet.alt.technology"
+  },
+  {
+    "id": "redstone",
+    "name": "Redstone",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/redstone.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 690
+      }
+    },
+    "explorer": {
+      "name": "blockscout",
+      "txUrl": "https://explorer.redstone.xyz/tx/{HASH}",
+      "tokenUrl": "https://explorer.redstone.xyz/token/{ADDRESS}",
+      "homeUrl": "https://explorer.redstone.xyz",
+      "addressUrl": "https://explorer.redstone.xyz/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "redstone": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/redstone",
+    "publicRpcUrl": "https://rpc.redstonechain.com"
+  },
+  {
+    "id": "astar-zkevm",
+    "name": "Astar zkEVM",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/3776",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 3776
+      }
+    },
+    "explorer": {
+      "name": "Blockscout Astar zkEVM explorer",
+      "txUrl": "https://astar-zkevm.explorer.startale.com/tx/{HASH}",
+      "tokenUrl": "https://astar-zkevm.explorer.startale.com/token/{ADDRESS}",
+      "homeUrl": "https://astar-zkevm.explorer.startale.com",
+      "addressUrl": "https://astar-zkevm.explorer.startale.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "astar-zkevm": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": false,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": false,
+      "supportsSimulations": false
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/astar-zkevm",
+    "publicRpcUrl": "https://rpc.startale.com/astar-zkevm"
+  },
+  {
+    "id": "polygon-zkevm",
+    "name": "Polygon zkEVM",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/1101",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1101
+      }
+    },
+    "explorer": {
+      "name": "blockscout",
+      "txUrl": "https://zkevm.polygonscan.com/tx/{HASH}",
+      "tokenUrl": "https://zkevm.polygonscan.com/token/{ADDRESS}",
+      "homeUrl": "https://zkevm.polygonscan.com",
+      "addressUrl": "https://zkevm.polygonscan.com/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "polygon-zkevm": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/polygon-zkevm",
+    "publicRpcUrl": "https://zkevm-rpc.com"
+  },
+  {
+    "id": "degen",
+    "name": "Degen Chain",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/666666666",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 666666666
+      }
+    },
+    "explorer": {
+      "name": "Degen Explorer",
+      "txUrl": "https://explorer.degen.tips/tx/{HASH}",
+      "tokenUrl": "https://explorer.degen.tips/token/{ADDRESS}",
+      "homeUrl": "https://explorer.degen.tips",
+      "addressUrl": "https://explorer.degen.tips/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "d590ac9c-6971-42db-b900-0bd057033ae0",
+      "name": "DEGEN",
+      "symbol": "DEGEN",
+      "iconUrl": "https://cdn.zerion.io/d590ac9c-6971-42db-b900-0bd057033ae0.png",
+      "implementations": {
+        "degen": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/degen",
+    "publicRpcUrl": "https://rpc.degen.tips"
+  },
+  {
+    "id": "rari",
+    "name": "Rari",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/1380012617",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 1380012617
+      }
+    },
+    "explorer": {
+      "name": "rarichain-explorer",
+      "txUrl": "https://mainnet.explorer.rarichain.org/tx/{HASH}",
+      "tokenUrl": "https://mainnet.explorer.rarichain.org/token/{ADDRESS}",
+      "homeUrl": "https://mainnet.explorer.rarichain.org",
+      "addressUrl": "https://mainnet.explorer.rarichain.org/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "rari": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": true,
+      "supportsSending": true,
+      "supportsBridging": true,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/rari",
+    "publicRpcUrl": "https://rari.calderachain.xyz/http"
+  },
+  {
+    "id": "wonder",
+    "name": "Wonder",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/9637",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 9637
+      }
+    },
+    "explorer": {
+      "name": "Wonder Block Explorer",
+      "txUrl": "https://explorer.mainnet.wonderchain.org/tx/{HASH}",
+      "tokenUrl": "https://explorer.mainnet.wonderchain.org/address/{ADDRESS}",
+      "homeUrl": "https://explorer.mainnet.wonderchain.org",
+      "addressUrl": "https://explorer.mainnet.wonderchain.org/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "wonder": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/wonder",
+    "publicRpcUrl": "https://rpc.mainnet.wonderchain.org"
+  },
+  {
+    "id": "zero",
+    "name": "ZERϴ",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/chainlist/543210",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 543210
+      }
+    },
+    "explorer": {
+      "name": "ZERO Network Explorer",
+      "txUrl": "https://explorer.zero.network/tx/{HASH}",
+      "tokenUrl": "https://explorer.zero.network/token/{ADDRESS}",
+      "homeUrl": "https://explorer.zero.network",
+      "addressUrl": "https://explorer.zero.network/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "zero": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": false,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": true,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/zero",
+    "publicRpcUrl": "https://rpc.zerion.io/v1/zero"
+  },
+  {
+    "id": "zkcandy",
+    "name": "ZKcandy",
+    "iconUrl": "https://chain-icons.s3.amazonaws.com/zkcandy.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 320
+      }
+    },
+    "explorer": {
+      "name": "ZKcandy Block Explorer",
+      "txUrl": "https://explorer.zkcandy.io/tx/{HASH}",
+      "tokenUrl": "https://explorer.zkcandy.io/token/{ADDRESS}",
+      "homeUrl": "https://explorer.zkcandy.io",
+      "addressUrl": "https://explorer.zkcandy.io/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "eth",
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "iconUrl": "https://cdn.zerion.io/eth.png",
+      "implementations": {
+        "zkcandy": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": true,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": true,
+      "supportsSimulations": true
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/zkcandy",
+    "publicRpcUrl": "https://rpc.zkcandy.io"
+  },
+  {
+    "id": "re-al",
+    "name": "re.al",
+    "iconUrl": "https://chain-icons.s3.us-east-1.amazonaws.com/real.png",
+    "testnet": false,
+    "specification": {
+      "eip155": {
+        "chainId": 111188
+      }
+    },
+    "explorer": {
+      "name": "blockscout",
+      "txUrl": "https://explorer.re.al/tx/{HASH}",
+      "tokenUrl": "https://explorer.re.al/token/{ADDRESS}",
+      "homeUrl": "https://explorer.re.al",
+      "addressUrl": "https://explorer.re.al/address/{ADDRESS}"
+    },
+    "baseAsset": {
+      "id": "3b5814a4-7fa3-48e3-b389-638925def2cf",
+      "name": "Real Ether",
+      "symbol": "reETH",
+      "iconUrl": null,
+      "implementations": {
+        "re-al": {
+          "address": null,
+          "decimals": 18
+        }
+      }
+    },
+    "flags": {
+      "supportsTrading": false,
+      "supportsSending": false,
+      "supportsBridging": false,
+      "supportsActions": true,
+      "supportsPositions": true,
+      "supportsNftPositions": false,
+      "supportsSponsoredTransactions": false,
+      "supportsGasPrices": false,
+      "supportsSimulations": false
+    },
+    "rpcUrl": "https://rpc.zerion.io/v1/re-al",
+    "publicRpcUrl": "https://rpc.realforreal.gelato.digital"
+  }
+]

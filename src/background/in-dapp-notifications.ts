@@ -45,7 +45,7 @@ export class InDappNotificationService {
     await this.notify(origin, {
       notificationEvent: 'chainChanged',
       networkName: network.name,
-      networkIcon: network.icon_url,
+      networkIcon: network.iconUrl || '',
     });
   }
 

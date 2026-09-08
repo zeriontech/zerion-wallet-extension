@@ -1,11 +1,11 @@
 import { Networks } from 'src/modules/networks/Networks';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 
 function tryGetEcosystem(
-  network: NetworkConfig | null | undefined
+  network: NetworkInfo | null | undefined
 ): BlockchainType | null {
   if (!network) return null;
   try {
@@ -51,8 +51,8 @@ export function getCrossEcosystemState({
   outputNetwork,
   to,
 }: {
-  inputNetwork: NetworkConfig | null | undefined;
-  outputNetwork: NetworkConfig | null | undefined;
+  inputNetwork: NetworkInfo | null | undefined;
+  outputNetwork: NetworkInfo | null | undefined;
   to: string | null | undefined;
 }): CrossEcosystemState {
   const inputEcosystem = tryGetEcosystem(inputNetwork);

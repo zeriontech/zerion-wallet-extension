@@ -9,7 +9,7 @@ import type { BackendSourceParams } from 'src/modules/zerion-api/shared';
 export function useNativeAssetId(chain: Chain) {
   const { networks } = useNetworks();
   const network = networks?.getNetworkByName(chain);
-  return network?.native_asset?.id;
+  return network?.baseAsset?.id;
 }
 
 /**

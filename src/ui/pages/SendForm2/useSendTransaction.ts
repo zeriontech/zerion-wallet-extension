@@ -7,7 +7,7 @@ import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useTransactionGetSend } from 'src/modules/zerion-api/hooks/useTransactionGetSend';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
 import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
@@ -37,7 +37,7 @@ import type { SendFormState2 } from './types';
 export type SendQuote = Pick<Quote2, 'networkFee' | 'transactionSwap'>;
 
 export interface SendTransactionResult {
-  network: NetworkConfig | null;
+  network: NetworkInfo | null;
   sendQuote: SendQuote | null;
   inputAmount: Amount | null;
   error: TransactionPrepareError | null;
@@ -114,7 +114,7 @@ export function useSendTransaction({
   formState: SendFormState2;
   position: FungiblePosition | null;
   resolvedInputAmount: string | null;
-  network: NetworkConfig | null;
+  network: NetworkInfo | null;
   enabled?: boolean;
 }) {
   const { currency } = useCurrency();
@@ -183,7 +183,7 @@ export function useSendTransaction({
       network
   );
 
-  const useBackend = Boolean(network?.supports_sending);
+  const useBackend = Boolean(network?.flags.supportsSending);
 
   const backendQuery = useTransactionGetSend(
     {

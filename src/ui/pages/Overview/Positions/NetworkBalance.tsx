@@ -16,7 +16,7 @@ import type { Kind as UITextKind } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { usePreferences } from 'src/ui/features/preferences';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { Networks } from 'src/modules/networks/Networks';
 import { NetworkId } from 'src/modules/networks/NetworkId';
@@ -174,9 +174,9 @@ export function NetworkBalance({
 
   const testnetMode = preferences?.testnetMode?.on;
   const networksPredicate = useMemo(() => {
-    return (network: NetworkConfig) => {
+    return (network: NetworkInfo) => {
       if (testnetMode) {
-        const isTestnet = Boolean(network.is_testnet);
+        const isTestnet = Boolean(network.testnet);
         return isTestnet && Networks.predicate(standard, network);
       } else {
         return Networks.predicate(standard, network);

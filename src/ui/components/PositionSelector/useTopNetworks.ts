@@ -71,7 +71,7 @@ export function useTopNetworks(
       return {
         chainId,
         name: network.name,
-        iconUrl: network.icon_url ?? '',
+        iconUrl: network.iconUrl ?? '',
       };
     };
 

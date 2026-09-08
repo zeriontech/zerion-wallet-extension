@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from '@solana/web3.js';
 import type { AddressPosition } from 'src/defi-sdk.types';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { eth_getBalance } from 'src/modules/ethereum/eth_getBalance';
@@ -20,7 +20,7 @@ async function solanaGetBalance({
 
 interface FetchBalanceParams {
   address: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
 }
 
 async function fetchAddressPositionFromSolanaNode({
@@ -47,7 +47,7 @@ export async function fetchAddressPositionFromRpcNode({
   network,
 }: {
   address: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
 }): Promise<AddressPosition | null> {
   const ecosystem = Networks.getEcosystem(network);
   if (!isMatchForEcosystem(address, ecosystem)) {

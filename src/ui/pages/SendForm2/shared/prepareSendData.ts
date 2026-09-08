@@ -31,7 +31,8 @@ import { solToBase64 } from 'src/modules/solana/transactions/create';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { getAddressType } from 'src/shared/wallet/classifiers';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
+import { getBaseAssetDecimals } from 'src/modules/networks/NetworkInfo';
 import { SOL_ASSET_FUNGIBLE } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import BigNumber from 'bignumber.js';
@@ -45,20 +46,21 @@ import { buildSolanaTransfer } from './buildSolanaTransfer';
 
 function createNetworkFee(
   fee: number,
-  network: NetworkConfig
+  network: NetworkInfo
 ): null | NetworkFeeType {
-  if (!network.native_asset) {
+  const decimals = getBaseAssetDecimals(network);
+  if (decimals == null) {
     return null;
   }
   return {
     free: false,
     amount: {
-      quantity: baseToCommon(fee, network.native_asset?.decimals).toFixed(),
+      quantity: baseToCommon(fee, decimals).toFixed(),
       value: null,
       usdValue: null,
     },
     // TODO: Fetch real asset from backend so that we have fiat price
-    fungible: network.standard === 'solana' ? SOL_ASSET_FUNGIBLE : null,
+    fungible: network.specification.solana ? SOL_ASSET_FUNGIBLE : null,
   };
 }
 
@@ -123,7 +125,7 @@ type SendSubmitData = (
       transaction: null;
     }
   | {
-      network: NetworkConfig;
+      network: NetworkInfo;
       transaction: MultichainTransaction<
         PartiallyRequired<IncomingTransaction, 'chainId' | 'from'>
       >;
@@ -218,7 +220,7 @@ export async function prepareSendData(
     });
     tx = applied.transaction;
     let eligibility: SendSubmitData['paymasterEligibility'] = null;
-    if (network.supports_sponsored_transactions) {
+    if (network.flags.supportsSponsoredTransactions) {
       eligibility = await getEligibility(tx);
       if (eligibility.data.eligible) {
         tx = await getPaymasterTx(tx);
@@ -266,17 +268,15 @@ export async function prepareSendData(
     }
 
     let networkFee: NetworkFeeType | null = null;
-    if (feeEstimation && network.native_asset) {
+    const baseAssetDecimals = getBaseAssetDecimals(network);
+    if (feeEstimation && baseAssetDecimals != null) {
       const feeBase = new BigNumber(
         String(feeEstimation.maxFee ?? feeEstimation.estimatedFee)
       );
       networkFee = {
         free: false,
         amount: {
-          quantity: baseToCommon(
-            feeBase,
-            network.native_asset.decimals
-          ).toFixed(),
+          quantity: baseToCommon(feeBase, baseAssetDecimals).toFixed(),
           value: null,
           usdValue: null,
         },
@@ -288,7 +288,7 @@ export async function prepareSendData(
     assertProp(tx, 'from');
     return {
       network,
-      paymasterPossible: network.supports_sponsored_transactions,
+      paymasterPossible: network.flags.supportsSponsoredTransactions,
       paymasterEligibility: eligibility,
       transaction: { evm: tx },
       networkFee,

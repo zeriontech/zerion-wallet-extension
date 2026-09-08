@@ -489,7 +489,7 @@ function NetworkFeeButton({
 
   const selected = option === networkFeeConfiguration.speed;
   const nativeAssetSymbol =
-    networks?.getNetworkByName(chain)?.native_asset?.symbol;
+    networks?.getNetworkByName(chain)?.baseAsset?.symbol;
 
   return (
     <SurfaceItemButton

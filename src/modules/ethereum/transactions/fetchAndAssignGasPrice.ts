@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import omit from 'lodash/omit';
 import { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
@@ -21,7 +21,7 @@ function add10Percent(value: number) {
 
 export async function estimateGasForNetwork<T extends IncomingTransaction>(
   transaction: T,
-  network: NetworkConfig
+  network: NetworkInfo
 ) {
   const chainIdHex = resolveChainId(transaction);
   const rpcUrl = Networks.getNetworkRpcUrlInternal(network);

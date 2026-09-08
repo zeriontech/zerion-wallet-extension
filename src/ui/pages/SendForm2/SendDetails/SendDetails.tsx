@@ -4,7 +4,7 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import type { CustomConfiguration } from '@zeriontech/transactions';
 import { useMeasure } from 'src/ui/shared/useMeasure';
 import type { Networks } from 'src/modules/networks/Networks';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
@@ -62,7 +62,7 @@ function DetailRow({
 
 function formatNetworkFee(
   fee: NetworkFeeType | null,
-  network: NetworkConfig | null,
+  network: NetworkInfo | null,
   fiatValue: number | null,
   currency: string
 ): React.ReactNode {
@@ -75,7 +75,7 @@ function formatNetworkFee(
     });
   }
   if (fee.amount?.quantity) {
-    const symbol = fee.fungible?.symbol ?? network?.native_asset?.symbol ?? '';
+    const symbol = fee.fungible?.symbol ?? network?.baseAsset?.symbol ?? '';
     return formatTokenValue(fee.amount.quantity, symbol);
   }
   return noValueDash;
@@ -101,7 +101,7 @@ export function SendDetails({
   inputChain: string;
   networks: Networks;
   sendQuote: SendQuote | null;
-  network: NetworkConfig | null;
+  network: NetworkInfo | null;
   evmTx: IncomingTransaction | null;
   address: string;
   gasPrices: ChainGasPrice | null;
@@ -128,7 +128,7 @@ export function SendDetails({
 
   const chain = createChain(inputChain);
   const chainName = networks.getChainName(chain);
-  const chainIconUrl = networks.getByNetworkId(chain)?.icon_url;
+  const chainIconUrl = networks.getByNetworkId(chain)?.iconUrl;
 
   const showReceived = (() => {
     if (!receivedAmount || !typedAmount) return false;
@@ -158,7 +158,7 @@ export function SendDetails({
         })()
       : null;
 
-  const feeFungibleId = networkFee?.fungible?.id ?? network?.native_asset?.id;
+  const feeFungibleId = networkFee?.fungible?.id ?? network?.baseAsset?.id;
   const { data: feeFungibleResponse } = useAssetListFungibles(
     feeFungibleId ? { fungibleIds: [feeFungibleId], currency } : { currency },
     { suspense: false }

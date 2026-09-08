@@ -6,7 +6,7 @@ import { isTruthy } from 'is-truthy-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import {
   toAddEthereumChainParameter,
-  toNetworkConfig,
+  toNetworkInfo,
 } from 'src/modules/networks/helpers';
 import { invariant } from 'src/shared/invariant';
 import { useBackgroundKind } from 'src/ui/components/Background/Background';
@@ -31,7 +31,7 @@ import {
 import { Networks } from 'src/modules/networks/Networks';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { injectChainConfig } from 'src/modules/networks/injectChainConfig';
+import { applyChainConfig } from 'src/modules/networks/applyChainConfig';
 import { NetworkForm } from '../Networks/NetworkForm';
 import { NetworkCreateSuccess } from '../Networks/NetworkCreateSuccess';
 import { NetworkUpdateSuccess } from '../Networks/NetworkUpdateSuccess';
@@ -82,8 +82,8 @@ function AddOrUpdateChain({
       ? updatedNetworks.getNetworkById(chainId) ?? null
       : null;
     const network = prevNetwork
-      ? injectChainConfig(prevNetwork, addEthereumChainParameter)
-      : toNetworkConfig(addEthereumChainParameter, null);
+      ? applyChainConfig(prevNetwork, addEthereumChainParameter)
+      : toNetworkInfo(addEthereumChainParameter, null);
     return { network, prevNetwork };
   }, [addEthereumChainParameter, updatedNetworks, chainId]);
 

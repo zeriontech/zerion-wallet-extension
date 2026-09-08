@@ -460,7 +460,7 @@ function SwapFormComponent({
           symbol: inputPosition.fungible.symbol,
           iconUrl: inputPosition.fungible.iconUrl,
         },
-        chain: { iconUrl: inputNetwork.icon_url ?? null },
+        chain: { iconUrl: inputNetwork.iconUrl ?? null },
       };
       const swapToasterView: ToasterView = {
         kind: isCrossChain ? 'bridge' : 'swap',
@@ -472,7 +472,7 @@ function SwapFormComponent({
           symbol: outputPosition.fungible.symbol,
           iconUrl: outputPosition.fungible.iconUrl,
         },
-        receivedChain: { iconUrl: outputNetwork.icon_url ?? null },
+        receivedChain: { iconUrl: outputNetwork.iconUrl ?? null },
       };
 
       if (configuredQuote.transactionApprove) {

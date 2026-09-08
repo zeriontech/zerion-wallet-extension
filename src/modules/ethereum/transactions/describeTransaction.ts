@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
+import { getBaseAssetImplementation } from 'src/modules/networks/NetworkInfo';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 export type TransactionActionType =
@@ -133,8 +134,9 @@ function createExecuteAction(
     isNativeAsset: true,
     contractAddress: transaction.to || '0x',
     amount: getMaybeAmount(transaction),
-    assetId: network?.native_asset?.id || null,
-    assetAddress: network?.native_asset?.address || null,
+    assetId: network?.baseAsset?.id || null,
+    assetAddress:
+      (network && getBaseAssetImplementation(network)?.address) || null,
     chain: context.chain,
   };
 }
@@ -197,7 +199,7 @@ function describeApprove(
   return {
     ...result,
     chain: context.chain,
-    assetId: network?.native_asset?.id || null,
+    assetId: network?.baseAsset?.id || null,
   };
 }
 
@@ -216,8 +218,9 @@ function describeSend(
       type: 'send',
       isNativeAsset: true,
       chain: context.chain,
-      assetId: network?.native_asset?.id || null,
-      assetAddress: network?.native_asset?.address || null,
+      assetId: network?.baseAsset?.id || null,
+      assetAddress:
+        (network && getBaseAssetImplementation(network)?.address) || null,
       receiverAddress: transaction.to,
       amount: amountToString(transaction.value ?? '0'),
     };

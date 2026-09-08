@@ -84,7 +84,7 @@ export function InputPosition({
   const isNative = (() => {
     if (!position || !networks) return false;
     const network = networks.getByNetworkId(createChain(position.chain.id));
-    const nativeAddress = network?.native_asset?.id;
+    const nativeAddress = network?.baseAsset?.id;
     if (!nativeAddress) return false;
     const implAddress = position.fungible.id;
     return implAddress === nativeAddress;

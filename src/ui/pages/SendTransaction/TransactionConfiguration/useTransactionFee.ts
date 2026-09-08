@@ -19,6 +19,7 @@ import type { EstimatedFeeValue } from 'src/modules/ethereum/transactions/gasPri
 import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPrices/feeEstimation';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { getDecimals } from 'src/modules/networks/asset';
+import { getBaseAssetDecimals } from 'src/modules/networks/NetworkInfo';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -165,9 +166,12 @@ function calculateTransactionCosts({
   const totalValueBase = calculateTotalValue({ txValue, fee: estimatedFee });
   const maxTotalValueBase = calculateTotalValue({ txValue, fee: maxFee });
 
+  const network = networks?.getNetworkByName(chain);
   const decimals = nativeAsset
     ? getDecimals({ asset: nativeAsset, chain })
-    : networks?.getNetworkByName(chain)?.native_asset?.decimals;
+    : network
+    ? getBaseAssetDecimals(network)
+    : undefined;
 
   if (decimals == null) {
     return null;

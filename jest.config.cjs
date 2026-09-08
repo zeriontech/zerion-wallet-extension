@@ -3,6 +3,7 @@ module.exports = {
   // preset: 'ts-jest',
 
   modulePaths: ['<rootDir>/'],
+  setupFiles: ['<rootDir>/jest.setup.cjs'],
   // moduleDirectories: ['node_modules', 'src'],
   testPathIgnorePatterns: [
     '/node_modules/',

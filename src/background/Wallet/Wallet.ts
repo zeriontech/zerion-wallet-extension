@@ -84,7 +84,7 @@ import {
   createTypedData,
   serializePaymasterTx,
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import type { RemoteConfig } from 'src/modules/remote-config';
@@ -156,7 +156,7 @@ import { toPlainTransactionResponse } from './model/ethers-v5-types';
 
 async function prepareNonce<
   T extends { nonce?: number | null; from?: string | null }
->(transaction: T, network: NetworkConfig) {
+>(transaction: T, network: NetworkInfo) {
   if (transaction.nonce == null) {
     invariant(transaction.from, '"from" field is missing from transaction');
     const txCount = await backgroundGetBestKnownTransactionCount({
@@ -2023,13 +2023,13 @@ export class Wallet {
       | { chainId: ChainId; id?: undefined }
       | { id: Chain; chainId?: undefined }
   ): Promise<
-    | { violation: true; network: NetworkConfig; mode: 'testnet' | 'default' }
+    | { violation: true; network: NetworkInfo; mode: 'testnet' | 'default' }
     | { violation: false; network: null; mode: 'testnet' | 'default' }
   > {
     const preferences = await this.getPreferences({
       context: INTERNAL_SYMBOL_CONTEXT,
     });
-    let network: NetworkConfig | null;
+    let network: NetworkInfo | null;
     if (options.chainId) {
       network = await fetchNetworkByChainId({
         preferences,
@@ -2049,7 +2049,7 @@ export class Wallet {
     if (!network) {
       return { violation: false, network: null, mode };
     }
-    if (Boolean(network.is_testnet) === Boolean(preferences.testnetMode?.on)) {
+    if (Boolean(network.testnet) === Boolean(preferences.testnetMode?.on)) {
       return { violation: false, network: null, mode };
     } else {
       return { violation: true, network, mode };

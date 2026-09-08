@@ -1,7 +1,7 @@
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
 import type { ChainId } from '../ethereum/transactions/ChainId';
-import type { NetworkConfig } from './NetworkConfig';
+import type { NetworkInfo } from './NetworkInfo';
 import { Networks } from './Networks';
 import { networksFallbackInfo } from './networks-fallback';
 import { NetworksStore } from './networks-store';
@@ -103,7 +103,7 @@ class NetworksStoreMock extends NetworksStore {
     return this.getState().networks!;
   }
 
-  async pushConfigs(..._extraNetworkConfigs: NetworkConfig[]) {
+  async pushConfigs(..._extraNetworkConfigs: NetworkInfo[]) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.getState().networks!;
   }

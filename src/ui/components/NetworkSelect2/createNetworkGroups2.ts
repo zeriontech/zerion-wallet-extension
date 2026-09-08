@@ -1,5 +1,5 @@
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
@@ -8,14 +8,14 @@ import type { NetworkSelectDistribution } from './types';
 export type NetworkGroup = {
   key: 'main' | 'other';
   name: string | null;
-  items: NetworkConfig[];
+  items: NetworkInfo[];
 };
 
 export type NetworkGroups = NetworkGroup[];
 
 function compareNetworks(
-  a: NetworkConfig,
-  b: NetworkConfig,
+  a: NetworkInfo,
+  b: NetworkInfo,
   chainDistribution: NetworkSelectDistribution | null
 ) {
   const aValue =
@@ -41,15 +41,15 @@ export function createGroups2({
   networks: Networks;
   chainDistribution: NetworkSelectDistribution | null;
   testnetMode: boolean;
-  filterPredicate?: (network: NetworkConfig) => boolean;
+  filterPredicate?: (network: NetworkInfo) => boolean;
 }): NetworkGroups {
   const allNetworks = networks
     .getDefaultNetworks(standard)
-    .filter((item) => Boolean(item.is_testnet) === testnetMode)
+    .filter((item) => Boolean(item.testnet) === testnetMode)
     .filter((item) => !item.hidden)
     .filter(filterPredicate);
   const pinnedNetworkId = standard === 'solana' ? NetworkId.Solana : null;
-  const otherNetworkPredicate = (network: NetworkConfig) =>
+  const otherNetworkPredicate = (network: NetworkInfo) =>
     network.id !== pinnedNetworkId &&
     (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id));
   return [

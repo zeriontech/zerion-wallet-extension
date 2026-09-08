@@ -15,7 +15,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { EligibilityQuery } from 'src/ui/components/address-action/EligibilityQuery';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { walletPort } from '../channels';
 
@@ -41,7 +41,7 @@ export async function interpretTxBasedOnEligibility({
   const preferences = await getPreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const networksStore = await getNetworksStore();
-  let network: NetworkConfig | null = null;
+  let network: NetworkInfo | null = null;
   if (transactions[0].evm) {
     const networks = await networksStore.loadNetworksByChainId(
       normalizeChainId(transactions[0].evm.chainId)
@@ -56,11 +56,11 @@ export async function interpretTxBasedOnEligibility({
     network = await networksStore.fetchNetworkById(NetworkId.Solana);
   }
   invariant(network, 'Network must be defined for transaction interpretation');
-  if (!network.supports_simulations) {
+  if (!network.flags.supportsSimulations) {
     return null;
   }
   const shouldDoRegularInterpret =
-    !network.supports_sponsored_transactions ||
+    !network.flags.supportsSponsoredTransactions ||
     eligibilityQueryData === false ||
     eligibilityQueryStatus === 'error';
 
@@ -75,7 +75,10 @@ export async function interpretTxBasedOnEligibility({
       },
       { source }
     );
-  } else if (network.supports_sponsored_transactions && eligibilityQueryData) {
+  } else if (
+    network.flags.supportsSponsoredTransactions &&
+    eligibilityQueryData
+  ) {
     invariant(
       transactions[0].evm,
       'Only EVM transactions are supported for paymaster'

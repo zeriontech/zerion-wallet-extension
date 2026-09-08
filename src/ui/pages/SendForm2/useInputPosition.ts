@@ -28,7 +28,7 @@ export function useInputPosition({
         : null,
     [inputChain, networks]
   );
-  const supportsPositions = networkConfig?.supports_positions ?? true;
+  const supportsPositions = networkConfig?.flags.supportsPositions ?? true;
 
   const simpleMatch = useMemo(() => {
     if (!inputChain || !inputFungibleId) return null;
@@ -81,7 +81,7 @@ export function useInputPosition({
       chain: {
         id: inputChain!,
         name: networkConfig.name,
-        iconUrl: networkConfig.icon_url ?? '',
+        iconUrl: networkConfig.iconUrl ?? '',
       },
     };
   }, [

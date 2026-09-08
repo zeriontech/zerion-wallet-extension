@@ -278,7 +278,7 @@ function DepositFormBody({
           symbol: 'USDC',
           iconUrl: usdcFakeFungible.iconUrl ?? null,
         },
-        receivedChain: { iconUrl: inputNetwork.icon_url ?? null },
+        receivedChain: { iconUrl: inputNetwork.iconUrl ?? null },
       };
 
       const steps: SignStep[] = [];
@@ -554,7 +554,7 @@ function DepositPageInner({ address }: { address: string }) {
     if (!networks) return [];
     return positions.filter((p) => {
       const net = networks.getByNetworkId(createChain(p.chain.id));
-      return net?.supports_bridging || p.chain.id === ETHEREUM_CHAIN_ID;
+      return net?.flags.supportsBridging || p.chain.id === ETHEREUM_CHAIN_ID;
     });
   }, [positions, networks]);
 

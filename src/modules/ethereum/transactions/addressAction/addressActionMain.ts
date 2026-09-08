@@ -9,7 +9,7 @@ import type {
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { invariant } from 'src/shared/invariant';
 import type { Asset, NFT } from 'src/defi-sdk.types';
-import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import type {
@@ -119,11 +119,11 @@ export function convertNftToNftPreview(nft: NFT | null): NFTPreview | null {
   };
 }
 
-function convertNetworkToActionChain(network: NetworkConfig): ActionChain {
+function convertNetworkToActionChain(network: NetworkInfo): ActionChain {
   return {
     id: network.id,
     name: network.name,
-    iconUrl: network.icon_url,
+    iconUrl: network.iconUrl || '',
   };
 }
 
@@ -148,7 +148,7 @@ export function createSendTokenAddressAction({
 }: {
   transaction: MultichainTransaction;
   hash: string | null;
-  network: NetworkConfig;
+  network: NetworkInfo;
   sendAsset: Asset;
   sendAmount: Amount;
   address: string;
@@ -237,7 +237,7 @@ export function createSendNFTAddressAction({
 }: {
   hash: string | null;
   transaction: MultichainTransaction;
-  network: NetworkConfig;
+  network: NetworkInfo;
   sendAsset: NFT;
   sendAmount: Amount;
   address: string;
@@ -324,7 +324,7 @@ export function createTradeAddressAction({
   receiveAmount: Amount;
   receiveAsset: Asset;
   address: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
   rate: Quote2['rate'] | null;
   explorerUrl: string | null;
 }): LocalAddressAction {
@@ -406,8 +406,8 @@ export function createBridgeAddressAction({
   spendAsset: Asset;
   receiveAmount: Amount;
   receiveAsset: Asset;
-  inputNetwork: NetworkConfig;
-  outputNetwork: NetworkConfig;
+  inputNetwork: NetworkInfo;
+  outputNetwork: NetworkInfo;
   explorerUrl: string | null;
   receiverAddress: string | null;
 }): LocalAddressAction {
@@ -546,7 +546,7 @@ export function createApproveAddressAction({
   transaction: IncomingTransactionWithFrom;
   asset: Asset;
   amount: Amount;
-  network: NetworkConfig;
+  network: NetworkInfo;
   explorerUrl: string | null;
 }): LocalAddressAction {
   const content = {
@@ -619,7 +619,7 @@ export function createTradeAddressAction2({
   receiveAmount: Amount;
   receiveFungible: Fungible;
   address: string;
-  network: NetworkConfig;
+  network: NetworkInfo;
   rate: Quote2['rate'] | null;
   explorerUrl: string | null;
 }): LocalAddressAction {
@@ -701,8 +701,8 @@ export function createBridgeAddressAction2({
   spendFungible: Fungible;
   receiveAmount: Amount;
   receiveFungible: Fungible;
-  inputNetwork: NetworkConfig;
-  outputNetwork: NetworkConfig;
+  inputNetwork: NetworkInfo;
+  outputNetwork: NetworkInfo;
   explorerUrl: string | null;
   receiverAddress: string | null;
 }): LocalAddressAction {
@@ -841,7 +841,7 @@ export function createApproveAddressAction2({
   transaction: IncomingTransactionWithFrom;
   fungible: Fungible;
   amount: Amount;
-  network: NetworkConfig;
+  network: NetworkInfo;
   explorerUrl: string | null;
 }): LocalAddressAction {
   const content = {

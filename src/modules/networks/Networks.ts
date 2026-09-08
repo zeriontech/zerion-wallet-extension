@@ -6,24 +6,24 @@ import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { FEATURE_SOLANA } from 'src/env/config';
+import type { ChainFlags } from 'src/modules/zerion-api/types/ChainFullInfo';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
 import { createChain } from './Chain';
-import type { Eip155Specification, NetworkConfig } from './NetworkConfig';
+import type { NetworkInfo, NetworkInfoEip155 } from './NetworkInfo';
+import { getBaseAssetImplementation } from './NetworkInfo';
 import { getAddress } from './asset';
 import { UnsupportedNetwork } from './errors';
-import { injectChainConfig } from './injectChainConfig';
+import { applyChainConfig } from './applyChainConfig';
 
 type Collection<T> = { [key: string]: T };
 
-type SupportsFlags = Exclude<
-  keyof {
-    [K in keyof NetworkConfig as K extends `supports_${infer S}`
-      ? S
-      : never]: NetworkConfig[K];
-  },
-  'bridge' // supports_bridge is deprecated
->;
+/** Purpose vocabulary of {Networks.supports}: `'trading'` reads `flags.supportsTrading` */
+type SupportsFlags = keyof {
+  [K in keyof ChainFlags as K extends `supports${infer S}`
+    ? Uncapitalize<S>
+    : never]: ChainFlags[K];
+};
 
 function toCollection<T, K>(
   items: T[],
@@ -40,15 +40,15 @@ function toCollection<T, K>(
   return result;
 }
 
-function injectChainConfigs(
-  networkConfigs: NetworkConfig[],
+function applyChainConfigs(
+  networks: NetworkInfo[],
   chainConfigs: EthereumChainConfig[]
-): NetworkConfig[] {
+): NetworkInfo[] {
   const chainConfigById = Object.fromEntries(
     chainConfigs.map((config) => [config.id, config.value])
   );
-  return networkConfigs.map((network) =>
-    injectChainConfig(network, chainConfigById[network.id] || null)
+  return networks.map((network) =>
+    applyChainConfig(network, chainConfigById[network.id] || null)
   );
 }
 
@@ -71,30 +71,31 @@ function toAliasMap(ethereumChainConfigs: EthereumChainConfig[]) {
 }
 
 export class Networks {
-  private networks: NetworkConfig[];
-  private collection: { [key: string]: NetworkConfig | undefined };
-  private collectionByEvmId: { [key: ChainId]: NetworkConfig | undefined };
+  private networks: NetworkInfo[];
+  private collection: { [key: string]: NetworkInfo | undefined };
+  private collectionByEvmId: { [key: ChainId]: NetworkInfo | undefined };
   private networkIdAliases: Record<string, string>;
   private ethereumChainConfigs: EthereumChainConfig[];
   private visitedChains: Set<string>;
 
-  private solanaNetworks: NetworkConfig[];
-  private evmNetworks: NetworkConfig[];
+  private solanaNetworks: NetworkInfo[];
+  private evmNetworks: NetworkInfo[];
 
-  static getChainId<T extends Partial<NetworkConfig>>(network: T) {
+  /** Hex chain id; ZPI's `specification.eip155.chainId` is decimal */
+  static getChainId<T extends Partial<NetworkInfo>>(network: T) {
     if (Networks.isEip155(network)) {
-      return normalizeChainId(network.specification.eip155.id);
+      return normalizeChainId(network.specification.eip155.chainId);
     }
     throw new Error(`Network is not eip-155: ${network.id}`);
   }
 
-  static isEip155<T extends Partial<NetworkConfig>>(
+  static isEip155<T extends Partial<NetworkInfo>>(
     network: T
-  ): network is T & Eip155Specification {
+  ): network is T & NetworkInfoEip155 {
     return network.specification?.eip155 != null;
   }
 
-  static getEcosystem(network: NetworkConfig): BlockchainType {
+  static getEcosystem(network: NetworkInfo): BlockchainType {
     if (Networks.isEip155(network)) {
       return 'evm';
     } else if (network.id === 'solana') {
@@ -106,11 +107,11 @@ export class Networks {
     }
   }
 
-  static predicate(standard: BlockchainType | null, network: NetworkConfig) {
+  static predicate(standard: BlockchainType | null, network: NetworkInfo) {
     if (standard === 'solana') {
-      return network.standard === 'solana';
+      return network.specification.solana != null;
     } else if (standard === 'evm') {
-      return network.standard === 'eip155';
+      return Networks.isEip155(network);
     } else {
       return true;
     }
@@ -119,7 +120,7 @@ export class Networks {
   /**
    * Update this predicate when adding new supported ecosystems
    */
-  static isSupportedEcosystem(network: NetworkConfig) {
+  static isSupportedEcosystem(network: NetworkInfo) {
     return Networks.isEip155(network) || network.id === 'solana';
   }
 
@@ -128,19 +129,19 @@ export class Networks {
     ethereumChainConfigs,
     visitedChains,
   }: {
-    networks: NetworkConfig[];
+    networks: NetworkInfo[];
     ethereumChainConfigs: EthereumChainConfig[];
     visitedChains: string[];
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
-    this.networks = injectChainConfigs(networks, ethereumChainConfigs);
+    this.networks = applyChainConfigs(networks, ethereumChainConfigs);
     this.networks = this.networks.filter(Networks.isSupportedEcosystem);
     if (FEATURE_SOLANA !== 'on') {
-      this.networks = this.networks.filter((n) => n.standard === 'eip155');
+      this.networks = this.networks.filter((n) => Networks.isEip155(n));
     }
-    this.evmNetworks = this.networks.filter((n) => n.standard === 'eip155');
+    this.evmNetworks = this.networks.filter((n) => Networks.isEip155(n));
     this.solanaNetworks = this.networks.filter(
-      (n) => n.id.toLowerCase().includes('solana') // TODO: filter by n['standard'] when backend updates
+      (n) => n.specification.solana != null
     );
     this.collection = toCollection(
       this.networks,
@@ -156,7 +157,7 @@ export class Networks {
     this.visitedChains = new Set(visitedChains);
   }
 
-  static getName(network: NetworkConfig) {
+  static getName(network: NetworkInfo) {
     return network.name || capitalize(network.id);
   }
 
@@ -200,7 +201,7 @@ export class Networks {
   }
 
   getMainnets() {
-    return this.networks.filter((item) => !item.is_testnet);
+    return this.networks.filter((item) => !item.testnet);
   }
 
   getDefaultNetworks(standard: BlockchainType | 'all') {
@@ -237,8 +238,8 @@ export class Networks {
 
   getNativeAssetIdsForTrading() {
     return this.networks
-      .filter((network) => network.supports_trading && network.native_asset)
-      .map((network) => network.native_asset?.id)
+      .filter((network) => network.flags.supportsTrading && network.baseAsset)
+      .map((network) => network.baseAsset?.id)
       .filter(isTruthy);
   }
 
@@ -269,15 +270,11 @@ export class Networks {
   }
 
   getExplorerHomeUrlByName(chain: Chain) {
-    return this.getByNetworkId(chain)?.explorer_home_url;
+    return this.getByNetworkId(chain)?.explorer?.homeUrl;
   }
 
-  private getExplorerTxUrl(network: NetworkConfig | undefined, hash: string) {
-    if (network?.explorer_tx_url) {
-      return network.explorer_tx_url?.replace('{HASH}', hash);
-    } else if (network?.explorer_home_url) {
-      return new URL(`/tx/${hash}`, network.explorer_home_url).toString();
-    }
+  private getExplorerTxUrl(network: NetworkInfo | undefined, hash: string) {
+    return network?.explorer?.txUrl.replace('{HASH}', hash);
   }
 
   getExplorerTxUrlById(chainId: ChainId, hash: string) {
@@ -293,17 +290,17 @@ export class Networks {
   }
 
   static getExplorerAddressUrl(
-    network: NetworkConfig | undefined,
+    network: NetworkInfo | undefined,
     address: string
   ) {
-    return network?.explorer_address_url?.replace('{ADDRESS}', address);
+    return network?.explorer?.addressUrl.replace('{ADDRESS}', address);
   }
 
   private getExplorerTokenUrl(
-    network: NetworkConfig | undefined,
+    network: NetworkInfo | undefined,
     address: string
   ) {
-    return network?.explorer_token_url?.replace('{ADDRESS}', address);
+    return network?.explorer?.tokenUrl.replace('{ADDRESS}', address);
   }
 
   getExplorerTokenUrlByName(chain: Chain, address: string) {
@@ -311,7 +308,12 @@ export class Networks {
   }
 
   getExplorerNameByChainName(chain: Chain) {
-    return this.getByNetworkId(chain)?.explorer_name;
+    return this.getByNetworkId(chain)?.explorer?.name;
+  }
+
+  static supports(purpose: SupportsFlags, network: NetworkInfo): boolean {
+    const key = `supports${capitalize(purpose)}` as keyof ChainFlags;
+    return Boolean(network.flags[key]);
   }
 
   supports(purpose: SupportsFlags, chain: Chain): boolean {
@@ -319,13 +321,14 @@ export class Networks {
     if (!network) {
       return false;
     }
-    return network[`supports_${purpose}`];
+    return Networks.supports(purpose, network);
   }
 
-  static isNativeAsset(asset: Asset, network: NetworkConfig) {
-    if (network.native_asset) {
+  static isNativeAsset(asset: Asset, network: NetworkInfo) {
+    const implementation = getBaseAssetImplementation(network);
+    if (implementation) {
       const address = getAddress({ asset, chain: createChain(network.id) });
-      return address === network.native_asset.address;
+      return address === implementation.address;
     } else {
       return false;
     }
@@ -338,19 +341,15 @@ export class Networks {
 
   isNativeAddress(address: string | null, chainId: ChainId): boolean {
     const network = this.getNetworkById(chainId);
-    if (!network.native_asset) {
+    const implementation = getBaseAssetImplementation(network);
+    if (!implementation) {
       throw new Error(`Native asset is not defined for: ${chainId}`);
     }
-    return network.native_asset
-      ? address === network.native_asset.address
-      : false;
+    return address === implementation.address;
   }
 
-  static getNetworkRpcUrlInternal(network: NetworkConfig) {
-    const url =
-      network.rpc_url_user ||
-      network.rpc_url_internal ||
-      network.rpc_url_public?.[0];
+  static getNetworkRpcUrlInternal(network: NetworkInfo) {
+    const url = network.rpcUrlUser || network.rpcUrl || network.publicRpcUrl;
     if (!url) {
       throw new Error(`Network url missing: ${network.id}`);
     }
@@ -365,11 +364,8 @@ export class Networks {
     return Networks.getNetworkRpcUrlInternal(network);
   }
 
-  static getRpcUrlPublic(network: NetworkConfig) {
-    const url =
-      network.rpc_url_user ||
-      network.rpc_url_public?.[0] ||
-      network.rpc_url_internal;
+  static getRpcUrlPublic(network: NetworkInfo) {
+    const url = network.rpcUrlUser || network.publicRpcUrl || network.rpcUrl;
     if (!url) {
       throw new Error(`Network url missing: ${network.id}`);
     }

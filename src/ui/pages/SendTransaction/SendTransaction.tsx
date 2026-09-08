@@ -526,7 +526,8 @@ function SendTransactionContent({
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
   const paymasterPossible =
-    USE_PAYMASTER_FEATURE && Boolean(network?.supports_sponsored_transactions);
+    USE_PAYMASTER_FEATURE &&
+    Boolean(network?.flags.supportsSponsoredTransactions);
 
   const eligibilityQuery = useQuery({
     // transaction gas type may change when gasPrices responds, so we should wait
@@ -572,7 +573,9 @@ function SendTransactionContent({
   const isWaitingForGasrices = !gasPricesReady && !isStaleGasPricesValue;
 
   const interpretQuery = useQuery({
-    enabled: Boolean(network?.supports_simulations && !isWaitingForGasrices),
+    enabled: Boolean(
+      network?.flags.supportsSimulations && !isWaitingForGasrices
+    ),
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
     keepPreviousData: true,

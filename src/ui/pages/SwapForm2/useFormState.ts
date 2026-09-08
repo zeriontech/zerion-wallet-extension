@@ -74,7 +74,10 @@ function useDefaultFormState({
     );
     for (const chainId of sortedChains) {
       const networkConfig = networks.getByNetworkId(createChain(chainId));
-      if (networkConfig?.supports_trading || networkConfig?.supports_bridging) {
+      if (
+        networkConfig?.flags.supportsTrading ||
+        networkConfig?.flags.supportsBridging
+      ) {
         return chainId;
       }
     }
@@ -117,7 +120,7 @@ function useDefaultFormState({
       createChain(preferredInputChain)
     );
     const nativeOnPreferred =
-      networkConfig?.native_asset?.id ||
+      networkConfig?.baseAsset?.id ||
       (getAddressType(address) === 'evm' ? ETH_ID : SOL_ID);
     if (!matchesOutput(preferredInputChain, nativeOnPreferred)) {
       return {
@@ -139,7 +142,7 @@ function useDefaultFormState({
     const networkConfig = networks.getByNetworkId(
       createChain(defaultInputChain)
     );
-    return Boolean(networkConfig?.supports_trading);
+    return Boolean(networkConfig?.flags.supportsTrading);
   }, [defaultInputChain, networks]);
 
   const defaultOutputChain = useMemo(() => {
@@ -178,7 +181,7 @@ function useDefaultFormState({
       createChain(defaultOutputChain)
     );
     const fallbackList = [
-      networkConfig?.native_asset?.id,
+      networkConfig?.baseAsset?.id,
       USDC_ID,
       USDT_ID,
     ].filter((id): id is string => Boolean(id));

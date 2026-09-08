@@ -46,14 +46,14 @@ function NetworkList({ standard }: { standard: BlockchainType }) {
   const allNetworks = useMemo(() => {
     return networks
       ?.getDefaultNetworks(standard)
-      .filter((item) => !item.is_testnet && !isCustomNetworkId(item.id));
+      .filter((item) => !item.testnet && !isCustomNetworkId(item.id));
   }, [networks, standard]);
 
   return (
     <VStack gap={0}>
       {allNetworks?.map((network) => (
         <HStack key={network.id} gap={12} style={{ paddingBlock: 12 }}>
-          <NetworkIcon name={network.name} src={network.icon_url} size={24} />
+          <NetworkIcon name={network.name} src={network.iconUrl} size={24} />
           <UIText kind="body/regular">{network.name}</UIText>
         </HStack>
       ))}
@@ -70,7 +70,7 @@ function SupportedNetworks({ address }: { address: string }) {
     return (
       networks
         ?.getDefaultNetworks(standard)
-        .filter((item) => !item.is_testnet && !isCustomNetworkId(item.id)) ?? []
+        .filter((item) => !item.testnet && !isCustomNetworkId(item.id)) ?? []
     );
   }, [networks, standard]);
 
@@ -93,7 +93,7 @@ function SupportedNetworks({ address }: { address: string }) {
               <NetworkIcon
                 key={network.id}
                 size={20}
-                src={network.icon_url}
+                src={network.iconUrl}
                 name={network.name}
                 style={{ borderRadius: 6 }}
               />
