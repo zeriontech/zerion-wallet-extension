@@ -29,6 +29,7 @@ import {
 import {
   INTERNAL_ORIGIN,
   INTERNAL_ORIGIN_SYMBOL,
+  INTERNAL_SYMBOL_CONTEXT,
 } from 'src/background/constants';
 import {
   fetchNetworkByChainId,
@@ -83,7 +84,6 @@ import {
   createTypedData,
   serializePaymasterTx,
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
-import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
@@ -170,7 +170,9 @@ async function prepareNonce<
   }
 }
 
-export const INTERNAL_SYMBOL_CONTEXT = { origin: INTERNAL_ORIGIN_SYMBOL };
+// Defined in a leaf module so low-level services can use it without importing
+// this file (and its import tree); re-exported to keep existing import paths.
+export { INTERNAL_SYMBOL_CONTEXT };
 
 type PublicMethodParams<T = undefined> = T extends undefined
   ? {
@@ -973,8 +975,10 @@ export class Wallet {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
     const on = Boolean(preferences.testnetMode?.on);
-    const client = getDefiSdkClient({ on });
-    chainConfigStore.setDefiSdkClient(client);
+    chainConfigStore.setNetworksApiParams({
+      apiClient: ZerionAPI,
+      source: on ? 'testnet' : 'mainnet',
+    });
   }
 
   private notifyLastUsedAddressStore() {

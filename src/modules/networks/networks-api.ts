@@ -1,59 +1,98 @@
-import { wait } from 'src/shared/wait';
-import type { Client } from 'defi-sdk';
-import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
-import { fetchChains, getNetworksBySearch } from '../ethereum/chains/requests';
-import { isTestClient } from '../defi-sdk/isTestClient';
+import { HTTPError } from 'ky';
+import { isTruthy } from 'is-truthy-ts';
+import { chainFullInfoToNetworkConfig } from 'src/modules/zerion-api/requests/chainFullInfoToNetworkConfig';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
+import type { ChainFullInfo } from 'src/modules/zerion-api/types/ChainFullInfo';
+import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import type { NetworkConfig } from './NetworkConfig';
 import { networksFallbackInfo } from './networks-fallback';
-import { Networks } from './Networks';
 
-const CHAIN_INFO_TIMEOUT = 12000;
-
-async function getNetworksFallback() {
-  await wait(CHAIN_INFO_TIMEOUT);
-  return networksFallbackInfo;
+export interface NetworksApiParams {
+  apiClient: ZerionApiClient;
+  source: NetworksSource;
 }
 
-export function getNetworks({
-  ids,
-  client,
-  include_testnets,
-  supported_only = false,
-}: {
-  ids: string[] | null;
-  client: Client;
-  include_testnets: boolean;
-  supported_only: boolean;
-}): Promise<NetworkConfig[]> {
-  return Promise.race([
-    fetchChains(
-      {
-        ids: ids || undefined,
-        include_testnets: Boolean(ids) || include_testnets,
-        supported_only,
-      },
-      client
-    ),
-    ids || isTestClient(client) // do not use fallback for testnet mode
-      ? rejectAfterDelay(
-          CHAIN_INFO_TIMEOUT,
-          `getNetworks(${ids?.join() ?? ''})`
-        )
-      : getNetworksFallback(),
-  ]);
+function toNetworkConfigs(chains: ChainFullInfo[]) {
+  return chains.map(chainFullInfoToNetworkConfig).filter(isTruthy);
 }
 
-export async function getNetworkByChainId(chainId: string, client: Client) {
-  const possibleNetworks = await Promise.race([
-    getNetworksBySearch({
-      query: Number(chainId).toString(),
-      client,
-      includeTestnets: true,
-    }),
-    rejectAfterDelay(CHAIN_INFO_TIMEOUT, `getNetworkByChainId(${chainId})`),
-  ]);
-  const network = possibleNetworks.find(
-    (item) => Networks.getChainId(item) === chainId
+/**
+ * The supported chain list for {source}. Testnets are included only for the
+ * testnet source, matching what the socket's `supported_only` request returned.
+ * The unfiltered list (~2.6k chains) is never fetched; chains outside this
+ * list are looked up individually with {getNetworkByChainId} / {getNetworkById}.
+ * Falls back to the bundled mainnet snapshot on failure — mainnet only, the
+ * snapshot has no testnets.
+ */
+export async function getSupportedNetworks({
+  apiClient,
+  source,
+}: NetworksApiParams): Promise<NetworkConfig[]> {
+  try {
+    const { data } = await apiClient.chainList(
+      { supportedOnly: true, includeTestnets: source === 'testnet' },
+      { source }
+    );
+    return toNetworkConfigs(data);
+  } catch (error) {
+    if (source === 'testnet') {
+      throw error;
+    }
+    return networksFallbackInfo;
+  }
+}
+
+/** Exact lookup by EIP-155 chain id (hex or decimal string) */
+export async function getNetworkByChainId(
+  chainId: string,
+  { apiClient, source }: NetworksApiParams
+): Promise<NetworkConfig | null> {
+  try {
+    const { data } = await apiClient.chainGet(
+      { eip155Id: Number(chainId) },
+      { source }
+    );
+    return chainFullInfoToNetworkConfig(data);
+  } catch (error) {
+    if (error instanceof HTTPError && error.response.status === 404) {
+      return null; // unknown chain, not a failure
+    }
+    throw error;
+  }
+}
+
+/**
+ * Exact lookup by network id (slug). chain/list/v1 has no `ids` param and
+ * `searchQuery` is a substring match, so the response is narrowed to the exact id.
+ */
+export async function getNetworkById(
+  id: string,
+  { apiClient, source }: NetworksApiParams
+): Promise<NetworkConfig | null> {
+  const { data } = await apiClient.chainList(
+    { searchQuery: id, supportedOnly: false, includeTestnets: true },
+    { source }
   );
-  return network || null;
+  const chain = data.find((item) => item.id === id);
+  return chain ? chainFullInfoToNetworkConfig(chain) : null;
+}
+
+export async function getNetworksBySearch({
+  query,
+  includeTestnets,
+  apiClient,
+  source,
+}: NetworksApiParams & {
+  query: string;
+  includeTestnets: boolean;
+}): Promise<NetworkConfig[]> {
+  const { data } = await apiClient.chainList(
+    {
+      searchQuery: query.trim().toLowerCase(),
+      supportedOnly: false,
+      includeTestnets,
+    },
+    { source }
+  );
+  return toNetworkConfigs(data);
 }

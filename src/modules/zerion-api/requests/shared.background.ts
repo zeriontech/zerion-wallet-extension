@@ -1,4 +1,4 @@
-import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
+import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/constants';
 import {
   getProviderForApiV4,
   getProviderNameFromGroup,

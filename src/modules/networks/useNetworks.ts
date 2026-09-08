@@ -10,8 +10,8 @@ import {
 } from 'src/modules/networks/networks-store.client';
 import { usePreferences } from 'src/ui/features/preferences';
 import { invariant } from 'src/shared/invariant';
-import { getNetworksBySearch } from '../ethereum/chains/requests';
 import type { ChainId } from '../ethereum/transactions/ChainId';
+import { getNetworksBySearch } from './networks-api';
 import { NetworksStore } from './networks-store';
 import { createChain } from './Chain';
 
@@ -142,7 +142,8 @@ export function useSearchNetworks({ query = '' }: { query?: string }) {
       const networksStore = await getNetworksStore();
       const data = await getNetworksBySearch({
         query: query.trim().toLowerCase(),
-        client: networksStore.client,
+        apiClient: networksStore.apiClient,
+        source: networksStore.source,
         includeTestnets: Boolean(preferences?.testnetMode?.on),
       });
       networksStore.pushConfigs(...data);

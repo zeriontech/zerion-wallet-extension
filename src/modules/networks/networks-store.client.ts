@@ -1,7 +1,6 @@
-import { client } from 'defi-sdk';
 import { walletPort } from 'src/ui/shared/channels';
 import { getPreferences } from 'src/ui/features/preferences/usePreferences';
-import { configureUITestClient } from '../defi-sdk';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { NetworksStore } from './networks-store';
 
 export const mainNetworksStore = new NetworksStore(
@@ -10,8 +9,8 @@ export const mainNetworksStore = new NetworksStore(
     getOtherNetworkData: async () => {
       return walletPort.request('getOtherNetworkData');
     },
-    client,
-    testnetMode: false,
+    getApiClient: () => ZerionAPI,
+    source: 'mainnet',
   }
 );
 
@@ -21,8 +20,8 @@ export const testenvNetworksStore = new NetworksStore(
     getOtherNetworkData: async () => {
       return walletPort.request('getOtherNetworkData');
     },
-    client: configureUITestClient(),
-    testnetMode: true,
+    getApiClient: () => ZerionAPI,
+    source: 'testnet',
   }
 );
 

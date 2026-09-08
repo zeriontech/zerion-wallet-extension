@@ -14,7 +14,8 @@ type NetworkSpecification = {
   specification: {
     solana?: null | object;
     eip155?: null | {
-      eip1559: boolean;
+      /** No ZPI source and no readers; absent on backend-provided configs */
+      eip1559?: boolean;
       id: number;
     };
   };
@@ -40,7 +41,8 @@ interface NetworkConfigBase {
   explorer_address_url: string | null;
   explorer_home_url: string | null;
   explorer_name: string | null;
-  explorer_urls: string[] | null;
+  /** No ZPI source and no readers; absent on backend-provided configs */
+  explorer_urls?: string[] | null;
   /**
    * The node URL that we use internally and do not expose to dApps.
    */
@@ -59,7 +61,8 @@ interface NetworkConfigBase {
   supports_sponsored_transactions: boolean;
   supports_simulations: boolean;
   native_asset: NetworkAsset | null;
-  wrapped_native_asset: NetworkAsset | null;
+  /** No ZPI source and no readers; absent on backend-provided configs */
+  wrapped_native_asset?: NetworkAsset | null;
   /**
    * Client-side value.
    * Whether to display this network among select options
