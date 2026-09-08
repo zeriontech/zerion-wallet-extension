@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import type {
   CustomConfiguration,
   NetworkFeeConfiguration,
-} from '@zeriontech/transactions';
+} from 'src/shared/types/TransactionConfiguration';
 import { gweiToWei, weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';

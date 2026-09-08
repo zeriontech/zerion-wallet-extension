@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js';
 import type {
   EIP1559,
   NetworkFeeConfiguration,
-} from '@zeriontech/transactions';
+} from 'src/shared/types/TransactionConfiguration';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';

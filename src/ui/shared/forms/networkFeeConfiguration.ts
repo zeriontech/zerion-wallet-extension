@@ -2,7 +2,7 @@ import { isNumeric } from 'src/shared/isNumeric';
 import type {
   CustomConfiguration,
   NetworkFeeSpeed,
-} from '@zeriontech/transactions';
+} from 'src/shared/types/TransactionConfiguration';
 import { gweiToWei, weiToGwei } from 'src/shared/units/formatGasPrice';
 
 type NetworkFeeSubset = {

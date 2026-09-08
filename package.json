@@ -139,7 +139,6 @@
     "@zeriontech/components": "^1.1.0",
     "@zeriontech/hardware-wallet-connection": "^2.0.0",
     "@zeriontech/solana-wallet-standard": "^1.0.0-alpha.2",
-    "@zeriontech/transactions": "^0.4.2",
     "bignumber.js": "^9.1.1",
     "bip32": "^5.0.0-rc.0",
     "bip39": "^3.1.0",

@@ -1,4 +1,4 @@
-import type { NetworkFeeSpeed } from '@zeriontech/transactions';
+import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
 
 export type SwapFormState = {
   /** @description Currency name for price conversions */

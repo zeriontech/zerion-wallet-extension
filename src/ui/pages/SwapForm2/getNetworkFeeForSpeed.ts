@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import type {
   CustomConfiguration,
   NetworkFeeSpeed,
-} from '@zeriontech/transactions';
+} from 'src/shared/types/TransactionConfiguration';
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { weiToGweiStr } from 'src/shared/units/formatGasPrice';

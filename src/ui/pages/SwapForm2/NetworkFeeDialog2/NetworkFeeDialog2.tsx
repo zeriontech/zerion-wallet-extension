@@ -4,7 +4,7 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import type {
   CustomConfiguration,
   NetworkFeeConfiguration,
-} from '@zeriontech/transactions';
+} from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import type { Chain } from 'src/modules/networks/Chain';
 import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';

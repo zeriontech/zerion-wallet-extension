@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import type { CustomConfiguration } from '@zeriontech/transactions';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import type {
   IncomingTransaction,

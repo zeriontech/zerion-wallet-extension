@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import type { CustomConfiguration } from '@zeriontech/transactions';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import { useMeasure } from 'src/ui/shared/useMeasure';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';

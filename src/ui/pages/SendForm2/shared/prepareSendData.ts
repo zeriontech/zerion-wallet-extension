@@ -1,5 +1,5 @@
-import type { EmptyAddressPosition } from '@zeriontech/transactions';
-import { createSendNativeOrContractTransaction } from '@zeriontech/transactions';
+import type { EmptyAddressPosition } from 'src/ui/pages/SendForm2/shared/EmptyAddressPosition';
+import { createSendNativeOrContractTransaction } from 'src/modules/ethereum/transactions/createSendTransaction';
 import type { AddressPosition } from 'src/defi-sdk.types';
 import {
   adjustedCheckEligibility,

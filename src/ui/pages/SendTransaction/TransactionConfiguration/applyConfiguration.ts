@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import type { CustomConfiguration } from '@zeriontech/transactions';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
