@@ -83,7 +83,6 @@ import {
   createTypedData,
   serializePaymasterTx,
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
-import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
@@ -973,8 +972,10 @@ export class Wallet {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
     const on = Boolean(preferences.testnetMode?.on);
-    const client = getDefiSdkClient({ on });
-    chainConfigStore.setDefiSdkClient(client);
+    chainConfigStore.setNetworksApiParams({
+      apiClient: ZerionAPI,
+      source: on ? 'testnet' : 'mainnet',
+    });
   }
 
   private notifyLastUsedAddressStore() {

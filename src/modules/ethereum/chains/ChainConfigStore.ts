@@ -1,9 +1,9 @@
 import { produce } from 'immer';
-import type { Client } from 'defi-sdk';
 import { equal } from 'src/modules/fast-deep-equal';
 import type { Chain } from 'src/modules/networks/Chain';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { upsert } from 'src/shared/upsert';
+import type { NetworksApiParams } from 'src/modules/networks/networks-api';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
@@ -38,7 +38,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     visitedChains: [],
   };
 
-  private defiSdkClient: Client | null = null;
+  private networksApiParams: NetworksApiParams | null = null;
 
   constructor(initialState: ChainConfig, key: string) {
     super(initialState, key, {
@@ -140,10 +140,10 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     this.addVisitedChain(chain);
   }
 
-  setDefiSdkClient(client: Client) {
-    const prevClient = this.defiSdkClient;
-    this.defiSdkClient = client;
-    if (prevClient !== this.defiSdkClient) {
+  setNetworksApiParams(params: NetworksApiParams) {
+    const prevSource = this.networksApiParams?.source;
+    this.networksApiParams = params;
+    if (prevSource !== params.source) {
       this.checkChainsForUpdates();
     }
   }
@@ -153,14 +153,16 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     if (ethereumChainConfigs.length) {
       const updatedEthereumChainConfigs: EthereumChainConfig[] = [];
       for (const config of ethereumChainConfigs) {
-        if (!this.defiSdkClient || !isCustomNetworkId(config.id)) {
+        if (!this.networksApiParams || !isCustomNetworkId(config.id)) {
           updatedEthereumChainConfigs.push(config);
           continue;
         }
         try {
           const { chainId } = config.value;
-          const client = this.defiSdkClient;
-          const network = await getNetworkByChainId(chainId, client);
+          const network = await getNetworkByChainId(
+            chainId,
+            this.networksApiParams
+          );
           if (!network) {
             throw new Error(
               `Unable to fetch network info by chainId: ${config.value.chainId}`

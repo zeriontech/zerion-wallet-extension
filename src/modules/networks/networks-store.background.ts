@@ -1,7 +1,6 @@
-import { client } from 'defi-sdk';
 import type { WalletRecord } from 'src/shared/types/WalletRecord';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { chainConfigStore } from '../ethereum/chains/ChainConfigStore';
-import { configureBackgroundTestClient } from '../defi-sdk/background';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import { NetworksStore } from './networks-store';
 import type { NetworkConfig } from './NetworkConfig';
@@ -16,8 +15,8 @@ export const mainNetworksStore = new NetworksStore(
         chainConfigStore.getState();
       return { ethereumChainConfigs, visitedChains };
     },
-    client,
-    testnetMode: false,
+    apiClient: ZerionAPI,
+    source: 'mainnet',
   }
 );
 
@@ -30,8 +29,8 @@ export const testenvNetworksStore = new NetworksStore(
         chainConfigStore.getState();
       return { ethereumChainConfigs, visitedChains };
     },
-    client: configureBackgroundTestClient(),
-    testnetMode: true,
+    apiClient: ZerionAPI,
+    source: 'testnet',
   }
 );
 

@@ -1,4 +1,4 @@
-import { client } from 'defi-sdk';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { NetworkConfig } from './NetworkConfig';
@@ -117,5 +117,5 @@ export const networksStore = new NetworksStoreMock(
       visitedChains: [],
     }),
   },
-  { getOtherNetworkData: null, client, testnetMode: false }
+  { getOtherNetworkData: null, apiClient: ZerionAPI, source: 'mainnet' }
 );

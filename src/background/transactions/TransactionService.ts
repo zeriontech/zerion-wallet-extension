@@ -19,12 +19,12 @@ import {
 } from 'src/modules/ethereum/transactions/addressAction';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { getNetworkByChainId } from 'src/modules/networks/networks-api';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { backendKnowsTransaction } from 'src/modules/ethereum/transactions/backendKnowsTransaction';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { invariant } from 'src/shared/invariant';
-import { getDefiSdkClient } from 'src/modules/defi-sdk/background';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { emitter } from '../events';
@@ -231,15 +231,15 @@ export class TransactionService {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
     const testnetMode = Boolean(preferences?.testnetMode?.on);
-    // Still needed by getNetworkByChainId; networks move off the defi-sdk
-    // client in WLT-2395.
-    const client = getDefiSdkClient({ on: testnetMode });
     const source = testnetMode ? 'testnet' : 'mainnet';
 
     for (const [key, { hash, nonce }] of map.entries()) {
       const [address, chainIdStr] = key.split(':');
       const chainId = chainIdStr as ChainId;
-      const network = await getNetworkByChainId(chainId, client);
+      const network = await getNetworkByChainId(chainId, {
+        apiClient: ZerionAPI,
+        source,
+      });
       if (network?.supports_actions) {
         // The nonce comes from the local store: the backend is only asked
         // whether it has seen this hash yet.

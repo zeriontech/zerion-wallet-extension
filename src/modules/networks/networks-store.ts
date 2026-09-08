@@ -1,11 +1,16 @@
 import { Store } from 'store-unit';
-import { type Client } from 'defi-sdk';
 import { invariant } from 'src/shared/invariant';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
+import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
 import { Networks } from './Networks';
-import { getNetworkByChainId, getNetworks } from './networks-api';
+import {
+  getNetworkByChainId,
+  getNetworkById,
+  getSupportedNetworks,
+} from './networks-api';
 import type { NetworkConfig } from './NetworkConfig';
 import { toNetworkConfig } from './helpers';
 import { createChain } from './Chain';
@@ -38,8 +43,8 @@ export class NetworksStore extends Store<State> {
   private networkConfigs: NetworkConfig[] = [];
   private customNetworkConfigs: NetworkConfig[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
-  client: Client;
-  testnetMode: boolean;
+  apiClient: ZerionApiClient;
+  source: NetworksSource;
   private getOtherNetworkData:
     | null
     | (() => Promise<OtherNetworkData | undefined>);
@@ -48,22 +53,22 @@ export class NetworksStore extends Store<State> {
     state: State,
     {
       getOtherNetworkData,
-      client,
-      testnetMode,
+      apiClient,
+      source,
     }: {
       getOtherNetworkData?: NetworksStore['getOtherNetworkData'];
-      client: Client;
-      testnetMode: boolean;
+      apiClient: ZerionApiClient;
+      source: NetworksSource;
     }
   ) {
     super(state);
     this.getOtherNetworkData = getOtherNetworkData ?? null;
-    this.client = client;
-    this.testnetMode = testnetMode;
+    this.apiClient = apiClient;
+    this.source = source;
   }
 
   toString() {
-    return this.client.url;
+    return this.source;
   }
 
   private async updateNetworks() {
@@ -85,11 +90,9 @@ export class NetworksStore extends Store<State> {
   private async fetchNetworks({
     chains = [],
     update,
-    testnetMode,
   }: {
     chains?: string[];
     update?: boolean;
-    testnetMode: boolean;
   }) {
     const existingNetworksCollection =
       this.getState().networks?.getNetworksCollection();
@@ -101,55 +104,56 @@ export class NetworksStore extends Store<State> {
     }
 
     const chainConfigs = await this.getOtherNetworkData?.();
-    const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
+    const savedChainConfigs = chainConfigs?.ethereumChainConfigs || [];
     const visitedChains = chainConfigs?.visitedChains || [];
-    const savedIds = savedChainConfigs?.map((config) => config.id) || [];
-    const chainsToFetch = Array.from(
-      new Set(
-        [...savedIds, ...chains, ...visitedChains].filter(
-          (id) => !isCustomNetworkId(id)
-        )
-      )
+    const params = { apiClient: this.apiClient, source: this.source };
+
+    const commonNetworkConfigs = update
+      ? []
+      : await getSupportedNetworks(params).catch(() => [] as NetworkConfig[]);
+    const knownNetworkConfigs = mergeNetworkConfigs(
+      this.networkConfigs,
+      commonNetworkConfigs
     );
+    const knownIdSet = new Set(knownNetworkConfigs.map(({ id }) => id));
 
-    const [extraNetworkConfigs, commonNetworkConfigs] =
-      await Promise.allSettled([
-        getNetworks({
-          ids: chainsToFetch,
-          client: this.client,
-          include_testnets: true,
-          supported_only: false,
-        }),
-        update
-          ? Promise.resolve([])
-          : getNetworks({
-              ids: null,
-              client: this.client,
-              include_testnets: testnetMode,
-              supported_only: true,
-            }),
-      ]);
-
-    const updatedNetworkConfigs = mergeNetworkConfigs(
-      commonNetworkConfigs.status === 'fulfilled'
-        ? commonNetworkConfigs.value
-        : [],
-      extraNetworkConfigs.status === 'fulfilled'
-        ? extraNetworkConfigs.value
-        : []
+    /**
+     * chain/list/v1 has no `ids` param, so chains outside the supported list
+     * are looked up one by one: saved configs by their exact eip155 chainId,
+     * requested and visited slugs through an exact-match search.
+     */
+    const savedConfigsToFetch = savedChainConfigs.filter(
+      (config) => !isCustomNetworkId(config.id) && !knownIdSet.has(config.id)
+    );
+    const savedIdsToFetch = new Set(savedConfigsToFetch.map(({ id }) => id));
+    const slugsToFetch = Array.from(
+      new Set([...chains, ...visitedChains])
+    ).filter(
+      (id) =>
+        !isCustomNetworkId(id) &&
+        !knownIdSet.has(id) &&
+        !savedIdsToFetch.has(id)
+    );
+    const extraResults = await Promise.allSettled([
+      ...savedConfigsToFetch.map((config) =>
+        getNetworkByChainId(config.value.chainId, params)
+      ),
+      ...slugsToFetch.map((id) => getNetworkById(id, params)),
+    ]);
+    const extraNetworkConfigs = extraResults.flatMap((result) =>
+      result.status === 'fulfilled' && result.value ? [result.value] : []
     );
 
     this.networkConfigs = mergeNetworkConfigs(
-      this.networkConfigs,
-      updatedNetworkConfigs
+      knownNetworkConfigs,
+      extraNetworkConfigs
     );
     const fulfilledNetworkIdSet = new Set(
       this.networkConfigs.map(({ id }) => id)
     );
-    this.customNetworkConfigs =
-      savedChainConfigs
-        ?.filter((config) => !fulfilledNetworkIdSet.has(config.id))
-        .map((config) => toNetworkConfig(config.value, config.id)) || [];
+    this.customNetworkConfigs = savedChainConfigs
+      .filter((config) => !fulfilledNetworkIdSet.has(config.id))
+      .map((config) => toNetworkConfig(config.value, config.id));
 
     return this.updateNetworks();
   }
@@ -165,7 +169,10 @@ export class NetworksStore extends Store<State> {
     if (!shouldUpdateNetworksInfo && existingNetworks) {
       return existingNetworks;
     }
-    const network = await getNetworkByChainId(chainId, this.client);
+    const network = await getNetworkByChainId(chainId, {
+      apiClient: this.apiClient,
+      source: this.source,
+    });
     if (network) {
       this.networkConfigs = mergeNetworkConfigs(this.networkConfigs, [network]);
     }
@@ -183,14 +190,7 @@ export class NetworksStore extends Store<State> {
   async load({ chains }: { chains?: string[] } = {}) {
     const key = JSON.stringify(chains || []);
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({
-        chains,
-        /**
-         * NOTE: due to fetchNetworks implementation, {testnetMode} param is important only when
-         * {chains} param is undefined. {testnetMode} param helps to fill networkStore initially for testnetMode
-         */
-        testnetMode: this.testnetMode,
-      }).finally(() => {
+      this.loaderPromises[key] = this.fetchNetworks({ chains }).finally(() => {
         delete this.loaderPromises[key];
         this.isReady = true;
       });
@@ -227,13 +227,11 @@ export class NetworksStore extends Store<State> {
   async update() {
     const key = 'update';
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({
-        update: true,
-        /** testnetMode value does not matter when update: true ¯\_(ツ)_/¯ */
-        testnetMode: this.testnetMode,
-      }).finally(() => {
-        delete this.loaderPromises[key];
-      });
+      this.loaderPromises[key] = this.fetchNetworks({ update: true }).finally(
+        () => {
+          delete this.loaderPromises[key];
+        }
+      );
     }
     return this.loaderPromises[key];
   }
