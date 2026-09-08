@@ -27,10 +27,8 @@ import type {
   AddressAction,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
-import { hashQueryKey, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
-import { Client } from 'defi-sdk';
 import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -103,27 +101,22 @@ function useMinedAndPendingAddressActions({
     ? networks?.supports('actions', chain)
     : true;
   const localActions = useLocalAddressTransactions(params);
-  const client = useDefiSdkClient();
+  const source = useHttpClientSource();
   const { currency } = useCurrency();
 
   const { data: localAddressActions, ...localActionsQuery } = useQuery({
-    // NOTE: for some reason, eslint doesn't warn about missing client. Report to GH?
     queryKey: [
       'pages/history',
       localActions,
       chain,
       searchQuery,
-      client,
+      source,
       startDate,
       actionTypes,
       actionTypes?.length,
       assetTypes?.length,
       assetTypes?.[0],
     ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
     queryFn: async () => {
       let items = await Promise.all(
         localActions.map((transactionObject) =>
@@ -131,7 +124,7 @@ function useMinedAndPendingAddressActions({
             transactionObject,
             loadNetworkByChainId,
             currency,
-            client
+            source
           )
         )
       );
@@ -174,7 +167,7 @@ function useMinedAndPendingAddressActions({
       assetTypes: assetTypes?.length ? assetTypes : undefined,
       limit: 10,
     },
-    { source: useHttpClientSource() },
+    { source },
     { enabled: isSupportedByBackend }
   );
 

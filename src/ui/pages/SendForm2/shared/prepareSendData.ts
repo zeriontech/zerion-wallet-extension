@@ -1,6 +1,5 @@
 import type { EmptyAddressPosition } from '@zeriontech/transactions';
 import { createSendNativeOrContractTransaction } from '@zeriontech/transactions';
-import type { Client } from 'defi-sdk';
 import type { AddressPosition } from 'src/defi-sdk.types';
 import {
   adjustedCheckEligibility,
@@ -140,10 +139,7 @@ type SendSubmitData = (
 export async function prepareSendData(
   from: string,
   position: AddressPosition | EmptyAddressPosition | null,
-  formState: SendFormState,
-  // Unused since the NFT branch was removed; kept so the call signature is
-  // stable for the NetworksSource threading slice (WLT-2184).
-  _client: Client
+  formState: SendFormState
 ): Promise<SendSubmitData> {
   const EMPTY_SEND_DATA = {
     network: null,

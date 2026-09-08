@@ -9,7 +9,6 @@ import {
   Navigate,
 } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { DefiSdkClientProvider as DefiSdkClientContextProvider } from 'defi-sdk';
 import * as styles from 'src/ui/style/global.module.css';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
@@ -21,7 +20,6 @@ import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
 import { useStore } from '@store-unit/react';
 import { runtimeStore } from 'src/shared/core/runtime-store';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { Playground } from 'src/ui-lab/Playground';
 import { useNavigate } from 'react-router-dom';
 import { Login } from '../pages/Login';
@@ -102,11 +100,6 @@ import {
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
-
-function DefiSdkClientProvider({ children }: React.PropsWithChildren) {
-  const client = useDefiSdkClient();
-  return <DefiSdkClientContextProvider client={client} children={children} />;
-}
 
 const useAuthState = () => {
   const { data, isFetching } = useQuery({
@@ -667,15 +660,13 @@ export function App({ initialView, inspect }: AppProps) {
                         ) : isPageLayout ? (
                           <PageLayoutViews />
                         ) : (
-                          <DefiSdkClientProvider>
-                            <Views
-                              initialRoute={
-                                initialView === 'handshakeFailure'
-                                  ? '/handshake-failure'
-                                  : undefined
-                              }
-                            />
-                          </DefiSdkClientProvider>
+                          <Views
+                            initialRoute={
+                              initialView === 'handshakeFailure'
+                                ? '/handshake-failure'
+                                : undefined
+                            }
+                          />
                         )
                       }
                     />

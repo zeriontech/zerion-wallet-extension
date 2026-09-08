@@ -1,8 +1,6 @@
-import { hashQueryKey, useQuery } from '@tanstack/react-query';
-import { Client } from 'defi-sdk';
+import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
@@ -119,7 +117,6 @@ export function useSendTransaction({
   network: NetworkConfig | null;
   enabled?: boolean;
 }) {
-  const client = useDefiSdkClient();
   const { currency } = useCurrency();
   const source = useHttpClientSource();
   const { preferences } = usePreferences();
@@ -245,14 +242,8 @@ export function useSendTransaction({
       address,
       addressPosition,
       legacyFormState,
-      client,
     ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
-    queryFn: () =>
-      prepareSendData(address, addressPosition, legacyFormState, client),
+    queryFn: () => prepareSendData(address, addressPosition, legacyFormState),
     staleTime: 20000,
     retry: 1,
   });

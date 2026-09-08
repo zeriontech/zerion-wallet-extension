@@ -1,6 +1,4 @@
-import type { Client } from 'defi-sdk';
 import { nanoid } from 'nanoid';
-import { isTestClient } from 'src/modules/defi-sdk/isTestClient';
 import { capitalize } from 'capitalize-ts';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
@@ -15,6 +13,7 @@ import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-a
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
 import type { NetworkConfig } from 'src/modules/networks/NetworkConfig';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { IncomingTransactionWithChainId } from '../../types/IncomingTransaction';
 import type { TransactionObject } from '../types';
 import type { TransactionActionType } from '../describeTransaction';
@@ -35,11 +34,8 @@ import {
 export async function createActionContent(
   action: TransactionAction,
   currency: string,
-  client: Client
+  source: NetworksSource
 ): Promise<AddressAction['content']> {
-  // The callers still thread the defi-sdk client (WLT-2395 converts them to
-  // NetworksSource threading); translate here so the asset lookup is pure ZPI.
-  const source = isTestClient(client) ? 'testnet' : 'mainnet';
   switch (action.type) {
     case 'execute':
     case 'send': {
@@ -199,7 +195,7 @@ async function pendingEvmTxToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
   currency: string,
-  client: Client
+  source: NetworksSource
 ): Promise<LocalAddressAction> {
   invariant(transactionObject.hash, 'Must be evm tx');
   const { transaction, hash, timestamp, addressAction } = transactionObject;
@@ -227,7 +223,7 @@ async function pendingEvmTxToAddressAction(
     : null;
   const label = action ? createActionLabel(action) : null;
   const content = action
-    ? await createActionContent(action, currency, client)
+    ? await createActionContent(action, currency, source)
     : null;
   const actionTransaction = {
     hash,
@@ -301,14 +297,14 @@ export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
   currency: string,
-  client: Client
+  source: NetworksSource
 ): Promise<LocalAddressAction> {
   if (transactionObject.hash) {
     return pendingEvmTxToAddressAction(
       transactionObject,
       loadNetworkByChainId,
       currency,
-      client
+      source
     );
   } else if (transactionObject.signature) {
     return pendingSolanaTxToAddressAction(transactionObject, currency);
@@ -324,7 +320,7 @@ export async function incomingTxToIncomingAddressAction(
   transactionAction: TransactionAction,
   networks: Networks,
   currency: string,
-  client: Client
+  source: NetworksSource
 ): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
   const network = networks.getNetworkById(
@@ -334,7 +330,7 @@ export async function incomingTxToIncomingAddressAction(
   const content = await createActionContent(
     transactionAction,
     currency,
-    client
+    source
   );
 
   const type = {

@@ -7,11 +7,6 @@ import { HandshakeFailed } from '../errors/errors';
 import { rejectAfterDelay } from '../rejectAfterDelay';
 import { createParams, sendToMetabase } from './analytics';
 import {
-  createAddProviderHook,
-  initialize as initializeApiV4Analytics,
-} from './api-v4-zerion';
-import {
-  getProviderForApiV4,
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
@@ -141,18 +136,9 @@ function trackAppEvents({
 }
 
 export function initializeClientAnalytics() {
-  async function getWalletProviderForApiV4(address: string) {
-    const group = await getWalletGroupByAddress(address);
-    return getProviderForApiV4(getProviderNameFromGroup(group));
-  }
   async function getWalletProviderForMetabase(address: string) {
     const group = await getWalletGroupByAddress(address);
     return getProviderForMetabase(getProviderNameFromGroup(group));
   }
-  initializeApiV4Analytics({
-    willSendRequest: createAddProviderHook({
-      getWalletProvider: getWalletProviderForApiV4,
-    }),
-  });
   return trackAppEvents({ getWalletProvider: getWalletProviderForMetabase });
 }

@@ -40,11 +40,6 @@ import { normalizeAddress } from '../normalizeAddress';
 import { getAddressType } from '../wallet/classifiers';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
-  createAddProviderHook,
-  initialize as initializeApiV4Analytics,
-} from './api-v4-zerion';
-import {
-  getProviderForApiV4,
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
@@ -988,12 +983,6 @@ function trackAppEvents({ account }: { account: Account }) {
 }
 
 export function initialize({ account }: { account: Account }) {
-  async function getWalletProvider(address: string) {
-    return getProviderForApiV4(queryWalletProvider(account, address));
-  }
-  initializeApiV4Analytics({
-    willSendRequest: createAddProviderHook({ getWalletProvider }),
-  });
   const handleUserId = async () => {
     const preferences = await globalPreferences.getPreferences();
     if (!preferences.analyticsEnabled) {

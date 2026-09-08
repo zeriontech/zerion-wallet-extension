@@ -1,7 +1,6 @@
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
 import { mainNetworksStore } from 'src/modules/networks/networks-store.background';
-import { configureBackgroundClient } from 'src/modules/defi-sdk/background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
@@ -17,7 +16,6 @@ import { createNotificationWindowMessageHandler } from './messaging/port-message
 import { createHttpConnectionMessageHandler } from './messaging/port-message-handlers/createHTTPConnectionMessageHandler';
 import { handleAccountEvents } from './messaging/controller-event-handlers/account-events-handler';
 import { EthereumEventsBroadcaster } from './messaging/controller-event-handlers/ethereum-provider-events';
-import { MemoryCacheRPC } from './resource/memoryCacheRPC';
 import type { RuntimePort } from './webapis/RuntimePort';
 import { emitter } from './events';
 import * as userActivity from './user-activity';
@@ -47,7 +45,6 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-configureBackgroundClient();
 mainNetworksStore.load();
 
 function isOnboardingMode(port: RuntimePort) {
@@ -137,7 +134,6 @@ initialize().then((values) => {
   emitter.emit('backgroundScriptInitialized');
   notifyContentScriptsAndUIAboutInitialization();
   // const httpConnection = new HttpConnection(() => account.getCurrentWallet());
-  const memoryCacheRPC = new MemoryCacheRPC();
 
   new ContentScriptManager().removeExpiredRecords().activate();
 
@@ -153,12 +149,6 @@ initialize().then((values) => {
     createPortMessageHandler({
       check: (port) => port.name === 'accountPublicRPC',
       controller: accountPublicRPC,
-    })
-  );
-  portRegistry.addMessageHandler(
-    createPortMessageHandler({
-      check: (port) => port.name === 'memoryCacheRPC',
-      controller: memoryCacheRPC,
     })
   );
   portRegistry.addMessageHandler(

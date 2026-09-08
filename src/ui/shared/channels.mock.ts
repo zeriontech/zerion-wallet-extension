@@ -188,12 +188,6 @@ export const httpConnectionPort = {
   },
 };
 
-export const memoryCacheRPCPort = {
-  async request() {
-    return null;
-  },
-};
-
 export const windowPort = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   confirm(windowId: number, ...args: any[]) {
