@@ -2,7 +2,6 @@ import React from 'react';
 import browser from 'webextension-polyfill';
 import type { Root } from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
-import { configureUIClient } from 'src/modules/defi-sdk';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
 import { initializeClientAnalytics } from 'src/shared/analytics/analytics.client';
 import { HandshakeFailed } from 'src/shared/errors/errors';
@@ -84,7 +83,6 @@ async function initializeUI({
       queryClient.clear();
     }
     await getPreferences(); // seed queryClient. TODO before merge: do we need this?
-    await configureUIClient();
     if (isPopup && !initialView) {
       await restoreRoute();
     }

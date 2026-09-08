@@ -1,9 +1,8 @@
 import React, { useMemo, useRef } from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { hashQueryKey, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { RenderArea } from 'react-area';
-import { Client } from 'defi-sdk';
-import { useDefiSdkClient } from 'src/modules/defi-sdk/useDefiSdkClient';
+import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
 import { invariant } from 'src/shared/invariant';
@@ -73,7 +72,7 @@ export function TransactionSimulation({
         })
       : null;
 
-  const client = useDefiSdkClient();
+  const source = useHttpClientSource();
   const { data: localEvmAddressAction } = useQuery({
     queryKey: [
       'incomingTxToIncomingAddressAction',
@@ -82,12 +81,8 @@ export function TransactionSimulation({
       networks,
       address,
       currency,
-      client,
+      source,
     ],
-    queryKeyHashFn: (queryKey) => {
-      const key = queryKey.map((x) => (x instanceof Client ? x.url : x));
-      return hashQueryKey(key);
-    },
     queryFn: () => {
       return transaction.evm && networks && transactionAction
         ? incomingTxToIncomingAddressAction(
@@ -99,7 +94,7 @@ export function TransactionSimulation({
             transactionAction,
             networks,
             currency,
-            client
+            source
           )
         : null;
     },

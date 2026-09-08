@@ -11,14 +11,11 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
-import { configureClient } from './defi-sdk';
 import { readmes } from './readmes';
 import './lab.module.css';
 import type { Readme } from './types';
 
 Object.assign(window, { ethers });
-
-configureClient();
 
 function ReadmeComponent({ readme }: { readme: Readme }) {
   return React.createElement(readme.component);

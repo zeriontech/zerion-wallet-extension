@@ -5,14 +5,11 @@ on:
     types: [opened, synchronize]
 
 env:
-  DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
-  DEFI_SDK_TESTNET_API_URL: ${{ github.event.inputs.DEFI_SDK_TESTNET_API_URL || 'wss://api-testnet.zerion.io/' }}
   ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
   ZERION_TESTNET_API_URL: ${{ github.event.inputs.ZERION_TESTNET_API_URL || 'https://zpi-testnet.zerion.io/' }}
   BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
   PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
   DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
-  DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
   TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
   FEATURE_SEND_FORM: on
   MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
@@ -43,12 +40,10 @@ jobs:
       - name: Install dependencies and build
         # TODO: Reuse env vars from ./pr.yml somehow
         env:
-          DEFI_SDK_API_URL: ${{ github.event.inputs.DEFI_SDK_API_URL || 'wss://api-v4.zerion.io/' }}
           ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
           BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
           PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
-          DEFI_SDK_API_TOKEN: Zerion.0JOY6zZTTw6yl5Cvz9sdmXc7d5AhzVMG
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}

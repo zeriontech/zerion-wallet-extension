@@ -2,7 +2,6 @@ import browser from 'webextension-polyfill';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
-import type { MemoryCacheRPC } from 'src/shared/types/MemoryCacheRPC';
 import { UserRejected } from 'src/shared/errors/errors';
 import type { RpcRequestWithContext } from 'src/shared/custom-rpc';
 import { urlContext } from 'src/shared/UrlContext';
@@ -32,10 +31,6 @@ export const httpConnectionPort = new PortMessageChannel({
 export const accountPublicRPCPort = new PortMessageChannel({
   name: 'accountPublicRPC',
 }) as RPCPort<AccountPublicRPC>;
-
-export const memoryCacheRPCPort = new PortMessageChannel({
-  name: 'memoryCacheRPC',
-}) as RPCPort<MemoryCacheRPC>;
 
 export const dnaServicePort = new PortMessageChannel({
   name: 'dnaService',
@@ -82,7 +77,6 @@ export function initialize() {
   walletPort.initialize();
   httpConnectionPort.initialize();
   accountPublicRPCPort.initialize();
-  memoryCacheRPCPort.initialize();
   windowPort.initialize();
   dnaServicePort.initialize();
   sessionCacheService.initialize();
