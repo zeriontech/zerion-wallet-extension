@@ -18,6 +18,10 @@ export interface HardwareDialogSession {
   activeStatus: StepStatus;
   /** ToasterView for the active step — drives icons + title kind. */
   activeView: ToasterView | null;
+  /** Order step re-opening the quote stream ("Refreshing quote") */
+  activePhase: 'requoting' | null;
+  /** An Order hit the bounded wait: success terminal reads "Still processing" */
+  stillProcessing: boolean;
   /** Terminal queue state (success / failed / aborted). null while running. */
   terminal: QueueTerminal;
   /** Last error message for terminal=failed. */
@@ -50,6 +54,8 @@ const INITIAL: HardwareDialogSession = {
   activeIndex: 0,
   activeStatus: 'waiting',
   activeView: null,
+  activePhase: null,
+  stillProcessing: false,
   terminal: null,
   errorMessage: null,
 };
@@ -71,7 +77,11 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
       return q?.steps[index]?.toaster ?? null;
     }
 
-    function setStepStatus(index: number, status: StepStatus) {
+    function setStepStatus(
+      index: number,
+      status: StepStatus,
+      activePhase: HardwareDialogSession['activePhase'] = null
+    ) {
       setState((s) => {
         if (!s.visible) return s;
         const steps = s.steps.slice();
@@ -83,6 +93,7 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
           steps,
           activeIndex: index,
           activeStatus: status,
+          activePhase,
           activeView: getActiveView(s.queueId, index) ?? s.activeView,
         };
       });
@@ -115,6 +126,8 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
               activeIndex: event.index,
               activeStatus: 'signing',
               activeView: queue?.steps[event.index]?.toaster ?? null,
+              activePhase: null,
+              stillProcessing: false,
               terminal: null,
               errorMessage: null,
             });
@@ -127,8 +140,21 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
           setStepStatus(event.index, 'signing');
           break;
         }
-        case 'step-pending': {
+        case 'step-pending':
+        case 'step-order-pending': {
           setStepStatus(event.index, 'pending');
+          break;
+        }
+        case 'step-requoting': {
+          setStepStatus(event.index, 'pending', 'requoting');
+          break;
+        }
+        case 'step-still-processing': {
+          setState((s) =>
+            s.visible && s.queueId === queueId
+              ? { ...s, stillProcessing: true }
+              : s
+          );
           break;
         }
         case 'step-success': {

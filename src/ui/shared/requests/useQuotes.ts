@@ -14,6 +14,26 @@ import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { applyPriceImpactOverride } from 'src/ui/features/dev-menu/applyPriceImpactOverride';
 import { walletPort } from '../channels';
 import { useEventSource } from './useEventSource';
+import {
+  createSwapQuotesSearchParams,
+  QUOTES_EVENT_CODE_TO_MESSAGE,
+  resolveQuotesFormState,
+  SWAP_QUOTES_V3_PATHNAME,
+} from './swapQuotesRequest';
+
+export { resolveQuotesFormState } from './swapQuotesRequest';
+
+export function createSwapQuotesV3Url(params: {
+  address: string;
+  currency: string;
+  formState: SwapFormState;
+}) {
+  return createUrl({
+    base: ZERION_API_URL,
+    pathname: SWAP_QUOTES_V3_PATHNAME,
+    searchParams: createSwapQuotesSearchParams(params),
+  }).toString();
+}
 export interface QuotesData<T> {
   quotes: T[] | null;
   isLoading: boolean;
@@ -33,13 +53,6 @@ function createSwapQuotesUrl(address: string, formState: SwapFormState) {
     searchParams,
   }).toString();
 }
-
-const QUOTES_EVENT_CODE_TO_MESSAGE = {
-  500: 'Internal Server Error',
-  503: 'Service Unavailable',
-  404: 'No liquidity for this trade',
-  400: 'Incorrect trade parameters',
-};
 
 export function useQuotes2({
   address,
@@ -242,46 +255,6 @@ export function useQuotes2({
   };
 }
 
-function createSwapQuotesV2Url({
-  address,
-  currency,
-  formState,
-}: {
-  address: string;
-  currency: string;
-  formState: SwapFormState;
-}) {
-  const searchParams = new URLSearchParams();
-  searchParams.set('currency', currency);
-  if (formState.inputChain) {
-    searchParams.set('inputChain', formState.inputChain);
-  }
-  if (formState.outputChain) {
-    searchParams.set('outputChain', formState.outputChain);
-  }
-  searchParams.set('from', address);
-  if (formState.to) {
-    searchParams.set('to', formState.to);
-  }
-  if (formState.inputFungibleId) {
-    searchParams.set('inputFungibleId', formState.inputFungibleId);
-  }
-  if (formState.outputFungibleId) {
-    searchParams.set('outputFungibleId', formState.outputFungibleId);
-  }
-  if (formState.inputAmount) {
-    searchParams.set('inputAmount', formState.inputAmount);
-  }
-  if (formState.slippage) {
-    searchParams.set('slippage', formState.slippage);
-  }
-  return createUrl({
-    base: ZERION_API_URL,
-    pathname: '/transaction/stream-swap-quotes/v2',
-    searchParams,
-  }).toString();
-}
-
 export function useQuotesV2({
   address,
   currency,
@@ -305,31 +278,13 @@ export function useQuotesV2({
 
   const chain = formState.inputChain ? createChain(formState.inputChain) : null;
 
-  const slippage = useMemo(() => {
-    if (!chain) {
-      return null;
-    }
-    if (formState.slippage === 'auto' || formState.slippage == null) {
-      return null;
-    }
-    return String(
-      getSlippageOptions({
-        chain,
-        userSlippage: Number(formState.slippage),
-      }).slippagePercent
-    );
-  }, [chain, formState.slippage]);
-
   const url = useMemo(() => {
-    if (!chain) {
+    const resolved = resolveQuotesFormState(formState);
+    if (!chain || !resolved) {
       return null;
     }
-    return createSwapQuotesV2Url({
-      address,
-      currency,
-      formState: { ...formState, slippage: slippage ?? undefined },
-    });
-  }, [address, currency, formState, chain, slippage]);
+    return createSwapQuotesV3Url({ address, currency, formState: resolved });
+  }, [address, currency, formState, chain]);
 
   const handleQuoteError = useCallback(
     ({

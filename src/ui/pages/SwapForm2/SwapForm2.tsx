@@ -4,12 +4,6 @@ import BigNumber from 'bignumber.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigationType } from 'react-router';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
-import {
-  createApproveAddressAction2,
-  createBridgeAddressAction2,
-  createTradeAddressAction2,
-} from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -17,22 +11,22 @@ import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWallet
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { invariant } from 'src/shared/invariant';
-import {
-  isReadonlyAccount,
-  isDeviceAccount,
-} from 'src/shared/types/validators';
+import { isReadonlyAccount } from 'src/shared/types/validators';
 import { isNumeric } from 'src/shared/isNumeric';
-import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import { toMultichainTransaction } from 'src/shared/types/Quote';
-import { toIncomingTransaction } from 'src/shared/types/Quote';
+import { isExecutableQuote } from 'src/shared/types/Quote';
+import { isStaleQuoteError } from 'src/shared/errors/OrderExecutionError';
 import {
   signTransactions,
   getQueues,
   QueueAbortError,
   QueueError,
-  type SignStep,
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
+import {
+  buildSwapSteps,
+  isSentEvent,
+} from 'src/ui/shared/forms/trading/buildSwapSteps';
+import { toFormError } from 'src/ui/shared/forms/trading/orderErrors';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
@@ -61,7 +55,6 @@ import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
-import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import {
   fromConfiguration,
@@ -201,15 +194,20 @@ function SwapFormComponent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outputEcosystem, isCrossEcosystem]);
 
-  const { quote, quotesQuery, setUserQuoteId, resolvedInputAmount } =
-    useSwapQuote({
-      address,
-      formState,
-      inputPosition,
-      outputPosition,
-      isCrossEcosystem,
-      outputEcosystem,
-    });
+  const {
+    quote,
+    quotesQuery,
+    quotesFormState,
+    setUserQuoteId,
+    resolvedInputAmount,
+  } = useSwapQuote({
+    address,
+    formState,
+    inputPosition,
+    outputPosition,
+    isCrossEcosystem,
+    outputEcosystem,
+  });
 
   // Single shared gas-prices fetch for the input chain. Powers the local fee
   // scaling (displayed fee + applied transactions) — gas changes never refetch
@@ -389,7 +387,7 @@ function SwapFormComponent({
       invariant(outputPosition, 'outputPosition must be defined');
       invariant(formState.inputAmount, 'inputAmount must be set');
       invariant(resolvedInputAmount, 'resolvedInputAmount must be set');
-      invariant(quote.transactionSwap, 'Quote must have a swap transaction');
+      invariant(isExecutableQuote(quote), 'Quote must be executable');
 
       const inputNetwork = networks.getByNetworkId(
         createChain(formState.inputChain)
@@ -411,26 +409,11 @@ function SwapFormComponent({
         gasPrices ?? null
       );
 
-      // Quote-derived EVM txs come back with a backend-assigned nonce that's
-      // stale once another queue is in flight. Strip it from every step so
-      // prepareNonce recomputes against the freshest local+RPC state at sign
-      // time. Exception: a user-entered nonce in form state overrides the
-      // first step only.
+      // A user-entered nonce in form state overrides the first step only.
       const userNonce =
         formState.nonce != null && isNumeric(formState.nonce)
           ? parseInt(formState.nonce)
           : null;
-      const withNonce = (
-        tx: MultichainTransaction,
-        nonce: number
-      ): MultichainTransaction => (tx.evm ? { evm: { ...tx.evm, nonce } } : tx);
-      const withoutNonce = (tx: MultichainTransaction): MultichainTransaction =>
-        tx.evm
-          ? (() => {
-              const { nonce: _omit, ...rest } = tx.evm;
-              return { evm: rest as typeof tx.evm };
-            })()
-          : tx;
 
       const inputUsdPrice =
         inputFungibleUsdInfo?.data?.at(0)?.meta.price ?? null;
@@ -451,8 +434,6 @@ function SwapFormComponent({
         value,
         usdValue,
       };
-
-      const steps: SignStep[] = [];
 
       const approveToasterView: ToasterView = {
         kind: 'approve',
@@ -475,98 +456,31 @@ function SwapFormComponent({
         receivedChain: { iconUrl: outputNetwork.iconUrl ?? null },
       };
 
-      if (configuredQuote.transactionApprove) {
-        const approveTx = configuredQuote.transactionApprove;
-        invariant(
-          approveTx.evm,
-          'Approve transaction must be EVM (Solana has no allowance step)'
-        );
-        const fallbackApproveAction = createApproveAddressAction2({
-          transaction: toIncomingTransaction(approveTx.evm),
-          hash: null,
-          explorerUrl: null,
-          fungible: inputPosition.fungible,
-          amount: spendAmount,
-          network: inputNetwork,
-        });
-        const approveMultichain = toMultichainTransaction(approveTx);
-        steps.push({
-          kind: 'send',
-          params: {
-            transaction:
-              userNonce != null
-                ? withNonce(approveMultichain, userNonce)
-                : withoutNonce(approveMultichain),
-            chain: formState.inputChain,
-            initiator: INTERNAL_ORIGIN,
-            clientScope: 'Swap',
-            actionType: 'Approve',
-            feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-            addressAction: interpretationAction ?? fallbackApproveAction,
-            warningWasShown: Boolean(showPriceImpactCallout),
-            outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
-          },
-          toaster:
-            isDeviceAccount(wallet) ||
-            formState.inputChain === NetworkId.Ethereum
-              ? approveToasterView
-              : swapToasterView,
-        });
-      }
-
-      const swapTx = configuredQuote.transactionSwap;
-      invariant(swapTx, 'Configured quote must have a swap transaction');
-      const fallbackSwapAction = isCrossChain
-        ? createBridgeAddressAction2({
-            address,
-            transaction: toMultichainTransaction(swapTx),
-            hash: null,
-            explorerUrl: null,
-            spendFungible: inputPosition.fungible,
-            spendAmount,
-            receiveFungible: outputPosition.fungible,
-            receiveAmount: quote.outputAmount,
-            inputNetwork,
-            outputNetwork,
-            receiverAddress: formState.to ?? address,
-          })
-        : createTradeAddressAction2({
-            address,
-            transaction: toMultichainTransaction(swapTx),
-            hash: null,
-            explorerUrl: null,
-            spendFungible: inputPosition.fungible,
-            spendAmount,
-            receiveFungible: outputPosition.fungible,
-            receiveAmount: quote.outputAmount,
-            network: inputNetwork,
-            rate: quote.rate,
-          });
-
-      const swapMultichain = toMultichainTransaction(swapTx);
-      // Swap is step 0 only when there's no approve; honor userNonce there.
-      // When swap follows approve, it's step 1+ — strip and let prepareNonce
-      // resolve, since prior step's nonce isn't known until broadcast.
-      const swapIsFirstStep = !quote.transactionApprove;
-      steps.push({
-        kind: 'send',
-        params: {
-          transaction:
-            swapIsFirstStep && userNonce != null
-              ? withNonce(swapMultichain, userNonce)
-              : withoutNonce(swapMultichain),
-          chain: formState.inputChain,
-          initiator: INTERNAL_ORIGIN,
-          clientScope: isCrossChain ? 'Bridge' : 'Swap',
-          actionType: 'Trade',
-          feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-          addressAction: interpretationAction ?? fallbackSwapAction,
-          quote,
-          outputChain: formState.outputChain,
-          warningWasShown: Boolean(showPriceImpactCallout),
-          outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+      const steps = buildSwapSteps({
+        quote,
+        configuredQuote,
+        wallet,
+        address,
+        currency,
+        quotesFormState,
+        inputFungible: inputPosition.fungible,
+        outputFungible: outputPosition.fungible,
+        inputNetwork,
+        outputNetwork,
+        outputChain: formState.outputChain,
+        spendAmount,
+        interpretationAction,
+        userNonce,
+        receiverAddress: formState.to ?? address,
+        isCrossChain,
+        clientScope: {
+          approve: 'Swap',
+          swap: isCrossChain ? 'Bridge' : 'Swap',
         },
-        toaster: swapToasterView,
+        actionType: { approve: 'Approve', swap: 'Trade' },
+        warningWasShown: Boolean(showPriceImpactCallout),
+        outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+        toaster: { approve: approveToasterView, swap: swapToasterView },
       });
 
       // Resolves on step-1 broadcast (form reset + button unblock); rejects
@@ -590,13 +504,16 @@ function SwapFormComponent({
           bluetoothSupportEnabled:
             globalPreferences?.bluetoothSupportEnabled ?? null,
           onEvent: (event) => {
-            if (event.type === 'step-pending' && event.index === 0) {
+            // "Sent" = approve broadcast, or the Order placed when there is
+            // no approve. An Order placed after an approve is step 1: the
+            // form has already reset, the toaster reports the rest.
+            if (isSentEvent(event)) {
               settle(() => {
                 setUserFormState(resetAfterBroadcast);
                 resolve();
               });
             } else if (event.type === 'step-error' && event.index === 0) {
-              settle(() => reject(event.error));
+              settle(() => reject(toFormError(event.error)));
             } else if (event.type === 'queue-aborted' && event.index === 0) {
               settle(() => reject(new QueueAbortError(0, [])));
             }
@@ -617,12 +534,16 @@ function SwapFormComponent({
         queuePromise.catch((err) => {
           const unwrapped =
             err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
-          settle(() => reject(unwrapped));
+          settle(() => reject(toFormError(unwrapped)));
         });
       });
     },
     onError: (error) => {
       if (error instanceof QueueAbortError) return;
+      // A stale quote is the only thing a fresh stream can fix
+      if (isStaleQuoteError((error as { cause?: unknown })?.cause)) {
+        quotesQuery.refetch();
+      }
       // eslint-disable-next-line no-console
       console.error('SwapForm2 sign failed', error);
     },

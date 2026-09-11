@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { HTTPError } from 'ky';
 import { Provider as ZksProvider } from 'zksync-ethers';
 import type { Keypair } from '@solana/web3.js';
 import { Connection } from '@solana/web3.js';
@@ -60,6 +61,8 @@ import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
+import { getError } from 'src/shared/errors/getError';
+import { OrderExecutionError } from 'src/shared/errors/OrderExecutionError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import {
@@ -119,6 +122,11 @@ import { SolanaSigning } from 'src/modules/solana/signing';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
+import {
+  normalizeTypedDataDocument,
+  type IntentSwapPayload,
+  type Quote2,
+} from 'src/shared/types/Quote';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
@@ -184,6 +192,27 @@ type PublicMethodParams<T = undefined> = T extends undefined
       params: T;
       context?: Partial<ChannelContext>;
     };
+
+/**
+ * Preserves the HTTP status and body of a failed `execute-order` call in a
+ * port-serializable error (ky's HTTPError carries a Response, which is not).
+ */
+async function toOrderExecutionError(error: unknown): Promise<Error> {
+  if (error instanceof HTTPError) {
+    const { status } = error.response;
+    let body: string | null = null;
+    try {
+      body = await error.response.clone().text();
+    } catch {
+      body = null;
+    }
+    return new OrderExecutionError(
+      `execute-order responded with ${status}${body ? `: ${body}` : ''}`,
+      { status, body }
+    );
+  }
+  return getError(error);
+}
 
 type WalletMethodParams<T = undefined> = T extends undefined
   ? {
@@ -1933,6 +1962,107 @@ export class Wallet {
     // walletPort.request('sendEvent', { event_name, params }).
     this.verifyInternalOrigin(context);
     emitter.emit('screenView', params);
+  }
+
+  /**
+   * Signs a Swap Intent or a Permit Approval (swap API v3) with the current
+   * software wallet. Nothing is broadcast and no `typedDataSigned` /
+   * `signed_message` analytics are emitted: the signature is reported once
+   * the Order is placed (`orderPlaced`). Returns 0x hex for EVM, base64 for
+   * Solana (the signed transaction).
+   */
+  async signSwapIntent({
+    params: { intent },
+    context,
+  }: WalletMethodParams<{ intent: IntentSwapPayload }>): Promise<string> {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    if (intent.evm) {
+      const signer = this.getOfflineSigner();
+      const document = normalizeTypedDataDocument(intent.evm);
+      return signTypedData(document, signer);
+    } else if (intent.solana) {
+      const currentAddress = this.ensureCurrentAddress();
+      invariant(
+        isSolanaAddress(currentAddress),
+        'Active address is not solana'
+      );
+      const keypair = this.getKeypairByAddress(currentAddress);
+      const transaction = solFromBase64(intent.solana);
+      const result = SolanaSigning.signTransaction(transaction, keypair);
+      return result.tx;
+    }
+    throw new InvalidParams();
+  }
+
+  /**
+   * Places an intent-swap Order and registers it in the transactions store.
+   * HTTP errors are rethrown as OrderExecutionError so the UI can classify a
+   * 400 (stale quote).
+   */
+  async submitSwapOrder({
+    params,
+    context,
+  }: WalletMethodParams<{
+    quoteId: string;
+    signatureSwap: string;
+    /** Omitted (never "") when the quote carried no Permit Approval */
+    signatureApprove?: string;
+    orderContext: TransactionContextParams & {
+      quote: Quote2;
+      outputChain: string | null;
+    };
+    order: {
+      from: string;
+      inputChain: string;
+      outputChain: string;
+      explorerUrlTemplate: string | null;
+    };
+  }>): Promise<{ orderId: string }> {
+    this.verifyInternalOrigin(context);
+    this.ensureStringOrigin(context);
+    const { quoteId, signatureSwap, signatureApprove, orderContext, order } =
+      params;
+    invariant(quoteId, () => new InvalidParams());
+    invariant(signatureSwap, () => new InvalidParams());
+    const { mode } = await this.assertNetworkMode({
+      id: createChain(order.inputChain),
+    });
+    let orderId: string;
+    try {
+      const response = await ZerionAPI.transactionExecuteOrder({
+        quoteId,
+        signatureSwap,
+        ...(signatureApprove ? { signatureApprove } : {}),
+      });
+      orderId = response.data.orderId;
+    } catch (error) {
+      const normalized = await toOrderExecutionError(error);
+      emitter.emit('transactionFailed', normalized.message, {
+        mode,
+        ...orderContext,
+      });
+      emitter.emit('globalError', {
+        name: 'network_error',
+        message: `execute-order failed: ${normalized.message}`,
+      });
+      throw normalized;
+    }
+    transactionService.addOrder({
+      orderId,
+      from: order.from,
+      chain: order.inputChain,
+      explorerUrlTemplate: order.explorerUrlTemplate,
+      initiator: orderContext.initiator,
+      addressAction: orderContext.addressAction,
+      analyticsContext: { mode, ...orderContext },
+    });
+    emitter.emit(
+      'orderPlaced',
+      { orderId, quoteId, from: order.from },
+      { mode, ...orderContext }
+    );
+    return { orderId };
   }
 
   async quoteError({ context, params }: WalletMethodParams<QuoteErrorContext>) {

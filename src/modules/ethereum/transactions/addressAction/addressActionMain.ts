@@ -44,6 +44,8 @@ export type LocalAddressAction = Omit<AddressAction, 'transaction' | 'acts'> & {
   } | null;
   local: true;
   relatedTransaction?: string; // hash of related transaction (cancelled or sped-up)
+  /** Set for an intent-swap Order; such actions cannot be sped up or cancelled */
+  orderId?: string;
 };
 
 export type AnyAddressAction = AddressAction | LocalAddressAction;
@@ -612,7 +614,8 @@ export function createTradeAddressAction2({
   rate,
   explorerUrl,
 }: {
-  transaction: MultichainTransaction;
+  /** null for an Intent Swap: there is no client transaction to describe */
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -675,7 +678,7 @@ export function createTradeAddressAction2({
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, network.id)
       : toEmptyActionTx(network.id),
   };
@@ -695,7 +698,8 @@ export function createBridgeAddressAction2({
   receiverAddress,
 }: {
   address: string;
-  transaction: MultichainTransaction;
+  /** null for an Intent Swap: there is no client transaction to describe */
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -823,7 +827,7 @@ export function createBridgeAddressAction2({
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, inputNetwork.id)
       : toEmptyActionTx(inputNetwork.id),
   };

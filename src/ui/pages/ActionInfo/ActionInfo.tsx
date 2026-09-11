@@ -342,8 +342,12 @@ export function ActionInfo() {
       : null;
   }, [addressAction?.timestamp]);
 
+  const orderId =
+    addressAction && isLocalAddressAction(addressAction)
+      ? addressAction.orderId
+      : undefined;
   const localStatus = useActionStatusByHash(
-    targetObject?.transaction?.hash || ''
+    orderId || targetObject?.transaction?.hash || ''
   );
 
   const initialPending = useRef(
@@ -430,7 +434,10 @@ export function ActionInfo() {
             ))
           )}
         </VStack>
-        {isLocalAddressAction(addressAction) && isPending && !actIndex ? (
+        {isLocalAddressAction(addressAction) &&
+        isPending &&
+        !actIndex &&
+        !orderId ? (
           <AccelerateTransaction
             addressAction={addressAction}
             onSuccess={() => navigate(-1)}

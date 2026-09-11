@@ -29,10 +29,29 @@ function solanaTransactionObjectToStatus(
   }
 }
 
+function orderObjectToStatus(
+  transactionObject: TransactionObject
+): ActionStatus {
+  invariant(transactionObject.orderId, 'Must be an order');
+  switch (transactionObject.orderStatus) {
+    case 'successful':
+      return 'confirmed';
+    case 'failed':
+    case 'rejected':
+      return 'failed';
+    case 'pending':
+    default:
+      return 'pending';
+  }
+}
+
 export function getTransactionObjectStatus(
   transactionObject: TransactionObject
-) {
-  if (transactionObject.signature) {
+): ActionStatus {
+  if (transactionObject.orderId) {
+    // Orders are never "dropped": they settle or the backend rejects them
+    return orderObjectToStatus(transactionObject);
+  } else if (transactionObject.signature) {
     return solanaTransactionObjectToStatus(transactionObject);
   } else {
     return transactionReceiptToActionStatus(transactionObject);

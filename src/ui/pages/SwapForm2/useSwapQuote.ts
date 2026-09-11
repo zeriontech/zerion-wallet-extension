@@ -95,8 +95,10 @@ export function useSwapQuote({
     return {
       quote: selectedQuote,
       quotesQuery,
+      /** Exact request params of the stream; the Re-quote must reuse them */
+      quotesFormState,
       setUserQuoteId,
       resolvedInputAmount: resolvedInputAmount ?? null,
     };
-  }, [selectedQuote, quotesQuery, resolvedInputAmount]);
+  }, [selectedQuote, quotesQuery, quotesFormState, resolvedInputAmount]);
 }

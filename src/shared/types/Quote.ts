@@ -1,3 +1,4 @@
+import type { TypedDataDomain, TypedDataField } from 'ethers';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
@@ -106,6 +107,34 @@ export type TransactionMultichainBackend = {
 
 type TransactionMultichain = TransactionMultichainBackend;
 
+/**
+ * EIP-712 document as served by swap API v3 for Intent Swaps and Permit
+ * Approvals. `types` never contains `EIP712Domain` (ethers derives it) and
+ * `message` may arrive serialized as a JSON string.
+ */
+export type TypedDataDocument = {
+  types: Record<string, Array<TypedDataField>>;
+  primaryType: string;
+  domain: TypedDataDomain;
+  message: Record<string, unknown> | string;
+};
+
+/**
+ * Off-chain payload the user signs for an Intent Swap. Exactly one side is
+ * set: `evm` is an EIP-712 document, `solana` is a base64 serialized
+ * transaction to sign without broadcasting.
+ */
+export type IntentSwapPayload = {
+  evm: null | TypedDataDocument;
+  solana: null | StringBase64;
+};
+
+/** Permit Approval to sign alongside the Swap Intent. EVM only. */
+export type IntentApprovePayload = {
+  evm: null | TypedDataDocument;
+  solana: null;
+};
+
 export type ContractMetadata2 = {
   /**
    * @description ID of liquidity source, may be used as `source_id` parameter
@@ -179,10 +208,19 @@ export interface Quote2 {
     amount: Amount | null;
     fungible: null | Fungible;
   };
-  /** @description Approval transaction if required */
+  /**
+   * @description Opaque id for `transaction/execute-order/v1`. Changes on
+   * every stream update; may be `""` on a quote carrying `error`.
+   */
+  quoteId: string;
+  /** @description Approval transaction if required (On-chain Approval) */
   transactionApprove: null | TransactionMultichain;
-  /** @description Main swap transaction */
+  /** @description Main swap transaction (On-chain Swap) */
   transactionSwap: null | TransactionMultichain;
+  /** @description Swap Intent to sign (Intent Swap). Mutually exclusive with transactionSwap */
+  intentSwap: null | IntentSwapPayload;
+  /** @description Permit Approval to sign. Mutually exclusive with transactionApprove */
+  intentApprove: null | IntentApprovePayload;
   /** @description Slippage chosen by the backend when the request omits one (auto mode). */
   autoSlippage: number | null;
   /** @description Final slippage applied to the quote, in percent (e.g. 0.5 = 0.5%). */
@@ -198,4 +236,31 @@ export function toMultichainTransaction(
     return { evm: toIncomingTransaction(tx.evm) };
   }
   throw new Error('Unexpected TransactionMultichain object');
+}
+
+/** A quote executed by signing a Swap Intent and placing an Order. */
+export function isIntentQuote(quote: Quote2): boolean {
+  return quote.intentSwap != null && quote.quoteId !== '';
+}
+
+/**
+ * Executable Quote: carries either an On-chain Swap transaction or a Swap
+ * Intent with a usable quoteId, and no error. Both kinds are first-class.
+ */
+export function isExecutableQuote(quote: Quote2): boolean {
+  return (
+    quote.error == null &&
+    (quote.transactionSwap != null || isIntentQuote(quote))
+  );
+}
+
+/** Parses a `message` that arrived as a JSON string. */
+export function normalizeTypedDataDocument(
+  document: TypedDataDocument
+): TypedDataDocument & { message: Record<string, unknown> } {
+  const message =
+    typeof document.message === 'string'
+      ? (JSON.parse(document.message) as Record<string, unknown>)
+      : document.message;
+  return { ...document, message };
 }

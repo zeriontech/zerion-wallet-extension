@@ -161,6 +161,10 @@
   background: var(--negative-500, #ff4242);
 }
 
+.statusBadgeProcessing {
+  background: var(--neutral-500, #8a8f9b);
+}
+
 .body {
   position: relative;
   display: flex;
@@ -315,4 +319,49 @@
     var(--solid-color, transparent) 0%,
     transparent 100%
   );
+}
+
+/* Right-hand actions (copy hash / open explorer) shown in the success state.
+   Spacing from the text column comes from .body's gap; the negative margin
+   pulls the icons 8px closer to the pill's right edge, since ghost buttons
+   carry their own slack around the glyph. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: -8px;
+  flex-shrink: 0;
+}
+
+/* Ghost: the glyph is the whole button; the 32px box is just the hit area. */
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--neutral-600);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.actionButton:hover {
+  color: var(--black);
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.actionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

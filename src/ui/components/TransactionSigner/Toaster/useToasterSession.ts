@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import {
   subscribeChange,
@@ -8,10 +8,15 @@ import {
 } from '../store';
 import type { QueueEvent, SignStep, ToasterView } from '../types';
 
-export type TerminalKind = 'success' | 'failed';
+/** 'processing': an Order is still pending after the bounded wait (neutral) */
+export type TerminalKind = 'success' | 'failed' | 'processing';
 
 export interface ActiveStepView {
   toaster?: ToasterView;
+  /** Broadcast transaction hash, once the step has one (send steps) */
+  hash: string | null;
+  /** Accepted Order id, once the intent was placed (order steps) */
+  orderId: string | null;
 }
 
 export interface ToasterSessionState {
@@ -34,10 +39,21 @@ export interface ToasterSessionState {
   pendingQueueCount: number;
 }
 
+export interface ToasterSession extends ToasterSessionState {
+  /**
+   * Freezes the auto-dismiss countdown while the pointer (or focus) is on the
+   * pill, so the success state's actions stay reachable. Releasing resumes the
+   * remaining time.
+   */
+  setHovered: (hovered: boolean) => void;
+}
+
 const TERMINAL_HOLD_MS = 3000;
 const DISSOLVE_MS = 500;
+/** Grace period handed back when the pointer leaves a held-open pill */
+const MIN_RESUME_MS = 1000;
 
-export function useToasterSession(): ToasterSessionState {
+export function useToasterSession(): ToasterSession {
   const [state, setState] = useState<ToasterSessionState>({
     visible: false,
     x: 0,
@@ -57,40 +73,103 @@ export function useToasterSession(): ToasterSessionState {
   // We count a step the moment it starts, so user-dismissals/errors that
   // happened don't double-count when the next queue starts.
   const countedRef = useRef<Set<string>>(new Set());
+  // Order steps that hit the bounded wait: their step-success ends the
+  // session in the neutral "Still processing" terminal instead of "Swapped".
+  const stillProcessingRef = useRef<Set<string>>(new Set());
 
   // Pending dismiss timer — fires after terminal hold + dissolve completes.
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // How much of the scheduled hold is left, and when that countdown started.
+  // Kept across a hover pause so releasing resumes instead of restarting.
+  const pendingDismissRef = useRef<{
+    remaining: number;
+    startedAt: number;
+  } | null>(null);
+  const hoveredRef = useRef(false);
+
+  const runDismiss = useCallback(() => {
+    dismissTimerRef.current = null;
+    pendingDismissRef.current = null;
+    setState((s) => ({
+      ...s,
+      visible: false,
+      current: null,
+      terminal: null,
+      x: 0,
+      n: 0,
+      activeQueueId: null,
+      pendingQueueCount: 0,
+    }));
+    countedRef.current = new Set();
+    stillProcessingRef.current = new Set();
+  }, []);
+
+  const clearDismiss = useCallback(() => {
+    if (dismissTimerRef.current !== null) {
+      clearTimeout(dismissTimerRef.current);
+      dismissTimerRef.current = null;
+    }
+    pendingDismissRef.current = null;
+  }, []);
+
+  const scheduleDismiss = useCallback(
+    (delay: number) => {
+      clearDismiss();
+      pendingDismissRef.current = { remaining: delay, startedAt: Date.now() };
+      // Hovering holds the pill open; the countdown resumes on release.
+      if (hoveredRef.current) return;
+      dismissTimerRef.current = setTimeout(runDismiss, delay);
+    },
+    [clearDismiss, runDismiss]
+  );
+
+  const setHovered = useCallback(
+    (hovered: boolean) => {
+      if (hoveredRef.current === hovered) return;
+      hoveredRef.current = hovered;
+      const pending = pendingDismissRef.current;
+      if (hovered) {
+        if (dismissTimerRef.current !== null) {
+          clearTimeout(dismissTimerRef.current);
+          dismissTimerRef.current = null;
+        }
+        if (pending) {
+          pending.remaining = Math.max(
+            0,
+            pending.remaining - (Date.now() - pending.startedAt)
+          );
+        }
+      } else if (pending) {
+        // Give back at least a moment so the pill doesn't vanish under the
+        // cursor the instant it leaves.
+        pending.remaining = Math.max(pending.remaining, MIN_RESUME_MS);
+        pending.startedAt = Date.now();
+        dismissTimerRef.current = setTimeout(runDismiss, pending.remaining);
+      }
+    },
+    [runDismiss]
+  );
 
   useEffect(() => {
-    function clearDismiss() {
-      if (dismissTimerRef.current !== null) {
-        clearTimeout(dismissTimerRef.current);
-        dismissTimerRef.current = null;
-      }
-    }
-
-    function scheduleDismiss(delay: number) {
-      clearDismiss();
-      dismissTimerRef.current = setTimeout(() => {
-        dismissTimerRef.current = null;
-        setState((s) => ({
-          ...s,
-          visible: false,
-          current: null,
-          terminal: null,
-          x: 0,
-          n: 0,
-          activeQueueId: null,
-          pendingQueueCount: 0,
-        }));
-        countedRef.current = new Set();
-      }, delay);
-    }
-
     function getStepView(queueId: string, stepIndex: number): ActiveStepView {
       const q = getQueue(queueId);
       const step: SignStep | undefined = q?.steps[stepIndex];
-      return { toaster: step?.toaster };
+      return { toaster: step?.toaster, hash: null, orderId: null };
+    }
+
+    /**
+     * Attach the step's on-chain identifier to the view already on screen.
+     * Guarded by queueId so a late event from a finished queue can't relabel
+     * the step the toaster is currently showing.
+     */
+    function setStepTarget(
+      queueId: string,
+      target: Partial<Pick<ActiveStepView, 'hash' | 'orderId'>>
+    ) {
+      setState((s) => {
+        if (!s.current || s.activeQueueId !== queueId) return s;
+        return { ...s, current: { ...s.current, ...target } };
+      });
     }
 
     // Count non-hardware queues that haven't started yet (run.state ===
@@ -167,7 +246,7 @@ export function useToasterSession(): ToasterSessionState {
     function handleStepEnd(
       queueId: string,
       stepIndex: number,
-      kind: 'success' | 'failed' | 'dismissed'
+      kind: 'success' | 'failed' | 'dismissed' | 'processing'
     ) {
       const isLast = isLastStepInQueue(queueId, stepIndex);
       if (isLast) {
@@ -182,11 +261,16 @@ export function useToasterSession(): ToasterSessionState {
             pendingQueueCount: 0,
           }));
           countedRef.current = new Set();
+          stillProcessingRef.current = new Set();
           clearDismiss();
           return;
         }
         const terminal: TerminalKind =
-          kind === 'success' ? 'success' : 'failed';
+          kind === 'success'
+            ? 'success'
+            : kind === 'processing'
+            ? 'processing'
+            : 'failed';
         setState((s) => ({ ...s, terminal, contentKey: s.contentKey + 1 }));
         // dissolve plays, then 1s hold, then dismiss
         scheduleDismiss(DISSOLVE_MS + TERMINAL_HOLD_MS);
@@ -216,8 +300,35 @@ export function useToasterSession(): ToasterSessionState {
             startOrAdvanceTo(queueId, event.index);
             break;
           }
+          case 'step-signing':
+          case 'step-requoting': {
+            // Intra-step progress: the toaster keeps the step's verb
+            // ("Swapping") for the whole step, so nothing changes here.
+            break;
+          }
+          case 'step-pending': {
+            // Verb is unchanged; record the hash so the success state can
+            // offer copy / explorer actions.
+            setStepTarget(queueId, { hash: event.txHash });
+            break;
+          }
+          case 'step-order-pending': {
+            // The fill hash only exists once the Order settles — keep the id
+            // and resolve the hash from the local transactions mirror.
+            setStepTarget(queueId, { orderId: event.orderId });
+            break;
+          }
+          case 'step-still-processing': {
+            stillProcessingRef.current.add(`${queueId}:${event.index}`);
+            break;
+          }
           case 'step-success': {
-            handleStepEnd(queueId, event.index, 'success');
+            const slotKey = `${queueId}:${event.index}`;
+            handleStepEnd(
+              queueId,
+              event.index,
+              stillProcessingRef.current.has(slotKey) ? 'processing' : 'success'
+            );
             break;
           }
           case 'step-error': {
@@ -256,7 +367,7 @@ export function useToasterSession(): ToasterSessionState {
       unsubscribeChange();
       clearDismiss();
     };
-  }, []);
+  }, [clearDismiss, scheduleDismiss]);
 
-  return state;
+  return { ...state, setHovered };
 }

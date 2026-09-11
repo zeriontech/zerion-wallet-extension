@@ -12,7 +12,15 @@ import shieldSolidUrl from 'url:src/ui/assets/shield-solid.svg';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { toMultichainTransaction } from 'src/shared/types/Quote';
+import {
+  isExecutableQuote,
+  isIntentQuote,
+  normalizeTypedDataDocument,
+  toMultichainTransaction,
+} from 'src/shared/types/Quote';
+import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import { interpretSignature } from 'src/ui/shared/requests/interpret';
+import { getPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -125,7 +133,33 @@ function isDisabled({
   if (isCrossEcosystem && receiverEcosystemMismatch) return true;
   if (!quote) return true;
   if (quote.error) return true;
+  if (!isExecutableQuote(quote)) return true;
   return false;
+}
+
+/**
+ * An Intent Swap is simulated through simulate-signature; a preceding
+ * On-chain Approval through simulate-transactions. Warnings from both apply;
+ * the interpreted action comes from the intent when it has one.
+ */
+export function mergeSimulationResults(
+  transactions: SimulationResult,
+  signature: SignatureInterpretResponse | null
+): SimulationResult {
+  if (!signature) return transactions;
+  if (!transactions || !('data' in transactions) || !transactions.data) {
+    return signature;
+  }
+  return {
+    ...signature,
+    data: {
+      action: signature.data.action ?? transactions.data.action,
+      warnings: [
+        ...(transactions.data.warnings ?? []),
+        ...(signature.data.warnings ?? []),
+      ],
+    },
+  };
 }
 
 export function SimulatingIcon() {
@@ -200,15 +234,42 @@ function useSimulation({
   }, [quote, formState, gasPrices]);
 
   const simulationMutation = useMutation({
-    mutationFn: (txs: MultichainTransaction[]) =>
-      interpretTxBasedOnEligibility({
-        address,
-        transactions: txs,
-        eligibilityQueryData: false,
-        eligibilityQueryStatus: 'success',
-        currency,
-        origin: 'https://app.zerion.io',
-      }),
+    mutationFn: async ({
+      txs,
+      quote,
+    }: {
+      txs: MultichainTransaction[];
+      quote: Quote2;
+    }): Promise<SimulationResult> => {
+      const origin = 'https://app.zerion.io';
+      const txResult = txs.length
+        ? await interpretTxBasedOnEligibility({
+            address,
+            transactions: txs,
+            eligibilityQueryData: false,
+            eligibilityQueryStatus: 'success',
+            currency,
+            origin,
+          })
+        : null;
+      const intentDocument = quote.intentSwap?.evm ?? null;
+      if (!intentDocument) {
+        // On-chain quotes, and Solana intents (no signature simulation)
+        return txResult;
+      }
+      const preferences = await getPreferences();
+      const signatureResult = await interpretSignature(
+        {
+          address,
+          chain: formState.inputChain,
+          typedData: normalizeTypedDataDocument(intentDocument) as TypedData,
+          currency,
+          origin,
+        },
+        { source: preferences?.testnetMode?.on ? 'testnet' : 'mainnet' }
+      );
+      return mergeSimulationResults(txResult, signatureResult);
+    },
     onSettled: (data) => {
       const patched = applySimulationPatch(data, devMenuStore.getState());
       onSimulationCompleted(patched ?? null);
@@ -224,8 +285,9 @@ function useSimulation({
       onSign();
       return;
     }
-    if (!quote || transactions.length === 0) return;
-    simulationMutation.mutate(transactions);
+    if (!quote) return;
+    if (transactions.length === 0 && !isIntentQuote(quote)) return;
+    simulationMutation.mutate({ txs: transactions, quote });
   }, [simulated, onSign, quote, transactions, simulationMutation]);
 
   const label = resolveLabel({

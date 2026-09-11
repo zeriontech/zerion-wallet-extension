@@ -17,7 +17,9 @@ export function filterAddressTransactions(
   transactions: TransactionObject[]
 ) {
   return transactions.filter((tx) => {
-    const txFromRaw = tx.transaction ? tx.transaction.from : tx.publicKey;
+    const txFromRaw = tx.transaction
+      ? tx.transaction.from
+      : tx.publicKey ?? tx.from;
     if (!txFromRaw) {
       return false;
     }

@@ -3,7 +3,13 @@ import { getError } from 'get-error';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
-import { waitForTransactionResolve } from 'src/ui/transactions/useLocalTransactionStatus';
+import {
+  waitForOrderResolve,
+  waitForTransactionResolve,
+} from 'src/ui/transactions/useLocalTransactionStatus';
+import { nanoid } from 'nanoid';
+import { normalizeTypedDataDocument } from 'src/shared/types/Quote';
+import { requoteIntent } from 'src/ui/shared/requests/requoteIntent';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import {
@@ -44,7 +50,13 @@ import { TransactionToaster } from './Toaster/TransactionToaster';
 import { HardwareDialog } from './HardwareDialog/HardwareDialog';
 import { LedgerDialogWrapper } from './LedgerDialogWrapper';
 import { isStepStale, refreshStaleGasForStep } from './refreshStaleGas';
-import type { SendTxParams, SignStep } from './types';
+import { runOrderStep, type RunOrderStepDeps } from './runOrderStep';
+import type {
+  OrderStepParams,
+  SendTxParams,
+  SignStep,
+  StepResult,
+} from './types';
 
 async function signSendStepSoftware({
   params: { transaction, ...txContext },
@@ -140,6 +152,68 @@ async function signSendStepHardware({
   return { solana: result };
 }
 
+/**
+ * Signs a Swap Intent / Permit Approval on a Ledger through the iframe. EVM
+ * returns the EIP-712 signature, Solana the signed transaction (base64).
+ */
+const signIntentHardware: (
+  wallet: QueueRecord['options']['wallet']
+) => RunOrderStepDeps['signIntent'] = (wallet) => async (intent) => {
+  invariant(isDeviceAccount(wallet), 'signIntentHardware: DeviceAccount');
+  const controller = getLedgerIframeController();
+  invariant(controller, 'Ledger iframe controller not mounted');
+  const contentWindow = controller.getContentWindow();
+  invariant(contentWindow, 'Ledger iframe contentWindow not available');
+  if (intent.evm) {
+    return hardwareMessageHandler.request<string>(
+      {
+        id: nanoid(),
+        method: 'signTypedData_v4',
+        params: {
+          derivationPath: wallet.derivationPath,
+          typedData: normalizeTypedDataDocument(intent.evm),
+        },
+      },
+      contentWindow
+    );
+  }
+  invariant(intent.solana, 'Intent must carry an evm or solana payload');
+  return signSolanaTransaction({
+    transaction: intent.solana,
+    messageHandler: hardwareMessageHandler,
+    derivationPath: wallet.derivationPath,
+    contentWindow,
+  });
+};
+
+const signIntentSoftware: RunOrderStepDeps['signIntent'] = (intent) =>
+  walletPort.request('signSwapIntent', { intent });
+
+async function runOrderStepInQueue({
+  queue,
+  params,
+  index,
+}: {
+  queue: QueueRecord;
+  params: OrderStepParams;
+  index: number;
+}): Promise<StepResult> {
+  const isHardware = isDeviceAccount(queue.options.wallet);
+  return runOrderStep({
+    params,
+    index,
+    deps: {
+      requote: requoteIntent,
+      signIntent: isHardware
+        ? signIntentHardware(queue.options.wallet)
+        : signIntentSoftware,
+      submitOrder: (p) => walletPort.request('submitSwapOrder', p),
+      waitForOrder: waitForOrderResolve,
+      emit: (event) => emitQueueEvent(queue.queueId, event),
+    },
+  });
+}
+
 async function runStep({
   queue,
   step,
@@ -148,8 +222,12 @@ async function runStep({
   queue: QueueRecord;
   step: SignStep;
   index: number;
-}): Promise<SignTransactionResult> {
+}): Promise<StepResult> {
   const isHardware = isDeviceAccount(queue.options.wallet);
+
+  if (step.kind === 'order') {
+    return runOrderStepInQueue({ queue, params: step.params, index });
+  }
 
   emitQueueEvent(queue.queueId, { type: 'step-signing', index });
 
@@ -195,7 +273,7 @@ function isAbortLikeError(error: unknown): boolean {
 
 async function runQueue(queue: QueueRecord): Promise<void> {
   const { queueId, steps, options, abortController, resolve, reject } = queue;
-  const completed: SignTransactionResult[] = [];
+  const completed: StepResult[] = [];
 
   // For hardware queues, push ecosystem (and bluetooth, in case the hook
   // hasn't pushed yet) into the iframe before the first sign call. All steps

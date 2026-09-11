@@ -197,7 +197,7 @@ async function pendingEvmTxToAddressAction(
   currency: string,
   source: NetworksSource
 ): Promise<LocalAddressAction> {
-  invariant(transactionObject.hash, 'Must be evm tx');
+  invariant(transactionObject.transaction, 'Must be evm tx');
   const { transaction, hash, timestamp, addressAction } = transactionObject;
   let network: NetworkInfo | null;
   const chainId = normalizeChainId(transaction.chainId);
@@ -293,13 +293,69 @@ function pendingSolanaTxToAddressAction(
   };
 }
 
+/**
+ * An intent-swap Order is rendered from the address action saved at placement
+ * time; status comes from the Order, the hash from its first fill.
+ */
+function pendingOrderToAddressAction(
+  transactionObject: TransactionObject
+): LocalAddressAction {
+  invariant(transactionObject.orderId, 'Must be an order');
+  const { orderId, from, fills, timestamp, addressAction } = transactionObject;
+  const status = getTransactionObjectStatus(transactionObject);
+  const fillHash = fills[0]?.hash ?? null;
+  const base: LocalAddressAction = addressAction
+    ? {
+        ...addressAction,
+        local: true,
+        acts: (addressAction.acts ?? null) as LocalAddressAction['acts'],
+        transaction: addressAction.transaction
+          ? {
+              ...addressAction.transaction,
+              hash: fillHash ?? addressAction.transaction.hash ?? ZERO_HASH,
+            }
+          : null,
+        rawTransaction: null,
+      }
+    : {
+        id: orderId,
+        address: from,
+        timestamp,
+        status,
+        label: null,
+        type: { value: 'trade', displayValue: 'Trade' },
+        content: null,
+        fee: null,
+        refund: null,
+        acts: null,
+        transaction: null,
+        rawTransaction: null,
+        local: true,
+      };
+  return {
+    ...base,
+    id: base.id || orderId,
+    address: base.address || from,
+    timestamp: timestamp ?? base.timestamp ?? Date.now(),
+    status,
+    acts:
+      base.acts?.map((act) => ({
+        ...act,
+        status: act.status === 'pending' ? status : act.status,
+      })) ?? null,
+    orderId,
+  };
+}
+
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
   currency: string,
   source: NetworksSource
 ): Promise<LocalAddressAction> {
-  if (transactionObject.hash) {
+  if (transactionObject.orderId) {
+    return pendingOrderToAddressAction(transactionObject);
+  } else if (transactionObject.transaction) {
     return pendingEvmTxToAddressAction(
       transactionObject,
       loadNetworkByChainId,

@@ -61,9 +61,13 @@ function getTitle(session: HardwareDialogSession): string {
   if (session.terminal === 'failed') return 'Failed';
   if (session.terminal === 'aborted') return 'Cancelled';
   const view = session.activeView;
+  if (session.terminal === 'success' && session.stillProcessing) {
+    return 'Still processing';
+  }
   if (session.terminal === 'success' && view) return SUCCESS_TITLE[view.kind];
   if (session.terminal === 'success') return 'Done';
 
+  if (session.activePhase === 'requoting') return 'Refreshing quote';
   if (!view) return 'Sign on Device';
   if (session.activeStatus === 'pending') return PENDING_TITLE[view.kind];
   if (session.activeStatus === 'confirmed') return SUCCESS_TITLE[view.kind];
