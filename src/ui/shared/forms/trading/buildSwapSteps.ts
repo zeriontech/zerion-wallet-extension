@@ -138,10 +138,14 @@ export function buildSwapSteps({
       // Ethereum approvals are slow enough to deserve their own "Approving"
       // stage; elsewhere (and on Ledger) the approve is folded into the swap
       // pill. Hardware wallets always show the dedicated stage.
-      toaster:
-        isDeviceAccount(wallet) || inputChain === NetworkId.Ethereum
+      toaster: {
+        ...(isDeviceAccount(wallet) || inputChain === NetworkId.Ethereum
           ? toaster.approve
-          : toaster.swap,
+          : toaster.swap),
+        // An approval is a plain transaction on the input chain — the
+        // provider's explorer wouldn't know its hash.
+        explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
+      },
     });
   }
 
@@ -174,6 +178,14 @@ export function buildSwapSteps({
         rate: quote.rate,
       });
 
+  // Both swap branches link to the same place: the provider's own explorer
+  // when it has one (a bridge/intent tracker that follows the whole route),
+  // otherwise the input chain's explorer.
+  const swapExplorerUrlTemplate =
+    quote.contractMetadata.explorer?.txUrl ??
+    inputNetwork.explorer?.txUrl ??
+    null;
+
   const swapContext = {
     chain: inputChain,
     initiator: INTERNAL_ORIGIN,
@@ -199,7 +211,10 @@ export function buildSwapSteps({
         quote,
         outputChain,
       },
-      toaster: toaster.swap,
+      toaster: {
+        ...toaster.swap,
+        explorerUrlTemplate: swapExplorerUrlTemplate,
+      },
     });
   } else {
     invariant(isIntentQuote(quote), 'Quote must carry a Swap Intent');
@@ -222,13 +237,13 @@ export function buildSwapSteps({
           from: address,
           inputChain,
           outputChain,
-          explorerUrlTemplate:
-            quote.contractMetadata.explorer?.txUrl ??
-            inputNetwork.explorer?.txUrl ??
-            null,
+          explorerUrlTemplate: swapExplorerUrlTemplate,
         },
       },
-      toaster: toaster.swap,
+      toaster: {
+        ...toaster.swap,
+        explorerUrlTemplate: swapExplorerUrlTemplate,
+      },
     });
   }
 

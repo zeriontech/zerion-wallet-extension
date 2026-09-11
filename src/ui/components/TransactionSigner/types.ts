@@ -56,25 +56,38 @@ export type StepResult = SignTransactionResult | OrderStepResult;
 type ToasterAsset = { symbol: string; iconUrl: string | null };
 type ToasterChain = { iconUrl: string | null };
 
-export type ToasterView =
-  | {
-      kind: 'approve';
-      token: ToasterAsset;
-      chain: ToasterChain;
-    }
-  | {
-      kind: 'swap' | 'bridge';
-      sent: ToasterAsset;
-      received: ToasterAsset;
-      receivedChain: ToasterChain;
-    }
-  | {
-      kind: 'send';
-      token: ToasterAsset;
-      chain: ToasterChain;
-      recipient: { address: string; name?: string };
-      isNft?: boolean;
-    };
+/** Fields every toaster view carries, whatever the step kind. */
+type ToasterViewCommon = {
+  /**
+   * `{HASH}` template for the explorer link offered in the success state.
+   * Prefer the provider's own explorer (a bridge/intent tracker that follows
+   * both legs) over the input chain's — the same precedence `OrderTarget`
+   * uses. Null when the step has no explorer to link to.
+   */
+  explorerUrlTemplate?: string | null;
+};
+
+export type ToasterView = ToasterViewCommon &
+  (
+    | {
+        kind: 'approve';
+        token: ToasterAsset;
+        chain: ToasterChain;
+      }
+    | {
+        kind: 'swap' | 'bridge';
+        sent: ToasterAsset;
+        received: ToasterAsset;
+        receivedChain: ToasterChain;
+      }
+    | {
+        kind: 'send';
+        token: ToasterAsset;
+        chain: ToasterChain;
+        recipient: { address: string; name?: string };
+        isNft?: boolean;
+      }
+  );
 
 export type SignStep =
   | { kind: 'send'; params: SendTxParams; toaster?: ToasterView }
