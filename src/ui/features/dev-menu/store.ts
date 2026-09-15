@@ -4,6 +4,7 @@ import {
   type DevMenuState,
   type PriceImpactOverride,
   type ReadonlyWallOverride,
+  type ConfidentialPermitsOverride,
   type SimulationOutputDiscrepancy,
   type SimulationStatusOverride,
   type SimulationWarningOverride,
@@ -64,6 +65,15 @@ export function setReadonlyWallOverride(value: ReadonlyWallOverride) {
   }));
 }
 
+export function setConfidentialPermitsOverride(
+  value: ConfidentialPermitsOverride
+) {
+  devMenuStore.setState((state) => ({
+    ...state,
+    confidentialPermitsOverride: value,
+  }));
+}
+
 export function hasAnyOverride(state: DevMenuState): boolean {
   return (
     state.priceImpactOverride !== 'off' ||
@@ -71,6 +81,7 @@ export function hasAnyOverride(state: DevMenuState): boolean {
     state.simulationStatusOverride !== 'off' ||
     state.simulationOutputDiscrepancy !== 'off' ||
     state.usDisclaimerOverride !== 'off' ||
-    state.readonlyWallOverride !== 'off'
+    state.readonlyWallOverride !== 'off' ||
+    state.confidentialPermitsOverride !== 'off'
   );
 }

@@ -416,3 +416,89 @@ describe('WalletRecordModel re-encryption methods', () => {
     });
   });
 });
+
+describe('WalletRecordModel confidential permits', () => {
+  const PK_ADDRESS = buildPrivateKeyContainer().getFirstWallet().address;
+  const permit = {
+    address: PK_ADDRESS.toLowerCase(),
+    contracts: ['0x3333333333333333333333333333333333333333'],
+    expireAt: '2026-10-14T00:00:00.000Z',
+    signature: `0x${'ab'.repeat(65)}`,
+    chain: 'ethereum',
+    signedAt: 1_757_800_000_000,
+  };
+
+  it('stores permits on the wallet entry and clears them again', () => {
+    const record = buildRecordWithoutMnemonics();
+    const withPermits = WalletRecordModel.setConfidentialPermits(record, {
+      // mixed-case input is normalized like `renameAddress` does
+      address: `0x${PK_ADDRESS.slice(2).toUpperCase()}`,
+      permits: [permit],
+    });
+    const wallet = WalletRecordModel.getWalletByAddress(withPermits, {
+      address: PK_ADDRESS,
+      groupId: null,
+    });
+    expect(wallet?.confidentialPermits).toEqual([permit]);
+    // the original record is untouched (immer)
+    expect(
+      WalletRecordModel.getWalletByAddress(record, {
+        address: PK_ADDRESS,
+        groupId: null,
+      })?.confidentialPermits
+    ).toBeUndefined();
+
+    const cleared = WalletRecordModel.clearConfidentialPermits(withPermits, {
+      address: PK_ADDRESS,
+    });
+    expect(
+      WalletRecordModel.getWalletByAddress(cleared, {
+        address: PK_ADDRESS,
+        groupId: null,
+      })?.confidentialPermits
+    ).toBeUndefined();
+  });
+
+  it('replaces the previous list wholesale and drops the field for an empty list', () => {
+    const record = buildRecordWithoutMnemonics();
+    const first = WalletRecordModel.setConfidentialPermits(record, {
+      address: PK_ADDRESS,
+      permits: [permit, { ...permit, chain: 'base', signature: '0xcd' }],
+    });
+    const second = WalletRecordModel.setConfidentialPermits(first, {
+      address: PK_ADDRESS,
+      permits: [{ ...permit, chain: 'arbitrum', signature: '0xef' }],
+    });
+    expect(
+      WalletRecordModel.getWalletByAddress(second, {
+        address: PK_ADDRESS,
+        groupId: null,
+      })?.confidentialPermits
+    ).toEqual([{ ...permit, chain: 'arbitrum', signature: '0xef' }]);
+
+    const emptied = WalletRecordModel.setConfidentialPermits(second, {
+      address: PK_ADDRESS,
+      permits: [],
+    });
+    expect(
+      WalletRecordModel.getWalletByAddress(emptied, {
+        address: PK_ADDRESS,
+        groupId: null,
+      })?.confidentialPermits
+    ).toBeUndefined();
+  });
+
+  it('throws for an unknown address on set, and is a no-op on clear', () => {
+    const record = buildRecordWithoutMnemonics();
+    const unknown = '0x9999999999999999999999999999999999999999';
+    expect(() =>
+      WalletRecordModel.setConfidentialPermits(record, {
+        address: unknown,
+        permits: [permit],
+      })
+    ).toThrow(/not found/);
+    expect(
+      WalletRecordModel.clearConfidentialPermits(record, { address: unknown })
+    ).toBe(record);
+  });
+});

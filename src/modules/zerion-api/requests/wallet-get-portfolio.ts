@@ -3,11 +3,17 @@ import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ResponseBody } from './ResponseBody';
+import type { SignedPermit } from './wallet-prepare-permits';
 
 export interface Params {
   addresses: string[];
   currency: string;
   nftPriceType?: 'not_included';
+  /**
+   * Signed decryption permits so confidential amounts count towards the
+   * totals. Same list get-positions takes; capped at 10 per request.
+   */
+  permits?: SignedPermit[];
 }
 
 export interface WalletPortfolio {

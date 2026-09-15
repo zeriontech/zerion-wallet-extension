@@ -38,6 +38,7 @@ import type { SignTransactionResult } from '../types/SignTransactionResult';
 import { invariant } from '../invariant';
 import { normalizeAddress } from '../normalizeAddress';
 import { getAddressType } from '../wallet/classifiers';
+import { CONFIDENTIAL_EVENT_NAMES } from '../types/confidential-events';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
   getProviderForMetabase,
@@ -272,6 +273,20 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('perps_position_action', params);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack('Perps: Position Action', mixpanelParams);
+  });
+
+  emitter.on('confidentialAnalyticsEvent', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    // the wallet address never goes to Mixpanel for this feature
+    const params = createParams({
+      request_name: 'confidential_balances',
+      ...data.params,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(CONFIDENTIAL_EVENT_NAMES[data.name], mixpanelParams);
   });
 
   emitter.on('assetClicked', async (data) => {

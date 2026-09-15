@@ -21,6 +21,7 @@ import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
+import type { ConfidentialAnalyticsEvent } from 'src/shared/types/confidential-events';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -118,4 +119,5 @@ export const emitter = createNanoEvents<{
   perpsScreenViewed: (data: PerpsScreenViewedParams) => void;
   perpsButtonPressed: (data: PerpsButtonPressedParams) => void;
   perpsPositionAction: (data: PerpsPositionActionParams) => void;
+  confidentialAnalyticsEvent: (data: ConfidentialAnalyticsEvent) => void;
 }>();

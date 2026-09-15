@@ -100,6 +100,8 @@ import type {
   PerpsPositionActionParams,
   PerpsScreenViewedParams,
 } from 'src/shared/types/perps-events';
+import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
+import type { ConfidentialAnalyticsEvent } from 'src/shared/types/confidential-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
 import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import {
@@ -884,6 +886,33 @@ export class Wallet {
       throw new RecordNotFound();
     }
     this.record = Model.renameAddress(this.record, { address, name });
+    this.updateWalletStore(this.record);
+  }
+
+  /**
+   * Stores the wallet's Signed Permits (Confidential Balances) in the record.
+   * Replaces the previous list wholesale: one Reveal restarts the set.
+   */
+  async setConfidentialPermits({
+    params: { address, permits },
+    context,
+  }: WalletMethodParams<{ address: string; permits: StoredPermit[] }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    this.record = Model.setConfidentialPermits(this.record, {
+      address,
+      permits,
+    });
+    this.updateWalletStore(this.record);
+  }
+
+  async clearConfidentialPermits({
+    params: { address },
+    context,
+  }: WalletMethodParams<{ address: string }>) {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    this.record = Model.clearConfidentialPermits(this.record, { address });
     this.updateWalletStore(this.record);
   }
 
@@ -1854,6 +1883,14 @@ export class Wallet {
   }: WalletMethodParams<PerpsScreenViewedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('perpsScreenViewed', params);
+  }
+
+  async confidentialAnalyticsEvent({
+    context,
+    params,
+  }: WalletMethodParams<ConfidentialAnalyticsEvent>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('confidentialAnalyticsEvent', params);
   }
 
   async perpsButtonPressed({

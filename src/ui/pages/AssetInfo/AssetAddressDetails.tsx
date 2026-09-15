@@ -40,6 +40,7 @@ import type { ResponseBody } from 'src/modules/zerion-api/requests/ResponseBody'
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PREMIUM_LANDING_LINK } from 'src/ui/features/premium/link';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
+import { ConfidentialMask } from 'src/ui/features/confidential-balances';
 import { getColor, getSign } from './helpers';
 import { AssetHeader } from './AssetHeader';
 import * as styles from './styles.module.css';
@@ -766,6 +767,7 @@ export function AssetAddressStats({
   walletAssetDetails,
   assetAddressPnlQuery,
   premiumStatus,
+  isEncrypted = false,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
@@ -773,6 +775,8 @@ export function AssetAddressStats({
   walletAssetDetails: WalletAssetDetails;
   assetAddressPnlQuery: AssetAddressPnlQuery;
   premiumStatus: PremiumStatus;
+  /** The wallet's position in this asset is a Confidential Position (still encrypted) */
+  isEncrypted?: boolean;
 }) {
   const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
   const { currency } = useCurrency();
@@ -844,7 +848,20 @@ export function AssetAddressStats({
           </UnstyledLink>
 
           <VStack gap={12}>
-            {walletAssetDetails.totalConvertedQuantity === 0 ? (
+            {isEncrypted ? (
+              <VStack gap={4}>
+                <UIText kind="headline/h1" style={{ display: 'flex' }}>
+                  <ConfidentialMask kind="headline/h1" address={address} />
+                </UIText>
+                <UIText
+                  kind="small/regular"
+                  color="var(--neutral-500)"
+                  style={{ display: 'flex' }}
+                >
+                  <ConfidentialMask kind="small/regular" address={address} />
+                </UIText>
+              </VStack>
+            ) : walletAssetDetails.totalConvertedQuantity === 0 ? (
               <VStack gap={4}>
                 {assetAddressPnlQuery.data?.data?.bought === 0 ? null : (
                   <UIText kind="headline/h2" color="var(--neutral-500)">

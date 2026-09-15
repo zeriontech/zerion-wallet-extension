@@ -1,0 +1,62 @@
+.panel {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 16px;
+  background-color: var(--neutral-100);
+  color: var(--black);
+  transition: background-color 150ms ease-out;
+}
+
+@media (hover: hover) {
+  .panel:hover {
+    background-color: var(--neutral-200);
+  }
+}
+
+.panel:active {
+  background-color: var(--neutral-200);
+}
+
+.card {
+  padding: 16px;
+  border-radius: 16px;
+  background-color: var(--neutral-100);
+}
+
+.positionRow {
+  padding: 8px 0;
+}
+
+/* Explainer hovercard hanging off the locked controls (the panel, a mask).
+ *
+ * The z-index is declared on the card itself even though it isn't positioned:
+ * Ariakit copies the computed value onto the wrapper it positions, and that
+ * wrapper is what has to outrank the sticky page header. */
+.infoCard {
+  z-index: 10;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--neutral-300);
+  background-color: var(--white);
+  box-shadow: var(--elevation-300);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  transition: opacity 150ms ease-out, transform 150ms ease-out;
+}
+
+/* Ariakit detects the transition above, flips `data-enter` while the card is
+ * on screen, and holds the unmount until the leave transition finishes. */
+.infoCard[data-enter] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .infoCard {
+    transition-duration: 0ms;
+    transform: none;
+  }
+}

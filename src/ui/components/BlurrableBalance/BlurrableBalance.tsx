@@ -31,6 +31,65 @@ function getGridConfigForKind(kind: UITextProps['kind']): GridConfig {
   return configs[kind];
 }
 
+/**
+ * The pixel-grid placeholder that stands in for a hidden amount. Sized off
+ * the typography `kind` so it occupies the same line box as the text it
+ * replaces. Shared by the hide-balances preference and the Confidential mask.
+ */
+export function HiddenBalancePixels({
+  kind,
+  color,
+  className,
+  label = 'Balance hidden',
+}: Pick<UITextProps, 'kind' | 'color'> & {
+  className?: string;
+  label?: string;
+}) {
+  const gridConfig = getGridConfigForKind(kind);
+  const squareColor = color || 'var(--neutral-600)';
+
+  const numberOfSquares = gridConfig.count * 2;
+  // stable per mount so the mosaic doesn't flicker on every re-render
+  const opacities = React.useMemo(
+    () =>
+      Array.from({ length: numberOfSquares }, () => Math.random() * 0.4 + 0.1),
+    [numberOfSquares]
+  );
+
+  return (
+    <div
+      className={className}
+      style={{
+        display: 'inline-grid',
+        gridTemplateColumns: `repeat(${gridConfig.count}, ${gridConfig.squareSize}px)`,
+        gridTemplateRows: `repeat(2, ${gridConfig.squareSize}px)`,
+        paddingTop: (gridConfig.height - gridConfig.squareSize * 2) / 2,
+        height: `${gridConfig.height}px`,
+      }}
+      aria-label={label}
+    >
+      {opacities.map((opacity, i) => (
+        <div
+          key={i}
+          style={{
+            width: `${gridConfig.squareSize}px`,
+            height: `${gridConfig.squareSize}px`,
+            backgroundColor: squareColor,
+            opacity,
+            borderTopLeftRadius: i === 0 ? gridConfig.squareSize / 2 : 0,
+            borderTopRightRadius:
+              i === gridConfig.count - 1 ? gridConfig.squareSize / 2 : 0,
+            borderBottomLeftRadius:
+              i === gridConfig.count ? gridConfig.squareSize / 2 : 0,
+            borderBottomRightRadius:
+              i === numberOfSquares - 1 ? gridConfig.squareSize / 2 : 0,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function BlurrableBalance({
   children,
   kind,
@@ -43,41 +102,7 @@ export function BlurrableBalance({
     return <>{children}</>;
   }
 
-  const gridConfig = getGridConfigForKind(kind);
-  const squareColor = color || 'var(--neutral-600)';
-
-  const numberOfSquares = gridConfig.count * 2;
-
   return (
-    <div
-      className={className}
-      style={{
-        display: 'inline-grid',
-        gridTemplateColumns: `repeat(${gridConfig.count}, ${gridConfig.squareSize}px)`,
-        gridTemplateRows: `repeat(2, ${gridConfig.squareSize}px)`,
-        paddingTop: (gridConfig.height - gridConfig.squareSize * 2) / 2,
-        height: `${gridConfig.height}px`,
-      }}
-      aria-label="Balance hidden"
-    >
-      {Array.from({ length: numberOfSquares }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            width: `${gridConfig.squareSize}px`,
-            height: `${gridConfig.squareSize}px`,
-            backgroundColor: squareColor,
-            opacity: Math.random() * 0.4 + 0.1,
-            borderTopLeftRadius: i === 0 ? gridConfig.squareSize / 2 : 0,
-            borderTopRightRadius:
-              i === gridConfig.count - 1 ? gridConfig.squareSize / 2 : 0,
-            borderBottomLeftRadius:
-              i === gridConfig.count ? gridConfig.squareSize / 2 : 0,
-            borderBottomRightRadius:
-              i === numberOfSquares - 1 ? gridConfig.squareSize / 2 : 0,
-          }}
-        />
-      ))}
-    </div>
+    <HiddenBalancePixels kind={kind} color={color} className={className} />
   );
 }

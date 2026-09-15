@@ -10,6 +10,9 @@ export type USDisclaimerOverride = 'off' | 'force-on' | 'force-off';
 
 export type ReadonlyWallOverride = 'off' | 'disabled';
 
+/** `fake`: prepare-permits returns three fabricated permits (ethereum/base/arbitrum) */
+export type ConfidentialPermitsOverride = 'off' | 'fake';
+
 export interface DevMenuState {
   priceImpactOverride: PriceImpactOverride;
   simulationWarningOverride: SimulationWarningOverride;
@@ -17,6 +20,7 @@ export interface DevMenuState {
   simulationOutputDiscrepancy: SimulationOutputDiscrepancy;
   usDisclaimerOverride: USDisclaimerOverride;
   readonlyWallOverride: ReadonlyWallOverride;
+  confidentialPermitsOverride: ConfidentialPermitsOverride;
 }
 
 export const DEFAULT_DEV_MENU_STATE: DevMenuState = {
@@ -26,4 +30,5 @@ export const DEFAULT_DEV_MENU_STATE: DevMenuState = {
   simulationOutputDiscrepancy: 'off',
   usDisclaimerOverride: 'off',
   readonlyWallOverride: 'off',
+  confidentialPermitsOverride: 'off',
 };

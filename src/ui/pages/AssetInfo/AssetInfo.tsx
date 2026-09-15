@@ -282,6 +282,12 @@ export function AssetInfo() {
           walletAssetDetails={walletData.data}
           assetAddressPnlQuery={assetAddressPnlQuery}
           premiumStatus={premiumStatus}
+          isEncrypted={Boolean(
+            simplePositionsData?.data.some(
+              (position) =>
+                position.fungible.id === asset_code && position.amount.encrypted
+            )
+          )}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />

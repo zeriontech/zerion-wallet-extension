@@ -85,7 +85,7 @@ function toPollingObj(value: TransactionObject): PollingTx {
       timestamp: value.timestamp,
     };
   } else {
-    throw new Error('Invalud TransactionObject');
+    throw new Error('Invalid TransactionObject');
   }
 }
 

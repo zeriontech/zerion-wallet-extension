@@ -18,6 +18,7 @@ import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import type { Kind } from 'src/ui/ui-kit/UIText';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
+import { ConfidentialMask } from 'src/ui/features/confidential-balances';
 
 function getSign(
   decimaledValue?: number | BigNumber | string,
@@ -61,9 +62,13 @@ export function HistoryTokenValue({
       }}
       title={quantity || undefined}
     >
-      <BlurrableBalance kind={kind}>
-        {quantity ? <AssetQuantity sign={sign} quantity={quantity} /> : null}
-      </BlurrableBalance>
+      {amount?.encrypted ? (
+        <ConfidentialMask kind={kind} />
+      ) : (
+        <BlurrableBalance kind={kind}>
+          {quantity ? <AssetQuantity sign={sign} quantity={quantity} /> : null}
+        </BlurrableBalance>
+      )}
       {withLink ? (
         <AssetLink fungible={fungible} />
       ) : (
@@ -217,6 +222,9 @@ export function TransactionCurrencyValue({
     return null;
   }
   const transfer = transfers[0];
+  if (transfer.amount?.encrypted) {
+    return <ConfidentialMask kind={kind} />;
+  }
   if (transfer.amount?.value == null) {
     return null;
   }

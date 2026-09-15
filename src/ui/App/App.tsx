@@ -50,6 +50,7 @@ import { InactivityDetector } from '../components/Session/InactivityDetector';
 import { SessionResetHandler } from '../components/Session/SessionResetHandler';
 import { MnemonicPhraseRestoration } from '../components/MnemonicPhraseRestoration';
 import { TransactionSigner } from '../components/TransactionSigner';
+import { ConfidentialRevealDialog } from '../features/confidential-balances';
 import { ViewSuspense } from '../components/ViewSuspense';
 import { VersionUpgrade } from '../components/VersionUpgrade';
 import { queryClient } from '../shared/requests/queryClient';
@@ -210,6 +211,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
     <ViewArea>
       <URLBar />
       <TransactionSigner />
+      <ConfidentialRevealDialog />
       {isPopup ? <RouteRestoration /> : null}
       <Routes>
         {initialRoute ? (

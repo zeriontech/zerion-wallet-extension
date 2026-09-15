@@ -1,1 +1,1 @@
-export { BlurrableBalance } from './BlurrableBalance';
+export { BlurrableBalance, HiddenBalancePixels } from './BlurrableBalance';
