@@ -10,6 +10,7 @@ import { ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
 import type { Fungible } from '../types/Fungible';
 import type { ResponseBody } from './ResponseBody';
+import type { SignedPermit } from './wallet-prepare-permits';
 
 interface Price {
   value: number;
@@ -59,6 +60,11 @@ export interface WalletPosition {
   value: string | null;
   isDisplayable: boolean;
   dapp: AddressPositionDappInfo | null;
+  /**
+   * Confidential (e.g. Zama FHE) position: quantity/value are encrypted
+   * on-chain and arrive zeroed until a matching Signed Permit is attached
+   */
+  encrypted?: boolean;
 }
 
 export interface Params {
@@ -66,6 +72,12 @@ export interface Params {
   currency: string;
   chainIds?: Chain[];
   assetIds?: string[];
+  /**
+   * Signed decryption permits unlocking confidential amounts. Send every
+   * permit held for the requested wallets; the server matches them. Capped at
+   * 10 per request (400 above the cap). A rejected or expired permit is a 401.
+   */
+  permits?: SignedPermit[];
 }
 
 type WalletGetPositionsResponse = ResponseBody<WalletPosition[]>;

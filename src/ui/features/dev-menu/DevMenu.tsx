@@ -15,17 +15,25 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
 import { devForceShowSwapOnboarding } from 'src/ui/pages/SwapForm2/SwapOnboardingDialog/devForceShowStore';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
+import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
+import { walletPort } from 'src/ui/shared/channels';
+import {
+  invalidateConfidentialPermits,
+  useWalletByAddress,
+} from 'src/ui/features/confidential-balances/useConfidentialPermits';
 import {
   devMenuStore,
   hasAnyOverride,
   setPriceImpactOverride,
   setReadonlyWallOverride,
+  setConfidentialPermitsOverride,
   setSimulationOutputDiscrepancy,
   setSimulationStatusOverride,
   setSimulationWarningOverride,
   setUSDisclaimerOverride,
 } from './store';
 import type {
+  ConfidentialPermitsOverride,
   PriceImpactOverride,
   ReadonlyWallOverride,
   SimulationOutputDiscrepancy,
@@ -75,6 +83,14 @@ const READONLY_WALL_OPTIONS: { value: ReadonlyWallOverride; label: string }[] =
     { value: 'disabled', label: 'Disabled' },
   ];
 
+const CONFIDENTIAL_PERMITS_OPTIONS: {
+  value: ConfidentialPermitsOverride;
+  label: string;
+}[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'fake', label: 'Fake (3 chains)' },
+];
+
 function ShortcutHint() {
   const modKey = isMacOS() ? '⌘' : 'Ctrl';
   return (
@@ -93,6 +109,9 @@ export function DevMenu() {
   const { preferences, setPreferences } = usePreferences();
   const perpsOnboardingDismissed =
     preferences?.perpsOnboardingDismissed === true;
+  const { singleAddress } = useAddressParams();
+  const { data: currentWallet } = useWalletByAddress(singleAddress || null);
+  const storedPermitsCount = currentWallet?.confidentialPermits?.length ?? 0;
 
   return (
     <>
@@ -300,6 +319,54 @@ export function DevMenu() {
                       </SegmentedControlRadio>
                     ))}
                   </SegmentedControlGroup>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>confidential</span>
+                  <span className={styles.sectionRule} />
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>prepare_permits</span>
+                  <SegmentedControlGroup kind="secondary">
+                    {CONFIDENTIAL_PERMITS_OPTIONS.map((option) => (
+                      <SegmentedControlRadio
+                        key={option.value}
+                        name="dev-menu-confidential-permits"
+                        value={option.value}
+                        checked={
+                          state.confidentialPermitsOverride === option.value
+                        }
+                        onChange={() =>
+                          setConfidentialPermitsOverride(option.value)
+                        }
+                      >
+                        {option.label}
+                      </SegmentedControlRadio>
+                    ))}
+                  </SegmentedControlGroup>
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>stored_permits</span>
+                  <div className={styles.navLinks}>
+                    <button
+                      type="button"
+                      className={styles.navLink}
+                      disabled={!singleAddress || storedPermitsCount === 0}
+                      onClick={async () => {
+                        if (!singleAddress) {
+                          return;
+                        }
+                        await walletPort.request('clearConfidentialPermits', {
+                          address: singleAddress,
+                        });
+                        invalidateConfidentialPermits();
+                      }}
+                    >
+                      clear ({storedPermitsCount})
+                    </button>
+                  </div>
                 </div>
               </div>
 

@@ -43,6 +43,8 @@ function createAggregatedPosition(
     protocol: null,
     is_displayable: true,
     included_in_chart: false,
+    // a cross-chain row is confidential if any of its legs is
+    encrypted: positions.some((position) => position.encrypted),
     chainDistribution: positions.map(({ chain, quantity, value }) => ({
       chain,
       value,

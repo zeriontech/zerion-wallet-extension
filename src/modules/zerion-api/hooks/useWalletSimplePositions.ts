@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
+import { useConfidentialPermits } from 'src/ui/features/confidential-balances/useConfidentialPermits';
+import { withPermits } from 'src/ui/features/confidential-balances/withPermits';
 import { ZerionAPI } from '../zerion-api.client';
 import type { Params } from '../requests/wallet-get-simple-positions';
 import type { BackendSourceParams } from '../shared';
@@ -22,11 +24,19 @@ export function useWalletSimplePositions(
     refetchInterval?: number | false;
   } = {}
 ) {
+  const { permits, fingerprint, isReady } = useConfidentialPermits([
+    params.address,
+  ]);
   return useQuery({
-    queryKey: persistentQuery([QUERY_KEY, params, source]),
-    queryFn: () => ZerionAPI.walletGetSimplePositions(params, { source }),
+    // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: persistentQuery([QUERY_KEY, params, source, fingerprint]),
+    queryFn: () =>
+      withPermits(permits, (permits) =>
+        ZerionAPI.walletGetSimplePositions({ ...params, permits }, { source })
+      ),
     suspense,
-    enabled,
+    enabled: enabled && isReady,
     keepPreviousData,
     staleTime: STALE_TIME,
     refetchInterval,

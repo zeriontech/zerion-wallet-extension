@@ -37,7 +37,8 @@ type MetabaseEvent =
   | 'report_ledger_error'
   | 'perps_screen_viewed'
   | 'perps_button_pressed'
-  | 'perps_position_action';
+  | 'perps_position_action'
+  | 'confidential_balances';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 

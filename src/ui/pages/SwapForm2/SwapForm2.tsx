@@ -377,9 +377,15 @@ function SwapFormComponent({
     { source: httpSource },
     { enabled: receiverAddress != null, keepPreviousData: true }
   );
-  const receivePositions = receiverAddress
-    ? receiverPositionsData?.data ?? []
-    : positions;
+  const receivePositions = useMemo(
+    () =>
+      receiverAddress
+        ? (receiverPositionsData?.data ?? []).filter(
+            (position) => !position.amount.encrypted
+          )
+        : positions,
+    [receiverAddress, receiverPositionsData, positions]
+  );
 
   const { mutate: handleSignTransaction, ...signMutation } = useMutation({
     mutationFn: async (result: SimulationResult) => {
@@ -895,7 +901,11 @@ function SwapFormWrapper({
     { enabled: ready, refetchInterval }
   );
 
-  const positions = data?.data;
+  // Confidential Positions arrive zeroed until revealed; hide them from the picker
+  const positions = useMemo(
+    () => data?.data.filter((position) => !position.amount.encrypted),
+    [data]
+  );
 
   const { networks, isFetching } = useNetworks();
 

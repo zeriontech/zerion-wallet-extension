@@ -2,12 +2,15 @@ import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ResponseBody } from './ResponseBody';
+import type { SignedPermit } from './wallet-prepare-permits';
 
 export interface Params {
   assetId: string;
   addresses: string[];
   currency: string;
   groupBy: ('by-wallet' | 'by-app')[];
+  /** Signed decryption permits unlocking confidential amounts (≤10 per request) */
+  permits?: SignedPermit[];
 }
 
 interface NetworkShortInfo {

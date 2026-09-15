@@ -6,4 +6,9 @@ export type Amount = {
   value: number | null;
   /** @description Amount in USD */
   usdValue: number | null;
+  /**
+   * @description Confidential (e.g. Zama FHE) amount: encrypted on-chain and
+   * returned zeroed until a matching Signed Permit is attached to the request
+   */
+  encrypted?: boolean;
 };

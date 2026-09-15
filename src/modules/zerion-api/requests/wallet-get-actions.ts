@@ -4,6 +4,7 @@ import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { Fungible } from '../types/Fungible';
+import type { SignedPermit } from './wallet-prepare-permits';
 
 export type NFTPreview = {
   /**
@@ -76,6 +77,11 @@ export interface Payload {
   currency: string;
   /** @description Wallet addresses */
   addresses: string[];
+  /**
+   * Signed decryption permits unlocking confidential transfer amounts. Send
+   * every permit held for the requested wallets; capped at 10 per request.
+   */
+  permits?: SignedPermit[];
   /** @description Pagination cursor */
   cursor?: string;
   /** @description Pagination limit */
@@ -156,6 +162,11 @@ export type Amount = {
   value: number | null;
   /** @description Amount in USD */
   usdValue: number | null;
+  /**
+   * @description Confidential (e.g. Zama FHE) amount: encrypted on-chain and
+   * returned zeroed until a matching Signed Permit is attached to the request
+   */
+  encrypted?: boolean;
 };
 
 type Fee = {

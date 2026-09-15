@@ -37,8 +37,15 @@ type Props = {
   ecosystem: BlockchainType;
   bluetoothSupportEnabled: boolean;
   keyboardShortcutEnabled: boolean;
-  legacySigning: boolean;
-  onLegacySigningChange: (value: boolean) => void;
+  legacySigning?: boolean;
+  onLegacySigningChange?: (value: boolean) => void;
+  /**
+   * The gear opening the "Legacy Signing" toggle. Turn off for internal
+   * flows whose signatures are verified by our backend as standard ECDSA
+   * (e.g. Confidential Balances permits), where the legacy format would
+   * silently produce unusable signatures.
+   */
+  showSigningSettings?: boolean;
 };
 
 export interface SignMessageHandle {
@@ -58,8 +65,9 @@ export const HardwareSignMessage = React.forwardRef(
       ecosystem,
       bluetoothSupportEnabled,
       keyboardShortcutEnabled,
-      legacySigning,
+      legacySigning = false,
       onLegacySigningChange,
+      showSigningSettings = true,
       ...buttonProps
     }: React.ButtonHTMLAttributes<HTMLButtonElement> & Props,
     ref: React.Ref<SignMessageHandle>
@@ -245,42 +253,46 @@ export const HardwareSignMessage = React.forwardRef(
             height={300}
           />
         </BottomSheetDialog>
-        <BottomSheetDialog ref={settingsDialogRef} height="fit-content">
-          <VStack gap={16} style={{ textAlign: 'left' }}>
-            <Frame>
-              <ToggleSettingLine
-                checked={legacySigning}
-                onChange={(event) =>
-                  onLegacySigningChange(event.target.checked)
-                }
-                text="Legacy Signing"
-                detailText="Enable this only if you previously signed a message with Ledger on a dapp and now the signature produces different results. This may happen with dapps that derive secondary keys or addresses from your signature."
-              />
-            </Frame>
-            <Button
-              kind="primary"
-              onClick={() => settingsDialogRef.current?.close()}
-              style={{ width: '100%' }}
-            >
-              Done
-            </Button>
-          </VStack>
-        </BottomSheetDialog>
+        {showSigningSettings ? (
+          <BottomSheetDialog ref={settingsDialogRef} height="fit-content">
+            <VStack gap={16} style={{ textAlign: 'left' }}>
+              <Frame>
+                <ToggleSettingLine
+                  checked={legacySigning}
+                  onChange={(event) =>
+                    onLegacySigningChange?.(event.target.checked)
+                  }
+                  text="Legacy Signing"
+                  detailText="Enable this only if you previously signed a message with Ledger on a dapp and now the signature produces different results. This may happen with dapps that derive secondary keys or addresses from your signature."
+                />
+              </Frame>
+              <Button
+                kind="primary"
+                onClick={() => settingsDialogRef.current?.close()}
+                style={{ width: '100%' }}
+              >
+                Done
+              </Button>
+            </VStack>
+          </BottomSheetDialog>
+        ) : null}
         <div style={{ position: 'relative' }}>
-          <UnstyledButton
-            aria-label="Signing settings"
-            onClick={() => settingsDialogRef.current?.showModal()}
-            style={{
-              position: 'absolute',
-              right: 0,
-              bottom: '100%',
-              marginBottom: 14,
-              padding: 4,
-              color: 'var(--neutral-500)',
-            }}
-          >
-            <SettingsIcon style={{ width: 20, height: 20 }} />
-          </UnstyledButton>
+          {showSigningSettings ? (
+            <UnstyledButton
+              aria-label="Signing settings"
+              onClick={() => settingsDialogRef.current?.showModal()}
+              style={{
+                position: 'absolute',
+                right: 0,
+                bottom: '100%',
+                marginBottom: 14,
+                padding: 4,
+                color: 'var(--neutral-500)',
+              }}
+            >
+              <SettingsIcon style={{ width: 20, height: 20 }} />
+            </UnstyledButton>
+          ) : null}
           {isLoading ? (
             <Button
               kind="loading-border"

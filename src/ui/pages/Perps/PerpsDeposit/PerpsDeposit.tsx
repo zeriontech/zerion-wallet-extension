@@ -547,7 +547,11 @@ function DepositPageInner({ address }: { address: string }) {
     { refetchInterval }
   );
   const { networks } = useNetworks();
-  const positions = useMemo(() => data?.data ?? [], [data]);
+  // Confidential Positions arrive zeroed until revealed; hide them from the picker
+  const positions = useMemo(
+    () => (data?.data ?? []).filter((position) => !position.amount.encrypted),
+    [data]
+  );
 
   // Filter to bridgeable EVM positions only.
   const bridgeable = useMemo(() => {

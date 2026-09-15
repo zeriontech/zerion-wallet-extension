@@ -79,6 +79,13 @@ import { walletPort } from 'src/ui/shared/channels';
 import { useLocation } from 'react-router-dom';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import {
+  ConfidentialBalancesPanel,
+  ConfidentialMask,
+  ConfidentialNameLock,
+  hasEncryptedPositions,
+  useIsSignableWallet,
+} from 'src/ui/features/confidential-balances';
+import {
   TAB_SELECTOR_HEIGHT,
   TAB_TOP_PADDING,
   getGrownTabMaxHeight,
@@ -207,7 +214,9 @@ function AddressPositionItem({
               gap={4}
               alignItems="center"
               style={{
-                gridTemplateColumns: showGasIcon ? '1fr auto' : '1fr',
+                gridTemplateColumns: `1fr${position.encrypted ? ' auto' : ''}${
+                  showGasIcon ? ' auto' : ''
+                }`,
                 justifySelf: 'start',
               }}
               title={position.asset.name}
@@ -215,6 +224,7 @@ function AddressPositionItem({
               <UIText kind="body/accent" style={textOverflowStyle}>
                 {position.asset.name}
               </UIText>
+              {position.encrypted ? <ConfidentialNameLock /> : null}
               {showGasIcon ? (
                 <div title="Token is used to cover gas fees">
                   <GasIcon
@@ -333,7 +343,14 @@ function AddressPositionItem({
                       protocol: {position.dapp?.name || DEFAULT_PROTOCOL_NAME}
                     </span>
                   ) : undefined,
-                  position.type !== 'asset' ? (
+                  position.encrypted ? (
+                    <span
+                      key="position-quantity"
+                      style={{ ...textOverflowStyle, display: 'flex' }}
+                    >
+                      <ConfidentialMask kind="small/regular" />
+                    </span>
+                  ) : position.type !== 'asset' ? (
                     <span
                       key="position-type"
                       color={
@@ -387,7 +404,13 @@ function AddressPositionItem({
             </UIText>
           }
         />
-        {position.value != null ? (
+        {position.encrypted ? (
+          <VStack gap={0} style={{ textAlign: 'right', justifyItems: 'end' }}>
+            <UIText kind="body/regular" style={{ display: 'flex' }}>
+              <ConfidentialMask kind="body/regular" color="var(--black)" />
+            </UIText>
+          </VStack>
+        ) : position.value != null ? (
           <VStack gap={0} style={{ textAlign: 'right', justifyItems: 'end' }}>
             <UIText kind="body/regular" style={{ display: 'flex' }}>
               <BlurrableBalance kind="body/regular" color="var(--black)">
@@ -613,6 +636,7 @@ export function PositionList({
   dappChain,
   isAllNetworks,
   stickyOffset,
+  confidentialPanel = false,
 }: {
   items: AddressPosition[];
   address: string | null;
@@ -625,6 +649,12 @@ export function PositionList({
    * its own (e.g. a dialog) so headings stick to that container's top.
    */
   stickyOffset?: number;
+  /**
+   * Show the Confidential Balances panel after the Wallet group when the
+   * wallet is Locked (encrypted items in `items`) and Signable. Only the
+   * Overview's own list opts in.
+   */
+  confidentialPanel?: boolean;
 }) {
   const COLLAPSED_COUNT = 6;
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -660,6 +690,14 @@ export function PositionList({
 
   const assetPageEnabled = Boolean(
     firebaseConfig?.extension_asset_page_enabled
+  );
+
+  const isSignable = useIsSignableWallet(confidentialPanel ? address : null);
+  const showConfidentialPanel = Boolean(
+    confidentialPanel &&
+      address &&
+      isSignable &&
+      hasEncryptedPositions(preparedPositions.items)
   );
 
   return (
@@ -832,6 +870,16 @@ export function PositionList({
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
             />
+            {dappId === DEFAULT_PROTOCOL_ID &&
+            showConfidentialPanel &&
+            address ? (
+              <>
+                <Spacer height={16} />
+                <div style={{ paddingInline: 16 }}>
+                  <ConfidentialBalancesPanel address={address} />
+                </div>
+              </>
+            ) : null}
             {dappIndex !== preparedPositions.dappIds.length - 1 ? (
               <>
                 <Spacer height={14} />
@@ -928,6 +976,7 @@ function MultiChainPositions({
           dappChain={dappChain}
           address={address}
           isAllNetworks={chainValue === NetworkSelectValue.All}
+          confidentialPanel={true}
           {...positionListProps}
         />
       </VStack>

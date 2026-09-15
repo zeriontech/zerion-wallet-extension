@@ -772,7 +772,11 @@ function SendFormWrapper({
     { enabled: ready, refetchInterval }
   );
 
-  const positions = data?.data;
+  // Confidential Positions arrive zeroed until revealed; hide them from the picker
+  const positions = useMemo(
+    () => data?.data.filter((position) => !position.amount.encrypted),
+    [data]
+  );
   const { networks, isFetching } = useNetworks();
 
   if (isError) return null;

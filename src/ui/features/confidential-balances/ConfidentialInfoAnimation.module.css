@@ -1,0 +1,204 @@
+/* "Decrypting balances" illustration for the Confidential Balances explainer
+ * card (ported from the web app's decrypt-animation.css).
+ *
+ * Three token rows sit on the ciphertext texture twice: a blurred, pixel-masked
+ * "ghost" copy underneath and a crisp copy on top. A glare beam sweeps across
+ * the stage and the crisp copy is clipped to wherever the beam has passed, so
+ * the rows resolve left to right — then the sweep runs back and they dissolve
+ * again. One 8s loop: decrypt (8%→22%), hold, re-encrypt (60%→74%), hold.
+ *
+ * Every metric is expressed in `--u`, one design pixel of a 248px-wide stage,
+ * so the same markup scales proportionally via container query units. */
+.stage {
+  container-type: inline-size;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  --u: calc(100cqw / 248);
+  --cycle: 8s;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --glare: rgba(255, 255, 255, 0.65);
+  background-color: var(--neutral-200);
+  background-image: conic-gradient(
+    var(--neutral-300) 25%,
+    transparent 25% 50%,
+    var(--neutral-300) 50% 75%,
+    transparent 75%
+  );
+  background-size: 6px 6px;
+}
+
+:global(.theme-dark) .stage {
+  --glare: rgba(255, 255, 255, 0.08);
+}
+
+.layer {
+  animation-duration: var(--cycle);
+  animation-timing-function: var(--ease);
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
+.rows {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(4 * var(--u));
+  padding: calc(12 * var(--u));
+  font-size: calc(12 * var(--u));
+  line-height: calc(16 * var(--u));
+  font-weight: 500;
+  letter-spacing: calc(0.38 * var(--u));
+  white-space: nowrap;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8 * var(--u));
+  height: calc(28 * var(--u));
+  padding: 0 calc(8 * var(--u));
+}
+
+.token {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+}
+
+.coin {
+  flex: none;
+  width: calc(20 * var(--u));
+  height: calc(20 * var(--u));
+  border-radius: 9999px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.coinUsdc {
+  background-color: var(--primary);
+  background-image: url('https://cdn.zerion.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png');
+}
+
+.coinUsdt {
+  background-color: var(--positive-500);
+  background-image: url('https://cdn.zerion.io/0xdac17f958d2ee523a2206206994597c13d831ec7.png');
+}
+
+.coinEth {
+  background-color: var(--neutral-800);
+  background-image: url('https://cdn.zerion.io/eth.png');
+}
+
+/* The encrypted copy: blurred and broken into a pixel mosaic by a checker mask */
+.ghost {
+  color: var(--neutral-600);
+  filter: blur(calc(1.6 * var(--u)));
+  -webkit-mask-image: conic-gradient(
+    #000 25%,
+    transparent 25% 50%,
+    #000 50% 75%,
+    transparent 75%
+  );
+  mask-image: conic-gradient(
+    #000 25%,
+    transparent 25% 50%,
+    #000 50% 75%,
+    transparent 75%
+  );
+  -webkit-mask-size: calc(5 * var(--u)) calc(5 * var(--u));
+  mask-size: calc(5 * var(--u)) calc(5 * var(--u));
+  animation-name: ghost;
+}
+
+.ghost .coin {
+  background: var(--neutral-500);
+}
+
+.crisp {
+  color: var(--black);
+  animation-name: crisp;
+}
+
+.beam {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: calc(56 * var(--u));
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--glare) 50%,
+    transparent
+  );
+  animation-name: beam;
+}
+
+@keyframes crisp {
+  0%,
+  8% {
+    clip-path: inset(0 100% 0 0);
+  }
+  22%,
+  60% {
+    clip-path: inset(0);
+  }
+  74%,
+  100% {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes ghost {
+  0%,
+  8% {
+    clip-path: inset(0);
+  }
+  22%,
+  60% {
+    clip-path: inset(0 0 0 100%);
+  }
+  74%,
+  100% {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes beam {
+  0%,
+  8% {
+    transform: translateX(-130%) skewX(-14deg);
+  }
+  22%,
+  60% {
+    transform: translateX(500%) skewX(-14deg);
+  }
+  74%,
+  100% {
+    transform: translateX(-130%) skewX(-14deg);
+  }
+}
+
+/* Reduced motion: a still frame caught halfway through the sweep */
+@media (prefers-reduced-motion: reduce) {
+  .layer {
+    animation: none;
+  }
+  .crisp {
+    clip-path: inset(0 50% 0 0);
+  }
+  .ghost {
+    clip-path: inset(0 0 0 50%);
+  }
+  .beam {
+    display: none;
+  }
+}

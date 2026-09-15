@@ -80,6 +80,11 @@ export interface AddressPosition {
   value: string | null;
   is_displayable: boolean;
   dapp: AddressPositionDappInfo | null;
+  /**
+   * Confidential (e.g. Zama FHE) position: quantity/value are encrypted
+   * on-chain and arrive zeroed until a matching Signed Permit is attached
+   */
+  encrypted?: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
