@@ -5,6 +5,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
+import { FullAddress } from 'src/ui/components/FullAddress';
 import { useProfileName } from 'src/ui/shared/useProfileName';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
@@ -81,9 +82,7 @@ function DialogContent({
                 </button>
               ) : null}
             </UIText>
-            <UIText kind="caption/regular" color="var(--neutral-500)">
-              {truncateAddress(address, 5)}
-            </UIText>
+            <FullAddress address={address} />
           </VStack>
         </VStack>
         <Button type="submit" kind="primary" style={{ width: '100%' }}>
