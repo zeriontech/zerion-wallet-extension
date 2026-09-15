@@ -23,6 +23,13 @@ emitter.on('uiAccountsChanged', () => {
   queryClient.removeQueries({
     queryKey: ['wallet/uiGetCurrentWallet'],
   });
+  // Per-address wallet lookups are cached with `staleTime: Infinity`. The
+  // import flow looks up an address before it is saved (it renders portfolio
+  // values for the candidates), caching `null`; drop those so the new wallet
+  // is found once it exists.
+  queryClient.removeQueries({
+    queryKey: ['wallet/uiGetWalletByAddress'],
+  });
 });
 
 emitter.on('sidepanel/activeTabUpdated', () => {
