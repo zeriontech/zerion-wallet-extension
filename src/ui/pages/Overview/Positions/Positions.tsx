@@ -873,12 +873,9 @@ export function PositionList({
             {dappId === DEFAULT_PROTOCOL_ID &&
             showConfidentialPanel &&
             address ? (
-              <>
-                <Spacer height={16} />
-                <div style={{ paddingInline: 16 }}>
-                  <ConfidentialBalancesPanel address={address} />
-                </div>
-              </>
+              <div style={{ paddingInline: 16 }}>
+                <ConfidentialBalancesPanel address={address} />
+              </div>
             ) : null}
             {dappIndex !== preparedPositions.dappIds.length - 1 ? (
               <>

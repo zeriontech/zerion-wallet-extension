@@ -44,7 +44,7 @@ export function ConfidentialBalancesPanel({
           />
           <VStack gap={0}>
             <UIText kind="body/accent">Confidential Balances</UIText>
-            <UIText kind="small/regular" color="var(--neutral-500)">
+            <UIText kind="caption/regular" color="var(--neutral-500)">
               Some tokens in this wallet are encrypted onchain.
             </UIText>
           </VStack>
