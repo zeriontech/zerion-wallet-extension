@@ -29,7 +29,7 @@ describe('isPermitValid', () => {
     expect(isPermitValid(makePermit(), NOW)).toBe(true);
   });
 
-  test('stops at the earlier of expireAt and the 30-day lifetime', () => {
+  test('stops at the earlier of expireAt and the up-to-30-day lifetime', () => {
     const soon = makePermit({ expireAt: new Date(NOW + DAY).toISOString() });
     expect(isPermitValid(soon, NOW + DAY - 1)).toBe(true);
     expect(isPermitValid(soon, NOW + DAY)).toBe(false);

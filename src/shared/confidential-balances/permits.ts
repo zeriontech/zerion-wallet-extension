@@ -4,7 +4,7 @@ import type {
 } from 'src/modules/zerion-api/requests/wallet-prepare-permits';
 import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 
-/** How long a Signed Permit is reused locally, regardless of `expireAt` */
+/** Upper bound on how long a Signed Permit is reused locally: up to 30 days, and never past `expireAt` */
 export const PERMIT_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 /** Backend cap on permits per request (body or header) */
 export const MAX_PERMITS_PER_REQUEST = 10;
