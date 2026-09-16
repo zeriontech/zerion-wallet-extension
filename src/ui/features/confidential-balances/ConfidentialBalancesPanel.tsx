@@ -11,7 +11,7 @@ import * as styles from './styles.module.css';
 
 /**
  * The Confidential Balances panel: the primary entry point to the Reveal
- * Dialog, placed after the Wallet positions group on the Overview. The caller
+ * Dialog, placed above the positions groups on the Overview. The caller
  * decides whether to show it (the wallet is Locked and Signable). Hovering
  * it shows the explainer card.
  */

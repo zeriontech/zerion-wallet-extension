@@ -23,6 +23,7 @@ import { produce } from 'immer';
 import { Wallet } from '../Wallet/Wallet';
 import { peakSavedWalletState, WalletStore } from '../Wallet/persistence';
 import type { NotificationWindow } from '../NotificationWindow/NotificationWindow';
+import { clearSessionPermits } from '../Wallet/helpers/confidentialPermitsSession';
 import { credentialsKey } from './storage-keys';
 import { isSessionCredentials } from './Credentials';
 
@@ -158,6 +159,8 @@ export class Account extends EventEmitter<AccountEvents> {
   private static async removeCredentials() {
     await BrowserStorage.remove(credentialsKey);
     await SessionStorage.remove(credentialsKey);
+    // Confidential balances hide again on lock: drop the mirrored permits
+    await clearSessionPermits();
     await LoginActivity.recordLogout();
     await clearStorageArtefacts();
   }

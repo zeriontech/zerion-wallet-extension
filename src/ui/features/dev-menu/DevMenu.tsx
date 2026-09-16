@@ -19,7 +19,7 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { walletPort } from 'src/ui/shared/channels';
 import {
   invalidateConfidentialPermits,
-  useWalletByAddress,
+  useStoredConfidentialPermits,
 } from 'src/ui/features/confidential-balances/useConfidentialPermits';
 import {
   devMenuStore,
@@ -110,8 +110,10 @@ export function DevMenu() {
   const perpsOnboardingDismissed =
     preferences?.perpsOnboardingDismissed === true;
   const { singleAddress } = useAddressParams();
-  const { data: currentWallet } = useWalletByAddress(singleAddress || null);
-  const storedPermitsCount = currentWallet?.confidentialPermits?.length ?? 0;
+  const { data: storedPermits } = useStoredConfidentialPermits(
+    singleAddress || null
+  );
+  const storedPermitsCount = storedPermits?.length ?? 0;
 
   return (
     <>

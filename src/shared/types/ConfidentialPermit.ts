@@ -1,8 +1,8 @@
 import type { SignedPermit } from 'src/modules/zerion-api/requests/wallet-prepare-permits';
 
 /**
- * A Signed Permit as stored on the wallet entry inside the encrypted
- * WalletRecord (see ADR-0006). The two extra fields never leave the client:
+ * A Signed Permit as stored in the background's storage.session (see
+ * ADR-0007). The two extra fields never leave the client:
  * `chain` is for display and dev tooling, `signedAt` starts the local
  * lifetime of up to 30 days.
  */

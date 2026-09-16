@@ -28,7 +28,7 @@ function Rows({ className }: { className: string }) {
 
 /**
  * "Decrypting balances" illustration for the explainer hovercard. A full-width
- * 16:9 stage; the animation is CSS-only and scales with the stage width.
+ * flat stage; the animation is CSS-only and scales with the stage width.
  * Purely decorative — hidden from assistive tech.
  */
 export function ConfidentialInfoAnimation({

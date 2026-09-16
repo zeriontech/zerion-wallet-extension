@@ -23,10 +23,12 @@ const HIDE_TIMEOUT = 150;
  * card the web app shows, animation included.
  *
  * A hovercard rather than a tooltip: the content is a small card with an
- * animation stage and two lines of copy, and the user has to be able to move
- * the pointer into it. It never takes focus on show and it doesn't swallow
- * the click — the wrapped control still opens the Reveal Dialog, and the card
- * gets out of the way as soon as it does.
+ * animation stage and a short explainer, and the user has to be able to move
+ * the pointer into it. Kept short on purpose: the popup has ~250px free on
+ * either side of the panel, and a taller card gets slid over its trigger.
+ * It never takes focus on show and it doesn't swallow the click — the wrapped
+ * control still opens the Reveal Dialog, and the card gets out of the way as
+ * soon as it does.
  */
 export function ConfidentialInfoHovercard({
   children,
@@ -73,21 +75,17 @@ export function ConfidentialInfoHovercard({
         overflowPadding={12}
         className={styles.infoCard}
       >
-        <VStack gap={12}>
+        <VStack gap={8}>
           <ConfidentialInfoAnimation />
-          <VStack gap={4}>
-            <HovercardHeading render={<UIText kind="body/accent" />}>
+          <VStack gap={2}>
+            <HovercardHeading render={<UIText kind="caption/accent" />}>
               Confidential Balances
             </HovercardHeading>
-            <UIText kind="small/accent" color="var(--neutral-600)">
-              Some tokens in this wallet are encrypted onchain, so nobody can
-              see the amounts.
+            <UIText kind="caption/regular" color="var(--neutral-600)">
+              Some tokens in this wallet are encrypted onchain. Decrypt them
+              with your wallet to see the amounts and count them in your total.
             </UIText>
           </VStack>
-          <UIText kind="small/accent" color="var(--neutral-500)">
-            Decrypt them with your wallet to reveal the amounts and count them
-            in your total.
-          </UIText>
         </VStack>
       </Hovercard>
     </>

@@ -65,6 +65,7 @@ import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-de
 import {
   isDeviceAccount,
   isMnemonicContainer,
+  isReadonlyContainer,
 } from 'src/shared/types/validators';
 import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
 import { Disposable } from 'src/shared/Disposable';
@@ -136,6 +137,11 @@ import { lastUsedAddressStore } from '../user-activity';
 import { transactionService } from '../transactions/TransactionService';
 import { searchStore } from '../search/SearchStore';
 import { BrowserStorage } from '../webapis/storage';
+import {
+  readSessionPermits,
+  removeSessionPermits,
+  writeSessionPermits,
+} from './helpers/confidentialPermitsSession';
 import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
@@ -861,8 +867,14 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
+    const group = this.record.walletManager.groups.find(
+      (group) => group.id === groupId
+    );
+    const addresses =
+      group?.walletContainer.wallets.map((wallet) => wallet.address) ?? [];
     this.record = Model.removeWalletGroup(this.record, { groupId });
     this.updateWalletStore(this.record);
+    await this.removePermitsOfMissingWallets(addresses);
   }
 
   async renameWalletGroup({
@@ -890,8 +902,54 @@ export class Wallet {
   }
 
   /**
-   * Stores the wallet's Signed Permits (Confidential Balances) in the record.
-   * Replaces the previous list wholesale: one Reveal restarts the set.
+   * Signed Permits (Confidential Balances) for one wallet. They live in
+   * storage.session next to the unlock credentials, never in the record
+   * (ADR-0007): the list is read on demand and is gone after lock / logout.
+   */
+  async uiGetConfidentialPermits({
+    params: { address },
+    context,
+  }: WalletMethodParams<{ address: string }>): Promise<StoredPermit[]> {
+    this.verifyInternalOrigin(context);
+    if (!this.hasSignableWallet(address)) {
+      return [];
+    }
+    const all = await readSessionPermits();
+    return all[normalizeAddress(address)] ?? [];
+  }
+
+  /**
+   * Signed Permits are a capability of a wallet the user can sign with:
+   * a mnemonic, private key or hardware wallet. A watch-only entry for the
+   * same address does not count. The same address may sit in several
+   * groups, so every group is checked.
+   */
+  private hasSignableWallet(address: string) {
+    return Boolean(
+      this.record?.walletManager.groups.some(
+        (group) =>
+          !isReadonlyContainer(group.walletContainer) &&
+          group.walletContainer.getWalletByAddress(address)
+      )
+    );
+  }
+
+  /**
+   * Drops the Signed Permits of every address in `addresses` that no longer
+   * has a signable wallet in the record; see `hasSignableWallet`.
+   */
+  private async removePermitsOfMissingWallets(addresses: string[]) {
+    const gone = addresses.filter(
+      (address) => !this.hasSignableWallet(address)
+    );
+    if (gone.length) {
+      await removeSessionPermits(gone);
+    }
+  }
+
+  /**
+   * Replaces the wallet's Signed Permit list wholesale: one Reveal restarts
+   * the set. Only wallets present in the record can hold permits.
    */
   async setConfidentialPermits({
     params: { address, permits },
@@ -899,11 +957,10 @@ export class Wallet {
   }: WalletMethodParams<{ address: string; permits: StoredPermit[] }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
-    this.record = Model.setConfidentialPermits(this.record, {
-      address,
-      permits,
-    });
-    this.updateWalletStore(this.record);
+    if (!this.hasSignableWallet(address)) {
+      throw new Error(`Signable wallet for ${address} not found`);
+    }
+    await writeSessionPermits(address, permits);
   }
 
   async clearConfidentialPermits({
@@ -911,9 +968,7 @@ export class Wallet {
     context,
   }: WalletMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    this.record = Model.clearConfidentialPermits(this.record, { address });
-    this.updateWalletStore(this.record);
+    await removeSessionPermits(address);
   }
 
   async removeAddress({
@@ -924,6 +979,7 @@ export class Wallet {
     this.ensureRecord(this.record);
     this.record = Model.removeAddress(this.record, { address, groupId });
     this.updateWalletStore(this.record);
+    await this.removePermitsOfMissingWallets([address]);
   }
 
   async updateLastBackedUp({

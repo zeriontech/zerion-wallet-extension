@@ -31,6 +31,7 @@ export function ConfidentialMask({
   color,
   address,
   interactive = true,
+  showLock = true,
   style,
 }: {
   kind: UITextProps['kind'];
@@ -39,6 +40,8 @@ export function ConfidentialMask({
   address?: string | null;
   /** `false` inside the Reveal Dialog itself, where the tap has nowhere to go */
   interactive?: boolean;
+  /** `false` for secondary amounts next to a mask that already shows the lock */
+  showLock?: boolean;
   style?: React.CSSProperties;
 }) {
   const { singleAddress } = useAddressParams();
@@ -46,15 +49,17 @@ export function ConfidentialMask({
   const lockSize = LOCK_SIZE[kind];
   const content = (
     <>
-      <LockIcon
-        style={{
-          display: 'block',
-          width: lockSize,
-          height: lockSize,
-          color: color || 'var(--neutral-500)',
-          flexShrink: 0,
-        }}
-      />
+      {showLock ? (
+        <LockIcon
+          style={{
+            display: 'block',
+            width: lockSize,
+            height: lockSize,
+            color: color || 'var(--neutral-500)',
+            flexShrink: 0,
+          }}
+        />
+      ) : null}
       <HiddenBalancePixels
         kind={kind}
         color={color}

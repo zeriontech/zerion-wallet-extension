@@ -14,7 +14,9 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  /* The rows need ~80 design px; a flat stage keeps the hovercard short
+   * enough to fit above or below its trigger inside the popup */
+  height: 96px;
   border-radius: 12px;
   --u: calc(100cqw / 248);
   --cycle: 8s;

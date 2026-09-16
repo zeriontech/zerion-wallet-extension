@@ -24,7 +24,6 @@ import {
 } from 'src/shared/types/validators';
 import { capitalize } from 'capitalize-ts';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
-import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
 import { isSolanaAddress } from 'src/modules/solana/shared';
@@ -802,50 +801,6 @@ export class WalletRecordModel {
       }
       if (!didRename) {
         throw new Error(`Wallet for ${address} not found`);
-      }
-    });
-  }
-
-  /**
-   * Replaces the wallet's whole Signed Permit list. Applied to every group
-   * holding the address, exactly like `renameAddress`.
-   */
-  static setConfidentialPermits(
-    record: WalletRecord,
-    { address, permits }: { address: string; permits: StoredPermit[] }
-  ): WalletRecord {
-    const normalizedAddress = normalizeAddress(address);
-    return produce(record, (draft) => {
-      let found = false;
-      for (const group of draft.walletManager.groups) {
-        for (const wallet of group.walletContainer.wallets) {
-          if (normalizeAddress(wallet.address) === normalizedAddress) {
-            wallet.confidentialPermits = permits.length ? permits : undefined;
-            found = true;
-          }
-        }
-      }
-      if (!found) {
-        throw new Error(`Wallet for ${address} not found`);
-      }
-    });
-  }
-
-  static clearConfidentialPermits(
-    record: WalletRecord,
-    { address }: { address: string }
-  ): WalletRecord {
-    const normalizedAddress = normalizeAddress(address);
-    return produce(record, (draft) => {
-      for (const group of draft.walletManager.groups) {
-        for (const wallet of group.walletContainer.wallets) {
-          if (
-            normalizeAddress(wallet.address) === normalizedAddress &&
-            wallet.confidentialPermits
-          ) {
-            delete wallet.confidentialPermits;
-          }
-        }
       }
     });
   }

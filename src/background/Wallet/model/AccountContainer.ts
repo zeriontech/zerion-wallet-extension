@@ -1,7 +1,6 @@
 import type { ethers } from 'ethers';
 import { immerable } from 'immer';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 
 /**
  * Externally Owned Account (EOA)
@@ -10,12 +9,6 @@ import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 export interface ExternallyOwnedAccount {
   address: ethers.Wallet['address'];
   name: string | null;
-  /**
-   * Signed Permits that let the backend decrypt this wallet's Confidential
-   * Positions. Lives here, inside the encrypted record, so it is protected
-   * at rest and removed with the wallet (ADR-0006). `undefined` = none.
-   */
-  confidentialPermits?: StoredPermit[];
 }
 
 export interface Device {

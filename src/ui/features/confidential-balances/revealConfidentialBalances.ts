@@ -69,9 +69,9 @@ export function createLedgerPermitSigner(
 }
 
 /**
- * Signs every Permit with `sign` and stores the resulting Signed Permits on
- * the wallet. The whole batch is stored at once — a failure midway leaves the
- * wallet as it was. `onStep(index)` reports which permit is being signed so
+ * Signs every Permit with `sign` and stores the resulting Signed Permits in
+ * the background's storage.session (ADR-0007). The whole batch is stored at
+ * once — a failure midway leaves the wallet as it was. `onStep(index)` reports which permit is being signed so
  * the Ledger flow can render its Signing steps; the silent flow ignores it.
  */
 export async function signPermits(

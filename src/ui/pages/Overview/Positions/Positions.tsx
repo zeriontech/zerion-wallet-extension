@@ -81,7 +81,6 @@ import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import {
   ConfidentialBalancesPanel,
   ConfidentialMask,
-  ConfidentialNameLock,
   hasEncryptedPositions,
   useIsSignableWallet,
 } from 'src/ui/features/confidential-balances';
@@ -214,9 +213,7 @@ function AddressPositionItem({
               gap={4}
               alignItems="center"
               style={{
-                gridTemplateColumns: `1fr${position.encrypted ? ' auto' : ''}${
-                  showGasIcon ? ' auto' : ''
-                }`,
+                gridTemplateColumns: `1fr${showGasIcon ? ' auto' : ''}`,
                 justifySelf: 'start',
               }}
               title={position.asset.name}
@@ -224,7 +221,6 @@ function AddressPositionItem({
               <UIText kind="body/accent" style={textOverflowStyle}>
                 {position.asset.name}
               </UIText>
-              {position.encrypted ? <ConfidentialNameLock /> : null}
               {showGasIcon ? (
                 <div title="Token is used to cover gas fees">
                   <GasIcon
@@ -348,7 +344,7 @@ function AddressPositionItem({
                       key="position-quantity"
                       style={{ ...textOverflowStyle, display: 'flex' }}
                     >
-                      <ConfidentialMask kind="small/regular" />
+                      <ConfidentialMask kind="small/regular" showLock={false} />
                     </span>
                   ) : position.type !== 'asset' ? (
                     <span
@@ -580,11 +576,14 @@ function ProtocolHeading({
   value,
   relativeValue,
   currency,
+  allEncrypted,
 }: {
   dappInfo: AddressPositionDappInfo;
   value: number;
   relativeValue: number;
   currency: string;
+  /** Every position in the group is encrypted: the total is unknown, so it is not shown */
+  allEncrypted: boolean;
 }) {
   return (
     <HStack gap={8} alignItems="center">
@@ -607,24 +606,30 @@ function ProtocolHeading({
         }}
       >
         <span>{dappInfo.name || dappInfo.id}</span>
-        <span style={{ color: 'var(--neutral-500)' }}> · </span>
-        <BlurrableBalance kind="body/accent" color="var(--black)">
-          <NeutralDecimals
-            parts={formatCurrencyToParts(value, 'en', currency)}
-          />
-        </BlurrableBalance>
+        {allEncrypted ? null : (
+          <>
+            <span style={{ color: 'var(--neutral-500)' }}> · </span>
+            <BlurrableBalance kind="body/accent" color="var(--black)">
+              <NeutralDecimals
+                parts={formatCurrencyToParts(value, 'en', currency)}
+              />
+            </BlurrableBalance>
+          </>
+        )}
       </UIText>
-      <UIText
-        inline={true}
-        kind="caption/accent"
-        style={{
-          paddingInline: 6,
-          backgroundColor: 'var(--neutral-200)',
-          borderRadius: 8,
-        }}
-      >
-        {`${formatPercent(relativeValue, 'en')}%`}
-      </UIText>
+      {allEncrypted ? null : (
+        <UIText
+          inline={true}
+          kind="caption/accent"
+          style={{
+            paddingInline: 6,
+            backgroundColor: 'var(--neutral-200)',
+            borderRadius: 8,
+          }}
+        >
+          {`${formatPercent(relativeValue, 'en')}%`}
+        </UIText>
+      )}
     </HStack>
   );
 }
@@ -650,9 +655,9 @@ export function PositionList({
    */
   stickyOffset?: number;
   /**
-   * Show the Confidential Balances panel after the Wallet group when the
-   * wallet is Locked (encrypted items in `items`) and Signable. Only the
-   * Overview's own list opts in.
+   * Show the Confidential Balances panel above the positions groups when the
+   * wallet is Locked (encrypted items in `items`) and Signable, so it is
+   * visible without scrolling. Only the Overview's own list opts in.
    */
   confidentialPanel?: boolean;
 }) {
@@ -702,6 +707,11 @@ export function PositionList({
 
   return (
     <VStack gap={24}>
+      {showConfidentialPanel && address ? (
+        <div style={{ paddingInline: 16 }}>
+          <ConfidentialBalancesPanel address={address} />
+        </div>
+      ) : null}
       {preparedPositions.dappIds.map((dappId, dappIndex) => {
         const items: Item[] = [];
         const {
@@ -851,6 +861,9 @@ export function PositionList({
                     value={totalValue}
                     relativeValue={relativeValue}
                     currency={currency}
+                    allEncrypted={protocolItems.every(
+                      (position) => position.encrypted
+                    )}
                   />
                 </div>
               </>
@@ -870,13 +883,6 @@ export function PositionList({
               // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
             />
-            {dappId === DEFAULT_PROTOCOL_ID &&
-            showConfidentialPanel &&
-            address ? (
-              <div style={{ paddingInline: 16 }}>
-                <ConfidentialBalancesPanel address={address} />
-              </div>
-            ) : null}
             {dappIndex !== preparedPositions.dappIds.length - 1 ? (
               <>
                 <Spacer height={14} />

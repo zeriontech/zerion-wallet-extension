@@ -9,23 +9,42 @@ import {
 } from 'src/shared/confidential-balances/permits';
 
 /**
- * Signed Permits live on the wallet entry inside the WalletRecord (ADR-0006),
- * so reading them is reading the wallet. `maskWallet` keeps
- * `confidentialPermits` intact, only `privateKey`/`mnemonic` are stripped.
+ * Signed Permits live in the background's storage.session, next to the unlock
+ * credentials, not in the WalletRecord (ADR-0007). This is the one query that
+ * reads them; every permit-keyed data query derives from it.
  */
-function walletQueryOptions(address: string) {
+function permitsQueryOptions(address: string) {
   return {
-    queryKey: ['wallet/uiGetWalletByAddress', address, null] as const,
-    queryFn: () =>
-      walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
-    // the record only changes through explicit user actions; never poll
+    queryKey: ['wallet/uiGetConfidentialPermits', address] as const,
+    queryFn: () => walletPort.request('uiGetConfidentialPermits', { address }),
+    // permits only change through Reveal, a 401 wipe or lock; never poll
     staleTime: Infinity,
   };
 }
 
-export function useWalletByAddress(address: string | null | undefined) {
+/** Raw stored list for one wallet, expired ones included (dev tooling) */
+export function useStoredConfidentialPermits(
+  address: string | null | undefined
+) {
   return useQuery({
-    ...walletQueryOptions(address ?? ''),
+    ...permitsQueryOptions(address ?? ''),
+    enabled: Boolean(address),
+    suspense: false,
+  });
+}
+
+/** The wallet entry for `address` (masked); used to decide if it can sign */
+export function useWalletByAddress(address: string | null | undefined) {
+  const safeAddress = address ?? '';
+  return useQuery({
+    queryKey: ['wallet/uiGetWalletByAddress', safeAddress, null] as const,
+    queryFn: () =>
+      walletPort.request('uiGetWalletByAddress', {
+        address: safeAddress,
+        groupId: null,
+      }),
+    // the record only changes through explicit user actions; never poll
+    staleTime: Infinity,
     enabled: Boolean(address),
     suspense: false,
   });
@@ -33,7 +52,7 @@ export function useWalletByAddress(address: string | null | undefined) {
 
 /**
  * The Signed Permits a request for `addresses` should carry, plus a stable
- * fingerprint for query keys. `isReady` is false until the wallets have been
+ * fingerprint for query keys. `isReady` is false until the permits have been
  * read once, so callers can hold the data request instead of firing it
  * without permits and again with them.
  */
@@ -45,10 +64,10 @@ export function useConfidentialPermits(addresses: string[]): {
   const queries = useQueries({
     queries: addresses
       .filter(Boolean)
-      .map((address) => ({ ...walletQueryOptions(address), suspense: false })),
+      .map((address) => ({ ...permitsQueryOptions(address), suspense: false })),
   });
   const isReady = queries.every((query) => query.isFetched || query.isError);
-  const permitLists = queries.map((query) => query.data?.confidentialPermits);
+  const permitLists = queries.map((query) => query.data);
   const fingerprintInput = permitLists
     .map((list) => list?.map((permit) => permit.signature).join('|') ?? '')
     .join(';');
@@ -65,24 +84,19 @@ export function useConfidentialPermits(addresses: string[]): {
 export async function getConfidentialPermits(
   addresses: string[]
 ): Promise<SignedPermit[]> {
-  const wallets = await Promise.all(
+  const permitLists = await Promise.all(
     addresses
       .filter(Boolean)
       .map((address) =>
-        queryClient.fetchQuery(walletQueryOptions(address)).catch(() => null)
+        queryClient.fetchQuery(permitsQueryOptions(address)).catch(() => null)
       )
   );
-  return collectPermitsForRequest(
-    wallets.map((wallet) => wallet?.confidentialPermits)
-  );
+  return collectPermitsForRequest(permitLists);
 }
 
-/** Call after the record's permits changed so every permit-keyed query refetches */
+/** Call after the stored permits changed so every permit-keyed query refetches */
 export function invalidateConfidentialPermits() {
-  return Promise.all([
-    queryClient.invalidateQueries({
-      queryKey: ['wallet/uiGetWalletByAddress'],
-    }),
-    queryClient.invalidateQueries({ queryKey: ['wallet/uiGetCurrentWallet'] }),
-  ]);
+  return queryClient.invalidateQueries({
+    queryKey: ['wallet/uiGetConfidentialPermits'],
+  });
 }

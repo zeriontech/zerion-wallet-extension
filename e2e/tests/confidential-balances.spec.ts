@@ -169,7 +169,7 @@ test('confidential balances: panel → reveal → unmasked', async ({
   );
   await page.reload();
 
-  // Locked: panel after the Wallet group, masks in the row
+  // Locked: panel above the positions groups, masks in the row
   const panel = page.getByRole('button', { name: /Confidential Balances/ });
   await expect(panel).toBeVisible({ timeout: 20000 });
   await expect(page.getByText('Confidential USDC')).toBeVisible();
