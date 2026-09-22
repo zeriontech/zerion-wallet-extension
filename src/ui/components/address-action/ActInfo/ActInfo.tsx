@@ -18,6 +18,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { isUnlimitedApproval } from 'src/modules/ethereum/transactions/appovals';
+import { ConfidentialMask } from 'src/ui/features/confidential-balances';
 import { AssetAnchor } from '../../AssetLink';
 import { NFTAnchor } from '../../NFTLink/NFTLink';
 
@@ -52,7 +53,12 @@ function AssetContent({
               alignItems="center"
               style={{ gridTemplateColumns: 'auto 1fr' }}
             >
-              {unlimited || isUnlimitedApproval(amount?.quantity) ? (
+              {amount?.encrypted ? (
+                // Not tappable here: the reveal cannot decode a simulated
+                // amount anyway, and it would stack a permit signing flow
+                // on top of the request being signed.
+                <ConfidentialMask kind="headline/h3" interactive={false} />
+              ) : unlimited || isUnlimitedApproval(amount?.quantity) ? (
                 <span>Unlimited</span>
               ) : amount?.quantity ? (
                 <span>{`${
@@ -67,10 +73,22 @@ function AssetContent({
             </HStack>
           </UIText>
           {direction != null ? (
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              {amount?.value != null
-                ? formatPriceValue(amount.value || '0', 'en', amount.currency)
-                : 'N/A'}
+            <UIText
+              kind="small/regular"
+              color="var(--neutral-500)"
+              style={amount?.encrypted ? { display: 'flex' } : undefined}
+            >
+              {amount?.encrypted ? (
+                <ConfidentialMask
+                  kind="small/regular"
+                  interactive={false}
+                  showLock={false}
+                />
+              ) : amount?.value != null ? (
+                formatPriceValue(amount.value || '0', 'en', amount.currency)
+              ) : (
+                'N/A'
+              )}
             </UIText>
           ) : null}
         </VStack>
