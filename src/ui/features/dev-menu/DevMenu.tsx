@@ -31,6 +31,7 @@ import {
   setSimulationStatusOverride,
   setSimulationWarningOverride,
   setUSDisclaimerOverride,
+  setUKDisclaimerOverride,
 } from './store';
 import type {
   ConfidentialPermitsOverride,
@@ -39,7 +40,7 @@ import type {
   SimulationOutputDiscrepancy,
   SimulationStatusOverride,
   SimulationWarningOverride,
-  USDisclaimerOverride,
+  DisclaimerOverride,
 } from './store-types';
 import * as styles from './DevMenu.module.css';
 
@@ -70,12 +71,11 @@ const OUTPUT_DISCREPANCY_OPTIONS: {
   { value: '50', label: '50%' },
 ];
 
-const US_DISCLAIMER_OPTIONS: { value: USDisclaimerOverride; label: string }[] =
-  [
-    { value: 'off', label: 'Off' },
-    { value: 'force-on', label: 'On' },
-    { value: 'force-off', label: 'Hide' },
-  ];
+const DISCLAIMER_OPTIONS: { value: DisclaimerOverride; label: string }[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'force-on', label: 'On' },
+  { value: 'force-off', label: 'Hide' },
+];
 
 const READONLY_WALL_OPTIONS: { value: ReadonlyWallOverride; label: string }[] =
   [
@@ -259,13 +259,29 @@ export function DevMenu() {
                 <div className={styles.row}>
                   <span className={styles.rowLabel}>us_disclaimer</span>
                   <SegmentedControlGroup kind="secondary">
-                    {US_DISCLAIMER_OPTIONS.map((option) => (
+                    {DISCLAIMER_OPTIONS.map((option) => (
                       <SegmentedControlRadio
                         key={option.value}
                         name="dev-menu-us-disclaimer"
                         value={option.value}
                         checked={state.usDisclaimerOverride === option.value}
                         onChange={() => setUSDisclaimerOverride(option.value)}
+                      >
+                        {option.label}
+                      </SegmentedControlRadio>
+                    ))}
+                  </SegmentedControlGroup>
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>uk_disclaimer</span>
+                  <SegmentedControlGroup kind="secondary">
+                    {DISCLAIMER_OPTIONS.map((option) => (
+                      <SegmentedControlRadio
+                        key={option.value}
+                        name="dev-menu-uk-disclaimer"
+                        value={option.value}
+                        checked={state.ukDisclaimerOverride === option.value}
+                        onChange={() => setUKDisclaimerOverride(option.value)}
                       >
                         {option.label}
                       </SegmentedControlRadio>

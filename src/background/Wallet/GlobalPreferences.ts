@@ -30,10 +30,6 @@ export interface State {
   analyticsEnabled?: boolean | null;
   bluetoothSupportEnabled?: boolean | null;
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
-  statsigOverrides?: Record<
-    string,
-    { group: string; group_name: string | null }
-  >;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -70,7 +66,6 @@ export class GlobalPreferences extends PersistentStore<State> {
     analyticsEnabled: PLATFORM === 'firefox' ? null : true,
     bluetoothSupportEnabled: null,
     autoLockTimeout: HALF_DAY,
-    statsigOverrides: {},
   };
 
   private async fetchDefaultWalletNameFlags() {
