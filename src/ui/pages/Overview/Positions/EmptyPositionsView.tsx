@@ -10,14 +10,9 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { type HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { emitter } from 'src/ui/shared/events';
 import { useLocation } from 'react-router-dom';
-import {
-  ONRAMP_EXPERIMENT_NAME,
-  useStatsigExperiment,
-} from 'src/modules/statsig/statsig.client';
 import { AddFundsOptionsDialog } from '../../Receive/AddFundsOptionsDialog';
-import { EmptyPositionsViewLegacy } from './EmptyPositionsViewLegacy';
 
-export function EmptyPositionsViewNew() {
+export function EmptyPositionsView() {
   const { pathname } = useLocation();
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -97,16 +92,4 @@ export function EmptyPositionsViewNew() {
       />
     </>
   );
-}
-
-export function EmptyPositionsView() {
-  const { data, isLoading } = useStatsigExperiment(ONRAMP_EXPERIMENT_NAME);
-  if (isLoading) {
-    return null;
-  }
-  if (data?.group_name?.toLowerCase() === 'test') {
-    return <EmptyPositionsViewNew />;
-  } else {
-    return <EmptyPositionsViewLegacy />;
-  }
 }

@@ -38,8 +38,6 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 **finalSlippage (quote field)**: `quote.finalSlippage` — the slippage actually applied to the quote, in percent (e.g. `0.5` = 0.5%). Present in both manual and Auto modes. Maps to the analytics `slippage` property ("effective slippage the tx uses"). Already drives the `Auto · X%` UI display. _Avoid_: Applied slippage, effective slippage (use the field name).
 
-**Autoslippage experiment**: The Statsig A/B experiment `web_-_autoslippage_testing` gating whether SwapForm2 offers Auto mode. **Test group** (`group_name` e.g. `'Group1'`) sees the Auto option and defaults to it when slippage is untouched; **Control** (and any unresolved/failed state) hides Auto entirely and defaults to the static chain default from `getSlippageOptions`. The resolved `group_name` is reported to analytics as `autoslippage_test_group`. _Avoid_: Autoslippage flag, feature gate (it's an experiment with a group label, not a boolean gate).
-
 ### Form state
 
 **Cross-ecosystem swap**: A swap where the input network and output network belong to different ecosystems (`Networks.getEcosystem()` returns different values, e.g. `evm` vs `solana`). Distinct from "cross-chain": Ethereum → Base is cross-chain but same-ecosystem; Ethereum → Solana is both. The user's wallet address on the source ecosystem is not a valid recipient on the destination, so an explicit `to` is required before a quote can be fetched. _Avoid_: Cross-chain (when you mean ecosystem specifically).

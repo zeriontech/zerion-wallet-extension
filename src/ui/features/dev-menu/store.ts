@@ -8,7 +8,7 @@ import {
   type SimulationOutputDiscrepancy,
   type SimulationStatusOverride,
   type SimulationWarningOverride,
-  type USDisclaimerOverride,
+  type DisclaimerOverride,
 } from './store-types';
 import { retrieve, save } from './persistence';
 
@@ -51,10 +51,17 @@ export function setSimulationOutputDiscrepancy(
   }));
 }
 
-export function setUSDisclaimerOverride(value: USDisclaimerOverride) {
+export function setUSDisclaimerOverride(value: DisclaimerOverride) {
   devMenuStore.setState((state) => ({
     ...state,
     usDisclaimerOverride: value,
+  }));
+}
+
+export function setUKDisclaimerOverride(value: DisclaimerOverride) {
+  devMenuStore.setState((state) => ({
+    ...state,
+    ukDisclaimerOverride: value,
   }));
 }
 
@@ -81,6 +88,7 @@ export function hasAnyOverride(state: DevMenuState): boolean {
     state.simulationStatusOverride !== 'off' ||
     state.simulationOutputDiscrepancy !== 'off' ||
     state.usDisclaimerOverride !== 'off' ||
+    state.ukDisclaimerOverride !== 'off' ||
     state.readonlyWallOverride !== 'off' ||
     state.confidentialPermitsOverride !== 'off'
   );

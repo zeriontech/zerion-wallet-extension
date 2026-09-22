@@ -13,7 +13,6 @@ import {
   ensureSolanaResult,
   getTxSender,
 } from 'src/modules/shared/transactions/helpers';
-import { statsigTrack } from 'src/modules/statsig/shared';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
@@ -180,7 +179,6 @@ function trackAppEvents({ account }: { account: Account }) {
       'wallet_address',
     ]);
     mixpanelTrack('General: Screen Viewed', mixpanelParams);
-    statsigTrack('General: Screen Viewed', mixpanelParams);
   });
 
   emitter.on('screenView', async (params) => {
@@ -434,7 +432,6 @@ function trackAppEvents({ account }: { account: Account }) {
       'wallet_address',
     ]);
     mixpanelTrack('Transaction: Signed Transaction', mixpanelParams);
-    statsigTrack('Transaction: Signed Transaction', mixpanelParams);
   };
 
   emitter.on('transactionSent', async (result, context) => {
@@ -844,7 +841,6 @@ function trackAppEvents({ account }: { account: Account }) {
       return;
     }
     await waitForAnalyticsIdSet();
-    statsigTrack('General: Launch first time');
     mixpanelTrack('General: Launch first time', {});
     const gaParams = await prepareGaParams({});
     gaCollect('first_open', gaParams);

@@ -6,7 +6,11 @@ export type SimulationStatusOverride = 'off' | 'failed';
 
 export type SimulationOutputDiscrepancy = 'off' | '50';
 
-export type USDisclaimerOverride = 'off' | 'force-on' | 'force-off';
+/**
+ * Forces a geo-gated disclaimer on or off regardless of the country resolved
+ * by `geo/country/v1`, which QA cannot influence without a VPN.
+ */
+export type DisclaimerOverride = 'off' | 'force-on' | 'force-off';
 
 export type ReadonlyWallOverride = 'off' | 'disabled';
 
@@ -18,7 +22,8 @@ export interface DevMenuState {
   simulationWarningOverride: SimulationWarningOverride;
   simulationStatusOverride: SimulationStatusOverride;
   simulationOutputDiscrepancy: SimulationOutputDiscrepancy;
-  usDisclaimerOverride: USDisclaimerOverride;
+  usDisclaimerOverride: DisclaimerOverride;
+  ukDisclaimerOverride: DisclaimerOverride;
   readonlyWallOverride: ReadonlyWallOverride;
   confidentialPermitsOverride: ConfidentialPermitsOverride;
 }
@@ -29,6 +34,7 @@ export const DEFAULT_DEV_MENU_STATE: DevMenuState = {
   simulationStatusOverride: 'off',
   simulationOutputDiscrepancy: 'off',
   usDisclaimerOverride: 'off',
+  ukDisclaimerOverride: 'off',
   readonlyWallOverride: 'off',
   confidentialPermitsOverride: 'off',
 };

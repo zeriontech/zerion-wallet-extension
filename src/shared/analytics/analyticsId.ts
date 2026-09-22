@@ -12,7 +12,7 @@ import { deviceIdStore } from './shared/DeviceIdStore';
  * All analytics events should use this ID as userId.
  * This is why we send `General: First Screen View` event after this ID is set
  *
- * This ID is used by Mixpanel, Statsig and Google Analytics.
+ * This ID is used by Mixpanel and Google Analytics.
  *
  * This ID is not used for any other purposes, like user identification or authentication.
  * This ID is random and not connected to any user data.
