@@ -31,6 +31,7 @@ import {
 } from 'src/modules/ethereum/transactions/addressAction';
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { useBackgroundKind } from 'src/ui/components/Background';
+import { ConfidentialMask } from 'src/ui/features/confidential-balances';
 import { AccelerateTransaction } from '../History/AccelerateTransaction';
 import {
   PopoverToast,
@@ -83,19 +84,23 @@ function AssetContent({
               alignItems="center"
               style={{ gridTemplateColumns: 'auto 1fr' }}
             >
-              <BlurrableBalance kind="headline/h3">
-                {unlimited
-                  ? 'Unlimited'
-                  : amount?.quantity
-                  ? `${
-                      direction === 'out'
-                        ? minus
-                        : direction === 'in'
-                        ? '+'
-                        : ''
-                    }${formatTokenValue(amount?.quantity || '0', '')}`
-                  : null}
-              </BlurrableBalance>
+              {amount?.encrypted ? (
+                <ConfidentialMask kind="headline/h3" />
+              ) : (
+                <BlurrableBalance kind="headline/h3">
+                  {unlimited
+                    ? 'Unlimited'
+                    : amount?.quantity
+                    ? `${
+                        direction === 'out'
+                          ? minus
+                          : direction === 'in'
+                          ? '+'
+                          : ''
+                      }${formatTokenValue(amount?.quantity || '0', '')}`
+                    : null}
+                </BlurrableBalance>
+              )}
               <AssetLink
                 fungible={fungible}
                 title={direction == null ? fungible.name : undefined}
@@ -108,11 +113,19 @@ function AssetContent({
               color="var(--neutral-500)"
               style={{ display: 'flex' }}
             >
-              <BlurrableBalance kind="small/regular">
-                {amount?.value != null
-                  ? formatPriceValue(amount.value || '0', 'en', amount.currency)
-                  : 'N/A'}
-              </BlurrableBalance>
+              {amount?.encrypted ? (
+                <ConfidentialMask kind="small/regular" showLock={false} />
+              ) : (
+                <BlurrableBalance kind="small/regular">
+                  {amount?.value != null
+                    ? formatPriceValue(
+                        amount.value || '0',
+                        'en',
+                        amount.currency
+                      )
+                    : 'N/A'}
+                </BlurrableBalance>
+              )}
             </UIText>
           ) : null}
         </VStack>
