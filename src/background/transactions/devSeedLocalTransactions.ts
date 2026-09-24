@@ -7,9 +7,9 @@ import type { TransactionObject } from 'src/modules/ethereum/transactions/types'
  * without actually sending any.
  *
  * Seeded items are mined (they carry a receipt), so the poller ignores them,
- * and their hashes are random, so the backend never "knows" them and the purge
- * check leaves them alone. They share nonce 0 to stay out of nonce
- * calculations for wallets that already have history on these chains.
+ * and `performPurgeCheck` skips this initiator, so they survive the local TTL
+ * even though they are spread back over days. They share nonce 0 to stay out
+ * of nonce calculations for wallets that already have history on these chains.
  * They are removed by `initiator`.
  */
 export const DEV_SEED_INITIATOR = 'dev-menu:seed-local-transactions';

@@ -2,7 +2,6 @@ import browser from 'webextension-polyfill';
 import { createNanoEvents } from 'nanoevents';
 import { PersistentStore } from 'src/modules/persistent-store';
 import { produce } from 'immer';
-import throttle from 'lodash/throttle';
 import type {
   StoredTransactions,
   TransactionObject,
@@ -18,17 +17,25 @@ import {
   type AnyAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import { getNetworkByChainId } from 'src/modules/networks/networks-api';
+import {
+  getNetworkByChainId,
+  getNetworkById,
+} from 'src/modules/networks/networks-api';
+import { NetworkId } from 'src/modules/networks/NetworkId';
+import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { backendKnowsTransaction } from 'src/modules/ethereum/transactions/backendKnowsTransaction';
+import {
+  getExpiredTransactions,
+  getTransactionNetworkKey,
+  isExpiredTransaction,
+  type TransactionNetworkKey,
+} from 'src/modules/ethereum/transactions/getExpiredTransactions';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { invariant } from 'src/shared/invariant';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { emitter } from '../events';
-import { INTERNAL_SYMBOL_CONTEXT } from '../Wallet/Wallet';
 import {
   toEthersV5Receipt,
   txPlainToEthersV5TransactionResponse,
@@ -40,7 +47,6 @@ import {
   DEV_SEED_INITIATOR,
 } from './devSeedLocalTransactions';
 
-const FOUR_MINUTES_IN_MS = 1000 * 60 * 4;
 const ONE_DAY_IN_MINUTES = 1 * 60 * 24;
 
 class TransactionsStore extends PersistentStore<StoredTransactions> {
@@ -183,90 +189,70 @@ export class TransactionService {
     TransactionService.scheduleAlarms();
   }
 
-  private schedulePurgeCheck = throttle(
-    () => {
-      this.performPurgeCheck();
-    },
-    FOUR_MINUTES_IN_MS,
-    { leading: false } // Invoke no sooner and no more frequent than FOUR_MINUTES
-  );
-
   /**
-   * Purges from cache all transactions belonging to {address} in {chainId}
-   * which have a nonce less than or equals to {fromNonce}
+   * Whether the backend keeps history for the network behind {key}. Local
+   * entries don't record which mode they were created in, so both sources are
+   * asked: EIP-155 ids don't collide between them. Unknown networks and failed
+   * lookups answer `false`, so their entries are kept until a later check.
    */
-  private async purgeEntries({
-    address,
-    fromNonce,
-    chainId,
-  }: {
-    address: string;
-    fromNonce: number;
-    chainId: ChainId;
-  }) {
-    const transactions = await this.transactionsStore.getSavedState();
-    const candidates = transactions.filter((item) => {
-      return (
-        item.hash &&
-        normalizeAddress(item.transaction.from) === normalizeAddress(address) &&
-        normalizeChainId(item.transaction.chainId) === chainId &&
-        item.transaction.nonce <= fromNonce
-      );
-    });
-    this.transactionsStore.bulkDeleteTransactionsById(
-      candidates.map((item) => item.hash ?? item.signature)
-    );
+  private async networkHasHistory(key: TransactionNetworkKey) {
+    const sources: NetworksSource[] = ['mainnet', 'testnet'];
+    for (const source of sources) {
+      try {
+        const network =
+          key === NetworkId.Solana
+            ? await getNetworkById(key, { apiClient: ZerionAPI, source })
+            : await getNetworkByChainId(key, { apiClient: ZerionAPI, source });
+        if (network?.flags.supportsActions) {
+          return true;
+        }
+      } catch {
+        // Never delete on a failed lookup
+      }
+    }
+    return false;
   }
 
   /**
-   * Finds local transactions which our backend is aware of and removes them.
-   * This makes sense for EVM transaction which are ordered by NONCE.
-   * For Solana, there's no explicit order (only belonging to a particular "recentBlockHash")
-   * So we cannot determine "stale" transactions based on order
+   * Removes local transactions older than {LOCAL_TRANSACTION_TTL_MS} on
+   * networks with backend history. This is purely local bookkeeping: History
+   * already hides a local action once the backend returns its hash, so there is
+   * no need to ask the backend about individual hashes (that used to be a
+   * `wallet/get-actions` search per address and chain, which scans the whole
+   * wallet history server-side).
+   * Networks are only resolved when something has expired, so the common case
+   * makes no requests.
    */
   private async performPurgeCheck() {
-    const transactions = await this.transactionsStore.getSavedState();
-
-    type Address = string;
-    type Key = `${Address}:${ChainId}`;
-    const map = new Map<Key, { hash: string; nonce: number }>();
-
-    for (const item of transactions) {
-      if (!item.hash) {
-        continue; // Do not handle Solana items
-      }
-      const chainId = normalizeChainId(item.transaction.chainId);
-      const key = `${item.transaction.from}:${chainId}` as const;
-      map.set(key, { hash: item.hash, nonce: item.transaction.nonce });
+    const savedTransactions = await this.transactionsStore.getSavedState();
+    // Dev fixtures are spread over days on purpose; they are removed explicitly
+    // through the dev menu, not by age.
+    const transactions = savedTransactions.filter(
+      (item) => item.initiator !== DEV_SEED_INITIATOR
+    );
+    const now = Date.now();
+    const keys = new Set(
+      transactions
+        .filter((item) => isExpiredTransaction(item, now))
+        .map(getTransactionNetworkKey)
+    );
+    if (!keys.size) {
+      return;
     }
-
-    const wallet = this.options?.getWallet();
-    const preferences = await wallet?.getPreferences({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const testnetMode = Boolean(preferences?.testnetMode?.on);
-    const source = testnetMode ? 'testnet' : 'mainnet';
-
-    for (const [key, { hash, nonce }] of map.entries()) {
-      const [address, chainIdStr] = key.split(':');
-      const chainId = chainIdStr as ChainId;
-      const network = await getNetworkByChainId(chainId, {
-        apiClient: ZerionAPI,
-        source,
-      });
-      if (network?.flags.supportsActions) {
-        // The nonce comes from the local store: the backend is only asked
-        // whether it has seen this hash yet.
-        const known = await backendKnowsTransaction({
-          address,
-          hash,
-          chain: network.id,
-          source,
-        });
-        if (known) {
-          this.purgeEntries({ address, chainId, fromNonce: nonce });
-        }
+    const networksWithHistory = new Set<TransactionNetworkKey>();
+    for (const key of keys) {
+      if (await this.networkHasHistory(key)) {
+        networksWithHistory.add(key);
       }
+    }
+    const expired = getExpiredTransactions(transactions, {
+      now,
+      networksWithHistory,
+    });
+    if (expired.length) {
+      this.transactionsStore.bulkDeleteTransactionsById(
+        expired.map((item) => item.hash ?? item.signature)
+      );
     }
   }
 
@@ -333,7 +319,6 @@ export class TransactionService {
         })
       );
       this.startPurgeInterval();
-      this.schedulePurgeCheck();
     });
 
     emitter.on('transactionSent', async (result, { chain, mode }) => {
