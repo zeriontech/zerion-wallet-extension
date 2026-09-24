@@ -62,7 +62,8 @@ export function createGroups2({
   return [
     {
       key: 'pinned',
-      name: 'Pinned',
+      // No header: the pin icon on each row marks the group
+      name: null,
       items: pinnedNetworks,
     },
     {

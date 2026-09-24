@@ -38,6 +38,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import TrashIcon from 'jsx:src/ui/assets/trash.svg';
+import EditIcon from 'jsx:src/ui/assets/edit.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -301,7 +302,15 @@ function NetworkPage() {
             ''
           }
           elementEnd={
-            <HStack gap={0} alignItems="center">
+            <HStack
+              gap={0}
+              alignItems="center"
+              style={{
+                position: 'relative',
+                left:
+                  isCustomNetwork && NetworksModule.isEip155(network) ? -40 : 0,
+              }}
+            >
               {NetworksModule.isEip155(network) ? (
                 <PinNetworkButton
                   kind="title"
@@ -379,34 +388,32 @@ function WalletNetworkList({
   networks: NetworksModule;
   groups: NetworkGroups;
 }) {
+  const startsWithPinned =
+    groups[0]?.key === 'pinned' && groups[0].items.length;
   return (
     <>
+      {/* Untitled pinned rows would otherwise touch the search input */}
+      {startsWithPinned ? <Spacer height={8} /> : null}
       <VStack gap={8}>
         {groups.map((group, index) =>
           group.items.length ? (
-            <NetworkList
-              key={group.key}
-              title={group.name}
-              titleEnd={
-                group.key === 'pinned' ? (
-                  <Button
-                    as={UnstyledLink}
-                    to="/networks/pinned"
-                    kind="ghost"
-                    size={28}
-                    style={{ paddingInline: 8 }}
-                  >
-                    <UIText kind="small/accent">Edit</UIText>
-                  </Button>
-                ) : null
-              }
-              networks={networks}
-              networkList={group.items}
-              renderItemActions={renderPinNetworkAction(networks)}
-              previousListLength={groups
-                .slice(0, index)
-                .reduce((count, prev) => count + prev.items.length, 0)}
-            />
+            <React.Fragment key={group.key}>
+              <NetworkList
+                title={group.name}
+                networks={networks}
+                networkList={group.items}
+                renderItemActions={renderPinNetworkAction(networks)}
+                previousListLength={groups
+                  .slice(0, index)
+                  .reduce((count, prev) => count + prev.items.length, 0)}
+              />
+              {group.key === 'pinned' ? (
+                <div
+                  role="separator"
+                  style={{ height: 1, backgroundColor: 'var(--neutral-200)' }}
+                />
+              ) : null}
+            </React.Fragment>
           ) : null
         )}
       </VStack>
@@ -455,6 +462,9 @@ function NetworksView({
       sortMainNetworksType: 'alphabetical',
     });
   }, [networks, chainDistribution, testnetMode]);
+  const hasPinnedNetworks = groups.some(
+    (group) => group.key === 'pinned' && group.items.length > 0
+  );
 
   const {
     selectNext: selectNextNetwork,
@@ -482,16 +492,38 @@ function NetworksView({
           <NavigationTitle
             title="Networks"
             elementEnd={
-              <Button
-                as={UnstyledLink}
-                to="/networks/create"
-                kind="ghost"
-                title="Add Network"
-                size={36}
-                style={{ paddingInline: 6, justifySelf: 'center' }}
+              <HStack
+                gap={0}
+                alignItems="center"
+                // The end slot is one button wide, shift left to fit two
+                style={{
+                  position: 'relative',
+                  left: hasPinnedNetworks ? -36 : 0,
+                }}
               >
-                <AddCircleIcon style={{ display: 'block' }} />
-              </Button>
+                {hasPinnedNetworks ? (
+                  <Button
+                    as={UnstyledLink}
+                    to="/networks/pinned"
+                    kind="ghost"
+                    title="Edit Pinned Networks"
+                    size={36}
+                    style={{ paddingInline: 6, justifySelf: 'center' }}
+                  >
+                    <EditIcon style={{ display: 'block' }} />
+                  </Button>
+                ) : null}
+                <Button
+                  as={UnstyledLink}
+                  to="/networks/create"
+                  kind="ghost"
+                  title="Add Network"
+                  size={36}
+                  style={{ paddingInline: 6, justifySelf: 'center' }}
+                >
+                  <AddCircleIcon style={{ display: 'block' }} />
+                </Button>
+              </HStack>
             }
           />
           <Spacer height={16} />

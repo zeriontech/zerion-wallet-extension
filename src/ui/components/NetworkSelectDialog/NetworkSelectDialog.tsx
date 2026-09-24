@@ -297,16 +297,23 @@ function SectionView({
   chainDistribution: ChainDistribution | null;
   showAllNetworksOption?: boolean;
 }) {
-  const groups = useMemo(
-    () =>
-      rawGroups.map((group) => {
-        return {
-          ...group,
-          items: group.items.filter((network) => !network.hidden),
-        };
-      }),
-    [rawGroups]
-  );
+  const groups = useMemo(() => {
+    const visibleGroups = rawGroups.map((group) => {
+      return {
+        ...group,
+        items: group.items.filter((network) => !network.hidden),
+      };
+    });
+    // Pinned rows continue the main list without a header or a gap
+    const pinned = visibleGroups.find((group) => group.key === 'pinned');
+    return visibleGroups
+      .filter((group) => group.key !== 'pinned')
+      .map((group) =>
+        group.key === 'main' && pinned
+          ? { ...group, items: [...pinned.items, ...group.items] }
+          : group
+      );
+  }, [rawGroups]);
 
   return (
     <>

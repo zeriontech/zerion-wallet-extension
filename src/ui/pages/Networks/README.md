@@ -32,5 +32,5 @@ What if user has manually created a network A with chainId: `'a'` and then a dap
 - `ChainConfig.pinnedChains` is the ordered list of pinned network ids (backend and custom), global for all wallets
 - `ChainConfigStore` rewrites a pinned id whenever the network id changes: `checkChainsForUpdates` (custom id → backend id) and `addEthereumChain` with `prevId` (custom chainId edit)
 - a pin is dropped only on explicit removal: deleting a custom network or removing a visited network; resetting a backend network keeps it. Ids that stop resolving stay stored and are skipped by `Networks.getPinnedNetworks()`
-- selectors put the "Pinned" group first (after "All Networks"), still applying the selector's `filterPredicate`, ecosystem and testnet mode
+- selectors put pinned networks first (after "All Networks", no header, a pin icon on each row), still applying the selector's `filterPredicate`, ecosystem and testnet mode; the Networks page separates them with a divider and links to the reorder page from the title bar
 - `/networks/pinned` reorders pins; `reorderPinnedChains` keeps the slots of pins that aren't shown

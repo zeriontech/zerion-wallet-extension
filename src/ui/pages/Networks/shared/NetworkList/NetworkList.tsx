@@ -102,11 +102,9 @@ export function NetworkList({
   getItemTo,
   getItemIconEnd,
   renderItemActions,
-  titleEnd,
   previousListLength = 0,
 }: {
   title?: string | null;
-  titleEnd?: React.ReactNode;
   renderItemActions?: (item: NetworkInfo) => React.ReactNode;
   networks: Networks;
   networkList: NetworkInfo[];
@@ -131,21 +129,13 @@ export function NetworkList({
             zIndex: 1,
           } as const, // Just to calm down ts
           component: (
-            <HStack
-              gap={8}
-              justifyContent="space-between"
-              alignItems="center"
-              style={{ backgroundColor: 'var(--white)' }}
+            <UIText
+              kind="small/accent"
+              color="var(--neutral-500)"
+              style={{ paddingBlock: 8, backgroundColor: 'var(--white)' }}
             >
-              <UIText
-                kind="small/accent"
-                color="var(--neutral-500)"
-                style={{ paddingBlock: 8 }}
-              >
-                {title}
-              </UIText>
-              {titleEnd}
-            </HStack>
+              {title}
+            </UIText>
           ),
         }
       : null,
