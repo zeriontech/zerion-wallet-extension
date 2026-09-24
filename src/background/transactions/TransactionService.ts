@@ -35,6 +35,10 @@ import {
 } from '../Wallet/model/ethers-v5-types';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
+import {
+  createSeedTransactions,
+  DEV_SEED_INITIATOR,
+} from './devSeedLocalTransactions';
 
 const FOUR_MINUTES_IN_MS = 1000 * 60 * 4;
 const ONE_DAY_IN_MINUTES = 1 * 60 * 24;
@@ -65,6 +69,16 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
 
   clearPendingTransactions() {
     this.setState((state) => state.filter((t) => !isPendingTransaction(t)));
+  }
+
+  bulkAddTransactions(values: TransactionObject[]) {
+    this.setState((state) => [...state, ...values]);
+  }
+
+  removeTransactionsByInitiator(initiator: string) {
+    this.setState((state) =>
+      state.filter((item) => item.initiator !== initiator)
+    );
   }
 }
 
@@ -219,7 +233,7 @@ export class TransactionService {
 
     for (const item of transactions) {
       if (!item.hash) {
-        return; // Do not handle Solana items
+        continue; // Do not handle Solana items
       }
       const chainId = normalizeChainId(item.transaction.chainId);
       const key = `${item.transaction.from}:${chainId}` as const;
@@ -373,6 +387,24 @@ export class TransactionService {
   async clearPendingTransactions() {
     await this.transactionsStore.ready();
     this.transactionsStore.clearPendingTransactions();
+  }
+
+  async devSeedLocalTransactions({
+    address,
+    count,
+  }: {
+    address: string;
+    count: number;
+  }) {
+    await this.transactionsStore.ready();
+    this.transactionsStore.bulkAddTransactions(
+      createSeedTransactions({ address, count })
+    );
+  }
+
+  async devClearSeededLocalTransactions() {
+    await this.transactionsStore.ready();
+    this.transactionsStore.removeTransactionsByInitiator(DEV_SEED_INITIATOR);
   }
 }
 

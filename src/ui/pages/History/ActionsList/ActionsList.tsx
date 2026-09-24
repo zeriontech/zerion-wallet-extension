@@ -11,7 +11,9 @@ import { usePreferences } from 'src/ui/features/preferences';
 import dayjs from 'dayjs';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import type { LocalActionContentRequest } from 'src/modules/ethereum/transactions/addressAction/creators';
 import { ActionItem } from '../ActionItem';
+import { LocalActionItem } from '../ActionItem/LocalActionItem';
 import { HistoryDaySelector } from '../HistoryDaySelector';
 import * as styles from '../HistoryDaySelector/styles.module.css';
 
@@ -20,6 +22,7 @@ const FIRST_DATE = new Date('2018-01-01');
 
 export function ActionsList({
   actions,
+  contentRequests,
   hasMore,
   isLoading,
   onLoadMore,
@@ -27,6 +30,7 @@ export function ActionsList({
   onChangeDate,
 }: {
   actions: AnyAddressAction[];
+  contentRequests?: Map<string, LocalActionContentRequest>;
   hasMore: boolean;
   isLoading: boolean;
   onLoadMore?(): void;
@@ -163,16 +167,27 @@ export function ActionsList({
                   addressAction.transaction?.hash ||
                   addressAction.acts?.at(0)?.transaction.hash ||
                   '';
+                const testnetMode = Boolean(preferences?.testnetMode?.on);
+                const contentRequest = isLocalAddressAction(addressAction)
+                  ? contentRequests?.get(addressAction.id)
+                  : undefined;
                 return {
                   key: isLocalAddressAction(addressAction)
                     ? `local-${addressAction.relatedTransaction || hash}`
                     : hash,
-                  component: (
-                    <ActionItem
-                      addressAction={addressAction}
-                      testnetMode={Boolean(preferences?.testnetMode?.on)}
-                    />
-                  ),
+                  component:
+                    contentRequest && isLocalAddressAction(addressAction) ? (
+                      <LocalActionItem
+                        addressAction={addressAction}
+                        contentRequest={contentRequest}
+                        testnetMode={testnetMode}
+                      />
+                    ) : (
+                      <ActionItem
+                        addressAction={addressAction}
+                        testnetMode={testnetMode}
+                      />
+                    ),
                 };
               })}
             />

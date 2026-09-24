@@ -9,6 +9,7 @@ import { v5ToPlainTransactionResponse } from 'src/background/Wallet/model/ethers
 import { parseSolanaTransaction } from 'src/modules/solana/transactions/parseSolanaTransaction';
 import { invariant } from 'src/shared/invariant';
 import { solFromBase64 } from 'src/modules/solana/transactions/create';
+import type { Asset } from 'src/defi-sdk.types';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { getDecimals } from 'src/modules/networks/asset';
 import { baseToCommon } from 'src/shared/units/convert';
@@ -31,18 +32,17 @@ import {
   type LocalAddressAction,
 } from './addressActionMain';
 
-export async function createActionContent(
+export function getActionAssetQuery(
   action: TransactionAction,
-  currency: string,
-  source: NetworksSource
-): Promise<AddressAction['content']> {
+  currency: string
+): AssetQuery | null {
   switch (action.type) {
     case 'execute':
     case 'send': {
       if (!action.amount) {
         return null;
       }
-      const query: AssetQuery = action.isNativeAsset
+      return action.isNativeAsset
         ? {
             isNative: true,
             id: action.assetId,
@@ -54,8 +54,23 @@ export async function createActionContent(
             address: action.assetAddress,
             currency,
           };
-      const asset = await fetchAssetFromAPI(query, source);
-      if (!asset || !action.amount) {
+    }
+    case 'revoke':
+    case 'approve': {
+      return { isNative: false, address: action.assetAddress, currency };
+    }
+  }
+}
+
+export function buildActionContent(
+  action: TransactionAction,
+  asset: Asset,
+  currency: string
+): AddressAction['content'] {
+  switch (action.type) {
+    case 'execute':
+    case 'send': {
+      if (!action.amount) {
         return null;
       }
       const commonQuantity = baseToCommon(
@@ -83,17 +98,6 @@ export async function createActionContent(
       };
     }
     case 'revoke': {
-      const asset = await fetchAssetFromAPI(
-        {
-          isNative: false,
-          address: action.assetAddress,
-          currency,
-        },
-        source
-      );
-      if (!asset) {
-        return null;
-      }
       return {
         transfers: null,
         approvals: [
@@ -108,17 +112,6 @@ export async function createActionContent(
       };
     }
     case 'approve': {
-      const asset = await fetchAssetFromAPI(
-        {
-          isNative: false,
-          address: action.assetAddress,
-          currency,
-        },
-        source
-      );
-      if (!asset) {
-        return null;
-      }
       const commonQuantity = baseToCommon(
         action.amount,
         getDecimals({ asset, chain: action.chain })
@@ -145,6 +138,44 @@ export async function createActionContent(
       };
     }
   }
+}
+
+export async function createActionContent(
+  action: TransactionAction,
+  currency: string,
+  source: NetworksSource
+): Promise<AddressAction['content']> {
+  const query = getActionAssetQuery(action, currency);
+  if (!query) {
+    return null;
+  }
+  const asset = await fetchAssetFromAPI(query, source);
+  return asset ? buildActionContent(action, asset, currency) : null;
+}
+
+/**
+ * Describes the asset lookup a local action still needs before its content
+ * can be shown. History resolves it per row, only once the row is on screen.
+ */
+export type LocalActionContentRequest = {
+  transactionAction: TransactionAction;
+  assetQuery: AssetQuery;
+  /** Whether the only act was built locally and should get the content too */
+  fillActs: boolean;
+};
+
+export function applyLocalActionContent(
+  addressAction: LocalAddressAction,
+  request: LocalActionContentRequest,
+  content: AddressAction['content']
+): LocalAddressAction {
+  return {
+    ...addressAction,
+    content,
+    acts: request.fillActs
+      ? addressAction.acts?.map((act) => ({ ...act, content })) ?? null
+      : addressAction.acts,
+  };
 }
 
 type AddressActionLabelType = 'to' | 'from' | 'application';
@@ -191,12 +222,21 @@ function createActionLabel(
   };
 }
 
+export type LocalActionWithContentRequest = {
+  addressAction: LocalAddressAction;
+  contentRequest: LocalActionContentRequest | null;
+};
+
+/**
+ * Builds the local action without any network requests. When the stored
+ * interpretation has no content, the asset lookup is described in
+ * `contentRequest` instead of being performed here.
+ */
 async function pendingEvmTxToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
-  currency: string,
-  source: NetworksSource
-): Promise<LocalAddressAction> {
+  currency: string
+): Promise<LocalActionWithContentRequest> {
   invariant(transactionObject.hash, 'Must be evm tx');
   const { transaction, hash, timestamp, addressAction } = transactionObject;
   let network: NetworkInfo | null;
@@ -222,9 +262,19 @@ async function pendingEvmTxToAddressAction(
       })
     : null;
   const label = action ? createActionLabel(action) : null;
-  const content = action
-    ? await createActionContent(action, currency, source)
-    : null;
+  const assetQuery =
+    action && !addressAction?.content
+      ? getActionAssetQuery(action, currency)
+      : null;
+  const contentRequest =
+    action && assetQuery
+      ? {
+          transactionAction: action,
+          assetQuery,
+          fillActs: !addressAction?.acts,
+        }
+      : null;
+  const content = addressAction?.content || null;
   const actionTransaction = {
     hash,
     chain: {
@@ -248,7 +298,7 @@ async function pendingEvmTxToAddressAction(
       transaction: actionTransaction,
     },
   ];
-  return {
+  const localAddressAction: LocalAddressAction = {
     id: hash,
     address: transaction.from,
     timestamp: timestamp ?? Date.now(),
@@ -271,8 +321,9 @@ async function pendingEvmTxToAddressAction(
     refund: addressAction?.refund || null,
     fee: addressAction?.fee || null,
     acts: addressAction?.acts || acts,
-    content: addressAction?.content || content,
+    content,
   };
+  return { addressAction: localAddressAction, contentRequest };
 }
 
 function pendingSolanaTxToAddressAction(
@@ -296,18 +347,22 @@ function pendingSolanaTxToAddressAction(
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
-  currency: string,
-  source: NetworksSource
-): Promise<LocalAddressAction> {
+  currency: string
+): Promise<LocalActionWithContentRequest> {
   if (transactionObject.hash) {
     return pendingEvmTxToAddressAction(
       transactionObject,
       loadNetworkByChainId,
-      currency,
-      source
+      currency
     );
   } else if (transactionObject.signature) {
-    return pendingSolanaTxToAddressAction(transactionObject, currency);
+    return {
+      addressAction: pendingSolanaTxToAddressAction(
+        transactionObject,
+        currency
+      ),
+      contentRequest: null,
+    };
   } else {
     throw new Error('Unexpected TransactionObject');
   }

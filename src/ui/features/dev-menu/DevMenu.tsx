@@ -21,6 +21,18 @@ import {
   invalidateConfidentialPermits,
   useStoredConfidentialPermits,
 } from 'src/ui/features/confidential-balances/useConfidentialPermits';
+import { localTransactionsStore } from 'src/ui/transactions/transactions-store';
+import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { DEV_SEED_INITIATOR } from 'src/background/transactions/devSeedLocalTransactions';
+import type {
+  ConfidentialPermitsOverride,
+  PriceImpactOverride,
+  ReadonlyWallOverride,
+  SimulationOutputDiscrepancy,
+  SimulationStatusOverride,
+  SimulationWarningOverride,
+  DisclaimerOverride,
+} from './store-types';
 import {
   devMenuStore,
   hasAnyOverride,
@@ -33,15 +45,6 @@ import {
   setUSDisclaimerOverride,
   setUKDisclaimerOverride,
 } from './store';
-import type {
-  ConfidentialPermitsOverride,
-  PriceImpactOverride,
-  ReadonlyWallOverride,
-  SimulationOutputDiscrepancy,
-  SimulationStatusOverride,
-  SimulationWarningOverride,
-  DisclaimerOverride,
-} from './store-types';
 import * as styles from './DevMenu.module.css';
 
 const PRICE_IMPACT_OPTIONS: { value: PriceImpactOverride; label: string }[] = [
@@ -114,6 +117,13 @@ export function DevMenu() {
     singleAddress || null
   );
   const storedPermitsCount = storedPermits?.length ?? 0;
+  const localTransactions = useStore(localTransactionsStore);
+  const seededTransactionsCount = localTransactions.filter(
+    (item) => item.initiator === DEV_SEED_INITIATOR
+  ).length;
+  const canSeedTransactions = Boolean(
+    singleAddress && isEthereumAddress(singleAddress)
+  );
 
   return (
     <>
@@ -383,6 +393,47 @@ export function DevMenu() {
                       }}
                     >
                       clear ({storedPermitsCount})
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>history</span>
+                  <span className={styles.sectionRule} />
+                </div>
+                <div className={styles.row}>
+                  <span className={styles.rowLabel}>local_txs</span>
+                  <div className={styles.navLinks}>
+                    {[100, 600].map((count) => (
+                      <button
+                        key={count}
+                        type="button"
+                        className={styles.navLink}
+                        disabled={!canSeedTransactions}
+                        onClick={() => {
+                          if (!singleAddress) {
+                            return;
+                          }
+                          walletPort.request('devSeedLocalTransactions', {
+                            address: singleAddress,
+                            count,
+                          });
+                        }}
+                      >
+                        +{count}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={styles.navLink}
+                      disabled={seededTransactionsCount === 0}
+                      onClick={() => {
+                        walletPort.request('devClearSeededLocalTransactions');
+                      }}
+                    >
+                      clear ({seededTransactionsCount})
                     </button>
                   </div>
                 </div>

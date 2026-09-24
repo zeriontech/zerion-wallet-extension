@@ -2274,6 +2274,20 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     transactionService.clearPendingTransactions();
   }
+
+  /** Dev menu only: fills the local transactions store, see WLT-2647 */
+  async devSeedLocalTransactions({
+    params: { address, count },
+    context,
+  }: WalletMethodParams<{ address: string; count: number }>) {
+    this.verifyInternalOrigin(context);
+    await transactionService.devSeedLocalTransactions({ address, count });
+  }
+
+  async devClearSeededLocalTransactions({ context }: WalletMethodParams) {
+    this.verifyInternalOrigin(context);
+    await transactionService.devClearSeededLocalTransactions();
+  }
 }
 
 interface Web3WalletPermission {
