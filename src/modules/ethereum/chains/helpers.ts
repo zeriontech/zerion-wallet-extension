@@ -23,3 +23,28 @@ export function remapPinnedChains(
   }
   return Array.from(new Set(pinnedChains.map((id) => idMap.get(id) ?? id)));
 }
+
+/**
+ * Applies a new order of the visible pins to the stored list. Stored ids that
+ * aren't visible (unresolved, other ecosystem or testnet mode) keep their slots.
+ */
+export function reorderPinnedChains(
+  pinnedChains: string[],
+  nextVisibleChains: string[]
+) {
+  const visible = new Set(nextVisibleChains);
+  const slots = pinnedChains.flatMap((id, index) =>
+    visible.has(id) ? [index] : []
+  );
+  if (slots.length !== nextVisibleChains.length) {
+    return [
+      ...nextVisibleChains,
+      ...pinnedChains.filter((id) => !visible.has(id)),
+    ];
+  }
+  const result = [...pinnedChains];
+  slots.forEach((slot, index) => {
+    result[slot] = nextVisibleChains[index];
+  });
+  return result;
+}

@@ -10,6 +10,7 @@ import {
 } from 'src/ui/components/NetworkSelectDialog/NetworksEmptyView';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { NetworkList } from '../NetworkList';
+import { renderPinNetworkAction } from '../PinNetworkButton';
 
 export function SearchResults({
   query,
@@ -38,6 +39,7 @@ export function SearchResults({
       <NetworkList
         networks={networks}
         networkList={items}
+        renderItemActions={renderPinNetworkAction(networks)}
         getItemTo={(item) =>
           `/networks/network/${item.id}?from=${encodeURIComponent(pathname)}`
         }

@@ -101,9 +101,13 @@ export function NetworkList({
   networkList,
   getItemTo,
   getItemIconEnd,
+  renderItemActions,
+  titleEnd,
   previousListLength = 0,
 }: {
   title?: string | null;
+  titleEnd?: React.ReactNode;
+  renderItemActions?: (item: NetworkInfo) => React.ReactNode;
   networks: Networks;
   networkList: NetworkInfo[];
   getItemTo?: (item: NetworkInfo) => string;
@@ -127,13 +131,21 @@ export function NetworkList({
             zIndex: 1,
           } as const, // Just to calm down ts
           component: (
-            <UIText
-              kind="small/accent"
-              color="var(--neutral-500)"
-              style={{ paddingBlock: 8, backgroundColor: 'var(--white)' }}
+            <HStack
+              gap={8}
+              justifyContent="space-between"
+              alignItems="center"
+              style={{ backgroundColor: 'var(--white)' }}
             >
-              {title}
-            </UIText>
+              <UIText
+                kind="small/accent"
+                color="var(--neutral-500)"
+                style={{ paddingBlock: 8 }}
+              >
+                {title}
+              </UIText>
+              {titleEnd}
+            </HStack>
           ),
         }
       : null,
@@ -189,6 +201,7 @@ export function NetworkList({
                   }}
                 />
               ) : null}
+              {renderItemActions?.(network)}
               {getItemIconEnd?.(network) ?? (
                 <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
               )}

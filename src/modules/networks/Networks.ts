@@ -197,6 +197,11 @@ export class Networks {
     return this.pinnedChains.includes(network?.id ?? chain.toString());
   }
 
+  /** Stored pinned ids, including those that don't resolve to a network */
+  getPinnedChainIds() {
+    return [...this.pinnedChains];
+  }
+
   /** Pinned networks in the user's order; ids that don't resolve are skipped */
   getPinnedNetworks(standard: BlockchainType | 'all' = 'all') {
     return this.pinnedChains

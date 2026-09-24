@@ -73,6 +73,11 @@ import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
 import { SearchResults } from './shared/SearchResults';
 import { NetworkList } from './shared/NetworkList';
 import { NetworkForm } from './NetworkForm';
+import {
+  PinNetworkButton,
+  renderPinNetworkAction,
+} from './shared/PinNetworkButton';
+import { PinnedNetworks } from './PinnedNetworks';
 
 async function updateNetworks() {
   return Promise.all([
@@ -296,23 +301,34 @@ function NetworkPage() {
             ''
           }
           elementEnd={
-            isCustomNetwork ? (
-              <Button
-                kind="ghost"
-                title="Remove Network"
-                size={40}
-                onClick={() => {
-                  if (!dialogRef.current) {
-                    return;
-                  }
-                  showConfirmDialog(dialogRef.current).then(() =>
-                    removeMutation.mutate(network)
-                  );
-                }}
-              >
-                <TrashIcon style={{ display: 'block', marginInline: 'auto' }} />
-              </Button>
-            ) : undefined
+            <HStack gap={0} alignItems="center">
+              {NetworksModule.isEip155(network) ? (
+                <PinNetworkButton
+                  kind="title"
+                  chain={network.id}
+                  pinned={networks?.isPinned(createChain(network.id)) ?? false}
+                />
+              ) : null}
+              {isCustomNetwork ? (
+                <Button
+                  kind="ghost"
+                  title="Remove Network"
+                  size={40}
+                  onClick={() => {
+                    if (!dialogRef.current) {
+                      return;
+                    }
+                    showConfirmDialog(dialogRef.current).then(() =>
+                      removeMutation.mutate(network)
+                    );
+                  }}
+                >
+                  <TrashIcon
+                    style={{ display: 'block', marginInline: 'auto' }}
+                  />
+                </Button>
+              ) : null}
+            </HStack>
           }
         />
         <BottomSheetDialog ref={dialogRef} height="200px">
@@ -371,9 +387,25 @@ function WalletNetworkList({
             <NetworkList
               key={group.key}
               title={group.name}
+              titleEnd={
+                group.key === 'pinned' ? (
+                  <Button
+                    as={UnstyledLink}
+                    to="/networks/pinned"
+                    kind="ghost"
+                    size={28}
+                    style={{ paddingInline: 8 }}
+                  >
+                    <UIText kind="small/accent">Edit</UIText>
+                  </Button>
+                ) : null
+              }
               networks={networks}
               networkList={group.items}
-              previousListLength={groups[index - 1]?.items.length || 0}
+              renderItemActions={renderPinNetworkAction(networks)}
+              previousListLength={groups
+                .slice(0, index)
+                .reduce((count, prev) => count + prev.items.length, 0)}
             />
           ) : null
         )}
@@ -521,6 +553,7 @@ export function Networks() {
       <Routes>
         <Route path="/network/:chain" element={<NetworkPage />} />
         <Route path="/create" element={<NetworkCreatePage />} />
+        <Route path="/pinned" element={<PinnedNetworks />} />
         <Route
           path="/*"
           element={
