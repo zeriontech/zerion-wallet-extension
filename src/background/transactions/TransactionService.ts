@@ -224,7 +224,12 @@ export class TransactionService {
    * makes no requests.
    */
   private async performPurgeCheck() {
-    const transactions = await this.transactionsStore.getSavedState();
+    const savedTransactions = await this.transactionsStore.getSavedState();
+    // Dev fixtures are spread over days on purpose; they are removed explicitly
+    // through the dev menu, not by age.
+    const transactions = savedTransactions.filter(
+      (item) => item.initiator !== DEV_SEED_INITIATOR
+    );
     const now = Date.now();
     const keys = new Set(
       transactions
