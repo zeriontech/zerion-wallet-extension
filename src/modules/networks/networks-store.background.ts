@@ -11,9 +11,12 @@ export const mainNetworksStore = new NetworksStore(
   {
     getOtherNetworkData: async () => {
       await chainConfigStore.ready();
-      const { ethereumChainConfigs, visitedChains = null } =
-        chainConfigStore.getState();
-      return { ethereumChainConfigs, visitedChains };
+      const {
+        ethereumChainConfigs,
+        visitedChains = null,
+        pinnedChains = null,
+      } = chainConfigStore.getState();
+      return { ethereumChainConfigs, visitedChains, pinnedChains };
     },
     getApiClient: () => ZerionAPI,
     source: 'mainnet',
@@ -25,9 +28,12 @@ export const testenvNetworksStore = new NetworksStore(
   {
     getOtherNetworkData: async () => {
       await chainConfigStore.ready();
-      const { ethereumChainConfigs, visitedChains = null } =
-        chainConfigStore.getState();
-      return { ethereumChainConfigs, visitedChains };
+      const {
+        ethereumChainConfigs,
+        visitedChains = null,
+        pinnedChains = null,
+      } = chainConfigStore.getState();
+      return { ethereumChainConfigs, visitedChains, pinnedChains };
     },
     getApiClient: () => ZerionAPI,
     source: 'testnet',

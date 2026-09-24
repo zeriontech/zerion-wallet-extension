@@ -1,0 +1,25 @@
+.row {
+  position: relative;
+}
+
+.actionsSlot {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.actions {
+  position: absolute;
+  top: 50%;
+  /* link decoration padding (8) + chevron (24) + gap (8) */
+  right: 40px;
+  transform: translateY(-50%);
+  display: flex;
+}
+
+/* Keep the row highlighted while the pointer is over the actions */
+@media (hover: hover) {
+  .row:hover .link > div {
+    background-color: var(--highlight-color, var(--neutral-100));
+  }
+}

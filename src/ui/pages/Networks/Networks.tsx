@@ -38,6 +38,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { walletPort } from 'src/ui/shared/channels';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import TrashIcon from 'jsx:src/ui/assets/trash.svg';
+import EditIcon from 'jsx:src/ui/assets/edit.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -73,6 +74,11 @@ import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
 import { SearchResults } from './shared/SearchResults';
 import { NetworkList } from './shared/NetworkList';
 import { NetworkForm } from './NetworkForm';
+import {
+  PinNetworkButton,
+  renderPinNetworkAction,
+} from './shared/PinNetworkButton';
+import { PinnedNetworks } from './PinnedNetworks';
 
 async function updateNetworks() {
   return Promise.all([
@@ -278,8 +284,16 @@ function NetworkPage() {
     },
     onSuccess: goBack,
   });
+  // Mutations refresh the networks store before goBack runs, so the network
+  // may already be gone from the store while we are still on its page
+  const isLeaving = [
+    saveMutation,
+    removeMutation,
+    resetMutation,
+    removeFromVisitedMutation,
+  ].some((mutation) => mutation.isLoading || mutation.isSuccess);
   useBackgroundKind({ kind: 'white' });
-  if ((!networks && !network) || isStale) {
+  if ((!networks && !network) || isStale || (!network && isLeaving)) {
     return <ViewLoading kind="network" />;
   } else if (!network) {
     throw new Response(null, { status: 404, statusText: 'Page Not Found' });
@@ -296,23 +310,43 @@ function NetworkPage() {
             ''
           }
           elementEnd={
-            isCustomNetwork ? (
-              <Button
-                kind="ghost"
-                title="Remove Network"
-                size={40}
-                onClick={() => {
-                  if (!dialogRef.current) {
-                    return;
-                  }
-                  showConfirmDialog(dialogRef.current).then(() =>
-                    removeMutation.mutate(network)
-                  );
-                }}
-              >
-                <TrashIcon style={{ display: 'block', marginInline: 'auto' }} />
-              </Button>
-            ) : undefined
+            <HStack
+              gap={0}
+              alignItems="center"
+              style={{
+                position: 'relative',
+                left:
+                  isCustomNetwork && NetworksModule.isEip155(network) ? -40 : 0,
+              }}
+            >
+              {NetworksModule.isEip155(network) ? (
+                <PinNetworkButton
+                  kind="title"
+                  chain={network.id}
+                  pinned={networks?.isPinned(createChain(network.id)) ?? false}
+                />
+              ) : null}
+              {isCustomNetwork ? (
+                <Button
+                  kind="ghost"
+                  title="Remove Network"
+                  size={40}
+                  style={{ width: 40, padding: 0 }}
+                  onClick={() => {
+                    if (!dialogRef.current) {
+                      return;
+                    }
+                    showConfirmDialog(dialogRef.current).then(() =>
+                      removeMutation.mutate(network)
+                    );
+                  }}
+                >
+                  <TrashIcon
+                    style={{ display: 'block', marginInline: 'auto' }}
+                  />
+                </Button>
+              ) : null}
+            </HStack>
           }
         />
         <BottomSheetDialog ref={dialogRef} height="200px">
@@ -363,18 +397,32 @@ function WalletNetworkList({
   networks: NetworksModule;
   groups: NetworkGroups;
 }) {
+  const startsWithPinned =
+    groups[0]?.key === 'pinned' && groups[0].items.length;
   return (
     <>
+      {/* Untitled pinned rows would otherwise touch the search input */}
+      {startsWithPinned ? <Spacer height={8} /> : null}
       <VStack gap={8}>
         {groups.map((group, index) =>
           group.items.length ? (
-            <NetworkList
-              key={group.key}
-              title={group.name}
-              networks={networks}
-              networkList={group.items}
-              previousListLength={groups[index - 1]?.items.length || 0}
-            />
+            <React.Fragment key={group.key}>
+              <NetworkList
+                title={group.name}
+                networks={networks}
+                networkList={group.items}
+                renderItemActions={renderPinNetworkAction(networks)}
+                previousListLength={groups
+                  .slice(0, index)
+                  .reduce((count, prev) => count + prev.items.length, 0)}
+              />
+              {group.key === 'pinned' ? (
+                <div
+                  role="separator"
+                  style={{ height: 1, backgroundColor: 'var(--neutral-200)' }}
+                />
+              ) : null}
+            </React.Fragment>
           ) : null
         )}
       </VStack>
@@ -423,6 +471,9 @@ function NetworksView({
       sortMainNetworksType: 'alphabetical',
     });
   }, [networks, chainDistribution, testnetMode]);
+  const hasPinnedNetworks = groups.some(
+    (group) => group.key === 'pinned' && group.items.length > 0
+  );
 
   const {
     selectNext: selectNextNetwork,
@@ -450,16 +501,38 @@ function NetworksView({
           <NavigationTitle
             title="Networks"
             elementEnd={
-              <Button
-                as={UnstyledLink}
-                to="/networks/create"
-                kind="ghost"
-                title="Add Network"
-                size={36}
-                style={{ paddingInline: 6, justifySelf: 'center' }}
+              <HStack
+                gap={0}
+                alignItems="center"
+                // The end slot is one button wide, shift left to fit two
+                style={{
+                  position: 'relative',
+                  left: hasPinnedNetworks ? -36 : 0,
+                }}
               >
-                <AddCircleIcon style={{ display: 'block' }} />
-              </Button>
+                {hasPinnedNetworks ? (
+                  <Button
+                    as={UnstyledLink}
+                    to="/networks/pinned"
+                    kind="ghost"
+                    title="Edit Pinned Networks"
+                    size={36}
+                    style={{ paddingInline: 6, justifySelf: 'center' }}
+                  >
+                    <EditIcon style={{ display: 'block' }} />
+                  </Button>
+                ) : null}
+                <Button
+                  as={UnstyledLink}
+                  to="/networks/create"
+                  kind="ghost"
+                  title="Add Network"
+                  size={36}
+                  style={{ paddingInline: 6, justifySelf: 'center' }}
+                >
+                  <AddCircleIcon style={{ display: 'block' }} />
+                </Button>
+              </HStack>
             }
           />
           <Spacer height={16} />
@@ -521,6 +594,7 @@ export function Networks() {
       <Routes>
         <Route path="/network/:chain" element={<NetworkPage />} />
         <Route path="/create" element={<NetworkCreatePage />} />
+        <Route path="/pinned" element={<PinnedNetworks />} />
         <Route
           path="/*"
           element={

@@ -8,7 +8,7 @@ import { getNetworkByChainId } from 'src/modules/networks/networks-api';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
-import { isCustomNetworkId } from './helpers';
+import { isCustomNetworkId, remapPinnedChains } from './helpers';
 import type { ChainConfig, EthereumChainConfig } from './types';
 import { upgrades } from './versions';
 import { BACKEND_NETWORK_ORIGIN } from './constants';
@@ -78,8 +78,41 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
           draft.visitedChains = [];
         }
         remove(draft.visitedChains, (x) => x === chainStr);
+        if (draft.pinnedChains) {
+          remove(draft.pinnedChains, (x) => x === chainStr);
+        }
       })
     );
+  }
+
+  pinChain(chain: Chain) {
+    const chainStr = chain.toString();
+    this.setState((state) =>
+      produce(state, (draft) => {
+        if (!draft.pinnedChains) {
+          draft.pinnedChains = [];
+        }
+        upsert(draft.pinnedChains, chainStr, (x) => x);
+      })
+    );
+  }
+
+  unpinChain(chain: Chain) {
+    const chainStr = chain.toString();
+    this.setState((state) =>
+      produce(state, (draft) => {
+        if (draft.pinnedChains) {
+          remove(draft.pinnedChains, (x) => x === chainStr);
+        }
+      })
+    );
+  }
+
+  setPinnedChains(chains: string[]) {
+    this.setState((state) => ({
+      ...state,
+      pinnedChains: Array.from(new Set(chains)),
+    }));
   }
 
   addEthereumChain(
@@ -124,6 +157,12 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
       upsert(draft.ethereumChainConfigs, newEntry, (x) =>
         x.id === prevId ? id : x.id
       );
+      if (prevId !== id) {
+        draft.pinnedChains = remapPinnedChains(
+          draft.pinnedChains,
+          new Map([[prevId, id]])
+        );
+      }
     });
     this.setState(newState);
     return newEntry;
@@ -134,6 +173,10 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     this.setState((state) =>
       produce(state, (draft) => {
         remove(draft.ethereumChainConfigs, (x) => x.id === chainStr);
+        // Resetting a backend network keeps its pin, deleting a custom one drops it
+        if (isCustomNetworkId(chainStr) && draft.pinnedChains) {
+          remove(draft.pinnedChains, (x) => x === chainStr);
+        }
       })
     );
     // known networks should be kept in the `other networks` list after removing the config
@@ -152,6 +195,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
     const { ethereumChainConfigs } = this.getState();
     if (ethereumChainConfigs.length) {
       const updatedEthereumChainConfigs: EthereumChainConfig[] = [];
+      const idMap = new Map<string, string>();
       for (const config of ethereumChainConfigs) {
         if (!this.networksApiParams || !isCustomNetworkId(config.id)) {
           updatedEthereumChainConfigs.push(config);
@@ -170,6 +214,9 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
           }
           // Remove user-defined is_testnet when network becomes backend-supported
           const { is_testnet, ...valueWithoutTestnet } = config.value;
+          if (network.id !== config.id) {
+            idMap.set(config.id, network.id);
+          }
           updatedEthereumChainConfigs.push({
             ...config,
             id: network.id,
@@ -182,6 +229,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
       this.setState((current) => ({
         ...current,
         ethereumChainConfigs: updatedEthereumChainConfigs,
+        pinnedChains: remapPinnedChains(current.pinnedChains, idMap),
       }));
     }
   }

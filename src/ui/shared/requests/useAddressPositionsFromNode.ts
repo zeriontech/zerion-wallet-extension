@@ -21,8 +21,10 @@ export function useAddressPositionFromRpcNode({
   return useQuery({
     suspense,
     staleTime,
+    // Versioned: `useAddressPositionsFromNode2` used to persist a different
+    // shape under the unversioned key, which crashed readers of this hook
     queryKey: persistentQuery([
-      'fetchAddressPositionFromRpcNode',
+      'fetchAddressPositionFromRpcNode/v2',
       address,
       chain,
     ]),

@@ -16,6 +16,7 @@ import { LIST_ITEM_CLASS } from 'src/ui/components/NetworkSelectDialog/constants
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { BACKEND_NETWORK_ORIGIN } from 'src/modules/ethereum/chains/constants';
+import * as styles from './styles.module.css';
 
 function getOriginUrlFromMetaData(metadata: NetworkConfigMetaData) {
   if (
@@ -101,9 +102,11 @@ export function NetworkList({
   networkList,
   getItemTo,
   getItemIconEnd,
+  renderItemActions,
   previousListLength = 0,
 }: {
   title?: string | null;
+  renderItemActions?: (item: NetworkInfo) => React.ReactNode;
   networks: Networks;
   networkList: NetworkInfo[];
   getItemTo?: (item: NetworkInfo) => string;
@@ -137,12 +140,11 @@ export function NetworkList({
           ),
         }
       : null,
-    ...networkList.map((network, index) => ({
-      key: network.id,
-      pad: false,
-      isInteractive: true,
-      component: (
+    ...networkList.map((network, index) => {
+      const actions = renderItemActions?.(network);
+      const link = (
         <SurfaceItemLink
+          className={styles.link}
           to={getItemTo?.(network) ?? `/networks/network/${network.id}`}
           style={{ paddingInline: 0 }}
           data-class={LIST_ITEM_CLASS}
@@ -189,14 +191,32 @@ export function NetworkList({
                   }}
                 />
               ) : null}
+              {actions ? (
+                // Reserves room for the actions, rendered outside the link
+                <span aria-hidden={true} className={styles.actionsSlot} />
+              ) : null}
               {getItemIconEnd?.(network) ?? (
                 <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
               )}
             </HStack>
           </HStack>
         </SurfaceItemLink>
-      ),
-    })),
+      );
+      return {
+        key: network.id,
+        pad: false,
+        isInteractive: true,
+        component: actions ? (
+          // Buttons can't live inside a link, so they sit on top of it as siblings
+          <div className={styles.row}>
+            {link}
+            <div className={styles.actions}>{actions}</div>
+          </div>
+        ) : (
+          link
+        ),
+      };
+    }),
   ].filter(isTruthy);
 
   return items.length > 50 ? (

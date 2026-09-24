@@ -71,6 +71,7 @@ type ListItem =
       network: NetworkInfo;
       name: string;
       selected: boolean;
+      pinned: boolean;
     };
 
 function ShowTestnetsHint() {
@@ -243,6 +244,7 @@ function VirtualizedList({
                 name={item.name}
                 iconUrl={item.network.iconUrl}
                 selected={item.selected}
+                pinned={item.pinned}
                 onSelect={onSelect}
                 chainDistribution={chainDistribution}
                 address={address}
@@ -337,6 +339,7 @@ function NetworkSelect2Content({
         network,
         name: networks.getChainName(createChain(network.id)),
         selected: network.id === value,
+        pinned: networks.isPinned(createChain(network.id)),
       }));
     }
     const list: ListItem[] = [];
@@ -363,6 +366,7 @@ function NetworkSelect2Content({
           network,
           name: networks.getChainName(createChain(network.id)),
           selected: network.id === value,
+          pinned: group.key === 'pinned',
         });
       });
     });

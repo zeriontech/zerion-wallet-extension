@@ -139,6 +139,7 @@ class WalletPortMock {
       return {
         ethereumChainConfigs: ETHEREUM_CHAIN_SOURCES,
         visitedChains: null,
+        pinnedChains: null,
       };
     } else if (method === 'getGlobalPreferences') {
       return mockedGlobalPreferences;

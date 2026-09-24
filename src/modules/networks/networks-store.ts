@@ -36,6 +36,7 @@ function mergeNetworkInfos(
 type OtherNetworkData = {
   ethereumChainConfigs: EthereumChainConfig[];
   visitedChains: string[] | null;
+  pinnedChains: string[] | null;
 };
 
 export class NetworksStore extends Store<State> {
@@ -43,6 +44,14 @@ export class NetworksStore extends Store<State> {
   private networkConfigs: NetworkInfo[] = [];
   private customNetworkConfigs: NetworkInfo[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
+  /**
+   * Slugs the backend has answered "not found" for in this session, per store
+   * (so per source). Pinned and visited ids are never dropped from storage,
+   * so without this each unresolvable id would cost a search request on
+   * every load and update. Rejected requests are not recorded, so an outage
+   * does not hide a real network for the session.
+   */
+  private unresolvedSlugs = new Set<string>();
   /**
    * Lazy on purpose: the ZerionAPI modules sit in import cycles with the
    * background/UI entry points, so the binding must not be read at module load.
@@ -83,6 +92,7 @@ export class NetworksStore extends Store<State> {
     const chainConfigs = await this.getOtherNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
     const visitedChains = chainConfigs?.visitedChains;
+    const pinnedChains = chainConfigs?.pinnedChains;
     const networks = new Networks({
       networks: mergeNetworkInfos(
         this.networkConfigs,
@@ -90,6 +100,7 @@ export class NetworksStore extends Store<State> {
       ),
       ethereumChainConfigs: savedChainConfigs || [],
       visitedChains: visitedChains || [],
+      pinnedChains: pinnedChains || [],
     });
     this.setState({ networks });
     return networks;
@@ -114,6 +125,7 @@ export class NetworksStore extends Store<State> {
     const chainConfigs = await this.getOtherNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs || [];
     const visitedChains = chainConfigs?.visitedChains || [];
+    const pinnedChains = chainConfigs?.pinnedChains || [];
     const params = { apiClient: this.apiClient, source: this.source };
 
     const commonNetworkConfigs = update
@@ -128,19 +140,20 @@ export class NetworksStore extends Store<State> {
     /**
      * chain/list/v1 has no `ids` param, so chains outside the supported list
      * are looked up one by one: saved configs by their exact eip155 chainId,
-     * requested and visited slugs through an exact-match search.
+     * requested, visited and pinned slugs through an exact-match search.
      */
     const savedConfigsToFetch = savedChainConfigs.filter(
       (config) => !isCustomNetworkId(config.id) && !knownIdSet.has(config.id)
     );
     const savedIdsToFetch = new Set(savedConfigsToFetch.map(({ id }) => id));
     const slugsToFetch = Array.from(
-      new Set([...chains, ...visitedChains])
+      new Set([...chains, ...visitedChains, ...pinnedChains])
     ).filter(
       (id) =>
         !isCustomNetworkId(id) &&
         !knownIdSet.has(id) &&
-        !savedIdsToFetch.has(id)
+        !savedIdsToFetch.has(id) &&
+        !this.unresolvedSlugs.has(id)
     );
     const extraResults = await Promise.allSettled([
       ...savedConfigsToFetch.map((config) =>
@@ -148,6 +161,12 @@ export class NetworksStore extends Store<State> {
       ),
       ...slugsToFetch.map((id) => getNetworkById(id, params)),
     ]);
+    slugsToFetch.forEach((id, index) => {
+      const result = extraResults[savedConfigsToFetch.length + index];
+      if (result.status === 'fulfilled' && result.value === null) {
+        this.unresolvedSlugs.add(id);
+      }
+    });
     const extraNetworkConfigs = extraResults.flatMap((result) =>
       result.status === 'fulfilled' && result.value ? [result.value] : []
     );

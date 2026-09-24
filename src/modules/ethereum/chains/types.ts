@@ -47,6 +47,8 @@ export interface ChainConfigV2 {
   version: 2;
   ethereumChainConfigs: EthereumChainConfig[];
   visitedChains?: string[];
+  /** Ordered network ids pinned by the user, backend and custom */
+  pinnedChains?: string[];
   /** @deprecated */
   ethereumChains?: DeprecatedEthereumChainConfig[];
 }

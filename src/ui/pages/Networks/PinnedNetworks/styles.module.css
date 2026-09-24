@@ -1,0 +1,15 @@
+.row {
+  border: 2px solid var(--neutral-200);
+  border-radius: 20px;
+  width: 100%;
+  margin-block: 4px;
+  padding: 12px;
+  background-color: var(--white);
+}
+
+.dragHandle {
+  display: flex;
+  color: var(--neutral-500);
+  cursor: grab;
+  touch-action: none;
+}

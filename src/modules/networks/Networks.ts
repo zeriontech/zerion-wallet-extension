@@ -77,6 +77,7 @@ export class Networks {
   private networkIdAliases: Record<string, string>;
   private ethereumChainConfigs: EthereumChainConfig[];
   private visitedChains: Set<string>;
+  private pinnedChains: string[];
 
   private solanaNetworks: NetworkInfo[];
   private evmNetworks: NetworkInfo[];
@@ -128,10 +129,12 @@ export class Networks {
     networks,
     ethereumChainConfigs,
     visitedChains,
+    pinnedChains = [],
   }: {
     networks: NetworkInfo[];
     ethereumChainConfigs: EthereumChainConfig[];
     visitedChains: string[];
+    pinnedChains?: string[];
   }) {
     this.ethereumChainConfigs = ethereumChainConfigs;
     this.networks = applyChainConfigs(networks, ethereumChainConfigs);
@@ -155,6 +158,7 @@ export class Networks {
     );
     this.networkIdAliases = toAliasMap(this.ethereumChainConfigs);
     this.visitedChains = new Set(visitedChains);
+    this.pinnedChains = pinnedChains;
   }
 
   static getName(network: NetworkInfo) {
@@ -186,6 +190,26 @@ export class Networks {
 
   isVisitedChain(chain: Chain) {
     return this.visitedChains.has(chain.toString());
+  }
+
+  isPinned(chain: Chain) {
+    const network = this.getByNetworkId(chain);
+    return this.pinnedChains.includes(network?.id ?? chain.toString());
+  }
+
+  /** Stored pinned ids, including those that don't resolve to a network */
+  getPinnedChainIds() {
+    return [...this.pinnedChains];
+  }
+
+  /** Pinned networks in the user's order; ids that don't resolve are skipped */
+  getPinnedNetworks(standard: BlockchainType | 'all' = 'all') {
+    return this.pinnedChains
+      .map((id) => this.getByNetworkId(createChain(id)))
+      .filter(isTruthy)
+      .filter((network) =>
+        Networks.predicate(standard === 'all' ? null : standard, network)
+      );
   }
 
   getNetworks() {

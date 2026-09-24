@@ -6,7 +6,7 @@ import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import type { NetworkSelectDistribution } from './types';
 
 export type NetworkGroup = {
-  key: 'main' | 'other';
+  key: 'pinned' | 'main' | 'other';
   name: string | null;
   items: NetworkInfo[];
 };
@@ -43,24 +43,37 @@ export function createGroups2({
   testnetMode: boolean;
   filterPredicate?: (network: NetworkInfo) => boolean;
 }): NetworkGroups {
+  const isEligible = (network: NetworkInfo) =>
+    Boolean(network.testnet) === testnetMode &&
+    !network.hidden &&
+    filterPredicate(network);
+  const pinnedNetworks = networks
+    .getPinnedNetworks(standard)
+    .filter(isEligible);
+  const pinnedIds = new Set(pinnedNetworks.map((network) => network.id));
   const allNetworks = networks
     .getDefaultNetworks(standard)
-    .filter((item) => Boolean(item.testnet) === testnetMode)
-    .filter((item) => !item.hidden)
-    .filter(filterPredicate);
-  const pinnedNetworkId = standard === 'solana' ? NetworkId.Solana : null;
+    .filter(isEligible)
+    .filter((network) => !pinnedIds.has(network.id));
+  const preferredNetworkId = standard === 'solana' ? NetworkId.Solana : null;
   const otherNetworkPredicate = (network: NetworkInfo) =>
-    network.id !== pinnedNetworkId &&
+    network.id !== preferredNetworkId &&
     (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id));
   return [
+    {
+      key: 'pinned',
+      // No header: the pin icon on each row marks the group
+      name: null,
+      items: pinnedNetworks,
+    },
     {
       key: 'main',
       name: null,
       items: allNetworks
         .filter((network) => !otherNetworkPredicate(network))
         .sort((a, b) => {
-          if (a.id === pinnedNetworkId) return -1;
-          if (b.id === pinnedNetworkId) return 1;
+          if (a.id === preferredNetworkId) return -1;
+          if (b.id === preferredNetworkId) return 1;
           return compareNetworks(a, b, chainDistribution);
         }),
     },

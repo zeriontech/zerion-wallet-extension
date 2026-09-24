@@ -80,11 +80,8 @@ export function useAddressPositionsFromNode2({
   enabled?: boolean;
 }) {
   const query = useQuery({
-    queryKey: persistentQuery([
-      'fetchAddressPositionFromRpcNode',
-      address,
-      chain,
-    ]),
+    // Own key: the cached shape differs from `useAddressPositionFromRpcNode`
+    queryKey: persistentQuery(['useAddressPositionsFromNode2', address, chain]),
     queryFn: async () => {
       const networksStore = await getNetworksStore();
       const network = await networksStore.fetchNetworkById(chain.toString());
