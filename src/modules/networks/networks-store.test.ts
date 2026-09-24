@@ -1,9 +1,12 @@
+import { jest } from '@jest/globals';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 
 // ky and store-unit ship ESM only, which jest doesn't transform; the store's
 // event API is not exercised here
-jest.mock('ky', () => ({ HTTPError: class HTTPError extends Error {} }));
-jest.mock('store-unit', () => ({
+jest.unstable_mockModule('ky', () => ({
+  HTTPError: class HTTPError extends Error {},
+}));
+jest.unstable_mockModule('store-unit', () => ({
   Store: class Store<T> {
     private state: T;
     constructor(state: T) {
@@ -21,8 +24,8 @@ jest.mock('store-unit', () => ({
     }
   },
 }));
-import { networksFallbackInfo } from './networks-fallback';
-import { NetworksStore } from './networks-store';
+const { networksFallbackInfo } = await import('./networks-fallback');
+const { NetworksStore } = await import('./networks-store');
 
 function createStore(pinnedChains: string[]) {
   const searchQueries: string[] = [];
