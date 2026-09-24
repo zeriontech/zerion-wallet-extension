@@ -270,6 +270,7 @@ function DepositFormBody({
       // distinct "Approving" stage (mirrors SwapForm2).
       const depositToasterView: ToasterView = {
         kind: 'bridge',
+        explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
         sent: {
           symbol: inputPosition.fungible.symbol,
           iconUrl: inputPosition.fungible.iconUrl,

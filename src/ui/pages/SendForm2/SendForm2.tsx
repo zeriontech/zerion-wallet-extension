@@ -466,6 +466,7 @@ function SendFormComponent({
           },
           toaster: {
             kind: 'send',
+            explorerUrlTemplate: sendNetwork.explorer?.txUrl ?? null,
             token: { symbol: tokenSymbol, iconUrl: tokenIconUrl },
             chain: { iconUrl: sendNetwork.iconUrl ?? null },
             recipient: {

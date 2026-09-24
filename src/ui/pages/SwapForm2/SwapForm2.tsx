@@ -462,6 +462,7 @@ function SwapFormComponent({
 
       const approveToasterView: ToasterView = {
         kind: 'approve',
+        explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
         token: {
           symbol: inputPosition.fungible.symbol,
           iconUrl: inputPosition.fungible.iconUrl,
@@ -470,6 +471,7 @@ function SwapFormComponent({
       };
       const swapToasterView: ToasterView = {
         kind: isCrossChain ? 'bridge' : 'swap',
+        explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
         sent: {
           symbol: inputPosition.fungible.symbol,
           iconUrl: inputPosition.fungible.iconUrl,
