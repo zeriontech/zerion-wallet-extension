@@ -112,10 +112,15 @@ function useMinedAndPendingAddressActions({
   // assets once they scroll into view (see LocalActionItem). Filters apply
   // below in a memo, so typing a search query or switching a filter does not
   // rebuild anything.
+  // `source` is part of the key because the networks resolver behind
+  // `loadNetworkByChainId` swaps with testnet mode.
   const { data: localItems, ...localActionsQuery } = useQuery({
-    queryKey: ['pages/history', localActions, currency],
-    queryFn: () =>
-      Promise.all(
+    queryKey: ['pages/history', localActions, currency, source],
+    queryFn: async () => {
+      // One item that fails to build (e.g. its chain metadata cannot be
+      // fetched) is dropped from the list; it must not take the whole
+      // History view down.
+      const results = await Promise.allSettled(
         localActions.map((transactionObject) =>
           pendingTransactionToAddressAction(
             transactionObject,
@@ -123,8 +128,16 @@ function useMinedAndPendingAddressActions({
             currency
           )
         )
-      ),
-    useErrorBoundary: true,
+      );
+      return results.flatMap((result) => {
+        if (result.status === 'fulfilled') {
+          return [result.value];
+        }
+        console.error('Failed to build local action', result.reason); // eslint-disable-line no-console
+        return [];
+      });
+    },
+    useErrorBoundary: false,
   });
 
   const localAddressActions = useMemo(() => {
