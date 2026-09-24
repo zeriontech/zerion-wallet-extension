@@ -160,3 +160,19 @@ test('the bundled fallback is a valid NetworkInfo list', () => {
   expect(networks.getByNetworkId(createChain('solana'))).toBeDefined();
   expect(networks.getByNetworkId(createChain('tron'))).toBeUndefined();
 });
+
+test('pinned networks keep the user order and skip unresolved ids', () => {
+  const networks = new Networks({
+    networks: [ethereum, xdai],
+    ethereumChainConfigs: [],
+    visitedChains: [],
+    pinnedChains: ['xdai', 'unknown-chain', 'ethereum'],
+  });
+  expect(networks.getPinnedNetworks().map((n) => n.id)).toEqual([
+    'xdai',
+    'ethereum',
+  ]);
+  expect(networks.isPinned(createChain('xdai'))).toBe(true);
+  expect(networks.isPinned(createChain('solana'))).toBe(false);
+  expect(create([ethereum]).getPinnedNetworks()).toEqual([]);
+});

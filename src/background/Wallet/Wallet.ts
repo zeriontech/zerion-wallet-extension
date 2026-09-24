@@ -1904,12 +1904,39 @@ export class Wallet {
     chainConfigStore.removeVisitedChain(createChain(chainStr));
   }
 
+  async pinEthereumChain({
+    context,
+    params: { chain: chainStr },
+  }: WalletMethodParams<{ chain: string }>) {
+    this.verifyInternalOrigin(context);
+    chainConfigStore.pinChain(createChain(chainStr));
+  }
+
+  async unpinEthereumChain({
+    context,
+    params: { chain: chainStr },
+  }: WalletMethodParams<{ chain: string }>) {
+    this.verifyInternalOrigin(context);
+    chainConfigStore.unpinChain(createChain(chainStr));
+  }
+
+  async setPinnedEthereumChains({
+    context,
+    params: { chains },
+  }: WalletMethodParams<{ chains: string[] }>) {
+    this.verifyInternalOrigin(context);
+    chainConfigStore.setPinnedChains(chains);
+  }
+
   async getOtherNetworkData({ context }: PublicMethodParams) {
     this.verifyInternalOrigin(context);
     await chainConfigStore.ready();
-    const { ethereumChainConfigs, visitedChains = null } =
-      chainConfigStore.getState();
-    return { ethereumChainConfigs, visitedChains };
+    const {
+      ethereumChainConfigs,
+      visitedChains = null,
+      pinnedChains = null,
+    } = chainConfigStore.getState();
+    return { ethereumChainConfigs, visitedChains, pinnedChains };
   }
 
   async getPendingTransactions({ context }: PublicMethodParams) {

@@ -36,6 +36,7 @@ function mergeNetworkInfos(
 type OtherNetworkData = {
   ethereumChainConfigs: EthereumChainConfig[];
   visitedChains: string[] | null;
+  pinnedChains: string[] | null;
 };
 
 export class NetworksStore extends Store<State> {
@@ -83,6 +84,7 @@ export class NetworksStore extends Store<State> {
     const chainConfigs = await this.getOtherNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
     const visitedChains = chainConfigs?.visitedChains;
+    const pinnedChains = chainConfigs?.pinnedChains;
     const networks = new Networks({
       networks: mergeNetworkInfos(
         this.networkConfigs,
@@ -90,6 +92,7 @@ export class NetworksStore extends Store<State> {
       ),
       ethereumChainConfigs: savedChainConfigs || [],
       visitedChains: visitedChains || [],
+      pinnedChains: pinnedChains || [],
     });
     this.setState({ networks });
     return networks;
@@ -114,6 +117,7 @@ export class NetworksStore extends Store<State> {
     const chainConfigs = await this.getOtherNetworkData?.();
     const savedChainConfigs = chainConfigs?.ethereumChainConfigs || [];
     const visitedChains = chainConfigs?.visitedChains || [];
+    const pinnedChains = chainConfigs?.pinnedChains || [];
     const params = { apiClient: this.apiClient, source: this.source };
 
     const commonNetworkConfigs = update
@@ -128,14 +132,14 @@ export class NetworksStore extends Store<State> {
     /**
      * chain/list/v1 has no `ids` param, so chains outside the supported list
      * are looked up one by one: saved configs by their exact eip155 chainId,
-     * requested and visited slugs through an exact-match search.
+     * requested, visited and pinned slugs through an exact-match search.
      */
     const savedConfigsToFetch = savedChainConfigs.filter(
       (config) => !isCustomNetworkId(config.id) && !knownIdSet.has(config.id)
     );
     const savedIdsToFetch = new Set(savedConfigsToFetch.map(({ id }) => id));
     const slugsToFetch = Array.from(
-      new Set([...chains, ...visitedChains])
+      new Set([...chains, ...visitedChains, ...pinnedChains])
     ).filter(
       (id) =>
         !isCustomNetworkId(id) &&
