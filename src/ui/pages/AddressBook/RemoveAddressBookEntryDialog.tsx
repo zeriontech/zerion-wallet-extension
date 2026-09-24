@@ -21,7 +21,7 @@ function DialogContent({
   const profile = useProfileName({ address, name: null });
   const displayName = name || profile.value || truncateAddress(address, 5);
   return (
-    <VStack gap={20}>
+    <VStack gap={20} style={{ padding: 16, paddingTop: 0 }}>
       <UIText kind="body/regular" color="var(--neutral-700)">
         Remove{' '}
         <UIText kind="body/accent" inline={true}>
