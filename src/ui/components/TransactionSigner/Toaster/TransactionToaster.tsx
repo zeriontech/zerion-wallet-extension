@@ -7,6 +7,8 @@ import type { ToasterView } from '../types';
 import { ToasterArrow } from './ToasterArrow';
 import { ToasterIcons } from './ToasterIcons';
 import { ToasterStatusBadge } from './ToasterStatusBadge';
+import { ToasterActions } from './ToasterActions';
+import { useToasterTarget } from './useToasterTarget';
 import { useReducedMotion } from './useReducedMotion';
 import {
   useToasterSession,
@@ -269,6 +271,7 @@ function ToasterContent({
   const view = step?.toaster;
   const title = getTitle(view, terminal);
   const subtitle = getSubtitle(view, terminal);
+  const target = useToasterTarget(step);
 
   return (
     <motion.div
@@ -355,17 +358,28 @@ function ToasterContent({
           pendingQueueCount={pendingQueueCount}
         />
       </motion.div>
+      {/* Copy / explorer actions. Mounting them widens .measureWrap, which the
+          pill follows with the same spring that drives the text reveal. */}
+      <AnimatePresence initial={false}>
+        {terminal === 'success' && textRevealed ? (
+          <ToasterActions
+            key="actions"
+            target={target}
+            reducedMotion={reducedMotion}
+          />
+        ) : null}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
 export function TransactionToaster() {
-  const session = useToasterSession();
+  const { setHovered, ...session } = useToasterSession();
   const reducedMotion = useReducedMotion();
   const navigate = useNavigate();
 
   const [measureRef, { width: contentWidth }] = useMeasure<HTMLDivElement>();
-  const pillRef = useRef<HTMLButtonElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
   const { computeNextPosition } = useSnapPosition({
     pillRef,
   });
@@ -400,12 +414,15 @@ export function TransactionToaster() {
   );
 
   // The parent component stays mounted across toaster sessions; only the
-  // inner motion.button mounts/unmounts via AnimatePresence. Reset pill-local
+  // inner motion.div pill mounts/unmounts via AnimatePresence. Reset pill-local
   // state AFTER the exit animation completes (via AnimatePresence's
   // onExitComplete) so the next entrance starts from a clean slate — no
   // leftover drag offset, entrance gate re-armed, default exit direction.
   // Resetting earlier would interrupt the exit animation in flight.
   const handleExitComplete = useCallback(() => {
+    // The pointer can't leave a pill that's gone — release the hover hold
+    // explicitly, or the next session would never auto-dismiss.
+    setHovered(false);
     if (expandTimerRef.current != null) {
       clearTimeout(expandTimerRef.current);
       expandTimerRef.current = null;
@@ -415,7 +432,7 @@ export function TransactionToaster() {
     setHasEntered(false);
     setEntrancePhase('compact');
     setExitQuadrant('top-center');
-  }, [dragX, dragY]);
+  }, [dragX, dragY, setHovered]);
 
   const handleClick = useCallback(() => {
     if (justDraggedRef.current) {
@@ -426,6 +443,9 @@ export function TransactionToaster() {
   }, [navigate]);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      // Enter/Space on a nested action (copy / explorer) activates that
+      // action; it must not also navigate.
+      if (e.target !== e.currentTarget) return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         navigate(HISTORY_PATH);
@@ -469,10 +489,11 @@ export function TransactionToaster() {
       <div ref={dragAreaRef} className={s.dragArea} />
       <AnimatePresence onExitComplete={handleExitComplete}>
         {session.visible ? (
-          <motion.button
+          <motion.div
             ref={pillRef}
             key="pill"
-            type="button"
+            role="button"
+            tabIndex={0}
             className={s.pill}
             style={{
               ...getAnchorStyle(position),
@@ -549,6 +570,12 @@ export function TransactionToaster() {
             }}
             onClick={handleClick}
             onKeyDown={handleKeyDown}
+            // Hovering (or focusing anything inside) holds the pill open so
+            // the success actions stay reachable.
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            onFocus={() => setHovered(true)}
+            onBlur={() => setHovered(false)}
           >
             <div ref={measureRef} className={s.measureWrap}>
               <ToasterContent
@@ -559,7 +586,7 @@ export function TransactionToaster() {
                 textRevealed={expanded}
               />
             </div>
-          </motion.button>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </div>
