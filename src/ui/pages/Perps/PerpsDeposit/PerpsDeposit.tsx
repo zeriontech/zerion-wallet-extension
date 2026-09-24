@@ -270,7 +270,12 @@ function DepositFormBody({
       // distinct "Approving" stage (mirrors SwapForm2).
       const depositToasterView: ToasterView = {
         kind: 'bridge',
-        explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
+        // Prefer the provider's explorer (follows the bridge to Hypercore)
+        // over the input chain's.
+        explorerUrlTemplate:
+          quote.contractMetadata.explorer?.txUrl ??
+          inputNetwork.explorer?.txUrl ??
+          null,
         sent: {
           symbol: inputPosition.fungible.symbol,
           iconUrl: inputPosition.fungible.iconUrl,
@@ -306,7 +311,11 @@ function DepositFormBody({
             warningWasShown: false,
             outputAmountColor: 'grey',
           },
-          toaster: depositToasterView,
+          toaster: {
+            ...depositToasterView,
+            // The approve is a plain transaction on the input chain.
+            explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
+          },
         });
       }
 

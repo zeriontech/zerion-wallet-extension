@@ -460,6 +460,12 @@ function SwapFormComponent({
 
       const steps: SignStep[] = [];
 
+      // Explorer for the swap itself: prefer the provider's own explorer
+      // (a bridge tracker that follows both legs) over the input chain's.
+      const swapExplorerUrlTemplate =
+        quote.contractMetadata.explorer?.txUrl ??
+        inputNetwork.explorer?.txUrl ??
+        null;
       const approveToasterView: ToasterView = {
         kind: 'approve',
         explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
@@ -471,7 +477,7 @@ function SwapFormComponent({
       };
       const swapToasterView: ToasterView = {
         kind: isCrossChain ? 'bridge' : 'swap',
-        explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
+        explorerUrlTemplate: swapExplorerUrlTemplate,
         sent: {
           symbol: inputPosition.fungible.symbol,
           iconUrl: inputPosition.fungible.iconUrl,
@@ -514,11 +520,15 @@ function SwapFormComponent({
             warningWasShown: Boolean(showPriceImpactCallout),
             outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
           },
-          toaster:
-            isDeviceAccount(wallet) ||
+          toaster: {
+            ...(isDeviceAccount(wallet) ||
             formState.inputChain === NetworkId.Ethereum
               ? approveToasterView
-              : swapToasterView,
+              : swapToasterView),
+            // An approval is a plain transaction on the input chain — the
+            // provider's explorer wouldn't know its hash.
+            explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
+          },
         });
       }
 
