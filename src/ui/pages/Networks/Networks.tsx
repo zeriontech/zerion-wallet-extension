@@ -284,8 +284,16 @@ function NetworkPage() {
     },
     onSuccess: goBack,
   });
+  // Mutations refresh the networks store before goBack runs, so the network
+  // may already be gone from the store while we are still on its page
+  const isLeaving = [
+    saveMutation,
+    removeMutation,
+    resetMutation,
+    removeFromVisitedMutation,
+  ].some((mutation) => mutation.isLoading || mutation.isSuccess);
   useBackgroundKind({ kind: 'white' });
-  if ((!networks && !network) || isStale) {
+  if ((!networks && !network) || isStale || (!network && isLeaving)) {
     return <ViewLoading kind="network" />;
   } else if (!network) {
     throw new Response(null, { status: 404, statusText: 'Page Not Found' });
