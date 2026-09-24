@@ -45,6 +45,14 @@ export class NetworksStore extends Store<State> {
   private customNetworkConfigs: NetworkInfo[] = [];
   private loaderPromises: Record<string, Promise<Networks>> = {};
   /**
+   * Slugs the backend has answered "not found" for in this session, per store
+   * (so per source). Pinned and visited ids are never dropped from storage,
+   * so without this each unresolvable id would cost a search request on
+   * every load and update. Rejected requests are not recorded, so an outage
+   * does not hide a real network for the session.
+   */
+  private unresolvedSlugs = new Set<string>();
+  /**
    * Lazy on purpose: the ZerionAPI modules sit in import cycles with the
    * background/UI entry points, so the binding must not be read at module load.
    */
@@ -144,7 +152,8 @@ export class NetworksStore extends Store<State> {
       (id) =>
         !isCustomNetworkId(id) &&
         !knownIdSet.has(id) &&
-        !savedIdsToFetch.has(id)
+        !savedIdsToFetch.has(id) &&
+        !this.unresolvedSlugs.has(id)
     );
     const extraResults = await Promise.allSettled([
       ...savedConfigsToFetch.map((config) =>
@@ -152,6 +161,12 @@ export class NetworksStore extends Store<State> {
       ),
       ...slugsToFetch.map((id) => getNetworkById(id, params)),
     ]);
+    slugsToFetch.forEach((id, index) => {
+      const result = extraResults[savedConfigsToFetch.length + index];
+      if (result.status === 'fulfilled' && result.value === null) {
+        this.unresolvedSlugs.add(id);
+      }
+    });
     const extraNetworkConfigs = extraResults.flatMap((result) =>
       result.status === 'fulfilled' && result.value ? [result.value] : []
     );
