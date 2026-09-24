@@ -13,6 +13,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
+import PinIcon from 'jsx:src/ui/assets/pin.svg';
 import type { NetworkSelectDistribution } from './types';
 import * as styles from './styles.module.css';
 
@@ -41,11 +42,13 @@ export function NetworkRow({
   chainDistribution,
   address,
   ecosystem,
+  pinned = false,
 }: {
   value: string;
   name: string;
   iconUrl?: string | null;
   selected: boolean;
+  pinned?: boolean;
   onSelect: (value: string) => void;
   chainDistribution: NetworkSelectDistribution | null;
   address?: string;
@@ -84,6 +87,9 @@ export function NetworkRow({
         >
           {name}
         </UIText>
+        {pinned ? (
+          <PinIcon className={styles.pinIcon} role="img" aria-label="Pinned" />
+        ) : null}
       </div>
       <BlurrableBalance
         kind="small/regular"

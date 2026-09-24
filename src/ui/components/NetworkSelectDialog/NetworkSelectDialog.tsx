@@ -25,6 +25,7 @@ import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
+import PinIcon from 'jsx:src/ui/assets/pin.svg';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import { useNativeBalance } from 'src/ui/shared/requests/useNativeBalance';
@@ -81,11 +82,13 @@ function NetworkItem({
   chainDistribution,
   address,
   ecosystem,
+  pinned = false,
 }: {
   index: number;
   name: string;
   value: string;
   selected: boolean;
+  pinned?: boolean;
   icon: React.ReactElement;
   chainDistribution: ChainDistribution | null;
   address?: string;
@@ -114,12 +117,27 @@ function NetworkItem({
         <Media
           image={icon}
           text={
-            <UIText
-              kind="body/accent"
-              color={selected ? 'var(--primary)' : 'var(--black)'}
-            >
-              {name}
-            </UIText>
+            <HStack gap={4} alignItems="center">
+              <UIText
+                kind="body/accent"
+                color={selected ? 'var(--primary)' : 'var(--black)'}
+              >
+                {name}
+              </UIText>
+              {pinned ? (
+                <PinIcon
+                  role="img"
+                  aria-label="Pinned"
+                  style={{
+                    display: 'block',
+                    flexShrink: 0,
+                    width: 16,
+                    height: 16,
+                    color: 'var(--neutral-500)',
+                  }}
+                />
+              ) : null}
+            </HStack>
           }
           vGap={0}
           detailText={null}
@@ -177,22 +195,6 @@ function NetworkList({
 }) {
   const { singleAddress } = useAddressParams();
   const items = [
-    title
-      ? {
-          key: title,
-          pad: false,
-          style: { padding: 0 },
-          component: (
-            <UIText
-              kind="small/accent"
-              color="var(--neutral-500)"
-              style={{ paddingBlock: 8, backgroundColor: 'var(--white)' }}
-            >
-              {title}
-            </UIText>
-          ),
-        }
-      : null,
     showAllNetworksOption
       ? {
           key: NetworkSelectValue.All,
@@ -212,6 +214,22 @@ function NetworkList({
                 />
               }
             />
+          ),
+        }
+      : null,
+    title
+      ? {
+          key: title,
+          pad: false,
+          style: { padding: 0 },
+          component: (
+            <UIText
+              kind="small/accent"
+              color="var(--neutral-500)"
+              style={{ paddingBlock: 8, backgroundColor: 'var(--white)' }}
+            >
+              {title}
+            </UIText>
           ),
         }
       : null,
@@ -235,6 +253,7 @@ function NetworkList({
             }
             chainDistribution={chainDistribution}
             selected={network.id === value}
+            pinned={networks.isPinned(chain)}
             address={singleAddress}
             ecosystem={Networks.getEcosystem(network)}
           />
@@ -249,10 +268,10 @@ function NetworkList({
         paddingBlock: 0,
         ['--surface-background-color' as string]: 'transparent',
       }}
-      estimateSize={(index) => (index === 0 && title ? 36 : 48)}
+      estimateSize={(index) => (items[index].key === title && title ? 36 : 48)}
       items={items}
       context="dialog"
-      stickyFirstElement={Boolean(title)}
+      stickyFirstElement={Boolean(title) && !showAllNetworksOption}
     />
   ) : (
     <SurfaceList
@@ -298,8 +317,16 @@ function SectionView({
         }}
       >
         <VStack gap={8}>
-          {groups.map((group, index) =>
-            group.items.length ? (
+          {groups.map((group, index) => {
+            const isFirstGroup = groups
+              .slice(0, index)
+              .every((prev) => !prev.items.length);
+            const previousListLength =
+              groups
+                .slice(0, index)
+                .reduce((count, prev) => count + prev.items.length, 0) +
+              (showAllNetworksOption && !isFirstGroup ? 1 : 0);
+            return group.items.length ? (
               <NetworkList
                 key={group.key}
                 title={group.name}
@@ -307,11 +334,11 @@ function SectionView({
                 networks={networks}
                 networkList={group.items}
                 chainDistribution={chainDistribution}
-                showAllNetworksOption={showAllNetworksOption && index === 0}
-                previousListLength={groups[index - 1]?.items.length || 0}
+                showAllNetworksOption={showAllNetworksOption && isFirstGroup}
+                previousListLength={previousListLength}
               />
-            ) : null
-          )}
+            ) : null;
+          })}
         </VStack>
       </form>
       <Spacer height={8} />

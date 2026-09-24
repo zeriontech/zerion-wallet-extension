@@ -47,19 +47,29 @@ export function createGroups({
   filterPredicate?: (network: NetworkInfo) => boolean;
   sortMainNetworksType?: 'alphabetical' | 'by_distribution';
 }): NetworkGroups {
+  const isEligible = (network: NetworkInfo) =>
+    Boolean(network.testnet) === testnetMode && filterPredicate(network);
+  const pinnedNetworks = networks
+    .getPinnedNetworks(standard)
+    .filter(isEligible);
+  const pinnedIds = new Set(pinnedNetworks.map((network) => network.id));
   const allNetworks = networks
     .getDefaultNetworks(standard)
-    .filter((item) => Boolean(item.testnet) === testnetMode)
-    .filter(filterPredicate);
-  const pinnedNetworkId =
-    standard === 'evm' ? NetworkId.Zero : NetworkId.Solana;
+    .filter(isEligible)
+    .filter((network) => !pinnedIds.has(network.id));
+  const preferredNetworkId = standard === 'solana' ? NetworkId.Solana : null;
   const otherNetworkPredicate = (network: NetworkInfo) => {
     return (
-      network.id !== pinnedNetworkId &&
+      network.id !== preferredNetworkId &&
       (!chainDistribution?.chains[network.id] || isCustomNetworkId(network.id))
     );
   };
   return [
+    {
+      key: 'pinned',
+      name: 'Pinned',
+      items: pinnedNetworks,
+    },
     {
       key: 'main',
       name: null,
@@ -75,7 +85,7 @@ export function createGroups({
                 : null
             )
           ),
-        (item) => item.id === pinnedNetworkId
+        (item) => item.id === preferredNetworkId
       ),
     },
     {

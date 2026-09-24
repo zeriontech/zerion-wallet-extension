@@ -198,8 +198,13 @@ export class Networks {
   }
 
   /** Pinned networks in the user's order; ids that don't resolve are skipped */
-  getPinnedNetworks() {
-    return this.pinnedChains.map((id) => this.collection[id]).filter(isTruthy);
+  getPinnedNetworks(standard: BlockchainType | 'all' = 'all') {
+    return this.pinnedChains
+      .map((id) => this.getByNetworkId(createChain(id)))
+      .filter(isTruthy)
+      .filter((network) =>
+        Networks.predicate(standard === 'all' ? null : standard, network)
+      );
   }
 
   getNetworks() {
