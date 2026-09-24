@@ -54,10 +54,7 @@ export function PinNetworkButton({
   const { mutate, isLoading } = usePinNetworkMutation();
   const title = pinned ? 'Unpin network' : 'Pin network';
   const Icon = pinned ? UnpinIcon : PinIcon;
-  const onClick = (event: React.MouseEvent) => {
-    // The row button sits inside a link: toggle without navigating
-    event.preventDefault();
-    event.stopPropagation();
+  const onClick = () => {
     if (!isLoading) {
       mutate({ chain, pin: !pinned });
     }
