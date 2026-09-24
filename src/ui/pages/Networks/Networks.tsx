@@ -331,6 +331,7 @@ function NetworkPage() {
                   kind="ghost"
                   title="Remove Network"
                   size={40}
+                  style={{ width: 40, padding: 0 }}
                   onClick={() => {
                     if (!dialogRef.current) {
                       return;

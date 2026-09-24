@@ -72,6 +72,7 @@ export function PinNetworkButton({
         size={40}
         onClick={onClick}
         className={styles.pinButton}
+        style={{ width: 40, padding: 0 }}
       >
         <Icon className={styles.pinIcon} style={{ marginInline: 'auto' }} />
       </Button>
