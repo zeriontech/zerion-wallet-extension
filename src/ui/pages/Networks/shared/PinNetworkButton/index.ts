@@ -1,5 +1,6 @@
 export {
   PinNetworkButton,
+  pinButtonStyles,
   renderPinNetworkAction,
   usePinNetworkMutation,
   useSetPinnedNetworksMutation,

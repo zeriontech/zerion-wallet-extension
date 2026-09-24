@@ -1,0 +1,10 @@
+.pinIcon {
+  display: block;
+  color: var(--neutral-400);
+  transition: color 0.15s;
+}
+
+.pinButton:hover .pinIcon,
+.pinButton:focus-visible .pinIcon {
+  color: var(--black);
+}

@@ -12,6 +12,9 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import PinIcon from 'jsx:src/ui/assets/pin.svg';
 import UnpinIcon from 'jsx:src/ui/assets/unpin.svg';
+import * as styles from './styles.module.css';
+
+export const pinButtonStyles = styles;
 
 async function updateNetworks() {
   return Promise.all([
@@ -68,14 +71,9 @@ export function PinNetworkButton({
         aria-pressed={pinned}
         size={40}
         onClick={onClick}
+        className={styles.pinButton}
       >
-        <Icon
-          style={{
-            display: 'block',
-            marginInline: 'auto',
-            color: 'var(--neutral-400)',
-          }}
-        />
+        <Icon className={styles.pinIcon} style={{ marginInline: 'auto' }} />
       </Button>
     );
   }
@@ -85,9 +83,10 @@ export function PinNetworkButton({
       title={title}
       aria-pressed={pinned}
       onClick={onClick}
-      style={{ display: 'flex', color: 'var(--neutral-400)' }}
+      className={styles.pinButton}
+      style={{ display: 'flex' }}
     >
-      <Icon style={{ width: 20, height: 20 }} />
+      <Icon className={styles.pinIcon} style={{ width: 20, height: 20 }} />
     </UnstyledButton>
   );
 }

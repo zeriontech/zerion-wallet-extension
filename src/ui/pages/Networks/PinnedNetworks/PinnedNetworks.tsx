@@ -35,6 +35,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import DragIcon from 'jsx:src/ui/assets/drag.svg';
 import UnpinIcon from 'jsx:src/ui/assets/unpin.svg';
 import {
+  pinButtonStyles,
   usePinNetworkMutation,
   useSetPinnedNetworksMutation,
 } from '../shared/PinNetworkButton';
@@ -84,9 +85,13 @@ function SortableRow({
               onUnpin();
             }}
             title="Unpin network"
-            style={{ display: 'flex', color: 'var(--neutral-400)' }}
+            className={pinButtonStyles.pinButton}
+            style={{ display: 'flex' }}
           >
-            <UnpinIcon style={{ width: 20, height: 20 }} />
+            <UnpinIcon
+              className={pinButtonStyles.pinIcon}
+              style={{ width: 20, height: 20 }}
+            />
           </UnstyledButton>
           <div
             {...attributes}
