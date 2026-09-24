@@ -28,7 +28,10 @@ import type {
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useQuery } from '@tanstack/react-query';
-import { pendingTransactionToAddressAction } from 'src/modules/ethereum/transactions/addressAction/creators';
+import {
+  pendingTransactionToAddressAction,
+  type LocalActionContentRequest,
+} from 'src/modules/ethereum/transactions/addressAction/creators';
 import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -37,6 +40,7 @@ import dayjs from 'dayjs';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
+import { getLocalActionSearchTerms } from './localActionContent';
 import * as styles from './styles.module.css';
 import { getAddressActionsCursor } from './getAddressActionCursor';
 import { useHistoryFilterParams, HistoryFiltersButton } from './HistoryFilters';
@@ -104,57 +108,97 @@ function useMinedAndPendingAddressActions({
   const source = useHttpClientSource();
   const { currency } = useCurrency();
 
-  const { data: localAddressActions, ...localActionsQuery } = useQuery({
-    queryKey: [
-      'pages/history',
-      localActions,
-      chain,
-      searchQuery,
-      source,
-      startDate,
-      actionTypes,
-      actionTypes?.length,
-      assetTypes?.length,
-      assetTypes?.[0],
-    ],
+  // Building local actions makes no asset requests: rows resolve their own
+  // assets once they scroll into view (see LocalActionItem). Filters apply
+  // below in a memo, so typing a search query or switching a filter does not
+  // rebuild anything.
+  // `source` is part of the key because the networks resolver behind
+  // `loadNetworkByChainId` swaps with testnet mode.
+  const { data: localItems, ...localActionsQuery } = useQuery({
+    queryKey: ['pages/history', localActions, currency, source],
     queryFn: async () => {
-      let items = await Promise.all(
+      // One item that fails to build (e.g. its chain metadata cannot be
+      // fetched) is dropped from the list; it must not take the whole
+      // History view down.
+      const results = await Promise.allSettled(
         localActions.map((transactionObject) =>
           pendingTransactionToAddressAction(
             transactionObject,
             loadNetworkByChainId,
-            currency,
-            source
+            currency
           )
         )
       );
-      if (chain) {
-        items = items.filter(
-          (item) => item.transaction?.chain.id === chain.toString()
-        );
-      }
-      if (searchQuery) {
-        items = items.filter((item) => isMatchForAllWords(searchQuery, item));
-      }
-      if (startDate) {
-        items = items.filter((item) =>
-          dayjs(item.timestamp).isBefore(dayjs(startDate))
-        );
-      }
-      if (actionTypes?.length) {
-        items = items.filter(
-          (item) =>
-            actionTypes.includes(item.type.value) ||
-            item.acts?.some((act) => actionTypes.includes(act.type.value))
-        );
-      }
-      if (assetTypes?.length === 1 && assetTypes?.[0] === 'nft') {
-        items = items.filter(() => false);
-      }
-      return items;
+      return results.flatMap((result) => {
+        if (result.status === 'fulfilled') {
+          return [result.value];
+        }
+        console.error('Failed to build local action', result.reason); // eslint-disable-line no-console
+        return [];
+      });
     },
-    useErrorBoundary: true,
+    useErrorBoundary: false,
   });
+
+  const localAddressActions = useMemo(() => {
+    if (!localItems) {
+      return null;
+    }
+    let items = localItems;
+    if (chain) {
+      items = items.filter(
+        ({ addressAction }) =>
+          addressAction.transaction?.chain.id === chain.toString()
+      );
+    }
+    if (searchQuery) {
+      items = items.filter(({ addressAction, contentRequest }) =>
+        isMatchForAllWords(
+          searchQuery,
+          addressAction,
+          contentRequest
+            ? getLocalActionSearchTerms(contentRequest, source)
+            : undefined
+        )
+      );
+    }
+    if (startDate) {
+      items = items.filter(({ addressAction }) =>
+        dayjs(addressAction.timestamp).isBefore(dayjs(startDate))
+      );
+    }
+    if (actionTypes?.length) {
+      items = items.filter(
+        ({ addressAction }) =>
+          actionTypes.includes(addressAction.type.value) ||
+          addressAction.acts?.some((act) =>
+            actionTypes.includes(act.type.value)
+          )
+      );
+    }
+    if (assetTypes?.length === 1 && assetTypes?.[0] === 'nft') {
+      items = [];
+    }
+    return items;
+  }, [
+    localItems,
+    chain,
+    searchQuery,
+    source,
+    startDate,
+    actionTypes,
+    assetTypes,
+  ]);
+
+  const contentRequests = useMemo(() => {
+    const map = new Map<string, LocalActionContentRequest>();
+    for (const { addressAction, contentRequest } of localItems ?? []) {
+      if (contentRequest) {
+        map.set(addressAction.id, contentRequest);
+      }
+    }
+    return map;
+  }, [localItems]);
 
   const { actions, queryData, refetch } = useWalletActions(
     {
@@ -177,11 +221,12 @@ function useMinedAndPendingAddressActions({
     return {
       actions: localAddressActions
         ? mergeLocalAndBackendActions(
-            localAddressActions,
+            localAddressActions.map((item) => item.addressAction),
             backendItems,
             hasMore
           )
         : null,
+      contentRequests,
       ...localActionsQuery,
       isLoading:
         queryData.isLoading ||
@@ -194,6 +239,7 @@ function useMinedAndPendingAddressActions({
     isSupportedByBackend,
     actions,
     localAddressActions,
+    contentRequests,
     localActionsQuery,
     queryData,
     refetch,
@@ -265,7 +311,7 @@ export function HistoryList({
       : null;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
-  const { actions, isLoading, queryData, refetch } =
+  const { actions, contentRequests, isLoading, queryData, refetch } =
     useMinedAndPendingAddressActions({
       chain,
       searchQuery,
@@ -417,6 +463,7 @@ export function HistoryList({
       <Spacer height={16} />
       <ActionsList
         actions={actions}
+        contentRequests={contentRequests}
         hasMore={Boolean(queryData.hasNextPage)}
         isLoading={isLoading}
         onLoadMore={queryData.fetchNextPage}

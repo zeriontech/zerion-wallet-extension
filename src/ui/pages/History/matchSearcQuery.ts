@@ -78,7 +78,19 @@ function isMatchForQuery(query: string, action: LocalAddressAction) {
   return false;
 }
 
-export function isMatchForAllWords(query: string, action: LocalAddressAction) {
+/**
+ * @param extraTerms Additional strings a word may match, e.g. asset
+ * identifiers of a local action whose content has not been fetched yet
+ */
+export function isMatchForAllWords(
+  query: string,
+  action: LocalAddressAction,
+  extraTerms?: string[]
+) {
   const words = query.trim().split(/\s+/);
-  return words.every((word) => isMatchForQuery(word, action));
+  return words.every(
+    (word) =>
+      isMatchForQuery(word, action) ||
+      extraTerms?.some((term) => term.toLowerCase().includes(word))
+  );
 }
