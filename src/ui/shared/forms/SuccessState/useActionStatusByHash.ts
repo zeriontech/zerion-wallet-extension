@@ -13,7 +13,7 @@ export function useActionStatusByHash(hash: string | null) {
     return action ? getTransactionObjectStatus(action) : null;
   }, [localActions, hash]);
   /**
-   * Every ~4 mins we remove local actions from the store that our backend has already processed
+   * Local actions are eventually removed from the store once they expire
    * see `performPurgeCheck` in `TransactionService`
    * To avoid fallback into `pending` state we should use the last non-null status
    */
