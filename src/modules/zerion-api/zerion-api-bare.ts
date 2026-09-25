@@ -11,7 +11,7 @@ import {
   paymasterCheckEligibility,
   getPaymasterParams,
 } from './requests/paymaster-transactions';
-import { walletGetPositions } from './requests/wallet-get-positions';
+import { walletGetGroupedPositions } from './requests/wallet-get-grouped-positions';
 import { walletGetPortfolio } from './requests/wallet-get-portfolio';
 import { checkReferral } from './requests/check-referral';
 import { referWallet } from './requests/refer-wallet';
@@ -59,7 +59,7 @@ export const ZerionApiBare = {
   getWalletsMetaByChunks,
   paymasterCheckEligibility,
   getPaymasterParams,
-  walletGetPositions,
+  walletGetGroupedPositions,
   walletGetPortfolio,
   walletGetActions,
   walletSimulateSignature,

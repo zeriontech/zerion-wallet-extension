@@ -2,7 +2,7 @@ import type { Asset } from 'src/defi-sdk.types';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { fungibleToAsset } from 'src/modules/zerion-api/requests/wallet-get-positions';
+import { fungibleToAsset } from 'src/modules/zerion-api/shared/fungibleToAsset';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 type NativeAssetQuery = {

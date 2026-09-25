@@ -2,10 +2,13 @@ import React, { useMemo, useState } from 'react';
 import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { useWalletGroupedPositions } from 'src/modules/zerion-api/hooks/useWalletGroupedPositions';
 import { usePreferences } from 'src/ui/features/preferences';
-import { groupPositionsByDapp } from 'src/ui/components/Positions/groupPositions';
-import { DEFAULT_PROTOCOL_ID } from 'src/ui/components/Positions/types';
+import {
+  getAppPositions,
+  getGrossPositionsValue,
+} from 'src/ui/components/Positions/helpers';
+import { DEFAULT_APP_ID } from 'src/ui/components/Positions/types';
 import {
   DistributionChart,
   type DistributionItem,
@@ -14,50 +17,36 @@ import { PositionsListDialog } from './PositionsListDialog';
 import { DistributionItemTitle } from './DistributionItemTitle';
 
 /**
- * DeFi protocol allocation on the Stats tab. Backend positions carry `dapp`, so
- * we group by `dapp.id` and drop the synthetic no-dapp bucket (`wallet`) — plain
- * token holdings aren't a protocol, so the chart reflects DeFi allocation only,
- * with the remaining protocols re-normalized to 100% by the shared chart. Each
- * group is summed **gross** — loans are added, not subtracted — so every tile
- * area is positive (diverging from the positions view's net
- * `getFullPositionsValue`).
+ * DeFi protocol allocation on the Stats tab, one tile per App of the same
+ * by-app request the Tokens tab makes. The Wallet Bucket (`wallet`) is
+ * dropped — plain token holdings aren't a protocol, so the chart reflects
+ * DeFi allocation only, with the remaining Apps re-normalized to 100% by the
+ * shared chart. Each App is summed **gross** locally — loans are added, not
+ * subtracted — so every tile area is positive, whatever the backend's own
+ * (net) `value` says.
  */
 export function ProtocolDistributionChart({ address }: { address: string }) {
   const { currency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
   const source = useHttpClientSource();
-  const { data, isLoading } = useHttpAddressPositions(
-    { addresses: [address], currency },
+  const { data, isLoading } = useWalletGroupedPositions(
+    { addresses: [address], currency, groupBy: ['by-app'] },
     { source },
     { enabled: Boolean(address) }
   );
 
-  const items = useMemo<DistributionItem[]>(() => {
-    const positions = data?.data;
-    if (!positions?.length) {
-      return [];
-    }
-    const groups = groupPositionsByDapp(positions);
-    return (
-      Object.entries(groups)
-        // Exclude the synthetic "Wallet" bucket (positions not in any dapp) so the
-        // chart reflects DeFi protocol allocation only.
-        .filter(([dappId]) => dappId !== DEFAULT_PROTOCOL_ID)
-        .map(([dappId, groupPositions]) => {
-          const value = groupPositions.reduce(
-            (sum, position) => sum + (Number(position.value) || 0),
-            0
-          );
-          const dapp = groupPositions.find((position) => position.dapp)?.dapp;
-          return {
-            id: dappId,
-            label: dapp?.name ?? dappId,
-            value,
-            iconUrl: dapp?.icon_url ?? null,
-          };
-        })
-    );
-  }, [data]);
+  const items = useMemo<DistributionItem[]>(
+    () =>
+      (data?.data?.apps ?? [])
+        .filter((app) => app.app.id !== DEFAULT_APP_ID)
+        .map((app) => ({
+          id: app.app.id,
+          label: app.app.name ?? app.app.id,
+          value: getGrossPositionsValue(getAppPositions(app)),
+          iconUrl: app.app.iconUrl ?? null,
+        })),
+    [data]
+  );
 
   const [selected, setSelected] = useState<DistributionItem | null>(null);
 
@@ -80,7 +69,7 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
         onClose={() => setSelected(null)}
         address={address}
         title={selected ? <DistributionItemTitle item={selected} /> : null}
-        filter={selected ? { type: 'protocol', dappId: selected.id } : null}
+        filter={selected ? { type: 'protocol', appId: selected.id } : null}
       />
     </>
   );

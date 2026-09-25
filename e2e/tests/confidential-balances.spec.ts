@@ -28,7 +28,11 @@ async function hoverMoving(page: Page, locator: Locator) {
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 }
 
-function fakePositions(encrypted: boolean) {
+/**
+ * A `wallet/get-grouped-positions/v1` body: the Wallet Bucket (ETH + the
+ * confidential cUSDC) and one DeFi App (an Aave deposit).
+ */
+function fakeGroupedPositions(encrypted: boolean) {
   const chain = {
     id: 'ethereum',
     name: 'Ethereum',
@@ -44,6 +48,7 @@ function fakePositions(encrypted: boolean) {
     symbol: 'cUSDC',
     isDisplayable: true,
     isVerified: true,
+    isNew: false,
     implementations: {
       ethereum: {
         address: '0x1111111111111111111111111111111111111111',
@@ -59,61 +64,64 @@ function fakePositions(encrypted: boolean) {
     symbol: 'ETH',
     isDisplayable: true,
     isVerified: true,
+    isNew: false,
     implementations: { ethereum: { address: null, decimals: 18 } },
   };
-  return [
+  const walletPositions = [
     {
-      apy: null,
-      asset: ethAsset,
-      chain,
       id: 'eth-ethereum-asset',
-      includedInChart: true,
-      name: 'Asset',
-      parentId: null,
-      protocol: null,
-      quantity: '500000000000000000',
+      asset: ethAsset,
+      convertedQuantity: 0.5,
       type: 'asset',
-      value: '1500',
+      chains: [chain],
+      value: 1500,
       isDisplayable: true,
-      dapp: null,
     },
     {
-      apy: null,
-      asset: usdcAsset,
-      chain,
       id: 'cusdc-confidential-mock',
-      includedInChart: false,
-      name: 'Asset',
-      parentId: null,
-      protocol: null,
-      quantity: encrypted ? '0' : '4210000000',
+      asset: usdcAsset,
+      convertedQuantity: encrypted ? 0 : 4210,
       type: 'asset',
-      value: encrypted ? '0' : '4210',
+      chains: [chain],
+      value: encrypted ? 0 : 4210,
       isDisplayable: true,
-      dapp: null,
       encrypted,
     },
+  ];
+  const aavePositions = [
     {
-      apy: '3.1',
-      asset: ethAsset,
-      chain,
       id: 'aave-eth-deposit',
-      includedInChart: true,
-      name: 'Deposit',
-      parentId: null,
-      protocol: 'aave-v3',
-      quantity: '100000000000000000',
+      asset: ethAsset,
+      convertedQuantity: 0.1,
       type: 'deposit',
-      value: '300',
+      chains: [chain],
+      value: 300,
       isDisplayable: true,
-      dapp: {
-        id: 'aave-v3',
-        name: 'Aave V3',
-        url: 'https://app.aave.com',
-        iconUrl: null,
-      },
     },
   ];
+  const walletValue = encrypted ? 1500 : 5710;
+  return {
+    apps: [
+      {
+        app: { id: 'wallet', name: 'Wallet', iconUrl: null, url: null },
+        percentageAllocation: (walletValue / (walletValue + 300)) * 100,
+        value: walletValue,
+        groups: [{ name: '', fungiblePositions: walletPositions }],
+      },
+      {
+        app: {
+          id: 'aave-v3',
+          name: 'Aave V3',
+          url: 'https://app.aave.com',
+          iconUrl: null,
+        },
+        percentageAllocation: (300 / (walletValue + 300)) * 100,
+        value: 300,
+        groups: [{ name: 'Deposit', fungiblePositions: aavePositions }],
+      },
+    ],
+    totalValue: walletValue + 300,
+  };
 }
 
 /**
@@ -130,7 +138,7 @@ test('confidential balances: panel → reveal → unmasked', async ({
   await page.setViewportSize({ width: 400, height: 640 });
   const positionsPermits: unknown[][] = [];
   const portfolioPermits: unknown[][] = [];
-  await context.route('**/wallet/get-positions/v1', async (route) => {
+  await context.route('**/wallet/get-grouped-positions/v1', async (route) => {
     const body = JSON.parse(route.request().postData() || '{}');
     const permits: unknown[] = body.permits ?? [];
     if (permits.length) {
@@ -139,7 +147,11 @@ test('confidential balances: panel → reveal → unmasked', async ({
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ data: fakePositions(permits.length === 0) }),
+      body: JSON.stringify({
+        data: fakeGroupedPositions(permits.length === 0),
+        errors: null,
+        meta: null,
+      }),
     });
   });
   const actionsPermits: unknown[][] = [];

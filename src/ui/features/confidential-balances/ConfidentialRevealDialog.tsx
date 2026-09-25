@@ -2,12 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useStore } from '@store-unit/react';
 import { AnimatePresence, motion } from 'motion/react';
-import type { AddressPosition } from 'src/defi-sdk.types';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { createChain } from 'src/modules/networks/Chain';
-import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { useWalletGroupedPositions } from 'src/modules/zerion-api/hooks/useWalletGroupedPositions';
+import type { GroupedFungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-grouped-positions';
+import { flattenGroupedPositions } from 'src/modules/zerion-api/requests/wallet-get-grouped-positions';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { invariant } from 'src/shared/invariant';
 import { isDeviceAccount } from 'src/shared/types/validators';
@@ -80,9 +79,14 @@ type FlowStep =
   | { type: 'empty' }
   | { type: 'failed'; error: Error };
 
-function EncryptedPositionRow({ position }: { position: AddressPosition }) {
-  const { networks } = useNetworks();
-  const network = networks?.getNetworkByName(createChain(position.chain));
+function EncryptedPositionRow({
+  position,
+}: {
+  position: GroupedFungiblePosition;
+}) {
+  // A confidential token held on several chains is one row naming them all
+  const singleChain = position.chains.length === 1 ? position.chains[0] : null;
+  const chainNames = position.chains.map((chain) => chain.name).join(', ');
   return (
     <HStack
       gap={8}
@@ -97,7 +101,7 @@ function EncryptedPositionRow({ position }: { position: AddressPosition }) {
           <TokenIcon
             size={36}
             symbol={position.asset.symbol}
-            src={position.asset.icon_url}
+            src={position.asset.iconUrl}
           />
         }
         text={
@@ -117,13 +121,15 @@ function EncryptedPositionRow({ position }: { position: AddressPosition }) {
         }
         detailText={
           <HStack gap={4} alignItems="center" style={{ justifySelf: 'start' }}>
-            <NetworkIcon
-              size={16}
-              name={network?.name || position.chain}
-              src={network?.iconUrl}
-            />
+            {singleChain ? (
+              <NetworkIcon
+                size={16}
+                name={singleChain.name}
+                src={singleChain.iconUrl}
+              />
+            ) : null}
             <UIText kind="small/regular" color="var(--neutral-500)">
-              {position.asset.symbol}
+              {chainNames || position.asset.symbol}
             </UIText>
           </HStack>
         }
@@ -152,17 +158,25 @@ function RevealDialogContent({
   const hardwareSignRef = useRef<SignMessageHandle | null>(null);
   const { globalPreferences } = useGlobalPreferences();
 
-  const positionsQuery = useHttpAddressPositions(
-    { addresses: [address], currency },
+  // The same by-app query the Overview holds for this wallet, so the Locked
+  // state, this list and the close-on-refetch below all watch one response
+  const positionsQuery = useWalletGroupedPositions(
+    { addresses: [address], currency, groupBy: ['by-app'] },
     { source },
     { suspense: false, keepPreviousData: true }
   );
   const encryptedPositions = useMemo(
-    () => getEncryptedPositions(positionsQuery.data?.data),
+    () =>
+      getEncryptedPositions(flattenGroupedPositions(positionsQuery.data?.data)),
     [positionsQuery.data]
   );
   const encryptedChainsCount = useMemo(
-    () => new Set(encryptedPositions.map((position) => position.chain)).size,
+    () =>
+      new Set(
+        encryptedPositions.flatMap((position) =>
+          position.chains.map((chain) => chain.id)
+        )
+      ).size,
     [encryptedPositions]
   );
 

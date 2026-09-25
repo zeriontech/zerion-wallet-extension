@@ -17,11 +17,7 @@ import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { Params as FungibleFullInfoParams } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import {
-  toAddressPositions,
-  type Params as WalletGetPositionsParams,
-} from 'src/modules/zerion-api/requests/wallet-get-positions';
-import { getPositionBalance } from 'src/ui/components/Positions/helpers';
+import type { Params as WalletGetSimplePositionsParams } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { WalletOrigin } from '../WalletOrigin';
 import {
@@ -76,16 +72,14 @@ function queryFungibleInfo(payload: FungibleFullInfoParams) {
   });
 }
 
-async function queryWalletPositions(
-  payload: WalletGetPositionsParams,
+/** Simple Positions: the balance reported is the one on the input chain */
+async function queryWalletSimplePositions(
+  payload: WalletGetSimplePositionsParams,
   source: NetworksSource
 ) {
   return backgroundQueryClient.fetchQuery({
-    queryKey: ['ZerionAPI.getWalletsMeta', payload, source],
-    queryFn: async () => {
-      const response = await ZerionAPI.walletGetPositions(payload, { source });
-      return toAddressPositions(response);
-    },
+    queryKey: ['ZerionAPI.walletGetSimplePositions', payload, source],
+    queryFn: () => ZerionAPI.walletGetSimplePositions(payload, { source }),
     staleTime: 10000,
   });
 }
@@ -457,12 +451,8 @@ function trackAppEvents({ account }: { account: Account }) {
     }
     const [inputTokenPositions, inputAssetData, outputAssetData] =
       await Promise.all([
-        queryWalletPositions(
-          {
-            addresses: [quoteErrorContext.address],
-            currency: 'usd',
-            assetIds: [quoteErrorContext.inputFungibleId],
-          },
+        queryWalletSimplePositions(
+          { address: quoteErrorContext.address, currency: 'usd' },
           source
         ),
         quoteErrorContext.inputFungibleId
@@ -488,13 +478,11 @@ function trackAppEvents({ account }: { account: Account }) {
       outputAsset,
       'Unable to fetch output asset data for quoteError event'
     );
-    const inputPosition = inputTokenPositions.data
-      .filter(
-        (position) =>
-          position.type === 'asset' &&
-          position.chain === quoteErrorContext.inputChain
-      )
-      .at(0);
+    const inputPosition = inputTokenPositions.data.find(
+      (position) =>
+        position.fungible.id === quoteErrorContext.inputFungibleId &&
+        position.chain.id === quoteErrorContext.inputChain
+    );
 
     const params = createParams({
       request_name: 'client_error',
@@ -534,9 +522,7 @@ function trackAppEvents({ account }: { account: Account }) {
         quoteErrorContext.outputAmount != null
           ? toMaybeArr([Number(quoteErrorContext.outputAmount)])
           : null,
-      wallet_token_balance: inputPosition
-        ? getPositionBalance(inputPosition).toFixed()
-        : null,
+      wallet_token_balance: inputPosition?.amount.quantity ?? null,
     });
     sendToMetabase('client_error', params);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
