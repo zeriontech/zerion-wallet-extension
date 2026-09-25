@@ -34,12 +34,12 @@ import {
   getAppPositions,
   getFullPositionsValue,
   getPositionBalance,
+  getPositionChange24h,
   getPositionValue,
   positionTypeToStringMap,
   sortPositionsByValue,
 } from 'src/ui/components/Positions/helpers';
 import { formatPercent } from 'src/shared/units/formatPercent';
-import { getAbsoluteChange24h } from 'src/shared/units/getAbsoluteChange24h';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
@@ -93,27 +93,6 @@ const textOverflowStyle: React.CSSProperties = {
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
 };
-
-/**
- * The 24h change the value cell prints: the backend's own figure for the
- * position when it sends one, otherwise the price move applied to the value.
- */
-function getPositionChange24h(position: GroupedFungiblePosition) {
-  const value = getPositionValue(position);
-  if (position.relativeChange24h != null) {
-    const relative = position.relativeChange24h;
-    const absolute = position.absoluteChange24h ?? (relative / 100) * value;
-    return { relative, absolute };
-  }
-  const priceChange = position.asset.price?.relativeChange24h;
-  if (priceChange == null) {
-    return null;
-  }
-  return {
-    relative: priceChange,
-    absolute: getAbsoluteChange24h(value, priceChange / 100),
-  };
-}
 
 function GroupedPositionItem({
   position,
