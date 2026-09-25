@@ -20,6 +20,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletAssetDetails } from 'src/modules/zerion-api/requests/wallet-get-asset-details';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { formatPercent } from 'src/shared/units/formatPercent';
+import { getAbsoluteChange24h } from 'src/shared/units/getAbsoluteChange24h';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
@@ -195,13 +196,11 @@ function AssetStats({
   const assetAddressPnl = data?.data;
 
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
-  const return24h =
-    assetFullInfo.fungible.meta.relativeChange1d != null &&
-    walletAssetDetails.totalValue != null
-      ? assetFullInfo.fungible.meta.relativeChange1d *
-        walletAssetDetails.totalValue
-      : null;
   const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
+  const return24h =
+    relativeReturn24h != null && walletAssetDetails.totalValue != null
+      ? getAbsoluteChange24h(walletAssetDetails.totalValue, relativeReturn24h)
+      : null;
 
   if (isUntrackedAsset || premiumStatus.isLoading) {
     return null;
@@ -707,13 +706,11 @@ function AssetRegularAddressShortStats({
   walletAssetDetails: WalletAssetDetails;
 }) {
   const { currency } = useCurrency();
-  const return24h =
-    assetFullInfo.fungible.meta.relativeChange1d != null &&
-    walletAssetDetails.totalValue != null
-      ? assetFullInfo.fungible.meta.relativeChange1d *
-        walletAssetDetails.totalValue
-      : null;
   const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
+  const return24h =
+    relativeReturn24h != null && walletAssetDetails.totalValue != null
+      ? getAbsoluteChange24h(walletAssetDetails.totalValue, relativeReturn24h)
+      : null;
 
   return (
     <HStack

@@ -39,6 +39,7 @@ import {
   sortPositionsByValue,
 } from 'src/ui/components/Positions/helpers';
 import { formatPercent } from 'src/shared/units/formatPercent';
+import { getAbsoluteChange24h } from 'src/shared/units/getAbsoluteChange24h';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
@@ -108,10 +109,9 @@ function getPositionChange24h(position: GroupedFungiblePosition) {
   if (priceChange == null) {
     return null;
   }
-  const relativeChange = priceChange / 100;
   return {
     relative: priceChange,
-    absolute: (relativeChange * value) / (1 + relativeChange),
+    absolute: getAbsoluteChange24h(value, priceChange / 100),
   };
 }
 
