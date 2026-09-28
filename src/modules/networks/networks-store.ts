@@ -252,6 +252,25 @@ export class NetworksStore extends Store<State> {
   }
 
   async update() {
+    /**
+     * A store that was never loaded has nothing to refresh: its first load()
+     * fetches the supported list plus every saved, visited and pinned chain
+     * anyway. Without this, update() on a cold store skips the bulk list and
+     * searches each slug one by one. The testnet store is cold for every
+     * non-testnet user on every service-worker wakeup and popup open, which
+     * turned each chainConfigStore change into N requests to the testnet host.
+     */
+    if (!this.isReady) {
+      return (
+        this.getState().networks ??
+        new Networks({
+          networks: [],
+          ethereumChainConfigs: [],
+          visitedChains: [],
+          pinnedChains: [],
+        })
+      );
+    }
     const key = 'update';
     if (!this.loaderPromises[key]) {
       this.loaderPromises[key] = this.fetchNetworks({ update: true }).finally(

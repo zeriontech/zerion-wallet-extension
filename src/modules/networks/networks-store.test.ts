@@ -29,12 +29,14 @@ const { NetworksStore } = await import('./networks-store');
 
 function createStore(pinnedChains: string[]) {
   const searchQueries: string[] = [];
+  const calls = { chainList: 0 };
   let failSearches = false;
   const apiClient = {
     chainList: async (params: {
       supportedOnly?: boolean;
       searchQuery?: string;
     }) => {
+      calls.chainList += 1;
       if (params.searchQuery) {
         searchQueries.push(params.searchQuery);
         if (failSearches) {
@@ -60,6 +62,7 @@ function createStore(pinnedChains: string[]) {
   return {
     store,
     searchQueries,
+    calls,
     setFailSearches: (value: boolean) => {
       failSearches = value;
     },
@@ -85,4 +88,14 @@ test('a failed search is retried on the next update', async () => {
   expect(searchQueries).toEqual(['gone-chain', 'gone-chain']);
   await store.update();
   expect(searchQueries).toEqual(['gone-chain', 'gone-chain']);
+});
+
+test('update() on a store that was never loaded makes no requests', async () => {
+  const { store, searchQueries, calls } = createStore(['gone-chain']);
+  const networks = await store.update();
+  expect(calls.chainList).toBe(0);
+  expect(networks.getNetworks()).toEqual([]);
+  await store.load();
+  expect(searchQueries).toEqual(['gone-chain']);
+  expect(calls.chainList).toBe(2);
 });
