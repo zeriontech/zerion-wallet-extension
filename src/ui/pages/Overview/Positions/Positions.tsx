@@ -1,9 +1,4 @@
-import type {
-  AddressPosition,
-  AddressPositionDappInfo,
-} from 'src/defi-sdk.types';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Tooltip, TooltipAnchor, TooltipProvider } from 'src/ui/ui-kit/Tooltip';
 import {
   formatCurrencyToParts,
   formatCurrencyValue,
@@ -17,33 +12,31 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
 import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
-// import { VirtualizedSurfaceList } from 'src/ui/ui-kit/SurfaceList/VirtualizedSurfaceList';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
 import {
   SurfaceItemAnchor,
   SurfaceItemLink,
   SurfaceList,
 } from 'src/ui/ui-kit/SurfaceList';
-import {
-  DEFAULT_NAME,
-  DEFAULT_PROTOCOL_ID,
-  DEFAULT_PROTOCOL_NAME,
-  PositionsGroupType,
+import type {
+  AppInfo,
+  AppPortfolio,
+  GroupedFungiblePosition,
 } from 'src/ui/components/Positions/types';
-import type { AnyAddressPosition } from 'src/ui/components/Positions/types';
 import {
-  clearMissingParentIds,
-  groupPositionsByName,
-  groupPositionsByDapp,
-  groupPositionsByToken,
-  sortPositionGroupsByTotalValue,
-  sortPositionsByParentId,
-  sortPositionsByValue,
-} from 'src/ui/components/Positions/groupPositions';
+  DEFAULT_APP_ID,
+  DEFAULT_NAME,
+} from 'src/ui/components/Positions/types';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
+  addressPositionsToApps,
+  filterDisplayableApps,
+  getAppPositions,
   getFullPositionsValue,
+  getPositionBalance,
+  getPositionValue,
   positionTypeToStringMap,
+  sortPositionsByValue,
 } from 'src/ui/components/Positions/helpers';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { NetworkId } from 'src/modules/networks/NetworkId';
@@ -55,7 +48,6 @@ import { intersperce } from 'src/ui/shared/intersperce';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
-import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { minus } from 'src/ui/shared/typography';
 import { useAddressPositionsFromNode } from 'src/ui/shared/requests/useAddressPositionsFromNode';
@@ -66,7 +58,7 @@ import { useStore } from '@store-unit/react';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { useWalletGroupedPositions } from 'src/modules/zerion-api/hooks/useWalletGroupedPositions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
@@ -91,112 +83,54 @@ import {
   getStickyOffset,
   offsetValues,
 } from '../getTabsOffset';
-import { DappLink } from './DappLink';
+import { AppLink } from './AppLink';
 import { NetworkBalance } from './NetworkBalance';
 import { EmptyPositionsView } from './EmptyPositionsView';
-import * as styles from './styles.module.css';
-
-function LineToParent({
-  hasPreviosNestedPosition,
-}: {
-  hasPreviosNestedPosition?: boolean;
-}) {
-  return hasPreviosNestedPosition ? (
-    <svg
-      style={{
-        position: 'absolute',
-        left: 0,
-        bottom: 15,
-        width: 26,
-        height: 56,
-      }}
-    >
-      <path
-        d="M2 3L2 50C2 51.58 3 53 5 53L17 53"
-        stroke="var(--neutral-300)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        fillOpacity="0"
-      />
-    </svg>
-  ) : (
-    <svg
-      style={{
-        position: 'absolute',
-        left: 0,
-        bottom: 15,
-        width: 26,
-        height: 36,
-      }}
-    >
-      <path
-        d="M2 4L2 30C2 32.2 3.8 34 6 34L17 34"
-        stroke="var(--neutral-300)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        fillOpacity="0"
-      />
-      <circle
-        cx="2"
-        cy="4"
-        r="1.5"
-        fill="var(--neutral-300)"
-        stroke="var(--neutral-300)"
-      />
-    </svg>
-  );
-}
 
 const textOverflowStyle: React.CSSProperties = {
   overflow: 'hidden',
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
 };
-function AddressPositionItem({
+
+/**
+ * The 24h change the value cell prints: the backend's own figure for the
+ * position when it sends one, otherwise the price move applied to the value.
+ */
+function getPositionChange24h(position: GroupedFungiblePosition) {
+  const value = getPositionValue(position);
+  if (position.relativeChange24h != null) {
+    const relative = position.relativeChange24h;
+    const absolute = position.absoluteChange24h ?? (relative / 100) * value;
+    return { relative, absolute };
+  }
+  const priceChange = position.asset.price?.relativeChange24h;
+  if (priceChange == null) {
+    return null;
+  }
+  const relativeChange = priceChange / 100;
+  return {
+    relative: priceChange,
+    absolute: (relativeChange * value) / (1 + relativeChange),
+  };
+}
+
+function GroupedPositionItem({
   position,
-  hasPreviosNestedPosition,
-  groupType,
   showGasIcon,
 }: {
-  position: AnyAddressPosition;
-  groupType: PositionsGroupType;
-  hasPreviosNestedPosition?: boolean;
+  position: GroupedFungiblePosition;
   showGasIcon?: boolean;
 }) {
   const { currency } = useCurrency();
-  const isNested = Boolean(position.parent_id);
-  const { networks } = useNetworks();
-  const network = networks?.getNetworkByName(createChain(position.chain));
-  const chain = createChain(position.chain);
-  const isMultiChain =
-    'chainDistribution' in position && position.chainDistribution.length > 1;
-  const sortedChainDistribution = useMemo(() => {
-    if (!('chainDistribution' in position)) {
-      return null;
-    }
-    return [...position.chainDistribution].sort(
-      (a, b) => (Number(b.value) || 0) - (Number(a.value) || 0)
-    );
-  }, [position]);
-
-  const relativeChange = (position.asset.price?.relative_change_24h || 0) / 100;
-  const absoluteChange = Math.abs(
-    position.asset.price
-      ? (relativeChange * Number(position.value)) / (1 + relativeChange)
-      : 0
-  ).toFixed(2);
+  // One chain, or a spread across several: the row shows the chain icon in
+  // the first case and a pie icon in the second. Per-chain amounts are not
+  // part of a Grouped Position; the asset page has that breakdown.
+  const singleChain = position.chains.length === 1 ? position.chains[0] : null;
+  const change = getPositionChange24h(position);
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        paddingLeft: isNested ? 26 : 0,
-        paddingRight: 4,
-      }}
-    >
-      {isNested ? (
-        <LineToParent hasPreviosNestedPosition={hasPreviosNestedPosition} />
-      ) : null}
+    <div style={{ position: 'relative', paddingRight: 4 }}>
       <HStack gap={2} justifyContent="space-between" style={{ flexGrow: 1 }}>
         <Media
           vGap={0}
@@ -205,7 +139,7 @@ function AddressPositionItem({
             <TokenIcon
               size={36}
               symbol={position.asset.symbol}
-              src={position.asset.icon_url}
+              src={position.asset.iconUrl}
             />
           }
           text={
@@ -240,105 +174,30 @@ function AddressPositionItem({
                 alignItems: 'center',
               }}
             >
-              {isMultiChain && sortedChainDistribution ? (
-                <TooltipProvider placement="top" timeout={300}>
-                  <TooltipAnchor
-                    render={
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          width: 16,
-                          height: 16,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <PieChartIcon
-                          style={{ display: 'block', width: 16, height: 16 }}
-                        />
-                      </span>
-                    }
+              {singleChain == null ? (
+                <span
+                  title={`${position.chains.length} networks`}
+                  style={{
+                    display: 'inline-flex',
+                    width: 16,
+                    height: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <PieChartIcon
+                    style={{ display: 'block', width: 16, height: 16 }}
                   />
-                  <Tooltip className={styles.networksTooltip} gutter={8}>
-                    <UIText kind="caption/regular">
-                      <VStack gap={8}>
-                        {sortedChainDistribution.map(
-                          ({ chain: chainId, quantity, value }) => {
-                            const chainNetwork = networks?.getNetworkByName(
-                              createChain(chainId)
-                            );
-                            return (
-                              <HStack
-                                gap={4}
-                                key={chainId}
-                                justifyContent="space-between"
-                              >
-                                <HStack gap={4}>
-                                  <NetworkIcon
-                                    size={16}
-                                    name={chainNetwork?.name || chainId}
-                                    src={chainNetwork?.iconUrl}
-                                  />
-
-                                  <UIText
-                                    kind="caption/regular"
-                                    color="var(--white)"
-                                    style={textOverflowStyle}
-                                  >
-                                    {chainNetwork?.name || chainId}
-                                  </UIText>
-                                </HStack>
-                                <span className={styles.networksTooltipAmounts}>
-                                  {quantity ? (
-                                    <BlurrableBalance
-                                      kind="small/regular"
-                                      color="var(--white)"
-                                    >
-                                      {formatTokenValue(
-                                        getCommonQuantity({
-                                          asset: position.asset,
-                                          chain: createChain(chainId),
-                                          baseQuantity: quantity,
-                                        }),
-                                        position.asset.symbol
-                                      )}
-                                    </BlurrableBalance>
-                                  ) : null}
-                                  {value != null ? (
-                                    <BlurrableBalance
-                                      kind="small/regular"
-                                      color="var(--neutral-300)"
-                                    >
-                                      {` (${formatCurrencyValue(
-                                        value,
-                                        'en',
-                                        currency
-                                      )})`}
-                                    </BlurrableBalance>
-                                  ) : null}
-                                </span>
-                              </HStack>
-                            );
-                          }
-                        )}
-                      </VStack>
-                    </UIText>
-                  </Tooltip>
-                </TooltipProvider>
-              ) : position.chain !== NetworkId.Ethereum ? (
+                </span>
+              ) : singleChain.id !== NetworkId.Ethereum ? (
                 <NetworkIcon
                   size={16}
-                  name={network?.name || position.chain}
-                  src={network?.iconUrl}
+                  name={singleChain.name}
+                  src={singleChain.iconUrl}
                 />
               ) : null}
               {intersperce(
                 [
-                  groupType === PositionsGroupType.position ? (
-                    <span key={1}>
-                      protocol: {position.dapp?.name || DEFAULT_PROTOCOL_NAME}
-                    </span>
-                  ) : undefined,
                   position.encrypted ? (
                     <span
                       key="position-quantity"
@@ -357,7 +216,7 @@ function AddressPositionItem({
                     >
                       {positionTypeToStringMap[position.type]}
                     </span>
-                  ) : 'normalizedQuantity' in position ? (
+                  ) : (
                     <span
                       key="position-quantity"
                       style={{ ...textOverflowStyle, display: 'flex' }}
@@ -367,31 +226,12 @@ function AddressPositionItem({
                         color="var(--neutral-700)"
                       >
                         {formatTokenValue(
-                          position.normalizedQuantity,
+                          getPositionBalance(position),
                           position.asset.symbol
                         )}
                       </BlurrableBalance>
                     </span>
-                  ) : position.quantity ? (
-                    <span
-                      key="position-quantity"
-                      style={{ ...textOverflowStyle, display: 'flex' }}
-                    >
-                      <BlurrableBalance
-                        kind="small/regular"
-                        color="var(--neutral-700)"
-                      >
-                        {formatTokenValue(
-                          getCommonQuantity({
-                            asset: position.asset,
-                            chain,
-                            baseQuantity: position.quantity,
-                          }),
-                          position.asset.symbol
-                        )}
-                      </BlurrableBalance>
-                    </span>
-                  ) : null,
+                  ),
                 ],
                 (key) => (
                   <span key={key}> · </span>
@@ -406,40 +246,48 @@ function AddressPositionItem({
               <ConfidentialMask kind="body/regular" color="var(--black)" />
             </UIText>
           </VStack>
-        ) : position.value != null ? (
+        ) : position.asset.price != null ? (
           <VStack gap={0} style={{ textAlign: 'right', justifyItems: 'end' }}>
             <UIText kind="body/regular" style={{ display: 'flex' }}>
               <BlurrableBalance kind="body/regular" color="var(--black)">
-                {formatCurrencyValue(position.value, 'en', currency)}
+                {formatCurrencyValue(
+                  getPositionValue(position),
+                  'en',
+                  currency
+                )}
               </BlurrableBalance>
             </UIText>
-            {position.asset.price?.relative_change_24h ? (
+            {change && change.relative ? (
               <UIText
                 kind="small/regular"
                 color={
-                  position.asset.price.relative_change_24h < 0
+                  change.relative < 0
                     ? 'var(--negative-500)'
                     : 'var(--positive-500)'
                 }
                 style={{ display: 'flex', gap: 4 }}
               >
                 <span>
-                  {`${
-                    position.asset.price.relative_change_24h > 0 ? '+' : minus
-                  }${formatPercent(
-                    Math.abs(position.asset.price.relative_change_24h),
+                  {`${change.relative > 0 ? '+' : minus}${formatPercent(
+                    Math.abs(change.relative),
                     'en'
                   )}%`}
                 </span>
                 <BlurrableBalance
                   kind="small/regular"
                   color={
-                    position.asset.price.relative_change_24h < 0
+                    change.relative < 0
                       ? 'var(--negative-500)'
                       : 'var(--positive-500)'
                   }
                 >
-                  ({formatCurrencyValue(absoluteChange, 'en', currency)})
+                  (
+                  {formatCurrencyValue(
+                    Math.abs(change.absolute).toFixed(2),
+                    'en',
+                    currency
+                  )}
+                  )
                 </BlurrableBalance>
               </UIText>
             ) : null}
@@ -450,35 +298,36 @@ function AddressPositionItem({
   );
 }
 
-interface PreparedPositions {
-  gasAssetId: string | null;
-  items: AddressPosition[];
+interface PreparedApp {
+  app: AppInfo;
   totalValue: number;
-  dappIds: string[];
-  dappIndex: Record<
-    string,
-    {
-      totalValue: number;
-      relativeValue: number;
-      items: AnyAddressPosition[];
-      names: string[];
-      nameIndex: Record<string, AnyAddressPosition[]>;
-    }
-  >;
+  relativeValue: number;
+  /** Every position of the App, for counts and the all-encrypted check */
+  items: GroupedFungiblePosition[];
+  /** Position Group names in display order */
+  names: string[];
+  nameIndex: Record<string, GroupedFungiblePosition[]>;
 }
 
+interface PreparedPositions {
+  gasAssetId: string | null;
+  totalValue: number;
+  apps: PreparedApp[];
+}
+
+/**
+ * Orders the Apps (Wallet Bucket first, the rest by value) and, inside each,
+ * its Position Groups by value with rows sorted by value; pins the gas token
+ * of `dappChain` to the top of the Wallet Bucket when asked to.
+ */
 function usePreparedPositions({
-  items,
-  groupType,
+  apps,
   moveGasPositionToFront,
   dappChain,
-  isAllNetworks,
 }: {
-  items: AddressPosition[];
-  groupType: PositionsGroupType;
+  apps: AppPortfolio[];
   moveGasPositionToFront: boolean;
   dappChain: string | null;
-  isAllNetworks: boolean;
 }): PreparedPositions {
   const { networks } = useNetworks();
   const nativeAssetId = useMemo(() => {
@@ -489,96 +338,72 @@ function usePreparedPositions({
     return network?.baseAsset?.id || null;
   }, [networks, dappChain]);
 
-  const totalValue = useMemo(() => getFullPositionsValue(items), [items]);
   return useMemo(() => {
-    const byDapp =
-      groupType === PositionsGroupType.platform
-        ? groupPositionsByDapp(items)
-        : { [DEFAULT_PROTOCOL_ID]: items };
-    const byDappSorted = sortPositionGroupsByTotalValue(byDapp);
-    const dappIds = byDappSorted.map(([dappId]) => dappId);
-
-    // Pin Wallet group to the top of positions list
-    const defaultDappIndex = dappIds.findIndex(
-      (item) => item === DEFAULT_PROTOCOL_ID
+    const totalValue = apps.reduce(
+      (sum, app) => sum + getFullPositionsValue(getAppPositions(app)),
+      0
     );
-    if (defaultDappIndex >= 0) {
-      dappIds.splice(defaultDappIndex, 1);
-      dappIds.unshift(DEFAULT_PROTOCOL_ID);
-    }
-
-    const dappIndex: PreparedPositions['dappIndex'] = {};
-    for (const dappId of dappIds) {
-      const rawDappItems = byDapp[dappId];
-      const aggregatedDappItems: AnyAddressPosition[] =
-        dappId === DEFAULT_PROTOCOL_ID && isAllNetworks
-          ? groupPositionsByToken(rawDappItems)
-          : rawDappItems;
-      const dappItems = sortPositionsByValue(
-        aggregatedDappItems as AddressPosition[]
-      ) as AnyAddressPosition[];
-      const currentTotalValue = getFullPositionsValue(
-        dappItems as AddressPosition[]
+    const sortedApps = [...apps].sort((a, b) => {
+      if (a.app.id === DEFAULT_APP_ID) {
+        return -1;
+      }
+      if (b.app.id === DEFAULT_APP_ID) {
+        return 1;
+      }
+      return (
+        getFullPositionsValue(getAppPositions(b)) -
+        getFullPositionsValue(getAppPositions(a))
       );
-      const byName = groupPositionsByName(dappItems as AddressPosition[]);
-      const byNameSorted = sortPositionGroupsByTotalValue(byName);
-      const names = byNameSorted.map(([name]) => name);
-      const nameIndex: PreparedPositions['dappIndex'][string]['nameIndex'] = {};
-      for (const name of names) {
-        nameIndex[name] = sortPositionsByParentId(
-          clearMissingParentIds(byName[name])
-        ) as AnyAddressPosition[];
-        if (moveGasPositionToFront) {
-          const gasPositionIndex = nameIndex[name].findIndex(
+    });
+    const preparedApps = sortedApps.map<PreparedApp>((app) => {
+      const items = getAppPositions(app);
+      const currentTotalValue = getFullPositionsValue(items);
+      const groups = [...app.groups].sort(
+        (a, b) =>
+          getFullPositionsValue(b.fungiblePositions) -
+          getFullPositionsValue(a.fungiblePositions)
+      );
+      const nameIndex: PreparedApp['nameIndex'] = {};
+      for (const group of groups) {
+        const name = group.name || DEFAULT_NAME;
+        const rows = sortPositionsByValue(group.fungiblePositions);
+        if (moveGasPositionToFront && app.app.id === DEFAULT_APP_ID) {
+          const gasPositionIndex = rows.findIndex(
             (item) =>
-              !item.dapp &&
               item.asset.id === nativeAssetId &&
-              item.chain === dappChain?.toString()
+              item.chains.some((chain) => chain.id === dappChain)
           );
           if (gasPositionIndex >= 0) {
-            const gasPosition = nameIndex[name][gasPositionIndex];
-            nameIndex[name].splice(gasPositionIndex, 1);
-            nameIndex[name].unshift(gasPosition);
+            const [gasPosition] = rows.splice(gasPositionIndex, 1);
+            rows.unshift(gasPosition);
           }
         }
+        nameIndex[name] = [...(nameIndex[name] ?? []), ...rows];
       }
-      dappIndex[dappId] = {
+      return {
+        app: app.app,
         totalValue: currentTotalValue,
         relativeValue:
           currentTotalValue === 0 && totalValue === 0
             ? 0
             : (currentTotalValue / totalValue) * 100,
-        items: dappItems,
-        names,
+        items,
+        names: Object.keys(nameIndex),
         nameIndex,
       };
-    }
-    return {
-      gasAssetId: nativeAssetId,
-      items,
-      totalValue,
-      dappIds,
-      dappIndex,
-    };
-  }, [
-    groupType,
-    items,
-    nativeAssetId,
-    dappChain,
-    totalValue,
-    moveGasPositionToFront,
-    isAllNetworks,
-  ]);
+    });
+    return { gasAssetId: nativeAssetId, totalValue, apps: preparedApps };
+  }, [apps, nativeAssetId, dappChain, moveGasPositionToFront]);
 }
 
-function ProtocolHeading({
-  dappInfo,
+function AppHeading({
+  app,
   value,
   relativeValue,
   currency,
   allEncrypted,
 }: {
-  dappInfo: AddressPositionDappInfo;
+  app: AppInfo;
   value: number;
   relativeValue: number;
   currency: string;
@@ -587,12 +412,12 @@ function ProtocolHeading({
 }) {
   return (
     <HStack gap={8} alignItems="center">
-      {dappInfo.id === DEFAULT_PROTOCOL_ID ? (
+      {app.id === DEFAULT_APP_ID ? (
         <WalletIcon />
       ) : (
         <TokenIcon
-          src={dappInfo.icon_url}
-          symbol={dappInfo.name || dappInfo.id}
+          src={app.iconUrl}
+          symbol={app.name || app.id}
           size={24}
           style={{ borderRadius: 6 }}
         />
@@ -605,7 +430,7 @@ function ProtocolHeading({
           whiteSpace: 'nowrap',
         }}
       >
-        <span>{dappInfo.name || dappInfo.id}</span>
+        <span>{app.name || app.id}</span>
         {allEncrypted ? null : (
           <>
             <span style={{ color: 'var(--neutral-500)' }}> · </span>
@@ -635,28 +460,26 @@ function ProtocolHeading({
 }
 
 export function PositionList({
-  items,
+  apps,
   address,
   moveGasPositionToFront,
   dappChain,
-  isAllNetworks,
   stickyOffset,
   confidentialPanel = false,
 }: {
-  items: AddressPosition[];
+  apps: AppPortfolio[];
   address: string | null;
   moveGasPositionToFront: boolean;
   dappChain: string | null;
-  isAllNetworks: boolean;
   /**
-   * Top offset for the sticky protocol headings. Defaults to the Overview
+   * Top offset for the sticky App headings. Defaults to the Overview
    * tab's layout offset; pass `0` when rendering inside a scroll container of
    * its own (e.g. a dialog) so headings stick to that container's top.
    */
   stickyOffset?: number;
   /**
    * Show the Confidential Balances panel above the positions groups when the
-   * wallet is Locked (encrypted items in `items`) and Signable, so it is
+   * wallet is Locked (encrypted items in `apps`) and Signable, so it is
    * visible without scrolling. Only the Overview's own list opts in.
    */
   confidentialPanel?: boolean;
@@ -682,13 +505,10 @@ export function PositionList({
     'extension_asset_page_enabled',
   ]);
 
-  const groupType = PositionsGroupType.platform;
   const preparedPositions = usePreparedPositions({
-    items,
-    groupType,
+    apps,
     moveGasPositionToFront,
     dappChain,
-    isAllNetworks,
   });
   const offsetValuesState = useStore(offsetValues);
   const { currency } = useCurrency();
@@ -698,11 +518,15 @@ export function PositionList({
   );
 
   const isSignable = useIsSignableWallet(confidentialPanel ? address : null);
+  const allItems = useMemo(
+    () => preparedPositions.apps.flatMap((app) => app.items),
+    [preparedPositions]
+  );
   const showConfidentialPanel = Boolean(
     confidentialPanel &&
       address &&
       isSignable &&
-      hasEncryptedPositions(preparedPositions.items)
+      hasEncryptedPositions(allItems)
   );
 
   return (
@@ -712,22 +536,23 @@ export function PositionList({
           <ConfidentialBalancesPanel address={address} />
         </div>
       ) : null}
-      {preparedPositions.dappIds.map((dappId, dappIndex) => {
+      {preparedPositions.apps.map((preparedApp, appIndex) => {
         const items: Item[] = [];
         const {
+          app,
           totalValue,
           relativeValue,
           names,
           nameIndex,
-          items: protocolItems,
-        } = preparedPositions.dappIndex[dappId];
-        let dappPositionCounter = 0;
+          items: appItems,
+        } = preparedApp;
+        let appPositionCounter = 0;
         let subHeadingIndex = 0;
         // do not hide if only one item is left
         const stopAt =
-          protocolItems.length - COLLAPSED_COUNT > 1
+          appItems.length - COLLAPSED_COUNT > 1
             ? COLLAPSED_COUNT
-            : protocolItems.length;
+            : appItems.length;
         outerBlock: for (const name of names) {
           if (name.toUpperCase() !== DEFAULT_NAME) {
             items.push({
@@ -750,17 +575,11 @@ export function PositionList({
             });
             subHeadingIndex += 1;
           }
-          let namePositionCounter = 0;
           for (const position of nameIndex[name]) {
             const showAsLink = !preferences?.testnetMode?.on;
             const itemContent = (
-              <AddressPositionItem
+              <GroupedPositionItem
                 position={position}
-                groupType={groupType}
-                hasPreviosNestedPosition={
-                  namePositionCounter > 0 &&
-                  Boolean(nameIndex[name][namePositionCounter - 1].parent_id)
-                }
                 showGasIcon={
                   preparedPositions.gasAssetId != null &&
                   position.asset.id === preparedPositions.gasAssetId
@@ -769,7 +588,6 @@ export function PositionList({
             );
             items.push({
               key: position.id,
-              separatorLeadingInset: position.parent_id ? 26 : 0,
               pad: !assetPageEnabled && !showAsLink,
               style:
                 assetPageEnabled || showAsLink ? { padding: 0 } : undefined,
@@ -794,7 +612,7 @@ export function PositionList({
                   onClick={openHrefInTabIfSidepanel}
                   href={`https://app.zerion.io/tokens/${
                     position.asset.symbol
-                  }-${position.asset.asset_code}${
+                  }-${position.asset.id}${
                     address ? `?address=${address}` : ''
                   }`}
                   target="_blank"
@@ -806,72 +624,62 @@ export function PositionList({
                 itemContent
               ),
             });
-            namePositionCounter++;
-            dappPositionCounter++;
-            if (dappPositionCounter >= stopAt && !expanded.has(dappId)) {
+            appPositionCounter++;
+            if (appPositionCounter >= stopAt && !expanded.has(app.id)) {
               break outerBlock;
             }
           }
         }
-        if (protocolItems.length > stopAt) {
+        if (appItems.length > stopAt) {
           items.push({
             key: 'show-more-less',
             onClick: () => {
-              if (expanded.has(dappId)) {
-                showLess(dappId);
+              if (expanded.has(app.id)) {
+                showLess(app.id);
               } else {
-                showMore(dappId);
+                showMore(app.id);
               }
             },
             component: (
               <UIText kind="body/accent" color="var(--primary)">
-                {expanded.has(dappId) ? 'Show Less Assets' : 'Show All Assets'}
+                {expanded.has(app.id) ? 'Show Less Assets' : 'Show All Assets'}
               </UIText>
             ),
           });
         }
 
-        const dappInfo: AddressPositionDappInfo = protocolItems[0].dapp || {
-          id: DEFAULT_PROTOCOL_ID,
-          name: DEFAULT_PROTOCOL_NAME,
-          icon_url: null,
-          url: null,
-        };
-
         return (
-          <VStack gap={0} key={dappId}>
-            {preparedPositions.dappIds.length > 1 ? (
-              <>
-                <div
-                  style={{
-                    paddingBottom: 4,
-                    paddingInline: 16,
-                    position: 'sticky',
-                    top:
-                      stickyOffset ??
-                      getStickyOffset(offsetValuesState) +
-                        TAB_SELECTOR_HEIGHT +
-                        TAB_TOP_PADDING,
-                    zIndex: 1,
-                    backgroundColor: 'var(--white)',
-                  }}
-                >
-                  <ProtocolHeading
-                    dappInfo={dappInfo}
-                    value={totalValue}
-                    relativeValue={relativeValue}
-                    currency={currency}
-                    allEncrypted={protocolItems.every(
-                      (position) => position.encrypted
-                    )}
-                  />
-                </div>
-              </>
+          <VStack gap={0} key={app.id}>
+            {preparedPositions.apps.length > 1 ? (
+              <div
+                style={{
+                  paddingBottom: 4,
+                  paddingInline: 16,
+                  position: 'sticky',
+                  top:
+                    stickyOffset ??
+                    getStickyOffset(offsetValuesState) +
+                      TAB_SELECTOR_HEIGHT +
+                      TAB_TOP_PADDING,
+                  zIndex: 1,
+                  backgroundColor: 'var(--white)',
+                }}
+              >
+                <AppHeading
+                  app={app}
+                  value={totalValue}
+                  relativeValue={relativeValue}
+                  currency={currency}
+                  allEncrypted={appItems.every(
+                    (position) => position.encrypted
+                  )}
+                />
+              </div>
             ) : null}
-            {dappInfo.url ? (
+            {app.url ? (
               <>
                 <Spacer height={16} />
-                <DappLink dappInfo={dappInfo} style={{ marginInline: 16 }} />
+                <AppLink app={app} style={{ marginInline: 16 }} />
                 <Spacer height={16} />
               </>
             ) : (
@@ -879,11 +687,9 @@ export function PositionList({
             )}
             <SurfaceList
               style={{ position: 'relative', zIndex: 0 }}
-              // estimateSize={(index) => (index === 0 ? 52 : 60 + 1)}
-              // overscan={5} // the library detects window edge incorrectly, increasing overscan just visually hides the problem
               items={items}
             />
-            {dappIndex !== preparedPositions.dappIds.length - 1 ? (
+            {appIndex !== preparedPositions.apps.length - 1 ? (
               <>
                 <Spacer height={14} />
                 <div
@@ -919,42 +725,38 @@ function MultiChainPositions({
   selectedChain: string | null;
   onChainChange: (value: string | null) => void;
   portfolioDecomposition: WalletPortfolio | null;
-} & Omit<
-  React.ComponentProps<typeof PositionList>,
-  'items' | 'isAllNetworks'
->) {
+} & Omit<React.ComponentProps<typeof PositionList>, 'apps'>) {
   const { currency } = useCurrency();
-  const { data, isLoading } = useHttpAddressPositions(
-    { addresses: [address], currency },
+  const chainValue = selectedChain || NetworkSelectValue.All;
+  const isAllNetworks = chainValue === NetworkSelectValue.All;
+  // The chain filter is server-side: a Grouped Position sums an asset across
+  // chains, so a chain-scoped list is a different request, not a client filter
+  const { data, isLoading } = useWalletGroupedPositions(
+    {
+      addresses: [address],
+      currency,
+      groupBy: ['by-app'],
+      chainIds: isAllNetworks ? undefined : [chainValue],
+    },
     { source: useHttpClientSource() },
     { refetchInterval: usePositionsRefetchInterval(40000) }
   );
-  const positions = data?.data;
 
-  const chainValue = selectedChain || NetworkSelectValue.All;
-
-  const items = useMemo(
-    () =>
-      positions?.filter(
-        (position) =>
-          (position.type === 'asset' ? position.is_displayable : true) &&
-          (chainValue === NetworkSelectValue.All ||
-            position.chain === chainValue)
-      ),
-    [chainValue, positions]
+  const apps = useMemo(
+    () => filterDisplayableApps(data?.data?.apps ?? []),
+    [data]
   );
 
   if (isLoading) {
     return renderLoadingView() as JSX.Element;
   }
-  if (!items || items.length === 0) {
+  if (apps.length === 0) {
     return renderEmptyView() as JSX.Element;
   }
 
-  const chainTotalValue =
-    chainValue === NetworkSelectValue.All
-      ? portfolioDecomposition?.totalValue
-      : portfolioDecomposition?.positionsChainsDistribution[chainValue];
+  const chainTotalValue = isAllNetworks
+    ? portfolioDecomposition?.totalValue
+    : portfolioDecomposition?.positionsChainsDistribution[chainValue];
 
   return (
     <VStack gap={16}>
@@ -975,10 +777,9 @@ function MultiChainPositions({
           />
         </div>
         <PositionList
-          items={items}
+          apps={apps}
           dappChain={dappChain}
           address={address}
-          isAllNetworks={chainValue === NetworkSelectValue.All}
           confidentialPanel={true}
           {...positionListProps}
         />
@@ -1004,10 +805,7 @@ function RawChainPositions({
   dappChain: string | null;
   selectedChain: string | null;
   onChainChange: (value: string | null) => void;
-} & Omit<
-  React.ComponentProps<typeof PositionList>,
-  'items' | 'isAllNetworks'
->) {
+} & Omit<React.ComponentProps<typeof PositionList>, 'apps'>) {
   const { currency } = useCurrency();
   invariant(
     selectedChain !== NetworkSelectValue.All,
@@ -1020,6 +818,7 @@ function RawChainPositions({
     'Chain filter should be defined to show custom chain positions'
   );
   const chain = createChain(chainValue);
+  const network = networks?.getNetworkByName(chain);
   const {
     data: addressPositions,
     isLoading,
@@ -1030,6 +829,17 @@ function RawChainPositions({
     suspense: false,
     staleTime: 1000 * 20,
   });
+  const apps = useMemo(
+    () =>
+      addressPositions?.length
+        ? addressPositionsToApps(addressPositions, {
+            id: chainValue,
+            name: network?.name || chainValue,
+            iconUrl: network?.iconUrl ?? null,
+          })
+        : [],
+    [addressPositions, chainValue, network]
+  );
   if (isError) {
     return renderErrorView(
       networks?.getChainName(chain) || chainValue
@@ -1038,7 +848,7 @@ function RawChainPositions({
   if (isLoading) {
     return renderLoadingView() as JSX.Element;
   }
-  if (!addressPositions || !addressPositions.length) {
+  if (!apps.length) {
     return renderEmptyView() as JSX.Element;
   }
 
@@ -1054,7 +864,7 @@ function RawChainPositions({
           value={
             <NeutralDecimals
               parts={formatCurrencyToParts(
-                getFullPositionsValue(addressPositions),
+                getFullPositionsValue(getAppPositions(apps[0])),
                 'en',
                 currency
               )}
@@ -1064,9 +874,8 @@ function RawChainPositions({
       </div>
       <PositionList
         address={address}
-        items={addressPositions}
+        apps={apps}
         dappChain={dappChain}
-        isAllNetworks={false}
         {...positionListProps}
       />
     </VStack>

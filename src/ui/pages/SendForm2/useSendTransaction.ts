@@ -19,9 +19,9 @@ import type {
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
+import { fungiblePositionToAddressPosition } from 'src/ui/shared/requests/shared/fungiblePositionToAddressPosition';
 import { prepareSendData } from './shared/prepareSendData';
 import { isAmountEntered, isZeroAmount } from './shared/amount';
-import { fungiblePositionToAddressPosition } from './shared/fungiblePositionToAddressPosition';
 import { toLegacySendFormState } from './shared/toLegacySendFormState';
 import { hexlifyTransactionData } from './shared/hexlifyTransactionData';
 import type { SendFormState2 } from './types';

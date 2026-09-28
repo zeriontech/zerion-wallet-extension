@@ -3,7 +3,8 @@ import React, { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getCommonQuantity } from 'src/modules/networks/asset';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { useHttpAddressPositions } from 'src/modules/zerion-api/hooks/useWalletPositions';
+import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
+import { fungiblePositionToAddressPosition } from 'src/ui/shared/requests/shared/fungiblePositionToAddressPosition';
 import { invariant } from 'src/shared/invariant';
 import { PageTop } from 'src/ui/components/PageTop';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -38,9 +39,10 @@ export function AllowanceView({
     'requestedAllowanceQuantityBase is required to set custom allowance'
   );
 
-  const assetIds = assetId ? [assetId] : [];
-  const { data, isLoading: positionsAreLoading } = useHttpAddressPositions(
-    { addresses: [address], currency, assetIds },
+  // Simple Positions: the balance must be the one on `network`, which a
+  // Grouped Position (summed across chains) can't give
+  const { data, isLoading: positionsAreLoading } = useWalletSimplePositions(
+    { address, currency },
     { source: useHttpClientSource() },
     {
       enabled: Boolean(assetId),
@@ -49,13 +51,13 @@ export function AllowanceView({
   );
   const positions = data?.data;
 
-  const position = useMemo(
-    () =>
-      positions?.find(
-        (position) => position.chain === network.id && !position.dapp?.id
-      ),
-    [network.id, positions]
-  );
+  const position = useMemo(() => {
+    const found = positions?.find(
+      (position) =>
+        position.chain.id === network.id && position.fungible.id === assetId
+    );
+    return found ? fungiblePositionToAddressPosition(found) : undefined;
+  }, [network.id, assetId, positions]);
 
   const chain = createChain(network.id);
 

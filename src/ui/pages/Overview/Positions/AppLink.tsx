@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { AddressPositionDappInfo } from 'src/defi-sdk.types';
+import type { AppInfo } from 'src/ui/components/Positions/types';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
@@ -7,14 +7,14 @@ import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { Button } from 'src/ui/ui-kit/Button';
 
-export function DappLink({
-  dappInfo,
+export function AppLink({
+  app,
   style,
 }: {
-  dappInfo: AddressPositionDappInfo;
+  app: AppInfo;
   style?: React.CSSProperties;
 }) {
-  const { url: rawUrl } = dappInfo;
+  const { url: rawUrl } = app;
   const url = useMemo(() => (rawUrl ? prepareForHref(rawUrl) : null), [rawUrl]);
 
   if (!url) {

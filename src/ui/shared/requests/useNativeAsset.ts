@@ -3,7 +3,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { fungibleToAsset } from 'src/modules/zerion-api/requests/wallet-get-positions';
+import { fungibleToAsset } from 'src/modules/zerion-api/shared/fungibleToAsset';
 import type { BackendSourceParams } from 'src/modules/zerion-api/shared';
 
 export function useNativeAssetId(chain: Chain) {

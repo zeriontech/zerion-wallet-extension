@@ -1,15 +1,14 @@
-import type { AddressPosition } from 'src/defi-sdk.types';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 
 export function hasEncryptedPositions(
-  positions: Pick<AddressPosition, 'encrypted'>[] | null | undefined
+  positions: { encrypted?: boolean }[] | null | undefined
 ) {
   return Boolean(positions?.some((position) => position.encrypted));
 }
 
-export function getEncryptedPositions<
-  T extends Pick<AddressPosition, 'encrypted'>
->(positions: T[] | null | undefined): T[] {
+export function getEncryptedPositions<T extends { encrypted?: boolean }>(
+  positions: T[] | null | undefined
+): T[] {
   return positions?.filter((position) => position.encrypted) ?? [];
 }
 
