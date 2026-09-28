@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useCallback } from 'react';
 import {
   TabList,
   Tab,
@@ -11,6 +11,7 @@ import {
 import { Tooltip, TooltipAnchor, TooltipProvider } from 'src/ui/ui-kit/Tooltip';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { isMacOS } from 'src/ui/shared/isMacos';
+import { useDragScroll } from 'src/ui/shared/useDragScroll';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import * as styles from './styles.module.css';
@@ -87,10 +88,25 @@ export const NetworkChips = forwardRef<
   },
   ref
 ) {
+  const { ref: dragScrollRef, ...dragScrollProps } =
+    useDragScroll<HTMLDivElement>();
+
+  // One node, two consumers: the drag handlers scroll the tab list and the
+  // parent's forwarded ref queries it for scroll-into-view of the active chip.
+  const setTabListNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      dragScrollRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    },
+    [dragScrollRef, ref]
+  );
+
   return (
     <div className={styles.chipsContainer}>
       <TabList
-        ref={ref}
+        ref={setTabListNode}
+        {...dragScrollProps}
         className={styles.chipsScroll}
         aria-label="Filter by network"
       >
