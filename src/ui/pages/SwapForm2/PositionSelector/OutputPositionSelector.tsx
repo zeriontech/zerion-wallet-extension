@@ -26,6 +26,7 @@ import {
 import { TokenRow } from 'src/ui/components/PositionSelector/TokenRow';
 import { TokenListSkeleton } from 'src/ui/components/PositionSelector/TokenListSkeleton';
 import { useTopNetworks } from 'src/ui/components/PositionSelector/useTopNetworks';
+import { useVisiblePinnedNetworks } from 'src/ui/components/PositionSelector/useVisiblePinnedNetworks';
 import type { TopNetworksEntry } from 'src/ui/components/PositionSelector/useTopNetworks';
 import type { VirtualListItem } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
 import { VirtualizedTokenList } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
@@ -431,12 +432,23 @@ export function OutputPositionSelector({
     [isTradableChainId]
   );
 
+  // Same predicate as the network dialog below.
+  const visiblePinnedNetworks = useVisiblePinnedNetworks(networks);
+  const pinnedChainIds = useMemo(
+    () =>
+      visiblePinnedNetworks
+        .map((n) => n.id)
+        .filter((id) => isTradableChainId(id)),
+    [visiblePinnedNetworks, isTradableChainId]
+  );
+
   const topNetworks: TopNetworksEntry[] = useTopNetworks(
     tradablePositions,
     selectedNetwork,
     pinnedFromDialog,
     {
       pinnedFirstChainId: SOLANA_CHAIN_ID,
+      pinnedChainIds,
       fallbackChainId: ETHEREUM_CHAIN_ID,
       networks,
       padChainIds: tradablePadChainIds,
