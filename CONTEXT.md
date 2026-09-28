@@ -197,6 +197,8 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 **Position Group**: A named list of Grouped Positions inside an App — "Deposited", "Staked", "Rewards", "Debt" — rendered as a sub-heading under the App header. Replaces the legacy per-row `name` and parent/child nesting. _Avoid_: name, section.
 
+**24h Return**: The change of the wallet's holding in an asset over the last 24 hours, as a percentage and an amount, computed by the backend per Grouped Position so that buys and sells inside the window count; the same figure iOS shows. When the backend sends none, the asset's price move applied to the held value stands in, with the value 24 hours ago as the base. Distinct from PnL, which is measured against what was invested. _Avoid_: 24h change of the asset (that is the price move alone), daily PnL.
+
 ### Confidential Balances
 
 **Confidential Position**: A wallet position or history transfer whose amount is encrypted on-chain (Zama FHE). The backend returns it with real asset metadata but a zeroed quantity/value and `encrypted: true` until a matching **Signed Permit** is supplied. _Avoid_: hidden balance (collides with the user's hide-balances preference), private position.

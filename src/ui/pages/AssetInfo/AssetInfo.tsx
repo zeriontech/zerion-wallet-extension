@@ -28,6 +28,7 @@ import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { useWalletAssetDetails } from 'src/modules/zerion-api/hooks/useWalletAssetDetails';
 import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
+import { useWalletGroupedPositions } from 'src/modules/zerion-api/hooks/useWalletGroupedPositions';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -150,6 +151,18 @@ export function AssetInfo() {
   );
   const { data: simplePositionsData } = useWalletSimplePositions(
     { address: params.address, currency },
+    { source: useHttpClientSource() },
+    { enabled: ready }
+  );
+
+  // Position-level 24h Return (the figure iOS shows), scoped to this asset
+  const assetPositionsQuery = useWalletGroupedPositions(
+    {
+      addresses: [params.address],
+      currency,
+      groupBy: ['by-position'],
+      assetIds: [asset_code],
+    },
     { source: useHttpClientSource() },
     { enabled: ready }
   );
@@ -281,6 +294,7 @@ export function AssetInfo() {
           assetFullInfo={assetFullInfo}
           walletAssetDetails={walletData.data}
           assetAddressPnlQuery={assetAddressPnlQuery}
+          assetPositionsQuery={assetPositionsQuery}
           premiumStatus={premiumStatus}
           isEncrypted={Boolean(
             simplePositionsData?.data.some(

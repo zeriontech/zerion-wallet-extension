@@ -345,10 +345,10 @@ function TypedDataDefaultView({
                       style={{
                         position: 'relative',
                         display: '-webkit-box',
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                        minHeight: 48,
+                        minHeight: 72,
                       }}
                     >
                       {typedDataFormatted}

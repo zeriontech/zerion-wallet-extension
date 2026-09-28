@@ -20,6 +20,8 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletAssetDetails } from 'src/modules/zerion-api/requests/wallet-get-asset-details';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { formatPercent } from 'src/shared/units/formatPercent';
+import { getAbsoluteChange24h } from 'src/shared/units/getAbsoluteChange24h';
+import type { GroupedFungiblePosition } from 'src/ui/components/Positions/types';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
@@ -41,7 +43,8 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PREMIUM_LANDING_LINK } from 'src/ui/features/premium/link';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { ConfidentialMask } from 'src/ui/features/confidential-balances';
-import { getColor, getSign } from './helpers';
+import { getAssetChange24h, getColor, getSign } from './helpers';
+import type { AssetChange24h } from './helpers';
 import { AssetHeader } from './AssetHeader';
 import * as styles from './styles.module.css';
 
@@ -53,6 +56,64 @@ type PremiumStatus = {
 type AssetAddressPnlQuery = UseQueryResult<
   ResponseBody<AssetAddressPnl | null>
 >;
+
+/** The wallet's Grouped Positions in this asset (by-position, filtered to the asset) */
+type AssetPositionsQuery = Pick<
+  UseQueryResult<
+    ResponseBody<{ positions?: GroupedFungiblePosition[] } | null>
+  >,
+  'data' | 'isLoading'
+>;
+
+/**
+ * 24h Return shown on the asset page: the backend's position-level figure
+ * (what iOS shows), falling back to the asset's price move applied to the
+ * held value when no position carries one (untracked / zero holdings).
+ */
+function getReturn24h({
+  assetPositionsQuery,
+  assetFullInfo,
+  walletAssetDetails,
+}: {
+  assetPositionsQuery: AssetPositionsQuery;
+  assetFullInfo: AssetFullInfo;
+  walletAssetDetails: WalletAssetDetails;
+}): AssetChange24h | null {
+  const fromPositions = getAssetChange24h(
+    assetPositionsQuery.data?.data?.positions ?? []
+  );
+  if (fromPositions) {
+    return fromPositions;
+  }
+  const priceChange = assetFullInfo.fungible.meta.relativeChange1d;
+  if (priceChange == null || walletAssetDetails.totalValue == null) {
+    return null;
+  }
+  return {
+    relative: priceChange * 100,
+    absolute: getAbsoluteChange24h(walletAssetDetails.totalValue, priceChange),
+  };
+}
+
+function formatReturn24h(
+  change: AssetChange24h,
+  currency: string,
+  render: (value: string) => React.ReactNode = (value) => value
+) {
+  const percent =
+    change.relative != null
+      ? `${formatPercent(Math.abs(change.relative), 'en')}% `
+      : '';
+  return (
+    <>
+      <span>{`${getSign(change.absolute)}${percent}${
+        change.relative != null ? '(' : ''
+      }`}</span>
+      {render(formatCurrencyValue(Math.abs(change.absolute), 'en', currency))}
+      {change.relative != null ? <span>)</span> : null}
+    </>
+  );
+}
 
 function Line() {
   return (
@@ -182,11 +243,13 @@ function StatLine({
 function AssetStats({
   assetFullInfo,
   assetAddressPnlQuery,
+  assetPositionsQuery,
   walletAssetDetails,
   premiumStatus,
 }: {
   assetFullInfo: AssetFullInfo;
   assetAddressPnlQuery: AssetAddressPnlQuery;
+  assetPositionsQuery: AssetPositionsQuery;
   walletAssetDetails: WalletAssetDetails;
   premiumStatus: PremiumStatus;
 }) {
@@ -195,13 +258,11 @@ function AssetStats({
   const assetAddressPnl = data?.data;
 
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
-  const return24h =
-    assetFullInfo.fungible.meta.relativeChange1d != null &&
-    walletAssetDetails.totalValue != null
-      ? assetFullInfo.fungible.meta.relativeChange1d *
-        walletAssetDetails.totalValue
-      : null;
-  const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
+  const return24h = getReturn24h({
+    assetPositionsQuery,
+    assetFullInfo,
+    walletAssetDetails,
+  });
 
   if (isUntrackedAsset || premiumStatus.isLoading) {
     return null;
@@ -211,23 +272,17 @@ function AssetStats({
     <VStack gap={16}>
       <StatLine
         title="24-hour Return"
+        isLoading={assetPositionsQuery.isLoading}
         value={({ color, kind }) =>
-          return24h != null ? (
-            <>
-              <span>{`${getSign(return24h)}${formatPercent(
-                Math.abs(relativeReturn24h || 0) * 100,
-                'en'
-              )}% (`}</span>
-              <BlurrableBalance kind={kind} color={color}>
-                {formatCurrencyValue(Math.abs(return24h || 0), 'en', currency)}
-              </BlurrableBalance>
-              <span>)</span>
-            </>
-          ) : (
-            'N/A'
-          )
+          return24h
+            ? formatReturn24h(return24h, currency, (value) => (
+                <BlurrableBalance kind={kind} color={color}>
+                  {value}
+                </BlurrableBalance>
+              ))
+            : 'N/A'
         }
-        valueColor={return24h != null ? getColor(return24h) : undefined}
+        valueColor={return24h ? getColor(return24h.absolute) : undefined}
       />
       {premiumStatus.isPremium ? (
         <>
@@ -580,12 +635,14 @@ function AssetImplementationsDialogContent({
   assetFullInfo,
   walletAssetDetails,
   assetAddressPnlQuery,
+  assetPositionsQuery,
   premiumStatus,
 }: {
   address: string;
   assetFullInfo: AssetFullInfo;
   walletAssetDetails: WalletAssetDetails;
   assetAddressPnlQuery: AssetAddressPnlQuery;
+  assetPositionsQuery: AssetPositionsQuery;
   premiumStatus: PremiumStatus;
 }) {
   return (
@@ -605,6 +662,7 @@ function AssetImplementationsDialogContent({
         <AssetStats
           assetFullInfo={assetFullInfo}
           assetAddressPnlQuery={assetAddressPnlQuery}
+          assetPositionsQuery={assetPositionsQuery}
           walletAssetDetails={walletAssetDetails}
           premiumStatus={premiumStatus}
         />
@@ -700,20 +758,20 @@ function AssetPremiumAddressShortStats({
 function AssetRegularAddressShortStats({
   premiumStatus,
   assetFullInfo,
+  assetPositionsQuery,
   walletAssetDetails,
 }: {
   premiumStatus: PremiumStatus;
   assetFullInfo: AssetFullInfo;
+  assetPositionsQuery: AssetPositionsQuery;
   walletAssetDetails: WalletAssetDetails;
 }) {
   const { currency } = useCurrency();
-  const return24h =
-    assetFullInfo.fungible.meta.relativeChange1d != null &&
-    walletAssetDetails.totalValue != null
-      ? assetFullInfo.fungible.meta.relativeChange1d *
-        walletAssetDetails.totalValue
-      : null;
-  const relativeReturn24h = assetFullInfo.fungible.meta.relativeChange1d;
+  const return24h = getReturn24h({
+    assetPositionsQuery,
+    assetFullInfo,
+    walletAssetDetails,
+  });
 
   return (
     <HStack
@@ -743,18 +801,26 @@ function AssetRegularAddressShortStats({
         <UIText kind="caption/regular" color="var(--neutral-500)">
           24h Return
         </UIText>
-        <UIText kind="headline/h3" color={getColor(relativeReturn24h || 0)}>
-          {return24h != null
-            ? `${getSign(return24h)}${formatPercent(
-                Math.abs(relativeReturn24h || 0) * 100,
-                'en'
-              )}% (${formatCurrencyValue(
-                Math.abs(return24h || 0),
-                'en',
-                currency
-              )})`
-            : 'N/A'}
-        </UIText>
+        {assetPositionsQuery.isLoading ? (
+          <LoadingSkeleton />
+        ) : (
+          <UIText
+            kind="headline/h3"
+            color={getColor(return24h?.absolute)}
+            style={{ display: 'flex' }}
+          >
+            {return24h
+              ? formatReturn24h(return24h, currency, (value) => (
+                  <BlurrableBalance
+                    kind="headline/h3"
+                    color={getColor(return24h.absolute)}
+                  >
+                    {value}
+                  </BlurrableBalance>
+                ))
+              : 'N/A'}
+          </UIText>
+        )}
       </VStack>
     </HStack>
   );
@@ -766,6 +832,7 @@ export function AssetAddressStats({
   wallet,
   walletAssetDetails,
   assetAddressPnlQuery,
+  assetPositionsQuery,
   premiumStatus,
   isEncrypted = false,
 }: {
@@ -774,6 +841,7 @@ export function AssetAddressStats({
   wallet: ExternallyOwnedAccount;
   walletAssetDetails: WalletAssetDetails;
   assetAddressPnlQuery: AssetAddressPnlQuery;
+  assetPositionsQuery: AssetPositionsQuery;
   premiumStatus: PremiumStatus;
   /** The wallet's position in this asset is a Confidential Position (still encrypted) */
   isEncrypted?: boolean;
@@ -920,6 +988,7 @@ export function AssetAddressStats({
               <AssetRegularAddressShortStats
                 premiumStatus={premiumStatus}
                 assetFullInfo={assetFullInfo}
+                assetPositionsQuery={assetPositionsQuery}
                 walletAssetDetails={walletAssetDetails}
               />
             )}
@@ -978,6 +1047,7 @@ export function AssetAddressStats({
               assetFullInfo={assetFullInfo}
               walletAssetDetails={walletAssetDetails}
               assetAddressPnlQuery={assetAddressPnlQuery}
+              assetPositionsQuery={assetPositionsQuery}
               premiumStatus={premiumStatus}
             />
           </>

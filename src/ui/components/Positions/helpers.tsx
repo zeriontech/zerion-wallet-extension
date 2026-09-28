@@ -9,6 +9,10 @@ import type {
   PositionType,
 } from './types';
 import { DEFAULT_APP_ID, DEFAULT_APP_NAME, DEFAULT_NAME } from './types';
+import { getPositionChange24h, getPositionValue } from './change24h';
+
+export { getPositionChange24h, getPositionValue };
+export type { PositionChange24h } from './change24h';
 
 export const positionTypeToStringMap: Record<PositionType, string> = {
   asset: '',
@@ -19,12 +23,6 @@ export const positionTypeToStringMap: Record<PositionType, string> = {
   locked: 'Locked',
   investment: 'Investment',
 };
-
-export function getPositionValue(
-  position: Pick<GroupedFungiblePosition, 'value'>
-) {
-  return Number(position.value) || 0;
-}
 
 export function getPositionBalance(
   position: Pick<GroupedFungiblePosition, 'convertedQuantity'>
