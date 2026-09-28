@@ -47,6 +47,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { prepareGasAndNetworkFee } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import {
+  assertTypedDataValues,
   prepareTypedData,
   sanitizeTypedDataRaw,
 } from 'src/modules/ethereum/message-signing/prepareTypedData';
@@ -2794,6 +2795,9 @@ class PublicController {
       );
     }
     const stringifiedData = sanitizeTypedDataRaw(data);
+    // Reject malformed field values (e.g. the string "false" in a `bool`
+    // field) before interpretation and signing can disagree on their meaning
+    assertTypedDataValues(stringifiedData);
     const currentWallet = await this.wallet.uiGetCurrentWallet({
       context: INTERNAL_SYMBOL_CONTEXT,
     });

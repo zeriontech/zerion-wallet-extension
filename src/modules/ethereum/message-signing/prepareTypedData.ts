@@ -1,4 +1,6 @@
 import omit from 'lodash/omit';
+import { TypedDataEncoder } from 'ethers';
+import { InvalidParams } from 'src/shared/errors/errors';
 import type { TypedData } from './TypedData';
 
 function isTypedData(data: Partial<TypedData>): data is TypedData {
@@ -89,4 +91,44 @@ export function removeUnusedTypes(
     (type) => parents.get(type)?.length === 0 && type !== primaryType
   );
   return omit(types, unusedTypes);
+}
+
+/**
+ * ethers' EIP-712 encoder coerces any truthy value in a `bool` field to
+ * `true` (so the string "false" signs as `true`), while the interpretation
+ * backend reads the same payload as `false`. The user is then shown one
+ * authorization and signs another. EIP-712 requires JSON booleans here, so
+ * reject anything else. Every other primitive type already throws inside
+ * ethers on a wrong-typed value; the encoder dry-run below surfaces those
+ * before the request reaches the UI instead of at sign time.
+ * Throws InvalidParams (an RPC-level error) so the dApp gets a clear rejection.
+ */
+export function assertTypedDataValues(data: string | TypedData): void {
+  let typedData: TypedData;
+  try {
+    typedData = prepareTypedData(data);
+  } catch (error) {
+    throw new InvalidParams(
+      error instanceof Error ? error.message : 'Invalid typedData'
+    );
+  }
+  const types = removeUnusedTypes(typedData.types, typedData.primaryType);
+  try {
+    const encoder = TypedDataEncoder.from(types);
+    encoder.visit(typedData.message, (type, value) => {
+      if (type === 'bool' && typeof value !== 'boolean') {
+        throw new Error(
+          `Invalid typedData: "bool" field must be a JSON boolean, got ${JSON.stringify(
+            value
+          )}`
+        );
+      }
+      return value;
+    });
+    TypedDataEncoder.hash(typedData.domain, types, typedData.message);
+  } catch (error) {
+    throw new InvalidParams(
+      error instanceof Error ? error.message : 'Invalid typedData'
+    );
+  }
 }
