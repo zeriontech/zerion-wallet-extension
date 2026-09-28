@@ -24,6 +24,7 @@ import {
 } from 'src/ui/components/PositionSelector/NetworkChips';
 import { TokenRow } from 'src/ui/components/PositionSelector/TokenRow';
 import { useTopNetworks } from 'src/ui/components/PositionSelector/useTopNetworks';
+import { useVisiblePinnedNetworks } from 'src/ui/components/PositionSelector/useVisiblePinnedNetworks';
 import type { VirtualListItem } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
 import { VirtualizedTokenList } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
 import * as styles from 'src/ui/components/PositionSelector/styles.module.css';
@@ -226,9 +227,13 @@ export function TokensPanel({
   }, [positions]);
 
   // Same filter as the network dialog below: pins for the address's standard.
+  const visiblePinnedNetworks = useVisiblePinnedNetworks(
+    networks,
+    getAddressType(address)
+  );
   const pinnedChainIds = useMemo(
-    () => networks.getPinnedNetworks(getAddressType(address)).map((n) => n.id),
-    [networks, address]
+    () => visiblePinnedNetworks.map((n) => n.id),
+    [visiblePinnedNetworks]
   );
 
   const topNetworks = useTopNetworks(

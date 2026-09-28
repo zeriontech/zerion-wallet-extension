@@ -33,6 +33,7 @@ import {
 import { TokenRow } from 'src/ui/components/PositionSelector/TokenRow';
 import { TokenListSkeleton } from 'src/ui/components/PositionSelector/TokenListSkeleton';
 import { useTopNetworks } from 'src/ui/components/PositionSelector/useTopNetworks';
+import { useVisiblePinnedNetworks } from 'src/ui/components/PositionSelector/useVisiblePinnedNetworks';
 import type { VirtualListItem } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
 import { VirtualizedTokenList } from 'src/ui/components/PositionSelector/VirtualizedTokenList';
 import * as styles from 'src/ui/components/PositionSelector/styles.module.css';
@@ -249,14 +250,13 @@ export function InputPositionSelector({
 
   // Same predicate as the network dialog below: pinned chains only surface
   // as chips when the wallet holds a tradable position on them.
+  const visiblePinnedNetworks = useVisiblePinnedNetworks(networks);
   const pinnedChainIds = useMemo(
     () =>
-      networks
-        ?.getPinnedNetworks()
+      visiblePinnedNetworks
         .map((n) => n.id)
-        .filter((id) => chainIdsInPositions.has(id) && isTradableChainId(id)) ??
-      [],
-    [networks, chainIdsInPositions, isTradableChainId]
+        .filter((id) => chainIdsInPositions.has(id) && isTradableChainId(id)),
+    [visiblePinnedNetworks, chainIdsInPositions, isTradableChainId]
   );
 
   const topNetworks = useTopNetworks(

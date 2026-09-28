@@ -30,6 +30,7 @@ import {
 } from 'src/ui/components/PositionSelector/NetworkChips';
 import * as chipStyles from 'src/ui/components/PositionSelector/styles.module.css';
 import { NetworkSelect2 } from 'src/ui/components/NetworkSelect2';
+import { useVisiblePinnedNetworks } from 'src/ui/components/PositionSelector/useVisiblePinnedNetworks';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import * as styles from './NftsPanel.module.css';
@@ -220,12 +221,17 @@ export function NftsPanel({
     [networks]
   );
 
+  const visiblePinnedNetworks = useVisiblePinnedNetworks(
+    networks,
+    getAddressType(address)
+  );
+
   const topNetworks = useMemo(() => {
     // Same predicate as the network dialog below: pinned chips come first,
     // in the user's pin order, followed by chains sorted by NFT count.
-    const pinned = networks
-      .getPinnedNetworks(getAddressType(address))
-      .filter((n) => allowedChainIds.has(n.id));
+    const pinned = visiblePinnedNetworks.filter((n) =>
+      allowedChainIds.has(n.id)
+    );
     const pinnedIds = new Set(pinned.map((n) => n.id));
     const byCount = Object.entries(nftChainsDistribution)
       .filter(([chainId]) => !pinnedIds.has(chainId))
@@ -246,7 +252,7 @@ export function NftsPanel({
       })),
       ...byCount,
     ];
-  }, [nftChainsDistribution, networks, address, allowedChainIds]);
+  }, [nftChainsDistribution, networks, visiblePinnedNetworks, allowedChainIds]);
 
   const chainDistribution = useMemo(() => {
     const distribution: Record<string, number> = {};
