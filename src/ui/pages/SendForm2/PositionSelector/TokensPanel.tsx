@@ -225,11 +225,17 @@ export function TokensPanel({
     };
   }, [positions]);
 
+  // Same filter as the network dialog below: pins for the address's standard.
+  const pinnedChainIds = useMemo(
+    () => networks.getPinnedNetworks(getAddressType(address)).map((n) => n.id),
+    [networks, address]
+  );
+
   const topNetworks = useTopNetworks(
     positions,
     selectedNetwork,
     pinnedFromDialog,
-    { networks }
+    { networks, pinnedChainIds }
   );
 
   const selectedNetworkConfig = useMemo(() => {

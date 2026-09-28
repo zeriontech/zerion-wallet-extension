@@ -209,8 +209,26 @@ export function NftsPanel({
     onSelectedNetworkChange(selectedNetwork);
   }, [selectedNetwork, onSelectedNetworkChange]);
 
+  const allowedChainIds = useMemo(
+    () =>
+      new Set(
+        networks
+          .getMainnets()
+          .filter((n) => n.flags.supportsNftPositions)
+          .map((n) => n.id)
+      ),
+    [networks]
+  );
+
   const topNetworks = useMemo(() => {
-    return Object.entries(nftChainsDistribution)
+    // Same predicate as the network dialog below: pinned chips come first,
+    // in the user's pin order, followed by chains sorted by NFT count.
+    const pinned = networks
+      .getPinnedNetworks(getAddressType(address))
+      .filter((n) => allowedChainIds.has(n.id));
+    const pinnedIds = new Set(pinned.map((n) => n.id));
+    const byCount = Object.entries(nftChainsDistribution)
+      .filter(([chainId]) => !pinnedIds.has(chainId))
       .sort(([, a], [, b]) => b - a)
       .map(([chainId]) => {
         const network = networks.getByNetworkId(createChain(chainId));
@@ -220,7 +238,15 @@ export function NftsPanel({
           iconUrl: network?.iconUrl ?? '',
         };
       });
-  }, [nftChainsDistribution, networks]);
+    return [
+      ...pinned.map((n) => ({
+        chainId: n.id,
+        name: n.name,
+        iconUrl: n.iconUrl ?? '',
+      })),
+      ...byCount,
+    ];
+  }, [nftChainsDistribution, networks, address, allowedChainIds]);
 
   const chainDistribution = useMemo(() => {
     const distribution: Record<string, number> = {};
@@ -237,17 +263,6 @@ export function NftsPanel({
       totalValue,
     };
   }, [nftChainsDistribution]);
-
-  const allowedChainIds = useMemo(
-    () =>
-      new Set(
-        networks
-          .getMainnets()
-          .filter((n) => n.flags.supportsNftPositions)
-          .map((n) => n.id)
-      ),
-    [networks]
-  );
 
   const scrollChipIntoView = (chainId: string) => {
     const el = chipsRef.current?.querySelector<HTMLElement>(

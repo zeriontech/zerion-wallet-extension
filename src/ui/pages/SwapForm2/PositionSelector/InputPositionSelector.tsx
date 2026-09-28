@@ -242,10 +242,28 @@ export function InputPositionSelector({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const chainIdsInPositions = useMemo(
+    () => new Set(tradablePositions.map((p) => p.chain.id)),
+    [tradablePositions]
+  );
+
+  // Same predicate as the network dialog below: pinned chains only surface
+  // as chips when the wallet holds a tradable position on them.
+  const pinnedChainIds = useMemo(
+    () =>
+      networks
+        ?.getPinnedNetworks()
+        .map((n) => n.id)
+        .filter((id) => chainIdsInPositions.has(id) && isTradableChainId(id)) ??
+      [],
+    [networks, chainIdsInPositions, isTradableChainId]
+  );
+
   const topNetworks = useTopNetworks(
     tradablePositions,
     selectedNetwork,
-    pinnedFromDialog
+    pinnedFromDialog,
+    { pinnedChainIds }
   );
 
   const chipOrder = useMemo(
@@ -254,11 +272,6 @@ export function InputPositionSelector({
   );
 
   const showNetworkSelectorTrigger = topNetworks.length >= 4;
-
-  const chainIdsInPositions = useMemo(
-    () => new Set(tradablePositions.map((p) => p.chain.id)),
-    [tradablePositions]
-  );
 
   const chainDistribution = useMemo(() => {
     const distribution: Record<string, number> = {};

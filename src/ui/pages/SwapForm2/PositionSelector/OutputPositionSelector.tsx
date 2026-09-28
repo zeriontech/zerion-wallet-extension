@@ -431,12 +431,23 @@ export function OutputPositionSelector({
     [isTradableChainId]
   );
 
+  // Same predicate as the network dialog below.
+  const pinnedChainIds = useMemo(
+    () =>
+      networks
+        .getPinnedNetworks()
+        .map((n) => n.id)
+        .filter((id) => isTradableChainId(id)),
+    [networks, isTradableChainId]
+  );
+
   const topNetworks: TopNetworksEntry[] = useTopNetworks(
     tradablePositions,
     selectedNetwork,
     pinnedFromDialog,
     {
       pinnedFirstChainId: SOLANA_CHAIN_ID,
+      pinnedChainIds,
       fallbackChainId: ETHEREUM_CHAIN_ID,
       networks,
       padChainIds: tradablePadChainIds,
