@@ -86,7 +86,7 @@ function resolveLabel({
   if (isCrossEcosystem && receiverEcosystemMismatch) {
     return 'Unable to Swap';
   }
-  if (quote?.error) {
+  if (quote?.error || quotesQuery.error) {
     return 'Unable to Swap';
   }
   if (quotesQuery.isLoading && !quote) {

@@ -4,12 +4,17 @@ import { Store } from 'store-unit';
 import { EventSource, type ErrorEvent } from 'eventsource'; // supports passing custom headers
 import { getError } from 'get-error';
 import { invariant } from 'src/shared/invariant';
+import {
+  parseQuoteErrorDetailsFromText,
+  type QuoteErrorDetails,
+} from './quoteErrorDetails';
+import { QuotesError } from './QuotesError';
 
 interface EventSourceState<T> {
   value: null | T;
   nextValue: null | T;
   done: boolean;
-  error: null | Error;
+  error: null | QuotesError;
   isLoading: boolean;
 }
 
@@ -20,25 +25,35 @@ interface Options<T> {
   headers?: HeadersInit;
   eventCodeToMessage?: Record<number, string>;
   onError?: (params: {
-    parsedError: Error;
+    parsedError: QuotesError;
     rawEvent: ErrorEvent;
     requestUrl: URL;
   }) => void;
 }
 
+/**
+ * `eventsource` reports a non-200 response as a bare `ErrorEvent` with the
+ * status code only and never reads the body, so the body is read here — before
+ * the library sees the response — to keep the backend's error wording.
+ */
 function createEventSource(url: string | URL, headers?: HeadersInit) {
-  return new EventSource(
-    url,
-    headers
-      ? {
-          fetch: (input, init) =>
-            fetch(input, {
-              ...init,
-              headers: { ...init.headers, ...headers },
-            }),
-        }
-      : undefined
-  );
+  let errorDetails: QuoteErrorDetails | null = null;
+  const source = new EventSource(url, {
+    fetch: async (input, init) => {
+      const response = await fetch(input, {
+        ...init,
+        headers: { ...init.headers, ...headers },
+      });
+      if (!response.ok) {
+        errorDetails = await response
+          .clone()
+          .text()
+          .then(parseQuoteErrorDetailsFromText, () => null);
+      }
+      return response;
+    },
+  });
+  return { source, getErrorDetails: () => errorDetails };
 }
 
 const DEFAULT_EVENT_CODE_TO_MESSAGE = {
@@ -46,24 +61,51 @@ const DEFAULT_EVENT_CODE_TO_MESSAGE = {
   503: 'Service Unavailable',
 };
 
-function eventToMessage(
+function eventToError(
   event: ErrorEvent,
-  eventCodeToMessage: Record<number, string> = DEFAULT_EVENT_CODE_TO_MESSAGE
+  eventCodeToMessage: Record<number, string> = DEFAULT_EVENT_CODE_TO_MESSAGE,
+  details: QuoteErrorDetails | null = null
 ) {
-  return (
+  return new QuotesError(
     (event.code != null && eventCodeToMessage[event.code]) ||
-    event.message ||
-    'Server Error'
+      event.message ||
+      'Server Error',
+    event.code || 500,
+    details
   );
+}
+
+/**
+ * An `exception` event carries either the ZPI `errors` JSON or plain text;
+ * both are backend-authored, so plain text is kept as the detail.
+ */
+function exceptionDataToError(data: string) {
+  const details = parseQuoteErrorDetailsFromText(data);
+  if (details) {
+    return new QuotesError(
+      details.detail ?? details.title ?? data,
+      500,
+      details
+    );
+  }
+  return new QuotesError(data, 500, {
+    title: null,
+    detail: data,
+    dappName: null,
+    dappUrl: null,
+  });
 }
 
 export class EventSourceStore<T> extends Store<EventSourceState<T>> {
   source: EventSource | null;
+  getErrorDetails: () => QuoteErrorDetails | null = () => null;
   url: string | null;
   options: Options<T>;
 
-  subscribe(source: EventSource | null) {
+  subscribe(connection: ReturnType<typeof createEventSource> | null) {
+    const source = connection?.source ?? null;
     this.source = source;
+    this.getErrorDetails = connection?.getErrorDetails ?? (() => null);
     this.setState((state) => ({
       ...state,
       isLoading: Boolean(source),
@@ -127,8 +169,10 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
   };
 
   handleError = (event: ErrorEvent) => {
-    const error = new Error(
-      eventToMessage(event, this.options.eventCodeToMessage)
+    const error = eventToError(
+      event,
+      this.options.eventCodeToMessage,
+      this.getErrorDetails()
     );
     this.setState((state) => ({
       ...state,
@@ -146,11 +190,10 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
   };
 
   handleException = (event: ErrorEvent | MessageEvent) => {
-    const error = new Error(
+    const error =
       'data' in event && event.data
-        ? event.data
-        : eventToMessage(event, this.options.eventCodeToMessage)
-    );
+        ? exceptionDataToError(event.data)
+        : eventToError(event, this.options.eventCodeToMessage);
     this.setState((state) => ({
       ...state,
       error,

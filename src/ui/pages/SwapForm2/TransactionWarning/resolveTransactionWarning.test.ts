@@ -5,6 +5,7 @@ import type {
   InterpretResponse,
   Warning as SimulationWarning,
 } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
+import { QuotesError } from 'src/ui/shared/requests/QuotesError';
 import type { SwapFormState2 } from '../types';
 import {
   resolveTransactionWarning,
@@ -48,6 +49,15 @@ function makeQuotesQuery(quotes: Quote2[]): QuotesData<Quote2> {
     isLoading: false,
     quotes,
     error: null,
+  } as unknown as QuotesData<Quote2>;
+}
+
+function makeFailedQuotesQuery(error: QuotesError): QuotesData<Quote2> {
+  return {
+    done: true,
+    isLoading: false,
+    quotes: null,
+    error,
   } as unknown as QuotesData<Quote2>;
 }
 
@@ -549,6 +559,84 @@ describe('resolveTransactionWarning', () => {
         simulationResult: null,
       });
       expect(r.warning?.title).toContain('doesn’t support bridging');
+    });
+  });
+
+  describe('quote errors (whole quotes request failed)', () => {
+    it('backend-authored title, detail and dApp referral are shown verbatim', () => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        quote: null,
+        quotesQuery: makeFailedQuotesQuery(
+          new QuotesError('Incorrect trade parameters', 400, {
+            title: 'Unshielding not supported',
+            detail: 'Please use ${DAPP} to unshield.',
+            dappName: 'Zama',
+            dappUrl: 'https://app.zama.org/',
+          })
+        ),
+        simulationResult: null,
+      });
+      expect(r.warning).toEqual({
+        variant: 'warning',
+        title: 'Unshielding not supported',
+        description: 'Please use ${DAPP} to unshield.',
+        dapp: { name: 'Zama', url: 'https://app.zama.org/' },
+      });
+      expect(r.dangerTitle).toBeNull();
+      expect(r.blocksAutoSign).toBe(false);
+    });
+
+    it('backend title without detail keeps the status fallback description', () => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        quote: null,
+        quotesQuery: makeFailedQuotesQuery(
+          new QuotesError('No liquidity for this trade', 404, {
+            title: 'Nothing to route',
+            detail: null,
+            dappName: null,
+            dappUrl: null,
+          })
+        ),
+        simulationResult: null,
+      });
+      expect(r.warning).toEqual({
+        variant: 'warning',
+        title: 'Nothing to route',
+        description: 'This pair can’t be swapped right now.',
+      });
+    });
+
+    it.each([
+      [400, 'Incorrect trade parameters'],
+      [404, 'No providers available'],
+      [500, 'Service unavailable'],
+      [503, 'Service unavailable'],
+      [418, 'Unable to fetch quotes'],
+    ])('status %s without backend wording → "%s"', (status, title) => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        quote: null,
+        quotesQuery: makeFailedQuotesQuery(new QuotesError('x', status)),
+        simulationResult: null,
+      });
+      expect(r.warning?.title).toBe(title);
+      expect(r.warning?.description).toBeTruthy();
+      expect(r.warning?.dapp).toBeUndefined();
+    });
+
+    it('is hidden while the next quotes request is loading', () => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        quote: null,
+        quotesQuery: {
+          ...makeFailedQuotesQuery(new QuotesError('x', 500)),
+          isLoading: true,
+        },
+        simulationResult: null,
+      });
+      expect(r.warning).toBeNull();
     });
   });
 });

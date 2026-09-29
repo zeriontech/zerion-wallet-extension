@@ -11,6 +11,12 @@ export interface WarningContent {
   variant: WarningVariant;
   title: string;
   description?: string;
+  /**
+   * Present when `description` is backend-authored: it may contain the
+   * `${DAPP}` placeholder, rendered as a DApp Referral from these fields
+   * (see CONTEXT.md). Absent for our own wording.
+   */
+  dapp?: { name: string | null; url: string | null };
 }
 
 export type SimulationResult =
