@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { getError } from 'src/shared/errors/getError';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { SwapFormState2 } from '../types';
 import {
@@ -84,6 +83,38 @@ function readSimulatedOutput(
   };
 }
 
+/**
+ * Our own wording for a failed quotes request, used for whatever part the
+ * backend didn't author itself. Chosen by the response status.
+ */
+export function getQuotesErrorFallback(status: number): {
+  title: string;
+  description: string;
+} {
+  if (status === 400) {
+    return {
+      title: 'Incorrect trade parameters',
+      description: 'Check the tokens and amount, then try again.',
+    };
+  }
+  if (status === 404) {
+    return {
+      title: 'No providers available',
+      description: 'This pair can’t be swapped right now.',
+    };
+  }
+  if (status === 500 || status === 503) {
+    return {
+      title: 'Service unavailable',
+      description: 'Quotes are temporarily unavailable. Try again later.',
+    };
+  }
+  return {
+    title: 'Unable to fetch quotes',
+    description: 'Something went wrong. Try again later.',
+  };
+}
+
 function resolveFormStateWarning({
   quote,
   quotesQuery,
@@ -156,10 +187,17 @@ function resolveFormStateWarning({
   }
 
   if (quotesQuery.error && !quotesQuery.isLoading) {
+    const { status, details } = quotesQuery.error;
+    const fallback = getQuotesErrorFallback(status);
     return {
       variant: 'warning',
-      title: 'Unable to fetch quotes',
-      description: getError(quotesQuery.error).message,
+      title: details?.title ?? fallback.title,
+      ...(details?.detail
+        ? {
+            description: details.detail,
+            dapp: { name: details.dappName, url: details.dappUrl },
+          }
+        : { description: fallback.description }),
     };
   }
 

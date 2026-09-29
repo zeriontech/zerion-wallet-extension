@@ -13,12 +13,13 @@ import { useStore } from '@store-unit/react';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { applyPriceImpactOverride } from 'src/ui/features/dev-menu/applyPriceImpactOverride';
 import { walletPort } from '../channels';
+import type { QuotesError } from './QuotesError';
 import { useEventSource } from './useEventSource';
 export interface QuotesData<T> {
   quotes: T[] | null;
   isLoading: boolean;
   done: boolean;
-  error: Error | null;
+  error: QuotesError | null;
   refetch: () => void;
 }
 
@@ -179,7 +180,8 @@ export function useQuotes2({
         handleQuoteError({
           message: parsedError.message,
           code: rawEvent.code,
-          backendMessage: rawEvent.message,
+          // Raw (placeholder-unreplaced) backend detail groups well in analytics.
+          backendMessage: parsedError.details?.detail ?? rawEvent.message,
           requestParams: Object.fromEntries(
             requestUrl.searchParams.entries()
           ) as Partial<SwapFormState> & {
@@ -422,7 +424,8 @@ export function useQuotesV2({
         handleQuoteError({
           message: parsedError.message,
           code: rawEvent.code,
-          backendMessage: rawEvent.message,
+          // Raw (placeholder-unreplaced) backend detail groups well in analytics.
+          backendMessage: parsedError.details?.detail ?? rawEvent.message,
           requestParams: Object.fromEntries(
             requestUrl.searchParams.entries()
           ) as Partial<SwapFormState> & {
