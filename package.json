@@ -20,7 +20,8 @@
     "ui-lab": "parcel serve src/ui-lab/index.html --config ./src/ui-lab/parcel.lab.config",
     "lint": "eslint . --cache --fix",
     "lint:check": "eslint . --cache --max-warnings=0",
-    "format": "prettier --loglevel warn --write \"**/*.{ts,tsx,css,md}\"",
+    "format": "prettier --loglevel warn --write \"**/*.{js,jsx,mjs,cjs,json,ts,tsx,css,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,mjs,cjs,json,ts,tsx,css,md,yml,yaml}\"",
     "prepare": "husky install",
     "postversion": "node ./scripts/manifest-version.js",
     "refresh-networks-fallback": "node scripts/refresh-networks-fallback.mjs"

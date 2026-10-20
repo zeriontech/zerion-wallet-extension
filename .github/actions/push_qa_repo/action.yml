@@ -8,11 +8,11 @@ inputs:
     description: 'Commit message for the push'
     required: true
   repo_token:
-    description: "Token with contents:write on zerion-wallet-extension-qa (GitHub App installation token)"
+    description: 'Token with contents:write on zerion-wallet-extension-qa (GitHub App installation token)'
     required: true
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Create branch in another repository and copy files
       env:
