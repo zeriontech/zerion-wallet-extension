@@ -80,5 +80,26 @@ export default tseslint.config(
         ...globals.node,
       },
     },
+  },
+
+  {
+    files: ['**/*.mjs'],
+    languageOptions: {
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        // Node >=18 global, missing from the `globals` package's node set
+        fetch: 'readonly',
+      },
+    },
+  },
+
+  // CLI scripts print to stdout and intentionally read user-supplied paths
+  {
+    files: ['scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
+      'security/detect-non-literal-fs-filename': 'off',
+    },
   }
 );
