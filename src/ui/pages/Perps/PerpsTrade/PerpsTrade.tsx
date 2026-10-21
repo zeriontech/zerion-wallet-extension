@@ -20,6 +20,7 @@ import { calculateIsolatedLiquidationPrice } from 'src/modules/hyperliquid/calc/
 import { calculatePositionSize } from 'src/modules/hyperliquid/calc/calculatePositionSize';
 import { calculatePriceWithSlippage } from 'src/modules/hyperliquid/calc/calculatePriceWithSlippage';
 import { computeAssetId } from 'src/modules/hyperliquid/calc/computeAssetId';
+import { resolveIsCross } from 'src/modules/hyperliquid/calc/resolveIsCross';
 import {
   formatOrderPrice,
   formatOrderSize,
@@ -218,9 +219,11 @@ export function PerpsTrade() {
       // position is open. If a position already exists on this coin (e.g. user
       // is "opening" another long on top of an existing one, or `add`/`close`),
       // we MUST match the existing margin type. Greenfield opens default to
-      // cross.
-      const existingIsCross =
-        position != null ? position.leverage.type === 'cross' : true;
+      // cross, or isolated on isolated-only assets.
+      const existingIsCross = resolveIsCross({
+        positionMarginType: position?.leverage.type ?? null,
+        onlyIsolated: asset.universe.onlyIsolated,
+      });
 
       let intent: PerpsIntent;
       let analytics: PerpsPositionActionFormParams;
