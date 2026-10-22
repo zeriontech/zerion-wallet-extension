@@ -19,7 +19,7 @@ export function isInterpretQueryEnabled({
 
 export function getInterpretQueryKey(input: {
   populatedTransaction: IncomingTransactionWithChainId;
-  chainGasPrices: ChainGasPrice | undefined;
+  chainGasPrices: ChainGasPrice | null | undefined;
   configuration: CustomConfiguration;
   allowanceQuantityBase: string;
   chain: Chain;
