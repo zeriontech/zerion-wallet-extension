@@ -3,8 +3,6 @@ import { isNumeric } from 'src/shared/isNumeric';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { ZERION_API_URL } from 'src/env/config';
-import { createUrl } from 'src/shared/createUrl';
 import type { SwapFormState } from 'src/shared/types/SwapFormState';
 import { createHeaders } from 'src/modules/zerion-api/shared';
 import { invariant } from 'src/shared/invariant';
@@ -15,6 +13,7 @@ import { applyPriceImpactOverride } from 'src/ui/features/dev-menu/applyPriceImp
 import { walletPort } from '../channels';
 import type { QuotesError } from './QuotesError';
 import { useEventSource } from './useEventSource';
+import { createSwapQuotesV3Url } from './createSwapQuotesV3Url';
 export interface QuotesData<T> {
   quotes: T[] | null;
   isLoading: boolean;
@@ -23,266 +22,12 @@ export interface QuotesData<T> {
   refetch: () => void;
 }
 
-function createSwapQuotesUrl(address: string, formState: SwapFormState) {
-  const searchParams = new URLSearchParams(
-    Object.entries(formState).filter(([_, v]) => v)
-  );
-  searchParams.set('from', address);
-  return createUrl({
-    base: ZERION_API_URL,
-    pathname: '/transaction/stream-swap-quotes/v1',
-    searchParams,
-  }).toString();
-}
-
 const QUOTES_EVENT_CODE_TO_MESSAGE = {
   500: 'Internal Server Error',
   503: 'Service Unavailable',
   404: 'No liquidity for this trade',
   400: 'Incorrect trade parameters',
 };
-
-export function useQuotes2({
-  address,
-  currency,
-  formState,
-  enabled = true,
-  context,
-  pathname,
-}: {
-  address: string;
-  currency: string;
-  formState: SwapFormState;
-  enabled?: boolean;
-  context: 'Swap' | 'Bridge';
-  pathname: string;
-}) {
-  const [refetchHash, setRefetchHash] = useState(0);
-  const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
-  const refetch = useCallback(() => setRefetchHash((n) => n + 1), []);
-
-  const chain = formState.inputChain ? createChain(formState.inputChain) : null;
-
-  const formStateCompleted = useMemo(() => {
-    if (!chain) {
-      return null;
-    }
-    const slippageOptions = getSlippageOptions({
-      chain,
-      userSlippage:
-        formState.slippage != null ? Number(formState.slippage) : null,
-    });
-    return {
-      ...formState,
-      currency,
-      slippage: String(slippageOptions.slippagePercent),
-    };
-  }, [chain, currency, formState]);
-
-  // Gas params are intentionally never serialized into the request: the
-  // backend quotes at "fast" and ignores them. Changing the gas setting must
-  // not refetch the quote — it's scaled locally instead.
-  const url = useMemo(() => {
-    if (!formStateCompleted) {
-      return null;
-    }
-    return createSwapQuotesUrl(address, formStateCompleted);
-  }, [formStateCompleted, address]);
-
-  const handleQuoteError = useCallback(
-    ({
-      message,
-      code,
-      backendMessage,
-      requestParams,
-    }: {
-      message: string;
-      code?: number;
-      backendMessage?: string;
-      requestParams: Partial<SwapFormState> & { from: string };
-    }) => {
-      invariant(
-        requestParams.inputFungibleId,
-        'Unable to find inputFungibleId in quotes request'
-      );
-      invariant(
-        requestParams.outputFungibleId,
-        'Unable to find outputFungibleId in quotes request'
-      );
-      invariant(
-        requestParams.inputAmount,
-        'Unable to find inputAmount in quotes request'
-      );
-      walletPort.request('quoteError', {
-        message,
-        errorCode: code,
-        backendMessage,
-        context,
-        actionType: context === 'Swap' ? 'Trade' : 'Send',
-        type: context === 'Swap' ? 'Trade form error' : 'Bridge form error',
-        address: requestParams.from,
-        inputFungibleId: requestParams.inputFungibleId,
-        outputFungibleId: requestParams.outputFungibleId,
-        inputAmount: requestParams.inputAmount,
-        inputChain: requestParams.inputChain || null,
-        outputAmount: null,
-        outputChain: requestParams.outputChain || null,
-        contractType: null,
-        pathname,
-        slippage: requestParams.slippage
-          ? Number(requestParams.slippage)
-          : null,
-      });
-    },
-    [context, pathname]
-  );
-
-  const {
-    value: quotes,
-    isLoading,
-    error,
-    done,
-  } = useEventSource<Quote2[]>(
-    `${url ?? 'no-url'}-${refetchHash}`,
-    url ?? null,
-    {
-      headers: createHeaders({}),
-      enabled:
-        enabled &&
-        Boolean(
-          address &&
-            formState.inputChain &&
-            formState.inputAmount &&
-            isNumeric(formState.inputAmount) &&
-            Number(formState.inputAmount) > 0 &&
-            formState.inputFungibleId &&
-            formState.outputFungibleId
-        ),
-      mergeResponse: (currentValue, nextValue) => {
-        if (!currentValue) {
-          return nextValue;
-        }
-        if (!nextValue) {
-          return currentValue;
-        }
-        return currentValue.map((item) => {
-          const updatedItem = nextValue.find(
-            (nextItem) =>
-              nextItem.contractMetadata &&
-              item.contractMetadata &&
-              nextItem.contractMetadata.id === item.contractMetadata.id
-          );
-          return updatedItem || item;
-        });
-      },
-      eventCodeToMessage: QUOTES_EVENT_CODE_TO_MESSAGE,
-      onError: ({ parsedError, rawEvent, requestUrl }) => {
-        handleQuoteError({
-          message: parsedError.message,
-          code: rawEvent.code,
-          // Raw (placeholder-unreplaced) backend detail groups well in analytics.
-          backendMessage: parsedError.details?.detail ?? rawEvent.message,
-          requestParams: Object.fromEntries(
-            requestUrl.searchParams.entries()
-          ) as Partial<SwapFormState> & {
-            from: string;
-          },
-        });
-      },
-    }
-  );
-
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const refetchInterval = config?.quotes_refetch_interval ?? 20000;
-
-  useEffect(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = undefined;
-    }
-
-    if (done) {
-      timeoutRef.current = setTimeout(() => {
-        refetch();
-      }, refetchInterval);
-    }
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [done, refetch, refetchInterval]);
-
-  // keepPreviousData across periodic refetches: while the same `url` is being
-  // re-streamed, keep showing the last completed result rather than flickering
-  // to a loading state.
-  const resultRef = useRef(quotes);
-  const urlRef = useRef(url);
-
-  const usePreviousData = url === urlRef.current && !done;
-
-  if (url !== urlRef.current) {
-    urlRef.current = url;
-    resultRef.current = null;
-  }
-
-  if (done && quotes && !error) {
-    resultRef.current = quotes;
-  }
-  if (error) {
-    resultRef.current = null;
-  }
-
-  return {
-    quotes: usePreviousData && resultRef.current ? resultRef.current : quotes,
-    isPreviousData: Boolean(usePreviousData && resultRef.current),
-    isLoading,
-    error,
-    done,
-    refetch,
-  };
-}
-
-function createSwapQuotesV2Url({
-  address,
-  currency,
-  formState,
-}: {
-  address: string;
-  currency: string;
-  formState: SwapFormState;
-}) {
-  const searchParams = new URLSearchParams();
-  searchParams.set('currency', currency);
-  if (formState.inputChain) {
-    searchParams.set('inputChain', formState.inputChain);
-  }
-  if (formState.outputChain) {
-    searchParams.set('outputChain', formState.outputChain);
-  }
-  searchParams.set('from', address);
-  if (formState.to) {
-    searchParams.set('to', formState.to);
-  }
-  if (formState.inputFungibleId) {
-    searchParams.set('inputFungibleId', formState.inputFungibleId);
-  }
-  if (formState.outputFungibleId) {
-    searchParams.set('outputFungibleId', formState.outputFungibleId);
-  }
-  if (formState.inputAmount) {
-    searchParams.set('inputAmount', formState.inputAmount);
-  }
-  if (formState.slippage) {
-    searchParams.set('slippage', formState.slippage);
-  }
-  return createUrl({
-    base: ZERION_API_URL,
-    pathname: '/transaction/stream-swap-quotes/v2',
-    searchParams,
-  }).toString();
-}
 
 export function useQuotesV2({
   address,
@@ -326,7 +71,7 @@ export function useQuotesV2({
     if (!chain) {
       return null;
     }
-    return createSwapQuotesV2Url({
+    return createSwapQuotesV3Url({
       address,
       currency,
       formState: { ...formState, slippage: slippage ?? undefined },

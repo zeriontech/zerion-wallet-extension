@@ -57,6 +57,8 @@ export function useWalletActions(
     return queryData.data?.pages.flatMap((page) => page.data);
   }, [queryData.data]);
 
+  const firstPage = queryData.data?.pages[0];
+
   // Slice data to the first page on refetch
   // Based on: https://github.com/TanStack/query/discussions/1670#discussioncomment-13006968
   const refetch = useCallback(() => {
@@ -67,5 +69,12 @@ export function useWalletActions(
     queryClient.refetchQueries(queryKey);
   }, [queryKey]);
 
-  return { actions, refetch, queryData };
+  return {
+    actions,
+    pending: firstPage?.pending,
+    unsigned: firstPage?.unsigned,
+    pendingListsAvailable: firstPage?.pendingListsAvailable ?? false,
+    refetch,
+    queryData,
+  };
 }
