@@ -12,7 +12,10 @@ import shieldSolidUrl from 'url:src/ui/assets/shield-solid.svg';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { toMultichainTransaction } from 'src/shared/types/Quote';
+import {
+  isExecutableQuote,
+  toMultichainTransaction,
+} from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -124,7 +127,7 @@ function isDisabled({
   if (isCrossEcosystem && !formState.to) return true;
   if (isCrossEcosystem && receiverEcosystemMismatch) return true;
   if (!quote) return true;
-  if (quote.error) return true;
+  if (!isExecutableQuote(quote)) return true;
   return false;
 }
 
