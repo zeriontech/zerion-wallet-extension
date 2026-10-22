@@ -106,6 +106,29 @@ export type TransactionMultichainBackend = {
 
 type TransactionMultichain = TransactionMultichainBackend;
 
+/**
+ * EIP-712 document from the swap API: `types` may lack `EIP712Domain` and
+ * `message` may arrive as a JSON string.
+ */
+export type TypedDataDocument = {
+  types: Record<string, Array<{ name: string; type: string }>>;
+  primaryType: string;
+  domain: {
+    name?: string;
+    version?: string;
+    chainId?: number | string;
+    verifyingContract?: string;
+    salt?: string;
+  };
+  message: Record<string, unknown> | string;
+};
+
+/** EIP-712 document on EVM; base64 transaction to sign without broadcasting on Solana */
+export type IntentMultichain = {
+  evm: null | TypedDataDocument;
+  solana: null | TransactionSolana;
+};
+
 export type ContractMetadata2 = {
   /**
    * @description ID of liquidity source, may be used as `source_id` parameter
@@ -183,10 +206,43 @@ export interface Quote2 {
   transactionApprove: null | TransactionMultichain;
   /** @description Main swap transaction */
   transactionSwap: null | TransactionMultichain;
+  /** @description Opaque id for `transaction/execute-order/v1`. Empty on a quote carrying `error` */
+  quoteId: string;
+  /** @description Swap Intent to sign off-chain instead of sending `transactionSwap` */
+  intentSwap: null | IntentMultichain;
+  /** @description Permit to sign off-chain. Mutually exclusive with `transactionApprove` */
+  intentApprove: null | IntentMultichain;
   /** @description Slippage chosen by the backend when the request omits one (auto mode). */
   autoSlippage: number | null;
   /** @description Final slippage applied to the quote, in percent (e.g. 0.5 = 0.5%). */
   finalSlippage: number | null;
+}
+
+/** The only test for executing a quote as an Intent Swap */
+export function isIntentQuote<T extends Pick<Quote2, 'intentSwap' | 'quoteId'>>(
+  quote: T
+): quote is T & { intentSwap: IntentMultichain } {
+  return quote.intentSwap != null && quote.quoteId !== '';
+}
+
+/** No `error` and either a swap transaction or an intent with a non-empty `quoteId` */
+export function isExecutableQuote(
+  quote: Pick<Quote2, 'error' | 'transactionSwap' | 'intentSwap' | 'quoteId'>
+) {
+  if (quote.error) {
+    return false;
+  }
+  return quote.transactionSwap != null || isIntentQuote(quote);
+}
+
+export function filterQuotesByIntentCapability<T extends Quote2>(
+  quotes: T[] | null,
+  allowIntents: boolean
+): T[] | null {
+  if (!quotes || allowIntents) {
+    return quotes;
+  }
+  return quotes.filter((quote) => !isIntentQuote(quote));
 }
 
 export function toMultichainTransaction(

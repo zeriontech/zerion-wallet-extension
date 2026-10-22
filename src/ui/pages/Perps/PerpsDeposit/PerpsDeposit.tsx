@@ -60,6 +60,7 @@ import { PerpsOnboarding } from '../PerpsOnboarding';
 import { RiskDisclosureBlock } from '../Blocks/RiskDisclosureBlock';
 import { DepositFormSkeleton } from './DepositFormSkeleton';
 import * as s from './styles.module.css';
+import { pickPerpsDepositQuote } from './pickPerpsDepositQuote';
 
 const HYPERCORE_CHAIN_ID = 'hypercore';
 const HYPERCORE_USDC_FUNGIBLE_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
@@ -227,7 +228,7 @@ function DepositFormBody({
     inputFiatValue,
   });
 
-  const quote = quotesQuery.quotes?.[0] ?? null;
+  const quote = pickPerpsDepositQuote(quotesQuery.quotes);
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
