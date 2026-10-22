@@ -105,6 +105,10 @@ import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
+import {
+  getInterpretQueryKey,
+  isInterpretQueryEnabled,
+} from './interpretQuery';
 import { TransactionConfiguration } from './TransactionConfiguration';
 import {
   DEFAULT_CONFIGURATION,
@@ -235,6 +239,7 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   return {
     /** popuLATERtrasaction - it's partially populated now and will get more data later :D */
     populatedTransaction: resolveGasQuery.data || withChainId || null,
+    isPrepared: resolveGasQuery.isFetched,
   };
 }
 
@@ -472,6 +477,7 @@ function TransactionDefaultView({
 
 function SendTransactionContent({
   populatedTransaction,
+  isPrepared,
   origin,
   clientScope,
   wallet,
@@ -479,6 +485,7 @@ function SendTransactionContent({
   chain,
 }: {
   populatedTransaction: IncomingTransactionWithChainId;
+  isPrepared: boolean;
   origin: string;
   clientScope: string | null;
   wallet: ExternallyOwnedAccount;
@@ -532,7 +539,7 @@ function SendTransactionContent({
   const eligibilityQuery = useQuery({
     // transaction gas type may change when gasPrices responds, so we should wait
     // to avoid inconsistency between paymasterCheckEligibility and getPaymasterParams calls
-    enabled: paymasterPossible && gasPricesQuery.isFetched,
+    enabled: paymasterPossible && gasPricesQuery.isFetched && isPrepared,
     suspense: false,
     staleTime: 120000,
     retry: 1,
@@ -573,30 +580,31 @@ function SendTransactionContent({
   const isWaitingForGasrices = !gasPricesReady && !isStaleGasPricesValue;
 
   const interpretQuery = useQuery({
-    enabled: Boolean(
-      network?.flags.supportsSimulations && !isWaitingForGasrices
-    ),
+    enabled: isInterpretQueryEnabled({
+      supportsSimulations: Boolean(network?.flags.supportsSimulations),
+      isWaitingForGasPrices: isWaitingForGasrices,
+      isPrepared,
+    }),
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
     keepPreviousData: true,
     suspense: false,
-    queryKey: [
-      'interpretTxBasedOnEligibility',
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- networks content follows chain, which is in the key (WLT-2129)
+    queryKey: getInterpretQueryKey({
       populatedTransaction,
       chainGasPrices,
       configuration,
       allowanceQuantityBase,
       chain,
       singleAddress,
-      networks,
       transactionAction,
       currency,
       source,
-      eligibilityQuery.data?.data.eligible,
-      eligibilityQuery.status,
+      eligible: eligibilityQuery.data?.data.eligible,
+      eligibilityStatus: eligibilityQuery.status,
       origin,
-      wallet.address,
-    ],
+      walletAddress: wallet.address,
+    }),
     queryFn: async () => {
       const configuredTx = await configureTransactionToSign(
         populatedTransaction,
@@ -890,7 +898,10 @@ function EthSendTransaction() {
 
   // NOTE: this hook populates {networks} with a network for resolved chainId
   // This is why the {networks} object has necessary data, but it's very implicit.
-  const { populatedTransaction } = usePreparedTx(incomingTransaction, origin);
+  const { populatedTransaction, isPrepared } = usePreparedTx(
+    incomingTransaction,
+    origin
+  );
   const { networks } = useNetworks();
 
   if (isLoading || !wallet || !networks || !populatedTransaction) {
@@ -905,6 +916,7 @@ function EthSendTransaction() {
   return (
     <SendTransactionContent
       populatedTransaction={populatedTransaction}
+      isPrepared={isPrepared}
       origin={origin}
       clientScope={clientScope}
       wallet={wallet}
