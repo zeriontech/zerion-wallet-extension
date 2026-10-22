@@ -4,6 +4,7 @@ import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { createChain } from 'src/modules/networks/Chain';
 import {
   getInterpretQueryKey,
+  isInterpretationLoading,
   isInterpretQueryEnabled,
 } from './interpretQuery';
 
@@ -96,6 +97,64 @@ describe('isInterpretQueryEnabled', () => {
       expect(isInterpretQueryEnabled(input)).toBe(expected);
     }
   );
+});
+
+describe('isInterpretationLoading', () => {
+  // [isInitialLoading, isError, supportsSimulations, hasInterpretation, expected]
+  const cases: Array<[boolean, boolean, boolean, boolean, boolean]> = [
+    [false, false, false, false, false],
+    [false, false, false, true, false],
+    [false, false, true, false, true],
+    [false, false, true, true, false],
+    [false, true, false, false, false],
+    [false, true, false, true, false],
+    [false, true, true, false, false],
+    [false, true, true, true, false],
+    [true, false, false, false, true],
+    [true, false, false, true, true],
+    [true, false, true, false, true],
+    [true, false, true, true, true],
+    [true, true, false, false, true],
+    [true, true, false, true, true],
+    [true, true, true, false, true],
+    [true, true, true, true, true],
+  ];
+
+  test('covers all 16 input combinations', () => {
+    const distinct = new Set(cases.map((c) => c.slice(0, 4).join()));
+    expect(distinct.size).toBe(16);
+  });
+
+  test.each(cases)(
+    'isInitialLoading=%s isError=%s supportsSimulations=%s hasInterpretation=%s -> %s',
+    (
+      isInitialLoading,
+      isError,
+      supportsSimulations,
+      hasInterpretation,
+      expected
+    ) => {
+      expect(
+        isInterpretationLoading({
+          isInitialLoading,
+          isError,
+          supportsSimulations,
+          hasInterpretation,
+        })
+      ).toBe(expected);
+    }
+  );
+
+  test('a disabled query with no interpretation on a simulation network reads as loading', () => {
+    expect(
+      isInterpretationLoading({
+        isInitialLoading: false,
+        isError: false,
+        supportsSimulations: true,
+        hasInterpretation: false,
+      })
+    ).toBe(true);
+  });
 });
 
 describe('getInterpretQueryKey', () => {

@@ -17,6 +17,22 @@ export function isInterpretQueryEnabled({
   return supportsSimulations && !isWaitingForGasPrices && isPrepared;
 }
 
+export function isInterpretationLoading({
+  isInitialLoading,
+  isError,
+  supportsSimulations,
+  hasInterpretation,
+}: {
+  isInitialLoading: boolean;
+  isError: boolean;
+  supportsSimulations: boolean;
+  hasInterpretation: boolean;
+}): boolean {
+  return (
+    isInitialLoading || (supportsSimulations && !hasInterpretation && !isError)
+  );
+}
+
 export function getInterpretQueryKey(input: {
   populatedTransaction: IncomingTransactionWithChainId;
   chainGasPrices: ChainGasPrice | null | undefined;

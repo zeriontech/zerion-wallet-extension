@@ -107,6 +107,7 @@ import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import {
   getInterpretQueryKey,
+  isInterpretationLoading,
   isInterpretQueryEnabled,
 } from './interpretQuery';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -578,10 +579,11 @@ function SendTransactionContent({
    * to make the interpret request anyway
    */
   const isWaitingForGasrices = !gasPricesReady && !isStaleGasPricesValue;
+  const supportsSimulations = Boolean(network?.flags.supportsSimulations);
 
   const interpretQuery = useQuery({
     enabled: isInterpretQueryEnabled({
-      supportsSimulations: Boolean(network?.flags.supportsSimulations),
+      supportsSimulations,
       isWaitingForGasPrices: isWaitingForGasrices,
       isPrepared,
     }),
@@ -630,6 +632,16 @@ function SendTransactionContent({
     },
     refetchOnWindowFocus: false,
   });
+
+  const interpretationStatus = {
+    isInitialLoading: isInterpretationLoading({
+      isInitialLoading: interpretQuery.isInitialLoading,
+      isError: interpretQuery.isError,
+      supportsSimulations,
+      hasInterpretation: interpretQuery.data != null,
+    }),
+    isError: interpretQuery.isError,
+  };
 
   const interpretationHasCriticalWarning = hasCriticalWarning(
     interpretQuery.data?.data.warnings
@@ -762,7 +774,7 @@ function SendTransactionContent({
             allowanceQuantityCommon={allowanceQuantityCommon || null}
             customAllowanceQuantityBase={allowanceQuantityBase || null}
             interpretation={interpretQuery.data}
-            interpretQuery={interpretQuery}
+            interpretQuery={interpretationStatus}
             populatedTransaction={populatedTransaction}
             configuration={configuration}
             onConfigurationChange={setConfiguration}
