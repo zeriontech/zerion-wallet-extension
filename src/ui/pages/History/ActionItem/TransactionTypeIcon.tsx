@@ -219,7 +219,7 @@ function TransferIcon({
 export function TransactionItemIcon({
   addressAction,
 }: {
-  addressAction: AnyAddressAction;
+  addressAction: Pick<AnyAddressAction, 'content' | 'type'>;
 }) {
   const approvals = addressAction.content?.approvals;
   const incomingTransfers = useMemo(
