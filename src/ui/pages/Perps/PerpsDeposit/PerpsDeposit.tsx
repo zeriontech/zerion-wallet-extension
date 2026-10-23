@@ -311,6 +311,9 @@ function DepositFormBody({
             }),
             warningWasShown: false,
             outputAmountColor: 'grey',
+            orderReport: quote.quoteId
+              ? { quoteId: quote.quoteId, role: 'approve' }
+              : undefined,
           },
           toaster: {
             ...depositToasterView,
@@ -350,6 +353,9 @@ function DepositFormBody({
           outputChain: HYPERCORE_CHAIN_ID,
           warningWasShown: false,
           outputAmountColor: 'grey',
+          orderReport: quote.quoteId
+            ? { quoteId: quote.quoteId, role: 'swap' }
+            : undefined,
         },
         toaster: depositToasterView,
       });

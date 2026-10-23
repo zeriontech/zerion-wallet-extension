@@ -532,6 +532,9 @@ function SwapFormComponent({
             addressAction: interpretationAction ?? fallbackApproveAction,
             warningWasShown: Boolean(showPriceImpactCallout),
             outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+            orderReport: quote.quoteId
+              ? { quoteId: quote.quoteId, role: 'approve' }
+              : undefined,
           },
           toaster: {
             ...(isDeviceAccount(wallet) ||
@@ -596,6 +599,9 @@ function SwapFormComponent({
           outputChain: formState.outputChain,
           warningWasShown: Boolean(showPriceImpactCallout),
           outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+          orderReport: quote.quoteId
+            ? { quoteId: quote.quoteId, role: 'swap' }
+            : undefined,
         },
         toaster: swapToasterView,
       });
