@@ -34,15 +34,14 @@ describe('History request params: includePending (AC1)', () => {
       { isOwnWallet, startDate, pageParam },
       expected
     ) => {
-      const request = getPageRequestParams(
-        getHistoryActionsParams({
-          address: ADDRESS,
-          currency: 'usd',
-          startDate,
-          isOwnWallet,
-        }),
-        pageParam
-      );
+      const params = getHistoryActionsParams({
+        address: ADDRESS,
+        currency: 'usd',
+        startDate,
+        isOwnWallet,
+      });
+      expect(params.includePending === true).toBe(isOwnWallet && !startDate);
+      const request = getPageRequestParams(params, pageParam);
       expect(request.includePending === true).toBe(expected);
       expect('includePending' in request).toBe(expected);
     }
