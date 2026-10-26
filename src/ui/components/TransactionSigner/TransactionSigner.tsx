@@ -8,6 +8,7 @@ import { HardwareDialog } from './HardwareDialog/HardwareDialog';
 import { LedgerDialogWrapper } from './LedgerDialogWrapper';
 import { runQueue } from './runQueue';
 import { runStep } from './runStep';
+import { startOrderFollowUps } from './orderFollowUp/followOrders';
 
 export function TransactionSigner() {
   const releaseRef = useRef<(() => void) | null>(null);
@@ -36,6 +37,9 @@ export function TransactionSigner() {
       releaseRef.current = null;
     };
   }, []);
+
+  // Follow placed orders and wallet-sent swaps outside the queue, until unmount.
+  useEffect(() => startOrderFollowUps(), []);
 
   // Drive the head of the global queue.
   const runningRef = useRef<string | null>(null);

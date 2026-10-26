@@ -7,13 +7,55 @@ import {
   getQueues,
 } from '../store';
 import type { QueueEvent, SignStep, ToasterView } from '../types';
+import type { OrderOutcome } from '../orderFollowUp/followSubmittedOrder';
+import {
+  cancelFollowUp,
+  getFollowUpOutcome,
+  hasFollowUp,
+  subscribeFollowUp,
+} from '../orderFollowUp/followUpStore';
 
-export type TerminalKind = 'success' | 'failed';
+export type TerminalKind = 'success' | 'failed' | 'submitted' | 'complete';
+
+/** Submitted and complete stay on screen until dismissed or followed to success/failed */
+export function dissolvesAutomatically(terminal: TerminalKind): boolean {
+  switch (terminal) {
+    case 'success':
+    case 'failed':
+      return true;
+    case 'submitted':
+    case 'complete':
+      return false;
+    default: {
+      const exhaustive: never = terminal;
+      return exhaustive;
+    }
+  }
+}
+
+function outcomeToTerminal(outcome: OrderOutcome): TerminalKind {
+  switch (outcome.kind) {
+    case 'success':
+      return 'success';
+    case 'failed':
+      return 'failed';
+    case 'submitted':
+      return 'submitted';
+    case 'complete':
+      return 'complete';
+    default: {
+      const exhaustive: never = outcome;
+      return exhaustive;
+    }
+  }
+}
 
 export interface ActiveStepView {
   toaster?: ToasterView;
   /** Broadcast transaction hash, once the step has one */
   hash: string | null;
+  /** Explorer link decided by the order follow-up, over the step's own */
+  explorerUrl?: string | null;
 }
 
 export interface ToasterSessionState {
@@ -43,6 +85,8 @@ export interface ToasterSession extends ToasterSessionState {
    * remaining time.
    */
   setHovered: (hovered: boolean) => void;
+  /** Closes the pill now and stops following its order */
+  dismiss: () => void;
 }
 
 const TERMINAL_HOLD_MS = 3000;
@@ -80,8 +124,11 @@ export function useToasterSession(): ToasterSession {
     startedAt: number;
   } | null>(null);
   const hoveredRef = useRef(false);
+  // Queue whose final step ended and whose terminal comes from its order follow-up.
+  const awaitingFollowUpRef = useRef<string | null>(null);
 
   const runDismiss = useCallback(() => {
+    awaitingFollowUpRef.current = null;
     dismissTimerRef.current = null;
     pendingDismissRef.current = null;
     setState((s) => ({
@@ -143,6 +190,15 @@ export function useToasterSession(): ToasterSession {
     [runDismiss]
   );
 
+  const dismiss = useCallback(() => {
+    const queueId = stateRef.current.activeQueueId;
+    clearDismiss();
+    runDismiss();
+    if (queueId) {
+      cancelFollowUp(queueId);
+    }
+  }, [clearDismiss, runDismiss]);
+
   useEffect(() => {
     function getStepView(queueId: string, stepIndex: number): ActiveStepView {
       const q = getQueue(queueId);
@@ -182,6 +238,7 @@ export function useToasterSession(): ToasterSession {
       // previous queue's terminal state so it can't fire mid-session and
       // unmount the toaster while this step is running.
       clearDismiss();
+      awaitingFollowUpRef.current = null;
       const slotKey = `${queueId}:${stepIndex}`;
       let isNewSlot = false;
       if (!countedRef.current.has(slotKey)) {
@@ -233,12 +290,55 @@ export function useToasterSession(): ToasterSession {
       return stepIndex >= queue.steps.length - 1;
     }
 
+    function applyFollowUpOutcome(queueId: string, outcome: OrderOutcome) {
+      if (
+        awaitingFollowUpRef.current !== queueId ||
+        stateRef.current.activeQueueId !== queueId
+      ) {
+        return;
+      }
+      const terminal = outcomeToTerminal(outcome);
+      setState((s) => {
+        if (s.activeQueueId !== queueId || !s.current) return s;
+        const current =
+          outcome.kind === 'success'
+            ? {
+                ...s.current,
+                hash: outcome.hash ?? s.current.hash,
+                explorerUrl: outcome.explorerUrl ?? s.current.explorerUrl,
+              }
+            : s.current;
+        if (s.terminal === terminal && current === s.current) return s;
+        return { ...s, current, terminal, contentKey: s.contentKey + 1 };
+      });
+      if (dissolvesAutomatically(terminal)) {
+        awaitingFollowUpRef.current = null;
+        scheduleDismiss(DISSOLVE_MS + TERMINAL_HOLD_MS);
+      } else {
+        clearDismiss();
+      }
+    }
+
+    function awaitFollowUp(queueId: string) {
+      awaitingFollowUpRef.current = queueId;
+      const outcome = getFollowUpOutcome(queueId);
+      if (outcome) {
+        applyFollowUpOutcome(queueId, outcome);
+      }
+    }
+
     function handleStepEnd(
       queueId: string,
       stepIndex: number,
       kind: 'success' | 'failed' | 'dismissed' | 'placed'
     ) {
       const isLast = isLastStepInQueue(queueId, stepIndex);
+      const ended = kind === 'success' || kind === 'placed';
+      if (isLast && ended && hasFollowUp(queueId)) {
+        // The order's outcome comes from the backend, outside the queue.
+        awaitFollowUp(queueId);
+        return;
+      }
       if (isLast && kind === 'placed') {
         // The Order settles outside the queue: keep the in-progress verb, then dismiss.
         scheduleDismiss(TERMINAL_HOLD_MS);
@@ -337,12 +437,19 @@ export function useToasterSession(): ToasterSession {
       });
     });
 
+    const unsubscribeFollowUp = subscribeFollowUp((queueId, outcome) => {
+      if (outcome) {
+        applyFollowUpOutcome(queueId, outcome);
+      }
+    });
+
     return () => {
       unsubscribe();
       unsubscribeChange();
+      unsubscribeFollowUp();
       clearDismiss();
     };
   }, [clearDismiss, scheduleDismiss]);
 
-  return { ...state, setHovered };
+  return { ...state, setHovered, dismiss };
 }

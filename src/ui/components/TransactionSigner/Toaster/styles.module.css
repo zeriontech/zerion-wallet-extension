@@ -161,6 +161,10 @@
   background: var(--negative-500, #ff4242);
 }
 
+.statusBadgeNeutral {
+  background: var(--neutral-500, #8a8f9b);
+}
+
 .body {
   position: relative;
   display: flex;
@@ -360,4 +364,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.textAction {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 16px;
+  background: var(--neutral-100);
+  color: var(--black);
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.textAction:hover {
+  background: var(--neutral-200);
+}
+
+.textAction:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }

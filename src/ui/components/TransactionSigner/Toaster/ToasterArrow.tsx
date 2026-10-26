@@ -38,6 +38,23 @@ function phaseToScale(progress: number, offset: number): number {
   return SCALE_MIN + (SCALE_MAX - SCALE_MIN) * center;
 }
 
+/** The arrow keeps marching while the transaction is still under way */
+function isMarching(terminal: TerminalKind | null): boolean {
+  switch (terminal) {
+    case null:
+    case 'submitted':
+      return true;
+    case 'success':
+    case 'failed':
+    case 'complete':
+      return false;
+    default: {
+      const exhaustive: never = terminal;
+      return exhaustive;
+    }
+  }
+}
+
 export function ToasterArrow({
   terminal,
   reducedMotion,
@@ -59,10 +76,11 @@ export function ToasterArrow({
   const trailOpacity = useMotionValue(1);
 
   const terminalRef = useRef<TerminalKind | null>(null);
+  const marching = isMarching(terminal);
 
   // Loop while pending: keep leadX synced to progress, restart the sweep.
   useEffect(() => {
-    if (terminal !== null || reducedMotion) return;
+    if (!marching || reducedMotion) return;
     terminalRef.current = null;
     progress.set(0);
     trailOpacity.set(1);
@@ -80,11 +98,11 @@ export function ToasterArrow({
       controls.stop();
       unsubscribe();
     };
-  }, [terminal, reducedMotion, progress, leadX, leadScale, trailOpacity]);
+  }, [marching, reducedMotion, progress, leadX, leadScale, trailOpacity]);
 
   // Terminal: finish the march and rest a single arrow in the center.
   useEffect(() => {
-    if (terminal === null) return;
+    if (terminal === null || marching) return;
     if (terminalRef.current === terminal) return;
     terminalRef.current = terminal;
 
@@ -114,7 +132,7 @@ export function ToasterArrow({
       leadScaleControls.stop();
       trailControls.stop();
     };
-  }, [terminal, reducedMotion, leadX, leadScale, trailOpacity]);
+  }, [terminal, marching, reducedMotion, leadX, leadScale, trailOpacity]);
 
   return (
     <span className={s.arrowSlot} aria-hidden="true">
