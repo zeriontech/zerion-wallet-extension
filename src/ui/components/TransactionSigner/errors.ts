@@ -48,6 +48,14 @@ export class IntentVerificationError extends Error {
   }
 }
 
+/** A typed-data signature did not recover to the wallet the user is acting for; nothing was placed */
+export class IntentSignerMismatchError extends Error {
+  name = 'IntentSignerMismatchError';
+  constructor(public address: string, public recovered: string | null) {
+    super("The signature doesn't match your wallet. Nothing was submitted.");
+  }
+}
+
 /** execute-order rejected the signed Order for a reason other than an expired quote */
 export class OrderPlacementError extends Error {
   name = 'OrderPlacementError';
