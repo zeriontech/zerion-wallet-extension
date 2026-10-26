@@ -1,16 +1,22 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useMotionValue } from 'motion/react';
-import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { useMeasure } from 'src/ui/shared/useMeasure';
-import type { ToasterView } from '../types';
 import { ToasterArrow } from './ToasterArrow';
 import { ToasterIcons } from './ToasterIcons';
 import { ToasterStatusBadge } from './ToasterStatusBadge';
-import { ToasterActions } from './ToasterActions';
+import { ToasterActions, ToasterHistoryAction } from './ToasterActions';
+import {
+  HISTORY_PATH,
+  getSubtitle,
+  getTerminalAction,
+  getTitle,
+  type Subtitle,
+} from './toasterCopy';
 import { useToasterTarget } from './useToasterTarget';
 import { useReducedMotion } from './useReducedMotion';
 import {
+  dissolvesAutomatically,
   useToasterSession,
   type ActiveStepView,
   type TerminalKind,
@@ -58,75 +64,6 @@ const EXPAND_DELAY_MS = 400;
 // The compact pill rests at this scale and grows to 1 as it expands, giving a
 // subtle vertical (and overall) swell without cutting the actual height.
 const COMPACT_SCALE = 0.9;
-
-const HISTORY_PATH = '/overview/history';
-
-const PROGRESS_TITLE: Record<ToasterView['kind'], string> = {
-  approve: 'Approving',
-  swap: 'Swapping',
-  bridge: 'Bridging',
-  send: 'Sending',
-};
-
-const SUCCESS_TITLE: Record<ToasterView['kind'], string> = {
-  approve: 'Approved',
-  swap: 'Swapped',
-  bridge: 'Bridged',
-  send: 'Sent',
-};
-
-const FAILED_TITLE: Record<ToasterView['kind'], string> = {
-  approve: 'Approve failed',
-  swap: 'Swap failed',
-  bridge: 'Bridge failed',
-  send: 'Send failed',
-};
-
-function getTitle(
-  view: ToasterView | undefined,
-  terminal: TerminalKind | null
-): string {
-  if (terminal === 'failed') {
-    if (!view) return 'Failed';
-    return FAILED_TITLE[view.kind];
-  }
-  if (terminal === 'success') {
-    if (!view) return 'Done';
-    if (view.kind === 'bridge') return 'Cross-chain swaps';
-    return SUCCESS_TITLE[view.kind];
-  }
-  if (!view) return 'Executing';
-  return PROGRESS_TITLE[view.kind];
-}
-
-// A subtitle is either a plain text line, or a directional pair rendered with
-// an animated arrow between the two sides.
-type Subtitle =
-  | { type: 'text'; text: string }
-  | { type: 'directional'; from: string; to: string };
-
-function getSubtitle(
-  view: ToasterView | undefined,
-  terminal: TerminalKind | null
-): Subtitle | null {
-  if (!view) return null;
-  if (terminal === 'success' && view.kind === 'bridge') {
-    return { type: 'text', text: 'may take a few minutes' };
-  }
-  if (view.kind === 'approve') {
-    return { type: 'text', text: view.token.symbol };
-  }
-  if (view.kind === 'send') {
-    const target =
-      view.recipient.name ?? truncateAddress(view.recipient.address, 4);
-    return { type: 'directional', from: view.token.symbol, to: target };
-  }
-  return {
-    type: 'directional',
-    from: view.sent.symbol,
-    to: view.received.symbol,
-  };
-}
 
 // A stable key for AnimatePresence so the subtitle re-animates on content
 // change but the arrow keeps marching across a from/to swap.
@@ -259,6 +196,7 @@ function ToasterContent({
   reducedMotion,
   pendingQueueCount,
   textRevealed,
+  onNavigate,
 }: {
   step: ActiveStepView | null;
   terminal: TerminalKind | null;
@@ -267,10 +205,12 @@ function ToasterContent({
   // During the first entrance phase the pill shows only the icon; the text
   // column and counter reveal once this flips true.
   textRevealed: boolean;
+  onNavigate: (to: string) => void;
 }) {
   const view = step?.toaster;
   const title = getTitle(view, terminal);
   const subtitle = getSubtitle(view, terminal);
+  const terminalAction = getTerminalAction(terminal);
   const target = useToasterTarget(step);
 
   return (
@@ -367,6 +307,13 @@ function ToasterContent({
             target={target}
             reducedMotion={reducedMotion}
           />
+        ) : terminalAction && textRevealed ? (
+          <ToasterHistoryAction
+            key="terminal-action"
+            label={terminalAction.label}
+            reducedMotion={reducedMotion}
+            onClick={() => onNavigate(terminalAction.to)}
+          />
         ) : null}
       </AnimatePresence>
     </motion.div>
@@ -374,7 +321,7 @@ function ToasterContent({
 }
 
 export function TransactionToaster() {
-  const { setHovered, ...session } = useToasterSession();
+  const { setHovered, dismiss, ...session } = useToasterSession();
   const reducedMotion = useReducedMotion();
   const navigate = useNavigate();
 
@@ -434,13 +381,23 @@ export function TransactionToaster() {
     setExitQuadrant('top-center');
   }, [dragX, dragY, setHovered]);
 
+  const { terminal } = session;
+  const navigateFromPill = useCallback(
+    (to: string) => {
+      navigate(to);
+      if (terminal && !dissolvesAutomatically(terminal)) {
+        dismiss();
+      }
+    },
+    [navigate, terminal, dismiss]
+  );
   const handleClick = useCallback(() => {
     if (justDraggedRef.current) {
       justDraggedRef.current = false;
       return;
     }
-    navigate(HISTORY_PATH);
-  }, [navigate]);
+    navigateFromPill(HISTORY_PATH);
+  }, [navigateFromPill]);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       // Enter/Space on a nested action (copy / explorer) activates that
@@ -448,10 +405,10 @@ export function TransactionToaster() {
       if (e.target !== e.currentTarget) return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        navigate(HISTORY_PATH);
+        navigateFromPill(HISTORY_PATH);
       }
     },
-    [navigate]
+    [navigateFromPill]
   );
 
   const handleDragStart = useCallback(() => {
@@ -584,6 +541,7 @@ export function TransactionToaster() {
                 reducedMotion={reducedMotion}
                 pendingQueueCount={session.pendingQueueCount}
                 textRevealed={expanded}
+                onNavigate={navigateFromPill}
               />
             </div>
           </motion.div>
