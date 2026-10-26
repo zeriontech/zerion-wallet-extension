@@ -1,4 +1,4 @@
-import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import type { StepResult } from './types';
 
 export class ReadonlyWalletError extends Error {
   name = 'ReadonlyWalletError';
@@ -11,7 +11,7 @@ export class QueueError extends Error {
   name = 'QueueError';
   constructor(
     public failedAt: number,
-    public completedResults: SignTransactionResult[],
+    public completedResults: StepResult[],
     public cause: Error
   ) {
     super(`Queue failed at step ${failedAt}: ${cause.message}`);
@@ -20,10 +20,7 @@ export class QueueError extends Error {
 
 export class QueueAbortError extends Error {
   name = 'QueueAbortError';
-  constructor(
-    public abortedAt: number,
-    public completedResults: SignTransactionResult[]
-  ) {
+  constructor(public abortedAt: number, public completedResults: StepResult[]) {
     super(`Queue aborted at step ${abortedAt}`);
   }
 }
@@ -32,5 +29,29 @@ export class TransactionFailedOnChainError extends Error {
   name = 'TransactionFailedOnChainError';
   constructor(public status: 'failed' | 'dropped', public txHash: string) {
     super(`Transaction ${txHash} ${status} on-chain`);
+  }
+}
+
+/** The quote ran past its deadline before the Order was placed */
+export class QuoteExpiredError extends Error {
+  name = 'QuoteExpiredError';
+  constructor() {
+    super('The quote expired before the order was placed. Try again.');
+  }
+}
+
+/** A typed-data document of the quote failed validation; nothing was signed */
+export class IntentVerificationError extends Error {
+  name = 'IntentVerificationError';
+  constructor(public problems: string[]) {
+    super("We couldn't verify this quote");
+  }
+}
+
+/** execute-order rejected the signed Order for a reason other than an expired quote */
+export class OrderPlacementError extends Error {
+  name = 'OrderPlacementError';
+  constructor(public status: number | null) {
+    super("Couldn't place the order. Try again.");
   }
 }

@@ -1,13 +1,12 @@
-import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { ReadonlyWalletError } from './errors';
 import { appendQueue } from './store';
-import type { SignStep, SignTransactionsOptions } from './types';
+import type { SignStep, SignTransactionsOptions, StepResult } from './types';
 
 export interface SignTransactionsResult {
   queueId: string;
-  promise: Promise<SignTransactionResult[]>;
+  promise: Promise<StepResult[]>;
 }
 
 /**

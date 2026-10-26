@@ -18,6 +18,8 @@ export interface HardwareDialogSession {
   activeStatus: StepStatus;
   /** ToasterView for the active step — drives icons + title kind. */
   activeView: ToasterView | null;
+  /** An Order was placed; its settlement is followed outside the queue */
+  orderPlaced: boolean;
   /** Terminal queue state (success / failed / aborted). null while running. */
   terminal: QueueTerminal;
   /** Last error message for terminal=failed. */
@@ -32,6 +34,11 @@ const STEP_KIND_LABEL: Record<ToasterView['kind'], string> = {
 };
 
 function getStepLabel(step: SignStep): string {
+  if (step.kind === 'order') {
+    return step.params.quote.intentApprove?.evm
+      ? 'Sign on device (2 signatures)'
+      : 'Sign on device';
+  }
   if (step.toaster) return STEP_KIND_LABEL[step.toaster.kind];
   return 'Sign';
 }
@@ -50,6 +57,7 @@ const INITIAL: HardwareDialogSession = {
   activeIndex: 0,
   activeStatus: 'waiting',
   activeView: null,
+  orderPlaced: false,
   terminal: null,
   errorMessage: null,
 };
@@ -115,6 +123,7 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
               activeIndex: event.index,
               activeStatus: 'signing',
               activeView: queue?.steps[event.index]?.toaster ?? null,
+              orderPlaced: false,
               terminal: null,
               errorMessage: null,
             });
@@ -131,8 +140,17 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
           setStepStatus(event.index, 'pending');
           break;
         }
+        case 'step-order-placed': {
+          setStepStatus(event.index, 'pending');
+          setState((s) =>
+            s.visible && s.queueId === queueId ? { ...s, orderPlaced: true } : s
+          );
+          break;
+        }
         case 'step-success': {
-          setStepStatus(event.index, 'confirmed');
+          if (!('order' in event.result)) {
+            setStepStatus(event.index, 'confirmed');
+          }
           break;
         }
         case 'step-error': {

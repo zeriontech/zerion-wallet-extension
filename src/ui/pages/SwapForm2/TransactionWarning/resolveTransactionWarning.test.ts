@@ -640,3 +640,98 @@ describe('resolveTransactionWarning', () => {
     });
   });
 });
+
+describe('resolveTransactionWarning: intent quotes', () => {
+  function makeIntentQuote(
+    outputQuantity: string,
+    ecosystem: 'evm' | 'solana' = 'evm'
+  ): Quote2 {
+    return {
+      ...makeQuote(outputQuantity),
+      quoteId: 'q-1',
+      transactionSwap: null,
+      intentSwap:
+        ecosystem === 'evm'
+          ? {
+              evm: { types: {}, primaryType: 'Order', domain: {}, message: {} },
+              solana: null,
+            }
+          : { evm: null, solana: 'AQID' },
+    } as unknown as Quote2;
+  }
+
+  it('a null interpreted action alone does not make an intent unverified', () => {
+    const sim: SimulationResult = {
+      data: { action: null, warnings: [] },
+    } as unknown as InterpretResponse;
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.unverified).toBe(false);
+    expect(r.blocksAutoSign).toBe(false);
+  });
+
+  it('an interpreted action with no transfers does not make an intent unverified', () => {
+    const sim = makeSimulation({ status: 'confirmed', incoming: [] });
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.unverified).toBe(false);
+    expect(r.blocksAutoSign).toBe(false);
+  });
+
+  it('the output-mismatch check still runs when the signature simulation returns a matching transfer', () => {
+    const sim = makeSimulation({
+      incoming: [{ fungibleId: 'usdc', quantity: '50' }],
+    });
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.warning?.title).toBe('Output amount mismatch');
+    expect(r.blocksAutoSign).toBe(true);
+  });
+
+  it('Gray severity still marks an intent unverified', () => {
+    const sim = makeSimulation({
+      warnings: [
+        { severity: 'Gray', title: 'Unverified', description: '', details: '' },
+      ],
+      incoming: [{ fungibleId: 'usdc', quantity: '100' }],
+    });
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.unverified).toBe(true);
+  });
+
+  it('a Solana intent, which is not simulated, is not unverified', () => {
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeIntentQuote('100', 'solana'),
+      simulationResult: null,
+    });
+    expect(r.unverified).toBe(false);
+    expect(r.blocksAutoSign).toBe(false);
+  });
+
+  it('a classic quote with a null interpreted action is still unverified', () => {
+    const sim: SimulationResult = {
+      data: { action: null, warnings: [] },
+    } as unknown as InterpretResponse;
+    const r = resolveTransactionWarning({
+      ...baseInputs,
+      quote: makeQuote('100'),
+      simulationResult: sim,
+    });
+    expect(r.unverified).toBe(true);
+    expect(r.blocksAutoSign).toBe(true);
+  });
+});

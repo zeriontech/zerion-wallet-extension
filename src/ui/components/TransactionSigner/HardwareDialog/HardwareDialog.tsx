@@ -61,6 +61,9 @@ function getTitle(session: HardwareDialogSession): string {
   if (session.terminal === 'failed') return 'Failed';
   if (session.terminal === 'aborted') return 'Cancelled';
   const view = session.activeView;
+  if (session.terminal === 'success' && session.orderPlaced) {
+    return 'Order placed';
+  }
   if (session.terminal === 'success' && view) return SUCCESS_TITLE[view.kind];
   if (session.terminal === 'success') return 'Done';
 
