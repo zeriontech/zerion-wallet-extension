@@ -236,7 +236,11 @@ function SendFormComponent({
     return networks.getNetworkByName(createChain(formState.inputChain)) ?? null;
   }, [networks, formState.inputChain]);
 
-  const { data: sendData, isLoading: sendDataLoading } = useSendTransaction({
+  const {
+    data: sendData,
+    requestError: sendRequestError,
+    isLoading: sendDataLoading,
+  } = useSendTransaction({
     address,
     formState,
     position,
@@ -326,10 +330,11 @@ function SendFormComponent({
       resolveSendTransactionWarning({
         simulationResult,
         backendError: sendError,
+        requestError: sendRequestError,
         assetSymbol: position?.fungible.symbol ?? null,
         nativeAssetSymbol: sendNetwork?.baseAsset?.symbol ?? null,
       }),
-    [simulationResult, sendError, position, sendNetwork]
+    [simulationResult, sendError, sendRequestError, position, sendNetwork]
   );
 
   // USD price lookup for analytics — mirrors SwapForm2.
@@ -585,6 +590,7 @@ function SendFormComponent({
     const fresh = resolveSendTransactionWarning({
       simulationResult: result,
       backendError: sendError,
+      requestError: sendRequestError,
       assetSymbol: position?.fungible.symbol ?? null,
       nativeAssetSymbol: sendNetwork?.baseAsset?.symbol ?? null,
     });

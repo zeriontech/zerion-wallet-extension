@@ -9,6 +9,10 @@ import type {
   SimulationResult,
 } from 'src/ui/pages/SwapForm2/TransactionWarning/simulationWarningHelpers';
 import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
+import {
+  isClientErrorStatus,
+  type TransactionGetSendError,
+} from 'src/modules/zerion-api/hooks/transactionGetSendError';
 
 export type { ResolvedTransactionWarning, SimulationResult };
 
@@ -40,14 +44,30 @@ export function backendErrorToMessage(
 export function resolveSendTransactionWarning({
   simulationResult,
   backendError = null,
+  requestError = null,
   assetSymbol = null,
   nativeAssetSymbol = null,
 }: {
   simulationResult: SimulationResult;
   backendError?: TransactionPrepareError | null;
+  /** A 4xx get-send response; there is no transaction to sign. */
+  requestError?: Pick<TransactionGetSendError, 'status' | 'details'> | null;
   assetSymbol?: string | null;
   nativeAssetSymbol?: string | null;
 }): ResolvedTransactionWarning {
+  if (requestError && isClientErrorStatus(requestError.status)) {
+    return {
+      warning: {
+        variant: 'error',
+        title: requestError.details?.title ?? 'Unable to send',
+        description: requestError.details?.detail ?? undefined,
+      },
+      unverified: false,
+      blocksAutoSign: true,
+      dangerTitle: null,
+    };
+  }
+
   if (backendError) {
     return {
       warning: {

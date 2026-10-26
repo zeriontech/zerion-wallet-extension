@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
+import { responseToTransactionGetSendError } from 'src/modules/zerion-api/hooks/transactionGetSendError';
 import {
   backendErrorToMessage,
   resolveSendTransactionWarning,
@@ -124,5 +125,87 @@ describe('Received-line comparison', () => {
 
   it('hides when typed is null', () => {
     expect(showReceived('1', null)).toBe(false);
+  });
+});
+
+describe('resolveSendTransactionWarning — requestError', () => {
+  function requestError(status: number, body: string) {
+    return responseToTransactionGetSendError(new Response(body, { status }));
+  }
+
+  it('renders the 422 not-transferable body verbatim', async () => {
+    const resolved = resolveSendTransactionWarning({
+      simulationResult: null,
+      requestError: await requestError(
+        422,
+        '{"meta":null,"data":null,"errors":[{"title":"Unable to send","detail":"This token can\'t be transferred"}]}'
+      ),
+    });
+    expect(resolved).toEqual({
+      warning: {
+        variant: 'error',
+        title: 'Unable to send',
+        description: "This token can't be transferred",
+      },
+      unverified: false,
+      blocksAutoSign: true,
+      dangerTitle: null,
+    });
+  });
+
+  it.each([
+    [
+      400,
+      '{"meta":null,"data":null,"errors":[{"title":"Bad request","detail":"Invalid parameter"}]}',
+      'Bad request',
+      'Invalid parameter',
+    ],
+    [
+      404,
+      '{"meta":null,"data":null,"errors":[{"title":"Resource not found","detail":"Not found"}]}',
+      'Resource not found',
+      'Not found',
+    ],
+    [422, '{"errors":[{"title":"Only a title"}]}', 'Only a title', undefined],
+    [
+      422,
+      '{"errors":[{"detail":"Only a detail"}]}',
+      'Unable to send',
+      'Only a detail',
+    ],
+    [
+      403,
+      '<!DOCTYPE html><html>Just a moment...</html>',
+      'Unable to send',
+      undefined,
+    ],
+    [422, '{}', 'Unable to send', undefined],
+    [422, '{"errors":[]}', 'Unable to send', undefined],
+  ])(
+    'renders a %i response body %s as an error warning',
+    async (status, body, title, description) => {
+      const resolved = resolveSendTransactionWarning({
+        simulationResult: null,
+        requestError: await requestError(status, body),
+      });
+      expect(resolved.warning).toEqual({
+        variant: 'error',
+        title,
+        description,
+      });
+      expect(resolved.blocksAutoSign).toBe(true);
+      expect(resolved.dangerTitle).toBeNull();
+    }
+  );
+
+  it('produces no warning for a 500 response', async () => {
+    const resolved = resolveSendTransactionWarning({
+      simulationResult: null,
+      requestError: await requestError(
+        500,
+        '{"errors":[{"title":"Internal","detail":"Boom"}]}'
+      ),
+    });
+    expect(resolved.warning).toBeNull();
   });
 });
