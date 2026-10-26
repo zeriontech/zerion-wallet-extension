@@ -2,11 +2,19 @@ export { TransactionSigner } from './TransactionSigner';
 export { signTransactions } from './signTransactions';
 export { getQueues } from './store';
 export { useQueueStatus } from './useQueueStatus';
-export { QueueAbortError, QueueError, ReadonlyWalletError } from './errors';
+export {
+  IntentVerificationError,
+  OrderPlacementError,
+  QueueAbortError,
+  QueueError,
+  QuoteExpiredError,
+  ReadonlyWalletError,
+} from './errors';
 export type {
   QueueEvent,
   QueueRunStatus,
   QueueStatus,
+  OrderStepParams,
   SendTxParams,
   SignAllTransactionsParams,
   SignStep,
