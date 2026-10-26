@@ -1,12 +1,12 @@
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
-import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type {
   QueueEvent,
   QueueRunStatus,
   QueueStatus,
   SignStep,
   SignTransactionsOptions,
+  StepResult,
 } from './types';
 
 export interface QueueRecord {
@@ -18,7 +18,7 @@ export interface QueueRecord {
   abortController: AbortController;
   /** Imperative cancel — used by hardware dialog cancel button. */
   cancel: () => void;
-  resolve: (results: SignTransactionResult[]) => void;
+  resolve: (results: StepResult[]) => void;
   reject: (error: Error) => void;
   /** ms epoch when the queue was appended; used to detect stale gas estimates. */
   enqueuedAt: number;
@@ -55,12 +55,12 @@ export function appendQueue(
   options: SignTransactionsOptions
 ): {
   queueId: string;
-  promise: Promise<SignTransactionResult[]>;
+  promise: Promise<StepResult[]>;
 } {
   const queueId = nanoid();
-  let resolve!: (results: SignTransactionResult[]) => void;
+  let resolve!: (results: StepResult[]) => void;
   let reject!: (error: Error) => void;
-  const promise = new Promise<SignTransactionResult[]>((res, rej) => {
+  const promise = new Promise<StepResult[]>((res, rej) => {
     resolve = res;
     reject = rej;
   });

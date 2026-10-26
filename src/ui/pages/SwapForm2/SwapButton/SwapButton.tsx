@@ -9,18 +9,22 @@ import cn from 'classnames';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMutation } from '@tanstack/react-query';
 import shieldSolidUrl from 'url:src/ui/assets/shield-solid.svg';
-import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
-import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { toMultichainTransaction } from 'src/shared/types/Quote';
+import {
+  isExecutableQuote,
+  isIntentQuote,
+  toMultichainTransaction,
+} from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { usePreferences } from 'src/ui/features/preferences/usePreferences';
-import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
+import {
+  getPreferences,
+  usePreferences,
+} from 'src/ui/features/preferences/usePreferences';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { applySimulationPatch } from 'src/ui/features/dev-menu/applySimulationPatch';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
@@ -35,11 +39,9 @@ import { applyTransactionConfiguration } from '../applyTransactionConfiguration'
 import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSwapButtonOnboardingGate';
 import type { SwapFormState2 } from '../types';
 import * as styles from './SwapButton.module.css';
+import { simulateSwapQuote, type SimulationResult } from './simulateSwapQuote';
 
-export type SimulationResult =
-  | InterpretResponse
-  | SignatureInterpretResponse
-  | null;
+export type { SimulationResult };
 
 type ButtonState = 'idle' | 'simulating';
 
@@ -124,7 +126,7 @@ function isDisabled({
   if (isCrossEcosystem && !formState.to) return true;
   if (isCrossEcosystem && receiverEcosystemMismatch) return true;
   if (!quote) return true;
-  if (quote.error) return true;
+  if (!isExecutableQuote(quote)) return true;
   return false;
 }
 
@@ -193,22 +195,31 @@ function useSimulation({
     if (configuredQuote.transactionApprove) {
       list.push(toMultichainTransaction(configuredQuote.transactionApprove));
     }
-    if (configuredQuote.transactionSwap) {
+    if (configuredQuote.transactionSwap && !isIntentQuote(configuredQuote)) {
       list.push(toMultichainTransaction(configuredQuote.transactionSwap));
     }
     return list;
   }, [quote, formState, gasPrices]);
 
   const simulationMutation = useMutation({
-    mutationFn: (txs: MultichainTransaction[]) =>
-      interpretTxBasedOnEligibility({
+    mutationFn: async ({
+      txs,
+      quote,
+    }: {
+      txs: MultichainTransaction[];
+      quote: Quote2;
+    }) => {
+      const preferences = await getPreferences();
+      return simulateSwapQuote({
         address,
+        chain: formState.inputChain,
+        quote,
         transactions: txs,
-        eligibilityQueryData: false,
-        eligibilityQueryStatus: 'success',
         currency,
         origin: 'https://app.zerion.io',
-      }),
+        source: preferences?.testnetMode?.on ? 'testnet' : 'mainnet',
+      });
+    },
     onSettled: (data) => {
       const patched = applySimulationPatch(data, devMenuStore.getState());
       onSimulationCompleted(patched ?? null);
@@ -224,8 +235,9 @@ function useSimulation({
       onSign();
       return;
     }
-    if (!quote || transactions.length === 0) return;
-    simulationMutation.mutate(transactions);
+    if (!quote) return;
+    if (transactions.length === 0 && !isIntentQuote(quote)) return;
+    simulationMutation.mutate({ txs: transactions, quote });
   }, [simulated, onSign, quote, transactions, simulationMutation]);
 
   const label = resolveLabel({

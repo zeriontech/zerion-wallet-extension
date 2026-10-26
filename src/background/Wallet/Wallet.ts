@@ -125,6 +125,8 @@ import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
+import type { IntentMultichain } from 'src/shared/types/Quote';
+import type { OrderPlacedReport } from 'src/shared/types/OrderPlaced';
 import type {
   AssetClickedParams,
   DaylightEventParams,
@@ -134,7 +136,10 @@ import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { lastUsedAddressStore } from '../user-activity';
-import { transactionService } from '../transactions/TransactionService';
+import {
+  swapHashReporter,
+  transactionService,
+} from '../transactions/TransactionService';
 import { searchStore } from '../search/SearchStore';
 import { BrowserStorage } from '../webapis/storage';
 import {
@@ -143,6 +148,7 @@ import {
   writeSessionPermits,
 } from './helpers/confidentialPermitsSession';
 import { toEthersWallet } from './helpers/toEthersWallet';
+import { signSwapIntentPayload } from './helpers/signSwapIntentPayload';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
 import type { MaskedBareWallet } from './model/BareWallet';
@@ -1764,6 +1770,20 @@ export class Wallet {
     return signature;
   }
 
+  /** Signs a swap Intent with the current software wallet without emitting signing analytics; readonly and device accounts have no key and throw */
+  async signSwapIntent({
+    params: { intent },
+    context,
+  }: WalletMethodParams<{ intent: IntentMultichain }>): Promise<string> {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    return signSwapIntentPayload(intent, {
+      getEvmSigner: () => this.getOfflineSigner(),
+      getSolanaKeypair: () =>
+        this.getKeypairByAddress(this.ensureCurrentAddress()),
+    });
+  }
+
   async registerPersonalSign({
     params: { message, ...messageContextParams },
   }: WalletMethodParams<
@@ -2068,6 +2088,17 @@ export class Wallet {
     );
   }
 
+  async uiReportOrderPlaced({
+    context,
+    params: { context: txContext, ...order },
+  }: WalletMethodParams<OrderPlacedReport>) {
+    this.verifyInternalOrigin(context);
+    const { mode } = await this.assertNetworkMode({
+      id: createChain(txContext.chain),
+    });
+    emitter.emit('orderPlaced', order, { mode, ...txContext });
+  }
+
   async transactionFormed({
     context,
     params,
@@ -2268,6 +2299,15 @@ export class Wallet {
       }
     }
     return null;
+  }
+
+  async uiGetReportedSwapOrderId({
+    params: { swapHash },
+    context,
+  }: WalletMethodParams<{ swapHash: string }>): Promise<string | null> {
+    this.verifyInternalOrigin(context);
+    invariant(swapHash, () => new InvalidParams());
+    return swapHashReporter.getReportedOrderId(swapHash);
   }
 
   async clearPendingTransactions({ context }: WalletMethodParams) {
