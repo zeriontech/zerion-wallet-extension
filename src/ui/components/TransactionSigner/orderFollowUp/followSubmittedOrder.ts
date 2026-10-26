@@ -78,14 +78,11 @@ export function getFillExplorerUrl(
   return template ? template.replace('{HASH}', fill.hash) : null;
 }
 
-/** The first action's transaction, else the first Fill */
-function getSourceHash({
-  actions,
-  fills,
-}: Pick<OrderStatusData, 'actions' | 'fills'>): string | null {
+/** The first action's transaction */
+function getSourceHash(actions: OrderStatusData['actions']): string | null {
   const sourceAction = Array.isArray(actions) ? actions.at(0) : undefined;
   const sourceAct = sourceAction?.acts.find((act) => act.transaction?.hash);
-  return sourceAct?.transaction?.hash ?? fills.at(0)?.hash ?? null;
+  return sourceAct?.transaction?.hash ?? null;
 }
 
 /**
@@ -97,7 +94,7 @@ export function getDoneExplorerUrl(
   swapHash: string | null,
   explorer: OrderExplorer
 ): string | null {
-  const sourceHash = swapHash ?? getSourceHash({ actions, fills });
+  const sourceHash = swapHash ?? getSourceHash(actions);
   if (explorer.providerTemplate && sourceHash) {
     return explorer.providerTemplate.replace('{HASH}', sourceHash);
   }
@@ -180,10 +177,13 @@ export async function followSubmittedOrder(
     } else if (decision.kind === 'failed') {
       onOutcome({ kind: 'failed', status: decision.status });
     } else {
+      const lastFill = swapHash ? undefined : data.fills.at(-1);
       onOutcome({
         kind: 'success',
-        hash: swapHash ? null : data.fills.at(-1)?.hash ?? null,
-        explorerUrl: getDoneExplorerUrl(data, swapHash, explorer),
+        hash: lastFill?.hash ?? null,
+        explorerUrl: lastFill
+          ? getFillExplorerUrl(explorer, lastFill)
+          : getDoneExplorerUrl(data, swapHash, explorer),
       });
     }
   } catch (error) {

@@ -72,9 +72,6 @@ function decideIntentOrder(
   if (next === 'unsigned') {
     return { kind: 'complete' };
   }
-  if (next === 'pending') {
-    return { kind: 'submitted' };
-  }
   if (status === 'failed' || status === 'rejected') {
     return { kind: 'failed', status };
   }
@@ -115,7 +112,7 @@ export async function followIntentOrder(
     params.onOutcome({ kind: 'failed', status: 'failed' });
     return;
   }
-  if (result.kind === 'decided' && result.decision.kind !== 'submitted') {
+  if (result.kind === 'decided') {
     params.onOutcome(result.decision);
     return;
   }

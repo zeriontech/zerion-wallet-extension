@@ -291,11 +291,11 @@ describe('getFillExplorerUrl / getDoneExplorerUrl', () => {
       `https://relay.link/transaction/0x${'3e9a51d0'.repeat(8)}`,
     ],
     [
-      'an intent with no actions links its first Fill on the provider',
+      'an intent with no actions links its last Fill on the provider',
       null,
       {
         status: 'successful',
-        fills: [FILL, { chain: 'arbitrum', hash: '0xlast' }],
+        fills: [{ chain: 'arbitrum', hash: '0xfirst' }, FILL],
       },
       relayExplorer,
       `https://relay.link/transaction/${FILL.hash}`,
@@ -408,6 +408,30 @@ describe('followSubmittedOrder — polling behind Transaction submitted', () => 
         kind: 'success',
         hash: FILL.hash,
         explorerUrl: `https://basescan.org/tx/${FILL.hash}`,
+      },
+    ]);
+  });
+
+  test("an intent with actions and several Fills: success, carrying the last Fill's hash on the provider's explorer", async () => {
+    const api = follow({
+      explorer: relayExplorer,
+      replies: [
+        INTENT_FILL_PENDING,
+        {
+          ...BRIDGE_BOTH_MINED,
+          fills: [{ chain: 'arbitrum', hash: '0xfirst' }, FILL],
+        },
+      ],
+    });
+
+    await jest.advanceTimersByTimeAsync(3000);
+    await api.run;
+
+    expect(api.outcomes).toEqual([
+      {
+        kind: 'success',
+        hash: FILL.hash,
+        explorerUrl: `https://relay.link/transaction/${FILL.hash}`,
       },
     ]);
   });

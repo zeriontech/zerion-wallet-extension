@@ -323,8 +323,35 @@ describe('an intent order after step-order-placed', () => {
     expectEveryRequestCarriesCurrency(api.getOrderStatus);
   });
 
-  test('a pending action at the first read: submitted at once, then complete when the next step needs a signature', async () => {
+  test('a fill settling within 5000 ms: success at once, never submitted', async () => {
     const api = scriptOrderStatus([
+      BRIDGE_SOURCE_ONLY,
+      { status: 'successful', fills: [LAST_FILL], actions: null },
+    ]);
+    startFollowUps(api.getOrderStatus);
+    const queueId = enqueue(orderStep);
+    const outcomes = recordOutcomes(queueId);
+
+    placeIntentOrder(queueId);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(outcomes).toEqual([]);
+
+    await jest.advanceTimersByTimeAsync(3000);
+    expect(outcomes).toEqual([
+      {
+        kind: 'success',
+        hash: LAST_FILL.hash,
+        explorerUrl: `https://basescan.org/tx/${LAST_FILL.hash}`,
+      },
+    ]);
+    expect(api.requestTimesS).toEqual([0, 3]);
+    expectEveryRequestCarriesCurrency(api.getOrderStatus);
+  });
+
+  test('a pending action until 5000 ms: submitted then, and complete when the next step needs a signature', async () => {
+    const api = scriptOrderStatus([
+      BRIDGE_SOURCE_ONLY,
+      BRIDGE_SOURCE_ONLY,
       BRIDGE_SOURCE_ONLY,
       BRIDGE_SOURCE_ONLY,
       CLAIM_UNSIGNED,
@@ -334,12 +361,15 @@ describe('an intent order after step-order-placed', () => {
     const outcomes = recordOutcomes(queueId);
 
     placeIntentOrder(queueId);
-    await jest.advanceTimersByTimeAsync(0);
+    await jest.advanceTimersByTimeAsync(INTENT_STATUS_WAIT_MS - 1);
+    expect(outcomes).toEqual([]);
+
+    await jest.advanceTimersByTimeAsync(1);
     expect(outcomes).toEqual([{ kind: 'submitted' }]);
 
     await jest.advanceTimersByTimeAsync(3000);
     expect(outcomes).toEqual([{ kind: 'submitted' }, { kind: 'complete' }]);
-    expect(api.requestTimesS).toEqual([0, 0, 3]);
+    expect(api.requestTimesS).toEqual([0, 3, 5, 5, 8]);
     expectEveryRequestCarriesCurrency(api.getOrderStatus);
   });
 
