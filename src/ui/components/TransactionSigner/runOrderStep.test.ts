@@ -1,13 +1,17 @@
 import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 import { HTTPError } from 'ky';
 import { describe, expect, jest, test } from '@jest/globals';
 import type { IntentMultichain, Quote2 } from 'src/shared/types/Quote';
+import { prepareTypedDataForSigning } from 'src/modules/ethereum/message-signing/prepareTypedDataForSigning';
+import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
 import type { ExpectedIntentSigning } from 'src/ui/shared/forms/trading/intentTypedData';
 import {
   ZEROX_GASLESS_PERMIT,
   ZEROX_GASLESS_TRADE,
 } from 'src/ui/shared/forms/trading/intentTypedData.fixtures';
 import {
+  IntentSignerMismatchError,
   IntentVerificationError,
   OrderPlacementError,
   QuoteExpiredError,
@@ -29,6 +33,24 @@ const EXPECTED: ExpectedIntentSigning = {
 
 const PERMIT: IntentMultichain = { evm: ZEROX_GASLESS_PERMIT, solana: null };
 const TRADE: IntentMultichain = { evm: ZEROX_GASLESS_TRADE, solana: null };
+
+const WALLET = new ethers.Wallet(
+  '0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318'
+);
+const OTHER_WALLET = new ethers.Wallet(
+  '0x0123456789012345678901234567890123456789012345678901234567890123'
+);
+
+function signAs(wallet: ethers.Wallet) {
+  return async (intent: IntentMultichain) => {
+    if (!intent.evm) {
+      return 'AQID-signed';
+    }
+    return signTypedData(prepareTypedDataForSigning(intent.evm), wallet);
+  };
+}
+
+const sign = signAs(WALLET);
 
 function makeQuote(overrides: Partial<Quote2> = {}): Quote2 {
   return {
@@ -71,9 +93,7 @@ function makeDeps(
 ) {
   const events: QueueEvent[] = [];
   const deps = {
-    signIntent: jest.fn<RunOrderStepDeps['signIntent']>(async (intent) =>
-      intent === PERMIT ? '0xpermit-sig' : '0xintent-sig'
-    ),
+    signIntent: jest.fn<RunOrderStepDeps['signIntent']>(sign),
     executeOrder: jest.fn<RunOrderStepDeps['executeOrder']>(async () => ({
       orderId: 'zerox:abc',
     })),
@@ -85,7 +105,7 @@ function makeDeps(
     emit: (event: QueueEvent) => {
       events.push(event);
     },
-    address: '0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43',
+    address: WALLET.address.toLowerCase(),
     nowSeconds: () => NOW,
     signal: new AbortController().signal,
     ...overrides,
@@ -112,7 +132,7 @@ describe('runOrderStep: approval shapes', () => {
     const payload = deps.executeOrder.mock.calls[0][0];
     expect(payload).toEqual({
       quoteId: 'q-original',
-      signatureSwap: '0xintent-sig',
+      signatureSwap: await sign(TRADE),
     });
     expect('signatureApprove' in payload).toBe(false);
     expect(result).toEqual({ order: { orderId: 'zerox:abc' } });
@@ -132,8 +152,8 @@ describe('runOrderStep: approval shapes', () => {
       [
         {
           quoteId: 'q-original',
-          signatureSwap: '0xintent-sig',
-          signatureApprove: '0xpermit-sig',
+          signatureSwap: await sign(TRADE),
+          signatureApprove: await sign(PERMIT),
         },
       ],
     ]);
@@ -240,6 +260,83 @@ describe('runOrderStep: validation before any signature', () => {
   });
 });
 
+describe('runOrderStep: missing expected typed data', () => {
+  test.each([
+    ['intent', makeQuote()],
+    [
+      'permit',
+      makeQuote({
+        intentApprove: PERMIT,
+        intentSwap: { evm: null, solana: 'AQID' },
+      }),
+    ],
+  ])(
+    'an EVM %s with expected === null → IntentVerificationError with nothing signed',
+    async (_name, quote) => {
+      const { deps, events } = makeDeps();
+      const params = makeParams({ quote, expected: null });
+      await expect(
+        runOrderStep({ params, index: 0, deps })
+      ).rejects.toBeInstanceOf(IntentVerificationError);
+      expect(deps.signIntent).not.toHaveBeenCalled();
+      expect(deps.executeOrder).not.toHaveBeenCalled();
+      expect(events).toEqual([]);
+    }
+  );
+});
+
+describe('runOrderStep: signer recovery', () => {
+  test('the signature recovers to the wallet → the order is placed', async () => {
+    const { deps } = makeDeps({ address: WALLET.address.toUpperCase() });
+    const params = makeParams({ quote: makeQuote({ intentApprove: PERMIT }) });
+    await runOrderStep({ params, index: 0, deps });
+    expect(deps.executeOrder).toHaveBeenCalledTimes(1);
+  });
+
+  test('the intent signed by another key → IntentSignerMismatchError and nothing placed', async () => {
+    const { deps } = makeDeps({
+      signIntent: jest.fn<RunOrderStepDeps['signIntent']>(signAs(OTHER_WALLET)),
+    });
+    await expect(
+      runOrderStep({ params: makeParams(), index: 0, deps })
+    ).rejects.toMatchObject({
+      name: 'IntentSignerMismatchError',
+      recovered: OTHER_WALLET.address,
+    });
+    expect(deps.executeOrder).not.toHaveBeenCalled();
+    expect(deps.reportOrderPlaced).not.toHaveBeenCalled();
+  });
+
+  test('a permit signed by another key stops before the intent is signed', async () => {
+    const otherSign = signAs(OTHER_WALLET);
+    const signIntent = jest.fn<RunOrderStepDeps['signIntent']>((intent) =>
+      intent === PERMIT ? otherSign(intent) : sign(intent)
+    );
+    const { deps } = makeDeps({ signIntent });
+    const params = makeParams({ quote: makeQuote({ intentApprove: PERMIT }) });
+    await expect(
+      runOrderStep({ params, index: 0, deps })
+    ).rejects.toBeInstanceOf(IntentSignerMismatchError);
+    expect(signIntent.mock.calls).toEqual([[PERMIT]]);
+    expect(deps.executeOrder).not.toHaveBeenCalled();
+  });
+
+  test('an unrecoverable signature → IntentSignerMismatchError', async () => {
+    const { deps } = makeDeps({
+      signIntent: jest.fn<RunOrderStepDeps['signIntent']>(
+        async () => '0xnot-a-signature'
+      ),
+    });
+    await expect(
+      runOrderStep({ params: makeParams(), index: 0, deps })
+    ).rejects.toMatchObject({
+      name: 'IntentSignerMismatchError',
+      recovered: null,
+    });
+    expect(deps.executeOrder).not.toHaveBeenCalled();
+  });
+});
+
 describe('runOrderStep: execute-order failures', () => {
   const failures: Array<[string, () => Error, new (status: never) => Error]> = [
     ['400', () => httpError(400, 'quote expired'), QuoteExpiredError],
@@ -306,7 +403,7 @@ describe('runOrderStep: rejection', () => {
     const signIntent = jest.fn<RunOrderStepDeps['signIntent']>(
       async (intent) => {
         if (intent === TRADE) throw error;
-        return '0xpermit-sig';
+        return sign(intent);
       }
     );
     const { deps } = makeDeps({ signIntent });
@@ -322,7 +419,7 @@ describe('runOrderStep: rejection', () => {
       signal: controller.signal,
       signIntent: jest.fn<RunOrderStepDeps['signIntent']>(async () => {
         controller.abort();
-        return '0xintent-sig';
+        return sign(TRADE);
       }),
     });
     await expect(
