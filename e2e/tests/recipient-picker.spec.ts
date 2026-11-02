@@ -42,7 +42,9 @@ describe('Recipient picker', () => {
     await overviewPage.navigateTo();
     await overviewPage.openRecipientDialog();
 
-    const dialog = page.getByRole('dialog');
+    const dialog = page.getByRole('dialog').filter({
+      has: page.getByPlaceholder('Address, domain or identity'),
+    });
     await dialog
       .getByPlaceholder('Address, domain or identity')
       .fill(contact.address.toLowerCase());
