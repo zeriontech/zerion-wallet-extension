@@ -43,11 +43,15 @@ jobs:
           BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
           PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
-          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          # Public wallet from e2e/fixtures/constants.ts. E2E always onboards
+          # this wallet; using the secret here made dev-only UI depend on CI
+          # secret configuration and snapshots drift.
+          TEST_WALLET_ADDRESS: '0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1'
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_BRIDGE_FORM: on
+          FEATURE_LOYALTY_FLOW: off
           FEATURE_SOLANA: on
         run: |
           npm ci

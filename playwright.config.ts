@@ -6,8 +6,9 @@ dotenv.config();
 // See https://playwright.dev/docs/test-configuration.
 export default defineConfig({
   testDir: './e2e',
-  // 1 minute, default is 30 seconds
-  timeout: 1 * 60 * 1000,
+  // 2 minutes: onboarding with a recovery phrase derives multiple wallets and
+  // can exceed 60s on CI runners.
+  timeout: 2 * 60 * 1000,
   // Run tests in files in parallel
   fullyParallel: true,
   // Fail the build on CI if you accidentally left test.only in the source code
