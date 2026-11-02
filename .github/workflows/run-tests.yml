@@ -36,10 +36,20 @@ jobs:
         with:
           node-version: '24.x'
 
+      - name: Verify ZPI development secret
+        env:
+          ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
+        run: |
+          if [ -z "$ZERION_API_DEVELOPMENT_KEY" ]; then
+            echo "::error::Neither ZERION_API_DEVELOPMENT_KEY nor CF_ZPI_DEV_BYPASS_SECRET is available to this repository. E2E tests will be blocked by the ZPI Cloudflare challenge."
+            exit 1
+          fi
+
       - name: Install dependencies and build
         # TODO: Reuse env vars from ./pr.yml somehow
         env:
           ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
+          ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
           BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
           PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
           DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
