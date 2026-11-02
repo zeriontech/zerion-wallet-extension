@@ -49,47 +49,65 @@ export class SettingsPage extends ExtensionPage {
   async matchesSnapshot() {
     await expect(this.page.locator('html')).toMatchAriaSnapshot(`
       - document:
+        - button "Open dev menu"
         - navigation:
           - button "Go back"
           - text: Settings
         - link "Manage Wallets":
           - img
+          - text: Manage Wallets
+          - img
+        - link "Address Book":
+          - img
+          - text: Address Book
           - img
         - link "Connected Sites":
           - img
+          - text: Connected Sites
           - img
         - link "Networks":
           - img
+          - text: Networks
           - img
         - link "Developer Tools":
           - img
+          - text: Developer Tools
+          - img
+        - link "Playground":
+          - img
+          - text: Playground
           - img
         - link "Zerion Premium":
           - img
-          - img
-        - link "Invite Friends":
-          - img
-          - img
-        - link "Rewards":
-          - img
+          - text: Zerion Premium
           - img
         - link "Security":
           - img
+          - text: Security
+          - img
+        - link "Privacy":
+          - img
+          - text: Privacy
           - img
         - link "Appearance":
           - img
+          - text: Appearance
           - img
         - link "Preferences":
           - img
+          - text: Preferences
           - img
         - link "Experiments":
           - img
+          - text: Experiments
           - img
         - link "Support & Feedback":
           - img
+          - text: Support & Feedback
           - img
         - link "What’s New":
           - img
+          - text: What’s New
           - img
         - link "Privacy"
         - text: ·
@@ -98,6 +116,7 @@ export class SettingsPage extends ExtensionPage {
         - button /v1\\.\\d+\\.\\d+(-\\w+)?/
         - button "Lock Wallet":
           - img
+          - text: Lock Wallet
     `);
   }
 

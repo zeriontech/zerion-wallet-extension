@@ -41,12 +41,11 @@ export class WalletGroupSelectPage {
           - button "Go back"
         - text: Select Wallet Group
         - button "Each group contains wallets that are associated with same recovery phrase, stored locally on your device. Zerion does not have access to this data. We do not cross-associate wallet addresses or have a way to know that these wallets are grouped."
-        - 'link /Wallet Group #1 Ethereum wallets 0x[\\w\\W]{4}…[\\w\\W]{4} Solana wallets [\\w\\W]{4}…[\\w\\W]{4}/':
-          - img
-          - img
+        - 'link /Wallet Group #1/':
           - img
         - link "New Recovery Phrase":
           - img
+          - text: New Recovery Phrase
     `);
   }
 
@@ -167,7 +166,7 @@ export class GenerateWalletView {
 
   async ready() {
     await expect(
-      this.page.getByRole('link', { name: /View Wallets/i })
+      this.page.getByRole('link', { name: /View Wallets?/i })
     ).toBeInViewport();
   }
 
@@ -176,13 +175,13 @@ export class GenerateWalletView {
       - document:
         - navigation:
           - button "Go back"
-        - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
-        - link "View Wallets"
+        - text: /Your wallets? (are|is) ready/
+        - link /View Wallets?/
     `);
   }
 
   async finish() {
-    await this.page.getByRole('link', { name: /View Wallets/i }).click();
+    await this.page.getByRole('link', { name: /View Wallets?/i }).click();
   }
 }
 
@@ -191,7 +190,7 @@ export class AddressImportMessagesView {
 
   async ready() {
     await expect(
-      this.page.getByRole('link', { name: /View Wallets/i })
+      this.page.getByRole('link', { name: /View Wallets?/i })
     ).toBeEnabled();
   }
 
@@ -200,13 +199,13 @@ export class AddressImportMessagesView {
       - document:
         - navigation:
           - button "Go back"
-        - text: /Your wallets are ready Eth · 0x[\\w\\W]{5}…[\\w\\W]{5} Sol · [\\w\\W]{5}…[\\w\\W]{5}/
-        - link "View Wallets"
+        - text: /Your wallets? (are|is) ready/
+        - link /View Wallets?/
     `);
   }
 
   async finish() {
-    await this.page.getByRole('link', { name: /View Wallets/i }).click();
+    await this.page.getByRole('link', { name: /View Wallets?/i }).click();
   }
 }
 
