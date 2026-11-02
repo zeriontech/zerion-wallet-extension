@@ -114,6 +114,12 @@ export function useReceiverAddressItems() {
     addressBookItems,
     walletItems,
     watchlistItems,
+    /**
+     * Display names from the Address Book and the user's wallets/watchlist,
+     * keyed by normalized address. Address Book wins over the wallet name,
+     * matching `useReceiverDisplayName`.
+     */
+    savedNamesMap,
     isLoading,
   };
 }

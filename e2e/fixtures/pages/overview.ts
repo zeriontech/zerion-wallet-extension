@@ -2,6 +2,15 @@ import { expect } from '@playwright/test';
 import { ExtensionPage } from './extension-page';
 
 export class OverviewPage extends ExtensionPage {
+  readonly sendButton = this.page.getByRole('button', {
+    name: 'Send',
+    exact: true,
+  });
+
+  async openRecipientDialog() {
+    await this.sendButton.click();
+  }
+
   async ready() {
     await expect(this.page.getByText(/Get started/i)).toBeInViewport();
   }
