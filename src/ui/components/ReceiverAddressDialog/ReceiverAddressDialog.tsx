@@ -171,8 +171,6 @@ export function ReceiverAddressDialog({
     if (predicate && !predicate(normalized)) return null;
     return {
       address: normalized,
-      // The row may be deduped out of the Address Book / My wallets sections
-      // below, so it must carry the saved name itself.
       name: savedNamesMap[normalized] ?? null,
       pending: isExactMatchMetaFetching,
     };
