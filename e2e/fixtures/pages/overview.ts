@@ -2,6 +2,15 @@ import { expect } from '@playwright/test';
 import { ExtensionPage } from './extension-page';
 
 export class OverviewPage extends ExtensionPage {
+  readonly sendButton = this.page.getByRole('button', {
+    name: 'Send',
+    exact: true,
+  });
+
+  async openRecipientDialog() {
+    await this.sendButton.click();
+  }
+
   async ready() {
     // The empty state renders after the portfolio request settles. When the
     // live API answers with a Cloudflare challenge, that can take longer than

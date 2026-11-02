@@ -67,7 +67,7 @@ export function ReceiverAddressDialog({
   showAddressBookSection?: boolean;
 }) {
   const [searchValue, setSearchValue] = useState('');
-  const { recentItems, addressBookItems, walletItems, watchlistItems, isLoading } =
+  const { recentItems, addressBookItems, walletItems, watchlistItems, savedNamesMap, isLoading } =
     useReceiverAddressItems();
 
   const allAddresses = useMemo(() => {
@@ -171,10 +171,12 @@ export function ReceiverAddressDialog({
     if (predicate && !predicate(normalized)) return null;
     return {
       address: normalized,
-      name: null,
+      // The row may be deduped out of the Address Book / My wallets sections
+      // below, so it must carry the saved name itself.
+      name: savedNamesMap[normalized] ?? null,
       pending: isExactMatchMetaFetching,
     };
-  }, [resolvedAddress, predicate, isExactMatchMetaFetching]);
+  }, [resolvedAddress, predicate, isExactMatchMetaFetching, savedNamesMap]);
 
   const exactMatchAddress = exactMatch?.address ?? null;
   const dedupedRecents = useMemo(
