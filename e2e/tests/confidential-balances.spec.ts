@@ -125,7 +125,39 @@ function fakeGroupedPositions(encrypted: boolean) {
 }
 
 /**
- * Drives the Confidential Balances flow against a mocked positions endpoint:
+ * The `wallet/get-portfolio/v1` body for the same wallet. Fulfilled in the
+ * test so that the view never depends on — and is never covered by a
+ * Cloudflare challenge dialog served for — the live API.
+ */
+function fakePortfolio() {
+  return {
+    positionsTypesDistribution: {
+      assets: 1500,
+      deposited: 300,
+      borrowed: 0,
+      locked: 0,
+      staked: 0,
+    },
+    positionsChainsDistribution: { ethereum: 1800 },
+    nfts: { lastPrice: 0, floorPrice: 0 },
+    nftChainsDistribution: {},
+    change24h: { absolute: 0, relative: 0 },
+    totalValue: 1800,
+    chains: {
+      ethereum: {
+        id: 'ethereum',
+        explorerTxUrl: null,
+        iconUrl: 'https://chain-icons.s3.amazonaws.com/ethereum.png',
+        testnet: false,
+        name: 'Ethereum',
+      },
+    },
+  };
+}
+
+/**
+ * Drives the Confidential Balances flow against mocked positions and
+ * portfolio endpoints:
  * the wallet is Locked (one encrypted position) until the request carries
  * Signed Permits, which the dev-menu "fake permits" override lets the wallet
  * sign without the backend. Runs in a popup-sized viewport.
@@ -169,7 +201,15 @@ test('confidential balances: panel → reveal → unmasked', async ({
     if (permits.length) {
       portfolioPermits.push(permits);
     }
-    await route.continue();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: fakePortfolio(),
+        errors: null,
+        meta: null,
+      }),
+    });
   });
 
   await page.goto(`${extensionPopupUrl}#/overview`);
