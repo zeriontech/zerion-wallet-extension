@@ -197,10 +197,11 @@ export function ReceiverAddressDialog({
     if (!resolvedAddress) return null;
     const normalized = normalizeAddress(resolvedAddress);
     if (predicate && !predicate(normalized)) return null;
+    const name = savedNamesMap[normalized] ?? null;
     return {
       address: normalized,
-      name: savedNamesMap[normalized] ?? null,
-      pending: isExactMatchMetaFetching,
+      name,
+      pending: isExactMatchMetaFetching && name == null,
     };
   }, [resolvedAddress, predicate, isExactMatchMetaFetching, savedNamesMap]);
 

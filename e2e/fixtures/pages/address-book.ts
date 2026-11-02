@@ -18,7 +18,9 @@ export class AddressBookPage extends ExtensionPage {
   }): Promise<void> {
     await this.addFirstAddressButton.or(this.addAddressButton).click();
 
-    const picker = this.page.getByRole('dialog');
+    const picker = this.page
+      .getByRole('dialog')
+      .filter({ has: this.page.getByRole('combobox') });
     await picker.getByRole('combobox').fill(address);
     await picker.getByRole('option').filter({ hasText: address }).click();
 
