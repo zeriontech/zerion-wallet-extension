@@ -96,15 +96,14 @@ export function AddressBook() {
     null
   );
 
-  const recentAddresses = preferences?.recentAddresses ?? [];
   const filteredRecents = useMemo(() => {
     const savedSet = new Set(
       entries.map((entry) => normalizeAddress(entry.address))
     );
-    return recentAddresses.filter(
+    return (preferences?.recentAddresses ?? []).filter(
       (address) => !savedSet.has(normalizeAddress(address))
     );
-  }, [recentAddresses, entries]);
+  }, [preferences?.recentAddresses, entries]);
 
   const isEmpty = entries.length === 0;
 

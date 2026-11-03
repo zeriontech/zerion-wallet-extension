@@ -10,7 +10,17 @@ import tseslint from 'typescript-eslint';
 import previewsPlugin from './src/ui-lab/previews/eslint-rules/previews-plugin.mjs';
 
 export default tseslint.config(
-  { ignores: ['node_modules', 'dist', 'dist-firefox', 'e2e-report', 'playwright/.cache'] },
+  {
+    ignores: [
+      'node_modules',
+      'dist',
+      'dist-firefox',
+      'dist-e2e',
+      '.parcel-cache-e2e',
+      'e2e-report',
+      'playwright/.cache',
+    ],
+  },
   // Base JS rules for all files
   {
     ...js.configs.recommended,
@@ -79,6 +89,27 @@ export default tseslint.config(
       globals: {
         ...globals.node,
       },
+    },
+  },
+
+  {
+    files: ['**/*.mjs'],
+    languageOptions: {
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        // Node >=18 global, missing from the `globals` package's node set
+        fetch: 'readonly',
+      },
+    },
+  },
+
+  // CLI scripts print to stdout and intentionally read user-supplied paths
+  {
+    files: ['scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
+      'security/detect-non-literal-fs-filename': 'off',
     },
   }
 );

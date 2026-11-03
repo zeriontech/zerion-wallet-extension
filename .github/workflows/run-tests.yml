@@ -4,27 +4,30 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+# Non-secret configuration only. Secrets are scoped to the step that needs
+# them, so lint/typecheck/unit never run with credentials in the environment.
 env:
   ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
   ZERION_TESTNET_API_URL: ${{ github.event.inputs.ZERION_TESTNET_API_URL || 'https://zpi-testnet.zerion.io/' }}
   BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
   PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
   DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
-  TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+  # Public wallet from e2e/fixtures/constants.ts. Unit tests and E2E use it;
+  # it is not a secret.
+  TEST_WALLET_ADDRESS: '0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1'
   FEATURE_SEND_FORM: on
-  MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
-  GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
-  GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
-  FEATURE_LOYALTY_FLOW: on
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  run_tests:
-    # Tests run `npm ci` and a production build with real secrets in env —
-    # fork code must not execute in this context.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  quality:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -35,39 +38,123 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24.x'
+          cache: npm
 
-      - name: Install dependencies and build
-        # TODO: Reuse env vars from ./pr.yml somehow
+      - name: Install dependencies
+        # Dependency lifecycle scripts must not run with credentials in the
+        # environment; this job has none.
+        run: npm ci --ignore-scripts
+
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+  build:
+    # The production build gate uses repository secrets. Fork code must not
+    # execute in this context.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build production extension
         env:
-          ZERION_API_URL: ${{ github.event.inputs.ZERION_API_URL || 'https://zpi.zerion.io/' }}
-          BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
-          PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
-          DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
-          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          TEST_WALLET_ADDRESS: '0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1'
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_BRIDGE_FORM: on
+          FEATURE_LOYALTY_FLOW: off
           FEATURE_SOLANA: on
+        run: npm run build:production
+
+  e2e:
+    # Only this job receives the Cloudflare bypass secret. The extension is
+    # built against a local proxy, so the secret never reaches Chromium,
+    # traces, or the build output.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      E2E_PROXY_PORT: '4789'
+      # The build has no secret; it only needs to point at the proxy.
+      E2E_USE_PROXY: '1'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Verify ZPI development secret
+        env:
+          ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
         run: |
-          npm ci
-          npm run build:production
+          if [ -z "$ZERION_API_DEVELOPMENT_KEY" ]; then
+            echo "::error::Neither ZERION_API_DEVELOPMENT_KEY nor CF_ZPI_DEV_BYPASS_SECRET is available to this repository. E2E tests will be blocked by the ZPI Cloudflare challenge."
+            exit 1
+          fi
 
-      - name: Run unit tests
-        run: |
-          npm run test:unit
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
-      # TODO: Fix and enable e2e tests
-      # - name: Install Playwright browsers
-      #   run: npx playwright install --with-deps
+      - name: Build E2E extension
+        # No secret in this step: the build only knows the local proxy URL.
+        run: npm run build:e2e
 
-      # - name: Run Playwright tests
-      #   run: xvfb-run npx playwright test
+      - name: Run Playwright tests
+        id: e2e
+        env:
+          ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
+        run: xvfb-run npx playwright test
 
-      # - name: Upload Playwright report
-      #   uses: actions/upload-artifact@v4
-      #   if: ${{ !cancelled() }}
-      #   with:
-      #     name: e2e-report
-      #     path: e2e-report/
-      #     retention-days: 30
+      - name: Scan Playwright report for the bypass secret
+        id: scan
+        if: failure() && steps.e2e.outcome == 'failure'
+        env:
+          ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
+        run: node scripts/scan-for-secret.mjs e2e-report
+
+      - name: Upload Playwright report
+        # Artifacts of a public repository are public. Never upload the build,
+        # and never upload a report the scanner has not cleared.
+        # `failure()` is explicit: GitHub otherwise adds an implicit success()
+        # check, which is false after the Playwright step fails.
+        if: failure() && steps.e2e.outcome == 'failure' && steps.scan.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: e2e-report
+          path: e2e-report/
+          retention-days: 7
+          if-no-files-found: ignore

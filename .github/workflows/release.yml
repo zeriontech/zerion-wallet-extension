@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*.*.*'
 
+# This workflow deliberately skips lint, typecheck, formatting, and tests so an
+# emergency release is never blocked by CI. Those gates run on every pull
+# request; only run this workflow from a commit that passed them.
 jobs:
   release:
     runs-on: ubuntu-latest

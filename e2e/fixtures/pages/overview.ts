@@ -3,17 +3,21 @@ import { ExtensionPage } from './extension-page';
 
 export class OverviewPage extends ExtensionPage {
   async ready() {
-    await expect(this.page.getByText(/Get started/i)).toBeInViewport();
+    // The empty state renders after the portfolio request settles. When the
+    // live API answers with a Cloudflare challenge, that can take longer than
+    // the default 5s expect timeout.
+    await expect(this.page.getByText(/Get started/i)).toBeInViewport({
+      timeout: 30_000,
+    });
   }
 
   async matchesSnapshot() {
     await expect(this.page.locator('html')).toMatchAriaSnapshot(`
       - document:
         - link "0xc3A66…5Cbb1":
+          - text: 0xc3A66…5Cbb1
           - img
         - button "Copy Address":
-          - img
-        - link "Rewards":
           - img
         - link "Search":
           - img
@@ -21,37 +25,35 @@ export class OverviewPage extends ExtensionPage {
           - img
         - button "Open Sidepanel":
           - img
-        - text: /\\$\\d+\\.\\d+/
         - list:
           - listitem:
-            - link:
+            - link "Buy":
               - img
+              - text: Buy
           - listitem:
-            - link:
+            - link "Receive":
               - img
+              - text: Receive
           - listitem:
-            - link:
+            - button "Send":
               - img
-          - listitem:
-            - link:
-              - img
+              - text: Send
           - listitem:
             - link "Swap":
               - img
-        - link "Premium banner decoration Get Premium Lower fees, PnL and more":
-          - img "Premium banner decoration"
-          - img
-        - button "close":
-          - img
+              - text: Swap
         - link "Tokens"
-        - link "NFTs"
+        - link "Perps"
         - link "History"
-        - link "Perks"
+        - link "Stats"
+        - link "NFTs"
         - button "All Networks":
+          - text: All Networks
           - img
         - text: Get Started By adding crypto to your wallet
         - button "Fund":
           - img
+          - text: Fund
     `);
   }
 }

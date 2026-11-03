@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import {
   test as baseTest,
@@ -9,7 +10,19 @@ import { onboardExistingWallet } from 'e2e/fixtures/pages/onboarding';
 import { testWallets } from 'e2e/fixtures/constants';
 import { SeedType } from 'src/shared/SeedType';
 
-const extensionPath = path.resolve(process.cwd(), 'dist');
+// E2E has its own build: API traffic is routed through the local proxy and no
+// CI secret is compiled into the extension. See scripts/build-e2e.js.
+const extensionPath = path.resolve(
+  process.cwd(),
+  process.env.E2E_DIST || 'dist-e2e'
+);
+
+// eslint-disable-next-line security/detect-non-literal-fs-filename -- path is the E2E build directory
+if (!fs.existsSync(path.join(extensionPath, 'manifest.json'))) {
+  throw new Error(
+    `E2E extension build not found at ${extensionPath}. Run \`npm run build:e2e\` first.`
+  );
+}
 
 interface Config {
   headless?: boolean;
@@ -134,6 +147,15 @@ interface Fixtures {
 // Allows quick toggling between headless/headed mode in dev env
 const RUN_HEADED_IN_DEV = true;
 
+// The proxy needs the bypass secret; the browser must never see it. Chromium
+// inherits the test worker's environment, so strip both aliases before launch.
+function getBrowserEnv() {
+  const env = { ...process.env };
+  delete env.ZERION_API_DEVELOPMENT_KEY;
+  delete env.CF_ZPI_DEV_BYPASS_SECRET;
+  return env as Record<string, string>;
+}
+
 export function createExtensionTest(testConfig?: Config) {
   return baseTest.extend<TestContext & Fixtures & Options>({
     // eslint-disable-next-line no-empty-pattern
@@ -148,6 +170,7 @@ export function createExtensionTest(testConfig?: Config) {
         devtools: Boolean(testConfig?.devtools),
         channel: 'chromium',
         args: createBrowserArgs(headless),
+        env: getBrowserEnv(),
       });
       await use(context);
       await context.close();

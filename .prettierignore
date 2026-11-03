@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-firefox/
+dist-e2e/
+.parcel-cache/
+.parcel-cache-e2e/
+e2e-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Generated files
+src/manifest.json
+package-lock.json
+src/modules/networks/networks-fallback.json
+src/ui/pages/Login/login-animation-lottie.json
