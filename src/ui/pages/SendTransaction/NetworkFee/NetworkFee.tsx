@@ -8,7 +8,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
-import { getNetworkFeeIndicator } from 'src/ui/shared/networkFeeIndicator';
+import { NetworkFeeReminder } from 'src/ui/shared/NetworkFeeReminder';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -20,7 +20,10 @@ import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
-import { NETWORK_SPEED_TO_TITLE } from './constants';
+import {
+  getNetworkFeeDisplayValue,
+  shouldShowNetworkFeeReminder,
+} from './getNetworkFeeDisplayValue';
 
 function getFeeTypeTitle(
   type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined
@@ -123,20 +126,13 @@ export function NetworkFee({
     .filter(isTruthy)
     .join(' · ');
 
-  const displayValue = feeValueFormatted
-    ? [
-        networkFeeConfiguration.speed === 'custom' && time ? time : null,
-        networkFeeConfiguration.speed === 'custom'
-          ? NETWORK_SPEED_TO_TITLE.custom
-          : time || NETWORK_SPEED_TO_TITLE[networkFeeConfiguration.speed],
-        `${feeValuePrefix}${feeValueFormatted}`,
-      ]
-        .filter(isTruthy)
-        .join(' · ')
-    : null;
-  const networkFeeIndicator = getNetworkFeeIndicator(
-    networkFeeConfiguration.speed
-  );
+  const displayValue = getNetworkFeeDisplayValue({
+    speed: networkFeeConfiguration.speed,
+    time,
+    feeValueFormatted,
+    feeValuePrefix,
+    customViewOnly: Boolean(customViewOnly),
+  });
 
   return (
     <>
@@ -171,6 +167,7 @@ export function NetworkFee({
                 {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
                 <UnstyledButton
                   type="button"
+                  aria-label="Network Fee"
                   className={disabled ? undefined : helperStyles.hoverUnderline}
                   style={{
                     color: disabled ? 'var(--black)' : 'var(--primary)',
@@ -197,10 +194,11 @@ export function NetworkFee({
             </UIText>
           ) : null}
         </HStack>
-        {networkFeeIndicator ? (
-          <UIText kind="caption/regular" color="var(--neutral-500)">
-            {networkFeeIndicator}
-          </UIText>
+        {shouldShowNetworkFeeReminder(Boolean(customViewOnly)) ? (
+          <NetworkFeeReminder
+            speed={networkFeeConfiguration.speed}
+            onChange={onChange ?? undefined}
+          />
         ) : null}
       </VStack>
     </>

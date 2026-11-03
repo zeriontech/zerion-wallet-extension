@@ -56,8 +56,8 @@ function toCustomNetworkFeeConfiguration(
 
 /**
  * Resolve the network-fee level to start a transaction with on `chainId`.
- * A Custom entry wins while it is younger than one hour; otherwise the last
- * picked Fast/Average preset applies. Returns null on a fresh install.
+ * A Custom entry wins while it is younger than 24 hours; otherwise the last
+ * picked Fast/Slow preset applies. Returns null on a fresh install.
  */
 export function resolveSavedNetworkFee(
   preferences: NetworkFeePreferences | undefined,

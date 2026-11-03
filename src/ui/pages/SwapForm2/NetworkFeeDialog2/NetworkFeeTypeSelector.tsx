@@ -1,5 +1,6 @@
 import React from 'react';
 import type {
+  CustomConfiguration,
   NetworkFeeConfiguration,
   NetworkFeeSpeed,
 } from 'src/shared/types/TransactionConfiguration';
@@ -10,17 +11,20 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { NetworkFeeIcon } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkFeeIcon';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
+import { formatSeconds } from 'src/shared/units/formatSeconds';
+import { noValueDash } from 'src/ui/shared/typography';
 import { formatNetworkFee } from '../formatNetworkFee';
 import {
-  getNetworkFeeRatio,
-  getPresetEffectiveGasPrice,
+  getCustomFeeRatioFromDefaults,
+  getNetworkFeeRatioForConfiguration,
   type NetworkFeeQuote,
 } from '../getNetworkFeeForSpeed';
+import type { CustomFormDefaults } from './NetworkFeeCustomForm';
 
 const PRESETS: { speed: Exclude<NetworkFeeSpeed, 'custom'>; label: string }[] =
   [
     { speed: 'fast', label: 'Fast' },
-    { speed: 'average', label: 'Average' },
+    { speed: 'average', label: 'Slow' },
   ];
 
 const SELECTED_BORDER = '2px solid var(--primary)';
@@ -31,6 +35,9 @@ export function NetworkFeeTypeSelector({
   quote,
   gasPrices,
   baseFee,
+  configuration,
+  defaults,
+  isEip1559,
   onSelectPreset,
   onSelectCustom,
 }: {
@@ -40,26 +47,64 @@ export function NetworkFeeTypeSelector({
   quote: NetworkFeeQuote | null;
   gasPrices: ChainGasPrice | null;
   baseFee: number | null;
+  configuration?: CustomConfiguration;
+  defaults?: CustomFormDefaults;
+  isEip1559: boolean;
   onSelectPreset: (value: NetworkFeeConfiguration) => void;
   onSelectCustom: () => void;
 }) {
+  const customNetworkFee =
+    configuration?.networkFee.speed === 'custom'
+      ? configuration.networkFee
+      : null;
+  const customRatio = customNetworkFee
+    ? getNetworkFeeRatioForConfiguration(
+        quote,
+        customNetworkFee,
+        gasPrices,
+        baseFee
+      )
+    : getCustomFeeRatioFromDefaults(quote, defaults, isEip1559, baseFee);
+  const customFeeLabel =
+    quote && customRatio != null ? formatNetworkFee(quote, customRatio) : null;
+
+  const displayFeeLabel = (label: string | null) => {
+    if (!label || label === noValueDash) {
+      return null;
+    }
+    return label === 'Free' ? 'Free' : `~${label}`;
+  };
+  const customFeeText = displayFeeLabel(customFeeLabel);
+
   return (
     <VStack gap={8}>
       {PRESETS.map(({ speed, label }) => {
-        const effective = getPresetEffectiveGasPrice(speed, gasPrices, baseFee);
-        const ratio = getNetworkFeeRatio(quote, effective, baseFee);
+        const ratio = getNetworkFeeRatioForConfiguration(
+          quote,
+          {
+            speed,
+            custom1559GasPrice: null,
+            customClassicGasPrice: null,
+            gasLimit: null,
+          },
+          gasPrices,
+          baseFee
+        );
         const feeLabel = quote ? formatNetworkFee(quote, ratio) : null;
+        const feeText = displayFeeLabel(feeLabel);
+        const eta = gasPrices?.[speed]?.eta;
+        const selected = speed === selectedSpeed;
         return (
           <Button
             key={speed}
             type="button"
             kind="neutral"
             size={56}
+            aria-pressed={selected}
             style={{
               width: '100%',
               paddingInline: 12,
-              border:
-                speed === selectedSpeed ? SELECTED_BORDER : UNSELECTED_BORDER,
+              border: selected ? SELECTED_BORDER : UNSELECTED_BORDER,
             }}
             onClick={() =>
               onSelectPreset({
@@ -76,16 +121,29 @@ export function NetworkFeeTypeSelector({
               justifyContent="space-between"
               style={{ width: '100%' }}
             >
-              <HStack gap={12} alignItems="center" justifyContent="start">
+              <HStack gap={8} alignItems="center" justifyContent="start">
                 <NetworkFeeIcon
                   speed={speed}
                   style={{ width: 24, height: 24 }}
                 />
-                <UIText kind="body/accent">{label}</UIText>
+                <UIText
+                  kind="body/accent"
+                  color={selected ? 'var(--primary)' : undefined}
+                >
+                  {label}
+                </UIText>
+                {eta ? (
+                  <UIText kind="body/regular" color="var(--neutral-500)">
+                    {`~${formatSeconds(eta)}`}
+                  </UIText>
+                ) : null}
               </HStack>
-              {feeLabel ? (
-                <UIText kind="caption/accent" color="var(--black)">
-                  ~{feeLabel}
+              {feeText ? (
+                <UIText
+                  kind="caption/accent"
+                  color={selected ? 'var(--primary)' : 'var(--black)'}
+                >
+                  {feeText}
                 </UIText>
               ) : null}
             </HStack>
@@ -96,6 +154,7 @@ export function NetworkFeeTypeSelector({
         type="button"
         kind="neutral"
         size={56}
+        aria-pressed={selectedSpeed === 'custom'}
         style={{
           width: '100%',
           paddingInline: 12,
@@ -104,9 +163,31 @@ export function NetworkFeeTypeSelector({
         }}
         onClick={onSelectCustom}
       >
-        <HStack gap={12} alignItems="center" justifyContent="start">
-          <NetworkFeeIcon speed="custom" style={{ width: 24, height: 24 }} />
-          <UIText kind="body/accent">Custom</UIText>
+        <HStack
+          gap={12}
+          alignItems="center"
+          justifyContent="space-between"
+          style={{ width: '100%' }}
+        >
+          <HStack gap={8} alignItems="center" justifyContent="start">
+            <NetworkFeeIcon speed="custom" style={{ width: 24, height: 24 }} />
+            <UIText
+              kind="body/accent"
+              color={selectedSpeed === 'custom' ? 'var(--primary)' : undefined}
+            >
+              Custom
+            </UIText>
+          </HStack>
+          {customFeeText ? (
+            <UIText
+              kind="caption/accent"
+              color={
+                selectedSpeed === 'custom' ? 'var(--primary)' : 'var(--black)'
+              }
+            >
+              {customFeeText}
+            </UIText>
+          ) : null}
         </HStack>
       </Button>
       <Spacer height={12} />
