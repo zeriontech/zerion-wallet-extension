@@ -40,6 +40,7 @@ export function Dialog2({
   autoFocusInput = true,
   style,
   animateContentSize = false,
+  forceCentered = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -61,6 +62,8 @@ export function Dialog2({
   style?: React.CSSProperties;
   /** When true, the dialog smoothly animates its own size as the content's height changes. Use with `size="content"`. */
   animateContentSize?: boolean;
+  /** Keep the dialog centered at narrow widths instead of pinning it to the bottom. */
+  forceCentered?: boolean;
 }) {
   const isNarrow = useIsNarrow();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -102,7 +105,8 @@ export function Dialog2({
     return () => cancelAnimationFrame(raf);
   }, [open, autoFocusInput]);
 
-  const isFullscreen = isNarrow && size === 'full';
+  const isCentered = !isNarrow || forceCentered;
+  const isFullscreen = !isCentered && size === 'full';
 
   return createPortal(
     <AnimatePresence>
@@ -126,11 +130,11 @@ export function Dialog2({
             render={
               <motion.div
                 className={`${styles.dialog} ${
-                  isNarrow ? styles.dialogFullscreen : styles.dialogCentered
+                  isCentered ? styles.dialogCentered : styles.dialogFullscreen
                 } ${size === 'content' ? styles.dialogContentHeight : ''}`}
                 style={style}
                 initial={
-                  isNarrow
+                  !isCentered
                     ? {
                         transform: 'translateY(32px) scale(0.98)',
                         opacity: 0,
@@ -150,7 +154,7 @@ export function Dialog2({
                       }
                 }
                 animate={{
-                  transform: isNarrow
+                  transform: !isCentered
                     ? 'translateY(0px) scale(1)'
                     : size === 'content'
                     ? 'translate(-50%, -50%) scale(1)'
@@ -159,7 +163,7 @@ export function Dialog2({
                   filter: 'blur(0px)',
                 }}
                 exit={
-                  isNarrow
+                  !isCentered
                     ? {
                         transform: 'translateY(32px) scale(0.98)',
                         opacity: 0,

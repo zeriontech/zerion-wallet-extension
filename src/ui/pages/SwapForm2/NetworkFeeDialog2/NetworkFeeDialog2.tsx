@@ -113,6 +113,7 @@ export function NetworkFeeDialog2({
       open={open}
       onClose={handleClose}
       size="content"
+      forceCentered={true}
       autoFocusInput={false}
       animateContentSize
     >
