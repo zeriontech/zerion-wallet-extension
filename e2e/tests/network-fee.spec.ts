@@ -1,12 +1,13 @@
 import { expect } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { testWallets } from 'e2e/fixtures/constants';
 import { createExtensionTest } from './test';
 
 const test = createExtensionTest({ headless: true });
 
-const AVERAGE_INDICATOR = 'Average fee selected (your last choice)';
-const CUSTOM_INDICATOR = 'Custom fee selected (kept for 24 hours)';
+const SLOW_REMINDER = 'Slow selected';
+const CUSTOM_REMINDER = 'Custom fee selected';
+const SWITCH_TO_FAST = 'Switch to Fast';
 
 function sendTransactionUrl(extensionPopupUrl: string, nonce: string) {
   const transaction = {
@@ -28,6 +29,16 @@ function sendTransactionUrl(extensionPopupUrl: string, nonce: string) {
   return `${extensionPopupUrl}#/sendTransaction?${params}`;
 }
 
+function sendFormUrl(extensionPopupUrl: string) {
+  const params = new URLSearchParams({
+    inputChain: 'ethereum',
+    inputFungibleId: 'eth',
+    inputAmount: '0.001',
+    to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+  });
+  return `${extensionPopupUrl}#/send-form?${params}`;
+}
+
 async function openTransaction(
   page: Page,
   extensionPopupUrl: string,
@@ -38,19 +49,24 @@ async function openTransaction(
   // and would keep the previous form configuration in memory.
   await page.reload();
   await expect(
-    page.getByRole('button', { name: /^(~\d+ sec|Custom)/ }).first()
+    page.getByRole('button', { name: 'Network Fee' }).first()
   ).toBeVisible({ timeout: 30_000 });
 }
 
 async function openFeeDialog(page: Page) {
-  const feeRow = page
-    .getByRole('button', { name: /^(~\d+ sec|Custom)/ })
-    .first();
+  const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
   await expect(feeRow).toBeEnabled();
   await feeRow.click();
   await expect(
-    page.getByRole('button', { name: /Fast/ }).first()
+    page.getByRole('button', { name: /Fast icon/ }).first()
   ).toBeVisible();
+}
+
+async function feeAmount(locator: Locator) {
+  const text = (await locator.textContent()) ?? '';
+  const match = text.match(/\$[\d.,]+/);
+  expect(match, `No amount in "${text}"`).not.toBeNull();
+  return match?.[0];
 }
 
 test('remembers the fee level per chain and flags non-Fast levels', async ({
@@ -92,43 +108,167 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
     });
   });
 
+  await context.route('**/transaction/get-send/v1*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          inputAmount: {
+            currency: 'usd',
+            quantity: '0.001',
+            value: 2.26,
+            usdValue: 2.26,
+          },
+          error: null,
+          networkFee: {
+            free: false,
+            amount: { quantity: '0.0001', value: 3, usdValue: 3 },
+            fungible: null,
+          },
+          transactionSend: {
+            evm: {
+              type: '0x2',
+              from: testWallets.alice.address,
+              to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+              nonce: '0x0',
+              chainId: '0x1',
+              gas: '0x5208',
+              gasPrice: null,
+              maxFee: '0x6fc23ac00',
+              maxPriorityFee: '0x77359400',
+              value: '0x38d7ea4c68000',
+              data: '0x',
+              customData: null,
+            },
+            solana: null,
+          },
+        },
+        meta: null,
+        errors: null,
+      }),
+    });
+  });
+
   await openTransaction(page, extensionPopupUrl, '0x1');
-  await expect(page.getByText(AVERAGE_INDICATOR)).toHaveCount(0);
+  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
+  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await expect(page.getByRole('button', { name: SWITCH_TO_FAST })).toHaveCount(
+    0
+  );
 
-  // Pick Average: the indicator appears immediately.
+  // Pick Slow: the reminder and the one-tap switch appear immediately.
   await openFeeDialog(page);
-  await page
-    .getByRole('button', { name: /Average/ })
-    .first()
-    .click();
-  await expect(page.getByText(AVERAGE_INDICATOR)).toBeVisible();
+  await expect(page.getByRole('button', { name: /Fast icon/ })).toContainText(
+    '~15 sec'
+  );
+  await expect(page.getByRole('button', { name: /Slow icon/ })).toContainText(
+    '~60 sec'
+  );
+  await expect(page.getByRole('button', { name: /Custom icon/ })).toContainText(
+    /\$/
+  );
+  await expect(page.getByText('Average')).toHaveCount(0);
+  await page.getByRole('button', { name: /Slow icon/ }).click();
+  await expect(page.getByText(SLOW_REMINDER)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: SWITCH_TO_FAST })
+  ).toBeVisible();
 
-  // The next transaction on the same chain starts on Average.
+  // The row amount equals the highlighted Slow row in the picker.
+  await openFeeDialog(page);
+  const slowPicker = page.getByRole('button', { name: /Slow icon/ });
+  await expect(slowPicker).toHaveAttribute('aria-pressed', 'true');
+  const slowPickerAmount = await feeAmount(slowPicker);
+  await page.keyboard.press('Escape');
+  const slowRowAmount = await feeAmount(
+    page.getByRole('button', { name: 'Network Fee' }).first()
+  );
+  expect(slowRowAmount).toBe(slowPickerAmount);
+
+  // The next transaction on the same chain starts on Slow.
   await openTransaction(page, extensionPopupUrl, '0x2');
-  await expect(page.getByText(AVERAGE_INDICATOR)).toBeVisible();
+  await expect(page.getByText(SLOW_REMINDER)).toBeVisible();
 
-  // Picking Fast clears the indicator and persists.
+  // The reminder's switch persists Fast through the same path as the picker.
+  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
+  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
   await openFeeDialog(page);
-  await page.getByRole('button', { name: /Fast/ }).first().click();
-  await expect(page.getByText(AVERAGE_INDICATOR)).toHaveCount(0);
+  const fastPicker = page.getByRole('button', { name: /Fast icon/ });
+  await expect(fastPicker).toHaveAttribute('aria-pressed', 'true');
+  const fastPickerAmount = await feeAmount(fastPicker);
+  await page.keyboard.press('Escape');
+  const fastRowAmount = await feeAmount(
+    page.getByRole('button', { name: 'Network Fee' }).first()
+  );
+  expect(fastRowAmount).toBe(fastPickerAmount);
   await openTransaction(page, extensionPopupUrl, '0x3');
-  await expect(page.getByText(AVERAGE_INDICATOR)).toHaveCount(0);
+  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
+  await expect(page.getByRole('button', { name: SWITCH_TO_FAST })).toHaveCount(
+    0
+  );
 
-  // Custom is saved for the chain and reused by the next transaction.
+  // Custom is saved for the chain, priced in the picker, and reused.
   await openFeeDialog(page);
-  await page
-    .getByRole('button', { name: /Custom/ })
-    .first()
-    .click();
+  await page.getByRole('button', { name: /Custom icon/ }).click();
   await page.getByRole('button', { name: 'Save' }).click();
   // The legacy dapp dialog returns to its selector after saving Custom.
+  const customPicker = page.getByRole('button', { name: /Custom icon/ });
+  await expect(customPicker).toHaveAttribute('aria-pressed', 'true');
+  const customPickerAmount = await feeAmount(customPicker);
   await page.keyboard.press('Escape');
-  await expect(page.getByText(CUSTOM_INDICATOR)).toBeVisible();
+  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+  const customRowAmount = await feeAmount(
+    page.getByRole('button', { name: 'Network Fee' }).first()
+  );
+  expect(customRowAmount).toBe(customPickerAmount);
+
   await openTransaction(page, extensionPopupUrl, '0x4');
-  await expect(page.getByText(CUSTOM_INDICATOR)).toBeVisible();
+  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
 
   // Fast clears the saved Custom entry too.
-  await openFeeDialog(page);
-  await page.getByRole('button', { name: /Fast/ }).first().click();
-  await expect(page.getByText(CUSTOM_INDICATOR)).toHaveCount(0);
+  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
+  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await openTransaction(page, extensionPopupUrl, '0x5');
+  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await expect(page.getByRole('button', { name: SWITCH_TO_FAST })).toHaveCount(
+    0
+  );
+
+  // Send: the row and the highlighted picker row use the same amount,
+  // including the Custom gas limit.
+  await page.goto(sendFormUrl(extensionPopupUrl));
+  const sendFeeRow = page
+    .getByRole('button')
+    .filter({ hasText: 'Network Fee' })
+    .first();
+  await expect(sendFeeRow).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
+
+  await sendFeeRow.click();
+  await page.getByRole('button', { name: /Slow icon/ }).click();
+  await expect(page.getByText(SLOW_REMINDER)).toBeVisible();
+  await sendFeeRow.click();
+  const sendSlowPicker = page.getByRole('button', { name: /Slow icon/ });
+  await expect(sendSlowPicker).toHaveAttribute('aria-pressed', 'true');
+  const sendSlowPickerAmount = await feeAmount(sendSlowPicker);
+  await page.keyboard.press('Escape');
+  await expect(sendFeeRow).toContainText(sendSlowPickerAmount!);
+
+  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
+  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
+
+  await sendFeeRow.click();
+  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+  await sendFeeRow.click();
+  const sendCustomPicker = page.getByRole('button', { name: /Custom icon/ });
+  await expect(sendCustomPicker).toHaveAttribute('aria-pressed', 'true');
+  const sendCustomPickerAmount = await feeAmount(sendCustomPicker);
+  await page.keyboard.press('Escape');
+  await expect(sendFeeRow).toContainText(sendCustomPickerAmount!);
+
+  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
+  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
 });
