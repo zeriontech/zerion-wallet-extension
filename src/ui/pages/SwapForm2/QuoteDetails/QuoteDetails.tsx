@@ -25,6 +25,7 @@ import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { noValueDash } from 'src/ui/shared/typography';
+import { getNetworkFeeIndicator } from 'src/ui/shared/networkFeeIndicator';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { SlippageSettings } from '../SlippageSettings';
 import type { SwapFormState2 } from '../types';
@@ -181,6 +182,9 @@ export function QuoteDetails({
   // Quote-derived defaults (GWEI) for the custom form, seeded from the swap
   // tx's own values.
   const customDefaults = useMemo(() => getCustomFormDefaults(quote), [quote]);
+  const networkFeeIndicator = getNetworkFeeIndicator(
+    configuration.networkFee.speed
+  );
 
   const inputChain = createChain(formState.inputChain);
   const inputChainName = networks.getChainName(inputChain);
@@ -205,6 +209,7 @@ export function QuoteDetails({
           <div className={styles.detailsContainer}>
             <VStack gap={0}>
               <VStack gap={16}>
+                <VStack gap={4}>
                 <DetailRow
                   label="Network Fee"
                   onClick={evmTx ? networkFeeDialog.openDialog : undefined}
@@ -221,6 +226,12 @@ export function QuoteDetails({
                     )
                   }
                 />
+                  {networkFeeIndicator ? (
+                    <UIText kind="caption/regular" color="var(--neutral-500)">
+                      {networkFeeIndicator}
+                    </UIText>
+                  ) : null}
+                </VStack>
                 {showAutoSlippageInCollapsed ? (
                   <DetailRow
                     label="Slippage"

@@ -17,11 +17,16 @@ import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWallet
 import { usePositionsRefetchInterval } from 'src/ui/transactions/usePositionsRefetchInterval';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { invariant } from 'src/shared/invariant';
-import { isReadonlyAccount, isDeviceAccount } from 'src/shared/types/validators';
+import {
+  isReadonlyAccount,
+  isDeviceAccount,
+} from 'src/shared/types/validators';
 import { isNumeric } from 'src/shared/isNumeric';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
 import { toIncomingTransaction } from 'src/shared/types/Quote';
+import { equal } from 'src/modules/fast-deep-equal';
 import {
   signTransactions,
   getQueues,
@@ -33,7 +38,10 @@ import {
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'get-error';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
-import { useGlobalPreferences, usePreferences } from 'src/ui/features/preferences/usePreferences';
+import {
+  useGlobalPreferences,
+  usePreferences,
+} from 'src/ui/features/preferences/usePreferences';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { walletPort } from 'src/ui/shared/channels';
 import { useEvent } from 'src/ui/shared/useEvent';
@@ -57,7 +65,11 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
-import { fromConfiguration, toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
+import {
+  fromConfiguration,
+  toConfiguration,
+} from 'src/ui/shared/forms/networkFeeConfiguration';
+import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { calculatePriceImpactFromPositions } from './shared/price-impact';
@@ -70,7 +82,10 @@ import { InputPosition } from './InputPosition';
 import { OutputPosition } from './OutputPosition';
 import { QuoteDetails } from './QuoteDetails';
 import { ReceiverAddressSelector } from './ReceiverAddressSelector';
-import { TransactionWarning, resolveTransactionWarning } from './TransactionWarning';
+import {
+  TransactionWarning,
+  resolveTransactionWarning,
+} from './TransactionWarning';
 import { UKDisclaimer } from './UKDisclaimer';
 import { USDisclaimer } from './USDisclaimer';
 import { SwapButton, type SimulationResult } from './SwapButton';
@@ -94,7 +109,9 @@ import * as styles from './styles.module.css';
  * receiver, nonce, slippage, and all network-fee overrides. The token/chain
  * selection is preserved so the user can immediately start another swap.
  */
-function resetAfterBroadcast(state: Partial<SwapFormState2>): Partial<SwapFormState2> {
+function resetAfterBroadcast(
+  state: Partial<SwapFormState2>
+): Partial<SwapFormState2> {
   return {
     ...state,
     inputAmount: '',
@@ -144,6 +161,21 @@ function SwapFormComponent({
     networks,
   });
 
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(
+    formState.inputChain || null
+  );
+  const configuration = useMemo(
+    () => toConfiguration(formState, savedNetworkFee),
+    [formState, savedNetworkFee]
+  );
+  const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    if (!equal(value.networkFee, configuration.networkFee)) {
+      saveNetworkFee(value.networkFee);
+    }
+    const partial = fromConfiguration(value);
+    setUserFormState((state) => ({ ...state, ...partial }));
+  });
+
   const { inputPosition, outputPosition } = useFormPositions({
     formState,
     positions,
@@ -153,27 +185,28 @@ function SwapFormComponent({
   const inputNetworkConfig = useMemo(
     () =>
       formState.inputChain
-        ? (networks.getByNetworkId(createChain(formState.inputChain)) ?? null)
+        ? networks.getByNetworkId(createChain(formState.inputChain)) ?? null
         : null,
-    [networks, formState.inputChain],
+    [networks, formState.inputChain]
   );
   const outputNetworkConfig = useMemo(
     () =>
       formState.outputChain
-        ? (networks.getByNetworkId(createChain(formState.outputChain)) ?? null)
+        ? networks.getByNetworkId(createChain(formState.outputChain)) ?? null
         : null,
-    [networks, formState.outputChain],
+    [networks, formState.outputChain]
   );
 
-  const { isCrossEcosystem, receiverEcosystemMismatch, outputEcosystem } = useMemo(
-    () =>
-      getCrossEcosystemState({
-        inputNetwork: inputNetworkConfig,
-        outputNetwork: outputNetworkConfig,
-        to: formState.to,
-      }),
-    [inputNetworkConfig, outputNetworkConfig, formState.to],
-  );
+  const { isCrossEcosystem, receiverEcosystemMismatch, outputEcosystem } =
+    useMemo(
+      () =>
+        getCrossEcosystemState({
+          inputNetwork: inputNetworkConfig,
+          outputNetwork: outputNetworkConfig,
+          to: formState.to,
+        }),
+      [inputNetworkConfig, outputNetworkConfig, formState.to]
+    );
 
   // Clear receiver fields when the form transitions out of cross-ecosystem
   // (the address is no longer required) or when the output ecosystem itself
@@ -186,21 +219,22 @@ function SwapFormComponent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outputEcosystem, isCrossEcosystem]);
 
-  const { quote, quotesQuery, setUserQuoteId, resolvedInputAmount } = useSwapQuote({
-    address,
-    formState,
-    inputPosition,
-    outputPosition,
-    isCrossEcosystem,
-    outputEcosystem,
-  });
+  const { quote, quotesQuery, setUserQuoteId, resolvedInputAmount } =
+    useSwapQuote({
+      address,
+      formState,
+      inputPosition,
+      outputPosition,
+      isCrossEcosystem,
+      outputEcosystem,
+    });
 
   // Single shared gas-prices fetch for the input chain. Powers the local fee
   // scaling (displayed fee + applied transactions) — gas changes never refetch
   // the quote. Polled so the displayed fee tracks the current base fee.
   const inputChainForGas = useMemo(
     () => (formState.inputChain ? createChain(formState.inputChain) : null),
-    [formState.inputChain],
+    [formState.inputChain]
   );
   const { data: gasPrices } = useGasPrices(inputChainForGas, {
     refetchInterval: 20000,
@@ -230,7 +264,12 @@ function SwapFormComponent({
         inputPosition,
         outputPosition,
       }),
-    [resolvedInputAmount, quote?.outputAmount?.quantity, inputPosition, outputPosition],
+    [
+      resolvedInputAmount,
+      quote?.outputAmount?.quantity,
+      inputPosition,
+      outputPosition,
+    ]
   );
 
   // "Price unknown" should be derived purely from the input position so it
@@ -261,7 +300,8 @@ function SwapFormComponent({
   const hasZeroInputBalance =
     !inputPosition || new BigNumber(inputPosition.amount.quantity).isZero();
   const shouldShowTopUpCTA =
-    quote?.error?.code === 2 || (quote?.error?.code === 1 && hasZeroInputBalance);
+    quote?.error?.code === 2 ||
+    (quote?.error?.code === 1 && hasZeroInputBalance);
 
   const trackTransactionFormed = useEvent(() => {
     if (!quote) return;
@@ -273,7 +313,9 @@ function SwapFormComponent({
       outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
       enoughBalance:
         inputPosition && resolvedInputAmount
-          ? new BigNumber(inputPosition.amount.quantity).gte(new BigNumber(resolvedInputAmount))
+          ? new BigNumber(inputPosition.amount.quantity).gte(
+              new BigNumber(resolvedInputAmount)
+            )
           : false,
       slippagePercent: formState.inputChain
         ? getSlippageOptions({
@@ -302,7 +344,8 @@ function SwapFormComponent({
   const { readonlyWallOverride } = useStore(devMenuStore);
   const readonlyWallDisabled = readonlyWallOverride === 'disabled';
   const showSwapOnboarding =
-    devForceShowOnboarding || preferences?.crossChainSwapOnboardingShown !== true;
+    devForceShowOnboarding ||
+    preferences?.crossChainSwapOnboardingShown !== true;
   const closeSwapOnboarding = useEvent(() => {
     if (devForceShowOnboarding) {
       // Dev-triggered open: just close locally, don't write the flag.
@@ -323,7 +366,8 @@ function SwapFormComponent({
     currency: 'usd',
   });
 
-  const [simulationResult, setSimulationResult] = useState<SimulationResult>(null);
+  const [simulationResult, setSimulationResult] =
+    useState<SimulationResult>(null);
   const [hasSimulated, setHasSimulated] = useState(false);
 
   useEffect(() => {
@@ -343,18 +387,22 @@ function SwapFormComponent({
 
   const httpSource = useHttpClientSource();
   const receiverAddress =
-    formState.to && formState.to.toLowerCase() !== address.toLowerCase() ? formState.to : null;
+    formState.to && formState.to.toLowerCase() !== address.toLowerCase()
+      ? formState.to
+      : null;
   const { data: receiverPositionsData } = useWalletSimplePositions(
     { address: receiverAddress ?? address, currency },
     { source: httpSource },
-    { enabled: receiverAddress != null, keepPreviousData: true },
+    { enabled: receiverAddress != null, keepPreviousData: true }
   );
   const receivePositions = useMemo(
     () =>
       receiverAddress
-        ? (receiverPositionsData?.data ?? []).filter((position) => !position.amount.encrypted)
+        ? (receiverPositionsData?.data ?? []).filter(
+            (position) => !position.amount.encrypted
+          )
         : positions,
-    [receiverAddress, receiverPositionsData, positions],
+    [receiverAddress, receiverPositionsData, positions]
   );
 
   const { mutate: handleSignTransaction, ...signMutation } = useMutation({
@@ -367,9 +415,13 @@ function SwapFormComponent({
       invariant(resolvedInputAmount, 'resolvedInputAmount must be set');
       invariant(quote.transactionSwap, 'Quote must have a swap transaction');
 
-      const inputNetwork = networks.getByNetworkId(createChain(formState.inputChain));
+      const inputNetwork = networks.getByNetworkId(
+        createChain(formState.inputChain)
+      );
       invariant(inputNetwork, 'inputNetwork must be defined');
-      const outputNetwork = networks.getByNetworkId(createChain(formState.outputChain));
+      const outputNetwork = networks.getByNetworkId(
+        createChain(formState.outputChain)
+      );
       invariant(outputNetwork, 'outputNetwork must be defined');
 
       const isCrossChain = formState.inputChain !== formState.outputChain;
@@ -379,8 +431,8 @@ function SwapFormComponent({
       // the transactions change; networkFee/outputAmount/etc. stay as quoted.
       const configuredQuote = applyTransactionConfiguration(
         quote,
-        toConfiguration(formState),
-        gasPrices ?? null,
+        configuration,
+        gasPrices ?? null
       );
 
       // Quote-derived EVM txs come back with a backend-assigned nonce that's
@@ -389,9 +441,13 @@ function SwapFormComponent({
       // time. Exception: a user-entered nonce in form state overrides the
       // first step only.
       const userNonce =
-        formState.nonce != null && isNumeric(formState.nonce) ? parseInt(formState.nonce) : null;
-      const withNonce = (tx: MultichainTransaction, nonce: number): MultichainTransaction =>
-        tx.evm ? { evm: { ...tx.evm, nonce } } : tx;
+        formState.nonce != null && isNumeric(formState.nonce)
+          ? parseInt(formState.nonce)
+          : null;
+      const withNonce = (
+        tx: MultichainTransaction,
+        nonce: number
+      ): MultichainTransaction => (tx.evm ? { evm: { ...tx.evm, nonce } } : tx);
       const withoutNonce = (tx: MultichainTransaction): MultichainTransaction =>
         tx.evm
           ? (() => {
@@ -400,14 +456,19 @@ function SwapFormComponent({
             })()
           : tx;
 
-      const inputUsdPrice = inputFungibleUsdInfo?.data?.at(0)?.meta.price ?? null;
+      const inputUsdPrice =
+        inputFungibleUsdInfo?.data?.at(0)?.meta.price ?? null;
       const inputAmountBn = new BigNumber(resolvedInputAmount);
       const value =
         inputPosition.fungible.meta.price != null
-          ? inputAmountBn.multipliedBy(inputPosition.fungible.meta.price).toNumber()
+          ? inputAmountBn
+              .multipliedBy(inputPosition.fungible.meta.price)
+              .toNumber()
           : null;
       const usdValue =
-        inputUsdPrice != null ? inputAmountBn.multipliedBy(inputUsdPrice).toNumber() : null;
+        inputUsdPrice != null
+          ? inputAmountBn.multipliedBy(inputUsdPrice).toNumber()
+          : null;
       const spendAmount = {
         currency,
         quantity: resolvedInputAmount,
@@ -420,7 +481,9 @@ function SwapFormComponent({
       // Explorer for the swap itself: prefer the provider's own explorer
       // (a bridge tracker that follows both legs) over the input chain's.
       const swapExplorerUrlTemplate =
-        quote.contractMetadata.explorer?.txUrl ?? inputNetwork.explorer?.txUrl ?? null;
+        quote.contractMetadata.explorer?.txUrl ??
+        inputNetwork.explorer?.txUrl ??
+        null;
       const approveToasterView: ToasterView = {
         kind: 'approve',
         explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
@@ -446,7 +509,10 @@ function SwapFormComponent({
 
       if (configuredQuote.transactionApprove) {
         const approveTx = configuredQuote.transactionApprove;
-        invariant(approveTx.evm, 'Approve transaction must be EVM (Solana has no allowance step)');
+        invariant(
+          approveTx.evm,
+          'Approve transaction must be EVM (Solana has no allowance step)'
+        );
         const fallbackApproveAction = createApproveAddressAction2({
           transaction: toIncomingTransaction(approveTx.evm),
           hash: null,
@@ -473,7 +539,8 @@ function SwapFormComponent({
             outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
           },
           toaster: {
-            ...(isDeviceAccount(wallet) || formState.inputChain === NetworkId.Ethereum
+            ...(isDeviceAccount(wallet) ||
+            formState.inputChain === NetworkId.Ethereum
               ? approveToasterView
               : swapToasterView),
             // An approval is a plain transaction on the input chain — the
@@ -556,7 +623,8 @@ function SwapFormComponent({
         const { promise: queuePromise } = signTransactions(steps, {
           wallet,
           holdToSign: false,
-          bluetoothSupportEnabled: globalPreferences?.bluetoothSupportEnabled ?? null,
+          bluetoothSupportEnabled:
+            globalPreferences?.bluetoothSupportEnabled ?? null,
           onEvent: (event) => {
             if (event.type === 'step-pending' && event.index === 0) {
               settle(() => {
@@ -583,7 +651,8 @@ function SwapFormComponent({
         // Catches pre-flight rejections (e.g. ReadonlyWalletError) that
         // never emit step events, plus any rejection that races onEvent.
         queuePromise.catch((err) => {
-          const unwrapped = err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
+          const unwrapped =
+            err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
           settle(() => reject(unwrapped));
         });
       });
@@ -623,7 +692,14 @@ function SwapFormComponent({
         inputNetwork: inputNetworkConfig,
         outputNetwork: outputNetworkConfig,
       }),
-    [quote, quotesQuery, formState, simulationResult, inputNetworkConfig, outputNetworkConfig],
+    [
+      quote,
+      quotesQuery,
+      formState,
+      simulationResult,
+      inputNetworkConfig,
+      outputNetworkConfig,
+    ]
   );
 
   const isUnverified = resolved.unverified;
@@ -663,7 +739,7 @@ function SwapFormComponent({
   }, []);
   const walletSelectState = useMemo(
     () => ({ from: `${location.pathname}${location.search}` }),
-    [location.pathname, location.search],
+    [location.pathname, location.search]
   );
 
   return (
@@ -679,13 +755,28 @@ function SwapFormComponent({
           >
             <SettingsIcon style={{ display: 'block' }} />
           </Button>
-          <UnstyledLink to={walletSelectTo} state={walletSelectState} title="Change Wallet">
-            <WalletAvatar active={false} address={address} size={24} borderRadius={6} />
+          <UnstyledLink
+            to={walletSelectTo}
+            state={walletSelectState}
+            title="Change Wallet"
+          >
+            <WalletAvatar
+              active={false}
+              address={address}
+              size={24}
+              borderRadius={6}
+            />
           </UnstyledLink>
         </HStack>
       </div>
-      <SwapSettingsDialog open={settingsDialog.open} onClose={settingsDialog.closeDialog} />
-      <SwapOnboardingDialog open={showSwapOnboarding} onClose={closeSwapOnboarding} />
+      <SwapSettingsDialog
+        open={settingsDialog.open}
+        onClose={settingsDialog.closeDialog}
+      />
+      <SwapOnboardingDialog
+        open={showSwapOnboarding}
+        onClose={closeSwapOnboarding}
+      />
       <PageColumn>
         <PageTop />
         <NavigationTitle title="Swap" />
@@ -729,7 +820,9 @@ function SwapFormComponent({
             networks={networks}
             isCrossEcosystem={isCrossEcosystem}
             receiverEcosystemMismatch={receiverEcosystemMismatch}
-            receiveToAnotherAddress={preferences?.receiveToAnotherAddress ?? false}
+            receiveToAnotherAddress={
+              preferences?.receiveToAnotherAddress ?? false
+            }
           />
           <QuoteDetails
             quote={quote}
@@ -738,15 +831,14 @@ function SwapFormComponent({
             networks={networks}
             address={address}
             gasPrices={gasPrices ?? null}
-            configuration={toConfiguration(formState)}
-            onConfigurationChange={(value) => {
-              const partial = fromConfiguration(value);
-              setUserFormState((state) => ({ ...state, ...partial }));
-            }}
+            configuration={configuration}
+            onConfigurationChange={handleConfigurationChange}
             onProviderChange={setUserQuoteId}
           />
           <TransactionWarning warning={resolved.warning} />
-          {showPriceImpactCallout ? <PriceImpactWarning priceImpact={priceImpact} /> : null}
+          {showPriceImpactCallout ? (
+            <PriceImpactWarning priceImpact={priceImpact} />
+          ) : null}
           {isUnverified ? <UnverifiedWarning /> : null}
           <UKDisclaimer />
           <USDisclaimer />
@@ -762,7 +854,8 @@ function SwapFormComponent({
       </PopoverToast>
       <div className={styles.absoluteFooter}>
         <Spacer height={16} />
-        {signMutation.isError && !(signMutation.error instanceof QueueAbortError) ? (
+        {signMutation.isError &&
+        !(signMutation.error instanceof QueueAbortError) ? (
           <VStack gap={0} style={{ paddingBottom: 8 }}>
             <ErrorMessage
               error={getError(signMutation.error)}
@@ -778,6 +871,7 @@ function SwapFormComponent({
           <SwapButton
             address={address}
             formState={formState}
+            configuration={configuration}
             quote={quote}
             quotesQuery={quotesQuery}
             gasPrices={gasPrices ?? null}
@@ -791,7 +885,9 @@ function SwapFormComponent({
             onCancel={handleCancel}
             dangerTitle={
               resolved.dangerTitle ??
-              (inputPriceUnknown || priceImpact?.kind === 'n/a' || showPriceImpactWarning
+              (inputPriceUnknown ||
+              priceImpact?.kind === 'n/a' ||
+              showPriceImpactWarning
                 ? 'Proceed Anyway'
                 : undefined)
             }
@@ -804,12 +900,20 @@ function SwapFormComponent({
 }
 
 /** Sets initial chainInput to last used chain for current address */
-function SwapFormWrapper({ address, ready }: { address: string; ready: boolean }) {
+function SwapFormWrapper({
+  address,
+  ready,
+}: {
+  address: string;
+  ready: boolean;
+}) {
   const { currency } = useCurrency();
   const navigationType = useNavigationType();
   const isBackOrForward = navigationType === 'POP';
   const [searchParams, setSearchParams] = useSearchParams();
-  const [prepared, setPrepared] = useState(isBackOrForward || searchParams.has('inputChain'));
+  const [prepared, setPrepared] = useState(
+    isBackOrForward || searchParams.has('inputChain')
+  );
   const { data: lastUsedChain, isFetchedAfterMount } = useQuery({
     enabled: ready && !prepared,
     // Avoid using stale value. Leaving form and coming back should use new value instantly
@@ -822,13 +926,13 @@ function SwapFormWrapper({ address, ready }: { address: string; ready: boolean }
   const { data, isError, refetch } = useWalletSimplePositions(
     { address, currency },
     { source: useHttpClientSource() },
-    { enabled: ready, refetchInterval },
+    { enabled: ready, refetchInterval }
   );
 
   // Confidential Positions arrive zeroed until revealed; hide them from the picker
   const positions = useMemo(
     () => data?.data.filter((position) => !position.amount.encrypted),
-    [data],
+    [data]
   );
 
   const { networks, isFetching } = useNetworks();
@@ -842,12 +946,22 @@ function SwapFormWrapper({ address, ready }: { address: string; ready: boolean }
       setSearchParams(searchParams, { replace: true });
     }
     setPrepared(true);
-  }, [isFetchedAfterMount, lastUsedChain, prepared, searchParams, setSearchParams]);
+  }, [
+    isFetchedAfterMount,
+    lastUsedChain,
+    prepared,
+    searchParams,
+    setSearchParams,
+  ]);
 
   return isError ? (
     <SwapFormError onReload={() => refetch()} />
   ) : prepared && positions && networks && !isFetching ? (
-    <SwapFormComponent address={address} positions={positions} networks={networks} />
+    <SwapFormComponent
+      address={address}
+      positions={positions}
+      networks={networks}
+    />
   ) : (
     <SwapFormSkeleton />
   );

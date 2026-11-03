@@ -24,10 +24,14 @@ import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
+import { getNetworkFeeIndicator } from 'src/ui/shared/networkFeeIndicator';
 import { NonceLine2 } from 'src/ui/pages/SwapForm2/QuoteDetails/NonceLine2';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { NetworkFeeDialog2 } from 'src/ui/pages/SwapForm2/NetworkFeeDialog2';
-import { getBaseFee, getCustomFormDefaults } from 'src/ui/pages/SwapForm2/getNetworkFeeForSpeed';
+import {
+  getBaseFee,
+  getCustomFormDefaults,
+} from 'src/ui/pages/SwapForm2/getNetworkFeeForSpeed';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import type { SendQuote } from '../useSendTransaction';
 import * as styles from './SendDetails.module.css';
@@ -61,7 +65,7 @@ function formatNetworkFee(
   fee: NetworkFeeType | null,
   network: NetworkInfo | null,
   fiatValue: number | null,
-  currency: string,
+  currency: string
 ): React.ReactNode {
   if (!fee) return noValueDash;
   if (fee.free) return 'Free';
@@ -119,7 +123,12 @@ export function SendDetails({
   const networkFee: NetworkFeeType | null = sendQuote?.networkFee ?? null;
   const baseFee = getBaseFee(gasPrices);
   const customDefaults = getCustomFormDefaults(sendQuote);
-  const showNonce = Boolean(preferences?.configurableNonce && isEthereumAddress(address));
+  const networkFeeIndicator = getNetworkFeeIndicator(
+    configuration.networkFee.speed
+  );
+  const showNonce = Boolean(
+    preferences?.configurableNonce && isEthereumAddress(address)
+  );
 
   const chain = createChain(inputChain);
   const chainName = networks.getChainName(chain);
@@ -137,13 +146,16 @@ export function SendDetails({
   const receivedValue =
     showReceived && receivedAmount
       ? (() => {
-          const quantityNode = formatTokenValue(receivedAmount.quantity, tokenSymbol ?? '');
+          const quantityNode = formatTokenValue(
+            receivedAmount.quantity,
+            tokenSymbol ?? ''
+          );
           if (receivedAmount.value != null) {
             return `${quantityNode} (${formatCurrencyValueExtra(
               receivedAmount.value,
               'en',
               currency,
-              { zeroRoundingFallback: 0.01 },
+              { zeroRoundingFallback: 0.01 }
             )})`;
           }
           return quantityNode;
@@ -153,10 +165,11 @@ export function SendDetails({
   const feeFungibleId = networkFee?.fungible?.id ?? network?.baseAsset?.id;
   const { data: feeFungibleResponse } = useAssetListFungibles(
     feeFungibleId ? { fungibleIds: [feeFungibleId], currency } : { currency },
-    { suspense: false },
+    { suspense: false }
   );
   const feePrice = feeFungibleId
-    ? (feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta.price ?? null)
+    ? feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta
+        .price ?? null
     : null;
   const feeQuantity = networkFee?.amount?.quantity ?? null;
   const feeFiatValue =
@@ -169,24 +182,40 @@ export function SendDetails({
       <VStack gap={0}>
         <div className={styles.detailsContainer}>
           <VStack gap={0}>
-            <DetailRow
-              label="Network Fee"
-              onClick={evmTx ? networkFeeDialog.openDialog : undefined}
-              value={
-                networkFee ? (
-                  <HStack gap={4} alignItems="center">
-                    <UIText kind="small/accent">
-                      {formatNetworkFee(networkFee, network, feeFiatValue, currency)}
-                    </UIText>
-                    {evmTx ? <ChevronRightIcon className={styles.detailLinkChevron} /> : null}
-                  </HStack>
-                ) : isLoading ? (
-                  <CircleSpinner />
-                ) : (
-                  noValueDash
-                )
-              }
-            />
+            <VStack gap={4}>
+              <DetailRow
+                label="Network Fee"
+                onClick={evmTx ? networkFeeDialog.openDialog : undefined}
+                value={
+                  networkFee ? (
+                    <HStack gap={4} alignItems="center">
+                      <UIText kind="small/accent">
+                        {formatNetworkFee(
+                          networkFee,
+                          network,
+                          feeFiatValue,
+                          currency
+                        )}
+                      </UIText>
+                      {evmTx ? (
+                        <ChevronRightIcon
+                          className={styles.detailLinkChevron}
+                        />
+                      ) : null}
+                    </HStack>
+                  ) : isLoading ? (
+                    <CircleSpinner />
+                  ) : (
+                    noValueDash
+                  )
+                }
+              />
+              {networkFeeIndicator ? (
+                <UIText kind="caption/regular" color="var(--neutral-500)">
+                  {networkFeeIndicator}
+                </UIText>
+              ) : null}
+            </VStack>
             <AnimatePresence initial={false}>
               {isExpanded ? (
                 <motion.div
@@ -205,9 +234,15 @@ export function SendDetails({
                   >
                     <VStack gap={16}>
                       <div />
-                      {showReceived ? <DetailRow label="Received" value={receivedValue} /> : null}
+                      {showReceived ? (
+                        <DetailRow label="Received" value={receivedValue} />
+                      ) : null}
                       {showNonce ? (
-                        <React.Suspense fallback={<DetailRow label="Nonce" value={noValueDash} />}>
+                        <React.Suspense
+                          fallback={
+                            <DetailRow label="Nonce" value={noValueDash} />
+                          }
+                        >
                           {evmTx && evmTx.from ? (
                             <NonceLine2
                               transaction={{ ...evmTx, from: evmTx.from }}
@@ -246,7 +281,10 @@ export function SendDetails({
             className={styles.detailsToggle}
             onClick={() => setIsExpanded((prev) => !prev)}
           >
-            <UIText kind="caption/regular" style={{ fontWeight: 600, color: 'var(--neutral-500)' }}>
+            <UIText
+              kind="caption/regular"
+              style={{ fontWeight: 600, color: 'var(--neutral-500)' }}
+            >
               Details
             </UIText>
             <motion.span

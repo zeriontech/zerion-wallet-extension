@@ -1,8 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import BigNumber from 'bignumber.js';
 import { useStore } from '@store-unit/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
+import { equal } from 'src/modules/fast-deep-equal';
+import { useEvent } from 'src/ui/shared/useEvent';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
 import { useWalletNftPosition } from 'src/modules/zerion-api/hooks/useWalletNftPosition';
@@ -17,7 +26,11 @@ import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { applyConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration/applyConfiguration';
-import { fromConfiguration, toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
+import {
+  fromConfiguration,
+  toConfiguration,
+} from 'src/ui/shared/forms/networkFeeConfiguration';
+import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import { PageColumn } from 'src/ui/components/PageColumn/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -37,7 +50,10 @@ import { invariant } from 'src/shared/invariant';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { isNumeric } from 'src/shared/isNumeric';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
-import { useGlobalPreferences, usePreferences } from 'src/ui/features/preferences/usePreferences';
+import {
+  useGlobalPreferences,
+  usePreferences,
+} from 'src/ui/features/preferences/usePreferences';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
@@ -93,7 +109,9 @@ import * as styles from './SendForm2.module.css';
  * keeps the asset and recipient they just used instead of the form snapping
  * back to the highest-value position with an empty recipient.
  */
-function resetAfterBroadcast(state: Partial<SendFormState2>): Partial<SendFormState2> {
+function resetAfterBroadcast(
+  state: Partial<SendFormState2>
+): Partial<SendFormState2> {
   return {
     ...state,
     inputAmount: undefined,
@@ -120,12 +138,27 @@ function SendFormComponent({
 }) {
   const { currency } = useCurrency();
   const source = useHttpClientSource();
-  const [formState, handleChange, setUserFormState, selectFungible, selectNft] = useFormState({
-    address,
-    positions,
+  const [formState, handleChange, setUserFormState, selectFungible, selectNft] =
+    useFormState({ address, positions });
+
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(
+    formState.inputChain || null
+  );
+  const configuration = useMemo(
+    () => toConfiguration(formState, savedNetworkFee),
+    [formState, savedNetworkFee]
+  );
+  const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    if (!equal(value.networkFee, configuration.networkFee)) {
+      saveNetworkFee(value.networkFee);
+    }
+    const partial = fromConfiguration(value);
+    setUserFormState((state) => ({ ...state, ...partial }));
   });
 
-  const [lastTokensNetwork, setLastTokensNetwork] = useState<string | null>(null);
+  const [lastTokensNetwork, setLastTokensNetwork] = useState<string | null>(
+    null
+  );
   const [lastNftsNetwork, setLastNftsNetwork] = useState<string | null>(null);
 
   const selectorDialog = useDialog2();
@@ -148,17 +181,17 @@ function SendFormComponent({
   const { data: nftResponse, isLoading: nftLoading } = useWalletNftPosition(
     { address, currency, nftId: formState.nftId ?? '' },
     { source },
-    { enabled: nftEnabled },
+    { enabled: nftEnabled }
   );
   const nftPosition = nftResponse?.data ?? null;
 
   const { data: portfolioData } = useWalletPortfolio(
     { addresses: [address], currency },
-    { source },
+    { source }
   );
   const nftChainsDistribution = useMemo(
     () => portfolioData?.data?.nftChainsDistribution ?? {},
-    [portfolioData],
+    [portfolioData]
   );
 
   const { data: wallet } = useQuery({
@@ -180,21 +213,23 @@ function SendFormComponent({
   // calldata to an NFT transfer has no use case, and `selectNft` clears the
   // value so nothing can be attached while the field is hidden.
   const showCustomData = Boolean(
-    preferences?.configurableTransactionData && isEthereumAddress(address) && !isNftMode,
+    preferences?.configurableTransactionData &&
+      isEthereumAddress(address) &&
+      !isNftMode
   );
 
   const handleSelectFungible = useCallback(
     (chainId: string, fungibleId: string) => {
       selectFungible(chainId, fungibleId);
     },
-    [selectFungible],
+    [selectFungible]
   );
 
   const handleSelectNft = useCallback(
     (nftId: string, chainId: string) => {
       selectNft(nftId, chainId);
     },
-    [selectNft],
+    [selectNft]
   );
 
   const ecosystemMismatch = useMemo(() => {
@@ -206,10 +241,12 @@ function SendFormComponent({
       return null;
     }
     if (isMatchForEcosystem(address, recipientEcosystem)) return null;
-    const senderEcosystem: BlockchainType = isMatchForEcosystem(address, 'evm') ? 'evm' : 'solana';
+    const senderEcosystem: BlockchainType = isMatchForEcosystem(address, 'evm')
+      ? 'evm'
+      : 'solana';
     const label = (e: BlockchainType) => (e === 'evm' ? 'Ethereum' : 'Solana');
     return `Recipient is on ${label(
-      recipientEcosystem,
+      recipientEcosystem
     )}, but sending wallet is on ${label(senderEcosystem)}.`;
   }, [address, formState.to]);
 
@@ -237,7 +274,7 @@ function SendFormComponent({
   // at sign time. Gas changes never refetch the send quote.
   const inputChainForGas = useMemo(
     () => (formState.inputChain ? createChain(formState.inputChain) : null),
-    [formState.inputChain],
+    [formState.inputChain]
   );
   const { data: gasPrices } = useGasPrices(inputChainForGas, {
     refetchInterval: 20000,
@@ -266,20 +303,22 @@ function SendFormComponent({
       formState.maxPriorityFee ||
       formState.gasPrice ||
       formState.gasLimit ||
-      formState.networkFeeSpeed;
+      formState.networkFeeSpeed ||
+      configuration.networkFee.speed !== 'fast';
     if (!hasNetworkFeeOverride) {
       return { evm: clientTx.evm };
     }
     const configured = applyConfiguration(
       clientTx.evm,
-      toConfiguration(formState),
-      gasPrices ?? null,
+      configuration,
+      gasPrices ?? null
     );
     return { evm: configured };
-  }, [sendQuote, formState, gasPrices]);
+  }, [sendQuote, formState, configuration, gasPrices]);
 
   // Reset simulation/sign state when form state changes meaningfully.
-  const [simulationResult, setSimulationResult] = useState<SimulationResult>(null);
+  const [simulationResult, setSimulationResult] =
+    useState<SimulationResult>(null);
   const [hasSimulated, setHasSimulated] = useState(false);
 
   useEffect(() => {
@@ -310,14 +349,14 @@ function SendFormComponent({
         assetSymbol: position?.fungible.symbol ?? null,
         nativeAssetSymbol: sendNetwork?.baseAsset?.symbol ?? null,
       }),
-    [simulationResult, sendError, position, sendNetwork],
+    [simulationResult, sendError, position, sendNetwork]
   );
 
   // USD price lookup for analytics — mirrors SwapForm2.
   const { data: inputFungibleUsdInfo } = useAssetListFungibles(
     formState.inputFungibleId
       ? { fungibleIds: [formState.inputFungibleId], currency: 'usd' }
-      : { currency: 'usd' },
+      : { currency: 'usd' }
   );
 
   // Resolve the recipient to a friendly name (address book → wallet/watchlist
@@ -345,7 +384,9 @@ function SendFormComponent({
       const interpretationAction = result?.data?.action ?? null;
 
       const userNonce =
-        formState.nonce != null && isNumeric(formState.nonce) ? parseInt(formState.nonce) : null;
+        formState.nonce != null && isNumeric(formState.nonce)
+          ? parseInt(formState.nonce)
+          : null;
 
       // `clientTransaction` already has the selected network-fee override
       // applied. The prepared EVM tx comes back with a nonce that's stale once
@@ -363,14 +404,18 @@ function SendFormComponent({
 
       const feeValueCommon = sendQuote?.networkFee?.amount?.quantity ?? null;
 
-      const inputUsdPrice = inputFungibleUsdInfo?.data?.at(0)?.meta.price ?? null;
+      const inputUsdPrice =
+        inputFungibleUsdInfo?.data?.at(0)?.meta.price ?? null;
       const tokenPrice = position.fungible.meta.price;
 
       // Backend may shave gas off a max-send and return a different amount.
       // Use the backend's authoritative amount where present.
       const backendInputAmount = sendInputAmount;
       const sendQuantity =
-        backendInputAmount?.quantity ?? resolvedInputAmount ?? formState.nftAmount ?? '';
+        backendInputAmount?.quantity ??
+        resolvedInputAmount ??
+        formState.nftAmount ??
+        '';
       const quantityBn = sendQuantity ? new BigNumber(sendQuantity) : null;
       const sendAmount = backendInputAmount
         ? { ...backendInputAmount, currency }
@@ -416,12 +461,14 @@ function SendFormComponent({
             });
 
       const tokenIconUrl = isNftMode
-        ? (nftPosition?.nft.metadata?.content?.imageUrl ??
+        ? nftPosition?.nft.metadata?.content?.imageUrl ??
           nftPosition?.nft.metadata?.content?.imagePreviewUrl ??
-          null)
+          null
         : position.fungible.iconUrl;
       const tokenSymbol = isNftMode
-        ? (nftPosition?.nft.metadata?.name ?? nftPosition?.nft.collection?.name ?? 'NFT')
+        ? nftPosition?.nft.metadata?.name ??
+          nftPosition?.nft.collection?.name ??
+          'NFT'
         : position.fungible.symbol;
 
       const steps: SignStep[] = [
@@ -462,7 +509,8 @@ function SendFormComponent({
         const { promise: queuePromise } = signTransactions(steps, {
           wallet,
           holdToSign: false,
-          bluetoothSupportEnabled: globalPreferences?.bluetoothSupportEnabled ?? null,
+          bluetoothSupportEnabled:
+            globalPreferences?.bluetoothSupportEnabled ?? null,
           onEvent: (event) => {
             if (event.type === 'step-pending' && event.index === 0) {
               settle(() => {
@@ -470,7 +518,7 @@ function SendFormComponent({
                   setPreferences({
                     recentAddresses: updateRecentAddresses(
                       formState.to,
-                      preferences.recentAddresses,
+                      preferences.recentAddresses
                     ),
                   });
                 }
@@ -490,7 +538,10 @@ function SendFormComponent({
           settle(() => {
             if (preferences && formState.to) {
               setPreferences({
-                recentAddresses: updateRecentAddresses(formState.to, preferences.recentAddresses),
+                recentAddresses: updateRecentAddresses(
+                  formState.to,
+                  preferences.recentAddresses
+                ),
               });
             }
             setUserFormState(resetAfterBroadcast);
@@ -500,7 +551,8 @@ function SendFormComponent({
         }
 
         queuePromise.catch((err) => {
-          const unwrapped = err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
+          const unwrapped =
+            err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
           settle(() => reject(unwrapped));
         });
       });
@@ -535,16 +587,18 @@ function SendFormComponent({
   // An **Unknown receiver** gets one more confirmation before anything is
   // signed. The gate wraps the sign call, not the button, so it covers both
   // entry points below — the clean auto-sign and the post-warning second tap.
-  const { guardedSign, dialog: unknownReceiverDialog } = useUnknownReceiverGate({
-    senderAddress: address,
-    to: formState.to,
-    network: sendNetwork,
-    warning: resolved.warning,
-    sign: handleSignTransaction,
-    // Reaching the confirmation counts as having simulated: dismissing it
-    // leaves the footer on "Confirm Send" instead of re-simulating.
-    onIntercept: () => setHasSimulated(true),
-  });
+  const { guardedSign, dialog: unknownReceiverDialog } = useUnknownReceiverGate(
+    {
+      senderAddress: address,
+      to: formState.to,
+      network: sendNetwork,
+      warning: resolved.warning,
+      sign: handleSignTransaction,
+      // Reaching the confirmation counts as having simulated: dismissing it
+      // leaves the footer on "Confirm Send" instead of re-simulating.
+      onIntercept: () => setHasSimulated(true),
+    }
+  );
 
   const handleSimulationCompleted = (result: SimulationResult) => {
     setSimulationResult(result);
@@ -575,7 +629,12 @@ function SendFormComponent({
                 title="Change Wallet"
                 style={{ justifySelf: 'center' }}
               >
-                <WalletAvatar active={false} address={address} size={24} borderRadius={6} />
+                <WalletAvatar
+                  active={false}
+                  address={address}
+                  size={24}
+                  borderRadius={6}
+                />
               </UnstyledLink>
             ) : null
           }
@@ -640,13 +699,12 @@ function SendFormComponent({
               evmTx={evmTx}
               address={address}
               gasPrices={gasPrices ?? null}
-              configuration={toConfiguration(formState)}
-              onConfigurationChange={(value) => {
-                const partial = fromConfiguration(value);
-                setUserFormState((state) => ({ ...state, ...partial }));
-              }}
+              configuration={configuration}
+              onConfigurationChange={handleConfigurationChange}
               userNonce={formState.nonce ?? null}
-              onNonceChange={(nonce) => handleChange('nonce', nonce ?? undefined)}
+              onNonceChange={(nonce) =>
+                handleChange('nonce', nonce ?? undefined)
+              }
               isLoading={sendDataLoading}
               receivedAmount={sendInputAmount}
               typedAmount={resolvedInputAmount}
@@ -685,7 +743,8 @@ function SendFormComponent({
       {unknownReceiverDialog}
       <div className={styles.absoluteFooter}>
         <Spacer height={16} />
-        {signMutation.isError && !(signMutation.error instanceof QueueAbortError) ? (
+        {signMutation.isError &&
+        !(signMutation.error instanceof QueueAbortError) ? (
           <VStack gap={0} style={{ paddingBottom: 8 }}>
             <ErrorMessage
               error={getError(signMutation.error)}
@@ -715,27 +774,39 @@ function SendFormComponent({
   );
 }
 
-function SendFormWrapper({ address, ready }: { address: string; ready: boolean }) {
+function SendFormWrapper({
+  address,
+  ready,
+}: {
+  address: string;
+  ready: boolean;
+}) {
   useBackgroundKind(whiteBackgroundKind);
   const { currency } = useCurrency();
   const refetchInterval = usePositionsRefetchInterval(20000);
   const { data, isError } = useWalletSimplePositions(
     { address, currency },
     { source: useHttpClientSource() },
-    { enabled: ready, refetchInterval },
+    { enabled: ready, refetchInterval }
   );
 
   // Confidential Positions arrive zeroed until revealed; hide them from the picker
   const positions = useMemo(
     () => data?.data.filter((position) => !position.amount.encrypted),
-    [data],
+    [data]
   );
   const { networks, isFetching } = useNetworks();
 
   if (isError) return null;
   if (!positions || !networks || isFetching) return <SendFormSkeleton />;
 
-  return <SendFormComponent address={address} positions={positions} networks={networks} />;
+  return (
+    <SendFormComponent
+      address={address}
+      positions={positions}
+      networks={networks}
+    />
+  );
 }
 
 export function SendForm2() {

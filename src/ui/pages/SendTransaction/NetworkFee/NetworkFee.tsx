@@ -4,9 +4,11 @@ import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfig
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
+import { getNetworkFeeIndicator } from 'src/ui/shared/networkFeeIndicator';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -124,6 +126,9 @@ export function NetworkFee({
         .filter(isTruthy)
         .join(' · ')
     : null;
+  const networkFeeIndicator = getNetworkFeeIndicator(
+    networkFeeConfiguration.speed
+  );
 
   return (
     <>
@@ -143,6 +148,7 @@ export function NetworkFee({
           customViewOnly={customViewOnly}
         />
       ) : null}
+      <VStack gap={4}>
       <HStack gap={8} justifyContent="space-between">
         {label !== undefined ? label : <UIText kind="small/regular">Network Fee</UIText>}
         {isLoading ? (
@@ -179,6 +185,12 @@ export function NetworkFee({
           </UIText>
         ) : null}
       </HStack>
+        {networkFeeIndicator ? (
+          <UIText kind="caption/regular" color="var(--neutral-500)">
+            {networkFeeIndicator}
+          </UIText>
+        ) : null}
+      </VStack>
     </>
   );
 }
