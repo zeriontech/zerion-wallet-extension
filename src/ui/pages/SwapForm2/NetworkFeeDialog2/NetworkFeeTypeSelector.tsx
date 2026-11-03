@@ -38,6 +38,9 @@ export function NetworkFeeTypeSelector({
   configuration,
   defaults,
   isEip1559,
+  fallbackFiatValue = null,
+  fallbackSymbol = null,
+  currency = null,
   onSelectPreset,
   onSelectCustom,
 }: {
@@ -50,6 +53,9 @@ export function NetworkFeeTypeSelector({
   configuration?: CustomConfiguration;
   defaults?: CustomFormDefaults;
   isEip1559: boolean;
+  fallbackFiatValue?: number | null;
+  fallbackSymbol?: string | null;
+  currency?: string | null;
   onSelectPreset: (value: NetworkFeeConfiguration) => void;
   onSelectCustom: () => void;
 }) {
@@ -66,7 +72,13 @@ export function NetworkFeeTypeSelector({
       )
     : getCustomFeeRatioFromDefaults(quote, defaults, isEip1559, baseFee);
   const customFeeLabel =
-    quote && customRatio != null ? formatNetworkFee(quote, customRatio) : null;
+    quote && customRatio != null
+      ? formatNetworkFee(quote, customRatio, {
+          fallbackFiatValue,
+          fallbackSymbol,
+          currency,
+        })
+      : null;
 
   const displayFeeLabel = (label: string | null) => {
     if (!label || label === noValueDash) {
@@ -90,7 +102,13 @@ export function NetworkFeeTypeSelector({
           gasPrices,
           baseFee
         );
-        const feeLabel = quote ? formatNetworkFee(quote, ratio) : null;
+        const feeLabel = quote
+          ? formatNetworkFee(quote, ratio, {
+              fallbackFiatValue,
+              fallbackSymbol,
+              currency,
+            })
+          : null;
         const feeText = displayFeeLabel(feeLabel);
         const eta = gasPrices?.[speed]?.eta;
         const selected = speed === selectedSpeed;
