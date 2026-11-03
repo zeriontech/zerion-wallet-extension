@@ -1,4 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -21,11 +28,8 @@ import {
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type {
-  ActionType,
-  AddressAction,
-} from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { ActionType } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -37,53 +41,50 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import dayjs from 'dayjs';
+import { isReadonlyContainer } from 'src/shared/types/validators';
+import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
+import { hiddenPendingActionsStore } from 'src/ui/features/pending-transactions/hiddenPendingActions';
+import {
+  filterLocalByAssetTypes,
+  hasContentFilter,
+} from 'src/ui/features/pending-transactions/getLocalPendingActions';
+import { withTransactionIdentity } from 'src/ui/features/pending-transactions/lookupTransactionIdentity';
+import { useReadyClock } from 'src/ui/features/pending-transactions/useReadyClock';
+import { reconcileBroadcastLocks } from 'src/ui/features/pending-transactions/broadcastLockStore';
+import type { PendingAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
 import { getLocalActionSearchTerms } from './localActionContent';
 import * as styles from './styles.module.css';
-import { getAddressActionsCursor } from './getAddressActionCursor';
+import { getHistoryActionsParams } from './getHistoryActionsParams';
+import { mergeHistoryActions } from './mergeHistoryActions';
 import { useHistoryFilterParams, HistoryFiltersButton } from './HistoryFilters';
+import { PendingActionButtons } from './PendingActionButtons';
 
-function sortActions<T extends { timestamp?: number }>(actions: T[]) {
-  return actions.sort((a, b) => {
-    const aDate = a.timestamp || Date.now();
-    const bDate = b.timestamp || Date.now();
-    return bDate - aDate;
-  });
+const HistoryRefetchContext = createContext<() => void>(() => {});
+
+/** Re-fetches History's first page together with its pending lists. */
+export function useRefetchHistory(): () => void {
+  return useContext(HistoryRefetchContext);
 }
 
-function mergeLocalAndBackendActions(
-  local: AnyAddressAction[],
-  backend: AddressAction[],
-  hasMoreBackendActions: boolean
-) {
-  const backendHashes = new Set(
-    backend.flatMap(
-      (tx) =>
-        tx.transaction?.hash || tx.acts?.map((act) => act.transaction.hash)
-    )
+function PendingRowActions({
+  item,
+  nowMs,
+}: {
+  item: PendingAction;
+  nowMs: number;
+}) {
+  const refetchHistory = useRefetchHistory();
+  return (
+    <PendingActionButtons
+      item={item}
+      nowMs={nowMs}
+      placement="row"
+      onSettled={refetchHistory}
+    />
   );
-
-  const lastBackendActionDatetime = backend.at(-1)?.timestamp;
-  const lastBackendTimestamp =
-    lastBackendActionDatetime && hasMoreBackendActions
-      ? new Date(lastBackendActionDatetime).getTime()
-      : 0;
-
-  const merged = local
-    .filter(
-      (tx) =>
-        tx.transaction?.hash &&
-        backendHashes.has(tx.transaction.hash) === false &&
-        !tx.acts?.some(
-          (act) =>
-            act.transaction.hash && backendHashes.has(act.transaction.hash)
-        ) &&
-        tx.timestamp >= lastBackendTimestamp
-    )
-    .concat(backend);
-  return sortActions(merged);
 }
 
 function useMinedAndPendingAddressActions({
@@ -99,7 +100,7 @@ function useMinedAndPendingAddressActions({
   actionTypes?: ActionType[];
   assetTypes?: ('fungible' | 'nft')[];
 }) {
-  const { params } = useAddressParams();
+  const { params, singleAddress } = useAddressParams();
   const { networks, loadNetworkByChainId } = useNetworks();
   const isSupportedByBackend = chain
     ? networks?.supports('actions', chain)
@@ -176,10 +177,10 @@ function useMinedAndPendingAddressActions({
           )
       );
     }
-    if (assetTypes?.length === 1 && assetTypes?.[0] === 'nft') {
-      items = [];
-    }
-    return items;
+    return filterLocalByAssetTypes(
+      items.map((item) => item.addressAction),
+      assetTypes
+    ).map(withTransactionIdentity);
   }, [
     localItems,
     chain,
@@ -200,32 +201,115 @@ function useMinedAndPendingAddressActions({
     return map;
   }, [localItems]);
 
-  const { actions, queryData, refetch } = useWalletActions(
-    {
-      addresses: [params.address],
+  const { data: walletGroup, isFetched: isWalletGroupFetched } = useQuery({
+    queryKey: ['getWalletGroupByAddress', singleAddress],
+    queryFn: () => getWalletGroupByAddress(singleAddress),
+    enabled: Boolean(singleAddress),
+    useErrorBoundary: false,
+  });
+  const isOwnWallet = Boolean(
+    walletGroup && !isReadonlyContainer(walletGroup.walletContainer)
+  );
+  const backendChain =
+    chain && isSupportedByBackend ? chain.toString() : undefined;
+  const requestParams = useMemo(
+    () =>
+      getHistoryActionsParams({
+        address: params.address,
+        currency,
+        chain: backendChain,
+        searchQuery,
+        startDate,
+        actionTypes,
+        assetTypes,
+        isOwnWallet,
+      }),
+    [
+      params.address,
       currency,
-      chain: chain && isSupportedByBackend ? chain.toString() : undefined,
+      backendChain,
       searchQuery,
-      cursor: startDate ? getAddressActionsCursor(startDate) : undefined,
-      actionTypes: actionTypes?.length ? actionTypes : undefined,
-      assetTypes: assetTypes?.length ? assetTypes : undefined,
-      limit: 10,
-    },
+      startDate,
+      actionTypes,
+      assetTypes,
+      isOwnWallet,
+    ]
+  );
+  const hiddenIds = useStore(hiddenPendingActionsStore);
+
+  const [pendingRows, setPendingRows] = useState<LocalAddressAction[]>([]);
+  const {
+    actions,
+    pending,
+    unsigned,
+    pendingListsAvailable,
+    queryData,
+    refetch,
+  } = useWalletActions(
+    requestParams,
     { source },
-    { enabled: isSupportedByBackend }
+    {
+      enabled: isSupportedByBackend && isWalletGroupFetched,
+      localPending: pendingRows,
+    }
   );
 
+  const listsUnfiltered =
+    !requestParams.chain && !hasContentFilter(requestParams);
+  useEffect(() => {
+    if (listsUnfiltered && pendingListsAvailable && pending && unsigned) {
+      reconcileBroadcastLocks({ pending, unsigned });
+    }
+  }, [listsUnfiltered, pendingListsAvailable, pending, unsigned]);
+
+  const merged = useMemo(() => {
+    if (!localAddressActions) {
+      return null;
+    }
+    const backendFailed = !isSupportedByBackend || queryData.isError;
+    return mergeHistoryActions({
+      local: localAddressActions,
+      actions: backendFailed ? [] : actions,
+      pending: backendFailed ? [] : pending ?? [],
+      unsigned: backendFailed ? [] : unsigned ?? [],
+      hiddenIds,
+      filters: { chain: chain?.toString(), searchQuery, actionTypes },
+      contentFiltered: hasContentFilter(requestParams),
+    });
+  }, [
+    localAddressActions,
+    isSupportedByBackend,
+    queryData.isError,
+    actions,
+    pending,
+    unsigned,
+    hiddenIds,
+    chain,
+    searchQuery,
+    actionTypes,
+    requestParams,
+  ]);
+
+  const localPendingRows = useMemo(
+    () =>
+      merged?.pending.flatMap((entry) =>
+        entry.kind === 'local' ? [entry.action] : []
+      ) ?? [],
+    [merged]
+  );
+  useEffect(() => {
+    setPendingRows((current) =>
+      current.map((row) => row.id).join() ===
+      localPendingRows.map((row) => row.id).join()
+        ? current
+        : localPendingRows
+    );
+  }, [localPendingRows]);
+
   return useMemo(() => {
-    const backendItems = isSupportedByBackend && actions ? actions : [];
-    const hasMore = Boolean(isSupportedByBackend && queryData.hasNextPage);
     return {
-      actions: localAddressActions
-        ? mergeLocalAndBackendActions(
-            localAddressActions.map((item) => item.addressAction),
-            backendItems,
-            hasMore
-          )
-        : null,
+      actions: merged?.history ?? null,
+      pendingEntries: merged?.pending ?? [],
       contentRequests,
       ...localActionsQuery,
       isLoading:
@@ -235,15 +319,7 @@ function useMinedAndPendingAddressActions({
       queryData,
       refetch,
     };
-  }, [
-    isSupportedByBackend,
-    actions,
-    localAddressActions,
-    contentRequests,
-    localActionsQuery,
-    queryData,
-    refetch,
-  ]);
+  }, [merged, contentRequests, localActionsQuery, queryData, refetch]);
 }
 
 function HistoryEmptyView({
@@ -311,14 +387,31 @@ export function HistoryList({
       : null;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
-  const { actions, contentRequests, isLoading, queryData, refetch } =
-    useMinedAndPendingAddressActions({
-      chain,
-      searchQuery,
-      startDate: searchParams.date,
-      actionTypes: actionTypes.length ? actionTypes : undefined,
-      assetTypes: assetTypes.length ? assetTypes : undefined,
-    });
+  const {
+    actions,
+    pendingEntries,
+    contentRequests,
+    isLoading,
+    queryData,
+    refetch,
+  } = useMinedAndPendingAddressActions({
+    chain,
+    searchQuery,
+    startDate: searchParams.date,
+    actionTypes: actionTypes.length ? actionTypes : undefined,
+    assetTypes: assetTypes.length ? assetTypes : undefined,
+  });
+
+  const unsignedEntries = useMemo(
+    () =>
+      pendingEntries.flatMap((entry) =>
+        entry.kind === 'remote' && entry.item.status === 'unsigned'
+          ? [entry.item]
+          : []
+      ),
+    [pendingEntries]
+  );
+  const nowMs = useReadyClock(unsignedEntries);
 
   const handleActionTypesChange = useCallback(
     (keys: string[]) => {
@@ -429,7 +522,7 @@ export function HistoryList({
     </div>
   );
 
-  if (!actions?.length) {
+  if (!actions?.length && !pendingEntries.length) {
     return (
       <CenteredFillViewportView
         maxHeight={getGrownTabMaxHeight(offsetValuesState)}
@@ -461,20 +554,27 @@ export function HistoryList({
     <>
       {actionFilters}
       <Spacer height={16} />
-      <ActionsList
-        actions={actions}
-        contentRequests={contentRequests}
-        hasMore={Boolean(queryData.hasNextPage)}
-        isLoading={isLoading}
-        onLoadMore={queryData.fetchNextPage}
-        targetDate={searchParams.date || null}
-        onChangeDate={(date) =>
-          setSearchParams((state) => ({
-            ...state,
-            date: date ? formatDate(date) : undefined,
-          }))
-        }
-      />
+      <HistoryRefetchContext.Provider value={refetch}>
+        <ActionsList
+          actions={actions ?? []}
+          pendingEntries={pendingEntries}
+          nowMs={nowMs}
+          renderPendingActions={(item) => (
+            <PendingRowActions item={item} nowMs={nowMs} />
+          )}
+          contentRequests={contentRequests}
+          hasMore={Boolean(queryData.hasNextPage)}
+          isLoading={isLoading}
+          onLoadMore={queryData.fetchNextPage}
+          targetDate={searchParams.date || null}
+          onChangeDate={(date) =>
+            setSearchParams((state) => ({
+              ...state,
+              date: date ? formatDate(date) : undefined,
+            }))
+          }
+        />
+      </HistoryRefetchContext.Provider>
     </>
   );
 }

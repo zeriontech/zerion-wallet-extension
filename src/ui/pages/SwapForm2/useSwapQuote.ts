@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
+import { filterQuotesByIntentCapability } from 'src/shared/types/Quote';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { resolveTokenValue } from 'src/ui/components/AmountInput/inputKind';
 import type { SwapFormState2 } from './types';
 import { isReceiverReadyForQuote } from './shared/getCrossEcosystemState';
+import { selectSwapQuote } from './selectSwapQuote';
 
 export function useSwapQuote({
   address,
@@ -15,6 +17,7 @@ export function useSwapQuote({
   outputPosition,
   isCrossEcosystem,
   outputEcosystem,
+  allowIntents,
 }: {
   address: string;
   formState: SwapFormState2;
@@ -22,6 +25,7 @@ export function useSwapQuote({
   outputPosition: FungiblePosition | null;
   isCrossEcosystem: boolean;
   outputEcosystem: BlockchainType | null;
+  allowIntents: boolean;
 }) {
   const { currency } = useCurrency();
   const { pathname } = useLocation();
@@ -63,7 +67,7 @@ export function useSwapQuote({
     to: formState.to,
   });
 
-  const quotesQuery = useQuotesV2({
+  const rawQuotesQuery = useQuotesV2({
     address,
     currency,
     formState: quotesFormState,
@@ -77,19 +81,25 @@ export function useSwapQuote({
     inputFiatValue,
   });
 
+  const quotes = useMemo(
+    () => filterQuotesByIntentCapability(rawQuotesQuery.quotes, allowIntents),
+    [rawQuotesQuery.quotes, allowIntents]
+  );
+  const quotesQuery = useMemo(
+    () => ({ ...rawQuotesQuery, quotes }),
+    [rawQuotesQuery, quotes]
+  );
+
   const { inputFungibleId, inputChain, outputFungibleId } = formState;
 
   useEffect(() => {
     setUserQuoteId(null);
   }, [resolvedInputAmount, inputFungibleId, outputFungibleId, inputChain]);
 
-  const selectedQuote = useMemo(() => {
-    const userQuote = quotesQuery.quotes?.find(
-      (quote) => quote.contractMetadata?.id === userQuoteId
-    );
-    const defaultQuote = quotesQuery.quotes?.[0];
-    return userQuote || defaultQuote || null;
-  }, [userQuoteId, quotesQuery.quotes]);
+  const selectedQuote = useMemo(
+    () => selectSwapQuote({ quotes, userQuoteId }),
+    [userQuoteId, quotes]
+  );
 
   return useMemo(() => {
     return {

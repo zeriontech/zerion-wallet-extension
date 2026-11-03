@@ -5,23 +5,64 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type {
+  AnyAddressAction,
+  LocalAddressAction,
+} from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { usePreferences } from 'src/ui/features/preferences';
 import dayjs from 'dayjs';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { LocalActionContentRequest } from 'src/modules/ethereum/transactions/addressAction/creators';
+import type { PendingAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import {
+  getEntryKey,
+  type PendingListEntry,
+} from 'src/ui/features/pending-transactions/mergePendingEntries';
 import { ActionItem } from '../ActionItem';
 import { LocalActionItem } from '../ActionItem/LocalActionItem';
 import { HistoryDaySelector } from '../HistoryDaySelector';
+import { PendingActionItem } from '../PendingActionItem';
 import * as styles from '../HistoryDaySelector/styles.module.css';
+
+function toListItem(
+  addressAction: AnyAddressAction,
+  contentRequests: Map<string, LocalActionContentRequest> | undefined,
+  testnetMode: boolean
+) {
+  const hash =
+    addressAction.transaction?.hash ||
+    addressAction.acts?.at(0)?.transaction.hash ||
+    '';
+  const contentRequest = isLocalAddressAction(addressAction)
+    ? contentRequests?.get(addressAction.id)
+    : undefined;
+  return {
+    key: isLocalAddressAction(addressAction)
+      ? `local-${addressAction.relatedTransaction || hash}`
+      : hash,
+    component:
+      contentRequest && isLocalAddressAction(addressAction) ? (
+        <LocalActionItem
+          addressAction={addressAction}
+          contentRequest={contentRequest}
+          testnetMode={testnetMode}
+        />
+      ) : (
+        <ActionItem addressAction={addressAction} testnetMode={testnetMode} />
+      ),
+  };
+}
 
 const TODAY = new Date();
 const FIRST_DATE = new Date('2018-01-01');
 
 export function ActionsList({
   actions,
+  pendingEntries,
+  nowMs,
+  renderPendingActions,
   contentRequests,
   hasMore,
   isLoading,
@@ -30,6 +71,9 @@ export function ActionsList({
   onChangeDate,
 }: {
   actions: AnyAddressAction[];
+  pendingEntries: PendingListEntry<LocalAddressAction>[];
+  nowMs: number;
+  renderPendingActions?: (item: PendingAction) => React.ReactNode;
   contentRequests?: Map<string, LocalActionContentRequest>;
   hasMore: boolean;
   isLoading: boolean;
@@ -38,6 +82,7 @@ export function ActionsList({
   onChangeDate(date: Date | null): void;
 }) {
   const { preferences } = usePreferences();
+  const testnetMode = Boolean(preferences?.testnetMode?.on);
   const groupedByDate = useMemo(
     () =>
       groupBy(actions, (item) =>
@@ -67,6 +112,30 @@ export function ActionsList({
   return (
     <VStack gap={4} style={{ alignContent: 'start' }}>
       <VStack gap={24}>
+        {pendingEntries.length ? (
+          <VStack gap={8}>
+            <div style={{ display: 'flex', padding: '4px 16px' }}>
+              <UIText kind="small/accent">Pending</UIText>
+            </div>
+            <SurfaceList
+              gap={4}
+              items={pendingEntries.map((entry) =>
+                entry.kind === 'remote'
+                  ? {
+                      key: getEntryKey(entry),
+                      component: (
+                        <PendingActionItem
+                          item={entry.item}
+                          nowMs={nowMs}
+                          actions={renderPendingActions?.(entry.item)}
+                        />
+                      ),
+                    }
+                  : toListItem(entry.action, contentRequests, testnetMode)
+              )}
+            />
+          </VStack>
+        ) : null}
         {emptyTargetDay && targetDate && !isLoading ? (
           <VStack gap={8}>
             <HStack gap={12} alignItems="center">
@@ -162,34 +231,9 @@ export function ActionsList({
 
             <SurfaceList
               gap={4}
-              items={items.map((addressAction) => {
-                const hash =
-                  addressAction.transaction?.hash ||
-                  addressAction.acts?.at(0)?.transaction.hash ||
-                  '';
-                const testnetMode = Boolean(preferences?.testnetMode?.on);
-                const contentRequest = isLocalAddressAction(addressAction)
-                  ? contentRequests?.get(addressAction.id)
-                  : undefined;
-                return {
-                  key: isLocalAddressAction(addressAction)
-                    ? `local-${addressAction.relatedTransaction || hash}`
-                    : hash,
-                  component:
-                    contentRequest && isLocalAddressAction(addressAction) ? (
-                      <LocalActionItem
-                        addressAction={addressAction}
-                        contentRequest={contentRequest}
-                        testnetMode={testnetMode}
-                      />
-                    ) : (
-                      <ActionItem
-                        addressAction={addressAction}
-                        testnetMode={testnetMode}
-                      />
-                    ),
-                };
-              })}
+              items={items.map((addressAction) =>
+                toListItem(addressAction, contentRequests, testnetMode)
+              )}
             />
           </VStack>
         ))}

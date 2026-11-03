@@ -600,6 +600,14 @@ export function createApproveAddressAction({
   };
 }
 
+type TradeActionType = 'trade' | 'deposit' | 'withdraw';
+
+const TRADE_ACTION_LABELS: Record<TradeActionType, string> = {
+  trade: 'Trade',
+  deposit: 'Deposit',
+  withdraw: 'Withdraw',
+};
+
 export function createTradeAddressAction2({
   address,
   transaction,
@@ -611,8 +619,9 @@ export function createTradeAddressAction2({
   network,
   rate,
   explorerUrl,
+  type = 'trade',
 }: {
-  transaction: MultichainTransaction;
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -622,7 +631,9 @@ export function createTradeAddressAction2({
   network: NetworkInfo;
   rate: Quote2['rate'] | null;
   explorerUrl: string | null;
+  type?: TradeActionType;
 }): LocalAddressAction {
+  const actionType = { value: type, displayValue: TRADE_ACTION_LABELS[type] };
   const content = {
     approvals: null,
     transfers: [
@@ -659,23 +670,17 @@ export function createTradeAddressAction2({
         label: null,
         rate,
         status: 'pending',
-        type: {
-          value: 'trade',
-          displayValue: 'Trade',
-        },
+        type: actionType,
         transaction: actionTransaction,
       },
     ],
     status: 'pending',
-    type: {
-      value: 'trade',
-      displayValue: 'Trade',
-    },
+    type: actionType,
     label: null,
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, network.id)
       : toEmptyActionTx(network.id),
   };
@@ -695,7 +700,7 @@ export function createBridgeAddressAction2({
   receiverAddress,
 }: {
   address: string;
-  transaction: MultichainTransaction;
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -823,7 +828,7 @@ export function createBridgeAddressAction2({
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, inputNetwork.id)
       : toEmptyActionTx(inputNetwork.id),
   };

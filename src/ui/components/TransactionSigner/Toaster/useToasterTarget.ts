@@ -21,9 +21,10 @@ function matches(tx: TransactionObject, hash: string): boolean {
 /**
  * Resolves the copy/explorer target for the step the toaster is showing.
  *
- * The hash arrives with the step's broadcast event. The explorer link prefers
- * the template the step was enqueued with and falls back to the URL stored on
- * the local transaction's address action (the chain explorer).
+ * The hash arrives with the step's broadcast event, or with an order's
+ * follow-up. The explorer link prefers the follow-up's link, then the template
+ * the step was enqueued with, and falls back to the URL stored on the local
+ * transaction's address action (the chain explorer).
  */
 export function useToasterTarget(step: ActiveStepView | null): ToasterTarget {
   const localTransactions = useStore(localTransactionsStore);
@@ -31,6 +32,7 @@ export function useToasterTarget(step: ActiveStepView | null): ToasterTarget {
     if (!step?.hash) return EMPTY;
     const { hash } = step;
     const explorerUrl =
+      step.explorerUrl ??
       getExplorerUrl(step.toaster?.explorerUrlTemplate ?? null, hash) ??
       localTransactions.find((tx) => matches(tx, hash))?.addressAction
         ?.transaction?.explorerUrl ??

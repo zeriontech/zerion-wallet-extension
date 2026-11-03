@@ -5,6 +5,10 @@ import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { Fungible } from '../types/Fungible';
 import type { SignedPermit } from './wallet-prepare-permits';
+import {
+  type PENDING_ACTION_STATUSES,
+  normalizePendingLists,
+} from './wallet-get-actions-pending.normalize';
 
 export type NFTPreview = {
   /**
@@ -101,6 +105,10 @@ export interface Payload {
   searchQuery?: string;
   /** @description Include spam transactions */
   includeSpam?: boolean;
+  /** @description Return the pending and unsigned lists. Sent only on the first page, never with a cursor. */
+  includePending?: boolean;
+  /** @description Unix timestamp (seconds). Only actions mined at or after it are returned. */
+  since?: number;
 }
 
 type Wallet = {
@@ -216,7 +224,7 @@ type Chain = {
    * @description URL to the chain's icon
    * @example https://example.com/icon.png
    */
-  iconUrl: string;
+  iconUrl: string | null;
 };
 
 export type ActionChain = Chain;
@@ -227,6 +235,10 @@ export type ActionTransaction = {
   hash: string;
   /** @description URL to the transaction on the blockchain explorer */
   explorerUrl: null | string;
+  /** @description Sender's nonce (uint64); null when upstream has none and always null on Solana */
+  nonce?: number | null;
+  /** @description Sender address; null when upstream has none */
+  sender?: string | null;
 };
 
 type Rate = {
@@ -282,8 +294,59 @@ export type AddressAction = Action;
 
 export type ActionWithoutTimestamp = Omit<Action, 'timestamp'>;
 
+export type PendingActionStatus = (typeof PENDING_ACTION_STATUSES)[number];
+
+export type PendingAct = Omit<Act, 'status'> & {
+  status: ActionStatus | PendingActionStatus | '';
+};
+
+/** The transaction of a wire pending act: `hash` is null until the act is broadcast (zpi#357, WLT-2923). */
+export type PendingActTransactionWire = Omit<
+  PendingAct['transaction'],
+  'hash'
+> & {
+  hash: string | null;
+};
+
+/** One act of a wire `pending` or `unsigned` row: `status` is '' in revision 1 of the contract and absent in revision 2 (zpi-ref#241); `transaction` is tolerated absent or null. */
+export type PendingActWire = Omit<PendingAct, 'status' | 'transaction'> & {
+  status?: PendingAct['status'];
+  transaction?: PendingActTransactionWire | null;
+};
+
+/** One row of the wire `pending` or `unsigned` list (seconds). The key is `id`; `status` is null in revision 1 of the contract and absent in revision 2 (zpi-ref#241). */
+export type PendingActionWire = Omit<Action, 'status' | 'acts'> & {
+  status?: string | null;
+  acts: PendingActWire[];
+  /** @description Unix timestamp in seconds */
+  availableAt?: number | null;
+  /** @description Unix timestamp in seconds */
+  expiresAt?: number | null;
+};
+
+/** A normalized row of the response `pending` or `unsigned` list (milliseconds). */
+export type PendingAction = Omit<Action, 'status' | 'acts'> & {
+  /** @description Set by the normalizer to the list it came from */
+  status: PendingActionStatus;
+  acts: PendingAct[];
+  /** @description The wire `id`, an opaque id that is never parsed, also kept in `id` */
+  pendingActionId: string;
+  /** @description Order creation time, unix timestamp in ms */
+  timestamp: number;
+  /** @description Unix timestamp in ms */
+  availableAt: number | null;
+  /** @description Unix timestamp in ms */
+  expiresAt: number | null;
+};
+
 export interface Response {
   data: Action[];
+  /** @description Pending list; [] when the backend omitted it */
+  pending: PendingAction[];
+  /** @description Unsigned list; [] when the backend omitted it */
+  unsigned: PendingAction[];
+  /** @description true only when the backend sent both `pending` and `unsigned` as lists; null (could not load) or omitted is false */
+  pendingListsAvailable: boolean;
   meta: {
     pagination: {
       /**
@@ -296,6 +359,20 @@ export interface Response {
   errors?: { title: string; detail: string }[];
 }
 
+/** The wire response: `pending` and `unsigned` are absent on cursor pages and without includePending, and both null when the backend could not load them. */
+export type WalletActionsWireResponse = Omit<
+  Response,
+  'pending' | 'unsigned' | 'pendingListsAvailable'
+> & {
+  pending?: PendingActionWire[] | null;
+  unsigned?: PendingActionWire[] | null;
+};
+
+export {
+  PENDING_ACTION_STATUSES,
+  normalizePendingList,
+} from './wallet-get-actions-pending.normalize';
+
 export async function walletGetActions(
   this: ZerionApiContext,
   params: Payload,
@@ -306,18 +383,25 @@ export async function walletGetActions(
   const provider = await this.getAddressProviderHeader(firstAddress);
   const kyOptions = this.getKyOptions();
   const endpoint = 'wallet/get-actions/v1';
-  const result = await ZerionHttpClient.post<Response>(
+  const { includePending, ...rest } = params;
+  const body: Payload =
+    includePending && !params.cursor ? { ...rest, includePending } : rest;
+  const result = await ZerionHttpClient.post<WalletActionsWireResponse>(
     {
       endpoint,
-      body: JSON.stringify(params),
+      body: JSON.stringify(body),
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
     kyOptions
   );
-  return produce(result, (draft) => {
-    draft.data.forEach((action) => {
-      action.timestamp = action.timestamp * 1000;
-    });
-  });
+  const { pending, unsigned, ...actions } = result;
+  return {
+    ...produce(actions, (draft) => {
+      draft.data.forEach((action) => {
+        action.timestamp = action.timestamp * 1000;
+      });
+    }),
+    ...normalizePendingLists({ pending, unsigned }),
+  };
 }

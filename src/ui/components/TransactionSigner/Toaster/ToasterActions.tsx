@@ -172,3 +172,32 @@ export function ToasterActions({
     </motion.div>
   );
 }
+
+/** A text action shown on the right of the pill in the submitted and complete states */
+export function ToasterHistoryAction({
+  label,
+  reducedMotion,
+  onClick,
+}: {
+  label: string;
+  reducedMotion: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <motion.button
+      type="button"
+      className={s.textAction}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      // Pointer-down would otherwise start a drag of the pill underneath.
+      onPointerDown={(event) => event.stopPropagation()}
+      whileHover={reducedMotion ? undefined : { scale: 1.04 }}
+      whileTap={reducedMotion ? undefined : { scale: 0.96 }}
+      {...enterAnimation(reducedMotion, 0)}
+    >
+      {label}
+    </motion.button>
+  );
+}

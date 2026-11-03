@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 // import FireIcon from 'jsx:src/ui/assets/fire.svg';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { RenderArea } from 'react-area';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -16,6 +16,10 @@ import {
 } from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
+import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
+import { hiddenPendingActionsStore } from 'src/ui/features/pending-transactions/hiddenPendingActions';
+import { shouldShowHistoryTabDot } from 'src/ui/features/pending-transactions/shouldShowHistoryTabDot';
+import { useReadyClock } from 'src/ui/features/pending-transactions/useReadyClock';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import {
@@ -62,6 +66,7 @@ import { Networks } from 'src/modules/networks/Networks';
 import { ViewSuspense } from '../../components/ViewSuspense';
 import { WalletAvatar } from '../../components/WalletAvatar';
 import { HistoryList } from '../History/History';
+import { getHistoryActionsParams } from '../History/getHistoryActionsParams';
 import { PerpsOverview } from '../Perps/PerpsOverview/PerpsOverview';
 import { SettingsLinkIcon } from '../Settings/SettingsLinkIcon';
 import { SearchLinkIcon } from '../Search';
@@ -89,10 +94,37 @@ import {
 } from './getTabsOffset';
 import * as styles from './styles.module.css';
 
-function PendingTransactionsIndicator() {
+function PendingTransactionsIndicator({
+  address,
+  isWatchlist,
+}: {
+  address: string;
+  isWatchlist: boolean;
+}) {
   const pendingTxs = usePendingTransactions();
+  const { currency } = useCurrency();
+  const source = useHttpClientSource();
+  const params = useMemo(
+    () => getHistoryActionsParams({ address, currency, isOwnWallet: true }),
+    [address, currency]
+  );
+  const { unsigned } = useWalletActions(params, { source }, { enabled: false });
+  const hiddenIds = useStore(hiddenPendingActionsStore);
+  const visibleUnsigned = useMemo(
+    () =>
+      (unsigned ?? []).filter((item) => !hiddenIds.has(item.pendingActionId)),
+    [unsigned, hiddenIds]
+  );
+  const nowMs = useReadyClock(visibleUnsigned);
 
-  if (pendingTxs.length === 0) {
+  if (
+    !shouldShowHistoryTabDot({
+      isWatchlist,
+      localPendingCount: pendingTxs.length,
+      unsigned: visibleUnsigned,
+      nowMs,
+    })
+  ) {
     return null;
   } else {
     return (
@@ -580,7 +612,11 @@ function OverviewComponent() {
               to={createTo('/overview/history')}
               onClick={() => handleTabChange('/overview/history')}
             >
-              History <PendingTransactionsIndicator />
+              History{' '}
+              <PendingTransactionsIndicator
+                address={singleAddressNormalized}
+                isWatchlist={Boolean(isReadonlyGroup)}
+              />
             </SegmentedControlLink>
             <SegmentedControlLink
               to={createTo('/overview/pnl')}

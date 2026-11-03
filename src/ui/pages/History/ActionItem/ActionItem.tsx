@@ -140,6 +140,113 @@ function ActionDetail({ addressAction }: { addressAction: AnyAddressAction }) {
   );
 }
 
+export function ActionItemValue({
+  actionType,
+  content,
+  testnetMode,
+}: {
+  actionType: AnyAddressAction['type']['value'];
+  content: AnyAddressAction['content'];
+  testnetMode: boolean;
+}) {
+  const { currency } = useCurrency();
+
+  const incomingTransfers = useMemo(
+    () => content?.transfers?.filter((transfer) => transfer.direction === 'in'),
+    [content?.transfers]
+  );
+  const outgoingTransfers = useMemo(
+    () =>
+      content?.transfers?.filter((transfer) => transfer.direction === 'out'),
+    [content?.transfers]
+  );
+  const approvals = useMemo(() => content?.approvals || [], [content]);
+
+  const shouldUsePositiveColor = incomingTransfers?.length === 1;
+
+  return (
+    <VStack
+      gap={0}
+      style={{
+        justifyItems: 'end',
+        overflow: 'hidden',
+        textAlign: 'left',
+      }}
+    >
+      <UIText
+        kind="body/regular"
+        color={shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'}
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '100%',
+        }}
+      >
+        {incomingTransfers?.length ? (
+          <HistoryItemValue
+            actionType={actionType}
+            transfers={incomingTransfers}
+            withLink={!testnetMode}
+            kind="body/regular"
+          />
+        ) : outgoingTransfers?.length ? (
+          <HistoryItemValue
+            actionType={actionType}
+            transfers={outgoingTransfers}
+            withLink={!testnetMode}
+            kind="body/regular"
+          />
+        ) : approvals.length ? (
+          <HistoryApprovalValue approvals={approvals} withLink={!testnetMode} />
+        ) : null}
+      </UIText>
+      <UIText kind="small/regular" color="var(--neutral-500)">
+        {incomingTransfers?.length && !outgoingTransfers?.length ? (
+          <TransactionCurrencyValue
+            transfers={incomingTransfers}
+            currency={currency}
+            kind="small/regular"
+          />
+        ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
+          <TransactionCurrencyValue
+            transfers={outgoingTransfers}
+            currency={currency}
+            kind="small/regular"
+          />
+        ) : outgoingTransfers?.length ? (
+          <HistoryItemValue
+            actionType={actionType}
+            transfers={outgoingTransfers}
+            withLink={false}
+            kind="small/regular"
+          />
+        ) : approvals.length === 1 && approvals[0].unlimited ? (
+          'Unlimited'
+        ) : approvals.length === 1 ? (
+          approvals[0].nft ? (
+            <HistoryNFTValue
+              nft={approvals[0].nft}
+              amount={approvals[0].amount}
+              direction={null}
+              withLink={false}
+              kind="small/regular"
+            />
+          ) : approvals[0].fungible ? (
+            <HistoryTokenValue
+              fungible={approvals[0].fungible}
+              amount={approvals[0].amount}
+              direction={null}
+              actionType="approve"
+              withLink={false}
+              kind="small/regular"
+            />
+          ) : null
+        ) : null}
+      </UIText>
+    </VStack>
+  );
+}
+
 export function ActionItem({
   addressAction,
   testnetMode,
@@ -147,29 +254,7 @@ export function ActionItem({
   addressAction: AnyAddressAction;
   testnetMode: boolean;
 }) {
-  const { currency } = useCurrency();
   const navigate = useNavigate();
-
-  const incomingTransfers = useMemo(
-    () =>
-      addressAction.content?.transfers?.filter(
-        (transfer) => transfer.direction === 'in'
-      ),
-    [addressAction.content?.transfers]
-  );
-  const outgoingTransfers = useMemo(
-    () =>
-      addressAction.content?.transfers?.filter(
-        (transfer) => transfer.direction === 'out'
-      ),
-    [addressAction.content?.transfers]
-  );
-  const approvals = useMemo(
-    () => addressAction.content?.approvals || [],
-    [addressAction]
-  );
-
-  const shouldUsePositiveColor = incomingTransfers?.length === 1;
 
   return (
     <HStack
@@ -213,90 +298,11 @@ export function ActionItem({
         text={<ActionTitle addressAction={addressAction} />}
         detailText={<ActionDetail addressAction={addressAction} />}
       />
-      <VStack
-        gap={0}
-        style={{
-          justifyItems: 'end',
-          overflow: 'hidden',
-          textAlign: 'left',
-        }}
-      >
-        <UIText
-          kind="body/regular"
-          color={
-            shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
-          }
-          style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            maxWidth: '100%',
-          }}
-        >
-          {incomingTransfers?.length ? (
-            <HistoryItemValue
-              actionType={addressAction.type.value}
-              transfers={incomingTransfers}
-              withLink={!testnetMode}
-              kind="body/regular"
-            />
-          ) : outgoingTransfers?.length ? (
-            <HistoryItemValue
-              actionType={addressAction.type.value}
-              transfers={outgoingTransfers}
-              withLink={!testnetMode}
-              kind="body/regular"
-            />
-          ) : approvals.length ? (
-            <HistoryApprovalValue
-              approvals={approvals}
-              withLink={!testnetMode}
-            />
-          ) : null}
-        </UIText>
-        <UIText kind="small/regular" color="var(--neutral-500)">
-          {incomingTransfers?.length && !outgoingTransfers?.length ? (
-            <TransactionCurrencyValue
-              transfers={incomingTransfers}
-              currency={currency}
-              kind="small/regular"
-            />
-          ) : outgoingTransfers?.length && !incomingTransfers?.length ? (
-            <TransactionCurrencyValue
-              transfers={outgoingTransfers}
-              currency={currency}
-              kind="small/regular"
-            />
-          ) : outgoingTransfers?.length ? (
-            <HistoryItemValue
-              actionType={addressAction.type.value}
-              transfers={outgoingTransfers}
-              withLink={false}
-              kind="small/regular"
-            />
-          ) : approvals.length === 1 && approvals[0].unlimited ? (
-            'Unlimited'
-          ) : approvals.length === 1 ? (
-            approvals[0].nft ? (
-              <HistoryNFTValue
-                nft={approvals[0].nft}
-                amount={approvals[0].amount}
-                direction={null}
-                withLink={false}
-                kind="small/regular"
-              />
-            ) : approvals[0].fungible ? (
-              <HistoryTokenValue
-                fungible={approvals[0].fungible}
-                amount={approvals[0].amount}
-                direction={null}
-                actionType="approve"
-                withLink={false}
-                kind="small/regular"
-              />
-            ) : null
-          ) : null}
-        </UIText>
-      </VStack>
+      <ActionItemValue
+        actionType={addressAction.type.value}
+        content={addressAction.content}
+        testnetMode={testnetMode}
+      />
     </HStack>
   );
 }

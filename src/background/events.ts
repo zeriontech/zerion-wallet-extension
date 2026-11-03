@@ -19,6 +19,7 @@ import type {
 } from 'src/shared/types/perps-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import type { OrderPlaced } from 'src/shared/types/OrderPlaced';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { ConfidentialAnalyticsEvent } from 'src/shared/types/confidential-events';
@@ -61,6 +62,10 @@ export const emitter = createNanoEvents<{
   transactionFormed: (context: TransactionFormedContext) => void;
   transactionSent: (
     result: SignTransactionResult,
+    context: { mode: 'default' | 'testnet' } & TransactionContextParams
+  ) => void;
+  orderPlaced: (
+    order: OrderPlaced,
     context: { mode: 'default' | 'testnet' } & TransactionContextParams
   ) => void;
   transactionFailed: (

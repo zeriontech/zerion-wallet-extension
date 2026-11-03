@@ -18,6 +18,10 @@ export const emitter = createNanoEvents<{
   sessionLogout: () => void;
   error: (error: Error) => void;
   signingError: (type: EthersSignMethod, message: string) => void;
+  executeOrderFailed: (failure: {
+    status: number | null;
+    body: string;
+  }) => void;
   mutationError: (error: unknown, variables: unknown, context: unknown) => void;
   networksSearchResponse: (query: string, resultsCount: number) => void;
   errorScreenView: (data: { message: string; location: string }) => void;

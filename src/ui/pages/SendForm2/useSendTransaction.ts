@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
@@ -21,7 +20,8 @@ import type { MultichainTransaction } from 'src/shared/types/MultichainTransacti
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { fungiblePositionToAddressPosition } from 'src/ui/shared/requests/shared/fungiblePositionToAddressPosition';
 import { prepareSendData } from './shared/prepareSendData';
-import { isAmountEntered, isZeroAmount } from './shared/amount';
+import { isAmountEntered } from './shared/amount';
+import { getSendParams } from './shared/getSendParams';
 import { toLegacySendFormState } from './shared/toLegacySendFormState';
 import { hexlifyTransactionData } from './shared/hexlifyTransactionData';
 import type { SendFormState2 } from './types';
@@ -147,32 +147,43 @@ export function useSendTransaction({
     formState.data,
   ]);
 
-  // A typed zero is never a max-send. On a zero-balance position (the synthetic
-  // one built for a token the wallet doesn't hold — the calldata-claim case)
-  // `0` would otherwise equal the balance and flip the request to `max=true`,
-  // which the backend answers with an insufficient-balance error instead of a
-  // valid zero-value transaction.
-  const isMax = useMemo(() => {
-    if (isNftMode || !resolvedInputAmount || !position) return false;
-    if (isZeroAmount(resolvedInputAmount)) return false;
-    try {
-      return new BigNumber(resolvedInputAmount).eq(position.amount.quantity);
-    } catch {
-      return false;
-    }
-  }, [isNftMode, resolvedInputAmount, position]);
-
   const assetId = formState.nftId ?? formState.inputFungibleId;
 
   const effectiveAmount = isNftMode
     ? formState.nftAmount ?? '1'
     : resolvedInputAmount;
 
+  const sendParams = useMemo(
+    () =>
+      getSendParams({
+        currency,
+        chain: formState.inputChain,
+        from: address,
+        to: formState.to ?? '',
+        assetId: assetId ?? '',
+        amount: effectiveAmount ?? null,
+        isNftMode,
+        position,
+        data: customData,
+      }),
+    [
+      currency,
+      formState.inputChain,
+      address,
+      formState.to,
+      assetId,
+      effectiveAmount,
+      isNftMode,
+      position,
+      customData,
+    ]
+  );
+
   // Token mode prepares a send for any entered amount, including `0`; NFT mode
   // still requires at least one unit.
   const amountGatePasses = isNftMode
     ? Boolean(effectiveAmount && Number(effectiveAmount) > 0)
-    : isMax || isAmountEntered(effectiveAmount);
+    : Boolean(sendParams.max) || isAmountEntered(effectiveAmount);
 
   const baseGatesPass = Boolean(
     address &&
@@ -186,16 +197,7 @@ export function useSendTransaction({
   const useBackend = Boolean(network?.flags.supportsSending);
 
   const backendQuery = useTransactionGetSend(
-    {
-      currency,
-      chain: formState.inputChain,
-      from: address,
-      to: formState.to ?? '',
-      assetId: assetId ?? '',
-      amount: isMax ? undefined : effectiveAmount ?? undefined,
-      max: isMax ? true : undefined,
-      data: customData,
-    },
+    sendParams,
     { source },
     {
       enabled: enabledParam && baseGatesPass && useBackend,
@@ -226,9 +228,9 @@ export function useSendTransaction({
       gasPrice: undefined,
       gasLimit: undefined,
       nonce: undefined,
-      data: customData,
+      data: sendParams.data,
     };
-  }, [formState, resolvedInputAmount, customData]);
+  }, [formState, resolvedInputAmount, sendParams.data]);
 
   const localEnabled =
     enabledParam && baseGatesPass && !useBackend && Boolean(addressPosition);

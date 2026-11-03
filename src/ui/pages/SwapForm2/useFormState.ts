@@ -8,11 +8,9 @@ import { createChain } from 'src/modules/networks/Chain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useReceiveFungibles } from 'src/modules/zerion-api/hooks/useReceiveFungibles';
 import type { HandleChangeFunction, SwapFormState2 } from './types';
+import { deriveDefaultOutput, ETH_ID, USDC_ID } from './deriveDefaultOutput';
 
-const ETH_ID = 'eth';
 const SOL_ID = '11111111111111111111111111111111';
-const USDC_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-const USDT_ID = '0xdac17f958d2ee523a2206206994597c13d831ec7';
 
 /**
  * Network-fee overrides are tied to a specific chain + quote. When the swap's
@@ -160,56 +158,50 @@ function useDefaultFormState({
 
   const effectiveInputFungibleId = inputFungibleId ?? defaultInputFungibleId;
 
-  const outputDefaultPending =
-    inputSupportsTrading && !receiveFungiblesData && outputFungibleId == null;
-
-  const defaultOutputFungibleId = useMemo<string | undefined>(() => {
-    if (!inputSupportsTrading) {
-      return ETH_ID;
-    }
-    if (!receiveFungiblesData) {
-      return undefined;
-    }
-    const popular = receiveFungiblesData.data.popular;
-    const others = receiveFungiblesData.data.others;
-    for (const fungible of [...popular, ...others]) {
-      if (fungible.id !== effectiveInputFungibleId) {
-        return fungible.id;
-      }
-    }
-    const networkConfig = networks.getByNetworkId(
-      createChain(defaultOutputChain)
-    );
-    const fallbackList = [
-      networkConfig?.baseAsset?.id,
-      USDC_ID,
-      USDT_ID,
-    ].filter((id): id is string => Boolean(id));
-    for (const id of fallbackList) {
-      if (id !== effectiveInputFungibleId) {
-        return id;
-      }
-    }
-    return USDC_ID;
-  }, [
-    inputSupportsTrading,
-    effectiveInputFungibleId,
-    defaultOutputChain,
-    networks,
-    receiveFungiblesData,
-  ]);
+  const {
+    outputChain: resolvedOutputChain,
+    outputFungibleId: defaultOutputFungibleId,
+    outputDefaultPending,
+  } = useMemo(
+    () =>
+      deriveDefaultOutput({
+        inputSupportsTrading,
+        inputChain: inputChainId ?? defaultInputChain,
+        inputFungibleId: effectiveInputFungibleId,
+        outputChainId,
+        outputFungibleId,
+        defaultOutputChain,
+        outputBaseAssetId: networks.getByNetworkId(
+          createChain(defaultOutputChain)
+        )?.baseAsset?.id,
+        receiveFungibles: receiveFungiblesData?.data,
+        positions,
+      }),
+    [
+      inputSupportsTrading,
+      inputChainId,
+      defaultInputChain,
+      effectiveInputFungibleId,
+      outputChainId,
+      outputFungibleId,
+      defaultOutputChain,
+      networks,
+      receiveFungiblesData,
+      positions,
+    ]
+  );
 
   const defaults = useMemo<SwapFormState2>(() => {
     return {
       inputChain: defaultInputChain,
       inputFungibleId: defaultInputFungibleId,
-      outputChain: defaultOutputChain,
+      outputChain: resolvedOutputChain,
       outputFungibleId: defaultOutputFungibleId,
     };
   }, [
     defaultInputChain,
     defaultInputFungibleId,
-    defaultOutputChain,
+    resolvedOutputChain,
     defaultOutputFungibleId,
   ]);
 
