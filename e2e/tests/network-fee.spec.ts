@@ -319,3 +319,115 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
   await expect(nullFiatRow).toContainText(nullFiatCustomPickerText);
 });
+
+test('keeps the acceleration fee UI unchanged', async ({
+  context,
+  page,
+  extensionPopupUrl,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 440, height: 700 });
+  await context.route('**/chain/get-gas-prices/v1*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          average: {
+            classic: null,
+            eip1559: {
+              maxFee: 20_000_000_000,
+              priorityFee: 1_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 60,
+          },
+          fast: {
+            classic: null,
+            eip1559: {
+              maxFee: 30_000_000_000,
+              priorityFee: 2_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 15,
+          },
+        },
+        errors: null,
+        meta: null,
+      }),
+    });
+  });
+
+  await page.goto(`${extensionPopupUrl}#/overview/history`);
+  await page.waitForTimeout(500);
+  await page.evaluate(
+    ({ address }) => {
+      const hash = `0x${'11'.repeat(32)}`;
+      const transaction = {
+        hash,
+        from: address,
+        to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+        nonce: 1,
+        gasLimit: '0x5208',
+        gasPrice: '0x0',
+        data: '0x',
+        value: '0x0',
+        chainId: 1,
+        type: 2,
+        maxFeePerGas: '0x6fc23ac00',
+        maxPriorityFeePerGas: '0x3b9aca00',
+      };
+      (
+        window as unknown as {
+          localTransactionsStore: {
+            setState(value: unknown[]): void;
+          };
+        }
+      ).localTransactionsStore.setState([
+        { hash, transaction, timestamp: Date.now(), initiator: address },
+      ]);
+    },
+    { address: testWallets.alice.address }
+  );
+
+  const openAcceleration = async (action: 'Speed Up' | 'Cancel') => {
+    await expect(page.getByText('Pending').first()).toBeVisible({
+      timeout: 10_000,
+    });
+    await page.getByText('Pending').first().click();
+    await page.getByRole('button', { name: action }).click();
+    const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
+    await expect(feeRow).toBeVisible({ timeout: 10_000 });
+    return feeRow;
+  };
+
+  const editCustomFee = async () => {
+    await page.getByRole('button', { name: 'Network Fee' }).first().click();
+    const maxFee = page.locator('input[name="maxFee"]');
+    await expect(maxFee).toBeVisible();
+    await maxFee.fill('35');
+    await page.getByRole('button', { name: 'Save' }).click();
+  };
+
+  const assertUnchanged = async () => {
+    await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: SWITCH_TO_FAST })
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: 'Network Fee' }).first()
+    ).toContainText('Custom');
+  };
+
+  const speedUpFee = await openAcceleration('Speed Up');
+  await editCustomFee();
+  await expect(speedUpFee).toContainText('Custom');
+  await assertUnchanged();
+
+  await page.goBack();
+  await openAcceleration('Cancel');
+  await editCustomFee();
+  await assertUnchanged();
+});
