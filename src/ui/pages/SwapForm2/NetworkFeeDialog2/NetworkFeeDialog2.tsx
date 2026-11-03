@@ -128,6 +128,9 @@ export function NetworkFeeDialog2({
                     quote={quote}
                     gasPrices={gasPrices}
                     baseFee={baseFee}
+                    configuration={configuration}
+                    defaults={defaults}
+                    isEip1559={isEip1559}
                     onSelectPreset={handlePresetSelect}
                     onSelectCustom={() => setView('custom')}
                   />

@@ -2,7 +2,7 @@
  * Persisted network-fee selection, one entry per chain and shared by every
  * wallet in this browser profile.
  *
- * `preset` is the last explicitly picked Fast/Average level. `custom` is kept
+ * `preset` is the last explicitly picked Fast/Slow level. `custom` is kept
  * separately so picking Custom never overwrites the preset it must fall back
  * to after the custom entry expires.
  */

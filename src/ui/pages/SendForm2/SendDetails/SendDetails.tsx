@@ -24,13 +24,14 @@ import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
-import { getNetworkFeeIndicator } from 'src/ui/shared/networkFeeIndicator';
+import { NetworkFeeReminder } from 'src/ui/shared/NetworkFeeReminder';
 import { NonceLine2 } from 'src/ui/pages/SwapForm2/QuoteDetails/NonceLine2';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { NetworkFeeDialog2 } from 'src/ui/pages/SwapForm2/NetworkFeeDialog2';
 import {
   getBaseFee,
   getCustomFormDefaults,
+  getNetworkFeeRatioForConfiguration,
 } from 'src/ui/pages/SwapForm2/getNetworkFeeForSpeed';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import type { SendQuote } from '../useSendTransaction';
@@ -65,11 +66,17 @@ function formatNetworkFee(
   fee: NetworkFeeType | null,
   network: NetworkInfo | null,
   fiatValue: number | null,
-  currency: string
+  currency: string,
+  ratio = 1
 ): React.ReactNode {
   if (!fee) return noValueDash;
   if (fee.free) return 'Free';
-  const value = fee.amount?.value ?? fiatValue;
+  const value =
+    fee.amount?.value != null
+      ? fee.amount.value * ratio
+      : fiatValue != null
+      ? fiatValue * ratio
+      : null;
   if (value != null) {
     return formatCurrencyValueExtra(value, 'en', currency, {
       zeroRoundingFallback: 0.01,
@@ -77,7 +84,11 @@ function formatNetworkFee(
   }
   if (fee.amount?.quantity) {
     const symbol = fee.fungible?.symbol ?? network?.baseAsset?.symbol ?? '';
-    return formatTokenValue(fee.amount.quantity, symbol);
+    const quantity =
+      ratio === 1
+        ? fee.amount.quantity
+        : new BigNumber(fee.amount.quantity).multipliedBy(ratio).toFixed();
+    return formatTokenValue(quantity, symbol);
   }
   return noValueDash;
 }
@@ -123,8 +134,11 @@ export function SendDetails({
   const networkFee: NetworkFeeType | null = sendQuote?.networkFee ?? null;
   const baseFee = getBaseFee(gasPrices);
   const customDefaults = getCustomFormDefaults(sendQuote);
-  const networkFeeIndicator = getNetworkFeeIndicator(
-    configuration.networkFee.speed
+  const feeRatio = getNetworkFeeRatioForConfiguration(
+    sendQuote,
+    configuration.networkFee,
+    gasPrices,
+    baseFee
   );
   const showNonce = Boolean(
     preferences?.configurableNonce && isEthereumAddress(address)
@@ -194,7 +208,8 @@ export function SendDetails({
                           networkFee,
                           network,
                           feeFiatValue,
-                          currency
+                          currency,
+                          feeRatio
                         )}
                       </UIText>
                       {evmTx ? (
@@ -210,11 +225,12 @@ export function SendDetails({
                   )
                 }
               />
-              {networkFeeIndicator ? (
-                <UIText kind="caption/regular" color="var(--neutral-500)">
-                  {networkFeeIndicator}
-                </UIText>
-              ) : null}
+              <NetworkFeeReminder
+                speed={configuration.networkFee.speed}
+                onChange={(networkFee) =>
+                  onConfigurationChange({ ...configuration, networkFee })
+                }
+              />
             </VStack>
             <AnimatePresence initial={false}>
               {isExpanded ? (

@@ -450,6 +450,7 @@ function NetworkFeeButton({
     <SurfaceItemButton
       style={{ height: 48, borderRadius: 12, paddingInline: 0 }}
       outlined={selected}
+      aria-pressed={selected}
       onClick={onClick}
       title={feeValueCommon ? formatTokenValue(feeValueCommon, nativeAssetSymbol) : undefined}
     >
