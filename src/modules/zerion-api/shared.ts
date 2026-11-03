@@ -1,11 +1,7 @@
 import ky, { type Options as KyOptions } from 'ky';
 import { platform } from 'src/shared/analytics/platform';
 import { version } from 'src/shared/packageVersion';
-import {
-  ZERION_API_URL,
-  ZERION_TESTNET_API_URL,
-  ZERION_API_DEVELOPMENT_KEY,
-} from 'src/env/config';
+import { ZERION_API_URL, ZERION_TESTNET_API_URL } from 'src/env/config';
 import { invariant } from 'src/shared/invariant';
 import { createUrl } from 'src/shared/createUrl';
 
@@ -36,9 +32,6 @@ export function createHeaders(options: Options) {
     'Zerion-Client-Type': platform,
     'Zerion-Client-Version': version,
     'Content-Type': 'application/json',
-    ...(ZERION_API_DEVELOPMENT_KEY
-      ? { 'Zerion-Development-Secret': ZERION_API_DEVELOPMENT_KEY }
-      : {}),
     ...options.headers,
   };
 }

@@ -10,3 +10,5 @@ dist-firefox
 /playwright/.cache/
 /src/manifest.json
 settings.local.json
+dist-e2e
+.parcel-cache-e2e

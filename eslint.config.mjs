@@ -15,6 +15,8 @@ export default tseslint.config(
       'node_modules',
       'dist',
       'dist-firefox',
+      'dist-e2e',
+      '.parcel-cache-e2e',
       'e2e-report',
       'playwright/.cache',
     ],

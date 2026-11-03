@@ -24,7 +24,8 @@
     "format:check": "prettier --check \"**/*.{js,jsx,mjs,cjs,json,ts,tsx,css,md,yml,yaml}\"",
     "prepare": "husky install",
     "postversion": "node ./scripts/manifest-version.js",
-    "refresh-networks-fallback": "node scripts/refresh-networks-fallback.mjs"
+    "refresh-networks-fallback": "node scripts/refresh-networks-fallback.mjs",
+    "build:e2e": "node scripts/build-e2e.js"
   },
   "alias": {
     "src": "./src",
