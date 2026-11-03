@@ -12,6 +12,9 @@ env:
   BACKEND_ENV: ${{ github.event.inputs.BACKEND_ENV || '' }}
   PROXY_URL: ${{ github.event.inputs.PROXY_URL || 'https://proxy.zerion.io/' }}
   DEFI_SDK_TRANSACTIONS_API_URL: ${{ github.event.inputs.DEFI_SDK_TRANSACTIONS_API_URL || 'https://transactions.zerion.io' }}
+  # Public wallet from e2e/fixtures/constants.ts. Unit tests and E2E use it;
+  # it is not a secret.
+  TEST_WALLET_ADDRESS: '0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1'
   FEATURE_SEND_FORM: on
 
 concurrency:
