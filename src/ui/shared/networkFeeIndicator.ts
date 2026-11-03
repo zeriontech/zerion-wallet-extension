@@ -8,7 +8,7 @@ export function getNetworkFeeIndicator(speed: NetworkFeeSpeed): string | null {
     return 'Average fee selected (your last choice)';
   }
   if (speed === 'custom') {
-    return 'Custom fee selected (kept for 1 hour)';
+    return 'Custom fee selected (kept for 24 hours)';
   }
   return null;
 }

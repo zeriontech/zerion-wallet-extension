@@ -6,7 +6,7 @@ import { createExtensionTest } from './test';
 const test = createExtensionTest({ headless: true });
 
 const AVERAGE_INDICATOR = 'Average fee selected (your last choice)';
-const CUSTOM_INDICATOR = 'Custom fee selected (kept for 1 hour)';
+const CUSTOM_INDICATOR = 'Custom fee selected (kept for 24 hours)';
 
 function sendTransactionUrl(extensionPopupUrl: string, nonce: string) {
   const transaction = {
