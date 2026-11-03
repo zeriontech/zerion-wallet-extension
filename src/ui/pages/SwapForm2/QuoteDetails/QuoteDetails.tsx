@@ -191,6 +191,8 @@ export function QuoteDetails({
   const inputChain = createChain(formState.inputChain);
   const inputChainName = networks.getChainName(inputChain);
   const inputChainIconUrl = networks.getByNetworkId(inputChain)?.iconUrl;
+  const inputChainBaseAssetSymbol =
+    networks.getByNetworkId(inputChain)?.baseAsset?.symbol;
 
   const outputChain = createChain(formState.outputChain);
   const outputChainName = networks.getChainName(outputChain);
@@ -220,7 +222,9 @@ export function QuoteDetails({
                       quote ? (
                         <HStack gap={4} alignItems="center">
                           <UIText kind="small/accent">
-                            {formatNetworkFee(quote, feeRatio)}
+                            {formatNetworkFee(quote, feeRatio, {
+                              fallbackSymbol: inputChainBaseAssetSymbol,
+                            })}
                           </UIText>
                           {evmTx ? (
                             <ChevronRightIcon
@@ -534,6 +538,7 @@ export function QuoteDetails({
           quote={quote}
           gasPrices={gasPrices}
           baseFee={baseFee}
+          fallbackSymbol={inputChainBaseAssetSymbol}
         />
       ) : null}
     </MotionConfig>

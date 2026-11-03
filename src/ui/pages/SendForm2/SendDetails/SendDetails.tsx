@@ -28,6 +28,7 @@ import { NetworkFeeReminder } from 'src/ui/shared/NetworkFeeReminder';
 import { NonceLine2 } from 'src/ui/pages/SwapForm2/QuoteDetails/NonceLine2';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { NetworkFeeDialog2 } from 'src/ui/pages/SwapForm2/NetworkFeeDialog2';
+import { formatNetworkFee } from 'src/ui/pages/SwapForm2/formatNetworkFee';
 import {
   getBaseFee,
   getCustomFormDefaults,
@@ -60,37 +61,6 @@ function DetailRow({
     );
   }
   return content;
-}
-
-function formatNetworkFee(
-  fee: NetworkFeeType | null,
-  network: NetworkInfo | null,
-  fiatValue: number | null,
-  currency: string,
-  ratio = 1
-): React.ReactNode {
-  if (!fee) return noValueDash;
-  if (fee.free) return 'Free';
-  const value =
-    fee.amount?.value != null
-      ? fee.amount.value * ratio
-      : fiatValue != null
-      ? fiatValue * ratio
-      : null;
-  if (value != null) {
-    return formatCurrencyValueExtra(value, 'en', currency, {
-      zeroRoundingFallback: 0.01,
-    });
-  }
-  if (fee.amount?.quantity) {
-    const symbol = fee.fungible?.symbol ?? network?.baseAsset?.symbol ?? '';
-    const quantity =
-      ratio === 1
-        ? fee.amount.quantity
-        : new BigNumber(fee.amount.quantity).multipliedBy(ratio).toFixed();
-    return formatTokenValue(quantity, symbol);
-  }
-  return noValueDash;
 }
 
 export function SendDetails({
@@ -201,16 +171,14 @@ export function SendDetails({
                 label="Network Fee"
                 onClick={evmTx ? networkFeeDialog.openDialog : undefined}
                 value={
-                  networkFee ? (
+                  sendQuote ? (
                     <HStack gap={4} alignItems="center">
                       <UIText kind="small/accent">
-                        {formatNetworkFee(
-                          networkFee,
-                          network,
-                          feeFiatValue,
+                        {formatNetworkFee(sendQuote, feeRatio, {
+                          fallbackFiatValue: feeFiatValue,
+                          fallbackSymbol: network?.baseAsset?.symbol,
                           currency,
-                          feeRatio
-                        )}
+                        })}
                       </UIText>
                       {evmTx ? (
                         <ChevronRightIcon
@@ -336,6 +304,9 @@ export function SendDetails({
           quote={sendQuote}
           gasPrices={gasPrices}
           baseFee={baseFee}
+          fallbackFiatValue={feeFiatValue}
+          fallbackSymbol={network?.baseAsset?.symbol}
+          currency={currency}
         />
       ) : null}
     </MotionConfig>

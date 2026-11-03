@@ -69,6 +69,17 @@ async function feeAmount(locator: Locator) {
   return match?.[0];
 }
 
+function parseFeeText(text: string) {
+  const trimmed = text.trim();
+  const match = trimmed.match(/(\$[\d.,]+|\d[\d.,]*\s*[A-Za-z]{2,})$/);
+  expect(match, `No fee text in "${trimmed}"`).not.toBeNull();
+  return match![0].trim();
+}
+
+async function feeText(locator: Locator) {
+  return parseFeeText((await locator.textContent()) ?? '');
+}
+
 test('remembers the fee level per chain and flags non-Fast levels', async ({
   context,
   page,
@@ -108,6 +119,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
     });
   });
 
+  let sendFeeValue: number | null = 3;
   await context.route('**/transaction/get-send/v1*', async (route) => {
     await route.fulfill({
       status: 200,
@@ -123,7 +135,11 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
           error: null,
           networkFee: {
             free: false,
-            amount: { quantity: '0.0001', value: 3, usdValue: 3 },
+            amount: {
+              quantity: '0.0001',
+              value: sendFeeValue,
+              usdValue: sendFeeValue,
+            },
             fungible: null,
           },
           transactionSend: {
@@ -271,4 +287,35 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
 
   await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
   await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+
+  // Regression: a quote without amount.value must format identically in the
+  // row and the highlighted picker row (fiat fallback or token + symbol).
+  sendFeeValue = null;
+  await page.reload();
+  const nullFiatRow = page
+    .getByRole('button')
+    .filter({ hasText: 'Network Fee' })
+    .first();
+  await expect(nullFiatRow).toBeVisible({ timeout: 30_000 });
+  await nullFiatRow.click();
+  const nullFiatPicker = page.getByRole('button', { name: /Fast icon/ });
+  await expect(nullFiatPicker).toHaveAttribute('aria-pressed', 'true');
+  const nullFiatPickerText = await feeText(nullFiatPicker);
+  await page.keyboard.press('Escape');
+  await expect(nullFiatRow).toContainText(nullFiatPickerText);
+
+  // The Custom picker row and the custom form summary use the same fallbacks.
+  await nullFiatRow.click();
+  const nullFiatCustomRow = page.getByRole('button', {
+    name: /Custom icon/,
+  });
+  const nullFiatCustomPickerText = await feeText(nullFiatCustomRow);
+  await nullFiatCustomRow.click();
+  const expectedFeeText = parseFeeText(
+    (await page.getByText('Expected Fee').locator('..').textContent()) ?? ''
+  );
+  expect(expectedFeeText).toBe(nullFiatCustomPickerText);
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+  await expect(nullFiatRow).toContainText(nullFiatCustomPickerText);
 });
