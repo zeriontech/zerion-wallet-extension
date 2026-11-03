@@ -138,7 +138,7 @@ jobs:
 
       - name: Scan Playwright report for the bypass secret
         id: scan
-        if: steps.e2e.outcome == 'failure'
+        if: failure() && steps.e2e.outcome == 'failure'
         env:
           ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
         run: node scripts/scan-for-secret.mjs e2e-report
@@ -146,7 +146,9 @@ jobs:
       - name: Upload Playwright report
         # Artifacts of a public repository are public. Never upload the build,
         # and never upload a report the scanner has not cleared.
-        if: steps.e2e.outcome == 'failure' && steps.scan.outcome == 'success'
+        # `failure()` is explicit: GitHub otherwise adds an implicit success()
+        # check, which is false after the Playwright step fails.
+        if: failure() && steps.e2e.outcome == 'failure' && steps.scan.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: e2e-report
