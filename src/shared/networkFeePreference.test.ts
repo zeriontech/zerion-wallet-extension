@@ -108,6 +108,36 @@ describe('resolveSavedNetworkFee', () => {
     });
   });
 
+  it('returns the preset with the retained custom values after switching to a preset', () => {
+    const preferences = withSavedNetworkFee(
+      withSavedNetworkFee(undefined, CHAIN, customConfiguration, NOW),
+      CHAIN,
+      averageConfiguration,
+      NOW
+    );
+    expect(resolveSavedNetworkFee(preferences, CHAIN, NOW)).toEqual({
+      speed: 'average',
+      custom1559GasPrice: {
+        maxFee: 30_000_000_000,
+        priorityFee: 1_500_000_000,
+      },
+      customClassicGasPrice: null,
+      gasLimit: null,
+    });
+  });
+
+  it('returns the active custom entry over a retained one', () => {
+    const preferences = withSavedNetworkFee(
+      withSavedNetworkFee(undefined, CHAIN, averageConfiguration, NOW),
+      CHAIN,
+      customConfiguration,
+      NOW
+    );
+    expect(resolveSavedNetworkFee(preferences, CHAIN, NOW)).toMatchObject({
+      speed: 'custom',
+    });
+  });
+
   it('keeps chains independent', () => {
     const preferences = withSavedNetworkFee(
       undefined,
@@ -120,7 +150,7 @@ describe('resolveSavedNetworkFee', () => {
 });
 
 describe('withSavedNetworkFee', () => {
-  it('clears a saved custom entry when a preset is picked', () => {
+  it('retains a saved custom entry as inactive when a preset is picked', () => {
     const withCustom = withSavedNetworkFee(
       undefined,
       CHAIN,
@@ -133,7 +163,11 @@ describe('withSavedNetworkFee', () => {
       averageConfiguration,
       NOW
     );
-    expect(withPreset[CHAIN]).toEqual({ preset: 'average' });
+    expect(withPreset[CHAIN]).toMatchObject({
+      preset: 'average',
+      customActive: false,
+      custom: { savedAt: NOW },
+    });
   });
 
   it('does not overwrite the preset when custom is picked', () => {

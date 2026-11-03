@@ -190,10 +190,7 @@ export function NetworkFeeCustomForm({
   // Existing custom override (in wei), converted to GWEI strings. These seed the
   // inputs above the quote defaults so a previously-saved custom fee is shown
   // when the form reopens.
-  const customNetworkFee =
-    configuration?.networkFee.speed === 'custom'
-      ? configuration.networkFee
-      : null;
+  const customNetworkFee = configuration?.networkFee;
   const custom = {
     priorityFee: weiToGweiOrNull(
       customNetworkFee?.custom1559GasPrice?.priorityFee
