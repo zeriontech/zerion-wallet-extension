@@ -431,3 +431,62 @@ test('keeps the acceleration fee UI unchanged', async ({
   await editCustomFee();
   await assertUnchanged();
 });
+
+test('keeps custom fee values after switching to Fast', async ({
+  context,
+  page,
+  extensionPopupUrl,
+}) => {
+  await page.setViewportSize({ width: 400, height: 640 });
+  await context.route('**/chain/get-gas-prices/v1*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          average: {
+            classic: null,
+            eip1559: {
+              maxFee: 20_000_000_000,
+              priorityFee: 1_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 60,
+          },
+          fast: {
+            classic: null,
+            eip1559: {
+              maxFee: 30_000_000_000,
+              priorityFee: 2_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 15,
+          },
+        },
+        errors: null,
+        meta: null,
+      }),
+    });
+  });
+
+  await openTransaction(page, extensionPopupUrl, '0x1');
+  await openFeeDialog(page);
+  await page.getByRole('button', { name: /Custom icon/ }).click();
+  const maxFee = page.locator('input[name="maxFee"]');
+  await maxFee.fill('33');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+
+  // Switching to Fast keeps the custom values but makes Fast the active level.
+  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
+  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+
+  await openTransaction(page, extensionPopupUrl, '0x2');
+  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await openFeeDialog(page);
+  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await expect(page.locator('input[name="maxFee"]')).toHaveValue('33');
+});

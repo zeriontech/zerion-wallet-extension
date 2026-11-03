@@ -22,6 +22,12 @@ export interface SavedCustomNetworkFee {
 export interface SavedNetworkFee {
   preset: NetworkFeePreset;
   custom?: SavedCustomNetworkFee;
+  /**
+   * Whether the custom entry is the active level. Switching to a preset keeps
+   * the custom values but makes them inactive, so the next transaction starts
+   * on the preset. Missing on old records, which treated custom as active.
+   */
+  customActive?: boolean;
 }
 
 export type NetworkFeePreferences = Record<string, SavedNetworkFee | undefined>;

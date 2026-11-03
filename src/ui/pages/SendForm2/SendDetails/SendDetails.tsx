@@ -194,7 +194,7 @@ export function SendDetails({
                 }
               />
               <NetworkFeeReminder
-                speed={configuration.networkFee.speed}
+                networkFee={configuration.networkFee}
                 onChange={(networkFee) =>
                   onConfigurationChange({ ...configuration, networkFee })
                 }

@@ -59,9 +59,18 @@ export function NetworkFeeTypeSelector({
   onSelectPreset: (value: NetworkFeeConfiguration) => void;
   onSelectCustom: () => void;
 }) {
-  const customNetworkFee =
-    configuration?.networkFee.speed === 'custom'
-      ? configuration.networkFee
+  const retainedCustom = configuration?.networkFee;
+  const hasCustomValues = Boolean(
+    retainedCustom?.custom1559GasPrice || retainedCustom?.customClassicGasPrice
+  );
+  const customNetworkFee: NetworkFeeConfiguration | null =
+    hasCustomValues && retainedCustom
+      ? {
+          speed: 'custom',
+          custom1559GasPrice: retainedCustom.custom1559GasPrice ?? null,
+          customClassicGasPrice: retainedCustom.customClassicGasPrice ?? null,
+          gasLimit: retainedCustom.gasLimit ?? null,
+        }
       : null;
   const customRatio = customNetworkFee
     ? getNetworkFeeRatioForConfiguration(
@@ -127,8 +136,10 @@ export function NetworkFeeTypeSelector({
             onClick={() =>
               onSelectPreset({
                 speed,
-                custom1559GasPrice: null,
-                customClassicGasPrice: null,
+                custom1559GasPrice:
+                  configuration?.networkFee.custom1559GasPrice ?? null,
+                customClassicGasPrice:
+                  configuration?.networkFee.customClassicGasPrice ?? null,
                 gasLimit: null,
               })
             }

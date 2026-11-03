@@ -184,7 +184,7 @@ export function NetworkFee({
       </HStack>
         {shouldShowNetworkFeeReminder(Boolean(customViewOnly)) ? (
           <NetworkFeeReminder
-            speed={networkFeeConfiguration.speed}
+            networkFee={networkFeeConfiguration}
             onChange={onChange ?? undefined}
           />
         ) : null}

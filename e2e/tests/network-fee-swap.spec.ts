@@ -310,9 +310,17 @@ test('Swap on Ethereum keeps row, picker and custom form in sync', async ({
     page.getByText('Expected Fee').locator('..')
   );
   expect(expectedFeeText).toBe(customPickerText);
+  await page.locator('input[name="maxFee"]').fill('35');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText(CUSTOM)).toBeVisible();
   await expect(row).toContainText(customPickerText);
+
+  // Switching to Fast keeps the values available in the custom form.
+  await page.getByRole('button', { name: SWITCH }).click();
+  await expect(page.getByText(CUSTOM)).toHaveCount(0);
+  await row.click();
+  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await expect(page.locator('input[name="maxFee"]')).toHaveValue('35');
 });
 
 test('Classic Send on BSC prices Slow and Custom consistently', async ({

@@ -8,13 +8,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 
-const FAST_NETWORK_FEE_CONFIGURATION: NetworkFeeConfiguration = {
-  speed: 'fast',
-  custom1559GasPrice: null,
-  customClassicGasPrice: null,
-  gasLimit: null,
-};
-
 export function getNetworkFeeReminderLabel(
   speed: NetworkFeeSpeed
 ): string | null {
@@ -33,13 +26,13 @@ export function getNetworkFeeReminderLabel(
  * through the same callback as the picker, so the preset is persisted.
  */
 export function NetworkFeeReminder({
-  speed,
+  networkFee,
   onChange,
 }: {
-  speed: NetworkFeeSpeed;
+  networkFee: NetworkFeeConfiguration;
   onChange?: (value: NetworkFeeConfiguration) => void;
 }) {
-  const label = getNetworkFeeReminderLabel(speed);
+  const label = getNetworkFeeReminderLabel(networkFee.speed);
   if (!label) {
     return null;
   }
@@ -61,7 +54,13 @@ export function NetworkFeeReminder({
         <UnstyledButton
           type="button"
           className={helperStyles.hoverUnderline}
-          onClick={() => onChange(FAST_NETWORK_FEE_CONFIGURATION)}
+          onClick={() =>
+            onChange({
+              ...networkFee,
+              speed: 'fast',
+              gasLimit: null,
+            })
+          }
         >
           <UIText
             kind="caption/accent"

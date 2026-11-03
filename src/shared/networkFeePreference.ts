@@ -56,8 +56,10 @@ function toCustomNetworkFeeConfiguration(
 
 /**
  * Resolve the network-fee level to start a transaction with on `chainId`.
- * A Custom entry wins while it is younger than 24 hours; otherwise the last
- * picked Fast/Slow preset applies. Returns null on a fresh install.
+ * An active Custom entry wins while it is younger than 24 hours; otherwise the
+ * last picked Fast/Slow preset applies. A Custom entry that was deactivated by
+ * picking a preset is still returned alongside that preset (for up to 24 hours)
+ * so the custom form can show the values the user entered.
  */
 export function resolveSavedNetworkFee(
   preferences: NetworkFeePreferences | undefined,
@@ -68,13 +70,23 @@ export function resolveSavedNetworkFee(
   if (!saved) {
     return null;
   }
-  if (saved.custom && now - saved.custom.savedAt < CUSTOM_NETWORK_FEE_TTL) {
-    const custom = toCustomNetworkFeeConfiguration(saved.custom);
-    if (custom) {
-      return custom;
-    }
+  const custom =
+    saved.custom && now - saved.custom.savedAt < CUSTOM_NETWORK_FEE_TTL
+      ? toCustomNetworkFeeConfiguration(saved.custom)
+      : null;
+  if (custom && saved.customActive !== false) {
+    return custom;
   }
-  return PRESET_CONFIGURATION[saved.preset];
+  const preset = PRESET_CONFIGURATION[saved.preset];
+  if (custom) {
+    return {
+      ...preset,
+      custom1559GasPrice: custom.custom1559GasPrice,
+      customClassicGasPrice: custom.customClassicGasPrice,
+      gasLimit: null,
+    };
+  }
+  return preset;
 }
 
 function toSavedCustomNetworkFee(
@@ -112,7 +124,11 @@ export function withSavedNetworkFee(
   if (configuration.speed !== 'custom') {
     return {
       ...current,
-      [chainId]: { preset: configuration.speed },
+      [chainId]: {
+        ...current[chainId],
+        preset: configuration.speed,
+        customActive: false,
+      },
     };
   }
   const custom = toSavedCustomNetworkFee(configuration, now);
@@ -124,6 +140,7 @@ export function withSavedNetworkFee(
     [chainId]: {
       preset: current[chainId]?.preset ?? 'fast',
       custom,
+      customActive: true,
     },
   };
 }
