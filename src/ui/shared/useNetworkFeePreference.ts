@@ -10,7 +10,7 @@ import { useEvent } from 'src/ui/shared/useEvent';
 /**
  * Reads the persisted per-chain fee selection and writes back picks.
  * The value is resolved once per chain/preference change, so an open form does
- * not flip levels when a Custom entry crosses its 1h expiry.
+ * not flip levels when a Custom entry crosses its 24h expiry.
  */
 export function useNetworkFeePreference(chainId: string | null | undefined) {
   const { globalPreferences, setGlobalPreferences } = useGlobalPreferences();

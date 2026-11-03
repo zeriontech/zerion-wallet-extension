@@ -7,8 +7,8 @@ import type {
   SavedCustomNetworkFee,
 } from 'src/shared/types/NetworkFeePreference';
 
-/** Picking Custom keeps it for one hour, then the saved preset applies again. */
-export const CUSTOM_NETWORK_FEE_TTL = 60 * 60 * 1000;
+/** Picking Custom keeps it for 24 hours, then the saved preset applies again. */
+export const CUSTOM_NETWORK_FEE_TTL = 24 * 60 * 60 * 1000;
 
 const PRESET_CONFIGURATION: Record<
   Exclude<NetworkFeeSpeed, 'custom'>,

@@ -47,7 +47,7 @@ describe('resolveSavedNetworkFee', () => {
     });
   });
 
-  it('returns a custom 1559 entry while it is younger than one hour', () => {
+  it('returns a custom 1559 entry while it is younger than one day', () => {
     const preferences = withSavedNetworkFee(
       undefined,
       CHAIN,
