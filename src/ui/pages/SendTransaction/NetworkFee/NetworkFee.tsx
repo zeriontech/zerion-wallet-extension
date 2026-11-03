@@ -4,9 +4,11 @@ import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfig
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
+import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
+import { getNetworkFeeIndicator } from 'src/ui/shared/networkFeeIndicator';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
@@ -132,6 +134,9 @@ export function NetworkFee({
         .filter(isTruthy)
         .join(' · ')
     : null;
+  const networkFeeIndicator = getNetworkFeeIndicator(
+    networkFeeConfiguration.speed
+  );
 
   return (
     <>
@@ -151,46 +156,53 @@ export function NetworkFee({
           customViewOnly={customViewOnly}
         />
       ) : null}
-      <HStack gap={8} justifyContent="space-between">
-        {label !== undefined ? (
-          label
-        ) : (
-          <UIText kind="small/regular">Network Fee</UIText>
-        )}
-        {isLoading ? (
-          <CircleSpinner />
-        ) : displayValue ? (
-          <HStack gap={0} alignItems="center">
-            <HStack gap={12} alignItems="center">
-              {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
-              <UnstyledButton
-                type="button"
-                className={disabled ? undefined : helperStyles.hoverUnderline}
-                style={{
-                  color: disabled ? 'var(--black)' : 'var(--primary)',
-                  cursor: !onChange ? 'auto' : undefined,
-                }}
-                onClick={() => {
-                  dialogRef.current?.showModal();
-                }}
-                disabled={disabled}
-              >
-                {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
-                  <UIText kind="small/accent" title={hintTitle}>
-                    {displayValue}
-                    {displayValueEnd ? ' · ' : null}
-                  </UIText>
-                )}
-              </UnstyledButton>
+      <VStack gap={4}>
+        <HStack gap={8} justifyContent="space-between">
+          {label !== undefined ? (
+            label
+          ) : (
+            <UIText kind="small/regular">Network Fee</UIText>
+          )}
+          {isLoading ? (
+            <CircleSpinner />
+          ) : displayValue ? (
+            <HStack gap={0} alignItems="center">
+              <HStack gap={12} alignItems="center">
+                {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
+                <UnstyledButton
+                  type="button"
+                  className={disabled ? undefined : helperStyles.hoverUnderline}
+                  style={{
+                    color: disabled ? 'var(--black)' : 'var(--primary)',
+                    cursor: !onChange ? 'auto' : undefined,
+                  }}
+                  onClick={() => {
+                    dialogRef.current?.showModal();
+                  }}
+                  disabled={disabled}
+                >
+                  {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
+                    <UIText kind="small/accent" title={hintTitle}>
+                      {displayValue}
+                      {displayValueEnd ? ' · ' : null}
+                    </UIText>
+                  )}
+                </UnstyledButton>
+              </HStack>
+              {displayValueEnd}
             </HStack>
-            {displayValueEnd}
-          </HStack>
-        ) : feeEstimationQuery.isSuccess ? (
-          <UIText kind="small/regular" title="No fee data">
-            {noValueDash}
+          ) : feeEstimationQuery.isSuccess ? (
+            <UIText kind="small/regular" title="No fee data">
+              {noValueDash}
+            </UIText>
+          ) : null}
+        </HStack>
+        {networkFeeIndicator ? (
+          <UIText kind="caption/regular" color="var(--neutral-500)">
+            {networkFeeIndicator}
           </UIText>
         ) : null}
-      </HStack>
+      </VStack>
     </>
   );
 }

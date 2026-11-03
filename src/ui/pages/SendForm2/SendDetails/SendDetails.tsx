@@ -24,6 +24,7 @@ import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
+import { getNetworkFeeIndicator } from 'src/ui/shared/networkFeeIndicator';
 import { NonceLine2 } from 'src/ui/pages/SwapForm2/QuoteDetails/NonceLine2';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { NetworkFeeDialog2 } from 'src/ui/pages/SwapForm2/NetworkFeeDialog2';
@@ -122,6 +123,9 @@ export function SendDetails({
   const networkFee: NetworkFeeType | null = sendQuote?.networkFee ?? null;
   const baseFee = getBaseFee(gasPrices);
   const customDefaults = getCustomFormDefaults(sendQuote);
+  const networkFeeIndicator = getNetworkFeeIndicator(
+    configuration.networkFee.speed
+  );
   const showNonce = Boolean(
     preferences?.configurableNonce && isEthereumAddress(address)
   );
@@ -178,31 +182,40 @@ export function SendDetails({
       <VStack gap={0}>
         <div className={styles.detailsContainer}>
           <VStack gap={0}>
-            <DetailRow
-              label="Network Fee"
-              onClick={evmTx ? networkFeeDialog.openDialog : undefined}
-              value={
-                networkFee ? (
-                  <HStack gap={4} alignItems="center">
-                    <UIText kind="small/accent">
-                      {formatNetworkFee(
-                        networkFee,
-                        network,
-                        feeFiatValue,
-                        currency
-                      )}
-                    </UIText>
-                    {evmTx ? (
-                      <ChevronRightIcon className={styles.detailLinkChevron} />
-                    ) : null}
-                  </HStack>
-                ) : isLoading ? (
-                  <CircleSpinner />
-                ) : (
-                  noValueDash
-                )
-              }
-            />
+            <VStack gap={4}>
+              <DetailRow
+                label="Network Fee"
+                onClick={evmTx ? networkFeeDialog.openDialog : undefined}
+                value={
+                  networkFee ? (
+                    <HStack gap={4} alignItems="center">
+                      <UIText kind="small/accent">
+                        {formatNetworkFee(
+                          networkFee,
+                          network,
+                          feeFiatValue,
+                          currency
+                        )}
+                      </UIText>
+                      {evmTx ? (
+                        <ChevronRightIcon
+                          className={styles.detailLinkChevron}
+                        />
+                      ) : null}
+                    </HStack>
+                  ) : isLoading ? (
+                    <CircleSpinner />
+                  ) : (
+                    noValueDash
+                  )
+                }
+              />
+              {networkFeeIndicator ? (
+                <UIText kind="caption/regular" color="var(--neutral-500)">
+                  {networkFeeIndicator}
+                </UIText>
+              ) : null}
+            </VStack>
             <AnimatePresence initial={false}>
               {isExpanded ? (
                 <motion.div

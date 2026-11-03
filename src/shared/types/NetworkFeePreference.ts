@@ -1,0 +1,27 @@
+/**
+ * Persisted network-fee selection, one entry per chain and shared by every
+ * wallet in this browser profile.
+ *
+ * `preset` is the last explicitly picked Fast/Average level. `custom` is kept
+ * separately so picking Custom never overwrites the preset it must fall back
+ * to after the custom entry expires.
+ */
+export type NetworkFeePreset = 'fast' | 'average';
+
+export interface SavedCustomNetworkFee {
+  /** EIP-1559 max fee, in wei */
+  maxFee?: number;
+  /** EIP-1559 priority fee, in wei */
+  priorityFee?: number;
+  /** Classic gas price, in wei */
+  gasPrice?: number;
+  /** Unix timestamp (ms) when this custom entry was saved */
+  savedAt: number;
+}
+
+export interface SavedNetworkFee {
+  preset: NetworkFeePreset;
+  custom?: SavedCustomNetworkFee;
+}
+
+export type NetworkFeePreferences = Record<string, SavedNetworkFee | undefined>;

@@ -103,6 +103,8 @@ import { getDecimals } from 'src/modules/networks/asset';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
+import { equal } from 'src/modules/fast-deep-equal';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { TransactionConfiguration } from './TransactionConfiguration';
@@ -492,7 +494,20 @@ function SendTransactionContent({
   const { singleAddress } = useAddressParams();
   const { preferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
-  const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(
+    chain.toString()
+  );
+  const [configuration, setConfiguration] = useState<CustomConfiguration>(() =>
+    savedNetworkFee
+      ? { ...DEFAULT_CONFIGURATION, networkFee: savedNetworkFee }
+      : DEFAULT_CONFIGURATION
+  );
+  const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    if (!equal(value.networkFee, configuration.networkFee)) {
+      saveNetworkFee(value.networkFee);
+    }
+    setConfiguration(value);
+  });
   const { data: chainGasPrices, ...gasPricesQuery } = useGasPrices(chain);
   const toastRef = useRef<PopoverToastHandle>(null);
 
@@ -757,7 +772,7 @@ function SendTransactionContent({
             interpretQuery={interpretQuery}
             populatedTransaction={populatedTransaction}
             configuration={configuration}
-            onConfigurationChange={setConfiguration}
+            onConfigurationChange={handleConfigurationChange}
             paymasterEligible={paymasterEligible}
             paymasterPossible={paymasterPossible}
             paymasterWaiting={paymasterWaiting}

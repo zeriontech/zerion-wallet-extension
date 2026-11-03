@@ -1,6 +1,7 @@
 import { isNumeric } from 'src/shared/isNumeric';
 import type {
   CustomConfiguration,
+  NetworkFeeConfiguration,
   NetworkFeeSpeed,
 } from 'src/shared/types/TransactionConfiguration';
 import { gweiToWei, weiToGwei } from 'src/shared/units/formatGasPrice';
@@ -16,28 +17,37 @@ type NetworkFeeSubset = {
 };
 
 export function toConfiguration(
-  formState: NetworkFeeSubset
+  formState: NetworkFeeSubset,
+  savedNetworkFee: NetworkFeeConfiguration | null = null
 ): CustomConfiguration {
   const { maxFee, maxPriorityFee, nonce, gasPrice, slippage } = formState;
+  const networkFee: NetworkFeeConfiguration = formState.networkFeeSpeed
+    ? {
+        speed: formState.networkFeeSpeed,
+        custom1559GasPrice:
+          maxFee &&
+          isNumeric(maxFee) &&
+          maxPriorityFee &&
+          isNumeric(maxPriorityFee)
+            ? {
+                // TODO: Do not convert. When other forms update to the new Swap API,
+                // remove conversion in NetworkFeeDialog and here
+                maxFee: gweiToWei(maxFee),
+                priorityFee: gweiToWei(maxPriorityFee),
+              }
+            : null,
+        customClassicGasPrice:
+          gasPrice && isNumeric(gasPrice) ? gweiToWei(gasPrice) : null,
+        gasLimit: formState.gasLimit || null,
+      }
+    : savedNetworkFee ?? {
+        speed: 'fast',
+        custom1559GasPrice: null,
+        customClassicGasPrice: null,
+        gasLimit: null,
+      };
   return {
-    networkFee: {
-      speed: formState.networkFeeSpeed || 'fast',
-      custom1559GasPrice:
-        maxFee &&
-        isNumeric(maxFee) &&
-        maxPriorityFee &&
-        isNumeric(maxPriorityFee)
-          ? {
-              // TODO: Do not convert. When other forms update to the new Swap API,
-              // remove conversion in NetworkFeeDialog and here
-              maxFee: gweiToWei(maxFee),
-              priorityFee: gweiToWei(maxPriorityFee),
-            }
-          : null,
-      customClassicGasPrice:
-        gasPrice && isNumeric(gasPrice) ? gweiToWei(gasPrice) : null,
-      gasLimit: formState.gasLimit || null,
-    },
+    networkFee,
     slippage: slippage != null && isNumeric(slippage) ? Number(slippage) : null,
     nonce: nonce && isNumeric(nonce) ? nonce : null,
   };
