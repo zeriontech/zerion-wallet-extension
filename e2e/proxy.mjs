@@ -20,15 +20,16 @@ const SECRET =
   process.env.ZERION_API_DEVELOPMENT_KEY ||
   process.env.CF_ZPI_DEV_BYPASS_SECRET;
 
+// Fixed upstreams: environment overrides would let a misconfiguration send
+// the bypass header to an arbitrary host.
 const ROUTES = [
   {
     prefix: '/zpi/',
-    upstream: process.env.ZPI_UPSTREAM_URL || 'https://zpi.zerion.io/',
+    upstream: 'https://zpi.zerion.io/',
   },
   {
     prefix: '/zpi-testnet/',
-    upstream:
-      process.env.ZPI_TESTNET_UPSTREAM_URL || 'https://zpi-testnet.zerion.io/',
+    upstream: 'https://zpi-testnet.zerion.io/',
   },
 ];
 

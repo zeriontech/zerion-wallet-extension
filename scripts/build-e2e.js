@@ -1,5 +1,7 @@
 /* eslint-env node */
-const { execFileSync } = require('child_process');
+/* eslint-disable security/detect-non-literal-fs-filename -- scans the build output directory */
+const fs = require('fs');
+const path = require('path');
 const dotenv = require('dotenv');
 const { execAsync } = require('./execAsync');
 
@@ -24,6 +26,31 @@ const USE_PROXY = SECRETS.length > 0 || process.env.E2E_USE_PROXY === '1';
 // Public wallet from e2e/fixtures/constants.ts. E2E always onboards this
 // wallet; it must not depend on a CI secret.
 const TEST_WALLET_ADDRESS = '0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1';
+
+// Scan in-process so the secret never appears in subprocess arguments or in
+// a subprocess error message.
+function containsSecret(directory, secret) {
+  const needle = Buffer.from(secret);
+  const stack = [directory];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(file);
+        continue;
+      }
+      // Fail closed on symlinks and other non-regular files.
+      if (!entry.isFile()) {
+        return true;
+      }
+      if (fs.readFileSync(file).includes(needle)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 /**
  * E2E-only build. It differs from the production build in three ways:
@@ -85,18 +112,7 @@ async function build() {
   );
 
   for (const secret of SECRETS) {
-    let found = false;
-    try {
-      execFileSync('grep', ['-rlF', '--', secret, 'dist-e2e'], {
-        stdio: 'ignore',
-      });
-      found = true;
-    } catch (error) {
-      if (error.status !== 1) {
-        throw error;
-      }
-    }
-    if (found) {
+    if (containsSecret('dist-e2e', secret)) {
       throw new Error(
         'E2E build contains the Cloudflare bypass secret. Refusing to continue.'
       );

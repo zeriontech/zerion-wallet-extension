@@ -147,6 +147,15 @@ interface Fixtures {
 // Allows quick toggling between headless/headed mode in dev env
 const RUN_HEADED_IN_DEV = true;
 
+// The proxy needs the bypass secret; the browser must never see it. Chromium
+// inherits the test worker's environment, so strip both aliases before launch.
+function getBrowserEnv() {
+  const env = { ...process.env };
+  delete env.ZERION_API_DEVELOPMENT_KEY;
+  delete env.CF_ZPI_DEV_BYPASS_SECRET;
+  return env as Record<string, string>;
+}
+
 export function createExtensionTest(testConfig?: Config) {
   return baseTest.extend<TestContext & Fixtures & Options>({
     // eslint-disable-next-line no-empty-pattern
@@ -161,6 +170,7 @@ export function createExtensionTest(testConfig?: Config) {
         devtools: Boolean(testConfig?.devtools),
         channel: 'chromium',
         args: createBrowserArgs(headless),
+        env: getBrowserEnv(),
       });
       await use(context);
       await context.close();
