@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page, Route } from '@playwright/test';
 import { testWallets } from 'e2e/fixtures/constants';
 import { createExtensionTest } from './test';
 
@@ -325,7 +325,7 @@ test('keeps the acceleration fee UI unchanged', async ({
   page,
   extensionPopupUrl,
 }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(120_000);
   await page.setViewportSize({ width: 440, height: 700 });
   await context.route('**/chain/get-gas-prices/v1*', async (route) => {
     await route.fulfill({
@@ -357,6 +357,33 @@ test('keeps the acceleration fee UI unchanged', async ({
         errors: null,
         meta: null,
       }),
+    });
+  });
+
+  // CancelTx calls eth_estimateGas against the public RPC. CI's requests hit
+  // a Cloudflare challenge (403), which renders an error card instead of the
+  // fee row. Stub just the estimate so the acceleration UI test is deterministic.
+  await context.route('**/rpc.zerion.io/v1/ethereum*', async (route: Route) => {
+    const postData = route.request().postData();
+    if (!postData) {
+      await route.continue();
+      return;
+    }
+    const payload = JSON.parse(postData);
+    const items = Array.isArray(payload) ? payload : [payload];
+    if (!items.every((item) => item.method === 'eth_estimateGas')) {
+      await route.continue();
+      return;
+    }
+    const response = items.map((item) => ({
+      jsonrpc: '2.0',
+      id: item.id,
+      result: '0x5208',
+    }));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(Array.isArray(payload) ? response : response[0]),
     });
   });
 
@@ -399,14 +426,14 @@ test('keeps the acceleration fee UI unchanged', async ({
     await page.getByText('Pending').first().click();
     await page.getByRole('button', { name: action }).click();
     const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
-    await expect(feeRow).toBeVisible({ timeout: 30_000 });
+    await expect(feeRow).toBeVisible({ timeout: 10_000 });
     return feeRow;
   };
 
   const editCustomFee = async () => {
     await page.getByRole('button', { name: 'Network Fee' }).first().click();
     const maxFee = page.locator('input[name="maxFee"]');
-    await expect(maxFee).toBeVisible({ timeout: 15_000 });
+    await expect(maxFee).toBeVisible();
     await maxFee.fill('35');
     await page.getByRole('button', { name: 'Save' }).click();
   };
