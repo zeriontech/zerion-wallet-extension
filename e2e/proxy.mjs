@@ -29,6 +29,10 @@ const ROUTES = [
     prefix: '/zpi-testnet/',
     upstream: 'https://zpi-testnet.zerion.io/',
   },
+  {
+    prefix: '/rpc/',
+    upstream: 'https://rpc.zerion.io/',
+  },
 ];
 
 const HOP_BY_HOP_HEADERS = [
