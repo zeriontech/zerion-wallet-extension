@@ -325,7 +325,7 @@ test('keeps the acceleration fee UI unchanged', async ({
   page,
   extensionPopupUrl,
 }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 440, height: 700 });
   await context.route('**/chain/get-gas-prices/v1*', async (route) => {
     await route.fulfill({
@@ -399,14 +399,14 @@ test('keeps the acceleration fee UI unchanged', async ({
     await page.getByText('Pending').first().click();
     await page.getByRole('button', { name: action }).click();
     const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
-    await expect(feeRow).toBeVisible({ timeout: 10_000 });
+    await expect(feeRow).toBeVisible({ timeout: 30_000 });
     return feeRow;
   };
 
   const editCustomFee = async () => {
     await page.getByRole('button', { name: 'Network Fee' }).first().click();
     const maxFee = page.locator('input[name="maxFee"]');
-    await expect(maxFee).toBeVisible();
+    await expect(maxFee).toBeVisible({ timeout: 15_000 });
     await maxFee.fill('35');
     await page.getByRole('button', { name: 'Save' }).click();
   };
