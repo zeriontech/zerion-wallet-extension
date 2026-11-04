@@ -18,6 +18,8 @@ You can also download the latest build of the Zerion Extension from [here](https
 
 ## Development
 
+> Release gates, the changeset flow, store publishing and the one-time CI setup are documented in [docs/release.md](docs/release.md).
+
 ### Prerequisites
 
 - Install [npm](https://www.npmjs.com/get-npm)
