@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import type { Locator, Page, Route } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { testWallets } from 'e2e/fixtures/constants';
 import { createExtensionTest } from './test';
 
@@ -357,33 +357,6 @@ test('keeps the acceleration fee UI unchanged', async ({
         errors: null,
         meta: null,
       }),
-    });
-  });
-
-  // CancelTx calls eth_estimateGas against the public RPC. CI's requests hit
-  // a Cloudflare challenge (403), which renders an error card instead of the
-  // fee row. Stub just the estimate so the acceleration UI test is deterministic.
-  await context.route('**/rpc.zerion.io/v1/ethereum*', async (route: Route) => {
-    const postData = route.request().postData();
-    if (!postData) {
-      await route.continue();
-      return;
-    }
-    const payload = JSON.parse(postData);
-    const items = Array.isArray(payload) ? payload : [payload];
-    if (!items.every((item) => item.method === 'eth_estimateGas')) {
-      await route.continue();
-      return;
-    }
-    const response = items.map((item) => ({
-      jsonrpc: '2.0',
-      id: item.id,
-      result: '0x5208',
-    }));
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(Array.isArray(payload) ? response : response[0]),
     });
   });
 
