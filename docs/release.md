@@ -1,0 +1,108 @@
+# Releases
+
+Everything that cuts a release lives in `.github/workflows/`. Every action is pinned to a commit SHA, checkouts use `persist-credentials: false`, and secrets are scoped to the step that needs them.
+
+## Gate matrix
+
+| Event | Workflow | What runs |
+| --- | --- | --- |
+| Pull request | `run-tests.yml` | `changeset-check` (or the `skip-changeset` label), `quality` (`lint:check`, `format:check`, `typecheck`, `test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs) |
+| Pull request | `pr.yml` → `pr_attach_build.yml` | production build with PR env, zip attached to the PR thread |
+| Pull request | `pr_push_qa.yml` | build pushed to the `zerion-wallet-extension-qa` repo on the PR branch |
+| Push `main` | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump |
+| Tag `vX.Y.Z` | `release.yml` | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack |
+| Tag `vX.Y.Z` | `release_push_qa.yml` | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa` |
+| Manual | `publish-stores.yml` | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO |
+
+`release.yml` deliberately skips lint, typecheck, formatting and tests: a tag is only created for a commit that already passed every PR gate, so an emergency release is never blocked by CI. Quality gates stay on pull requests.
+
+## Release flow (changesets)
+
+1. Every behavior-changing PR includes a changeset (`npm run changeset`, commit the generated `.changeset/*.md`). Docs/CI/dependency-only PRs use the `skip-changeset` label. The `changeset-check` job fails with the exact command to run when a changeset is missing.
+2. On merge to `main`, `version-packages.yml` runs `changesets/action`, which opens or updates the **Version Packages** PR.
+3. Merging that PR bumps `package.json`, runs `node scripts/manifest-version.js` (so `src/manifest-chrome.json` and `src/manifest-firefox.json` stay in sync), writes `CHANGELOG.md`, and deletes the consumed changesets.
+4. With no changesets left, `version-packages.yml` runs `scripts/release/tag-version.mjs`, which creates and pushes the annotated `vX.Y.Z` tag. It is a no-op when that tag already exists.
+5. The tag push triggers `release.yml` (artifacts + GitHub Release + Slack) and `release_push_qa.yml` (release-candidate branch for QA).
+
+Tagging belongs to CI only. `scripts/manifest-version.js` no longer creates or amends commits or tags.
+
+`.changeset/config.json` sets `format: false`: Changesets 3 formats the changelog with `prettier --no-error-on-unmatched-pattern`, which the Prettier 2 pinned in this repo does not support. `npm run version` formats `CHANGELOG.md` with the repo's own Prettier instead, so the Version Packages PR still passes `format:check`.
+
+### Why a GitHub App token
+
+The tag push uses a token minted from `RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KEY`, never `GITHUB_TOKEN`:
+
+- pushes made with `GITHUB_TOKEN` do not trigger other workflows, so `release.yml` and `release_push_qa.yml` would never run;
+- the org ruleset `hive-protect-tags` (active) only allows tag creation by its bypass actors.
+
+The app needs `contents: write` on this repository (plus `pull-requests: write` so `changesets/action` can open the Version Packages PR) and must be listed as a bypass actor on `hive-protect-tags`. Misconfiguration fails the workflow before the tag is created: the preflight step fails when the app token cannot read the repository, and `tag-version.mjs` fails with an error naming `RELEASE_APP_ID` and `hive-protect-tags` when the push is rejected.
+
+### QA repository contract
+
+Unchanged: `release_push_qa.yml` pushes to branch `release-candidate-<tag>` in `zeriontech/zerion-wallet-extension-qa` through `.github/actions/push_qa_repo`, using `QA_REPO_APP_ID` / `QA_REPO_APP_PRIVATE_KEY`. `release.yml` keeps the artifact names `zerion-wallet-extension-<tag>.{zip,tar.gz}` and `zerion-wallet-firefox-addon-<tag>.{zip,tar.gz}`.
+
+## Store publishing
+
+`publish-stores.yml` is manual only, defaults to `dry_run: true`, and runs in the `store-publishing` environment so real submissions can require approval.
+
+### Tool choice: `publish-browser-extension`
+
+`wxt submit` is an alias for [`publish-browser-extension`](https://www.npmjs.com/package/publish-browser-extension) (the WXT docs say so, and `wxt submit --help` reports `publish-extension`). We install the underlying package directly instead of WXT: same functionality, 3 runtime dependencies (`cac`, `tasuku`, `@topcli/prompts`), no framework coupling to this Parcel repo.
+
+What it gives us in one command: Chrome upload + publish, Firefox upload + submit with a sources ZIP, and `--dry-run` that authenticates against both stores without uploading. We call it through `scripts/release/publish-stores.mjs` so we get per-store statuses for Slack and a redacted failure path.
+
+Rejected alternatives:
+
+- `chrome-webstore-upload-cli` + `web-ext sign`: two tools, two auth models, no shared dry-run. The CLI documents only OAuth `CLIENT_ID`/`CLIENT_SECRET`/ `REFRESH_TOKEN`, i.e. Chrome Web Store API **v1.1**, which Google retired on 2026-10-15; `web-ext` alone pulls ~27 dependencies.
+- Plasmo's submit: tied to Plasmo's build output and framework; this repo builds with Parcel.
+
+Tradeoff: we depend on a single third-party submitter covering both stores. If it breaks, store submission is manual (upload the same ZIPs by hand) until it is fixed; nothing else in the release flow depends on it.
+
+### Required secrets
+
+| Secret | For | Notes |
+| --- | --- | --- |
+| `CHROME_EXTENSION_ID` | Chrome | Extension ID in the Web Store |
+| `CHROME_PUBLISHER_ID` | Chrome | Publisher ID from the developer dashboard |
+| `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL` | Chrome | CWS API v2 service account |
+| `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY` | Chrome | Service account key, newlines may be literal `\n` |
+| `FIREFOX_EXTENSION_ID` | Firefox | AMO add-on id/slug |
+| `FIREFOX_JWT_ISSUER` | Firefox | AMO API key |
+| `FIREFOX_JWT_SECRET` | Firefox | AMO API secret |
+| `SLACK_AUTH_TOKEN` | both | Already used by `release.yml` |
+
+`CHROME_API_VERSION=v2` is set in the workflow, not stored as a secret. The script refuses to run with anything else: CWS API v1.1 stopped working on 2026-10-15.
+
+### Manual first run
+
+1. Upload both extensions to the stores by hand once; neither store creates a new listing through the API.
+2. Add the secrets above to the `store-publishing` environment.
+3. Run `publish-stores.yml` with the default `dry_run: true`. This rebuilds the tag, creates the ZIPs and authenticates against both stores; a green run means the credentials are valid.
+4. Run it again with `dry_run: false` for the real submission, then watch the Chrome Web Store dashboard and AMO for review results.
+
+### Firefox sources ZIP
+
+AMO requires source code that reproduces the submitted build. `scripts/release/store-zips.mjs` creates `zerion-wallet-firefox-addon-<tag>-sources.zip` with `git archive` of the released tag; it contains `SOURCE_CODE_REVIEW.md` with the rebuild steps. Review that file whenever the build changes.
+
+### Re-running after a partial failure
+
+Submission is not transactional: if Chrome succeeded and Firefox failed, both stores are attempted again on re-run, and the store that already accepted the version rejects the duplicate. Bump the version and cut a new release rather than re-running for a half-published version.
+
+## Emergency release
+
+1. Bump the version and sync the manifests: `npm version <bump> --no-git-tag-version` (the `version` lifecycle hook skips `changeset version` and only syncs the manifests; `postversion` does the same). Plain `npm version` also works but tags before the manifest sync is committed, so prefer the explicit two-step.
+2. Add the `CHANGELOG.md` entry, commit and merge to `main`.
+3. Create and push the tag with an account that is a bypass actor on `hive-protect-tags`: `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z`.
+4. `release.yml` and `release_push_qa.yml` run from the tag. Publish to the stores with `publish-stores.yml` once the release looks right.
+
+## Deliberate gaps
+
+- `release.yml` runs no quality gates by design; it trusts that the tagged commit passed CI. The tag ruleset, not the workflow, is what keeps unreviewed commits out.
+- No automatic store publishing after a release: a tag produces a GitHub Release and a QA build, and a human starts `publish-stores.yml`.
+- No store retry/rollback logic (see above).
+- The `hive-protect-tags` bypass list lives in org settings; the repository cannot verify it, only fail loudly when it is wrong.
+- Bundle size is not gated.
+
+## Not planned
+
+- There is no beta channel for the extension: no beta branch, no prerelease manifest versioning, and no store prerelease track.
