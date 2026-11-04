@@ -6,6 +6,10 @@ import type { NetworkFeeType } from '../types/NetworkFeeType';
 import type { TransactionPrepareError } from '../types/TransactionPrepareError';
 import type { BackendSourceParams } from '../shared';
 import type { Params } from '../requests/transaction-get-send';
+import {
+  shouldRetryTransactionGetSend,
+  toTransactionGetSendError,
+} from './transactionGetSendError';
 
 const QUERY_KEY = 'transactionGetSend';
 const STALE_TIME = 20000;
@@ -39,13 +43,19 @@ export function useTransactionGetSend(
   return useQuery({
     queryKey: [QUERY_KEY, params, source],
     queryFn: async (): Promise<TransactionGetSendResult> => {
-      const response = await ZerionAPI.transactionGetSend(params, { source });
-      return response.data;
+      try {
+        const response = await ZerionAPI.transactionGetSend(params, {
+          source,
+        });
+        return response.data;
+      } catch (error) {
+        throw await toTransactionGetSendError(error);
+      }
     },
     enabled,
     keepPreviousData,
     suspense,
     staleTime: STALE_TIME,
-    retry: 1,
+    retry: shouldRetryTransactionGetSend,
   });
 }

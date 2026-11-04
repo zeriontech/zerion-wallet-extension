@@ -5,7 +5,11 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
-import { useTransactionGetSend } from 'src/modules/zerion-api/hooks/useTransactionGetSend';
+import {
+  useTransactionGetSend,
+  type TransactionGetSendResult,
+} from 'src/modules/zerion-api/hooks/useTransactionGetSend';
+import { getSendRequestClientError } from 'src/modules/zerion-api/hooks/transactionGetSendError';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
@@ -99,6 +103,23 @@ function toQuoteNetworkFee(
     free: networkFee.free,
     amount: networkFee.amount ? { ...networkFee.amount, currency } : null,
     fungible: networkFee.fungible,
+  };
+}
+
+export function selectBackendSendTransaction(
+  { data, error }: { data?: TransactionGetSendResult; error: unknown },
+  { network, currency }: { network: NetworkInfo | null; currency: string }
+): SendTransactionResult | undefined {
+  if (error || !data) return undefined;
+  const { transactionSend, networkFee, inputAmount, error: sendError } = data;
+  return {
+    network,
+    sendQuote: {
+      transactionSwap: transactionSend,
+      networkFee: toQuoteNetworkFee(networkFee, currency),
+    },
+    inputAmount,
+    error: sendError,
   };
 }
 
@@ -251,18 +272,10 @@ export function useSendTransaction({
   const data = useMemo<SendTransactionResult | undefined>(() => {
     if (!baseGatesPass) return undefined;
     if (useBackend) {
-      if (!backendQuery.data) return undefined;
-      const { transactionSend, networkFee, inputAmount, error } =
-        backendQuery.data;
-      return {
-        network,
-        sendQuote: {
-          transactionSwap: transactionSend,
-          networkFee: toQuoteNetworkFee(networkFee, currency),
-        },
-        inputAmount,
-        error,
-      };
+      return selectBackendSendTransaction(
+        { data: backendQuery.data, error: backendQuery.error },
+        { network, currency }
+      );
     }
     if (!localQuery.data) return undefined;
     const local = localQuery.data;
@@ -281,6 +294,7 @@ export function useSendTransaction({
     baseGatesPass,
     useBackend,
     backendQuery.data,
+    backendQuery.error,
     localQuery.data,
     network,
     currency,
@@ -290,6 +304,9 @@ export function useSendTransaction({
 
   return {
     data,
+    requestError: backendEnabled
+      ? getSendRequestClientError(backendQuery.error)
+      : null,
     isLoading: useBackend
       ? backendEnabled && backendQuery.isLoading
       : localEnabled && localQuery.isLoading,
