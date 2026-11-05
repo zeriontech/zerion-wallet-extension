@@ -50,6 +50,8 @@ import { describeTransaction } from 'src/modules/ethereum/transactions/describeT
 import { AllowanceView } from 'src/ui/components/AllowanceView';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { useEvent } from 'src/ui/shared/useEvent';
+import { emitter } from 'src/ui/shared/events';
+import { toNetworkFeeAnalyticsLevel } from 'src/shared/types/network-fee-events';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import {
   SignTransactionButton,
@@ -503,7 +505,16 @@ function SendTransactionContent({
       : DEFAULT_CONFIGURATION
   );
   const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    const previousSpeed = configuration.networkFee.speed;
+    const nextSpeed = value.networkFee.speed;
     if (!equal(value.networkFee, configuration.networkFee)) {
+      if (nextSpeed !== previousSpeed) {
+        emitter.emit('networkFeeLevelChanged', {
+          level: toNetworkFeeAnalyticsLevel(nextSpeed),
+          chain: chain.toString(),
+          flow: 'dapp',
+        });
+      }
       saveNetworkFee(value.networkFee);
     }
     setConfiguration(value);

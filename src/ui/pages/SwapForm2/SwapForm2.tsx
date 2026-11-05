@@ -45,6 +45,8 @@ import {
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { walletPort } from 'src/ui/shared/channels';
 import { useEvent } from 'src/ui/shared/useEvent';
+import { emitter } from 'src/ui/shared/events';
+import { toNetworkFeeAnalyticsLevel } from 'src/shared/types/network-fee-events';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -169,7 +171,16 @@ function SwapFormComponent({
     [formState, savedNetworkFee]
   );
   const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    const previousSpeed = configuration.networkFee.speed;
+    const nextSpeed = value.networkFee.speed;
     if (!equal(value.networkFee, configuration.networkFee)) {
+      if (formState.inputChain && nextSpeed !== previousSpeed) {
+        emitter.emit('networkFeeLevelChanged', {
+          level: toNetworkFeeAnalyticsLevel(nextSpeed),
+          chain: formState.inputChain,
+          flow: 'swap',
+        });
+      }
       saveNetworkFee(value.networkFee);
     }
     const partial = fromConfiguration(value);
