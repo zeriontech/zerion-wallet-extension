@@ -38,7 +38,6 @@ export function Dialog2({
   autoFocusInput = true,
   style,
   animateContentSize = false,
-  forceCentered = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -60,8 +59,6 @@ export function Dialog2({
   style?: React.CSSProperties;
   /** When true, the dialog smoothly animates its own size as the content's height changes. Use with `size="content"`. */
   animateContentSize?: boolean;
-  /** Keep the dialog centered at narrow widths instead of pinning it to the bottom. */
-  forceCentered?: boolean;
 }) {
   const isNarrow = useIsNarrow();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -103,7 +100,7 @@ export function Dialog2({
     return () => cancelAnimationFrame(raf);
   }, [open, autoFocusInput]);
 
-  const isCentered = !isNarrow || forceCentered;
+  const isCentered = !isNarrow;
   const isFullscreen = !isCentered && size === 'full';
 
   return createPortal(

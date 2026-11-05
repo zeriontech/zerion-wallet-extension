@@ -37,7 +37,7 @@ function Header({ view, onBack }: { view: View; onBack: () => void }) {
         ) : null}
       </div>
       <UIText kind="body/accent" className={styles.headerTitle}>
-        {view === 'selector' ? 'Network Fee' : 'Custom'}
+        {view === 'selector' ? 'Network speed' : 'Custom'}
       </UIText>
       <div className={styles.headerRight}>
         <DialogDismiss className={styles.iconButton} aria-label="Close">
@@ -117,7 +117,6 @@ export function NetworkFeeDialog2({
       open={open}
       onClose={handleClose}
       size="content"
-      forceCentered={true}
       autoFocusInput={false}
       animateContentSize
     >

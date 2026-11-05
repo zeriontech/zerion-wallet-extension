@@ -1,38 +1,42 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
-import FastSrc from 'url:./assets/fast.png';
-import Fast2xSrc from 'url:./assets/fast_2x.png';
-import SlowSrc from 'url:./assets/slow.png';
-import Slow2xSrc from 'url:./assets/slow_2x.png';
-import CustomSrc from 'url:./assets/custom.png';
-import Custom2xSrc from 'url:./assets/custom_2x.png';
-import { NETWORK_SPEED_TO_TITLE } from './constants';
-
-function getNetworkSpeedSrc(speed: NetworkFeeSpeed, scale?: '2x') {
-  if (speed === 'custom') {
-    return scale === '2x' ? Custom2xSrc : CustomSrc;
-  }
-  if (speed === 'average') {
-    return scale === '2x' ? Slow2xSrc : SlowSrc;
-  }
-  if (speed === 'fast') {
-    return scale === '2x' ? Fast2xSrc : FastSrc;
-  }
-  throw new Error('Unexpected network fee speed');
-}
+import BoltIcon from 'jsx:src/ui/assets/bolt.svg';
+import HourglassIcon from 'jsx:src/ui/assets/hourglass.svg';
+import SlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 
 export function NetworkFeeIcon({
   speed,
   ...props
-}: React.HTMLAttributes<HTMLImageElement> & { speed: NetworkFeeSpeed }) {
-  const src = useMemo(() => getNetworkSpeedSrc(speed), [speed]);
-  const src2x = useMemo(() => getNetworkSpeedSrc(speed, '2x'), [speed]);
+}: React.SVGProps<SVGSVGElement> & { speed: NetworkFeeSpeed }) {
+  const Icon =
+    speed === 'fast'
+      ? BoltIcon
+      : speed === 'average'
+      ? HourglassIcon
+      : speed === 'custom'
+      ? SlidersIcon
+      : null;
+  if (!Icon) {
+    throw new Error('Unexpected network fee speed');
+  }
+  return <Icon {...props} aria-hidden="true" />;
+}
+
+export function NetworkFeeIconBadge({ speed }: { speed: NetworkFeeSpeed }) {
   return (
-    <img
-      {...props}
-      src={src}
-      alt={`${NETWORK_SPEED_TO_TITLE[speed]} icon`}
-      srcSet={`${src}, ${src2x} 2x`}
-    />
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 32,
+        height: 32,
+        flexShrink: 0,
+        borderRadius: '50%',
+        background: 'var(--white)',
+      }}
+    >
+      <NetworkFeeIcon speed={speed} style={{ width: 20, height: 20 }} />
+    </span>
   );
 }

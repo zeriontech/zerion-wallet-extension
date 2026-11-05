@@ -4,11 +4,10 @@ import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfig
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
-import { NetworkFeeReminder } from 'src/ui/shared/NetworkFeeReminder';
+import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { Chain } from 'src/modules/networks/Chain';
@@ -19,10 +18,7 @@ import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
-import {
-  getNetworkFeeDisplayValue,
-  shouldShowNetworkFeeReminder,
-} from './getNetworkFeeDisplayValue';
+import { getNetworkFeeDisplayValue } from './getNetworkFeeDisplayValue';
 
 function getFeeTypeTitle(type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined) {
   if (!type) {
@@ -144,7 +140,6 @@ export function NetworkFee({
           customViewOnly={customViewOnly}
         />
       ) : null}
-      <VStack gap={4}>
       <HStack gap={8} justifyContent="space-between">
         {label !== undefined ? label : <UIText kind="small/regular">Network Fee</UIText>}
         {isLoading ? (
@@ -166,12 +161,20 @@ export function NetworkFee({
                 }}
                 disabled={disabled}
               >
+                <HStack gap={4} alignItems="center">
+                  {customViewOnly ? null : (
+                    <NetworkFeeLevelLabel
+                      speed={networkFeeConfiguration.speed}
+                      separatorColor="var(--primary)"
+                    />
+                  )}
                 {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
                   <UIText kind="small/accent" title={hintTitle}>
                     {displayValue}
                     {displayValueEnd ? ' · ' : null}
                   </UIText>
                 )}
+                </HStack>
               </UnstyledButton>
             </HStack>
             {displayValueEnd}
@@ -182,13 +185,6 @@ export function NetworkFee({
           </UIText>
         ) : null}
       </HStack>
-        {shouldShowNetworkFeeReminder(Boolean(customViewOnly)) ? (
-          <NetworkFeeReminder
-            networkFee={networkFeeConfiguration}
-            onChange={onChange ?? undefined}
-          />
-        ) : null}
-      </VStack>
     </>
   );
 }

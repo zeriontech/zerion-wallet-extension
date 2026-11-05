@@ -1,7 +1,4 @@
-import {
-  getNetworkFeeDisplayValue,
-  shouldShowNetworkFeeReminder,
-} from './getNetworkFeeDisplayValue';
+import { getNetworkFeeDisplayValue } from './getNetworkFeeDisplayValue';
 
 const base = {
   feeValueFormatted: '$3.00',
@@ -10,43 +7,33 @@ const base = {
 };
 
 describe('getNetworkFeeDisplayValue', () => {
-  test('keeps the speed title for Fast', () => {
+  test('returns amount only when the level label is rendered separately', () => {
     expect(
       getNetworkFeeDisplayValue({
         ...base,
         speed: 'fast',
         time: '~15 sec',
       })
-    ).toBe('~15 sec · $3.00');
+    ).toBe('$3.00');
     expect(
       getNetworkFeeDisplayValue({
         ...base,
         speed: 'fast',
         time: undefined,
       })
-    ).toBe('Fast · $3.00');
-  });
-
-  test('omits the speed title for Slow and Custom', () => {
+    ).toBe('$3.00');
     expect(
       getNetworkFeeDisplayValue({
         ...base,
         speed: 'average',
         time: '~60 sec',
       })
-    ).toBe('~60 sec · $3.00');
+    ).toBe('$3.00');
     expect(
       getNetworkFeeDisplayValue({
         ...base,
         speed: 'custom',
         time: '~60 sec',
-      })
-    ).toBe('~60 sec · $3.00');
-    expect(
-      getNetworkFeeDisplayValue({
-        ...base,
-        speed: 'average',
-        time: undefined,
       })
     ).toBe('$3.00');
   });
@@ -95,12 +82,5 @@ describe('getNetworkFeeDisplayValue', () => {
         time: '~15 sec',
       })
     ).toBe(null);
-  });
-});
-
-describe('shouldShowNetworkFeeReminder', () => {
-  test('is hidden in acceleration flows', () => {
-    expect(shouldShowNetworkFeeReminder(true)).toBe(false);
-    expect(shouldShowNetworkFeeReminder(false)).toBe(true);
   });
 });
