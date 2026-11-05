@@ -6,6 +6,7 @@ import type {
   PerpsPositionActionParams,
   PerpsScreenViewedParams,
 } from 'src/shared/types/perps-events';
+import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
 
 type EthersSignMethod = 'sendTransaction' | '_signTypedData' | 'signMessage';
 
@@ -25,6 +26,7 @@ export const emitter = createNanoEvents<{
   ethereumEvent: () => void;
   'sidepanel/activeTabUpdated': () => void;
   buttonClicked: (data: ButtonClickedParams) => void;
+  networkFeeLevelChanged: (data: NetworkFeeLevelChangedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
   mnemonicRestorationNeeded: () => void;
   perpsScreenViewed: (data: PerpsScreenViewedParams) => void;

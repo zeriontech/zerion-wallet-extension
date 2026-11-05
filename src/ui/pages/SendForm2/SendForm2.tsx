@@ -12,6 +12,8 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import { equal } from 'src/modules/fast-deep-equal';
 import { useEvent } from 'src/ui/shared/useEvent';
+import { emitter } from 'src/ui/shared/events';
+import { toNetworkFeeAnalyticsLevel } from 'src/shared/types/network-fee-events';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
 import { useWalletNftPosition } from 'src/modules/zerion-api/hooks/useWalletNftPosition';
@@ -149,7 +151,16 @@ function SendFormComponent({
     [formState, savedNetworkFee]
   );
   const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    const previousSpeed = configuration.networkFee.speed;
+    const nextSpeed = value.networkFee.speed;
     if (!equal(value.networkFee, configuration.networkFee)) {
+      if (formState.inputChain && nextSpeed !== previousSpeed) {
+        emitter.emit('networkFeeLevelChanged', {
+          level: toNetworkFeeAnalyticsLevel(nextSpeed),
+          chain: formState.inputChain,
+          flow: 'send',
+        });
+      }
       saveNetworkFee(value.networkFee);
     }
     const partial = fromConfiguration(value);
