@@ -5,9 +5,19 @@ import { createExtensionTest } from './test';
 
 const test = createExtensionTest({ headless: true });
 
-const SLOW_REMINDER = 'Slow selected';
-const CUSTOM_REMINDER = 'Custom fee selected';
-const SWITCH_TO_FAST = 'Switch to Fast';
+const PRESET_NAME = {
+  Fast: /^Fast\b/,
+  Slow: /^Slow\b/,
+  Custom: /^Custom\b/,
+} as const;
+
+function preset(page: Page, label: 'Fast' | 'Slow' | 'Custom') {
+  return page.getByRole('button', { name: PRESET_NAME[label] }).last();
+}
+
+function dappFeeRow(page: Page) {
+  return page.getByRole('button', { name: 'Network Fee' }).first();
+}
 
 function sendTransactionUrl(extensionPopupUrl: string, nonce: string) {
   const transaction = {
@@ -57,9 +67,7 @@ async function openFeeDialog(page: Page) {
   const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
   await expect(feeRow).toBeEnabled();
   await feeRow.click();
-  await expect(
-    page.getByRole('button', { name: /Fast icon/ }).first()
-  ).toBeVisible();
+  await expect(preset(page, 'Fast')).toBeVisible();
 }
 
 async function feeAmount(locator: Locator) {
@@ -167,89 +175,70 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   });
 
   await openTransaction(page, extensionPopupUrl, '0x1');
-  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
-  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
-  await expect(page.getByRole('button', { name: SWITCH_TO_FAST })).toHaveCount(
-    0
-  );
+  await expect(dappFeeRow(page)).toContainText('Fast');
 
-  // Pick Slow: the reminder and the one-tap switch appear immediately.
+  // Pick Slow: the fee row shows the level inline, with no second line.
   await openFeeDialog(page);
-  await expect(page.getByRole('button', { name: /Fast icon/ })).toContainText(
-    '~15 sec'
-  );
-  await expect(page.getByRole('button', { name: /Slow icon/ })).toContainText(
-    '~60 sec'
-  );
-  await expect(page.getByRole('button', { name: /Custom icon/ })).toContainText(
-    /\$/
-  );
-  await expect(page.getByText('Average')).toHaveCount(0);
-  await page.getByRole('button', { name: /Slow icon/ }).click();
-  await expect(page.getByText(SLOW_REMINDER)).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: SWITCH_TO_FAST })
-  ).toBeVisible();
+  await expect(page.getByText('Network speed')).toBeVisible();
+  await expect(preset(page, 'Fast')).toContainText('~15 sec');
+  await expect(preset(page, 'Slow')).toContainText('~60 sec');
+  await expect(preset(page, 'Custom')).toContainText(/\$/);
+  await preset(page, 'Slow').click();
+  await expect(dappFeeRow(page)).toContainText('Slow');
+  await expect(dappFeeRow(page)).not.toContainText('Custom');
 
   // The row amount equals the highlighted Slow row in the picker.
   await openFeeDialog(page);
-  const slowPicker = page.getByRole('button', { name: /Slow icon/ });
+  const slowPicker = preset(page, 'Slow');
   await expect(slowPicker).toHaveAttribute('aria-pressed', 'true');
   const slowPickerAmount = await feeAmount(slowPicker);
   await page.keyboard.press('Escape');
-  const slowRowAmount = await feeAmount(
-    page.getByRole('button', { name: 'Network Fee' }).first()
-  );
+  const slowRowAmount = await feeAmount(dappFeeRow(page));
   expect(slowRowAmount).toBe(slowPickerAmount);
 
   // The next transaction on the same chain starts on Slow.
   await openTransaction(page, extensionPopupUrl, '0x2');
-  await expect(page.getByText(SLOW_REMINDER)).toBeVisible();
+  await expect(dappFeeRow(page)).toContainText('Slow');
 
-  // The reminder's switch persists Fast through the same path as the picker.
-  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
-  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
+  // Fast is picked through the picker; there is no separate switch control.
   await openFeeDialog(page);
-  const fastPicker = page.getByRole('button', { name: /Fast icon/ });
+  await preset(page, 'Fast').click();
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Slow');
+  await openFeeDialog(page);
+  const fastPicker = preset(page, 'Fast');
   await expect(fastPicker).toHaveAttribute('aria-pressed', 'true');
   const fastPickerAmount = await feeAmount(fastPicker);
   await page.keyboard.press('Escape');
-  const fastRowAmount = await feeAmount(
-    page.getByRole('button', { name: 'Network Fee' }).first()
-  );
+  const fastRowAmount = await feeAmount(dappFeeRow(page));
   expect(fastRowAmount).toBe(fastPickerAmount);
   await openTransaction(page, extensionPopupUrl, '0x3');
-  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
-  await expect(page.getByRole('button', { name: SWITCH_TO_FAST })).toHaveCount(
-    0
-  );
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Slow');
 
   // Custom is saved for the chain, priced in the picker, and reused.
   await openFeeDialog(page);
-  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await preset(page, 'Custom').click();
   await page.getByRole('button', { name: 'Save' }).click();
   // The legacy dapp dialog returns to its selector after saving Custom.
-  const customPicker = page.getByRole('button', { name: /Custom icon/ });
+  const customPicker = preset(page, 'Custom');
   await expect(customPicker).toHaveAttribute('aria-pressed', 'true');
   const customPickerAmount = await feeAmount(customPicker);
   await page.keyboard.press('Escape');
-  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
-  const customRowAmount = await feeAmount(
-    page.getByRole('button', { name: 'Network Fee' }).first()
-  );
+  await expect(dappFeeRow(page)).toContainText('Custom');
+  const customRowAmount = await feeAmount(dappFeeRow(page));
   expect(customRowAmount).toBe(customPickerAmount);
 
   await openTransaction(page, extensionPopupUrl, '0x4');
-  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+  await expect(dappFeeRow(page)).toContainText('Custom');
 
   // Fast clears the saved Custom entry too.
-  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
-  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await openFeeDialog(page);
+  await preset(page, 'Fast').click();
+  await expect(dappFeeRow(page)).toContainText('Fast');
   await openTransaction(page, extensionPopupUrl, '0x5');
-  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
-  await expect(page.getByRole('button', { name: SWITCH_TO_FAST })).toHaveCount(
-    0
-  );
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Custom');
 
   // Send: the row and the highlighted picker row use the same amount,
   // including the Custom gas limit.
@@ -259,34 +248,37 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
     .filter({ hasText: 'Network Fee' })
     .first();
   await expect(sendFeeRow).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
+  await expect(sendFeeRow).toContainText('Fast');
 
   await sendFeeRow.click();
-  await page.getByRole('button', { name: /Slow icon/ }).click();
-  await expect(page.getByText(SLOW_REMINDER)).toBeVisible();
+  await preset(page, 'Slow').click();
+  await expect(sendFeeRow).toContainText('Slow');
   await sendFeeRow.click();
-  const sendSlowPicker = page.getByRole('button', { name: /Slow icon/ });
+  const sendSlowPicker = preset(page, 'Slow');
   await expect(sendSlowPicker).toHaveAttribute('aria-pressed', 'true');
   const sendSlowPickerAmount = await feeAmount(sendSlowPicker);
   await page.keyboard.press('Escape');
   await expect(sendFeeRow).toContainText(sendSlowPickerAmount!);
 
-  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
-  await expect(page.getByText(SLOW_REMINDER)).toHaveCount(0);
+  await sendFeeRow.click();
+  await preset(page, 'Fast').click();
+  await expect(sendFeeRow).toContainText('Fast');
+  await expect(sendFeeRow).not.toContainText('Slow');
 
   await sendFeeRow.click();
-  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await preset(page, 'Custom').click();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+  await expect(sendFeeRow).toContainText('Custom');
   await sendFeeRow.click();
-  const sendCustomPicker = page.getByRole('button', { name: /Custom icon/ });
+  const sendCustomPicker = preset(page, 'Custom');
   await expect(sendCustomPicker).toHaveAttribute('aria-pressed', 'true');
   const sendCustomPickerAmount = await feeAmount(sendCustomPicker);
   await page.keyboard.press('Escape');
   await expect(sendFeeRow).toContainText(sendCustomPickerAmount!);
 
-  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
-  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await sendFeeRow.click();
+  await preset(page, 'Fast').click();
+  await expect(sendFeeRow).toContainText('Fast');
 
   // Regression: a quote without amount.value must format identically in the
   // row and the highlighted picker row (fiat fallback or token + symbol).
@@ -298,7 +290,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
     .first();
   await expect(nullFiatRow).toBeVisible({ timeout: 30_000 });
   await nullFiatRow.click();
-  const nullFiatPicker = page.getByRole('button', { name: /Fast icon/ });
+  const nullFiatPicker = preset(page, 'Fast');
   await expect(nullFiatPicker).toHaveAttribute('aria-pressed', 'true');
   const nullFiatPickerText = await feeText(nullFiatPicker);
   await page.keyboard.press('Escape');
@@ -306,9 +298,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
 
   // The Custom picker row and the custom form summary use the same fallbacks.
   await nullFiatRow.click();
-  const nullFiatCustomRow = page.getByRole('button', {
-    name: /Custom icon/,
-  });
+  const nullFiatCustomRow = preset(page, 'Custom');
   const nullFiatCustomPickerText = await feeText(nullFiatCustomRow);
   await nullFiatCustomRow.click();
   const expectedFeeText = parseFeeText(
@@ -316,7 +306,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   );
   expect(expectedFeeText).toBe(nullFiatCustomPickerText);
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+  await expect(nullFiatRow).toContainText('Custom');
   await expect(nullFiatRow).toContainText(nullFiatCustomPickerText);
 });
 
@@ -439,13 +429,10 @@ test('keeps the acceleration fee UI unchanged', async ({
   };
 
   const assertUnchanged = async () => {
-    await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
-    await expect(
-      page.getByRole('button', { name: SWITCH_TO_FAST })
-    ).toHaveCount(0);
-    await expect(
-      page.getByRole('button', { name: 'Network Fee' }).first()
-    ).toContainText('Custom');
+    const row = dappFeeRow(page);
+    await expect(row).toContainText('Custom');
+    await expect(row).not.toContainText('Slow');
+    await expect(page.getByText('Set your own')).toHaveCount(0);
   };
 
   const speedUpFee = await openAcceleration('Speed Up');
@@ -500,20 +487,22 @@ test('keeps custom fee values after switching to Fast', async ({
 
   await openTransaction(page, extensionPopupUrl, '0x1');
   await openFeeDialog(page);
-  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await preset(page, 'Custom').click();
   const maxFee = page.locator('input[name="maxFee"]');
   await maxFee.fill('33');
   await page.getByRole('button', { name: 'Save' }).click();
   await page.keyboard.press('Escape');
-  await expect(page.getByText(CUSTOM_REMINDER)).toBeVisible();
+  await expect(dappFeeRow(page)).toContainText('Custom');
 
   // Switching to Fast keeps the custom values but makes Fast the active level.
-  await page.getByRole('button', { name: SWITCH_TO_FAST }).click();
-  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await openFeeDialog(page);
+  await preset(page, 'Fast').click();
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Custom');
 
   await openTransaction(page, extensionPopupUrl, '0x2');
-  await expect(page.getByText(CUSTOM_REMINDER)).toHaveCount(0);
+  await expect(dappFeeRow(page)).toContainText('Fast');
   await openFeeDialog(page);
-  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await preset(page, 'Custom').click();
   await expect(page.locator('input[name="maxFee"]')).toHaveValue('33');
 });
