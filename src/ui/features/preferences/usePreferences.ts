@@ -43,19 +43,21 @@ export function usePreferences() {
 }
 
 async function setGlobalPreferences(preferences: GlobalPreferences) {
-  walletPort.request('setGlobalPreferences', { preferences });
+  await walletPort.request('setGlobalPreferences', { preferences });
 }
+
+export const GLOBAL_PREFERENCES_QUERY_KEY = ['wallet/getGlobalPreferences'];
 
 export async function fetchGlobalPreferences() {
   return queryClient.fetchQuery({
-    queryKey: ['wallet/getGlobalPreferences'],
+    queryKey: GLOBAL_PREFERENCES_QUERY_KEY,
     queryFn: () => walletPort.request('getGlobalPreferences'),
   });
 }
 
 export function useGlobalPreferences() {
   const query = useQuery({
-    queryKey: ['wallet/getGlobalPreferences'],
+    queryKey: GLOBAL_PREFERENCES_QUERY_KEY,
     queryFn: () => walletPort.request('getGlobalPreferences'),
     useErrorBoundary: true,
     suspense: true,

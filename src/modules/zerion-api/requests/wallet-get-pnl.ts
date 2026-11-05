@@ -2,6 +2,7 @@ import { invariant } from 'src/shared/invariant';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
+import { withNormalizedHiddenFungibleIds } from '../shared/hiddenFungibleIds';
 import type { ResponseBody } from './ResponseBody';
 
 export interface Params {
@@ -13,6 +14,8 @@ export interface Params {
   chainIds?: string[];
   /** Fungible asset IDs */
   fungibleIds?: string[];
+  /** Fungible asset IDs excluded from PnL */
+  hiddenFungibleIds?: string[];
 }
 
 export type WalletPnL = {
@@ -62,7 +65,7 @@ export async function walletGetPnl(
   return ZerionHttpClient.post<Response>(
     {
       endpoint: 'wallet/get-pnl/v1',
-      body: JSON.stringify(params),
+      body: JSON.stringify(withNormalizedHiddenFungibleIds(params)),
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },

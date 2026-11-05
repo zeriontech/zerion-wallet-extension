@@ -85,6 +85,10 @@ export class SettingsPage extends ExtensionPage {
           - img
           - text: Security
           - img
+        - link "Hidden Assets":
+          - img
+          - text: Hidden Assets
+          - img
         - link "Privacy":
           - img
           - text: Privacy

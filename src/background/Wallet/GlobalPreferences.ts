@@ -32,6 +32,12 @@ export interface State {
   bluetoothSupportEnabled?: boolean | null;
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
   networkFeeByChain?: NetworkFeePreferences;
+  /**
+   * Fungible asset IDs the user hid on this device, in hide order. Applies to
+   * every wallet. Request building normalizes this list; storage keeps the
+   * user's order.
+   */
+  hiddenFungibleIds?: string[];
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -69,6 +75,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     bluetoothSupportEnabled: null,
     autoLockTimeout: HALF_DAY,
     networkFeeByChain: {},
+    hiddenFungibleIds: [],
   };
 
   private async fetchDefaultWalletNameFlags() {
