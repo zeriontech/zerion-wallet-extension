@@ -88,6 +88,10 @@ function trackAppEvents({
     walletPort.request('buttonClicked', data);
   });
 
+  emitter.on('networkFeeLevelChanged', async (data) => {
+    walletPort.request('networkFeeLevelChanged', data);
+  });
+
   emitter.on('bannerClicked', async (data) => {
     walletPort.request('bannerClicked', data);
   });

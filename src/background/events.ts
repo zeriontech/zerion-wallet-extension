@@ -17,6 +17,7 @@ import type {
   PerpsPositionActionParams,
   PerpsScreenViewedParams,
 } from 'src/shared/types/perps-events';
+import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
@@ -105,6 +106,7 @@ export const emitter = createNanoEvents<{
   eip6963SupportDetected: (data: { origin: string }) => void;
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
+  networkFeeLevelChanged: (data: NetworkFeeLevelChangedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
   cloudflareChallengeIssued: () => void;
   assetClicked: (data: AssetClickedParams) => void;

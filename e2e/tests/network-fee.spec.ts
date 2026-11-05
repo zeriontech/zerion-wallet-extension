@@ -1,0 +1,508 @@
+import { expect } from '@playwright/test';
+import type { Locator, Page, Route } from '@playwright/test';
+import { testWallets } from 'e2e/fixtures/constants';
+import { createExtensionTest } from './test';
+
+const test = createExtensionTest({ headless: true });
+
+const PRESET_NAME = {
+  Fast: /^Fast\b/,
+  Slow: /^Slow\b/,
+  Custom: /^Custom\b/,
+} as const;
+
+function preset(page: Page, label: 'Fast' | 'Slow' | 'Custom') {
+  return page.getByRole('button', { name: PRESET_NAME[label] }).last();
+}
+
+function dappFeeRow(page: Page) {
+  return page.getByRole('button', { name: 'Network Fee' }).first();
+}
+
+function sendTransactionUrl(extensionPopupUrl: string, nonce: string) {
+  const transaction = {
+    from: testWallets.alice.address,
+    to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+    chainId: '0x1',
+    value: '0x0',
+    data: '0x',
+    gas: '0x5208',
+    nonce,
+    maxFeePerGas: '0x6fc23ac00',
+    maxPriorityFeePerGas: '0x3b9aca00',
+  };
+  const params = new URLSearchParams({
+    origin: 'https://app.zerion.io',
+    transaction: JSON.stringify(transaction),
+    windowId: '1',
+  });
+  return `${extensionPopupUrl}#/sendTransaction?${params}`;
+}
+
+function sendFormUrl(extensionPopupUrl: string) {
+  const params = new URLSearchParams({
+    inputChain: 'ethereum',
+    inputFungibleId: 'eth',
+    inputAmount: '0.001',
+    to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+  });
+  return `${extensionPopupUrl}#/send-form?${params}`;
+}
+
+async function openTransaction(
+  page: Page,
+  extensionPopupUrl: string,
+  nonce: string
+) {
+  await page.goto(sendTransactionUrl(extensionPopupUrl, nonce));
+  // Force a real reload: changing only the hash is a same-document navigation
+  // and would keep the previous form configuration in memory.
+  await page.reload();
+  await expect(
+    page.getByRole('button', { name: 'Network Fee' }).first()
+  ).toBeVisible({ timeout: 30_000 });
+}
+
+async function openFeeDialog(page: Page) {
+  const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
+  await expect(feeRow).toBeEnabled();
+  await feeRow.click();
+  await expect(preset(page, 'Fast')).toBeVisible();
+}
+
+async function feeAmount(locator: Locator) {
+  const text = (await locator.textContent()) ?? '';
+  const match = text.match(/\$[\d.,]+/);
+  expect(match, `No amount in "${text}"`).not.toBeNull();
+  return match?.[0];
+}
+
+function parseFeeText(text: string) {
+  const trimmed = text.trim();
+  const match = trimmed.match(/(\$[\d.,]+|\d[\d.,]*\s*[A-Za-z]{2,})$/);
+  expect(match, `No fee text in "${trimmed}"`).not.toBeNull();
+  return match![0].trim();
+}
+
+async function feeText(locator: Locator) {
+  return parseFeeText((await locator.textContent()) ?? '');
+}
+
+test('remembers the fee level per chain and flags non-Fast levels', async ({
+  context,
+  page,
+  extensionPopupUrl,
+}) => {
+  await page.setViewportSize({ width: 400, height: 640 });
+  await context.route('**/chain/get-gas-prices/v1*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          average: {
+            classic: null,
+            eip1559: {
+              maxFee: 20_000_000_000,
+              priorityFee: 1_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 60,
+          },
+          fast: {
+            classic: null,
+            eip1559: {
+              maxFee: 30_000_000_000,
+              priorityFee: 2_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 15,
+          },
+        },
+        errors: null,
+        meta: null,
+      }),
+    });
+  });
+
+  let sendFeeValue: number | null = 3;
+  await context.route('**/transaction/get-send/v1*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          inputAmount: {
+            currency: 'usd',
+            quantity: '0.001',
+            value: 2.26,
+            usdValue: 2.26,
+          },
+          error: null,
+          networkFee: {
+            free: false,
+            amount: {
+              quantity: '0.0001',
+              value: sendFeeValue,
+              usdValue: sendFeeValue,
+            },
+            fungible: null,
+          },
+          transactionSend: {
+            evm: {
+              type: '0x2',
+              from: testWallets.alice.address,
+              to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+              nonce: '0x0',
+              chainId: '0x1',
+              gas: '0x5208',
+              gasPrice: null,
+              maxFee: '0x6fc23ac00',
+              maxPriorityFee: '0x77359400',
+              value: '0x38d7ea4c68000',
+              data: '0x',
+              customData: null,
+            },
+            solana: null,
+          },
+        },
+        meta: null,
+        errors: null,
+      }),
+    });
+  });
+
+  await openTransaction(page, extensionPopupUrl, '0x1');
+  await expect(dappFeeRow(page)).toContainText('Fast');
+
+  // Pick Slow: the fee row shows the level inline, with no second line.
+  await openFeeDialog(page);
+  await expect(page.getByText('Network speed')).toBeVisible();
+  await expect(preset(page, 'Fast')).toContainText('~15 sec');
+  await expect(preset(page, 'Slow')).toContainText('~60 sec');
+  await expect(preset(page, 'Custom')).toContainText(/\$/);
+  await preset(page, 'Slow').click();
+  await expect(dappFeeRow(page)).toContainText('Slow');
+  await expect(dappFeeRow(page)).not.toContainText('Custom');
+
+  // The row amount equals the highlighted Slow row in the picker.
+  await openFeeDialog(page);
+  const slowPicker = preset(page, 'Slow');
+  await expect(slowPicker).toHaveAttribute('aria-pressed', 'true');
+  const slowPickerAmount = await feeAmount(slowPicker);
+  await page.keyboard.press('Escape');
+  const slowRowAmount = await feeAmount(dappFeeRow(page));
+  expect(slowRowAmount).toBe(slowPickerAmount);
+
+  // The next transaction on the same chain starts on Slow.
+  await openTransaction(page, extensionPopupUrl, '0x2');
+  await expect(dappFeeRow(page)).toContainText('Slow');
+
+  // Fast is picked through the picker; there is no separate switch control.
+  await openFeeDialog(page);
+  await preset(page, 'Fast').click();
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Slow');
+  await openFeeDialog(page);
+  const fastPicker = preset(page, 'Fast');
+  await expect(fastPicker).toHaveAttribute('aria-pressed', 'true');
+  const fastPickerAmount = await feeAmount(fastPicker);
+  await page.keyboard.press('Escape');
+  const fastRowAmount = await feeAmount(dappFeeRow(page));
+  expect(fastRowAmount).toBe(fastPickerAmount);
+  await openTransaction(page, extensionPopupUrl, '0x3');
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Slow');
+
+  // Custom is saved for the chain, priced in the picker, and reused.
+  await openFeeDialog(page);
+  await preset(page, 'Custom').click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  // The legacy dapp dialog returns to its selector after saving Custom.
+  const customPicker = preset(page, 'Custom');
+  await expect(customPicker).toHaveAttribute('aria-pressed', 'true');
+  const customPickerAmount = await feeAmount(customPicker);
+  await page.keyboard.press('Escape');
+  await expect(dappFeeRow(page)).toContainText('Custom');
+  const customRowAmount = await feeAmount(dappFeeRow(page));
+  expect(customRowAmount).toBe(customPickerAmount);
+
+  await openTransaction(page, extensionPopupUrl, '0x4');
+  await expect(dappFeeRow(page)).toContainText('Custom');
+
+  // Fast clears the saved Custom entry too.
+  await openFeeDialog(page);
+  await preset(page, 'Fast').click();
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await openTransaction(page, extensionPopupUrl, '0x5');
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Custom');
+
+  // Send: the row and the highlighted picker row use the same amount,
+  // including the Custom gas limit.
+  await page.goto(sendFormUrl(extensionPopupUrl));
+  const sendFeeRow = page
+    .getByRole('button')
+    .filter({ hasText: 'Network Fee' })
+    .first();
+  await expect(sendFeeRow).toBeVisible({ timeout: 30_000 });
+  await expect(sendFeeRow).toContainText('Fast');
+
+  await sendFeeRow.click();
+  await preset(page, 'Slow').click();
+  await expect(sendFeeRow).toContainText('Slow');
+  await sendFeeRow.click();
+  const sendSlowPicker = preset(page, 'Slow');
+  await expect(sendSlowPicker).toHaveAttribute('aria-pressed', 'true');
+  const sendSlowPickerAmount = await feeAmount(sendSlowPicker);
+  await page.keyboard.press('Escape');
+  await expect(sendFeeRow).toContainText(sendSlowPickerAmount!);
+
+  await sendFeeRow.click();
+  await preset(page, 'Fast').click();
+  await expect(sendFeeRow).toContainText('Fast');
+  await expect(sendFeeRow).not.toContainText('Slow');
+
+  await sendFeeRow.click();
+  await preset(page, 'Custom').click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(sendFeeRow).toContainText('Custom');
+  await sendFeeRow.click();
+  const sendCustomPicker = preset(page, 'Custom');
+  await expect(sendCustomPicker).toHaveAttribute('aria-pressed', 'true');
+  const sendCustomPickerAmount = await feeAmount(sendCustomPicker);
+  await page.keyboard.press('Escape');
+  await expect(sendFeeRow).toContainText(sendCustomPickerAmount!);
+
+  await sendFeeRow.click();
+  await preset(page, 'Fast').click();
+  await expect(sendFeeRow).toContainText('Fast');
+
+  // Regression: a quote without amount.value must format identically in the
+  // row and the highlighted picker row (fiat fallback or token + symbol).
+  sendFeeValue = null;
+  await page.reload();
+  const nullFiatRow = page
+    .getByRole('button')
+    .filter({ hasText: 'Network Fee' })
+    .first();
+  await expect(nullFiatRow).toBeVisible({ timeout: 30_000 });
+  await nullFiatRow.click();
+  const nullFiatPicker = preset(page, 'Fast');
+  await expect(nullFiatPicker).toHaveAttribute('aria-pressed', 'true');
+  const nullFiatPickerText = await feeText(nullFiatPicker);
+  await page.keyboard.press('Escape');
+  await expect(nullFiatRow).toContainText(nullFiatPickerText);
+
+  // The Custom picker row and the custom form summary use the same fallbacks.
+  await nullFiatRow.click();
+  const nullFiatCustomRow = preset(page, 'Custom');
+  const nullFiatCustomPickerText = await feeText(nullFiatCustomRow);
+  await nullFiatCustomRow.click();
+  const expectedFeeText = parseFeeText(
+    (await page.getByText('Expected Fee').locator('..').textContent()) ?? ''
+  );
+  expect(expectedFeeText).toBe(nullFiatCustomPickerText);
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(nullFiatRow).toContainText('Custom');
+  await expect(nullFiatRow).toContainText(nullFiatCustomPickerText);
+});
+
+test('keeps the acceleration fee UI unchanged', async ({
+  context,
+  page,
+  extensionPopupUrl,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 440, height: 700 });
+  await context.route('**/chain/get-gas-prices/v1*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          average: {
+            classic: null,
+            eip1559: {
+              maxFee: 20_000_000_000,
+              priorityFee: 1_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 60,
+          },
+          fast: {
+            classic: null,
+            eip1559: {
+              maxFee: 30_000_000_000,
+              priorityFee: 2_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 15,
+          },
+        },
+        errors: null,
+        meta: null,
+      }),
+    });
+  });
+
+  // CancelTx calls eth_estimateGas against the public RPC. CI's requests hit
+  // a Cloudflare challenge (403), which renders an error card instead of the
+  // fee row. Stub just the estimate so the acceleration UI test is deterministic.
+  await context.route('**/rpc.zerion.io/v1/ethereum*', async (route: Route) => {
+    const postData = route.request().postData();
+    if (!postData) {
+      await route.continue();
+      return;
+    }
+    const payload = JSON.parse(postData);
+    const items = Array.isArray(payload) ? payload : [payload];
+    if (!items.every((item) => item.method === 'eth_estimateGas')) {
+      await route.continue();
+      return;
+    }
+    const response = items.map((item) => ({
+      jsonrpc: '2.0',
+      id: item.id,
+      result: '0x5208',
+    }));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(Array.isArray(payload) ? response : response[0]),
+    });
+  });
+
+  await page.goto(`${extensionPopupUrl}#/overview/history`);
+  await page.waitForTimeout(500);
+  await page.evaluate(
+    ({ address }) => {
+      const hash = `0x${'11'.repeat(32)}`;
+      const transaction = {
+        hash,
+        from: address,
+        to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
+        nonce: 1,
+        gasLimit: '0x5208',
+        gasPrice: '0x0',
+        data: '0x',
+        value: '0x0',
+        chainId: 1,
+        type: 2,
+        maxFeePerGas: '0x6fc23ac00',
+        maxPriorityFeePerGas: '0x3b9aca00',
+      };
+      (
+        window as unknown as {
+          localTransactionsStore: {
+            setState(value: unknown[]): void;
+          };
+        }
+      ).localTransactionsStore.setState([
+        { hash, transaction, timestamp: Date.now(), initiator: address },
+      ]);
+    },
+    { address: testWallets.alice.address }
+  );
+
+  const openAcceleration = async (action: 'Speed Up' | 'Cancel') => {
+    await expect(page.getByText('Pending').first()).toBeVisible({
+      timeout: 10_000,
+    });
+    await page.getByText('Pending').first().click();
+    await page.getByRole('button', { name: action }).click();
+    const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
+    await expect(feeRow).toBeVisible({ timeout: 10_000 });
+    return feeRow;
+  };
+
+  const editCustomFee = async () => {
+    await page.getByRole('button', { name: 'Network Fee' }).first().click();
+    const maxFee = page.locator('input[name="maxFee"]');
+    await expect(maxFee).toBeVisible();
+    await maxFee.fill('35');
+    await page.getByRole('button', { name: 'Save' }).click();
+  };
+
+  const assertUnchanged = async () => {
+    const row = dappFeeRow(page);
+    await expect(row).toContainText('Custom');
+    await expect(row).not.toContainText('Slow');
+    await expect(page.getByText('Set your own')).toHaveCount(0);
+  };
+
+  const speedUpFee = await openAcceleration('Speed Up');
+  await editCustomFee();
+  await expect(speedUpFee).toContainText('Custom');
+  await assertUnchanged();
+
+  await page.goBack();
+  await openAcceleration('Cancel');
+  await editCustomFee();
+  await assertUnchanged();
+});
+
+test('keeps custom fee values after switching to Fast', async ({
+  context,
+  page,
+  extensionPopupUrl,
+}) => {
+  await page.setViewportSize({ width: 400, height: 640 });
+  await context.route('**/chain/get-gas-prices/v1*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          average: {
+            classic: null,
+            eip1559: {
+              maxFee: 20_000_000_000,
+              priorityFee: 1_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 60,
+          },
+          fast: {
+            classic: null,
+            eip1559: {
+              maxFee: 30_000_000_000,
+              priorityFee: 2_000_000_000,
+              baseFee: 15_000_000_000,
+            },
+            optimistic: null,
+            eta: 15,
+          },
+        },
+        errors: null,
+        meta: null,
+      }),
+    });
+  });
+
+  await openTransaction(page, extensionPopupUrl, '0x1');
+  await openFeeDialog(page);
+  await preset(page, 'Custom').click();
+  const maxFee = page.locator('input[name="maxFee"]');
+  await maxFee.fill('33');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.keyboard.press('Escape');
+  await expect(dappFeeRow(page)).toContainText('Custom');
+
+  // Switching to Fast keeps the custom values but makes Fast the active level.
+  await openFeeDialog(page);
+  await preset(page, 'Fast').click();
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await expect(dappFeeRow(page)).not.toContainText('Custom');
+
+  await openTransaction(page, extensionPopupUrl, '0x2');
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  await openFeeDialog(page);
+  await preset(page, 'Custom').click();
+  await expect(page.locator('input[name="maxFee"]')).toHaveValue('33');
+});

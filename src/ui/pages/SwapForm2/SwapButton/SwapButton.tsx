@@ -14,6 +14,7 @@ import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests
 import type { Quote2 } from 'src/shared/types/Quote';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -30,7 +31,6 @@ import {
 } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
-import { toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
 import { applyTransactionConfiguration } from '../applyTransactionConfiguration';
 import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSwapButtonOnboardingGate';
 import type { SwapFormState2 } from '../types';
@@ -154,6 +154,7 @@ export function HoldHint() {
 function useSimulation({
   address,
   formState,
+  configuration,
   quote,
   quotesQuery,
   gasPrices,
@@ -167,6 +168,7 @@ function useSimulation({
 }: {
   address: string;
   formState: SwapFormState2;
+  configuration: CustomConfiguration;
   quote: Quote2 | null;
   quotesQuery: QuotesData<Quote2>;
   gasPrices: ChainGasPrice | null;
@@ -186,7 +188,7 @@ function useSimulation({
     // will actually be signed.
     const configuredQuote = applyTransactionConfiguration(
       quote,
-      toConfiguration(formState),
+      configuration,
       gasPrices
     );
     const list: MultichainTransaction[] = [];
@@ -197,7 +199,7 @@ function useSimulation({
       list.push(toMultichainTransaction(configuredQuote.transactionSwap));
     }
     return list;
-  }, [quote, formState, gasPrices]);
+  }, [quote, configuration, gasPrices]);
 
   const simulationMutation = useMutation({
     mutationFn: (txs: MultichainTransaction[]) =>
@@ -548,6 +550,7 @@ export function DangerSignButton({
 export function SwapButton({
   address,
   formState,
+  configuration,
   quote,
   quotesQuery,
   gasPrices,
@@ -563,6 +566,7 @@ export function SwapButton({
 }: {
   address: string;
   formState: SwapFormState2;
+  configuration: CustomConfiguration;
   quote: Quote2 | null;
   quotesQuery: QuotesData<Quote2>;
   gasPrices: ChainGasPrice | null;
@@ -579,6 +583,7 @@ export function SwapButton({
   const { state, fire, label, disabled } = useSimulation({
     address,
     formState,
+    configuration,
     quote,
     quotesQuery,
     gasPrices,

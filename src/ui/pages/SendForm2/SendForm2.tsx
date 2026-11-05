@@ -9,6 +9,11 @@ import BigNumber from 'bignumber.js';
 import { useStore } from '@store-unit/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useCurrency } from 'src/modules/currency/useCurrency';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
+import { equal } from 'src/modules/fast-deep-equal';
+import { useEvent } from 'src/ui/shared/useEvent';
+import { emitter } from 'src/ui/shared/events';
+import { toNetworkFeeAnalyticsLevel } from 'src/shared/types/network-fee-events';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
 import { useWalletNftPosition } from 'src/modules/zerion-api/hooks/useWalletNftPosition';
@@ -27,6 +32,7 @@ import {
   fromConfiguration,
   toConfiguration,
 } from 'src/ui/shared/forms/networkFeeConfiguration';
+import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import { PageColumn } from 'src/ui/components/PageColumn/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -136,6 +142,30 @@ function SendFormComponent({
   const source = useHttpClientSource();
   const [formState, handleChange, setUserFormState, selectFungible, selectNft] =
     useFormState({ address, positions });
+
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(
+    formState.inputChain || null
+  );
+  const configuration = useMemo(
+    () => toConfiguration(formState, savedNetworkFee),
+    [formState, savedNetworkFee]
+  );
+  const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    const previousSpeed = configuration.networkFee.speed;
+    const nextSpeed = value.networkFee.speed;
+    if (!equal(value.networkFee, configuration.networkFee)) {
+      if (formState.inputChain && nextSpeed !== previousSpeed) {
+        emitter.emit('networkFeeLevelChanged', {
+          level: toNetworkFeeAnalyticsLevel(nextSpeed),
+          chain: formState.inputChain,
+          flow: 'send',
+        });
+      }
+      saveNetworkFee(value.networkFee);
+    }
+    const partial = fromConfiguration(value);
+    setUserFormState((state) => ({ ...state, ...partial }));
+  });
 
   const [lastTokensNetwork, setLastTokensNetwork] = useState<string | null>(
     null
@@ -284,17 +314,18 @@ function SendFormComponent({
       formState.maxPriorityFee ||
       formState.gasPrice ||
       formState.gasLimit ||
-      formState.networkFeeSpeed;
+      formState.networkFeeSpeed ||
+      configuration.networkFee.speed !== 'fast';
     if (!hasNetworkFeeOverride) {
       return { evm: clientTx.evm };
     }
     const configured = applyConfiguration(
       clientTx.evm,
-      toConfiguration(formState),
+      configuration,
       gasPrices ?? null
     );
     return { evm: configured };
-  }, [sendQuote, formState, gasPrices]);
+  }, [sendQuote, formState, configuration, gasPrices]);
 
   // Reset simulation/sign state when form state changes meaningfully.
   const [simulationResult, setSimulationResult] =
@@ -679,11 +710,8 @@ function SendFormComponent({
               evmTx={evmTx}
               address={address}
               gasPrices={gasPrices ?? null}
-              configuration={toConfiguration(formState)}
-              onConfigurationChange={(value) => {
-                const partial = fromConfiguration(value);
-                setUserFormState((state) => ({ ...state, ...partial }));
-              }}
+              configuration={configuration}
+              onConfigurationChange={handleConfigurationChange}
               userNonce={formState.nonce ?? null}
               onNonceChange={(nonce) =>
                 handleChange('nonce', nonce ?? undefined)

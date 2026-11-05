@@ -6,6 +6,7 @@ import { removeEmptyValues } from 'src/shared/removeEmptyValues';
 import { equal } from 'src/modules/fast-deep-equal';
 import { difference } from 'src/shared/difference';
 import { PLATFORM } from 'src/env/config';
+import type { NetworkFeePreferences } from 'src/shared/types/NetworkFeePreference';
 import type { WalletNameFlag } from './model/WalletNameFlag';
 
 const HALF_DAY = 1000 * 60 * 60 * 12;
@@ -30,6 +31,7 @@ export interface State {
   analyticsEnabled?: boolean | null;
   bluetoothSupportEnabled?: boolean | null;
   walletNameFlags?: Record<string, WalletNameFlag[] | undefined>;
+  networkFeeByChain?: NetworkFeePreferences;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -66,6 +68,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     analyticsEnabled: PLATFORM === 'firefox' ? null : true,
     bluetoothSupportEnabled: null,
     autoLockTimeout: HALF_DAY,
+    networkFeeByChain: {},
   };
 
   private async fetchDefaultWalletNameFlags() {

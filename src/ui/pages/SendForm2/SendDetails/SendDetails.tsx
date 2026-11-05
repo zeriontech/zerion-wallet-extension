@@ -24,12 +24,15 @@ import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
+import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
 import { NonceLine2 } from 'src/ui/pages/SwapForm2/QuoteDetails/NonceLine2';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { NetworkFeeDialog2 } from 'src/ui/pages/SwapForm2/NetworkFeeDialog2';
+import { formatNetworkFee } from 'src/ui/pages/SwapForm2/formatNetworkFee';
 import {
   getBaseFee,
   getCustomFormDefaults,
+  getNetworkFeeRatioForConfiguration,
 } from 'src/ui/pages/SwapForm2/getNetworkFeeForSpeed';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import type { SendQuote } from '../useSendTransaction';
@@ -58,27 +61,6 @@ function DetailRow({
     );
   }
   return content;
-}
-
-function formatNetworkFee(
-  fee: NetworkFeeType | null,
-  network: NetworkInfo | null,
-  fiatValue: number | null,
-  currency: string
-): React.ReactNode {
-  if (!fee) return noValueDash;
-  if (fee.free) return 'Free';
-  const value = fee.amount?.value ?? fiatValue;
-  if (value != null) {
-    return formatCurrencyValueExtra(value, 'en', currency, {
-      zeroRoundingFallback: 0.01,
-    });
-  }
-  if (fee.amount?.quantity) {
-    const symbol = fee.fungible?.symbol ?? network?.baseAsset?.symbol ?? '';
-    return formatTokenValue(fee.amount.quantity, symbol);
-  }
-  return noValueDash;
 }
 
 export function SendDetails({
@@ -122,6 +104,12 @@ export function SendDetails({
   const networkFee: NetworkFeeType | null = sendQuote?.networkFee ?? null;
   const baseFee = getBaseFee(gasPrices);
   const customDefaults = getCustomFormDefaults(sendQuote);
+  const feeRatio = getNetworkFeeRatioForConfiguration(
+    sendQuote,
+    configuration.networkFee,
+    gasPrices,
+    baseFee
+  );
   const showNonce = Boolean(
     preferences?.configurableNonce && isEthereumAddress(address)
   );
@@ -182,15 +170,17 @@ export function SendDetails({
               label="Network Fee"
               onClick={evmTx ? networkFeeDialog.openDialog : undefined}
               value={
-                networkFee ? (
+                sendQuote ? (
                   <HStack gap={4} alignItems="center">
+                    <NetworkFeeLevelLabel
+                      speed={configuration.networkFee.speed}
+                    />
                     <UIText kind="small/accent">
-                      {formatNetworkFee(
-                        networkFee,
-                        network,
-                        feeFiatValue,
-                        currency
-                      )}
+                      {formatNetworkFee(sendQuote, feeRatio, {
+                        fallbackFiatValue: feeFiatValue,
+                        fallbackSymbol: network?.baseAsset?.symbol,
+                        currency,
+                      })}
                     </UIText>
                     {evmTx ? (
                       <ChevronRightIcon className={styles.detailLinkChevron} />
@@ -307,6 +297,9 @@ export function SendDetails({
           quote={sendQuote}
           gasPrices={gasPrices}
           baseFee={baseFee}
+          fallbackFiatValue={feeFiatValue}
+          fallbackSymbol={network?.baseAsset?.symbol}
+          currency={currency}
         />
       ) : null}
     </MotionConfig>

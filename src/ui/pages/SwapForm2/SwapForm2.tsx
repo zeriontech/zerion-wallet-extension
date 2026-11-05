@@ -22,9 +22,11 @@ import {
   isDeviceAccount,
 } from 'src/shared/types/validators';
 import { isNumeric } from 'src/shared/isNumeric';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
 import { toIncomingTransaction } from 'src/shared/types/Quote';
+import { equal } from 'src/modules/fast-deep-equal';
 import {
   signTransactions,
   getQueues,
@@ -43,6 +45,8 @@ import {
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { walletPort } from 'src/ui/shared/channels';
 import { useEvent } from 'src/ui/shared/useEvent';
+import { emitter } from 'src/ui/shared/events';
+import { toNetworkFeeAnalyticsLevel } from 'src/shared/types/network-fee-events';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -67,6 +71,7 @@ import {
   fromConfiguration,
   toConfiguration,
 } from 'src/ui/shared/forms/networkFeeConfiguration';
+import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { calculatePriceImpactFromPositions } from './shared/price-impact';
@@ -156,6 +161,30 @@ function SwapFormComponent({
     address,
     positions,
     networks,
+  });
+
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(
+    formState.inputChain || null
+  );
+  const configuration = useMemo(
+    () => toConfiguration(formState, savedNetworkFee),
+    [formState, savedNetworkFee]
+  );
+  const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
+    const previousSpeed = configuration.networkFee.speed;
+    const nextSpeed = value.networkFee.speed;
+    if (!equal(value.networkFee, configuration.networkFee)) {
+      if (formState.inputChain && nextSpeed !== previousSpeed) {
+        emitter.emit('networkFeeLevelChanged', {
+          level: toNetworkFeeAnalyticsLevel(nextSpeed),
+          chain: formState.inputChain,
+          flow: 'swap',
+        });
+      }
+      saveNetworkFee(value.networkFee);
+    }
+    const partial = fromConfiguration(value);
+    setUserFormState((state) => ({ ...state, ...partial }));
   });
 
   const { inputPosition, outputPosition } = useFormPositions({
@@ -413,7 +442,7 @@ function SwapFormComponent({
       // the transactions change; networkFee/outputAmount/etc. stay as quoted.
       const configuredQuote = applyTransactionConfiguration(
         quote,
-        toConfiguration(formState),
+        configuration,
         gasPrices ?? null
       );
 
@@ -813,11 +842,8 @@ function SwapFormComponent({
             networks={networks}
             address={address}
             gasPrices={gasPrices ?? null}
-            configuration={toConfiguration(formState)}
-            onConfigurationChange={(value) => {
-              const partial = fromConfiguration(value);
-              setUserFormState((state) => ({ ...state, ...partial }));
-            }}
+            configuration={configuration}
+            onConfigurationChange={handleConfigurationChange}
             onProviderChange={setUserQuoteId}
           />
           <TransactionWarning warning={resolved.warning} />
@@ -856,6 +882,7 @@ function SwapFormComponent({
           <SwapButton
             address={address}
             formState={formState}
+            configuration={configuration}
             quote={quote}
             quotesQuery={quotesQuery}
             gasPrices={gasPrices ?? null}
