@@ -6,9 +6,6 @@ import { createExtensionTest } from './test';
 const test = createExtensionTest({ headless: true });
 
 const RECIPIENT = '0xea79c0adb4f9d249770a8752fc6c0020999c52a0';
-const SLOW = 'Slow selected';
-const CUSTOM = 'Custom fee selected';
-const SWITCH = 'Switch to Fast';
 const ETH_CHAIN = 'ethereum';
 const BSC_CHAIN = 'binance-smart-chain';
 
@@ -103,6 +100,16 @@ function quote(chain: string, classic: boolean) {
     autoSlippage: null,
     finalSlippage: 0.5,
   };
+}
+
+const PRESET_NAME = {
+  Fast: /^Fast\b/,
+  Slow: /^Slow\b/,
+  Custom: /^Custom\b/,
+} as const;
+
+function preset(page: Page, label: 'Fast' | 'Slow' | 'Custom') {
+  return page.getByRole('button', { name: PRESET_NAME[label] }).last();
 }
 
 function feeText(locator: Locator) {
@@ -286,24 +293,26 @@ test('Swap on Ethereum keeps row, picker and custom form in sync', async ({
 }) => {
   await setupRoutes({ context });
   const row = await openSwap(page, extensionPopupUrl, ETH_CHAIN);
-  await expect(page.getByText(SLOW)).toHaveCount(0);
+  await expect(row).toContainText('Fast');
 
   await row.click();
-  await page.getByRole('button', { name: /Slow icon/ }).click();
-  await expect(page.getByText(SLOW)).toBeVisible();
+  await preset(page, 'Slow').click();
+  await expect(row).toContainText('Slow');
   const slowRowText = await feeText(row);
   await row.click();
-  const slowPicker = page.getByRole('button', { name: /Slow icon/ });
+  const slowPicker = preset(page, 'Slow');
   await expect(slowPicker).toHaveAttribute('aria-pressed', 'true');
   const slowPickerText = await feeText(slowPicker);
   expect(slowRowText).toBe(slowPickerText);
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: SWITCH }).click();
-  await expect(page.getByText(SLOW)).toHaveCount(0);
+  await row.click();
+  await preset(page, 'Fast').click();
+  await expect(row).toContainText('Fast');
+  await expect(row).not.toContainText('Slow');
 
   await row.click();
-  const customRow = page.getByRole('button', { name: /Custom icon/ });
+  const customRow = preset(page, 'Custom');
   const customPickerText = await feeText(customRow);
   await customRow.click();
   const expectedFeeText = await feeText(
@@ -312,14 +321,16 @@ test('Swap on Ethereum keeps row, picker and custom form in sync', async ({
   expect(expectedFeeText).toBe(customPickerText);
   await page.locator('input[name="maxFee"]').fill('35');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText(CUSTOM)).toBeVisible();
+  await expect(row).toContainText('Custom');
   await expect(row).toContainText(customPickerText);
 
   // Switching to Fast keeps the values available in the custom form.
-  await page.getByRole('button', { name: SWITCH }).click();
-  await expect(page.getByText(CUSTOM)).toHaveCount(0);
   await row.click();
-  await page.getByRole('button', { name: /Custom icon/ }).click();
+  await preset(page, 'Fast').click();
+  await expect(row).toContainText('Fast');
+  await expect(row).not.toContainText('Custom');
+  await row.click();
+  await preset(page, 'Custom').click();
   await expect(page.locator('input[name="maxFee"]')).toHaveValue('35');
 });
 
@@ -330,25 +341,25 @@ test('Classic Send on BSC prices Slow and Custom consistently', async ({
 }) => {
   await setupRoutes({ context });
   const row = await openSend(page, extensionPopupUrl, BSC_CHAIN);
-  await expect(page.getByText(SLOW)).toHaveCount(0);
+  await expect(row).toContainText('Fast');
 
   await row.click();
-  const slowPicker = page.getByRole('button', { name: /Slow icon/ });
+  const slowPicker = preset(page, 'Slow');
   await expect(slowPicker).not.toContainText('sec');
   await expect(slowPicker).not.toContainText('min');
   await slowPicker.click();
-  await expect(page.getByText(SLOW)).toBeVisible();
+  await expect(row).toContainText('Slow');
   const slowRowText = await feeText(row);
   await row.click();
-  const slowPickerText = await feeText(
-    page.getByRole('button', { name: /Slow icon/ })
-  );
+  const slowPickerText = await feeText(preset(page, 'Slow'));
   expect(slowRowText).toBe(slowPickerText);
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: SWITCH }).click();
+  await row.click();
+  await preset(page, 'Fast').click();
+  await expect(row).toContainText('Fast');
 
   await row.click();
-  const customRow = page.getByRole('button', { name: /Custom icon/ });
+  const customRow = preset(page, 'Custom');
   const customPickerText = await feeText(customRow);
   await customRow.click();
   const expectedFeeText = await feeText(
@@ -356,7 +367,7 @@ test('Classic Send on BSC prices Slow and Custom consistently', async ({
   );
   expect(expectedFeeText).toBe(customPickerText);
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText(CUSTOM)).toBeVisible();
+  await expect(row).toContainText('Custom');
   await expect(row).toContainText(customPickerText);
 });
 
@@ -367,24 +378,22 @@ test('Classic Swap on BSC prices Slow and Custom consistently', async ({
 }) => {
   await setupRoutes({ context });
   const row = await openSwap(page, extensionPopupUrl, BSC_CHAIN);
-  await expect(page.getByText(SLOW)).toHaveCount(0);
+  await expect(row).toContainText('Fast');
 
   await row.click();
-  const slowPicker = page.getByRole('button', { name: /Slow icon/ });
+  const slowPicker = preset(page, 'Slow');
   await expect(slowPicker).not.toContainText('sec');
   await expect(slowPicker).not.toContainText('min');
   await slowPicker.click();
-  await expect(page.getByText(SLOW)).toBeVisible();
+  await expect(row).toContainText('Slow');
   const slowRowText = await feeText(row);
   await row.click();
-  const slowPickerText = await feeText(
-    page.getByRole('button', { name: /Slow icon/ })
-  );
+  const slowPickerText = await feeText(preset(page, 'Slow'));
   expect(slowRowText).toBe(slowPickerText);
   await page.keyboard.press('Escape');
 
   await row.click();
-  const customRow = page.getByRole('button', { name: /Custom icon/ });
+  const customRow = preset(page, 'Custom');
   const customPickerText = await feeText(customRow);
   await customRow.click();
   const expectedFeeText = await feeText(
@@ -392,7 +401,7 @@ test('Classic Swap on BSC prices Slow and Custom consistently', async ({
   );
   expect(expectedFeeText).toBe(customPickerText);
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText(CUSTOM)).toBeVisible();
+  await expect(row).toContainText('Custom');
   await expect(row).toContainText(customPickerText);
 });
 
@@ -404,18 +413,18 @@ test('Send Slow carries into Swap and another chain starts Fast', async ({
   await setupRoutes({ context });
   const sendRow = await openSend(page, extensionPopupUrl, ETH_CHAIN);
   await sendRow.click();
-  await page.getByRole('button', { name: /Slow icon/ }).click();
-  await expect(page.getByText(SLOW)).toBeVisible();
+  await preset(page, 'Slow').click();
+  await expect(sendRow).toContainText('Slow');
 
   const swapRow = await openSwap(page, extensionPopupUrl, ETH_CHAIN);
-  await expect(page.getByText(SLOW)).toBeVisible();
+  await expect(swapRow).toContainText('Slow');
   await swapRow.click();
-  const slowPicker = page.getByRole('button', { name: /Slow icon/ });
+  const slowPicker = preset(page, 'Slow');
   await expect(slowPicker).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
 
   // A different chain has no saved Slow preference.
-  await openSend(page, extensionPopupUrl, BSC_CHAIN);
-  await expect(page.getByText(SLOW)).toHaveCount(0);
-  await expect(page.getByRole('button', { name: SWITCH })).toHaveCount(0);
+  const bscRow = await openSend(page, extensionPopupUrl, BSC_CHAIN);
+  await expect(bscRow).toContainText('Fast');
+  await expect(bscRow).not.toContainText('Slow');
 });
