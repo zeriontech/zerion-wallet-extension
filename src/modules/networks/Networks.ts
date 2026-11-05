@@ -5,7 +5,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
-import { FEATURE_SOLANA } from 'src/env/config';
+import { FEATURE_SOLANA, RPC_PROXY_URL } from 'src/env/config';
 import type { ChainFlags } from 'src/modules/zerion-api/types/ChainFullInfo';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
@@ -15,6 +15,7 @@ import { getBaseAssetImplementation } from './NetworkInfo';
 import { getAddress } from './asset';
 import { UnsupportedNetwork } from './errors';
 import { applyChainConfig } from './applyChainConfig';
+import { maybeProxyRpcUrl } from './rpcUrl';
 
 type Collection<T> = { [key: string]: T };
 
@@ -377,7 +378,7 @@ export class Networks {
     if (!url) {
       throw new Error(`Network url missing: ${network.id}`);
     }
-    return url;
+    return maybeProxyRpcUrl(url, RPC_PROXY_URL);
   }
 
   getRpcUrlInternal(chain: Chain) {
@@ -393,7 +394,7 @@ export class Networks {
     if (!url) {
       throw new Error(`Network url missing: ${network.id}`);
     }
-    return url;
+    return maybeProxyRpcUrl(url, RPC_PROXY_URL);
   }
 
   getRpcUrlPublic(chain: Chain) {
