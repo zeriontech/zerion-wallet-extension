@@ -25,7 +25,7 @@ import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { noValueDash } from 'src/ui/shared/typography';
-import { NetworkFeeReminder } from 'src/ui/shared/NetworkFeeReminder';
+import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { SlippageSettings } from '../SlippageSettings';
 import type { SwapFormState2 } from '../types';
@@ -214,38 +214,33 @@ export function QuoteDetails({
           <div className={styles.detailsContainer}>
             <VStack gap={0}>
               <VStack gap={16}>
-                <VStack gap={4}>
-                  <DetailRow
-                    label="Network Fee"
-                    onClick={evmTx ? networkFeeDialog.openDialog : undefined}
-                    value={
-                      quote ? (
-                        <HStack gap={4} alignItems="center">
-                          <UIText kind="small/accent">
-                            {formatNetworkFee(quote, feeRatio, {
-                              fallbackSymbol: inputChainBaseAssetSymbol,
-                            })}
-                          </UIText>
-                          {evmTx ? (
-                            <ChevronRightIcon
-                              className={styles.detailLinkChevron}
-                            />
-                          ) : null}
-                        </HStack>
-                      ) : quotesQuery.isLoading ? (
-                        <CircleSpinner />
-                      ) : (
-                        noValueDash
-                      )
-                    }
-                  />
-                  <NetworkFeeReminder
-                    networkFee={configuration.networkFee}
-                    onChange={(networkFee) =>
-                      onConfigurationChange({ ...configuration, networkFee })
-                    }
-                  />
-                </VStack>
+                <DetailRow
+                  label="Network Fee"
+                  onClick={evmTx ? networkFeeDialog.openDialog : undefined}
+                  value={
+                    quote ? (
+                      <HStack gap={4} alignItems="center">
+                        <NetworkFeeLevelLabel
+                          speed={configuration.networkFee.speed}
+                        />
+                        <UIText kind="small/accent">
+                          {formatNetworkFee(quote, feeRatio, {
+                            fallbackSymbol: inputChainBaseAssetSymbol,
+                          })}
+                        </UIText>
+                        {evmTx ? (
+                          <ChevronRightIcon
+                            className={styles.detailLinkChevron}
+                          />
+                        ) : null}
+                      </HStack>
+                    ) : quotesQuery.isLoading ? (
+                      <CircleSpinner />
+                    ) : (
+                      noValueDash
+                    )
+                  }
+                />
                 {showAutoSlippageInCollapsed ? (
                   <DetailRow
                     label="Slippage"

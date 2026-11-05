@@ -14,6 +14,7 @@ import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTML
 import { UIText } from 'src/ui/ui-kit/UIText';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import ArrowLeftcon from 'jsx:src/ui/assets/arrow-left.svg';
+import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import type { Chain } from 'src/modules/networks/Chain';
 import { Media } from 'src/ui/ui-kit/Media';
 import { SurfaceItemButton, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
@@ -53,7 +54,7 @@ import { apostrophe } from 'src/ui/shared/typography';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { estimateFee } from 'src/modules/ethereum/transactions/gasPrices/eip1559/estimateFee';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';
-import { NetworkFeeIcon } from './NetworkFeeIcon';
+import { NetworkFeeIconBadge } from './NetworkFeeIcon';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
 
 const OPTIONS: NetworkFeeSpeed[] = ['fast', 'average', 'custom'];
@@ -505,13 +506,10 @@ function NetworkFeeButton({
     >
       <HStack gap={4} justifyContent="space-between" alignItems="center">
         <Media
-          image={<NetworkFeeIcon speed={option} />}
+          image={<NetworkFeeIconBadge speed={option} />}
           text={
             <HStack gap={8} alignItems="center">
-              <UIText
-                kind="body/accent"
-                color={selected ? 'var(--primary)' : undefined}
-              >
+              <UIText kind="body/accent">
                 {NETWORK_SPEED_TO_TITLE[option]}
               </UIText>
               {seconds ? (
@@ -527,23 +525,37 @@ function NetworkFeeButton({
         />
         {costsQuery.isLoading ? (
           <CircleSpinner />
-        ) : feeValueFiat ? (
-          <UIText
-            kind="small/regular"
-            color={selected ? 'var(--primary)' : 'var(--black)'}
-          >
-            {totalValueExceedsBalance ? 'Up to ' : null}
-            {formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
-              zeroRoundingFallback: 0.01,
-            })}
-          </UIText>
-        ) : feeValueCommon && nativeAssetSymbol ? (
-          <UIText
-            kind="small/regular"
-            color={selected ? 'var(--primary)' : 'var(--black)'}
-          >
-            {totalValueExceedsBalance ? 'Up to ' : null}~
-            {formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)}
+        ) : feeValueFiat || (feeValueCommon && nativeAssetSymbol) ? (
+          <HStack gap={6} alignItems="center">
+            <UIText kind="small/regular" color="var(--neutral-500)">
+              {totalValueExceedsBalance ? 'Up to ' : null}
+              {feeValueFiat
+                ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
+                    zeroRoundingFallback: 0.01,
+                  })
+                : feeValueCommon && nativeAssetSymbol
+                ? `~${formatTokenValue(
+                    feeValueCommon.toString(),
+                    nativeAssetSymbol
+                  )}`
+                : null}
+            </UIText>
+            {selected ? (
+              <CheckmarkCheckedIcon
+                aria-hidden="true"
+                style={{
+                  width: 16,
+                  height: 16,
+                  flexShrink: 0,
+                  color: 'var(--black)',
+                  ['--checkmark-tick-color' as string]: 'var(--white)',
+                }}
+              />
+            ) : null}
+          </HStack>
+        ) : option === 'custom' ? (
+          <UIText kind="small/regular" color="var(--neutral-500)">
+            Set your own
           </UIText>
         ) : null}
       </HStack>
@@ -598,7 +610,7 @@ export const NetworkFeeDialog = React.forwardRef<
           <>
             <DialogTitle
               alignTitle="start"
-              title={<UIText kind="headline/h3">Network Fee</UIText>}
+              title={<UIText kind="headline/h3">Network speed</UIText>}
               closeKind="icon"
             />
             <Spacer height={10} />

@@ -9,7 +9,8 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { NetworkFeeIcon } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkFeeIcon';
+import { NetworkFeeIconBadge } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkFeeIcon';
+import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { noValueDash } from 'src/ui/shared/typography';
@@ -93,7 +94,7 @@ export function NetworkFeeTypeSelector({
     if (!label || label === noValueDash) {
       return null;
     }
-    return label === 'Free' ? 'Free' : `~${label}`;
+    return label;
   };
   const customFeeText = displayFeeLabel(customFeeLabel);
 
@@ -151,16 +152,8 @@ export function NetworkFeeTypeSelector({
               style={{ width: '100%' }}
             >
               <HStack gap={8} alignItems="center" justifyContent="start">
-                <NetworkFeeIcon
-                  speed={speed}
-                  style={{ width: 24, height: 24 }}
-                />
-                <UIText
-                  kind="body/accent"
-                  color={selected ? 'var(--primary)' : undefined}
-                >
-                  {label}
-                </UIText>
+                <NetworkFeeIconBadge speed={speed} />
+                <UIText kind="body/accent">{label}</UIText>
                 {eta ? (
                   <UIText kind="body/regular" color="var(--neutral-500)">
                     {`~${formatSeconds(eta)}`}
@@ -168,12 +161,23 @@ export function NetworkFeeTypeSelector({
                 ) : null}
               </HStack>
               {feeText ? (
-                <UIText
-                  kind="caption/accent"
-                  color={selected ? 'var(--primary)' : 'var(--black)'}
-                >
-                  {feeText}
-                </UIText>
+                <HStack gap={6} alignItems="center">
+                  <UIText kind="caption/accent" color="var(--neutral-500)">
+                    {feeText}
+                  </UIText>
+                  {selected ? (
+                    <CheckmarkCheckedIcon
+                      aria-hidden="true"
+                      style={{
+                        width: 16,
+                        height: 16,
+                        flexShrink: 0,
+                        color: 'var(--black)',
+                        ['--checkmark-tick-color' as string]: 'var(--white)',
+                      }}
+                    />
+                  ) : null}
+                </HStack>
               ) : null}
             </HStack>
           </Button>
@@ -199,24 +203,26 @@ export function NetworkFeeTypeSelector({
           style={{ width: '100%' }}
         >
           <HStack gap={8} alignItems="center" justifyContent="start">
-            <NetworkFeeIcon speed="custom" style={{ width: 24, height: 24 }} />
-            <UIText
-              kind="body/accent"
-              color={selectedSpeed === 'custom' ? 'var(--primary)' : undefined}
-            >
-              Custom
-            </UIText>
+            <NetworkFeeIconBadge speed="custom" />
+            <UIText kind="body/accent">Custom</UIText>
           </HStack>
-          {customFeeText ? (
-            <UIText
-              kind="caption/accent"
-              color={
-                selectedSpeed === 'custom' ? 'var(--primary)' : 'var(--black)'
-              }
-            >
-              {customFeeText}
+          <HStack gap={6} alignItems="center">
+            <UIText kind="caption/accent" color="var(--neutral-500)">
+              {customFeeText ?? 'Set your own'}
             </UIText>
-          ) : null}
+            {selectedSpeed === 'custom' ? (
+              <CheckmarkCheckedIcon
+                aria-hidden="true"
+                style={{
+                  width: 16,
+                  height: 16,
+                  flexShrink: 0,
+                  color: 'var(--black)',
+                  ['--checkmark-tick-color' as string]: 'var(--white)',
+                }}
+              />
+            ) : null}
+          </HStack>
         </HStack>
       </Button>
       <Spacer height={12} />
