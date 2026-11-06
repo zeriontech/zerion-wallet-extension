@@ -37,6 +37,8 @@ The tag push uses a token minted from `RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KE
 
 The app needs `contents: write` on this repository (plus `pull-requests: write` so `changesets/action` can open the Version Packages PR) and must be listed as a bypass actor on `hive-protect-tags`. Misconfiguration fails the workflow before the tag is created: the preflight step fails when the app token cannot read the repository, and `tag-version.mjs` fails with an error naming `RELEASE_APP_ID` and `hive-protect-tags` when the push is rejected.
 
+The app is `zerion-ci-release`, installed only on this repository and `zerion-web-app`. `RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KEY` are secrets of the `release` environment, whose deployment branches are limited to `main`, and the `version-packages` job declares `environment: release`. Do not copy them into repository or organization secrets: those are readable by a workflow pushed on any branch, and the key can push release tags past `hive-protect-tags`.
+
 ### QA repository contract
 
 Unchanged: `release_push_qa.yml` pushes to branch `release-candidate-<tag>` in `zeriontech/zerion-wallet-extension-qa` through `.github/actions/push_qa_repo`, using `QA_REPO_APP_ID` / `QA_REPO_APP_PRIVATE_KEY`. `release.yml` keeps the artifact names `zerion-wallet-extension-<tag>.{zip,tar.gz}` and `zerion-wallet-firefox-addon-<tag>.{zip,tar.gz}`.
