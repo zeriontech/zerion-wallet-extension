@@ -40,6 +40,7 @@ import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
 import { gaCollect, prepareGaParams } from './google-analytics';
 import { waitForAnalyticsIdSet } from './analyticsId';
+import { getAssetVisibilityEvent } from './shared/assetVisibilityEvent';
 
 const toEcosystemProperty = (value: 'evm' | 'solana') =>
   value === 'evm' ? 'EVM' : value === 'solana' ? 'Solana' : value;
@@ -233,21 +234,14 @@ function trackAppEvents({ account }: { account: Account }) {
     if (!preferences.analyticsEnabled) {
       return;
     }
+    const { event, properties } = getAssetVisibilityEvent(data);
     const params = createParams({
       request_name: 'asset_visibility_changed',
-      asset_id: data.assetId,
-      asset_name: data.assetName,
-      asset_symbol: data.assetSymbol,
-      entry_point: data.entryPoint,
-      screen_name: data.screenName,
       wallet_address: data.walletAddress,
-      hidden_assets_count: data.hiddenAssetsCount,
+      ...properties,
     });
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(
-      data.isHidden ? 'General: Asset Hidden' : 'General: Asset Unhidden',
-      mixpanelParams
-    );
+    mixpanelTrack(event, mixpanelParams);
   });
 
   emitter.on('perpsScreenViewed', async (data) => {
