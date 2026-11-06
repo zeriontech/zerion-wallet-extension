@@ -37,6 +37,8 @@ import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPn
 import {
   AssetMoreMenu,
   HiddenAssetBanner,
+  reportAssetSpam,
+  trackAssetVisibilityChanged,
   useHiddenFungibleActions,
   useHiddenFungibleIds,
 } from 'src/ui/features/hidden-assets';
@@ -180,6 +182,41 @@ export function AssetInfo() {
     );
   }
 
+  const hideAsset = (entryPoint: 'menu' | 'hint' = 'menu') => {
+    const next = hide(asset_code);
+    if (!next) {
+      return;
+    }
+    reportAssetSpam(asset_code, params.address);
+    trackAssetVisibilityChanged({
+      isHidden: true,
+      assetId: asset_code,
+      assetName: assetFullInfo.fungible.name,
+      assetSymbol: assetFullInfo.fungible.symbol,
+      entryPoint,
+      screenName: 'Asset',
+      walletAddress: params.address,
+      hiddenAssetsCount: next.length,
+    });
+  };
+
+  const unhideAsset = (entryPoint: 'menu' | 'banner') => {
+    const next = unhide(asset_code);
+    if (!next) {
+      return;
+    }
+    trackAssetVisibilityChanged({
+      isHidden: false,
+      assetId: asset_code,
+      assetName: assetFullInfo.fungible.name,
+      assetSymbol: assetFullInfo.fungible.symbol,
+      entryPoint,
+      screenName: 'Asset',
+      walletAddress: params.address,
+      hiddenAssetsCount: next.length,
+    });
+  };
+
   const isWatchedAddress = isReadonlyAccount(wallet);
   const isEmptyBalance = walletData?.data.totalValue === 0;
 
@@ -221,8 +258,8 @@ export function AssetInfo() {
             asset={assetFullInfo.fungible}
             isHidden={isHidden}
             canHideMore={hiddenIdsAreReady && canHideMore}
-            onHide={() => hide(asset_code)}
-            onUnhide={() => unhide(asset_code)}
+            onHide={() => hideAsset('menu')}
+            onUnhide={() => unhideAsset('menu')}
           />
         }
       />
@@ -232,7 +269,7 @@ export function AssetInfo() {
         style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
       >
         {isHidden ? (
-          <HiddenAssetBanner onUnhide={() => unhide(asset_code)} />
+          <HiddenAssetBanner onUnhide={() => unhideAsset('banner')} />
         ) : null}
         <AssetTitleAndChart
           asset={assetFullInfo.fungible}

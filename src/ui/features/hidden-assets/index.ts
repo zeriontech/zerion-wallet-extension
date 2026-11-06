@@ -6,3 +6,4 @@ export {
   useHiddenFungibleIds,
 } from './useHiddenFungibles';
 export { useHiddenAssetFungibles } from './useHiddenAssetFungibles';
+export { reportAssetSpam, trackAssetVisibilityChanged } from './visibility';

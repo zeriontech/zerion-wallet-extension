@@ -88,26 +88,32 @@ export function useHiddenFungibleActions() {
       }),
   });
 
+  /**
+   * Returns the effective list after hiding, or `null` when nothing changed:
+   * empty/already-hidden id, or the 500-id cap refusing the hide. Callers use
+   * the returned list for the post-change analytics count.
+   */
   const hide = useCallback(
     (id: string) => {
       const next = addHiddenFungibleId(rawHiddenFungibleIds, id);
-      if (next == null) {
-        return false;
+      if (next == null || next.length === rawHiddenFungibleIds.length) {
+        return null;
       }
-      if (next.length !== rawHiddenFungibleIds.length) {
-        mutation.mutate(next);
-      }
-      return true;
+      mutation.mutate(next);
+      return next;
     },
     [mutation, rawHiddenFungibleIds]
   );
 
+  /** Same contract as hide: the list after unhiding, or `null` on no-op. */
   const unhide = useCallback(
     (id: string) => {
       const next = removeHiddenFungibleId(rawHiddenFungibleIds, id);
-      if (next.length !== rawHiddenFungibleIds.length) {
-        mutation.mutate(next);
+      if (next.length === rawHiddenFungibleIds.length) {
+        return null;
       }
+      mutation.mutate(next);
+      return next;
     },
     [mutation, rawHiddenFungibleIds]
   );

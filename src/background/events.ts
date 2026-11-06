@@ -8,7 +8,11 @@ import type {
 } from 'src/shared/types/SignatureContextParams';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
+import type {
+  BannerClickedParams,
+  ButtonClickedParams,
+} from 'src/shared/types/button-events';
+import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
 import type {
   PerpsButtonPressedParams,
   PerpsPositionActionParams,
@@ -95,6 +99,7 @@ export const emitter = createNanoEvents<{
   buttonClicked: (data: ButtonClickedParams) => void;
   networkFeeLevelChanged: (data: NetworkFeeLevelChangedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
+  assetVisibilityChanged: (data: AssetVisibilityChangedParams) => void;
   cloudflareChallengeIssued: () => void;
   assetClicked: (data: AssetClickedParams) => void;
   passkeyLoginEnabled: () => void;

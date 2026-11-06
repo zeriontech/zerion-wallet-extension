@@ -96,6 +96,10 @@ function trackAppEvents({
     walletPort.request('bannerClicked', data);
   });
 
+  emitter.on('assetVisibilityChanged', async (data) => {
+    walletPort.request('assetVisibilityChanged', data);
+  });
+
   emitter.on('perpsScreenViewed', async (data) => {
     walletPort.request('perpsScreenViewed', data);
   });

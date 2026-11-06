@@ -21,6 +21,7 @@ import { walletSimulateSignature } from './requests/wallet-simulate-signature';
 import { walletSimulateTransaction } from './requests/wallet-simulate-transaction';
 import { searchQueryFungibles } from './requests/search-query-fungibles';
 import { assetListFungibles } from './requests/asset-list-fungibles';
+import { assetReportSpam } from './requests/asset-report-spam';
 import { walletGetPnl } from './requests/wallet-get-pnl';
 import { walletGetSimplePositions } from './requests/wallet-get-simple-positions';
 import { walletSimulateTransactions } from './requests/wallet-simulate-transactions';
@@ -65,6 +66,7 @@ export const ZerionApiBare = {
   assetGetFungibleFullInfo,
   assetGetFungiblePnl,
   assetListFungibles,
+  assetReportSpam,
   walletGetAssetDetails,
   assetGetChart,
   walletGetChart,

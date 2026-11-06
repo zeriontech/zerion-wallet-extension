@@ -228,6 +228,28 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
+  emitter.on('assetVisibilityChanged', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'asset_visibility_changed',
+      asset_id: data.assetId,
+      asset_name: data.assetName,
+      asset_symbol: data.assetSymbol,
+      entry_point: data.entryPoint,
+      screen_name: data.screenName,
+      wallet_address: data.walletAddress,
+      hidden_assets_count: data.hiddenAssetsCount,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(
+      data.isHidden ? 'General: Asset Hidden' : 'General: Asset Unhidden',
+      mixpanelParams
+    );
+  });
+
   emitter.on('perpsScreenViewed', async (data) => {
     const preferences = await globalPreferences.getPreferences();
     if (!preferences.analyticsEnabled) {
