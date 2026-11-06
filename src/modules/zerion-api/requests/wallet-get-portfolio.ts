@@ -2,6 +2,7 @@ import { invariant } from 'src/shared/invariant';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
+import { withNormalizedHiddenFungibleIds } from '../shared/hiddenFungibleIds';
 import type { ResponseBody } from './ResponseBody';
 import type { SignedPermit } from './wallet-prepare-permits';
 
@@ -9,6 +10,8 @@ export interface Params {
   addresses: string[];
   currency: string;
   nftPriceType?: 'not_included';
+  /** Fungible asset IDs excluded from totals, positions and distributions */
+  hiddenFungibleIds?: string[];
   /**
    * Signed decryption permits so confidential amounts count towards the
    * totals. Same list get-positions takes; capped at 10 per request.
@@ -62,7 +65,7 @@ export async function walletGetPortfolio(
   return ZerionHttpClient.post<Response>(
     {
       endpoint,
-      body: JSON.stringify(params),
+      body: JSON.stringify(withNormalizedHiddenFungibleIds(params)),
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },

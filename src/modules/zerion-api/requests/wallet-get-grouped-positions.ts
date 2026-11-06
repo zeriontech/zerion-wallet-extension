@@ -2,6 +2,7 @@ import { invariant } from 'src/shared/invariant';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';
+import { withNormalizedHiddenFungibleIds } from '../shared/hiddenFungibleIds';
 import type { ResponseBody } from './ResponseBody';
 import type { SignedPermit } from './wallet-prepare-permits';
 
@@ -187,7 +188,7 @@ export async function walletGetGroupedPositions(
   return ZerionHttpClient.post<WalletGetGroupedPositionsResponse>(
     {
       endpoint,
-      body: JSON.stringify(params),
+      body: JSON.stringify(withNormalizedHiddenFungibleIds(params)),
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },

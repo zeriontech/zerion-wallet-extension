@@ -4,6 +4,7 @@ import type {
   BannerClickedParams,
   ButtonClickedParams,
 } from 'src/shared/types/button-events';
+import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
 import type {
   PerpsButtonPressedParams,
   PerpsPositionActionParams,
@@ -29,6 +30,7 @@ export const emitter = createNanoEvents<{
   'sidepanel/activeTabUpdated': () => void;
   buttonClicked: (data: ButtonClickedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
+  assetVisibilityChanged: (data: AssetVisibilityChangedParams) => void;
   mnemonicRestorationNeeded: () => void;
   perpsScreenViewed: (data: PerpsScreenViewedParams) => void;
   perpsButtonPressed: (data: PerpsButtonPressedParams) => void;

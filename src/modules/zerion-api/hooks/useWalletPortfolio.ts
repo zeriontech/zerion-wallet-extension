@@ -11,6 +11,7 @@ import {
 } from 'src/ui/features/confidential-balances/useConfidentialPermits';
 import { withPermits } from 'src/ui/features/confidential-balances/withPermits';
 import { getPermitsFingerprint } from 'src/shared/confidential-balances/permits';
+import { useHiddenFungibleIds } from 'src/ui/features/hidden-assets/useHiddenFungibles';
 import { ZerionAPI } from '../zerion-api.client';
 import type { Params } from '../requests/wallet-get-portfolio';
 import type { SignedPermit } from '../requests/wallet-prepare-permits';
@@ -81,14 +82,22 @@ export function useWalletPortfolio(
   const { permits, fingerprint, isReady } = useConfidentialPermits(
     params.addresses
   );
+  // The device-wide hidden list is part of the request and therefore of the
+  // key: changing it refetches instead of re-filtering cached data.
+  const { hiddenFungibleIds, isReady: hiddenIdsAreReady } =
+    useHiddenFungibleIds();
+  const filteredParams = useMemo(
+    () => ({ ...params, hiddenFungibleIds }),
+    [params, hiddenFungibleIds]
+  );
   const portfolioQuery = useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: persistentQuery([QUERY_KEY, params, source, fingerprint]),
-    queryFn: () => queryFn(params, { source }, permits),
+    queryKey: persistentQuery([QUERY_KEY, filteredParams, source, fingerprint]),
+    queryFn: () => queryFn(filteredParams, { source }, permits),
     retry: 0, // if not 0, there are too many rerenders if the queryFn throws synchronously
     suspense,
-    enabled: enabled && isReady,
+    enabled: enabled && isReady && hiddenIdsAreReady,
     keepPreviousData,
     staleTime: STALE_TIME,
     refetchInterval,

@@ -12,6 +12,7 @@ import type {
   BannerClickedParams,
   ButtonClickedParams,
 } from 'src/shared/types/button-events';
+import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
 import type {
   PerpsButtonPressedParams,
   PerpsPositionActionParams,
@@ -106,6 +107,7 @@ export const emitter = createNanoEvents<{
   uiClosed: (data: { url: string | null }) => void;
   buttonClicked: (data: ButtonClickedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
+  assetVisibilityChanged: (data: AssetVisibilityChangedParams) => void;
   cloudflareChallengeIssued: () => void;
   assetClicked: (data: AssetClickedParams) => void;
   passkeyLoginEnabled: () => void;

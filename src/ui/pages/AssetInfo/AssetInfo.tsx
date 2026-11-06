@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   NavigationType,
   useNavigate,
@@ -15,13 +15,9 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send.svg';
-import FlagIcon from 'jsx:src/ui/assets/flag.svg';
-import ShareIcon from 'jsx:src/ui/assets/share.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageTop } from 'src/ui/components/PageTop';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
-import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { useQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -38,10 +34,14 @@ import { NetworkId } from 'src/modules/networks/NetworkId';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPnl';
-import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
-import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
-import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';
+import {
+  AssetMoreMenu,
+  HiddenAssetBanner,
+  reportAssetSpam,
+  trackAssetVisibilityChanged,
+  useHiddenFungibleActions,
+  useHiddenFungibleIds,
+} from 'src/ui/features/hidden-assets';
 import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { ReceiverAddressDialog } from 'src/ui/components/ReceiverAddressDialog';
@@ -56,59 +56,6 @@ import {
 } from './AssetHeader';
 import { AssetDescription } from './AssetDescription';
 import * as styles from './styles.module.css';
-
-function ReportAssetLink({ asset }: { asset: Asset }) {
-  return (
-    <UnstyledAnchor
-      target="_blank"
-      href={`https://zerion-io.typeform.com/to/IVsRHfBy?typeform-medium=embed-snippet#symbol=${asset.symbol}&asset_id=${asset.id}`}
-      rel="noopener noreferrer"
-      className="parent-hover"
-      style={{
-        ['--parent-content-color' as string]: 'var(--neutral-400)',
-        ['--parent-hovered-content-color' as string]: 'var(--neutral-700)',
-      }}
-    >
-      <HStack
-        gap={8}
-        alignItems="center"
-        className="content-hover"
-        justifyContent="center"
-      >
-        <FlagIcon style={{ width: 20, height: 20 }} />
-        <UIText kind="small/accent">Report Asset</UIText>
-      </HStack>
-    </UnstyledAnchor>
-  );
-}
-
-function ShareAssetLink({ asset }: { asset: Asset }) {
-  const toastRef = useRef<PopoverToastHandle>(null);
-  const { handleCopy } = useCopyToClipboard({
-    text: `https://app.zerion.io/tokens/${asset.symbol}-${asset.id}`,
-    onSuccess: () => toastRef.current?.showToast(),
-  });
-
-  return (
-    <>
-      <PopoverToast
-        ref={toastRef}
-        style={{
-          bottom: 'calc(100px + var(--technical-panel-bottom-height, 0px))',
-        }}
-      >
-        Link Copied to Clipboard
-      </PopoverToast>
-      <UnstyledButton
-        onClick={handleCopy}
-        title="Copy Link"
-        aria-label="Copy Link"
-      >
-        <ShareIcon />
-      </UnstyledButton>
-    </>
-  );
-}
 
 export function AssetInfo() {
   const { asset_code } = useParams();
@@ -130,6 +77,13 @@ export function AssetInfo() {
   );
   const assetFullInfo = assetFullInfoData?.data;
   const { ready, params } = useAddressParams();
+  const {
+    hiddenFungibleIds,
+    isReady: hiddenIdsAreReady,
+    canHideMore,
+  } = useHiddenFungibleIds();
+  const { hide, unhide } = useHiddenFungibleActions();
+  const isHidden = hiddenIdsAreReady && hiddenFungibleIds.includes(asset_code);
   const { data: portfolioData } = useWalletPortfolio(
     {
       addresses: [params.address],
@@ -231,6 +185,41 @@ export function AssetInfo() {
     );
   }
 
+  const hideAsset = (entryPoint: 'menu' | 'hint' = 'menu') => {
+    const next = hide(asset_code);
+    if (!next) {
+      return;
+    }
+    reportAssetSpam(asset_code, params.address);
+    trackAssetVisibilityChanged({
+      isHidden: true,
+      assetId: asset_code,
+      assetName: assetFullInfo.fungible.name,
+      assetSymbol: assetFullInfo.fungible.symbol,
+      entryPoint,
+      screenName: 'Asset',
+      walletAddress: params.address,
+      hiddenAssetsCount: next.length,
+    });
+  };
+
+  const unhideAsset = (entryPoint: 'menu' | 'banner') => {
+    const next = unhide(asset_code);
+    if (!next) {
+      return;
+    }
+    trackAssetVisibilityChanged({
+      isHidden: false,
+      assetId: asset_code,
+      assetName: assetFullInfo.fungible.name,
+      assetSymbol: assetFullInfo.fungible.symbol,
+      entryPoint,
+      screenName: 'Asset',
+      walletAddress: params.address,
+      hiddenAssetsCount: next.length,
+    });
+  };
+
   const isWatchedAddress = isReadonlyAccount(wallet);
   const isEmptyBalance = walletData?.data.totalValue === 0;
 
@@ -276,13 +265,24 @@ export function AssetInfo() {
           </div>
         }
         documentTitle={`${assetFullInfo.fungible.name} - info`}
-        elementEnd={<ShareAssetLink asset={assetFullInfo.fungible} />}
+        elementEnd={
+          <AssetMoreMenu
+            asset={assetFullInfo.fungible}
+            isHidden={isHidden}
+            canHideMore={hiddenIdsAreReady && canHideMore}
+            onHide={() => hideAsset('menu')}
+            onUnhide={() => unhideAsset('menu')}
+          />
+        }
       />
       <PageTop />
       <VStack
         gap={24}
         style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
       >
+        {isHidden ? (
+          <HiddenAssetBanner onUnhide={() => unhideAsset('banner')} />
+        ) : null}
         <AssetTitleAndChart
           asset={assetFullInfo.fungible}
           address={params.address}
@@ -306,7 +306,6 @@ export function AssetInfo() {
         <AssetResources assetFullInfo={assetFullInfo} />
         <AssetDescription assetFullInfo={assetFullInfo} />
         <AssetHistory fungibleId={asset_code} address={params.address} />
-        <ReportAssetLink asset={assetFullInfo.fungible} />
       </VStack>
       {isWatchedAddress || !portfolioData ? null : (
         <StickyBottomPanel
