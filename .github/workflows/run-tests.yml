@@ -159,16 +159,17 @@ jobs:
     # built against a local proxy, so the secret never reaches Chromium,
     # traces, or the build output.
     #
-    # Three shards, balanced by measured duration rather than Playwright's
+    # Five shards, balanced by measured duration rather than Playwright's
     # index split (which left 56s/28s/32s). `scripts/e2e-shards.mjs` packs the
-    # 22 tests into 38.9s/39.8s/38.8s of local test time and a `--verify` step
-    # fails if any test is not assigned to exactly one shard.
+    # 22 extension tests and the 13 dapp tests into five balanced groups and a
+    # `--verify` step fails if any test is not assigned to exactly one shard.
     #
-    # `--workers=2` per shard: with three jobs the serial run is ~70-85s on a
-    # runner, and two workers bring the test step back to ~30s (measured
-    # locally: 41s/39s/39s at 1 worker, 23s/20s/22s at 2, both all-green). Each
-    # test still gets its own browser context, so isolation is unchanged.
-    name: e2e (${{ matrix.shard }}/3)
+    # Dapp tests use the hosted test dapp via DAPP_URL and are skipped when
+    # DAPP_URL is unset (for local runs of the extension suite).
+    #
+    # `--workers=2` per shard: two workers keep the test step short; each test
+    # still gets its own browser context, so isolation is unchanged.
+    name: e2e (${{ matrix.shard }}/5)
     if: >-
       github.event.action != 'labeled' &&
       github.event.action != 'unlabeled' &&
@@ -178,8 +179,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5]
     env:
+      DAPP_URL: https://zeriontech.github.io/zerion-test-dapp/
       E2E_PROXY_PORT: '4789'
       # The build has no secret; it only needs to point at the proxy.
       E2E_USE_PROXY: '1'
@@ -239,14 +241,14 @@ jobs:
 
       - name: Select shard
         id: shard
-        run: node scripts/e2e-shards.mjs --shard=${{ matrix.shard }} --total=3 >> "$GITHUB_OUTPUT"
+        run: node scripts/e2e-shards.mjs --shard=${{ matrix.shard }} --total=5 >> "$GITHUB_OUTPUT"
 
       - name: Verify shard coverage
         # Fails if a test is not assigned to exactly one shard, e.g. after a
         # test is added or renamed.
-        run: node scripts/e2e-shards.mjs --verify
+        run: node scripts/e2e-shards.mjs --verify --total=5
 
-      - name: Run Playwright tests (shard ${{ matrix.shard }}/3)
+      - name: Run Playwright tests (shard ${{ matrix.shard }}/5)
         id: e2e
         env:
           ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
