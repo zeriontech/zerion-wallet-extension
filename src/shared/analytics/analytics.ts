@@ -27,6 +27,7 @@ type MetabaseEvent =
   | 'button_clicked'
   | 'banner_clicked'
   | 'asset_clicked'
+  | 'asset_visibility_changed'
   | 'passkey_login_enabled'
   | 'passkey_login_disabled'
   | 'password_change_success'

@@ -20,6 +20,7 @@ import {
   useHiddenFungibleActions,
   useHiddenFungibleIds,
 } from './useHiddenFungibles';
+import { trackAssetVisibilityChanged } from './visibility';
 import { useHiddenAssetFungibles } from './useHiddenAssetFungibles';
 
 function matchesAsset(query: string, asset: Fungible | undefined, id: string) {
@@ -63,6 +64,22 @@ export function HiddenAssets() {
   const rows = rawHiddenFungibleIds
     .map((id) => ({ id, asset: assetsById.get(id) }))
     .filter(({ id, asset }) => matchesAsset(query, asset, id));
+
+  const unhideAsset = (id: string, asset: Fungible | undefined) => {
+    const next = unhide(id);
+    if (!next) {
+      return;
+    }
+    trackAssetVisibilityChanged({
+      isHidden: false,
+      assetId: id,
+      assetName: asset?.name,
+      assetSymbol: asset?.symbol,
+      entryPoint: 'list',
+      screenName: 'Hidden Assets',
+      hiddenAssetsCount: next.length,
+    });
+  };
 
   return (
     <PageColumn>
@@ -138,7 +155,7 @@ export function HiddenAssets() {
                 <Button
                   kind="neutral"
                   size={36}
-                  onClick={() => unhide(id)}
+                  onClick={() => unhideAsset(id, asset)}
                   style={{ flexShrink: 0 }}
                 >
                   Unhide

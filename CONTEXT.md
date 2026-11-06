@@ -211,6 +211,8 @@ A browser extension wallet supporting EVM and Solana. This document captures lan
 
 **Hidden filter**: The normalized `hiddenFungibleIds` request field: drop empty ids, deduplicate exact ids, sort deterministically, keep spelling/case, never truncate. Sent to wallet portfolio, grouped-positions, chart and PnL reads; omitted when empty. 500 is a write gate for the persisted list, not a reason to truncate a request. The field is declared on simple-positions but no caller sends it: that route feeds Send/Swap/balance caches and must keep a hidden token's holdings. _Avoid_: client-side filtering (ZPI filters), `exclude_asset_id` (downstream, never sent by clients).
 
+**Hide report and event**: A successful hide also POSTs `/asset/report-spam/v1` with `{assetId, wallet}` fire-and-forget, and both hide and unhide emit `General: Asset Hidden` / `General: Asset Unhidden` with `asset_id`, `asset_name`, `asset_symbol`, `entry_point`, `screen_name`, `wallet_provider` and `hidden_assets_count`. Entry points exist only where the extension has the control: asset-page More menu (`menu`), asset-page banner (`banner`), Hidden Assets list (`list`). No report or event fires when the hide is a no-op or refused at 500.
+
 **Hidden token page**: The asset page for a hidden token. It keeps holdings, chart, PnL, history and Send, and shows a "You hid this token / Unhide" banner plus Hide/Unhide in the More menu. Only portfolio reads exclude it. A grouped-positions lookup with a positive `assetIds` filter is treated as a single-asset view and does not receive the hidden filter.
 
 ### Confidential Balances

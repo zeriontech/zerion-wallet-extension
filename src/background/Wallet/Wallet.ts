@@ -96,6 +96,7 @@ import type {
   BannerClickedParams,
   ButtonClickedParams,
 } from 'src/shared/types/button-events';
+import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
 import type {
   PerpsButtonPressedParams,
   PerpsPositionActionParams,
@@ -1958,6 +1959,14 @@ export class Wallet {
   }: WalletMethodParams<BannerClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('bannerClicked', params);
+  }
+
+  async assetVisibilityChanged({
+    context,
+    params,
+  }: WalletMethodParams<AssetVisibilityChangedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('assetVisibilityChanged', params);
   }
 
   async perpsScreenViewed({
