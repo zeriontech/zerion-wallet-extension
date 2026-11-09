@@ -6,6 +6,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgr from 'vite-plugin-svgr';
 import { defineConfig } from 'vite-plus';
 
+import { PAGE_ENTRIES, SCRIPT_TARGETS } from './scripts/manifest.mjs';
 import {
   componentsAlias,
   parcelSchemePlugin,
@@ -44,36 +45,25 @@ const outDir = path.resolve(
 );
 const isProduction = process.env.NODE_ENV !== 'development';
 
-const PAGE_ENTRIES = {
-  popup: 'ui/popup.html',
-  ledger: 'ui/hardware-wallet/ledger.html',
-  ...(platform === 'chrome' ? { sidepanel: 'ui/sidepanel.html' } : {}),
-};
-
-/** Single-file bundles: content scripts and the page-world script are classic. */
-const SCRIPT_ENTRIES = {
-  background: { input: 'background/index.ts', fileName: 'background.js' },
-  'content-script': {
-    input: 'content-script/index.ts',
-    fileName: 'content-script.js',
-  },
-  'in-page': { input: 'content-script/in-page.ts', fileName: 'in-page.js' },
-};
-
 function buildEntries() {
   if (target === 'pages') {
+    // Firefox has no side panel, so it ships two pages instead of three.
+    const pages =
+      platform === 'chrome'
+        ? PAGE_ENTRIES
+        : { popup: PAGE_ENTRIES.popup, ledger: PAGE_ENTRIES.ledger };
     return Object.fromEntries(
-      Object.entries(PAGE_ENTRIES).map(([name, file]) => [
+      Object.entries(pages).map(([name, file]) => [
         name,
         path.join(sourceRoot, file),
       ])
     );
   }
-  const entry = SCRIPT_ENTRIES[target];
+  const entry = SCRIPT_TARGETS[target];
   if (!entry) {
     throw new Error(
       `Unknown BUILD_TARGET "${target}". Expected one of: pages, ${Object.keys(
-        SCRIPT_ENTRIES
+        SCRIPT_TARGETS
       ).join(', ')}.`
     );
   }
@@ -489,7 +479,7 @@ export default defineConfig(({ mode }) => ({
           : {
               format: 'iife' as const,
               inlineDynamicImports: true,
-              entryFileNames: SCRIPT_ENTRIES[target].fileName,
+              entryFileNames: SCRIPT_TARGETS[target].fileName,
               // The content script's stylesheet must have a stable name: the
               // manifest lists it under `content_scripts[].css`.
               assetFileNames: `${target}.[ext]`,

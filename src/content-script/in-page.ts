@@ -1,4 +1,3 @@
-import 'src/shared/polyfills';
 import {
   type Ghost,
   initialize as initializeWalletStandard,

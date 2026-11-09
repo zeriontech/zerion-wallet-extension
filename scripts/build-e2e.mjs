@@ -91,9 +91,17 @@ const buildEnv = {
   FEATURE_SOLANA: 'on',
 };
 
-// Defence in depth: never let the bypass secret reach the bundler.
-delete buildEnv.ZERION_API_DEVELOPMENT_KEY;
-delete buildEnv.CF_ZPI_DEV_BYPASS_SECRET;
+// Defence in depth: never let the bypass secret reach the bundler. `buildEnv`
+// never contained the keys — `buildExtension` spreads `process.env` too — so
+// remove them from the inherited environment as well.
+const SECRET_ENV_VARS = [
+  'ZERION_API_DEVELOPMENT_KEY',
+  'CF_ZPI_DEV_BYPASS_SECRET',
+];
+for (const name of SECRET_ENV_VARS) {
+  delete buildEnv[name];
+  delete process.env[name];
+}
 
 buildExtension({ platform: 'chrome', outDir: 'dist-e2e', env: buildEnv });
 

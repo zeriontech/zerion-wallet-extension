@@ -13,31 +13,55 @@ import path from 'node:path';
  * Mirrors what `@parcel/config-webextension` produced, without the content
  * hashes.
  */
-export function buildManifest({ source, platform, emitted }) {
+/**
+ * Source entry -> emitted bundle for the single-file targets. Shared with
+ * `vite.config.ts` so the filenames exist in exactly one place.
+ */
+export const SCRIPT_TARGETS = {
+  background: { input: 'background/index.ts', fileName: 'background.js' },
+  'content-script': {
+    input: 'content-script/index.ts',
+    fileName: 'content-script.js',
+  },
+  'in-page': { input: 'content-script/in-page.ts', fileName: 'in-page.js' },
+};
+
+export const PAGE_ENTRIES = {
+  popup: 'ui/popup.html',
+  ledger: 'ui/hardware-wallet/ledger.html',
+  sidepanel: 'ui/sidepanel.html',
+};
+
+export function buildManifest({ source, platform, emitted, outDir }) {
   const manifest = structuredClone(source);
 
+  const backgroundFile = SCRIPT_TARGETS.background.fileName;
   if (platform === 'firefox') {
     // Firefox MV3 does not support module service workers; both platforms get
     // the IIFE bundle.
-    manifest.background = { scripts: ['background.js'] };
+    manifest.background = { scripts: [backgroundFile] };
   } else {
-    manifest.background = { service_worker: 'background.js' };
+    manifest.background = { service_worker: backgroundFile };
   }
 
   const contentScript = manifest.content_scripts?.[0];
   if (!contentScript) {
     throw new Error('manifest.content_scripts[0] is missing');
   }
-  contentScript.js = ['content-script.js'];
-  if (emitted['content-script'].includes('content-script.css')) {
-    contentScript.css = ['content-script.css'];
+  const contentScriptFile = SCRIPT_TARGETS['content-script'].fileName;
+  contentScript.js = [contentScriptFile];
+  // Vite emits the content script's stylesheet outside the chunk's file list,
+  // so the output directory is the source of truth here.
+  const contentScriptStyles = `${contentScriptFile.replace(/\.js$/, '')}.css`;
+  if (fs.existsSync(path.join(outDir, contentScriptStyles))) {
+    contentScript.css = [contentScriptStyles];
   }
 
   const pageWorld = manifest.web_accessible_resources?.[0];
   if (!pageWorld) {
     throw new Error('manifest.web_accessible_resources[0] is missing');
   }
-  pageWorld.resources = ['in-page.js'];
+  pageWorld.resources = [SCRIPT_TARGETS['in-page'].fileName];
 
   // Assets imported by the content script are injected into pages, so the
   // browser only serves them if they are web-accessible.
