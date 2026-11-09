@@ -6,7 +6,7 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 
 | Event | Workflow | What runs |
 | --- | --- | --- |
-| Pull request | `run-tests.yml` | `changeset-check` (or the `skip-changeset` label), `static` (`lint:check`, `format:check`, `typecheck`), `test` (`test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs, sharded 3 ways, balanced by measured test duration). All four jobs run in parallel |
+| Pull request | `run-tests.yml` | `changeset-check` (or the `skip-changeset` label), `static` (`lint:check`, `format:check`, `typecheck`), `test` (`test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs, sharded 3 ways, balanced by measured test duration). `static`, `test`, `build` and `e2e` run in parallel; `changeset-check` is independent |
 | Pull request | `pr.yml` → `pr_attach_build.yml` | production build with PR env, zip attached to the PR thread |
 | Pull request | `pr_push_qa.yml` | build pushed to the `zerion-wallet-extension-qa` repo on the PR branch |
 | Push `main` | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump |
@@ -15,7 +15,7 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 | Tag `vX.Y.Z` | `release_push_qa.yml` | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa` |
 | Manual | `publish-stores.yml` | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO |
 
-All gates run on the Vite+ toolchain — Oxlint, Oxfmt, Vitest and TSRS; see `docs/build.md`.
+All gates run on the Vite+ toolchain — Oxlint, Vitest and TSRS, with Prettier for formatting (Oxfmt is a follow-up change); see `docs/build.md`.
 
 `release.yml` deliberately skips lint, typecheck, formatting and tests: a tag is only created for a commit that already passed every PR gate, so an emergency release is never blocked by CI. Quality gates stay on pull requests.
 

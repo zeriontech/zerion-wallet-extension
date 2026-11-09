@@ -83,7 +83,7 @@ jobs:
         # environment; this job has none.
         run: npm ci --ignore-scripts
 
-      # All three run through the Vite+ toolchain (Oxlint, Oxfmt, TSRS).
+      # Vite+ toolchain: Oxlint and TSRS (formatting is still Prettier).
       - name: Lint
         run: npm run lint:check
 
@@ -196,7 +196,7 @@ jobs:
           cache: npm
 
       # Sharding multiplies setup cost, so the install and the browser download
-      # are cached on the lockfile hash instead of being paid six times.
+      # are cached on the lockfile hash instead of being paid once per shard.
       - name: Cache node_modules
         id: node-modules
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -218,8 +218,8 @@ jobs:
       # `--with-deps` also installs Chromium's system libraries on a cache miss.
       # On a cache hit the step is skipped: the ubuntu-latest image already ships
       # those libraries, and `playwright install-deps` cost 10-19s of apt per
-      # shard, which is most of the non-test budget at ten shards. A missing
-      # library fails loudly at browser launch, not silently.
+      # shard, which was most of the non-test budget. A missing library fails
+      # loudly at browser launch, not silently.
       - name: Install Playwright Chromium
         if: steps.playwright-browsers.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium

@@ -1,6 +1,6 @@
 # Build and check toolchain
 
-The extension is built with **Vite+** (Vite on Rolldown, Oxlint, Oxfmt, Vitest) and type-checked with **TSRS**, matching `zerion-web-app`. Everything is configured in `vite.config.ts`; CI calls the same npm scripts as a developer does.
+The extension is built and checked with **Vite+** (Vite on Rolldown, Oxlint, Vitest) and type-checked with **TSRS**, matching `zerion-web-app`. Formatting is still Prettier 2 for now (see "Formatting is a separate change" below). Everything is configured in `vite.config.ts`; CI calls the same npm scripts as a developer does.
 
 ## Commands
 
@@ -25,7 +25,7 @@ An MV3 extension needs bundles with different constraints, which one Rollup grap
 | --- | --- | --- |
 | `pages` | `ui/popup.html`, `ui/sidepanel.html`, `ui/hardware-wallet/ledger.html` | HTML entries, code splitting, one CSS file |
 | `background` | `background.js` | single IIFE (Firefox MV3 has no module service worker) |
-| `content-script` | `content-script.js` | single IIFE, classic script, CSS inlined |
+| `content-script` | `content-script.js` + `content-script.css` | single IIFE, classic script; its stylesheet is listed in `content_scripts[].css` |
 | `in-page` | `in-page.js` | single IIFE, injected into the page's own world |
 
 `scripts/build.mjs` runs them in sequence into one output directory and then writes the manifest from `src/manifest-<platform>.json`:
@@ -34,7 +34,7 @@ An MV3 extension needs bundles with different constraints, which one Rollup grap
 - `content_scripts[0].js` and `web_accessible_resources[0].resources` point at the emitted bundles;
 - any asset the content script emits is added to `web_accessible_resources`, because pages can only load declared resources.
 
-`scripts/manifest.mjs` holds that logic and is the only place that knows how source paths map to built files.
+`scripts/manifest.mjs` holds that logic: it exports the source-to-output tables (`PAGE_ENTRIES`, `SCRIPT_TARGETS`), which `vite.config.ts` imports, so the mapping exists in one place.
 
 ## Parcel conventions kept in the sources
 

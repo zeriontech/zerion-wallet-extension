@@ -4,7 +4,7 @@ This repository builds the Zerion Wallet browser extension for Chrome and Firefo
 
 ## Requirements
 
-- Node.js `>=20.10` (CI uses `24.x`), npm `>=11.10`
+- Node.js `>=22.18` (CI uses `24.x`), npm `>=11.10`
 
 ## Rebuild
 
@@ -13,7 +13,7 @@ npm ci
 npm run build:firefox
 ```
 
-The unpacked extension is written to `dist-firefox/`. `npm run build:chrome` writes `dist/`. Both use [Parcel](https://parceljs.org/) and pass `--no-content-hash --no-source-maps`, so output file names are stable.
+The unpacked extension is written to `dist-firefox/`. `npm run build:chrome` writes `dist/`. Both use [Vite+](https://viteplus.dev/) (Vite on Rolldown) through `vp build` (`scripts/build.mjs`), which emits content-hashed assets and no source maps.
 
 ## Build-time environment
 
