@@ -59,7 +59,7 @@ jobs:
             exit 1
           fi
 
-  quality:
+  static:
     # Label-only events exist for the changeset gate; do not re-run the suite.
     if: >-
       github.event.action != 'labeled' &&
@@ -83,6 +83,7 @@ jobs:
         # environment; this job has none.
         run: npm ci --ignore-scripts
 
+      # All three run through the Vite+ toolchain (Oxlint, Oxfmt, TSRS).
       - name: Lint
         run: npm run lint:check
 
@@ -92,6 +93,29 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+  test:
+    name: Tests
+    if: >-
+      github.event.action != 'labeled' &&
+      github.event.action != 'unlabeled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      # Vitest on the `vmThreads` pool: one job, no shards.
       - name: Run unit tests
         run: npm run test:unit
 
@@ -102,7 +126,6 @@ jobs:
       github.event.action != 'labeled' &&
       github.event.action != 'unlabeled' &&
       github.event.pull_request.head.repo.full_name == github.repository
-    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -139,7 +162,6 @@ jobs:
       github.event.action != 'labeled' &&
       github.event.action != 'unlabeled' &&
       github.event.pull_request.head.repo.full_name == github.repository
-    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
