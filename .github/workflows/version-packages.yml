@@ -18,6 +18,9 @@ jobs:
     name: Version packages
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # The release App credentials live only in the `release` environment, which
+    # is restricted to `main`: a workflow pushed on any other branch cannot read them.
+    environment: release
     steps:
       - name: Verify release app credentials
         env:
@@ -25,7 +28,7 @@ jobs:
           RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
         run: |
           if [ -z "$RELEASE_APP_ID" ] || [ -z "$RELEASE_APP_PRIVATE_KEY" ]; then
-            echo "::error::RELEASE_APP_ID / RELEASE_APP_PRIVATE_KEY are not configured. The release tag must be pushed by a GitHub App (never GITHUB_TOKEN) that has contents: write here and is a bypass actor on the 'hive-protect-tags' ruleset."
+            echo "::error::RELEASE_APP_ID / RELEASE_APP_PRIVATE_KEY are not configured in the 'release' environment. The release tag must be pushed by a GitHub App (never GITHUB_TOKEN) that has contents: write here and is a bypass actor on the 'hive-protect-tags' ruleset."
             exit 1
           fi
 
