@@ -441,6 +441,8 @@ export default defineConfig(({ mode }) => ({
         rules: {
           'no-console': 'off',
           'security/detect-non-literal-fs-filename': 'off',
+          // The shard selector builds regexes from a data table.
+          'security/detect-non-literal-regexp': 'off',
           'typescript/no-require-imports': 'off',
           'typescript/no-var-requires': 'off',
           'no-undef': 'off',

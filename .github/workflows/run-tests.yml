@@ -155,15 +155,30 @@ jobs:
         run: npm run build:production
 
   e2e:
-    # Only this job receives the Cloudflare bypass secret. The extension is
+    # Only these jobs receive the Cloudflare bypass secret. The extension is
     # built against a local proxy, so the secret never reaches Chromium,
     # traces, or the build output.
+    #
+    # Three shards, balanced by measured duration rather than Playwright's
+    # index split (which left 56s/28s/32s). `scripts/e2e-shards.mjs` packs the
+    # 22 tests into 38.9s/39.8s/38.8s of local test time and a `--verify` step
+    # fails if any test is not assigned to exactly one shard.
+    #
+    # `--workers=2` per shard: with three jobs the serial run is ~70-85s on a
+    # runner, and two workers bring the test step back to ~30s (measured
+    # locally: 41s/39s/39s at 1 worker, 23s/20s/22s at 2, both all-green). Each
+    # test still gets its own browser context, so isolation is unchanged.
+    name: e2e (${{ matrix.shard }}/3)
     if: >-
       github.event.action != 'labeled' &&
       github.event.action != 'unlabeled' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     env:
       E2E_PROXY_PORT: '4789'
       # The build has no secret; it only needs to point at the proxy.
@@ -180,8 +195,34 @@ jobs:
           node-version: '24.x'
           cache: npm
 
+      # Sharding multiplies setup cost, so the install and the browser download
+      # are cached on the lockfile hash instead of being paid six times.
+      - name: Cache node_modules
+        id: node-modules
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.node-modules.outputs.cache-hit != 'true'
         run: npm ci --ignore-scripts
+
+      - name: Cache Playwright Chromium
+        id: playwright-browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # `--with-deps` also installs Chromium's system libraries on a cache miss.
+      # On a cache hit the step is skipped: the ubuntu-latest image already ships
+      # those libraries, and `playwright install-deps` cost 10-19s of apt per
+      # shard, which is most of the non-test budget at ten shards. A missing
+      # library fails loudly at browser launch, not silently.
+      - name: Install Playwright Chromium
+        if: steps.playwright-browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
 
       - name: Verify ZPI development secret
         env:
@@ -192,18 +233,25 @@ jobs:
             exit 1
           fi
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
       - name: Build E2E extension
         # No secret in this step: the build only knows the local proxy URL.
         run: npm run build:e2e
 
-      - name: Run Playwright tests
+      - name: Select shard
+        id: shard
+        run: node scripts/e2e-shards.mjs --shard=${{ matrix.shard }} --total=3 >> "$GITHUB_OUTPUT"
+
+      - name: Verify shard coverage
+        # Fails if a test is not assigned to exactly one shard, e.g. after a
+        # test is added or renamed.
+        run: node scripts/e2e-shards.mjs --verify
+
+      - name: Run Playwright tests (shard ${{ matrix.shard }}/3)
         id: e2e
         env:
           ZERION_API_DEVELOPMENT_KEY: ${{ secrets.ZERION_API_DEVELOPMENT_KEY || secrets.CF_ZPI_DEV_BYPASS_SECRET }}
-        run: xvfb-run npx playwright test
+          E2E_GREP: ${{ steps.shard.outputs.grep }}
+        run: xvfb-run npx playwright test --grep "$E2E_GREP" --workers=2
 
       - name: Scan Playwright report for the bypass secret
         id: scan
@@ -220,7 +268,7 @@ jobs:
         if: failure() && steps.e2e.outcome == 'failure' && steps.scan.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: e2e-report
+          name: e2e-report-${{ matrix.shard }}
           path: e2e-report/
           retention-days: 7
           if-no-files-found: ignore
