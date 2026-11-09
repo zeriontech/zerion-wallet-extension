@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  */
 export function useHasBeenInView(
   ref: React.RefObject<Element>,
-  { rootMargin = '200px', enabled = true } = {}
+  { rootMargin = '200px', enabled = true } = {},
 ) {
   const [hasBeenInView, setHasBeenInView] = useState(false);
 
@@ -23,7 +23,7 @@ export function useHasBeenInView(
           observer.disconnect();
         }
       },
-      { rootMargin }
+      { rootMargin },
     );
     observer.observe(node);
     return () => observer.disconnect();

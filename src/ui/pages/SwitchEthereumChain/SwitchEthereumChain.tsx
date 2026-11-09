@@ -81,19 +81,10 @@ export function SwitchEthereumChain() {
             <NetworkIcon src={network.iconUrl} size={40} name={network.name} />
             <UIText kind="headline/h1">{networks.getChainName(chain)}</UIText>
           </VStack>
-          <VStack
-            gap={8}
-            style={{ justifyItems: 'center', textAlign: 'center' }}
-          >
-            <ValueCell
-              label="RPC URL"
-              value={networks.getRpcUrlPublic(chain)}
-            />
+          <VStack gap={8} style={{ justifyItems: 'center', textAlign: 'center' }}>
+            <ValueCell label="RPC URL" value={networks.getRpcUrlPublic(chain)} />
             <ValueCell label="Chain ID" value={chainId} />
-            <ValueCell
-              label="Currency Symbol"
-              value={network.baseAsset?.symbol ?? noValueDash}
-            />
+            <ValueCell label="Currency Symbol" value={network.baseAsset?.symbol ?? noValueDash} />
             <ValueCell
               label="Block Explorer URL"
               value={network.explorer?.homeUrl || noValueDash}

@@ -122,8 +122,7 @@ export function ApplicationLine({
     : null;
 
   const name =
-    addressAction.label?.contract?.dapp.name !==
-    addressAction.label?.contract?.address
+    addressAction.label?.contract?.dapp.name !== addressAction.label?.contract?.address
       ? addressAction.label?.contract?.dapp.name
       : null;
 
@@ -131,9 +130,7 @@ export function ApplicationLine({
     <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
       <Media
         style={{ gridAutoColumns: 'minmax(min-content, max-content) auto' }}
-        image={
-          <ApplicationImage addressAction={addressAction} network={network} />
-        }
+        image={<ApplicationImage addressAction={addressAction} network={network} />}
         vGap={0}
         text={
           addressAction.label?.displayTitle ? (
@@ -146,27 +143,15 @@ export function ApplicationLine({
           <HStack gap={4} alignItems="center" justifyContent="space-between">
             <UIText kind="body/accent" color="var(--black)">
               <ShuffleText
-                text={
-                  name ||
-                  (applicationAddress
-                    ? truncateAddress(applicationAddress, 4)
-                    : '')
-                }
+                text={name || (applicationAddress ? truncateAddress(applicationAddress, 4) : '')}
               />
             </UIText>
             {applicationAddress ? (
-              <UIText
-                kind="small/regular"
-                color="var(--neutral-500)"
-                title={applicationAddress}
-              >
+              <UIText kind="small/regular" color="var(--neutral-500)" title={applicationAddress}>
                 <TextAnchor
                   // Open URL in a new _window_ so that extension UI stays open and visible
                   onClick={openInNewWindow}
-                  href={Networks.getExplorerAddressUrl(
-                    network,
-                    applicationAddress
-                  )}
+                  href={Networks.getExplorerAddressUrl(network, applicationAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

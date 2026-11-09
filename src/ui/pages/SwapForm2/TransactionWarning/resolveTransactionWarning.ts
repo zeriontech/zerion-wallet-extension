@@ -16,12 +16,7 @@ import type {
   WarningVariant,
 } from './simulationWarningHelpers';
 
-export type {
-  ResolvedTransactionWarning,
-  SimulationResult,
-  WarningContent,
-  WarningVariant,
-};
+export type { ResolvedTransactionWarning, SimulationResult, WarningContent, WarningVariant };
 
 const OUTPUT_MISMATCH_EPSILON = 0.01;
 
@@ -36,7 +31,7 @@ interface SimulatedOutput {
 
 function readSimulatedOutput(
   result: SimulationResult,
-  outputFungibleId: string | undefined
+  outputFungibleId: string | undefined,
 ): SimulatedOutput {
   if (!result || !('data' in result) || !result.data) {
     return { actualQuantity: null, matchCount: 0, inspectable: false };
@@ -64,10 +59,7 @@ function readSimulatedOutput(
     return { actualQuantity: null, matchCount: 0, inspectable: true };
   }
   const incoming = transfers.filter(
-    (t) =>
-      t.direction === 'in' &&
-      t.fungible != null &&
-      t.fungible.id === outputFungibleId
+    (t) => t.direction === 'in' && t.fungible != null && t.fungible.id === outputFungibleId,
   );
   if (incoming.length === 0) {
     return { actualQuantity: null, matchCount: 0, inspectable: true };
@@ -132,9 +124,7 @@ function resolveFormStateWarning({
     return null;
   }
 
-  const sameChain =
-    Boolean(formState.inputChain) &&
-    formState.inputChain === formState.outputChain;
+  const sameChain = Boolean(formState.inputChain) && formState.inputChain === formState.outputChain;
 
   if (inputNetwork && outputNetwork && !sameChain) {
     const unsupported = !inputNetwork.flags.supportsBridging
@@ -151,12 +141,7 @@ function resolveFormStateWarning({
     }
   }
 
-  if (
-    inputNetwork &&
-    outputNetwork &&
-    sameChain &&
-    !inputNetwork.flags.supportsTrading
-  ) {
+  if (inputNetwork && outputNetwork && sameChain && !inputNetwork.flags.supportsTrading) {
     return {
       variant: 'warning',
       title: `${inputNetwork.name} doesn’t support trading`,
@@ -202,9 +187,7 @@ function resolveFormStateWarning({
   }
 
   const shouldHaveQuotes = Boolean(
-    formState.inputAmount &&
-    formState.inputFungibleId &&
-    formState.outputFungibleId
+    formState.inputAmount && formState.inputFungibleId && formState.outputFungibleId,
   );
   if (
     shouldHaveQuotes &&
@@ -273,10 +256,7 @@ export function resolveTransactionWarning({
     formState.inputChain !== formState.outputChain;
   let unverifiedFromSimGaps = false;
   if (simulationResult != null && formState.outputFungibleId) {
-    const out = readSimulatedOutput(
-      simulationResult,
-      formState.outputFungibleId
-    );
+    const out = readSimulatedOutput(simulationResult, formState.outputFungibleId);
     // No action / no transfers / no matching transfer / multiple matches.
     if (!out.inspectable) {
       unverifiedFromSimGaps = true;
@@ -330,16 +310,12 @@ export function resolveTransactionWarning({
   //    drift), floored by OUTPUT_MISMATCH_EPSILON to absorb serialization
   //    artifacts.
   if (quote && formState.outputFungibleId && simulationResult) {
-    const out = readSimulatedOutput(
-      simulationResult,
-      formState.outputFungibleId
-    );
+    const out = readSimulatedOutput(simulationResult, formState.outputFungibleId);
     if (out.inspectable && out.matchCount === 1 && out.actualQuantity != null) {
       const quoted = new BigNumber(quote.outputAmount.quantity);
       if (quoted.gt(0)) {
         const diff = out.actualQuantity.minus(quoted).abs().div(quoted);
-        const slippageRatio =
-          quote.finalSlippage != null ? quote.finalSlippage / 100 : 0;
+        const slippageRatio = quote.finalSlippage != null ? quote.finalSlippage / 100 : 0;
         const threshold = Math.max(OUTPUT_MISMATCH_EPSILON, slippageRatio);
         if (diff.gt(threshold)) {
           const description =

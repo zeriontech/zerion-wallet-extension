@@ -8,11 +8,7 @@ import {
 import { estimateGasForNetwork } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import {
-  getAddress,
-  getAssetImplementationInChain,
-  getDecimals,
-} from 'src/modules/networks/asset';
+import { getAddress, getAssetImplementationInChain, getDecimals } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { Networks } from 'src/modules/networks/Networks';
@@ -44,10 +40,7 @@ import { applyConfiguration } from '../../SendTransaction/TransactionConfigurati
 import type { SendFormState } from './SendFormState';
 import { buildSolanaTransfer } from './buildSolanaTransfer';
 
-function createNetworkFee(
-  fee: number,
-  network: NetworkInfo
-): null | NetworkFeeType {
+function createNetworkFee(fee: number, network: NetworkInfo): null | NetworkFeeType {
   const decimals = getBaseAssetDecimals(network);
   if (decimals == null) {
     return null;
@@ -64,9 +57,7 @@ function createNetworkFee(
   };
 }
 
-function getGasPriceFromTransaction(
-  transaction: IncomingTransaction
-): GasPriceObject | null {
+function getGasPriceFromTransaction(transaction: IncomingTransaction): GasPriceObject | null {
   const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = transaction;
   if (gasPrice) {
     return { classic: Number(gasPrice), eip1559: null, optimistic: null };
@@ -132,16 +123,14 @@ type SendSubmitData = (
     }
 ) & {
   paymasterPossible: boolean;
-  paymasterEligibility: null | Awaited<
-    ReturnType<typeof adjustedCheckEligibility>
-  >;
+  paymasterEligibility: null | Awaited<ReturnType<typeof adjustedCheckEligibility>>;
   networkFee: null | NetworkFeeType;
 };
 
 export async function prepareSendData(
   from: string,
   position: AddressPosition | EmptyAddressPosition | null,
-  formState: SendFormState
+  formState: SendFormState,
 ): Promise<SendSubmitData> {
   const EMPTY_SEND_DATA = {
     network: null,
@@ -150,8 +139,7 @@ export async function prepareSendData(
     transaction: null,
     networkFee: null,
   };
-  const { type, to, tokenValue, tokenChain, tokenAssetCode, gasLimit, data } =
-    formState;
+  const { type, to, tokenValue, tokenChain, tokenAssetCode, gasLimit, data } = formState;
   if (!from || !to || !tokenChain) {
     return EMPTY_SEND_DATA;
   }
@@ -170,11 +158,11 @@ export async function prepareSendData(
     }
     invariant(
       position?.asset.asset_code === tokenAssetCode,
-      'Position must match formState.tokenAssetCode'
+      'Position must match formState.tokenAssetCode',
     );
     invariant(
       getAssetImplementationInChain({ asset: position.asset, chain }),
-      'Asset must exist on chain'
+      'Asset must exist on chain',
     );
     const tokenAddressInChain = getAddress({ asset: position.asset, chain });
     if (tokenAddressInChain === undefined) {
@@ -187,10 +175,10 @@ export async function prepareSendData(
       to,
       inputToken: tokenAddressInChain,
       tokenInterface: isNativeAsset ? 'native' : 'erc20',
-      value: commonToBase(
-        tokenValue,
-        getDecimals({ asset: position.asset, chain })
-      ).toFixed(0, BigNumber.ROUND_DOWN),
+      value: commonToBase(tokenValue, getDecimals({ asset: position.asset, chain })).toFixed(
+        0,
+        BigNumber.ROUND_DOWN,
+      ),
     });
     if (data && isNativeAsset) {
       tx = { ...tx, data };
@@ -239,21 +227,19 @@ export async function prepareSendData(
 
     if (!eligibility) {
       const isNative =
-        type !== 'nft' &&
-        position &&
-        Networks.isNativeAsset(position.asset, network);
+        type !== 'nft' && position && Networks.isNativeAsset(position.asset, network);
       if (isNative && tokenValue && position.quantity) {
         const sendAmountBase = new BigNumber(
-          commonToBase(
-            tokenValue,
-            getDecimals({ asset: position.asset, chain })
-          ).toFixed(0, BigNumber.ROUND_DOWN)
+          commonToBase(tokenValue, getDecimals({ asset: position.asset, chain })).toFixed(
+            0,
+            BigNumber.ROUND_DOWN,
+          ),
         );
         const positionQuantity = new BigNumber(position.quantity);
         if (sendAmountBase.isEqualTo(positionQuantity)) {
           if (feeEstimation) {
             const networkFeeBase = new BigNumber(
-              String(feeEstimation.maxFee ?? feeEstimation.estimatedFee)
+              String(feeEstimation.maxFee ?? feeEstimation.estimatedFee),
             );
             const adjustedValue = positionQuantity.minus(networkFeeBase);
             if (adjustedValue.isGreaterThan(0)) {
@@ -270,9 +256,7 @@ export async function prepareSendData(
     let networkFee: NetworkFeeType | null = null;
     const baseAssetDecimals = getBaseAssetDecimals(network);
     if (feeEstimation && baseAssetDecimals != null) {
-      const feeBase = new BigNumber(
-        String(feeEstimation.maxFee ?? feeEstimation.estimatedFee)
-      );
+      const feeBase = new BigNumber(String(feeEstimation.maxFee ?? feeEstimation.estimatedFee));
       networkFee = {
         free: false,
         amount: {
@@ -301,12 +285,7 @@ export async function prepareSendData(
     if (!tokenValue || !tokenAssetCode || !tokenChain || !position) {
       return EMPTY_SEND_DATA;
     }
-    const { tx, fee } = await buildSolanaTransfer(
-      from,
-      formState,
-      position,
-      network
-    );
+    const { tx, fee } = await buildSolanaTransfer(from, formState, position, network);
     return {
       network,
       paymasterPossible: false,

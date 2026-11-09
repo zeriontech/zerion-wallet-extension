@@ -3,7 +3,7 @@ import type { SendFormState } from './SendFormState';
 
 export function toLegacySendFormState(
   s: SendFormState2,
-  resolvedInputAmount: string | null
+  resolvedInputAmount: string | null,
 ): SendFormState {
   return {
     type: s.nftId ? 'nft' : 'token',

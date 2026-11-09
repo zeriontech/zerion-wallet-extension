@@ -51,10 +51,7 @@ broadcastChannel.addEventListener('message', async (event) => {
     try {
       await port.request(data.method, data.params, data.id);
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === 'Extension context invalidated.'
-      ) {
+      if (error instanceof Error && error.message === 'Extension context invalidated.') {
         /**
          * It might be possible to re-execute this content-script after extension
          * has been invalidated (e.g. reinstalled), see:

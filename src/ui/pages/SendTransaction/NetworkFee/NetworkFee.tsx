@@ -19,9 +19,7 @@ import type { TransactionFee } from '../TransactionConfiguration/useTransactionF
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { NETWORK_SPEED_TO_TITLE } from './constants';
 
-function getFeeTypeTitle(
-  type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined
-) {
+function getFeeTypeTitle(type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined) {
   if (!type) {
     return undefined;
   }
@@ -53,10 +51,7 @@ export function NetworkFee({
   onChange: null | ((value: NetworkFeeConfiguration) => void);
   customViewOnly?: boolean;
   label?: React.ReactNode;
-  renderDisplayValue?: (params: {
-    hintTitle: string;
-    displayValue: string;
-  }) => React.ReactNode;
+  renderDisplayValue?: (params: { hintTitle: string; displayValue: string }) => React.ReactNode;
   displayValueEnd?: React.ReactNode;
   /**
    * The interpretation response from the transaction simulation API.
@@ -67,8 +62,7 @@ export function NetworkFee({
   const { networks } = useNetworks();
   const { currency } = useCurrency();
   const dialogRef = useRef<HTMLDialogElement | null>(null);
-  const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } =
-    transactionFee;
+  const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } = transactionFee;
   const {
     feeValueCommon: expectedFeeValueCommon,
     maxFeeValueCommon,
@@ -79,8 +73,7 @@ export function NetworkFee({
 
   const isLoading = feeEstimationQuery.isLoading || costsQuery.isLoading;
 
-  const nativeAssetSymbol =
-    networks?.getNetworkByName(chain)?.baseAsset?.symbol;
+  const nativeAssetSymbol = networks?.getNetworkByName(chain)?.baseAsset?.symbol;
 
   const disabled = isLoading || !onChange;
 
@@ -110,7 +103,7 @@ export function NetworkFee({
     expectedFeeValueCommon
       ? `${totalValueExceedsBalance ? 'Expected Fee: ' : ''}${formatTokenValue(
           expectedFeeValueCommon,
-          nativeAssetSymbol
+          nativeAssetSymbol,
         )}`
       : null,
     totalValueExceedsBalance && maxFeeValueCommon
@@ -151,11 +144,7 @@ export function NetworkFee({
         />
       ) : null}
       <HStack gap={8} justifyContent="space-between">
-        {label !== undefined ? (
-          label
-        ) : (
-          <UIText kind="small/regular">Network Fee</UIText>
-        )}
+        {label !== undefined ? label : <UIText kind="small/regular">Network Fee</UIText>}
         {isLoading ? (
           <CircleSpinner />
         ) : displayValue ? (

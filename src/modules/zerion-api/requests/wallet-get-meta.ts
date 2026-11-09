@@ -174,7 +174,7 @@ interface Response {
 function getWalletsMetaInternal(
   { identifiers }: Params,
   kyOptions: KyOptions,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const params = new URLSearchParams({ identifiers: identifiers.join(',') });
   const endpoint = `wallet/get-meta/v1?${params}`;
@@ -184,7 +184,7 @@ function getWalletsMetaInternal(
 export function getWalletsMeta(
   this: ZerionApiContext,
   params: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const kyOptions = this.getKyOptions();
   return getWalletsMetaInternal(params, kyOptions, options);
@@ -198,16 +198,11 @@ function splitIntoChunks<T>(arr: T[], size: number) {
   return chunks;
 }
 
-export async function getWalletsMetaByChunks(
-  this: ZerionApiContext,
-  addresses: string[]
-) {
+export async function getWalletsMetaByChunks(this: ZerionApiContext, addresses: string[]) {
   const chunks = splitIntoChunks(addresses, 10);
   const kyOptions = this.getKyOptions();
   const results = await Promise.all(
-    chunks.map((chunk) =>
-      getWalletsMetaInternal({ identifiers: chunk }, kyOptions)
-    )
+    chunks.map((chunk) => getWalletsMetaInternal({ identifiers: chunk }, kyOptions)),
   );
   return results
     .map((response) => response.data)

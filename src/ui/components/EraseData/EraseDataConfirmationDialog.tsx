@@ -20,12 +20,10 @@ function ResetWarningForm() {
             kind="negative"
             glow={true}
           />
-          <UIText kind="headline/h3">
-            Erase data for the browser extension?
-          </UIText>
+          <UIText kind="headline/h3">Erase data for the browser extension?</UIText>
           <UIText kind="body/regular">
-            Your crypto assets remain secured on the blockchain and can be
-            accessed with your private keys and recovery phrase
+            Your crypto assets remain secured on the blockchain and can be accessed with your
+            private keys and recovery phrase
           </UIText>
         </VStack>
         <Spacer height={28} />
@@ -66,12 +64,9 @@ export const EraseDataConfirmationDialog = React.forwardRef(
       }
     }, [ref]);
     return (
-      <BottomSheetDialog
-        style={{ height: 'max-content', minHeight: '48vh' }}
-        ref={ref}
-      >
+      <BottomSheetDialog style={{ height: 'max-content', minHeight: '48vh' }} ref={ref}>
         <ResetWarningForm key={key} />
       </BottomSheetDialog>
     );
-  }
+  },
 );

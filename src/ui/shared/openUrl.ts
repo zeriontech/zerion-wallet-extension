@@ -18,10 +18,7 @@ export async function openUrl(url: URL, params?: Partial<UrlContext>) {
   browser.tabs.create({ url: url.toString(), index });
 }
 
-export function openHref(
-  event: React.MouseEvent,
-  params?: Partial<UrlContext>
-) {
+export function openHref(event: React.MouseEvent, params?: Partial<UrlContext>) {
   event.preventDefault();
   const attr = event.currentTarget.getAttributeNode('href');
   if (attr) {

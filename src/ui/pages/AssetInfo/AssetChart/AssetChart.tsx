@@ -86,9 +86,7 @@ function getPointStyle({
   direction: AssetChartActionDirection;
 }): PointStyle {
   if (count > 1) {
-    return MultiActionPointImages[direction || 'in'][
-      theme === Theme.light ? 'light' : 'dark'
-    ];
+    return MultiActionPointImages[direction || 'in'][theme === Theme.light ? 'light' : 'dark'];
   }
   return 'circle';
 }
@@ -156,7 +154,7 @@ export function AssetChart({
       },
       pointBorderWidth: 1,
     }),
-    []
+    [],
   );
 
   const tooltip = useMemo<ChartTooltipOptions>(
@@ -171,11 +169,7 @@ export function AssetChart({
                   ...actions.total,
                   // we need to color total string based on the value sign, not direction field
                   direction:
-                    actions.total.value > 0
-                      ? 'in'
-                      : actions.total.value < 0
-                        ? 'out'
-                        : null,
+                    actions.total.value > 0 ? 'in' : actions.total.value < 0 ? 'out' : null,
                 },
                 asset: assetRef.current,
                 currency,
@@ -194,13 +188,13 @@ export function AssetChart({
                   action,
                   asset: assetRef.current,
                   currency,
-                })
+                }),
               )
             : '';
         },
       },
     }),
-    [currency]
+    [currency],
   );
 
   const plugins = useMemo<ChartPlugins>(
@@ -209,13 +203,10 @@ export function AssetChart({
       drawVerticalLinePlugin({ getTheme: () => themeRef.current }),
       drawCapPointPlugin({ getTheme: () => themeRef.current }),
     ],
-    []
+    [],
   );
 
-  const interaction = useMemo<ChartInteraction>(
-    () => ({ mode: 'magneticActions' }),
-    []
-  );
+  const interaction = useMemo<ChartInteraction>(() => ({ mode: 'magneticActions' }), []);
 
   return (
     <div

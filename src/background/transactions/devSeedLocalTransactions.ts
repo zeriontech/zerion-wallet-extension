@@ -63,8 +63,7 @@ function createSeedTransaction({
 }): TransactionObject {
   const { chainId, tokens } = CHAINS[index % CHAINS.length];
   // Every 10th item points at a random contract to exercise asset misses
-  const token =
-    index % 10 === 9 ? randomHex(20) : tokens[index % tokens.length];
+  const token = index % 10 === 9 ? randomHex(20) : tokens[index % tokens.length];
   const kind = index % 3; // 0: native send, 1: token transfer, 2: approve
   const amount = BigInt(1 + (index % 97)) * 10n ** 15n;
   const to = kind === 0 ? RECEIVER : token;
@@ -116,6 +115,6 @@ export function createSeedTransactions({
   now?: number;
 }): TransactionObject[] {
   return Array.from({ length: count }, (_, index) =>
-    createSeedTransaction({ address, index, timestamp: now - index * 60_000 })
+    createSeedTransaction({ address, index, timestamp: now - index * 60_000 }),
   );
 }

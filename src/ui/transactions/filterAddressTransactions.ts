@@ -6,15 +6,13 @@ interface MultipleAddressesParam {
   addresses: string[];
 }
 
-function isMultipleAddressesParam(
-  x: AddressParams
-): x is MultipleAddressesParam {
+function isMultipleAddressesParam(x: AddressParams): x is MultipleAddressesParam {
   return 'addresses' in x;
 }
 
 export function filterAddressTransactions(
   addressParams: AddressParams,
-  transactions: TransactionObject[]
+  transactions: TransactionObject[],
 ) {
   return transactions.filter((tx) => {
     const txFromRaw = tx.transaction ? tx.transaction.from : tx.publicKey;

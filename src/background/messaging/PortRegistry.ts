@@ -1,10 +1,7 @@
 import { pushUnique, removeFromArray } from 'src/shared/array-mutations';
 import type { RuntimePort } from '../webapis/RuntimePort';
 
-export type PortMessageHandler = (
-  port: RuntimePort,
-  msg: unknown
-) => void | boolean;
+export type PortMessageHandler = (port: RuntimePort, msg: unknown) => void | boolean;
 
 export class PortRegistry {
   private ports: RuntimePort[];

@@ -23,25 +23,15 @@ export function PerpsMarketRow({ perp }: { perp: Perp }) {
       : relativeChange1d >= 0
         ? 'var(--positive-500)'
         : 'var(--negative-500)';
-  const changePrefix =
-    relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
+  const changePrefix = relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
   // iOS subtitle: "{24h volume, compact} · {leverage}x", e.g. "$2.5M · 10x".
   const volumeLabel =
-    volume24h != null
-      ? formatPriceValue(volume24h, 'en', currency, { notation: 'compact' })
-      : null;
+    volume24h != null ? formatPriceValue(volume24h, 'en', currency, { notation: 'compact' }) : null;
   const subtitle = [volumeLabel, `${maxLeverage}×`].filter(Boolean).join(' · ');
 
   return (
-    <UnstyledLink
-      to={`/perps/${encodeURIComponent(perp.name)}`}
-      className={styles.row}
-    >
-      <HStack
-        gap={8}
-        alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
-      >
+    <UnstyledLink to={`/perps/${encodeURIComponent(perp.name)}`} className={styles.row}>
+      <HStack gap={8} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
         <TokenIcon
           src={perp.iconUrl || getPerpIconUrl(perp.id)}
           symbol={perp.symbol}
@@ -68,9 +58,7 @@ export function PerpsMarketRow({ perp }: { perp: Perp }) {
               {perp.symbol}
             </UIText>
             {price != null ? (
-              <UIText kind="body/accent">
-                {formatPriceValue(price, 'en', currency)}
-              </UIText>
+              <UIText kind="body/accent">{formatPriceValue(price, 'en', currency)}</UIText>
             ) : null}
           </HStack>
           <HStack gap={4} alignItems="center" justifyContent="space-between">

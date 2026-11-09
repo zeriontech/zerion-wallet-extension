@@ -36,13 +36,11 @@ function parseArgs(argv) {
   };
   for (const arg of argv) {
     if (arg === '--dry-run') options.dryRun = true;
-    else if (arg.startsWith('--out-dir='))
-      options.outDir = arg.slice('--out-dir='.length);
+    else if (arg.startsWith('--out-dir=')) options.outDir = arg.slice('--out-dir='.length);
     else if (arg.startsWith('--tag=')) options.tag = arg.slice('--tag='.length);
     else if (arg.startsWith('--version-suffix='))
       options.versionSuffix = arg.slice('--version-suffix='.length);
-    else if (arg.startsWith('--label='))
-      options.label = arg.slice('--label='.length);
+    else if (arg.startsWith('--label=')) options.label = arg.slice('--label='.length);
     else {
       console.error(`Unknown argument: ${arg}`);
       process.exit(1);
@@ -58,35 +56,25 @@ function fail(message) {
 
 const options = parseArgs(process.argv.slice(2));
 const root = process.cwd();
-const { version } = JSON.parse(
-  fs.readFileSync(path.join(root, 'package.json'), 'utf8')
-);
-const expectedVersion = options.versionSuffix
-  ? `${version}.${options.versionSuffix}`
-  : version;
+const { version } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const expectedVersion = options.versionSuffix ? `${version}.${options.versionSuffix}` : version;
 const tag = options.tag ?? `v${expectedVersion}`;
 const suffixLabel = options.label ? `-${options.label}` : '';
 
 if (tag !== `v${expectedVersion}`) {
-  fail(
-    `Tag ${tag} does not match the built version ${expectedVersion}. Refusing to zip.`
-  );
+  fail(`Tag ${tag} does not match the built version ${expectedVersion}. Refusing to zip.`);
 }
 
 function requireBuildOutput(dir) {
   const manifestPath = path.join(root, dir, 'manifest.json');
   if (!fs.existsSync(manifestPath)) {
-    fail(
-      `${dir}/manifest.json is missing. Run \`npm run build:production\` first.`
-    );
+    fail(`${dir}/manifest.json is missing. Run \`npm run build:production\` first.`);
   }
-  const { version: manifestVersion } = JSON.parse(
-    fs.readFileSync(manifestPath, 'utf8')
-  );
+  const { version: manifestVersion } = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   if (manifestVersion !== expectedVersion) {
     fail(
       `${dir}/manifest.json has version ${manifestVersion}, but the build should be ${expectedVersion}. ` +
-        'Rebuild before zipping.'
+        'Rebuild before zipping.',
     );
   }
 }
@@ -106,19 +94,19 @@ const artifacts = {
     root,
     options.outDir,
     'chrome',
-    `zerion-wallet-extension-${tag}${suffixLabel}.zip`
+    `zerion-wallet-extension-${tag}${suffixLabel}.zip`,
   ),
   firefox: path.join(
     root,
     options.outDir,
     'firefox',
-    `zerion-wallet-firefox-addon-${tag}${suffixLabel}.zip`
+    `zerion-wallet-firefox-addon-${tag}${suffixLabel}.zip`,
   ),
   firefoxSources: path.join(
     root,
     options.outDir,
     'firefox',
-    `zerion-wallet-firefox-addon-${tag}${suffixLabel}-sources.zip`
+    `zerion-wallet-firefox-addon-${tag}${suffixLabel}-sources.zip`,
   ),
 };
 
@@ -149,14 +137,13 @@ execFileSync(
     // A beta build has no tag; HEAD is the commit it was built from.
     options.tag ?? 'HEAD',
   ],
-  { cwd: root, stdio: 'inherit' }
+  { cwd: root, stdio: 'inherit' },
 );
 
 for (const [name, artifact] of Object.entries(artifacts)) {
   const { size } = fs.statSync(artifact);
   if (size === 0) fail(`${name} artifact is empty: ${artifact}`);
-  const humanSize =
-    size < 1024 ? `${size} B` : `${(size / 1024).toFixed(0)} KiB`;
+  const humanSize = size < 1024 ? `${size} B` : `${(size / 1024).toFixed(0)} KiB`;
   console.log(`${name}: ${path.relative(root, artifact)} (${humanSize})`);
 }
 

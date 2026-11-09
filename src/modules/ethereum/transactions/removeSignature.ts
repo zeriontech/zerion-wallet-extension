@@ -13,14 +13,12 @@ interface MaybeWithSignature {
 }
 
 function toPlainObject<T extends object>(x: T): T {
-  const entries = Object.entries(x).filter(
-    (entry) => typeof entry[1] !== 'function'
-  );
+  const entries = Object.entries(x).filter((entry) => typeof entry[1] !== 'function');
   return Object.fromEntries(entries) as T;
 }
 
 export function removeSignature<T extends MaybeWithSignature>(
-  tx: T
+  tx: T,
 ): Omit<T, 'r' | 's' | 'v' | 'signature'> {
   const value = produce(toPlainObject(tx), (draft) => {
     delete draft.r;

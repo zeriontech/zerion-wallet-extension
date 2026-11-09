@@ -152,8 +152,7 @@ describe('RequestCache tests by GPT-4', () => {
 
   it('should return the same promise if getter has not resolved yet', async () => {
     const key = 'key1';
-    const getter = () =>
-      new Promise((resolve) => setTimeout(() => resolve('data'), 5000));
+    const getter = () => new Promise((resolve) => setTimeout(() => resolve('data'), 5000));
 
     const promise1 = cache.get(key, getter);
     const promise2 = cache.get(key, getter);

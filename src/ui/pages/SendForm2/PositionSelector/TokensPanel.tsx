@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ComboboxProvider,
-  Combobox,
-  TabProvider,
-  useTabContext,
-} from '@ariakit/react';
+import { ComboboxProvider, Combobox, TabProvider, useTabContext } from '@ariakit/react';
 import { normalizedContains } from 'normalized-contains';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -32,44 +27,40 @@ import { NetworkSelect2 } from 'src/ui/components/NetworkSelect2';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 
-const SearchCombobox = React.forwardRef<HTMLInputElement>(
-  function SearchCombobox(_props, ref) {
-    const tab = useTabContext();
-    return (
-      <div style={{ position: 'relative' }}>
-        <SearchIcon
-          role="presentation"
-          style={{
-            pointerEvents: 'none',
-            position: 'absolute',
-            left: 12,
-            top: 10,
-            width: 24,
-            height: 24,
-            color: 'var(--neutral-500)',
-          }}
-        />
-        <Combobox
-          ref={ref}
-          autoSelect="always"
-          placeholder="Search tokens"
-          render={<Input style={{ paddingLeft: 40 }} />}
-          onKeyDown={(event) => {
-            if (event.key !== 'Tab') return;
-            const activeId = tab?.getState().selectedId;
-            const options = { activeId, focusLoop: false };
-            const nextId = event.shiftKey
-              ? tab?.previous(options)
-              : tab?.next(options);
-            if (!nextId) return;
-            event.preventDefault();
-            tab?.select(nextId);
-          }}
-        />
-      </div>
-    );
-  }
-);
+const SearchCombobox = React.forwardRef<HTMLInputElement>(function SearchCombobox(_props, ref) {
+  const tab = useTabContext();
+  return (
+    <div style={{ position: 'relative' }}>
+      <SearchIcon
+        role="presentation"
+        style={{
+          pointerEvents: 'none',
+          position: 'absolute',
+          left: 12,
+          top: 10,
+          width: 24,
+          height: 24,
+          color: 'var(--neutral-500)',
+        }}
+      />
+      <Combobox
+        ref={ref}
+        autoSelect="always"
+        placeholder="Search tokens"
+        render={<Input style={{ paddingLeft: 40 }} />}
+        onKeyDown={(event) => {
+          if (event.key !== 'Tab') return;
+          const activeId = tab?.getState().selectedId;
+          const options = { activeId, focusLoop: false };
+          const nextId = event.shiftKey ? tab?.previous(options) : tab?.next(options);
+          if (!nextId) return;
+          event.preventDefault();
+          tab?.select(nextId);
+        }}
+      />
+    </div>
+  );
+});
 
 function SkeletonRow() {
   return (
@@ -179,18 +170,14 @@ export function TokensPanel({
 }: TokensPanelProps) {
   const { currency } = useCurrency();
   const [searchValue, setSearchValue] = useState('');
-  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(
-    defaultSelectedNetwork
-  );
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(defaultSelectedNetwork);
   const [pinnedFromDialog, setPinnedFromDialog] = useState<string | null>(null);
   const networkSelector = useDialog2();
   const comboboxRef = useRef<HTMLInputElement>(null);
   const chipsRef = useRef<HTMLDivElement>(null);
 
   const scrollChipIntoView = (chainId: string) => {
-    const el = chipsRef.current?.querySelector<HTMLElement>(
-      `[data-chain-id="${chainId}"]`
-    );
+    const el = chipsRef.current?.querySelector<HTMLElement>(`[data-chain-id="${chainId}"]`);
     el?.scrollIntoView({ block: 'nearest', inline: 'center' });
   };
 
@@ -227,21 +214,16 @@ export function TokensPanel({
   }, [positions]);
 
   // Same filter as the network dialog below: pins for the address's standard.
-  const visiblePinnedNetworks = useVisiblePinnedNetworks(
-    networks,
-    getAddressType(address)
-  );
+  const visiblePinnedNetworks = useVisiblePinnedNetworks(networks, getAddressType(address));
   const pinnedChainIds = useMemo(
     () => visiblePinnedNetworks.map((n) => n.id),
-    [visiblePinnedNetworks]
+    [visiblePinnedNetworks],
   );
 
-  const topNetworks = useTopNetworks(
-    positions,
-    selectedNetwork,
-    pinnedFromDialog,
-    { networks, pinnedChainIds }
-  );
+  const topNetworks = useTopNetworks(positions, selectedNetwork, pinnedFromDialog, {
+    networks,
+    pinnedChainIds,
+  });
 
   const selectedNetworkConfig = useMemo(() => {
     if (!selectedNetwork) return null;
@@ -249,9 +231,7 @@ export function TokensPanel({
   }, [networks, selectedNetwork]);
 
   const useNodePositions = Boolean(
-    selectedNetwork &&
-    selectedNetworkConfig &&
-    !selectedNetworkConfig.flags.supportsPositions
+    selectedNetwork && selectedNetworkConfig && !selectedNetworkConfig.flags.supportsPositions,
   );
 
   // All-chains view: simple positions only (no node-positions fan-out).
@@ -268,7 +248,7 @@ export function TokensPanel({
       result = result.filter(
         (p) =>
           normalizedContains(p.fungible.name.toLowerCase(), query) ||
-          normalizedContains(p.fungible.symbol.toLowerCase(), query)
+          normalizedContains(p.fungible.symbol.toLowerCase(), query),
       );
     }
     return result.sort((a, b) => (b.amount.value || 0) - (a.amount.value || 0));
@@ -281,7 +261,7 @@ export function TokensPanel({
         key: `${position.chain.id}-${position.fungible.id}`,
         data: position,
       })),
-    [filteredPositions]
+    [filteredPositions],
   );
 
   return (

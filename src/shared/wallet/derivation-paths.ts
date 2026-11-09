@@ -32,16 +32,12 @@ const pathPatterns = {
     regex: /(?:m\/)?501'\/(\d+)'\/0'\/0'/,
     fromIndex: (index: number) => `m/501'/${index}'/0'/0'`,
   },
-} satisfies Record<
-  string,
-  { regex: RegExp; fromIndex: (index: number) => string }
->;
+} satisfies Record<string, { regex: RegExp; fromIndex: (index: number) => string }>;
 
 export type DerivationPathType = keyof typeof pathPatterns;
 
 /** Default account paths used for Ethereum wallets */
-export const getAccountPathEthereum = (index: number) =>
-  pathPatterns.bip44.fromIndex(index);
+export const getAccountPathEthereum = (index: number) => pathPatterns.bip44.fromIndex(index);
 
 /** This isn't the most elegant, but we can determine solana addresses based on derivation path */
 export function isSolanaPath(path: string) {
@@ -56,10 +52,7 @@ export const getAccountPath = (pathType: DerivationPathType, index: number) => {
   return pathPatterns[pathType].fromIndex(index);
 };
 
-export function getIndexFromPath(
-  path: string,
-  type: DerivationPathType = 'bip44'
-) {
+export function getIndexFromPath(path: string, type: DerivationPathType = 'bip44') {
   const pattern = pathPatterns[type];
   const digits = path.match(pattern.regex)?.[1];
   return digits ? Number(digits) : 0;

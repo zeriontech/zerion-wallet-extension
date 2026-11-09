@@ -19,10 +19,7 @@ import { WarningIcon } from '../WarningIcon';
 export function PhishingWarningPage() {
   const [params] = useSearchParams();
   const rawUrl = params.get('url');
-  const safeUrl = useMemo(
-    () => (rawUrl ? prepareForHref(rawUrl) : null),
-    [rawUrl]
-  );
+  const safeUrl = useMemo(() => (rawUrl ? prepareForHref(rawUrl) : null), [rawUrl]);
   const hostname = safeUrl ? safeUrl.hostname : null;
 
   useBodyStyle({
@@ -52,11 +49,7 @@ export function PhishingWarningPage() {
           }}
         />
         <VStack gap={16}>
-          <UIText
-            kind="headline/h1"
-            color="var(--always-white)"
-            style={{ justifySelf: 'center' }}
-          >
+          <UIText kind="headline/h1" color="var(--always-white)" style={{ justifySelf: 'center' }}>
             Malicious DApp
           </UIText>
           <div
@@ -88,9 +81,7 @@ export function PhishingWarningPage() {
               <UIText kind="body/accent" color="var(--always-black)">
                 Connection blocked by
               </UIText>
-              <ZerionIcon
-                style={{ color: 'var(--always-black)', width: 20, height: 20 }}
-              />
+              <ZerionIcon style={{ color: 'var(--always-black)', width: 20, height: 20 }} />
               <UIText kind="body/accent" color="var(--always-black)">
                 Zerion
               </UIText>
@@ -138,9 +129,7 @@ export function PhishingWarningPage() {
                 window.close();
               }}
             >
-              <span style={{ color: 'var(--always-black)' }}>
-                Back to Safety
-              </span>
+              <span style={{ color: 'var(--always-black)' }}>Back to Safety</span>
             </Button>
           </VStack>
         </VStack>

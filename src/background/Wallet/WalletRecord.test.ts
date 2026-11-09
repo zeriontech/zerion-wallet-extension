@@ -5,31 +5,24 @@ import type { SessionCredentials } from 'src/background/account/Credentials';
 import { WalletRecordModel, toPlainObject } from './WalletRecord';
 import { MnemonicWalletContainer } from './model/WalletContainer';
 import { PrivateKeyWalletContainer } from './model/WalletContainer';
-import {
-  DeviceAccountContainer,
-  ReadonlyAccountContainer,
-} from './model/AccountContainer';
+import { DeviceAccountContainer, ReadonlyAccountContainer } from './model/AccountContainer';
 import type { WalletRecord } from './model/types';
 import type { BareMnemonicWallet } from './model/BareWallet';
 import { WalletOrigin } from './model/WalletOrigin';
 
 function getMnemonicWallets(record: WalletRecord, groupIndex: number) {
-  return record.walletManager.groups[groupIndex].walletContainer
-    .wallets as BareMnemonicWallet[];
+  return record.walletManager.groups[groupIndex].walletContainer.wallets as BareMnemonicWallet[];
 }
 
 const TEST_USER = { id: 'test-user-id', salt: createSalt() };
 
 async function makeCreds(password: string): Promise<SessionCredentials> {
-  const [
-    encryptionKey,
-    seedPhraseEncryptionKey,
-    seedPhraseEncryptionKey_deprecated,
-  ] = await Promise.all([
-    sha256({ salt: TEST_USER.id, password }),
-    sha256({ salt: TEST_USER.salt, password }),
-    createCryptoKey(password, TEST_USER.salt),
-  ]);
+  const [encryptionKey, seedPhraseEncryptionKey, seedPhraseEncryptionKey_deprecated] =
+    await Promise.all([
+      sha256({ salt: TEST_USER.id, password }),
+      sha256({ salt: TEST_USER.salt, password }),
+      createCryptoKey(password, TEST_USER.salt),
+    ]);
   return {
     id: TEST_USER.id,
     encryptionKey,
@@ -39,11 +32,9 @@ async function makeCreds(password: string): Promise<SessionCredentials> {
 }
 
 const PHRASE_1 = 'test test test test test test test test test test test junk';
-const PHRASE_2 =
-  'legal winner thank year wave sausage worth useful legal winner thank yellow';
+const PHRASE_2 = 'legal winner thank year wave sausage worth useful legal winner thank yellow';
 
-const TEST_PRIVATE_KEY =
-  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+const TEST_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 
 function buildPrivateKeyContainer() {
   return new PrivateKeyWalletContainer([{ privateKey: TEST_PRIVATE_KEY }]);
@@ -224,38 +215,22 @@ describe('WalletRecordModel re-encryption methods', () => {
       const inputGroup4 = record.walletManager.groups[3].walletContainer;
       const inputGroup5 = record.walletManager.groups[4].walletContainer;
 
-      const result = await WalletRecordModel.reEncryptRecord(
-        record,
-        OLD_CREDS,
-        NEW_CREDS
-      );
+      const result = await WalletRecordModel.reEncryptRecord(record, OLD_CREDS, NEW_CREDS);
 
       const group1Wallets = getMnemonicWallets(result, 0);
       const group2Wallets = getMnemonicWallets(result, 1);
 
       // Mnemonics re-encrypted: decrypt with NEW returns the original phrase
-      expect(
-        await decryptMnemonic(group1Wallets[0].mnemonic.phrase, NEW_CREDS)
-      ).toBe(PHRASE_1);
-      expect(
-        await decryptMnemonic(group2Wallets[0].mnemonic.phrase, NEW_CREDS)
-      ).toBe(PHRASE_2);
+      expect(await decryptMnemonic(group1Wallets[0].mnemonic.phrase, NEW_CREDS)).toBe(PHRASE_1);
+      expect(await decryptMnemonic(group2Wallets[0].mnemonic.phrase, NEW_CREDS)).toBe(PHRASE_2);
 
       // Decryption with OLD now fails
-      await expect(
-        decryptMnemonic(group1Wallets[0].mnemonic.phrase, OLD_CREDS)
-      ).rejects.toThrow();
-      await expect(
-        decryptMnemonic(group2Wallets[0].mnemonic.phrase, OLD_CREDS)
-      ).rejects.toThrow();
+      await expect(decryptMnemonic(group1Wallets[0].mnemonic.phrase, OLD_CREDS)).rejects.toThrow();
+      await expect(decryptMnemonic(group2Wallets[0].mnemonic.phrase, OLD_CREDS)).rejects.toThrow();
 
       // All 3 wallets in group 1 share the same updated ciphertext
-      expect(group1Wallets[0].mnemonic.phrase).toBe(
-        group1Wallets[1].mnemonic.phrase
-      );
-      expect(group1Wallets[1].mnemonic.phrase).toBe(
-        group1Wallets[2].mnemonic.phrase
-      );
+      expect(group1Wallets[0].mnemonic.phrase).toBe(group1Wallets[1].mnemonic.phrase);
+      expect(group1Wallets[1].mnemonic.phrase).toBe(group1Wallets[2].mnemonic.phrase);
 
       // Non-mnemonic containers referentially equal to the input
       expect(result.walletManager.groups[2].walletContainer).toBe(inputGroup3);
@@ -270,9 +245,7 @@ describe('WalletRecordModel re-encryption methods', () => {
         'group-4',
         'group-5',
       ]);
-      expect(result.walletManager.currentAddress).toBe(
-        record.walletManager.currentAddress
-      );
+      expect(result.walletManager.currentAddress).toBe(record.walletManager.currentAddress);
     });
 
     it('throws on wrong old credentials and leaves input record unchanged', async () => {
@@ -283,7 +256,7 @@ describe('WalletRecordModel re-encryption methods', () => {
       const snapshotBefore = JSON.stringify(toPlainObject(record));
 
       await expect(
-        WalletRecordModel.reEncryptRecord(record, WRONG_CREDS, NEW_CREDS)
+        WalletRecordModel.reEncryptRecord(record, WRONG_CREDS, NEW_CREDS),
       ).rejects.toThrow();
 
       const snapshotAfter = JSON.stringify(toPlainObject(record));
@@ -298,30 +271,21 @@ describe('WalletRecordModel re-encryption methods', () => {
         group2Creds: OLD_CREDS,
       });
 
-      const result =
-        await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
-          record,
-          OLD_CREDS,
-          NEW_CREDS
-        );
+      const result = await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
+        record,
+        OLD_CREDS,
+        NEW_CREDS,
+      );
 
       const group1Wallets = getMnemonicWallets(result, 0);
       const group2Wallets = getMnemonicWallets(result, 1);
 
-      expect(
-        await decryptMnemonic(group1Wallets[0].mnemonic.phrase, NEW_CREDS)
-      ).toBe(PHRASE_1);
-      expect(
-        await decryptMnemonic(group2Wallets[0].mnemonic.phrase, NEW_CREDS)
-      ).toBe(PHRASE_2);
+      expect(await decryptMnemonic(group1Wallets[0].mnemonic.phrase, NEW_CREDS)).toBe(PHRASE_1);
+      expect(await decryptMnemonic(group2Wallets[0].mnemonic.phrase, NEW_CREDS)).toBe(PHRASE_2);
 
       // All 3 wallets in group 1 share the same updated ciphertext
-      expect(group1Wallets[0].mnemonic.phrase).toBe(
-        group1Wallets[1].mnemonic.phrase
-      );
-      expect(group1Wallets[1].mnemonic.phrase).toBe(
-        group1Wallets[2].mnemonic.phrase
-      );
+      expect(group1Wallets[0].mnemonic.phrase).toBe(group1Wallets[1].mnemonic.phrase);
+      expect(group1Wallets[1].mnemonic.phrase).toBe(group1Wallets[2].mnemonic.phrase);
     });
 
     it('leaves every group untouched when none are stale', async () => {
@@ -330,32 +294,23 @@ describe('WalletRecordModel re-encryption methods', () => {
         group2Creds: NEW_CREDS,
       });
 
-      const group1PhrasesBefore = getMnemonicWallets(record, 0).map(
-        (w) => w.mnemonic.phrase
-      );
-      const group2PhraseBefore = getMnemonicWallets(record, 1)[0].mnemonic
-        .phrase;
+      const group1PhrasesBefore = getMnemonicWallets(record, 0).map((w) => w.mnemonic.phrase);
+      const group2PhraseBefore = getMnemonicWallets(record, 1)[0].mnemonic.phrase;
 
-      const result =
-        await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
-          record,
-          OLD_CREDS,
-          NEW_CREDS
-        );
-
-      const group1PhrasesAfter = getMnemonicWallets(result, 0).map(
-        (w) => w.mnemonic.phrase
+      const result = await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
+        record,
+        OLD_CREDS,
+        NEW_CREDS,
       );
-      const group2PhraseAfter = getMnemonicWallets(result, 1)[0].mnemonic
-        .phrase;
+
+      const group1PhrasesAfter = getMnemonicWallets(result, 0).map((w) => w.mnemonic.phrase);
+      const group2PhraseAfter = getMnemonicWallets(result, 1)[0].mnemonic.phrase;
 
       expect(group1PhrasesAfter).toEqual(group1PhrasesBefore);
       expect(group2PhraseAfter).toBe(group2PhraseBefore);
 
       // Sanity: still decrypt with NEW
-      expect(await decryptMnemonic(group2PhraseAfter, NEW_CREDS)).toBe(
-        PHRASE_2
-      );
+      expect(await decryptMnemonic(group2PhraseAfter, NEW_CREDS)).toBe(PHRASE_2);
     });
 
     it('re-encrypts only stale groups in mixed state (partial-fix scenario)', async () => {
@@ -364,51 +319,39 @@ describe('WalletRecordModel re-encryption methods', () => {
         group2Creds: NEW_CREDS, // already current
       });
 
-      const group1PhraseBefore = getMnemonicWallets(record, 0)[0].mnemonic
-        .phrase;
-      const group2PhraseBefore = getMnemonicWallets(record, 1)[0].mnemonic
-        .phrase;
+      const group1PhraseBefore = getMnemonicWallets(record, 0)[0].mnemonic.phrase;
+      const group2PhraseBefore = getMnemonicWallets(record, 1)[0].mnemonic.phrase;
 
-      const result =
-        await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
-          record,
-          OLD_CREDS,
-          NEW_CREDS
-        );
+      const result = await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
+        record,
+        OLD_CREDS,
+        NEW_CREDS,
+      );
 
       const group1Wallets = getMnemonicWallets(result, 0);
       const group2Wallets = getMnemonicWallets(result, 1);
 
       // Group 1: re-encrypted (ciphertext changed)
       expect(group1Wallets[0].mnemonic.phrase).not.toBe(group1PhraseBefore);
-      expect(
-        await decryptMnemonic(group1Wallets[0].mnemonic.phrase, NEW_CREDS)
-      ).toBe(PHRASE_1);
+      expect(await decryptMnemonic(group1Wallets[0].mnemonic.phrase, NEW_CREDS)).toBe(PHRASE_1);
       // Group 1: all 3 wallets share the same updated ciphertext
-      expect(group1Wallets[0].mnemonic.phrase).toBe(
-        group1Wallets[1].mnemonic.phrase
-      );
-      expect(group1Wallets[1].mnemonic.phrase).toBe(
-        group1Wallets[2].mnemonic.phrase
-      );
+      expect(group1Wallets[0].mnemonic.phrase).toBe(group1Wallets[1].mnemonic.phrase);
+      expect(group1Wallets[1].mnemonic.phrase).toBe(group1Wallets[2].mnemonic.phrase);
 
       // Group 2: byte-identical (untouched)
       expect(group2Wallets[0].mnemonic.phrase).toBe(group2PhraseBefore);
-      expect(
-        await decryptMnemonic(group2Wallets[0].mnemonic.phrase, NEW_CREDS)
-      ).toBe(PHRASE_2);
+      expect(await decryptMnemonic(group2Wallets[0].mnemonic.phrase, NEW_CREDS)).toBe(PHRASE_2);
     });
 
     it('is a no-op for a record with no mnemonic groups', async () => {
       const record = buildRecordWithoutMnemonics();
       const snapshotBefore = JSON.stringify(toPlainObject(record));
 
-      const result =
-        await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
-          record,
-          OLD_CREDS,
-          NEW_CREDS
-        );
+      const result = await WalletRecordModel.reEncryptMnemonicWithNewCredentialsIfNeeded(
+        record,
+        OLD_CREDS,
+        NEW_CREDS,
+      );
 
       const snapshotAfter = JSON.stringify(toPlainObject(result));
       expect(snapshotAfter).toBe(snapshotBefore);

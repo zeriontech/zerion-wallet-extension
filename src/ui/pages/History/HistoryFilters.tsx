@@ -90,27 +90,24 @@ function parseAssetTypes(param?: string): ('fungible' | 'nft')[] {
 }
 
 export function useHistoryFilterParams() {
-  const [searchParams, setSearchParams] =
-    useSearchParamsObj<HistorySearchParams>();
+  const [searchParams, setSearchParams] = useSearchParamsObj<HistorySearchParams>();
 
   const actionTypeKeys = useMemo(
     () => parseActionTypeKeys(searchParams.actionTypes),
-    [searchParams.actionTypes]
+    [searchParams.actionTypes],
   );
 
   const actionTypes = useMemo(
     () => parseActionTypes(searchParams.actionTypes),
-    [searchParams.actionTypes]
+    [searchParams.actionTypes],
   );
 
   const assetTypes = useMemo(
     () => parseAssetTypes(searchParams.assetTypes),
-    [searchParams.assetTypes]
+    [searchParams.assetTypes],
   );
 
-  const hasActiveFilters = Boolean(
-    searchParams.actionTypes || searchParams.assetTypes
-  );
+  const hasActiveFilters = Boolean(searchParams.actionTypes || searchParams.assetTypes);
 
   return {
     searchParams,
@@ -140,10 +137,7 @@ function getAssetTypeLabel(param?: string): string {
 
 function FilterRow({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <UnstyledButton
-      onClick={onClick}
-      style={{ width: '100%', padding: '12px', textAlign: 'left' }}
-    >
+    <UnstyledButton onClick={onClick} style={{ width: '100%', padding: '12px', textAlign: 'left' }}>
       <HStack
         gap={4}
         justifyContent="space-between"
@@ -224,11 +218,7 @@ function AssetTypeDialog({
                       >
                         <UIText
                           kind="body/regular"
-                          color={
-                            value === option.value
-                              ? 'var(--primary)'
-                              : undefined
-                          }
+                          color={value === option.value ? 'var(--primary)' : undefined}
                         >
                           {option.label}
                         </UIText>
@@ -261,9 +251,7 @@ function ActionTypeDialogContent({
   dialogRef: React.RefObject<HTMLDialogElement | null>;
   initialKeys: string[];
 }) {
-  const [selected, setSelected] = useState<Set<string>>(
-    () => new Set(initialKeys)
-  );
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(initialKeys));
 
   const toggle = (key: string) => {
     setSelected((prev) => {
@@ -310,9 +298,7 @@ function ActionTypeDialogContent({
             >
               <UIText
                 kind="body/regular"
-                color={
-                  selected.has(option.value) ? 'var(--primary)' : undefined
-                }
+                color={selected.has(option.value) ? 'var(--primary)' : undefined}
               >
                 {option.label}
               </UIText>
@@ -330,12 +316,7 @@ function ActionTypeDialogContent({
         }))}
       />
       <Spacer height={24} />
-      <Button
-        onClick={handleApply}
-        style={{ width: '100%' }}
-        size={48}
-        kind="primary"
-      >
+      <Button onClick={handleApply} style={{ width: '100%' }} size={48} kind="primary">
         Apply
       </Button>
     </>
@@ -371,10 +352,7 @@ function ActionTypeDialog({
         height="min-content"
         containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
         renderWhenOpen={() => (
-          <ActionTypeDialogContent
-            dialogRef={dialogRef}
-            initialKeys={selectedKeys}
-          />
+          <ActionTypeDialogContent dialogRef={dialogRef} initialKeys={selectedKeys} />
         )}
       />
     </>
@@ -408,8 +386,7 @@ export function HistoryFiltersButton({
 }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
-  const hasAnyFilter =
-    hasActiveFilters || Boolean(selectedChain) || Boolean(date);
+  const hasAnyFilter = hasActiveFilters || Boolean(selectedChain) || Boolean(date);
 
   const handleOpen = () => {
     if (!dialogRef.current) return;
@@ -455,10 +432,7 @@ export function HistoryFiltersButton({
         containerStyle={{ backgroundColor: 'var(--neutral-100)' }}
         renderWhenOpen={() => (
           <div>
-            <DialogTitle
-              alignTitle="start"
-              title={<UIText kind="headline/h3">Filters</UIText>}
-            />
+            <DialogTitle alignTitle="start" title={<UIText kind="headline/h3">Filters</UIText>} />
             <Spacer height={16} />
             <VStack gap={16}>
               {showNetworkSelector ? (
@@ -467,11 +441,7 @@ export function HistoryFiltersButton({
                     Network
                   </UIText>
                   <SurfaceList
-                    style={
-                      selectedChain
-                        ? { border: '2px solid var(--primary-300)' }
-                        : undefined
-                    }
+                    style={selectedChain ? { border: '2px solid var(--primary-300)' } : undefined}
                     items={[
                       {
                         key: 'network',
@@ -483,24 +453,16 @@ export function HistoryFiltersButton({
                             standard={addressType || 'evm'}
                             onChangeEffect={handleClose}
                             onChange={(value) => {
-                              onChainChange(
-                                value === NetworkSelectValue.All ? null : value
-                              );
+                              onChainChange(value === NetworkSelectValue.All ? null : value);
                             }}
                             showAllNetworksOption={true}
                             showEcosystemHint={false}
                             renderButton={({ openDialog, networks }) => {
-                              const chain = selectedChain
-                                ? createChain(selectedChain)
-                                : null;
+                              const chain = selectedChain ? createChain(selectedChain) : null;
                               const chainName =
-                                chain && networks
-                                  ? networks.getChainName(chain)
-                                  : null;
+                                chain && networks ? networks.getChainName(chain) : null;
                               const network =
-                                chain && networks
-                                  ? networks.getByNetworkId(chain)
-                                  : null;
+                                chain && networks ? networks.getByNetworkId(chain) : null;
                               return (
                                 <UnstyledButton
                                   onClick={openDialog}
@@ -557,11 +519,7 @@ export function HistoryFiltersButton({
                   Date
                 </UIText>
                 <SurfaceList
-                  style={
-                    date
-                      ? { border: '2px solid var(--primary-300)' }
-                      : undefined
-                  }
+                  style={date ? { border: '2px solid var(--primary-300)' } : undefined}
                   items={[
                     {
                       key: 'date',
@@ -590,9 +548,7 @@ export function HistoryFiltersButton({
                                 alignItems="center"
                                 style={{ gridTemplateColumns: '1fr auto' }}
                               >
-                                <UIText kind="body/regular">
-                                  {date || 'All Time'}
-                                </UIText>
+                                <UIText kind="body/regular">{date || 'All Time'}</UIText>
                                 <ChevronRightIcon
                                   style={{
                                     display: 'block',
@@ -616,11 +572,7 @@ export function HistoryFiltersButton({
                   Asset
                 </UIText>
                 <SurfaceList
-                  style={
-                    assetTypeParam
-                      ? { border: '2px solid var(--primary-300)' }
-                      : undefined
-                  }
+                  style={assetTypeParam ? { border: '2px solid var(--primary-300)' } : undefined}
                   items={[
                     {
                       key: 'asset',
@@ -644,9 +596,7 @@ export function HistoryFiltersButton({
                 </UIText>
                 <SurfaceList
                   style={
-                    actionTypeKeys.length
-                      ? { border: '2px solid var(--primary-300)' }
-                      : undefined
+                    actionTypeKeys.length ? { border: '2px solid var(--primary-300)' } : undefined
                   }
                   items={[
                     {
@@ -667,12 +617,7 @@ export function HistoryFiltersButton({
             </VStack>
 
             <Spacer height={24} />
-            <Button
-              onClick={handleClose}
-              style={{ width: '100%' }}
-              size={48}
-              kind="primary"
-            >
+            <Button onClick={handleClose} style={{ width: '100%' }} size={48} kind="primary">
               Show
             </Button>
             {hasAnyFilter ? (

@@ -3,10 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { findPerpAsset } from 'src/modules/hyperliquid/findPerpAsset';
-import {
-  getPerpDisplayName,
-  parsePerpId,
-} from 'src/modules/hyperliquid/parsePerpId';
+import { getPerpDisplayName, parsePerpId } from 'src/modules/hyperliquid/parsePerpId';
 import { useClearinghouseState } from 'src/modules/hyperliquid/hooks/useClearinghouseState';
 import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useHyperliquidAccountSummary';
 import { useMetaAndAssetCtxs } from 'src/modules/hyperliquid/hooks/useMetaAndAssetCtxs';
@@ -34,10 +31,7 @@ import { MIN_ORDER_NOTIONAL_USD } from 'src/modules/hyperliquid/constants';
 import { runPerpsIntent } from 'src/modules/hyperliquid/useCases';
 import type { PerpsIntent } from 'src/modules/hyperliquid/useCases/runIntent';
 import { getError } from 'src/shared/errors/getError';
-import {
-  PERPS_SCREEN,
-  type PerpsPositionActionFormParams,
-} from 'src/shared/types/perps-events';
+import { PERPS_SCREEN, type PerpsPositionActionFormParams } from 'src/shared/types/perps-events';
 import { emitter } from 'src/ui/shared/events';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -98,12 +92,9 @@ export function PerpsTrade() {
   const ctxRefetchInterval = useHyperliquidRefetchInterval(10_000);
   const { data: ctxData } = useMetaAndAssetCtxs(
     { dexIdentifier: parsed.dexIdentifier },
-    { refetchInterval: ctxRefetchInterval }
+    { refetchInterval: ctxRefetchInterval },
   );
-  const asset = useMemo(
-    () => findPerpAsset(ctxData, parsed.coin),
-    [ctxData, parsed.coin]
-  );
+  const asset = useMemo(() => findPerpAsset(ctxData, parsed.coin), [ctxData, parsed.coin]);
 
   // For builder-DEX assets the exchange API expects a derived asset id:
   // 100_000 + dexIndex * 10_000 + localIndex, where dexIndex is the raw
@@ -118,13 +109,13 @@ export function PerpsTrade() {
 
   const { data: clearingState } = useClearinghouseState(
     { address, dexIdentifier: parsed.dexIdentifier },
-    { enabled: Boolean(address) }
+    { enabled: Boolean(address) },
   );
 
   const position = useMemo(() => {
     if (!clearingState) return null;
     const entry = clearingState.assetPositions.find(
-      (e) => e.position.coin.toLowerCase() === parsed.coin.toLowerCase()
+      (e) => e.position.coin.toLowerCase() === parsed.coin.toLowerCase(),
     );
     return entry?.position ?? null;
   }, [clearingState, parsed.coin]);
@@ -140,13 +131,11 @@ export function PerpsTrade() {
   // `max(activeAssetData, effective)` floor — otherwise a unified user with
   // funds on the spot side sees 0 available to trade. For legacy users we
   // trust `activeAssetData.availableToTrade` once it lands.
-  const { effectiveWithdrawableUSDC, isUnified } = useHyperliquidAccountSummary(
-    { address }
-  );
+  const { effectiveWithdrawableUSDC, isUnified } = useHyperliquidAccountSummary({ address });
   const activeAssetDataRefetchInterval = useHyperliquidRefetchInterval(10_000);
   const { data: activeAssetData } = usePerpActiveAssetData(
     { address, coin: parsed.coin },
-    { refetchInterval: activeAssetDataRefetchInterval }
+    { refetchInterval: activeAssetDataRefetchInterval },
   );
   const availableToTrade: [number, number] = (() => {
     if (!activeAssetData) {
@@ -155,10 +144,7 @@ export function PerpsTrade() {
     const long = Number(activeAssetData.availableToTrade[0]);
     const short = Number(activeAssetData.availableToTrade[1]);
     if (!isUnified) return [long, short];
-    return [
-      Math.max(long, effectiveWithdrawableUSDC),
-      Math.max(short, effectiveWithdrawableUSDC),
-    ];
+    return [Math.max(long, effectiveWithdrawableUSDC), Math.max(short, effectiveWithdrawableUSDC)];
   })();
 
   // Stale-URL recovery: if ?mode=close / ?mode=add but no open position, drop
@@ -182,8 +168,7 @@ export function PerpsTrade() {
 
   // Default mode: open when no position, otherwise let user pick via PerpPage CTAs.
   const effectiveMode = state.mode ?? 'open';
-  const effectiveSide =
-    state.side ?? (position && Number(position.szi) < 0 ? 'short' : 'long');
+  const effectiveSide = state.side ?? (position && Number(position.szi) < 0 ? 'short' : 'long');
   const effectiveLeverage = state.leverage ?? DEFAULT_LEVERAGE;
 
   const submitMutation = useMutation({
@@ -198,10 +183,7 @@ export function PerpsTrade() {
       // form — scope to the DEX we're about to trade on, not all DEXes.
       await queryClient.invalidateQueries({
         predicate: (q) => {
-          const [name, payload] = q.queryKey as [
-            string,
-            { dexIdentifier?: string } | undefined,
-          ];
+          const [name, payload] = q.queryKey as [string, { dexIdentifier?: string } | undefined];
           return (
             name === 'hyperliquid/metaAndAssetCtxs' &&
             payload?.dexIdentifier === parsed.dexIdentifier
@@ -219,8 +201,7 @@ export function PerpsTrade() {
       // is "opening" another long on top of an existing one, or `add`/`close`),
       // we MUST match the existing margin type. Greenfield opens default to
       // cross.
-      const existingIsCross =
-        position != null ? position.leverage.type === 'cross' : true;
+      const existingIsCross = position != null ? position.leverage.type === 'cross' : true;
 
       let intent: PerpsIntent;
       let analytics: PerpsPositionActionFormParams;
@@ -251,10 +232,7 @@ export function PerpsTrade() {
 
         const orders: ExchangePlaceOrderPayload[] = [mainOrder];
         if (state.takeProfitPrice) {
-          const tpPx = formatOrderPrice(
-            Number(state.takeProfitPrice),
-            asset.universe.szDecimals
-          );
+          const tpPx = formatOrderPrice(Number(state.takeProfitPrice), asset.universe.szDecimals);
           orders.push({
             a: assetId,
             b: !isLong,
@@ -269,10 +247,7 @@ export function PerpsTrade() {
           });
         }
         if (state.stopLossPrice) {
-          const slPx = formatOrderPrice(
-            Number(state.stopLossPrice),
-            asset.universe.szDecimals
-          );
+          const slPx = formatOrderPrice(Number(state.stopLossPrice), asset.universe.szDecimals);
           orders.push({
             a: assetId,
             b: !isLong,
@@ -404,16 +379,12 @@ export function PerpsTrade() {
           provider_fee_percentage: tradingContext.hyperliquidRate * 100,
           provider_fee_usd_amount: notional * tradingContext.hyperliquidRate,
           entry_price_usd: Number(position.entryPx),
-          liquidation_price_usd: position.liquidationPx
-            ? Number(position.liquidationPx)
-            : 0,
+          liquidation_price_usd: position.liquidationPx ? Number(position.liquidationPx) : 0,
           size: existingSize + notional,
           margin: existingMargin + marginUsd,
           delta_size: notional,
           delta_margin: marginUsd,
-          screen_name: isLong
-            ? PERPS_SCREEN.AddToLong
-            : PERPS_SCREEN.AddToShort,
+          screen_name: isLong ? PERPS_SCREEN.AddToLong : PERPS_SCREEN.AddToShort,
         };
       } else if (effectiveMode === 'close') {
         invariant(position, 'Position is required for close');
@@ -421,8 +392,7 @@ export function PerpsTrade() {
         const positionAbsSize = Math.abs(Number(position.szi));
         const positionValueAbs = Math.abs(Number(position.positionValue));
         const closeUsd = Number(state.inputAmount);
-        const closeFraction =
-          positionValueAbs > 0 ? Math.min(closeUsd / positionValueAbs, 1) : 0;
+        const closeFraction = positionValueAbs > 0 ? Math.min(closeUsd / positionValueAbs, 1) : 0;
         const rawSize = positionAbsSize * closeFraction;
         const size = formatOrderSize(rawSize, asset.universe.szDecimals);
         const isLong = Number(position.szi) >= 0;
@@ -457,8 +427,7 @@ export function PerpsTrade() {
           isCross: existingIsCross,
           desiredLeverage: position.leverage.value,
           order: action,
-          successText:
-            closeFraction >= 1 ? 'Position closed' : 'Position updated',
+          successText: closeFraction >= 1 ? 'Position closed' : 'Position updated',
         };
 
         const marginUsed = Number(position.marginUsed);
@@ -478,8 +447,7 @@ export function PerpsTrade() {
           zerion_fee_percentage: tradingContext.zerionRate * 100,
           zerion_fee_usd_amount: sizeBeingClosed * tradingContext.zerionRate,
           provider_fee_percentage: tradingContext.hyperliquidRate * 100,
-          provider_fee_usd_amount:
-            sizeBeingClosed * tradingContext.hyperliquidRate,
+          provider_fee_usd_amount: sizeBeingClosed * tradingContext.hyperliquidRate,
           entry_price_usd: Number(position.entryPx),
           liquidation_price_usd: position.liquidationPx
             ? Number(position.liquidationPx)
@@ -488,9 +456,7 @@ export function PerpsTrade() {
           margin: marginUsed - marginBeingClosed,
           delta_size: -sizeBeingClosed,
           delta_margin: -marginBeingClosed,
-          screen_name: isLong
-            ? PERPS_SCREEN.CloseLong
-            : PERPS_SCREEN.CloseShort,
+          screen_name: isLong ? PERPS_SCREEN.CloseLong : PERPS_SCREEN.CloseShort,
           receive_usd_amount: marginBeingClosed + scaledPnl,
           realized_pnl_usd: scaledPnl,
         };
@@ -552,13 +518,8 @@ export function PerpsTrade() {
       });
       queryClient.invalidateQueries({
         predicate: (q) => {
-          const [name, payload] = q.queryKey as [
-            string,
-            { address?: string } | undefined,
-          ];
-          return (
-            name === 'hyperliquid/userFills' && payload?.address === address
-          );
+          const [name, payload] = q.queryKey as [string, { address?: string } | undefined];
+          return name === 'hyperliquid/userFills' && payload?.address === address;
         },
       });
     },
@@ -589,8 +550,7 @@ export function PerpsTrade() {
     const positionValueAbs = Math.abs(Number(position.positionValue));
     const closeUsd = Number(state.inputAmount) || 0;
     const remainingUsd = Math.max(positionValueAbs - closeUsd, 0);
-    if (remainingUsd > 0 && remainingUsd < MIN_ORDER_NOTIONAL_USD)
-      closeBlocker = true;
+    if (remainingUsd > 0 && remainingUsd < MIN_ORDER_NOTIONAL_USD) closeBlocker = true;
     if (closeUsd > positionValueAbs) closeBlocker = true;
   }
 
@@ -600,16 +560,10 @@ export function PerpsTrade() {
   // *quantised* notional — not the raw user input — and block submit when it
   // would be rejected on-chain. This mirrors the iOS app's behaviour.
   let minNotionalBlocker = false;
-  if (
-    asset &&
-    inputValid &&
-    (effectiveMode === 'open' || effectiveMode === 'add')
-  ) {
+  if (asset && inputValid && (effectiveMode === 'open' || effectiveMode === 'add')) {
     const marginUsd = Number(state.inputAmount);
     const leverage =
-      effectiveMode === 'add' && position
-        ? position.leverage.value
-        : effectiveLeverage;
+      effectiveMode === 'add' && position ? position.leverage.value : effectiveLeverage;
     const plannedSize = calculatePositionSize({
       margin: marginUsd,
       leverage,
@@ -625,8 +579,7 @@ export function PerpsTrade() {
   // For builder-DEX assets the assetId depends on the dex's position in the
   // perpDexs list; block submit until the list has resolved so we don't fall
   // back to the raw asset index and place an order against the wrong market.
-  const dexIndexMissing =
-    parsed.dexIdentifier != null && builderDexIndex == null;
+  const dexIndexMissing = parsed.dexIdentifier != null && builderDexIndex == null;
 
   const submitDisabled =
     !tradingContext.isReady ||
@@ -657,12 +610,7 @@ export function PerpsTrade() {
               to="/wallet-select"
               title="Change Wallet"
             >
-              <WalletAvatar
-                active={false}
-                address={address}
-                size={24}
-                borderRadius={6}
-              />
+              <WalletAvatar active={false} address={address} size={24} borderRadius={6} />
             </UnstyledLink>
           ) : undefined
         }
@@ -673,9 +621,7 @@ export function PerpsTrade() {
           <OpenPositionForm
             asset={asset}
             markPrice={markPrice}
-            availableToTrade={
-              availableToTrade[effectiveSide === 'short' ? 1 : 0]
-            }
+            availableToTrade={availableToTrade[effectiveSide === 'short' ? 1 : 0]}
             formState={{
               ...state,
               side: effectiveSide,
@@ -693,9 +639,7 @@ export function PerpsTrade() {
             asset={asset}
             position={position}
             markPrice={markPrice}
-            availableToTrade={
-              availableToTrade[Number(position.szi) < 0 ? 1 : 0]
-            }
+            availableToTrade={availableToTrade[Number(position.szi) < 0 ? 1 : 0]}
             formState={state}
             onChange={updateState}
             totalFeeRate={tradingContext.totalRate}
@@ -714,11 +658,7 @@ export function PerpsTrade() {
         ) : null}
       </VStack>
 
-      <SubmitFooter
-        label={submitLabel}
-        disabled={submitDisabled}
-        onSubmit={handleSubmit}
-      />
+      <SubmitFooter label={submitLabel} disabled={submitDisabled} onSubmit={handleSubmit} />
 
       {asset ? (
         <LeverageOverlay

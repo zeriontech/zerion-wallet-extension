@@ -25,10 +25,7 @@ const PROXY_PORT = process.env.E2E_PROXY_PORT || '4789';
 const PROXY_BASE = `http://127.0.0.1:${PROXY_PORT}`;
 const SECRETS = [
   ...new Set(
-    [
-      process.env.ZERION_API_DEVELOPMENT_KEY,
-      process.env.CF_ZPI_DEV_BYPASS_SECRET,
-    ].filter(Boolean)
+    [process.env.ZERION_API_DEVELOPMENT_KEY, process.env.CF_ZPI_DEV_BYPASS_SECRET].filter(Boolean),
   ),
 ];
 
@@ -66,11 +63,7 @@ function containsSecret(directory, secret) {
   return false;
 }
 
-console.log(
-  `Building E2E extension (API target: ${
-    USE_PROXY ? 'local proxy' : 'direct ZPI'
-  })`
-); // eslint-disable-line no-console
+console.log(`Building E2E extension (API target: ${USE_PROXY ? 'local proxy' : 'direct ZPI'})`); // eslint-disable-line no-console
 
 const buildEnv = {
   PLATFORM: 'chrome',
@@ -94,10 +87,7 @@ const buildEnv = {
 // Defence in depth: never let the bypass secret reach the bundler. `buildEnv`
 // never contained the keys — `buildExtension` spreads `process.env` too — so
 // remove them from the inherited environment as well.
-const SECRET_ENV_VARS = [
-  'ZERION_API_DEVELOPMENT_KEY',
-  'CF_ZPI_DEV_BYPASS_SECRET',
-];
+const SECRET_ENV_VARS = ['ZERION_API_DEVELOPMENT_KEY', 'CF_ZPI_DEV_BYPASS_SECRET'];
 for (const name of SECRET_ENV_VARS) {
   delete buildEnv[name];
   delete process.env[name];
@@ -107,9 +97,7 @@ buildExtension({ platform: 'chrome', outDir: 'dist-e2e', env: buildEnv });
 
 for (const secret of SECRETS) {
   if (containsSecret('dist-e2e', secret)) {
-    throw new Error(
-      'E2E build contains the Cloudflare bypass secret. Refusing to continue.'
-    );
+    throw new Error('E2E build contains the Cloudflare bypass secret. Refusing to continue.');
   }
 }
 

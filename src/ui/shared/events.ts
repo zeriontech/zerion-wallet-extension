@@ -1,9 +1,6 @@
 import { createNanoEvents } from 'nanoevents';
 import { getError } from 'src/shared/errors/getError';
-import type {
-  BannerClickedParams,
-  ButtonClickedParams,
-} from 'src/shared/types/button-events';
+import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
 import type {
   PerpsButtonPressedParams,
   PerpsPositionActionParams,
@@ -36,11 +33,7 @@ export const emitter = createNanoEvents<{
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {
-  if (
-    context === 'sendTransaction' ||
-    context === '_signTypedData' ||
-    context === 'signMessage'
-  ) {
+  if (context === 'sendTransaction' || context === '_signTypedData' || context === 'signMessage') {
     emitter.emit('signingError', context, getError(error).message);
   }
 });

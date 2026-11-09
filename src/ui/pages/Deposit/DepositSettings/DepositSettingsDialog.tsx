@@ -1,10 +1,7 @@
 import React from 'react';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
-import type {
-  DepositQuote,
-  OnrampCountry,
-} from 'src/modules/zerion-api/types/DepositFlow';
+import type { DepositQuote, OnrampCountry } from 'src/modules/zerion-api/types/DepositFlow';
 import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -28,11 +25,7 @@ function SectionCard({
 }) {
   return (
     <VStack gap={8} className={styles.card}>
-      <HStack
-        gap={8}
-        alignItems="start"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
-      >
+      <HStack gap={8} alignItems="start" style={{ gridTemplateColumns: 'auto 1fr' }}>
         <UIText kind="body/accent" color="var(--neutral-500)">
           {step}.
         </UIText>
@@ -80,9 +73,7 @@ export function DepositSettingsDialog({
   const countryDialog = useDialog2();
   const providerDialog = useDialog2();
 
-  const selectedCountry = countryId
-    ? countries?.find((country) => country.id === countryId)
-    : null;
+  const selectedCountry = countryId ? countries?.find((country) => country.id === countryId) : null;
 
   return (
     <Dialog2 open={open} onClose={onClose} title="Change Provider" size="full">
@@ -92,10 +83,7 @@ export function DepositSettingsDialog({
           title="Country of your card or bank account"
           hint="Your country is pre-selected. Make sure to pick where your card was issued or your bank is located to avoid failed transactions — providers vary by country."
         >
-          <UnstyledButton
-            className={styles.selectorButton}
-            onClick={countryDialog.openDialog}
-          >
+          <UnstyledButton className={styles.selectorButton} onClick={countryDialog.openDialog}>
             {countryId ? (
               <>
                 <CountryFlag code={countryId} />
@@ -122,15 +110,8 @@ export function DepositSettingsDialog({
             title="Provider & payment method"
             hint="Purchases are processed by external providers. Prices, conditions and available payment methods vary between them."
           >
-            <UnstyledButton
-              className={styles.selectorButton}
-              onClick={providerDialog.openDialog}
-            >
-              <img
-                alt=""
-                src={selectedQuote.provider.iconUrl}
-                className={styles.providerIcon}
-              />
+            <UnstyledButton className={styles.selectorButton} onClick={providerDialog.openDialog}>
+              <img alt="" src={selectedQuote.provider.iconUrl} className={styles.providerIcon} />
               <UIText kind="body/regular">{selectedQuote.provider.name}</UIText>
               <ChevronRightIcon className={styles.selectorChevron} />
             </UnstyledButton>
@@ -150,11 +131,7 @@ export function DepositSettingsDialog({
                       style={{ gridTemplateColumns: '1fr auto' }}
                     >
                       <HStack gap={12} alignItems="center">
-                        <img
-                          alt=""
-                          src={method.iconUrl}
-                          className={styles.methodIcon}
-                        />
+                        <img alt="" src={method.iconUrl} className={styles.methodIcon} />
                         <UIText kind="body/regular">{method.name}</UIText>
                       </HStack>
                       {method.id === selectedPaymentMethodId ? (

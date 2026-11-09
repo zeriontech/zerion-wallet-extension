@@ -41,16 +41,8 @@ export interface Response {
 
 export function depositGetQuotes(
   this: ZerionApiContext,
-  {
-    address,
-    countryId,
-    currency,
-    assetId,
-    chainId,
-    fiatAmount,
-    supportsApplePay,
-  }: Params,
-  options?: ClientOptions
+  { address, countryId, currency, assetId, chainId, fiatAmount, supportsApplePay }: Params,
+  options?: ClientOptions,
 ) {
   const params = new URLSearchParams({
     address,

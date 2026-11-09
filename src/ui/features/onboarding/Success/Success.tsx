@@ -109,9 +109,7 @@ export function Success() {
     suspense: true,
   });
 
-  const [pendingReferrer, setPendingReferrer] = useState<ReferrerData | null>(
-    null
-  );
+  const [pendingReferrer, setPendingReferrer] = useState<ReferrerData | null>(null);
 
   const referrer = currentReferrer || pendingReferrer;
 
@@ -204,9 +202,7 @@ export function Success() {
         </div>
         <animated.div className={styles.pinner} style={pinnerStyle}>
           <VStack gap={0}>
-            <ZerionIcon
-              style={{ width: 16, height: 16, color: 'var(--black)' }}
-            />
+            <ZerionIcon style={{ width: 16, height: 16, color: 'var(--black)' }} />
             <Spacer height={16} />
             <UIText kind="headline/h3">Pin Zerion extension</UIText>
             <Spacer height={24} />

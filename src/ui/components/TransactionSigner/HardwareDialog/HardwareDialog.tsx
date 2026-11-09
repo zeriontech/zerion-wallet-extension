@@ -13,10 +13,7 @@ import { TransactionStepper } from 'src/ui/components/TransactionStepper';
 import type { ToasterView } from '../types';
 import { cancelQueue } from '../store';
 import { AnimatedIcons } from './AnimatedIcons';
-import {
-  useHardwareDialogSession,
-  type HardwareDialogSession,
-} from './useHardwareDialogSession';
+import { useHardwareDialogSession, type HardwareDialogSession } from './useHardwareDialogSession';
 import * as s from './styles.module.css';
 
 const ICON_SIZE = 72;
@@ -72,12 +69,10 @@ function getTitle(session: HardwareDialogSession): string {
 }
 
 function getIconPhase(
-  session: HardwareDialogSession
+  session: HardwareDialogSession,
 ): 'start' | 'transitioning' | 'complete' | 'failed' {
-  if (session.terminal === 'failed' || session.activeStatus === 'failed')
-    return 'failed';
-  if (session.terminal === 'success' || session.activeStatus === 'confirmed')
-    return 'complete';
+  if (session.terminal === 'failed' || session.activeStatus === 'failed') return 'failed';
+  if (session.terminal === 'success' || session.activeStatus === 'confirmed') return 'complete';
   if (session.activeStatus === 'pending') return 'transitioning';
   return 'start';
 }
@@ -85,18 +80,10 @@ function getIconPhase(
 function isWaitingForSignature(session: HardwareDialogSession): boolean {
   if (session.terminal != null) return false;
   if (!session.activeView) return false;
-  return (
-    session.activeStatus === 'signing' || session.activeStatus === 'waiting'
-  );
+  return session.activeStatus === 'signing' || session.activeStatus === 'waiting';
 }
 
-function StatusTitle({
-  title,
-  isPending,
-}: {
-  title: string;
-  isPending: boolean;
-}) {
+function StatusTitle({ title, isPending }: { title: string; isPending: boolean }) {
   return (
     <div className={s.titleContainer}>
       <AnimatePresence mode="popLayout">
@@ -126,7 +113,7 @@ function StatusTitle({
 
 function getIconNodes(
   view: ToasterView | null,
-  showLedger: boolean
+  showLedger: boolean,
 ): {
   startItem: React.ReactNode;
   endItem: React.ReactNode | null;
@@ -184,11 +171,7 @@ function getIconNodes(
   // swap | bridge
   return {
     startItem: (
-      <TokenWithChain
-        iconUrl={view.sent.iconUrl}
-        symbol={view.sent.symbol}
-        chainIconUrl={null}
-      />
+      <TokenWithChain iconUrl={view.sent.iconUrl} symbol={view.sent.symbol} chainIconUrl={null} />
     ),
     endItem: (
       <TokenWithChain
@@ -200,11 +183,7 @@ function getIconNodes(
   };
 }
 
-export function HardwareDialog({
-  ledgerDialogOpen,
-}: {
-  ledgerDialogOpen: boolean;
-}) {
+export function HardwareDialog({ ledgerDialogOpen }: { ledgerDialogOpen: boolean }) {
   const session = useHardwareDialogSession();
   const open = session.visible;
   const isMultiStep = session.steps.length > 1;
@@ -215,11 +194,8 @@ export function HardwareDialog({
   const isPending = !isTerminal && session.activeStatus === 'pending';
   const showLedger = isWaitingForSignature(session);
 
-  const isLastStep =
-    session.steps.length > 0 &&
-    session.activeIndex === session.steps.length - 1;
-  const showStepper =
-    isMultiStep && !(isLastStep && !isWaitingForSignature(session));
+  const isLastStep = session.steps.length > 0 && session.activeIndex === session.steps.length - 1;
+  const showStepper = isMultiStep && !(isLastStep && !isWaitingForSignature(session));
 
   const handleClose = () => {
     if (!session.queueId) return session.reset();
@@ -251,12 +227,7 @@ export function HardwareDialog({
     >
       <div className={s.root}>
         <VStack gap={20} className={s.topHalf}>
-          <AnimatedIcons
-            startItem={startItem}
-            endItem={endItem}
-            phase={phase}
-            size="big"
-          />
+          <AnimatedIcons startItem={startItem} endItem={endItem} phase={phase} size="big" />
           <StatusTitle title={title} isPending={isPending} />
           {isMultiStep ? (
             <AnimatePresence mode="popLayout" initial={false}>
@@ -295,11 +266,7 @@ export function HardwareDialog({
           ) : null}
           <div className={s.buttonSlot}>
             {isTerminal ? (
-              <Button
-                kind="regular"
-                style={{ width: '100%' }}
-                onClick={handleDone}
-              >
+              <Button kind="regular" style={{ width: '100%' }} onClick={handleDone}>
                 Done
               </Button>
             ) : session.activeStatus === 'pending' ? (
@@ -307,11 +274,7 @@ export function HardwareDialog({
                 Pending
               </Button>
             ) : (
-              <Button
-                kind="regular"
-                style={{ width: '100%' }}
-                onClick={handleCancel}
-              >
+              <Button kind="regular" style={{ width: '100%' }} onClick={handleCancel}>
                 Cancel
               </Button>
             )}

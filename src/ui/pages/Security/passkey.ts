@@ -37,8 +37,7 @@ async function checkPRFSupport(): Promise<boolean> {
     }
 
     // Check if platform authenticator is available
-    const available =
-      await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
     if (!available) {
       return false;
     }
@@ -56,9 +55,7 @@ async function checkPRFSupport(): Promise<boolean> {
 /**
  * Type guard to validate PRF extension results
  */
-function isPRFResultValid(
-  result: unknown
-): result is { prf: { results: { first: ArrayBuffer } } } {
+function isPRFResultValid(result: unknown): result is { prf: { results: { first: ArrayBuffer } } } {
   if (!result || typeof result !== 'object') {
     return false;
   }
@@ -74,16 +71,12 @@ function isPRFResultValid(
  */
 function extractPRFResult(cred: unknown): ArrayBuffer {
   if (!cred || typeof cred !== 'object') {
-    throw new Error(
-      'Invalid credential object. Passkey authentication failed.'
-    );
+    throw new Error('Invalid credential object. Passkey authentication failed.');
   }
 
   const credential = cred as PublicKeyCredential;
   if (typeof credential.getClientExtensionResults !== 'function') {
-    throw new Error(
-      'Browser does not support WebAuthn extensions. Please update your browser.'
-    );
+    throw new Error('Browser does not support WebAuthn extensions. Please update your browser.');
   }
 
   const result = credential.getClientExtensionResults();
@@ -92,7 +85,7 @@ function extractPRFResult(cred: unknown): ArrayBuffer {
     throw new Error(
       'PRF extension is not supported by your authenticator. ' +
         'This feature requires a compatible device with biometric authentication (Touch ID, Face ID, etc.). ' +
-        'Please try a different device or use password login instead.'
+        'Please try a different device or use password login instead.',
     );
   }
 
@@ -106,7 +99,7 @@ export async function setupAccountPasskey(password: string) {
   if (!prfSupported) {
     throw new Error(
       'Your device does not support passkey-based password encryption. ' +
-        'Please ensure you are using a compatible browser and have platform authentication (Touch ID) enabled.'
+        'Please ensure you are using a compatible browser and have platform authentication (Touch ID) enabled.',
     );
   }
 
@@ -141,10 +134,7 @@ export async function setupAccountPasskey(password: string) {
   } catch (error) {
     // Handle user cancellation or other creation errors
     if (error instanceof Error) {
-      if (
-        error.name === 'NotAllowedError' ||
-        error.message.includes('cancelled')
-      ) {
+      if (error.name === 'NotAllowedError' || error.message.includes('cancelled')) {
         throw new Error('Passkey setup was cancelled by user');
       }
       throw new Error(`Failed to create passkey: ${error.message}`);
@@ -209,15 +199,12 @@ export async function getPasswordWithPasskey() {
   } catch (error) {
     // Handle user cancellation or authentication errors
     if (error instanceof Error) {
-      if (
-        error.name === 'NotAllowedError' ||
-        error.message.includes('cancelled')
-      ) {
+      if (error.name === 'NotAllowedError' || error.message.includes('cancelled')) {
         throw new Error('Authentication was cancelled by user');
       }
       if (error.name === 'InvalidStateError') {
         throw new Error(
-          'Passkey not found on this device. Please use password login or set up passkey again.'
+          'Passkey not found on this device. Please use password login or set up passkey again.',
         );
       }
       throw new Error(`Authentication failed: ${error.message}`);

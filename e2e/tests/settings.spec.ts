@@ -29,12 +29,7 @@ describe('Settings', () => {
     await settingsPage.matchesSnapshot();
   });
 
-  test('User can lock and unlock wallet', async ({
-    page,
-    settingsPage,
-    loginPage,
-    password,
-  }) => {
+  test('User can lock and unlock wallet', async ({ page, settingsPage, loginPage, password }) => {
     await settingsPage.lockWallet();
     await expect(page).toHaveURL(/.*\/login/);
     await loginPage.unlock(password);

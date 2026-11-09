@@ -3,7 +3,7 @@ import type { ChannelContext } from 'src/shared/types/ChannelContext';
 import type { RuntimePort } from '../webapis/RuntimePort';
 
 function isChromePortSender(
-  x: browser.Runtime.Port['sender'] | chrome.runtime.Port['sender']
+  x: browser.Runtime.Port['sender'] | chrome.runtime.Port['sender'],
 ): x is chrome.runtime.Port['sender'] {
   return x ? 'origin' in x : false;
 }

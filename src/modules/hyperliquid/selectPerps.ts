@@ -24,7 +24,7 @@ function toNumber(value: string | null | undefined): number | null {
 
 function toPerp(
   asset: PerpMetaAndAssetCtxsResponse[0]['universe'][number],
-  ctx: PerpMetaAndAssetCtxsResponse[1][number]
+  ctx: PerpMetaAndAssetCtxsResponse[1][number],
 ): Perp {
   const markPx = toNumber(ctx.markPx);
   const prevDayPx = toNumber(ctx.prevDayPx);
@@ -77,7 +77,7 @@ export function selectPerps(
     sorting: PerpSorting;
     query?: string;
     limit?: number;
-  }
+  },
 ): Perp[] {
   const items: Perp[] = [];
   for (const entry of data) {

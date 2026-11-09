@@ -11,8 +11,9 @@ const fields = [
   'maxFeePerGas',
 ] as const;
 type Keys = (typeof fields)[number];
-type HexifiedTx<Keys extends keyof IncomingTransaction> =
-  IncomingTransaction & { [key in Keys]?: string };
+type HexifiedTx<Keys extends keyof IncomingTransaction> = IncomingTransaction & {
+  [key in Keys]?: string;
+};
 
 export function hexifyTxValues({
   transaction,

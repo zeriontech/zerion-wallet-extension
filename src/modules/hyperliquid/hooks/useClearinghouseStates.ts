@@ -21,7 +21,7 @@ interface UseClearinghouseStatesResult {
 
 export function useClearinghouseStates(
   { address }: { address: string | null | undefined },
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ): UseClearinghouseStatesResult {
   const { data: dexs, isLoading: dexsLoading } = useQuery({
     ...perpDexsQueryOptions,
@@ -49,13 +49,12 @@ export function useClearinghouseStates(
               dexIdentifier: dex,
             }),
             enabled: false,
-          }
+          },
     ),
   });
 
   const statesLoading = results.some((r) => r.isLoading);
-  const isLoading =
-    enabled && Boolean(address) && (dexsLoading || statesLoading);
+  const isLoading = enabled && Boolean(address) && (dexsLoading || statesLoading);
 
   let totalAccountValue = 0;
   const perpStatesByDex: Array<PerpClearinghouseState | null | undefined> = [];
@@ -98,10 +97,7 @@ export function useClearinghouseStates(
   // Sort by margin used, keeping dexByPosition aligned with allPositions.
   const order = allPositions
     .map((_, idx) => idx)
-    .sort(
-      (a, b) =>
-        Number(allPositions[b].marginUsed) - Number(allPositions[a].marginUsed)
-    );
+    .sort((a, b) => Number(allPositions[b].marginUsed) - Number(allPositions[a].marginUsed));
   const sortedPositions = order.map((idx) => allPositions[idx]);
   const sortedDex = order.map((idx) => dexByPosition[idx]);
 

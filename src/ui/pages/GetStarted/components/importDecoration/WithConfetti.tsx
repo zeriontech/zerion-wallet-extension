@@ -64,16 +64,7 @@ export function WithConfetti({
     return () => {
       clearTimeout(timerId);
     };
-  }, [
-    decay,
-    fireDelay,
-    gravity,
-    leftOriginX,
-    originY,
-    particleCount,
-    rightOriginX,
-    startVelocity,
-  ]);
+  }, [decay, fireDelay, gravity, leftOriginX, originY, particleCount, rightOriginX, startVelocity]);
   return (
     <>
       <canvas

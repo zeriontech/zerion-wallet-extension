@@ -36,8 +36,7 @@ export function BackupFlowSettingsSection() {
               Secure Your Wallet
             </UIText>
             <UIText kind="small/regular" color="var(--neutral-700)">
-              You will lose access to your funds forever if your device is lost
-              or stolen
+              You will lose access to your funds forever if your device is lost or stolen
             </UIText>
           </VStack>
           <Spacer height={16} />
@@ -46,19 +45,11 @@ export function BackupFlowSettingsSection() {
               .filter((group) => isMnemonicContainer(group.walletContainer))
               .filter((group) => group.lastBackedUp == null)
               .map((group) => (
-                <VStack
-                  key={group.id}
-                  gap={8}
-                  style={{ color: 'var(--notice-600)' }}
-                >
+                <VStack key={group.id} gap={8} style={{ color: 'var(--notice-600)' }}>
                   <VStack gap={4} style={{ color: 'var(--black)' }}>
                     {group.walletContainer.wallets.map((wallet) => (
                       <HStack key={wallet.address} gap={4} alignItems="center">
-                        <WalletAvatar
-                          address={wallet.address}
-                          size={16}
-                          borderRadius={4}
-                        />
+                        <WalletAvatar address={wallet.address} size={16} borderRadius={4} />
                         <UIText kind="caption/regular">
                           <WalletDisplayName wallet={wallet} />
                         </UIText>

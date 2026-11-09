@@ -9,7 +9,7 @@ export function useOptimisticMutation<Args, Res, QueryType = unknown>(
   }: {
     relatedQueryKey: string[];
     onMutate?: (info: { client: QueryClient; variables: Args }) => unknown;
-  }
+  },
 ) {
   type OptimisticContext = { previous?: QueryType };
   const client = useQueryClient();

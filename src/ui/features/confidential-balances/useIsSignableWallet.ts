@@ -7,9 +7,7 @@ import { useWalletByAddress } from './useConfidentialPermits';
  * on the device. Readonly and watched wallets get masks and the explain-only
  * dialog. `null` while the wallet is loading.
  */
-export function useIsSignableWallet(
-  address: string | null | undefined
-): boolean | null {
+export function useIsSignableWallet(address: string | null | undefined): boolean | null {
   const { data: wallet, isFetched } = useWalletByAddress(address);
   if (!isFetched) {
     return null;

@@ -1,16 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  SelectItem,
-  SelectList,
-  SelectProvider,
-  TabProvider,
-} from '@ariakit/react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SelectItem, SelectList, SelectProvider, TabProvider } from '@ariakit/react';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -54,9 +43,7 @@ function NftSkeletonItem() {
     <div className={styles.gridItem}>
       <div className={styles.gridItemContent}>
         <SquareElement
-          render={(style) => (
-            <div style={style} className={styles.skeletonSquare} />
-          )}
+          render={(style) => <div style={style} className={styles.skeletonSquare} />}
         />
       </div>
       <div className={styles.skeletonLabel} />
@@ -88,13 +75,7 @@ function ChipStripSkeleton() {
   );
 }
 
-function NftGridItem({
-  position,
-  index,
-}: {
-  position: NftPosition;
-  index: number;
-}) {
+function NftGridItem({ position, index }: { position: NftPosition; index: number }) {
   const displayName =
     position.nft.name ||
     position.nft.metadata.name ||
@@ -164,9 +145,7 @@ export function NftsPanel({
 }: NftsPanelProps) {
   const { currency } = useCurrency();
   const source = useHttpClientSource();
-  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(
-    defaultSelectedNetwork
-  );
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(defaultSelectedNetwork);
   const networkSelector = useDialog2();
   const chipsRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -188,7 +167,7 @@ export function NftsPanel({
       limit: 30,
     },
     { source },
-    { suspense: false }
+    { suspense: false },
   );
 
   useEffect(() => {
@@ -200,7 +179,7 @@ export function NftsPanel({
           fetchNextPage();
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: '200px' },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -216,22 +195,17 @@ export function NftsPanel({
         networks
           .getMainnets()
           .filter((n) => n.flags.supportsNftPositions)
-          .map((n) => n.id)
+          .map((n) => n.id),
       ),
-    [networks]
+    [networks],
   );
 
-  const visiblePinnedNetworks = useVisiblePinnedNetworks(
-    networks,
-    getAddressType(address)
-  );
+  const visiblePinnedNetworks = useVisiblePinnedNetworks(networks, getAddressType(address));
 
   const topNetworks = useMemo(() => {
     // Same predicate as the network dialog below: pinned chips come first,
     // in the user's pin order, followed by chains sorted by NFT count.
-    const pinned = visiblePinnedNetworks.filter((n) =>
-      allowedChainIds.has(n.id)
-    );
+    const pinned = visiblePinnedNetworks.filter((n) => allowedChainIds.has(n.id));
     const pinnedIds = new Set(pinned.map((n) => n.id));
     const byCount = Object.entries(nftChainsDistribution)
       .filter(([chainId]) => !pinnedIds.has(chainId))
@@ -271,9 +245,7 @@ export function NftsPanel({
   }, [nftChainsDistribution]);
 
   const scrollChipIntoView = (chainId: string) => {
-    const el = chipsRef.current?.querySelector<HTMLElement>(
-      `[data-chain-id="${chainId}"]`
-    );
+    const el = chipsRef.current?.querySelector<HTMLElement>(`[data-chain-id="${chainId}"]`);
     el?.scrollIntoView({ block: 'nearest', inline: 'center' });
   };
 
@@ -296,11 +268,10 @@ export function NftsPanel({
       const picked = positions.find((p) => p.nft.id === id);
       if (picked) onSelect(picked);
     },
-    [positions, selectedNftId, onSelect]
+    [positions, selectedNftId, onSelect],
   );
 
-  const defaultActiveId =
-    selectedNftId ?? selectedNetwork ?? ALL_NETWORKS_TAB_ID;
+  const defaultActiveId = selectedNftId ?? selectedNetwork ?? ALL_NETWORKS_TAB_ID;
 
   return (
     <>
@@ -363,23 +334,15 @@ export function NftsPanel({
                   <div className={styles.gridWrapper}>
                     <SelectList className={styles.grid}>
                       {positions.map((position, index) => (
-                        <NftGridItem
-                          key={position.nft.id}
-                          position={position}
-                          index={index}
-                        />
+                        <NftGridItem key={position.nft.id} position={position} index={index} />
                       ))}
                       {isFetchingNextPage
                         ? Array.from({
                             length: NEXT_PAGE_SKELETON_COUNT,
-                          }).map((_, i) => (
-                            <NftSkeletonItem key={`skeleton-${i}`} />
-                          ))
+                          }).map((_, i) => <NftSkeletonItem key={`skeleton-${i}`} />)
                         : null}
                     </SelectList>
-                    {hasNextPage ? (
-                      <div ref={sentinelRef} style={{ height: 1 }} />
-                    ) : null}
+                    {hasNextPage ? <div ref={sentinelRef} style={{ height: 1 }} /> : null}
                   </div>
                 )}
               </TabPanelWrapper>

@@ -39,11 +39,7 @@ export function ConfidentialInfoAnimation({
   style?: React.CSSProperties;
 }) {
   return (
-    <div
-      aria-hidden={true}
-      className={cx(styles.stage, className)}
-      style={style}
-    >
+    <div aria-hidden={true} className={cx(styles.stage, className)} style={style}>
       <Rows className={styles.ghost} />
       <Rows className={styles.crisp} />
       <div className={cx(styles.layer, styles.beam)} />

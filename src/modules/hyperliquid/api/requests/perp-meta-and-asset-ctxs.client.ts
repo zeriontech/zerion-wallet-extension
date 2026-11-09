@@ -5,7 +5,7 @@ import type {
 } from './perp-meta-and-asset-ctxs.types';
 
 export async function perpMetaAndAssetCtxs(
-  payload: PerpMetaAndAssetCtxsPayload = {}
+  payload: PerpMetaAndAssetCtxsPayload = {},
 ): Promise<PerpMetaAndAssetCtxsResponse | null> {
   return postInfo<PerpMetaAndAssetCtxsResponse>({
     type: 'metaAndAssetCtxs',

@@ -12,7 +12,7 @@ const test = extensionTest.extend<ManageWalletsFixtures>({
       new ForgotPasswordPage(page, {
         extensionPopupUrl,
         path: '/forgot-password',
-      })
+      }),
     );
   },
 });

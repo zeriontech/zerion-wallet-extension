@@ -16,12 +16,10 @@ export type NetworkGroups = NetworkGroup[];
 function compareNetworks(
   a: NetworkInfo,
   b: NetworkInfo,
-  chainDistribution: NetworkSelectDistribution | null
+  chainDistribution: NetworkSelectDistribution | null,
 ) {
-  const aValue =
-    chainDistribution?.positionsChainsDistribution[a.id.toString()];
-  const bValue =
-    chainDistribution?.positionsChainsDistribution[b.id.toString()];
+  const aValue = chainDistribution?.positionsChainsDistribution[a.id.toString()];
+  const bValue = chainDistribution?.positionsChainsDistribution[b.id.toString()];
   if (aValue && bValue) return bValue - aValue;
   if (aValue && !bValue) return -1;
   if (!aValue && bValue) return 1;
@@ -44,12 +42,8 @@ export function createGroups2({
   filterPredicate?: (network: NetworkInfo) => boolean;
 }): NetworkGroups {
   const isEligible = (network: NetworkInfo) =>
-    Boolean(network.testnet) === testnetMode &&
-    !network.hidden &&
-    filterPredicate(network);
-  const pinnedNetworks = networks
-    .getPinnedNetworks(standard)
-    .filter(isEligible);
+    Boolean(network.testnet) === testnetMode && !network.hidden && filterPredicate(network);
+  const pinnedNetworks = networks.getPinnedNetworks(standard).filter(isEligible);
   const pinnedIds = new Set(pinnedNetworks.map((network) => network.id));
   const allNetworks = networks
     .getDefaultNetworks(standard)
@@ -80,9 +74,7 @@ export function createGroups2({
     {
       key: 'other',
       name: 'Other Networks',
-      items: allNetworks
-        .filter(otherNetworkPredicate)
-        .sort((a, b) => compareNetworks(a, b, null)),
+      items: allNetworks.filter(otherNetworkPredicate).sort((a, b) => compareNetworks(a, b, null)),
     },
   ];
 }

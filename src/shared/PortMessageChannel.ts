@@ -5,10 +5,7 @@ import {
   isJsonRpcResponse,
   isJsonRpcResult,
 } from '@walletconnect/jsonrpc-utils';
-import type {
-  JsonRpcPayload,
-  JsonRpcRequest,
-} from '@walletconnect/jsonrpc-utils';
+import type { JsonRpcPayload, JsonRpcRequest } from '@walletconnect/jsonrpc-utils';
 import { createNanoEvents } from 'nanoevents';
 import { invariant } from './invariant';
 import { formatJsonRpcRequestPatched } from './custom-rpc/formatJsonRpcRequestPatched';
@@ -65,7 +62,7 @@ export class PortMessageChannel {
   async request<Method extends string, Params, Result>(
     method: Method,
     params: Params,
-    id?: number
+    id?: number,
   ) {
     // NOTE: Should we assert this.port _after_ emitting the custom 'postMessage'?
     // Or not assert at all?
@@ -78,21 +75,18 @@ export class PortMessageChannel {
 
   private getPromise<Result>(id: number): Promise<Result> {
     return new Promise((resolve, reject) => {
-      const unlisten = this.emitter.on(
-        'message',
-        (msg: JsonRpcPayload | unknown) => {
-          if (isJsonRpcPayload(msg) && isJsonRpcResponse(msg)) {
-            if (msg.id === id) {
-              if (isJsonRpcResult(msg)) {
-                resolve(msg.result);
-              } else {
-                reject(msg.error);
-              }
-              unlisten();
+      const unlisten = this.emitter.on('message', (msg: JsonRpcPayload | unknown) => {
+        if (isJsonRpcPayload(msg) && isJsonRpcResponse(msg)) {
+          if (msg.id === id) {
+            if (isJsonRpcResult(msg)) {
+              resolve(msg.result);
+            } else {
+              reject(msg.error);
             }
+            unlisten();
           }
         }
-      );
+      });
     });
   }
 }

@@ -14,8 +14,6 @@ export type SidepanelMessageRequest = {
   payload: IsSidepanelOpenRequest | CloseSidepanelRequest;
 };
 
-export function isSidepanelMessageRequest(
-  x: unknown
-): x is SidepanelMessageRequest {
+export function isSidepanelMessageRequest(x: unknown): x is SidepanelMessageRequest {
   return isObj(x) && isObj(x.payload) && 'method' in x.payload;
 }

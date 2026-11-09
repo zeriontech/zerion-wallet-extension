@@ -72,8 +72,7 @@
 .piece {
   position: absolute;
   bottom: 20px;
-  animation: confetti-drift var(--dur) cubic-bezier(0.1, 0.45, 0.55, 0.8)
-    var(--delay) both;
+  animation: confetti-drift var(--dur) cubic-bezier(0.1, 0.45, 0.55, 0.8) var(--delay) both;
 }
 
 .body {

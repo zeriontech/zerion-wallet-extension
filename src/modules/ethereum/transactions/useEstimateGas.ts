@@ -14,8 +14,7 @@ export function useEstimateGas({
   return useQuery({
     suspense: false,
     queryKey: ['estimateGas', transaction, networks],
-    queryFn: () =>
-      networks && transaction ? estimateGas(transaction, networks) : null,
+    queryFn: () => (networks && transaction ? estimateGas(transaction, networks) : null),
     enabled: Boolean(networks && transaction),
     keepPreviousData,
   });

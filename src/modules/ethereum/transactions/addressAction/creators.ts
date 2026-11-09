@@ -18,10 +18,7 @@ import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { IncomingTransactionWithChainId } from '../../types/IncomingTransaction';
 import type { TransactionObject } from '../types';
 import type { TransactionActionType } from '../describeTransaction';
-import {
-  describeTransaction,
-  type TransactionAction,
-} from '../describeTransaction';
+import { describeTransaction, type TransactionAction } from '../describeTransaction';
 import type { ChainId } from '../ChainId';
 import { getTransactionObjectStatus } from '../getTransactionObjectStatus';
 import { fetchAssetFromAPI, type AssetQuery } from './fetchAssetFromAPI';
@@ -34,7 +31,7 @@ import {
 
 export function getActionAssetQuery(
   action: TransactionAction,
-  currency: string
+  currency: string,
 ): AssetQuery | null {
   switch (action.type) {
     case 'execute':
@@ -65,7 +62,7 @@ export function getActionAssetQuery(
 export function buildActionContent(
   action: TransactionAction,
   asset: Asset,
-  currency: string
+  currency: string,
 ): AddressAction['content'] {
   switch (action.type) {
     case 'execute':
@@ -75,7 +72,7 @@ export function buildActionContent(
       }
       const commonQuantity = baseToCommon(
         action.amount,
-        getDecimals({ asset, chain: action.chain })
+        getDecimals({ asset, chain: action.chain }),
       );
       return {
         approvals: null,
@@ -114,7 +111,7 @@ export function buildActionContent(
     case 'approve': {
       const commonQuantity = baseToCommon(
         action.amount,
-        getDecimals({ asset, chain: action.chain })
+        getDecimals({ asset, chain: action.chain }),
       );
       return {
         transfers: null,
@@ -143,7 +140,7 @@ export function buildActionContent(
 export async function createActionContent(
   action: TransactionAction,
   currency: string,
-  source: NetworksSource
+  source: NetworksSource,
 ): Promise<AddressAction['content']> {
   const query = getActionAssetQuery(action, currency);
   if (!query) {
@@ -167,7 +164,7 @@ export type LocalActionContentRequest = {
 export function applyLocalActionContent(
   addressAction: LocalAddressAction,
   request: LocalActionContentRequest,
-  content: AddressAction['content']
+  content: AddressAction['content'],
 ): LocalAddressAction {
   return {
     ...addressAction,
@@ -180,10 +177,7 @@ export function applyLocalActionContent(
 
 type AddressActionLabelType = 'to' | 'from' | 'application';
 
-const actionTypeToLabelType: Record<
-  TransactionActionType,
-  AddressActionLabelType
-> = {
+const actionTypeToLabelType: Record<TransactionActionType, AddressActionLabelType> = {
   deploy: 'from',
   send: 'to',
   execute: 'application',
@@ -191,9 +185,7 @@ const actionTypeToLabelType: Record<
   revoke: 'application',
 };
 
-function createActionLabel(
-  addressAction: TransactionAction
-): AddressAction['label'] {
+function createActionLabel(addressAction: TransactionAction): AddressAction['label'] {
   const title = actionTypeToLabelType[addressAction.type];
 
   return {
@@ -235,7 +227,7 @@ export type LocalActionWithContentRequest = {
 async function pendingEvmTxToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
-  currency: string
+  currency: string,
 ): Promise<LocalActionWithContentRequest> {
   invariant(transactionObject.hash, 'Must be evm tx');
   const { transaction, hash, timestamp, addressAction } = transactionObject;
@@ -263,9 +255,7 @@ async function pendingEvmTxToAddressAction(
     : null;
   const label = action ? createActionLabel(action) : null;
   const assetQuery =
-    action && !addressAction?.content
-      ? getActionAssetQuery(action, currency)
-      : null;
+    action && !addressAction?.content ? getActionAssetQuery(action, currency) : null;
   const contentRequest =
     action && assetQuery
       ? {
@@ -328,7 +318,7 @@ async function pendingEvmTxToAddressAction(
 
 function pendingSolanaTxToAddressAction(
   transactionObject: TransactionObject,
-  currency: string
+  currency: string,
 ): LocalAddressAction {
   invariant(transactionObject.signature, 'Must be solana tx');
   const tx = solFromBase64(transactionObject.solanaBase64);
@@ -347,20 +337,13 @@ function pendingSolanaTxToAddressAction(
 export async function pendingTransactionToAddressAction(
   transactionObject: TransactionObject,
   loadNetworkByChainId: (chainId: ChainId) => Promise<Networks>,
-  currency: string
+  currency: string,
 ): Promise<LocalActionWithContentRequest> {
   if (transactionObject.hash) {
-    return pendingEvmTxToAddressAction(
-      transactionObject,
-      loadNetworkByChainId,
-      currency
-    );
+    return pendingEvmTxToAddressAction(transactionObject, loadNetworkByChainId, currency);
   } else if (transactionObject.signature) {
     return {
-      addressAction: pendingSolanaTxToAddressAction(
-        transactionObject,
-        currency
-      ),
+      addressAction: pendingSolanaTxToAddressAction(transactionObject, currency),
       contentRequest: null,
     };
   } else {
@@ -375,18 +358,12 @@ export async function incomingTxToIncomingAddressAction(
   transactionAction: TransactionAction,
   networks: Networks,
   currency: string,
-  source: NetworksSource
+  source: NetworksSource,
 ): Promise<LocalAddressAction> {
   const { transaction, timestamp } = transactionObject;
-  const network = networks.getNetworkById(
-    normalizeChainId(transaction.chainId)
-  );
+  const network = networks.getNetworkById(normalizeChainId(transaction.chainId));
   const label = createActionLabel(transactionAction);
-  const content = await createActionContent(
-    transactionAction,
-    currency,
-    source
-  );
+  const content = await createActionContent(transactionAction, currency, source);
 
   const type = {
     displayValue: capitalize(transactionAction.type),

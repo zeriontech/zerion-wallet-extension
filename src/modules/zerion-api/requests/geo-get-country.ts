@@ -21,7 +21,7 @@ export interface Response {
 export function geoGetCountry(
   this: ZerionApiContext,
   _params?: undefined,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const endpoint = 'geo/country/v1';
   const kyOptions = this.getKyOptions();

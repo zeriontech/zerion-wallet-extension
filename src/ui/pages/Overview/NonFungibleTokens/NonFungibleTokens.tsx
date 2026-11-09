@@ -45,11 +45,7 @@ function NFTItem({
   const price = item.amount.value;
 
   return (
-    <UnstyledLink
-      to={getNftEntityUrl(item.nft)}
-      style={{ display: 'flex' }}
-      className={s.link}
-    >
+    <UnstyledLink to={getNftEntityUrl(item.nft)} style={{ display: 'flex' }} className={s.link}>
       <div style={{ width: '100%', position: 'relative' }}>
         <SquareElement
           style={{ position: 'relative' }}
@@ -81,11 +77,7 @@ function NFTItem({
                   border: '1px solid var(--white)',
                 }}
               >
-                <NetworkIcon
-                  size={12}
-                  name={item.chain.name}
-                  src={item.chain.iconUrl}
-                />
+                <NetworkIcon size={12} name={item.chain.name} src={item.chain.iconUrl} />
               </div>
             </>
           )}
@@ -118,9 +110,7 @@ function NFTItem({
           {price ? (
             <UIText kind="small/accent">
               <BlurrableBalance kind="small/accent" color="var(--black)">
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(price, 'en', currency)}
-                />
+                <NeutralDecimals parts={formatCurrencyToParts(price, 'en', currency)} />
               </BlurrableBalance>
             </UIText>
           ) : someHavePrice ? (
@@ -142,17 +132,12 @@ export function NonFungibleTokens({
   onChainChange: (value: string | null) => void;
 }) {
   const { currency } = useCurrency();
-  const {
-    ready,
-    params,
-    singleAddressNormalized,
-    singleAddress: address,
-  } = useAddressParams();
+  const { ready, params, singleAddressNormalized, singleAddress: address } = useAddressParams();
   const source = useHttpClientSource();
   const { data: portfolioResponse } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source },
-    { enabled: ready }
+    { enabled: ready },
   );
   const walletPortfolio = portfolioResponse?.data;
   const nftTotalValue = walletPortfolio?.nfts.floorPrice ?? null;
@@ -182,14 +167,11 @@ export function NonFungibleTokens({
       addresses: [params.address],
       currency,
       sort: 'floor_price_high',
-      chain:
-        isSupportedByBackend && chainValue !== NetworkSelectValue.All
-          ? chainValue
-          : undefined,
+      chain: isSupportedByBackend && chainValue !== NetworkSelectValue.All ? chainValue : undefined,
       limit: 30,
     },
     { source },
-    { enabled: ready && isSupportedByBackend }
+    { enabled: ready && isSupportedByBackend },
   );
 
   const offsetValuesState = useStore(offsetValues);
@@ -225,21 +207,14 @@ export function NonFungibleTokens({
 
   if (!isSupportedByBackend) {
     return (
-      <CenteredFillViewportView
-        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-      >
+      <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
         {emptyNetworkBalance}
-        <VStack
-          gap={16}
-          style={{ padding: 20, textAlign: 'center', placeItems: 'center' }}
-        >
+        <VStack gap={16} style={{ padding: 20, textAlign: 'center', placeItems: 'center' }}>
           <img style={{ width: 80 }} src={comingSoonImgSrc} alt="" />
           <UIText kind="body/accent">
             {referenceChain === 'solana'
               ? 'NFTs coming soon'
-              : `NFTs for ${
-                  network?.name || referenceChain
-                } are not supported yet`}
+              : `NFTs for ${network?.name || referenceChain} are not supported yet`}
           </UIText>
         </VStack>
       </CenteredFillViewportView>
@@ -248,9 +223,7 @@ export function NonFungibleTokens({
 
   if (isLoading && !items.length) {
     return (
-      <CenteredFillViewportView
-        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-      >
+      <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
         {emptyNetworkBalance}
         <ViewLoading kind="network" />
       </CenteredFillViewportView>
@@ -259,9 +232,7 @@ export function NonFungibleTokens({
 
   if (!items.length) {
     return (
-      <CenteredFillViewportView
-        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-      >
+      <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
         {emptyNetworkBalance}
         <DelayedRender delay={100}>
           {isLoading && isSupportedByBackend ? (
@@ -295,9 +266,7 @@ export function NonFungibleTokens({
             onChange={onChainChange}
             value={
               nftChainValue != null ? (
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(nftChainValue, 'en', currency)}
-                />
+                <NeutralDecimals parts={formatCurrencyToParts(nftChainValue, 'en', currency)} />
               ) : null
             }
           />

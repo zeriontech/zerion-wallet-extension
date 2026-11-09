@@ -1,11 +1,7 @@
 import { ethers } from 'ethers';
 import memoizeOne from 'memoize-one';
 import type { Provider as ZksProvider } from 'zksync-ethers';
-import {
-  EIP712Signer,
-  utils as zksUtils,
-  types as zksTypes,
-} from 'zksync-ethers';
+import { EIP712Signer, utils as zksUtils, types as zksTypes } from 'zksync-ethers';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
 /**
@@ -15,11 +11,9 @@ import type { IncomingTransaction } from '../types/IncomingTransaction';
 function patchEip712SignerGetSignInput() {
   EIP712Signer.getSignInput = (transaction: zksTypes.TransactionRequest) => {
     const maxFeePerGas = transaction.maxFeePerGas || transaction.gasPrice || 0n;
-    const maxPriorityFeePerGas =
-      transaction.maxPriorityFeePerGas ?? maxFeePerGas;
+    const maxPriorityFeePerGas = transaction.maxPriorityFeePerGas ?? maxFeePerGas;
     const gasPerPubdataByteLimit =
-      transaction.customData?.gasPerPubdata ||
-      zksUtils.DEFAULT_GAS_PER_PUBDATA_LIMIT;
+      transaction.customData?.gasPerPubdata || zksUtils.DEFAULT_GAS_PER_PUBDATA_LIMIT;
     return {
       txType: transaction.type || zksUtils.EIP712_TX_TYPE,
       from: transaction.from,
@@ -28,25 +22,18 @@ function patchEip712SignerGetSignInput() {
       gasPerPubdataByteLimit: gasPerPubdataByteLimit,
       maxFeePerGas,
       maxPriorityFeePerGas,
-      paymaster:
-        transaction.customData?.paymasterParams?.paymaster ||
-        ethers.ZeroAddress,
+      paymaster: transaction.customData?.paymasterParams?.paymaster || ethers.ZeroAddress,
       nonce: transaction.nonce || 0,
       value: transaction.value || 0n,
       data: transaction.data || '0x',
       factoryDeps:
-        transaction.customData?.factoryDeps?.map((dep) =>
-          zksUtils.hashBytecode(dep)
-        ) || [],
-      paymasterInput:
-        transaction.customData?.paymasterParams?.paymasterInput || '0x',
+        transaction.customData?.factoryDeps?.map((dep) => zksUtils.hashBytecode(dep)) || [],
+      paymasterInput: transaction.customData?.paymasterParams?.paymasterInput || '0x',
     };
   };
 }
 
-const patchEip712SignerGetSignInputOnce = memoizeOne(
-  patchEip712SignerGetSignInput
-);
+const patchEip712SignerGetSignInputOnce = memoizeOne(patchEip712SignerGetSignInput);
 
 /** Patched implementation of zksync-ethers `parseEip712` */
 export function parseEip712Patched(rawTx: string) {
@@ -73,10 +60,7 @@ export function isEip712Transaction<T extends IncomingTransaction>(tx: T) {
  * Patched implementation of zksync-ethers `broadcastTransaction`:
  * https://github.com/zksync-sdk/zksync-ethers/blob/1e8231e304f3a0d37020f3083b4d63c94a27d80f/src/provider.ts#L982-L1002
  */
-export async function broadcastTransactionPatched(
-  provider: ZksProvider,
-  signedTx: string
-) {
+export async function broadcastTransactionPatched(provider: ZksProvider, signedTx: string) {
   const { blockNumber, hash } = await ethers.resolveProperties({
     blockNumber: provider.getBlockNumber(),
     hash: provider._perform({
@@ -92,7 +76,5 @@ export async function broadcastTransactionPatched(
     throw new Error('The returned hash did not match!');
   }
 
-  return provider
-    ._wrapTransactionResponse(tx)
-    .replaceableTransaction(blockNumber);
+  return provider._wrapTransactionResponse(tx).replaceableTransaction(blockNumber);
 }

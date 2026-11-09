@@ -32,8 +32,7 @@ export function useToasterTarget(step: ActiveStepView | null): ToasterTarget {
     const { hash } = step;
     const explorerUrl =
       getExplorerUrl(step.toaster?.explorerUrlTemplate ?? null, hash) ??
-      localTransactions.find((tx) => matches(tx, hash))?.addressAction
-        ?.transaction?.explorerUrl ??
+      localTransactions.find((tx) => matches(tx, hash))?.addressAction?.transaction?.explorerUrl ??
       null;
     return { hash, explorerUrl };
   }, [step, localTransactions]);

@@ -20,8 +20,7 @@ export function DialogTitle({
       style={{
         position: 'relative',
         display: 'grid',
-        gridTemplateColumns:
-          alignTitle === 'center' ? '1fr 4fr 1fr' : 'max-content 1fr',
+        gridTemplateColumns: alignTitle === 'center' ? '1fr 4fr 1fr' : 'max-content 1fr',
       }}
     >
       <div
@@ -70,10 +69,7 @@ export function DialogTitle({
           {closeKind === 'text' ? (
             'Close'
           ) : (
-            <IconClose
-              role="presentation"
-              style={{ display: 'block', marginInline: 'auto' }}
-            />
+            <IconClose role="presentation" style={{ display: 'block', marginInline: 'auto' }} />
           )}
         </Button>
       </form>

@@ -25,13 +25,10 @@ import path from 'node:path';
 const dryRun = process.argv.includes('--dry-run');
 const repo = process.env.GITHUB_REPOSITORY;
 const sha =
-  process.env.GITHUB_SHA ||
-  execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  process.env.GITHUB_SHA || execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 
-const { version } = JSON.parse(
-  fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8')
-);
+const { version } = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
 const tag = `v${version}`;
 
 const RULESET_HELP =
@@ -58,11 +55,9 @@ function remoteTagExists() {
       // Fall through to git: the tag may exist even if the API call fails.
     }
   }
-  const output = execFileSync(
-    'git',
-    ['ls-remote', '--tags', 'origin', `refs/tags/${tag}`],
-    { encoding: 'utf8' }
-  );
+  const output = execFileSync('git', ['ls-remote', '--tags', 'origin', `refs/tags/${tag}`], {
+    encoding: 'utf8',
+  });
   return output.trim().length > 0;
 }
 
@@ -72,16 +67,11 @@ if (remoteTagExists()) {
 }
 
 if (dryRun) {
-  console.log(
-    `[dry-run] Would create annotated tag ${tag} at ${sha} and push it to ${repo}.`
-  );
+  console.log(`[dry-run] Would create annotated tag ${tag} at ${sha} and push it to ${repo}.`);
   process.exit(0);
 }
 
-if (!token)
-  fail(
-    `GH_TOKEN or GITHUB_TOKEN is required to push the release tag. ${RULESET_HELP}`
-  );
+if (!token) fail(`GH_TOKEN or GITHUB_TOKEN is required to push the release tag. ${RULESET_HELP}`);
 
 // GitHub masks this value in the log; also mask it for the shell.
 process.stdout.write(`::add-mask::${token}\n`);
@@ -100,23 +90,19 @@ const askpassPath = path.join(os.tmpdir(), `askpass-${process.pid}.sh`);
 fs.writeFileSync(
   askpassPath,
   '#!/bin/sh\ncase "$1" in\n  *Username*) echo "x-access-token" ;;\n  *Password*) echo "$GIT_PUSH_TOKEN" ;;\nesac\n',
-  { mode: 0o700 }
+  { mode: 0o700 },
 );
 
 try {
-  execFileSync(
-    'git',
-    ['push', `https://github.com/${repo}.git`, `refs/tags/${tag}`],
-    {
-      stdio: 'pipe',
-      env: {
-        ...process.env,
-        GIT_ASKPASS: askpassPath,
-        GIT_TERMINAL_PROMPT: '0',
-        GIT_PUSH_TOKEN: token,
-      },
-    }
-  );
+  execFileSync('git', ['push', `https://github.com/${repo}.git`, `refs/tags/${tag}`], {
+    stdio: 'pipe',
+    env: {
+      ...process.env,
+      GIT_ASKPASS: askpassPath,
+      GIT_TERMINAL_PROMPT: '0',
+      GIT_PUSH_TOKEN: token,
+    },
+  });
   console.log(`Pushed tag ${tag}.`);
 } catch (error) {
   const stderr = String(error.stderr || '').replaceAll(token, '***');

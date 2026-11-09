@@ -19,16 +19,14 @@ export function formatNetworkFee(quote: NetworkFeeQuote, ratio = 1): string {
       networkFee.amount.value * ratio,
       'en',
       networkFee.amount.currency,
-      { zeroRoundingFallback: 0.01 }
+      { zeroRoundingFallback: 0.01 },
     );
   }
   if (networkFee?.amount?.quantity) {
     const quantity =
       ratio === 1
         ? networkFee.amount.quantity
-        : new BigNumber(networkFee.amount.quantity)
-            .multipliedBy(ratio)
-            .toFixed();
+        : new BigNumber(networkFee.amount.quantity).multipliedBy(ratio).toFixed();
     return formatTokenValue(quantity, networkFee.fungible?.symbol ?? '');
   }
   return noValueDash;

@@ -6,12 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  Combobox,
-  ComboboxList,
-  ComboboxProvider,
-  DialogDismiss,
-} from '@ariakit/react';
+import { Combobox, ComboboxList, ComboboxProvider, DialogDismiss } from '@ariakit/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import AddCircleIcon from 'jsx:src/ui/assets/add-circle-outlined.svg';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
@@ -22,10 +17,7 @@ import { filterAndSortNetworksByQuery } from 'src/modules/ethereum/chains/filter
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import {
-  useNetworks,
-  useSearchNetworks,
-} from 'src/modules/networks/useNetworks';
+import { useNetworks, useSearchNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import {
   mainNetworksStore,
@@ -56,10 +48,7 @@ const SECTION_HEADER_HEIGHT = 28;
 const ALL_ROW_KEY = `__all__:${NetworkSelectValue.All}`;
 
 async function updateNetworks() {
-  return Promise.all([
-    mainNetworksStore.update(),
-    testenvNetworksStore.update(),
-  ]);
+  return Promise.all([mainNetworksStore.update(), testenvNetworksStore.update()]);
 }
 
 type ListItem =
@@ -90,10 +79,7 @@ function ShowTestnetsHint() {
       Looking for testnets?
       <br />
       Enable Testnet Mode in{' '}
-      <TextLink
-        to="/settings/developer-tools"
-        style={{ color: 'var(--primary)' }}
-      >
+      <TextLink to="/settings/developer-tools" style={{ color: 'var(--primary)' }}>
         Settings → Developer Tools
       </TextLink>
     </UIText>
@@ -104,11 +90,7 @@ function EmptyView({ testnetMode }: { testnetMode: boolean }) {
   return (
     <div className={styles.emptyState}>
       <VStack gap={16} style={{ justifyItems: 'center' }}>
-        <img
-          src={noResultsImg}
-          style={{ width: 80, height: 64 }}
-          alt="no results"
-        />
+        <img src={noResultsImg} style={{ width: 80, height: 64 }} alt="no results" />
         <VStack gap={8} style={{ justifyItems: 'center' }}>
           <UIText kind="headline/h3">No results found</UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
@@ -116,11 +98,7 @@ function EmptyView({ testnetMode }: { testnetMode: boolean }) {
           </UIText>
         </VStack>
       </VStack>
-      <Button
-        as={UnstyledLink}
-        to="/networks/create"
-        style={{ paddingInline: 16 }}
-      >
+      <Button as={UnstyledLink} to="/networks/create" style={{ paddingInline: 16 }}>
         Add Network
       </Button>
       {testnetMode ? null : <ShowTestnetsHint />}
@@ -187,8 +165,7 @@ function VirtualizedList({
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement,
-    estimateSize: (index) =>
-      items[index].kind === 'header' ? SECTION_HEADER_HEIGHT : ROW_HEIGHT,
+    estimateSize: (index) => (items[index].kind === 'header' ? SECTION_HEADER_HEIGHT : ROW_HEIGHT),
     overscan: 8,
     scrollMargin: listRef.current?.offsetTop ?? 0,
     getItemKey: (index) => items[index].key,
@@ -295,7 +272,7 @@ function NetworkSelect2Content({
 
   const distributionChains = useMemo(
     () => Object.keys(chainDistribution?.chains || {}),
-    [chainDistribution]
+    [chainDistribution],
   );
   const { networks } = useNetworks(distributionChains);
 
@@ -303,7 +280,7 @@ function NetworkSelect2Content({
   const [query, setQuery] = useState('');
   const debouncedSetQuery = useDebouncedCallback(
     useCallback((value: string) => setQuery(value), []),
-    200
+    200,
   );
 
   const { networks: searchNetworks } = useSearchNetworks({ query });
@@ -321,12 +298,10 @@ function NetworkSelect2Content({
 
   const searchItems = useMemo<NetworkInfo[]>(() => {
     if (!query || !searchNetworks) return [];
-    const pool = testnetMode
-      ? searchNetworks.getNetworks()
-      : searchNetworks.getMainnets();
+    const pool = testnetMode ? searchNetworks.getNetworks() : searchNetworks.getMainnets();
     return filterAndSortNetworksByQuery(
       pool.filter((n) => !n.hidden).filter(filterPredicate),
-      query
+      query,
     );
   }, [filterPredicate, query, searchNetworks, testnetMode]);
 
@@ -373,10 +348,7 @@ function NetworkSelect2Content({
     return list;
   }, [networks, groups, query, searchItems, showAllNetworksOption, value]);
 
-  const networkCount = useMemo(
-    () => groups.reduce((acc, g) => acc + g.items.length, 0),
-    [groups]
-  );
+  const networkCount = useMemo(() => groups.reduce((acc, g) => acc + g.items.length, 0), [groups]);
 
   const { singleAddress } = useAddressParams();
   const ecosystem: BlockchainType | undefined =
@@ -399,19 +371,12 @@ function NetworkSelect2Content({
         </UnstyledLink>
         <UnstyledLink to="/networks/create" title="Add Network">
           <Button kind="ghost" as="div" size={32} style={{ width: 32 }}>
-            <AddCircleIcon
-              style={{ width: 20, height: 20, display: 'block' }}
-            />
+            <AddCircleIcon style={{ width: 20, height: 20, display: 'block' }} />
           </Button>
         </UnstyledLink>
         <DialogDismiss
           render={
-            <Button
-              kind="ghost"
-              as="button"
-              size={32}
-              style={{ width: 32, paddingInline: 6 }}
-            >
+            <Button kind="ghost" as="button" size={32} style={{ width: 32, paddingInline: 6 }}>
               <CloseIcon style={{ width: 20, height: 20, display: 'block' }} />
             </Button>
           }
@@ -454,9 +419,7 @@ function NetworkSelect2Content({
             </div>
           </div>
         ) : null}
-        {standard !== 'all' && showEcosystemHint ? (
-          <EcosystemHint standard={standard} />
-        ) : null}
+        {standard !== 'all' && showEcosystemHint ? <EcosystemHint standard={standard} /> : null}
         <div className={styles.scrollArea}>
           {items.length === 0 ? (
             <EmptyView testnetMode={testnetMode} />

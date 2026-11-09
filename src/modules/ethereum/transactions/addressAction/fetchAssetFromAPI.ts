@@ -37,7 +37,7 @@ function matchesFungibleId(fungible: Fungible, fungibleId: string) {
   return (
     fungible.id === fungibleId ||
     Object.values(fungible.implementations || {}).some(
-      (impl) => normalizeNullableAddress(impl.address) === fungibleId
+      (impl) => normalizeNullableAddress(impl.address) === fungibleId,
     )
   );
 }
@@ -66,13 +66,11 @@ let flushScheduled = false;
 function requestChunk(batch: Batch, fungibleIds: string[]) {
   ZerionAPI.assetListFungibles(
     { fungibleIds, currency: batch.currency },
-    { source: batch.source }
+    { source: batch.source },
   ).then(
     (response) => {
       for (const fungibleId of fungibleIds) {
-        const fungible =
-          response.data.find((item) => matchesFungibleId(item, fungibleId)) ??
-          null;
+        const fungible = response.data.find((item) => matchesFungibleId(item, fungibleId)) ?? null;
         batch.waiters.get(fungibleId)?.forEach(({ resolve }) => {
           resolve(fungible);
         });
@@ -82,7 +80,7 @@ function requestChunk(batch: Batch, fungibleIds: string[]) {
       for (const fungibleId of fungibleIds) {
         batch.waiters.get(fungibleId)?.forEach(({ reject }) => reject(error));
       }
-    }
+    },
   );
 }
 
@@ -98,11 +96,7 @@ function flush() {
   }
 }
 
-function loadFungible(
-  fungibleId: string,
-  currency: string,
-  source: NetworksSource
-) {
+function loadFungible(fungibleId: string, currency: string, source: NetworksSource) {
   return new Promise<Fungible | null>((resolve, reject) => {
     const key = `${source}:${currency}`;
     let batch = batches.get(key);
@@ -129,7 +123,7 @@ function loadFungible(
  */
 export async function fetchAssetFromAPI(
   query: AssetQuery,
-  source: NetworksSource
+  source: NetworksSource,
 ): Promise<Asset | null> {
   const fungibleId = getAssetQueryFungibleId(query);
   if (!fungibleId) {

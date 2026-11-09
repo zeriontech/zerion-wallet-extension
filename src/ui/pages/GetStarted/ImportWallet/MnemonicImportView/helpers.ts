@@ -56,7 +56,7 @@ export async function prepareWalletsToImport(phrase: LocallyEncoded): Promise<{
   return {
     derivedWallets,
     addressesToCheck: derivedWallets.flatMap((config) =>
-      config.wallets.slice(0, WALLETS_TO_CHECK_PER_PATH).map((w) => w.address)
+      config.wallets.slice(0, WALLETS_TO_CHECK_PER_PATH).map((w) => w.address),
     ),
   };
 }
@@ -74,16 +74,11 @@ export function suggestInitialWallets({
   groups: { ecosystem: BlockchainType; wallets: MaskedBareWallet[] }[];
 } {
   const allWallets = wallets.flatMap((config) => config.wallets);
-  const newOnes = allWallets.filter(
-    (w) => !existingAddressesSet.has(normalizeAddress(w.address))
-  );
+  const newOnes = allWallets.filter((w) => !existingAddressesSet.has(normalizeAddress(w.address)));
   const grouped = groupBy(newOnes, ({ address }) =>
-    activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest'
+    activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest',
   );
-  const { active, rest } = grouped as Record<
-    'active' | 'rest',
-    MaskedBareWallet[] | undefined
-  >;
+  const { active, rest } = grouped as Record<'active' | 'rest', MaskedBareWallet[] | undefined>;
   if (active?.length) {
     // display all found active addresses
     const ethWallets = active.filter((w) => isEthereumAddress(w.address));

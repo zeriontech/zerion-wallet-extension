@@ -185,11 +185,7 @@ describe('applyTransactionConfiguration', () => {
       },
     };
 
-    const result = applyTransactionConfiguration(
-      quote,
-      customConfig,
-      gasPrices
-    );
+    const result = applyTransactionConfiguration(quote, customConfig, gasPrices);
     // Swap gas set to the custom limit.
     expect(Number(result.transactionSwap?.evm?.gas)).toBe(200);
     // Approve gas scaled by gasLimitRatio (200/100 = 2): 80 → 160.
@@ -254,8 +250,6 @@ describe('applyTransactionConfiguration', () => {
       priorityFee: 110,
       baseFee: 90,
     });
-    expect(applyTransactionConfiguration(quote, PRESET_FAST, gasPrices)).toBe(
-      quote
-    );
+    expect(applyTransactionConfiguration(quote, PRESET_FAST, gasPrices)).toBe(quote);
   });
 });

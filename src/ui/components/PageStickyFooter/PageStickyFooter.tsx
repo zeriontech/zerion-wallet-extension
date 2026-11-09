@@ -19,9 +19,7 @@ export function PageStickyFooter({
   lineColor,
 }: React.HTMLAttributes<HTMLDivElement> & { lineColor?: string }) {
   const { uiScrollRootElement } = useContext(UIContext);
-  const [drawTopBorder, setDrawTopBorder] = useState(
-    canBeScrolled(uiScrollRootElement)
-  );
+  const [drawTopBorder, setDrawTopBorder] = useState(canBeScrolled(uiScrollRootElement));
   useEffect(() => {
     // uiScrollRootElement might have mutation before useEffect is run,
     // so we try to update state here before adding the MutationObserver
@@ -52,9 +50,7 @@ export function PageStickyFooter({
         ...style,
       }}
     >
-      <PageFullBleedLine
-        lineColor={drawTopBorder ? lineColor : 'transparent'}
-      />
+      <PageFullBleedLine lineColor={drawTopBorder ? lineColor : 'transparent'} />
       {children}
     </PageColumn>
   );

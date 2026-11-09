@@ -37,12 +37,7 @@ function Reveal({
   onSubmit: () => void;
   onSessionExpired: () => void;
 }) {
-  const {
-    data: privateKeyMasked,
-    isLoading,
-    isError,
-    error,
-  } = usePrivateKey(address);
+  const { data: privateKeyMasked, isLoading, isError, error } = usePrivateKey(address);
 
   const privateKey = privateKeyMasked ? decodeMasked(privateKeyMasked) : null;
   const { handleCopy, isSuccess: isCopySuccess } = useCopyToClipboard({
@@ -71,8 +66,7 @@ function Reveal({
       <PageTop />
       <UIText kind="body/regular">
         <span>
-          Your private key can be used to access all of your funds. Do not share
-          it with anyone
+          Your private key can be used to access all of your funds. Do not share it with anyone
         </span>
       </UIText>
       <Spacer height={24} />
@@ -101,11 +95,7 @@ function Reveal({
               {React.createElement(isCopySuccess ? CheckIcon : CopyIcon, {
                 style: { display: 'block', width: 20, height: 20 },
               })}
-              <ZStack
-                hideLowerElements={true}
-                justifyContent="start"
-                style={{ textAlign: 'left' }}
-              >
+              <ZStack hideLowerElements={true} justifyContent="start" style={{ textAlign: 'left' }}>
                 {isCopySuccess ? <span>Copied to Clipboard</span> : null}
                 <span aria-hidden={isCopySuccess}>Copy to Clipboard</span>
               </ZStack>
@@ -113,11 +103,7 @@ function Reveal({
           </Button>
         </div>
       </VStack>
-      <Button
-        style={{ marginTop: 'auto' }}
-        autoFocus={true}
-        onClick={() => onSubmit()}
-      >
+      <Button style={{ marginTop: 'auto' }} autoFocus={true} onClick={() => onSubmit()}>
         Done
       </Button>
       <PageBottom />

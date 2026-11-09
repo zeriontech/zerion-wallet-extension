@@ -32,9 +32,7 @@ export function AnimatedCheckmark({
   if (!checked) {
     return (
       <div>
-        <CheckmarkUnCheckedIcon
-          style={{ display: 'block', color: uncheckedColor }}
-        />
+        <CheckmarkUnCheckedIcon style={{ display: 'block', color: uncheckedColor }} />
       </div>
     );
   } else {
@@ -43,9 +41,7 @@ export function AnimatedCheckmark({
         <CheckmarkCheckedIcon
           style={Object.assign(
             { display: 'block', color: checkedColor },
-            tickColor
-              ? { ['--checkmark-tick-color' as string]: tickColor }
-              : null
+            tickColor ? { ['--checkmark-tick-color' as string]: tickColor } : null,
           )}
         />
       </animated.div>

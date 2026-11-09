@@ -57,9 +57,7 @@ export function ImportKey({
       <VStack gap={isNarrowView ? 16 : 52}>
         <VStack gap={8}>
           <UIText kind="headline/h2">Private key</UIText>
-          <UIText kind="body/regular">
-            Import an existing wallet with your private key.
-          </UIText>
+          <UIText kind="body/regular">Import an existing wallet with your private key.</UIText>
         </VStack>
         <form
           onSubmit={(e) => {
@@ -78,11 +76,7 @@ export function ImportKey({
               autoFocus={true}
               autoComplete="off"
             />
-            <Button
-              kind="primary"
-              style={{ width: '100%' }}
-              disabled={isLoading}
-            >
+            <Button kind="primary" style={{ width: '100%' }} disabled={isLoading}>
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <span>Import Wallet</span>
                 {isLoading ? <CircleSpinner /> : null}

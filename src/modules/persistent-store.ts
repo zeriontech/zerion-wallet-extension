@@ -49,9 +49,7 @@ export class PersistentStore<T> extends Store<T> {
         // Throw only in dev mode in case some production flow depends on
         // setting state sooner. Before this refactoring it was possible, so
         // it shouldn't really break anything
-        throw new Error(
-          'You are trying to write to a PersistentStore before {ready}'
-        );
+        throw new Error('You are trying to write to a PersistentStore before {ready}');
       }
     }
     return super.setState(...args);

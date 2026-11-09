@@ -11,7 +11,7 @@ import { getColor, getSign } from 'src/ui/pages/AssetInfo/helpers';
  */
 function sortRangeIndexes(
   startRangeIndex: number | null,
-  endRangeIndex: number | null
+  endRangeIndex: number | null,
 ): { start: number | null; end: number | null } {
   if (startRangeIndex === null) {
     return { start: startRangeIndex, end: endRangeIndex };
@@ -92,22 +92,16 @@ export function computeChartRangeDisplay({
       ? ((value - startValue) / startValue) * 100
       : 0;
 
-  const changeAbsolute =
-    startValue != null && value != null ? value - startValue : 0;
+  const changeAbsolute = startValue != null && value != null ? value - startValue : 0;
 
   // Only show a timestamp once the user is hovering/selecting a point.
   const activeTimestamp = end != null ? endPoint?.[0] : null;
-  const activeFormatted = activeTimestamp
-    ? dayjs(activeTimestamp).format(DATE_FORMAT)
-    : null;
+  const activeFormatted = activeTimestamp ? dayjs(activeTimestamp).format(DATE_FORMAT) : null;
   // Prefix with the start date only for a genuine range (start past the period
   // start); a single hover reads against the period start and needs no prefix.
   const startTimestamp = startPoint?.[0];
   const initialFormatted =
-    activeFormatted &&
-    start != null &&
-    startTimestamp != null &&
-    startTimestamp !== firstPoint?.[0]
+    activeFormatted && start != null && startTimestamp != null && startTimestamp !== firstPoint?.[0]
       ? `${dayjs(startTimestamp).format(DATE_FORMAT)} → `
       : '';
   const date = activeFormatted ? `${initialFormatted}${activeFormatted}` : '';
@@ -127,7 +121,7 @@ export function computeChartRangeDisplay({
     // total-balance change line (e.g. `-1.09% ($22.49)`).
     change: `${getSign(change)}${formatPercent(
       Math.abs(change),
-      'en'
+      'en',
     )}% (${formatCurrencyValue(Math.abs(changeAbsolute), 'en', currency)})`,
     changeColor: getColor(change),
     date,

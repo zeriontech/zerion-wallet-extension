@@ -14,9 +14,7 @@ export function RestoreRecoveryPhraseReminder() {
     !isLoading &&
     preferences &&
     !preferences.restoreRecoveryPhraseSuccess &&
-    Date.now() -
-      (preferences.restoreRecoveryPhraseReminderDismissedTime ?? 0) >=
-      ONE_DAY;
+    Date.now() - (preferences.restoreRecoveryPhraseReminderDismissedTime ?? 0) >= ONE_DAY;
 
   useEffect(() => {
     if (!shouldShow) {

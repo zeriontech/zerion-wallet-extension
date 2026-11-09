@@ -5,10 +5,7 @@ import { invariant } from 'src/shared/invariant';
 import type { ErrorResponse } from '@walletconnect/jsonrpc-utils';
 import type { PortMessageHandler } from '../PortRegistry';
 
-function assertType<T>(
-  value: unknown,
-  check: (value: unknown) => value is T
-): asserts value is T {
+function assertType<T>(value: unknown, check: (value: unknown) => value is T): asserts value is T {
   invariant(check(value), 'Type Error');
 }
 
@@ -20,7 +17,7 @@ const isWindowReject = (v: unknown): v is WindowReject =>
   isObj(v) && 'windowId' in v && 'error' in v;
 
 export function createNotificationWindowMessageHandler(
-  notificationWindow: NotificationWindow
+  notificationWindow: NotificationWindow,
 ): PortMessageHandler {
   return function notificationWindowMessageHandler(port, msg) {
     if (port.name !== 'window') {

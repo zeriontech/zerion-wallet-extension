@@ -5,7 +5,7 @@ import type {
 } from './perp-active-asset-data.types';
 
 export async function perpActiveAssetData(
-  payload: PerpActiveAssetDataPayload
+  payload: PerpActiveAssetDataPayload,
 ): Promise<PerpActiveAssetData | null> {
   return postInfo<PerpActiveAssetData>({
     type: 'activeAssetData',

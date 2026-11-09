@@ -44,13 +44,13 @@ function useNativeAddressPosition({
     {
       enabled: enabled && Boolean(id),
       refetchInterval: usePositionsRefetchInterval(false),
-    }
+    },
   );
 
   return useMemo(() => {
     const nativePositions =
       response?.data?.filter(
-        (item) => item.chain.id === chain.toString() && item.fungible.id === id
+        (item) => item.chain.id === chain.toString() && item.fungible.id === id,
       ) ?? [];
     if (nativePositions.length > 1) {
       // eslint-disable-next-line no-console
@@ -58,9 +58,7 @@ function useNativeAddressPosition({
     }
     return {
       // ternary expression to correctly type accessor as nullable
-      data: nativePositions.length
-        ? fungiblePositionToAddressPosition(nativePositions[0])
-        : null,
+      data: nativePositions.length ? fungiblePositionToAddressPosition(nativePositions[0]) : null,
       isLoading,
       isSuccess,
     };
@@ -96,10 +94,8 @@ export function useNativeBalance({
     staleTime,
   });
 
-  const isLoading =
-    nativeAddressPosition.isLoading || positionFromRpcNodeQuery.isLoading;
-  const isSuccess =
-    nativeAddressPosition.isSuccess || positionFromRpcNodeQuery.isSuccess;
+  const isLoading = nativeAddressPosition.isLoading || positionFromRpcNodeQuery.isLoading;
+  const isSuccess = nativeAddressPosition.isSuccess || positionFromRpcNodeQuery.isSuccess;
   const position = nativeAddressPosition.data || positionFromRpcNodeQuery.data;
   return useMemo(() => {
     if (!position?.quantity) {

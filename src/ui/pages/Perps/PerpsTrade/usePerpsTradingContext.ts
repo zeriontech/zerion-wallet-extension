@@ -26,33 +26,25 @@ export interface PerpsTradingContext {
   totalRate: number;
 }
 
-export function usePerpsTradingContext({
-  address,
-}: {
-  address: string;
-}): PerpsTradingContext {
+export function usePerpsTradingContext({ address }: { address: string }): PerpsTradingContext {
   const { data: config } = usePerpsRemoteConfig();
 
   const { isPremium } = useSingleAddressPremiumStatus({ address });
 
-  const { data: userFees } = useUserFees(
-    { address },
-    { enabled: Boolean(address) }
-  );
+  const { data: userFees } = useUserFees({ address }, { enabled: Boolean(address) });
 
   return useMemo<PerpsTradingContext>(() => {
     const builderAddress = config?.builderAddress ?? '';
     const standardFee = config?.builderFee ?? 0;
     const premiumFee = config?.builderFeePremium ?? 0;
-    const builderFeeUnits =
-      isPremium && premiumFee > 0 ? premiumFee : standardFee;
+    const builderFeeUnits = isPremium && premiumFee > 0 ? premiumFee : standardFee;
     // Approve a fixed ceiling (from config) rather than the per-order fee, so
     // one approval covers standard + premium and the preflight gate doesn't
     // re-approve when the tier flips. Fall back to the per-order fee if the
     // config cap is missing or somehow below it.
     const maxApproveBuilderFeeUnits = Math.max(
       config?.maxApproveBuilderFeeInteger ?? 0,
-      builderFeeUnits
+      builderFeeUnits,
     );
     const referralCode = config?.referralCode ?? '';
 
@@ -68,10 +60,7 @@ export function usePerpsTradingContext({
     // Fail-closed: trade CTAs are hidden until both Firebase config and user
     // fees have resolved and the builder address is non-empty.
     const isReady =
-      Boolean(config) &&
-      Boolean(builderAddress) &&
-      builderFeeUnits > 0 &&
-      userFees != null;
+      Boolean(config) && Boolean(builderAddress) && builderFeeUnits > 0 && userFees != null;
 
     return {
       isReady,

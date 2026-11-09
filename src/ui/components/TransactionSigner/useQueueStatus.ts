@@ -4,7 +4,7 @@ import type { QueueStatus } from './types';
 
 export function useQueueStatus(queueId: string | null): QueueStatus | null {
   const [status, setStatus] = useState<QueueStatus | null>(() =>
-    queueId ? getQueueStatus(queueId) : null
+    queueId ? getQueueStatus(queueId) : null,
   );
 
   useEffect(() => {

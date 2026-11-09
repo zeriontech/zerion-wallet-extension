@@ -3,12 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import * as s from './styles.module.css';
 
-export type StepStatus =
-  | 'waiting'
-  | 'signing'
-  | 'pending'
-  | 'confirmed'
-  | 'failed';
+export type StepStatus = 'waiting' | 'signing' | 'pending' | 'confirmed' | 'failed';
 
 export interface Step {
   label: string;
@@ -37,17 +32,13 @@ function StepIndicator({
         >
           {status === 'confirmed' ? (
             <div className={`${s.stepCircle} ${s.stepCircleConfirmed}`}>
-              <CheckIcon
-                style={{ color: 'var(--always-white)', width: 14, height: 14 }}
-              />
+              <CheckIcon style={{ color: 'var(--always-white)', width: 14, height: 14 }} />
             </div>
           ) : status === 'failed' ? (
             <div className={s.failedDot} />
           ) : (
             <div
-              className={`${s.stepCircle} ${
-                isActive ? s.stepCircleActive : s.stepCircleFuture
-              }`}
+              className={`${s.stepCircle} ${isActive ? s.stepCircleActive : s.stepCircleFuture}`}
             >
               {index + 1}
             </div>
@@ -60,7 +51,7 @@ function StepIndicator({
 
 export function TransactionStepper({ steps }: { steps: Step[] }) {
   const activeIndex = steps.findIndex(
-    (step) => step.status !== 'confirmed' && step.status !== 'failed'
+    (step) => step.status !== 'confirmed' && step.status !== 'failed',
   );
   return (
     <div className={s.stepper}>
@@ -69,11 +60,7 @@ export function TransactionStepper({ steps }: { steps: Step[] }) {
         return (
           <React.Fragment key={index}>
             <div className={s.step}>
-              <StepIndicator
-                status={step.status}
-                index={index}
-                isActive={isActive}
-              />
+              <StepIndicator status={step.status} index={index} isActive={isActive} />
               <span
                 className={s.label}
                 style={{

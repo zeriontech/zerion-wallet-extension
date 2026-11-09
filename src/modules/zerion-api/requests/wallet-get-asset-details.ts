@@ -59,7 +59,7 @@ type Response = ResponseBody<WalletAssetDetails>;
 export async function walletGetAssetDetails(
   this: ZerionApiContext,
   params: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const firstAddress = params.addresses[0];
   const provider = await this.getAddressProviderHeader(firstAddress);
@@ -71,6 +71,6 @@ export async function walletGetAssetDetails(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

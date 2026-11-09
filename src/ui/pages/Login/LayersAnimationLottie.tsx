@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useImperativeHandle,
-  useLayoutEffect,
-  useRef,
-} from 'react';
+import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef } from 'react';
 import type { AnimationItem } from 'lottie-web';
 
 async function loadLottieWeb() {
@@ -26,8 +21,7 @@ class LottieModule {
      * ESM returns a module namespace. lottie-web mutates the object it is
      * given, and a frozen module namespace throws, so unwrap `default`.
      */
-    const animationData =
-      (animationModule as { default?: unknown }).default ?? animationModule;
+    const animationData = (animationModule as { default?: unknown }).default ?? animationModule;
     return { lottieWeb, animationData };
   }
 
@@ -37,7 +31,7 @@ class LottieModule {
 
   async startAnimation(
     container: Element,
-    { autoplay, signal }: { autoplay: boolean; signal: AbortSignal }
+    { autoplay, signal }: { autoplay: boolean; signal: AbortSignal },
   ) {
     const { lottieWeb, animationData } = await this.prepareResources();
     if (signal.aborted) {
@@ -55,9 +49,7 @@ class LottieModule {
       item.goToAndPlay(FRAME_NUMBER_TO_START_LOOP, true);
     }
     item.addEventListener('complete', loopOnCompleted);
-    this.disposables.push(() =>
-      item.removeEventListener('complete', loopOnCompleted)
-    );
+    this.disposables.push(() => item.removeEventListener('complete', loopOnCompleted));
     this.options.onAnimationReady?.();
     this.animationItem = item;
   }
@@ -73,52 +65,50 @@ export interface LottieComponentHandle {
   startAnimation: () => void;
 }
 
-export const LayersAnimationLottie = React.forwardRef(
-  function LayersLottieAnimation(
-    {
-      onAnimationReady,
-    }: {
-      onAnimationReady?: () => void;
+export const LayersAnimationLottie = React.forwardRef(function LayersLottieAnimation(
+  {
+    onAnimationReady,
+  }: {
+    onAnimationReady?: () => void;
+  },
+  ref: React.Ref<LottieComponentHandle>,
+) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const lottieModuleRef = useRef<LottieModule | null>(null);
+
+  const onAnimationStartRef = useRef(onAnimationReady);
+  useLayoutEffect(() => {
+    onAnimationStartRef.current = onAnimationReady;
+  });
+
+  useImperativeHandle(ref, () => ({
+    startAnimation() {
+      lottieModuleRef.current?.animationItem?.play();
     },
-    ref: React.Ref<LottieComponentHandle>
-  ) {
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const lottieModuleRef = useRef<LottieModule | null>(null);
+  }));
 
-    const onAnimationStartRef = useRef(onAnimationReady);
-    useLayoutEffect(() => {
-      onAnimationStartRef.current = onAnimationReady;
+  useEffect(() => {
+    if (!containerRef.current) {
+      return;
+    }
+    const lottieModule = new LottieModule({
+      onAnimationReady: () => onAnimationStartRef.current?.(),
     });
+    lottieModule.prepareResources();
+    lottieModuleRef.current = lottieModule;
+    const abortController = new AbortController();
+    lottieModule.startAnimation(containerRef.current, {
+      autoplay: false,
+      signal: abortController.signal,
+    });
+    return () => {
+      lottieModuleRef.current = null;
+      abortController.abort();
+      lottieModule.destroy();
+    };
+  }, []);
 
-    useImperativeHandle(ref, () => ({
-      startAnimation() {
-        lottieModuleRef.current?.animationItem?.play();
-      },
-    }));
-
-    useEffect(() => {
-      if (!containerRef.current) {
-        return;
-      }
-      const lottieModule = new LottieModule({
-        onAnimationReady: () => onAnimationStartRef.current?.(),
-      });
-      lottieModule.prepareResources();
-      lottieModuleRef.current = lottieModule;
-      const abortController = new AbortController();
-      lottieModule.startAnimation(containerRef.current, {
-        autoplay: false,
-        signal: abortController.signal,
-      });
-      return () => {
-        lottieModuleRef.current = null;
-        abortController.abort();
-        lottieModule.destroy();
-      };
-    }, []);
-
-    return <div ref={containerRef} />;
-  }
-);
+  return <div ref={containerRef} />;
+});
 
 export default LayersAnimationLottie;

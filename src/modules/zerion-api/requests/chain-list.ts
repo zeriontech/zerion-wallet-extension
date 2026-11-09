@@ -23,7 +23,7 @@ export type Response = ResponseBody<ChainFullInfo[]>;
 export function chainList(
   this: ZerionApiContext,
   { includeTestnets, supportedOnly, searchQuery }: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const params = new URLSearchParams();
   if (includeTestnets != null) {

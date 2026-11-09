@@ -1,11 +1,5 @@
-import type {
-  ErrorResponse,
-  JsonRpcRequest,
-} from '@walletconnect/jsonrpc-utils';
-import {
-  isJsonRpcPayload,
-  isJsonRpcRequest,
-} from '@walletconnect/jsonrpc-utils';
+import type { ErrorResponse, JsonRpcRequest } from '@walletconnect/jsonrpc-utils';
+import { isJsonRpcPayload, isJsonRpcRequest } from '@walletconnect/jsonrpc-utils';
 import { isObj } from '../isObj';
 
 export interface RpcRequest<T = unknown> {
@@ -27,26 +21,22 @@ export interface RpcError {
 export type RpcResponse<T = unknown> = RpcResult<T> | RpcError;
 
 export function isRpcResult<T = unknown>(
-  payload: Partial<RpcResult<T>> | unknown
+  payload: Partial<RpcResult<T>> | unknown,
 ): payload is RpcResult<T> {
   return isObj(payload) && 'id' in payload && 'result' in payload;
 }
 
-export function isRpcError(
-  payload: Partial<RpcError> | unknown
-): payload is RpcError {
+export function isRpcError(payload: Partial<RpcError> | unknown): payload is RpcError {
   return isObj(payload) && 'id' in payload && 'error' in payload;
 }
 
 export function isRpcResponse<T = unknown>(
-  payload: Partial<RpcResult<T> | RpcError> | unknown
+  payload: Partial<RpcResult<T> | RpcError> | unknown,
 ): payload is RpcResponse<T> {
   return isRpcResult(payload) || isRpcError(payload);
 }
 
-export function isRpcRequest(
-  payload: Partial<RpcRequest> | unknown
-): payload is RpcRequest {
+export function isRpcRequest(payload: Partial<RpcRequest> | unknown): payload is RpcRequest {
   return isObj(payload) && 'id' in payload && 'method' in payload;
 }
 
@@ -54,9 +44,7 @@ export type RpcRequestWithContext<T> = Omit<JsonRpcRequest<T>, 'params'> & {
   params: { params: T; context: { chainId: string } };
 };
 
-export function isRpcRequestWithContext<T>(
-  x: unknown
-): x is RpcRequestWithContext<T> {
+export function isRpcRequestWithContext<T>(x: unknown): x is RpcRequestWithContext<T> {
   return (
     isObj(x) &&
     isJsonRpcPayload(x) &&
@@ -67,7 +55,7 @@ export function isRpcRequestWithContext<T>(
 }
 
 export function requestWithContextToRpcRequest<T>(
-  request: RpcRequestWithContext<T>
+  request: RpcRequestWithContext<T>,
 ): JsonRpcRequest<T> {
   const {
     params: { params },

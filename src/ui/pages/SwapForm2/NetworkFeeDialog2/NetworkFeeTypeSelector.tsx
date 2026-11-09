@@ -17,11 +17,10 @@ import {
   type NetworkFeeQuote,
 } from '../getNetworkFeeForSpeed';
 
-const PRESETS: { speed: Exclude<NetworkFeeSpeed, 'custom'>; label: string }[] =
-  [
-    { speed: 'fast', label: 'Fast' },
-    { speed: 'average', label: 'Average' },
-  ];
+const PRESETS: { speed: Exclude<NetworkFeeSpeed, 'custom'>; label: string }[] = [
+  { speed: 'fast', label: 'Fast' },
+  { speed: 'average', label: 'Average' },
+];
 
 const SELECTED_BORDER = '2px solid var(--primary)';
 const UNSELECTED_BORDER = '2px solid transparent';
@@ -58,8 +57,7 @@ export function NetworkFeeTypeSelector({
             style={{
               width: '100%',
               paddingInline: 12,
-              border:
-                speed === selectedSpeed ? SELECTED_BORDER : UNSELECTED_BORDER,
+              border: speed === selectedSpeed ? SELECTED_BORDER : UNSELECTED_BORDER,
             }}
             onClick={() =>
               onSelectPreset({
@@ -77,10 +75,7 @@ export function NetworkFeeTypeSelector({
               style={{ width: '100%' }}
             >
               <HStack gap={12} alignItems="center" justifyContent="start">
-                <NetworkFeeIcon
-                  speed={speed}
-                  style={{ width: 24, height: 24 }}
-                />
+                <NetworkFeeIcon speed={speed} style={{ width: 24, height: 24 }} />
                 <UIText kind="body/accent">{label}</UIText>
               </HStack>
               {feeLabel ? (
@@ -99,8 +94,7 @@ export function NetworkFeeTypeSelector({
         style={{
           width: '100%',
           paddingInline: 12,
-          border:
-            selectedSpeed === 'custom' ? SELECTED_BORDER : UNSELECTED_BORDER,
+          border: selectedSpeed === 'custom' ? SELECTED_BORDER : UNSELECTED_BORDER,
         }}
         onClick={onSelectCustom}
       >

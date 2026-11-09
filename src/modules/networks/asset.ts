@@ -20,11 +20,7 @@ export function getDecimals({
   asset: Pick<Asset, 'implementations'> & { decimals?: number };
   chain: Chain;
 }) {
-  return (
-    getAssetImplementationInChain({ asset, chain })?.decimals ||
-    asset.decimals ||
-    18
-  );
+  return getAssetImplementationInChain({ asset, chain })?.decimals || asset.decimals || 18;
 }
 
 export function getAddress({

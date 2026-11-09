@@ -32,9 +32,7 @@ export function PrivateKeyImportView({
   const [idempotentRequest] = useState(() => new IdempotentRequest());
   const { value: privateKey } = useMemoryLocationState(locationStateStore);
   if (!privateKey) {
-    throw new Error(
-      'Location state for PrivateKeyImportView is expected to have a value property'
-    );
+    throw new Error('Location state for PrivateKeyImportView is expected to have a value property');
   }
   const { data, mutate, isIdle, isError, ...importWallet } = useMutation({
     mutationFn: async (input: LocallyEncoded) => {
@@ -112,12 +110,7 @@ export function PrivateKeyImportView({
         ) : null}
         {ready ? (
           <animated.div style={style}>
-            <Button
-              as={UnstyledLink}
-              to="/overview"
-              style={{ width: '100%' }}
-              ref={autoFocusRef}
-            >
+            <Button as={UnstyledLink} to="/overview" style={{ width: '100%' }} ref={autoFocusRef}>
               View Wallet
             </Button>
           </animated.div>

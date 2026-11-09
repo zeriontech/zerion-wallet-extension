@@ -22,10 +22,7 @@ export function RecipientLine({
   network: NetworkInfo;
   showNetworkIcon: boolean;
 }) {
-  const checksumAddress = useMemo(
-    () => toChecksumAddress(recipientAddress),
-    [recipientAddress]
-  );
+  const checksumAddress = useMemo(() => toChecksumAddress(recipientAddress), [recipientAddress]);
 
   const showRecipientName = recipientName && recipientName !== recipientAddress;
 
@@ -57,11 +54,7 @@ export function RecipientLine({
           </UIText>
         }
         detailText={
-          <UIText
-            kind="small/regular"
-            color="var(--neutral-500)"
-            title={checksumAddress}
-          >
+          <UIText kind="small/regular" color="var(--neutral-500)" title={checksumAddress}>
             <TextAnchor
               // Open URL in a new _window_ so that extension UI stays open and visible
               onClick={openInNewWindow}
@@ -69,9 +62,7 @@ export function RecipientLine({
               target="_blank"
               rel="noopener noreferrer"
             >
-              {showRecipientName
-                ? recipientName
-                : truncateAddress(checksumAddress, 15)}
+              {showRecipientName ? recipientName : truncateAddress(checksumAddress, 15)}
             </TextAnchor>
           </UIText>
         }

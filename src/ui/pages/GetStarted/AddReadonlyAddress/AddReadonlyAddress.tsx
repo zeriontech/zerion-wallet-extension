@@ -1,10 +1,7 @@
 import React, { useId, useRef, useState } from 'react';
 import { HTTPError } from 'ky';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  useBackgroundKind,
-  whiteBackgroundKind,
-} from 'src/ui/components/Background/Background';
+import { useBackgroundKind, whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
@@ -43,7 +40,7 @@ async function submitReadonlyAddress({ address }: { address: string }) {
 
 function getHints(
   query: string,
-  data: undefined | Awaited<ReturnType<(typeof ZerionAPI)['getWalletsMeta']>>
+  data: undefined | Awaited<ReturnType<(typeof ZerionAPI)['getWalletsMeta']>>,
 ): { address: string | null; domains: string[] | null } {
   if (!data || !data.data?.length) {
     return { address: null, domains: null };
@@ -70,20 +67,13 @@ async function lookup(value: string) {
 async function lookupAddressByQuery(query: string) {
   try {
     const promises = [lookup(query)];
-    if (
-      !isValidAddress(query) &&
-      !query.endsWith('.eth') &&
-      !query.endsWith('.lens')
-    ) {
+    if (!isValidAddress(query) && !query.endsWith('.eth') && !query.endsWith('.lens')) {
       promises.push(lookup(`${query}.eth`));
       promises.push(lookup(`${query}.lens`));
     }
     return await Promise.any(promises);
   } catch (unknownError) {
-    const error =
-      unknownError instanceof AggregateError
-        ? unknownError.errors[0]
-        : unknownError;
+    const error = unknownError instanceof AggregateError ? unknownError.errors[0] : unknownError;
     if (error instanceof HTTPError) {
       const payload = await (error as HTTPError).response.json();
       const message = payload.errors?.[0]?.title;
@@ -136,8 +126,7 @@ export function AddReadonlyAddress() {
   // Do not _display_ error for input like {hello},
   // only show for inputs like {hello.}, {hello.eth}, etc
   // NOTE: form error (custom validity) must still be set
-  const errorMessage =
-    isError && query.includes('.') ? getError(error).message : null;
+  const errorMessage = isError && query.includes('.') ? getError(error).message : null;
   const hints = getHints(query, data);
 
   const title = 'Watch Address';
@@ -148,8 +137,7 @@ export function AddReadonlyAddress() {
       <PageHeading>{title}</PageHeading>
       <Spacer height={4} />
       <UIText kind="body/regular">
-        Search or paste an address, domain or identity to start watching a
-        wallet
+        Search or paste an address, domain or identity to start watching a wallet
       </UIText>
       <Spacer height={32} />
       <form
@@ -221,30 +209,21 @@ export function AddReadonlyAddress() {
             </UIText>
           ) : null}
           {errorMessage ? (
-            <UIText
-              kind="caption/regular"
-              color={isError ? 'var(--negative-500)' : undefined}
-            >
+            <UIText kind="caption/regular" color={isError ? 'var(--negative-500)' : undefined}>
               {errorMessage}
             </UIText>
           ) : hints.address ? (
             <div>
               <UIText kind="caption/regular">{hints.address}</UIText>
               {hints.domains && !hints.domains.includes(query) ? (
-                <UIText kind="caption/regular">
-                  {hints.domains.join(', ')}
-                </UIText>
+                <UIText kind="caption/regular">{hints.domains.join(', ')}</UIText>
               ) : null}
             </div>
           ) : hints.domains?.length ? (
             <UIText kind="caption/regular">{hints.domains.join(', ')}</UIText>
           ) : null}
         </VStack>
-        <Button
-          style={{ marginTop: 'auto' }}
-          kind="primary"
-          disabled={isSubmitting}
-        >
+        <Button style={{ marginTop: 'auto' }} kind="primary" disabled={isSubmitting}>
           Continue
         </Button>
       </form>

@@ -25,10 +25,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  SegmentedControlGroup,
-  SegmentedControlRadio,
-} from 'src/ui/ui-kit/SegmentedControl';
+import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/SegmentedControl';
 import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
@@ -61,9 +58,7 @@ function DecoratedSettingsSelect({
           paddingInline: 12,
         }}
       >
-        <SettingsSlidersIcon
-          style={{ display: 'block', width: 20, height: 20 }}
-        />
+        <SettingsSlidersIcon style={{ display: 'block', width: 20, height: 20 }} />
       </div>
     </div>
   );
@@ -81,9 +76,7 @@ export function PortfolioValueDetail({ address }: { address: string }) {
             const value = data.data?.totalValue ?? 0;
             return (
               <BlurrableBalance kind="headline/h2" color="var(--black)">
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(value, 'en', currency)}
-                />
+                <NeutralDecimals parts={formatCurrencyToParts(value, 'en', currency)} />
               </BlurrableBalance>
             );
           } else {
@@ -111,8 +104,7 @@ function InactiveWalletsHint() {
           />
           <Spacer height={8} />
           <UIText kind="small/regular" style={{ textAlign: 'start' }}>
-            The wallets that have zero balance or no transactions on the
-            supported chains.
+            The wallets that have zero balance or no transactions on the supported chains.
           </UIText>
           <Spacer height={24} />
           <form method="dialog">
@@ -150,19 +142,15 @@ export function SelectMoreWalletsDialog({
         acc[key] = groupBy(config.wallets, toActiveStatus) as Grouped;
         return acc;
       },
-      {} as { [key: string]: Grouped }
+      {} as { [key: string]: Grouped },
     );
   }, [activeWallets, wallets]);
 
   type CurveValue = 'ecdsa' | 'ed25519';
   const [curve, setCurve] = useState<CurveValue>('ecdsa');
   const ethPathType = 'bip44';
-  type SolanaPathType =
-    | 'solanaBip44Change'
-    | 'solanaBip44'
-    | 'solanaDeprecated';
-  const [solPathType, setSolPathType] =
-    useState<SolanaPathType>('solanaBip44Change');
+  type SolanaPathType = 'solanaBip44Change' | 'solanaBip44' | 'solanaDeprecated';
+  const [solPathType, setSolPathType] = useState<SolanaPathType>('solanaBip44Change');
 
   const [values, toggleValue] = useToggledValues(initialValues);
 
@@ -170,8 +158,7 @@ export function SelectMoreWalletsDialog({
     return null;
   }
 
-  const filter =
-    curve === 'ecdsa' ? `${curve}:${ethPathType}` : `${curve}:${solPathType}`;
+  const filter = curve === 'ecdsa' ? `${curve}:${ethPathType}` : `${curve}:${solPathType}`;
   const { active, rest } = groupedByEcosystem[filter];
   return (
     <BottomSheetDialog
@@ -197,11 +184,7 @@ export function SelectMoreWalletsDialog({
             }}
           >
             <div style={{ padding: 20 }}>
-              <DialogTitle
-                title={
-                  <UIText kind="headline/h3">Select Another Wallet</UIText>
-                }
-              />
+              <DialogTitle title={<UIText kind="headline/h3">Select Another Wallet</UIText>} />
             </div>
             <Spacer height={8} />
             <div
@@ -225,9 +208,7 @@ export function SelectMoreWalletsDialog({
                       name="curve"
                       value="ecdsa"
                       checked={curve === 'ecdsa'}
-                      onChange={(event) =>
-                        setCurve(event.currentTarget.value as CurveValue)
-                      }
+                      onChange={(event) => setCurve(event.currentTarget.value as CurveValue)}
                     >
                       <HStack gap={8} alignItems="center">
                         <EcosystemEthereumIcon />
@@ -238,9 +219,7 @@ export function SelectMoreWalletsDialog({
                       name="curve"
                       value="ed25519"
                       checked={curve === 'ed25519'}
-                      onChange={(event) =>
-                        setCurve(event.currentTarget.value as CurveValue)
-                      }
+                      onChange={(event) => setCurve(event.currentTarget.value as CurveValue)}
                     >
                       <HStack gap={8} alignItems="center">
                         <EcosystemSolanaIcon />
@@ -258,9 +237,7 @@ export function SelectMoreWalletsDialog({
                       name="solPathType"
                       value={solPathType}
                       onChange={(event) =>
-                        setSolPathType(
-                          event.currentTarget.value as SolanaPathType
-                        )
+                        setSolPathType(event.currentTarget.value as SolanaPathType)
                       }
                     >
                       <option value="solanaBip44Change">Bip44Change</option>
@@ -277,13 +254,9 @@ export function SelectMoreWalletsDialog({
           <div style={{ paddingInline: 4 }}>
             {active?.length ? (
               <WalletList
-                listTitle={
-                  <div style={{ paddingInline: 16 }}>Active wallets</div>
-                }
+                listTitle={<div style={{ paddingInline: 16 }}>Active wallets</div>}
                 wallets={active}
-                renderDetail={(index) => (
-                  <PortfolioValueDetail address={active[index].address} />
-                )}
+                renderDetail={(index) => <PortfolioValueDetail address={active[index].address} />}
                 existingAddressesSet={existingAddressesSet}
                 values={values}
                 onSelect={toggleValue}
@@ -339,21 +312,13 @@ function AddressImportList({
   onSubmit: (values: MaskedBareWallet[]) => void;
 }) {
   const existingAddresses = useAllExistingMnemonicAddresses();
-  const existingAddressesSet = useMemo(
-    () => new Set(existingAddresses),
-    [existingAddresses]
-  );
+  const existingAddressesSet = useMemo(() => new Set(existingAddresses), [existingAddresses]);
   const suggestedWallets = useMemo(
-    () =>
-      suggestInitialWallets({ wallets, activeWallets, existingAddressesSet }),
-    [activeWallets, existingAddressesSet, wallets]
+    () => suggestInitialWallets({ wallets, activeWallets, existingAddressesSet }),
+    [activeWallets, existingAddressesSet, wallets],
   );
   const [values, toggleAddress] = useToggledValues<string>(() => {
-    return new Set(
-      suggestedWallets.groups.flatMap((group) =>
-        group.wallets.map((w) => w.address)
-      )
-    );
+    return new Set(suggestedWallets.groups.flatMap((group) => group.wallets.map((w) => w.address)));
   });
   const moreWalletsDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -377,12 +342,9 @@ function AddressImportList({
             </UIText>
           ) : (
             <VStack gap={0} style={{ textAlign: 'center' }}>
-              <UIText kind="headline/h3">
-                We didn’t find any active wallets
-              </UIText>
+              <UIText kind="headline/h3">We didn’t find any active wallets</UIText>
               <UIText kind="small/accent" color="var(--neutral-600)">
-                Start with these wallets associated <br /> with your recovery
-                phrase
+                Start with these wallets associated <br /> with your recovery phrase
               </UIText>
             </VStack>
           )}
@@ -404,11 +366,7 @@ function AddressImportList({
                     onLoadMore={null}
                     renderDetail={
                       suggestedWallets.activeCount
-                        ? (index) => (
-                            <PortfolioValueDetail
-                              address={group.wallets[index].address}
-                            />
-                          )
+                        ? (index) => <PortfolioValueDetail address={group.wallets[index].address} />
                         : null
                     }
                     existingAddressesSet={existingAddressesSet}

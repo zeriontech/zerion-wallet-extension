@@ -47,8 +47,7 @@ export class CandlestickElement extends BarElement {
   declare options: CandlestickElementOptions;
 
   draw(ctx: CanvasRenderingContext2D): void {
-    const { x, yOpen, yHigh, yLow, yClose, width } =
-      this as unknown as CandlestickElementProps;
+    const { x, yOpen, yHigh, yLow, yClose, width } = this as unknown as CandlestickElementProps;
     const opts = this.options;
 
     const isUp = yClose <= yOpen;
@@ -90,15 +89,9 @@ export class CandlestickElement extends BarElement {
   }
 
   inRange(mouseX: number, mouseY: number, useFinalPosition?: boolean): boolean {
-    const { x, yHigh, yLow, width } =
-      this as unknown as CandlestickElementProps;
+    const { x, yHigh, yLow, width } = this as unknown as CandlestickElementProps;
     void useFinalPosition;
-    return (
-      mouseX >= x - width / 2 &&
-      mouseX <= x + width / 2 &&
-      mouseY >= yHigh &&
-      mouseY <= yLow
-    );
+    return mouseX >= x - width / 2 && mouseX <= x + width / 2 && mouseY >= yHigh && mouseY <= yLow;
   }
 
   inXRange(mouseX: number, useFinalPosition?: boolean): boolean {
@@ -154,7 +147,7 @@ export class CandlestickController extends BarController {
     meta: { iScale?: { parse: (value: unknown) => unknown } },
     data: CandlestickPoint[],
     start: number,
-    count: number
+    count: number,
   ): ParsedCandle[] {
     const parsed: ParsedCandle[] = [];
     for (let i = start; i < start + count; i += 1) {
@@ -190,21 +183,13 @@ export class CandlestickController extends BarController {
             _userMax?: number;
           }
         | undefined;
-      const xMin = Number.isFinite(xScale?._userMin)
-        ? (xScale?._userMin as number)
-        : xScale?.min;
-      const xMax = Number.isFinite(xScale?._userMax)
-        ? (xScale?._userMax as number)
-        : xScale?.max;
+      const xMin = Number.isFinite(xScale?._userMin) ? (xScale?._userMin as number) : xScale?.min;
+      const xMax = Number.isFinite(xScale?._userMax) ? (xScale?._userMax as number) : xScale?.max;
       const useViewport =
-        Number.isFinite(xMin) &&
-        Number.isFinite(xMax) &&
-        (xMax as number) > (xMin as number);
+        Number.isFinite(xMin) && Number.isFinite(xMax) && (xMax as number) > (xMin as number);
 
       const candleInterval =
-        parsed.length > 1
-          ? (parsed[parsed.length - 1].x - parsed[0].x) / (parsed.length - 1)
-          : 0;
+        parsed.length > 1 ? (parsed[parsed.length - 1].x - parsed[0].x) / (parsed.length - 1) : 0;
 
       let lo: ParsedCandle | null = null;
       let hi: ParsedCandle | null = null;
@@ -257,7 +242,7 @@ export class CandlestickController extends BarController {
     elements: Element[],
     start: number,
     count: number,
-    mode: 'default' | 'reset' | 'hide' | 'show' | 'none' | 'active' | 'resize'
+    mode: 'default' | 'reset' | 'hide' | 'show' | 'none' | 'active' | 'resize',
   ): void {
     const meta = this.getMeta();
     const dataset = this.getDataset() as { data: CandlestickPoint[] };
@@ -279,11 +264,10 @@ export class CandlestickController extends BarController {
           Math.min(
             14,
             Math.abs(
-              (xScale.getPixelForValue(last.x) -
-                xScale.getPixelForValue(first.x)) /
-                Math.max(1, count - 1)
-            ) * 0.8
-          )
+              (xScale.getPixelForValue(last.x) - xScale.getPixelForValue(first.x)) /
+                Math.max(1, count - 1),
+            ) * 0.8,
+          ),
         );
       }
     }
@@ -315,14 +299,13 @@ export class CandlestickController extends BarController {
       };
 
       const sharedOptions = this.resolveDataElementOptions(i, mode);
-      properties.options =
-        sharedOptions as unknown as CandlestickElementOptions;
+      properties.options = sharedOptions as unknown as CandlestickElementOptions;
 
       this.updateElement(
         element as unknown as Element,
         i,
         properties as unknown as Record<string, unknown>,
-        mode
+        mode,
       );
     }
   }

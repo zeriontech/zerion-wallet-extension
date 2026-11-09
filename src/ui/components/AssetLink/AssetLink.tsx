@@ -42,13 +42,7 @@ export function AssetAnchor({
   );
 }
 
-export function AssetLink({
-  fungible,
-  title,
-}: {
-  fungible: Fungible;
-  title?: string;
-}) {
+export function AssetLink({ fungible, title }: { fungible: Fungible; title?: string }) {
   const { preferences } = usePreferences();
   const content = title || fungible.symbol || fungible.name;
   if (preferences?.testnetMode?.on) {

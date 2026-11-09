@@ -16,9 +16,7 @@ import https from 'node:https';
  */
 
 const PORT = Number(process.env.E2E_PROXY_PORT || 4789);
-const SECRET =
-  process.env.ZERION_API_DEVELOPMENT_KEY ||
-  process.env.CF_ZPI_DEV_BYPASS_SECRET;
+const SECRET = process.env.ZERION_API_DEVELOPMENT_KEY || process.env.CF_ZPI_DEV_BYPASS_SECRET;
 
 // Fixed upstreams: environment overrides would let a misconfiguration send
 // the bypass header to an arbitrary host.
@@ -62,9 +60,7 @@ function rewriteLocation(location, route) {
   }
   const upstream = new URL(route.upstream);
   if (location.startsWith(upstream.origin)) {
-    return `http://127.0.0.1:${PORT}${route.prefix}${location.slice(
-      `${upstream.origin}/`.length
-    )}`;
+    return `http://127.0.0.1:${PORT}${route.prefix}${location.slice(`${upstream.origin}/`.length)}`;
   }
   return location;
 }
@@ -106,14 +102,11 @@ function handleRequest(request, response) {
         delete responseHeaders[header];
       }
       if (responseHeaders.location) {
-        responseHeaders.location = rewriteLocation(
-          responseHeaders.location,
-          route
-        );
+        responseHeaders.location = rewriteLocation(responseHeaders.location, route);
       }
       response.writeHead(proxyResponse.statusCode || 502, responseHeaders);
       proxyResponse.pipe(response);
-    }
+    },
   );
 
   proxyRequest.on('error', () => {
@@ -135,7 +128,7 @@ server.listen(PORT, '127.0.0.1', () => {
   process.stdout.write(
     `E2E proxy listening on 127.0.0.1:${PORT} (ZPI bypass header ${
       SECRET ? 'enabled' : 'disabled'
-    })\n`
+    })\n`,
   );
 });
 

@@ -9,14 +9,10 @@ interface PersonalSignParams {
   message: string;
 }
 
-export function assertPersonalSignParams(
-  x: unknown
-): asserts x is PersonalSignParams {
+export function assertPersonalSignParams(x: unknown): asserts x is PersonalSignParams {
   invariant(
-    isObj(x) &&
-      typeof x.derivationPath === 'string' &&
-      typeof x.message === 'string',
-    'Invalid Payload'
+    isObj(x) && typeof x.derivationPath === 'string' && typeof x.message === 'string',
+    'Invalid Payload',
   );
 }
 
@@ -25,15 +21,13 @@ interface SignTypedData_v4Params {
   typedData: string | TypedData;
 }
 
-export function assertSignTypedData_v4Params(
-  x: unknown
-): asserts x is SignTypedData_v4Params {
+export function assertSignTypedData_v4Params(x: unknown): asserts x is SignTypedData_v4Params {
   invariant(
     isObj(x) &&
       typeof x.derivationPath === 'string' &&
       // TODO: should we add more accurate check for typedData inner structure
       (typeof x.typedData === 'string' || isObj(x.typedData)),
-    'Invalid Payload'
+    'Invalid Payload',
   );
 }
 
@@ -43,12 +37,10 @@ interface SignTransactionParams {
   transport: TransportIdentifier;
 }
 
-export function assertSignTransactionParams(
-  x: unknown
-): asserts x is SignTransactionParams {
+export function assertSignTransactionParams(x: unknown): asserts x is SignTransactionParams {
   invariant(
     isObj(x) && typeof x.derivationPath === 'string' && isObj(x.transaction),
-    'Invalid Payload'
+    'Invalid Payload',
   );
 }
 
@@ -58,12 +50,10 @@ interface SignSolanaTransactionParams {
 }
 
 export function assertSignSolanaTransactionParams(
-  x: unknown
+  x: unknown,
 ): asserts x is SignSolanaTransactionParams {
   invariant(
-    isObj(x) &&
-      typeof x.derivationPath === 'string' &&
-      typeof x.transaction === 'string',
-    'Invalid Payload'
+    isObj(x) && typeof x.derivationPath === 'string' && typeof x.transaction === 'string',
+    'Invalid Payload',
   );
 }

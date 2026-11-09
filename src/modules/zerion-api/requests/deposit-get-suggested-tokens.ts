@@ -29,7 +29,7 @@ export interface Response {
 export function depositGetSuggestedTokens(
   this: ZerionApiContext,
   { ecosystem, query }: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const params = new URLSearchParams();
   if (ecosystem) {

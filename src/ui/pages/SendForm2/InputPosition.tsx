@@ -12,10 +12,7 @@ import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-ge
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import BigNumber from 'bignumber.js';
-import {
-  QUICK_AMOUNTS,
-  QuickAmountButton,
-} from 'src/ui/shared/forms/QuickAmounts';
+import { QUICK_AMOUNTS, QuickAmountButton } from 'src/ui/shared/forms/QuickAmounts';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { InputKindToggle } from 'src/ui/components/AmountInput/InputKindToggle';
 import { getCurrencySymbol } from 'src/ui/components/AmountInput/getCurrencySymbol';
@@ -72,17 +69,11 @@ export function InputPosition({
     inputKind === 'token' ? (
       inputPrice != null ? (
         <UIText kind="small/regular">
-          {formatCurrencyValue(
-            new BigNumber(inputAmount || '0').times(inputPrice),
-            'en',
-            currency
-          )}
+          {formatCurrencyValue(new BigNumber(inputAmount || '0').times(inputPrice), 'en', currency)}
         </UIText>
       ) : null
     ) : (
-      <UIText kind="small/regular">
-        {roundTokenDisplayValue(resolvedInputAmount) || '0'}
-      </UIText>
+      <UIText kind="small/regular">{roundTokenDisplayValue(resolvedInputAmount) || '0'}</UIText>
     );
 
   const shakeControls = useAnimationControls();
@@ -102,12 +93,7 @@ export function InputPosition({
   const handleToggle = () => {
     const nextKind = inputKind === 'token' ? 'currency' : 'token';
     if (inputAmount) {
-      const converted = convertOnToggle(
-        inputAmount,
-        inputKind,
-        nextKind,
-        inputPrice
-      );
+      const converted = convertOnToggle(inputAmount, inputKind, nextKind, inputPrice);
       onChange('inputAmount', converted);
     }
     onChange('inputKind', nextKind);
@@ -134,13 +120,11 @@ export function InputPosition({
     setLiveInput(inputAmount ?? '');
   }, [inputAmount]);
 
-  const [containerRef, { width: containerWidth }] =
-    useMeasure<HTMLDivElement>();
-  const { defaultMirrorRef, shrunkMirrorRef, textWidth, activeKind } =
-    useValueScaling({
-      text: liveInput || '0',
-      containerWidth,
-    });
+  const [containerRef, { width: containerWidth }] = useMeasure<HTMLDivElement>();
+  const { defaultMirrorRef, shrunkMirrorRef, textWidth, activeKind } = useValueScaling({
+    text: liveInput || '0',
+    containerWidth,
+  });
 
   return (
     <FormFieldset
@@ -150,10 +134,7 @@ export function InputPosition({
         positionBalance ? (
           <HStack gap={16} alignItems="center">
             {QUICK_AMOUNTS.map(({ factor, title }) => (
-              <QuickAmountButton
-                key={factor}
-                onClick={() => handleQuickAmount(factor)}
-              >
+              <QuickAmountButton key={factor} onClick={() => handleQuickAmount(factor)}>
                 {title}
               </QuickAmountButton>
             ))}
@@ -173,33 +154,19 @@ export function InputPosition({
       startContent={
         <TooltipProvider placement="top" timeout={1000}>
           <TooltipAnchor
-            render={
-              <AssetSelectorButton
-                position={position}
-                onClick={onOpenSelector}
-              />
-            }
+            render={<AssetSelectorButton position={position} onClick={onOpenSelector} />}
           />
-          <Tooltip
-            className={assetSelectorStyles.tooltip}
-            gutter={8}
-            portal={false}
-          >
+          <Tooltip className={assetSelectorStyles.tooltip} gutter={8} portal={false}>
             <UIText kind="caption/regular">
               <span>Select Asset to Send</span>{' '}
-              <span className={assetSelectorStyles.tooltipKbd}>
-                {isMacOS() ? '⇧↑' : 'Shift+↑'}
-              </span>
+              <span className={assetSelectorStyles.tooltipKbd}>{isMacOS() ? '⇧↑' : 'Shift+↑'}</span>
             </UIText>
           </Tooltip>
         </TooltipProvider>
       }
       endContent={
         <UIText kind={activeKind}>
-          <div
-            ref={containerRef}
-            style={{ position: 'relative', width: '100%' }}
-          >
+          <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
             <HiddenMirror mirrorRef={defaultMirrorRef} kind="headline/h3">
               {liveInput || '0'}
             </HiddenMirror>
@@ -227,9 +194,7 @@ export function InputPosition({
                   value={value}
                   placeholder="0"
                   onChange={(event) => {
-                    const next = event.currentTarget.value
-                      .replace(',', '.')
-                      .replace(/\s/g, '');
+                    const next = event.currentTarget.value.replace(',', '.').replace(/\s/g, '');
                     if (!/^\d*\.?\d*$/.test(next)) return;
                     setLiveInput(next);
                     handleChange(next);
@@ -251,9 +216,7 @@ export function InputPosition({
         <motion.div
           animate={shakeControls}
           style={{
-            color: notEnoughBalance
-              ? 'var(--negative-500)'
-              : 'var(--neutral-600)',
+            color: notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)',
             display: 'flex',
             gap: 4,
           }}
@@ -261,9 +224,7 @@ export function InputPosition({
           <span>Balance:</span>
           <BlurrableBalance
             kind="small/regular"
-            color={
-              notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)'
-            }
+            color={notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)'}
           >
             {positionBalance ? formatTokenValue(positionBalance) : null}
           </BlurrableBalance>

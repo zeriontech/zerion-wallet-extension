@@ -62,10 +62,7 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
   stateRef.current = state;
 
   useEffect(() => {
-    function getActiveView(
-      queueId: string | null,
-      index: number
-    ): ToasterView | null {
+    function getActiveView(queueId: string | null, index: number): ToasterView | null {
       if (!queueId) return null;
       const q = getQueue(queueId);
       return q?.steps[index]?.toaster ?? null;
@@ -98,8 +95,7 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
 
       switch (event.type) {
         case 'step-start': {
-          const isFresh =
-            !stateRef.current.visible || stateRef.current.queueId !== queueId;
+          const isFresh = !stateRef.current.visible || stateRef.current.queueId !== queueId;
           if (isFresh) {
             // Fresh hardware session.
             const steps = queue ? buildInitialSteps(queue.steps) : [];
@@ -109,7 +105,7 @@ export function useHardwareDialogSession(): HardwareDialogSession & {
               steps:
                 steps.length > 0
                   ? steps.map((step, i) =>
-                      i === event.index ? { ...step, status: 'signing' } : step
+                      i === event.index ? { ...step, status: 'signing' } : step,
                     )
                   : steps,
               activeIndex: event.index,

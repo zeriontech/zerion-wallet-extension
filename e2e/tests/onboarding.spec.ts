@@ -1,7 +1,4 @@
-import {
-  generateRandomRecoveryPhrase,
-  generateRandomWallet,
-} from 'e2e/utils/wallet';
+import { generateRandomRecoveryPhrase, generateRandomWallet } from 'e2e/utils/wallet';
 import {
   CreateNewWalletFlow,
   ImportPrivateKeyFlow,
@@ -24,9 +21,7 @@ const test = extensionTest.extend<OnboardingFixtures>({
   page: async ({ context }, use) => {
     // We don't need to open onboarding page, because it opens automatically when
     // the extension is installed. See browser.runtime.onInstalled event handlers.
-    const page = await waitForPage(context, (page) =>
-      page.url().includes('onboarding')
-    );
+    const page = await waitForPage(context, (page) => page.url().includes('onboarding'));
     await use(page);
   },
   welcomePage: async ({ page }, use) => {

@@ -12,10 +12,7 @@ import { useAddressActivity } from 'src/ui/shared/requests/useAddressActivity';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { useBackgroundKind } from 'src/ui/components/Background';
-import {
-  useBodyStyle,
-  whiteBackgroundKind,
-} from 'src/ui/components/Background/Background';
+import { useBodyStyle, whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import type { MemoryLocationState } from '../memoryLocationState';
 import { useMemoryLocationState } from '../memoryLocationState';
 import { AddressImportFlow } from './AddressImportFlow';
@@ -101,7 +98,7 @@ export function MnemonicImportView({
   const { data: activityData } = useAddressActivity(
     { addresses: data?.addressesToCheck || [] },
     { source },
-    { enabled: Boolean(data?.addressesToCheck), keepPreviousData: true }
+    { enabled: Boolean(data?.addressesToCheck), keepPreviousData: true },
   );
   const { isStale: isStaleValue } = useStaleTime(activityData, 3000);
   const shouldWaitForValue = activityData == null && !isStaleValue;
@@ -117,10 +114,7 @@ export function MnemonicImportView({
           <PageBottom />
         </PageColumn>
       ) : (
-        <AddressImportFlow
-          wallets={data.derivedWallets}
-          activeWallets={activityData ?? {}}
-        />
+        <AddressImportFlow wallets={data.derivedWallets} activeWallets={activityData ?? {}} />
       )}
     </>
   );

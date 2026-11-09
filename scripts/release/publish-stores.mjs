@@ -42,10 +42,8 @@ function parseArgs(argv) {
   };
   for (const arg of argv) {
     if (arg === '--dry-run') options.dryRun = true;
-    else if (arg.startsWith('--store='))
-      options.store = arg.slice('--store='.length);
-    else if (arg.startsWith('--chrome-zip='))
-      options.chromeZip = arg.slice('--chrome-zip='.length);
+    else if (arg.startsWith('--store=')) options.store = arg.slice('--store='.length);
+    else if (arg.startsWith('--chrome-zip=')) options.chromeZip = arg.slice('--chrome-zip='.length);
     else if (arg.startsWith('--firefox-zip='))
       options.firefoxZip = arg.slice('--firefox-zip='.length);
     else if (arg.startsWith('--firefox-sources-zip='))
@@ -58,9 +56,7 @@ function parseArgs(argv) {
     }
   }
   if (!['all', 'chrome', 'firefox'].includes(options.store)) {
-    console.error(
-      `--store must be one of all, chrome, firefox (got ${options.store}).`
-    );
+    console.error(`--store must be one of all, chrome, firefox (got ${options.store}).`);
     process.exit(1);
   }
   return options;
@@ -96,11 +92,8 @@ function requireZip(file, label) {
 }
 
 const options = parseArgs(process.argv.slice(2));
-const { version } = JSON.parse(
-  fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8')
-);
-const stores =
-  options.store === 'all' ? ['chrome', 'firefox'] : [options.store];
+const { version } = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+const stores = options.store === 'all' ? ['chrome', 'firefox'] : [options.store];
 
 const config = { dryRun: options.dryRun };
 if (stores.includes('chrome')) {
@@ -109,7 +102,7 @@ if (stores.includes('chrome')) {
     fail(
       'CHROME_API_VERSION must be "v2". The Chrome Web Store API v1.1 was retired on 2026-10-15, ' +
         'so submissions need a service account (CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL / ' +
-        'CHROME_SERVICE_ACCOUNT_PRIVATE_KEY / CHROME_PUBLISHER_ID).'
+        'CHROME_SERVICE_ACCOUNT_PRIVATE_KEY / CHROME_PUBLISHER_ID).',
     );
   }
   requireZip(options.chromeZip, '--chrome-zip');
@@ -125,9 +118,7 @@ if (stores.includes('firefox')) {
 }
 
 console.log(
-  `${
-    options.dryRun ? '[dry-run] Validating' : 'Submitting'
-  } ${version} to: ${stores.join(', ')}`
+  `${options.dryRun ? '[dry-run] Validating' : 'Submitting'} ${version} to: ${stores.join(', ')}`,
 );
 
 // The library's `submit()` aggregates stores but throws on the first failure,
@@ -140,9 +131,7 @@ let failed = false;
 
 for (const store of stores) {
   const setStatus = (text) => console.log(`${store}: ${text}`);
-  console.log(
-    `${store}: ${options.dryRun ? 'validating credentials' : 'submitting'}`
-  );
+  console.log(`${store}: ${options.dryRun ? 'validating credentials' : 'submitting'}`);
   try {
     if (store === 'chrome') {
       const chromeStore = new ChromeWebStoreV2(resolved.chrome, setStatus);
@@ -174,7 +163,7 @@ for (const [store, result] of Object.entries(summary.stores)) {
         : options.dryRun
           ? 'credentials OK (dry run, nothing uploaded)'
           : 'submitted for review'
-    }`
+    }`,
   );
 }
 

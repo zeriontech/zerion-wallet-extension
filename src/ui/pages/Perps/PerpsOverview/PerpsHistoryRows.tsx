@@ -115,15 +115,8 @@ export function PerpsHistoryTradeRow({
               {formatPriceValue(px, 'en', currency)}
             </UIText>
           </VStack>
-          <UIText
-            kind="body/regular"
-            color={trailingColor}
-            style={{ flexShrink: 0 }}
-          >
-            <BlurrableBalance
-              kind="body/regular"
-              color={trailingColor ?? 'var(--black)'}
-            >
+          <UIText kind="body/regular" color={trailingColor} style={{ flexShrink: 0 }}>
+            <BlurrableBalance kind="body/regular" color={trailingColor ?? 'var(--black)'}>
               {trailing}
             </BlurrableBalance>
           </UIText>
@@ -219,11 +212,7 @@ function getLedgerAmount(update: NonFundingLedgerUpdate): number {
   return 0;
 }
 
-export function PerpsHistoryLedgerRow({
-  update,
-}: {
-  update: NonFundingLedgerUpdate;
-}) {
+export function PerpsHistoryLedgerRow({ update }: { update: NonFundingLedgerUpdate }) {
   const { currency } = useCurrency();
   const type = update.delta.type;
   const amount = getLedgerAmount(update);
@@ -289,15 +278,8 @@ export function PerpsHistoryLedgerRow({
         >
           {LEDGER_LABELS[type]}
         </UIText>
-        <UIText
-          kind="body/regular"
-          color={trailing.color}
-          style={{ flexShrink: 0 }}
-        >
-          <BlurrableBalance
-            kind="body/regular"
-            color={trailing.color ?? 'var(--black)'}
-          >
+        <UIText kind="body/regular" color={trailing.color} style={{ flexShrink: 0 }}>
+          <BlurrableBalance kind="body/regular" color={trailing.color ?? 'var(--black)'}>
             {trailing.text}
           </BlurrableBalance>
         </UIText>

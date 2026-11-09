@@ -10,11 +10,10 @@ export function useNavigationState<T = string>(param: string, defaultValue: T) {
       const nextState = { ...(location.state || {}), [param]: value };
       navigate('.', { replace: true, state: nextState });
     },
-    [location, navigate, param]
+    [location, navigate, param],
   );
 
-  const value =
-    ((location.state as Record<string, unknown>)?.[param] as T) || defaultValue;
+  const value = ((location.state as Record<string, unknown>)?.[param] as T) || defaultValue;
 
   return [value, setState] as [T, (value: T) => void];
 }

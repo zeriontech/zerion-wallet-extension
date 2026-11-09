@@ -1,9 +1,6 @@
 import { isTruthy } from 'is-truthy-ts';
 import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type {
-  Collection,
-  NFTPreview,
-} from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { Collection, NFTPreview } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 function fungibleMatches(query: string, fungible: Fungible | null) {
@@ -56,9 +53,7 @@ function isMatchForQuery(query: string, action: LocalAddressAction) {
 
   if (
     action.content?.transfers?.some(
-      (transfer) =>
-        fungibleMatches(query, transfer.fungible) ||
-        nftMatches(query, transfer.nft)
+      (transfer) => fungibleMatches(query, transfer.fungible) || nftMatches(query, transfer.nft),
     )
   ) {
     return true;
@@ -69,7 +64,7 @@ function isMatchForQuery(query: string, action: LocalAddressAction) {
       (transfer) =>
         fungibleMatches(query, transfer.fungible) ||
         nftMatches(query, transfer.nft) ||
-        collectionMatches(query, transfer.collection)
+        collectionMatches(query, transfer.collection),
     )
   ) {
     return true;
@@ -85,12 +80,12 @@ function isMatchForQuery(query: string, action: LocalAddressAction) {
 export function isMatchForAllWords(
   query: string,
   action: LocalAddressAction,
-  extraTerms?: string[]
+  extraTerms?: string[],
 ) {
   const words = query.trim().split(/\s+/);
   return words.every(
     (word) =>
       isMatchForQuery(word, action) ||
-      extraTerms?.some((term) => term.toLowerCase().includes(word))
+      extraTerms?.some((term) => term.toLowerCase().includes(word)),
   );
 }

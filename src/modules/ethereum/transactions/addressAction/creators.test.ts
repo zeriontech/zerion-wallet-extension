@@ -13,11 +13,8 @@ vi.mock('src/shared/packageVersion', () => ({
   productionVersion: 'test',
 }));
 const { ZerionAPI } = await import('src/modules/zerion-api/zerion-api.client');
-const {
-  applyLocalActionContent,
-  buildActionContent,
-  pendingTransactionToAddressAction,
-} = await import('./creators');
+const { applyLocalActionContent, buildActionContent, pendingTransactionToAddressAction } =
+  await import('./creators');
 
 function network(id: string, chainId: number): NetworkInfo {
   return {
@@ -68,9 +65,7 @@ test('building many local actions makes no asset requests', async () => {
   const spy = vi.mocked(ZerionAPI.assetListFungibles);
   const seeded = createSeedTransactions({ address, count: 600 });
   const items = await Promise.all(
-    seeded.map((tx) =>
-      pendingTransactionToAddressAction(tx, loadNetworkByChainId, 'usd')
-    )
+    seeded.map((tx) => pendingTransactionToAddressAction(tx, loadNetworkByChainId, 'usd')),
   );
   expect(spy).not.toHaveBeenCalled();
   expect(items).toHaveLength(600);
@@ -100,12 +95,11 @@ test('a stored interpretation with content needs no asset lookup', async () => {
       local: true,
     },
   };
-  const { addressAction, contentRequest } =
-    await pendingTransactionToAddressAction(
-      withStoredAction,
-      loadNetworkByChainId,
-      'usd'
-    );
+  const { addressAction, contentRequest } = await pendingTransactionToAddressAction(
+    withStoredAction,
+    loadNetworkByChainId,
+    'usd',
+  );
   expect(contentRequest).toBeNull();
   expect(addressAction.content).toBe(content);
   // Locally built acts reuse the stored content instead of fetching
@@ -114,8 +108,11 @@ test('a stored interpretation with content needs no asset lookup', async () => {
 
 test('resolved content fills both the action and its locally built act', async () => {
   const [tx] = createSeedTransactions({ address, count: 2 }).slice(1);
-  const { addressAction, contentRequest } =
-    await pendingTransactionToAddressAction(tx, loadNetworkByChainId, 'usd');
+  const { addressAction, contentRequest } = await pendingTransactionToAddressAction(
+    tx,
+    loadNetworkByChainId,
+    'usd',
+  );
   if (!contentRequest) {
     throw new Error('Expected a content request');
   }
@@ -130,13 +127,9 @@ test('resolved content fills both the action and its locally built act', async (
       implementations: {},
       price: { value: 1, relative_change_24h: 0, changed_at: 0 },
     } as never,
-    'usd'
+    'usd',
   );
-  const resolved = applyLocalActionContent(
-    addressAction,
-    contentRequest,
-    content
-  );
+  const resolved = applyLocalActionContent(addressAction, contentRequest, content);
   expect(resolved.content?.transfers?.[0].fungible?.symbol).toBe('USDC');
   expect(resolved.acts?.[0].content).toBe(resolved.content);
 });

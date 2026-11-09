@@ -6,10 +6,7 @@ import type { SignTransactionResult } from 'src/shared/types/SignTransactionResu
 import { waitForTransactionResolve } from 'src/ui/transactions/useLocalTransactionStatus';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { getAddressType } from 'src/shared/wallet/classifiers';
-import {
-  deniedByUser,
-  parseLedgerError,
-} from '@zeriontech/hardware-wallet-connection';
+import { deniedByUser, parseLedgerError } from '@zeriontech/hardware-wallet-connection';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import {
   prepareForSignByLedger,
@@ -54,10 +51,7 @@ async function signSendStepSoftware({
   // EVM and Solana software-wallet paths copied from
   // src/ui/components/SignTransactionButton/SignTransactionButton.tsx
   if (transaction.evm) {
-    const result = await walletPort.request('signAndSendTransaction', [
-      transaction.evm,
-      txContext,
-    ]);
+    const result = await walletPort.request('signAndSendTransaction', [transaction.evm, txContext]);
     return { evm: result };
   }
   const methodMap = {
@@ -67,11 +61,9 @@ async function signSendStepSoftware({
   } as const;
   invariant(
     txContext.method !== 'signAllTransactions',
-    'TransactionSigner: Use kind: "signAll" for signAllTransactions'
+    'TransactionSigner: Use kind: "signAll" for signAllTransactions',
   );
-  const methodName = txContext.method
-    ? methodMap[txContext.method]
-    : methodMap.default;
+  const methodName = txContext.method ? methodMap[txContext.method] : methodMap.default;
   const result = await walletPort.request(methodName, {
     transaction: transaction.solana,
     params: txContext,
@@ -87,10 +79,7 @@ async function signSendStepHardware({
   params: SendTxParams;
 }): Promise<SignTransactionResult> {
   const wallet = queue.options.wallet;
-  invariant(
-    isDeviceAccount(wallet),
-    'signSendStepHardware: wallet must be a DeviceAccount'
-  );
+  invariant(isDeviceAccount(wallet), 'signSendStepHardware: wallet must be a DeviceAccount');
 
   if (transaction.evm) {
     const networksStore = await getNetworksStore();
@@ -120,7 +109,7 @@ async function signSendStepHardware({
 
   invariant(
     txContext.method !== 'signAllTransactions',
-    'TransactionSigner: signAllTransactions is not supported for hardware wallets'
+    'TransactionSigner: signAllTransactions is not supported for hardware wallets',
   );
   const controller = getLedgerIframeController();
   invariant(controller, 'Ledger iframe controller not mounted');
@@ -163,9 +152,7 @@ async function runStep({
 
   const txHash =
     result.evm?.hash ||
-    (Array.isArray(result.solana)
-      ? result.solana[0].signature
-      : result.solana?.signature);
+    (Array.isArray(result.solana) ? result.solana[0].signature : result.solana?.signature);
   if (txHash) {
     emitQueueEvent(queue.queueId, {
       type: 'step-pending',

@@ -43,9 +43,9 @@ export function LeverageOverlay({
     }
   }, [open]);
 
-  const chips = Array.from(
-    new Set([...PRESETS.filter((p) => p <= maxLeverage), maxLeverage])
-  ).sort((a, b) => a - b);
+  const chips = Array.from(new Set([...PRESETS.filter((p) => p <= maxLeverage), maxLeverage])).sort(
+    (a, b) => a - b,
+  );
 
   return (
     <Dialog2 open={open} onClose={onClose} title="Leverage" size="content">
@@ -74,15 +74,11 @@ export function LeverageOverlay({
               key={chip}
               type="button"
               className={
-                value === chip
-                  ? `${s.leverageChip} ${s.leverageChipActive}`
-                  : s.leverageChip
+                value === chip ? `${s.leverageChip} ${s.leverageChipActive}` : s.leverageChip
               }
               onClick={() => setValue(chip)}
             >
-              {chip === maxLeverage && chip !== 25
-                ? `${chip}x · Max`
-                : `${chip}x`}
+              {chip === maxLeverage && chip !== 25 ? `${chip}x · Max` : `${chip}x`}
             </UnstyledButton>
           ))}
         </HStack>

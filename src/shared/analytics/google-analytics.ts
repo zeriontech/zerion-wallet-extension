@@ -1,7 +1,4 @@
-import {
-  GOOGLE_ANALYTICS_API_SECRET,
-  GOOGLE_ANALYTICS_MEASUREMENT_ID,
-} from 'src/env/config';
+import { GOOGLE_ANALYTICS_API_SECRET, GOOGLE_ANALYTICS_MEASUREMENT_ID } from 'src/env/config';
 import type { Options } from 'ky';
 import ky from 'ky';
 import { version } from 'src/shared/packageVersion';
@@ -21,11 +18,7 @@ if (!GOOGLE_ANALYTICS_MEASUREMENT_ID) {
 
 const USE_PAYLOAD_VALIDATION_ENDPOINT = false;
 
-type GoogleAnalyticsEvent =
-  | 'first_open'
-  | 'page_view'
-  | 'signed_message'
-  | 'signed_transaction';
+type GoogleAnalyticsEvent = 'first_open' | 'page_view' | 'signed_message' | 'signed_transaction';
 
 class GoogleAnalyticsApi {
   baseParams: null | Record<string, unknown>;
@@ -76,17 +69,11 @@ class GoogleAnalyticsApi {
     this.baseParams = values;
   }
 
-  async collect(
-    event: GoogleAnalyticsEvent,
-    sessionId: string,
-    values: Record<string, unknown>
-  ) {
+  async collect(event: GoogleAnalyticsEvent, sessionId: string, values: Record<string, unknown>) {
     await this.ready();
 
     const path =
-      this.debugMode && USE_PAYLOAD_VALIDATION_ENDPOINT
-        ? '/debug/mp/collect'
-        : '/mp/collect';
+      this.debugMode && USE_PAYLOAD_VALIDATION_ENDPOINT ? '/debug/mp/collect' : '/mp/collect';
     const url = new URL(path, this.url);
 
     if (this.apiSecret) {
@@ -118,11 +105,7 @@ class GoogleAnalyticsApi {
       events: [eventPayload],
     };
 
-    logToConsole(
-      Loglevel.info,
-      'group',
-      `Google Analytics collect: ${eventPayload.name}`
-    );
+    logToConsole(Loglevel.info, 'group', `Google Analytics collect: ${eventPayload.name}`);
     logTable(Loglevel.info, eventPayload.params, ['index']);
     logToConsole(Loglevel.info, 'groupEnd');
 
@@ -130,11 +113,7 @@ class GoogleAnalyticsApi {
   }
 
   async sendEvent(url: string, options: Options) {
-    if (
-      this.apiSecret != null &&
-      this.measurementId != null &&
-      this.sendRequestsOverTheNetwork
-    ) {
+    if (this.apiSecret != null && this.measurementId != null && this.sendRequestsOverTheNetwork) {
       return ky.post(url, options);
     }
   }
@@ -159,7 +138,7 @@ interface GoogleAnalyticsParams {
 }
 
 export async function prepareGaParams(
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
 ): Promise<GoogleAnalyticsParams> {
   const userId = await getAnalyticsId();
   return {
@@ -175,7 +154,7 @@ export async function prepareGaParams(
 
 export async function gaCollect(
   event: GoogleAnalyticsEvent,
-  { params, sessionId }: GoogleAnalyticsParams
+  { params, sessionId }: GoogleAnalyticsParams,
 ) {
   if (!sessionId) {
     logToConsole(Loglevel.info, 'log', 'Google Analytics: No session id');

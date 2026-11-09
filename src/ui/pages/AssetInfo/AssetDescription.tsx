@@ -11,9 +11,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
  */
 const TextPreview = ({ text }: { text: string }) => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [isClamped, setIsClamped] = useState<false | true | undefined>(
-    undefined
-  );
+  const [isClamped, setIsClamped] = useState<false | true | undefined>(undefined);
   // on Safari line-camp works correctly only with inline elements inside
   const paragraphs = text.split(/\r?\n|\r/g);
   const markup: React.ReactNode[] = [];
@@ -57,8 +55,7 @@ const TextPreview = ({ text }: { text: string }) => {
             position: 'absolute',
             right: 0,
             bottom: 0,
-            background:
-              'linear-gradient(90deg, transparent 0%, var(--background) 30%)',
+            background: 'linear-gradient(90deg, transparent 0%, var(--background) 30%)',
             paddingLeft: 40,
           }}
           className={helperStyles.hoverUnderline}
@@ -72,11 +69,7 @@ const TextPreview = ({ text }: { text: string }) => {
   );
 };
 
-export function AssetDescription({
-  assetFullInfo,
-}: {
-  assetFullInfo: AssetFullInfo;
-}) {
+export function AssetDescription({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
   const hasNoDescription = !assetFullInfo.extra.description;
 
   if (hasNoDescription) {

@@ -36,8 +36,8 @@ if (typeof window !== 'undefined') {
         windowSizeStore.setState(createState());
       },
       300,
-      { trailing: true }
-    )
+      { trailing: true },
+    ),
   );
 }
 

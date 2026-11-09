@@ -7,16 +7,11 @@ function getSystemMode(colorSchemeMedia: MediaQueryList) {
   return colorSchemeMedia.matches ? Theme.dark : Theme.light;
 }
 
-function getTheme(
-  preference: typeof preferenceStore,
-  colorSchemeMedia: MediaQueryList
-) {
+function getTheme(preference: typeof preferenceStore, colorSchemeMedia: MediaQueryList) {
   if (preference.getState().mode === ThemePreference.system) {
     return getSystemMode(colorSchemeMedia);
   }
-  return preferenceStore.getState().mode === ThemePreference.dark
-    ? Theme.dark
-    : Theme.light;
+  return preferenceStore.getState().mode === ThemePreference.dark ? Theme.dark : Theme.light;
 }
 
 const colorSchemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
@@ -24,9 +19,7 @@ const colorSchemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
 export const isSupported = true;
 
 export const themeStore = new ThemeStore({
-  theme: isSupported
-    ? getTheme(preferenceStore, colorSchemeMedia)
-    : Theme.light,
+  theme: isSupported ? getTheme(preferenceStore, colorSchemeMedia) : Theme.light,
 });
 
 function safelySetTheme(theme: Theme) {

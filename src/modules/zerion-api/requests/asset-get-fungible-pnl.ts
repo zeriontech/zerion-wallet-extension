@@ -25,7 +25,7 @@ type Response = ResponseBody<AssetAddressPnl | null>;
 export async function assetGetFungiblePnl(
   this: ZerionApiContext,
   params: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const firstAddress = params.addresses[0];
   const provider = await this.getAddressProviderHeader(firstAddress);
@@ -37,6 +37,6 @@ export async function assetGetFungiblePnl(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

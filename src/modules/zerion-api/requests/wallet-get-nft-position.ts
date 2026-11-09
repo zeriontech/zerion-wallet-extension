@@ -19,7 +19,7 @@ interface Response {
 export async function walletGetNftPosition(
   this: ZerionApiContext,
   { address, currency, nftId }: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const provider = await this.getAddressProviderHeader(address);
   const kyOptions = this.getKyOptions();
@@ -31,6 +31,6 @@ export async function walletGetNftPosition(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

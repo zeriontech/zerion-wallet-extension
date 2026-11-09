@@ -17,14 +17,12 @@ export type NetworkGroups = ListGroup<NetworkInfo>[];
 function compareNetworks(
   a: NetworkInfo,
   b: NetworkInfo,
-  chainDistribution: ChainDistribution | null
+  chainDistribution: ChainDistribution | null,
 ) {
   const aString = a.name.toString().toLowerCase();
   const bString = b.name.toString().toLowerCase();
-  const aValue =
-    chainDistribution?.positionsChainsDistribution[a.id.toString()];
-  const bValue =
-    chainDistribution?.positionsChainsDistribution[b.id.toString()];
+  const aValue = chainDistribution?.positionsChainsDistribution[a.id.toString()];
+  const bValue = chainDistribution?.positionsChainsDistribution[b.id.toString()];
 
   if (aValue && bValue) return bValue - aValue;
   if (aValue && !bValue) return -1;
@@ -49,9 +47,7 @@ export function createGroups({
 }): NetworkGroups {
   const isEligible = (network: NetworkInfo) =>
     Boolean(network.testnet) === testnetMode && filterPredicate(network);
-  const pinnedNetworks = networks
-    .getPinnedNetworks(standard)
-    .filter(isEligible);
+  const pinnedNetworks = networks.getPinnedNetworks(standard).filter(isEligible);
   const pinnedIds = new Set(pinnedNetworks.map((network) => network.id));
   const allNetworks = networks
     .getDefaultNetworks(standard)
@@ -81,20 +77,16 @@ export function createGroups({
             compareNetworks(
               a,
               b,
-              sortMainNetworksType === 'by_distribution'
-                ? chainDistribution
-                : null
-            )
+              sortMainNetworksType === 'by_distribution' ? chainDistribution : null,
+            ),
           ),
-        (item) => item.id === preferredNetworkId
+        (item) => item.id === preferredNetworkId,
       ),
     },
     {
       key: 'other',
       name: 'Other Networks',
-      items: allNetworks
-        .filter(otherNetworkPredicate)
-        .sort((a, b) => compareNetworks(a, b, null)),
+      items: allNetworks.filter(otherNetworkPredicate).sort((a, b) => compareNetworks(a, b, null)),
     },
   ];
 }

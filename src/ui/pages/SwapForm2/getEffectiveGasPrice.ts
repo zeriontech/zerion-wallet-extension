@@ -21,7 +21,7 @@ export function getEffectiveGasPrice(
     maxFee?: number | null;
     maxPriorityFee?: number | null;
   },
-  baseFee?: number | null
+  baseFee?: number | null,
 ): number | null {
   const is1559 = maxFee != null || maxPriorityFee != null;
   if (is1559) {

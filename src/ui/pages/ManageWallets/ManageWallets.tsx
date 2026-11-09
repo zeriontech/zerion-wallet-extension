@@ -20,11 +20,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { EraseDataListButton } from 'src/ui/components/EraseData';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { BackupInfoNote } from 'src/ui/components/BackupInfoNote';
-import {
-  ContainerType,
-  getContainerType,
-  isHardwareContainer,
-} from 'src/shared/types/validators';
+import { ContainerType, getContainerType, isHardwareContainer } from 'src/shared/types/validators';
 import { openHref } from 'src/ui/shared/openUrl';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
@@ -54,11 +50,7 @@ function FlatAddressList({
             key: group.id,
             to: `/wallets/accounts/${wallet.address}?groupId=${group.id}`,
             component: (
-              <HStack
-                gap={4}
-                justifyContent="space-between"
-                alignItems="center"
-              >
+              <HStack gap={4} justifyContent="space-between" alignItems="center">
                 <HStack gap={8} alignItems="center">
                   <WalletAvatar address={address} size={28} borderRadius={4} />
                   <UIText kind="small/regular" title={address}>
@@ -84,23 +76,21 @@ function WalletGroupItem({ group }: { group: WalletGroup }) {
         <UIText kind="small/accent" style={{ overflowWrap: 'break-word' }}>
           {getGroupDisplayName(group.name)}
         </UIText>
-        {BLOCKCHAIN_TYPES.filter(
-          (blockchainType) => blockchainType in byEcosystem
-        ).map((blockchainType) => {
-          const wallets = byEcosystem[blockchainType];
-          return (
-            <VStack key={blockchainType} gap={8}>
-              {FEATURE_SOLANA === 'on' ? (
-                <BlockchainTitleHelper kind={blockchainType} />
-              ) : null}
-              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                {wallets.map((wallet) => (
-                  <AddressBadge key={wallet.address} wallet={wallet} />
-                ))}
-              </div>
-            </VStack>
-          );
-        })}
+        {BLOCKCHAIN_TYPES.filter((blockchainType) => blockchainType in byEcosystem).map(
+          (blockchainType) => {
+            const wallets = byEcosystem[blockchainType];
+            return (
+              <VStack key={blockchainType} gap={8}>
+                {FEATURE_SOLANA === 'on' ? <BlockchainTitleHelper kind={blockchainType} /> : null}
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  {wallets.map((wallet) => (
+                    <AddressBadge key={wallet.address} wallet={wallet} />
+                  ))}
+                </div>
+              </VStack>
+            );
+          },
+        )}
         <BackupInfoNote group={group} />
       </VStack>
       <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
@@ -143,10 +133,7 @@ function HardwareWalletList({ walletGroups }: { walletGroups: WalletGroup[] }) {
             <HStack gap={4} justifyContent="space-between" alignItems="center">
               <VStack gap={8}>
                 <VStack gap={0}>
-                  <UIText
-                    kind="small/accent"
-                    style={{ wordBreak: 'break-all' }}
-                  >
+                  <UIText kind="small/accent" style={{ wordBreak: 'break-all' }}>
                     {getGroupDisplayName(group.name)}
                   </UIText>
                   {isHardwareContainer(group.walletContainer) ? (
@@ -183,9 +170,7 @@ function WalletGroups() {
     if (!walletGroups) {
       return null;
     }
-    const grouped = groupBy(walletGroups, (group) =>
-      getContainerType(group.walletContainer)
-    );
+    const grouped = groupBy(walletGroups, (group) => getContainerType(group.walletContainer));
     // Define order of groups
     return [
       ContainerType.mnemonic,
@@ -230,23 +215,12 @@ function WalletGroups() {
                   />
                 );
               } else if (containerType === ContainerType.mnemonic) {
-                return (
-                  <MnemonicList key={containerType} walletGroups={items} />
-                );
+                return <MnemonicList key={containerType} walletGroups={items} />;
               } else if (containerType === ContainerType.hardware) {
-                return (
-                  <HardwareWalletList
-                    key={containerType}
-                    walletGroups={items}
-                  />
-                );
+                return <HardwareWalletList key={containerType} walletGroups={items} />;
               } else if (containerType === ContainerType.readonly) {
                 return (
-                  <FlatAddressList
-                    key={containerType}
-                    walletGroups={items}
-                    title="Watchlist"
-                  />
+                  <FlatAddressList key={containerType} walletGroups={items} title="Watchlist" />
                 );
               }
             })}

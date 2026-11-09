@@ -24,10 +24,8 @@ export function equal<T>(a: unknown, b: T): a is T {
     if (a.constructor === RegExp)
       // @ts-ignore
       return a.source === b.source && a.flags === b.flags;
-    if (a.valueOf !== Object.prototype.valueOf)
-      return a.valueOf() === b.valueOf();
-    if (a.toString !== Object.prototype.toString)
-      return a.toString() === b.toString();
+    if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
+    if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
 
     keys = Object.keys(a);
     length = keys.length;

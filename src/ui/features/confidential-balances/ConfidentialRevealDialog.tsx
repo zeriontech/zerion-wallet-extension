@@ -79,11 +79,7 @@ type FlowStep =
   | { type: 'empty' }
   | { type: 'failed'; error: Error };
 
-function EncryptedPositionRow({
-  position,
-}: {
-  position: GroupedFungiblePosition;
-}) {
+function EncryptedPositionRow({ position }: { position: GroupedFungiblePosition }) {
   // A confidential token held on several chains is one row naming them all
   const singleChain = position.chains.length === 1 ? position.chains[0] : null;
   const chainNames = position.chains.map((chain) => chain.name).join(', ');
@@ -97,13 +93,7 @@ function EncryptedPositionRow({
       <Media
         vGap={0}
         gap={12}
-        image={
-          <TokenIcon
-            size={36}
-            symbol={position.asset.symbol}
-            src={position.asset.iconUrl}
-          />
-        }
+        image={<TokenIcon size={36} symbol={position.asset.symbol} src={position.asset.iconUrl} />}
         text={
           <HStack gap={4} alignItems="center" style={{ justifySelf: 'start' }}>
             <UIText
@@ -122,11 +112,7 @@ function EncryptedPositionRow({
         detailText={
           <HStack gap={4} alignItems="center" style={{ justifySelf: 'start' }}>
             {singleChain ? (
-              <NetworkIcon
-                size={16}
-                name={singleChain.name}
-                src={singleChain.iconUrl}
-              />
+              <NetworkIcon size={16} name={singleChain.name} src={singleChain.iconUrl} />
             ) : null}
             <UIText kind="small/regular" color="var(--neutral-500)">
               {chainNames || position.asset.symbol}
@@ -150,9 +136,7 @@ function RevealDialogContent({
   const isSignable = useIsSignableWallet(address);
   // Reveal is offered only for the *current* wallet: the background signs
   // with it, and one rule for every wallet type is easier to reason about
-  const canReveal =
-    isSignable === true &&
-    normalizeAddress(address) === singleAddressNormalized;
+  const canReveal = isSignable === true && normalizeAddress(address) === singleAddressNormalized;
   const { data: wallet } = useWalletByAddress(address);
   const ledgerWallet = wallet && isDeviceAccount(wallet) ? wallet : null;
   const hardwareSignRef = useRef<SignMessageHandle | null>(null);
@@ -163,21 +147,17 @@ function RevealDialogContent({
   const positionsQuery = useWalletGroupedPositions(
     { addresses: [address], currency, groupBy: ['by-app'] },
     { source },
-    { suspense: false, keepPreviousData: true }
+    { suspense: false, keepPreviousData: true },
   );
   const encryptedPositions = useMemo(
-    () =>
-      getEncryptedPositions(flattenGroupedPositions(positionsQuery.data?.data)),
-    [positionsQuery.data]
+    () => getEncryptedPositions(flattenGroupedPositions(positionsQuery.data?.data)),
+    [positionsQuery.data],
   );
   const encryptedChainsCount = useMemo(
     () =>
-      new Set(
-        encryptedPositions.flatMap((position) =>
-          position.chains.map((chain) => chain.id)
-        )
-      ).size,
-    [encryptedPositions]
+      new Set(encryptedPositions.flatMap((position) => position.chains.map((chain) => chain.id)))
+        .size,
+    [encryptedPositions],
   );
 
   const [flowStep, setFlowStep] = useState<FlowStep>({ type: 'intro' });
@@ -232,15 +212,11 @@ function RevealDialogContent({
         return { permits };
       }
       if (ledgerWallet) {
-        invariant(
-          hardwareSignRef.current,
-          'HardwareSignMessage must be mounted'
-        );
+        invariant(hardwareSignRef.current, 'HardwareSignMessage must be mounted');
         const signOnDevice = hardwareSignRef.current.signTypedData_v4;
         await signPermits(address, permits, {
           sign: createLedgerPermitSigner(address, signOnDevice),
-          onStep: (currentIndex) =>
-            setFlowStep({ type: 'signing', permits, currentIndex }),
+          onStep: (currentIndex) => setFlowStep({ type: 'signing', permits, currentIndex }),
         });
       } else {
         await signPermits(address, permits);
@@ -303,12 +279,10 @@ function RevealDialogContent({
         ? { permits: flowStep.permits, currentIndex: flowStep.permits.length }
         : null;
   const isLoading =
-    !signingSteps &&
-    (flowStep.type === 'revealing' || flowStep.type === 'refetching');
+    !signingSteps && (flowStep.type === 'revealing' || flowStep.type === 'refetching');
   // The device button is rendered by the dialog, outside the crossfading
   // views, so the Ledger iframe survives every view change
-  const isSigningOnDevice =
-    flowStep.type === 'revealing' || flowStep.type === 'signing';
+  const isSigningOnDevice = flowStep.type === 'revealing' || flowStep.type === 'signing';
   const showLedgerFooter =
     Boolean(ledgerWallet && canReveal) &&
     (flowStep.type === 'intro' ||
@@ -327,9 +301,7 @@ function RevealDialogContent({
           <div ref={measureRef}>
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
-                key={
-                  signingSteps ? 'steps' : isLoading ? 'loading' : flowStep.type
-                }
+                key={signingSteps ? 'steps' : isLoading ? 'loading' : flowStep.type}
                 variants={viewVariants}
                 initial="initial"
                 animate="animate"
@@ -350,11 +322,7 @@ function RevealDialogContent({
                       padding: '32px 0',
                     }}
                   >
-                    <CircleSpinner
-                      size="32px"
-                      trackWidth="3px"
-                      color="var(--primary)"
-                    />
+                    <CircleSpinner size="32px" trackWidth="3px" color="var(--primary)" />
                     <UIText kind="body/accent">Decrypting balances…</UIText>
                     <UIText kind="small/regular" color="var(--neutral-500)">
                       Signing happens on this device and sends no transaction.
@@ -363,9 +331,7 @@ function RevealDialogContent({
                 ) : flowStep.type === 'failed' ? (
                   <VStack gap={16}>
                     <VStack gap={8}>
-                      <UIText kind="headline/h3">
-                        Couldn't decrypt the balances
-                      </UIText>
+                      <UIText kind="headline/h3">Couldn't decrypt the balances</UIText>
                       <UIText kind="body/regular" color="var(--neutral-600)">
                         Please try again.
                       </UIText>
@@ -379,10 +345,7 @@ function RevealDialogContent({
                     </VStack>
                     {ledgerWallet ? null : (
                       <VStack gap={8}>
-                        <Button
-                          kind="primary"
-                          onClick={() => revealMutation.mutate()}
-                        >
+                        <Button kind="primary" onClick={() => revealMutation.mutate()}>
                           Try again
                         </Button>
                         <Button kind="regular" onClick={onClose}>
@@ -394,12 +357,10 @@ function RevealDialogContent({
                 ) : flowStep.type === 'empty' ? (
                   <VStack gap={16}>
                     <VStack gap={8}>
-                      <UIText kind="headline/h3">
-                        Nothing to decrypt right now
-                      </UIText>
+                      <UIText kind="headline/h3">Nothing to decrypt right now</UIText>
                       <UIText kind="body/regular" color="var(--neutral-600)">
-                        The backend issued no decryption permits for this
-                        wallet. Please try again later.
+                        The backend issued no decryption permits for this wallet. Please try again
+                        later.
                       </UIText>
                     </VStack>
                     <Button kind="regular" onClick={onClose}>
@@ -410,8 +371,8 @@ function RevealDialogContent({
                   <VStack gap={16}>
                     <VStack gap={8}>
                       <UIText kind="small/regular" color="var(--neutral-600)">
-                        Some tokens in this wallet are encrypted onchain, so
-                        nobody can see the amounts.
+                        Some tokens in this wallet are encrypted onchain, so nobody can see the
+                        amounts.
                       </UIText>
                       <UIText kind="small/regular" color="var(--neutral-600)">
                         {canReveal
@@ -422,10 +383,7 @@ function RevealDialogContent({
                       </UIText>
                     </VStack>
                     {canReveal && !ledgerWallet ? (
-                      <Button
-                        kind="primary"
-                        onClick={() => revealMutation.mutate()}
-                      >
+                      <Button kind="primary" onClick={() => revealMutation.mutate()}>
                         Reveal
                       </Button>
                     ) : null}
@@ -442,12 +400,8 @@ function RevealDialogContent({
               derivationPath={ledgerWallet.derivationPath}
               ecosystem={getAddressType(address)}
               isSigning={isSigningOnDevice}
-              buttonTitle={
-                flowStep.type === 'failed' ? 'Try again' : 'Reveal with Ledger'
-              }
-              bluetoothSupportEnabled={Boolean(
-                globalPreferences?.bluetoothSupportEnabled
-              )}
+              buttonTitle={flowStep.type === 'failed' ? 'Try again' : 'Reveal with Ledger'}
+              bluetoothSupportEnabled={Boolean(globalPreferences?.bluetoothSupportEnabled)}
               keyboardShortcutEnabled={false}
               showSigningSettings={false}
               onClick={() => revealMutation.mutate()}

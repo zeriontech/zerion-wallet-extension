@@ -66,7 +66,7 @@ export function buildManifest({ source, platform, emitted, outDir }) {
   // Assets imported by the content script are injected into pages, so the
   // browser only serves them if they are web-accessible.
   const contentScriptAssets = emitted['content-script'].filter(
-    (file) => !/\.(js|css|map)$/.test(file)
+    (file) => !/\.(js|css|map)$/.test(file),
   );
   if (contentScriptAssets.length > 0) {
     manifest.web_accessible_resources.push({

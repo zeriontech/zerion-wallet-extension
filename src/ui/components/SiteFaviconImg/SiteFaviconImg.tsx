@@ -16,11 +16,7 @@ type Props = {
   priorityUrl?: string | null;
 };
 
-function FallbackIcon({
-  url,
-  size,
-  style,
-}: Pick<Props, 'url' | 'size' | 'style'>) {
+function FallbackIcon({ url, size, style }: Pick<Props, 'url' | 'size' | 'style'>) {
   const siteNamePreview = new URL(url).hostname.split('.').at(-2)?.slice(0, 2);
   return siteNamePreview ? (
     <div
@@ -93,12 +89,7 @@ function ProgressiveFavicon({
   }
 
   return (
-    <img
-      {...imgProps}
-      style={style}
-      src={src}
-      onError={() => setIndex((current) => current + 1)}
-    />
+    <img {...imgProps} style={style} src={src} onError={() => setIndex((current) => current + 1)} />
   );
 }
 

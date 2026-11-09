@@ -17,18 +17,14 @@ export function InputKindToggle({
   onToggle: () => void;
 }) {
   const targetLabel =
-    inputKind === 'token'
-      ? currencyCode.toUpperCase()
-      : tokenSymbol.toUpperCase();
+    inputKind === 'token' ? currencyCode.toUpperCase() : tokenSymbol.toUpperCase();
   return (
     <UnstyledButton type="button" onClick={onToggle}>
       <HStack gap={4} alignItems="center">
         <UIText kind="small/regular" color="var(--primary)">
           {targetLabel}
         </UIText>
-        <ReverseIcon
-          style={{ width: 16, height: 16, color: 'var(--primary)' }}
-        />
+        <ReverseIcon style={{ width: 16, height: 16, color: 'var(--primary)' }} />
       </HStack>
     </UnstyledButton>
   );

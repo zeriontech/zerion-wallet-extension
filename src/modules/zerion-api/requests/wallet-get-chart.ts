@@ -22,7 +22,7 @@ type Response = ResponseBody<WalletChart>;
 export async function walletGetChart(
   this: ZerionApiContext,
   payload: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const kyOptions = this.getKyOptions();
   return ZerionHttpClient.post<Response>(
@@ -31,6 +31,6 @@ export async function walletGetChart(
       body: JSON.stringify(payload),
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

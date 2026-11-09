@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
@@ -44,7 +38,7 @@ const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
 const REQUEST_TOKEN_LINK = 'https://zerion.io/request-token';
 
 function populateChartActionsDirection(
-  actions: AssetChartActions | null
+  actions: AssetChartActions | null,
 ): AssetChartActions | null {
   if (!actions || actions.total.direction) {
     return actions;
@@ -59,13 +53,7 @@ function populateChartActionsDirection(
   };
 }
 
-export function AssetTitleAndChart({
-  asset,
-  address,
-}: {
-  asset: Asset;
-  address: string;
-}) {
+export function AssetTitleAndChart({ asset, address }: { asset: Asset; address: string }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const { currency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
@@ -106,37 +94,20 @@ export function AssetTitleAndChart({
       endRangeIndex: number | null;
     }) => {
       const startTimestamp =
-        startRangeIndex != null
-          ? chartPoints[startRangeIndex]?.[0]
-          : chartPoints[0]?.[0];
+        startRangeIndex != null ? chartPoints[startRangeIndex]?.[0] : chartPoints[0]?.[0];
       const startValue =
-        startRangeIndex != null
-          ? chartPoints[startRangeIndex]?.[1]
-          : chartPoints[0]?.[1];
+        startRangeIndex != null ? chartPoints[startRangeIndex]?.[1] : chartPoints[0]?.[1];
 
-      const value =
-        endRangeIndex != null
-          ? chartPoints[endRangeIndex]?.[1]
-          : asset.meta.price;
-      const timestamp =
-        endRangeIndex != null ? chartPoints[endRangeIndex]?.[0] : 0;
+      const value = endRangeIndex != null ? chartPoints[endRangeIndex]?.[1] : asset.meta.price;
+      const timestamp = endRangeIndex != null ? chartPoints[endRangeIndex]?.[0] : 0;
 
-      const localPriceChange = startValue
-        ? (((value || 0) - startValue) / startValue) * 100
-        : 0;
-      if (
-        priceElementRef.current &&
-        priceChangeElementRef.current &&
-        dateElementRef.current
-      ) {
+      const localPriceChange = startValue ? (((value || 0) - startValue) / startValue) * 100 : 0;
+      if (priceElementRef.current && priceChangeElementRef.current && dateElementRef.current) {
         const priceValue = formatPriceValue(value || 0, 'en', currency);
         priceElementRef.current.textContent = priceValue;
-        priceChangeElementRef.current.style.setProperty(
-          'color',
-          getColor(localPriceChange)
-        );
+        priceChangeElementRef.current.style.setProperty('color', getColor(localPriceChange));
         priceChangeElementRef.current.textContent = `${getSign(
-          localPriceChange
+          localPriceChange,
         )}${formatPercent(Math.abs(localPriceChange), 'en')}%`;
 
         const activeTimestampFormatted = timestamp
@@ -152,7 +123,7 @@ export function AssetTitleAndChart({
           : '';
       }
     },
-    [chartPoints, currency, asset.meta.price]
+    [chartPoints, currency, asset.meta.price],
   );
 
   useEffect(() => {
@@ -215,11 +186,7 @@ export function AssetTitleAndChart({
         </VStack>
         {isUntrackedAsset || isError ? null : (
           <>
-            <AssetChart
-              asset={asset}
-              chartPoints={chartPoints}
-              onRangeSelect={handleRangeSelect}
-            />
+            <AssetChart asset={asset} chartPoints={chartPoints} onRangeSelect={handleRangeSelect} />
             <HStack gap={8} justifyContent="space-between" alignItems="center">
               {CHART_TYPE_OPTIONS.map((type) => (
                 <Button
@@ -232,9 +199,7 @@ export function AssetTitleAndChart({
                     ['--button-background' as string]:
                       type === period ? 'var(--neutral-200)' : 'var(--white)',
                     ['--button-background-hover' as string]:
-                      type === period
-                        ? 'var(--neutral-300)'
-                        : 'var(--neutral-100)',
+                      type === period ? 'var(--neutral-300)' : 'var(--neutral-100)',
                   }}
                   onClick={() => setPeriod(type)}
                 >
@@ -280,8 +245,7 @@ export function AssetTitleAndChart({
         combination="shift+T"
         onKeyDown={() => {
           setPreferences({
-            showTransactionsOnAssetChart:
-              !preferences?.showTransactionsOnAssetChart,
+            showTransactionsOnAssetChart: !preferences?.showTransactionsOnAssetChart,
           });
         }}
       />

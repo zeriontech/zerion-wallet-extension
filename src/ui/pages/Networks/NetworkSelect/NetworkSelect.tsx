@@ -29,10 +29,7 @@ import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 
 async function updateNetworks() {
-  return Promise.all([
-    mainNetworksStore.update(),
-    testenvNetworksStore.update(),
-  ]);
+  return Promise.all([mainNetworksStore.update(), testenvNetworksStore.update()]);
 }
 
 export function NetworkSelect({
@@ -69,7 +66,7 @@ export function NetworkSelect({
   const { data } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
-    { enabled: Boolean(isEthereumAddress(params.address)) }
+    { enabled: Boolean(isEthereumAddress(params.address)) },
   );
   const walletPortfolio = data?.data;
   const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -91,12 +88,10 @@ export function NetworkSelect({
   }
 
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
-  const { networks, isLoading } = useNetworks(
-    chain ? [chain.toString()] : undefined
-  );
+  const { networks, isLoading } = useNetworks(chain ? [chain.toString()] : undefined);
   const network = useMemo(
     () => (chain && networks ? networks.getNetworkByName(chain) : null),
-    [chain, networks]
+    [chain, networks],
   );
 
   const dialog = (
@@ -130,26 +125,12 @@ export function NetworkSelect({
       ) : isLoading ? (
         <Spacer height={24} />
       ) : (
-        <Button
-          type="button"
-          size={32}
-          kind="text-primary"
-          onClick={handleDialogOpen}
-        >
+        <Button type="button" size={32} kind="text-primary" onClick={handleDialogOpen}>
           <HStack gap={8} alignItems="center">
-            {!network ||
-            value === NetworkSelectValue.All ||
-            !network.iconUrl ? (
-              <AllNetworksIcon
-                style={{ width: 24, height: 24 }}
-                role="presentation"
-              />
+            {!network || value === NetworkSelectValue.All || !network.iconUrl ? (
+              <AllNetworksIcon style={{ width: 24, height: 24 }} role="presentation" />
             ) : (
-              <NetworkIcon
-                size={24}
-                src={network.iconUrl}
-                name={network.name}
-              />
+              <NetworkIcon size={24} src={network.iconUrl} name={network.name} />
             )}
             <span style={{ display: 'inline-flex', alignItems: 'center' }}>
               <span>

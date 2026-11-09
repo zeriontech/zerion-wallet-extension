@@ -18,7 +18,7 @@ function getIV() {
 async function encryptObject<T>(
   password: string,
   obj: T,
-  salt: string = createSalt()
+  salt: string = createSalt(),
 ): Promise<Encrypted> {
   const dataJSON = JSON.stringify(obj);
   const dataArray = utf8ToUint8Array(dataJSON);
@@ -29,7 +29,7 @@ async function encryptObject<T>(
   const encryptedBuffer = await globalThis.crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     key,
-    dataArray
+    dataArray,
   );
 
   const ivBase64 = arrayBufferToBase64(iv);
@@ -49,16 +49,13 @@ async function encryptObject<T>(
 export async function encrypt<T>(
   password: string,
   obj: T,
-  salt: string = createSalt()
+  salt: string = createSalt(),
 ): Promise<string> {
   const encrypted = await encryptObject(password, obj, salt);
   return JSON.stringify(encrypted);
 }
 
-export async function decryptObject<T>(
-  password: string,
-  encrypted: Encrypted
-): Promise<T> {
+export async function decryptObject<T>(password: string, encrypted: Encrypted): Promise<T> {
   const { iv: ivBase64, data: dataBase64, salt } = encrypted;
   const dataArray = base64ToUint8Array(dataBase64);
 
@@ -68,7 +65,7 @@ export async function decryptObject<T>(
   const decryptedBuffer = await globalThis.crypto.subtle.decrypt(
     { name: 'AES-GCM', iv },
     key,
-    dataArray
+    dataArray,
   );
 
   const decryptedArray = new Uint8Array(decryptedBuffer);

@@ -34,7 +34,7 @@ describe.each([
         standard: 'evm',
         chainDistribution,
         testnetMode: false,
-      })
+      }),
     );
     expect(groups.pinned).toEqual(['polygon', 'ethereum']);
     expect(groups.main).toEqual(['base']);
@@ -49,7 +49,7 @@ describe.each([
         chainDistribution,
         testnetMode: false,
         filterPredicate: (network) => network.flags.supportsTrading,
-      })
+      }),
     );
     expect(groups.pinned).toEqual(['base']);
     expect([...groups.main, ...groups.other]).not.toContain('okbchain');
@@ -62,7 +62,7 @@ describe.each([
         standard: 'evm',
         chainDistribution,
         testnetMode: false,
-      })
+      }),
     );
     expect(groups.pinned).toEqual([]);
     expect(groups.main).toEqual(['ethereum', 'base']);
@@ -75,7 +75,7 @@ describe.each([
         standard: 'solana',
         chainDistribution,
         testnetMode: false,
-      })
+      }),
     );
     expect(groups.main[0]).toBe('solana');
   });

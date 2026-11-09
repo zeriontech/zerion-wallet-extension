@@ -12,8 +12,7 @@ import * as helpersStyles from '../shared/helperStyles.module.css';
 
 export function ShareData() {
   const navigate = useNavigate();
-  const { globalPreferences, setGlobalPreferences, query } =
-    useGlobalPreferences();
+  const { globalPreferences, setGlobalPreferences, query } = useGlobalPreferences();
   const { isNarrowView } = useWindowSizeStore();
 
   useOnboardingSession({ navigateOnExistingUser: 'success' });
@@ -76,12 +75,12 @@ export function ShareData() {
               lineHeight: '24px',
             }}
           >
-            Share anonymous usage data (such as app interactions, feature usage,
-            and performance metrics) to help us make Zerion better for everyone.
+            Share anonymous usage data (such as app interactions, feature usage, and performance
+            metrics) to help us make Zerion better for everyone.
             <br />
             <br />
-            Turning off data collection will not impact your user experience.
-            You can change this setting anytime in Privacy settings.
+            Turning off data collection will not impact your user experience. You can change this
+            setting anytime in Privacy settings.
             <br />
             <br />
             Read more in our{' '}

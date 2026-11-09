@@ -19,28 +19,16 @@ import type { BackendSourceParams } from '../shared';
 const STALE_TIME = 20000;
 const QUERY_KEY = 'walletGetPortfolio';
 
-function queryFn(
-  params: Params,
-  clientParams: BackendSourceParams,
-  permits: SignedPermit[]
-) {
+function queryFn(params: Params, clientParams: BackendSourceParams, permits: SignedPermit[]) {
   return withPermits(permits, (permits) =>
-    ZerionAPI.walletGetPortfolio({ ...params, permits }, clientParams)
+    ZerionAPI.walletGetPortfolio({ ...params, permits }, clientParams),
   );
 }
 
-export async function queryWalletPortfolio(
-  params: Params,
-  clientParams: BackendSourceParams
-) {
+export async function queryWalletPortfolio(params: Params, clientParams: BackendSourceParams) {
   const permits = await getConfidentialPermits(params.addresses);
   return queryClient.fetchQuery({
-    queryKey: persistentQuery([
-      QUERY_KEY,
-      params,
-      clientParams,
-      getPermitsFingerprint(permits),
-    ]),
+    queryKey: persistentQuery([QUERY_KEY, params, clientParams, getPermitsFingerprint(permits)]),
     queryFn: () => queryFn(params, clientParams, permits),
     staleTime: STALE_TIME,
   });
@@ -74,13 +62,11 @@ export function useWalletPortfolio(
      * window-focus refetching independently of the main portfolio query.
      */
     hyperliquidRefetchOnWindowFocus?: boolean;
-  } = {}
+  } = {},
 ) {
   // Signed Permits make confidential amounts count towards the total, so
   // their fingerprint is part of the key: a new permit refetches the portfolio
-  const { permits, fingerprint, isReady } = useConfidentialPermits(
-    params.addresses
-  );
+  const { permits, fingerprint, isReady } = useConfidentialPermits(params.addresses);
   const portfolioQuery = useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
     // eslint-disable-next-line @tanstack/query/exhaustive-deps

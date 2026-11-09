@@ -31,7 +31,7 @@ export async function getTransactionCount({
 
 export async function getBestKnownTransactionCount(
   state: StoredTransactions,
-  params: Parameters<typeof getTransactionCount>[0]
+  params: Parameters<typeof getTransactionCount>[0],
 ): ReturnType<typeof getTransactionCount> {
   const transactionCount = await getTransactionCount(params);
   const { address, network } = params;

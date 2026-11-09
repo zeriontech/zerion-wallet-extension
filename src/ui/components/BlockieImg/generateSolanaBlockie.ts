@@ -1,7 +1,4 @@
-export function generateSolanaBlockie(
-  address: string,
-  size: number
-): HTMLCanvasElement {
+export function generateSolanaBlockie(address: string, size: number): HTMLCanvasElement {
   const blocksCount = 8;
   const scale = (size / blocksCount) * window.devicePixelRatio;
   const canvas = document.createElement('canvas');

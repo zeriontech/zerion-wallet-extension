@@ -56,11 +56,7 @@ function OnboardingStep({
             srcSet={`${imageSrc}, ${image2xSrc} 2x`}
             className={styles.coverImage}
           />
-          <UIText
-            kind="body/accent"
-            className={styles.onboardingText}
-            color="var(--neutral-700)"
-          >
+          <UIText kind="body/accent" className={styles.onboardingText} color="var(--neutral-700)">
             {text}
           </UIText>
         </VStack>

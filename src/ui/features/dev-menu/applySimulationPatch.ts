@@ -14,9 +14,7 @@ import type {
 
 const OUTPUT_DISCREPANCY_FACTOR = 0.5;
 
-function makeInjectedWarning(
-  severity: Exclude<SimulationWarningOverride, 'off'>
-): Warning {
+function makeInjectedWarning(severity: Exclude<SimulationWarningOverride, 'off'>): Warning {
   return {
     severity,
     title: `[Dev] Injected ${severity} warning`,
@@ -25,26 +23,21 @@ function makeInjectedWarning(
   };
 }
 
-function applyWarningOverride(
-  warnings: Warning[],
-  override: SimulationWarningOverride
-): Warning[] {
+function applyWarningOverride(warnings: Warning[], override: SimulationWarningOverride): Warning[] {
   if (override === 'off') return warnings;
   return [...warnings, makeInjectedWarning(override)];
 }
 
 function applyStatusOverride(
   action: AddressAction,
-  override: SimulationStatusOverride
+  override: SimulationStatusOverride,
 ): AddressAction {
   if (override === 'off') return action;
   // override === 'failed' — write to top-level action AND every nested act
   return {
     ...action,
     status: 'failed',
-    acts: action.acts
-      ? action.acts.map((a) => ({ ...a, status: 'failed' as const }))
-      : action.acts,
+    acts: action.acts ? action.acts.map((a) => ({ ...a, status: 'failed' as const })) : action.acts,
   };
 }
 
@@ -57,8 +50,7 @@ function scaleAmount(amount: Amount, factor: number): Amount {
     ...amount,
     quantity: scaledQuantity,
     value: amount.value == null ? amount.value : amount.value * factor,
-    usdValue:
-      amount.usdValue == null ? amount.usdValue : amount.usdValue * factor,
+    usdValue: amount.usdValue == null ? amount.usdValue : amount.usdValue * factor,
   };
 }
 
@@ -71,7 +63,7 @@ function scaleIncomingTransfer(transfer: Transfer, factor: number): Transfer {
 
 function applyOutputDiscrepancy(
   action: AddressAction,
-  override: SimulationOutputDiscrepancy
+  override: SimulationOutputDiscrepancy,
 ): AddressAction {
   if (override === 'off') return action;
   if (!action.content || !action.content.transfers) return action;
@@ -80,9 +72,7 @@ function applyOutputDiscrepancy(
     ...action,
     content: {
       ...action.content,
-      transfers: action.content.transfers.map((t) =>
-        scaleIncomingTransfer(t, factor)
-      ),
+      transfers: action.content.transfers.map((t) => scaleIncomingTransfer(t, factor)),
     },
   };
 }
@@ -100,7 +90,7 @@ type Patchable = {
  */
 export function applySimulationPatch<T extends Patchable | null | undefined>(
   result: T,
-  state: DevMenuState
+  state: DevMenuState,
 ): T {
   if (!result) return result;
   if (
@@ -113,19 +103,13 @@ export function applySimulationPatch<T extends Patchable | null | undefined>(
 
   const patchedWarnings = applyWarningOverride(
     result.data.warnings,
-    state.simulationWarningOverride
+    state.simulationWarningOverride,
   );
 
   let patchedAction = result.data.action;
   if (patchedAction) {
-    patchedAction = applyStatusOverride(
-      patchedAction,
-      state.simulationStatusOverride
-    );
-    patchedAction = applyOutputDiscrepancy(
-      patchedAction,
-      state.simulationOutputDiscrepancy
-    );
+    patchedAction = applyStatusOverride(patchedAction, state.simulationStatusOverride);
+    patchedAction = applyOutputDiscrepancy(patchedAction, state.simulationOutputDiscrepancy);
   }
 
   return {

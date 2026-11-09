@@ -31,15 +31,7 @@ export function FeeLine({ fee }: { fee: ActionFee }) {
             <span>{formatTokenValue(fee.amount.quantity, '')}</span>
             {fee.fungible ? <AssetLink fungible={fee.fungible} /> : null}
             {fee.amount.value != null ? (
-              <span>
-                (
-                {formatCurrencyValue(
-                  fee.amount.value,
-                  'en',
-                  fee.amount.currency
-                )}
-                )
-              </span>
+              <span>({formatCurrencyValue(fee.amount.value, 'en', fee.amount.currency)})</span>
             ) : null}
           </HStack>
         )}

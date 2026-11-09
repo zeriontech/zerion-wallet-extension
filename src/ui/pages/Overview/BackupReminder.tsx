@@ -39,7 +39,7 @@ function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
   const { data: walletGroups, isLoading } = useWalletGroups();
   const notBackedUpGroups = useMemo(
     () => walletGroups?.filter((group) => needsBackup(group)),
-    [walletGroups]
+    [walletGroups],
   );
 
   if (isLoading || !notBackedUpGroups || !notBackedUpGroups.length) {
@@ -66,8 +66,8 @@ function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
           <VStack gap={8}>
             <UIText kind="headline/h3">Secure your wallet</UIText>
             <UIText kind="body/regular">
-              If this device is lost or stolen, you{apostrophe}ll lose access to
-              your wallet and funds
+              If this device is lost or stolen, you{apostrophe}ll lose access to your wallet and
+              funds
             </UIText>
           </VStack>
         </VStack>
@@ -115,15 +115,11 @@ export function BackupReminder() {
   const { preferences, setPreferences } = usePreferences();
 
   const showDialog =
-    count &&
-    preferences &&
-    Date.now() - preferences.backupReminderDismissedTime >= ONE_DAY;
+    count && preferences && Date.now() - preferences.backupReminderDismissedTime >= ONE_DAY;
 
   return showDialog ? (
     <BackupReminderComponent
-      onDismiss={() =>
-        setPreferences({ backupReminderDismissedTime: Date.now() })
-      }
+      onDismiss={() => setPreferences({ backupReminderDismissedTime: Date.now() })}
     />
   ) : null;
 }

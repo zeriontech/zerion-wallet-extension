@@ -133,7 +133,7 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     configuration: CustomConfiguration;
     chainGasPrices: ChainGasPrice | null;
     requireNonce: boolean;
-  }
+  },
 ): Promise<PartiallyRequired<T, 'chainId' | 'from'>> {
   let tx = { ...transaction } as T | IncomingTransaction;
 
@@ -175,7 +175,7 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
 
 async function resolveChain(
   transaction: IncomingTransaction,
-  currentChain: Chain
+  currentChain: Chain,
 ): Promise<PartiallyRequired<IncomingTransaction, 'chainId'>> {
   const networksStore = await getNetworksStore();
   const txChainId = normalizeTransactionChainId(transaction);
@@ -193,7 +193,7 @@ async function resolveChain(
 
 async function resolveGasAndFee(
   transaction: IncomingTransactionWithChainId,
-  { source }: { source: NetworksSource }
+  { source }: { source: NetworksSource },
 ) {
   const chainId = resolveChainId(transaction);
   const networksStore = await getNetworksStore();
@@ -225,8 +225,7 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const resolveGasQuery = useQuery({
     queryKey: ['resolveGasAndFee', withChainId, source],
-    queryFn: async () =>
-      withChainId ? resolveGasAndFee(withChainId, { source }) : null,
+    queryFn: async () => (withChainId ? resolveGasAndFee(withChainId, { source }) : null),
     enabled: Boolean(withChainId),
     useErrorBoundary: true,
     suspense: false,
@@ -289,7 +288,7 @@ function TransactionDefaultView({
 
   const allowanceViewHref = useMemo(
     () => `?${setURLSearchParams(params, { view: View.customAllowance })}`,
-    [params]
+    [params],
   );
 
   const network = networks.getByNetworkId(chain);
@@ -324,11 +323,7 @@ function TransactionDefaultView({
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
             ) : originForHref ? (
-              <TextAnchor
-                href={originForHref.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <TextAnchor href={originForHref.href} target="_blank" rel="noopener noreferrer">
                 {originForHref.hostname}
               </TextAnchor>
             ) : (
@@ -336,12 +331,7 @@ function TransactionDefaultView({
             )}
           </UIText>
           <HStack gap={8} alignItems="center">
-            <WalletAvatar
-              address={wallet.address}
-              size={20}
-              active={false}
-              borderRadius={6}
-            />
+            <WalletAvatar address={wallet.address} size={20} active={false} borderRadius={6} />
             <UIText kind="small/regular">
               <WalletDisplayName wallet={wallet} />
             </UIText>
@@ -362,8 +352,7 @@ function TransactionDefaultView({
               customAllowanceQuantityBase={customAllowanceQuantityBase}
               showApplicationLine={true}
               singleAssetElementEnd={
-                allowanceQuantityCommon &&
-                addressAction.type.value === 'approve' ? (
+                allowanceQuantityCommon && addressAction.type.value === 'approve' ? (
                   <UIText
                     as={TextLink}
                     kind="small/accent"
@@ -397,10 +386,7 @@ function TransactionDefaultView({
             <HStack gap={0} alignItems="center" justifyContent="center">
               <ScrollIcon />
               <span>Details</span>
-              <ArrowDownIcon
-                className="content-hover"
-                style={{ width: 24, height: 24 }}
-              />
+              <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
             </HStack>
           </Button>
         </HStack>
@@ -503,10 +489,7 @@ function SendTransactionContent({
   const [allowanceQuantityBase, setAllowanceQuantityBase] = useState('');
 
   const configureTransactionToBeSigned = useEvent(
-    async (
-      transaction: IncomingTransaction,
-      { requireNonce }: { requireNonce: boolean }
-    ) =>
+    async (transaction: IncomingTransaction, { requireNonce }: { requireNonce: boolean }) =>
       configureTransactionToSign(transaction, {
         chainGasPrices: chainGasPrices || null,
         configuration,
@@ -516,7 +499,7 @@ function SendTransactionContent({
         networks,
         transactionAction,
         requireNonce,
-      })
+      }),
   );
 
   const USE_PAYMASTER_FEATURE = true;
@@ -525,8 +508,7 @@ function SendTransactionContent({
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
   const paymasterPossible =
-    USE_PAYMASTER_FEATURE &&
-    Boolean(network?.flags.supportsSponsoredTransactions);
+    USE_PAYMASTER_FEATURE && Boolean(network?.flags.supportsSponsoredTransactions);
 
   const eligibilityQuery = useQuery({
     // transaction gas type may change when gasPrices responds, so we should wait
@@ -550,7 +532,7 @@ function SendTransactionContent({
       invariant(gas, 'gasLimit missing');
       return adjustedCheckEligibility(
         { ...tx, gas: valueToHex(gas) },
-        { source, apiClient: ZerionAPI }
+        { source, apiClient: ZerionAPI },
       );
     },
   });
@@ -558,8 +540,7 @@ function SendTransactionContent({
   const paymasterEligible = Boolean(eligibilityQuery.data?.data?.eligible);
   const { isStale } = useStaleTime(eligibilityQuery.isLoading, 2000);
   /** avoid a flash between network fee and "free" label, but not wait too long */
-  const paymasterWaiting =
-    paymasterPossible && eligibilityQuery.isLoading && !isStale;
+  const paymasterWaiting = paymasterPossible && eligibilityQuery.isLoading && !isStale;
 
   const gasPricesReady = Boolean(chainGasPrices);
   const { isStale: isStaleGasPricesValue } = useStaleTime(gasPricesReady, 2000);
@@ -572,9 +553,7 @@ function SendTransactionContent({
   const isWaitingForGasrices = !gasPricesReady && !isStaleGasPricesValue;
 
   const interpretQuery = useQuery({
-    enabled: Boolean(
-      network?.flags.supportsSimulations && !isWaitingForGasrices
-    ),
+    enabled: Boolean(network?.flags.supportsSimulations && !isWaitingForGasrices),
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
     keepPreviousData: true,
@@ -597,19 +576,16 @@ function SendTransactionContent({
       wallet.address,
     ],
     queryFn: async () => {
-      const configuredTx = await configureTransactionToSign(
-        populatedTransaction,
-        {
-          chainGasPrices: chainGasPrices || null,
-          configuration,
-          allowanceQuantityBase,
-          chain,
-          from: singleAddress,
-          networks,
-          transactionAction,
-          requireNonce: true,
-        }
-      );
+      const configuredTx = await configureTransactionToSign(populatedTransaction, {
+        chainGasPrices: chainGasPrices || null,
+        configuration,
+        allowanceQuantityBase,
+        chain,
+        from: singleAddress,
+        networks,
+        transactionAction,
+        requireNonce: true,
+      });
       return interpretTxBasedOnEligibility({
         address: wallet.address,
         transactions: [{ evm: configuredTx }],
@@ -622,9 +598,7 @@ function SendTransactionContent({
     refetchOnWindowFocus: false,
   });
 
-  const interpretationHasCriticalWarning = hasCriticalWarning(
-    interpretQuery.data?.data.warnings
-  );
+  const interpretationHasCriticalWarning = hasCriticalWarning(interpretQuery.data?.data.warnings);
 
   /**
    * The interpretation is the _only_ source of the address action: we no longer
@@ -706,10 +680,7 @@ function SendTransactionContent({
 
   const requestedAllowanceQuantityBase =
     requestedAllowanceQuantityCommon && fungibleDecimals
-      ? commonToBase(
-          requestedAllowanceQuantityCommon,
-          fungibleDecimals
-        ).toFixed()
+      ? commonToBase(requestedAllowanceQuantityCommon, fungibleDecimals).toFixed()
       : null;
 
   const allowanceQuantityCommon =
@@ -768,16 +739,10 @@ function SendTransactionContent({
           ref={advancedDialogRef}
           containerStyle={{ paddingBottom: 0 }}
           renderWhenOpen={() => {
-            invariant(
-              network,
-              'Network should be known to show transaction details'
-            );
+            invariant(network, 'Network should be known to show transaction details');
             return (
               <>
-                <DialogTitle
-                  title={<UIText kind="body/accent">Details</UIText>}
-                  closeKind="icon"
-                />
+                <DialogTitle title={<UIText kind="body/accent">Details</UIText>} closeKind="icon" />
                 <TransactionAdvancedView
                   network={network}
                   interpretation={interpretQuery.data}
@@ -842,21 +807,11 @@ function SendTransactionContent({
                   onClick={() => sendTransaction()}
                   isLoading={sendTransactionMutation.isLoading}
                   disabled={sendTransactionMutation.isLoading}
-                  buttonKind={
-                    interpretationHasCriticalWarning ? 'danger' : 'primary'
-                  }
-                  buttonTitle={
-                    interpretationHasCriticalWarning
-                      ? 'Proceed Anyway'
-                      : undefined
-                  }
+                  buttonKind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
+                  buttonTitle={interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined}
                   holdToSign={preferences.enableHoldToSignButton}
-                  bluetoothSupportEnabled={
-                    globalPreferences.bluetoothSupportEnabled
-                  }
-                  keyboardShortcutEnabled={
-                    preferences.enableKeyboardShortcutToSign
-                  }
+                  bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
+                  keyboardShortcutEnabled={preferences.enableKeyboardShortcutToSign}
                 />
               ) : null}
             </div>
@@ -876,15 +831,12 @@ function EthSendTransaction() {
     useErrorBoundary: true,
   });
   const transactionStringified = params.get('transaction');
-  invariant(
-    transactionStringified,
-    'transaction get-parameter is required for this view'
-  );
+  invariant(transactionStringified, 'transaction get-parameter is required for this view');
   const origin = params.get('origin');
   invariant(origin, 'origin get-parameter is required for this view');
   const incomingTransaction = useMemo(
     () => JSON.parse(transactionStringified) as IncomingTransaction,
-    [transactionStringified]
+    [transactionStringified],
   );
 
   // NOTE: this hook populates {networks} with a network for resolved chainId
@@ -975,11 +927,7 @@ function SolDefaultView({
             {origin === INTERNAL_ORIGIN ? (
               'Zerion'
             ) : originForHref ? (
-              <TextAnchor
-                href={originForHref.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <TextAnchor href={originForHref.href} target="_blank" rel="noopener noreferrer">
                 {originForHref.hostname}
               </TextAnchor>
             ) : (
@@ -987,12 +935,7 @@ function SolDefaultView({
             )}
           </UIText>
           <HStack gap={8} alignItems="center">
-            <WalletAvatar
-              address={wallet.address}
-              size={20}
-              active={false}
-              borderRadius={6}
-            />
+            <WalletAvatar address={wallet.address} size={20} active={false} borderRadius={6} />
             <UIText kind="small/regular">
               <WalletDisplayName wallet={wallet} />
             </UIText>
@@ -1038,10 +981,7 @@ function SolDefaultView({
             <HStack gap={0} alignItems="center" justifyContent="center">
               <ScrollIcon />
               <span>Details</span>
-              <ArrowDownIcon
-                className="content-hover"
-                style={{ width: 24, height: 24 }}
-              />
+              <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
             </HStack>
           </Button>
         </HStack>
@@ -1049,10 +989,7 @@ function SolDefaultView({
       </VStack>
       <div style={{ marginTop: 'auto' }}>
         {addressAction?.fee ? (
-          <AddressActionNetworkFee
-            fee={addressAction.fee}
-            isLoading={txInterpretQuery.isLoading}
-          />
+          <AddressActionNetworkFee fee={addressAction.fee} isLoading={txInterpretQuery.isLoading} />
         ) : null}
       </div>
 
@@ -1061,10 +998,7 @@ function SolDefaultView({
         containerStyle={{ paddingBottom: 0 }}
         renderWhenOpen={() => (
           <>
-            <DialogTitle
-              title={<UIText kind="body/accent">Details</UIText>}
-              closeKind="icon"
-            />
+            <DialogTitle title={<UIText kind="body/accent">Details</UIText>} closeKind="icon" />
             <TransactionAdvancedView
               network={network}
               interpretation={txInterpretQuery.data}
@@ -1089,16 +1023,13 @@ function SolDefaultView({
 }
 
 function assertKnownSolanaMethodParam(
-  value: string | null
-): asserts value is
-  | 'signTransaction'
-  | 'signAndSendTransaction'
-  | 'signAllTransactions' {
+  value: string | null,
+): asserts value is 'signTransaction' | 'signAndSendTransaction' | 'signAllTransactions' {
   invariant(
     value === 'signTransaction' ||
       value === 'signAndSendTransaction' ||
       value === 'signAllTransactions',
-    `Unsupported Solana method ${value}`
+    `Unsupported Solana method ${value}`,
   );
 }
 
@@ -1127,10 +1058,7 @@ function normalizeTxParams(params: URLSearchParams):
   if (method === 'signAllTransactions') {
     invariant(base64Txs, 'signAllTransactions: transactions param is required');
     const transactions = JSON.parse(base64Txs) as StringBase64[];
-    invariant(
-      transactions.length > 0,
-      'signAllTransactions: transactions param must not be empty'
-    );
+    invariant(transactions.length > 0, 'signAllTransactions: transactions param must not be empty');
     return { method, transaction: undefined, transactions };
   } else {
     invariant(base64Tx, 'transaction param is required');
@@ -1299,12 +1227,7 @@ function SolSendTransaction() {
               gap: 8,
             }}
           >
-            <Button
-              ref={focusNode}
-              kind="regular"
-              type="button"
-              onClick={handleReject}
-            >
+            <Button ref={focusNode} kind="regular" type="button" onClick={handleReject}>
               Cancel
             </Button>
             {preferences && globalPreferences ? (
@@ -1316,12 +1239,8 @@ function SolSendTransaction() {
                 disabled={sendTransactionMutation.isLoading}
                 buttonKind="primary"
                 holdToSign={preferences.enableHoldToSignButton}
-                bluetoothSupportEnabled={
-                  globalPreferences.bluetoothSupportEnabled
-                }
-                keyboardShortcutEnabled={
-                  preferences.enableKeyboardShortcutToSign
-                }
+                bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
+                keyboardShortcutEnabled={preferences.enableKeyboardShortcutToSign}
               />
             ) : null}
           </div>

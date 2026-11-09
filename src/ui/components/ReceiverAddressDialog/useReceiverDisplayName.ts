@@ -55,10 +55,7 @@ export function useReceiverDisplayName(address: string | null | undefined): {
  * Returns `null` when none is found, so callers can fall back to a truncated
  * address themselves.
  */
-export function useReceiverName(
-  address: string | null | undefined
-): string | null {
-  const { addressBookName, walletName, handle } =
-    useReceiverDisplayName(address);
+export function useReceiverName(address: string | null | undefined): string | null {
+  const { addressBookName, walletName, handle } = useReceiverDisplayName(address);
   return addressBookName || walletName || handle || null;
 }

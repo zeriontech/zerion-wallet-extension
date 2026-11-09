@@ -64,7 +64,7 @@ function EditableWalletName({
   });
   const debouncedRenameRequest = useDebouncedCallback(
     useCallback((value: string) => mutate(value), [mutate]),
-    500
+    500,
   );
 
   const { value: displayName } = useProfileName(wallet);
@@ -89,9 +89,7 @@ function EditableWalletName({
             setValue(name);
           }}
         />
-        {renameMutation.isLoading ? (
-          <CircleSpinner style={{ display: 'inline-block' }} />
-        ) : null}
+        {renameMutation.isLoading ? <CircleSpinner style={{ display: 'inline-block' }} /> : null}
       </div>
       {renameMutation.isError ? (
         <UIText kind="caption/regular" color="var(--negative-500)">
@@ -110,10 +108,7 @@ function RemoveAddressConfirmationDialog({
   wallet: ExternallyOwnedAccount;
 }) {
   return (
-    <form
-      method="dialog"
-      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-    >
+    <form method="dialog" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <VStack gap={8}>
         <WarningIcon
           size={44}
@@ -124,23 +119,18 @@ function RemoveAddressConfirmationDialog({
         />
         <UIText kind="headline/h3">Do you want to remove this wallet?</UIText>
         {containerType === ContainerType.readonly ? (
-          <UIText kind="body/regular">
-            You can always add it back to your watch list
-          </UIText>
+          <UIText kind="body/regular">You can always add it back to your watch list</UIText>
         ) : containerType === ContainerType.hardware ? (
           <UIText kind="body/regular">
             You can always add it again by connecting your hardware device
           </UIText>
         ) : (
           <UIText kind="body/regular">
-            You can always import it again using your recovery phrase or private
-            key
+            You can always import it again using your recovery phrase or private key
           </UIText>
         )}
         <Media
-          image={
-            <WalletAvatar address={wallet.address} size={32} borderRadius={8} />
-          }
+          image={<WalletAvatar address={wallet.address} size={32} borderRadius={8} />}
           text={
             <UIText kind="body/accent">
               <WalletDisplayName wallet={wallet} />
@@ -149,10 +139,7 @@ function RemoveAddressConfirmationDialog({
           detailText={null}
         />
       </VStack>
-      <HStack
-        gap={12}
-        style={{ marginTop: 'auto', gridAutoColumns: '1fr 1fr' }}
-      >
+      <HStack gap={12} style={{ marginTop: 'auto', gridAutoColumns: '1fr 1fr' }}>
         <Button value="cancel" kind="regular" style={{ width: '100%' }}>
           Cancel
         </Button>
@@ -169,10 +156,7 @@ export function WalletAccount() {
   const { currency } = useCurrency();
   const [params] = useSearchParams();
   const groupId = params.get('groupId');
-  invariant(
-    groupId,
-    'groupId is a required search-param for WalletAccount view'
-  );
+  invariant(groupId, 'groupId is a required search-param for WalletAccount view');
   invariant(address, 'Address param is required for WalletAccount view');
   const navigate = useNavigate();
   const {
@@ -181,8 +165,7 @@ export function WalletAccount() {
     refetch: refetchWallet,
   } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address, groupId],
-    queryFn: () =>
-      walletPort.request('uiGetWalletByAddress', { address, groupId }),
+    queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId }),
     useErrorBoundary: true,
   });
   const { data: walletGroup, isLoading: walletGroupIsLoading } = useQuery({
@@ -227,28 +210,19 @@ export function WalletAccount() {
         <Surface padding={12}>
           <VStack gap={8}>
             <Media
-              image={
-                <WalletAvatar
-                  address={wallet.address}
-                  size={44}
-                  borderRadius={12}
-                />
-              }
+              image={<WalletAvatar address={wallet.address} size={44} borderRadius={12} />}
               text={
                 <PortfolioValue
                   address={wallet.address}
                   render={(query) => (
                     <UIText kind="headline/h2" style={{ display: 'flex' }}>
                       {query.data ? (
-                        <BlurrableBalance
-                          kind="headline/h2"
-                          color="var(--black)"
-                        >
+                        <BlurrableBalance kind="headline/h2" color="var(--black)">
                           <NeutralDecimals
                             parts={formatCurrencyToParts(
                               query.data.data?.totalValue || 0,
                               'en',
-                              currency
+                              currency,
                             )}
                           />
                         </BlurrableBalance>
@@ -275,13 +249,7 @@ export function WalletAccount() {
         <InputDecorator
           label="Name"
           htmlFor={nameInputId}
-          input={
-            <EditableWalletName
-              id={nameInputId}
-              wallet={wallet}
-              onRename={refetchWallet}
-            />
-          }
+          input={<EditableWalletName id={nameInputId} wallet={wallet} onRename={refetchWallet} />}
         />
         {isBareWallet(wallet) ? (
           <VStack gap={8}>
@@ -297,15 +265,9 @@ export function WalletAccount() {
                     address: wallet.address,
                   })}`,
                   component: (
-                    <HStack
-                      gap={4}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
+                    <HStack gap={4} justifyContent="space-between" alignItems="center">
                       <UIText kind="body/accent">Private key</UIText>
-                      <ChevronRightIcon
-                        style={{ color: 'var(--neutral-400)' }}
-                      />
+                      <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
                     </HStack>
                   ),
                 },
@@ -341,8 +303,7 @@ export function WalletAccount() {
             </UIText>
           ) : null}
           <UIText kind="caption/regular" color="var(--neutral-500)">
-            You can always import it again using your recovery phrase or private
-            key
+            You can always import it again using your recovery phrase or private key
           </UIText>
         </VStack>
       </VStack>

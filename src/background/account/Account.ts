@@ -1,12 +1,7 @@
 import type { EventsMap } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
-import {
-  createSalt,
-  createCryptoKey,
-  encrypt,
-  decrypt,
-} from 'src/modules/crypto';
+import { createSalt, createCryptoKey, encrypt, decrypt } from 'src/modules/crypto';
 import { getSHA256HexDigest } from 'src/modules/crypto/getSHA256HexDigest';
 import {
   BrowserStorage,
@@ -125,7 +120,7 @@ export class Account extends EventEmitter<AccountEvents> {
     await Account.writeCurrentUser(
       produce(user, (draft) => {
         draft.passkey = passkey;
-      })
+      }),
     );
   }
 
@@ -137,7 +132,7 @@ export class Account extends EventEmitter<AccountEvents> {
     await Account.writeCurrentUser(
       produce(user, (draft) => {
         draft.passkey = null;
-      })
+      }),
     );
   }
 
@@ -197,11 +192,7 @@ export class Account extends EventEmitter<AccountEvents> {
     return record;
   }
 
-  constructor({
-    notificationWindow,
-  }: {
-    notificationWindow: NotificationWindow;
-  }) {
+  constructor({ notificationWindow }: { notificationWindow: NotificationWindow }) {
     super();
     this.user = null;
     this.isPendingNewUser = false;
@@ -274,7 +265,7 @@ export class Account extends EventEmitter<AccountEvents> {
   async setUser(
     user: User,
     partialCredentials: { password: string } | { encryptionKey: string },
-    { isNewUser = false } = {}
+    { isNewUser = false } = {},
   ) {
     this.user = user;
     this.isPendingNewUser = isNewUser;
@@ -332,9 +323,7 @@ export class Account extends EventEmitter<AccountEvents> {
     const walletTable = await this.wallet.walletStore.getSavedState();
     if (this.user) {
       const { id } = this.user;
-      this.wallet.walletStore.deleteMany(
-        Object.keys(walletTable).filter((key) => key !== id)
-      );
+      this.wallet.walletStore.deleteMany(Object.keys(walletTable).filter((key) => key !== id));
     }
   }
 
@@ -359,15 +348,13 @@ export class Account extends EventEmitter<AccountEvents> {
       user,
       credentials: { password: newPassword },
     });
-    if (
-      !isSessionCredentials(oldCredentials) ||
-      !isSessionCredentials(newCredentials)
-    ) {
+    if (!isSessionCredentials(oldCredentials) || !isSessionCredentials(newCredentials)) {
       throw new Error('Full credentials are expected');
     }
-    const updatedWalletRecord = await this.wallet.reencodeWalletWithNewPassword(
-      { oldCredentials, newCredentials }
-    );
+    const updatedWalletRecord = await this.wallet.reencodeWalletWithNewPassword({
+      oldCredentials,
+      newCredentials,
+    });
     /**
      * We don't use WalletStore.save here to make Storage change strictly before the next operation.
      * The save function for the PersistentStore is not blocking.
@@ -389,7 +376,7 @@ export class Account extends EventEmitter<AccountEvents> {
   async restoreMnemonicWithInitialPassword(
     user: User,
     initialPassword: string,
-    currentPassword: string
+    currentPassword: string,
   ) {
     const passwordIsCorrect = await this.verifyPassword(user, currentPassword);
     if (!passwordIsCorrect) {
@@ -420,11 +407,10 @@ export class Account extends EventEmitter<AccountEvents> {
     if (!isSessionCredentials(currentCredentials)) {
       throw new Error('Full credentials are expected');
     }
-    const updatedWalletRecord =
-      await this.wallet.restoreMnemonicWithInitialPassword({
-        initialCredentials,
-        currentCredentials,
-      });
+    const updatedWalletRecord = await this.wallet.restoreMnemonicWithInitialPassword({
+      initialCredentials,
+      currentCredentials,
+    });
     /**
      * We don't use WalletStore.save here to make Storage change strictly before the next operation.
      * The save function for the PersistentStore is not blocking.
@@ -434,11 +420,7 @@ export class Account extends EventEmitter<AccountEvents> {
     });
 
     await this.wallet.reloadWalletStore();
-    await this.setUser(
-      user,
-      { password: currentPassword },
-      { isNewUser: false }
-    );
+    await this.setUser(user, { password: currentPassword }, { isNewUser: false });
 
     /**
      * Remove backup in the end after successful password change
@@ -454,9 +436,7 @@ Object.assign(globalThis, {
   Account,
 });
 
-export type PublicMethodParams<T = undefined> = T extends undefined
-  ? never
-  : { params: T };
+export type PublicMethodParams<T = undefined> = T extends undefined ? never : { params: T };
 
 export class AccountPublicRPC {
   private account: Account;
@@ -487,10 +467,7 @@ export class AccountPublicRPC {
     if (!currentUser || currentUser.id !== user.id) {
       throw new Error(`User ${user.id} not found`);
     }
-    const canAuthorize = await this.account.verifyPassword(
-      currentUser,
-      password
-    );
+    const canAuthorize = await this.account.verifyPassword(currentUser, password);
     if (canAuthorize) {
       await this.account.login(currentUser, password);
       return user;
@@ -555,17 +532,12 @@ export class AccountPublicRPC {
     return { id, salt };
   }
 
-  async getPassword({
-    params: { encryptionKey },
-  }: PublicMethodParams<{ encryptionKey: string }>) {
+  async getPassword({ params: { encryptionKey } }: PublicMethodParams<{ encryptionKey: string }>) {
     const data = await this.account.getEncryptedPassword();
     if (!data) {
       throw new Error('No passkey found');
     }
-    const decrypted = await decrypt<{ password: string }>(
-      encryptionKey,
-      data.encryptedPassword
-    );
+    const decrypted = await decrypt<{ password: string }>(encryptionKey, data.encryptedPassword);
     return decrypted.password;
   }
 
@@ -589,10 +561,7 @@ export class AccountPublicRPC {
     if (!currentUser || currentUser.id !== user.id) {
       throw new Error(`User ${user.id} not found`);
     }
-    const passwordIsCorrect = await this.account.verifyPassword(
-      currentUser,
-      oldPassword
-    );
+    const passwordIsCorrect = await this.account.verifyPassword(currentUser, oldPassword);
     if (!passwordIsCorrect) {
       throw new Error('The current password is incorrect.');
     }
@@ -617,10 +586,7 @@ export class AccountPublicRPC {
     if (!currentUser || currentUser.id !== user.id) {
       throw new Error(`User ${user.id} not found`);
     }
-    const passwordIsCorrect = await this.account.verifyPassword(
-      currentUser,
-      currentPassword
-    );
+    const passwordIsCorrect = await this.account.verifyPassword(currentUser, currentPassword);
     if (!passwordIsCorrect) {
       throw new Error('The current password is incorrect.');
     }
@@ -628,7 +594,7 @@ export class AccountPublicRPC {
     return this.account.restoreMnemonicWithInitialPassword(
       currentUser,
       initialPassword,
-      currentPassword
+      currentPassword,
     );
   }
 }

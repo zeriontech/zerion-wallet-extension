@@ -18,12 +18,12 @@ export interface Response {
 export function assetListFungibles(
   this: ZerionApiContext,
   params: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const endpoint = 'asset/list-fungibles/v1';
   const kyOptions = this.getKyOptions();
   return ZerionHttpClient.post<Response>(
     { endpoint, body: JSON.stringify(params), ...options },
-    kyOptions
+    kyOptions,
   );
 }

@@ -44,24 +44,17 @@ const FORMATTING_OPTIONS: Intl.NumberFormatOptions = {
 
 const numberFormatter = Intl.NumberFormat('en', FORMATTING_OPTIONS);
 
-export function AssetGlobalStats({
-  assetFullInfo,
-}: {
-  assetFullInfo: AssetFullInfo;
-}) {
+export function AssetGlobalStats({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
   const { currency } = useCurrency();
 
-  const createdRecently =
-    Date.now() - new Date(assetFullInfo.extra.createdAt).getTime() < ONE_DAY;
+  const createdRecently = Date.now() - new Date(assetFullInfo.extra.createdAt).getTime() < ONE_DAY;
   const ageInHours = Math.floor(
-    (Date.now() - new Date(assetFullInfo.extra.createdAt).getTime()) / ONE_HOUR
+    (Date.now() - new Date(assetFullInfo.extra.createdAt).getTime()) / ONE_HOUR,
   );
 
   return (
     <HStack gap={8} className={styles.statsContainer}>
-      {createdRecently ? (
-        <AssetStatsChip title="AGE" value={`${ageInHours}h`} />
-      ) : null}
+      {createdRecently ? <AssetStatsChip title="AGE" value={`${ageInHours}h`} /> : null}
       {assetFullInfo.fungible.meta.marketCap != null ? (
         <AssetStatsChip
           title="MCAP"
@@ -70,7 +63,7 @@ export function AssetGlobalStats({
             assetFullInfo.fungible.meta.marketCap,
             'en',
             currency,
-            FORMATTING_OPTIONS
+            FORMATTING_OPTIONS,
           )}
         />
       ) : null}
@@ -82,7 +75,7 @@ export function AssetGlobalStats({
             assetFullInfo.extra.volume24h,
             'en',
             currency,
-            FORMATTING_OPTIONS
+            FORMATTING_OPTIONS,
           )}
         />
       ) : null}
@@ -108,7 +101,7 @@ export function AssetGlobalStats({
             assetFullInfo.extra.liquidity,
             'en',
             currency,
-            FORMATTING_OPTIONS
+            FORMATTING_OPTIONS,
           )}
         />
       ) : null}
@@ -120,7 +113,7 @@ export function AssetGlobalStats({
             assetFullInfo.fungible.meta.fullyDilutedValuation,
             'en',
             currency,
-            FORMATTING_OPTIONS
+            FORMATTING_OPTIONS,
           )}
         />
       ) : null}

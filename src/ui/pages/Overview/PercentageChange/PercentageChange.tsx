@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  formatCurrencyToParts,
-  formatCurrencyValue,
-} from 'src/shared/units/formatCurrencyValue';
+import { formatCurrencyToParts, formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { NBSP } from 'src/ui/shared/typography';
@@ -29,11 +26,7 @@ export function PercentageChange({ walletPortfolio, currency }: Props) {
         <UIText kind="headline/h1">
           {walletPortfolio?.totalValue != null ? (
             <NeutralDecimals
-              parts={formatCurrencyToParts(
-                walletPortfolio.totalValue,
-                'en',
-                currency
-              )}
+              parts={formatCurrencyToParts(walletPortfolio.totalValue, 'en', currency)}
             />
           ) : (
             NBSP
@@ -41,22 +34,11 @@ export function PercentageChange({ walletPortfolio, currency }: Props) {
         </UIText>
       </BlurrableBalance>
       {relativeValue != null ? (
-        <UIText
-          kind="small/regular"
-          color={color}
-          style={{ display: 'flex', gap: 4 }}
-        >
-          <span>{`${isPositive ? '+' : ''}${formatPercent(
-            relativeValue,
-            'en'
-          )}%`}</span>
+        <UIText kind="small/regular" color={color} style={{ display: 'flex', gap: 4 }}>
+          <span>{`${isPositive ? '+' : ''}${formatPercent(relativeValue, 'en')}%`}</span>
           {absoluteValue != null ? (
             <BlurrableBalance kind="small/regular" color={color}>
-              {`(${formatCurrencyValue(
-                Math.abs(absoluteValue),
-                'en',
-                currency
-              )})`}
+              {`(${formatCurrencyValue(Math.abs(absoluteValue), 'en', currency)})`}
             </BlurrableBalance>
           ) : null}
           <span>Today</span>

@@ -53,10 +53,7 @@ export function DepositHeaderControls({
           </Button>
         ) : null}
         {address ? (
-          <WalletSelectButton
-            address={address}
-            clearSearchParams={CLEARED_ON_WALLET_CHANGE}
-          />
+          <WalletSelectButton address={address} clearSearchParams={CLEARED_ON_WALLET_CHANGE} />
         ) : null}
       </HStack>
     </div>

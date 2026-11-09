@@ -14,10 +14,7 @@ import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.mo
 import { invariant } from 'src/shared/invariant';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
-import {
-  usePendingRecoveryPhrase,
-  useRecoveryPhrase,
-} from './useRecoveryPhrase';
+import { usePendingRecoveryPhrase, useRecoveryPhrase } from './useRecoveryPhrase';
 import { clipboardWarning } from './clipboardWarning';
 
 const INPUT_NUMBER = 12;
@@ -57,9 +54,7 @@ export function VerifyBackup({
     isLoading,
     isError,
     error,
-  } = isPendingWallet
-    ? pendingRecoveryPhraseQuery
-    : existingRecoveryPhraseQuery;
+  } = isPendingWallet ? pendingRecoveryPhraseQuery : existingRecoveryPhraseQuery;
 
   useEffect(() => {
     if (isError && isSessionExpiredError(error)) {
@@ -79,7 +74,7 @@ export function VerifyBackup({
         setValidationError(true);
       }
     },
-    [recoveryPhraseMasked, onSuccess]
+    [recoveryPhraseMasked, onSuccess],
   );
 
   const errorStyle = useMemo<React.CSSProperties>(
@@ -93,7 +88,7 @@ export function VerifyBackup({
             textAlign: 'center',
           }
         : { position: 'absolute', bottom: -24 },
-    [isNarrowView]
+    [isNarrowView],
   );
 
   const goBack = useGoBack();
@@ -154,25 +149,17 @@ export function VerifyBackup({
                   </div>
                 ))}
               </div>
-              <Button
-                kind="primary"
-                style={{ width: '100%' }}
-                disabled={isLoading}
-              >
+              <Button kind="primary" style={{ width: '100%' }} disabled={isLoading}>
                 Verify
               </Button>
               {validationError ? (
-                <UIText
-                  kind="caption/regular"
-                  color="var(--negative-500)"
-                  style={errorStyle}
-                >
+                <UIText kind="caption/regular" color="var(--negative-500)" style={errorStyle}>
                   Incorrect seed phrase
                 </UIText>
               ) : isTechnicalHint ? (
                 <UIText kind="caption/regular" color="var(--notice-500)">
-                  Your clipboard was cleared after copying the recovery phrase.
-                  If saved, you can now paste it here.
+                  Your clipboard was cleared after copying the recovery phrase. If saved, you can
+                  now paste it here.
                 </UIText>
               ) : null}
             </VStack>

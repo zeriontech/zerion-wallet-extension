@@ -78,8 +78,7 @@ function NetworkDetail({
             </span>
           ) : created && created === updated ? (
             <span key={0} title={createdFormatted}>
-              {isCustomNetworkId(network.id) ? 'Created' : 'Saved'}{' '}
-              {createdFormatted}
+              {isCustomNetworkId(network.id) ? 'Created' : 'Saved'} {createdFormatted}
             </span>
           ) : null,
           updated && updated !== created ? (
@@ -90,7 +89,7 @@ function NetworkDetail({
         ],
         (key) => (
           <span key={key}> · </span>
-        )
+        ),
       )}
     </UIText>
   );
@@ -113,10 +112,7 @@ export function NetworkList({
   getItemIconEnd?: (item: NetworkInfo) => React.ReactNode;
   previousListLength?: number;
 }) {
-  const metadataRecord = useMemo(
-    () => networks.getNetworksMetaData(),
-    [networks]
-  );
+  const metadataRecord = useMemo(() => networks.getNetworksMetaData(), [networks]);
 
   const items = [
     title
@@ -157,13 +153,7 @@ export function NetworkList({
             style={{ paddingBlock: 4 }}
           >
             <Media
-              image={
-                <NetworkIcon
-                  size={24}
-                  src={network.iconUrl}
-                  name={network.name}
-                />
-              }
+              image={<NetworkIcon size={24} src={network.iconUrl} name={network.name} />}
               text={
                 <UIText
                   kind="body/accent"
@@ -173,12 +163,7 @@ export function NetworkList({
                 </UIText>
               }
               vGap={0}
-              detailText={
-                <NetworkDetail
-                  network={network}
-                  metadataRecord={metadataRecord}
-                />
-              }
+              detailText={<NetworkDetail network={network} metadataRecord={metadataRecord} />}
             />
 
             <HStack gap={8} alignItems="center">

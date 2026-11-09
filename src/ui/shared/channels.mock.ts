@@ -101,12 +101,11 @@ class WalletPortMock {
       return this[method](...args);
     }
     if (method === 'uiGetCurrentWallet') {
-      const result: ReturnType<Wallet['uiGetCurrentWallet']> =
-        Promise.resolve(testWallet);
+      const result: ReturnType<Wallet['uiGetCurrentWallet']> = Promise.resolve(testWallet);
       return result;
     } else if (method === 'uiGetWalletGroups') {
       const result: ReturnType<Wallet['uiGetWalletGroups']> = Promise.resolve(
-        mockRecord.walletManager.groups
+        mockRecord.walletManager.groups,
       );
       return result;
     } else if (method === 'getNoBackupCount') {
@@ -118,9 +117,7 @@ class WalletPortMock {
         address: string;
         origin: string;
       };
-      return mockedPermissions[origin]?.addresses.includes(
-        normalizeAddress(address)
-      );
+      return mockedPermissions[origin]?.addresses.includes(normalizeAddress(address));
     } else if (method === 'requestChainForOrigin') {
       const { origin } = args[0] as { origin: string };
       return mockedPermissions[origin]?.chain || 'ethereum';
@@ -132,7 +129,7 @@ class WalletPortMock {
       const networks = await networksStore.load();
       this.state.chainId = networks.getChainId(
         // @ts-ignore
-        new Chain(args[0].chain as string)
+        new Chain(args[0].chain as string),
       );
       return;
     } else if (method === 'getOtherNetworkData') {

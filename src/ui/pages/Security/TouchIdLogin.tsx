@@ -67,21 +67,13 @@ export function TouchIdLogin({
         title={`Unlock with ${passkeyTitle}`}
       >
         {loginMutation.isLoading ? (
-          <CircleSpinner
-            size="40px"
-            color="var(--primary)"
-            trackColor="var(--primary-200)"
-          />
+          <CircleSpinner size="40px" color="var(--primary)" trackColor="var(--primary-200)" />
         ) : (
           <TouchIdIcon />
         )}
       </UnstyledButton>
       {loginMutation.isLoading ? null : (
-        <UIText
-          kind="small/regular"
-          color="var(--white)"
-          className={styles.touchIdPopup}
-        >
+        <UIText kind="small/regular" color="var(--white)" className={styles.touchIdPopup}>
           Unlock with {passkeyTitle}
         </UIText>
       )}

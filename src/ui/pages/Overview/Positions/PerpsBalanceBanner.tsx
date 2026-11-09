@@ -30,11 +30,7 @@ export function PerpsBalanceBanner({
         }}
       >
         <HyperliquidLogo style={{ width: 24, height: 24, flexShrink: 0 }} />
-        <HStack
-          gap={4}
-          alignItems="center"
-          style={{ gridTemplateColumns: '1fr auto' }}
-        >
+        <HStack gap={4} alignItems="center" style={{ gridTemplateColumns: '1fr auto' }}>
           <UIText
             kind="body/accent"
             style={{
@@ -52,9 +48,7 @@ export function PerpsBalanceBanner({
               padding: '4px 6px',
             }}
           >
-            <UIText kind="caption/accent">
-              {formatPercent(percentage, 'en')}%
-            </UIText>
+            <UIText kind="caption/accent">{formatPercent(percentage, 'en')}%</UIText>
           </div>
         </HStack>
         <HStack gap={8} alignItems="center" justifyContent="end">
@@ -66,9 +60,7 @@ export function PerpsBalanceBanner({
               })}
             </UIText>
           </BlurrableBalance>
-          <ArrowLeftTop
-            style={{ color: 'var(--neutral-600)', width: 12, height: 12 }}
-          />
+          <ArrowLeftTop style={{ color: 'var(--neutral-600)', width: 12, height: 12 }} />
         </HStack>
       </HStack>
     </UnstyledLink>

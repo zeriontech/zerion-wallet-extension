@@ -4,15 +4,9 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletGroupedPositions } from 'src/modules/zerion-api/hooks/useWalletGroupedPositions';
 import { usePreferences } from 'src/ui/features/preferences';
-import {
-  getAppPositions,
-  getGrossPositionsValue,
-} from 'src/ui/components/Positions/helpers';
+import { getAppPositions, getGrossPositionsValue } from 'src/ui/components/Positions/helpers';
 import { DEFAULT_APP_ID } from 'src/ui/components/Positions/types';
-import {
-  DistributionChart,
-  type DistributionItem,
-} from 'src/ui/components/DistributionChart';
+import { DistributionChart, type DistributionItem } from 'src/ui/components/DistributionChart';
 import { PositionsListDialog } from './PositionsListDialog';
 import { DistributionItemTitle } from './DistributionItemTitle';
 
@@ -32,7 +26,7 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
   const { data, isLoading } = useWalletGroupedPositions(
     { addresses: [address], currency, groupBy: ['by-app'] },
     { source },
-    { enabled: Boolean(address) }
+    { enabled: Boolean(address) },
   );
 
   const items = useMemo<DistributionItem[]>(
@@ -45,7 +39,7 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
           value: getGrossPositionsValue(getAppPositions(app)),
           iconUrl: app.app.iconUrl ?? null,
         })),
-    [data]
+    [data],
   );
 
   const [selected, setSelected] = useState<DistributionItem | null>(null);
@@ -60,9 +54,7 @@ export function ProtocolDistributionChart({ address }: { address: string }) {
         isLoading={isLoading}
         onSelect={setSelected}
         view={preferences?.protocolDistributionChartView ?? 'grid'}
-        onViewChange={(view) =>
-          setPreferences({ protocolDistributionChartView: view })
-        }
+        onViewChange={(view) => setPreferences({ protocolDistributionChartView: view })}
       />
       <PositionsListDialog
         open={selected != null}

@@ -41,10 +41,7 @@ export function PerpsMarketsList({
   // render first, markets are supplementary (see CONTEXT.md / ADR-0002).
   const markets = usePerpMarkets(dexList, { enabled: !positionsLoading });
 
-  const allPerps = useMemo(
-    () => selectPerps(markets.data, { sorting }),
-    [markets.data, sorting]
-  );
+  const allPerps = useMemo(() => selectPerps(markets.data, { sorting }), [markets.data, sorting]);
   const perps = useMemo(() => allPerps.slice(0, visible), [allPerps, visible]);
   const hasMore = visible < allPerps.length;
 
@@ -108,11 +105,7 @@ export function PerpsMarketsList({
               paddingTop: 8,
             }}
           >
-            <Button
-              kind="regular"
-              size={40}
-              onClick={() => setVisible((v) => v + PAGE_SIZE)}
-            >
+            <Button kind="regular" size={40} onClick={() => setVisible((v) => v + PAGE_SIZE)}>
               Show more
             </Button>
           </div>

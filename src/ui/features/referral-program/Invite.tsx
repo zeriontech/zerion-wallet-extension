@@ -84,16 +84,8 @@ function ReferralCode({ value }: { value: string }) {
     <Frame style={{ padding: 24 }}>
       <VStack gap={8} style={{ justifyItems: 'center' }}>
         <UIText kind="body/accent">Referral Code</UIText>
-        <HStack
-          gap={8}
-          alignItems="center"
-          style={{ gridAutoColumns: '1fr auto' }}
-        >
-          <UIText
-            kind="headline/h1"
-            className={styles.referralCode}
-            title={value}
-          >
+        <HStack gap={8} alignItems="center" style={{ gridAutoColumns: '1fr auto' }}>
+          <UIText kind="headline/h1" className={styles.referralCode} title={value}>
             {value}
           </UIText>
           <CopyButton
@@ -103,8 +95,7 @@ function ReferralCode({ value }: { value: string }) {
             btnStyle={{
               padding: 0,
               display: 'block',
-              ['--button-text' as string]:
-                'var(--copy-button-text-color, var(--neutral-500))',
+              ['--button-text' as string]: 'var(--copy-button-text-color, var(--neutral-500))',
             }}
           />
         </HStack>
@@ -151,11 +142,7 @@ function StatsItem({
   return (
     <Frame style={{ padding: 16 }}>
       <VStack gap={8}>
-        <HStack
-          gap={16}
-          justifyContent="space-between"
-          style={{ gridAutoColumns: '1fr auto' }}
-        >
+        <HStack gap={16} justifyContent="space-between" style={{ gridAutoColumns: '1fr auto' }}>
           {value}
           {icon}
         </HStack>
@@ -252,22 +239,13 @@ function ChangeWalletButton({
             <WalletDisplayName wallet={currentWallet} />
           </UIText>
         </HStack>
-        <ArrowDownIcon
-          className="content-hover"
-          style={{ width: 24, height: 24 }}
-        />
+        <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
       </HStack>
     </Button>
   );
 }
 
-function Heading({
-  title,
-  subtitle,
-}: {
-  title: React.ReactNode;
-  subtitle: React.ReactNode;
-}) {
+function Heading({ title, subtitle }: { title: React.ReactNode; subtitle: React.ReactNode }) {
   const navigate = useNavigate();
   return (
     <div className={styles.heading}>
@@ -313,17 +291,12 @@ export function Invite() {
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
   const [selectedWallet, setSelectedWallet] = useState(currentWallet);
-  const [pendingReferrer, setPendingReferrer] = useState<ReferrerData | null>(
-    null
-  );
+  const [pendingReferrer, setPendingReferrer] = useState<ReferrerData | null>(null);
 
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
   const ownedWalletGroups = useMemo(
-    () =>
-      (walletGroups ?? []).filter(
-        (group) => !isReadonlyContainer(group.walletContainer)
-      ),
-    [walletGroups]
+    () => (walletGroups ?? []).filter((group) => !isReadonlyContainer(group.walletContainer)),
+    [walletGroups],
   );
   const { data: walletsMeta } = useWalletsMetaByChunks({
     addresses: selectedWallet?.address ? [selectedWallet.address] : [],
@@ -378,9 +351,7 @@ export function Invite() {
             {myReferralCode ? <ReferralCode value={myReferralCode} /> : null}
             {myReferralLink ? (
               <ActionButtons
-                onShowInviteLink={() =>
-                  referralLinkDialogRef.current?.showModal()
-                }
+                onShowInviteLink={() => referralLinkDialogRef.current?.showModal()}
                 onShowQRCode={() => qrCodeDialogRef.current?.showModal()}
               />
             ) : null}
@@ -426,10 +397,7 @@ export function Invite() {
                 />
               </UIText>
             ) : (
-              <Button
-                kind="ghost"
-                onClick={() => enterReferralCodeDialogRef.current?.showModal()}
-              >
+              <Button kind="ghost" onClick={() => enterReferralCodeDialogRef.current?.showModal()}>
                 Enter Referral Code
               </Button>
             )}
@@ -453,18 +421,14 @@ export function Invite() {
           <BottomSheetDialog
             ref={referralLinkDialogRef}
             height="fit-content"
-            renderWhenOpen={() => (
-              <ReferralLinkDialog myReferralLink={myReferralLink} />
-            )}
+            renderWhenOpen={() => <ReferralLinkDialog myReferralLink={myReferralLink} />}
           />
         ) : null}
         {myReferralLink ? (
           <BottomSheetDialog
             ref={qrCodeDialogRef}
             height="fit-content"
-            renderWhenOpen={() => (
-              <QRCodeDialog myReferralLink={myReferralLink} />
-            )}
+            renderWhenOpen={() => <QRCodeDialog myReferralLink={myReferralLink} />}
           />
         ) : null}
         <BottomSheetDialog

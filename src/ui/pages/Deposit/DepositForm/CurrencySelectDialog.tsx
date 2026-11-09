@@ -25,13 +25,7 @@ export function CurrencySelectDialog({
   onSelect: (code: string) => void;
 }) {
   return (
-    <Dialog2
-      open={open}
-      onClose={onClose}
-      title="Pay with"
-      size="content"
-      autoFocusInput={false}
-    >
+    <Dialog2 open={open} onClose={onClose} title="Pay with" size="content" autoFocusInput={false}>
       <VStack gap={0} style={{ paddingBottom: 8 }}>
         {FIAT_CURRENCIES.map((config) => (
           <UnstyledButton
@@ -49,11 +43,7 @@ export function CurrencySelectDialog({
               style={{ width: '100%', gridTemplateColumns: '1fr auto' }}
             >
               <HStack gap={8} alignItems="center">
-                <UIText
-                  kind="body/accent"
-                  color="var(--neutral-500)"
-                  style={{ minWidth: 24 }}
-                >
+                <UIText kind="body/accent" color="var(--neutral-500)" style={{ minWidth: 24 }}>
                   {config.symbol}
                 </UIText>
                 <UIText kind="body/accent">{config.code.toUpperCase()}</UIText>
@@ -62,9 +52,7 @@ export function CurrencySelectDialog({
                 </UIText>
               </HStack>
               {config.code === value ? (
-                <CheckIcon
-                  style={{ width: 20, height: 20, color: 'var(--primary)' }}
-                />
+                <CheckIcon style={{ width: 20, height: 20, color: 'var(--primary)' }} />
               ) : null}
             </HStack>
           </UnstyledButton>

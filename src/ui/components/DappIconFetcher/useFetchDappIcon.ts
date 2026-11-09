@@ -1,9 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-function extractFaviconUrl(
-  dappUrl: string,
-  dappHtml: string
-): string | null | undefined {
+function extractFaviconUrl(dappUrl: string, dappHtml: string): string | null | undefined {
   const parser = new DOMParser();
   const doc = parser.parseFromString(dappHtml, 'text/html');
   const head = doc.head;
@@ -16,8 +13,7 @@ function extractFaviconUrl(
   const icon144 = head.querySelector("link[sizes='144x144']");
   const icon = head.querySelector("link[rel*='icon']");
 
-  const iconElement =
-    icon512 ?? icon192 ?? icon180 ?? icon167 ?? icon152 ?? icon144 ?? icon;
+  const iconElement = icon512 ?? icon192 ?? icon180 ?? icon167 ?? icon152 ?? icon144 ?? icon;
   const href = iconElement?.getAttribute('href');
   return href ? new URL(href, dappUrl).toString() : null;
 }

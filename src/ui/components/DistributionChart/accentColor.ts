@@ -42,10 +42,7 @@ const accentCache = new Map<string, Rgb | null>();
  * average. Returns `null` when nothing usable is found (e.g. a greyscale logo).
  */
 function pickDominant(data: Uint8ClampedArray): Rgb | null {
-  const buckets = new Map<
-    number,
-    { r: number; g: number; b: number; n: number }
-  >();
+  const buckets = new Map<number, { r: number; g: number; b: number; n: number }>();
   for (let i = 0; i < data.length; i += 4) {
     const alpha = data[i + 3];
     if (alpha < 128) {
@@ -82,11 +79,7 @@ function pickDominant(data: Uint8ClampedArray): Rgb | null {
   if (!best) {
     return null;
   }
-  return [
-    Math.round(best.r / best.n),
-    Math.round(best.g / best.n),
-    Math.round(best.b / best.n),
-  ];
+  return [Math.round(best.r / best.n), Math.round(best.g / best.n), Math.round(best.b / best.n)];
 }
 
 /**
@@ -124,9 +117,7 @@ function extractDominantColor(url: string): Promise<Rgb | null> {
  * hardcoded `accent` wins; otherwise the icon is decoded once and cached.
  * Extraction is async, so tiles paint neutral first and colorize on resolve.
  */
-export function useAccentColors(
-  items: DistributionItem[]
-): Record<string, Rgb | null> {
+export function useAccentColors(items: DistributionItem[]): Record<string, Rgb | null> {
   const [version, setVersion] = useState(0);
 
   const signature = items
@@ -136,11 +127,7 @@ export function useAccentColors(
   useEffect(() => {
     let cancelled = false;
     const pending = items.filter(
-      (item) =>
-        !item.accent &&
-        !item.isOthers &&
-        item.iconUrl &&
-        !accentCache.has(item.iconUrl)
+      (item) => !item.accent && !item.isOthers && item.iconUrl && !accentCache.has(item.iconUrl),
     );
     if (pending.length === 0) {
       return;
@@ -149,7 +136,7 @@ export function useAccentColors(
       pending.map(async (item) => {
         const color = await extractDominantColor(item.iconUrl as string);
         accentCache.set(item.iconUrl as string, color);
-      })
+      }),
     ).then(() => {
       if (!cancelled) {
         // Bump version so the memo below recomputes with the freshly cached

@@ -1,12 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core';
-import {
-  DndContext,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import {
   SortableContext,
   arrayMove,
@@ -34,14 +28,9 @@ function SortableRow({
   onRemove: () => void;
 }) {
   const id = normalizeAddress(entry.address);
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -121,44 +110,33 @@ export function AddressBookListEdit({
       sameLength &&
       localOrder.every(
         (item, i) =>
-          normalizeAddress(item.address) ===
-            normalizeAddress(entries[i].address) &&
-          item.name === entries[i].name
+          normalizeAddress(item.address) === normalizeAddress(entries[i].address) &&
+          item.name === entries[i].name,
       );
     if (!sameItems) {
       setLocalOrder(entries);
     }
   }, [entries, localOrder]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const handleDragEnd = useCallback(
     ({ active, over }: DragEndEvent) => {
       if (!over || active.id === over.id) return;
-      const oldIndex = localOrder.findIndex(
-        (item) => normalizeAddress(item.address) === active.id
-      );
-      const newIndex = localOrder.findIndex(
-        (item) => normalizeAddress(item.address) === over.id
-      );
+      const oldIndex = localOrder.findIndex((item) => normalizeAddress(item.address) === active.id);
+      const newIndex = localOrder.findIndex((item) => normalizeAddress(item.address) === over.id);
       if (oldIndex < 0 || newIndex < 0) return;
       const next = arrayMove(localOrder, oldIndex, newIndex);
       setLocalOrder(next);
       onReorder(next);
     },
-    [localOrder, onReorder]
+    [localOrder, onReorder],
   );
 
   const ids = localOrder.map((item) => normalizeAddress(item.address));
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <VStack gap={0}>
           {localOrder.map((entry) => (

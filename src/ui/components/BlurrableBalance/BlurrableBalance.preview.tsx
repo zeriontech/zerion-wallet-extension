@@ -167,12 +167,10 @@ registerPreviewPermanent({
         <UIText kind="headline/h2">Usage Instructions</UIText>
         <VStack gap={8}>
           <UIText kind="body/regular">
-            Toggle the "Hide Balances" setting in Settings → Privacy to see the
-            blur effect.
+            Toggle the "Hide Balances" setting in Settings → Privacy to see the blur effect.
           </UIText>
           <UIText kind="body/regular">
-            Or use keyboard shortcuts: Shift+H, Cmd+H (Mac), or Ctrl+H
-            (Windows/Linux)
+            Or use keyboard shortcuts: Shift+H, Cmd+H (Mac), or Ctrl+H (Windows/Linux)
           </UIText>
         </VStack>
       </VStack>

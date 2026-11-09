@@ -41,9 +41,7 @@ export function FormFieldset({
           target.parentElement === container ||
           target.parentElement?.parentElement === container
         ) {
-          const input = event.currentTarget.querySelector(
-            `#${CSS.escape(inputId)}`
-          );
+          const input = event.currentTarget.querySelector(`#${CSS.escape(inputId)}`);
           if (input && input instanceof HTMLInputElement) {
             input.focus();
           }
@@ -51,11 +49,7 @@ export function FormFieldset({
       }}
     >
       <VStack gap={6} style={{ padding: 0, width: '100%' }}>
-        <HStack
-          gap={16}
-          justifyContent="space-between"
-          style={{ width: '100%' }}
-        >
+        <HStack gap={16} justifyContent="space-between" style={{ width: '100%' }}>
           <UIText kind="small/regular" as="label" htmlFor={inputId}>
             {startTitle}
           </UIText>
@@ -78,11 +72,7 @@ export function FormFieldset({
           </UIText>
         </HStack>
         {hasDescription ? (
-          <HStack
-            gap={16}
-            justifyContent="space-between"
-            style={{ width: '100%' }}
-          >
+          <HStack gap={16} justifyContent="space-between" style={{ width: '100%' }}>
             <UIText kind="small/regular" color="var(--neutral-600)">
               {startDescription}
             </UIText>

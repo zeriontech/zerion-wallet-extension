@@ -36,7 +36,7 @@ export type SignatureInterpretResponse = Response;
 export async function walletSimulateSignature(
   this: ZerionApiContext,
   params: Payload,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const provider = await this.getAddressProviderHeader(params.address);
   const kyOptions = this.getKyOptions();
@@ -48,6 +48,6 @@ export async function walletSimulateSignature(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

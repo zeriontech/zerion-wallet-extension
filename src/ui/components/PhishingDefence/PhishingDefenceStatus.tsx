@@ -37,11 +37,7 @@ export function PhishingDefenceStatus({
           title="We're verifying this DApp against known malicious lists."
         >
           <CircleSpinner color="var(--neutral-500)" />
-          <UIText
-            kind="small/accent"
-            color="var(--neutral-600)"
-            style={{ userSelect: 'none' }}
-          >
+          <UIText kind="small/accent" color="var(--neutral-600)" style={{ userSelect: 'none' }}>
             Checking DApp...
           </UIText>
           <QuestionHintIcon style={{ color: 'var(--neutral-500)' }} />
@@ -68,8 +64,7 @@ export function PhishingDefenceStatus({
             </UIText>
           </HStack>
           <UIText kind="small/regular" color="var(--notice-600)">
-            Phishing defense check is temporarily unavailable. Proceed with
-            caution.
+            Phishing defense check is temporarily unavailable. Proceed with caution.
           </UIText>
         </VStack>
         <Spacer height={16} />
@@ -92,11 +87,7 @@ export function PhishingDefenceStatus({
             <ValidationErrorIcon style={{ color: 'var(--negative-500)' }} />
             <UIText kind="body/accent" color="var(--negative-500)">
               Malicious{' '}
-              {type === 'transaction'
-                ? 'Transaction'
-                : type === 'dapp'
-                  ? 'Dapp'
-                  : 'Initiator'}
+              {type === 'transaction' ? 'Transaction' : type === 'dapp' ? 'Dapp' : 'Initiator'}
             </UIText>
           </HStack>
           <UIText kind="small/regular" color="var(--negative-500)">

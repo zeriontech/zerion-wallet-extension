@@ -56,9 +56,7 @@ function makeGasPrices(eip1559: {
 describe('getSwapOriginalEffectiveGasPrice', () => {
   test('returns the swap tx effective price', () => {
     // min(maxFee 200, baseFee 90 + priority 10) = 100
-    const quote = makeQuote(
-      makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) })
-    );
+    const quote = makeQuote(makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) }));
     expect(getSwapOriginalEffectiveGasPrice(quote, 90)).toBe(100);
   });
 
@@ -89,16 +87,12 @@ describe('getPresetEffectiveGasPrice', () => {
 describe('getNetworkFeeRatio', () => {
   test('ratio of new effective to swap original', () => {
     // original 100, new 200 → 2
-    const quote = makeQuote(
-      makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) })
-    );
+    const quote = makeQuote(makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) }));
     expect(getNetworkFeeRatio(quote, 200, 90)).toBe(2);
   });
 
   test('falls back to 1 when prices are missing', () => {
-    const quote = makeQuote(
-      makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) })
-    );
+    const quote = makeQuote(makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) }));
     expect(getNetworkFeeRatio(quote, null, 90)).toBe(1);
     expect(getNetworkFeeRatio(makeQuote(null), 200, 90)).toBe(1);
   });
@@ -107,17 +101,13 @@ describe('getNetworkFeeRatio', () => {
 describe('getCustomFeeRatio', () => {
   test('combines price ratio and gas-limit ratio', () => {
     // original effective 100, gas 256.
-    const quote = makeQuote(
-      makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) })
-    );
+    const quote = makeQuote(makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) }));
     // new effective 200 (2x), gas limit 512 (2x) → 4x total
     expect(getCustomFeeRatio(quote, 200, 512, 90)).toBe(4);
   });
 
   test('gas-limit ratio defaults to 1 when gasLimit is null', () => {
-    const quote = makeQuote(
-      makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) })
-    );
+    const quote = makeQuote(makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) }));
     expect(getCustomFeeRatio(quote, 200, null, 90)).toBe(2);
   });
 });

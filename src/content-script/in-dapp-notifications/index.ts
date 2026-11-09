@@ -72,19 +72,14 @@ const notifications = {
 
 async function createNotification(notification: InDappNotification) {
   if (notification.notificationEvent === 'chainChanged') {
-    return await notifications.chainChanged(
-      notification.networkName,
-      notification.networkIcon
-    );
+    return await notifications.chainChanged(notification.networkName, notification.networkIcon);
   } else {
     return notifications.switchChainError(notification.chainId);
   }
 }
 
 function clearNotifications() {
-  document
-    .querySelectorAll(`.${styles.notification}`)
-    .forEach((el) => el.remove());
+  document.querySelectorAll(`.${styles.notification}`).forEach((el) => el.remove());
 }
 
 function removeNotification(el: HTMLElement) {
@@ -99,8 +94,7 @@ async function showNotification(notification: InDappNotification) {
   const el = await createNotification(notification);
   document.body.appendChild(el);
 
-  const closeTimeout =
-    notification.notificationEvent === 'switchChainError' ? 3500 : 2400;
+  const closeTimeout = notification.notificationEvent === 'switchChainError' ? 3500 : 2400;
   setTimeout(() => {
     el.classList.add(styles.show);
   }, 100);

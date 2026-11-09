@@ -29,9 +29,7 @@ function fungible(id: string, implementationAddress: string | null = id) {
 
 const listFungibles = vi.mocked(ZerionAPI.assetListFungibles);
 
-function mockListFungibles(
-  impl: (fungibleIds: string[]) => Promise<{ data: Fungible[] }>
-) {
+function mockListFungibles(impl: (fungibleIds: string[]) => Promise<{ data: Fungible[] }>) {
   listFungibles.mockImplementation(((params: { fungibleIds?: string[] }) =>
     impl(params.fungibleIds ?? [])) as unknown as typeof listFungibles);
   return listFungibles;
@@ -52,14 +50,14 @@ test('lookups started in the same tick share one request', async () => {
     Array.from({ length: 600 }, (_, index) =>
       fetchAssetFromAPI(
         { isNative: false, address: ids[index % ids.length], currency: 'usd' },
-        'mainnet'
-      )
-    )
+        'mainnet',
+      ),
+    ),
   );
   expect(spy).toHaveBeenCalledTimes(1);
   expect(spy.mock.calls[0][0].fungibleIds).toEqual(ids);
   expect(results.map((asset) => asset?.id)).toEqual(
-    Array.from({ length: 600 }, (_, index) => ids[index % ids.length])
+    Array.from({ length: 600 }, (_, index) => ids[index % ids.length]),
   );
 });
 
@@ -69,15 +67,10 @@ test('many unique ids are split into bounded requests', async () => {
   }));
   await Promise.all(
     Array.from({ length: 120 }, (_, index) =>
-      fetchAssetFromAPI(
-        { isNative: false, address: token(index), currency: 'usd' },
-        'mainnet'
-      )
-    )
+      fetchAssetFromAPI({ isNative: false, address: token(index), currency: 'usd' }, 'mainnet'),
+    ),
   );
-  expect(spy.mock.calls.map(([params]) => params.fungibleIds?.length)).toEqual([
-    50, 50, 20,
-  ]);
+  expect(spy.mock.calls.map(([params]) => params.fungibleIds?.length)).toEqual([50, 50, 20]);
 });
 
 test('an implementation address resolves to its canonical fungible', async () => {
@@ -90,7 +83,7 @@ test('an implementation address resolves to its canonical fungible', async () =>
       address: `0x${token(7).slice(2).toUpperCase()}`,
       currency: 'usd',
     },
-    'mainnet'
+    'mainnet',
   );
   expect(asset?.id).toBe('canonical-id');
 });
@@ -98,14 +91,8 @@ test('an implementation address resolves to its canonical fungible', async () =>
 test('a missing fungible resolves to null without failing the others', async () => {
   mockListFungibles(async () => ({ data: [fungible(token(1))] }));
   const [found, missing] = await Promise.all([
-    fetchAssetFromAPI(
-      { isNative: false, address: token(1), currency: 'usd' },
-      'mainnet'
-    ),
-    fetchAssetFromAPI(
-      { isNative: false, address: token(2), currency: 'usd' },
-      'mainnet'
-    ),
+    fetchAssetFromAPI({ isNative: false, address: token(1), currency: 'usd' }, 'mainnet'),
+    fetchAssetFromAPI({ isNative: false, address: token(2), currency: 'usd' }, 'mainnet'),
   ]);
   expect(found?.id).toBe(token(1));
   expect(missing).toBeNull();
@@ -120,11 +107,8 @@ test('a failed request rejects only the lookups it carried', async () => {
   });
   const results = await Promise.allSettled(
     Array.from({ length: 60 }, (_, index) =>
-      fetchAssetFromAPI(
-        { isNative: false, address: token(index), currency: 'usd' },
-        'mainnet'
-      )
-    )
+      fetchAssetFromAPI({ isNative: false, address: token(index), currency: 'usd' }, 'mainnet'),
+    ),
   );
   const statuses = results.map((result) => result.status);
   expect(statuses.slice(0, 50).every((s) => s === 'rejected')).toBe(true);

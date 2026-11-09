@@ -2,7 +2,7 @@ import lodashSet from 'lodash/set';
 
 export function naiveFormDataToObject<T>(
   formData: FormData,
-  modifier: (key: keyof T | string, value: unknown) => unknown
+  modifier: (key: keyof T | string, value: unknown) => unknown,
 ) {
   const result: Partial<{ [K in keyof T]: T[K] } & Record<string, string>> = {};
   for (const key of new Set(formData.keys())) {

@@ -4,10 +4,7 @@ import { Store } from 'store-unit';
 import { EventSource, type ErrorEvent } from 'eventsource'; // supports passing custom headers
 import { getError } from 'get-error';
 import { invariant } from 'src/shared/invariant';
-import {
-  parseQuoteErrorDetailsFromText,
-  type QuoteErrorDetails,
-} from './quoteErrorDetails';
+import { parseQuoteErrorDetailsFromText, type QuoteErrorDetails } from './quoteErrorDetails';
 import { QuotesError } from './QuotesError';
 
 interface EventSourceState<T> {
@@ -24,11 +21,7 @@ interface Options<T> {
   mergeResponse?(currentValue: T | null, nextValue: T | null): T | null;
   headers?: HeadersInit;
   eventCodeToMessage?: Record<number, string>;
-  onError?: (params: {
-    parsedError: QuotesError;
-    rawEvent: ErrorEvent;
-    requestUrl: URL;
-  }) => void;
+  onError?: (params: { parsedError: QuotesError; rawEvent: ErrorEvent; requestUrl: URL }) => void;
 }
 
 /**
@@ -64,14 +57,12 @@ const DEFAULT_EVENT_CODE_TO_MESSAGE = {
 function eventToError(
   event: ErrorEvent,
   eventCodeToMessage: Record<number, string> = DEFAULT_EVENT_CODE_TO_MESSAGE,
-  details: QuoteErrorDetails | null = null
+  details: QuoteErrorDetails | null = null,
 ) {
   return new QuotesError(
-    (event.code != null && eventCodeToMessage[event.code]) ||
-      event.message ||
-      'Server Error',
+    (event.code != null && eventCodeToMessage[event.code]) || event.message || 'Server Error',
     event.code || 500,
-    details
+    details,
   );
 }
 
@@ -82,11 +73,7 @@ function eventToError(
 function exceptionDataToError(data: string) {
   const details = parseQuoteErrorDetailsFromText(data);
   if (details) {
-    return new QuotesError(
-      details.detail ?? details.title ?? data,
-      500,
-      details
-    );
+    return new QuotesError(details.detail ?? details.title ?? data, 500, details);
   }
   return new QuotesError(data, 500, {
     title: null,
@@ -169,11 +156,7 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
   };
 
   handleError = (event: ErrorEvent) => {
-    const error = eventToError(
-      event,
-      this.options.eventCodeToMessage,
-      this.getErrorDetails()
-    );
+    const error = eventToError(event, this.options.eventCodeToMessage, this.getErrorDetails());
     this.setState((state) => ({
       ...state,
       error,
@@ -233,9 +216,7 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
     this.url = url;
     this.unlistenAndClose();
     this.options = options || {};
-    this.subscribe(
-      this.url ? createEventSource(this.url, this.options.headers) : null
-    );
+    this.subscribe(this.url ? createEventSource(this.url, this.options.headers) : null);
   }
 
   clear() {
@@ -247,11 +228,7 @@ export class EventSourceStore<T> extends Store<EventSourceState<T>> {
   };
 }
 
-export function useEventSource<T>(
-  key: string,
-  url: string | null,
-  options?: Options<T>
-) {
+export function useEventSource<T>(key: string, url: string | null, options?: Options<T>) {
   const urlRef = useRef(url);
   urlRef.current = url;
   const optionsRef = useRef(options);
@@ -280,10 +257,7 @@ export function useEventSource<T>(
     if (!store.current) {
       return;
     }
-    store.current.updateEventSource(
-      enabled ? urlRef.current : null,
-      optionsRef.current
-    );
+    store.current.updateEventSource(enabled ? urlRef.current : null, optionsRef.current);
   }, [key, enabled]);
 
   return useStore(store.current);

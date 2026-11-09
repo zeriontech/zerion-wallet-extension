@@ -40,9 +40,7 @@ export function NavigationTitle({
       return;
     }
     if (process.env.NODE_ENV !== 'production' && !stringTitle) {
-      throw new Error(
-        'NavigationTitle: either title or documentTitle is required'
-      );
+      throw new Error('NavigationTitle: either title or documentTitle is required');
     }
     document.title = getDocumentTitle(stringTitle);
   }, [ignoreDocumentTitle_DO_NOT_USE_EXCEPT_FOR_LOADING_VIEW, stringTitle]);
@@ -59,9 +57,7 @@ export function NavigationTitle({
         </Content>
       ) : null}
       <Content name="navigation-bar">{title}</Content>
-      <Content name="navigation-bar-end">
-        {elementEnd ? elementEnd : <span />}
-      </Content>
+      <Content name="navigation-bar-end">{elementEnd ? elementEnd : <span />}</Content>
     </>
   );
 }

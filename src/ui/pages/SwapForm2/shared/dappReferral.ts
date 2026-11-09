@@ -16,9 +16,7 @@ function toSafeHref(url: string | null): URL | null {
   }
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
-      ? parsed
-      : null;
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed : null;
   } catch {
     return null;
   }
@@ -31,7 +29,7 @@ function toSafeHref(url: string | null): URL | null {
  */
 export function splitDappPlaceholder(
   text: string,
-  dapp: { name: string | null; url: string | null } | undefined
+  dapp: { name: string | null; url: string | null } | undefined,
 ): DescriptionPart[] {
   const segments = text.split(DAPP_PLACEHOLDER);
   const safeUrl = toSafeHref(dapp?.url ?? null);

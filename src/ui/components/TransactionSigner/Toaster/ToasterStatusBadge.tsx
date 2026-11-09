@@ -12,18 +12,8 @@ export function ToasterStatusBadge({
 }) {
   const isSuccess = kind === 'success';
   return (
-    <div
-      className={`${s.statusBadge} ${
-        isSuccess ? s.statusBadgeSuccess : s.statusBadgeFailed
-      }`}
-    >
-      <motion.svg
-        width={20}
-        height={20}
-        viewBox="0 0 16 16"
-        fill="none"
-        aria-hidden="true"
-      >
+    <div className={`${s.statusBadge} ${isSuccess ? s.statusBadgeSuccess : s.statusBadgeFailed}`}>
+      <motion.svg width={20} height={20} viewBox="0 0 16 16" fill="none" aria-hidden="true">
         {isSuccess ? (
           <motion.path
             d="M3.5 8.5l3 3 6-6"

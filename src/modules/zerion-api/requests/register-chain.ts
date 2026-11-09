@@ -12,11 +12,7 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function registerChain(
-  this: ZerionApiContext,
-  payload: Params,
-  options?: ClientOptions
-) {
+export function registerChain(this: ZerionApiContext, payload: Params, options?: ClientOptions) {
   const { chain, addresses } = payload;
   const kyOptions = this.getKyOptions();
   return ZerionHttpClient.post<Response>(
@@ -25,6 +21,6 @@ export function registerChain(
       body: JSON.stringify({ chain, addresses }),
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

@@ -17,9 +17,7 @@ const dialogStack: string[] = [];
 
 /** ease-out-quart: fast start, gentle settle — ideal for elements entering */
 function useIsNarrow() {
-  const [isNarrow, setIsNarrow] = React.useState(
-    () => window.innerWidth < NARROW_BREAKPOINT
-  );
+  const [isNarrow, setIsNarrow] = React.useState(() => window.innerWidth < NARROW_BREAKPOINT);
   useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${NARROW_BREAKPOINT - 1}px)`);
     const handler = (e: MediaQueryListEvent) => setIsNarrow(e.matches);
@@ -95,7 +93,7 @@ export function Dialog2({
     }
     const raf = requestAnimationFrame(() => {
       const input = contentRef.current?.querySelector<HTMLElement>(
-        'input[role="combobox"], input[type="text"], input:not([type])'
+        'input[role="combobox"], input[type="text"], input:not([type])',
       );
       input?.focus();
     });
@@ -138,8 +136,7 @@ export function Dialog2({
                       }
                     : size === 'content'
                       ? {
-                          transform:
-                            'translate(-50%, calc(-50% + 24px)) scale(0.96)',
+                          transform: 'translate(-50%, calc(-50% + 24px)) scale(0.96)',
                           opacity: 0,
                           filter: 'blur(4px)',
                         }
@@ -167,8 +164,7 @@ export function Dialog2({
                       }
                     : size === 'content'
                       ? {
-                          transform:
-                            'translate(-50%, calc(-50% + 24px)) scale(0.96)',
+                          transform: 'translate(-50%, calc(-50% + 24px)) scale(0.96)',
                           opacity: 0,
                           filter: 'blur(4px)',
                         }
@@ -191,9 +187,7 @@ export function Dialog2({
                   <UIText
                     kind="body/accent"
                     className={
-                      titleAlign === 'start'
-                        ? styles.headerTitleStart
-                        : styles.headerTitle
+                      titleAlign === 'start' ? styles.headerTitleStart : styles.headerTitle
                     }
                   >
                     {title}
@@ -201,9 +195,7 @@ export function Dialog2({
                 ) : (
                   <div
                     className={
-                      titleAlign === 'start'
-                        ? styles.headerTitleStart
-                        : styles.headerTitle
+                      titleAlign === 'start' ? styles.headerTitleStart : styles.headerTitle
                     }
                   >
                     {title}
@@ -235,6 +227,6 @@ export function Dialog2({
         </>
       ) : null}
     </AnimatePresence>,
-    getRootDomNode()
+    getRootDomNode(),
   );
 }

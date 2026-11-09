@@ -7,10 +7,7 @@ import type {
 } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { QuotesError } from 'src/ui/shared/requests/QuotesError';
 import type { SwapFormState2 } from '../types';
-import {
-  resolveTransactionWarning,
-  type SimulationResult,
-} from './resolveTransactionWarning';
+import { resolveTransactionWarning, type SimulationResult } from './resolveTransactionWarning';
 
 // ---- Test fixtures (only the fields the resolver reads) ----
 
@@ -22,10 +19,7 @@ const baseFormState: SwapFormState2 = {
   inputAmount: '1',
 };
 
-function makeQuote(
-  outputQuantity: string,
-  options?: { finalSlippage?: number | null }
-): Quote2 {
+function makeQuote(outputQuantity: string, options?: { finalSlippage?: number | null }): Quote2 {
   return {
     outputAmount: {
       currency: 'usd',
@@ -573,7 +567,7 @@ describe('resolveTransactionWarning', () => {
             detail: 'Please use ${DAPP} to unshield.',
             dappName: 'Zama',
             dappUrl: 'https://app.zama.org/',
-          })
+          }),
         ),
         simulationResult: null,
       });
@@ -597,7 +591,7 @@ describe('resolveTransactionWarning', () => {
             detail: null,
             dappName: null,
             dappUrl: null,
-          })
+          }),
         ),
         simulationResult: null,
       });

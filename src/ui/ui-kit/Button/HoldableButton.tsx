@@ -73,12 +73,10 @@ const ButtonElement = <As extends ElementType = 'button'>(
   }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
       ref?: ComponentPropsWithRef<As>['ref'];
     },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>
+  ref: React.Ref<ComponentPropsWithRef<As>['ref']>,
 ) => {
   const realButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [innerState, setInnerState] = useState<'idle' | 'hold' | 'submitting'>(
-    'idle'
-  );
+  const [innerState, setInnerState] = useState<'idle' | 'hold' | 'submitting'>('idle');
   const [showHint, setShowHint] = useState(false);
 
   const state: State = submitting
@@ -133,19 +131,13 @@ const ButtonElement = <As extends ElementType = 'button'>(
         type="button"
         ref={ref}
         kind="small/accent"
-        className={cn(
-          className,
-          buttonStyles[kind],
-          buttonStyles.button,
-          styles.button,
-          {
-            [buttonStyles.asButton]: !isButton,
-            [styles.hold]: state === 'hold',
-            [styles.submitting]: state === 'submitting',
-            [styles.success]: state === 'success',
-            [styles.error]: state === 'error',
-          }
-        )}
+        className={cn(className, buttonStyles[kind], buttonStyles.button, styles.button, {
+          [buttonStyles.asButton]: !isButton,
+          [styles.hold]: state === 'hold',
+          [styles.submitting]: state === 'submitting',
+          [styles.success]: state === 'success',
+          [styles.error]: state === 'error',
+        })}
         onMouseDown={(e) => {
           if (e.button === 0) {
             e.preventDefault();
@@ -176,7 +168,7 @@ const ButtonElement = <As extends ElementType = 'button'>(
               kind === 'primary' ? 'var(--black)' : undefined,
           },
           kinds[kind](size),
-          style
+          style,
         )}
       >
         <div
@@ -199,12 +191,8 @@ const ButtonElement = <As extends ElementType = 'button'>(
           }}
         />
         <div className={cn(styles.content, styles.text)}>{text}</div>
-        <div className={cn(styles.content, styles.submittingText)}>
-          {submittingText}
-        </div>
-        <div className={cn(styles.content, styles.successText)}>
-          {successText}
-        </div>
+        <div className={cn(styles.content, styles.submittingText)}>{submittingText}</div>
+        <div className={cn(styles.content, styles.successText)}>{successText}</div>
         <div className={cn(styles.content, styles.errorText)}>{errorText}</div>
       </UIText>
       <button
@@ -216,11 +204,7 @@ const ButtonElement = <As extends ElementType = 'button'>(
       />
       {showHint && holdHint ? (
         <div className={styles.holdHintContainer}>
-          <UIText
-            kind="caption/accent"
-            color="var(--always-white)"
-            className={styles.holdHint}
-          >
+          <UIText kind="caption/accent" color="var(--always-white)" className={styles.holdHint}>
             {holdHint}
           </UIText>
         </div>
@@ -229,6 +213,4 @@ const ButtonElement = <As extends ElementType = 'button'>(
   );
 };
 
-export const HoldableButton = React.forwardRef(
-  ButtonElement
-) as typeof ButtonElement;
+export const HoldableButton = React.forwardRef(ButtonElement) as typeof ButtonElement;

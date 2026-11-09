@@ -30,8 +30,5 @@ export function getGrownTabMaxHeight(state: State) {
 }
 
 export function getCurrentTabsOffset(state: State) {
-  return (
-    (document.getElementById(TABS_OFFSET_METER_ID)?.offsetTop || 0) -
-    getStickyOffset(state)
-  );
+  return (document.getElementById(TABS_OFFSET_METER_ID)?.offsetTop || 0) - getStickyOffset(state);
 }

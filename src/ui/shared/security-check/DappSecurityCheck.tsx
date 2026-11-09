@@ -8,10 +8,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
 import WarningIcon from 'jsx:src/ui/assets/warning-triangle.svg';
 import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';
-import {
-  SecurityStatusButton,
-  type SecurityButtonKind,
-} from './SecurityStatusButton';
+import { SecurityStatusButton, type SecurityButtonKind } from './SecurityStatusButton';
 
 const SECURITY_STATUS_TO_TITLE: Record<DappSecurityStatus, string> = {
   error: 'Unverified',
@@ -21,10 +18,7 @@ const SECURITY_STATUS_TO_TITLE: Record<DappSecurityStatus, string> = {
   ok: 'No Risks Found',
 };
 
-const SECURITY_STATUS_BUTTON_KIND: Record<
-  DappSecurityStatus,
-  SecurityButtonKind
-> = {
+const SECURITY_STATUS_BUTTON_KIND: Record<DappSecurityStatus, SecurityButtonKind> = {
   error: 'unknown',
   loading: 'loading',
   unknown: 'unknown',
@@ -40,8 +34,7 @@ function SecurityCheckDialogContent({ status }: { status: 'ok' | 'error' }) {
         style={{
           padding: '16px 16px 24px',
           position: 'relative',
-          background:
-            'linear-gradient(111deg, var(--primary-100) 0%, var(--primary-200) 100%)',
+          background: 'linear-gradient(111deg, var(--primary-100) 0%, var(--primary-200) 100%)',
         }}
       >
         <WarningIcon
@@ -58,20 +51,13 @@ function SecurityCheckDialogContent({ status }: { status: 'ok' | 'error' }) {
         <VStack gap={16} style={{ position: 'relative' }}>
           <UIText kind="headline/h3">Unverified</UIText>
           <UIText kind="body/regular">
-            We couldn’t verify this website or complete security checks. Be
-            careful and connect only if you trust the source.Security checks are
-            powered by Blockaid.
+            We couldn’t verify this website or complete security checks. Be careful and connect only
+            if you trust the source.Security checks are powered by Blockaid.
           </UIText>
-          <UIText kind="body/regular">
-            Security checks are powered by Blockaid.
-          </UIText>
+          <UIText kind="body/regular">Security checks are powered by Blockaid.</UIText>
         </VStack>
         <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-          <Button
-            value={DialogButtonValue.cancel}
-            kind="primary"
-            style={{ width: '100%' }}
-          >
+          <Button value={DialogButtonValue.cancel} kind="primary" style={{ width: '100%' }}>
             Close
           </Button>
         </form>
@@ -85,8 +71,7 @@ function SecurityCheckDialogContent({ status }: { status: 'ok' | 'error' }) {
       style={{
         padding: '16px 16px 24px',
         position: 'relative',
-        background:
-          'linear-gradient(111deg, var(--positive-100) 0%, var(--positive-200) 100%)',
+        background: 'linear-gradient(111deg, var(--positive-100) 0%, var(--positive-200) 100%)',
       }}
     >
       <ShieldIcon
@@ -103,20 +88,13 @@ function SecurityCheckDialogContent({ status }: { status: 'ok' | 'error' }) {
       <VStack gap={16} style={{ position: 'relative' }}>
         <UIText kind="headline/h3">No Risks Found</UIText>
         <UIText kind="body/regular">
-          We scanned this website and found no malicious code or phishing
-          attempts. It appears safe to connect. Always stay cautious and
-          double-check before proceeding.
+          We scanned this website and found no malicious code or phishing attempts. It appears safe
+          to connect. Always stay cautious and double-check before proceeding.
         </UIText>
-        <UIText kind="body/regular">
-          Security checks are powered by Blockaid.
-        </UIText>
+        <UIText kind="body/regular">Security checks are powered by Blockaid.</UIText>
       </VStack>
       <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-        <Button
-          value={DialogButtonValue.cancel}
-          kind="primary"
-          style={{ width: '100%' }}
-        >
+        <Button value={DialogButtonValue.cancel} kind="primary" style={{ width: '100%' }}>
           Close
         </Button>
       </form>
@@ -152,9 +130,7 @@ export function DappSecurityCheck({
           kind={SECURITY_STATUS_BUTTON_KIND[status]}
           title={SECURITY_STATUS_TO_TITLE[status]}
           onClick={
-            status === 'ok' || status === 'error'
-              ? () => dialogRef.current?.showModal()
-              : undefined
+            status === 'ok' || status === 'error' ? () => dialogRef.current?.showModal() : undefined
           }
           size="big"
         />

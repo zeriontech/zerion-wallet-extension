@@ -23,9 +23,7 @@ export function RouteRestoration() {
   const { pathname, search } = useLocation();
   useEffect(() => {
     if (restorationWhiteList.has(pathname)) {
-      const destination = search
-        ? `${pathname}?${new URLSearchParams(search)}`
-        : pathname;
+      const destination = search ? `${pathname}?${new URLSearchParams(search)}` : pathname;
       SessionStorage.set('routeRestoration', destination);
     } else {
       SessionStorage.remove('routeRestoration');

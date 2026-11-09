@@ -23,10 +23,7 @@ function clampDecimal(raw: string): string {
   const sanitized = raw.replace(/[^0-9.]/g, '');
   const firstDot = sanitized.indexOf('.');
   if (firstDot === -1) return sanitized;
-  return (
-    sanitized.slice(0, firstDot + 1) +
-    sanitized.slice(firstDot + 1).replace(/\./g, '')
-  );
+  return sanitized.slice(0, firstDot + 1) + sanitized.slice(firstDot + 1).replace(/\./g, '');
 }
 
 export function ClosePositionForm({
@@ -49,9 +46,7 @@ export function ClosePositionForm({
   const { currency } = useCurrency();
   const positionSzi = Number(position.szi);
   const isPositionLong = positionSzi >= 0;
-  const screenName = isPositionLong
-    ? PERPS_SCREEN.CloseLong
-    : PERPS_SCREEN.CloseShort;
+  const screenName = isPositionLong ? PERPS_SCREEN.CloseLong : PERPS_SCREEN.CloseShort;
   const assetName = asset.universe.name;
   useEffect(() => {
     emitter.emit('perpsScreenViewed', {
@@ -69,19 +64,16 @@ export function ClosePositionForm({
   // `inputAmount` here is the USD notional being closed.
   const closeUsd = Number(formState.inputAmount) || 0;
   const remainingUsd = Math.max(positionValueAbs - closeUsd, 0);
-  const remainderTooSmall =
-    remainingUsd > 0 && remainingUsd < MIN_ORDER_NOTIONAL_USD;
+  const remainderTooSmall = remainingUsd > 0 && remainingUsd < MIN_ORDER_NOTIONAL_USD;
   const exceedsPosition = closeUsd > positionValueAbs;
-  const closeFraction =
-    positionValueAbs > 0 ? Math.min(closeUsd / positionValueAbs, 1) : 0;
+  const closeFraction = positionValueAbs > 0 ? Math.min(closeUsd / positionValueAbs, 1) : 0;
   const closeSize = positionAbsSize * closeFraction;
   const feeCost = closeSize * markPrice * totalFeeRate;
   // Realised PnL on the closed slice scales linearly with the closed fraction.
   const pnlOnClose = positionUnrealizedPnl * closeFraction;
   const isPnlPositive = pnlOnClose >= 0;
   // Notional returned to the available balance: margin freed + PnL − fee.
-  const closedMargin =
-    positionLeverage > 0 ? closeUsd / positionLeverage : closeUsd;
+  const closedMargin = positionLeverage > 0 ? closeUsd / positionLeverage : closeUsd;
   const receiveUsd = Math.max(closedMargin + pnlOnClose - feeCost, 0);
 
   function handleAmountChange(raw: string) {
@@ -102,10 +94,7 @@ export function ClosePositionForm({
   return (
     <VStack gap={16}>
       <VStack gap={4}>
-        <CenteredAmountInput
-          value={formState.inputAmount}
-          onChange={handleAmountChange}
-        />
+        <CenteredAmountInput value={formState.inputAmount} onChange={handleAmountChange} />
         <UIText
           kind="small/accent"
           color="var(--neutral-600)"
@@ -119,9 +108,7 @@ export function ClosePositionForm({
           <span>Size</span>
           <BlurrableBalance kind="small/accent" color="var(--neutral-600)">
             {formatCurrencyValue(closeUsd, 'en', currency)}
-            {closeSize > 0
-              ? ` · ${formatTokenValue(closeSize, asset.universe.name)}`
-              : ''}
+            {closeSize > 0 ? ` · ${formatTokenValue(closeSize, asset.universe.name)}` : ''}
           </BlurrableBalance>
         </UIText>
       </VStack>
@@ -148,22 +135,14 @@ export function ClosePositionForm({
               alignItems="center"
               className={s.pnlChip}
               style={{
-                backgroundColor: isPnlPositive
-                  ? 'var(--positive-200)'
-                  : 'var(--negative-200)',
-                color: isPnlPositive
-                  ? 'var(--positive-500)'
-                  : 'var(--negative-500)',
+                backgroundColor: isPnlPositive ? 'var(--positive-200)' : 'var(--negative-200)',
+                color: isPnlPositive ? 'var(--positive-500)' : 'var(--negative-500)',
               }}
             >
               <UIText kind="small/accent" color="inherit">
                 <BlurrableBalance
                   kind="small/accent"
-                  color={
-                    isPnlPositive
-                      ? 'var(--positive-500)'
-                      : 'var(--negative-500)'
-                  }
+                  color={isPnlPositive ? 'var(--positive-500)' : 'var(--negative-500)'}
                 >
                   {isPnlPositive ? '+' : '-'}
                   {formatCurrencyValue(Math.abs(pnlOnClose), 'en', currency)}
@@ -177,9 +156,7 @@ export function ClosePositionForm({
             <UIText kind="small/accent">
               <BlurrableBalance kind="small/accent" color="var(--black)">
                 {formatCurrencyValue(receiveUsd, 'en', currency)}
-                {closeSize > 0
-                  ? ` (${formatTokenValue(closeSize, asset.universe.name)})`
-                  : ''}
+                {closeSize > 0 ? ` (${formatTokenValue(closeSize, asset.universe.name)})` : ''}
               </BlurrableBalance>
             </UIText>
           </HStack>
@@ -195,9 +172,7 @@ export function ClosePositionForm({
             <UIText kind="small/accent">
               {closeSize > 0 ? (
                 <BlurrableBalance kind="small/accent" color="var(--black)">
-                  {`${closeSize.toFixed(Math.max(szDecimals, 2))} ${
-                    asset.universe.name
-                  }`}
+                  {`${closeSize.toFixed(Math.max(szDecimals, 2))} ${asset.universe.name}`}
                 </BlurrableBalance>
               ) : (
                 '—'
@@ -237,8 +212,7 @@ export function ClosePositionForm({
 
       {remainderTooSmall ? (
         <UIText kind="caption/regular" className={s.error}>
-          Remainder must be at least ${MIN_ORDER_NOTIONAL_USD} or close the full
-          position.
+          Remainder must be at least ${MIN_ORDER_NOTIONAL_USD} or close the full position.
         </UIText>
       ) : null}
       {exceedsPosition ? (

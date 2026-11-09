@@ -57,9 +57,7 @@ export function useFormPositions({
 }) {
   const inputExistingPosition: FungiblePosition | undefined = useMemo(() => {
     return positions.find(
-      (p) =>
-        p.chain.id === formState.inputChain &&
-        p.fungible.id === formState.inputFungibleId
+      (p) => p.chain.id === formState.inputChain && p.fungible.id === formState.inputFungibleId,
     );
   }, [formState.inputChain, formState.inputFungibleId, positions]);
 
@@ -72,9 +70,7 @@ export function useFormPositions({
 
   const outputExistingPosition: FungiblePosition | undefined = useMemo(() => {
     return positions.find(
-      (p) =>
-        p.chain.id === formState.outputChain &&
-        p.fungible.id === formState.outputFungibleId
+      (p) => p.chain.id === formState.outputChain && p.fungible.id === formState.outputFungibleId,
     );
   }, [formState.outputChain, formState.outputFungibleId, positions]);
 
@@ -90,11 +86,6 @@ export function useFormPositions({
       inputPosition: inputExistingPosition || inputEmptyPosition,
       outputPosition: outputExistingPosition || outputEmptyPosition,
     }),
-    [
-      inputExistingPosition,
-      inputEmptyPosition,
-      outputExistingPosition,
-      outputEmptyPosition,
-    ]
+    [inputExistingPosition, inputEmptyPosition, outputExistingPosition, outputEmptyPosition],
   );
 }

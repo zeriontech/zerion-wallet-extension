@@ -26,9 +26,7 @@ export interface ExchangeResponseError {
 
 export type ExchangeResponse = ExchangeResponseSuccess | ExchangeResponseError;
 
-export function isOrderResponseBody(
-  body: unknown
-): body is ExchangeOrderResponseBody {
+export function isOrderResponseBody(body: unknown): body is ExchangeOrderResponseBody {
   return (
     typeof body === 'object' &&
     body !== null &&
@@ -37,9 +35,7 @@ export function isOrderResponseBody(
   );
 }
 
-export function getOrderLegError(
-  status: ExchangeOrderLegStatus
-): string | null {
+export function getOrderLegError(status: ExchangeOrderLegStatus): string | null {
   if (
     typeof status === 'object' &&
     status !== null &&

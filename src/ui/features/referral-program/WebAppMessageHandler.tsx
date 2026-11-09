@@ -6,10 +6,7 @@ import { saveReferrerData } from './shared/storage';
 
 const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
 
-type WebAppCallbackMethod =
-  | 'set-referral-code'
-  | 'set-turnstile-token'
-  | 'set-user-id';
+type WebAppCallbackMethod = 'set-referral-code' | 'set-turnstile-token' | 'set-user-id';
 
 interface WebAppMessage {
   method: WebAppCallbackMethod;
@@ -22,7 +19,7 @@ function isWebAppMessage(
     expectedSource,
   }: {
     expectedSource: Window | null;
-  }
+  },
 ): event is MessageEvent<WebAppMessage> {
   return (
     event.origin === ZERION_WEB_APP_URL.origin &&
@@ -82,7 +79,7 @@ function sanitizeReferralCode(unsafeValue: string) {
 async function setReferralCode(params: unknown) {
   invariant(
     isObj(params) && typeof params.referralCode === 'string',
-    'Got invalid payload from set-referral-code web app message'
+    'Got invalid payload from set-referral-code web app message',
   );
 
   const sanitizedReferralCode = sanitizeReferralCode(params.referralCode);

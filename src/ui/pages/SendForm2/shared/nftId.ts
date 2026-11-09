@@ -17,10 +17,6 @@ export function parseNftId(id: string): ParsedNftId | null {
   return { chain, contractAddress, tokenId: rest.join(':') };
 }
 
-export function createNftId({
-  chain,
-  contractAddress,
-  tokenId,
-}: ParsedNftId): string {
+export function createNftId({ chain, contractAddress, tokenId }: ParsedNftId): string {
   return `${chain}:${contractAddress}:${tokenId}`;
 }

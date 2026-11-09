@@ -25,9 +25,7 @@ export function ChartBlock({
   fills: PerpFill[];
   displayName: string;
 }) {
-  const [interval, setIntervalValue] = useState<PerpCandleInterval>(
-    DEFAULT_PERP_INTERVAL
-  );
+  const [interval, setIntervalValue] = useState<PerpCandleInterval>(DEFAULT_PERP_INTERVAL);
   const range = useMemo(() => getIntervalRange(interval), [interval]);
 
   const { data, isLoading, isError } = useCandleSnapshot({
@@ -86,9 +84,7 @@ export function ChartBlock({
                   padding: '6px 12px',
                   borderRadius: 4,
                   transition: 'background-color 0.15s ease',
-                  backgroundColor: active
-                    ? 'var(--neutral-200)'
-                    : 'transparent',
+                  backgroundColor: active ? 'var(--neutral-200)' : 'transparent',
                   color: active ? 'var(--neutral-800)' : 'var(--neutral-600)',
                 }}
               >

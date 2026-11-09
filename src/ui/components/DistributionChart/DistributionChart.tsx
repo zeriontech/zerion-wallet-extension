@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStore } from '@store-unit/react';
 import GridIcon from 'jsx:src/ui/assets/distribution-grid.svg';
 import ListIcon from 'jsx:src/ui/assets/distribution-list.svg';
@@ -14,16 +8,9 @@ import { Image2 } from 'src/ui/ui-kit/MediaFallback/MediaFallback2';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  SegmentedControlGroup,
-  SegmentedControlRadio,
-} from 'src/ui/ui-kit/SegmentedControl';
+import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/SegmentedControl';
 import { useAccentColors, tintBackground } from './accentColor';
-import {
-  buildDistributionItems,
-  computeTiles,
-  MIN_TILES,
-} from './sliceAndDice';
+import { buildDistributionItems, computeTiles, MIN_TILES } from './sliceAndDice';
 import type { DistributionItem, DistributionView } from './types';
 
 const HEIGHT = 180;
@@ -184,17 +171,9 @@ function TileContent({
 }) {
   const { hideBalances } = useStore(preferenceStore);
   return (
-    <VStack
-      gap={4}
-      style={{ justifyItems: 'center', textAlign: 'center', maxWidth }}
-    >
+    <VStack gap={4} style={{ justifyItems: 'center', textAlign: 'center', maxWidth }}>
       {iconSize > 0 ? (
-        <TileIcon
-          src={item.iconUrl}
-          label={item.label}
-          node={item.iconNode}
-          size={iconSize}
-        />
+        <TileIcon src={item.iconUrl} label={item.label} node={item.iconNode} size={iconSize} />
       ) : null}
       <UIText
         kind="caption/accent"
@@ -294,11 +273,7 @@ function ChartHeading({
         <UIText kind="body/accent">{title}</UIText>
       </HStack>
       {onViewChange ? (
-        <DistributionViewSwitch
-          view={view}
-          onChange={onViewChange}
-          name={switchName}
-        />
+        <DistributionViewSwitch view={view} onChange={onViewChange} name={switchName} />
       ) : null}
     </HStack>
   );
@@ -348,9 +323,7 @@ function DistributionListRow({
           bottom: 0,
           right: 0,
           width: `${Math.min(100, Math.max(0, share))}%`,
-          backgroundColor: item.isOthers
-            ? 'var(--neutral-200)'
-            : tintBackground(accent),
+          backgroundColor: item.isOthers ? 'var(--neutral-200)' : tintBackground(accent),
         }}
       />
       {/* Flex (not HStack) so the label can shrink below its content width and
@@ -406,11 +379,7 @@ function DistributionListRow({
               {formatCurrencyValue(item.value, 'en', currency)}
             </UIText>
           )}
-          <UIText
-            kind="body/regular"
-            color="var(--neutral-500)"
-            style={{ textAlign: 'right' }}
-          >
+          <UIText kind="body/regular" color="var(--neutral-500)" style={{ textAlign: 'right' }}>
             {formatShare(share)}
           </UIText>
         </div>
@@ -514,15 +483,10 @@ export function DistributionChart({
    */
   onViewChange?: (view: DistributionView) => void;
 }) {
-  const switchName = `distribution-view-${title
-    .replace(/\s+/g, '-')
-    .toLowerCase()}`;
+  const switchName = `distribution-view-${title.replace(/\s+/g, '-').toLowerCase()}`;
   const items = useMemo(() => buildDistributionItems(rawItems), [rawItems]);
   const accents = useAccentColors(items);
-  const total = useMemo(
-    () => items.reduce((sum, item) => sum + item.value, 0),
-    [items]
-  );
+  const total = useMemo(() => items.reduce((sum, item) => sum + item.value, 0), [items]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
@@ -547,7 +511,7 @@ export function DistributionChart({
 
   const tiles = useMemo(
     () => (width > 0 ? computeTiles(items, width, HEIGHT) : []),
-    [items, width]
+    [items, width],
   );
 
   const [hovered, setHovered] = useState<{
@@ -596,9 +560,7 @@ export function DistributionChart({
     );
   }
 
-  const hoveredTile = hovered
-    ? tiles.find((tile) => tile.item.id === hovered.id)
-    : null;
+  const hoveredTile = hovered ? tiles.find((tile) => tile.item.id === hovered.id) : null;
 
   return (
     <VStack gap={12} style={{ padding: '0 16px' }}>
@@ -618,10 +580,7 @@ export function DistributionChart({
           const w = tile.w - GAP;
           const h = tile.h - GAP;
           const iconSize = iconSizeForTile(w, h);
-          const showLabel =
-            !tile.item.isOthers &&
-            w >= LABEL_TILE_MIN_W &&
-            h >= LABEL_TILE_MIN_H;
+          const showLabel = !tile.item.isOthers && w >= LABEL_TILE_MIN_W && h >= LABEL_TILE_MIN_H;
           const showIcon =
             !showLabel &&
             !tile.item.isOthers &&
@@ -633,9 +592,7 @@ export function DistributionChart({
               key={tile.item.id}
               role={clickable ? 'button' : undefined}
               onClick={clickable ? () => onSelect?.(tile.item) : undefined}
-              onMouseEnter={() =>
-                setHovered({ id: tile.item.id, x: tile.x, y: tile.y })
-              }
+              onMouseEnter={() => setHovered({ id: tile.item.id, x: tile.x, y: tile.y })}
               onMouseMove={(event) => {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (!rect) {

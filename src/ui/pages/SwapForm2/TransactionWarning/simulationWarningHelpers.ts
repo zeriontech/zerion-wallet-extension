@@ -19,10 +19,7 @@ export interface WarningContent {
   dapp?: { name: string | null; url: string | null };
 }
 
-export type SimulationResult =
-  | InterpretResponse
-  | SignatureInterpretResponse
-  | null;
+export type SimulationResult = InterpretResponse | SignatureInterpretResponse | null;
 
 export interface ResolvedTransactionWarning {
   warning: WarningContent | null;
@@ -38,16 +35,11 @@ const SEVERITY_RANK: Record<WarningSeverity, number> = {
   Gray: 0,
 };
 
-export function pickHighestNonGray(
-  warnings: SimulationWarning[]
-): SimulationWarning | null {
+export function pickHighestNonGray(warnings: SimulationWarning[]): SimulationWarning | null {
   let best: SimulationWarning | null = null;
   for (const w of warnings) {
     if (w.severity === 'Gray') continue;
-    if (
-      best == null ||
-      SEVERITY_RANK[w.severity] > SEVERITY_RANK[best.severity]
-    ) {
+    if (best == null || SEVERITY_RANK[w.severity] > SEVERITY_RANK[best.severity]) {
       best = w;
     }
   }
@@ -67,9 +59,7 @@ export function readSimulationStatus(result: SimulationResult): string | null {
   return action?.status ?? null;
 }
 
-export function readSimulationWarnings(
-  result: SimulationResult
-): SimulationWarning[] {
+export function readSimulationWarnings(result: SimulationResult): SimulationWarning[] {
   if (!result || !('data' in result) || !result.data) return [];
   const data = result.data as { warnings?: SimulationWarning[] };
   return data.warnings ?? [];

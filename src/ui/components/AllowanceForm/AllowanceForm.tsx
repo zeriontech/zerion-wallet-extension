@@ -55,16 +55,11 @@ export function AllowanceForm({
   const { currency } = useCurrency();
   const isRequestedAllowanceUnlimited =
     isUnlimitedApproval(requestedAllowanceQuantityBase) ||
-    Boolean(
-      addressAction?.type.value === 'approve' &&
-      getActionApproval(addressAction)?.unlimited
-    );
+    Boolean(addressAction?.type.value === 'approve' && getActionApproval(addressAction)?.unlimited);
   const isCurrentAllowanceUnlimited =
     isUnlimitedApproval(value) ||
     (value.eq(requestedAllowanceQuantityBase) && isRequestedAllowanceUnlimited);
-  const [isAllowanceUnlimited, setIsAllowanceUnlimited] = useState(
-    isCurrentAllowanceUnlimited
-  );
+  const [isAllowanceUnlimited, setIsAllowanceUnlimited] = useState(isCurrentAllowanceUnlimited);
   const initialAllowanceQuantityCommon = useMemo(
     () =>
       getCommonQuantity({
@@ -72,7 +67,7 @@ export function AllowanceForm({
         chain,
         baseQuantity: requestedAllowanceQuantityBase,
       }),
-    [asset, chain, requestedAllowanceQuantityBase]
+    [asset, chain, requestedAllowanceQuantityBase],
   );
   const currentAllowanceQuantityCommon = useMemo(
     () =>
@@ -83,7 +78,7 @@ export function AllowanceForm({
             chain,
             baseQuantity: value.toString(),
           }),
-    [asset, chain, value, isCurrentAllowanceUnlimited]
+    [asset, chain, value, isCurrentAllowanceUnlimited],
   );
 
   const assetPrice = asset.price?.value;
@@ -92,9 +87,7 @@ export function AllowanceForm({
       ? currentAllowanceQuantityCommon.times(assetPrice)
       : null;
 
-  const [allowanceQuantityUsd, setAllowanceQuantityUsd] = useState(
-    currentAllowanceQuantityUsd
-  );
+  const [allowanceQuantityUsd, setAllowanceQuantityUsd] = useState(currentAllowanceQuantityUsd);
   const allowanceQuantityCommonRef = useRef<HTMLInputElement | null>(null);
 
   const updateAllowanceQuantityUsd = useCallback(
@@ -106,7 +99,7 @@ export function AllowanceForm({
         setAllowanceQuantityUsd(null);
       }
     },
-    [setAllowanceQuantityUsd, assetPrice]
+    [setAllowanceQuantityUsd, assetPrice],
   );
 
   const setAllowanceQuantityCommon = useCallback(
@@ -116,15 +109,13 @@ export function AllowanceForm({
       }
       updateAllowanceQuantityUsd(value);
     },
-    [updateAllowanceQuantityUsd]
+    [updateAllowanceQuantityUsd],
   );
 
   const handleReset = () => {
     setIsAllowanceUnlimited(isRequestedAllowanceUnlimited);
     setAllowanceQuantityCommon(
-      isRequestedAllowanceUnlimited
-        ? null
-        : initialAllowanceQuantityCommon.toFixed()
+      isRequestedAllowanceUnlimited ? null : initialAllowanceQuantityCommon.toFixed(),
     );
   };
 
@@ -174,11 +165,7 @@ export function AllowanceForm({
             });
             onSubmit(newValue.toFixed());
           } else {
-            onSubmit(
-              isRequestedAllowanceUnlimited
-                ? ''
-                : UNLIMITED_APPROVAL_AMOUNT.toFixed()
-            );
+            onSubmit(isRequestedAllowanceUnlimited ? '' : UNLIMITED_APPROVAL_AMOUNT.toFixed());
           }
         }}
       >
@@ -192,11 +179,7 @@ export function AllowanceForm({
               vGap={0}
               image={
                 asset.icon_url ? (
-                  <TokenIcon
-                    size={36}
-                    src={asset.icon_url}
-                    symbol={asset.symbol}
-                  />
+                  <TokenIcon size={36} src={asset.icon_url} symbol={asset.symbol} />
                 ) : (
                   <UnknownIcon />
                 )
@@ -239,13 +222,9 @@ export function AllowanceForm({
                       defaultValue={currentAllowanceQuantityCommon?.toFixed()}
                       onInvalid={(event) => {
                         if (event.currentTarget.validity.patternMismatch) {
-                          event.currentTarget.setCustomValidity(
-                            'Amount must be a positive number'
-                          );
+                          event.currentTarget.setCustomValidity('Amount must be a positive number');
                         } else if (event.currentTarget.validity.valueMissing) {
-                          event.currentTarget.setCustomValidity(
-                            'Amount is required'
-                          );
+                          event.currentTarget.setCustomValidity('Amount is required');
                         }
                       }}
                       onInput={(event) => {
@@ -271,10 +250,7 @@ export function AllowanceForm({
               }}
             >
               <HStack gap={4}>
-                <UIText
-                  kind="small/regular"
-                  style={{ color: 'var(--neutral-600)' }}
-                >
+                <UIText kind="small/regular" style={{ color: 'var(--neutral-600)' }}>
                   Balance:
                 </UIText>
                 <UIText
@@ -320,10 +296,7 @@ export function AllowanceForm({
               )}
             </HStack>
           </VStack>
-          <Spacer
-            style={{ borderTop: '1px solid var(--neutral-300)' }}
-            height={1}
-          />
+          <Spacer style={{ borderTop: '1px solid var(--neutral-300)' }} height={1} />
           <HStack gap={4} justifyContent="space-between">
             <Media
               image={null}
@@ -344,11 +317,7 @@ export function AllowanceForm({
         </VStack>
       </form>
       <Spacer height={20} />
-      {footerRenderArea ? (
-        <Content name={footerRenderArea}>{submitRow}</Content>
-      ) : (
-        submitRow
-      )}
+      {footerRenderArea ? <Content name={footerRenderArea}>{submitRow}</Content> : submitRow}
     </>
   );
 }

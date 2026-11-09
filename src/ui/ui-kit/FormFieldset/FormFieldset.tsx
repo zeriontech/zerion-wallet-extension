@@ -23,10 +23,7 @@ interface FormFieldsetProps extends Omit<
   inputSelector?: string;
 }
 
-export const FormFieldset = React.forwardRef<
-  HTMLFieldSetElement,
-  FormFieldsetProps
->(
+export const FormFieldset = React.forwardRef<HTMLFieldSetElement, FormFieldsetProps>(
   (
     {
       title,
@@ -41,7 +38,7 @@ export const FormFieldset = React.forwardRef<
       inputSelector,
       ...props
     },
-    ref
+    ref,
   ) => {
     const labelRef = useRef<HTMLLabelElement | null>(null);
     return (
@@ -51,16 +48,11 @@ export const FormFieldset = React.forwardRef<
         className={cn(
           className,
           unstyled ? styles.unstyled : styles.container,
-          disabled || unstyled ? null : styles.hoverable
+          disabled || unstyled ? null : styles.hoverable,
         )}
         onClick={(event) => {
-          if (
-            event.target === event.currentTarget ||
-            event.target === labelRef.current
-          ) {
-            const input = event.currentTarget.querySelector(
-              inputSelector ?? 'input'
-            );
+          if (event.target === event.currentTarget || event.target === labelRef.current) {
+            const input = event.currentTarget.querySelector(inputSelector ?? 'input');
             if (input && input instanceof HTMLInputElement) {
               input.focus();
             }
@@ -73,9 +65,7 @@ export const FormFieldset = React.forwardRef<
               <UIText kind="small/regular" as="label" ref={labelRef}>
                 {title}
               </UIText>
-              {endTitle ? (
-                <UIText kind="small/regular">{endTitle}</UIText>
-              ) : null}
+              {endTitle ? <UIText kind="small/regular">{endTitle}</UIText> : null}
             </HStack>
           ) : null}
           <HStack
@@ -104,5 +94,5 @@ export const FormFieldset = React.forwardRef<
         </VStack>
       </fieldset>
     );
-  }
+  },
 );

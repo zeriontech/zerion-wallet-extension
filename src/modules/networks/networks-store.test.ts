@@ -15,8 +15,7 @@ vi.mock('store-unit', () => ({
       return this.state;
     }
     setState(next: T | ((state: T) => T)) {
-      this.state =
-        typeof next === 'function' ? (next as (s: T) => T)(this.state) : next;
+      this.state = typeof next === 'function' ? (next as (s: T) => T)(this.state) : next;
     }
     on() {
       return () => {};
@@ -31,10 +30,7 @@ function createStore(pinnedChains: string[]) {
   const calls = { chainList: 0 };
   let failSearches = false;
   const apiClient = {
-    chainList: async (params: {
-      supportedOnly?: boolean;
-      searchQuery?: string;
-    }) => {
+    chainList: async (params: { supportedOnly?: boolean; searchQuery?: string }) => {
       calls.chainList += 1;
       if (params.searchQuery) {
         searchQueries.push(params.searchQuery);
@@ -56,7 +52,7 @@ function createStore(pinnedChains: string[]) {
       }),
       getApiClient: () => apiClient,
       source: 'mainnet',
-    }
+    },
   );
   return {
     store,

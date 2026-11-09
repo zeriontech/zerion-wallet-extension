@@ -5,10 +5,7 @@ function getRandomInteger() {
   return window.crypto.getRandomValues(new Uint32Array(1))[0];
 }
 
-async function sendPortMessage<Req, Resp>(
-  port: browser.Runtime.Port,
-  request: Req
-) {
+async function sendPortMessage<Req, Resp>(port: browser.Runtime.Port, request: Req) {
   return new Promise<Resp>((resolve, reject) => {
     const onMessage = (response: Resp) => {
       port.onMessage.removeListener(onMessage);

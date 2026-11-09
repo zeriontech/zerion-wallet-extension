@@ -16,9 +16,7 @@ function toNumber(value: string | undefined | null): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function sumPerpAccountValue(
-  perpStates: Array<PerpClearinghouseState | null | undefined>
-): number {
+function sumPerpAccountValue(perpStates: Array<PerpClearinghouseState | null | undefined>): number {
   let total = 0;
   for (const state of perpStates) {
     if (!state) continue;
@@ -27,9 +25,7 @@ function sumPerpAccountValue(
   return total;
 }
 
-function sumPerpWithdrawable(
-  perpStates: Array<PerpClearinghouseState | null | undefined>
-): number {
+function sumPerpWithdrawable(perpStates: Array<PerpClearinghouseState | null | undefined>): number {
   let total = 0;
   for (const state of perpStates) {
     if (!state) continue;
@@ -52,9 +48,7 @@ interface EffectiveValuesInput {
 //
 // For non-unified users we fall through to legacy values, which keeps the
 // code path identical to before this change.
-export function computeEffectiveAccountValueUSD(
-  input: EffectiveValuesInput
-): number {
+export function computeEffectiveAccountValueUSD(input: EffectiveValuesInput): number {
   const { perpStates, spotBalances, abstractionMode } = input;
   if (isUnifiedMode(abstractionMode)) {
     const usdc = findUsdc(spotBalances);
@@ -65,9 +59,7 @@ export function computeEffectiveAccountValueUSD(
   return sumPerpAccountValue(perpStates);
 }
 
-export function computeEffectiveWithdrawableUSDC(
-  input: EffectiveValuesInput
-): number {
+export function computeEffectiveWithdrawableUSDC(input: EffectiveValuesInput): number {
   const { perpStates, spotBalances, abstractionMode } = input;
   if (isUnifiedMode(abstractionMode)) {
     const usdc = findUsdc(spotBalances);

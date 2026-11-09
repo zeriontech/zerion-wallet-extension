@@ -60,11 +60,7 @@ export function ConfidentialMask({
           }}
         />
       ) : null}
-      <HiddenBalancePixels
-        kind={kind}
-        color={color}
-        label="Encrypted balance"
-      />
+      <HiddenBalancePixels kind={kind} color={color} label="Encrypted balance" />
     </>
   );
   const layoutStyle: React.CSSProperties = {

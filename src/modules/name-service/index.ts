@@ -20,9 +20,7 @@ export async function lookupAddressNames(address: string): Promise<string[]> {
   try {
     const response = await ZerionAPI.getWalletsMeta({ identifiers: [address] });
     return (
-      response.data?.[0]?.identities
-        .sort(identityComparator)
-        .map(({ handle }) => handle) || []
+      response.data?.[0]?.identities.sort(identityComparator).map(({ handle }) => handle) || []
     );
   } catch {
     return [];
@@ -33,9 +31,7 @@ export async function lookupAddressNames(address: string): Promise<string[]> {
  * parameterize apiClient: ZerionApiClient as a dependency
  * so that this method can be used in background scripts, too
  */
-export async function lookupAddressName(
-  address: string
-): Promise<string | null> {
+export async function lookupAddressName(address: string): Promise<string | null> {
   const names = await lookupAddressNames(address);
   return names && names.length > 0 ? names[0] : null;
 }

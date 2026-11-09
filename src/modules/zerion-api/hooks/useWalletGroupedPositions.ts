@@ -28,20 +28,18 @@ export function useWalletGroupedPositions(
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number | false;
-  } = {}
+  } = {},
 ) {
   // Signed Permits are part of the request, so their fingerprint is part of
   // the key: a newly signed (or dropped) permit refetches the positions
-  const { permits, fingerprint, isReady } = useConfidentialPermits(
-    params.addresses
-  );
+  const { permits, fingerprint, isReady } = useConfidentialPermits(params.addresses);
   return useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: persistentQuery([QUERY_KEY, params, source, fingerprint]),
     queryFn: () =>
       withPermits(permits, (permits) =>
-        ZerionAPI.walletGetGroupedPositions({ ...params, permits }, { source })
+        ZerionAPI.walletGetGroupedPositions({ ...params, permits }, { source }),
       ),
     suspense,
     enabled: enabled && isReady && params.addresses.length > 0,

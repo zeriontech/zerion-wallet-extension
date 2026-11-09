@@ -5,11 +5,7 @@ module.exports = {
   modulePaths: ['<rootDir>/'],
   setupFiles: ['<rootDir>/jest.setup.cjs'],
   // moduleDirectories: ['node_modules', 'src'],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '<rootDir>/lib/',
-    '<rootDir>/e2e/',
-  ],
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/lib/', '<rootDir>/e2e/'],
   transform: { '^.+\\.tsx?$': ['ts-jest', { useESM: true }] },
   extensionsToTreatAsEsm: ['.ts'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$',

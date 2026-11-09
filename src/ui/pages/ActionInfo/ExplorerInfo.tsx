@@ -20,10 +20,7 @@ const ICON_SIZE = 20;
 function ExplorerLink({ url }: { url: string }) {
   const { style, trigger } = useTransformTrigger({ x: 2 });
 
-  const urlPrepared = useMemo(
-    () => (url ? prepareForHref(url)?.toString() : undefined),
-    [url]
-  );
+  const urlPrepared = useMemo(() => (url ? prepareForHref(url)?.toString() : undefined), [url]);
 
   return (
     <UnstyledAnchor
@@ -48,8 +45,7 @@ function HashButton({ hash }: { hash: string }) {
   const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
     x: 2,
   });
-  const { style: successIconStyle, trigger: successCopyTrigger } =
-    useTransformTrigger({ x: 2 });
+  const { style: successIconStyle, trigger: successCopyTrigger } = useTransformTrigger({ x: 2 });
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: hash });
 
   const handleClick = useCallback(() => {
@@ -89,22 +85,12 @@ export function ExplorerInfo({
   transaction: ActionTransaction | LocalActionTransaction;
 }) {
   return (
-    <HStack
-      gap={16}
-      alignItems="center"
-      style={{ gridTemplateColumns: '1fr auto auto' }}
-    >
+    <HStack gap={16} alignItems="center" style={{ gridTemplateColumns: '1fr auto auto' }}>
       <HStack gap={8} alignItems="center">
-        <NetworkIcon
-          src={transaction.chain.iconUrl}
-          size={24}
-          name={transaction.chain.name}
-        />
+        <NetworkIcon src={transaction.chain.iconUrl} size={24} name={transaction.chain.name} />
         <UIText kind="small/accent">{transaction.chain.name}</UIText>
       </HStack>
-      {transaction.explorerUrl ? (
-        <ExplorerLink url={transaction.explorerUrl} />
-      ) : null}
+      {transaction.explorerUrl ? <ExplorerLink url={transaction.explorerUrl} /> : null}
       {transaction.hash ? <HashButton hash={transaction.hash} /> : null}
     </HStack>
   );

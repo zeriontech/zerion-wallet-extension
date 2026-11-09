@@ -1,6 +1,6 @@
 export function intersperce<T>(
   arr: (T | null | undefined)[],
-  getJoiner: (key: number, index: number) => T
+  getJoiner: (key: number, index: number) => T,
 ): T[] {
   const result: T[] = [];
   let index = 0;

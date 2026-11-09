@@ -15,10 +15,7 @@ import type { ValidationResult } from 'src/shared/validation/ValidationResult';
 import { SeedType } from 'src/shared/SeedType';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
-import {
-  isValidMnemonic,
-  isValidPrivateKey,
-} from 'src/shared/validation/wallet';
+import { isValidMnemonic, isValidPrivateKey } from 'src/shared/validation/wallet';
 import { WithPasswordSession } from 'src/ui/components/VerifyUser/WithPasswordSession';
 import { SecretInput } from 'src/ui/components/SecretInput';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
@@ -38,11 +35,7 @@ function getSeedType(value: string) {
   }
 }
 
-export function validate({
-  recoveryInput,
-}: {
-  recoveryInput: string;
-}): ValidationResult {
+export function validate({ recoveryInput }: { recoveryInput: string }): ValidationResult {
   if (recoveryInput.trim().split(/\s+/).length > 1) {
     // probably a mnemonic
     if (isValidMnemonic(recoveryInput)) {
@@ -67,8 +60,7 @@ function ImportForm({
 }: {
   onSubmit: (result: { value: string; seedType: SeedType }) => void;
 }) {
-  const [validationResult, setValidationResult] =
-    useState<ValidationResult | null>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   return (
     <>
       <form
@@ -76,9 +68,7 @@ function ImportForm({
         onInput={() => setValidationResult(null)}
         onSubmit={(event) => {
           event.preventDefault();
-          const userInput = new FormData(event.currentTarget).get(
-            'seedOrPrivateKey'
-          ) as string;
+          const userInput = new FormData(event.currentTarget).get('seedOrPrivateKey') as string;
           const value = prepareUserInputSeedOrPrivateKey(userInput);
           if (!value) {
             return;
@@ -101,17 +91,11 @@ function ImportForm({
           name="seedOrPrivateKey"
           required={true}
           label={
-            <UIText kind="small/accent">
-              Use spaces between words if using a recovery phrase
-            </UIText>
+            <UIText kind="small/accent">Use spaces between words if using a recovery phrase</UIText>
           }
           hint={
             validationResult?.valid === false ? (
-              <UIText
-                kind="caption/regular"
-                color="var(--negative-500)"
-                role="alert"
-              >
+              <UIText kind="caption/regular" color="var(--negative-500)" role="alert">
                 {validationResult.message}
               </UIText>
             ) : null
@@ -139,11 +123,7 @@ function ImportForm({
   );
 }
 
-function ImportWalletView({
-  locationStateStore,
-}: {
-  locationStateStore: MemoryLocationState;
-}) {
+function ImportWalletView({ locationStateStore }: { locationStateStore: MemoryLocationState }) {
   const navigate = useNavigate();
 
   return (
@@ -201,15 +181,10 @@ export function ImportWallet() {
   const [memoryLocationState] = useState(() => new MemoryLocationState({}));
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<ImportWalletView locationStateStore={memoryLocationState} />}
-      />
+      <Route path="/" element={<ImportWalletView locationStateStore={memoryLocationState} />} />
       <Route
         path="/private-key"
-        element={
-          <PrivateKeyImportView locationStateStore={memoryLocationState} />
-        }
+        element={<PrivateKeyImportView locationStateStore={memoryLocationState} />}
       />
       <Route
         path="/mnemonic"

@@ -36,11 +36,9 @@ export function getSlippageOptions({
   chain: Chain;
   userSlippage: number | null;
 }) {
-  const options =
-    SLIPPAGE_BY_CHAIN[chain.toString()] ?? DEFAULT_SLIPPAGE_OPTIONS;
+  const options = SLIPPAGE_BY_CHAIN[chain.toString()] ?? DEFAULT_SLIPPAGE_OPTIONS;
 
-  const slippagePercent =
-    userSlippage != null ? toPercents(userSlippage) : options.default;
+  const slippagePercent = userSlippage != null ? toPercents(userSlippage) : options.default;
   const slippage = fromPercents(slippagePercent);
 
   return { ...options, slippage, slippagePercent };

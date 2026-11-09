@@ -4,10 +4,7 @@ import { Route, Routes, useSearchParams } from 'react-router-dom';
 import { RenderArea } from 'react-area';
 import { isTruthy } from 'is-truthy-ts';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import {
-  toAddEthereumChainParameter,
-  toNetworkInfo,
-} from 'src/modules/networks/helpers';
+import { toAddEthereumChainParameter, toNetworkInfo } from 'src/modules/networks/helpers';
 import { invariant } from 'src/shared/invariant';
 import { useBackgroundKind } from 'src/ui/components/Background/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
@@ -59,11 +56,8 @@ function AddOrUpdateChain({
   const [params] = useSearchParams();
   const hostname = useMemo(() => new URL(origin).hostname, [origin]);
   const addEthereumChainParameter = useMemo(
-    () =>
-      JSON.parse(
-        addEthereumChainParameterStringified
-      ) as AddEthereumChainParameter,
-    [addEthereumChainParameterStringified]
+    () => JSON.parse(addEthereumChainParameterStringified) as AddEthereumChainParameter,
+    [addEthereumChainParameterStringified],
   );
 
   const chainId = normalizeChainId(addEthereumChainParameter.chainId);
@@ -103,9 +97,7 @@ function AddOrUpdateChain({
       });
       return {
         config,
-        prevChainConfig: prevNetwork
-          ? toAddEthereumChainParameter(prevNetwork)
-          : null,
+        prevChainConfig: prevNetwork ? toAddEthereumChainParameter(prevNetwork) : null,
       };
     },
     onSuccess: async (result) => {
@@ -121,7 +113,7 @@ function AddOrUpdateChain({
           networks
             .getEvmNetworks()
             .map((n) => Networks.getChainId(n))
-            .filter(isTruthy)
+            .filter(isTruthy),
         )
       : null;
   }, [networks]);
@@ -151,16 +143,12 @@ function AddOrUpdateChain({
               <UIText kind="headline/h2">{hostname}</UIText>
             </HStack>
             <UIText kind="small/accent" color="var(--neutral-500)">
-              {`Suggests you ${
-                prevNetwork ? 'update RPC URL' : 'add this network'
-              }`}
+              {`Suggests you ${prevNetwork ? 'update RPC URL' : 'add this network'}`}
             </UIText>
           </VStack>
         </div>
         <Spacer height={16} />
-        <UIText kind="headline/h1">
-          {prevNetwork?.name || Networks.getName(network)}
-        </UIText>
+        <UIText kind="headline/h1">{prevNetwork?.name || Networks.getName(network)}</UIText>
         <Spacer height={16} />
         {prevNetwork ? (
           <RpcUrlForm
@@ -245,9 +233,7 @@ function AddEthereumChainContent({
 
   return (
     <AddOrUpdateChain
-      addEthereumChainParameterStringified={
-        addEthereumChainParameterStringified
-      }
+      addEthereumChainParameterStringified={addEthereumChainParameterStringified}
       origin={origin}
       onKeepCurrent={onDone}
       onReject={onReject}
@@ -265,13 +251,10 @@ export function AddEthereumChain() {
   invariant(windowId, 'windowId get-parameter is required for this view');
   invariant(
     addEthereumChainParameter,
-    'addEtheretumChainParameter get-parameter is required for this view'
+    'addEtheretumChainParameter get-parameter is required for this view',
   );
 
-  const handleReject = useCallback(
-    () => windowPort.reject(windowId),
-    [windowId]
-  );
+  const handleReject = useCallback(() => windowPort.reject(windowId), [windowId]);
 
   return (
     <>
@@ -283,10 +266,7 @@ export function AddEthereumChain() {
               addEthereumChainParameterStringified={addEthereumChainParameter}
               origin={origin}
               onReject={handleReject}
-              onDone={useCallback(
-                () => windowPort.confirm(windowId, null),
-                [windowId]
-              )}
+              onDone={useCallback(() => windowPort.confirm(windowId, null), [windowId])}
             />
           }
         />

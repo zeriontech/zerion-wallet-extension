@@ -100,9 +100,7 @@ export function ReceiverAddressBlock({
         <CopyButton
           textToCopy={normalizedAddress}
           title="Copy address"
-          tooltipContent={
-            <UIText kind="caption/regular">Address copied</UIText>
-          }
+          tooltipContent={<UIText kind="caption/regular">Address copied</UIText>}
           tooltipPosition="center-bottom"
         />
       </div>

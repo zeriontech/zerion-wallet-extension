@@ -48,15 +48,14 @@ export function PremiumPage() {
   const membershipInfo = walletsMeta?.at(0)?.membership;
   const hasActivePremium = Boolean(membershipInfo?.premium);
   const activePremiumExpirationDate = membershipInfo?.premium?.expirationTime;
-  const previousPremiumExpirationDate =
-    membershipInfo?.expiredPremium?.expirationTime;
+  const previousPremiumExpirationDate = membershipInfo?.expiredPremium?.expirationTime;
 
   const isMoreThan7DaysLeft = useMemo(
     () =>
       activePremiumExpirationDate
         ? dayjs(activePremiumExpirationDate).isAfter(dayjs().add(7, 'day'))
         : false,
-    [activePremiumExpirationDate]
+    [activePremiumExpirationDate],
   );
 
   const isUnlimited = hasActivePremium && !activePremiumExpirationDate;
@@ -106,14 +105,9 @@ export function PremiumPage() {
                 <WalletDisplayName
                   wallet={wallet}
                   maxCharacters={16}
-                  render={(name) => (
-                    <UIText kind="body/accent">{name.value}</UIText>
-                  )}
+                  render={(name) => <UIText kind="body/accent">{name.value}</UIText>}
                 />
-                <ArrowDownIcon
-                  className="content-hover"
-                  style={{ width: 24, height: 24 }}
-                />
+                <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
               </HStack>
             ) : null}
           </UnstyledLink>
@@ -123,20 +117,14 @@ export function PremiumPage() {
       <PageTop />
       {wallet && !isLoading ? (
         <VStack gap={24} style={{ justifyItems: 'center' }}>
-          <WalletAvatar
-            address={wallet.address}
-            size={180}
-            borderRadius={24}
-            borderWidth={6}
-          />
+          <WalletAvatar address={wallet.address} size={180} borderRadius={24} borderWidth={6} />
           {kind !== 'none' ? (
             <VStack gap={8} style={{ justifyItems: 'center' }}>
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <UIText
                   kind="headline/h2"
                   style={{
-                    background:
-                      'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
+                    background: 'linear-gradient(90deg, #6C6CF9 0%, #FF7583 100%)',
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',

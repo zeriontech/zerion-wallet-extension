@@ -59,8 +59,7 @@ const FungibleView = React.forwardRef<
       : relativeChange1d >= 0
         ? 'var(--positive-500)'
         : 'var(--negative-500)';
-  const changePrefix =
-    relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
+  const changePrefix = relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
 
   return (
     <SurfaceItemLink
@@ -70,11 +69,7 @@ const FungibleView = React.forwardRef<
       highlighted={highlighted}
       onClick={onClick}
     >
-      <HStack
-        gap={8}
-        alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
-      >
+      <HStack gap={8} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
         <TokenIcon
           src={fungible.iconUrl}
           symbol={fungible.symbol}
@@ -124,7 +119,7 @@ const FungibleView = React.forwardRef<
                       fungible.meta.fullyDilutedValuation,
                       'en',
                       currency,
-                      COMPACT_FORMAT
+                      COMPACT_FORMAT,
                     )}`
                   : null,
                 fungible.meta.marketCap != null
@@ -132,7 +127,7 @@ const FungibleView = React.forwardRef<
                       fungible.meta.marketCap,
                       'en',
                       currency,
-                      COMPACT_FORMAT
+                      COMPACT_FORMAT,
                     )} MCAP`
                   : null,
               ]
@@ -188,8 +183,7 @@ const PerpView = React.forwardRef<
       : relativeChange1d >= 0
         ? 'var(--positive-500)'
         : 'var(--negative-500)';
-  const changePrefix =
-    relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
+  const changePrefix = relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
 
   return (
     <SurfaceItemLink
@@ -199,11 +193,7 @@ const PerpView = React.forwardRef<
       highlighted={highlighted}
       onClick={onClick}
     >
-      <HStack
-        gap={8}
-        alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
-      >
+      <HStack gap={8} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
         <TokenIcon
           src={perp.iconUrl || getPerpIconUrl(perp.id)}
           symbol={perp.symbol}
@@ -242,9 +232,7 @@ const PerpView = React.forwardRef<
               </UIText>
             </HStack>
             {price != null ? (
-              <UIText kind="body/accent">
-                {formatPriceValue(price, 'en', currency)}
-              </UIText>
+              <UIText kind="body/accent">{formatPriceValue(price, 'en', currency)}</UIText>
             ) : null}
           </HStack>
           <HStack gap={4} alignItems="center" justifyContent="space-between">
@@ -277,7 +265,7 @@ const RecentItem = React.forwardRef<
 
   const { data, isLoading } = useAssetFullInfo(
     { fungibleId, currency },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
   );
 
   const fungible = data?.data.fungible;
@@ -321,9 +309,7 @@ const RecentItem = React.forwardRef<
         onClick={() => removeRecentSearchMutation.mutate()}
         disabled={removeRecentSearchMutation.isLoading}
       >
-        <CloseIcon
-          style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
-        />
+        <CloseIcon style={{ width: 20, height: 20, color: 'var(--neutral-500)' }} />
       </Button>
     </HStack>
   );
@@ -349,10 +335,7 @@ export function Search() {
   const setSearchParamsEvent = useEvent((value: string) => {
     setSearchParams(value ? { query: value } : {}, { replace: true });
   });
-  const debouncedSetSearchParams = useDebouncedCallback(
-    setSearchParamsEvent,
-    500
-  );
+  const debouncedSetSearchParams = useDebouncedCallback(setSearchParamsEvent, 500);
   const normalizedQuery = urlQuery.trim();
   const { data: searchHistory } = useQuery({
     queryKey: ['wallet/getSearchHistory'],
@@ -408,7 +391,7 @@ export function Search() {
         section: 'Search',
       });
     },
-    [pathname]
+    [pathname],
   );
 
   const { getItemProps, getInputProps, getMenuProps, highlightedIndex } =

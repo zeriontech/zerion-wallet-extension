@@ -64,7 +64,7 @@ describe('collectPermitsForRequest', () => {
 
   test('caps at the backend limit in wallet order', () => {
     const many = Array.from({ length: MAX_PERMITS_PER_REQUEST + 3 }, (_, i) =>
-      makePermit({ signature: `0x${String(i).padStart(130, '0')}` })
+      makePermit({ signature: `0x${String(i).padStart(130, '0')}` }),
     );
     const result = collectPermitsForRequest([many], NOW);
     expect(result).toHaveLength(MAX_PERMITS_PER_REQUEST);
@@ -82,10 +82,7 @@ describe('getPermitsFingerprint', () => {
     expect(getPermitsFingerprint([])).toBeNull();
     expect(getPermitsFingerprint(undefined)).toBeNull();
     const a = collectPermitsForRequest([[makePermit()]], NOW);
-    const b = collectPermitsForRequest(
-      [[makePermit({ signature: `0x${'cd'.repeat(65)}` })]],
-      NOW
-    );
+    const b = collectPermitsForRequest([[makePermit({ signature: `0x${'cd'.repeat(65)}` })]], NOW);
     expect(getPermitsFingerprint(a)).not.toBe(getPermitsFingerprint(b));
     expect(getPermitsFingerprint(a)).toBe(getPermitsFingerprint(a));
   });
@@ -113,7 +110,7 @@ describe('toStoredPermit', () => {
         },
       },
       '0xsig',
-      NOW
+      NOW,
     );
     expect(stored).toEqual({
       address: '0x1111111111111111111111111111111111111111',

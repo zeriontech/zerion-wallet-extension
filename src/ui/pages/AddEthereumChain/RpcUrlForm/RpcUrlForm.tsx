@@ -36,9 +36,7 @@ export function RpcUrlForm({
 }) {
   const { networks } = useNetworks();
 
-  const currentRpcUrl = networks?.getRpcUrlInternal(
-    createChain(prevNetwork.id)
-  );
+  const currentRpcUrl = networks?.getRpcUrlInternal(createChain(prevNetwork.id));
 
   const id = useId();
 
@@ -61,9 +59,7 @@ export function RpcUrlForm({
         }
         const formObject = collectData(form, {});
         // Use prevNetwork as base, overwrite only values used in current form
-        const result = produce(prevNetwork, (draft) =>
-          merge(draft, formObject)
-        );
+        const result = produce(prevNetwork, (draft) => merge(draft, formObject));
         onSubmit(network.id, toAddEthereumChainParameter(result));
       }}
     >
@@ -77,9 +73,7 @@ export function RpcUrlForm({
           name={undefined}
           required={true}
         />
-        <ArrowDownIcon
-          style={{ width: 24, height: 24, color: 'var(--neutral-500)' }}
-        />
+        <ArrowDownIcon style={{ width: 24, height: 24, color: 'var(--neutral-500)' }} />
         <Field
           label="New RPC URL"
           /** A user-defined RPC URL wins over Zerion's and the public one */
@@ -89,20 +83,13 @@ export function RpcUrlForm({
           required={true}
         />
         <UIText kind="small/regular" color="var(--neutral-500)">
-          You can always revert this change and switch back to the default RPC
-          URL from your network settings at any time
+          You can always revert this change and switch back to the default RPC URL from your network
+          settings at any time
         </UIText>
       </VStack>
       <Spacer height={16} />
-      <UIText
-        as={UnstyledLink}
-        to={rpcUrlHelpHref}
-        kind="small/accent"
-        color="var(--primary)"
-      >
-        <span className={helperStyles.hoverUnderline}>
-          What is RPC URLs and Potential Risks
-        </span>
+      <UIText as={UnstyledLink} to={rpcUrlHelpHref} kind="small/accent" color="var(--primary)">
+        <span className={helperStyles.hoverUnderline}>What is RPC URLs and Potential Risks</span>
       </UIText>
       <Spacer height={20} />
       <Content name="add-ethereum-chain-footer">

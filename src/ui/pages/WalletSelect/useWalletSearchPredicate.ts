@@ -34,6 +34,6 @@ export function useWalletSearchPredicate({
 
       return false;
     },
-    [searchQuery, handlesMap]
+    [searchQuery, handlesMap],
   );
 }

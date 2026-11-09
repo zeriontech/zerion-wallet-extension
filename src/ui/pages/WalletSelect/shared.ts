@@ -48,7 +48,7 @@ export function getFullWalletList({
         getWalletId({
           address: wallet.address,
           groupId: group.id,
-        })
+        }),
       );
     }
   }
@@ -86,14 +86,12 @@ export function getFullWalletList({
       const targetGroup = result.find((g) => g.id === targetWalletGroup);
       if (!targetGroup) {
         throw new Error(
-          `Wallet group with id "${targetWalletGroup}" not found in result. Cannot add wallet with id "${walletId}".`
+          `Wallet group with id "${targetWalletGroup}" not found in result. Cannot add wallet with id "${walletId}".`,
         );
       }
       targetGroup.walletIds.push(walletId);
     }
   }
 
-  return filterEmptyGroups
-    ? result.filter((group) => group.walletIds.length > 0)
-    : result;
+  return filterEmptyGroups ? result.filter((group) => group.walletIds.length > 0) : result;
 }

@@ -4,10 +4,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
-import {
-  useNetworks,
-  useSearchNetworks,
-} from 'src/modules/networks/useNetworks';
+import { useNetworks, useSearchNetworks } from 'src/modules/networks/useNetworks';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -66,11 +63,7 @@ function NativeBalance({ address, chain }: { address: string; chain: Chain }) {
   // funds), which would render as a very long string and overflow the selector
   // row. Show large balances using compact notation, e.g. "1.2M TEMPO".
   const notation = valueCommon.abs().gte(1e6) ? 'compact' : undefined;
-  return (
-    <span>
-      {formatTokenValue(valueCommon, position?.asset.symbol, { notation })}
-    </span>
-  );
+  return <span>{formatTokenValue(valueCommon, position?.asset.symbol, { notation })}</span>;
 }
 
 function NetworkItem({
@@ -95,8 +88,7 @@ function NetworkItem({
   ecosystem?: BlockchainType;
 }) {
   const preferChainDistribution =
-    value === NetworkSelectValue.All ||
-    value in (chainDistribution?.chains || {});
+    value === NetworkSelectValue.All || value in (chainDistribution?.chains || {});
   const chain = value === NetworkSelectValue.All ? null : createChain(value);
   const { currency } = useCurrency();
 
@@ -118,10 +110,7 @@ function NetworkItem({
           image={icon}
           text={
             <HStack gap={4} alignItems="center">
-              <UIText
-                kind="body/accent"
-                color={selected ? 'var(--primary)' : 'var(--black)'}
-              >
+              <UIText kind="body/accent" color={selected ? 'var(--primary)' : 'var(--black)'}>
                 {name}
               </UIText>
               {pinned ? (
@@ -157,10 +146,7 @@ function NetworkItem({
           >
             {address &&
             ecosystem &&
-            !isMatchForEcosystem(
-              address,
-              ecosystem
-            ) ? null : preferChainDistribution ? (
+            !isMatchForEcosystem(address, ecosystem) ? null : preferChainDistribution ? (
               <ChainValue
                 chain={chain || NetworkSelectValue.All}
                 chainDistribution={chainDistribution}
@@ -207,12 +193,7 @@ function NetworkList({
               value={NetworkSelectValue.All}
               selected={value === NetworkSelectValue.All}
               chainDistribution={chainDistribution}
-              icon={
-                <AllNetworksIcon
-                  style={{ width: 24, height: 24 }}
-                  role="presentation"
-                />
-              }
+              icon={<AllNetworksIcon style={{ width: 24, height: 24 }} role="presentation" />}
             />
           ),
         }
@@ -244,13 +225,7 @@ function NetworkList({
             index={previousListLength + index + (showAllNetworksOption ? 1 : 0)}
             name={networks.getChainName(chain)}
             value={network.id}
-            icon={
-              <NetworkIcon
-                size={24}
-                src={network.iconUrl}
-                name={network.name}
-              />
-            }
+            icon={<NetworkIcon size={24} src={network.iconUrl} name={network.name} />}
             chainDistribution={chainDistribution}
             selected={network.id === value}
             pinned={networks.isPinned(chain)}
@@ -311,7 +286,7 @@ function SectionView({
       .map((group) =>
         group.key === 'main' && pinned
           ? { ...group, items: [...pinned.items, ...group.items] }
-          : group
+          : group,
       );
   }, [rawGroups]);
 
@@ -325,13 +300,9 @@ function SectionView({
       >
         <VStack gap={8}>
           {groups.map((group, index) => {
-            const isFirstGroup = groups
-              .slice(0, index)
-              .every((prev) => !prev.items.length);
+            const isFirstGroup = groups.slice(0, index).every((prev) => !prev.items.length);
             const previousListLength =
-              groups
-                .slice(0, index)
-                .reduce((count, prev) => count + prev.items.length, 0) +
+              groups.slice(0, index).reduce((count, prev) => count + prev.items.length, 0) +
               (showAllNetworksOption && !isFirstGroup ? 1 : 0);
             return group.items.length ? (
               <NetworkList
@@ -436,7 +407,7 @@ function AddressNetworkList({
   const [query, setQuery] = useState('');
   const debouncedSetSearchParams = useDebouncedCallback(
     useCallback((value: string) => setQuery(value), []),
-    300
+    300,
   );
 
   const groups = useMemo(() => {
@@ -498,9 +469,7 @@ function AddressNetworkList({
             size={36}
             style={{ padding: 8 }}
           >
-            <AddCircleIcon
-              style={{ display: 'block', width: 20, height: 20 }}
-            />
+            <AddCircleIcon style={{ display: 'block', width: 20, height: 20 }} />
           </Button>
           <DialogCloseButton />
         </HStack>
@@ -594,10 +563,7 @@ export function NetworkSelectDialog({
   filterPredicate?: (network: NetworkInfo) => boolean;
   showEcosystemHint: boolean;
 }) {
-  const chains = useMemo(
-    () => Object.keys(chainDistribution?.chains || {}),
-    [chainDistribution]
-  );
+  const chains = useMemo(() => Object.keys(chainDistribution?.chains || {}), [chainDistribution]);
   const { preferences } = usePreferences();
   const { networks } = useNetworks(chains);
 

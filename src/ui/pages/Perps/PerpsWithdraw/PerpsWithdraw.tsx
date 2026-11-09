@@ -39,10 +39,7 @@ function clampAmount(raw: string): string {
   const sanitized = raw.replace(/[^0-9.]/g, '');
   const firstDot = sanitized.indexOf('.');
   if (firstDot === -1) return sanitized;
-  return (
-    sanitized.slice(0, firstDot + 1) +
-    sanitized.slice(firstDot + 1).replace(/\./g, '')
-  );
+  return sanitized.slice(0, firstDot + 1) + sanitized.slice(firstDot + 1).replace(/\./g, '');
 }
 
 function formatUsd(value: string | number): string {
@@ -86,7 +83,7 @@ export function PerpsWithdraw() {
   const balanceLoading = isClearinghouseLoading || !isModeReady;
   const withdrawable = useMemo(
     () => new BigNumber(effectiveWithdrawableUSDC),
-    [effectiveWithdrawableUSDC]
+    [effectiveWithdrawableUSDC],
   );
 
   const { data: config } = usePerpsRemoteConfig();
@@ -94,8 +91,7 @@ export function PerpsWithdraw() {
   const amountBn = parseAmount(amount);
   const amountTooLow = amount !== '' && amountBn.lt(MIN_WITHDRAW_USD);
   const amountTooHigh = amountBn.gt(withdrawable);
-  const amountValid =
-    amount !== '' && amountBn.gt(0) && !amountTooLow && !amountTooHigh;
+  const amountValid = amount !== '' && amountBn.gt(0) && !amountTooLow && !amountTooHigh;
 
   const withdrawMutation = useMutation({
     mutationFn: async () => {
@@ -186,12 +182,7 @@ export function PerpsWithdraw() {
               to="/wallet-select"
               title="Change Wallet"
             >
-              <WalletAvatar
-                active={false}
-                address={address}
-                size={24}
-                borderRadius={6}
-              />
+              <WalletAvatar active={false} address={address} size={24} borderRadius={6} />
             </UnstyledLink>
           ) : undefined
         }
@@ -208,9 +199,7 @@ export function PerpsWithdraw() {
               target.parentElement === container ||
               target.parentElement?.parentElement === container
             ) {
-              const input = event.currentTarget.querySelector(
-                `#${CSS.escape(inputId)}`
-              );
+              const input = event.currentTarget.querySelector(`#${CSS.escape(inputId)}`);
               if (input && input instanceof HTMLInputElement) {
                 input.focus();
               }
@@ -252,23 +241,14 @@ export function PerpsWithdraw() {
                   placeholder="0"
                   autoFocus={true}
                   value={amount}
-                  onChange={(e) =>
-                    setAmount(clampAmount(e.currentTarget.value))
-                  }
+                  onChange={(e) => setAmount(clampAmount(e.currentTarget.value))}
                   className={s.amountInput}
                 />
               </UIText>
             </HStack>
-            <HStack
-              gap={16}
-              justifyContent="space-between"
-              style={{ width: '100%' }}
-            >
+            <HStack gap={16} justifyContent="space-between" style={{ width: '100%' }}>
               {balanceLoading ? (
-                <div
-                  className={s.skeleton}
-                  style={{ width: 132, height: 16 }}
-                />
+                <div className={s.skeleton} style={{ width: 132, height: 16 }} />
               ) : (
                 <UIText
                   kind="small/regular"
@@ -276,10 +256,7 @@ export function PerpsWithdraw() {
                   style={{ display: 'flex', gap: 4 }}
                 >
                   <span>Available</span>
-                  <BlurrableBalance
-                    kind="small/regular"
-                    color="var(--neutral-600)"
-                  >
+                  <BlurrableBalance kind="small/regular" color="var(--neutral-600)">
                     {formatUsd(withdrawable.toFixed())}
                   </BlurrableBalance>
                 </UIText>
@@ -340,10 +317,7 @@ export function PerpsWithdraw() {
                 </UIText>
               </div>
               <div style={{ height: 4 }} />
-              <div
-                className={s.destinationAddressRow}
-                title={normalizedAddress}
-              >
+              <div className={s.destinationAddressRow} title={normalizedAddress}>
                 <UIText
                   kind="caption/regular"
                   color="var(--neutral-500)"
@@ -373,11 +347,7 @@ export function PerpsWithdraw() {
       </VStack>
       <div className={s.absoluteFooter}>
         <Spacer height={16} />
-        <HoldableButton
-          label="Withdraw"
-          disabled={submitDisabled}
-          onFire={handleSubmit}
-        />
+        <HoldableButton label="Withdraw" disabled={submitDisabled} onFire={handleSubmit} />
         <PageBottom />
       </div>
     </PageColumn>

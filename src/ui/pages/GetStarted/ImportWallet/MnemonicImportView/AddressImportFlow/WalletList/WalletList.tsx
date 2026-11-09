@@ -83,9 +83,7 @@ export function WalletListPresentation({
                       title={`Derivation path: ${wallet.mnemonic?.path}`}
                       style={{ cursor: 'help' }}
                     >
-                      {wallet.mnemonic
-                        ? inferIndexFromDerivationPath(wallet.mnemonic.path)
-                        : null}
+                      {wallet.mnemonic ? inferIndexFromDerivationPath(wallet.mnemonic.path) : null}
                     </UIText>
                   ) : null}
                   {renderMedia ? (
@@ -109,9 +107,7 @@ export function WalletListPresentation({
                       detailText={renderDetail?.(index)}
                     />
                   )}
-                  {existingAddressesSet?.has(
-                    normalizeAddress(wallet.address)
-                  ) ? (
+                  {existingAddressesSet?.has(normalizeAddress(wallet.address)) ? (
                     <UIText kind="caption/regular" color="var(--neutral-500)">
                       Already added
                     </UIText>
@@ -135,10 +131,7 @@ export function WalletListPresentation({
                     isInteractive: true,
                     pad: false,
                     component: (
-                      <SurfaceItemButton
-                        onClick={() => onLoadMore?.()}
-                        disabled={isLoadingMore}
-                      >
+                      <SurfaceItemButton onClick={() => onLoadMore?.()} disabled={isLoadingMore}>
                         <UIText kind="body/regular" color="var(--primary)">
                           <HStack alignItems="center" gap={8}>
                             {isLoadingMore ? <CircleSpinner /> : null}
@@ -149,7 +142,7 @@ export function WalletListPresentation({
                     ),
                   },
                 ]
-              : []
+              : [],
           )}
       />
     </VStack>

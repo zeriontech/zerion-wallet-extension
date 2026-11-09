@@ -13,23 +13,16 @@ interface ClassicGasPriceProps {
 
 export function assignGasPrice<
   T extends Partial<
-    Pick<
-      IncomingTransaction,
-      keyof ClassicGasPriceProps | keyof EIP1559Props | 'type'
-    >
+    Pick<IncomingTransaction, keyof ClassicGasPriceProps | keyof EIP1559Props | 'type'>
   >,
->(
-  transaction: T,
-  gasPrice: GasPriceObject
-): T & (ClassicGasPriceProps | EIP1559Props) {
+>(transaction: T, gasPrice: GasPriceObject): T & (ClassicGasPriceProps | EIP1559Props) {
   // Prefer non-zero number for "classic", but prefer zero over nullish:
   const classicGasPrices =
     gasPrice.classic ||
     gasPrice.optimistic?.underlying.classic ||
     (gasPrice.classic ?? gasPrice.optimistic?.underlying.classic);
 
-  const eip1559GasPrices =
-    gasPrice.eip1559 || gasPrice.optimistic?.underlying.eip1559;
+  const eip1559GasPrices = gasPrice.eip1559 || gasPrice.optimistic?.underlying.eip1559;
   if (eip1559GasPrices) {
     delete transaction.gasPrice;
     const EIP1559_TYPE = 2;
@@ -51,7 +44,5 @@ export function assignGasPrice<
       gasPrice: ethers.toQuantity(classicGasPrices),
     });
   }
-  throw new Error(
-    'gasPrice object must include either classic or eip1559 field'
-  );
+  throw new Error('gasPrice object must include either classic or eip1559 field');
 }

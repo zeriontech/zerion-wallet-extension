@@ -50,8 +50,7 @@ export function TokenRow({
 }) {
   const { networks } = useNetworks();
   const isGasAsset =
-    networks?.getNetworkByName(createChain(chainId))?.baseAsset?.id ===
-    fungible.id;
+    networks?.getNetworkByName(createChain(chainId))?.baseAsset?.id === fungible.id;
   const marketCap = fungible.meta.marketCap;
   const fullyDilutedValuation = fungible.meta.fullyDilutedValuation;
   const mcap = formatMarketCap(marketCap);
@@ -106,11 +105,7 @@ export function TokenRow({
             <VerifiedIcon style={{ display: 'block' }} />
           ) : null}
         </HStack>
-        <UIText
-          kind="caption/regular"
-          color="var(--neutral-500)"
-          className={styles.tokenMeta}
-        >
+        <UIText kind="caption/regular" color="var(--neutral-500)" className={styles.tokenMeta}>
           {metaParts.length > 0
             ? metaParts.map((part, i) => (
                 <React.Fragment key={part.label}>
@@ -126,9 +121,7 @@ export function TokenRow({
       </div>
       <div className={styles.tokenValues}>
         {fiatValue != null && fiatValue > 0 ? (
-          <UIText kind="body/regular">
-            {formatCurrencyValue(fiatValue, 'en', currency)}
-          </UIText>
+          <UIText kind="body/regular">{formatCurrencyValue(fiatValue, 'en', currency)}</UIText>
         ) : tokenQuantity != null && tokenQuantity !== '0' ? (
           <UIText kind="body/regular">&nbsp;</UIText>
         ) : null}

@@ -34,27 +34,15 @@ export function SecurityInfo() {
         gap={innerWidth < 720 ? 12 : 32}
         style={{ color: 'var(--always-white)' }}
       >
-        <HStack
-          gap={8}
-          alignItems="center"
-          style={{ paddingBlock: innerWidth < 720 ? 0 : 12 }}
-        >
+        <HStack gap={8} alignItems="center" style={{ paddingBlock: innerWidth < 720 ? 0 : 12 }}>
           <ShieldIcon style={{ width: 20, height: 20 }} />
           <UIText kind="small/accent">Independently audited</UIText>
         </HStack>
-        <HStack
-          gap={8}
-          alignItems="center"
-          style={{ paddingBlock: innerWidth < 720 ? 0 : 12 }}
-        >
+        <HStack gap={8} alignItems="center" style={{ paddingBlock: innerWidth < 720 ? 0 : 12 }}>
           <EyeIcon style={{ width: 20, height: 20 }} />
           <UIText kind="small/accent">Open-sourced</UIText>
         </HStack>
-        <HStack
-          gap={8}
-          alignItems="center"
-          style={{ paddingBlock: innerWidth < 720 ? 0 : 12 }}
-        >
+        <HStack gap={8} alignItems="center" style={{ paddingBlock: innerWidth < 720 ? 0 : 12 }}>
           <PersonIcon style={{ width: 20, height: 20 }} />
           <UIText kind="small/accent">Self custodial</UIText>
         </HStack>

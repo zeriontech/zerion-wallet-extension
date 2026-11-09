@@ -6,10 +6,7 @@ import type { BackendSourceParams } from '../shared';
 export function useAssetFullInfo(
   params: Params,
   { source }: BackendSourceParams,
-  {
-    suspense = false,
-    enabled = true,
-  }: { suspense?: boolean; enabled?: boolean } = {}
+  { suspense = false, enabled = true }: { suspense?: boolean; enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: ['assetGetFungibleFullInfo', params, source],

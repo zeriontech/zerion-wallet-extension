@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import {
-  Combobox,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxProvider,
-} from '@ariakit/react';
+import { Combobox, ComboboxItem, ComboboxList, ComboboxProvider } from '@ariakit/react';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import type { OnrampAsset } from 'src/modules/zerion-api/types/DepositFlow';
@@ -58,18 +53,9 @@ function assetKey(asset: OnrampAsset) {
  * side-by-side tiles: passing `ecosystem` narrows the list to a single entry,
  * so there is nothing to sit beside.
  */
-function FeaturedAsset({
-  asset,
-  search,
-}: {
-  asset: OnrampAsset;
-  search: string;
-}) {
+function FeaturedAsset({ asset, search }: { asset: OnrampAsset; search: string }) {
   return (
-    <UnstyledLink
-      to={formPathFor(asset, search)}
-      className={styles.featuredTile}
-    >
+    <UnstyledLink to={formPathFor(asset, search)} className={styles.featuredTile}>
       <HStack gap={12} alignItems="center">
         <TokenAndNetworkIcon
           size={48}
@@ -153,13 +139,12 @@ function GasTokenHint() {
         <VStack gap={4}>
           <UIText kind="small/accent">Get Started</UIText>
           <UIText kind="small/regular">
-            To start trading, you&apos;ll need a gas token such as ETH for
-            Ethereum or SOL for Solana. A gas token is what pays for transaction
-            fees on the network.
+            To start trading, you&apos;ll need a gas token such as ETH for Ethereum or SOL for
+            Solana. A gas token is what pays for transaction fees on the network.
             <br />
             <br />
-            We&apos;ve automatically selected the most common network for this
-            token, shown by the small badge next to the token icon.
+            We&apos;ve automatically selected the most common network for this token, shown by the
+            small badge next to the token icon.
           </UIText>
         </VStack>
       </Tooltip>
@@ -181,7 +166,7 @@ export function DepositTokenSelect() {
       ecosystem: singleAddress ? getOnrampEcosystem(singleAddress) : undefined,
       query: query || undefined,
     },
-    { enabled: Boolean(singleAddress) }
+    { enabled: Boolean(singleAddress) },
   );
 
   const data = suggestedTokensQuery.data?.data;
@@ -190,14 +175,10 @@ export function DepositTokenSelect() {
   const assets = data?.assets;
   const isSearching = Boolean(inputValue);
   const showSkeleton =
-    suggestedTokensQuery.isLoading ||
-    (isSearching && suggestedTokensQuery.isFetching);
+    suggestedTokensQuery.isLoading || (isSearching && suggestedTokensQuery.isFetching);
 
   const noFundingOptions =
-    suggestedTokensQuery.isSuccess &&
-    !isSearching &&
-    !featuredAssets?.length &&
-    !assets?.length;
+    suggestedTokensQuery.isSuccess && !isSearching && !featuredAssets?.length && !assets?.length;
 
   return (
     <Background backgroundKind="white">
@@ -231,28 +212,16 @@ export function DepositTokenSelect() {
                       same neutral read as one mumbled paragraph. Black at 16px
                       puts it between that caption and the 20px section
                       headings, which is the rank an instruction wants. */}
-                  <UIText kind="body/accent">
-                    To get started, select one of these gas tokens
-                  </UIText>
+                  <UIText kind="body/accent">To get started, select one of these gas tokens</UIText>
                   {featuredAssets.map((asset) => (
-                    <FeaturedAsset
-                      key={assetKey(asset)}
-                      asset={asset}
-                      search={search}
-                    />
+                    <FeaturedAsset key={assetKey(asset)} asset={asset} search={search} />
                   ))}
                 </VStack>
               ) : null}
 
-              <div
-                className={styles.stickySearch}
-                style={{ top: NAVIGATION_BAR_HEIGHT }}
-              >
+              <div className={styles.stickySearch} style={{ top: NAVIGATION_BAR_HEIGHT }}>
                 <div className={styles.searchWrapper}>
-                  <SearchIcon
-                    role="presentation"
-                    className={styles.searchIcon}
-                  />
+                  <SearchIcon role="presentation" className={styles.searchIcon} />
                   <Combobox
                     autoSelect="always"
                     placeholder="Search tokens..."
@@ -271,16 +240,10 @@ export function DepositTokenSelect() {
                 // max-height of its own the way the web app's card does
               >
                 {showSkeleton ? (
-                  Array.from({ length: 5 }, (_, index) => (
-                    <AssetRowSkeleton key={index} />
-                  ))
+                  Array.from({ length: 5 }, (_, index) => <AssetRowSkeleton key={index} />)
                 ) : assets?.length ? (
                   assets.map((asset) => (
-                    <AssetRow
-                      key={assetKey(asset)}
-                      asset={asset}
-                      search={search}
-                    />
+                    <AssetRow key={assetKey(asset)} asset={asset} search={search} />
                   ))
                 ) : isSearching ? (
                   <div className={styles.emptyState}>

@@ -10,8 +10,7 @@ export function initializeSidepanelMessaging() {
         const { initialWindowId } = browserState;
         const isSidepanel = urlContext.windowType === 'sidepanel';
         const { windowId } = request.payload.params;
-        const isTargetWindow =
-          windowId == null ? true : windowId === initialWindowId;
+        const isTargetWindow = windowId == null ? true : windowId === initialWindowId;
         if (isSidepanel && isTargetWindow) {
           return { sidepanelStatus: 'open' };
         } else {

@@ -29,15 +29,10 @@ export function WalletAvatar({
     useErrorBoundary: false,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
-  const isPremium =
-    !disablePremiumHighlight && Boolean(data?.at(0)?.membership.premium);
+  const isPremium = !disablePremiumHighlight && Boolean(data?.at(0)?.membership.premium);
 
   if (isLoading) {
-    return (
-      <div style={{ width: size, height: size, position: 'relative' }}>
-        {icon}
-      </div>
-    );
+    return <div style={{ width: size, height: size, position: 'relative' }}>{icon}</div>;
   }
 
   return (

@@ -8,10 +8,7 @@ import { emitter } from '../events';
 import type { Account } from '../account/Account';
 import { INTERNAL_SYMBOL_CONTEXT } from '../Wallet/Wallet';
 
-function registerChainAndAddressIfPossible(
-  chain: string,
-  address: string | null
-) {
+function registerChainAndAddressIfPossible(chain: string, address: string | null) {
   if (address && !isCustomNetworkId(chain.toString())) {
     ZerionAPI.registerChain({
       chain: chain.toString(),
@@ -28,31 +25,26 @@ export function initialize(account: Account) {
   // Backend needs these events to initialize chain listening for the address in case the chain is not fully supported
   emitter.on('chainChanged', registerChain);
   emitter.on('ui:chainSelected', registerChain);
-  emitter.on(
-    'requestAccountsResolved',
-    async ({ origin, address, explicitly }) => {
-      if (!explicitly) {
-        return;
-      }
-      const chainId = await account
-        .getCurrentWallet()
-        .getChainIdForOrigin({ origin });
-      if (!chainId) {
-        return;
-      }
-      const preferences = await account
-        .getCurrentWallet()
-        .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
-      const network = await fetchNetworkByChainId({
-        chainId,
-        preferences,
-        apiEnv: 'testnet-first',
-      });
-      if (network) {
-        registerChainAndAddressIfPossible(network.id, address);
-      }
+  emitter.on('requestAccountsResolved', async ({ origin, address, explicitly }) => {
+    if (!explicitly) {
+      return;
     }
-  );
+    const chainId = await account.getCurrentWallet().getChainIdForOrigin({ origin });
+    if (!chainId) {
+      return;
+    }
+    const preferences = await account
+      .getCurrentWallet()
+      .getPreferences({ context: INTERNAL_SYMBOL_CONTEXT });
+    const network = await fetchNetworkByChainId({
+      chainId,
+      preferences,
+      apiEnv: 'testnet-first',
+    });
+    if (network) {
+      registerChainAndAddressIfPossible(network.id, address);
+    }
+  });
 
   // Backend needs this event to initialize address listening for chains without total support
   emitter.on('walletCreated', async ({ walletContainer, origin }) => {

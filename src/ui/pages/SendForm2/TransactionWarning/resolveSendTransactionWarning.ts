@@ -14,7 +14,7 @@ export type { ResolvedTransactionWarning, SimulationResult };
 
 export function backendErrorToMessage(
   error: TransactionPrepareError,
-  context: { assetSymbol?: string | null; nativeAssetSymbol?: string | null }
+  context: { assetSymbol?: string | null; nativeAssetSymbol?: string | null },
 ): string {
   if (error.code === 1) {
     const symbol = context.assetSymbol;
@@ -22,9 +22,7 @@ export function backendErrorToMessage(
   }
   if (error.code === 2) {
     const symbol = context.nativeAssetSymbol;
-    return symbol
-      ? `Insufficient ${symbol} for gas`
-      : 'Insufficient balance for gas';
+    return symbol ? `Insufficient ${symbol} for gas` : 'Insufficient balance for gas';
   }
   return error.message;
 }

@@ -31,16 +31,12 @@ export function EmptyView2(
     | {
         title: React.ReactNode;
         message: React.ReactNode;
-      }
+      },
 ) {
   return (
     <FillView>
       <VStack gap={16} style={{ textAlign: 'center' }}>
-        <img
-          src={noResultsImg}
-          style={{ height: 64, placeSelf: 'center' }}
-          alt=""
-        />
+        <img src={noResultsImg} style={{ height: 64, placeSelf: 'center' }} alt="" />
         {'children' in props ? (
           props.children
         ) : (

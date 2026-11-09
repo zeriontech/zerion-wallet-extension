@@ -25,9 +25,7 @@ export function ViewLoading({ size = '24px', kind = 'default' }: Props) {
 
           {kind === 'network' ? (
             <UIText kind="small/regular" color="var(--neutral-600)">
-              {isTooLong
-                ? `Request is taking longer than usual${ellipsis}`
-                : NBSP}
+              {isTooLong ? `Request is taking longer than usual${ellipsis}` : NBSP}
             </UIText>
           ) : null}
         </VStack>
@@ -36,10 +34,7 @@ export function ViewLoading({ size = '24px', kind = 'default' }: Props) {
   );
 }
 
-export function ViewLoadingSuspense({
-  children,
-  ...props
-}: React.PropsWithChildren<Props>) {
+export function ViewLoadingSuspense({ children, ...props }: React.PropsWithChildren<Props>) {
   return (
     <React.Suspense
       fallback={

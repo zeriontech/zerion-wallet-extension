@@ -1,7 +1,4 @@
-import {
-  BrowserStorage,
-  clearStorageArtefacts,
-} from 'src/background/webapis/storage';
+import { BrowserStorage, clearStorageArtefacts } from 'src/background/webapis/storage';
 import { Account } from 'src/background/account/Account';
 import { STORAGE_VERSION, checkExisingData, getCurrentVersion } from './shared';
 

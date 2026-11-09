@@ -9,10 +9,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { invariant } from 'src/shared/invariant';
 import type { StrengthStats } from 'src/shared/validation/password-strength';
-import {
-  Strength,
-  estimatePasswordStrengh,
-} from 'src/shared/validation/password-strength';
+import { Strength, estimatePasswordStrengh } from 'src/shared/validation/password-strength';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -31,12 +28,7 @@ function WeakPasswordWarning() {
   return (
     <VStack gap={24}>
       <VStack gap={8}>
-        <WarningIcon
-          size={40}
-          outlineStrokeWidth={6}
-          borderWidth="3px"
-          glow={true}
-        />
+        <WarningIcon size={40} outlineStrokeWidth={6} borderWidth="3px" glow={true} />
         <UIText kind="headline/h2">Weak Password</UIText>
         <UIText kind="body/regular">
           Your current password choice seems weak.
@@ -135,13 +127,7 @@ function CreatePasswordForm({
   );
 }
 
-function ConfirmPasswordForm({
-  password,
-  onSubmit,
-}: {
-  password: string;
-  onSubmit: () => void;
-}) {
+function ConfirmPasswordForm({ password, onSubmit }: { password: string; onSubmit: () => void }) {
   invariant(Boolean(password), 'Password must be a non-empty string');
   const [value, setValue] = useState('');
   const [formError, setFormError] = useState<null | {
@@ -155,9 +141,7 @@ function ConfirmPasswordForm({
       onSubmit={(event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const repeatedPassword = formData.get('confirmPassword') as
-          | string
-          | undefined;
+        const repeatedPassword = formData.get('confirmPassword') as string | undefined;
         if (!password) {
           return;
         }
@@ -190,10 +174,7 @@ function ConfirmPasswordForm({
           ) : null}
         </VStack>
         <div style={{ display: 'flex' }}>
-          <CheckmarkBadge
-            text="Passwords match"
-            positive={value === password}
-          />
+          <CheckmarkBadge text="Passwords match" positive={value === password} />
         </div>
       </VStack>
       <Spacer height={74} />
@@ -239,13 +220,9 @@ export function Password({
               onSubmit={({ value, stats }) => {
                 setValue(value);
                 if (stats.strength === Strength.weak) {
-                  navigate(
-                    `?view=${ViewParam.password}&step=${PasswordStep.warning}`
-                  );
+                  navigate(`?view=${ViewParam.password}&step=${PasswordStep.warning}`);
                 } else {
-                  navigate(
-                    `?view=${ViewParam.password}&step=${PasswordStep.confirm}`
-                  );
+                  navigate(`?view=${ViewParam.password}&step=${PasswordStep.confirm}`);
                 }
               }}
             />

@@ -1,10 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Combobox,
-  ComboboxProvider,
-  ComboboxItem,
-} from '@ariakit/react/combobox';
+import { Combobox, ComboboxProvider, ComboboxItem } from '@ariakit/react/combobox';
 import { normalizedContains } from 'normalized-contains';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import PersonIcon from 'jsx:src/ui/assets/person.svg';
@@ -27,11 +23,7 @@ import * as styles from './ReceiverAddressDialog.module.css';
 const SKELETON_ROW_COUNT = 6;
 const RECENTS_LIMIT = 3;
 
-function matches(
-  query: string,
-  item: AddressItem,
-  handlesByAddress: Map<string, string[]>
-) {
+function matches(query: string, item: AddressItem, handlesByAddress: Map<string, string[]>) {
   if (!query) {
     return true;
   }
@@ -75,19 +67,13 @@ export function ReceiverAddressDialog({
   showAddressBookSection?: boolean;
 }) {
   const [searchValue, setSearchValue] = useState('');
-  const {
-    recentItems,
-    addressBookItems,
-    walletItems,
-    watchlistItems,
-    isLoading,
-  } = useReceiverAddressItems();
+  const { recentItems, addressBookItems, walletItems, watchlistItems, isLoading } =
+    useReceiverAddressItems();
 
   const allAddresses = useMemo(() => {
     const set = new Set<string>();
     for (const item of recentItems) set.add(normalizeAddress(item.address));
-    for (const item of addressBookItems)
-      set.add(normalizeAddress(item.address));
+    for (const item of addressBookItems) set.add(normalizeAddress(item.address));
     for (const item of walletItems) set.add(normalizeAddress(item.address));
     for (const item of watchlistItems) set.add(normalizeAddress(item.address));
     return Array.from(set);
@@ -123,10 +109,7 @@ export function ReceiverAddressDialog({
       if (!normalizedValue) {
         return null;
       }
-      if (
-        isEthereumAddress(normalizedValue) ||
-        isSolanaAddress(normalizedValue)
-      ) {
+      if (isEthereumAddress(normalizedValue) || isSolanaAddress(normalizedValue)) {
         return normalizedValue;
       }
       return resolveDomain(normalizedValue);
@@ -150,46 +133,36 @@ export function ReceiverAddressDialog({
       recentItems
         .filter(
           (item) =>
-            (predicate?.(item.address) ?? true) &&
-            matches(searchValue, item, handlesByAddress)
+            (predicate?.(item.address) ?? true) && matches(searchValue, item, handlesByAddress),
         )
         .slice(0, RECENTS_LIMIT),
-    [recentItems, predicate, searchValue, handlesByAddress]
+    [recentItems, predicate, searchValue, handlesByAddress],
   );
   const filteredAddressBook = useMemo(
     () =>
       showAddressBookSection
         ? addressBookItems.filter(
             (item) =>
-              (predicate?.(item.address) ?? true) &&
-              matches(searchValue, item, handlesByAddress)
+              (predicate?.(item.address) ?? true) && matches(searchValue, item, handlesByAddress),
           )
         : [],
-    [
-      showAddressBookSection,
-      addressBookItems,
-      predicate,
-      searchValue,
-      handlesByAddress,
-    ]
+    [showAddressBookSection, addressBookItems, predicate, searchValue, handlesByAddress],
   );
   const filteredWallets = useMemo(
     () =>
       walletItems.filter(
         (item) =>
-          (predicate?.(item.address) ?? true) &&
-          matches(searchValue, item, handlesByAddress)
+          (predicate?.(item.address) ?? true) && matches(searchValue, item, handlesByAddress),
       ),
-    [walletItems, predicate, searchValue, handlesByAddress]
+    [walletItems, predicate, searchValue, handlesByAddress],
   );
   const filteredWatchlist = useMemo(
     () =>
       watchlistItems.filter(
         (item) =>
-          (predicate?.(item.address) ?? true) &&
-          matches(searchValue, item, handlesByAddress)
+          (predicate?.(item.address) ?? true) && matches(searchValue, item, handlesByAddress),
       ),
-    [watchlistItems, predicate, searchValue, handlesByAddress]
+    [watchlistItems, predicate, searchValue, handlesByAddress],
   );
 
   const exactMatch = useMemo<RowData | null>(() => {
@@ -207,38 +180,30 @@ export function ReceiverAddressDialog({
   const dedupedRecents = useMemo(
     () =>
       exactMatchAddress
-        ? filteredRecents.filter(
-            (item) => normalizeAddress(item.address) !== exactMatchAddress
-          )
+        ? filteredRecents.filter((item) => normalizeAddress(item.address) !== exactMatchAddress)
         : filteredRecents,
-    [filteredRecents, exactMatchAddress]
+    [filteredRecents, exactMatchAddress],
   );
   const dedupedAddressBook = useMemo(
     () =>
       exactMatchAddress
-        ? filteredAddressBook.filter(
-            (item) => normalizeAddress(item.address) !== exactMatchAddress
-          )
+        ? filteredAddressBook.filter((item) => normalizeAddress(item.address) !== exactMatchAddress)
         : filteredAddressBook,
-    [filteredAddressBook, exactMatchAddress]
+    [filteredAddressBook, exactMatchAddress],
   );
   const dedupedWallets = useMemo(
     () =>
       exactMatchAddress
-        ? filteredWallets.filter(
-            (item) => normalizeAddress(item.address) !== exactMatchAddress
-          )
+        ? filteredWallets.filter((item) => normalizeAddress(item.address) !== exactMatchAddress)
         : filteredWallets,
-    [filteredWallets, exactMatchAddress]
+    [filteredWallets, exactMatchAddress],
   );
   const dedupedWatchlist = useMemo(
     () =>
       exactMatchAddress
-        ? filteredWatchlist.filter(
-            (item) => normalizeAddress(item.address) !== exactMatchAddress
-          )
+        ? filteredWatchlist.filter((item) => normalizeAddress(item.address) !== exactMatchAddress)
         : filteredWatchlist,
-    [filteredWatchlist, exactMatchAddress]
+    [filteredWatchlist, exactMatchAddress],
   );
 
   const errorMessage = useMemo(() => {
@@ -310,13 +275,7 @@ export function ReceiverAddressDialog({
       }
     }
     return list;
-  }, [
-    exactMatch,
-    dedupedRecents,
-    dedupedAddressBook,
-    dedupedWallets,
-    dedupedWatchlist,
-  ]);
+  }, [exactMatch, dedupedRecents, dedupedAddressBook, dedupedWallets, dedupedWatchlist]);
 
   const handlePick = (address: string) => {
     onSelect(address);
@@ -324,10 +283,7 @@ export function ReceiverAddressDialog({
   };
 
   const isEmpty = virtualItems.length === 0;
-  const hasAnyItems =
-    recentItems.length > 0 ||
-    walletItems.length > 0 ||
-    watchlistItems.length > 0;
+  const hasAnyItems = recentItems.length > 0 || walletItems.length > 0 || watchlistItems.length > 0;
 
   return (
     <Dialog2
@@ -433,10 +389,7 @@ export function ReceiverAddressDialog({
                       onClick={() => handlePick(row.address)}
                     >
                       <div className={styles.rowInner}>
-                        <AddressListItem
-                          address={row.address}
-                          localName={row.name}
-                        />
+                        <AddressListItem address={row.address} localName={row.name} />
                       </div>
                     </ComboboxItem>
                   )

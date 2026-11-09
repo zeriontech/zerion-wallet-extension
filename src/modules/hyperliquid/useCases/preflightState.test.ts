@@ -23,7 +23,7 @@ describe('derivePreflightState', () => {
   test('user role "missing" → hyperliquidEnabled = false', () => {
     const state = derivePreflightState(
       { ...EMPTY_RAW, userRole: { role: 'missing' } },
-      { requiredMaxBuilderFee: 100 }
+      { requiredMaxBuilderFee: 100 },
     );
     expect(state.hyperliquidEnabled).toBe(false);
   });
@@ -31,7 +31,7 @@ describe('derivePreflightState', () => {
   test('user role "user" → hyperliquidEnabled = true', () => {
     const state = derivePreflightState(
       { ...EMPTY_RAW, userRole: { role: 'user' } },
-      { requiredMaxBuilderFee: 100 }
+      { requiredMaxBuilderFee: 100 },
     );
     expect(state.hyperliquidEnabled).toBe(true);
   });
@@ -42,7 +42,7 @@ describe('derivePreflightState', () => {
         ...EMPTY_RAW,
         referral: { referredBy: { referrer: '0xabc', code: 'ZERION' } },
       },
-      { requiredMaxBuilderFee: 100 }
+      { requiredMaxBuilderFee: 100 },
     );
     expect(state.referrerSet).toBe(true);
   });
@@ -50,7 +50,7 @@ describe('derivePreflightState', () => {
   test('approved builder fee >= required → builderFeeApproved = true', () => {
     const state = derivePreflightState(
       { ...EMPTY_RAW, maxBuilderFee: 100 },
-      { requiredMaxBuilderFee: 100 }
+      { requiredMaxBuilderFee: 100 },
     );
     expect(state.builderFeeApproved).toBe(true);
   });
@@ -58,14 +58,14 @@ describe('derivePreflightState', () => {
   test('approved builder fee < required → builderFeeApproved = false', () => {
     const state = derivePreflightState(
       { ...EMPTY_RAW, maxBuilderFee: 50 },
-      { requiredMaxBuilderFee: 100 }
+      { requiredMaxBuilderFee: 100 },
     );
     expect(state.builderFeeApproved).toBe(false);
   });
 
   function clearinghouseWithPosition(
     coin: string,
-    leverage: { type: 'cross' | 'isolated'; value: number }
+    leverage: { type: 'cross' | 'isolated'; value: number },
   ): PreflightRawState['clearinghouseState'] {
     return {
       marginSummary: {
@@ -112,7 +112,7 @@ describe('derivePreflightState', () => {
           value: 7,
         }),
       },
-      { requiredMaxBuilderFee: 100, coin: 'BTC' }
+      { requiredMaxBuilderFee: 100, coin: 'BTC' },
     );
     expect(state.currentLeverage).toEqual({ value: 7, isCross: true });
   });
@@ -126,7 +126,7 @@ describe('derivePreflightState', () => {
           value: 1,
         }),
       },
-      { requiredMaxBuilderFee: 100, coin: 'xyz:SP500' }
+      { requiredMaxBuilderFee: 100, coin: 'xyz:SP500' },
     );
     expect(state.currentLeverage).toEqual({ value: 1, isCross: false });
   });
@@ -140,7 +140,7 @@ describe('derivePreflightState', () => {
           value: 3,
         }),
       },
-      { requiredMaxBuilderFee: 100, coin: 'XYZ:sp500' }
+      { requiredMaxBuilderFee: 100, coin: 'XYZ:sp500' },
     );
     expect(state.currentLeverage).toEqual({ value: 3, isCross: false });
   });

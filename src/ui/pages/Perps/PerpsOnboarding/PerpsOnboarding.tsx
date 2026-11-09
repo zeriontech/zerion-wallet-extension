@@ -50,13 +50,7 @@ const SLIDES: Slide[] = [
   },
 ];
 
-export function PerpsOnboarding({
-  open,
-  onDismiss,
-}: {
-  open: boolean;
-  onDismiss: () => void;
-}) {
+export function PerpsOnboarding({ open, onDismiss }: { open: boolean; onDismiss: () => void }) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const isLast = index === SLIDES.length - 1;

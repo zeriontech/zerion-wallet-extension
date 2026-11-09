@@ -40,22 +40,12 @@ export function WalletSelectButton({
   // it pops the history entry instead, which is cheaper and keeps the stack flat
   const state = useMemo(
     () => ({ from: `${location.pathname}${location.search}` }),
-    [location.pathname, location.search]
+    [location.pathname, location.search],
   );
 
   return (
-    <UnstyledLink
-      to={to}
-      state={state}
-      title={title}
-      style={{ display: 'flex' }}
-    >
-      <WalletAvatar
-        active={false}
-        address={address}
-        size={size}
-        borderRadius={borderRadius}
-      />
+    <UnstyledLink to={to} state={state} title={title} style={{ display: 'flex' }}>
+      <WalletAvatar active={false} address={address} size={size} borderRadius={borderRadius} />
     </UnstyledLink>
   );
 }

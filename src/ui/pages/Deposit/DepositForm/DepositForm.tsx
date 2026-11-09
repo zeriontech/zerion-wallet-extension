@@ -49,8 +49,7 @@ function DepositFormView({ address }: { address: string }) {
     isLoading: isFormStateLoading,
   } = useDepositFormState({ address });
 
-  const { fiatValue, currency, outputFungibleId, outputChain, countryId } =
-    formState;
+  const { fiatValue, currency, outputFungibleId, outputChain, countryId } = formState;
 
   const { search } = useLocation();
   // Falls back to navigating when the token step isn't behind us, which is how
@@ -66,9 +65,7 @@ function DepositFormView({ address }: { address: string }) {
   // key rather than an invisible dependency of it
   const applePayQuery = useApplePaySupported();
 
-  const hasValidAmount = Boolean(
-    fiatValue && isNumeric(fiatValue) && Number(fiatValue) > 0
-  );
+  const hasValidAmount = Boolean(fiatValue && isNumeric(fiatValue) && Number(fiatValue) > 0);
 
   const quotesQuery = useDepositQuotes(
     {
@@ -89,17 +86,15 @@ function DepositFormView({ address }: { address: string }) {
         hasValidAmount &&
         // Don't fire before the probe settles, or the first request would go
         // out with the wrong flag and immediately be superseded
-        !applePayQuery.isLoading
+        !applePayQuery.isLoading,
       ),
-    }
+    },
   );
 
   // Provider and payment method are chosen against a specific quote list, so a
   // change to any input that re-prices invalidates the choice
   const [userProviderId, setUserProviderId] = useState<string | null>(null);
-  const [userPaymentMethodId, setUserPaymentMethodId] = useState<string | null>(
-    null
-  );
+  const [userPaymentMethodId, setUserPaymentMethodId] = useState<string | null>(null);
   useEffect(() => {
     setUserProviderId(null);
     setUserPaymentMethodId(null);
@@ -112,14 +107,7 @@ function DepositFormView({ address }: { address: string }) {
   const resetHandoff = handoffMutation.reset;
   useEffect(() => {
     resetHandoff();
-  }, [
-    resetHandoff,
-    currency,
-    outputFungibleId,
-    outputChain,
-    countryId,
-    fiatValue,
-  ]);
+  }, [resetHandoff, currency, outputFungibleId, outputChain, countryId, fiatValue]);
 
   const quotes = quotesQuery.data?.data.quotes ?? null;
 
@@ -127,17 +115,13 @@ function DepositFormView({ address }: { address: string }) {
     if (!quotes) {
       return null;
     }
-    const userQuote = quotes.find(
-      (quote) => quote.provider.id === userProviderId
-    );
+    const userQuote = quotes.find((quote) => quote.provider.id === userProviderId);
     return userQuote ?? quotes.at(0) ?? null;
   }, [quotes, userProviderId]);
 
   const selectedPaymentMethod = useMemo(() => {
     const methods = selectedQuote?.supportedPaymentMethods;
-    const userMethod = methods?.find(
-      (method) => method.id === userPaymentMethodId
-    );
+    const userMethod = methods?.find((method) => method.id === userPaymentMethodId);
     return userMethod ?? methods?.at(0) ?? null;
   }, [selectedQuote, userPaymentMethodId]);
 
@@ -162,8 +146,10 @@ function DepositFormView({ address }: { address: string }) {
       });
     }
   }, [handoffMutation, selectedQuote, selectedPaymentMethod]);
-  const { guardedFire: guardedHandoff, dialog: readonlyReceiverDialog } =
-    useReadonlyReceiverGate({ to: address, fire: fireHandoff });
+  const { guardedFire: guardedHandoff, dialog: readonlyReceiverDialog } = useReadonlyReceiverGate({
+    to: address,
+    fire: fireHandoff,
+  });
 
   const noQuotes = quotesQuery.isSuccess && quotes?.length === 0;
 
@@ -188,10 +174,7 @@ function DepositFormView({ address }: { address: string }) {
 
   return (
     <Background backgroundKind="white">
-      <DepositHeaderControls
-        address={address}
-        onSettings={settingsDialog.openDialog}
-      />
+      <DepositHeaderControls address={address} onSettings={settingsDialog.openDialog} />
       <PageColumn>
         <Spacer height={DEPOSIT_PAGE_TOP} />
         {/* No `backTo`: the URL bar's own back button pops, which returns to
@@ -215,9 +198,7 @@ function DepositFormView({ address }: { address: string }) {
                     className={styles.currencyButton}
                     onClick={currencyDialog.openDialog}
                   >
-                    <UIText kind="headline/h3">
-                      {currency?.toUpperCase()}
-                    </UIText>
+                    <UIText kind="headline/h3">{currency?.toUpperCase()}</UIText>
                     <ChevronDownIcon className={styles.chevron} />
                   </UnstyledButton>
                 }
@@ -241,9 +222,7 @@ function DepositFormView({ address }: { address: string }) {
                         placeholder="0"
                         className={styles.amountInput}
                         value={value}
-                        onChange={(event) =>
-                          onInputChange(event.target.value.replace(',', '.'))
-                        }
+                        onChange={(event) => onInputChange(event.target.value.replace(',', '.'))}
                       />
                     )}
                   />
@@ -276,9 +255,7 @@ function DepositFormView({ address }: { address: string }) {
                           networkIconSize={16}
                           networkIconBorderRadius={6}
                         />
-                        <UIText kind="headline/h3">
-                          {outputPreview.symbol}
-                        </UIText>
+                        <UIText kind="headline/h3">{outputPreview.symbol}</UIText>
                       </HStack>
                     ) : (
                       <HStack gap={8} alignItems="center">
@@ -344,10 +321,7 @@ function DepositFormView({ address }: { address: string }) {
               />
             ) : null}
             {quotesQuery.isError ? (
-              <Callout
-                kind="negative"
-                description={getError(quotesQuery.error).message}
-              />
+              <Callout kind="negative" description={getError(quotesQuery.error).message} />
             ) : null}
             {handoffMutation.isError ? (
               <Callout
@@ -382,11 +356,7 @@ function DepositFormView({ address }: { address: string }) {
                 )}
               </Button>
             ) : (
-              <Button
-                kind="primary"
-                type="button"
-                onClick={settingsDialog.openDialog}
-              >
+              <Button kind="primary" type="button" onClick={settingsDialog.openDialog}>
                 {countryId ? 'Change Country' : 'Select Country'}
               </Button>
             )}
@@ -398,12 +368,8 @@ function DepositFormView({ address }: { address: string }) {
                 onClick={settingsDialog.openDialog}
               >
                 <HStack gap={8} alignItems="center" justifyContent="center">
-                  <UIText
-                    kind="body/regular"
-                    className={styles.settingsSummaryLabel}
-                  >
-                    {selectedPaymentMethod?.name ?? 'Buy'} via{' '}
-                    {selectedQuote.provider.name}
+                  <UIText kind="body/regular" className={styles.settingsSummaryLabel}>
+                    {selectedPaymentMethod?.name ?? 'Buy'} via {selectedQuote.provider.name}
                   </UIText>
                   <ChevronDownIcon
                     className={styles.chevron}

@@ -56,9 +56,7 @@ export function ReceiverAddressSelector({
     ? `${getEcosystemLabel(ecosystem)} Recipient Address`
     : 'Recipient Address';
 
-  const dialogTitle = ecosystem
-    ? `${getEcosystemLabel(ecosystem)} Recipient`
-    : 'Recipient';
+  const dialogTitle = ecosystem ? `${getEcosystemLabel(ecosystem)} Recipient` : 'Recipient';
 
   const normalizedTo = formState.to ? normalizeAddress(formState.to) : null;
   const display = useReceiverDisplayName(normalizedTo);
@@ -74,7 +72,7 @@ export function ReceiverAddressSelector({
     (address: string) => {
       onChange('to', address);
     },
-    [onChange]
+    [onChange],
   );
 
   const handleClear = useCallback(
@@ -82,7 +80,7 @@ export function ReceiverAddressSelector({
       event.stopPropagation();
       onChange('to', undefined);
     },
-    [onChange]
+    [onChange],
   );
 
   const predicate = useCallback(
@@ -90,7 +88,7 @@ export function ReceiverAddressSelector({
       if (!ecosystem) return true;
       return isMatchForEcosystem(address, ecosystem);
     },
-    [ecosystem]
+    [ecosystem],
   );
 
   const validateMatch = useCallback(
@@ -99,10 +97,10 @@ export function ReceiverAddressSelector({
       if (isMatchForEcosystem(address, ecosystem)) return '';
       const wrongLabel = ecosystem === 'evm' ? 'Solana' : 'Ethereum';
       return `This is a ${wrongLabel} address. Enter a ${getEcosystemLabel(
-        ecosystem
+        ecosystem,
       )} address for ${outputNetwork.name}.`;
     },
-    [ecosystem, outputNetwork]
+    [ecosystem, outputNetwork],
   );
 
   const visible = isCrossEcosystem || (isCrossChain && receiveToAnotherAddress);
@@ -174,11 +172,7 @@ export function ReceiverAddressSelector({
               </VStack>
             </div>
             <div className={styles.actions}>
-              <UnstyledButton
-                type="button"
-                className={styles.closeButton}
-                onClick={handleClear}
-              >
+              <UnstyledButton type="button" className={styles.closeButton} onClick={handleClear}>
                 <CloseIcon style={{ width: 20, height: 20 }} />
               </UnstyledButton>
             </div>

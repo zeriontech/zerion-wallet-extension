@@ -62,8 +62,7 @@ function updateChartPoints<T>({
       data: toScatterData(prevPoints),
       borderColor: getChartColor({
         theme,
-        isPositive:
-          (prevPoints.at(0)?.[1] || 0) <= (prevPoints.at(-1)?.[1] || 0),
+        isPositive: (prevPoints.at(0)?.[1] || 0) <= (prevPoints.at(-1)?.[1] || 0),
         isHighlighted: false,
       }),
     };
@@ -127,9 +126,7 @@ function getSegmentColor<T>({
   const startValue = chartPoints.at(startRangeIndex ?? 0)?.[1] || 0;
 
   const afterActivePoint =
-    startRangeIndex === null &&
-    endRangeIndex != null &&
-    ctx.p1DataIndex > endRangeIndex;
+    startRangeIndex === null && endRangeIndex != null && ctx.p1DataIndex > endRangeIndex;
 
   const insideTheRange =
     startRangeIndex !== null &&
@@ -190,15 +187,11 @@ export function Chart<T>({
   themeRef.current = theme;
 
   const maxChartPointValue = useMemo(() => {
-    return chartPoints.length
-      ? Math.max(...chartPoints.map(([, value]) => value))
-      : null;
+    return chartPoints.length ? Math.max(...chartPoints.map(([, value]) => value)) : null;
   }, [chartPoints]);
 
   const minChartPointValue = useMemo(() => {
-    return chartPoints.length
-      ? Math.min(...chartPoints.map(([, value]) => value))
-      : null;
+    return chartPoints.length ? Math.min(...chartPoints.map(([, value]) => value)) : null;
   }, [chartPoints]);
 
   useEffect(() => {
@@ -253,13 +246,11 @@ export function Chart<T>({
           id: 'mouseSelectPlugin',
           beforeEvent: (chart, args) => {
             if (args.event.type === 'mousedown') {
-              startRangeIndexRef.current =
-                chart.getActiveElements()[0]?.index ?? null;
+              startRangeIndexRef.current = chart.getActiveElements()[0]?.index ?? null;
               startRangeXRef.current = args.event.x;
             }
             if (args.event.type === 'mousemove') {
-              endRangeIndexRef.current =
-                chart.getActiveElements()[0]?.index ?? null;
+              endRangeIndexRef.current = chart.getActiveElements()[0]?.index ?? null;
             }
             if (args.event.type === 'mouseout') {
               endRangeIndexRef.current = null;
@@ -268,8 +259,7 @@ export function Chart<T>({
             }
             // chart is still hovered so we shouldn't reset the end of the range
             if (args.event.type === 'mouseup') {
-              endRangeIndexRef.current =
-                chart.getActiveElements()[0]?.index ?? null;
+              endRangeIndexRef.current = chart.getActiveElements()[0]?.index ?? null;
               startRangeIndexRef.current = null;
               startRangeXRef.current = null;
             }
@@ -277,7 +267,7 @@ export function Chart<T>({
               getSortedRangeIndexes({
                 startRangeIndex: startRangeIndexRef.current,
                 endRangeIndex: endRangeIndexRef.current,
-              })
+              }),
             );
           },
           afterEvent: (chart, args) => {

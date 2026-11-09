@@ -59,7 +59,7 @@ export function useUnknownReceiverGate({
       openDialog();
       onIntercept?.();
     },
-    [to, familiarity, sign, openDialog, onIntercept]
+    [to, familiarity, sign, openDialog, onIntercept],
   );
 
   const handleConfirm = useCallback(() => {

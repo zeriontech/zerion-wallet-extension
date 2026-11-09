@@ -10,7 +10,5 @@ export const middleTruncate = ({
   trailingLettersCount?: number;
 }) =>
   value.length > leadingLettersCount + trailingLettersCount
-    ? `${value.slice(0, leadingLettersCount)}${ellipsis}${value.slice(
-        -trailingLettersCount
-      )}`
+    ? `${value.slice(0, leadingLettersCount)}${ellipsis}${value.slice(-trailingLettersCount)}`
     : value;

@@ -25,9 +25,7 @@
         "./node_modules/@zeriontech/components/lib/UIText/index.d.ts"
       ],
       "capitalize-ts": ["./node_modules/capitalize-ts/lib/index.d.ts"],
-      "normalized-contains": [
-        "./node_modules/normalized-contains/lib/index.d.ts"
-      ],
+      "normalized-contains": ["./node_modules/normalized-contains/lib/index.d.ts"],
       "react-area": ["./node_modules/react-area/dist/index.d.ts"]
     },
     "plugins": [

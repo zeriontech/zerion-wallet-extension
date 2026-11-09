@@ -15,10 +15,7 @@ export function NftPreview({
     return null;
   }
 
-  const displayName =
-    position.nft.name ||
-    position.nft.metadata.name ||
-    `#${position.nft.tokenId}`;
+  const displayName = position.nft.name || position.nft.metadata.name || `#${position.nft.tokenId}`;
 
   return (
     <Image2

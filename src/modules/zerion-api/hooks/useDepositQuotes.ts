@@ -2,10 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { Params } from '../requests/deposit-get-quotes';
 
-export function useDepositQuotes(
-  params: Params,
-  { enabled = true }: { enabled?: boolean } = {}
-) {
+export function useDepositQuotes(params: Params, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['depositGetQuotes', params],
     queryFn: () => ZerionAPI.depositGetQuotes(params),

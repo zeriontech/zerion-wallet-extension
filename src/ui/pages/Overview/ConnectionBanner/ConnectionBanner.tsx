@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
-import {
-  useMainnetNetwork,
-  useNetworks,
-} from 'src/modules/networks/useNetworks';
+import { useMainnetNetwork, useNetworks } from 'src/modules/networks/useNetworks';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
@@ -23,13 +20,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { ConnectedSiteDialog } from '../../ConnectedSites/ConnectedSite';
 import { isConnectableDapp } from '../../ConnectedSites/shared/isConnectableDapp';
 
-function ConnectedNetworkBadge({
-  originName,
-  address,
-}: {
-  originName: string;
-  address: string;
-}) {
+function ConnectedNetworkBadge({ originName, address }: { originName: string; address: string }) {
   const { networks, isLoading } = useNetworks();
   const { preferences } = usePreferences();
   const { data: siteChain } = useQuery({
@@ -39,16 +30,11 @@ function ConnectedNetworkBadge({
     suspense: false,
   });
   const value = siteChain?.toString();
-  const selectedNetwork = value
-    ? networks?.getNetworkByName(createChain(value))
-    : null;
+  const selectedNetwork = value ? networks?.getNetworkByName(createChain(value)) : null;
   const { data: mainnetNetwork } = useMainnetNetwork({
     chain: value || '',
     enabled:
-      Boolean(preferences?.testnetMode?.on) &&
-      !isLoading &&
-      !selectedNetwork &&
-      Boolean(value),
+      Boolean(preferences?.testnetMode?.on) && !isLoading && !selectedNetwork && Boolean(value),
   });
   const network = selectedNetwork || mainnetNetwork;
 
@@ -58,9 +44,7 @@ function ConnectedNetworkBadge({
   return (
     <HStack gap={4} alignItems="center">
       <NetworkIcon size={20} src={network.iconUrl} name={network.name} />
-      <ArrowDownIcon
-        style={{ width: 20, height: 20, color: 'var(--neutral-500)' }}
-      />
+      <ArrowDownIcon style={{ width: 20, height: 20, color: 'var(--neutral-500)' }} />
     </HStack>
   );
 }
@@ -83,9 +67,7 @@ export function ConnectionBanner() {
 
   const activeTabOrigin = tabData?.tabOrigin;
   const hostname = tabData?.url.hostname;
-  const isConnectableSite = tabData?.url
-    ? isConnectableDapp(tabData.url)
-    : false;
+  const isConnectableSite = tabData?.url ? isConnectableDapp(tabData.url) : false;
 
   if (!isConnected || !isConnectableSite || !activeTabOrigin) {
     return null;
@@ -134,18 +116,11 @@ export function ConnectionBanner() {
                 Connected
               </UIText>
             </VStack>
-            <ConnectedNetworkBadge
-              originName={activeTabOrigin}
-              address={address}
-            />
+            <ConnectedNetworkBadge originName={activeTabOrigin} address={address} />
           </HStack>
         </UnstyledButton>
       </StickyBottomPanel>
-      <Dialog2
-        open={showDialog}
-        onClose={() => setShowDialog(false)}
-        size="content"
-      >
+      <Dialog2 open={showDialog} onClose={() => setShowDialog(false)} size="content">
         <div style={{ paddingInline: 16, paddingBlock: 24 }}>
           <ConnectedSiteDialog
             originName={activeTabOrigin}

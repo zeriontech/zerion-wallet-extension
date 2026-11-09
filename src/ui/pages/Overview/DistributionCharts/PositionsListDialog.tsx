@@ -37,7 +37,7 @@ function PositionsListDialogBody({
       chainIds: filter.type === 'network' ? [filter.chainId] : undefined,
     },
     { source },
-    { enabled: Boolean(address) }
+    { enabled: Boolean(address) },
   );
 
   const apps = useMemo(() => {

@@ -6,11 +6,7 @@ import {
   isJsonRpcError,
   isJsonRpcResult,
 } from '@walletconnect/jsonrpc-utils';
-import type {
-  JsonRpcError,
-  JsonRpcResult,
-  JsonRpcRequest,
-} from '@walletconnect/jsonrpc-utils';
+import type { JsonRpcError, JsonRpcResult, JsonRpcRequest } from '@walletconnect/jsonrpc-utils';
 import { getError } from '../errors/getError';
 import { formatJsonRpcRequestPatched } from './formatJsonRpcRequestPatched';
 
@@ -19,7 +15,7 @@ import { formatJsonRpcRequestPatched } from './formatJsonRpcRequestPatched';
  */
 export async function fulfillRpcRequest<T>(
   url: string,
-  request: JsonRpcRequest
+  request: JsonRpcRequest,
 ): Promise<JsonRpcResult<T> | JsonRpcError> {
   if (!isJsonRpcRequest(request)) {
     console.warn('not a request:', request); // eslint-disable-line no-console
@@ -31,10 +27,7 @@ export async function fulfillRpcRequest<T>(
       body: JSON.stringify(request),
       headers: { 'Content-Type': 'application/json' },
     }).json();
-    if (
-      isJsonRpcPayload(data) &&
-      (isJsonRpcResult(data) || isJsonRpcError(data))
-    ) {
+    if (isJsonRpcPayload(data) && (isJsonRpcResult(data) || isJsonRpcError(data))) {
       return data;
     } else {
       return formatJsonRpcError(request.id, 'Invalid Response');
@@ -49,13 +42,9 @@ export async function fulfillRpcRequest<T>(
  */
 export async function sendRpcRequest<T>(
   url: string,
-  request: Partial<JsonRpcRequest> & Pick<JsonRpcRequest, 'method' | 'params'>
+  request: Partial<JsonRpcRequest> & Pick<JsonRpcRequest, 'method' | 'params'>,
 ) {
-  const payload = formatJsonRpcRequestPatched(
-    request.method,
-    request.params,
-    request.id
-  );
+  const payload = formatJsonRpcRequestPatched(request.method, request.params, request.id);
   const result = await fulfillRpcRequest<T>(url, payload);
   if (isJsonRpcError(result)) {
     throw result;

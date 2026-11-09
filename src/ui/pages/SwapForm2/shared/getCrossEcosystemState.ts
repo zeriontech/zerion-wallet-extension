@@ -4,9 +4,7 @@ import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 
-function tryGetEcosystem(
-  network: NetworkInfo | null | undefined
-): BlockchainType | null {
+function tryGetEcosystem(network: NetworkInfo | null | undefined): BlockchainType | null {
   if (!network) return null;
   try {
     return Networks.getEcosystem(network);
@@ -15,9 +13,7 @@ function tryGetEcosystem(
   }
 }
 
-function tryGetAddressEcosystem(
-  address: string | null | undefined
-): BlockchainType | null {
+function tryGetAddressEcosystem(address: string | null | undefined): BlockchainType | null {
   if (!address) return null;
   if (isEthereumAddress(address)) return 'evm';
   if (isSolanaAddress(address)) return 'solana';
@@ -59,9 +55,7 @@ export function getCrossEcosystemState({
   const outputEcosystem = tryGetEcosystem(outputNetwork);
 
   const isCrossEcosystem =
-    inputEcosystem != null &&
-    outputEcosystem != null &&
-    inputEcosystem !== outputEcosystem;
+    inputEcosystem != null && outputEcosystem != null && inputEcosystem !== outputEcosystem;
 
   let receiverEcosystemMismatch = false;
   if (isCrossEcosystem && to && outputEcosystem) {

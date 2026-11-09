@@ -45,11 +45,8 @@ export async function estimateNetworkFee({
         })
       : 'not-enough-data';
 
-  const shouldUseOptimistic = shouldTryOptimistic
-    ? optimisticFee != null
-    : false;
-  const optimisticFeeValue =
-    optimisticFee === 'not-enough-data' ? null : optimisticFee;
+  const shouldUseOptimistic = shouldTryOptimistic ? optimisticFee != null : false;
+  const optimisticFeeValue = optimisticFee === 'not-enough-data' ? null : optimisticFee;
 
   if (shouldUseOptimistic) {
     if (!optimisticFeeValue) {

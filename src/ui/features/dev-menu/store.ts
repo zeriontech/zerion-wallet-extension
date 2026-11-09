@@ -42,9 +42,7 @@ export function setSimulationStatusOverride(value: SimulationStatusOverride) {
   }));
 }
 
-export function setSimulationOutputDiscrepancy(
-  value: SimulationOutputDiscrepancy
-) {
+export function setSimulationOutputDiscrepancy(value: SimulationOutputDiscrepancy) {
   devMenuStore.setState((state) => ({
     ...state,
     simulationOutputDiscrepancy: value,
@@ -72,9 +70,7 @@ export function setReadonlyWallOverride(value: ReadonlyWallOverride) {
   }));
 }
 
-export function setConfidentialPermitsOverride(
-  value: ConfidentialPermitsOverride
-) {
+export function setConfidentialPermitsOverride(value: ConfidentialPermitsOverride) {
   devMenuStore.setState((state) => ({
     ...state,
     confidentialPermitsOverride: value,

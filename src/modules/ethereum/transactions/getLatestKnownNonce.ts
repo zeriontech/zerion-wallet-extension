@@ -17,7 +17,7 @@ export function getLatestLocallyKnownNonce({
     (tx) =>
       tx.hash &&
       normalizeAddress(tx.transaction.from) === normalizeAddress(address) &&
-      normalizeChainId(tx.transaction.chainId) === chainId
+      normalizeChainId(tx.transaction.chainId) === chainId,
   );
   const nonces = transactions.map((tx) => {
     invariant(tx.hash, 'Evm item is expected');

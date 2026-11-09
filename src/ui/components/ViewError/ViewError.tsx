@@ -50,12 +50,7 @@ export function ViewError({
       <PageColumn>
         <PageTop />
         <VStack gap={24} style={{ alignContent: 'start' }}>
-          <WarningIcon
-            kind="notice"
-            size={48}
-            glow={true}
-            outlineStrokeWidth={8}
-          />
+          <WarningIcon kind="notice" size={48} glow={true} outlineStrokeWidth={8} />
           <VStack gap={8}>
             <UIText kind="headline/h1">{title}</UIText>
             {subtitle ? (
@@ -91,13 +86,9 @@ export function ViewError({
                       {isSuccess ? 'Copied to Clipboard' : 'Copy to Clipboard'}
                     </UIText>
                     {isSuccess ? (
-                      <TickIcon
-                        style={{ width: ICON_SIZE, height: ICON_SIZE }}
-                      />
+                      <TickIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
                     ) : (
-                      <CopyIcon
-                        style={{ width: ICON_SIZE, height: ICON_SIZE }}
-                      />
+                      <CopyIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />
                     )}
                   </HStack>
                 </UnstyledButton>

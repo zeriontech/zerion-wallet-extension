@@ -6,7 +6,7 @@ describe('splitDappPlaceholder', () => {
       splitDappPlaceholder('Please use ${DAPP} to unshield.', {
         name: 'Zama',
         url: 'https://app.zama.org/',
-      })
+      }),
     ).toEqual([
       { kind: 'text', text: 'Please use ' },
       { kind: 'dapp', label: 'Zama', href: 'https://app.zama.org/' },
@@ -19,14 +19,12 @@ describe('splitDappPlaceholder', () => {
       splitDappPlaceholder('No route found.', {
         name: 'Zama',
         url: 'https://app.zama.org/',
-      })
+      }),
     ).toEqual([{ kind: 'text', text: 'No route found.' }]);
   });
 
   it('falls back to a plain name without a URL', () => {
-    expect(
-      splitDappPlaceholder('Use ${DAPP}.', { name: 'Zama', url: null })
-    ).toEqual([
+    expect(splitDappPlaceholder('Use ${DAPP}.', { name: 'Zama', url: null })).toEqual([
       { kind: 'text', text: 'Use ' },
       { kind: 'dapp', label: 'Zama', href: null },
       { kind: 'text', text: '.' },
@@ -38,7 +36,7 @@ describe('splitDappPlaceholder', () => {
       splitDappPlaceholder('Use ${DAPP}.', {
         name: null,
         url: 'https://app.zama.org/path',
-      })
+      }),
     ).toEqual([
       { kind: 'text', text: 'Use ' },
       {
@@ -63,17 +61,15 @@ describe('splitDappPlaceholder', () => {
       splitDappPlaceholder('${DAPP}', {
         name: null,
         url: 'javascript:alert(1)',
-      })
+      }),
     ).toEqual([{ kind: 'dapp', label: null, href: null }]);
-    expect(
-      splitDappPlaceholder('${DAPP}', { name: 'Zama', url: 'not a url' })
-    ).toEqual([{ kind: 'dapp', label: 'Zama', href: null }]);
+    expect(splitDappPlaceholder('${DAPP}', { name: 'Zama', url: 'not a url' })).toEqual([
+      { kind: 'dapp', label: 'Zama', href: null },
+    ]);
   });
 
   it('handles multiple placeholders', () => {
-    expect(
-      splitDappPlaceholder('${DAPP} and ${DAPP}', { name: 'Zama', url: null })
-    ).toEqual([
+    expect(splitDappPlaceholder('${DAPP} and ${DAPP}', { name: 'Zama', url: null })).toEqual([
       { kind: 'dapp', label: 'Zama', href: null },
       { kind: 'text', text: ' and ' },
       { kind: 'dapp', label: 'Zama', href: null },

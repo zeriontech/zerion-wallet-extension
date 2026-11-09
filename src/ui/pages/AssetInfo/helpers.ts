@@ -1,16 +1,9 @@
 import { minus } from 'src/ui/shared/typography';
 import type { GroupedFungiblePosition } from 'src/ui/components/Positions/types';
-import {
-  getPositionChange24h,
-  getPositionValue,
-} from 'src/ui/components/Positions/change24h';
+import { getPositionChange24h, getPositionValue } from 'src/ui/components/Positions/change24h';
 
 export function getColor(value?: number) {
-  return !value
-    ? 'var(--black)'
-    : value > 0
-      ? 'var(--positive-500)'
-      : 'var(--negative-500)';
+  return !value ? 'var(--black)' : value > 0 ? 'var(--positive-500)' : 'var(--negative-500)';
 }
 
 export function getSign(value?: number) {
@@ -31,9 +24,7 @@ export interface AssetChange24h {
  * re-derived against the combined value 24h ago. Null when no position
  * carries a change.
  */
-export function getAssetChange24h(
-  positions: GroupedFungiblePosition[]
-): AssetChange24h | null {
+export function getAssetChange24h(positions: GroupedFungiblePosition[]): AssetChange24h | null {
   const changes = positions
     .map((position) => ({
       change: getPositionChange24h(position),
@@ -46,10 +37,7 @@ export function getAssetChange24h(
   if (changes.length === 1) {
     return changes[0].change;
   }
-  const absolute = changes.reduce(
-    (sum, item) => sum + item.change!.absolute,
-    0
-  );
+  const absolute = changes.reduce((sum, item) => sum + item.change!.absolute, 0);
   const value = changes.reduce((sum, item) => sum + item.value, 0);
   const base = value - absolute;
   return { relative: base > 0 ? (absolute / base) * 100 : null, absolute };

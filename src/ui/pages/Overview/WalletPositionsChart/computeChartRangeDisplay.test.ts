@@ -1,9 +1,6 @@
 import dayjs from 'dayjs';
 import { minus } from 'src/ui/shared/typography';
-import {
-  computeChartRangeDisplay,
-  type WalletChartPoint,
-} from './computeChartRangeDisplay';
+import { computeChartRangeDisplay, type WalletChartPoint } from './computeChartRangeDisplay';
 
 const POSITIVE_COLOR = 'var(--positive-500)';
 const NEGATIVE_COLOR = 'var(--negative-500)';
@@ -63,9 +60,7 @@ describe('computeChartRangeDisplay', () => {
     expect(result.change).toBe('+36.4% ($40.00)');
     expect(result.changeColor).toBe(POSITIVE_COLOR);
     expect(result.date).toBe(
-      `${dayjs(2_000).format(DATE_FORMAT)} → ${dayjs(4_000).format(
-        DATE_FORMAT
-      )}`
+      `${dayjs(2_000).format(DATE_FORMAT)} → ${dayjs(4_000).format(DATE_FORMAT)}`,
     );
   });
 

@@ -5,8 +5,7 @@ import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 import { uiTextParams } from 'src/ui/ui-kit/UIText';
 import * as s from './styles.module.css';
 
-const [fontSize, lineHeight, fontWeight, letterSpacing] =
-  uiTextParams['body/regular'];
+const [fontSize, lineHeight, fontWeight, letterSpacing] = uiTextParams['body/regular'];
 
 const inputFontStyle = {
   fontSize,
@@ -22,7 +21,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 const InputComponent = (
   { style, className, boxHeight = 44, error = false, ...props }: InputProps,
-  ref: React.Ref<HTMLInputElement>
+  ref: React.Ref<HTMLInputElement>,
 ) => {
   const themeState = useStore(themeStore);
 

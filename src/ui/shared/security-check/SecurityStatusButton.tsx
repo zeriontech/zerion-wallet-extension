@@ -11,12 +11,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import * as styles from './styles.module.css';
 
-export type SecurityButtonKind =
-  | 'ok'
-  | 'danger'
-  | 'warning'
-  | 'unknown'
-  | 'loading';
+export type SecurityButtonKind = 'ok' | 'danger' | 'warning' | 'unknown' | 'loading';
 
 const SECURITY_COLORS: Record<
   SecurityButtonKind,
@@ -49,13 +44,7 @@ const SECURITY_COLORS: Record<
   },
 };
 
-function SecurityCheckIcon({
-  kind,
-  iconSize,
-}: {
-  kind: SecurityButtonKind;
-  iconSize: number;
-}) {
+function SecurityCheckIcon({ kind, iconSize }: { kind: SecurityButtonKind; iconSize: number }) {
   if (kind === 'loading') {
     return (
       <div
@@ -67,10 +56,7 @@ function SecurityCheckIcon({
           justifyContent: 'center',
         }}
       >
-        <div
-          className={styles.loadingShield}
-          style={{ width: iconSize, height: iconSize }}
-        >
+        <div className={styles.loadingShield} style={{ width: iconSize, height: iconSize }}>
           <div />
         </div>
       </div>
@@ -116,8 +102,7 @@ export function SecurityStatusBackground() {
       <div
         className={styles.backgroundGradient}
         style={{
-          ['--security-gradient-background-color' as string]:
-            SECURITY_COLORS[kind].accent,
+          ['--security-gradient-background-color' as string]: SECURITY_COLORS[kind].accent,
         }}
       />
     </div>
@@ -178,10 +163,7 @@ export function SecurityStatusButton({
             }}
           >
             <HStack gap={size === 'big' ? 12 : 4} alignItems="center">
-              <SecurityCheckIcon
-                kind={kind}
-                iconSize={size === 'big' ? 32 : 28}
-              />
+              <SecurityCheckIcon kind={kind} iconSize={size === 'big' ? 32 : 28} />
               <UIText
                 kind={size === 'big' ? 'body/accent' : 'small/accent'}
                 color={SECURITY_COLORS[kind].primary}

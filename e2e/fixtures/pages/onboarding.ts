@@ -1,8 +1,5 @@
 import type { BrowserContext, Locator, Page } from '@playwright/test';
-import {
-  Strength,
-  estimatePasswordStrengh,
-} from 'src/shared/validation/password-strength';
+import { Strength, estimatePasswordStrengh } from 'src/shared/validation/password-strength';
 import { waitForPage } from 'e2e/utils/wait';
 import { expect } from '@playwright/test';
 import { SeedType } from 'src/shared/SeedType';
@@ -86,9 +83,7 @@ export class CreateNewWalletFlow extends OnboardingPage {
   }
 
   private async toggleRevealRecoveryPhrase() {
-    const revealButton = this.page.locator(
-      'button[aria-label="Visually reveal value"]'
-    );
+    const revealButton = this.page.locator('button[aria-label="Visually reveal value"]');
     await revealButton.click();
   }
 
@@ -98,9 +93,7 @@ export class CreateNewWalletFlow extends OnboardingPage {
     await this.toggleRevealRecoveryPhrase();
     await this.page.getByRole('button', { name: /Copy to Clipboard/i }).click();
 
-    const recoveryPhrase = await this.page.evaluate(() =>
-      navigator.clipboard.readText()
-    );
+    const recoveryPhrase = await this.page.evaluate(() => navigator.clipboard.readText());
     await this.page.getByRole('button', { name: /Verify Backup/i }).click();
     await fillRecoveryPhrase(this.page, recoveryPhrase);
     await this.page.getByRole('button', { name: /Verify/i }).click();
@@ -114,9 +107,7 @@ export class CreateNewWalletFlow extends OnboardingPage {
 
 export class ImportRecoveryPhraseFlow extends OnboardingPage {
   async start() {
-    await this.page
-      .getByRole('link', { name: /Import Recovery Phrase/i })
-      .click();
+    await this.page.getByRole('link', { name: /Import Recovery Phrase/i }).click();
   }
 
   async importRecoveryPhrase(phrase: string) {
@@ -146,11 +137,9 @@ export async function onboardExistingWallet(
     wallet: TestWallet;
     seedType: SeedType;
     password: string;
-  }
+  },
 ) {
-  const page = await waitForPage(context, (page) =>
-    page.url().includes('onboarding')
-  );
+  const page = await waitForPage(context, (page) => page.url().includes('onboarding'));
   const welcomePage = new WelcomePage(page);
   await welcomePage.importExistingWalletLink.click();
 

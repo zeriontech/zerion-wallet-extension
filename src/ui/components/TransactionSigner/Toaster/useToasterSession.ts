@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isDeviceAccount } from 'src/shared/types/validators';
-import {
-  subscribeChange,
-  subscribeQueueEvent,
-  getQueue,
-  getQueues,
-} from '../store';
+import { subscribeChange, subscribeQueueEvent, getQueue, getQueues } from '../store';
 import type { QueueEvent, SignStep, ToasterView } from '../types';
 
 export type TerminalKind = 'success' | 'failed';
@@ -113,7 +108,7 @@ export function useToasterSession(): ToasterSession {
       if (hoveredRef.current) return;
       dismissTimerRef.current = setTimeout(runDismiss, delay);
     },
-    [clearDismiss, runDismiss]
+    [clearDismiss, runDismiss],
   );
 
   const setHovered = useCallback(
@@ -127,10 +122,7 @@ export function useToasterSession(): ToasterSession {
           dismissTimerRef.current = null;
         }
         if (pending) {
-          pending.remaining = Math.max(
-            0,
-            pending.remaining - (Date.now() - pending.startedAt)
-          );
+          pending.remaining = Math.max(0, pending.remaining - (Date.now() - pending.startedAt));
         }
       } else if (pending) {
         // Give back at least a moment so the pill doesn't vanish under the
@@ -140,7 +132,7 @@ export function useToasterSession(): ToasterSession {
         dismissTimerRef.current = setTimeout(runDismiss, pending.remaining);
       }
     },
-    [runDismiss]
+    [runDismiss],
   );
 
   useEffect(() => {
@@ -236,7 +228,7 @@ export function useToasterSession(): ToasterSession {
     function handleStepEnd(
       queueId: string,
       stepIndex: number,
-      kind: 'success' | 'failed' | 'dismissed'
+      kind: 'success' | 'failed' | 'dismissed',
     ) {
       const isLast = isLastStepInQueue(queueId, stepIndex);
       if (isLast) {
@@ -254,8 +246,7 @@ export function useToasterSession(): ToasterSession {
           clearDismiss();
           return;
         }
-        const terminal: TerminalKind =
-          kind === 'success' ? 'success' : 'failed';
+        const terminal: TerminalKind = kind === 'success' ? 'success' : 'failed';
         setState((s) => ({ ...s, terminal, contentKey: s.contentKey + 1 }));
         // dissolve plays, then 1s hold, then dismiss
         scheduleDismiss(DISSOLVE_MS + TERMINAL_HOLD_MS);
@@ -275,43 +266,40 @@ export function useToasterSession(): ToasterSession {
       }
     }
 
-    const unsubscribe = subscribeQueueEvent(
-      (queueId: string, event: QueueEvent) => {
-        // Hardware queues drive the dedicated hardware dialog, not the toaster.
-        const q = getQueue(queueId);
-        if (q && isDeviceAccount(q.options.wallet)) return;
-        switch (event.type) {
-          case 'step-start': {
-            startOrAdvanceTo(queueId, event.index);
-            break;
-          }
-          case 'step-pending': {
-            // Verb is unchanged; record the hash so the success state can
-            // offer copy / explorer actions.
-            setStepHash(queueId, event.txHash);
-            break;
-          }
-          case 'step-success': {
-            handleStepEnd(queueId, event.index, 'success');
-            break;
-          }
-          case 'step-error': {
-            handleStepEnd(queueId, event.index, 'failed');
-            break;
-          }
-          case 'queue-aborted': {
-            const kind =
-              event.reason === 'user-dismissed' ? 'dismissed' : 'failed';
-            handleStepEnd(queueId, event.index, kind);
-            break;
-          }
-          case 'queue-done': {
-            // Step-success for the final step already handled this. No-op.
-            break;
-          }
+    const unsubscribe = subscribeQueueEvent((queueId: string, event: QueueEvent) => {
+      // Hardware queues drive the dedicated hardware dialog, not the toaster.
+      const q = getQueue(queueId);
+      if (q && isDeviceAccount(q.options.wallet)) return;
+      switch (event.type) {
+        case 'step-start': {
+          startOrAdvanceTo(queueId, event.index);
+          break;
+        }
+        case 'step-pending': {
+          // Verb is unchanged; record the hash so the success state can
+          // offer copy / explorer actions.
+          setStepHash(queueId, event.txHash);
+          break;
+        }
+        case 'step-success': {
+          handleStepEnd(queueId, event.index, 'success');
+          break;
+        }
+        case 'step-error': {
+          handleStepEnd(queueId, event.index, 'failed');
+          break;
+        }
+        case 'queue-aborted': {
+          const kind = event.reason === 'user-dismissed' ? 'dismissed' : 'failed';
+          handleStepEnd(queueId, event.index, kind);
+          break;
+        }
+        case 'queue-done': {
+          // Step-success for the final step already handled this. No-op.
+          break;
         }
       }
-    );
+    });
 
     const unsubscribeChange = subscribeChange(() => {
       // Refresh the pending counter on every store change — append, remove,

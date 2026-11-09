@@ -2,9 +2,7 @@ import type { AddressPosition } from 'src/defi-sdk.types';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import { commonToBase } from 'src/shared/units/convert';
 
-export function fungiblePositionToAddressPosition(
-  fp: FungiblePosition
-): AddressPosition {
+export function fungiblePositionToAddressPosition(fp: FungiblePosition): AddressPosition {
   const { fungible, amount, chain } = fp;
   const chainImpl = fungible.implementations[chain.id];
   const fallbackImpl = Object.values(fungible.implementations)[0];

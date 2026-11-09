@@ -1,9 +1,6 @@
 import React from 'react';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
-import type {
-  Collection,
-  NFTPreview,
-} from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { Collection, NFTPreview } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 export function AssetIcon({
@@ -29,11 +26,7 @@ export function AssetIcon({
       symbol={nft.metadata.name || nft.tokenId}
     />
   ) : collection?.iconUrl ? (
-    <TokenIcon
-      size={size}
-      src={collection.iconUrl}
-      symbol={collection.name || 'Collection'}
-    />
+    <TokenIcon size={size} src={collection.iconUrl} symbol={collection.name || 'Collection'} />
   ) : (
     (fallback as JSX.Element)
   );

@@ -22,13 +22,7 @@ import { isMacOS } from 'src/ui/shared/isMacos';
 import type { DeviceConnection } from '../types';
 import { ConnectIllustration } from './ConnectIllustration';
 
-function CheckListItem({
-  checked,
-  text,
-}: {
-  checked: boolean;
-  text: React.ReactNode;
-}) {
+function CheckListItem({ checked, text }: { checked: boolean; text: React.ReactNode }) {
   return (
     <li style={{ color: checked ? 'var(--black)' : 'var(--neutral-700)' }}>
       <HStack gap={8}>
@@ -64,16 +58,14 @@ function BluetoothWarningDialog({ onSubmit }: { onSubmit: () => void }) {
           }}
         >
           <UIText kind="small/regular" color="var(--neutral-700)">
-            Due to browser limitations, signing flows for your hardware wallets
-            will open in a tab view instead of popup or sidepanel.
+            Due to browser limitations, signing flows for your hardware wallets will open in a tab
+            view instead of popup or sidepanel.
           </UIText>
         </div>
 
         <UIText kind="caption/accent" color="var(--neutral-500)">
           You can turn this on or off anytime in{' '}
-          <span style={{ textDecoration: 'underline' }}>
-            Settings → Experiments.
-          </span>
+          <span style={{ textDecoration: 'underline' }}>Settings → Experiments.</span>
         </UIText>
 
         <Button kind="primary" style={{ width: '100%' }} onClick={onSubmit}>
@@ -111,9 +103,7 @@ export function ConnectLedgerDevice({
   });
   const error = isError ? parseLedgerError(maybeError) : null;
   const isPhysicallyConnected =
-    error &&
-    error.name !== 'TransportOpenUserCancelled' &&
-    error.name !== 'Error';
+    error && error.name !== 'TransportOpenUserCancelled' && error.name !== 'Error';
 
   const title = 'Connect Ledger';
 
@@ -150,9 +140,7 @@ export function ConnectLedgerDevice({
                 width: 52,
               }}
             >
-              <LedgerIcon
-                style={{ color: 'var(--white)', width: 32, height: 32 }}
-              />
+              <LedgerIcon style={{ color: 'var(--white)', width: 32, height: 32 }} />
             </div>
           </div>
           <UIText kind="headline/hero">{title}</UIText>
@@ -171,10 +159,7 @@ export function ConnectLedgerDevice({
                 checked={isSuccess || Boolean(isPhysicallyConnected)}
                 text="Connected to the computer."
               />
-              <CheckListItem
-                checked={isSuccess}
-                text="Has Ethereum App or Solana App installed."
-              />
+              <CheckListItem checked={isSuccess} text="Has Ethereum App or Solana App installed." />
             </ol>
           </UIText>
         </VStack>
@@ -202,8 +187,7 @@ export function ConnectLedgerDevice({
             <HStack
               gap={8}
               style={{
-                gridTemplateColumns:
-                  bluetoothSupportEnabled !== false ? '1fr 1fr' : '1fr',
+                gridTemplateColumns: bluetoothSupportEnabled !== false ? '1fr 1fr' : '1fr',
               }}
             >
               <Button

@@ -4,7 +4,7 @@ import type { Params } from '../requests/deposit-get-suggested-tokens';
 
 export function useDepositSuggestedTokens(
   params: Params,
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: ['depositGetSuggestedTokens', params],

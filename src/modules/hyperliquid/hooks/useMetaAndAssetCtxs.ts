@@ -14,7 +14,7 @@ export function useMetaAndAssetCtxs(
     suspense?: boolean;
     enabled?: boolean;
     refetchInterval?: number | false;
-  } = {}
+  } = {},
 ) {
   return useQuery({
     queryKey: [META_AND_ASSET_CTXS_QUERY_KEY, payload],

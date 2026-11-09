@@ -22,12 +22,9 @@ export function nftPositionToDefiSdkNft(position: NftPosition): NFT {
       attributes: [],
       content: nft.metadata?.content
         ? {
-            type:
-              (nft.metadata.content.type as 'video' | 'image' | 'audio') ??
-              'image',
+            type: (nft.metadata.content.type as 'video' | 'image' | 'audio') ?? 'image',
             image_url: nft.metadata.content.imageUrl ?? undefined,
-            image_preview_url:
-              nft.metadata.content.imagePreviewUrl ?? undefined,
+            image_preview_url: nft.metadata.content.imagePreviewUrl ?? undefined,
             audio_url: nft.metadata.content.audioUrl ?? undefined,
             video_url: nft.metadata.content.videoUrl ?? undefined,
           }

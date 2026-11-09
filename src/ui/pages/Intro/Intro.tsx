@@ -5,9 +5,7 @@ export function Intro() {
   return (
     <Navigate
       replace={true}
-      to={`/get-started?beforeCreate=${encodeURIComponent(
-        '/create-account'
-      )}&intro`}
+      to={`/get-started?beforeCreate=${encodeURIComponent('/create-account')}&intro`}
     />
   );
 }

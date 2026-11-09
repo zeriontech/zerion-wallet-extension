@@ -8,6 +8,6 @@ export function useErrorBoundary() {
       setState(() => {
         throw getError(error);
       }),
-    []
+    [],
   );
 }

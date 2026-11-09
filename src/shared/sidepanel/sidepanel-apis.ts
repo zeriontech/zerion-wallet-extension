@@ -8,7 +8,7 @@ export async function getActiveTab() {
 }
 
 async function resolveOpenOptions(
-  openOptions?: chrome.sidePanel.OpenOptions
+  openOptions?: chrome.sidePanel.OpenOptions,
 ): Promise<chrome.sidePanel.OpenOptions> {
   if (openOptions) {
     return openOptions;

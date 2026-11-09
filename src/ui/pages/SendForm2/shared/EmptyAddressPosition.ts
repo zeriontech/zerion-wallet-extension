@@ -5,7 +5,4 @@ import type { AddressPosition } from 'src/defi-sdk.types';
  * send transaction for the asset. Inlined from `@zeriontech/transactions`
  * (WLT-2470), where it was a class; the extension only ever reads it.
  */
-export type EmptyAddressPosition = Pick<
-  AddressPosition,
-  'asset' | 'quantity' | 'chain' | 'id'
->;
+export type EmptyAddressPosition = Pick<AddressPosition, 'asset' | 'quantity' | 'chain' | 'id'>;

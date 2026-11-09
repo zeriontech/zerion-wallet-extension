@@ -1,9 +1,4 @@
-import type {
-  AppMode,
-  UrlContext,
-  WindowLayout,
-  WindowType,
-} from './types/UrlContext';
+import type { AppMode, UrlContext, WindowLayout, WindowType } from './types/UrlContext';
 import { UrlContextParam } from './types/UrlContext';
 
 function getWindowType(params: URLSearchParams): WindowType {
@@ -21,8 +16,7 @@ function getUrlContext(): UrlContext {
   return {
     appMode: (params.get(UrlContextParam.appMode) as AppMode) || 'wallet',
     windowType: getWindowType(params),
-    windowLayout:
-      (params.get(UrlContextParam.windowLayout) as WindowLayout) || 'column',
+    windowLayout: (params.get(UrlContextParam.windowLayout) as WindowLayout) || 'column',
   };
 }
 

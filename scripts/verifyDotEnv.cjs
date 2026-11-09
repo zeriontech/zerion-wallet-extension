@@ -48,7 +48,7 @@ function verifyDotEnv() {
   for (const key in env) {
     if (key in envExample === false) {
       printError(
-        `Unexpected env key: ${key}. Please add it to .env.example if you wish to use it. Otherwise it might not get picked up by a CD system.`
+        `Unexpected env key: ${key}. Please add it to .env.example if you wish to use it. Otherwise it might not get picked up by a CD system.`,
       );
       process.exit(1);
     }

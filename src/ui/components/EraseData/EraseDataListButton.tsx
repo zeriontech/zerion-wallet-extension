@@ -12,11 +12,7 @@ import { EraseDataConfirmationDialog } from './EraseDataConfirmationDialog';
 import { EraseDataInProgress } from './EraseDataInProgress';
 import { useEraseDataMutation } from './useEraseDataMutation';
 
-export function EraseDataListButton({
-  textKind,
-}: {
-  textKind: UITextProps['kind'];
-}) {
+export function EraseDataListButton({ textKind }: { textKind: UITextProps['kind'] }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {

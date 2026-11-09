@@ -2,11 +2,7 @@ import 'src/shared/polyfills';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HashRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
-import {
-  QueryClient,
-  QueryClientProvider,
-  useMutation,
-} from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { ViewError } from 'src/ui/components/ViewError';
@@ -17,10 +13,7 @@ import type { ThemeState } from 'src/ui/features/appearance/ThemeState';
 import { applyTheme } from 'src/ui/features/appearance/applyTheme';
 import type { RpcRequest, RpcResponse } from 'src/shared/custom-rpc';
 import { nanoid } from 'nanoid';
-import {
-  useBackgroundKind,
-  useBodyStyle,
-} from '../components/Background/Background';
+import { useBackgroundKind, useBodyStyle } from '../components/Background/Background';
 import type { DeviceConnection, LedgerAccountImport } from './types';
 import { ConnectLedgerDevice } from './ConnectLedgerDevice';
 import { verifySandbox } from './shared/verifySandbox';
@@ -181,7 +174,7 @@ function renderApp() {
           </ErrorBoundary>
         </HashRouter>
       </QueryClientProvider>
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 }
 

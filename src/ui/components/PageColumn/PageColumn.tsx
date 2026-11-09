@@ -26,14 +26,6 @@ export function PageColumn({
   );
 }
 
-export function PagePaddingInline({
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      style={{ paddingInline: 'var(--column-padding-inline)', ...style }}
-      {...props}
-    />
-  );
+export function PagePaddingInline({ style, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div style={{ paddingInline: 'var(--column-padding-inline)', ...style }} {...props} />;
 }

@@ -24,10 +24,7 @@ export const lookupAddressNameKey = 'name-service/lookupAddressName';
 
 export function useProfileName(
   wallet: Pick<BareWallet, 'address' | 'name'>,
-  {
-    padding = 5,
-    maxCharacters,
-  }: { padding?: number; maxCharacters?: number } = {}
+  { padding = 5, maxCharacters }: { padding?: number; maxCharacters?: number } = {},
 ): { type: WalletNameType; value: string } {
   const { isLoading: isDomainLoading, data: domain } = useQuery({
     queryKey: persistentQuery([lookupAddressNameKey, wallet.address]),
@@ -50,8 +47,7 @@ export function useProfileName(
       value: getWalletDisplayName(wallet, { padding, maxCharacters }),
     };
   }
-  const value =
-    domainName ?? getWalletDisplayName(wallet, { padding, maxCharacters });
+  const value = domainName ?? getWalletDisplayName(wallet, { padding, maxCharacters });
   const type = domainName ? WalletNameType.domain : WalletNameType.address;
   if (normalizeAddress(wallet.address) === testAddress) {
     return { type, value: `${value} ${testWalletSuffix}` };

@@ -6,7 +6,7 @@ import {
 } from './user-abstraction.types';
 
 export async function userAbstraction(
-  payload: UserAbstractionPayload
+  payload: UserAbstractionPayload,
 ): Promise<AbstractionMode | null> {
   const response = await postInfo<unknown>({
     type: 'userAbstraction',

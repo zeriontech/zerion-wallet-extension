@@ -4,14 +4,8 @@ import type {
   JsonRpcPayload,
   JsonRpcResult,
 } from '@walletconnect/jsonrpc-utils';
-import {
-  isJsonRpcError,
-  isJsonRpcResponse,
-} from '@walletconnect/jsonrpc-utils';
-import type {
-  ExtractChannelMethods,
-  RPCApi,
-} from 'src/ui/shared/channels.types';
+import { isJsonRpcError, isJsonRpcResponse } from '@walletconnect/jsonrpc-utils';
+import type { ExtractChannelMethods, RPCApi } from 'src/ui/shared/channels.types';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { formatJsonRpcRequestPatched } from 'src/shared/custom-rpc/formatJsonRpcRequestPatched';
 
@@ -45,9 +39,7 @@ export class Connection extends EventEmitter implements IJsonRpcConnection {
 
   rpcRequest = (async (method: string, params: unknown) => {
     return this.send(formatJsonRpcRequestPatched(method, params || []));
-  }) as RPCApi<
-    ExtractChannelMethods<Wallet['publicEthereumController']>
-  >['request'];
+  }) as RPCApi<ExtractChannelMethods<Wallet['publicEthereumController']>>['request'];
 
   async open() {
     return Promise.resolve().then(() => {

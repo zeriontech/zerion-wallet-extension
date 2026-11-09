@@ -40,25 +40,15 @@ export function NetworkFeeLineInfo({
   }
   return (
     <HStack gap={8} justifyContent="space-between">
-      {label !== undefined ? (
-        label
-      ) : (
-        <UIText kind="small/regular">Network Fee</UIText>
-      )}
+      {label !== undefined ? label : <UIText kind="small/regular">Network Fee</UIText>}
 
       <UIText kind="small/accent">
         <HStack gap={8} alignItems="center">
           {networkFee.amount?.value != null
-            ? formatCurrencyValueExtra(
-                networkFee.amount.value,
-                'en',
-                currency,
-                { zeroRoundingFallback: 0.01 }
-              )
-            : formatTokenValue(
-                networkFee.amount.quantity,
-                networkFee.fungible?.symbol
-              )}
+            ? formatCurrencyValueExtra(networkFee.amount.value, 'en', currency, {
+                zeroRoundingFallback: 0.01,
+              })
+            : formatTokenValue(networkFee.amount.quantity, networkFee.fungible?.symbol)}
         </HStack>
       </UIText>
     </HStack>
@@ -76,11 +66,7 @@ export function AddressActionNetworkFee({
 }) {
   return (
     <HStack gap={8} justifyContent="space-between">
-      {label !== undefined ? (
-        label
-      ) : (
-        <UIText kind="small/regular">Network Fee</UIText>
-      )}
+      {label !== undefined ? label : <UIText kind="small/regular">Network Fee</UIText>}
 
       <UIText kind="small/accent">
         <HStack gap={8} alignItems="center">
@@ -97,14 +83,9 @@ export function AddressActionNetworkFee({
               Free
             </div>
           ) : fee.amount.value != null ? (
-            formatCurrencyValueExtra(
-              fee.amount.value,
-              'en',
-              fee.amount.currency,
-              {
-                zeroRoundingFallback: 0.01,
-              }
-            )
+            formatCurrencyValueExtra(fee.amount.value, 'en', fee.amount.currency, {
+              zeroRoundingFallback: 0.01,
+            })
           ) : (
             formatTokenValue(fee.amount.quantity, fee.fungible?.symbol)
           )}
@@ -158,15 +139,11 @@ function NetworkFeeLine({
         renderWhenOpen={() => (
           <VStack gap={16}>
             <UIText kind="headline/h3">
-              <DialogTitle
-                title="Why isn’t it free?"
-                alignTitle="start"
-                closeKind="icon"
-              />
+              <DialogTitle title="Why isn’t it free?" alignTitle="start" closeKind="icon" />
             </UIText>
             <UIText kind="body/regular">
-              To fight spam, wallets must qualify for free transactions by
-              either depositing funds to Zero or waiting for automatic reloads
+              To fight spam, wallets must qualify for free transactions by either depositing funds
+              to Zero or waiting for automatic reloads
             </UIText>
           </VStack>
         )}
@@ -185,17 +162,14 @@ function NetworkFeeLine({
                 title="Why isn’t it free?"
                 onClick={() => dialogRef.current?.showModal()}
               >
-                <QuestionHintIcon
-                  style={{ display: 'block', color: 'var(--neutral-500)' }}
-                />
+                <QuestionHintIcon style={{ display: 'block', color: 'var(--neutral-500)' }} />
               </UnstyledButton>
             </>
           ) : null
         }
         onChange={
           onConfigurationChange
-            ? (networkFee) =>
-                onConfigurationChange({ ...configuration, networkFee })
+            ? (networkFee) => onConfigurationChange({ ...configuration, networkFee })
             : null
         }
         interpretation={interpretation}
@@ -242,7 +216,7 @@ export function TransactionConfiguration({
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
     () => ({ ...incomingTransaction, from }),
-    [from, incomingTransaction]
+    [from, incomingTransaction],
   );
 
   // viewTransitionNames need to be unique when this component is used more than once on the same view

@@ -62,10 +62,7 @@ export function createSendNativeOrContractTransaction({
     return { from, to, value: valueAsHex, chainId, data: '0x' };
   } else if (tokenInterface === 'erc20') {
     invariant(inputToken, 'inputToken value is required for erc-20 tokens');
-    const data = new Interface(erc20TransferAbi).encodeFunctionData(
-      'transfer',
-      [to, valueAsHex]
-    );
+    const data = new Interface(erc20TransferAbi).encodeFunctionData('transfer', [to, valueAsHex]);
     return { from, to: inputToken, data, chainId };
   } else {
     throw new Error('Unexpected token interface');

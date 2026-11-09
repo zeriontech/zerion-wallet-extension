@@ -6,11 +6,7 @@ export class QuotesError extends Error {
   /** Backend-authored wording, when the error response carried any. */
   details: QuoteErrorDetails | null;
 
-  constructor(
-    message: string,
-    status: number,
-    details: QuoteErrorDetails | null = null
-  ) {
+  constructor(message: string, status: number, details: QuoteErrorDetails | null = null) {
     super(message);
     this.name = 'QuotesError';
     this.status = status;

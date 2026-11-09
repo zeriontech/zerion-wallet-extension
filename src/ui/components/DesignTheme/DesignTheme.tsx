@@ -3,11 +3,7 @@ import 'src/ui/style/theme.module.css';
 import 'src/ui/style/fonts.module.css';
 import { useLayoutEffect } from 'react';
 
-export function DesignTheme({
-  bodyClassList = [],
-}: {
-  bodyClassList?: string[];
-}) {
+export function DesignTheme({ bodyClassList = [] }: { bodyClassList?: string[] }) {
   useLayoutEffect(() => {
     if (bodyClassList?.length) {
       document.body.classList.add(...bodyClassList);

@@ -52,7 +52,7 @@ export function getQueueStatus(queueId: string): QueueStatus | null {
 
 export function appendQueue(
   steps: SignStep[],
-  options: SignTransactionsOptions
+  options: SignTransactionsOptions,
 ): {
   queueId: string;
   promise: Promise<SignTransactionResult[]>;
@@ -134,7 +134,7 @@ export function subscribeChange(listener: () => void): () => void {
 }
 
 export function subscribeQueueEvent(
-  listener: (queueId: string, event: QueueEvent) => void
+  listener: (queueId: string, event: QueueEvent) => void,
 ): () => void {
   return emitter.on('queueEvent', listener);
 }
@@ -142,9 +142,7 @@ export function subscribeQueueEvent(
 let mounted = false;
 export function claimSingletonMount(): () => void {
   if (mounted) {
-    throw new Error(
-      'TransactionSigner is already mounted. It must be rendered exactly once.'
-    );
+    throw new Error('TransactionSigner is already mounted. It must be rendered exactly once.');
   }
   mounted = true;
   return () => {

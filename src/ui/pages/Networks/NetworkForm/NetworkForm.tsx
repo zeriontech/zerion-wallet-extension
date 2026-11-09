@@ -16,10 +16,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { collectData } from 'src/ui/shared/form-data';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
-import {
-  toCustomNetworkId,
-  isCustomNetworkId,
-} from 'src/modules/ethereum/chains/helpers';
+import { toCustomNetworkId, isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { apostrophe } from 'src/ui/shared/typography';
@@ -47,9 +44,7 @@ export function Field({
           error={Boolean(error)}
           disabled={disabled}
           boxHeight={40}
-          style={
-            disabled ? { paddingRight: ICON_OFFSET * 2 + ICON_SIZE } : undefined
-          }
+          style={disabled ? { paddingRight: ICON_OFFSET * 2 + ICON_SIZE } : undefined}
           {...inputProps}
         />
         {disabled ? (
@@ -74,10 +69,7 @@ export function Field({
   );
 }
 
-type Validators = Record<
-  string,
-  (event: HTMLInputElement) => string | undefined
->;
+type Validators = Record<string, (event: HTMLInputElement) => string | undefined>;
 
 function collectErrors(form: HTMLFormElement, validators: Validators) {
   const errors: Record<string, string | undefined> = {};
@@ -95,7 +87,7 @@ function collectErrors(form: HTMLFormElement, validators: Validators) {
 
 function findInput(
   elements: HTMLFormControlsCollection,
-  predicate: (el: HTMLInputElement) => boolean
+  predicate: (el: HTMLInputElement) => boolean,
 ) {
   return Array.from(elements).find((el): el is HTMLInputElement => {
     return el instanceof HTMLInputElement && predicate(el);
@@ -226,8 +218,7 @@ export function NetworkForm({
       }
     },
   };
-  const [errors, setErrors] =
-    useState<Record<string, string | undefined>>(EMPTY_OBJECT);
+  const [errors, setErrors] = useState<Record<string, string | undefined>>(EMPTY_OBJECT);
   const submitRow = (
     <div
       style={{
@@ -265,15 +256,11 @@ export function NetworkForm({
             return;
           }
           const formObject = collectData(event.currentTarget, parsers);
-          const result = produce(chainConfig, (draft) =>
-            merge(draft, formObject)
-          );
+          const result = produce(chainConfig, (draft) => merge(draft, formObject));
           onSubmit(
             // custom network id should be generated from (probably) updated chainId
-            !chain || isCustomNetworkId(chain)
-              ? toCustomNetworkId(result.chainId)
-              : chain,
-            result
+            !chain || isCustomNetworkId(chain) ? toCustomNetworkId(result.chainId) : chain,
+            result,
           );
         }}
       >
@@ -299,14 +286,12 @@ export function NetworkForm({
             label={<span title={chainConfig.chainId}>Chain ID</span>}
             name="chainId"
             title={chainConfig.chainId}
-            defaultValue={
-              chainConfig.chainId ? String(parseInt(chainConfig.chainId)) : ''
-            }
+            defaultValue={chainConfig.chainId ? String(parseInt(chainConfig.chainId)) : ''}
             pattern="^0x[\dabcdef]+|\d+"
             error={errors.chainId}
             onInvalid={(event) =>
               event.currentTarget.setCustomValidity(
-                'Chain ID must be either a 0x-prefixed hex value or an integer'
+                'Chain ID must be either a 0x-prefixed hex value or an integer',
               )
             }
             onInput={(event) => event.currentTarget.setCustomValidity('')}
@@ -349,10 +334,7 @@ export function NetworkForm({
           <>
             <Spacer height={20} />
             <Frame style={{ padding: 24 }}>
-              <NetworkHiddenFieldLine
-                name="hidden"
-                defaultChecked={chainConfig.hidden}
-              />
+              <NetworkHiddenFieldLine name="hidden" defaultChecked={chainConfig.hidden} />
             </Frame>
           </>
         )}
@@ -360,10 +342,7 @@ export function NetworkForm({
           <>
             <Spacer height={12} />
             <Frame style={{ padding: 24 }}>
-              <NetworkTestnetFieldLine
-                name="is_testnet"
-                defaultChecked={chainConfig.is_testnet}
-              />
+              <NetworkTestnetFieldLine name="is_testnet" defaultChecked={chainConfig.is_testnet} />
             </Frame>
           </>
         )}
@@ -394,11 +373,7 @@ export function NetworkForm({
         ) : null}
       </form>
       <Spacer height={20} />
-      {footerRenderArea ? (
-        <Content name={footerRenderArea}>{submitRow}</Content>
-      ) : (
-        submitRow
-      )}
+      {footerRenderArea ? <Content name={footerRenderArea}>{submitRow}</Content> : submitRow}
     </>
   );
 }

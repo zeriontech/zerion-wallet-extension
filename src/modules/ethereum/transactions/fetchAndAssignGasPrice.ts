@@ -21,7 +21,7 @@ function add10Percent(value: number) {
 
 export async function estimateGasForNetwork<T extends IncomingTransaction>(
   transaction: T,
-  network: NetworkInfo
+  network: NetworkInfo,
 ) {
   const chainIdHex = resolveChainId(transaction);
   const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
@@ -53,7 +53,7 @@ export async function estimateGasForNetwork<T extends IncomingTransaction>(
             'gas', // error on Aurora if gas: 0x0, so we omit it
             'nonce', // error on Polygon if nonce is int, but we don't need it at all
             'gasPrice', // error on Avalanche about maxFee being less than baseFee, event though only gasPrice in tx
-          ]
+          ],
         ),
       ],
     });
@@ -62,10 +62,7 @@ export async function estimateGasForNetwork<T extends IncomingTransaction>(
   return add10Percent(parseInt(gasEstimation));
 }
 
-export async function estimateGas(
-  transaction: IncomingTransaction,
-  networks: Networks
-) {
+export async function estimateGas(transaction: IncomingTransaction, networks: Networks) {
   const chainIdHex = resolveChainId(transaction);
   const network = networks.getNetworkById(chainIdHex);
   return estimateGasForNetwork(transaction, network);
@@ -74,7 +71,7 @@ export async function estimateGas(
 async function fetchGasPriceForTransaction(
   transaction: IncomingTransaction,
   networks: Networks,
-  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient },
 ): Promise<ChainGasPrice> {
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
@@ -94,7 +91,7 @@ export function hasGasEstimation(transaction: IncomingTransaction) {
 export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   transaction: T,
   networks: Networks,
-  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient },
 ) {
   const [gas, networkFeeInfo] = await Promise.all([
     hasGasEstimation(transaction)
@@ -111,10 +108,7 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
         }),
   ]);
   return produce(transaction, (draft) => {
-    if (
-      gas &&
-      (getGas(transaction) == null || gas > Number(getGas(transaction)))
-    ) {
+    if (gas && (getGas(transaction) == null || gas > Number(getGas(transaction)))) {
       delete draft.gas;
       draft.gasLimit = gas;
     }

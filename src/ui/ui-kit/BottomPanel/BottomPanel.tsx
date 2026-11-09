@@ -14,7 +14,7 @@ export const StickyBottomPanel = React.forwardRef(
       containerStyle?: React.CSSProperties;
       backdropStyle?: React.CSSProperties;
     },
-    ref: React.Ref<HTMLDivElement>
+    ref: React.Ref<HTMLDivElement>,
   ) => {
     return (
       <div className={styles.stickyBottomSheet} style={containerStyle}>
@@ -24,5 +24,5 @@ export const StickyBottomPanel = React.forwardRef(
         </div>
       </div>
     );
-  }
+  },
 );

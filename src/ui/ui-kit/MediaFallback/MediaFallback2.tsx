@@ -13,12 +13,7 @@ interface FallbackProps {
  * an extra render cycle. Use this for small iconic images where a loading
  * placeholder isn't needed.
  */
-export function Image2({
-  renderError,
-  onError,
-  src,
-  ...props
-}: FallbackProps & ImageProps) {
+export function Image2({ renderError, onError, src, ...props }: FallbackProps & ImageProps) {
   const [errorSrc, setErrorSrc] = useState<string | null>(null);
 
   if (!src || errorSrc === src) {

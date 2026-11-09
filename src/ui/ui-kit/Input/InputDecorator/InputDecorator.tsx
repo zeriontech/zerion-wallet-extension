@@ -13,9 +13,7 @@ interface Props extends React.FieldsetHTMLAttributes<HTMLFieldSetElement> {
   htmlFor: string;
 }
 
-function handleInputWrapperClick(
-  event: React.MouseEvent<HTMLFieldSetElement, MouseEvent>
-) {
+function handleInputWrapperClick(event: React.MouseEvent<HTMLFieldSetElement, MouseEvent>) {
   if (event.target === event.currentTarget) {
     const input = event.currentTarget.querySelector('input');
     if (input) {
@@ -34,7 +32,7 @@ function InputDecoratorComponent(
     htmlFor,
     ...props
   }: Props,
-  ref: ForwardedRef<HTMLFieldSetElement>
+  ref: ForwardedRef<HTMLFieldSetElement>,
 ) {
   return (
     <Surface
@@ -47,12 +45,7 @@ function InputDecoratorComponent(
     >
       <VStack gap={0}>
         {label ? (
-          <UIText
-            as="label"
-            htmlFor={htmlFor}
-            kind={labelTextKind}
-            color="var(--neutral-500)"
-          >
+          <UIText as="label" htmlFor={htmlFor} kind={labelTextKind} color="var(--neutral-500)">
             {label}
           </UIText>
         ) : null}

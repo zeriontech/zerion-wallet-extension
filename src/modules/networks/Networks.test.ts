@@ -100,10 +100,7 @@ test('ecosystem is derived from the specification', () => {
 
 test('chains of an unmodelled standard are dropped', () => {
   const networks = create([ethereum, solana, tron]);
-  expect(networks.getNetworks().map((n) => n.id)).toEqual([
-    'ethereum',
-    'solana',
-  ]);
+  expect(networks.getNetworks().map((n) => n.id)).toEqual(['ethereum', 'solana']);
 });
 
 test('isNativeAddress compares against the base asset implementation on its own chain', () => {
@@ -111,10 +108,7 @@ test('isNativeAddress compares against the base asset implementation on its own 
   expect(networks.isNativeAddress(null, normalizeChainId(1))).toBe(true);
   expect(networks.isNativeAddress('0xdead', normalizeChainId(1))).toBe(false);
   expect(
-    networks.isNativeAddress(
-      '0xe91d153e0b41518a2ce8dd3d7944fa863463a97d',
-      normalizeChainId(100)
-    )
+    networks.isNativeAddress('0xe91d153e0b41518a2ce8dd3d7944fa863463a97d', normalizeChainId(100)),
   ).toBe(true);
   expect(networks.isNativeAddress(null, normalizeChainId(100))).toBe(false);
 });
@@ -130,14 +124,12 @@ test('supports() maps the purpose vocabulary onto flags', () => {
 
 test('explorer urls come from the explorer templates only', () => {
   const networks = create([ethereum, { ...xdai, explorer: null }]);
-  expect(
-    networks.getExplorerTxUrlByName(createChain('ethereum'), '0xabc')
-  ).toBe('https://etherscan.io/tx/0xabc');
-  expect(
-    networks.getExplorerTxUrlByName(createChain('xdai'), '0xabc')
-  ).toBeUndefined();
+  expect(networks.getExplorerTxUrlByName(createChain('ethereum'), '0xabc')).toBe(
+    'https://etherscan.io/tx/0xabc',
+  );
+  expect(networks.getExplorerTxUrlByName(createChain('xdai'), '0xabc')).toBeUndefined();
   expect(Networks.getExplorerAddressUrl(ethereum, '0xabc')).toBe(
-    'https://etherscan.io/address/0xabc'
+    'https://etherscan.io/address/0xabc',
   );
 });
 
@@ -145,9 +137,7 @@ test('rpc url precedence', () => {
   expect(Networks.getNetworkRpcUrlInternal(ethereum)).toBe(ethereum.rpcUrl);
   expect(Networks.getRpcUrlPublic(ethereum)).toBe(ethereum.publicRpcUrl);
   const withUser = { ...ethereum, rpcUrlUser: 'https://my-node.example' };
-  expect(Networks.getNetworkRpcUrlInternal(withUser)).toBe(
-    'https://my-node.example'
-  );
+  expect(Networks.getNetworkRpcUrlInternal(withUser)).toBe('https://my-node.example');
   expect(Networks.getRpcUrlPublic(withUser)).toBe('https://my-node.example');
 });
 
@@ -168,10 +158,7 @@ test('pinned networks keep the user order and skip unresolved ids', () => {
     visitedChains: [],
     pinnedChains: ['xdai', 'unknown-chain', 'ethereum'],
   });
-  expect(networks.getPinnedNetworks().map((n) => n.id)).toEqual([
-    'xdai',
-    'ethereum',
-  ]);
+  expect(networks.getPinnedNetworks().map((n) => n.id)).toEqual(['xdai', 'ethereum']);
   expect(networks.isPinned(createChain('xdai'))).toBe(true);
   expect(networks.isPinned(createChain('solana'))).toBe(false);
   expect(create([ethereum]).getPinnedNetworks()).toEqual([]);

@@ -109,7 +109,7 @@ export interface Response {
 export function searchQuery(
   this: ZerionApiContext,
   { query, currency, limit = 5 }: Payload,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const params = new URLSearchParams({ query, currency, limit: String(limit) });
   const endpoint = `search/query/v1?${params}`;

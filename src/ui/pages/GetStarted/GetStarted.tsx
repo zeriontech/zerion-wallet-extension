@@ -1,12 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import noop from 'lodash/noop';
-import {
-  Link,
-  Route,
-  Routes,
-  useNavigate,
-  useSearchParams,
-} from 'react-router-dom';
+import { Link, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
 import DownloadIcon from 'jsx:src/ui/assets/download.svg';
@@ -31,15 +25,9 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  ItemLink as SurfaceItemLink,
-  SurfaceList,
-} from 'src/ui/ui-kit/SurfaceList/SurfaceList';
+import { ItemLink as SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList/SurfaceList';
 import * as surfaceListStyles from 'src/ui/ui-kit/SurfaceList/styles.module.css';
-import {
-  useBackgroundKind,
-  whiteBackgroundKind,
-} from 'src/ui/components/Background/Background';
+import { useBackgroundKind, whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { openHref } from 'src/ui/shared/openUrl';
 import { PageTop } from 'src/ui/components/PageTop';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
@@ -49,10 +37,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Media } from 'src/ui/ui-kit/Media';
-import {
-  BLOCKCHAIN_TYPES,
-  type BlockchainType,
-} from 'src/shared/wallet/classifiers';
+import { BLOCKCHAIN_TYPES, type BlockchainType } from 'src/shared/wallet/classifiers';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
 import { groupByEcosystem } from '../ManageWallets/shared/groupByEcosystem';
 import { ImportWallet } from './ImportWallet';
@@ -86,21 +71,13 @@ function NewWalletOption({
           ref={autoFocusRef}
           size={44}
           as={Link}
-          to={`wallet-group-select?${
-            beforeCreate ? new URLSearchParams({ beforeCreate }) : ''
-          }`}
+          to={`wallet-group-select?${beforeCreate ? new URLSearchParams({ beforeCreate }) : ''}`}
           style={elevationStyle}
         >
           Create New Wallet
         </Button>
       ) : (
-        <Button
-          ref={autoFocusRef}
-          as={Link}
-          to={newWalletPath}
-          size={44}
-          style={elevationStyle}
-        >
+        <Button ref={autoFocusRef} as={Link} to={newWalletPath} size={44} style={elevationStyle}>
           Create New Wallet
         </Button>
       )}
@@ -134,11 +111,7 @@ function ScreenCover() {
       <Spacer height={24} />
       <UIText kind="headline/h1">Add Wallet</UIText>
       <Spacer height={4} />
-      <UIText
-        kind="body/regular"
-        color="var(--neutral-500)"
-        style={{ textAlign: 'center' }}
-      >
+      <UIText kind="body/regular" color="var(--neutral-500)" style={{ textAlign: 'center' }}>
         Choose an option to set up your wallet
       </UIText>
     </FillView>
@@ -149,11 +122,8 @@ function Options() {
   const { data: walletGroups, isLoading } = useWalletGroups();
   const [params] = useSearchParams();
   const mnemonicGroups = useMemo(
-    () =>
-      walletGroups?.filter((group) =>
-        isMnemonicContainer(group.walletContainer)
-      ),
-    [walletGroups]
+    () => walletGroups?.filter((group) => isMnemonicContainer(group.walletContainer)),
+    [walletGroups],
   );
 
   useBackgroundKind(whiteBackgroundKind);
@@ -222,10 +192,7 @@ function ExistingWalletOptions() {
 
   const beforeCreate = params.get('beforeCreate');
   const importHref = createNextHref('/get-started/import', beforeCreate);
-  const importLedgerHref = createNextHref(
-    '/connect-hardware-wallet',
-    beforeCreate
-  );
+  const importLedgerHref = createNextHref('/connect-hardware-wallet', beforeCreate);
   const addReadonlyHref = createNextHref('/get-started/readonly', beforeCreate);
   useBackgroundKind(whiteBackgroundKind);
   return (
@@ -307,11 +274,8 @@ function WalletGroupSelect() {
   const beforeCreate = params.get('beforeCreate');
   const { data: walletGroups, isLoading } = useWalletGroups();
   const mnemonicGroups = useMemo(
-    () =>
-      walletGroups?.filter((group) =>
-        isMnemonicContainer(group.walletContainer)
-      ),
-    [walletGroups]
+    () => walletGroups?.filter((group) => isMnemonicContainer(group.walletContainer)),
+    [walletGroups],
   );
   useBackgroundKind(whiteBackgroundKind);
   const title = 'Select Wallet Group';
@@ -347,24 +311,19 @@ function WalletGroupSelect() {
         <BottomSheetDialog ref={dialogRef} height="min-content">
           <DialogTitle
             alignTitle="start"
-            title={
-              <UIText kind="headline/h3">
-                Wallets Are Grouped by Recovery Phrase
-              </UIText>
-            }
+            title={<UIText kind="headline/h3">Wallets Are Grouped by Recovery Phrase</UIText>}
           />
           <Spacer height={24} />
           <UIText kind="body/regular" style={{ textAlign: 'start' }}>
-            Each group contains wallets that are associated with same recovery
-            phrase.
+            Each group contains wallets that are associated with same recovery phrase.
             <br />
             <br />
-            Your recovery phrase is stored locally on your device. Zerion does
-            not have access to this data.
+            Your recovery phrase is stored locally on your device. Zerion does not have access to
+            this data.
             <br />
             <br />
-            We do not cross-associate wallet addresses or have a way to know
-            that these wallets are grouped.
+            We do not cross-associate wallet addresses or have a way to know that these wallets are
+            grouped.
           </UIText>
           <Spacer height={32} />
           <form method="dialog">
@@ -379,49 +338,36 @@ function WalletGroupSelect() {
           return (
             <TemporaryListItem
               key={group.id}
-              to={createNextHref(
-                `/get-started/import/mnemonic?groupId=${group.id}`,
-                beforeCreate
-              )}
+              to={createNextHref(`/get-started/import/mnemonic?groupId=${group.id}`, beforeCreate)}
             >
               <AngleRightRow>
                 <VStack gap={FEATURE_SOLANA === 'on' ? 20 : 8}>
-                  <UIText
-                    kind="small/accent"
-                    style={{ overflowWrap: 'break-word' }}
-                  >
+                  <UIText kind="small/accent" style={{ overflowWrap: 'break-word' }}>
                     {getGroupDisplayName(group.name)}
                   </UIText>
-                  {BLOCKCHAIN_TYPES.filter(
-                    (blockchainType) => blockchainType in byEcosystem
-                  ).map((blockchainType) => {
-                    const wallets = byEcosystem[blockchainType];
-                    return (
-                      <VStack key={blockchainType} gap={8}>
-                        {FEATURE_SOLANA === 'on' ? (
-                          <BlockchainTitleHelper kind={blockchainType} />
-                        ) : null}
-                        <div
-                          style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}
-                        >
-                          {wallets.map((wallet) => (
-                            <AddressBadge
-                              key={wallet.address}
-                              wallet={wallet}
-                            />
-                          ))}
-                        </div>
-                      </VStack>
-                    );
-                  })}
+                  {BLOCKCHAIN_TYPES.filter((blockchainType) => blockchainType in byEcosystem).map(
+                    (blockchainType) => {
+                      const wallets = byEcosystem[blockchainType];
+                      return (
+                        <VStack key={blockchainType} gap={8}>
+                          {FEATURE_SOLANA === 'on' ? (
+                            <BlockchainTitleHelper kind={blockchainType} />
+                          ) : null}
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            {wallets.map((wallet) => (
+                              <AddressBadge key={wallet.address} wallet={wallet} />
+                            ))}
+                          </div>
+                        </VStack>
+                      );
+                    },
+                  )}
                 </VStack>
               </AngleRightRow>
             </TemporaryListItem>
           );
         })}
-        <TemporaryListItem
-          to={createNextHref('/get-started/new', beforeCreate)}
-        >
+        <TemporaryListItem to={createNextHref('/get-started/new', beforeCreate)}>
           <HStack gap={8} alignItems="center">
             <SpaceZone backgroundColor="var(--actions-default)">
               <AddCircleIcon style={{ color: 'var(--always-white)' }} />
@@ -479,10 +425,7 @@ export function EcosystemOptionsList({
                 </VStack>
               </HStack>
               <span>
-                <AnimatedCheckmark
-                  checked={values.has('evm')}
-                  checkedColor="var(--primary)"
-                />
+                <AnimatedCheckmark checked={values.has('evm')} checkedColor="var(--primary)" />
               </span>
             </HStack>
           ),
@@ -530,10 +473,7 @@ export function EcosystemOptionsList({
                 <UIText kind="body/accent">Solana Ecosystem</UIText>
               </HStack>
               <span>
-                <AnimatedCheckmark
-                  checked={values.has('solana')}
-                  checkedColor="var(--primary)"
-                />
+                <AnimatedCheckmark checked={values.has('solana')} checkedColor="var(--primary)" />
               </span>
             </HStack>
           ),
@@ -547,10 +487,7 @@ function NewWalletGroup() {
   const title = 'Create New Wallet';
   useBackgroundKind(whiteBackgroundKind);
   const [values, toggleValueOriginal] = useToggledValues(
-    () =>
-      new Set<BlockchainType>(
-        FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']
-      )
+    () => new Set<BlockchainType>(FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']),
   );
   const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : noop;
   const navigate = useNavigate();
@@ -577,7 +514,7 @@ function NewWalletGroup() {
         disabled={values.size === 0}
         onClick={() => {
           const params = new URLSearchParams(
-            Array.from(values).map((value) => ['ecosystems', value])
+            Array.from(values).map((value) => ['ecosystems', value]),
           );
           navigate(`/get-started/new/generate?${params}`);
         }}

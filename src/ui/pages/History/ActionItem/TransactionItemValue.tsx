@@ -20,10 +20,7 @@ import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { ConfidentialMask } from 'src/ui/features/confidential-balances';
 
-function getSign(
-  decimaledValue?: number | BigNumber | string,
-  direction?: ActionDirection | null
-) {
+function getSign(decimaledValue?: number | BigNumber | string, direction?: ActionDirection | null) {
   if (!decimaledValue || !direction) {
     return '';
   }
@@ -69,11 +66,7 @@ export function HistoryTokenValue({
           {quantity ? <AssetQuantity sign={sign} quantity={quantity} /> : null}
         </BlurrableBalance>
       )}
-      {withLink ? (
-        <AssetLink fungible={fungible} />
-      ) : (
-        fungible.symbol || fungible.name
-      )}
+      {withLink ? <AssetLink fungible={fungible} /> : fungible.symbol || fungible.name}
     </HStack>
   );
 }
@@ -120,11 +113,7 @@ export function HistoryNFTValue({
           <span title={quantity}>{formattedValue}</span>
         </BlurrableBalance>
       ) : null}
-      {withLink ? (
-        <NFTLink nft={nft} />
-      ) : (
-        <span>{nft?.metadata?.name || 'NFT'}</span>
-      )}
+      {withLink ? <NFTLink nft={nft} /> : <span>{nft?.metadata?.name || 'NFT'}</span>}
     </HStack>
   );
 }

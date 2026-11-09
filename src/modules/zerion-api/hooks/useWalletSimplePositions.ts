@@ -22,18 +22,16 @@ export function useWalletSimplePositions(
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number | false;
-  } = {}
+  } = {},
 ) {
-  const { permits, fingerprint, isReady } = useConfidentialPermits([
-    params.address,
-  ]);
+  const { permits, fingerprint, isReady } = useConfidentialPermits([params.address]);
   return useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: persistentQuery([QUERY_KEY, params, source, fingerprint]),
     queryFn: () =>
       withPermits(permits, (permits) =>
-        ZerionAPI.walletGetSimplePositions({ ...params, permits }, { source })
+        ZerionAPI.walletGetSimplePositions({ ...params, permits }, { source }),
       ),
     suspense,
     enabled: enabled && isReady,

@@ -8,15 +8,9 @@ import { isValidMnemonic } from 'src/shared/validation/wallet';
 export function decryptMnemonic(data: string, credentials: SessionCredentials) {
   const encrypted = JSON.parse(data) as Encrypted | StableEncrypted;
   if ('iv' in encrypted) {
-    return decryptObject<string>(
-      credentials.seedPhraseEncryptionKey,
-      encrypted
-    );
+    return decryptObject<string>(credentials.seedPhraseEncryptionKey, encrypted);
   } else {
-    return stableDecryptObject<string>(
-      credentials.seedPhraseEncryptionKey_deprecated,
-      encrypted
-    );
+    return stableDecryptObject<string>(credentials.seedPhraseEncryptionKey_deprecated, encrypted);
   }
 }
 

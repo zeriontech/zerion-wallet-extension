@@ -1,8 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  formatCurrencyToParts,
-  formatCurrencyValue,
-} from 'src/shared/units/formatCurrencyValue';
+import { formatCurrencyToParts, formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -13,20 +10,13 @@ import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import GasIcon from 'jsx:src/ui/assets/gas.svg';
 import PieChartIcon from 'jsx:src/ui/assets/pie-chart.svg';
 import type { Item } from 'src/ui/ui-kit/SurfaceList';
-import {
-  SurfaceItemAnchor,
-  SurfaceItemLink,
-  SurfaceList,
-} from 'src/ui/ui-kit/SurfaceList';
+import { SurfaceItemAnchor, SurfaceItemLink, SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type {
   AppInfo,
   AppPortfolio,
   GroupedFungiblePosition,
 } from 'src/ui/components/Positions/types';
-import {
-  DEFAULT_APP_ID,
-  DEFAULT_NAME,
-} from 'src/ui/components/Positions/types';
+import { DEFAULT_APP_ID, DEFAULT_NAME } from 'src/ui/components/Positions/types';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import {
   addressPositionsToApps,
@@ -115,11 +105,7 @@ function GroupedPositionItem({
           vGap={0}
           gap={12}
           image={
-            <TokenIcon
-              size={36}
-              symbol={position.asset.symbol}
-              src={position.asset.iconUrl}
-            />
+            <TokenIcon size={36} symbol={position.asset.symbol} src={position.asset.iconUrl} />
           }
           text={
             <HStack
@@ -136,9 +122,7 @@ function GroupedPositionItem({
               </UIText>
               {showGasIcon ? (
                 <div title="Token is used to cover gas fees">
-                  <GasIcon
-                    style={{ display: 'block', width: 20, height: 20 }}
-                  />
+                  <GasIcon style={{ display: 'block', width: 20, height: 20 }} />
                 </div>
               ) : null}
             </HStack>
@@ -164,57 +148,37 @@ function GroupedPositionItem({
                     justifyContent: 'center',
                   }}
                 >
-                  <PieChartIcon
-                    style={{ display: 'block', width: 16, height: 16 }}
-                  />
+                  <PieChartIcon style={{ display: 'block', width: 16, height: 16 }} />
                 </span>
               ) : singleChain.id !== NetworkId.Ethereum ? (
-                <NetworkIcon
-                  size={16}
-                  name={singleChain.name}
-                  src={singleChain.iconUrl}
-                />
+                <NetworkIcon size={16} name={singleChain.name} src={singleChain.iconUrl} />
               ) : null}
               {intersperce(
                 [
                   position.encrypted ? (
-                    <span
-                      key="position-quantity"
-                      style={{ ...textOverflowStyle, display: 'flex' }}
-                    >
+                    <span key="position-quantity" style={{ ...textOverflowStyle, display: 'flex' }}>
                       <ConfidentialMask kind="small/regular" showLock={false} />
                     </span>
                   ) : position.type !== 'asset' ? (
                     <span
                       key="position-type"
                       color={
-                        position.type === 'loan'
-                          ? 'var(--negative-500)'
-                          : 'var(--neutral-500)'
+                        position.type === 'loan' ? 'var(--negative-500)' : 'var(--neutral-500)'
                       }
                     >
                       {positionTypeToStringMap[position.type]}
                     </span>
                   ) : (
-                    <span
-                      key="position-quantity"
-                      style={{ ...textOverflowStyle, display: 'flex' }}
-                    >
-                      <BlurrableBalance
-                        kind="small/regular"
-                        color="var(--neutral-700)"
-                      >
-                        {formatTokenValue(
-                          getPositionBalance(position),
-                          position.asset.symbol
-                        )}
+                    <span key="position-quantity" style={{ ...textOverflowStyle, display: 'flex' }}>
+                      <BlurrableBalance kind="small/regular" color="var(--neutral-700)">
+                        {formatTokenValue(getPositionBalance(position), position.asset.symbol)}
                       </BlurrableBalance>
                     </span>
                   ),
                 ],
                 (key) => (
                   <span key={key}> · </span>
-                )
+                ),
               )}
             </UIText>
           }
@@ -229,44 +193,26 @@ function GroupedPositionItem({
           <VStack gap={0} style={{ textAlign: 'right', justifyItems: 'end' }}>
             <UIText kind="body/regular" style={{ display: 'flex' }}>
               <BlurrableBalance kind="body/regular" color="var(--black)">
-                {formatCurrencyValue(
-                  getPositionValue(position),
-                  'en',
-                  currency
-                )}
+                {formatCurrencyValue(getPositionValue(position), 'en', currency)}
               </BlurrableBalance>
             </UIText>
             {change && change.relative ? (
               <UIText
                 kind="small/regular"
-                color={
-                  change.relative < 0
-                    ? 'var(--negative-500)'
-                    : 'var(--positive-500)'
-                }
+                color={change.relative < 0 ? 'var(--negative-500)' : 'var(--positive-500)'}
                 style={{ display: 'flex', gap: 4 }}
               >
                 <span>
                   {`${change.relative > 0 ? '+' : minus}${formatPercent(
                     Math.abs(change.relative),
-                    'en'
+                    'en',
                   )}%`}
                 </span>
                 <BlurrableBalance
                   kind="small/regular"
-                  color={
-                    change.relative < 0
-                      ? 'var(--negative-500)'
-                      : 'var(--positive-500)'
-                  }
+                  color={change.relative < 0 ? 'var(--negative-500)' : 'var(--positive-500)'}
                 >
-                  (
-                  {formatCurrencyValue(
-                    Math.abs(change.absolute).toFixed(2),
-                    'en',
-                    currency
-                  )}
-                  )
+                  ({formatCurrencyValue(Math.abs(change.absolute).toFixed(2), 'en', currency)})
                 </BlurrableBalance>
               </UIText>
             ) : null}
@@ -320,7 +266,7 @@ function usePreparedPositions({
   return useMemo(() => {
     const totalValue = apps.reduce(
       (sum, app) => sum + getFullPositionsValue(getAppPositions(app)),
-      0
+      0,
     );
     const sortedApps = [...apps].sort((a, b) => {
       if (a.app.id === DEFAULT_APP_ID) {
@@ -329,18 +275,14 @@ function usePreparedPositions({
       if (b.app.id === DEFAULT_APP_ID) {
         return 1;
       }
-      return (
-        getFullPositionsValue(getAppPositions(b)) -
-        getFullPositionsValue(getAppPositions(a))
-      );
+      return getFullPositionsValue(getAppPositions(b)) - getFullPositionsValue(getAppPositions(a));
     });
     const preparedApps = sortedApps.map<PreparedApp>((app) => {
       const items = getAppPositions(app);
       const currentTotalValue = getFullPositionsValue(items);
       const groups = [...app.groups].sort(
         (a, b) =>
-          getFullPositionsValue(b.fungiblePositions) -
-          getFullPositionsValue(a.fungiblePositions)
+          getFullPositionsValue(b.fungiblePositions) - getFullPositionsValue(a.fungiblePositions),
       );
       const nameIndex: PreparedApp['nameIndex'] = {};
       for (const group of groups) {
@@ -350,7 +292,7 @@ function usePreparedPositions({
           const gasPositionIndex = rows.findIndex(
             (item) =>
               item.asset.id === nativeAssetId &&
-              item.chains.some((chain) => chain.id === dappChain)
+              item.chains.some((chain) => chain.id === dappChain),
           );
           if (gasPositionIndex >= 0) {
             const [gasPosition] = rows.splice(gasPositionIndex, 1);
@@ -363,9 +305,7 @@ function usePreparedPositions({
         app: app.app,
         totalValue: currentTotalValue,
         relativeValue:
-          currentTotalValue === 0 && totalValue === 0
-            ? 0
-            : (currentTotalValue / totalValue) * 100,
+          currentTotalValue === 0 && totalValue === 0 ? 0 : (currentTotalValue / totalValue) * 100,
         items,
         names: Object.keys(nameIndex),
         nameIndex,
@@ -414,9 +354,7 @@ function AppHeading({
           <>
             <span style={{ color: 'var(--neutral-500)' }}> · </span>
             <BlurrableBalance kind="body/accent" color="var(--black)">
-              <NeutralDecimals
-                parts={formatCurrencyToParts(value, 'en', currency)}
-              />
+              <NeutralDecimals parts={formatCurrencyToParts(value, 'en', currency)} />
             </BlurrableBalance>
           </>
         )}
@@ -467,7 +405,7 @@ export function PositionList({
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const showMore = useCallback(
     (key: string) => setExpanded((expanded) => new Set(expanded).add(key)),
-    []
+    [],
   );
   const showLess = useCallback(
     (key: string) =>
@@ -476,13 +414,11 @@ export function PositionList({
         set.delete(key);
         return set;
       }),
-    []
+    [],
   );
   const { pathname } = useLocation();
   const { preferences } = usePreferences();
-  const { data: firebaseConfig } = useFirebaseConfig([
-    'extension_asset_page_enabled',
-  ]);
+  const { data: firebaseConfig } = useFirebaseConfig(['extension_asset_page_enabled']);
 
   const preparedPositions = usePreparedPositions({
     apps,
@@ -492,20 +428,15 @@ export function PositionList({
   const offsetValuesState = useStore(offsetValues);
   const { currency } = useCurrency();
 
-  const assetPageEnabled = Boolean(
-    firebaseConfig?.extension_asset_page_enabled
-  );
+  const assetPageEnabled = Boolean(firebaseConfig?.extension_asset_page_enabled);
 
   const isSignable = useIsSignableWallet(confidentialPanel ? address : null);
   const allItems = useMemo(
     () => preparedPositions.apps.flatMap((app) => app.items),
-    [preparedPositions]
+    [preparedPositions],
   );
   const showConfidentialPanel = Boolean(
-    confidentialPanel &&
-    address &&
-    isSignable &&
-    hasEncryptedPositions(allItems)
+    confidentialPanel && address && isSignable && hasEncryptedPositions(allItems),
   );
 
   return (
@@ -517,21 +448,11 @@ export function PositionList({
       ) : null}
       {preparedPositions.apps.map((preparedApp, appIndex) => {
         const items: Item[] = [];
-        const {
-          app,
-          totalValue,
-          relativeValue,
-          names,
-          nameIndex,
-          items: appItems,
-        } = preparedApp;
+        const { app, totalValue, relativeValue, names, nameIndex, items: appItems } = preparedApp;
         let appPositionCounter = 0;
         let subHeadingIndex = 0;
         // do not hide if only one item is left
-        const stopAt =
-          appItems.length - COLLAPSED_COUNT > 1
-            ? COLLAPSED_COUNT
-            : appItems.length;
+        const stopAt = appItems.length - COLLAPSED_COUNT > 1 ? COLLAPSED_COUNT : appItems.length;
         outerBlock: for (const name of names) {
           if (name.toUpperCase() !== DEFAULT_NAME) {
             items.push({
@@ -568,8 +489,7 @@ export function PositionList({
             items.push({
               key: position.id,
               pad: !assetPageEnabled && !showAsLink,
-              style:
-                assetPageEnabled || showAsLink ? { padding: 0 } : undefined,
+              style: assetPageEnabled || showAsLink ? { padding: 0 } : undefined,
               // NODE: Don't link to web in testnet mode
               // TODO: remove this conditional when we have Asset Page 100% enabled in extension
               component: assetPageEnabled ? (
@@ -591,9 +511,7 @@ export function PositionList({
                   onClick={openHrefInTabIfSidepanel}
                   href={`https://app.zerion.io/tokens/${
                     position.asset.symbol
-                  }-${position.asset.id}${
-                    address ? `?address=${address}` : ''
-                  }`}
+                  }-${position.asset.id}${address ? `?address=${address}` : ''}`}
                   target="_blank"
                   decorationStyle={{ borderRadius: 16 }}
                 >
@@ -637,9 +555,7 @@ export function PositionList({
                   position: 'sticky',
                   top:
                     stickyOffset ??
-                    getStickyOffset(offsetValuesState) +
-                      TAB_SELECTOR_HEIGHT +
-                      TAB_TOP_PADDING,
+                    getStickyOffset(offsetValuesState) + TAB_SELECTOR_HEIGHT + TAB_TOP_PADDING,
                   zIndex: 1,
                   backgroundColor: 'var(--white)',
                 }}
@@ -649,9 +565,7 @@ export function PositionList({
                   value={totalValue}
                   relativeValue={relativeValue}
                   currency={currency}
-                  allEncrypted={appItems.every(
-                    (position) => position.encrypted
-                  )}
+                  allEncrypted={appItems.every((position) => position.encrypted)}
                 />
               </div>
             ) : null}
@@ -664,10 +578,7 @@ export function PositionList({
             ) : (
               <Spacer height={4} />
             )}
-            <SurfaceList
-              style={{ position: 'relative', zIndex: 0 }}
-              items={items}
-            />
+            <SurfaceList style={{ position: 'relative', zIndex: 0 }} items={items} />
             {appIndex !== preparedPositions.apps.length - 1 ? (
               <>
                 <Spacer height={14} />
@@ -718,13 +629,10 @@ function MultiChainPositions({
       chainIds: isAllNetworks ? undefined : [chainValue],
     },
     { source: useHttpClientSource() },
-    { refetchInterval: usePositionsRefetchInterval(40000) }
+    { refetchInterval: usePositionsRefetchInterval(40000) },
   );
 
-  const apps = useMemo(
-    () => filterDisplayableApps(data?.data?.apps ?? []),
-    [data]
-  );
+  const apps = useMemo(() => filterDisplayableApps(data?.data?.apps ?? []), [data]);
 
   if (isLoading) {
     return renderLoadingView() as JSX.Element;
@@ -748,9 +656,7 @@ function MultiChainPositions({
             onChange={onChainChange}
             value={
               chainTotalValue ? (
-                <NeutralDecimals
-                  parts={formatCurrencyToParts(chainTotalValue, 'en', currency)}
-                />
+                <NeutralDecimals parts={formatCurrencyToParts(chainTotalValue, 'en', currency)} />
               ) : null
             }
           />
@@ -788,14 +694,11 @@ function RawChainPositions({
   const { currency } = useCurrency();
   invariant(
     selectedChain !== NetworkSelectValue.All,
-    'All networks filter should not show custom chain positions'
+    'All networks filter should not show custom chain positions',
   );
   const { networks } = useNetworks();
   const chainValue = selectedChain;
-  invariant(
-    chainValue,
-    'Chain filter should be defined to show custom chain positions'
-  );
+  invariant(chainValue, 'Chain filter should be defined to show custom chain positions');
   const chain = createChain(chainValue);
   const network = networks?.getNetworkByName(chain);
   const {
@@ -817,12 +720,10 @@ function RawChainPositions({
             iconUrl: network?.iconUrl ?? null,
           })
         : [],
-    [addressPositions, chainValue, network]
+    [addressPositions, chainValue, network],
   );
   if (isError) {
-    return renderErrorView(
-      networks?.getChainName(chain) || chainValue
-    ) as JSX.Element;
+    return renderErrorView(networks?.getChainName(chain) || chainValue) as JSX.Element;
   }
   if (isLoading) {
     return renderLoadingView() as JSX.Element;
@@ -845,18 +746,13 @@ function RawChainPositions({
               parts={formatCurrencyToParts(
                 getFullPositionsValue(getAppPositions(apps[0])),
                 'en',
-                currency
+                currency,
               )}
             />
           }
         />
       </div>
-      <PositionList
-        address={address}
-        apps={apps}
-        dappChain={dappChain}
-        {...positionListProps}
-      />
+      <PositionList address={address} apps={apps} dappChain={dappChain} {...positionListProps} />
     </VStack>
   );
 }
@@ -876,12 +772,11 @@ export function Positions({
   const { data, ...portfolioQuery } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: useHttpClientSource() },
-    { enabled: ready && !addrIsSolana }
+    { enabled: ready && !addrIsSolana },
   );
   const walletPortfolio = data?.data;
   const chainValue = selectedChain || NetworkSelectValue.All;
-  const chain =
-    chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
+  const chain = chainValue === NetworkSelectValue.All ? null : createChain(chainValue);
   const positionChains = useMemo(() => {
     const chainsSet = new Set(Object.keys(walletPortfolio?.chains || {}));
     if (chainValue !== NetworkSelectValue.All) {
@@ -892,14 +787,10 @@ export function Positions({
   const offsetValuesState = useStore(offsetValues);
   // Cheap perceived performance hack: render expensive Positions component later so that initial UI render is faster
   const readyToRender = useRenderDelay(16);
-  const { networks, isLoading } = useNetworks(
-    positionChains.length ? positionChains : undefined
-  );
+  const { networks, isLoading } = useNetworks(positionChains.length ? positionChains : undefined);
   if (!ready) {
     return (
-      <CenteredFillViewportView
-        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-      >
+      <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
         <DelayedRender delay={500}>
           <ViewLoading kind="network" />
         </DelayedRender>
@@ -909,9 +800,7 @@ export function Positions({
   const moveGasPositionToFront = chainValue !== NetworkSelectValue.All;
   const OVERRIDE_POSITIONS_SUPPORT = addrIsSolana; // todo: remove when backend updates NetworkInfo for Solana
   const isSupportedByBackend =
-    chain == null
-      ? true
-      : OVERRIDE_POSITIONS_SUPPORT || networks?.supports('positions', chain);
+    chain == null ? true : OVERRIDE_POSITIONS_SUPPORT || networks?.supports('positions', chain);
 
   const emptyNetworkBalance = (
     <div
@@ -934,9 +823,7 @@ export function Positions({
   );
 
   const renderEmptyViewForNetwork = () => (
-    <CenteredFillViewportView
-      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-    >
+    <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
       {emptyNetworkBalance}
       <DelayedRender delay={50}>
         <EmptyPositionsView />
@@ -944,9 +831,7 @@ export function Positions({
     </CenteredFillViewportView>
   );
   const renderLoadingViewForNetwork = () => (
-    <CenteredFillViewportView
-      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-    >
+    <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
       {emptyNetworkBalance}
       <DelayedRender delay={50}>
         <ViewLoading kind="network" />
@@ -954,9 +839,7 @@ export function Positions({
     </CenteredFillViewportView>
   );
   const renderErrorViewForNetwork = (chainName: string) => (
-    <CenteredFillViewportView
-      maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-    >
+    <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
       {emptyNetworkBalance}
       <VStack gap={4} style={{ padding: 20, textAlign: 'center' }}>
         <span style={{ fontSize: 20 }}>💔</span>

@@ -5,7 +5,7 @@ import type {
 } from './perp-clearinghouse-state.types';
 
 export async function perpClearinghouseState(
-  payload: PerpClearinghouseStatePayload
+  payload: PerpClearinghouseStatePayload,
 ): Promise<PerpClearinghouseState | null> {
   return postInfo<PerpClearinghouseState>({
     type: 'clearinghouseState',

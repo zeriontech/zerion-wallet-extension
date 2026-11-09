@@ -9,11 +9,7 @@ import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { emitter } from 'src/ui/shared/events';
 
-export function ReadonlySignButton({
-  wallet,
-}: {
-  wallet: ExternallyOwnedAccount;
-}) {
+export function ReadonlySignButton({ wallet }: { wallet: ExternallyOwnedAccount }) {
   const { pathname } = useLocation();
   const { open, openDialog, closeDialog } = useDialog2();
 
@@ -39,16 +35,10 @@ export function ReadonlySignButton({
       >
         Import Wallet
       </Button>
-      <Dialog2
-        open={open}
-        onClose={closeDialog}
-        title="Import Wallet"
-        size="content"
-      >
+      <Dialog2 open={open} onClose={closeDialog} title="Import Wallet" size="content">
         <div style={{ padding: 16 }}>
           <UIText kind="body/regular">
-            To perform transactions, import your wallet using your private keys
-            or recovery phrase.
+            To perform transactions, import your wallet using your private keys or recovery phrase.
           </UIText>
           <Spacer height={24} />
           <div

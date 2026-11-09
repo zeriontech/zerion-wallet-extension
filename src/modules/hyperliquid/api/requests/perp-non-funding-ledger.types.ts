@@ -1,8 +1,4 @@
-export type NonFundingLedgerUpdateType =
-  | 'deposit'
-  | 'internalTransfer'
-  | 'send'
-  | 'withdraw';
+export type NonFundingLedgerUpdateType = 'deposit' | 'internalTransfer' | 'send' | 'withdraw';
 
 export interface NonFundingLedgerDelta {
   type: NonFundingLedgerUpdateType;

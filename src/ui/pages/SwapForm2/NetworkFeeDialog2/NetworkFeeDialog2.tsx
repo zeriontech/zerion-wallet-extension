@@ -14,10 +14,7 @@ import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import ChevronLeftIcon from 'jsx:src/ui/assets/chevron-left-medium.svg';
 import type { NetworkFeeQuote } from '../getNetworkFeeForSpeed';
 import { NetworkFeeTypeSelector } from './NetworkFeeTypeSelector';
-import {
-  NetworkFeeCustomForm,
-  type CustomFormDefaults,
-} from './NetworkFeeCustomForm';
+import { NetworkFeeCustomForm, type CustomFormDefaults } from './NetworkFeeCustomForm';
 import * as styles from './NetworkFeeDialog2.module.css';
 
 type View = 'selector' | 'custom';
@@ -35,9 +32,7 @@ function Header({ view, onBack }: { view: View; onBack: () => void }) {
             onClick={onBack}
             style={{ padding: '0 8px', minWidth: 32 }}
           >
-            <ChevronLeftIcon
-              style={{ display: 'block', width: 16, height: 16 }}
-            />
+            <ChevronLeftIcon style={{ display: 'block', width: 16, height: 16 }} />
           </Button>
         ) : null}
       </div>

@@ -6,10 +6,7 @@ import { derivePath } from 'ed25519-hd-key';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { BareMnemonicWallet } from 'src/background/Wallet/model/BareWallet';
 
-export function fromSolanaKeypair(opts: {
-  mnemonic: null;
-  keypair: Keypair;
-}): BareWallet;
+export function fromSolanaKeypair(opts: { mnemonic: null; keypair: Keypair }): BareWallet;
 export function fromSolanaKeypair(opts: {
   mnemonic: { phrase: string; path: string };
   keypair: Keypair;

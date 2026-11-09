@@ -21,7 +21,7 @@ export function useAllExistingMnemonicAddresses() {
         ?.filter((group) => isMnemonicContainer(group.walletContainer))
         ?.flatMap((group) => group.walletContainer.wallets)
         .map(({ address }) => normalizeAddress(address)),
-    [walletGroups]
+    [walletGroups],
   );
 }
 
@@ -37,11 +37,10 @@ export function useAllSignerOrHwAddresses() {
       walletGroups
         ?.filter(
           (group) =>
-            isSignerContainer(group.walletContainer) ||
-            isHardwareContainer(group.walletContainer)
+            isSignerContainer(group.walletContainer) || isHardwareContainer(group.walletContainer),
         )
         ?.flatMap((group) => group.walletContainer.wallets)
         .map(({ address }) => normalizeAddress(address)),
-    [walletGroups]
+    [walletGroups],
   );
 }

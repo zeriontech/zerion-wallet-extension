@@ -32,7 +32,7 @@ interface UseHyperliquidAccountSummaryResult {
 
 export function useHyperliquidAccountSummary(
   { address }: { address: string | null | undefined },
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ): UseHyperliquidAccountSummaryResult {
   const perp = useClearinghouseStates({ address }, { enabled });
 
@@ -40,15 +40,9 @@ export function useHyperliquidAccountSummary(
   const abstractionQuery = useUserAbstraction({ address }, { enabled });
 
   const abstractionMode: AbstractionMode = abstractionQuery.data ?? 'disabled';
-  const spotBalances = useMemo(
-    () => spotQuery.data?.balances ?? [],
-    [spotQuery.data]
-  );
+  const spotBalances = useMemo(() => spotQuery.data?.balances ?? [], [spotQuery.data]);
 
-  const perpStates = useMemo(
-    () => perp.perpStatesByDex,
-    [perp.perpStatesByDex]
-  );
+  const perpStates = useMemo(() => perp.perpStatesByDex, [perp.perpStatesByDex]);
 
   const effectiveAccountValueUSD = useMemo(
     () =>
@@ -57,7 +51,7 @@ export function useHyperliquidAccountSummary(
         spotBalances,
         abstractionMode,
       }),
-    [perpStates, spotBalances, abstractionMode]
+    [perpStates, spotBalances, abstractionMode],
   );
 
   const effectiveWithdrawableUSDC = useMemo(
@@ -67,7 +61,7 @@ export function useHyperliquidAccountSummary(
         spotBalances,
         abstractionMode,
       }),
-    [perpStates, spotBalances, abstractionMode]
+    [perpStates, spotBalances, abstractionMode],
   );
 
   return {

@@ -23,6 +23,6 @@ export function referWallet(this: ZerionApiContext, params: Params) {
         signature: params.signature,
       }),
     },
-    kyOptions
+    kyOptions,
   );
 }

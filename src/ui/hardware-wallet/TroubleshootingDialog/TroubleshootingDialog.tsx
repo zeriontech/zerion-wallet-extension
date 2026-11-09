@@ -9,11 +9,7 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { useMutation } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 
-export function TroubleshootingDialog({
-  error,
-}: {
-  error: LedgerError | null;
-}) {
+export function TroubleshootingDialog({ error }: { error: LedgerError | null }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const reportMutation = useMutation({
     mutationFn: async () => {
@@ -38,8 +34,7 @@ export function TroubleshootingDialog({
         <Spacer height={24} />
         <VStack gap={16} style={{ textAlign: 'left' }}>
           <UIText kind="body/regular">
-            If you're experiencing issues with your Ledger device, try the
-            following steps:
+            If you're experiencing issues with your Ledger device, try the following steps:
           </UIText>
           <UIText
             kind="small/regular"
@@ -49,9 +44,8 @@ export function TroubleshootingDialog({
               backgroundColor: 'var(--neutral-100)',
             }}
           >
-            There is most likely another unfinished operation in progress. Or
-            device is already connected via usb to another app or window of this
-            extension
+            There is most likely another unfinished operation in progress. Or device is already
+            connected via usb to another app or window of this extension
           </UIText>
           <ul
             style={{
@@ -64,9 +58,7 @@ export function TroubleshootingDialog({
             }}
           >
             <li>
-              <UIText kind="small/regular">
-                Unlock the device and close all apps
-              </UIText>
+              <UIText kind="small/regular">Unlock the device and close all apps</UIText>
             </li>
             <li>
               <UIText kind="small/regular">
@@ -80,9 +72,7 @@ export function TroubleshootingDialog({
               <UIText kind="small/regular">Restart the device</UIText>
             </li>
             <li>
-              <UIText kind="small/regular">
-                Update the firmware to the latest version
-              </UIText>
+              <UIText kind="small/regular">Update the firmware to the latest version</UIText>
             </li>
           </ul>
           <Spacer height={8} />

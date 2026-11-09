@@ -8,10 +8,7 @@ import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { getIndexFromPath } from 'src/shared/wallet/derivation-paths';
-import {
-  isEncryptedMnemonic,
-  decryptMnemonic,
-} from 'src/shared/wallet/encryption';
+import { isEncryptedMnemonic, decryptMnemonic } from 'src/shared/wallet/encryption';
 import { invariant } from 'src/shared/invariant';
 import {
   assertSignerContainer,
@@ -32,17 +29,9 @@ import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { DEFAULT_WALLET_LIST_GROUPS } from 'src/shared/wallet/wallet-list';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { emitter } from '../events';
-import type {
-  PendingWallet,
-  WalletContainer,
-  WalletGroup,
-  WalletRecord,
-} from './model/types';
+import type { PendingWallet, WalletContainer, WalletGroup, WalletRecord } from './model/types';
 import type { BareWallet } from './model/BareWallet';
-import {
-  MnemonicWalletContainer,
-  PrivateKeyWalletContainer,
-} from './model/WalletContainer';
+import { MnemonicWalletContainer, PrivateKeyWalletContainer } from './model/WalletContainer';
 import {
   DeviceAccountContainer,
   ReadonlyAccountContainer,
@@ -50,10 +39,7 @@ import {
 } from './model/AccountContainer';
 import { walletRecordUpgrades } from './model/versions';
 
-function generateGroupName(
-  record: WalletRecord | null,
-  walletContainer: WalletContainer
-) {
+function generateGroupName(record: WalletRecord | null, walletContainer: WalletContainer) {
   const isMnemonicGroup = isMnemonicContainer(walletContainer);
   const isPrivateKeyGroup = isPrivateKeyContainer(walletContainer);
   const isHardwareGroup = isHardwareContainer(walletContainer);
@@ -105,10 +91,7 @@ function createGroup({
   walletContainer,
   origin,
   created,
-}: Pick<
-  WalletGroup,
-  'name' | 'walletContainer' | 'origin' | 'created'
->): WalletGroup {
+}: Pick<WalletGroup, 'name' | 'walletContainer' | 'origin' | 'created'>): WalletGroup {
   return {
     id: nanoid(),
     walletContainer,
@@ -129,10 +112,7 @@ export function toPlainObject(record: WalletRecord) {
   });
 }
 
-function validateName(
-  name: string,
-  { minLength = 1 }: { minLength?: number } = {}
-) {
+function validateName(name: string, { minLength = 1 }: { minLength?: number } = {}) {
   const ETHEREUM_ADDRESS_LENGTH = 40;
   const MAX_ALLOWED_NAME_LENGTH = ETHEREUM_ADDRESS_LENGTH * 2;
   if (typeof name !== 'string') {
@@ -170,19 +150,18 @@ function verifyCurrentAddress(draft: Draft<WalletRecord>) {
     const normalizedAddress = normalizeAddress(currentAddress);
     const walletExists = draft.walletManager.groups.some((group) =>
       group.walletContainer.wallets.some(
-        (wallet) => normalizeAddress(wallet.address) === normalizedAddress
-      )
+        (wallet) => normalizeAddress(wallet.address) === normalizedAddress,
+      ),
     );
     if (!walletExists) {
-      draft.walletManager.currentAddress =
-        WalletRecordModel.getFirstWallet(draft)?.address || null;
+      draft.walletManager.currentAddress = WalletRecordModel.getFirstWallet(draft)?.address || null;
     }
   }
 }
 
 function cleanupActivityRecord(draft: Draft<WalletRecord>) {
   const addresses = draft.walletManager.groups.flatMap((group) =>
-    group.walletContainer.wallets.map((wallet) => wallet.address)
+    group.walletContainer.wallets.map((wallet) => wallet.address),
   );
   const set = new Set(addresses);
   for (const address in draft.activityRecord) {
@@ -206,7 +185,7 @@ export class WalletRecordModel {
 
   static getWalletGroupByAddress(record: WalletRecord, address: string) {
     const sortedGroups = sortBy(record.walletManager.groups, (group) =>
-      getContainerType(group.walletContainer)
+      getContainerType(group.walletContainer),
     );
     for (const group of sortedGroups) {
       const wallet = group.walletContainer.getWalletByAddress(address);
@@ -219,10 +198,10 @@ export class WalletRecordModel {
 
   static getWalletByAddress(
     record: WalletRecord,
-    { address, groupId }: { address: string; groupId: string | null }
+    { address, groupId }: { address: string; groupId: string | null },
   ) {
     const sortedGroups = sortBy(record.walletManager.groups, (group) =>
-      getContainerType(group.walletContainer)
+      getContainerType(group.walletContainer),
     );
     const group = sortedGroups.find((group) => {
       if (groupId) {
@@ -235,12 +214,9 @@ export class WalletRecordModel {
     return wallet;
   }
 
-  static getSignerWalletByAddress(
-    record: WalletRecord,
-    address: string
-  ): BareWallet | null {
+  static getSignerWalletByAddress(record: WalletRecord, address: string): BareWallet | null {
     const sortedGroups = sortBy(record.walletManager.groups, (group) =>
-      getContainerType(group.walletContainer)
+      getContainerType(group.walletContainer),
     );
     for (const group of sortedGroups) {
       if (isSignerContainer(group.walletContainer)) {
@@ -256,7 +232,7 @@ export class WalletRecordModel {
   /** Currently only looks for matches among mnemonic groups, but can be updated */
   static getMatchingExistingWalletGroup(
     record: WalletRecord,
-    walletContainer: WalletContainer
+    walletContainer: WalletContainer,
   ): WalletGroup | undefined {
     if (isMnemonicContainer(walletContainer)) {
       const mnemonic = walletContainer.getMnemonic();
@@ -276,22 +252,18 @@ export class WalletRecordModel {
   static async reEncryptRecord(
     record: WalletRecord,
     oldCredentials: SessionCredentials,
-    newCredentials: SessionCredentials
+    newCredentials: SessionCredentials,
   ): Promise<WalletRecord> {
     const draft = createDraft(record);
     for (const group of draft.walletManager.groups) {
       if (!isMnemonicContainer(group.walletContainer)) {
         continue;
       }
-      const { mnemonic: encryptedMnemonic } =
-        group.walletContainer.getFirstWallet();
+      const { mnemonic: encryptedMnemonic } = group.walletContainer.getFirstWallet();
       if (!encryptedMnemonic) {
         continue;
       }
-      let phrase: string | null = await decryptMnemonic(
-        encryptedMnemonic.phrase,
-        oldCredentials
-      );
+      let phrase: string | null = await decryptMnemonic(encryptedMnemonic.phrase, oldCredentials);
       const { seedPhraseEncryptionKey } = newCredentials;
       const updatedPhrase = await encrypt(seedPhraseEncryptionKey, phrase);
       phrase = null;
@@ -305,16 +277,12 @@ export class WalletRecordModel {
     return result;
   }
 
-  static async ensureSeedPhraseCredentials(
-    record: WalletRecord,
-    credentials: SessionCredentials
-  ) {
+  static async ensureSeedPhraseCredentials(record: WalletRecord, credentials: SessionCredentials) {
     for (const group of record.walletManager.groups) {
       if (!isMnemonicContainer(group.walletContainer)) {
         continue;
       }
-      const { mnemonic: encryptedMnemonic } =
-        group.walletContainer.getFirstWallet();
+      const { mnemonic: encryptedMnemonic } = group.walletContainer.getFirstWallet();
       if (!encryptedMnemonic) {
         continue;
       }
@@ -334,24 +302,20 @@ export class WalletRecordModel {
   static async reEncryptMnemonicWithNewCredentialsIfNeeded(
     record: WalletRecord,
     oldCredentials: SessionCredentials,
-    newCredentials: SessionCredentials
+    newCredentials: SessionCredentials,
   ) {
     const draft = createDraft(record);
     for (const group of draft.walletManager.groups) {
       if (!isMnemonicContainer(group.walletContainer)) {
         continue;
       }
-      const { mnemonic: encryptedMnemonic } =
-        group.walletContainer.getFirstWallet();
+      const { mnemonic: encryptedMnemonic } = group.walletContainer.getFirstWallet();
       if (!encryptedMnemonic) {
         continue;
       }
       let phrase: string | null;
       try {
-        phrase = await decryptMnemonic(
-          encryptedMnemonic.phrase,
-          oldCredentials
-        );
+        phrase = await decryptMnemonic(encryptedMnemonic.phrase, oldCredentials);
       } catch {
         continue;
       }
@@ -372,7 +336,7 @@ export class WalletRecordModel {
 
   static createOrUpdateRecord(
     record: WalletRecord | null,
-    pendingWallet: PendingWallet
+    pendingWallet: PendingWallet,
   ): WalletRecord {
     if (!record) {
       const { walletContainer } = pendingWallet;
@@ -433,7 +397,7 @@ export class WalletRecordModel {
           const existingReadonlyGroup = draft.walletManager.groups.find(
             (group) =>
               isReadonlyContainer(group.walletContainer) &&
-              group.walletContainer.getWalletByAddress(wallet.address)
+              group.walletContainer.getWalletByAddress(wallet.address),
           );
           if (existingReadonlyGroup) {
             WalletRecordModel.mutateRemoveAddress(draft, {
@@ -453,9 +417,7 @@ export class WalletRecordModel {
         const existingGroup = draft.walletManager.groups.find((group) => {
           return (
             isPrivateKeyContainer(group.walletContainer) &&
-            group.walletContainer.wallets.some(
-              (wallet) => wallet.privateKey === privateKey
-            )
+            group.walletContainer.wallets.some((wallet) => wallet.privateKey === privateKey)
           );
         });
         if (existingGroup) {
@@ -467,7 +429,7 @@ export class WalletRecordModel {
               name: generateGroupName(record, walletContainer),
               origin: pendingWallet.origin,
               created: Date.now(),
-            })
+            }),
           );
         }
       } else if (isMnemonicGroup) {
@@ -476,7 +438,7 @@ export class WalletRecordModel {
         const { seedHash } = walletContainer;
         const existingGroup = WalletRecordModel.getMatchingExistingWalletGroup(
           draft,
-          walletContainer
+          walletContainer,
         );
 
         if (existingGroup && seedHash) {
@@ -498,7 +460,7 @@ export class WalletRecordModel {
               name: generateGroupName(record, walletContainer),
               origin: pendingWallet.origin,
               created: Date.now(),
-            })
+            }),
           );
         }
       } else if (isHardwareGroup) {
@@ -512,7 +474,7 @@ export class WalletRecordModel {
             name: generateGroupName(record, walletContainer),
             origin: pendingWallet.origin,
             created: Date.now(),
-          })
+          }),
         );
       } else if (isReadonlyGroup) {
         const { address } = walletContainer.getFirstWallet();
@@ -531,7 +493,7 @@ export class WalletRecordModel {
               name: generateGroupName(record, walletContainer),
               origin: pendingWallet.origin,
               created: Date.now(),
-            })
+            }),
           );
         }
       } else {
@@ -548,32 +510,23 @@ export class WalletRecordModel {
     return await decrypt(key, encryptedRecord);
   }
 
-  static async decryptAndRestoreRecord(
-    encryptedRecord: string,
-    credentials: Credentials
-  ) {
+  static async decryptAndRestoreRecord(encryptedRecord: string, credentials: Credentials) {
     const { encryptionKey } = credentials;
-    const persistedEntry = (await decrypt(
-      encryptionKey,
-      encryptedRecord
-    )) as WalletRecord;
+    const persistedEntry = (await decrypt(encryptionKey, encryptedRecord)) as WalletRecord;
     const entry = upgradeRecord(persistedEntry, walletRecordUpgrades);
 
     entry.walletManager.groups = await Promise.all(
       entry.walletManager.groups.map(async (group) => {
         if (isMnemonicContainer(group.walletContainer)) {
-          group.walletContainer =
-            await MnemonicWalletContainer.restoreWalletContainer(
-              group.walletContainer,
-              credentials
-            );
+          group.walletContainer = await MnemonicWalletContainer.restoreWalletContainer(
+            group.walletContainer,
+            credentials,
+          );
         } else if (isPrivateKeyContainer(group.walletContainer)) {
           const { wallets } = group.walletContainer;
           group.walletContainer = new PrivateKeyWalletContainer(wallets);
         } else if (isHardwareContainer(group.walletContainer)) {
-          group.walletContainer = new DeviceAccountContainer(
-            group.walletContainer
-          );
+          group.walletContainer = new DeviceAccountContainer(group.walletContainer);
         } else if (isReadonlyContainer(group.walletContainer)) {
           const { wallets } = group.walletContainer;
           group.walletContainer = new ReadonlyAccountContainer(wallets);
@@ -581,7 +534,7 @@ export class WalletRecordModel {
           throw new Error('Unexpected Account Container');
         }
         return group;
-      })
+      }),
     );
 
     return WalletRecordModel.verifyStateIntegrity(entry as WalletRecord);
@@ -589,14 +542,9 @@ export class WalletRecordModel {
 
   static async getRecoveryPhrase(
     record: WalletRecord,
-    {
-      groupId,
-      credentials,
-    }: { groupId: string; credentials: SessionCredentials }
+    { groupId, credentials }: { groupId: string; credentials: SessionCredentials },
   ): Promise<{ phrase: LocallyEncoded; path: string }> {
-    const group = record.walletManager.groups.find(
-      (group) => group.id === groupId
-    );
+    const group = record.walletManager.groups.find((group) => group.id === groupId);
     if (!group) {
       throw new Error('Wallet Group not found');
     }
@@ -624,7 +572,7 @@ export class WalletRecordModel {
 
   static async getPendingRecoveryPhrase(
     pendingWallet: PendingWallet,
-    credentials: SessionCredentials
+    credentials: SessionCredentials,
   ): Promise<LocallyEncoded> {
     const walletContainer = pendingWallet.walletContainer;
     if (!walletContainer || !isMnemonicContainer(walletContainer)) {
@@ -638,10 +586,7 @@ export class WalletRecordModel {
     return encodeForMasking(phrase);
   }
 
-  static async getPrivateKey(
-    record: WalletRecord,
-    { address }: { address: string }
-  ) {
+  static async getPrivateKey(record: WalletRecord, { address }: { address: string }) {
     let wallet: BareWallet | null = null;
     for (const group of record.walletManager.groups) {
       if (!isSignerContainer(group.walletContainer)) {
@@ -659,10 +604,7 @@ export class WalletRecordModel {
     return encodeForMasking(wallet.privateKey);
   }
 
-  static setCurrentAddress(
-    record: WalletRecord,
-    { address }: { address: string }
-  ) {
+  static setCurrentAddress(record: WalletRecord, { address }: { address: string }) {
     const checkSumAddress = toChecksumAddress(address);
     return produce(record, (draft) => {
       draft.walletManager.currentAddress = checkSumAddress;
@@ -671,12 +613,10 @@ export class WalletRecordModel {
 
   static renameWalletGroup(
     record: WalletRecord,
-    { groupId, name }: { groupId: string; name: string }
+    { groupId, name }: { groupId: string; name: string },
   ): WalletRecord {
     return produce(record, (draft) => {
-      const group = draft.walletManager.groups.find(
-        (group) => group.id === groupId
-      );
+      const group = draft.walletManager.groups.find((group) => group.id === groupId);
       if (!group) {
         throw new Error('Group not found');
       }
@@ -688,27 +628,22 @@ export class WalletRecordModel {
     });
   }
 
-  static removeWalletGroup(
-    record: WalletRecord,
-    { groupId }: { groupId: string }
-  ): WalletRecord {
+  static removeWalletGroup(record: WalletRecord, { groupId }: { groupId: string }): WalletRecord {
     return produce(record, (draft) => {
       const [pos, item] = findWithIndex(
         draft.walletManager.groups,
-        (group) => group.id === groupId
+        (group) => group.id === groupId,
       );
       if (!item) {
         throw new Error('Group not found');
       }
       const { currentAddress } = draft.walletManager;
       const shouldChangeCurrentAddress = item.walletContainer.wallets.some(
-        (wallet) => wallet.address === currentAddress
+        (wallet) => wallet.address === currentAddress,
       );
       draft.walletManager.groups.splice(pos, 1);
       if (shouldChangeCurrentAddress) {
-        const newAddress =
-          draft.walletManager.groups[0]?.walletContainer.getFirstWallet()
-            .address;
+        const newAddress = draft.walletManager.groups[0]?.walletContainer.getFirstWallet().address;
         draft.walletManager.currentAddress = newAddress || null;
       }
       cleanupActivityRecord(draft);
@@ -721,7 +656,7 @@ export class WalletRecordModel {
    */
   static mutateRemoveAddress(
     draft: WalletRecord,
-    { address, groupId }: { address: string; groupId: string | null }
+    { address, groupId }: { address: string; groupId: string | null },
   ) {
     const normalizedAddress = normalizeAddress(address);
     const [pos, group] = findWithIndex(draft.walletManager.groups, (group) => {
@@ -729,7 +664,7 @@ export class WalletRecordModel {
         return group.id === groupId;
       } else {
         return group.walletContainer.wallets.some(
-          (wallet) => normalizeAddress(wallet.address) === normalizedAddress
+          (wallet) => normalizeAddress(wallet.address) === normalizedAddress,
         );
       }
     });
@@ -740,12 +675,12 @@ export class WalletRecordModel {
     if (isMnemonicContainer(group.walletContainer) && isLastAddress) {
       // I guess this is a safetyguard to prevent removing unbackedup mnemonic groups
       throw new Error(
-        'Removing last wallet from a Mnemonic group is not allowed. You can remove the whole group'
+        'Removing last wallet from a Mnemonic group is not allowed. You can remove the whole group',
       );
     }
     if (isHardwareContainer(group.walletContainer) && isLastAddress) {
       throw new Error(
-        'Removing last wallet from a Hardware group is not allowed. You can remove the whole group'
+        'Removing last wallet from a Hardware group is not allowed. You can remove the whole group',
       );
     }
     if (isLastAddress) {
@@ -760,11 +695,9 @@ export class WalletRecordModel {
     if (shouldChangeCurrentAddress) {
       if (isLastAddress) {
         draft.walletManager.currentAddress =
-          draft.walletManager.groups[0]?.walletContainer.getFirstWallet()
-            .address || null;
+          draft.walletManager.groups[0]?.walletContainer.getFirstWallet().address || null;
       } else {
-        draft.walletManager.currentAddress =
-          group.walletContainer.getFirstWallet().address;
+        draft.walletManager.currentAddress = group.walletContainer.getFirstWallet().address;
       }
     }
     cleanupActivityRecord(draft);
@@ -772,7 +705,7 @@ export class WalletRecordModel {
 
   static removeAddress(
     record: WalletRecord,
-    { address, groupId }: { address: string; groupId: string | null }
+    { address, groupId }: { address: string; groupId: string | null },
   ) {
     return produce(record, (draft) => {
       WalletRecordModel.mutateRemoveAddress(draft, { address, groupId });
@@ -781,7 +714,7 @@ export class WalletRecordModel {
 
   static renameAddress(
     record: WalletRecord,
-    { address, name }: { address: string; name: string }
+    { address, name }: { address: string; name: string },
   ): WalletRecord {
     const maybeErrorMessage = validateName(name, { minLength: 0 });
     if (maybeErrorMessage) {
@@ -807,7 +740,7 @@ export class WalletRecordModel {
 
   static addPermission(
     record: WalletRecord,
-    { address, origin }: { address: string; origin: string }
+    { address, origin }: { address: string; origin: string },
   ): WalletRecord {
     return produce(record, (draft) => {
       const normalizedAddress = normalizeAddress(address);
@@ -826,7 +759,7 @@ export class WalletRecordModel {
   /** EIP-1193 uses the wording "available" */
   static isAccountAvailable(
     record: WalletRecord,
-    { address, origin }: { address: string; origin: string }
+    { address, origin }: { address: string; origin: string },
   ): boolean {
     const normalizedAddress = normalizeAddress(address);
     return record.permissions[origin]?.addresses.includes(normalizedAddress);
@@ -840,7 +773,7 @@ export class WalletRecordModel {
       origin,
     }: AtLeastOneOf<{ evmChain: Chain; solanaChain: Chain }> & {
       origin: string;
-    }
+    },
   ) {
     return produce(record, (draft) => {
       if (!draft.permissions[origin]) {
@@ -860,7 +793,7 @@ export class WalletRecordModel {
 
   static getChainForOrigin(
     record: WalletRecord,
-    { origin, standard }: { origin: string; standard: BlockchainType }
+    { origin, standard }: { origin: string; standard: BlockchainType },
   ): Chain | null {
     let value: string | null = null;
     if (standard === 'solana') {
@@ -871,10 +804,7 @@ export class WalletRecordModel {
     return value ? createChain(value) : null;
   }
 
-  static getPermissionsByChain(
-    record: WalletRecord,
-    { chain }: { chain: Chain }
-  ) {
+  static getPermissionsByChain(record: WalletRecord, { chain }: { chain: Chain }) {
     return Object.entries(record.permissions)
       .filter(([, permission]) => permission.chain === chain.toString())
       .map(([origin, permission]) => ({ origin, permission }));
@@ -888,7 +818,7 @@ export class WalletRecordModel {
 
   static removePermission(
     record: WalletRecord,
-    { origin, address }: { origin: string; address?: string }
+    { origin, address }: { origin: string; address?: string },
   ): WalletRecord {
     return produce(record, (draft) => {
       if (origin in draft.permissions === false) {
@@ -910,10 +840,7 @@ export class WalletRecordModel {
   }
 
   /** Removes only solana addresses from permissions for origin */
-  static removeSolanaPermissions(
-    record: WalletRecord,
-    { origin }: { origin: string }
-  ) {
+  static removeSolanaPermissions(record: WalletRecord, { origin }: { origin: string }) {
     return produce(record, (draft) => {
       if (origin in draft.permissions === false) {
         throw new Error(`Record for ${origin} not found`);
@@ -921,9 +848,7 @@ export class WalletRecordModel {
       const permission = draft.permissions[origin];
       const { addresses: existingPermissions } = permission;
       if (existingPermissions.some(isSolanaAddress)) {
-        permission.addresses = existingPermissions.filter(
-          (address) => !isSolanaAddress(address)
-        );
+        permission.addresses = existingPermissions.filter((address) => !isSolanaAddress(address));
       }
       if (permission.addresses.length === 0) {
         delete draft.permissions[origin];
@@ -973,18 +898,15 @@ export class WalletRecordModel {
 
   static setPreferences(
     record: WalletRecord,
-    { preferences }: { preferences: Partial<WalletRecord['publicPreferences']> }
+    { preferences }: { preferences: Partial<WalletRecord['publicPreferences']> },
   ) {
     if (preferences.enableHoldToSignButton != null) {
-      emitter.emit(
-        'holdToSignPreferenceChange',
-        preferences.enableHoldToSignButton
-      );
+      emitter.emit('holdToSignPreferenceChange', preferences.enableHoldToSignButton);
     }
     if (preferences.enableKeyboardShortcutToSign != null) {
       emitter.emit(
         'keyboardShortcutToSignPreferenceChange',
-        preferences.enableKeyboardShortcutToSign
+        preferences.enableKeyboardShortcutToSign,
       );
     }
     return produce(record, (draft) => {
@@ -994,12 +916,10 @@ export class WalletRecordModel {
 
   static updateLastBackedUp(
     record: WalletRecord,
-    { groupId, timestamp }: { groupId: string; timestamp: number }
+    { groupId, timestamp }: { groupId: string; timestamp: number },
   ) {
     return produce(record, (draft) => {
-      const group = draft.walletManager.groups.find(
-        (group) => group.id === groupId
-      );
+      const group = draft.walletManager.groups.find((group) => group.id === groupId);
       if (!group) {
         throw new Error(`Group with id ${groupId} not found`);
       }
@@ -1007,16 +927,13 @@ export class WalletRecordModel {
     });
   }
 
-  static getLastSwapChain(
-    record: WalletRecord,
-    { address }: { address: string }
-  ) {
+  static getLastSwapChain(record: WalletRecord, { address }: { address: string }) {
     return record.activityRecord[address]?.lastSwapChain ?? null;
   }
 
   static setLastSwapChain(
     record: WalletRecord,
-    { address, chain }: { address: string; chain: string }
+    { address, chain }: { address: string; chain: string },
   ) {
     return produce(record, (draft) => {
       draft.activityRecord[address] ??= {};

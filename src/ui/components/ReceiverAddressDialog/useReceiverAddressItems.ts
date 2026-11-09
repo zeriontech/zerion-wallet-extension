@@ -1,10 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import {
-  getWalletId,
-  WATCHLIST_WALLET_LIST_GROUP_ID,
-} from 'src/shared/wallet/wallet-list';
+import { getWalletId, WATCHLIST_WALLET_LIST_GROUP_ID } from 'src/shared/wallet/wallet-list';
 import { walletPort } from 'src/ui/shared/channels';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { useAddressBook } from 'src/ui/features/address-book';
@@ -30,10 +27,7 @@ export function useReceiverAddressItems() {
   const { savedNamesMap, walletItems, watchlistItems } = useMemo(() => {
     const walletList: AddressItem[] = [];
     const watchlist: AddressItem[] = [];
-    const itemsMap = new Map<
-      string,
-      { address: string; name: string | null; groupId: string }
-    >();
+    const itemsMap = new Map<string, { address: string; name: string | null; groupId: string }>();
     const namesMap: Record<string, string> = {};
     if (walletGroups) {
       for (const group of walletGroups) {

@@ -37,5 +37,5 @@ export type SendFormState2 = {
 
 export type HandleChangeFunction = <K extends keyof SendFormState2>(
   key: K,
-  value: SendFormState2[K]
+  value: SendFormState2[K],
 ) => void;

@@ -16,8 +16,7 @@ export function useSwapButtonOnboardingGate({
   // The gate intercepts only the first pre-simulation tap. Once `simulated`
   // is true the user is on the "Confirm Swap" step and has necessarily
   // passed through `fire` once already this session.
-  const shouldGate =
-    !simulated && preferences?.oneTapCrossChainSwapOnboardingShown !== true;
+  const shouldGate = !simulated && preferences?.oneTapCrossChainSwapOnboardingShown !== true;
 
   const guardedFire = useCallback(() => {
     if (shouldGate) {
@@ -34,11 +33,7 @@ export function useSwapButtonOnboardingGate({
   }, [setPreferences, closeDialog, fire]);
 
   const dialog = (
-    <SwapButtonOnboardingDialog
-      open={open}
-      onClose={closeDialog}
-      onConfirm={handleConfirm}
-    />
+    <SwapButtonOnboardingDialog open={open} onClose={closeDialog} onConfirm={handleConfirm} />
   );
 
   return { guardedFire, dialog };

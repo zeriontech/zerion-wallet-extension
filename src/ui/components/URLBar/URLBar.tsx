@@ -111,10 +111,7 @@ export function URLBar() {
                 onClick={() => navigate(getBackOrHome() as number)}
                 title={'Press "backspace" to navigate back'}
               />
-              <KeyboardShortcut
-                combination="backspace"
-                onKeyDown={() => navigate(-1)}
-              />
+              <KeyboardShortcut combination="backspace" onKeyDown={() => navigate(-1)} />
             </>
           );
         }}

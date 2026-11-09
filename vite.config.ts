@@ -7,11 +7,7 @@ import svgr from 'vite-plugin-svgr';
 import { defineConfig } from 'vite-plus';
 
 import { PAGE_ENTRIES, SCRIPT_TARGETS } from './scripts/manifest.mjs';
-import {
-  componentsAlias,
-  parcelSchemePlugin,
-  sourceAlias,
-} from './scripts/vite-plugins';
+import { componentsAlias, parcelSchemePlugin, sourceAlias } from './scripts/vite-plugins';
 
 /**
  * Variables `src/**` reads via `process.env.*`. Parcel only inlined the ones a
@@ -41,7 +37,7 @@ const platform = process.env.PLATFORM === 'firefox' ? 'firefox' : 'chrome';
 const target = process.env.BUILD_TARGET ?? 'pages';
 const outDir = path.resolve(
   projectRoot,
-  process.env.BUILD_OUT ?? (platform === 'firefox' ? 'dist-firefox' : 'dist')
+  process.env.BUILD_OUT ?? (platform === 'firefox' ? 'dist-firefox' : 'dist'),
 );
 const isProduction = process.env.NODE_ENV !== 'development';
 
@@ -53,18 +49,15 @@ function buildEntries() {
         ? PAGE_ENTRIES
         : { popup: PAGE_ENTRIES.popup, ledger: PAGE_ENTRIES.ledger };
     return Object.fromEntries(
-      Object.entries(pages).map(([name, file]) => [
-        name,
-        path.join(sourceRoot, file),
-      ])
+      Object.entries(pages).map(([name, file]) => [name, path.join(sourceRoot, file)]),
     );
   }
   const entry = SCRIPT_TARGETS[target];
   if (!entry) {
     throw new Error(
-      `Unknown BUILD_TARGET "${target}". Expected one of: pages, ${Object.keys(
-        SCRIPT_TARGETS
-      ).join(', ')}.`
+      `Unknown BUILD_TARGET "${target}". Expected one of: pages, ${Object.keys(SCRIPT_TARGETS).join(
+        ', ',
+      )}.`,
     );
   }
   return { [target]: path.join(sourceRoot, entry.input) };
@@ -79,13 +72,11 @@ function extensionBuildPlugin() {
   return {
     name: 'zerion-extension',
     generateBundle(_options: unknown, bundle: Record<string, unknown>) {
-      const files = Object.keys(bundle).filter(
-        (file) => !file.endsWith('.map')
-      );
+      const files = Object.keys(bundle).filter((file) => !file.endsWith('.map'));
       fs.mkdirSync(outDir, { recursive: true });
       fs.writeFileSync(
         path.join(outDir, `.build-${target}.json`),
-        JSON.stringify({ target, files }, null, 2)
+        JSON.stringify({ target, files }, null, 2),
       );
     },
   };
@@ -116,15 +107,13 @@ export default defineConfig(({ mode }) => ({
         // strings during transform.
         {}
       : {
-          'process.env.NODE_ENV': JSON.stringify(
-            isProduction ? 'production' : 'development'
-          ),
+          'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development'),
           'process.env.PLATFORM': JSON.stringify(platform),
           ...Object.fromEntries(
             BUILD_ENV_VARS.map((name) => [
               `process.env.${name}`,
               JSON.stringify(process.env[name] ?? ''),
-            ])
+            ]),
           ),
         },
   lint: {
@@ -453,39 +442,16 @@ export default defineConfig(({ mode }) => ({
     // `vmThreads` keeps per-file isolation but reuses one thread pool instead
     // of spawning a process per test file (which was ~75% of the run).
     pool: 'vmThreads',
-    include: [
-      'src/**/*.{test,spec}.{ts,tsx,js,jsx}',
-      '__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}',
-    ],
+    include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}', '__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}'],
     exclude: ['**/node_modules/**', 'dist*/**', 'e2e/**'],
   },
 
   fmt: {
-    // Matches the Prettier 2 configuration this repo used (`.prettierrc`), so
-    // switching the formatter does not reflow the codebase: same width, quotes,
-    // trailing commas and arrow parens. Import sorting and package.json sorting
-    // stay off for the same reason.
-    printWidth: 80,
+    // Oxc defaults, minus what this repo deliberately pins:
+    // - `singleQuote` because Oxlint enforces single quotes,
+    // - `ignorePatterns` for build output and generated files,
+    // - a wider `printWidth` for the env config, as before.
     singleQuote: true,
-    trailingComma: 'es5',
-    arrowParens: 'always',
-    sortImports: false,
-    sortPackageJson: false,
-    overrides: [
-      {
-        files: ['*.md'],
-        options: {
-          printWidth: 70,
-          trailingComma: 'none',
-          arrowParens: 'avoid',
-          proseWrap: 'never',
-        },
-      },
-      {
-        files: ['src/env/config.ts'],
-        options: { printWidth: 120 },
-      },
-    ],
     ignorePatterns: [
       'node_modules/',
       'dist/',
@@ -499,6 +465,12 @@ export default defineConfig(({ mode }) => ({
       'package-lock.json',
       'src/modules/networks/networks-fallback.json',
       'src/ui/pages/Login/login-animation-lottie.json',
+    ],
+    overrides: [
+      {
+        files: ['src/env/config.ts'],
+        options: { printWidth: 120 },
+      },
     ],
   },
 
@@ -532,8 +504,6 @@ export default defineConfig(({ mode }) => ({
     format: 'iife',
     // Workers are bundled by a separate pipeline: without the polyfills plugin
     // the mnemonic worker throws `process is not defined` at runtime.
-    plugins: () => [
-      nodePolyfills({ globals: { Buffer: true, global: true, process: true } }),
-    ],
+    plugins: () => [nodePolyfills({ globals: { Buffer: true, global: true, process: true } })],
   },
 }));

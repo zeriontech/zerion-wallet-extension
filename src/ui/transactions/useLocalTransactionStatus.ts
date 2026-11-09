@@ -8,9 +8,7 @@ export function useTransactionStatus(hash: string | null) {
   const transactions = useStore(localTransactionsStore);
   return useMemo(() => {
     if (hash) {
-      const tx = transactions.find(
-        (tx) => tx.hash === hash || tx.signature === hash
-      );
+      const tx = transactions.find((tx) => tx.hash === hash || tx.signature === hash);
       return tx ? getTransactionObjectStatus(tx) : null;
     } else {
       return null;
@@ -18,19 +16,13 @@ export function useTransactionStatus(hash: string | null) {
   }, [hash, transactions]);
 }
 
-export function waitForTransactionResolve(
-  hash: string | null
-): Promise<ActionStatus> {
+export function waitForTransactionResolve(hash: string | null): Promise<ActionStatus> {
   if (!hash) {
-    return Promise.reject(
-      new Error('Hash is required to wait for transaction resolve')
-    );
+    return Promise.reject(new Error('Hash is required to wait for transaction resolve'));
   }
   return new Promise((resolve) => {
     const unsub = localTransactionsStore.on('change', (transactions) => {
-      const tx = transactions.find(
-        (tx) => tx.hash === hash || tx.signature === hash
-      );
+      const tx = transactions.find((tx) => tx.hash === hash || tx.signature === hash);
       if (tx) {
         const status = getTransactionObjectStatus(tx);
         if (status !== 'pending') {

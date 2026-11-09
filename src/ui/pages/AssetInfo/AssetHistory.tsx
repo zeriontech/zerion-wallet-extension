@@ -51,28 +51,20 @@ function AssetHistoryItem({ addressAction }: { addressAction: AddressAction }) {
       : addressAction.type.displayValue;
 
   const price = transfer?.amount?.value
-    ? new BigNumber(transfer.amount.value || 0).dividedBy(
-        transfer.amount.quantity
-      )
+    ? new BigNumber(transfer.amount.value || 0).dividedBy(transfer.amount.quantity)
     : null;
 
-  const formattedPrice = price
-    ? formatPriceValue(price, 'en', currency)
-    : noValueDash;
+  const formattedPrice = price ? formatPriceValue(price, 'en', currency) : noValueDash;
 
   const actionTitle = `${actionType} at ${formattedPrice}`;
-  const actionDatetime = dateFormatter.format(
-    new Date(addressAction.timestamp)
-  );
+  const actionDatetime = dateFormatter.format(new Date(addressAction.timestamp));
   const actionBalance = transfer.amount
     ? `${transfer.direction === 'in' ? '+' : minus}${formatTokenValue(
         transfer.amount?.quantity,
         transfer.fungible?.symbol,
         {
-          notation: new BigNumber(transfer.amount.quantity).gte(100000)
-            ? 'compact'
-            : undefined,
-        }
+          notation: new BigNumber(transfer.amount.quantity).gte(100000) ? 'compact' : undefined,
+        },
       )}`
     : null;
   const actionValue = transfer.amount?.value
@@ -100,25 +92,13 @@ function AssetHistoryItem({ addressAction }: { addressAction: AddressAction }) {
         <VStack gap={0} style={{ justifyItems: 'end' }}>
           <UIText
             kind="body/regular"
-            color={
-              transfer.direction === 'in'
-                ? 'var(--positive-500)'
-                : 'currentColor'
-            }
+            color={transfer.direction === 'in' ? 'var(--positive-500)' : 'currentColor'}
             style={{ display: 'flex' }}
           >
-            <BlurrableBalance kind="body/regular">
-              {actionBalance}
-            </BlurrableBalance>
+            <BlurrableBalance kind="body/regular">{actionBalance}</BlurrableBalance>
           </UIText>
-          <UIText
-            kind="small/regular"
-            color="var(--neutral-500)"
-            style={{ display: 'flex' }}
-          >
-            <BlurrableBalance kind="small/regular">
-              {actionValue}
-            </BlurrableBalance>
+          <UIText kind="small/regular" color="var(--neutral-500)" style={{ display: 'flex' }}>
+            <BlurrableBalance kind="small/regular">{actionValue}</BlurrableBalance>
           </UIText>
         </VStack>
       </HStack>
@@ -126,13 +106,7 @@ function AssetHistoryItem({ addressAction }: { addressAction: AddressAction }) {
   );
 }
 
-export function AssetHistory({
-  fungibleId,
-  address,
-}: {
-  fungibleId: string;
-  address: string;
-}) {
+export function AssetHistory({ fungibleId, address }: { fungibleId: string; address: string }) {
   const { currency } = useCurrency();
   const { actions, queryData } = useWalletActions(
     {
@@ -141,7 +115,7 @@ export function AssetHistory({
       fungibleId,
       limit: 10,
     },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
   );
 
   const isLoading = queryData.isLoading || queryData.isFetching;
@@ -157,10 +131,7 @@ export function AssetHistory({
         <PageFullBleedColumn paddingInline={false}>
           <VStack gap={0}>
             {actions?.map((addressAction) => (
-              <AssetHistoryItem
-                key={addressAction.id}
-                addressAction={addressAction}
-              />
+              <AssetHistoryItem key={addressAction.id} addressAction={addressAction} />
             ))}
           </VStack>
         </PageFullBleedColumn>

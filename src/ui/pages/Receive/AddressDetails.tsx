@@ -10,10 +10,7 @@ import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import { isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import { useNetworks } from 'src/modules/networks/useNetworks';
-import {
-  getAddressType,
-  type BlockchainType,
-} from 'src/shared/wallet/classifiers';
+import { getAddressType, type BlockchainType } from 'src/shared/wallet/classifiers';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -120,8 +117,8 @@ function SupportedNetworks({ address }: { address: string }) {
                 title={<UIText kind="headline/h3">Supported Networks</UIText>}
               />
               <UIText kind="body/regular">
-                These are the blockchains Zerion supports for sending,
-                receiving, and managing assets.
+                These are the blockchains Zerion supports for sending, receiving, and managing
+                assets.
               </UIText>
               <HStack
                 gap={12}
@@ -241,11 +238,7 @@ function PayloadRow({
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: copyText });
 
   return (
-    <UnstyledButton
-      className={styles.payloadRow}
-      title={title}
-      onClick={handleCopy}
-    >
+    <UnstyledButton className={styles.payloadRow} title={title} onClick={handleCopy}>
       <VStack gap={2} style={{ minWidth: 0 }}>
         <UIText kind="caption/regular" color="var(--neutral-600)">
           {label}
@@ -295,17 +288,13 @@ export function AddressDetails({
   /** The wallet's locally saved nickname, when it has one. */
   walletName?: string | null;
 }) {
-  const checksumAddress =
-    getAddressType(address) === 'evm' ? toChecksumAddress(address) : address;
+  const checksumAddress = getAddressType(address) === 'evm' ? toChecksumAddress(address) : address;
 
   // No `maxCharacters`: that middle-truncates by character count, which has no
   // idea how much room the heading actually has — a 28-character nickname loses
   // its middle while two thirds of the column sit empty. The name is passed
   // through whole and the row below ellipsises it only when it really overflows.
-  const profileName = useProfileName(
-    { address, name: walletName ?? null },
-    { padding: 6 }
-  );
+  const profileName = useProfileName({ address, name: walletName ?? null }, { padding: 6 });
 
   const truncatedAddress = middleTruncate({
     value: checksumAddress,
@@ -313,8 +302,7 @@ export function AddressDetails({
     trailingLettersCount: 4,
   });
   const profileHandle =
-    profileName.type === WalletNameType.domain &&
-    isDomainHandle(profileName.value)
+    profileName.type === WalletNameType.domain && isDomainHandle(profileName.value)
       ? profileName.value
       : null;
   const profilePath = profileHandle ?? checksumAddress;
@@ -343,12 +331,7 @@ export function AddressDetails({
         }}
       >
         <div className={styles.avatarRing}>
-          <WalletAvatar
-            active={false}
-            address={address}
-            size={32}
-            borderRadius={8}
-          />
+          <WalletAvatar active={false} address={address} size={32} borderRadius={8} />
         </div>
         <UIText kind="headline/h3" className={styles.walletName}>
           {profileName.value}
@@ -391,11 +374,7 @@ export function AddressDetails({
 
       <SupportedNetworks address={address} />
 
-      <Button
-        kind="primary"
-        onClick={handleCopy}
-        style={{ width: '100%', paddingInline: 16 }}
-      >
+      <Button kind="primary" onClick={handleCopy} style={{ width: '100%', paddingInline: 16 }}>
         <HStack gap={8} alignItems="center" justifyContent="center">
           {isSuccess ? (
             <CheckIcon style={{ display: 'block', width: 20, height: 20 }} />

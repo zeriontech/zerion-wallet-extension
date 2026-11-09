@@ -8,10 +8,7 @@ import {
   parseLedgerError,
 } from '@zeriontech/hardware-wallet-connection';
 import type { DeviceAccount } from 'src/shared/types/Device';
-import {
-  SegmentedControlGroup,
-  SegmentedControlRadio,
-} from 'src/ui/ui-kit/SegmentedControl';
+import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/SegmentedControl';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import { WalletListPresentation } from 'src/ui/pages/GetStarted/ImportWallet/MnemonicImportView/AddressImportFlow/WalletList';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -64,14 +61,7 @@ function WalletMediaPresentation({
 
   return (
     <Media
-      image={
-        <AvatarIcon
-          address={wallet.address}
-          active={false}
-          size={40}
-          borderRadius={12}
-        />
-      }
+      image={<AvatarIcon address={wallet.address} active={false} size={40} borderRadius={12} />}
       text={walletInfo?.name ?? getWalletDisplayName(wallet)}
       vGap={0}
       detailText={
@@ -79,11 +69,7 @@ function WalletMediaPresentation({
           {' '}
           {walletInfo?.portfolio != null ? (
             <NeutralDecimals
-              parts={formatCurrencyToParts(
-                walletInfo?.portfolio ?? 0,
-                'en',
-                currency
-              )}
+              parts={formatCurrencyToParts(walletInfo?.portfolio ?? 0, 'en', currency)}
             />
           ) : (
             NBSP
@@ -111,12 +97,7 @@ function WalletMediaData({
       }),
     staleTime: Infinity,
   });
-  return (
-    <WalletMediaPresentation
-      wallet={wallet}
-      walletInfo={data as WalletInfo | undefined}
-    />
-  );
+  return <WalletMediaPresentation wallet={wallet} walletInfo={data as WalletInfo | undefined} />;
 }
 
 const COUNT = 5;
@@ -166,10 +147,7 @@ function AddressSelectList({
           values={values}
           wallets={wallets}
           renderMedia={(index) => (
-            <WalletMediaData
-              wallet={wallets[index]}
-              handleRequest={handleRequest}
-            />
+            <WalletMediaData wallet={wallets[index]} handleRequest={handleRequest} />
           )}
           renderDetail={null}
           listTitle={null}
@@ -207,7 +185,7 @@ function AddressSelectList({
                   name: null,
                   derivationPath: item.derivationPath,
                 };
-              })
+              }),
             );
           }}
         >
@@ -232,8 +210,9 @@ export function ImportLedgerAddresses({
 }) {
   const [curve, setCurve] = useState<CurveValue | null>(null);
   const [pathType, setPathType] = useState<DerivationPathType | null>(null);
-  const [interactionRequested, setInteractionRequested] =
-    useState<UserInteractionRequested | null>(null);
+  const [interactionRequested, setInteractionRequested] = useState<UserInteractionRequested | null>(
+    null,
+  );
   const [loadedWallets, setLoadedWallets] = useState(0);
   const { sessionId } = ledger;
 
@@ -269,9 +248,8 @@ export function ImportLedgerAddresses({
             {
               sessionId,
               onInteractionRequested: setInteractionRequested,
-              onProgress: (progress) =>
-                pageParam === 0 ? setLoadedWallets(progress) : undefined,
-            }
+              onProgress: (progress) => (pageParam === 0 ? setLoadedWallets(progress) : undefined),
+            },
           )
         : getAddressesSolana(
             {
@@ -282,9 +260,8 @@ export function ImportLedgerAddresses({
             {
               sessionId,
               onInteractionRequested: setInteractionRequested,
-              onProgress: (progress) =>
-                pageParam === 0 ? setLoadedWallets(progress) : undefined,
-            }
+              onProgress: (progress) => (pageParam === 0 ? setLoadedWallets(progress) : undefined),
+            },
           );
     },
     getNextPageParam: (_lastPage, allPages) => {
@@ -310,12 +287,8 @@ export function ImportLedgerAddresses({
 
   const itemsByAddress = useMemo(
     () =>
-      new Map(
-        data?.pages.flatMap((items) =>
-          items.map((item) => [item.account.address, item])
-        )
-      ),
-    [data]
+      new Map(data?.pages.flatMap((items) => items.map((item) => [item.account.address, item]))),
+    [data],
   );
 
   const wallets = useMemo(
@@ -331,17 +304,14 @@ export function ImportLedgerAddresses({
             // we're not gonna read this prop and only need to match type
             phrase: opaqueType<LocallyEncoded>('<ledger-mnemonic>'),
           },
-        }))
+        })),
       ),
-    [data]
+    [data],
   );
 
   if (curve === null || pathType === null) {
     return (
-      <PageColumn
-        style={{ height: '100%', position: 'relative' }}
-        paddingInline={24}
-      >
+      <PageColumn style={{ height: '100%', position: 'relative' }} paddingInline={24}>
         <PageFullBleedColumn
           paddingInline={true}
           style={{
@@ -395,10 +365,7 @@ export function ImportLedgerAddresses({
   }
 
   return (
-    <PageColumn
-      style={{ height: '100%', position: 'relative' }}
-      paddingInline={24}
-    >
+    <PageColumn style={{ height: '100%', position: 'relative' }} paddingInline={24}>
       <PageFullBleedColumn
         paddingInline={true}
         style={{

@@ -38,15 +38,12 @@ export function formatSubscriptValue(
   absValue: number,
   locale: string,
   currency: string,
-  significantDigits: number
+  significantDigits: number,
 ) {
   const exponent = Math.floor(Math.log10(absValue));
   const leadingZeros = -exponent - 1;
   const significand = absValue / 10 ** exponent;
-  const digits = significand
-    .toPrecision(significantDigits)
-    .replace('.', '')
-    .replace(/0+$/, '');
+  const digits = significand.toPrecision(significantDigits).replace('.', '').replace(/0+$/, '');
 
   // Build from the currency's own `$0.00` rendering so the symbol, its
   // position and the decimal separator all come from Intl.
@@ -62,8 +59,5 @@ export function formatSubscriptValue(
   const separatorMatch = zero.match(/0(\D)\d/);
   const separator = separatorMatch ? separatorMatch[1] : '.';
   // Replace the "0.00" fraction part with "0<separator>0<subscript><digits>".
-  return zero.replace(
-    /0\D\d+/,
-    `0${separator}0${toSubscript(leadingZeros)}${digits}`
-  );
+  return zero.replace(/0\D\d+/, `0${separator}0${toSubscript(leadingZeros)}${digits}`);
 }

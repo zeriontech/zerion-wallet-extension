@@ -6,10 +6,7 @@ import type {
 } from 'src/shared/types/TransactionConfiguration';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import {
-  DialogButtonValue,
-  DialogTitle,
-} from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { DialogButtonValue, DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import ArrowLeftcon from 'jsx:src/ui/assets/arrow-left.svg';
@@ -26,11 +23,7 @@ import type {
 } from 'src/modules/ethereum/types/IncomingTransaction';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
-import {
-  formatGasPrice,
-  gweiToWei,
-  weiToGwei,
-} from 'src/shared/units/formatGasPrice';
+import { formatGasPrice, gweiToWei, weiToGwei } from 'src/shared/units/formatGasPrice';
 import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -42,10 +35,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { invariant } from 'src/shared/invariant';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
-import {
-  FLOAT_INPUT_PATTERN,
-  INT_INPUT_PATTERN,
-} from 'src/ui/shared/forms/inputs';
+import { FLOAT_INPUT_PATTERN, INT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { apostrophe } from 'src/ui/shared/typography';
@@ -75,9 +65,7 @@ function getCustomFeeDescription({
   }${formatGasPrice(gasPrice)}${fiat ? ')' : ''}`;
 }
 
-export function formDataToGasConfiguration(
-  formData: FormData
-): NetworkFeeConfiguration {
+export function formDataToGasConfiguration(formData: FormData): NetworkFeeConfiguration {
   const priorityFee = (formData.get('priorityFee') ?? '') as string;
   const maxFee = (formData.get('maxFee') ?? '') as string;
   const baseFee = (formData.get('baseFee') ?? '') as string;
@@ -113,22 +101,19 @@ function setFormValue(form: HTMLFormElement, name: string, value: unknown) {
   }
 }
 
-const setPatternValidity =
-  (message: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.validity.patternMismatch) {
-      event.currentTarget.setCustomValidity(message);
-    } else {
-      event.currentTarget.setCustomValidity('');
-    }
-  };
+const setPatternValidity = (message: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  if (event.currentTarget.validity.patternMismatch) {
+    event.currentTarget.setCustomValidity(message);
+  } else {
+    event.currentTarget.setCustomValidity('');
+  }
+};
 
 const setGasPriceValidationMessage = setPatternValidity(
-  'Gas Price value must be a positive number'
+  'Gas Price value must be a positive number',
 );
 
-const setGasLimitValidationMessage = setPatternValidity(
-  'Gas Limit value must be a natural number'
-);
+const setGasLimitValidationMessage = setPatternValidity('Gas Limit value must be a natural number');
 
 /** Avoids scientific notation */
 function numberToStr(n: number) {
@@ -166,33 +151,25 @@ function CustomNetworkFeeForm({
 
   const source = useHttpClientSource();
   const { value: nativeAsset } = useNativeAsset(chain, { source });
-  const { data: gasEstimation, isError: isGasEstimationError } = useEstimateGas(
-    { transaction }
-  );
+  const { data: gasEstimation, isError: isGasEstimationError } = useEstimateGas({ transaction });
 
   const formRef = useRef<HTMLFormElement | null>(null);
   const defaultBaseFee = value.customClassicGasPrice ?? classic ?? 0;
-  const defaultPriorityFee =
-    value.custom1559GasPrice?.priorityFee ?? eip1559?.priorityFee ?? 0;
-  const defaultMaxFee =
-    value.custom1559GasPrice?.maxFee ?? eip1559?.maxFee ?? 0;
+  const defaultPriorityFee = value.custom1559GasPrice?.priorityFee ?? eip1559?.priorityFee ?? 0;
+  const defaultMaxFee = value.custom1559GasPrice?.maxFee ?? eip1559?.maxFee ?? 0;
 
   const defaultBaseFeeGWEI = numberToStr(weiToGwei(defaultBaseFee));
   const defaultPriorityFeeGWEI = numberToStr(weiToGwei(defaultPriorityFee));
   const defaultMaxFeeGWEI = numberToStr(weiToGwei(defaultMaxFee));
-  const transactionGasLimit = new BigNumber(
-    Number(getGas(transaction))
-  ).toFixed();
+  const transactionGasLimit = new BigNumber(Number(getGas(transaction))).toFixed();
   const defaultGasLimit = value.gasLimit || transactionGasLimit;
 
   const baseFee = configuration.customClassicGasPrice ?? defaultBaseFee;
-  const priorityFee =
-    configuration.custom1559GasPrice?.priorityFee ?? defaultPriorityFee;
+  const priorityFee = configuration.custom1559GasPrice?.priorityFee ?? defaultPriorityFee;
   const maxFee = configuration.custom1559GasPrice?.maxFee ?? defaultMaxFee;
 
   const gasLimit = configuration.gasLimit ?? defaultGasLimit;
-  const showLowGasLimitWarning =
-    gasEstimation != null && Number(gasLimit) * 1.1 < gasEstimation;
+  const showLowGasLimitWarning = gasEstimation != null && Number(gasLimit) * 1.1 < gasEstimation;
 
   const { expectedFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
     if (!nativeAsset?.price || !gasLimit) {
@@ -211,20 +188,12 @@ function CustomNetworkFeeForm({
           gas: gasLimit,
           baseFee: eip1559?.baseFee || 0,
           eip1559: { maxFee, priorityFee },
-        })
+        }),
       ),
       maxFeeFiat: getFiatValue(new BigNumber(maxFee).times(gasLimit)),
       baseFeeFiat: getFiatValue(new BigNumber(baseFee).times(gasLimit)),
     };
-  }, [
-    nativeAsset,
-    gasLimit,
-    chain,
-    priorityFee,
-    maxFee,
-    eip1559?.baseFee,
-    baseFee,
-  ]);
+  }, [nativeAsset, gasLimit, chain, priorityFee, maxFee, eip1559?.baseFee, baseFee]);
 
   return (
     <form
@@ -254,9 +223,7 @@ function CustomNetworkFeeForm({
           <VStack gap={12}>
             <HStack gap={24} justifyContent="space-between">
               <UIText kind="small/regular">Base Fee</UIText>
-              <UIText kind="small/accent">
-                {formatGasPrice(eip1559.baseFee)}
-              </UIText>
+              <UIText kind="small/accent">{formatGasPrice(eip1559.baseFee)}</UIText>
             </HStack>
             <div
               style={{
@@ -330,11 +297,7 @@ function CustomNetworkFeeForm({
             ) : gasEstimation ? (
               <UIText
                 kind="caption/regular"
-                color={
-                  showLowGasLimitWarning
-                    ? 'var(--notice-500)'
-                    : 'var(--neutral-500)'
-                }
+                color={showLowGasLimitWarning ? 'var(--notice-500)' : 'var(--neutral-500)'}
                 style={{ paddingInline: 2 }}
               >
                 Recommended value:{' '}
@@ -345,9 +308,7 @@ function CustomNetworkFeeForm({
                     const { form } = event.currentTarget;
                     if (form) {
                       setFormValue(form, 'gasLimit', String(gasEstimation));
-                      setConfiguration(
-                        formDataToGasConfiguration(new FormData(form))
-                      );
+                      setConfiguration(formDataToGasConfiguration(new FormData(form)));
                     }
                   }}
                 >
@@ -366,10 +327,7 @@ function CustomNetworkFeeForm({
               <UIText kind="small/accent">
                 {getCustomFeeDescription({
                   fiat: expectedFeeFiat,
-                  gasPrice: Math.min(
-                    eip1559.baseFee + (priorityFee || 0),
-                    maxFee
-                  ),
+                  gasPrice: Math.min(eip1559.baseFee + (priorityFee || 0), maxFee),
                   currency,
                 })}
               </UIText>
@@ -483,33 +441,24 @@ function NetworkFeeButton({
     totalValueExceedsBalance,
   } = costs || {};
 
-  const seconds =
-    option !== 'custom' ? chainGasPrices?.[option]?.eta : undefined;
+  const seconds = option !== 'custom' ? chainGasPrices?.[option]?.eta : undefined;
 
   const selected = option === networkFeeConfiguration.speed;
-  const nativeAssetSymbol =
-    networks?.getNetworkByName(chain)?.baseAsset?.symbol;
+  const nativeAssetSymbol = networks?.getNetworkByName(chain)?.baseAsset?.symbol;
 
   return (
     <SurfaceItemButton
       style={{ height: 48, borderRadius: 12, paddingInline: 0 }}
       outlined={selected}
       onClick={onClick}
-      title={
-        feeValueCommon
-          ? formatTokenValue(feeValueCommon, nativeAssetSymbol)
-          : undefined
-      }
+      title={feeValueCommon ? formatTokenValue(feeValueCommon, nativeAssetSymbol) : undefined}
     >
       <HStack gap={4} justifyContent="space-between" alignItems="center">
         <Media
           image={<NetworkFeeIcon speed={option} />}
           text={
             <HStack gap={8} alignItems="center">
-              <UIText
-                kind="body/accent"
-                color={selected ? 'var(--primary)' : undefined}
-              >
+              <UIText kind="body/accent" color={selected ? 'var(--primary)' : undefined}>
                 {NETWORK_SPEED_TO_TITLE[option]}
               </UIText>
               {seconds ? (
@@ -526,20 +475,14 @@ function NetworkFeeButton({
         {costsQuery.isLoading ? (
           <CircleSpinner />
         ) : feeValueFiat ? (
-          <UIText
-            kind="small/regular"
-            color={selected ? 'var(--primary)' : 'var(--black)'}
-          >
+          <UIText kind="small/regular" color={selected ? 'var(--primary)' : 'var(--black)'}>
             {totalValueExceedsBalance ? 'Up to ' : null}
             {formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
               zeroRoundingFallback: 0.01,
             })}
           </UIText>
         ) : feeValueCommon && nativeAssetSymbol ? (
-          <UIText
-            kind="small/regular"
-            color={selected ? 'var(--primary)' : 'var(--black)'}
-          >
+          <UIText kind="small/regular" color={selected ? 'var(--primary)' : 'var(--black)'}>
             {totalValueExceedsBalance ? 'Up to ' : null}~
             {formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)}
           </UIText>
@@ -562,20 +505,10 @@ export const NetworkFeeDialog = React.forwardRef<
   }
 >(
   (
-    {
-      onSubmit,
-      onDismiss,
-      value,
-      chain,
-      transaction,
-      chainGasPrices,
-      customViewOnly = false,
-    },
-    ref
+    { onSubmit, onDismiss, value, chain, transaction, chainGasPrices, customViewOnly = false },
+    ref,
   ) => {
-    const [view, setView] = useState<'custom' | 'default'>(
-      customViewOnly ? 'custom' : 'default'
-    );
+    const [view, setView] = useState<'custom' | 'default'>(customViewOnly ? 'custom' : 'default');
 
     const dialogHeight = view === 'default' ? 'min-content' : '90vh';
 
@@ -632,10 +565,7 @@ export const NetworkFeeDialog = React.forwardRef<
             </React.Suspense>
           </>
         ) : (
-          <VStack
-            gap={24}
-            style={{ gridTemplateRows: 'auto 1fr', height: '100%' }}
-          >
+          <VStack gap={24} style={{ gridTemplateRows: 'auto 1fr', height: '100%' }}>
             <div
               style={{
                 position: 'relative',
@@ -707,5 +637,5 @@ export const NetworkFeeDialog = React.forwardRef<
         )}
       </BottomSheetDialog>
     );
-  }
+  },
 );

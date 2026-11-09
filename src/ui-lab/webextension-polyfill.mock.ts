@@ -1,6 +1,4 @@
-type OnChangedParameters = Parameters<
-  Parameters<typeof chrome.storage.onChanged.addListener>[0]
->;
+type OnChangedParameters = Parameters<Parameters<typeof chrome.storage.onChanged.addListener>[0]>;
 
 const browser = {
   runtime: {
@@ -16,10 +14,7 @@ const browser = {
     },
     onChanged: {
       addListener(
-        listener: (
-          _changes: OnChangedParameters[0],
-          _namespace: OnChangedParameters[1]
-        ) => void
+        listener: (_changes: OnChangedParameters[0], _namespace: OnChangedParameters[1]) => void,
       ) {
         console.log('added listener', listener); // eslint-disable-line no-console
       },

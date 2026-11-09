@@ -18,15 +18,8 @@ interface DayPickerProps {
   onDateSelect: (date: Date) => void;
 }
 
-function DayPicker({
-  selectedDate,
-  minDate,
-  maxDate,
-  onDateSelect,
-}: DayPickerProps) {
-  const [currentMonth, setCurrentMonth] = useState(
-    () => selectedDate || new Date()
-  );
+function DayPicker({ selectedDate, minDate, maxDate, onDateSelect }: DayPickerProps) {
+  const [currentMonth, setCurrentMonth] = useState(() => selectedDate || new Date());
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -109,7 +102,7 @@ function DayPicker({
       // Focus the new date button
       setTimeout(() => {
         const button = document.querySelector(
-          `button[data-date="${newDate.toISOString()}"]`
+          `button[data-date="${newDate.toISOString()}"]`,
         ) as HTMLButtonElement;
         button?.focus();
       }, 0);
@@ -140,16 +133,13 @@ function DayPicker({
         onKeyDown={(e) => handleKeyDown(e, day)}
       >
         {day}
-      </button>
+      </button>,
     );
   }
 
   return (
     <div className={styles.dayPicker}>
-      <HStack
-        gap={12}
-        style={{ alignItems: 'center', justifyContent: 'space-between' }}
-      >
+      <HStack gap={12} style={{ alignItems: 'center', justifyContent: 'space-between' }}>
         <UnstyledButton
           onClick={goToPreviousMonth}
           className={styles.navButton}

@@ -3,9 +3,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 export type ReceiverFamiliarity = 'known' | 'unknown';
 
 function includesAddress(addresses: string[], normalizedTo: string): boolean {
-  return addresses.some(
-    (address) => normalizeAddress(address) === normalizedTo
-  );
+  return addresses.some((address) => normalizeAddress(address) === normalizedTo);
 }
 
 /**

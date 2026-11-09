@@ -1,7 +1,4 @@
-import {
-  HYPERLIQUID_CHAIN,
-  HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX,
-} from '../constants';
+import { HYPERLIQUID_CHAIN, HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX } from '../constants';
 import type { ExchangeSetAbstractionAction, SetAbstractionMode } from './types';
 
 export function buildSetAbstractionAction({

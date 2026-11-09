@@ -19,13 +19,7 @@ function countryCodeToFlagEmoji(countryCode: string) {
  * than as a duplicate of the label (which is why the web app's currency
  * dropdown, where the flag sits next to a ticker, drops it on Windows instead).
  */
-export function CountryFlag({
-  code,
-  size = 24,
-}: {
-  code: string;
-  size?: number;
-}) {
+export function CountryFlag({ code, size = 24 }: { code: string; size?: number }) {
   return (
     <span
       role="presentation"

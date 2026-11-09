@@ -3,11 +3,7 @@ import type { AddressPosition } from 'src/defi-sdk.types';
 import { baseToCommon } from 'src/shared/units/convert';
 import { getDecimals } from 'src/modules/networks/asset';
 import { createChain } from 'src/modules/networks/Chain';
-import type {
-  AppPortfolio,
-  GroupedFungiblePosition,
-  PositionType,
-} from './types';
+import type { AppPortfolio, GroupedFungiblePosition, PositionType } from './types';
 import { DEFAULT_APP_ID, DEFAULT_APP_NAME, DEFAULT_NAME } from './types';
 import { getPositionChange24h, getPositionValue } from './change24h';
 
@@ -24,45 +20,37 @@ export const positionTypeToStringMap: Record<PositionType, string> = {
   investment: 'Investment',
 };
 
-export function getPositionBalance(
-  position: Pick<GroupedFungiblePosition, 'convertedQuantity'>
-) {
+export function getPositionBalance(position: Pick<GroupedFungiblePosition, 'convertedQuantity'>) {
   return new BigNumber(position.convertedQuantity || 0);
 }
 
 /** Sum of values, with debt (`loan`) counted against the rest */
 export function getFullPositionsValue(
-  positions?: Pick<GroupedFungiblePosition, 'value' | 'type'>[] | null
+  positions?: Pick<GroupedFungiblePosition, 'value' | 'type'>[] | null,
 ) {
   return positions
     ? positions.reduce(
         (acc, item) =>
-          item.type === 'loan'
-            ? acc - getPositionValue(item)
-            : acc + getPositionValue(item),
-        0
+          item.type === 'loan' ? acc - getPositionValue(item) : acc + getPositionValue(item),
+        0,
       )
     : 0;
 }
 
 /** Sum of |value|: every part counts, so a leveraged App still gets a positive area */
 export function getGrossPositionsValue(
-  positions?: Pick<GroupedFungiblePosition, 'value'>[] | null
+  positions?: Pick<GroupedFungiblePosition, 'value'>[] | null,
 ) {
-  return positions
-    ? positions.reduce((acc, item) => acc + Math.abs(getPositionValue(item)), 0)
-    : 0;
+  return positions ? positions.reduce((acc, item) => acc + Math.abs(getPositionValue(item)), 0) : 0;
 }
 
-export function sortPositionsByValue<
-  T extends Pick<GroupedFungiblePosition, 'value'>,
->(positions?: T[] | null): T[] {
+export function sortPositionsByValue<T extends Pick<GroupedFungiblePosition, 'value'>>(
+  positions?: T[] | null,
+): T[] {
   if (!positions) {
     return [];
   }
-  return [...positions].sort(
-    (a, b) => getPositionValue(b) - getPositionValue(a)
-  );
+  return [...positions].sort((a, b) => getPositionValue(b) - getPositionValue(a));
 }
 
 /** Plain holdings hidden by the backend's spam/dust heuristics are dropped; DeFi positions never are */
@@ -75,9 +63,7 @@ export function getAppPositions(app: AppPortfolio): GroupedFungiblePosition[] {
 }
 
 /** Every position of every App, in App order */
-export function flattenApps(
-  apps?: AppPortfolio[] | null
-): GroupedFungiblePosition[] {
+export function flattenApps(apps?: AppPortfolio[] | null): GroupedFungiblePosition[] {
   return apps?.flatMap(getAppPositions) ?? [];
 }
 
@@ -94,21 +80,15 @@ export function filterDisplayableApps(apps: AppPortfolio[]): AppPortfolio[] {
       }
       const groups = app.groups.map((group) => ({
         ...group,
-        fungiblePositions: group.fungiblePositions.filter(
-          isDisplayablePosition
-        ),
+        fungiblePositions: group.fungiblePositions.filter(isDisplayablePosition),
       }));
       return {
         ...app,
         groups,
-        value: getFullPositionsValue(
-          groups.flatMap((group) => group.fungiblePositions)
-        ),
+        value: getFullPositionsValue(groups.flatMap((group) => group.fungiblePositions)),
       };
     })
-    .filter((app) =>
-      app.groups.some((group) => group.fungiblePositions.length)
-    );
+    .filter((app) => app.groups.some((group) => group.fungiblePositions.length));
 }
 
 /**
@@ -119,7 +99,7 @@ export function filterDisplayableApps(apps: AppPortfolio[]): AppPortfolio[] {
  */
 export function addressPositionToGroupedPosition(
   position: AddressPosition,
-  chain: { id: string; name: string; iconUrl: string | null }
+  chain: { id: string; name: string; iconUrl: string | null },
 ): GroupedFungiblePosition {
   const { asset } = position;
   const decimals = getDecimals({ asset, chain: createChain(position.chain) });
@@ -142,10 +122,7 @@ export function addressPositionToGroupedPosition(
       isVerified: asset.is_verified,
       isNew: false,
     },
-    convertedQuantity: baseToCommon(
-      position.quantity || 0,
-      decimals
-    ).toNumber(),
+    convertedQuantity: baseToCommon(position.quantity || 0, decimals).toNumber(),
     type: position.type === 'asset' ? 'asset' : position.type,
     chains: [{ id: chain.id, name: chain.name, iconUrl: chain.iconUrl ?? '' }],
     value: Number(position.value) || 0,
@@ -157,10 +134,10 @@ export function addressPositionToGroupedPosition(
 /** Wraps node-sourced positions as the one Wallet Bucket App the list expects */
 export function addressPositionsToApps(
   positions: AddressPosition[],
-  chain: { id: string; name: string; iconUrl: string | null }
+  chain: { id: string; name: string; iconUrl: string | null },
 ): AppPortfolio[] {
   const fungiblePositions = positions.map((position) =>
-    addressPositionToGroupedPosition(position, chain)
+    addressPositionToGroupedPosition(position, chain),
   );
   return [
     {

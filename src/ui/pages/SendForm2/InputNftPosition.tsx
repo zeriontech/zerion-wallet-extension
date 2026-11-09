@@ -10,10 +10,7 @@ import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import type { NftPosition } from 'src/modules/zerion-api/requests/wallet-get-nft-positions';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
-import {
-  QUICK_AMOUNTS,
-  QuickAmountButton,
-} from 'src/ui/shared/forms/QuickAmounts';
+import { QUICK_AMOUNTS, QuickAmountButton } from 'src/ui/shared/forms/QuickAmounts';
 import { FormFieldset } from './FormFieldset';
 import type { HandleChangeFunction, SendFormState2 } from './types';
 import { NftSelectorButton } from './NftSelectorButton';
@@ -47,9 +44,7 @@ export function InputNftPosition({
   const erc721 = isErc721(nftPosition);
   const balanceQuantity = nftPosition?.amount.quantity ?? null;
   const showAmountInput =
-    !erc721 &&
-    balanceQuantity != null &&
-    new BigNumber(balanceQuantity).isGreaterThan(1);
+    !erc721 && balanceQuantity != null && new BigNumber(balanceQuantity).isGreaterThan(1);
 
   // When amount input is hidden, keep form state at '1'.
   useEffect(() => {
@@ -91,10 +86,7 @@ export function InputNftPosition({
         showQuickAmounts ? (
           <HStack gap={16} alignItems="center">
             {QUICK_AMOUNTS.map(({ factor, title }) => (
-              <QuickAmountButton
-                key={factor}
-                onClick={() => handleQuickAmount(factor)}
-              >
+              <QuickAmountButton key={factor} onClick={() => handleQuickAmount(factor)}>
                 {title}
               </QuickAmountButton>
             ))}
@@ -106,23 +98,12 @@ export function InputNftPosition({
       startContent={
         <TooltipProvider placement="top" timeout={1000}>
           <TooltipAnchor
-            render={
-              <NftSelectorButton
-                position={nftPosition}
-                onClick={onOpenSelector}
-              />
-            }
+            render={<NftSelectorButton position={nftPosition} onClick={onOpenSelector} />}
           />
-          <Tooltip
-            className={assetSelectorStyles.tooltip}
-            gutter={8}
-            portal={false}
-          >
+          <Tooltip className={assetSelectorStyles.tooltip} gutter={8} portal={false}>
             <UIText kind="caption/regular">
               <span>Select NFT to Send</span>{' '}
-              <span className={assetSelectorStyles.tooltipKbd}>
-                {isMacOS() ? '⇧↑' : 'Shift+↑'}
-              </span>
+              <span className={assetSelectorStyles.tooltipKbd}>{isMacOS() ? '⇧↑' : 'Shift+↑'}</span>
             </UIText>
           </Tooltip>
         </TooltipProvider>
@@ -168,9 +149,7 @@ export function InputNftPosition({
           <motion.div
             animate={shakeControls}
             style={{
-              color: exceedsBalance
-                ? 'var(--negative-500)'
-                : 'var(--neutral-600)',
+              color: exceedsBalance ? 'var(--negative-500)' : 'var(--neutral-600)',
               display: 'flex',
               gap: 4,
             }}
@@ -178,9 +157,7 @@ export function InputNftPosition({
             <span>Balance:</span>
             <BlurrableBalance
               kind="small/regular"
-              color={
-                exceedsBalance ? 'var(--negative-500)' : 'var(--neutral-600)'
-              }
+              color={exceedsBalance ? 'var(--negative-500)' : 'var(--neutral-600)'}
             >
               {formatTokenValue(balanceQuantity)}
             </BlurrableBalance>

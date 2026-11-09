@@ -14,11 +14,7 @@ import * as styles from './styles.module.css';
  * (Visa, SEPA, Apple Pay) are longer than the strip has room for, so they move
  * to the group's accessible label.
  */
-function PaymentMethodStrip({
-  methods,
-}: {
-  methods: DepositQuote['supportedPaymentMethods'];
-}) {
+function PaymentMethodStrip({ methods }: { methods: DepositQuote['supportedPaymentMethods'] }) {
   return (
     <div
       className={styles.methodStrip}
@@ -49,13 +45,7 @@ export function ProviderSelectDialog({
   onSelect: (providerId: string) => void;
 }) {
   return (
-    <Dialog2
-      open={open}
-      onClose={onClose}
-      title="Provider"
-      size="full"
-      autoFocusInput={false}
-    >
+    <Dialog2 open={open} onClose={onClose} title="Provider" size="full" autoFocusInput={false}>
       <VStack gap={12} style={{ paddingInline: 16, paddingBottom: 24 }}>
         <UIText kind="small/regular" color="var(--neutral-500)">
           {countryName
@@ -83,16 +73,10 @@ export function ProviderSelectDialog({
                   style={{ gridTemplateColumns: '1fr auto' }}
                 >
                   <HStack gap={12} alignItems="center">
-                    <img
-                      alt=""
-                      src={quote.provider.iconUrl}
-                      className={styles.providerIcon}
-                    />
+                    <img alt="" src={quote.provider.iconUrl} className={styles.providerIcon} />
                     <VStack gap={4}>
                       <UIText kind="body/accent">{quote.provider.name}</UIText>
-                      <PaymentMethodStrip
-                        methods={quote.supportedPaymentMethods}
-                      />
+                      <PaymentMethodStrip methods={quote.supportedPaymentMethods} />
                     </VStack>
                   </HStack>
                   <HStack gap={8} alignItems="center">

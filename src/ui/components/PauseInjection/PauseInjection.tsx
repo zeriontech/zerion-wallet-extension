@@ -54,9 +54,9 @@ function PauseInjectionDialog({
       const data = naiveFormDataToObject<{ duration: TurnOffDuration }>(
         new (FormData as FormDataWithSubmitter)(
           event.currentTarget as HTMLFormElement,
-          event.submitter
+          event.submitter,
         ),
-        (key, value) => (key === 'duration' ? Number(value) : (value as string))
+        (key, value) => (key === 'duration' ? Number(value) : (value as string)),
       );
       onSubmitRef.current({
         origin: data.origin as string,
@@ -78,9 +78,7 @@ function PauseInjectionDialog({
       <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
         Disable Zerion for
         <br />
-        <span
-          style={{ color: 'var(--neutral-500)', overflowWrap: 'break-word' }}
-        >
+        <span style={{ color: 'var(--neutral-500)', overflowWrap: 'break-word' }}>
           {activeTabUrl?.hostname}
         </span>
       </UIText>
@@ -112,16 +110,11 @@ export function usePausedData() {
   const { globalPreferences, mutation } = useGlobalPreferences();
   const tabUrl = tabData?.url;
   const protocol = tabUrl?.protocol;
-  const tabUrlHttp =
-    protocol === 'https:' || protocol === 'http:' ? tabUrl : undefined;
-  const isPausedForAll = Boolean(
-    globalPreferences?.providerInjection['<all_urls>']
-  );
+  const tabUrlHttp = protocol === 'https:' || protocol === 'http:' ? tabUrl : undefined;
+  const isPausedForAll = Boolean(globalPreferences?.providerInjection['<all_urls>']);
   const isPaused =
     isPausedForAll ||
-    (tabUrlHttp
-      ? Boolean(globalPreferences?.providerInjection[tabUrlHttp.origin])
-      : false);
+    (tabUrlHttp ? Boolean(globalPreferences?.providerInjection[tabUrlHttp.origin]) : false);
   return {
     tabUrl: tabUrlHttp,
     isPaused,
@@ -139,13 +132,8 @@ export function usePausedData() {
  * from the (retired) Overview connection header.
  */
 export function DisableWalletProviderSettingsItem() {
-  const {
-    isPaused,
-    isPausedForAll,
-    tabUrl,
-    globalPreferences,
-    setGlobalPreferences,
-  } = usePausedData();
+  const { isPaused, isPausedForAll, tabUrl, globalPreferences, setGlobalPreferences } =
+    usePausedData();
   const [showDialog, setShowDialog] = useState(false);
 
   if (!globalPreferences || !tabUrl) {
@@ -153,10 +141,7 @@ export function DisableWalletProviderSettingsItem() {
   }
   return (
     <>
-      <FrameListItemButton
-        onClick={() => setShowDialog(true)}
-        disabled={isPaused}
-      >
+      <FrameListItemButton onClick={() => setShowDialog(true)} disabled={isPaused}>
         <AngleRightRow>
           <HStack gap={8} alignItems="center">
             <ConnectionIconOn
@@ -174,18 +159,14 @@ export function DisableWalletProviderSettingsItem() {
           </HStack>
         </AngleRightRow>
       </FrameListItemButton>
-      <Dialog2
-        open={showDialog}
-        onClose={() => setShowDialog(false)}
-        size="content"
-      >
+      <Dialog2 open={showDialog} onClose={() => setShowDialog(false)} size="content">
         <div style={{ paddingInline: 16, paddingBlock: 24 }}>
           <PauseInjectionDialog
             activeTabUrl={tabUrl || null}
             onSubmit={(formData) => {
-              setGlobalPreferences(
-                createInjectionPreference(globalPreferences, formData)
-              ).then(reloadActiveTab);
+              setGlobalPreferences(createInjectionPreference(globalPreferences, formData)).then(
+                reloadActiveTab,
+              );
               setShowDialog(false);
             }}
           />
@@ -196,14 +177,8 @@ export function DisableWalletProviderSettingsItem() {
 }
 
 export function PausedHeader() {
-  const {
-    isPaused,
-    isPausedForAll,
-    pattern,
-    tabUrl,
-    globalPreferences,
-    setGlobalPreferences,
-  } = usePausedData();
+  const { isPaused, isPausedForAll, pattern, tabUrl, globalPreferences, setGlobalPreferences } =
+    usePausedData();
   if (!isPaused || !globalPreferences) {
     return null;
   }
@@ -214,11 +189,7 @@ export function PausedHeader() {
       alignItems="center"
       style={{ gridTemplateColumns: '1fr auto' }}
     >
-      <HStack
-        gap={4}
-        alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
-      >
+      <HStack gap={4} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
         <UIText kind="body/regular" color="var(--notice-500)">
           Paused for
         </UIText>
@@ -250,9 +221,9 @@ export function PausedHeader() {
           ['--button-background-hover' as string]: 'var(--neutral-200)',
         }}
         onClick={() =>
-          setGlobalPreferences(
-            disableInjectionPreference(globalPreferences, pattern)
-          ).then(reloadActiveTab)
+          setGlobalPreferences(disableInjectionPreference(globalPreferences, pattern)).then(
+            reloadActiveTab,
+          )
         }
       >
         <UIText kind="small/accent">Resume</UIText>

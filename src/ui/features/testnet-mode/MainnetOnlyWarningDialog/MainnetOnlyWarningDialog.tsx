@@ -24,12 +24,7 @@ const MainnetOnlyWarningDialog = React.forwardRef<
             <DialogTitle title={null} alignTitle="start" closeKind="icon" />
           </UIText>
           <Spacer height={8} />
-          <WarningIcon
-            kind="neutral"
-            size={44}
-            glow={true}
-            outlineStrokeWidth={7}
-          />
+          <WarningIcon kind="neutral" size={44} glow={true} outlineStrokeWidth={7} />
           <Spacer height={16} />
           <UIText kind="headline/h3">{message}</UIText>
           <Spacer height={8} />
@@ -50,9 +45,7 @@ type ClickHandler<T extends 'button' | 'a'> = T extends 'a'
   ? React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
   : React.ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
 
-type ClickEvent<T extends 'button' | 'a'> = Parameters<
-  NonNullable<ClickHandler<T>>
->[0];
+type ClickEvent<T extends 'button' | 'a'> = Parameters<NonNullable<ClickHandler<T>>>[0];
 
 export function WithMainnetOnlyWarningDialog<T extends 'button' | 'a'>({
   onClick,
@@ -61,18 +54,14 @@ export function WithMainnetOnlyWarningDialog<T extends 'button' | 'a'>({
 }: {
   onClick?: ClickHandler<T>;
   message: React.ReactNode;
-  render: (props: {
-    handleClick: NonNullable<ClickHandler<T>>;
-  }) => React.ReactNode;
+  render: (props: { handleClick: NonNullable<ClickHandler<T>> }) => React.ReactNode;
 }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const { preferences } = usePreferences();
   const isTestnetMode = preferences?.testnetMode?.on;
   return (
     <>
-      {isTestnetMode ? (
-        <MainnetOnlyWarningDialog ref={dialogRef} message={message} />
-      ) : null}
+      {isTestnetMode ? <MainnetOnlyWarningDialog ref={dialogRef} message={message} /> : null}
       {render({
         handleClick: (event: ClickEvent<T>) => {
           if (isTestnetMode) {

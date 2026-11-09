@@ -116,11 +116,7 @@ export function XpDropClaimSuccess() {
         }}
       ></canvas>
       <PageColumn>
-        <NavigationTitle
-          title={null}
-          documentTitle="Claim Finished"
-          backTo="/overview"
-        />
+        <NavigationTitle title={null} documentTitle="Claim Finished" backTo="/overview" />
         <FillView>
           <VStack gap={21} style={{ justifyItems: 'center' }}>
             <CheckIcon />

@@ -1,9 +1,6 @@
 import React from 'react';
 
-export function ViewArea({
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function ViewArea({ style, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       {...props}

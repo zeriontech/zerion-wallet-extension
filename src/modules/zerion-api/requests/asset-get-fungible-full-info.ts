@@ -55,7 +55,7 @@ type Response = ResponseBody<AssetFullInfo>;
 export async function assetGetFungibleFullInfo(
   this: ZerionApiContext,
   payload: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const kyOptions = this.getKyOptions();
   const params = new URLSearchParams({
@@ -67,6 +67,6 @@ export async function assetGetFungibleFullInfo(
       endpoint: `asset/get-fungible-full-info/v1?${params}`,
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

@@ -19,10 +19,7 @@ import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { BlurredToggle } from 'src/ui/components/BlurredToggle';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 import { decodeMasked } from 'src/shared/wallet/encode-locally';
-import {
-  usePendingRecoveryPhrase,
-  useRecoveryPhrase,
-} from './useRecoveryPhrase';
+import { usePendingRecoveryPhrase, useRecoveryPhrase } from './useRecoveryPhrase';
 import { clipboardWarning } from './clipboardWarning';
 
 export function RecoveryPhrase({
@@ -52,9 +49,7 @@ export function RecoveryPhrase({
     isLoading,
     isError,
     error,
-  } = isPendingWallet
-    ? pendingRecoveryPhraseQuery
-    : existingRecoveryPhraseQuery;
+  } = isPendingWallet ? pendingRecoveryPhraseQuery : existingRecoveryPhraseQuery;
 
   const recoveryPhrase = encoded ? decodeMasked(encoded) : null;
 
@@ -96,9 +91,8 @@ export function RecoveryPhrase({
           <UIText kind="headline/h2">Let’s Back Up Your Wallet!</UIText>
           <Spacer height={8} />
           <UIText kind="body/regular">
-            Save these{' '}
-            {recoveryPhrase ? recoveryPhrase.split(/\s+/).length : ''} words in
-            a password manager or write them down and store in a secure location
+            Save these {recoveryPhrase ? recoveryPhrase.split(/\s+/).length : ''} words in a
+            password manager or write them down and store in a secure location
           </UIText>
           <Spacer height={40} />
           {isLoading ? (
@@ -142,11 +136,7 @@ export function RecoveryPhrase({
           ) : (
             <>
               <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  kind="ghost"
-                  onClick={handleCopy}
-                  style={{ paddingInline: 32 }}
-                >
+                <Button kind="ghost" onClick={handleCopy} style={{ paddingInline: 32 }}>
                   <HStack gap={8}>
                     {React.createElement(isCopySuccess ? CheckIcon : CopyIcon, {
                       style: { display: 'block', width: 20, height: 20 },

@@ -14,7 +14,7 @@ interface Response {
 export function registerAddresses(
   this: ZerionApiContext,
   payload: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const kyOptions = this.getKyOptions();
   return ZerionHttpClient.post<Response>(
@@ -23,6 +23,6 @@ export function registerAddresses(
       body: JSON.stringify({ addresses: payload.addresses }),
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

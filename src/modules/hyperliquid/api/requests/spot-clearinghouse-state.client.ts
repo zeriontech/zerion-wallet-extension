@@ -5,7 +5,7 @@ import type {
 } from './spot-clearinghouse-state.types';
 
 export async function spotClearinghouseState(
-  payload: SpotClearinghouseStatePayload
+  payload: SpotClearinghouseStatePayload,
 ): Promise<SpotClearinghouseState | null> {
   return postInfo<SpotClearinghouseState>({
     type: 'spotClearinghouseState',

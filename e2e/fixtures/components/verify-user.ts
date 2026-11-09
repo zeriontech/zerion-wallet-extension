@@ -15,7 +15,7 @@ export class VerifyUserComponent {
 
   constructor(
     public readonly page: Page,
-    public readonly props?: Props
+    public readonly props?: Props,
   ) {}
 
   async matchesSnapshot() {

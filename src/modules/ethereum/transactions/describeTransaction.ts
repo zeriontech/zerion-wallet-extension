@@ -5,12 +5,7 @@ import type { Networks } from 'src/modules/networks/Networks';
 import { getBaseAssetImplementation } from 'src/modules/networks/NetworkInfo';
 import type { IncomingTransaction } from '../types/IncomingTransaction';
 
-export type TransactionActionType =
-  | 'deploy'
-  | 'send'
-  | 'execute'
-  | 'approve'
-  | 'revoke';
+export type TransactionActionType = 'deploy' | 'send' | 'execute' | 'approve' | 'revoke';
 
 interface OutgoingValue {
   isNativeAsset: boolean;
@@ -83,12 +78,7 @@ function sliceArguments(data: string) {
 
 function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
   const { data } = transaction;
-  if (
-    !transaction.to ||
-    data == null ||
-    data === '' ||
-    ethers.toQuantity(data) === '0x0'
-  ) {
+  if (!transaction.to || data == null || data === '' || ethers.toQuantity(data) === '0x0') {
     return null;
   }
   const selector = sliceSelector(data);
@@ -103,11 +93,7 @@ function matchSelectors(transaction: IncomingTransaction, selectors: string[]) {
 }
 
 function encodeSelector(signature: string) {
-  return ethers.dataSlice(
-    ethers.keccak256(ethers.toUtf8Bytes(signature)),
-    0,
-    4
-  );
+  return ethers.dataSlice(ethers.keccak256(ethers.toUtf8Bytes(signature)), 0, 4);
 }
 
 const selectors = {
@@ -126,7 +112,7 @@ const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
 function createExecuteAction(
   transaction: IncomingTransaction,
-  context: DescriberContext
+  context: DescriberContext,
 ): TransactionAction {
   const network = context.networks.getNetworkByName(context.chain);
   return {
@@ -135,15 +121,14 @@ function createExecuteAction(
     contractAddress: transaction.to || '0x',
     amount: getMaybeAmount(transaction),
     assetId: network?.baseAsset?.id || null,
-    assetAddress:
-      (network && getBaseAssetImplementation(network)?.address) || null,
+    assetAddress: (network && getBaseAssetImplementation(network)?.address) || null,
     chain: context.chain,
   };
 }
 
 function describeMulticall(
   transaction: IncomingTransaction,
-  context: DescriberContext
+  context: DescriberContext,
 ): TransactionAction | null {
   const match = matchSelectors(transaction, [
     selectors.multicall1,
@@ -163,10 +148,7 @@ export function parseApprove<T extends IncomingTransaction>(transaction: T) {
     return null;
   }
   const { args } = match;
-  const [spenderAddress, amount] = abiCoder.decode(
-    ['address', 'uint256'],
-    args
-  );
+  const [spenderAddress, amount] = abiCoder.decode(['address', 'uint256'], args);
   const contractAddress = transaction.to || '0x';
   if (amount === 0n) {
     return {
@@ -189,7 +171,7 @@ export function parseApprove<T extends IncomingTransaction>(transaction: T) {
 
 function describeApprove(
   transaction: IncomingTransaction,
-  context: DescriberContext
+  context: DescriberContext,
 ): TransactionAction | null {
   const result = parseApprove(transaction);
   if (!result) {
@@ -205,13 +187,10 @@ function describeApprove(
 
 function describeSend(
   transaction: IncomingTransaction,
-  context: DescriberContext
+  context: DescriberContext,
 ): TransactionAction | null {
   // native token send
-  if (
-    (transaction.data == null || transaction.data == '0x') &&
-    transaction.to
-  ) {
+  if ((transaction.data == null || transaction.data == '0x') && transaction.to) {
     const network = context.networks.getNetworkByName(context.chain);
 
     return {
@@ -219,18 +198,14 @@ function describeSend(
       isNativeAsset: true,
       chain: context.chain,
       assetId: network?.baseAsset?.id || null,
-      assetAddress:
-        (network && getBaseAssetImplementation(network)?.address) || null,
+      assetAddress: (network && getBaseAssetImplementation(network)?.address) || null,
       receiverAddress: transaction.to,
       amount: amountToString(transaction.value ?? '0'),
     };
   }
 
   // non-native token send
-  const match = matchSelectors(transaction, [
-    selectors.send,
-    selectors.transfer,
-  ]);
+  const match = matchSelectors(transaction, [selectors.send, selectors.transfer]);
   if (!match) {
     return null;
   }
@@ -242,10 +217,7 @@ function describeSend(
   if (selector === selectors.transfer) {
     [receiverAddress, amount] = abiCoder.decode(['address', 'uint256'], args);
   } else if (selector === selectors.send) {
-    [receiverAddress, amount] = abiCoder.decode(
-      ['address', 'uint256', 'bytes'],
-      args
-    );
+    [receiverAddress, amount] = abiCoder.decode(['address', 'uint256', 'bytes'], args);
   }
 
   const contractAddress = transaction.to || '0x';
@@ -266,7 +238,7 @@ const describers = [describeApprove, describeSend, describeMulticall];
 
 export function describeTransaction(
   transaction: IncomingTransaction,
-  context: DescriberContext
+  context: DescriberContext,
 ): TransactionAction {
   for (const describer of describers) {
     const description = describer(transaction, context);

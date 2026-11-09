@@ -2,9 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useEvent } from '../useEvent';
 
-export function useSearchParamsObj<
-  T extends Record<string, string | undefined>,
->() {
+export function useSearchParamsObj<T extends Record<string, string | undefined>>() {
   const [searchParams, setSearchParams] = useSearchParams();
   const value = useMemo(() => {
     return Object.fromEntries(searchParams) as Partial<T>;
@@ -29,10 +27,10 @@ export function useSearchParamsObj<
           }
           return new URLSearchParams(current);
         },
-        { replace: true }
+        { replace: true },
       );
     },
-    [setSearchParamsStable]
+    [setSearchParamsStable],
   );
   return [value, setValue] as const;
 }

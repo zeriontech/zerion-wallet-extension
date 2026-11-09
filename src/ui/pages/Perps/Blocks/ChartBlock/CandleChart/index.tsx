@@ -46,7 +46,7 @@ Chart.register(
   Tooltip,
   CandlestickController,
   CandlestickElement,
-  zoomPlugin
+  zoomPlugin,
 );
 
 const DEFAULT_ZOOM_RATIO = 5;
@@ -61,11 +61,10 @@ function computeRangeBounds(candles: PerpCandle[]) {
   const firstT = candles[0].t;
   const lastT = candles[candles.length - 1].t;
   const totalSpan = Math.max(lastT - firstT, 1);
-  const candleInterval =
-    candles.length > 1 ? (lastT - firstT) / (candles.length - 1) : totalSpan;
+  const candleInterval = candles.length > 1 ? (lastT - firstT) / (candles.length - 1) : totalSpan;
   const minVisibleSpan = Math.max(
     candleInterval * MIN_VISIBLE_CANDLES,
-    totalSpan / DEFAULT_ZOOM_RATIO
+    totalSpan / DEFAULT_ZOOM_RATIO,
   );
   return {
     firstT,
@@ -88,14 +87,7 @@ interface Props {
   displayName: string;
 }
 
-export function CandleChart({
-  candles,
-  height,
-  interval,
-  coin,
-  fills,
-  displayName,
-}: Props) {
+export function CandleChart({ candles, height, interval, coin, fills, displayName }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -124,7 +116,7 @@ export function CandleChart({
 
   const tradeBuckets = useMemo<TradeBuckets | null>(
     () => bucketFills(fills, candles),
-    [fills, candles]
+    [fills, candles],
   );
   const tradeBucketsRef = useRef(tradeBuckets);
   tradeBucketsRef.current = tradeBuckets;
@@ -205,9 +197,7 @@ export function CandleChart({
             },
             grid: {
               color:
-                themeRef.current === Theme.dark
-                  ? 'rgba(255,255,255,0.04)'
-                  : 'rgba(0,0,0,0.04)',
+                themeRef.current === Theme.dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
             },
             ticks: {
               color: themeRef.current === Theme.dark ? '#9c9fa8' : '#7B7E89',
@@ -216,9 +206,7 @@ export function CandleChart({
             },
             border: {
               color:
-                themeRef.current === Theme.dark
-                  ? 'rgba(255,255,255,0.06)'
-                  : 'rgba(0,0,0,0.06)',
+                themeRef.current === Theme.dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
             },
           },
           y: {
@@ -227,33 +215,24 @@ export function CandleChart({
             bounds: 'data',
             grid: {
               color:
-                themeRef.current === Theme.dark
-                  ? 'rgba(255,255,255,0.04)'
-                  : 'rgba(0,0,0,0.04)',
+                themeRef.current === Theme.dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
             },
             ticks: {
               color: themeRef.current === Theme.dark ? '#9c9fa8' : '#7B7E89',
-              callback: (value) =>
-                formatPriceValue(Number(value), 'en', currencyRef.current),
+              callback: (value) => formatPriceValue(Number(value), 'en', currencyRef.current),
             },
             afterTickToLabelConversion: (scale) => {
               const yTicks = scale.ticks;
               if (yTicks.length < 2) return;
-              const topPixel = scale.getPixelForValue(
-                Number(yTicks[yTicks.length - 1].value)
-              );
-              const secondPixel = scale.getPixelForValue(
-                Number(yTicks[yTicks.length - 2].value)
-              );
+              const topPixel = scale.getPixelForValue(Number(yTicks[yTicks.length - 1].value));
+              const secondPixel = scale.getPixelForValue(Number(yTicks[yTicks.length - 2].value));
               if (Math.abs(secondPixel - topPixel) < MIN_Y_TICK_LABEL_GAP) {
                 yTicks[yTicks.length - 2].label = '';
               }
             },
             border: {
               color:
-                themeRef.current === Theme.dark
-                  ? 'rgba(255,255,255,0.06)'
-                  : 'rgba(0,0,0,0.06)',
+                themeRef.current === Theme.dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
             },
           },
           yVolume: {
@@ -284,20 +263,16 @@ export function CandleChart({
               getTradesSection: (candleTime) => {
                 const buckets = tradeBucketsRef.current;
                 if (!buckets) return null;
-                const bucketStart = getCandleBucketStart(
-                  candleTime,
-                  candlesRef.current
-                );
+                const bucketStart = getCandleBucketStart(candleTime, candlesRef.current);
                 if (bucketStart == null) return null;
-                const bucketFillsForTime =
-                  buckets.fillsByBucket.get(bucketStart);
+                const bucketFillsForTime = buckets.fillsByBucket.get(bucketStart);
                 if (!bucketFillsForTime || bucketFillsForTime.length === 0) {
                   return null;
                 }
                 return buildTradesTooltipSection(
                   bucketFillsForTime,
                   currencyRef.current,
-                  displayNameRef.current
+                  displayNameRef.current,
                 );
               },
             }),
@@ -312,7 +287,7 @@ export function CandleChart({
                 cursorRef.current = null;
                 canvas.style.cursor = 'grabbing';
                 const tooltip = container.querySelector(
-                  '.perp-candle-tooltip'
+                  '.perp-candle-tooltip',
                 ) as HTMLElement | null;
                 if (tooltip) tooltip.style.opacity = '0';
                 return undefined;
@@ -337,11 +312,7 @@ export function CandleChart({
             },
           },
         },
-        onHover: (
-          event: ChartEvent,
-          activeElements: ActiveElement[],
-          chartInstance
-        ) => {
+        onHover: (event: ChartEvent, activeElements: ActiveElement[], chartInstance) => {
           if (isPanningRef.current) return;
           const native = event.native as MouseEvent | TouchEvent | null;
           if (!native) {
@@ -553,9 +524,7 @@ export function CandleChart({
         const prevMax = xOptions.max as number | undefined;
         const prevMin = xOptions.min as number | undefined;
         const wasPinnedRight =
-          prevLastT != null &&
-          prevMax != null &&
-          prevMax >= prevLastT - bounds.candleInterval;
+          prevLastT != null && prevMax != null && prevMax >= prevLastT - bounds.candleInterval;
 
         if (wasPinnedRight && prevMin != null && prevMax != null) {
           const span = prevMax - prevMin;
@@ -600,10 +569,7 @@ export function CandleChart({
   }, [theme]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{ position: 'relative', width: '100%', height }}
-    >
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height }}>
       <canvas ref={canvasRef} />
     </div>
   );

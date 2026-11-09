@@ -21,10 +21,7 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Button } from 'src/ui/ui-kit/Button';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
-import {
-  useWalletGroup,
-  useWalletGroups,
-} from 'src/ui/shared/requests/useWalletGroups';
+import { useWalletGroup, useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
@@ -87,7 +84,7 @@ function EditableWalletGroupName({
   });
   const debouncedRenameRequest = useDebouncedCallback(
     useCallback((value: string) => mutate(value), [mutate]),
-    500
+    500,
   );
   return (
     <VStack gap={4}>
@@ -110,9 +107,7 @@ function EditableWalletGroupName({
             setValue(name);
           }}
         />
-        {renameMutation.isLoading ? (
-          <CircleSpinner style={{ display: 'inline-block' }} />
-        ) : null}
+        {renameMutation.isLoading ? <CircleSpinner style={{ display: 'inline-block' }} /> : null}
       </div>
       {renameMutation.isError ? (
         <UIText kind="caption/regular" color="var(--negative-500)">
@@ -123,11 +118,7 @@ function EditableWalletGroupName({
   );
 }
 
-function RemoveGroupConfirmationDialog({
-  walletGroup,
-}: {
-  walletGroup: WalletGroup;
-}) {
+function RemoveGroupConfirmationDialog({ walletGroup }: { walletGroup: WalletGroup }) {
   const containerType = getContainerType(walletGroup.walletContainer);
   return (
     <form
@@ -148,9 +139,7 @@ function RemoveGroupConfirmationDialog({
           glow={true}
         />
         <UIText kind="headline/h3">Did you backup your recovery phrase?</UIText>
-        <UIText kind="body/regular">
-          {strings.getRemoveWalletSubtitle(containerType)}
-        </UIText>
+        <UIText kind="body/regular">{strings.getRemoveWalletSubtitle(containerType)}</UIText>
         <UIText kind="small/accent" color="var(--neutral-500)">
           Wallets to remove
         </UIText>
@@ -158,13 +147,7 @@ function RemoveGroupConfirmationDialog({
           {walletGroup.walletContainer.wallets.map((wallet) => (
             <Media
               key={wallet.address}
-              image={
-                <WalletAvatar
-                  address={wallet.address}
-                  size={24}
-                  borderRadius={4}
-                />
-              }
+              image={<WalletAvatar address={wallet.address} size={24} borderRadius={4} />}
               text={
                 <UIText kind="caption/regular">
                   <WalletDisplayName wallet={wallet} />
@@ -191,10 +174,7 @@ function RemoveGroupConfirmationDialog({
   );
 }
 
-function SurfaceListTitle({
-  style,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+function SurfaceListTitle({ style, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <UIText
       kind="caption/accent"
@@ -215,9 +195,7 @@ function WalletGroupItem({
   return (
     <HStack gap={4} justifyContent="space-between" alignItems="center">
       <Media
-        image={
-          <WalletAvatar address={wallet.address} size={44} borderRadius={8} />
-        }
+        image={<WalletAvatar address={wallet.address} size={44} borderRadius={8} />}
         alignItems="center"
         text={<WalletDisplayName wallet={wallet} />}
         vGap={0}
@@ -232,7 +210,7 @@ function WalletGroupItem({
                       parts={formatCurrencyToParts(
                         query.data.data?.totalValue || 0,
                         'en',
-                        currency
+                        currency,
                       )}
                     />
                   </BlurrableBalance>
@@ -365,20 +343,12 @@ export function WalletGroup() {
                   to: `/backup?groupId=${walletGroup.id}`,
                   onClick: openHrefInTabView,
                   component: (
-                    <HStack
-                      gap={4}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
+                    <HStack gap={4} justifyContent="space-between" alignItems="center">
                       <UIText kind="body/accent">
-                        {isMnemonicGroup
-                          ? strings.recoveryPhraseTitle
-                          : strings.privateKeyTitle}
+                        {isMnemonicGroup ? strings.recoveryPhraseTitle : strings.privateKeyTitle}
                         <BackupInfoNote group={walletGroup} />
                       </UIText>
-                      <ChevronRightIcon
-                        style={{ color: 'var(--neutral-400)' }}
-                      />
+                      <ChevronRightIcon style={{ color: 'var(--neutral-400)' }} />
                     </HStack>
                   ),
                 },
@@ -391,10 +361,7 @@ export function WalletGroup() {
           <UIText kind="small/accent" color="var(--neutral-500)">
             Wallets
           </UIText>
-          <WalletGroupItems
-            group={walletGroup}
-            isMnemonicGroup={isMnemonicGroup}
-          />
+          <WalletGroupItems group={walletGroup} isMnemonicGroup={isMnemonicGroup} />
         </VStack>
         <VStack gap={8}>
           <SurfaceList

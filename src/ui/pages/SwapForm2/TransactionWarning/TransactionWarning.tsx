@@ -9,13 +9,7 @@ import * as styles from './TransactionWarning.module.css';
 const GENERIC_DAPP_NAME = 'the dApp';
 
 /** A backend-authored message, with `${DAPP}` rendered as a DApp Referral. */
-function BackendMessage({
-  message,
-  dapp,
-}: {
-  message: string;
-  dapp: WarningContent['dapp'];
-}) {
+function BackendMessage({ message, dapp }: { message: string; dapp: WarningContent['dapp'] }) {
   return splitDappPlaceholder(message, dapp).map((part, index) => {
     if (part.kind === 'text') {
       return <Fragment key={index}>{part.text}</Fragment>;
@@ -41,20 +35,12 @@ function BackendMessage({
  * Presentation-only. The decision of which warning to show (or none) lives in
  * `resolveTransactionWarning`, called once in `SwapForm2`.
  */
-export function TransactionWarning({
-  warning,
-}: {
-  warning: WarningContent | null;
-}) {
+export function TransactionWarning({ warning }: { warning: WarningContent | null }) {
   if (!warning) return null;
 
   return (
     <div
-      className={
-        warning.variant === 'error'
-          ? `${styles.card} ${styles.cardError}`
-          : styles.card
-      }
+      className={warning.variant === 'error' ? `${styles.card} ${styles.cardError}` : styles.card}
     >
       <VStack gap={warning.description ? 8 : 0}>
         <UIText kind="small/accent" color="currentColor">
@@ -63,10 +49,7 @@ export function TransactionWarning({
         {warning.description ? (
           <UIText kind="small/regular" color="currentColor">
             {warning.dapp ? (
-              <BackendMessage
-                message={warning.description}
-                dapp={warning.dapp}
-              />
+              <BackendMessage message={warning.description} dapp={warning.dapp} />
             ) : (
               warning.description
             )}

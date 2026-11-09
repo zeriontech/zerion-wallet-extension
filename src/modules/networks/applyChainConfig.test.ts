@@ -81,14 +81,12 @@ test('overrides only what the form can edit', () => {
   expect(network.baseAsset?.id).toBe('eth');
   expect(network.baseAsset?.iconUrl).toBe('https://cdn.zerion.io/eth.png');
   expect(network.baseAsset?.implementations.polygon).toEqual(
-    ethereum.baseAsset?.implementations.polygon
+    ethereum.baseAsset?.implementations.polygon,
   );
 });
 
 test('user-defined testnet flag wins over the backend one', () => {
-  expect(
-    applyChainConfig(ethereum, { ...edit, is_testnet: true }).testnet
-  ).toBe(true);
+  expect(applyChainConfig(ethereum, { ...edit, is_testnet: true }).testnet).toBe(true);
   expect(applyChainConfig(ethereum, edit).testnet).toBe(false);
 });
 
@@ -106,7 +104,7 @@ test('synthesizes an explorer when the network had none', () => {
 test('a chain without a backend base asset gets one from the config', () => {
   const network = applyChainConfig(
     { ...ethereum, id: 'unlisted', baseAsset: null },
-    { ...edit, nativeCurrency: { name: 'Gas', symbol: 'GAS', decimals: 9 } }
+    { ...edit, nativeCurrency: { name: 'Gas', symbol: 'GAS', decimals: 9 } },
   );
   expect(network.baseAsset).toEqual({
     id: 'gas',

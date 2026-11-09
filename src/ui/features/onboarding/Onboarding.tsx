@@ -19,8 +19,8 @@ export function Onboarding() {
       () => ({
         backgroundColor: 'var(--neutral-100)',
       }),
-      []
-    )
+      [],
+    ),
   );
 
   return (

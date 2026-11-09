@@ -15,8 +15,7 @@ import type { DepositFormState } from './types';
  * present in the URL *is* a user choice, so defaults stay live until overridden.
  */
 export function useDepositFormState({ address }: { address: string }) {
-  const [userFormState, setUserFormState] =
-    useSearchParamsObj<DepositFormState>();
+  const [userFormState, setUserFormState] = useSearchParamsObj<DepositFormState>();
 
   const { currency: preferredCurrency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
@@ -43,23 +42,15 @@ export function useDepositFormState({ address }: { address: string }) {
       outputChain: featuredAsset?.chain.id,
       countryId: savedCountryId ?? detectedCountryQuery.data?.data.countryCode,
     }),
-    [
-      preferredCurrency,
-      featuredAsset,
-      savedCountryId,
-      detectedCountryQuery.data,
-    ]
+    [preferredCurrency, featuredAsset, savedCountryId, detectedCountryQuery.data],
   );
 
-  const formState = useMemo(
-    () => ({ ...defaults, ...userFormState }),
-    [defaults, userFormState]
-  );
+  const formState = useMemo(() => ({ ...defaults, ...userFormState }), [defaults, userFormState]);
 
   const handleChange = useCallback(
     <K extends keyof DepositFormState>(key: K, value: DepositFormState[K]) =>
       setUserFormState((state) => ({ ...state, [key]: value })),
-    [setUserFormState]
+    [setUserFormState],
   );
 
   /**
@@ -72,13 +63,13 @@ export function useDepositFormState({ address }: { address: string }) {
       handleChange('countryId', countryId);
       setPreferences({ depositCountryId: countryId });
     },
-    [handleChange, setPreferences]
+    [handleChange, setPreferences],
   );
 
   const countries = countriesQuery.data?.data.countries;
   const supportedCountry = useMemo(
     () => countries?.find((country) => country.id === formState.countryId),
-    [countries, formState.countryId]
+    [countries, formState.countryId],
   );
 
   return {
@@ -96,7 +87,6 @@ export function useDepositFormState({ address }: { address: string }) {
     isLoading:
       suggestedTokensQuery.isLoading ||
       countriesQuery.isLoading ||
-      (detectedCountryQuery.isLoading &&
-        detectedCountryQuery.fetchStatus === 'fetching'),
+      (detectedCountryQuery.isLoading && detectedCountryQuery.fetchStatus === 'fetching'),
   };
 }

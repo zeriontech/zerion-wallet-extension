@@ -22,8 +22,7 @@ export const analyticsIdKey = 'z-user-id';
 
 export async function getAnalyticsId() {
   return (
-    (await BrowserStorage.get<string>(analyticsIdKey)) ||
-    (await deviceIdStore.getSavedState())
+    (await BrowserStorage.get<string>(analyticsIdKey)) || (await deviceIdStore.getSavedState())
   );
 }
 

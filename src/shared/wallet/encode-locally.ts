@@ -17,9 +17,7 @@ export function encodeForMasking(value: string) {
   const key = NONSECRET_KEY_FOR_INTERNAL_USE;
   let encoded = '';
   for (let i = 0; i < value.length; i++) {
-    encoded += String.fromCharCode(
-      value.charCodeAt(i) ^ key.charCodeAt(i % key.length)
-    );
+    encoded += String.fromCharCode(value.charCodeAt(i) ^ key.charCodeAt(i % key.length));
   }
   return opaqueType<LocallyEncoded>(btoa(encoded));
 }
@@ -29,9 +27,7 @@ export function decodeMasked(encoded: LocallyEncoded) {
   const decoded = atob(unwrapOpaqueType(encoded));
   let data = '';
   for (let i = 0; i < decoded.length; i++) {
-    data += String.fromCharCode(
-      decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length)
-    );
+    data += String.fromCharCode(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
   }
   return data;
 }

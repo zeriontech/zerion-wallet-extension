@@ -43,17 +43,9 @@ export function AppearancePage() {
                 }));
               }}
             >
-              <HStack
-                gap={8}
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <UIText kind="body/accent">
-                  {preferenceStrings[preference]}
-                </UIText>
-                {mode === preference ? (
-                  <CheckIcon style={{ width: 24, height: 24 }} />
-                ) : null}
+              <HStack gap={8} alignItems="center" justifyContent="space-between">
+                <UIText kind="body/accent">{preferenceStrings[preference]}</UIText>
+                {mode === preference ? <CheckIcon style={{ width: 24, height: 24 }} /> : null}
               </HStack>
             </FrameListItemButton>
           ))}

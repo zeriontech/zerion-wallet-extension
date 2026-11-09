@@ -21,16 +21,14 @@ type Collection<T> = { [key: string]: T };
 /** Purpose vocabulary of {Networks.supports}: `'trading'` reads `flags.supportsTrading` */
 type SupportsFlags = keyof {
   [
-    K in keyof ChainFlags as K extends `supports${infer S}`
-      ? Uncapitalize<S>
-      : never
+    K in keyof ChainFlags as K extends `supports${infer S}` ? Uncapitalize<S> : never
   ]: ChainFlags[K];
 };
 
 function toCollection<T, K>(
   items: T[],
   getKey: (item: T) => string | null,
-  getItem: (item: T) => K
+  getItem: (item: T) => K,
 ) {
   const result: Collection<ReturnType<typeof getItem>> = {};
   for (const item of items) {
@@ -44,14 +42,12 @@ function toCollection<T, K>(
 
 function applyChainConfigs(
   networks: NetworkInfo[],
-  chainConfigs: EthereumChainConfig[]
+  chainConfigs: EthereumChainConfig[],
 ): NetworkInfo[] {
   const chainConfigById = Object.fromEntries(
-    chainConfigs.map((config) => [config.id, config.value])
+    chainConfigs.map((config) => [config.id, config.value]),
   );
-  return networks.map((network) =>
-    applyChainConfig(network, chainConfigById[network.id] || null)
-  );
+  return networks.map((network) => applyChainConfig(network, chainConfigById[network.id] || null));
 }
 
 export interface NetworkConfigMetaData {
@@ -92,9 +88,7 @@ export class Networks {
     throw new Error(`Network is not eip-155: ${network.id}`);
   }
 
-  static isEip155<T extends Partial<NetworkInfo>>(
-    network: T
-  ): network is T & NetworkInfoEip155 {
+  static isEip155<T extends Partial<NetworkInfo>>(network: T): network is T & NetworkInfoEip155 {
     return network.specification?.eip155 != null;
   }
 
@@ -104,9 +98,7 @@ export class Networks {
     } else if (network.id === 'solana') {
       return 'solana';
     } else {
-      throw new Error(
-        `Cannot infer ecosystem of ${network.id} (${network.name})`
-      );
+      throw new Error(`Cannot infer ecosystem of ${network.id} (${network.name})`);
     }
   }
 
@@ -145,18 +137,16 @@ export class Networks {
       this.networks = this.networks.filter((n) => Networks.isEip155(n));
     }
     this.evmNetworks = this.networks.filter((n) => Networks.isEip155(n));
-    this.solanaNetworks = this.networks.filter(
-      (n) => n.specification.solana != null
-    );
+    this.solanaNetworks = this.networks.filter((n) => n.specification.solana != null);
     this.collection = toCollection(
       this.networks,
       (network) => network.id,
-      (x) => x
+      (x) => x,
     );
     this.collectionByEvmId = toCollection(
       this.evmNetworks,
       (x) => Networks.getChainId(x),
-      (x) => x
+      (x) => x,
     );
     this.networkIdAliases = toAliasMap(this.ethereumChainConfigs);
     this.visitedChains = new Set(visitedChains);
@@ -168,10 +158,7 @@ export class Networks {
   }
 
   getByNetworkId(id: Chain) {
-    return (
-      this.collection[id.toString()] ||
-      this.collection[this.networkIdAliases[id.toString()]]
-    );
+    return this.collection[id.toString()] || this.collection[this.networkIdAliases[id.toString()]];
   }
 
   /** @deprecated, prefer {this.getByNetworkId} */
@@ -185,9 +172,7 @@ export class Networks {
   }
 
   isSavedLocallyChain(chain: Chain) {
-    return this.ethereumChainConfigs.some(
-      (item) => item.id === chain.toString()
-    );
+    return this.ethereumChainConfigs.some((item) => item.id === chain.toString());
   }
 
   isVisitedChain(chain: Chain) {
@@ -209,9 +194,7 @@ export class Networks {
     return this.pinnedChains
       .map((id) => this.getByNetworkId(createChain(id)))
       .filter(isTruthy)
-      .filter((network) =>
-        Networks.predicate(standard === 'all' ? null : standard, network)
-      );
+      .filter((network) => Networks.predicate(standard === 'all' ? null : standard, network));
   }
 
   getNetworks() {
@@ -251,10 +234,7 @@ export class Networks {
 
   getNetworksMetaData(): Record<string, NetworkConfigMetaData | undefined> {
     return Object.fromEntries(
-      this.ethereumChainConfigs.map((chainConfig) => [
-        chainConfig.id,
-        chainConfig,
-      ])
+      this.ethereumChainConfigs.map((chainConfig) => [chainConfig.id, chainConfig]),
     );
   }
 
@@ -315,17 +295,11 @@ export class Networks {
     return Networks.getExplorerAddressUrl(this.getByNetworkId(chain), address);
   }
 
-  static getExplorerAddressUrl(
-    network: NetworkInfo | undefined,
-    address: string
-  ) {
+  static getExplorerAddressUrl(network: NetworkInfo | undefined, address: string) {
     return network?.explorer?.addressUrl.replace('{ADDRESS}', address);
   }
 
-  private getExplorerTokenUrl(
-    network: NetworkInfo | undefined,
-    address: string
-  ) {
+  private getExplorerTokenUrl(network: NetworkInfo | undefined, address: string) {
     return network?.explorer?.tokenUrl.replace('{ADDRESS}', address);
   }
 
@@ -415,10 +389,7 @@ export class Networks {
     if (this.hasNetworkById(chainId)) {
       const network = this.getNetworkById(chainId);
       const currentRpcUrl = this.getRpcUrlInternal(createChain(network.id));
-      return (
-        new URL(currentRpcUrl).toString() ===
-        new URL(config.rpcUrls[0]).toString()
-      );
+      return new URL(currentRpcUrl).toString() === new URL(config.rpcUrls[0]).toString();
     } else {
       return false;
     }

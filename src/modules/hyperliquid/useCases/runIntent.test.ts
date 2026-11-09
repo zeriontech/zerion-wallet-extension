@@ -1,16 +1,9 @@
 import { describe, expect, test, vi } from 'vite-plus/test';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import type {
-  ExchangePlaceOrderAction,
-  ExchangeRequestBody,
-} from '../actions/types';
+import type { ExchangePlaceOrderAction, ExchangeRequestBody } from '../actions/types';
 import type { ExchangeResponse } from '../api/submitExchangeAction.types';
 import type { PreflightFetchInput, PreflightState } from './preflightState';
-import {
-  runIntent,
-  type PerpsIntent,
-  type RunIntentContext,
-} from './runIntent';
+import { runIntent, type PerpsIntent, type RunIntentContext } from './runIntent';
 import { HyperliquidExchangeError } from './signAndSubmit';
 
 type SubmitFn = (body: ExchangeRequestBody) => Promise<ExchangeResponse>;
@@ -72,11 +65,7 @@ function makeOrderIntent(overrides: Partial<PerpsIntent> = {}): PerpsIntent {
   } as PerpsIntent;
 }
 
-type StartFn = (args: {
-  kind: string;
-  label: string;
-  coin?: string | null;
-}) => string;
+type StartFn = (args: { kind: string; label: string; coin?: string | null }) => string;
 type AdvanceFn = (args: { label: string }) => void;
 type SucceedFn = (args: { text: string }) => void;
 type FailFn = (error: Error) => void;
@@ -126,7 +115,7 @@ function orderStatusResponse(
     | { error: string }
     | { resting: { oid: number } }
     | { filled: { totalSz: string; avgPx: string; oid: number } }
-  >
+  >,
 ): ExchangeResponse {
   return {
     status: 'ok',
@@ -322,10 +311,7 @@ describe('runIntent', () => {
     const store = makeStoreMock();
     const signTypedData = makeSign();
 
-    const fetchPreflightState = makeFetchPreflight([
-      BRAND_NEW,
-      FULLY_CONFIGURED,
-    ]);
+    const fetchPreflightState = makeFetchPreflight([BRAND_NEW, FULLY_CONFIGURED]);
 
     let call = 0;
     const submit = makeSubmit(async () => {
@@ -364,7 +350,7 @@ describe('runIntent', () => {
         intent: makeOrderIntent(),
         context: TEST_CONTEXT,
         deps: { signTypedData, submit, fetchPreflightState, store },
-      })
+      }),
     ).rejects.toBeInstanceOf(HyperliquidExchangeError);
 
     expect(store.fail).toHaveBeenCalledTimes(1);
@@ -401,7 +387,7 @@ describe('runIntent', () => {
     const fetchPreflightState = makeFetchPreflight(FULLY_CONFIGURED);
     // Both attempts (initial + retry-after-refresh) return inner-status errors.
     const submit = makeSubmit(async () =>
-      orderStatusResponse([{ error: 'Order has invalid size' }])
+      orderStatusResponse([{ error: 'Order has invalid size' }]),
     );
 
     await expect(
@@ -409,7 +395,7 @@ describe('runIntent', () => {
         intent: makeOrderIntent(),
         context: TEST_CONTEXT,
         deps: { signTypedData, submit, fetchPreflightState, store },
-      })
+      }),
     ).rejects.toBeInstanceOf(HyperliquidExchangeError);
 
     expect(store.fail).toHaveBeenCalledTimes(1);
@@ -421,10 +407,7 @@ describe('runIntent', () => {
   test('inner-status error triggers preflight refresh + retry, then succeeds', async () => {
     const store = makeStoreMock();
     const signTypedData = makeSign();
-    const fetchPreflightState = makeFetchPreflight([
-      FULLY_CONFIGURED,
-      FULLY_CONFIGURED,
-    ]);
+    const fetchPreflightState = makeFetchPreflight([FULLY_CONFIGURED, FULLY_CONFIGURED]);
     let call = 0;
     const submit = makeSubmit(async () => {
       call += 1;
@@ -454,7 +437,7 @@ describe('runIntent', () => {
       orderStatusResponse([
         { filled: { totalSz: '0.001', avgPx: '50000', oid: 1 } },
         { error: 'Trigger price too close to mark' },
-      ])
+      ]),
     );
 
     await runIntent({

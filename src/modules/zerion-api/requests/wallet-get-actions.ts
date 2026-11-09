@@ -299,7 +299,7 @@ export interface Response {
 export async function walletGetActions(
   this: ZerionApiContext,
   params: Payload,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   invariant(params.addresses.length > 0, 'Addresses param is empty');
   const firstAddress = params.addresses[0];
@@ -313,7 +313,7 @@ export async function walletGetActions(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
   return produce(result, (draft) => {
     draft.data.forEach((action) => {

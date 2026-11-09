@@ -17,12 +17,12 @@ export type Response = ResponseBody<null>;
 export function transactionCollect(
   this: ZerionApiContext,
   params: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const endpoint = 'transaction/collect/v1';
   const kyOptions = this.getKyOptions();
   return ZerionHttpClient.post<Response>(
     { endpoint, body: JSON.stringify(params), ...options },
-    kyOptions
+    kyOptions,
   );
 }

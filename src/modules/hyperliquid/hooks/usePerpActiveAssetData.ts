@@ -26,10 +26,7 @@ export function usePerpActiveAssetData(
     address: string | null | undefined;
     coin: string;
   },
-  {
-    enabled = true,
-    refetchInterval,
-  }: { enabled?: boolean; refetchInterval?: number | false } = {}
+  { enabled = true, refetchInterval }: { enabled?: boolean; refetchInterval?: number | false } = {},
 ) {
   return useQuery({
     queryKey: [PERP_ACTIVE_ASSET_DATA_QUERY_KEY, payload.address, payload.coin],

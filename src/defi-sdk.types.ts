@@ -51,13 +51,7 @@ export interface Asset {
 /* AddressPosition                                                            */
 /* -------------------------------------------------------------------------- */
 
-export type PositionType =
-  | 'asset'
-  | 'deposit'
-  | 'loan'
-  | 'reward'
-  | 'staked'
-  | 'locked';
+export type PositionType = 'asset' | 'deposit' | 'loan' | 'reward' | 'staked' | 'locked';
 
 export interface AddressPositionDappInfo {
   id: string;

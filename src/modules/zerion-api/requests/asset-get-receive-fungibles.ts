@@ -28,7 +28,7 @@ export interface Response {
 export function assetGetReceiveFungibles(
   this: ZerionApiContext,
   { chain, currency }: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const params = new URLSearchParams({ currency });
   if (chain != null) {

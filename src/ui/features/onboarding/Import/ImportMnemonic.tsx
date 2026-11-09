@@ -19,11 +19,7 @@ import * as styles from './styles.module.css';
 const MAX_INPUT_NUMBER = 24;
 const ARRAY_OF_NUMBERS = Array.from({ length: MAX_INPUT_NUMBER }, (_, i) => i);
 
-export function ImportMnemonic({
-  onSubmit,
-}: {
-  onSubmit(mnemonic: string): void;
-}) {
+export function ImportMnemonic({ onSubmit }: { onSubmit(mnemonic: string): void }) {
   const { isNarrowView } = useWindowSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [phraseMode, setPhraseMode] = useState<12 | 24>(12);
@@ -49,7 +45,7 @@ export function ImportMnemonic({
       setValue(ARRAY_OF_NUMBERS.map(() => ''));
       onSubmit(phrase);
     },
-    [onSubmit]
+    [onSubmit],
   );
 
   const gridStyle = useSpring({
@@ -68,7 +64,7 @@ export function ImportMnemonic({
             textAlign: 'center',
           }
         : { position: 'absolute', bottom: -24 },
-    [isNarrowView]
+    [isNarrowView],
   );
 
   return (
@@ -87,10 +83,7 @@ export function ImportMnemonic({
           }}
         >
           <VStack gap={28} style={{ position: 'relative' }}>
-            <animated.div
-              className={helpersStyles.phraseInputGrip}
-              style={gridStyle}
-            >
+            <animated.div className={helpersStyles.phraseInputGrip} style={gridStyle}>
               {ARRAY_OF_NUMBERS.map((index) => (
                 <div key={index} style={{ position: 'relative' }}>
                   <Input
@@ -117,9 +110,7 @@ export function ImportMnemonic({
             </animated.div>
             <UnstyledButton
               type="button"
-              onClick={() =>
-                setPhraseMode((current) => (current === 12 ? 24 : 12))
-              }
+              onClick={() => setPhraseMode((current) => (current === 12 ? 24 : 12))}
               className={styles.modeSelector}
             >
               <UIText kind="caption/accent" color="var(--neutral-600)">
@@ -130,11 +121,7 @@ export function ImportMnemonic({
               Import wallet
             </Button>
             {!validation || validation.valid ? null : (
-              <UIText
-                kind="caption/regular"
-                color="var(--negative-500)"
-                style={errorStyle}
-              >
+              <UIText kind="caption/regular" color="var(--negative-500)" style={errorStyle}>
                 {validation.message}
               </UIText>
             )}

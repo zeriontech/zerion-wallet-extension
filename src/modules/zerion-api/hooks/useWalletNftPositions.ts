@@ -19,17 +19,16 @@ export function useWalletNftPositions(
     enabled?: boolean;
     refetchInterval?: number | false;
     suspense?: boolean;
-  } = {}
+  } = {},
 ) {
   const queryData = useInfiniteQuery({
     queryKey: persistentQuery([QUERY_KEY, params, source]),
     queryFn: ({ pageParam }) =>
       ZerionAPI.walletGetNftPositions(
         { ...params, cursor: pageParam as string | undefined },
-        { source }
+        { source },
       ),
-    getNextPageParam: (lastPage) =>
-      lastPage?.meta?.pagination.cursor || undefined,
+    getNextPageParam: (lastPage) => lastPage?.meta?.pagination.cursor || undefined,
     enabled,
     staleTime: STALE_TIME,
     refetchInterval,

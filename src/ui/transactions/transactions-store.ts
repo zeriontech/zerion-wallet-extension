@@ -11,15 +11,13 @@ class LocalTransactionsStore extends Store<StoredTransactions> {
   }
 
   async init() {
-    const transactions: StoredTransactions | undefined =
-      await BrowserStorage.get('transactions');
+    const transactions: StoredTransactions | undefined = await BrowserStorage.get('transactions');
     if (transactions) {
       this.setState(dataToModel(transactions));
     }
     browser.storage.onChanged.addListener((changes, _namespace) => {
       if ('transactions' in changes) {
-        const newValue: StoredTransactions =
-          changes.transactions.newValue || [];
+        const newValue: StoredTransactions = changes.transactions.newValue || [];
         this.setState(dataToModel(newValue));
       }
     });

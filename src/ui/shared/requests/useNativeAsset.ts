@@ -28,7 +28,7 @@ export function useNativeAsset(chain: Chain, { source }: BackendSourceParams) {
       }
       const response = await ZerionAPI.assetListFungibles(
         { fungibleIds: [id], currency },
-        { source }
+        { source },
       );
       const fungible = response.data.find((item) => item.id === id);
       return fungible ? fungibleToAsset(fungible) : null;

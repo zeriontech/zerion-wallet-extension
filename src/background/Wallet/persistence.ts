@@ -27,18 +27,12 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
     return Model.decryptRecord(encryptionKey, encryptedRecord);
   }
 
-  async read(
-    id: string,
-    credentials: Credentials
-  ): Promise<WalletRecord | null> {
+  async read(id: string, credentials: Credentials): Promise<WalletRecord | null> {
     const encryptedRecord = this.getState()[id];
     if (!encryptedRecord) {
       return null;
     }
-    this.lastRecord = await Model.decryptAndRestoreRecord(
-      encryptedRecord,
-      credentials
-    );
+    this.lastRecord = await Model.decryptAndRestoreRecord(encryptedRecord, credentials);
     return this.lastRecord;
   }
 
@@ -50,7 +44,7 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
     this.setState((state) =>
       produce(state, (draft) => {
         draft[id] = encryptedRecord;
-      })
+      }),
     );
     this.lastRecord = record;
   }
@@ -61,7 +55,7 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
         for (const key of keys) {
           delete draft[key];
         }
-      })
+      }),
     );
     this.lastRecord = null;
   }

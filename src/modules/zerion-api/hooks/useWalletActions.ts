@@ -19,14 +19,12 @@ export function useWalletActions(
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number | false;
-  } = {}
+  } = {},
 ) {
-  const { permits, fingerprint, isReady } = useConfidentialPermits(
-    params.addresses
-  );
+  const { permits, fingerprint, isReady } = useConfidentialPermits(params.addresses);
   const queryKey = useMemo(
     () => ['walletGetActions', params, source, fingerprint],
-    [params, source, fingerprint]
+    [params, source, fingerprint],
   );
   const queryData = useInfiniteQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
@@ -41,13 +39,12 @@ export function useWalletActions(
             chain: params.chain || undefined,
             cursor: pageParam ?? params.cursor,
           },
-          { source }
-        )
+          { source },
+        ),
       ),
     enabled: enabled && isReady,
     suspense,
-    getNextPageParam: (lastPage) =>
-      lastPage?.meta?.pagination.cursor || undefined,
+    getNextPageParam: (lastPage) => lastPage?.meta?.pagination.cursor || undefined,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchInterval,

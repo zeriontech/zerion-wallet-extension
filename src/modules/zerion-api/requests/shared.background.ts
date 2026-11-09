@@ -5,10 +5,7 @@ import {
 } from 'src/shared/analytics/shared/getProviderNameFromGroup';
 import type { Wallet } from 'src/shared/types/Wallet';
 
-export async function getAddressProviderHeader(
-  wallet: Wallet,
-  address: string
-) {
+export async function getAddressProviderHeader(wallet: Wallet, address: string) {
   const group = await wallet.getWalletGroupByAddress({
     params: { address },
     context: INTERNAL_SYMBOL_CONTEXT,

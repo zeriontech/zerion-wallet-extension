@@ -62,7 +62,7 @@ type Response = ResponseBody<{ permits: Permit[] }>;
 export async function walletPreparePermits(
   this: ZerionApiContext,
   params: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ): Promise<Response> {
   const provider = await this.getAddressProviderHeader(params.address);
   const kyOptions = this.getKyOptions();
@@ -74,7 +74,7 @@ export async function walletPreparePermits(
         headers: { 'Zerion-Wallet-Provider': provider },
         ...options,
       },
-      { ...kyOptions, retry: 0 }
+      { ...kyOptions, retry: 0 },
     );
   } catch (error) {
     if (error instanceof HTTPError) {

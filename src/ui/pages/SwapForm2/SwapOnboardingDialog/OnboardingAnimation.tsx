@@ -195,18 +195,13 @@ export function OnboardingAnimation() {
       setAnimationStarted(true);
       return;
     }
-    const id = window.setTimeout(
-      () => setAnimationStarted(true),
-      ANIMATION_DELAY_MS
-    );
+    const id = window.setTimeout(() => setAnimationStarted(true), ANIMATION_DELAY_MS);
     return () => window.clearTimeout(id);
   }, [reducedMotion]);
 
   const initialCenterScale = reducedMotion ? 1 : CENTER_INITIAL_SCALE;
   const initialLeftX = reducedMotion ? CENTER_LEFT_END_X : CENTER_LEFT_START_X;
-  const initialRightX = reducedMotion
-    ? CENTER_RIGHT_END_X
-    : CENTER_RIGHT_START_X;
+  const initialRightX = reducedMotion ? CENTER_RIGHT_END_X : CENTER_RIGHT_START_X;
   const initialRotateScale = reducedMotion ? 1 : ROTATE_INITIAL_SCALE;
 
   const transition = reducedMotion ? { duration: 0.2 } : SOFT_SPRING;
@@ -263,11 +258,7 @@ export function OnboardingAnimation() {
                 pointerEvents: 'none',
               }}
             >
-              <TokenIcon
-                size={SATELLITE_SIZE}
-                token={sat.token}
-                network={sat.network}
-              />
+              <TokenIcon size={SATELLITE_SIZE} token={sat.token} network={sat.network} />
             </motion.div>
           );
         })}
@@ -282,11 +273,7 @@ export function OnboardingAnimation() {
             y: CENTER_Y,
             scale: initialCenterScale,
           }}
-          animate={
-            animationStarted
-              ? { x: CENTER_LEFT_END_X, y: CENTER_Y, scale: 1 }
-              : undefined
-          }
+          animate={animationStarted ? { x: CENTER_LEFT_END_X, y: CENTER_Y, scale: 1 } : undefined}
           transition={centerTransition}
           style={{
             position: 'absolute',
@@ -299,11 +286,7 @@ export function OnboardingAnimation() {
             pointerEvents: 'none',
           }}
         >
-          <TokenIcon
-            size={CENTER_SIZE_END}
-            token={token18}
-            network={network3}
-          />
+          <TokenIcon size={CENTER_SIZE_END} token={token18} network={network3} />
         </motion.div>
         <motion.div
           initial={{
@@ -311,11 +294,7 @@ export function OnboardingAnimation() {
             y: CENTER_Y,
             scale: initialCenterScale,
           }}
-          animate={
-            animationStarted
-              ? { x: CENTER_RIGHT_END_X, y: CENTER_Y, scale: 1 }
-              : undefined
-          }
+          animate={animationStarted ? { x: CENTER_RIGHT_END_X, y: CENTER_Y, scale: 1 } : undefined}
           transition={centerTransition}
           style={{
             position: 'absolute',
@@ -328,11 +307,7 @@ export function OnboardingAnimation() {
             pointerEvents: 'none',
           }}
         >
-          <TokenIcon
-            size={CENTER_SIZE_END}
-            token={token04}
-            network={network2}
-          />
+          <TokenIcon size={CENTER_SIZE_END} token={token04} network={network2} />
         </motion.div>
 
         {/* Sync rotate icon — scales in with the center pair. Figma applies a

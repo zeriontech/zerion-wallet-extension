@@ -1,8 +1,5 @@
 import { immerable } from 'immer';
-import type {
-  Credentials,
-  SessionCredentials,
-} from 'src/background/account/Credentials';
+import type { Credentials, SessionCredentials } from 'src/background/account/Credentials';
 import { isSessionCredentials } from 'src/background/account/Credentials';
 import { encrypt } from 'src/modules/crypto';
 import { invariant } from 'src/shared/invariant';
@@ -13,10 +10,7 @@ import {
   restoreBareWallet,
   walletToObject,
 } from 'src/shared/wallet/create';
-import {
-  decryptMnemonic,
-  seedPhraseToHash,
-} from 'src/shared/wallet/encryption';
+import { decryptMnemonic, seedPhraseToHash } from 'src/shared/wallet/encryption';
 import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { SeedType } from './SeedType';
@@ -60,16 +54,14 @@ abstract class WalletContainerImpl implements SignerContainer {
   }
 
   getMnemonic() {
-    return this.seedType === SeedType.privateKey
-      ? null
-      : this.getFirstWallet().mnemonic;
+    return this.seedType === SeedType.privateKey ? null : this.getFirstWallet().mnemonic;
   }
 
   abstract addWallet(wallet: BareWallet, seedHash: string): void;
 
   removeWallet(address: string) {
     const pos = this.wallets.findIndex(
-      (wallet) => wallet.address.toLowerCase() === address.toLowerCase()
+      (wallet) => wallet.address.toLowerCase() === address.toLowerCase(),
     );
     if (pos === -1) {
       return;
@@ -79,7 +71,7 @@ abstract class WalletContainerImpl implements SignerContainer {
 
   getWalletByAddress(address: string) {
     const wallet = this.wallets.find(
-      (wallet) => normalizeAddress(wallet.address) === normalizeAddress(address)
+      (wallet) => normalizeAddress(wallet.address) === normalizeAddress(address),
     );
     return wallet || null;
   }
@@ -92,27 +84,21 @@ abstract class WalletContainerImpl implements SignerContainer {
   }
 }
 
-const MISSING_MNEMONIC =
-  'Mnemonic Container is expected to have a wallet with a mnemonic';
+const MISSING_MNEMONIC = 'Mnemonic Container is expected to have a wallet with a mnemonic';
 
-function isMnemonicBareWallet(
-  x: BareWallet | BareMnemonicWallet
-): x is BareMnemonicWallet {
+function isMnemonicBareWallet(x: BareWallet | BareMnemonicWallet): x is BareMnemonicWallet {
   return Boolean(x.mnemonic?.path && x.mnemonic.phrase);
 }
 
 function assertMnemonicWallets(
-  x: BareWallet[] | BareMnemonicWallet[] | (BareMnemonicWallet | BareWallet)[]
+  x: BareWallet[] | BareMnemonicWallet[] | (BareMnemonicWallet | BareWallet)[],
 ): asserts x is BareMnemonicWallet[] {
   if (x.some((w) => !isMnemonicBareWallet(w))) {
     throw new Error('Only mnemonic wallets are expected');
   }
 }
 
-type MnemonicSeed = PartiallyOptional<
-  BareMnemonicWallet,
-  'name' | 'address' | 'privateKey'
->;
+type MnemonicSeed = PartiallyOptional<BareMnemonicWallet, 'name' | 'address' | 'privateKey'>;
 
 export class MnemonicWalletContainer extends WalletContainerImpl {
   wallets: BareWallet[];
@@ -128,19 +114,14 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     credentials: SessionCredentials;
     ecosystems?: BlockchainType[];
   }): Promise<MnemonicWalletContainer> {
-    const initial = wallets?.length
-      ? wallets
-      : generateWalletsForEcosystems(ecosystems ?? ['evm']);
+    const initial = wallets?.length ? wallets : generateWalletsForEcosystems(ecosystems ?? ['evm']);
     const phrase = initial[0].mnemonic?.phrase;
     invariant(phrase, MISSING_MNEMONIC);
     const seedHash = await seedPhraseToHash(phrase);
     const walletContainer = new MnemonicWalletContainer(initial, seedHash);
     const { mnemonic } = walletContainer.getFirstWallet();
     if (mnemonic) {
-      const encryptedMnemonic = await encrypt(
-        credentials.seedPhraseEncryptionKey,
-        mnemonic.phrase
-      );
+      const encryptedMnemonic = await encrypt(credentials.seedPhraseEncryptionKey, mnemonic.phrase);
       walletContainer.wallets.forEach((wallet) => {
         if (wallet.mnemonic) {
           wallet.mnemonic.phrase = encryptedMnemonic;
@@ -183,15 +164,9 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     return instance;
   }
 
-  static async restoreWalletContainer(
-    walletContainer: SignerContainer,
-    credentials: Credentials
-  ) {
+  static async restoreWalletContainer(walletContainer: SignerContainer, credentials: Credentials) {
     const { seedType, seedHash, wallets } = walletContainer;
-    invariant(
-      seedType === SeedType.mnemonic,
-      'Must be a MnemonicWalletContainer'
-    );
+    invariant(seedType === SeedType.mnemonic, 'Must be a MnemonicWalletContainer');
     assertMnemonicWallets(wallets);
     if (seedHash) {
       return new MnemonicWalletContainer(wallets, seedHash);
@@ -205,10 +180,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     }
   }
 
-  static async decryptMnemonic(
-    phrase: string,
-    credentials: SessionCredentials
-  ) {
+  static async decryptMnemonic(phrase: string, credentials: SessionCredentials) {
     return decryptMnemonic(phrase, credentials);
   }
 
@@ -230,7 +202,7 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
   addWallet(wallet: BareWallet, seedHash: string) {
     invariant(
       seedHash === this.seedHash,
-      'Added wallet must have the same mnemonic as other wallets in the SignerContainer'
+      'Added wallet must have the same mnemonic as other wallets in the SignerContainer',
     );
     if (this.wallets.some(({ address }) => address === wallet.address)) {
       /** Seems it's better to keep existing wallet in order to save existing state, e.g. name */
@@ -249,14 +221,12 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
     super();
     if (!wallets || wallets.length > 1) {
       throw new Error(
-        `Wallets array is expected to have exactly one element, instead got: ${wallets?.length}`
+        `Wallets array is expected to have exactly one element, instead got: ${wallets?.length}`,
       );
     }
     this.wallets = wallets.map((wallet) => {
       if (!wallet.privateKey) {
-        throw new Error(
-          'PrivateKey container is expected to have a wallet with a privateKey'
-        );
+        throw new Error('PrivateKey container is expected to have a wallet with a privateKey');
       }
       return restoreBareWallet(wallet);
     });

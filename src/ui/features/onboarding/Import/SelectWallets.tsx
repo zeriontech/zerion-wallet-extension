@@ -37,21 +37,13 @@ function ChooseWalletsToImport({
   onSubmit: (values: MaskedBareWallet[]) => void;
 }) {
   const existingAddresses = useAllExistingMnemonicAddresses();
-  const existingAddressesSet = useMemo(
-    () => new Set(existingAddresses),
-    [existingAddresses]
-  );
+  const existingAddressesSet = useMemo(() => new Set(existingAddresses), [existingAddresses]);
   const suggestedWallets = useMemo(
-    () =>
-      suggestInitialWallets({ wallets, activeWallets, existingAddressesSet }),
-    [activeWallets, existingAddressesSet, wallets]
+    () => suggestInitialWallets({ wallets, activeWallets, existingAddressesSet }),
+    [activeWallets, existingAddressesSet, wallets],
   );
   const [values, toggleAddress] = useToggledValues<string>(() => {
-    return new Set(
-      suggestedWallets.groups.flatMap((group) =>
-        group.wallets.map((w) => w.address)
-      )
-    );
+    return new Set(suggestedWallets.groups.flatMap((group) => group.wallets.map((w) => w.address)));
   });
 
   const moreWalletsDialogRef = useRef<HTMLDialogElement>(null);
@@ -76,12 +68,9 @@ function ChooseWalletsToImport({
             </UIText>
           ) : (
             <VStack gap={8}>
-              <UIText kind="headline/h2">
-                We didn’t find any active wallets
-              </UIText>
+              <UIText kind="headline/h2">We didn’t find any active wallets</UIText>
               <UIText kind="body/regular">
-                Start with these wallets associated <br /> with your recovery
-                phrase
+                Start with these wallets associated <br /> with your recovery phrase
               </UIText>
             </VStack>
           )}
@@ -109,11 +98,7 @@ function ChooseWalletsToImport({
                 onLoadMore={null}
                 renderDetail={
                   suggestedWallets.activeCount
-                    ? (index) => (
-                        <PortfolioValueDetail
-                          address={group.wallets[index].address}
-                        />
-                      )
+                    ? (index) => <PortfolioValueDetail address={group.wallets[index].address} />
                     : null
                 }
                 existingAddressesSet={existingAddressesSet}
@@ -179,18 +164,16 @@ export function SelectWallets({
   });
 
   const source = useHttpClientSource();
-  const { data: activeWallets, isLoading: activeWalletsAreLoading } =
-    useAddressActivity(
-      { addresses: data?.addressesToCheck || [] },
-      { source },
-      { enabled: Boolean(data?.addressesToCheck), keepPreviousData: true }
-    );
+  const { data: activeWallets, isLoading: activeWalletsAreLoading } = useAddressActivity(
+    { addresses: data?.addressesToCheck || [] },
+    { source },
+    { enabled: Boolean(data?.addressesToCheck), keepPreviousData: true },
+  );
 
   const { isStale: isStaleValue } = useStaleTime(activeWallets, 5000);
   const shouldWaitForValue = activeWallets == null && !isStaleValue;
 
-  return data == null ||
-    (shouldWaitForValue && (isLoading || activeWalletsAreLoading)) ? (
+  return data == null || (shouldWaitForValue && (isLoading || activeWalletsAreLoading)) ? (
     <div className={helperStyles.loadingOverlay}>
       <UIText kind="headline/hero" className={helperStyles.loadingTitle}>
         Looking for Wallets

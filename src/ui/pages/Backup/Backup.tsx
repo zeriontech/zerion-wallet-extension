@@ -31,17 +31,10 @@ export function BackupComponent({
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<Info onStart={onStart} onExit={onExit} onSkip={onSkip} />}
-      />
+      <Route path="/" element={<Info onStart={onStart} onExit={onExit} onSkip={onSkip} />} />
       <Route
         path="/verify-user"
-        element={
-          <VerifyUser
-            onSuccess={() => navigate(`recovery-phrase${searchParams}`)}
-          />
-        }
+        element={<VerifyUser onSuccess={() => navigate(`recovery-phrase${searchParams}`)} />}
       />
       <Route
         path="/recovery-phrase"
@@ -78,7 +71,7 @@ export function BackupPage() {
 
   const goToVerifyUser = useCallback(
     () => navigate(`/backup/verify-user?groupId=${groupId}`, { replace: true }),
-    [navigate, groupId]
+    [navigate, groupId],
   );
 
   const { mutate: handleSuccess } = useMutation({

@@ -12,10 +12,7 @@ import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referra
 import { HTTPError } from 'ky';
 import { getError } from 'src/shared/errors/getError';
 
-function requestErrorToMessage(
-  error: unknown | Error,
-  fallbackMessage: string
-) {
+function requestErrorToMessage(error: unknown | Error, fallbackMessage: string) {
   return error instanceof HTTPError ? getError(error).message : fallbackMessage;
 }
 
@@ -28,23 +25,18 @@ export function EnterReferralCodeDialog({
   onSuccess: (pendingReferrer: ReferrerData) => void;
   onDismiss: () => void;
 }) {
-  const { mutate: applyReferralCode, ...applyReferralCodeMutation } =
-    useMutation({
-      mutationFn: ({
-        referralCode: rawReferralCode,
-      }: {
-        referralCode: string;
-      }) => {
-        const referralCode = rawReferralCode.trim();
-        if (myReferralCode === referralCode) {
-          throw new Error('Can not apply your own referral code');
-        }
-        return walletPort.request('uiApplyReferralCodeToAllWallets', {
-          referralCode,
-        });
-      },
-      onSuccess,
-    });
+  const { mutate: applyReferralCode, ...applyReferralCodeMutation } = useMutation({
+    mutationFn: ({ referralCode: rawReferralCode }: { referralCode: string }) => {
+      const referralCode = rawReferralCode.trim();
+      if (myReferralCode === referralCode) {
+        throw new Error('Can not apply your own referral code');
+      }
+      return walletPort.request('uiApplyReferralCodeToAllWallets', {
+        referralCode,
+      });
+    },
+    onSuccess,
+  });
 
   return (
     <VStack gap={24}>
@@ -77,10 +69,7 @@ export function EnterReferralCodeDialog({
             />
             {applyReferralCodeMutation.isError ? (
               <UIText kind="caption/regular" color="var(--negative-500)">
-                {requestErrorToMessage(
-                  applyReferralCodeMutation.error,
-                  'Invalid Referral Code'
-                )}
+                {requestErrorToMessage(applyReferralCodeMutation.error, 'Invalid Referral Code')}
               </UIText>
             ) : null}
           </VStack>
@@ -88,10 +77,7 @@ export function EnterReferralCodeDialog({
             <Button kind="regular" type="button" onClick={() => onDismiss()}>
               Back
             </Button>
-            <Button
-              kind="primary"
-              disabled={applyReferralCodeMutation.isLoading}
-            >
+            <Button kind="primary" disabled={applyReferralCodeMutation.isLoading}>
               {applyReferralCodeMutation.isLoading ? 'Applying...' : 'Apply'}
             </Button>
           </HStack>

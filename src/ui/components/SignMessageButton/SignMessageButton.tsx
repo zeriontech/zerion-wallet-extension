@@ -8,18 +8,11 @@ import { isDeviceAccount } from 'src/shared/types/validators';
 import type { SignMessageHandle } from 'src/ui/pages/HardwareWalletConnection/HardwareSignMessage';
 import { HardwareSignMessage } from 'src/ui/pages/HardwareWalletConnection/HardwareSignMessage';
 import { walletPort } from 'src/ui/shared/channels';
-import {
-  Button,
-  HoldableButton,
-  type Kind as ButtonKind,
-} from 'src/ui/ui-kit/Button';
+import { Button, HoldableButton, type Kind as ButtonKind } from 'src/ui/ui-kit/Button';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
-import {
-  KeyboardShortcut,
-  ShortcutHint,
-} from 'src/ui/components/KeyboardShortcut';
+import { KeyboardShortcut, ShortcutHint } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WithReadonlyWarningDialog } from '../SignTransactionButton/ReadonlyWarningDialog';
@@ -74,7 +67,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     keyboardShortcutEnabled?: boolean | null;
     onClick?: () => void;
   },
-  ref: React.Ref<SignMsgBtnHandle>
+  ref: React.Ref<SignMsgBtnHandle>,
 ) {
   const hardwareSignRef = useRef<SignMessageHandle | null>(null);
   const [legacySigning, setLegacySigning] = useState(false);
@@ -84,10 +77,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
       if (isDeviceAccount(wallet)) {
         const { params: methodParams, ...messageContextParams } = params;
         const [message] = methodParams;
-        invariant(
-          hardwareSignRef.current,
-          'HardwareSignMessage must be mounted'
-        );
+        invariant(hardwareSignRef.current, 'HardwareSignMessage must be mounted');
         let signature = await hardwareSignRef.current.personalSign(message);
         if (legacySigning) {
           signature = applyLegacySignature(signature);
@@ -108,12 +98,8 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     mutationFn: async (params: SignTypedDataParams) => {
       const { typedData, ...typedDataContext } = params;
       if (isDeviceAccount(wallet)) {
-        invariant(
-          hardwareSignRef.current,
-          'HardwareSignMessage must be mounted'
-        );
-        let signature =
-          await hardwareSignRef.current.signTypedData_v4(typedData);
+        invariant(hardwareSignRef.current, 'HardwareSignMessage must be mounted');
+        let signature = await hardwareSignRef.current.signTypedData_v4(typedData);
         if (legacySigning) {
           signature = applyLegacySignature(signature);
         }
@@ -135,13 +121,9 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   const solanaSignMutation = useMutation({
     mutationFn: async (params: SolanaSignMessageParams) => {
       if (isDeviceAccount(wallet)) {
-        invariant(
-          hardwareSignRef.current,
-          'HardwareSignMessage must be mounted'
-        );
+        invariant(hardwareSignRef.current, 'HardwareSignMessage must be mounted');
         const { messageHex: message } = params;
-        const signature =
-          await hardwareSignRef.current.solana_signMessage(message);
+        const signature = await hardwareSignRef.current.solana_signMessage(message);
         return signature;
       } else {
         const result = await walletPort.request('solana_signMessage', params);
@@ -158,7 +140,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
 
   const activeMutation =
     [personalSignMutation, signTypedData_v4Mutation, solanaSignMutation].find(
-      (x) => x.status !== 'idle'
+      (x) => x.status !== 'idle',
     ) || personalSignMutation;
   const isLoading = activeMutation.isLoading;
   const isSuccess = activeMutation.isSuccess;
@@ -170,10 +152,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
   const title = buttonTitle || 'Sign';
   const windowFocused = useWindowFocus();
   const shortcutActive =
-    Boolean(keyboardShortcutEnabled) &&
-    buttonKind !== 'danger' &&
-    !disabled &&
-    !isLoading;
+    Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled && !isLoading;
 
   return isDeviceAccount(wallet) ? (
     <>

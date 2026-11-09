@@ -99,8 +99,10 @@ export function SendButton({
     onSign,
   });
 
-  const { guardedFire, dialog: readonlyReceiverDialog } =
-    useReadonlyReceiverGate({ to: formState.to, fire });
+  const { guardedFire, dialog: readonlyReceiverDialog } = useReadonlyReceiverGate({
+    to: formState.to,
+    fire,
+  });
   const effectiveFire = simulated ? fire : guardedFire;
 
   const label = resolveLabel({
@@ -118,8 +120,7 @@ export function SendButton({
     signing,
   });
 
-  const isDanger =
-    Boolean(dangerTitle) && (state === 'simulating' || !disabled);
+  const isDanger = Boolean(dangerTitle) && (state === 'simulating' || !disabled);
 
   return (
     <>

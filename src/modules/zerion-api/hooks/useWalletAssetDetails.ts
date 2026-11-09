@@ -14,18 +14,16 @@ export function useWalletAssetDetails(
   }: {
     suspense?: boolean;
     enabled?: boolean;
-  } = {}
+  } = {},
 ) {
-  const { permits, fingerprint, isReady } = useConfidentialPermits(
-    params.addresses
-  );
+  const { permits, fingerprint, isReady } = useConfidentialPermits(params.addresses);
   return useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ['walletGetAssetDetails', params, source, fingerprint],
     queryFn: () =>
       withPermits(permits, (permits) =>
-        ZerionAPI.walletGetAssetDetails({ ...params, permits }, { source })
+        ZerionAPI.walletGetAssetDetails({ ...params, permits }, { source }),
       ),
     suspense,
     enabled: enabled && isReady,

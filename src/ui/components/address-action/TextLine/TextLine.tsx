@@ -23,9 +23,7 @@ export function TextLine({
         kind="body/regular"
         color="var(--black)"
         style={
-          wrap
-            ? { whiteSpace: 'pre-wrap', overflowWrap: 'break-word' }
-            : { whiteSpace: 'nowrap' }
+          wrap ? { whiteSpace: 'pre-wrap', overflowWrap: 'break-word' } : { whiteSpace: 'nowrap' }
         }
       >
         {value || noValueDash}

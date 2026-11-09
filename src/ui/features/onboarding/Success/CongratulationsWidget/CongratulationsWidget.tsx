@@ -11,11 +11,7 @@ import { FeatureCard } from 'src/ui/features/referral-program/shared/FeatureCard
 import { HStack } from 'src/ui/ui-kit/HStack';
 import * as styles from './styles.module.css';
 
-export function CongratulationsWidget({
-  referrer,
-}: {
-  referrer: ReferrerData;
-}) {
+export function CongratulationsWidget({ referrer }: { referrer: ReferrerData }) {
   return (
     <VStack gap={24} className={styles.invitationBanner}>
       <HStack gap={32} justifyContent="space-between" alignItems="center">
@@ -23,15 +19,8 @@ export function CongratulationsWidget({
           <UIText kind="headline/h1">Congratulations!</UIText>
           {referrer.address ? (
             <UIText kind="small/accent" style={{ textAlign: 'left' }}>
-              <ReferrerLink
-                handle={referrer.handle}
-                address={referrer.address}
-              />{' '}
-              <UIText
-                kind="small/regular"
-                inline={true}
-                color="var(--neutral-500)"
-              >
+              <ReferrerLink handle={referrer.handle} address={referrer.address} />{' '}
+              <UIText kind="small/regular" inline={true} color="var(--neutral-500)">
                 has invited you!
               </UIText>
             </UIText>

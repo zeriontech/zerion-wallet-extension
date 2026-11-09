@@ -198,10 +198,7 @@ mixpanelApi.setBaseProperties({
   app_version: version,
 });
 
-export async function mixpanelTrack(
-  event: string,
-  values: Record<string, unknown>
-) {
+export async function mixpanelTrack(event: string, values: Record<string, unknown>) {
   const userId = await getAnalyticsId();
   mixpanelApi.track(event, {
     ...values,

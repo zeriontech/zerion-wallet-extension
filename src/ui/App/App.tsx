@@ -1,13 +1,7 @@
 import React, { useMemo } from 'react';
 import { AreaProvider } from 'react-area';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
-import {
-  HashRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-  Navigate,
-} from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import * as styles from 'src/ui/style/global.module.css';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -24,11 +18,7 @@ import { Playground } from 'src/ui-lab/Playground';
 import { useNavigate } from 'react-router-dom';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import {
-  accountPublicRPCPort,
-  walletPort,
-  windowPort,
-} from '../shared/channels';
+import { accountPublicRPCPort, walletPort, windowPort } from '../shared/channels';
 import { CreateAccount } from '../pages/CreateAccount';
 import { URLBar } from '../components/URLBar';
 import { SwitchEthereumChain } from '../pages/SwitchEthereumChain';
@@ -92,12 +82,7 @@ import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
 import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
 import { Deposit } from '../pages/Deposit';
-import {
-  PerpPage,
-  PerpsDeposit,
-  PerpsTrade,
-  PerpsWithdraw,
-} from '../pages/Perps';
+import { PerpPage, PerpsDeposit, PerpsTrade, PerpsWithdraw } from '../pages/Perps';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -141,8 +126,7 @@ function SomeKindOfResolver({
   notAuthenticated: JSX.Element;
   authenticated: JSX.Element;
 }) {
-  const { isLoading, isAuthenticated, existingUser, hasWallet } =
-    useAuthState();
+  const { isLoading, isAuthenticated, existingUser, hasWallet } = useAuthState();
   if (isLoading) {
     return null;
   }
@@ -171,9 +155,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   } else if (!isAuthenticated) {
     return (
       <Navigate
-        to={`/login?next=${encodeURIComponent(
-          `${location.pathname}${location.search}`
-        )}`}
+        to={`/login?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`}
         replace={true}
       />
     );
@@ -214,9 +196,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
       <ConfidentialRevealDialog />
       {isPopup ? <RouteRestoration /> : null}
       <Routes>
-        {initialRoute ? (
-          <Route path="/" element={<Navigate to={initialRoute} />} />
-        ) : null}
+        {initialRoute ? <Route path="/" element={<Navigate to={initialRoute} />} /> : null}
         <Route
           path="/"
           element={
@@ -234,10 +214,7 @@ function Views({ initialRoute }: { initialRoute?: string }) {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/get-started/*" element={<GetStarted />} />
         <Route path="/restore-data" element={<RestoreData />} />
-        <Route
-          path="/connect-hardware-wallet/*"
-          element={<HardwareWalletConnection />}
-        />
+        <Route path="/connect-hardware-wallet/*" element={<HardwareWalletConnection />} />
         <Route path="/receive" element={<Receive />} />
         <Route path="/phishing-warning" element={<PhishingWarningPage />} />
         <Route
@@ -611,12 +588,9 @@ export function App({ initialView, inspect }: AppProps) {
   const { connected } = useStore(runtimeStore);
   const { hasTestWallet } = useStore(metaAppState);
 
-  useBodyStyle(
-    useMemo(() => ({ opacity: connected ? '' : '0.6' }), [connected])
-  );
+  useBodyStyle(useMemo(() => ({ opacity: connected ? '' : '0.6' }), [connected]));
 
-  const isOnboardingView =
-    isOnboardingMode && initialView !== 'handshakeFailure';
+  const isOnboardingView = isOnboardingMode && initialView !== 'handshakeFailure';
 
   return (
     <AreaProvider>
@@ -664,9 +638,7 @@ export function App({ initialView, inspect }: AppProps) {
                         ) : (
                           <Views
                             initialRoute={
-                              initialView === 'handshakeFailure'
-                                ? '/handshake-failure'
-                                : undefined
+                              initialView === 'handshakeFailure' ? '/handshake-failure' : undefined
                             }
                           />
                         )

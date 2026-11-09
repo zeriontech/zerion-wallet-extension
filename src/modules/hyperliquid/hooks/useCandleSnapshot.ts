@@ -14,7 +14,7 @@ export function useCandleSnapshot(
     suspense?: boolean;
     enabled?: boolean;
     refetchInterval?: number | false;
-  } = {}
+  } = {},
 ) {
   return useQuery({
     queryKey: [CANDLE_SNAPSHOT_QUERY_KEY, payload],

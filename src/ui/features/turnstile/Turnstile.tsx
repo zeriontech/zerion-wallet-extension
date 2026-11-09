@@ -21,7 +21,7 @@ function TurnstileDialog() {
   const handleTurnstileToken = useCallback((params: unknown) => {
     invariant(
       isObj(params) && typeof params.token === 'string',
-      'Got invalid payload from set-turnstile-token web app message'
+      'Got invalid payload from set-turnstile-token web app message',
     );
     dialogRef.current?.close();
     queryClient.refetchQueries();

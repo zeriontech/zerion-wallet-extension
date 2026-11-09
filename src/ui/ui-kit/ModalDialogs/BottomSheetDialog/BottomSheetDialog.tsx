@@ -29,7 +29,7 @@ export const BottomSheetDialog = React.forwardRef(
       animationPreset?: AnimationPreset;
       displayGrid?: boolean;
     },
-    ref: React.Ref<HTMLDialogElement>
+    ref: React.Ref<HTMLDialogElement>,
   ) => {
     return (
       <BaseDialog
@@ -38,7 +38,7 @@ export const BottomSheetDialog = React.forwardRef(
           animationStyles[animationPreset],
           s.dialog,
           className,
-          displayGrid ? s.displayGrid : null
+          displayGrid ? s.displayGrid : null,
         )}
         style={{
           border: 'none',
@@ -63,5 +63,5 @@ export const BottomSheetDialog = React.forwardRef(
         {...props}
       />
     );
-  }
+  },
 );

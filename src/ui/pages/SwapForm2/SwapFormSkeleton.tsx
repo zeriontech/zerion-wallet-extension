@@ -18,21 +18,10 @@ function FieldsetSkeleton() {
           <div className={styles.skeleton} style={{ width: 64, height: 20 }} />
           <div style={{ height: 20 }} />
         </HStack>
-        <HStack
-          gap={16}
-          justifyContent="space-between"
-          alignItems="center"
-          style={{ height: 32 }}
-        >
+        <HStack gap={16} justifyContent="space-between" alignItems="center" style={{ height: 32 }}>
           <HStack gap={8} alignItems="center">
-            <div
-              className={styles.skeletonCircle}
-              style={{ width: 32, height: 32 }}
-            />
-            <div
-              className={styles.skeleton}
-              style={{ width: 72, height: 24 }}
-            />
+            <div className={styles.skeletonCircle} style={{ width: 32, height: 32 }} />
+            <div className={styles.skeleton} style={{ width: 72, height: 24 }} />
           </HStack>
           <div className={styles.skeleton} style={{ width: 96, height: 24 }} />
         </HStack>
@@ -47,16 +36,11 @@ function FieldsetSkeleton() {
 
 function SkeletonForm({ tinted = false }: { tinted?: boolean }) {
   return (
-    <div
-      className={`${styles.formContainer} ${tinted ? styles.errorTint : ''}`}
-    >
+    <div className={`${styles.formContainer} ${tinted ? styles.errorTint : ''}`}>
       <FieldsetSkeleton />
       <MiddleLine />
       <div className={styles.reverseButton}>
-        <div
-          className={styles.skeletonCircle}
-          style={{ width: 20, height: 20 }}
-        />
+        <div className={styles.skeletonCircle} style={{ width: 20, height: 20 }} />
       </div>
       <FieldsetSkeleton />
     </div>
@@ -68,10 +52,7 @@ export function SwapFormSkeleton() {
     <PageColumn>
       <PageTop />
       <NavigationTitle title="Swap" />
-      <VStack
-        gap={24}
-        style={{ position: 'relative', flex: 1, alignContent: 'start' }}
-      >
+      <VStack gap={24} style={{ position: 'relative', flex: 1, alignContent: 'start' }}>
         <SkeletonForm />
       </VStack>
     </PageColumn>
@@ -83,10 +64,7 @@ export function SwapFormError({ onReload }: { onReload?: () => void }) {
     <PageColumn>
       <PageTop />
       <NavigationTitle title="Swap" />
-      <VStack
-        gap={16}
-        style={{ position: 'relative', flex: 1, alignContent: 'start' }}
-      >
+      <VStack gap={16} style={{ position: 'relative', flex: 1, alignContent: 'start' }}>
         <SkeletonForm tinted />
         <div className={styles.errorCard}>
           <HStack gap={12} justifyContent="space-between" alignItems="center">
@@ -95,8 +73,7 @@ export function SwapFormError({ onReload }: { onReload?: () => void }) {
                 Couldn’t load swap
               </UIText>
               <UIText kind="small/regular" color="currentColor">
-                Something went wrong while preparing the form. Check your
-                connection and try again.
+                Something went wrong while preparing the form. Check your connection and try again.
               </UIText>
             </VStack>
             {onReload ? (

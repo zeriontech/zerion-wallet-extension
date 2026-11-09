@@ -6,13 +6,7 @@ import { isMatchForEcosystem } from 'src/shared/wallet/shared';
 import { eth_getBalance } from 'src/modules/ethereum/eth_getBalance';
 import { createAddressPosition } from './shared/createAddressPosition';
 
-async function solanaGetBalance({
-  address,
-  rpcUrl,
-}: {
-  address: string;
-  rpcUrl: string;
-}) {
+async function solanaGetBalance({ address, rpcUrl }: { address: string; rpcUrl: string }) {
   const connection = new Connection(rpcUrl);
   const res = await connection.getBalance(new PublicKey(address));
   return res;
@@ -23,19 +17,13 @@ interface FetchBalanceParams {
   network: NetworkInfo;
 }
 
-async function fetchAddressPositionFromSolanaNode({
-  address,
-  network,
-}: FetchBalanceParams) {
+async function fetchAddressPositionFromSolanaNode({ address, network }: FetchBalanceParams) {
   const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
   const balance = await solanaGetBalance({ address, rpcUrl });
   return createAddressPosition({ balance: String(balance), network });
 }
 
-async function fetchAddressPositionFromEvmNode({
-  address,
-  network,
-}: FetchBalanceParams) {
+async function fetchAddressPositionFromEvmNode({ address, network }: FetchBalanceParams) {
   const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
   const balance = await eth_getBalance(rpcUrl, address);
   return createAddressPosition({ balance, network });

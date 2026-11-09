@@ -48,9 +48,7 @@ export function WarningIcon({
         justifyContent: 'center',
         margin: glow ? outlineStrokeWidth : undefined,
         backgroundColor: glow ? innerGlowColor : undefined,
-        boxShadow: glow
-          ? `0 0 0px ${outlineStrokeWidth}px ${glowColor}`
-          : undefined,
+        boxShadow: glow ? `0 0 0px ${outlineStrokeWidth}px ${glowColor}` : undefined,
         ...style,
       }}
     >

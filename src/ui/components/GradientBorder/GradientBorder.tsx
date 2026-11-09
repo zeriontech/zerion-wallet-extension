@@ -21,11 +21,7 @@ export function GradientBorder({
         padding: borderWidth,
       }}
     >
-      <div
-        style={{ borderRadius: borderRadius - borderWidth, backgroundColor }}
-      >
-        {children}
-      </div>
+      <div style={{ borderRadius: borderRadius - borderWidth, backgroundColor }}>{children}</div>
     </div>
   );
 }

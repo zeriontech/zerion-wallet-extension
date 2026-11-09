@@ -5,12 +5,7 @@ import { setUrlContext } from 'src/shared/setUrlContext';
 import { ZerionAPI as ZerionAPIBackground } from '../zerion-api/zerion-api.background';
 import type { ZerionApiClient } from '../zerion-api/zerion-api-bare';
 
-export type DappSecurityStatus =
-  | 'loading'
-  | 'phishing'
-  | 'ok'
-  | 'unknown'
-  | 'error';
+export type DappSecurityStatus = 'loading' | 'phishing' | 'ok' | 'unknown' | 'error';
 
 class PhishingDefence {
   private whitelistedWebsites: Set<string> = new Set();
@@ -50,7 +45,7 @@ class PhishingDefence {
   }
 
   async checkDapp(
-    url?: string | null
+    url?: string | null,
   ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
     if (url === INTERNAL_ORIGIN) {
       return {
@@ -88,7 +83,7 @@ class PhishingDefence {
   }
 
   async getDappSecurityStatus(
-    url?: string | null
+    url?: string | null,
   ): Promise<{ status: DappSecurityStatus; isWhitelisted: boolean }> {
     if (url === INTERNAL_ORIGIN) {
       return {

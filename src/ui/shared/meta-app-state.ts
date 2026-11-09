@@ -30,9 +30,8 @@ export function checkForTestAddress(groups: WalletGroup[] | null) {
     groups?.some(
       (group) =>
         group.walletContainer.wallets.some(
-          (wallet) =>
-            normalizeAddress(wallet.address) === normalizeAddress(testAddress)
-        ) && !isReadonlyContainer(group.walletContainer)
+          (wallet) => normalizeAddress(wallet.address) === normalizeAddress(testAddress),
+        ) && !isReadonlyContainer(group.walletContainer),
     )
   ) {
     metaAppState.updateState({ hasTestWallet: true });

@@ -9,19 +9,11 @@ function isSubsetOf<T>(a: Set<T>, b: unknown[]): b is T[] {
   return b.every((item) => a.has(item as T));
 }
 
-export function assertKnownEcosystems(
-  values: string[]
-): asserts values is BlockchainType[] {
-  invariant(
-    isSubsetOf(supportedTypes, values),
-    `Invalid ecosystem values: ${values}`
-  );
+export function assertKnownEcosystems(values: string[]): asserts values is BlockchainType[] {
+  invariant(isSubsetOf(supportedTypes, values), `Invalid ecosystem values: ${values}`);
 }
 
-export function isMatchForEcosystem(
-  address: string,
-  ecosystem: BlockchainType
-) {
+export function isMatchForEcosystem(address: string, ecosystem: BlockchainType) {
   if (ecosystem === 'evm') {
     return isEthereumAddress(address);
   } else if (ecosystem === 'solana') {

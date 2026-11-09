@@ -1,9 +1,5 @@
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';
-import {
-  synthesizeExplorer,
-  toAddEthereumChainParameter,
-  toNetworkInfo,
-} from './helpers';
+import { synthesizeExplorer, toAddEthereumChainParameter, toNetworkInfo } from './helpers';
 import type { NetworkInfo } from './NetworkInfo';
 
 const param: AddEthereumChainParameter = {
@@ -64,10 +60,7 @@ test('toNetworkInfo synthesizes a chain the backend does not know', () => {
 });
 
 test('toNetworkInfo keeps the id it is given and has no explorer without a home URL', () => {
-  const network = toNetworkInfo(
-    { ...param, blockExplorerUrls: undefined },
-    'degen'
-  );
+  const network = toNetworkInfo({ ...param, blockExplorerUrls: undefined }, 'degen');
   expect(network.id).toBe('degen');
   expect(network.explorer).toBeNull();
   expect(network.baseAsset?.implementations).toEqual({
@@ -102,7 +95,7 @@ test('toAddEthereumChainParameter falls back to Zerion RPC, then the public one'
       ...base,
       rpcUrlUser: undefined,
       rpcUrl: 'https://rpc.zerion.io/v1/degen',
-    }).rpcUrls
+    }).rpcUrls,
   ).toEqual(['https://rpc.zerion.io/v1/degen']);
   expect(
     toAddEthereumChainParameter({
@@ -110,6 +103,6 @@ test('toAddEthereumChainParameter falls back to Zerion RPC, then the public one'
       rpcUrlUser: undefined,
       rpcUrl: '',
       publicRpcUrl: 'https://rpc.degen.tips/http',
-    }).rpcUrls
+    }).rpcUrls,
   ).toEqual(['https://rpc.degen.tips/http']);
 });

@@ -38,14 +38,8 @@ export function DepositFormSkeleton() {
                 style={{ height: 32 }}
               >
                 <HStack gap={8} alignItems="center">
-                  <div
-                    className={s.skeletonCircle}
-                    style={{ width: 32, height: 32 }}
-                  />
-                  <div
-                    className={s.skeleton}
-                    style={{ width: 72, height: 24 }}
-                  />
+                  <div className={s.skeletonCircle} style={{ width: 32, height: 32 }} />
+                  <div className={s.skeleton} style={{ width: 72, height: 24 }} />
                 </HStack>
                 <div className={s.skeleton} style={{ width: 80, height: 28 }} />
               </HStack>
@@ -56,10 +50,7 @@ export function DepositFormSkeleton() {
                 alignItems="center"
                 style={{ height: 20 }}
               >
-                <div
-                  className={s.skeleton}
-                  style={{ width: 112, height: 16 }}
-                />
+                <div className={s.skeleton} style={{ width: 112, height: 16 }} />
                 <div className={s.skeleton} style={{ width: 56, height: 16 }} />
               </HStack>
             </VStack>
@@ -69,10 +60,7 @@ export function DepositFormSkeleton() {
         {/* Output card — mirrors .outputCard (USDC on Hyperliquid) */}
         <div className={s.outputCard}>
           <div className={s.outputIconWrapper}>
-            <div
-              className={s.skeletonCircle}
-              style={{ width: 32, height: 32 }}
-            />
+            <div className={s.skeletonCircle} style={{ width: 32, height: 32 }} />
           </div>
           <VStack gap={2}>
             <div className={s.skeleton} style={{ width: 48, height: 18 }} />
@@ -84,11 +72,7 @@ export function DepositFormSkeleton() {
         </div>
       </div>
 
-      <UIText
-        kind="caption/regular"
-        color="var(--neutral-600)"
-        className={s.disclosure}
-      >
+      <UIText kind="caption/regular" color="var(--neutral-600)" className={s.disclosure}>
         Funds may take a few minutes to settle on Hyperliquid.
       </UIText>
       <RiskDisclosureBlock />

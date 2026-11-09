@@ -12,7 +12,7 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
 
 function InnerLabelInputComponent(
   { style, className, ...props }: Props,
-  ref: ForwardedRef<HTMLInputElement>
+  ref: ForwardedRef<HTMLInputElement>,
 ) {
   const id = useId();
   return (
@@ -23,9 +23,7 @@ function InnerLabelInputComponent(
       label={props.label}
       style={style}
       className={className}
-      input={
-        <UnstyledInput ref={ref} id={id} style={{ width: '100%' }} {...props} />
-      }
+      input={<UnstyledInput ref={ref} id={id} style={{ width: '100%' }} {...props} />}
     />
   );
 }

@@ -57,10 +57,10 @@ const getSingleItemTooltip = ({ item }: { item: TooltipBodyItem }) => {
       r(
         'span',
         { style: `color: ${getItemColor(item.direction)}; margin-left: 4px` },
-        item.balance
-      )
+        item.balance,
+      ),
     ),
-    r('div', { style: 'font-weight: 400' }, item.value)
+    r('div', { style: 'font-weight: 400' }, item.value),
   );
 };
 
@@ -90,29 +90,16 @@ const getMultipleItemsTooltip = ({
         r(
           'div',
           null,
-          r(
-            'span',
-            { style: `color: ${getItemColor(item.direction)}` },
-            item.balance
-          ),
-          r(
-            'span',
-            { style: 'font-weight: 400; padding-left: 4px' },
-            item.value
-          )
-        )
-      )
+          r('span', { style: `color: ${getItemColor(item.direction)}` }, item.balance),
+          r('span', { style: 'font-weight: 400; padding-left: 4px' }, item.value),
+        ),
+      ),
     ),
     count
-      ? r(
-          'div',
-          { style: 'color: var(--neutral-500)' },
-          `+${count} item${count > 1 ? 's' : ''}`
-        )
+      ? r('div', { style: 'color: var(--neutral-500)' }, `+${count} item${count > 1 ? 's' : ''}`)
       : null,
     r('div', {
-      style:
-        'width: 100%; height: 1px; margin-block: 8px; background-color: var(--neutral-500)',
+      style: 'width: 100%; height: 1px; margin-block: 8px; background-color: var(--neutral-500)',
     }),
     r(
       'div',
@@ -124,14 +111,10 @@ const getMultipleItemsTooltip = ({
       r(
         'div',
         null,
-        r(
-          'span',
-          { style: `color: ${getItemColor(total.direction)}` },
-          total.balance
-        ),
-        r('span', { style: 'font-weight: 400; padding-left: 4px' }, total.value)
-      )
-    )
+        r('span', { style: `color: ${getItemColor(total.direction)}` }, total.balance),
+        r('span', { style: 'font-weight: 400; padding-left: 4px' }, total.value),
+      ),
+    ),
   );
 };
 
@@ -170,17 +153,15 @@ export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
       tooltipEl.replaceChildren(
         getSingleItemTooltip({
           item: deserializeAssetChartActions(totalAction),
-        })
+        }),
       );
     } else {
       tooltipEl.replaceChildren(
         getMultipleItemsTooltip({
           count: totalActionsCount - previewActions.length,
           total: deserializeAssetChartActions(totalAction),
-          items: previewActions.map((item) =>
-            deserializeAssetChartActions(item)
-          ),
-        })
+          items: previewActions.map((item) => deserializeAssetChartActions(item)),
+        }),
       );
     }
   }
@@ -188,8 +169,7 @@ export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
   const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
 
   const inRightHalf = chart.width / 2 < tooltip.caretX;
-  const inTheMiddle =
-    chart.width * 0.3 < tooltip.caretX && tooltip.caretX < chart.width * 0.7;
+  const inTheMiddle = chart.width * 0.3 < tooltip.caretX && tooltip.caretX < chart.width * 0.7;
 
   const wideTooltip = tooltipEl.clientWidth > chart.width * 0.4;
 

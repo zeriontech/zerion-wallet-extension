@@ -1,12 +1,6 @@
 import type browser from 'webextension-polyfill';
-import type {
-  JsonRpcPayload,
-  JsonRpcResponse,
-} from '@walletconnect/jsonrpc-utils';
-import {
-  isJsonRpcPayload,
-  isJsonRpcRequest,
-} from '@walletconnect/jsonrpc-utils';
+import type { JsonRpcPayload, JsonRpcResponse } from '@walletconnect/jsonrpc-utils';
+import { isJsonRpcPayload, isJsonRpcRequest } from '@walletconnect/jsonrpc-utils';
 import { formatJsonRpcResultForPort } from 'src/shared/formatJsonRpcResultForPort';
 import { formatJsonRpcWalletError } from 'src/shared/formatJsonRpcWalletError';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
@@ -25,7 +19,7 @@ export function mapRPCMessageToController<T>(
   port: browser.Runtime.Port | chrome.runtime.Port,
   msg: JsonRpcPayload | unknown,
   controller: T,
-  context: PortContext
+  context: PortContext,
 ) {
   if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg)) {
     const { method, params, id } = msg;
@@ -39,8 +33,8 @@ export function mapRPCMessageToController<T>(
       port.postMessage(
         formatJsonRpcWalletError(
           id,
-          new MethodNotFound(method ? `Method not found: ${method}` : undefined)
-        )
+          new MethodNotFound(method ? `Method not found: ${method}` : undefined),
+        ),
       );
       return;
     }
@@ -61,7 +55,7 @@ export function mapRPCMessageToController<T>(
           console.table(normalizedError); // eslint-disable-line no-console
           console.groupEnd(); // eslint-disable-line no-console
           return normalizedError;
-        }
+        },
       )
       .then((result: JsonRpcResponse) => {
         // logging

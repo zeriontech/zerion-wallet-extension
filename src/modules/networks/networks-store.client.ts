@@ -11,7 +11,7 @@ export const mainNetworksStore = new NetworksStore(
     },
     getApiClient: () => ZerionAPI,
     source: 'mainnet',
-  }
+  },
 );
 
 export const testenvNetworksStore = new NetworksStore(
@@ -22,7 +22,7 @@ export const testenvNetworksStore = new NetworksStore(
     },
     getApiClient: () => ZerionAPI,
     source: 'testnet',
-  }
+  },
 );
 
 export async function getNetworksStore() {

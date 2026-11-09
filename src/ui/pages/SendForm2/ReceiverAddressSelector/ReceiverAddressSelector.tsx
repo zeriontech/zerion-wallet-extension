@@ -45,36 +45,30 @@ export function ReceiverAddressSelector({
   senderAddress: string;
 }) {
   const dialog = useDialog2();
-  const [addingToBookAddress, setAddingToBookAddress] = useState<string | null>(
-    null
-  );
+  const [addingToBookAddress, setAddingToBookAddress] = useState<string | null>(null);
 
-  const senderEcosystem: BlockchainType = isEthereumAddress(senderAddress)
-    ? 'evm'
-    : 'solana';
+  const senderEcosystem: BlockchainType = isEthereumAddress(senderAddress) ? 'evm' : 'solana';
 
   const handleSelect = useCallback(
     (address: string) => {
       onChange('to', address);
     },
-    [onChange]
+    [onChange],
   );
 
   const predicate = useCallback(
     (address: string) => isMatchForEcosystem(address, senderEcosystem),
-    [senderEcosystem]
+    [senderEcosystem],
   );
 
   const validateMatch = useCallback(
     (address: string): string => {
       if (isMatchForEcosystem(address, senderEcosystem)) return '';
-      const recipientLabel = getEcosystemLabel(
-        senderEcosystem === 'evm' ? 'solana' : 'evm'
-      );
+      const recipientLabel = getEcosystemLabel(senderEcosystem === 'evm' ? 'solana' : 'evm');
       const walletLabel = getEcosystemLabel(senderEcosystem);
       return `Recipient is on ${recipientLabel}, but sending wallet is on ${walletLabel}.`;
     },
-    [senderEcosystem]
+    [senderEcosystem],
   );
 
   const normalizedTo = formState.to ? normalizeAddress(formState.to) : null;
@@ -98,7 +92,7 @@ export function ReceiverAddressSelector({
         setAddingToBookAddress(normalizedTo);
       }
     },
-    [normalizedTo]
+    [normalizedTo],
   );
 
   const renderRightAction = () => {
@@ -106,9 +100,7 @@ export function ReceiverAddressSelector({
     if (display.isInAddressBook) {
       return (
         <span className={styles.rightAction} title="Saved to Address Book">
-          <PersonSuccessIcon
-            style={{ width: 24, height: 24, color: 'var(--positive-500)' }}
-          />
+          <PersonSuccessIcon style={{ width: 24, height: 24, color: 'var(--positive-500)' }} />
         </span>
       );
     }
@@ -140,11 +132,7 @@ export function ReceiverAddressSelector({
           {normalizedTo ? (
             <>
               <div className={styles.row}>
-                <UIText
-                  kind="body/regular"
-                  className={styles.label}
-                  color="var(--neutral-700)"
-                >
+                <UIText kind="body/regular" className={styles.label} color="var(--neutral-700)">
                   To:
                 </UIText>
                 <div
@@ -192,11 +180,7 @@ export function ReceiverAddressSelector({
           ) : (
             <>
               <div className={styles.row}>
-                <UIText
-                  kind="body/regular"
-                  className={styles.label}
-                  color="var(--neutral-700)"
-                >
+                <UIText kind="body/regular" className={styles.label} color="var(--neutral-700)">
                   To:
                 </UIText>
                 <div className={styles.skeletonAvatar} />

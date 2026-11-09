@@ -91,11 +91,7 @@ function handleQueryCacheUpdate(queryClient: QueryClient, buster: string) {
  * Checks if emitted event is about cache change and not about observers.
  * Useful for persist, where we only want to trigger save when cache is changed.
  */
-const cacheEventTypes: Set<NotifyEventType> = new Set([
-  'added',
-  'removed',
-  'updated',
-]);
+const cacheEventTypes: Set<NotifyEventType> = new Set(['added', 'removed', 'updated']);
 
 function isCacheEventType(eventType: NotifyEventType) {
   return cacheEventTypes.has(eventType);
@@ -110,7 +106,7 @@ const ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
 export async function persistQueryClient(
   queryClient: QueryClient,
   /** If persisted value is older than maxAge, it will be discarded */
-  maxAge = ONE_WEEK
+  maxAge = ONE_WEEK,
 ) {
   const buildHash = document.location.pathname.match(/(\w+)\.html$/)?.[1];
   if (!buildHash) {
@@ -128,11 +124,7 @@ export async function persistQueryClient(
     hydrate(queryClient, persistedClient.clientState);
   }
 
-  const throttledhandleQueryCacheUpdate = throttle(
-    handleQueryCacheUpdate,
-    800,
-    { trailing: true }
-  );
+  const throttledhandleQueryCacheUpdate = throttle(handleQueryCacheUpdate, 800, { trailing: true });
   queryClient.getQueryCache().subscribe((event) => {
     if (isCacheEventType(event.type)) {
       throttledhandleQueryCacheUpdate(queryClient, buildHash);

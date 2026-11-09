@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '@store-unit/react';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -15,24 +9,15 @@ import { preferenceStore } from 'src/ui/features/appearance/preference-store';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { Chart } from 'src/ui/components/chart/Chart';
 import { CHART_HEIGHT } from 'src/ui/components/chart/config';
-import {
-  drawDotPlugin,
-  drawVerticalLinePlugin,
-} from 'src/ui/components/chart/plugins';
-import type {
-  ChartInteraction,
-  ChartPlugins,
-} from 'src/ui/components/chart/types';
+import { drawDotPlugin, drawVerticalLinePlugin } from 'src/ui/components/chart/plugins';
+import type { ChartInteraction, ChartPlugins } from 'src/ui/components/chart/types';
 import { Button } from 'src/ui/ui-kit/Button';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { NBSP } from 'src/ui/shared/typography';
-import {
-  computeChartRangeDisplay,
-  type WalletChartPoint,
-} from './computeChartRangeDisplay';
+import { computeChartRangeDisplay, type WalletChartPoint } from './computeChartRangeDisplay';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];
 const CHART_TYPE_LABELS: Record<ChartPeriod, string> = {
@@ -108,14 +93,14 @@ export function WalletPositionsChart({ address }: { address: string }) {
   // x-position even when not over the line, with a vertical guide line + dot.
   const interaction = useMemo<ChartInteraction>(
     () => ({ mode: 'index', intersect: false, axis: 'x' }),
-    []
+    [],
   );
   const plugins = useMemo<ChartPlugins>(
     () => [
       drawVerticalLinePlugin({ getTheme: () => themeRef.current }),
       drawDotPlugin({ getTheme: () => themeRef.current }),
     ],
-    []
+    [],
   );
 
   const balanceElementRef = useRef<HTMLDivElement>(null);
@@ -135,13 +120,7 @@ export function WalletPositionsChart({ address }: { address: string }) {
   });
 
   const chartPoints = useMemo<WalletChartPoint[]>(() => {
-    return (
-      chartData?.data.points.map((item) => [
-        item.timestamp * 1000,
-        item.value,
-        null,
-      ]) || []
-    );
+    return chartData?.data.points.map((item) => [item.timestamp * 1000, item.value, null]) || [];
   }, [chartData]);
 
   const handleRangeSelect = useCallback(
@@ -167,16 +146,13 @@ export function WalletPositionsChart({ address }: { address: string }) {
       }
       if (changeElementRef.current) {
         changeElementRef.current.textContent = display.change ?? '';
-        changeElementRef.current.style.setProperty(
-          'color',
-          display.changeColor
-        );
+        changeElementRef.current.style.setProperty('color', display.changeColor);
       }
       if (dateElementRef.current) {
         dateElementRef.current.textContent = display.date;
       }
     },
-    [chartPoints, currency, hideBalances]
+    [chartPoints, currency, hideBalances],
   );
 
   useEffect(() => {
@@ -213,11 +189,7 @@ export function WalletPositionsChart({ address }: { address: string }) {
                 {NBSP}
               </UIText>
             </BlurrableBalance>
-            <HStack
-              gap={8}
-              alignItems="center"
-              style={{ minHeight: 24, whiteSpace: 'nowrap' }}
-            >
+            <HStack gap={8} alignItems="center" style={{ minHeight: 24, whiteSpace: 'nowrap' }}>
               <BlurrableBalance kind="body/accent" color="var(--black)">
                 <UIText
                   kind="body/accent"
@@ -260,11 +232,7 @@ export function WalletPositionsChart({ address }: { address: string }) {
                 // rest of the column keeps its 16px padding.
                 style={{ width: 'calc(100% + 32px)', marginInline: -16 }}
               />
-              <HStack
-                gap={8}
-                justifyContent="space-between"
-                alignItems="center"
-              >
+              <HStack gap={8} justifyContent="space-between" alignItems="center">
                 {CHART_TYPE_OPTIONS.map((type) => (
                   <Button
                     key={type}
@@ -276,9 +244,7 @@ export function WalletPositionsChart({ address }: { address: string }) {
                       ['--button-background' as string]:
                         type === period ? 'var(--neutral-200)' : 'var(--white)',
                       ['--button-background-hover' as string]:
-                        type === period
-                          ? 'var(--neutral-300)'
-                          : 'var(--neutral-100)',
+                        type === period ? 'var(--neutral-300)' : 'var(--neutral-100)',
                     }}
                     onClick={() => setPeriod(type)}
                   >

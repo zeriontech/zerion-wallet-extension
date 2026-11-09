@@ -3,19 +3,13 @@ import { createNanoEvents } from 'nanoevents';
 import { produce } from 'immer';
 import { isTruthy } from 'is-truthy-ts';
 import { difference } from 'src/shared/difference';
-import {
-  globalPreferences,
-  type GlobalPreferences,
-} from './Wallet/GlobalPreferences';
+import { globalPreferences, type GlobalPreferences } from './Wallet/GlobalPreferences';
 
 function setActiveIcon({ tabId }: { tabId?: number }) {
   if (process.env.NODE_ENV === 'development') {
     browser.action.setIcon({
       tabId,
-      path: new URL(
-        '../images/logo-icon-dev-128.png',
-        import.meta.url
-      ).toString(),
+      path: new URL('../images/logo-icon-dev-128.png', import.meta.url).toString(),
     });
   } else {
     browser.action.setIcon({
@@ -35,22 +29,10 @@ function setPausedIcon({ tabId }: { tabId?: number }) {
   browser.action.setIcon({
     tabId,
     path: {
-      16: new URL(
-        '../images/logo-icon-16-disabled.png',
-        import.meta.url
-      ).toString(),
-      32: new URL(
-        '../images/logo-icon-32-disabled.png',
-        import.meta.url
-      ).toString(),
-      48: new URL(
-        '../images/logo-icon-48-disabled.png',
-        import.meta.url
-      ).toString(),
-      128: new URL(
-        '../images/logo-icon-128-disabled.png',
-        import.meta.url
-      ).toString(),
+      16: new URL('../images/logo-icon-16-disabled.png', import.meta.url).toString(),
+      32: new URL('../images/logo-icon-32-disabled.png', import.meta.url).toString(),
+      48: new URL('../images/logo-icon-48-disabled.png', import.meta.url).toString(),
+      128: new URL('../images/logo-icon-128-disabled.png', import.meta.url).toString(),
     },
   });
   browser.action.setBadgeText({ tabId, text: '!' });
@@ -89,7 +71,7 @@ export class ContentScriptManager {
             delete draft.providerInjection;
           }
         }
-      })
+      }),
     );
     return this;
   }
@@ -99,10 +81,7 @@ export class ContentScriptManager {
     const excludeMatches = this.getExcludeMatches();
     const origin = tab?.url ? new URL(tab.url).origin : null;
 
-    if (
-      !matches ||
-      (origin && excludeMatches?.some((item) => item.includes(origin)))
-    ) {
+    if (!matches || (origin && excludeMatches?.some((item) => item.includes(origin)))) {
       setPausedIcon({ tabId: tab?.id });
     } else {
       setActiveIcon({ tabId: tab?.id });
@@ -174,8 +153,7 @@ export class ContentScriptManager {
   }
 
   async update() {
-    const inPageScriptLocation =
-      browser.runtime.getManifest().web_accessible_resources?.[0];
+    const inPageScriptLocation = browser.runtime.getManifest().web_accessible_resources?.[0];
     if (!inPageScriptLocation || typeof inPageScriptLocation === 'string') {
       throw new Error('Missing manifest field: web_accessible_resources');
     }

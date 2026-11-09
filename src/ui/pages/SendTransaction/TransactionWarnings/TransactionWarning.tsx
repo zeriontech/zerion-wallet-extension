@@ -9,10 +9,8 @@ const BORDER_COLOR: Record<Kind, string> = {
   info: 'var(--neutral-300)',
 };
 const BACKGROUND_GRADIENT: Record<Kind, string> = {
-  danger:
-    'linear-gradient(94deg, var(--negative-200) 0%, var(--negative-300) 100%)',
-  warning:
-    'linear-gradient(94deg, var(--notice-200) 0%, var(--notice-300) 100%)',
+  danger: 'linear-gradient(94deg, var(--negative-200) 0%, var(--negative-300) 100%)',
+  warning: 'linear-gradient(94deg, var(--notice-200) 0%, var(--notice-300) 100%)',
   info: 'linear-gradient(94deg, var(--neutral-200) 0%, var(--neutral-300) 100%)',
 };
 const COLOR: Record<Kind, string> = {
@@ -52,11 +50,7 @@ export function TransactionWarning({
         </UIText>
       ) : null}
       {message ? (
-        <UIText
-          kind="small/regular"
-          color={COLOR[kind]}
-          style={{ width: '100%' }}
-        >
+        <UIText kind="small/regular" color={COLOR[kind]} style={{ width: '100%' }}>
           {message}
         </UIText>
       ) : null}

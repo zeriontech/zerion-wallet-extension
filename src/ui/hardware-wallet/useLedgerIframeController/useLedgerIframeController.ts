@@ -44,9 +44,7 @@ export function useLedgerIframeController({
 
   // Global preferences (bluetooth toggle).
   const { globalPreferences } = useGlobalPreferences();
-  const bluetoothSupportEnabled = Boolean(
-    globalPreferences?.bluetoothSupportEnabled
-  );
+  const bluetoothSupportEnabled = Boolean(globalPreferences?.bluetoothSupportEnabled);
 
   // Keep last-known params in a ref so the registered controller can re-emit
   // on demand without a re-render dependency.
@@ -64,7 +62,7 @@ export function useLedgerIframeController({
         method: 'ledger/setSignParams',
         params: paramsRef.current,
       },
-      '*'
+      '*',
     );
   }, []);
 
@@ -82,10 +80,7 @@ export function useLedgerIframeController({
       cancelInFlight: () => {
         const win = iframeRef.current?.contentWindow;
         if (!win) return;
-        win.postMessage(
-          { id: nanoid(), method: 'ledger/sign/cancel', params: {} },
-          '*'
-        );
+        win.postMessage({ id: nanoid(), method: 'ledger/sign/cancel', params: {} }, '*');
       },
     };
     setLedgerIframeController(controller);

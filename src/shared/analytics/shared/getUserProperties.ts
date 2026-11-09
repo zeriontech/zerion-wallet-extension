@@ -6,20 +6,11 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
-import type {
-  PremiumPlan,
-  WalletMeta,
-} from 'src/modules/zerion-api/requests/wallet-get-meta';
+import type { PremiumPlan, WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { PREMIUM_PRIORITY } from 'src/modules/zerion-api/requests/wallet-get-meta';
-import type {
-  Params,
-  WalletPortfolio,
-} from 'src/modules/zerion-api/requests/wallet-get-portfolio';
+import type { Params, WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import type { AddressActivity } from 'src/modules/zerion-api/requests/wallet-check-activity';
-import {
-  getProviderForMixpanel,
-  getProviderNameFromGroup,
-} from './getProviderNameFromGroup';
+import { getProviderForMixpanel, getProviderNameFromGroup } from './getProviderNameFromGroup';
 import { omitNullParams } from './omitNullParams';
 
 function getFundedStatsByEcosystem(activity: AddressActivity | null): {
@@ -40,12 +31,8 @@ function getFundedStatsByEcosystem(activity: AddressActivity | null): {
   const values = Object.values(activity);
   return {
     totalCount: count(values),
-    evmFundedCount: count(
-      values.filter((value) => isEthereumAddress(value.address))
-    ),
-    solanaFundedCount: count(
-      values.filter((value) => isSolanaAddress(value.address))
-    ),
+    evmFundedCount: count(values.filter((value) => isEthereumAddress(value.address))),
+    solanaFundedCount: count(values.filter((value) => isSolanaAddress(value.address))),
   };
 }
 
@@ -82,11 +69,7 @@ async function getPortfolioStats(addresses: string[]) {
   });
 }
 
-async function getZerionStats({
-  ownedWalletsMeta,
-}: {
-  ownedWalletsMeta: WalletMeta[];
-}) {
+async function getZerionStats({ ownedWalletsMeta }: { ownedWalletsMeta: WalletMeta[] }) {
   const stats = {
     zerion_premium_holder: false,
     og_dna_premium_holder: false,
@@ -105,8 +88,7 @@ async function getZerionStats({
           PREMIUM_PRIORITY[walletMeta.membership.premium.plan]
       ) {
         stats.zerion_premium_plan = walletMeta.membership.premium.plan;
-        stats.zerion_premium_expiration_date =
-          walletMeta.membership.premium.expirationTime;
+        stats.zerion_premium_expiration_date = walletMeta.membership.premium.expirationTime;
       }
     }
 
@@ -153,29 +135,22 @@ export async function getUserProperties(account: Account) {
     context: INTERNAL_SYMBOL_CONTEXT,
   });
   const addressesCount =
-    groups?.reduce(
-      (sum, group) => sum + group.walletContainer.wallets.length,
-      0
-    ) ?? 0;
-  const ownedGroups = groups?.filter(
-    (group) => !isReadonlyContainer(group.walletContainer)
-  );
-  const readonlyGroups = groups?.filter((group) =>
-    isReadonlyContainer(group.walletContainer)
-  );
+    groups?.reduce((sum, group) => sum + group.walletContainer.wallets.length, 0) ?? 0;
+  const ownedGroups = groups?.filter((group) => !isReadonlyContainer(group.walletContainer));
+  const readonlyGroups = groups?.filter((group) => isReadonlyContainer(group.walletContainer));
   const readonlyAddresses = readonlyGroups?.flatMap((group) =>
-    group.walletContainer.wallets.map((wallet) => wallet.address)
+    group.walletContainer.wallets.map((wallet) => wallet.address),
   );
   const readonlyAddressesCount = readonlyAddresses?.length ?? 0;
   const readonlySolanaAddressesCount = readonlyAddresses?.filter((address) =>
-    isSolanaAddress(address)
+    isSolanaAddress(address),
   ).length;
   const readonlyEvmAddressesCount = readonlyAddresses?.filter((address) =>
-    isEthereumAddress(address)
+    isEthereumAddress(address),
   ).length;
 
   const ownedAddresses = ownedGroups?.flatMap((group) =>
-    group.walletContainer.wallets.map((wallet) => wallet.address)
+    group.walletContainer.wallets.map((wallet) => wallet.address),
   );
   const ownedAddressesCount = ownedAddresses?.length ?? 0;
 
@@ -196,24 +171,18 @@ export async function getUserProperties(account: Account) {
       .map((meta) => normalizeAddress(meta.address)) ?? [];
 
   const ownedWalletProviders = ownedGroups?.map((group) =>
-    getProviderForMixpanel(getProviderNameFromGroup(group))
+    getProviderForMixpanel(getProviderNameFromGroup(group)),
   );
 
-  const portfolioStats = ownedAddresses?.length
-    ? await getPortfolioStats(ownedAddresses)
-    : null;
-  const zerionStats = ownedWalletsMeta
-    ? await getZerionStats({ ownedWalletsMeta })
-    : null;
-  const fundedStatsByEcosystem = getFundedStatsByEcosystem(
-    portfolioStats?.addressActivity ?? null
-  );
+  const portfolioStats = ownedAddresses?.length ? await getPortfolioStats(ownedAddresses) : null;
+  const zerionStats = ownedWalletsMeta ? await getZerionStats({ ownedWalletsMeta }) : null;
+  const fundedStatsByEcosystem = getFundedStatsByEcosystem(portfolioStats?.addressActivity ?? null);
 
   const ownedSolanaAddressesCount = ownedAddresses?.filter((address) =>
-    isSolanaAddress(address)
+    isSolanaAddress(address),
   ).length;
   const ownedEvmAddressesCount = ownedAddresses?.filter((address) =>
-    isEthereumAddress(address)
+    isEthereumAddress(address),
   ).length;
 
   return {
@@ -241,8 +210,7 @@ export async function getUserProperties(account: Account) {
     zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
     og_dna_premium_holder: zerionStats?.og_dna_premium_holder ?? false,
     zerion_premium_plan: zerionStats?.zerion_premium_plan ?? null,
-    zerion_premium_expiration_date:
-      zerionStats?.zerion_premium_expiration_date ?? null,
+    zerion_premium_expiration_date: zerionStats?.zerion_premium_expiration_date ?? null,
     dna_holder: zerionStats?.dna_holder ?? false,
     was_invited: zerionStats?.was_invited ?? false,
     wallet_providers: Array.from(new Set(ownedWalletProviders)),

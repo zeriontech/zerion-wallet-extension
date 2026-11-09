@@ -10,9 +10,7 @@ export function PageFullBleedColumn({
       {...props}
       style={{
         marginInline: 'calc(-1 * var(--column-padding-inline))',
-        paddingInline: paddingInline
-          ? 'var(--column-padding-inline)'
-          : undefined,
+        paddingInline: paddingInline ? 'var(--column-padding-inline)' : undefined,
         ...style,
       }}
     />

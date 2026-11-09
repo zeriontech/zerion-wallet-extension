@@ -23,7 +23,7 @@ export function handleAccountEvents({ account }: { account: Account }) {
       wallet.emitter.on('chainChanged', (chainId, origin) => {
         emitter.emit('chainChanged', chainId, origin);
         emitter.emit('chainsUpdated');
-      })
+      }),
     );
   }
 

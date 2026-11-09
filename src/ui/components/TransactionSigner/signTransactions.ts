@@ -17,7 +17,7 @@ export interface SignTransactionsResult {
  */
 export function signTransactions(
   steps: SignStep[],
-  options: SignTransactionsOptions
+  options: SignTransactionsOptions,
 ): SignTransactionsResult {
   if (steps.length === 0) {
     return {

@@ -17,11 +17,7 @@ import {
 } from '../api/submitExchangeAction.types';
 import type * as PerpsActivityStore from '../perpsActivityStore';
 import type { PerpsActivityKind } from '../perpsActivityStore';
-import {
-  HyperliquidExchangeError,
-  signAndSubmit,
-  type SignAndSubmitDeps,
-} from './signAndSubmit';
+import { HyperliquidExchangeError, signAndSubmit, type SignAndSubmitDeps } from './signAndSubmit';
 import {
   fetchPreflightState as defaultFetchPreflightState,
   type PreflightFetchInput,
@@ -58,10 +54,7 @@ type WithdrawIntent = {
   successText: string;
 };
 
-export type PerpsIntent =
-  | PlaceOrderIntent
-  | UpdateLeverageIntent
-  | WithdrawIntent;
+export type PerpsIntent = PlaceOrderIntent | UpdateLeverageIntent | WithdrawIntent;
 
 export interface RunIntentContext {
   address: string;
@@ -71,10 +64,7 @@ export interface RunIntentContext {
   referralCode: string;
 }
 
-type StoreApi = Pick<
-  typeof PerpsActivityStore,
-  'start' | 'advance' | 'succeed' | 'fail'
->;
+type StoreApi = Pick<typeof PerpsActivityStore, 'start' | 'advance' | 'succeed' | 'fail'>;
 
 export interface RunIntentDeps {
   signTypedData: (typedData: TypedData) => Promise<string>;
@@ -84,14 +74,13 @@ export interface RunIntentDeps {
   now?: () => number;
 }
 
-const ACTIVITY_KIND_BY_INTENT: Record<PerpsIntent['kind'], PerpsActivityKind> =
-  {
-    open: 'perps-open',
-    add: 'perps-add',
-    close: 'perps-close',
-    updateLeverage: 'perps-open',
-    withdraw: 'perps-withdraw',
-  };
+const ACTIVITY_KIND_BY_INTENT: Record<PerpsIntent['kind'], PerpsActivityKind> = {
+  open: 'perps-open',
+  add: 'perps-add',
+  close: 'perps-close',
+  updateLeverage: 'perps-open',
+  withdraw: 'perps-withdraw',
+};
 
 const STARTING_LABEL_BY_INTENT: Record<PerpsIntent['kind'], string> = {
   open: 'Preparing order…',
@@ -109,7 +98,7 @@ interface PreflightStep {
 function buildPreflightSteps(
   intent: PerpsIntent,
   context: RunIntentContext,
-  state: PreflightState
+  state: PreflightState,
 ): PreflightStep[] {
   const steps: PreflightStep[] = [];
 
@@ -119,8 +108,7 @@ function buildPreflightSteps(
     if (!state.hyperliquidEnabled) {
       steps.push({
         label: 'Enabling Hyperliquid…',
-        buildAction: (nonce) =>
-          buildSetAbstractionAction({ user: context.address, nonce }),
+        buildAction: (nonce) => buildSetAbstractionAction({ user: context.address, nonce }),
       });
     }
     return steps;
@@ -129,8 +117,7 @@ function buildPreflightSteps(
   if (!state.hyperliquidEnabled) {
     steps.push({
       label: 'Enabling Hyperliquid…',
-      buildAction: (nonce) =>
-        buildSetAbstractionAction({ user: context.address, nonce }),
+      buildAction: (nonce) => buildSetAbstractionAction({ user: context.address, nonce }),
     });
   }
 
@@ -146,9 +133,7 @@ function buildPreflightSteps(
       label: 'Approving builder fee…',
       buildAction: (nonce) =>
         buildApproveBuilderFeeAction({
-          maxFeeRate: builderFeeUnitToMaxFeeRateString(
-            context.requiredMaxBuilderFee
-          ),
+          maxFeeRate: builderFeeUnitToMaxFeeRateString(context.requiredMaxBuilderFee),
           builder: context.builder,
           nonce,
         }),
@@ -215,15 +200,14 @@ function buildMainStep(intent: PerpsIntent): PreflightStep {
 
 function intentToPreflightInput(
   intent: PerpsIntent,
-  context: RunIntentContext
+  context: RunIntentContext,
 ): PreflightFetchInput {
   return {
     address: context.address,
     builder: context.builder,
     requiredMaxBuilderFee: context.requiredMaxBuilderFee,
     coin: intent.kind === 'withdraw' ? undefined : intent.coin,
-    dexIdentifier:
-      intent.kind === 'withdraw' ? undefined : intent.dexIdentifier,
+    dexIdentifier: intent.kind === 'withdraw' ? undefined : intent.dexIdentifier,
   };
 }
 
@@ -268,10 +252,7 @@ export async function runIntent(args: {
   try {
     const preflightInput = intentToPreflightInput(intent, context);
     let preflightState = await fetchPreflight(preflightInput);
-    let steps = [
-      ...buildPreflightSteps(intent, context, preflightState),
-      buildMainStep(intent),
-    ];
+    let steps = [...buildPreflightSteps(intent, context, preflightState), buildMainStep(intent)];
 
     let stepIndex = 0;
     let retriedAfterRejection = false;
@@ -284,10 +265,7 @@ export async function runIntent(args: {
       const action = step.buildAction(nonce);
       const isMainStep = stepIndex === steps.length - 1;
       try {
-        const response = await signAndSubmit(
-          { action, nonce },
-          signAndSubmitDeps
-        );
+        const response = await signAndSubmit({ action, nonce }, signAndSubmitDeps);
         // Hyperliquid wraps per-leg order failures inside an outer status:'ok'.
         // For `order`-type actions we must inspect response.data.statuses[i]
         // before treating the call as a real fill. Status[0] is the main leg
@@ -316,10 +294,7 @@ export async function runIntent(args: {
           legWarning = null;
           // Re-derive preflight state and resume from wherever we are.
           preflightState = await fetchPreflight(preflightInput);
-          steps = [
-            ...buildPreflightSteps(intent, context, preflightState),
-            buildMainStep(intent),
-          ];
+          steps = [...buildPreflightSteps(intent, context, preflightState), buildMainStep(intent)];
           stepIndex = 0;
           continue;
         }

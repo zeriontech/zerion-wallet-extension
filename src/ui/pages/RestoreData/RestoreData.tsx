@@ -53,8 +53,7 @@ export function RestoreData() {
           />
           <UIText kind="headline/h2">Password update was interrupted</UIText>
           <UIText kind="body/regular" color="var(--neutral-500)">
-            But we've made a backup! Click the button below to restore your
-            data.
+            But we've made a backup! Click the button below to restore your data.
           </UIText>
           <UIText kind="body/regular" color="var(--neutral-500)">
             Please, use your previous password to restore access to your wallet.
@@ -76,10 +75,7 @@ export function RestoreData() {
               contact our support
             </TextAnchor>
           </UIText>
-          <Button
-            kind="primary"
-            onClick={() => handleRestoreDataMutation.mutate()}
-          >
+          <Button kind="primary" onClick={() => handleRestoreDataMutation.mutate()}>
             Restore Data
           </Button>
           {handleRestoreDataMutation.isError ? (

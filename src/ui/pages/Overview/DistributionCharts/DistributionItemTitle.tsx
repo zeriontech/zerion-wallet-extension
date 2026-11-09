@@ -55,9 +55,7 @@ export function DistributionItemTitle({ item }: { item: DistributionItem }) {
         <span>{item.label}</span>
         <span style={{ color: 'var(--neutral-500)' }}> · </span>
         <BlurrableBalance kind="body/accent" color="var(--black)">
-          <NeutralDecimals
-            parts={formatCurrencyToParts(item.value, 'en', currency)}
-          />
+          <NeutralDecimals parts={formatCurrencyToParts(item.value, 'en', currency)} />
         </BlurrableBalance>
       </UIText>
     </HStack>

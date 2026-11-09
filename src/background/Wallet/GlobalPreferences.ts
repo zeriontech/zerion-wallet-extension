@@ -70,7 +70,7 @@ export class GlobalPreferences extends PersistentStore<State> {
 
   private async fetchDefaultWalletNameFlags() {
     const config = getRemoteConfigValue(
-      'extension_wallet_name_flags'
+      'extension_wallet_name_flags',
     ) as RemoteConfig['extension_wallet_name_flags'];
     if (config) {
       this.defaults.walletNameFlags = config;
@@ -132,10 +132,7 @@ export class GlobalPreferences extends PersistentStore<State> {
           // the default value. Empty arrays must kept as a user-set "off" value.
           // (!valueWithoutDefaults.walletNameFlags[origin]?.length &&
           //   !(origin in this.defaults.walletNameFlags)) ||
-          equal(
-            valueWithoutDefaults.walletNameFlags[origin],
-            this.defaults.walletNameFlags[origin]
-          )
+          equal(valueWithoutDefaults.walletNameFlags[origin], this.defaults.walletNameFlags[origin])
         ) {
           delete valueWithoutDefaults.walletNameFlags[origin];
         }

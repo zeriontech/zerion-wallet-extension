@@ -17,10 +17,7 @@ interface Props {
   stickyFirstElement?: boolean;
 }
 
-const getRangeExtractor = (
-  range: Range,
-  stickyFirstElement?: boolean
-): number[] => {
+const getRangeExtractor = (range: Range, stickyFirstElement?: boolean): number[] => {
   if (!stickyFirstElement) {
     return defaultRangeExtractor(range);
   }
@@ -70,7 +67,7 @@ export function WindowVirtualizedSurfaceList({
     scrollMargin: listRef.current?.offsetTop ?? 0,
     rangeExtractor: useCallback(
       (range: Range) => getRangeExtractor(range, stickyFirstElement),
-      [stickyFirstElement]
+      [stickyFirstElement],
     ),
   });
 
@@ -117,7 +114,7 @@ export function DialogVirtualizedSurfaceList({
     getScrollElement: () => uiScrollRootElement,
     rangeExtractor: useCallback(
       (range: Range) => getRangeExtractor(range, stickyFirstElement),
-      [stickyFirstElement]
+      [stickyFirstElement],
     ),
   });
 

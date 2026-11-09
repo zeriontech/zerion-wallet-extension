@@ -22,21 +22,15 @@ export function Heading({ asset }: { asset: PerpAssetEntry }) {
   const { currency } = useCurrency();
   const markPx = Number(asset.ctx.markPx);
   const prevDayPx = Number(asset.ctx.prevDayPx);
-  const change =
-    prevDayPx > 0 ? ((markPx - prevDayPx) / prevDayPx) * 100 : null;
+  const change = prevDayPx > 0 ? ((markPx - prevDayPx) / prevDayPx) * 100 : null;
 
   return (
     <HStack gap={8} alignItems="end">
       <UIText kind="headline/h1">
-        <NeutralDecimals
-          parts={formatPriceValueToParts(markPx, 'en', currency)}
-        />
+        <NeutralDecimals parts={formatPriceValueToParts(markPx, 'en', currency)} />
       </UIText>
       {change != null ? (
-        <UIText
-          kind="body/accent"
-          style={{ marginBottom: 4, color: getChangeColor(change) }}
-        >
+        <UIText kind="body/accent" style={{ marginBottom: 4, color: getChangeColor(change) }}>
           {getChangeSign(change)}
           {formatPercent(Math.abs(change), 'en', { maximumFractionDigits: 2 })}%
         </UIText>

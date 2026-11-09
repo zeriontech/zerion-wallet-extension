@@ -10,11 +10,7 @@ import { ToasterStatusBadge } from './ToasterStatusBadge';
 import { ToasterActions } from './ToasterActions';
 import { useToasterTarget } from './useToasterTarget';
 import { useReducedMotion } from './useReducedMotion';
-import {
-  useToasterSession,
-  type ActiveStepView,
-  type TerminalKind,
-} from './useToasterSession';
+import { useToasterSession, type ActiveStepView, type TerminalKind } from './useToasterSession';
 import {
   getAnchorStyle,
   isLeft,
@@ -82,10 +78,7 @@ const FAILED_TITLE: Record<ToasterView['kind'], string> = {
   send: 'Send failed',
 };
 
-function getTitle(
-  view: ToasterView | undefined,
-  terminal: TerminalKind | null
-): string {
+function getTitle(view: ToasterView | undefined, terminal: TerminalKind | null): string {
   if (terminal === 'failed') {
     if (!view) return 'Failed';
     return FAILED_TITLE[view.kind];
@@ -101,13 +94,11 @@ function getTitle(
 
 // A subtitle is either a plain text line, or a directional pair rendered with
 // an animated arrow between the two sides.
-type Subtitle =
-  | { type: 'text'; text: string }
-  | { type: 'directional'; from: string; to: string };
+type Subtitle = { type: 'text'; text: string } | { type: 'directional'; from: string; to: string };
 
 function getSubtitle(
   view: ToasterView | undefined,
-  terminal: TerminalKind | null
+  terminal: TerminalKind | null,
 ): Subtitle | null {
   if (!view) return null;
   if (terminal === 'success' && view.kind === 'bridge') {
@@ -117,8 +108,7 @@ function getSubtitle(
     return { type: 'text', text: view.token.symbol };
   }
   if (view.kind === 'send') {
-    const target =
-      view.recipient.name ?? truncateAddress(view.recipient.address, 4);
+    const target = view.recipient.name ?? truncateAddress(view.recipient.address, 4);
     return { type: 'directional', from: view.token.symbol, to: target };
   }
   return {
@@ -131,19 +121,13 @@ function getSubtitle(
 // A stable key for AnimatePresence so the subtitle re-animates on content
 // change but the arrow keeps marching across a from/to swap.
 function getSubtitleKey(subtitle: Subtitle): string {
-  return subtitle.type === 'text'
-    ? subtitle.text
-    : `${subtitle.from}→${subtitle.to}`;
+  return subtitle.type === 'text' ? subtitle.text : `${subtitle.from}→${subtitle.to}`;
 }
 
 const EXIT_DISTANCE = 50;
 
 function getExitOffset(position: SnapPosition): { x: number; y: number } {
-  const x = isLeft(position)
-    ? -EXIT_DISTANCE
-    : isRight(position)
-      ? EXIT_DISTANCE
-      : 0;
+  const x = isLeft(position) ? -EXIT_DISTANCE : isRight(position) ? EXIT_DISTANCE : 0;
   const y = isTop(position) ? -EXIT_DISTANCE : EXIT_DISTANCE;
   return { x, y };
 }
@@ -169,17 +153,9 @@ function ToasterText({
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={title}
-            initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, y: 8, filter: 'blur(2px)' }
-            }
+            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(2px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, y: -8, filter: 'blur(2px)' }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(2px)' }}
             transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
           >
             {title}
@@ -190,21 +166,11 @@ function ToasterText({
             <motion.span
               key={getSubtitleKey(subtitle)}
               className={s.subtitle}
-              initial={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, y: 8, filter: 'blur(2px)' }
-              }
+              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(2px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, y: -8, filter: 'blur(2px)' }
-              }
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(2px)' }}
               transition={
-                reducedMotion
-                  ? { duration: 0.1 }
-                  : { duration: 0.22, ease: [0.32, 0.72, 0, 1] }
+                reducedMotion ? { duration: 0.1 } : { duration: 0.22, ease: [0.32, 0.72, 0, 1] }
               }
             >
               {subtitle.type === 'directional' ? (
@@ -212,10 +178,7 @@ function ToasterText({
                   <span className={s.subtitleSide} title={subtitle.from}>
                     {subtitle.from}
                   </span>
-                  <ToasterArrow
-                    terminal={terminal}
-                    reducedMotion={reducedMotion}
-                  />
+                  <ToasterArrow terminal={terminal} reducedMotion={reducedMotion} />
                   <span className={s.subtitleSide} title={subtitle.to}>
                     {subtitle.to}
                   </span>
@@ -232,17 +195,9 @@ function ToasterText({
           <motion.span
             key={pendingQueueCount}
             className={s.counter}
-            initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, y: 8, filter: 'blur(2px)' }
-            }
+            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(2px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, y: -8, filter: 'blur(2px)' }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(2px)' }}
             transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
           >
             {`+${pendingQueueCount}`}
@@ -277,9 +232,7 @@ function ToasterContent({
     <motion.div
       className={s.body}
       transition={
-        reducedMotion
-          ? { duration: 0.1 }
-          : { layout: { duration: 0.25, ease: [0.32, 0.72, 0, 1] } }
+        reducedMotion ? { duration: 0.1 } : { layout: { duration: 0.25, ease: [0.32, 0.72, 0, 1] } }
       }
     >
       <motion.div className={s.iconWrap}>
@@ -289,37 +242,26 @@ function ToasterContent({
               key="status"
               className={s.statusBadgeOverlay}
               initial={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+                reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
               }
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               exit={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+                reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
               }
               transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
             >
-              <ToasterStatusBadge
-                kind={terminal}
-                reducedMotion={reducedMotion}
-              />
+              <ToasterStatusBadge kind={terminal} reducedMotion={reducedMotion} />
             </motion.div>
           ) : (
             <motion.div
               key={`icons-${step?.toaster?.kind ?? 'none'}`}
               className={s.iconLayer}
               initial={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+                reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
               }
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               exit={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+                reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
               }
               transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
             >
@@ -362,11 +304,7 @@ function ToasterContent({
           pill follows with the same spring that drives the text reveal. */}
       <AnimatePresence initial={false}>
         {terminal === 'success' && textRevealed ? (
-          <ToasterActions
-            key="actions"
-            target={target}
-            reducedMotion={reducedMotion}
-          />
+          <ToasterActions key="actions" target={target} reducedMotion={reducedMotion} />
         ) : null}
       </AnimatePresence>
     </motion.div>
@@ -396,9 +334,7 @@ export function TransactionToaster() {
   // Two-phase entrance: the pill first appears compact (icon only), then
   // expands to reveal the text. 'compact' on mount, flips to 'expanded' once
   // the initial fade/scale-in settles.
-  const [entrancePhase, setEntrancePhase] = useState<'compact' | 'expanded'>(
-    'compact'
-  );
+  const [entrancePhase, setEntrancePhase] = useState<'compact' | 'expanded'>('compact');
   const dragX = useMotionValue(0);
   const dragY = useMotionValue(0);
   const justDraggedRef = useRef(false);
@@ -410,7 +346,7 @@ export function TransactionToaster() {
         clearTimeout(expandTimerRef.current);
       }
     },
-    []
+    [],
   );
 
   // The parent component stays mounted across toaster sessions; only the
@@ -451,7 +387,7 @@ export function TransactionToaster() {
         navigate(HISTORY_PATH);
       }
     },
-    [navigate]
+    [navigate],
   );
 
   const handleDragStart = useCallback(() => {
@@ -530,15 +466,11 @@ export function TransactionToaster() {
                     opacity: { duration: 0.2, ease: SLIDE_EASE },
                     // Clean settle for the compact appear (0.8 → 0.9), bouncy
                     // spring only for the expand swell (0.9 → 1).
-                    scale: expanded
-                      ? SCALE_SPRING
-                      : { duration: 0.26, ease: SLIDE_EASE },
+                    scale: expanded ? SCALE_SPRING : { duration: 0.26, ease: SLIDE_EASE },
                     width: EXPAND_SPRING,
                   }
             }
-            whileHover={
-              reducedMotion || !hasEntered ? undefined : { scale: 1.02 }
-            }
+            whileHover={reducedMotion || !hasEntered ? undefined : { scale: 1.02 }}
             whileDrag={reducedMotion ? undefined : { scale: 1.05 }}
             drag={hasEntered && !reducedMotion}
             dragMomentum

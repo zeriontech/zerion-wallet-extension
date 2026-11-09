@@ -121,5 +121,5 @@ export const networksStore = new NetworksStoreMock(
     getOtherNetworkData: null,
     getApiClient: () => ZerionAPI,
     source: 'mainnet',
-  }
+  },
 );

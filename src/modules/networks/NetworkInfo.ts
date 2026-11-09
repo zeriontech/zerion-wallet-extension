@@ -1,7 +1,4 @@
-import type {
-  ChainFullInfo,
-  ChainSpecification,
-} from 'src/modules/zerion-api/types/ChainFullInfo';
+import type { ChainFullInfo, ChainSpecification } from 'src/modules/zerion-api/types/ChainFullInfo';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 /**
@@ -37,14 +34,12 @@ export type NetworkInfoEip155 = NetworkInfo & {
 };
 
 /** The base asset as implemented on its own chain: `address` is null for a native asset */
-export function getBaseAssetImplementation(
-  network: Pick<NetworkInfo, 'id' | 'baseAsset'>
-) {
+export function getBaseAssetImplementation(network: Pick<NetworkInfo, 'id' | 'baseAsset'>) {
   return network.baseAsset?.implementations[network.id];
 }
 
 export function getBaseAssetDecimals(
-  network: Pick<NetworkInfo, 'id' | 'baseAsset'>
+  network: Pick<NetworkInfo, 'id' | 'baseAsset'>,
 ): number | undefined {
   return getBaseAssetImplementation(network)?.decimals;
 }

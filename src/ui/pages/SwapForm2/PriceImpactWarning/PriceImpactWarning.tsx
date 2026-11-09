@@ -2,17 +2,10 @@ import React from 'react';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { formatPercent } from 'src/shared/units/formatPercent';
-import {
-  getPriceImpactPercentage,
-  type PriceImpact,
-} from '../shared/price-impact';
+import { getPriceImpactPercentage, type PriceImpact } from '../shared/price-impact';
 import * as styles from './PriceImpactWarning.module.css';
 
-export function PriceImpactWarning({
-  priceImpact,
-}: {
-  priceImpact: PriceImpact | null;
-}) {
+export function PriceImpactWarning({ priceImpact }: { priceImpact: PriceImpact | null }) {
   if (!priceImpact) {
     return null;
   }

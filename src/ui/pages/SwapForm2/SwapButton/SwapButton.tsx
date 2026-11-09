@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cn from 'classnames';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMutation } from '@tanstack/react-query';
@@ -24,10 +18,7 @@ import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpre
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { applySimulationPatch } from 'src/ui/features/dev-menu/applySimulationPatch';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
-import {
-  KeyboardShortcut,
-  ShortcutHint,
-} from 'src/ui/components/KeyboardShortcut';
+import { KeyboardShortcut, ShortcutHint } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
 import { toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
@@ -36,10 +27,7 @@ import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSw
 import type { SwapFormState2 } from '../types';
 import * as styles from './SwapButton.module.css';
 
-export type SimulationResult =
-  | InterpretResponse
-  | SignatureInterpretResponse
-  | null;
+export type SimulationResult = InterpretResponse | SignatureInterpretResponse | null;
 
 type ButtonState = 'idle' | 'simulating';
 
@@ -119,8 +107,7 @@ function isDisabled({
   if (state === 'simulating') return true;
   if (simulated) return false;
   if (!formState.outputFungibleId) return true;
-  if (!formState.inputAmount || Number(formState.inputAmount) === 0)
-    return true;
+  if (!formState.inputAmount || Number(formState.inputAmount) === 0) return true;
   if (isCrossEcosystem && !formState.to) return true;
   if (isCrossEcosystem && receiverEcosystemMismatch) return true;
   if (!quote) return true;
@@ -187,7 +174,7 @@ function useSimulation({
     const configuredQuote = applyTransactionConfiguration(
       quote,
       toConfiguration(formState),
-      gasPrices
+      gasPrices,
     );
     const list: MultichainTransaction[] = [];
     if (configuredQuote.transactionApprove) {
@@ -215,9 +202,7 @@ function useSimulation({
     },
   });
 
-  const state: ButtonState = simulationMutation.isLoading
-    ? 'simulating'
-    : 'idle';
+  const state: ButtonState = simulationMutation.isLoading ? 'simulating' : 'idle';
 
   const fire = useCallback(() => {
     if (simulated) {
@@ -371,7 +356,7 @@ export function useHoldToFire({
         cancelHold();
       },
     }),
-    [holdEnabled, onFire, startHold, cancelHold, isHolding]
+    [holdEnabled, onFire, startHold, cancelHold, isHolding],
   );
 
   return { isHolding, holdCompleted, showHoldHint, buttonHandlers };
@@ -390,9 +375,7 @@ export function RegularSignButton({
 }) {
   const { preferences } = usePreferences();
   const holdEnabled = Boolean(preferences?.enableHoldToSignButton);
-  const keyboardShortcutEnabled = Boolean(
-    preferences?.enableKeyboardShortcutToSign
-  );
+  const keyboardShortcutEnabled = Boolean(preferences?.enableKeyboardShortcutToSign);
   const windowFocused = useWindowFocus();
   const shortcutActive = keyboardShortcutEnabled && !disabled;
 
@@ -411,12 +394,7 @@ export function RegularSignButton({
         disabled={!shortcutActive}
         availableDuringInputs={true}
       />
-      <button
-        type="button"
-        className={styles.button}
-        disabled={disabled}
-        {...buttonHandlers}
-      >
+      <button type="button" className={styles.button} disabled={disabled} {...buttonHandlers}>
         {holdEnabled ? (
           <div
             className={cn(styles.holdOverlay, {
@@ -457,13 +435,12 @@ export function DangerSignButton({
   dangerTitle: string;
   onCancel: () => void;
 }) {
-  const { isHolding, holdCompleted, showHoldHint, buttonHandlers } =
-    useHoldToFire({
-      onFire: fire,
-      holdEnabled: true,
-      disabled: false,
-      shortPressThreshold: 1,
-    });
+  const { isHolding, holdCompleted, showHoldHint, buttonHandlers } = useHoldToFire({
+    onFire: fire,
+    holdEnabled: true,
+    disabled: false,
+    shortPressThreshold: 1,
+  });
 
   const sweepFilled = isHolding || holdCompleted || state === 'simulating';
   const showCancel = state !== 'simulating';
@@ -597,8 +574,7 @@ export function SwapButton({
     useSwapButtonOnboardingGate({ fire: readonlyGuardedFire, simulated });
   const effectiveFire = simulated ? fire : onboardingGuardedFire;
 
-  const isDanger =
-    Boolean(dangerTitle) && (state === 'simulating' || !disabled);
+  const isDanger = Boolean(dangerTitle) && (state === 'simulating' || !disabled);
 
   return (
     <>

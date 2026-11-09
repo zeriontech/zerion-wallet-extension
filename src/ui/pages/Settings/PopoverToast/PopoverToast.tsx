@@ -17,7 +17,7 @@ export interface PopoverToastHandle {
 
 function PopoverToastComponent(
   { style = {}, ...props }: React.HTMLAttributes<HTMLDivElement>,
-  ref: React.Ref<PopoverToastHandle>
+  ref: React.Ref<PopoverToastHandle>,
 ) {
   const [popoverSupported] = useState(() => supportsPopover());
   const popoverRef = useRef<HTMLDivElement>(null);

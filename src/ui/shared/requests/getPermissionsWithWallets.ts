@@ -22,12 +22,12 @@ function createExternallyOwnedAccount(address: string): ExternallyOwnedAccount {
 
 function updatePermissionsWithWallets(
   permissions: PermissionRecord,
-  walletGroups: WalletGroup[]
+  walletGroups: WalletGroup[],
 ): ConnectedSiteItem[] {
   const walletsMap = new Map(
     walletGroups
       .flatMap((group) => group.walletContainer.wallets)
-      .map((wallet) => [normalizeAddress(wallet.address), wallet])
+      .map((wallet) => [normalizeAddress(wallet.address), wallet]),
   );
   const result: ConnectedSiteItem[] = [];
   for (const origin in permissions) {

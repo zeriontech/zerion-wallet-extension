@@ -9,10 +9,7 @@ import {
 } from 'src/background/Wallet/GlobalPreferences';
 import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
 import { estimateSessionExpiry } from 'src/background/user-activity';
-import {
-  ensureSolanaResult,
-  getTxSender,
-} from 'src/modules/shared/transactions/helpers';
+import { ensureSolanaResult, getTxSender } from 'src/modules/shared/transactions/helpers';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
@@ -20,10 +17,7 @@ import type { Params as FungibleFullInfoParams } from 'src/modules/zerion-api/re
 import type { Params as WalletGetSimplePositionsParams } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { WalletOrigin } from '../WalletOrigin';
-import {
-  isMnemonicContainer,
-  isPrivateKeyContainer,
-} from '../types/validators';
+import { isMnemonicContainer, isPrivateKeyContainer } from '../types/validators';
 import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
 import { productionVersion } from '../packageVersion';
@@ -39,10 +33,7 @@ import {
   getProviderForMetabase,
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
-import {
-  addressActionToAnalytics,
-  toMaybeArr,
-} from './shared/addressActionToAnalytics';
+import { addressActionToAnalytics, toMaybeArr } from './shared/addressActionToAnalytics';
 import { mixpanelTrack, mixpanelIdentify } from './mixpanel';
 import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
@@ -66,8 +57,7 @@ function queryFungibleInfo(payload: FungibleFullInfoParams) {
 
   return backgroundQueryClient.fetchQuery({
     queryKey: ['assetGetFungibleFullInfo', fungibleId, currency],
-    queryFn: async () =>
-      ZerionAPI.assetGetFungibleFullInfo({ fungibleId, currency }),
+    queryFn: async () => ZerionAPI.assetGetFungibleFullInfo({ fungibleId, currency }),
     staleTime: 20000,
   });
 }
@@ -75,7 +65,7 @@ function queryFungibleInfo(payload: FungibleFullInfoParams) {
 /** Simple Positions: the balance reported is the one on the input chain */
 async function queryWalletSimplePositions(
   payload: WalletGetSimplePositionsParams,
-  source: NetworksSource
+  source: NetworksSource,
 ) {
   return backgroundQueryClient.fetchQuery({
     queryKey: ['ZerionAPI.walletGetSimplePositions', payload, source],
@@ -89,8 +79,7 @@ function trackAppEvents({ account }: { account: Account }) {
 
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
-  const getCurrentAddress = () =>
-    account.getCurrentWallet().readCurrentAddress();
+  const getCurrentAddress = () => account.getCurrentWallet().readCurrentAddress();
 
   const createParams: typeof createBaseParams = (eventParams) => {
     const params: typeof eventParams & {
@@ -111,28 +100,25 @@ function trackAppEvents({ account }: { account: Account }) {
     return createBaseParams(params);
   };
 
-  emitter.on(
-    'requestAccountsResolved',
-    async ({ origin, address, explicitly }) => {
-      const preferences = await globalPreferences.getPreferences();
-      if (!preferences.analyticsEnabled) {
-        return;
-      }
-      if (!explicitly) {
-        return;
-      }
-      const params = createParams({
-        request_name: 'dapp_connection',
-        dapp_domain: origin,
-        wallet_address: address,
-        ecosystem: toEcosystemProperty(getAddressType(address)),
-        eip6963_supported: eip6963Dapps.has(origin),
-      });
-      sendToMetabase('dapp_connection', params);
-      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-      mixpanelTrack('DApp: DApp Connection', mixpanelParams);
+  emitter.on('requestAccountsResolved', async ({ origin, address, explicitly }) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
     }
-  );
+    if (!explicitly) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'dapp_connection',
+      dapp_domain: origin,
+      wallet_address: address,
+      ecosystem: toEcosystemProperty(getAddressType(address)),
+      eip6963_supported: eip6963Dapps.has(origin),
+    });
+    sendToMetabase('dapp_connection', params);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack('DApp: DApp Connection', mixpanelParams);
+  });
 
   emitter.on('unlockedAppOpened', async () => {
     const preferences = await globalPreferences.getPreferences();
@@ -210,8 +196,7 @@ function trackAppEvents({ account }: { account: Account }) {
     if (!preferences.analyticsEnabled) {
       return;
     }
-    const { bannerName, pathname, walletAddress, bannerSource, bannerType } =
-      data;
+    const { bannerName, pathname, walletAddress, bannerSource, bannerType } = data;
     const params = createParams({
       request_name: 'banner_clicked',
       screen_name: pathname,
@@ -341,7 +326,7 @@ function trackAppEvents({ account }: { account: Account }) {
   const trackTransactionSign = async (
     props: {
       context: { mode: 'default' | 'testnet' } & TransactionContextParams;
-    } & (TransactionSentContext | TransactionFailedContext)
+    } & (TransactionSentContext | TransactionFailedContext),
   ) => {
     const { context, status } = props;
     const {
@@ -404,8 +389,7 @@ function trackAppEvents({ account }: { account: Account }) {
         wallet_address: address, // transaction.from,
         gas: props.result.evm ? props.result.evm.gasLimit.toString() : null,
         /** Current requirement by analytics: send solana signatures as `hash` */
-        hash:
-          props.result.evm?.hash ?? ensureSolanaResult(props.result).signature,
+        hash: props.result.evm?.hash ?? ensureSolanaResult(props.result).signature,
         ecosystem: toEcosystemProperty(getAddressType(address)),
       };
     } else {
@@ -420,11 +404,7 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('signed_transaction', params);
     const gaParams = await prepareGaParams(params);
     gaCollect('signed_transaction', gaParams);
-    const mixpanelParams = omit(params, [
-      'request_name',
-      'hash',
-      'wallet_address',
-    ]);
+    const mixpanelParams = omit(params, ['request_name', 'hash', 'wallet_address']);
     mixpanelTrack('Transaction: Signed Transaction', mixpanelParams);
   };
 
@@ -449,39 +429,29 @@ function trackAppEvents({ account }: { account: Account }) {
     if (!preferences.analyticsEnabled) {
       return;
     }
-    const [inputTokenPositions, inputAssetData, outputAssetData] =
-      await Promise.all([
-        queryWalletSimplePositions(
-          { address: quoteErrorContext.address, currency: 'usd' },
-          source
-        ),
-        quoteErrorContext.inputFungibleId
-          ? queryFungibleInfo({
-              fungibleId: quoteErrorContext.inputFungibleId,
-              currency: 'usd',
-            })
-          : null,
-        quoteErrorContext.outputFungibleId
-          ? queryFungibleInfo({
-              fungibleId: quoteErrorContext.outputFungibleId,
-              currency: 'usd',
-            })
-          : null,
-      ]);
+    const [inputTokenPositions, inputAssetData, outputAssetData] = await Promise.all([
+      queryWalletSimplePositions({ address: quoteErrorContext.address, currency: 'usd' }, source),
+      quoteErrorContext.inputFungibleId
+        ? queryFungibleInfo({
+            fungibleId: quoteErrorContext.inputFungibleId,
+            currency: 'usd',
+          })
+        : null,
+      quoteErrorContext.outputFungibleId
+        ? queryFungibleInfo({
+            fungibleId: quoteErrorContext.outputFungibleId,
+            currency: 'usd',
+          })
+        : null,
+    ]);
     const inputAsset = inputAssetData?.data?.fungible;
     const outputAsset = outputAssetData?.data?.fungible;
-    invariant(
-      inputAsset,
-      'Unable to fetch input asset data for quoteError event'
-    );
-    invariant(
-      outputAsset,
-      'Unable to fetch output asset data for quoteError event'
-    );
+    invariant(inputAsset, 'Unable to fetch input asset data for quoteError event');
+    invariant(outputAsset, 'Unable to fetch output asset data for quoteError event');
     const inputPosition = inputTokenPositions.data.find(
       (position) =>
         position.fungible.id === quoteErrorContext.inputFungibleId &&
-        position.chain.id === quoteErrorContext.inputChain
+        position.chain.id === quoteErrorContext.inputChain,
     );
 
     const params = createParams({
@@ -510,13 +480,11 @@ function trackAppEvents({ account }: { account: Account }) {
       asset_market_cap_received: outputAsset.meta.marketCap,
       asset_fdv_sent: inputAsset.meta.fullyDilutedValuation,
       asset_fdv_received: outputAsset.meta.fullyDilutedValuation,
-      usd_amount_sent:
-        Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
+      usd_amount_sent: Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
       asset_amount_sent: toMaybeArr([Number(quoteErrorContext.inputAmount)]),
       usd_amount_received:
         quoteErrorContext.outputAmount != null
-          ? Number(quoteErrorContext.outputAmount) *
-            (outputAsset.meta.price || 0)
+          ? Number(quoteErrorContext.outputAmount) * (outputAsset.meta.price || 0)
           : null,
       asset_amount_received:
         quoteErrorContext.outputAmount != null
@@ -534,14 +502,7 @@ function trackAppEvents({ account }: { account: Account }) {
     if (!preferences.analyticsEnabled) {
       return;
     }
-    const {
-      formState,
-      quote,
-      enoughBalance,
-      warningWasShown,
-      outputAmountColor,
-      scope,
-    } = context;
+    const { formState, quote, enoughBalance, warningWasShown, outputAmountColor, scope } = context;
 
     // We query fungible info for input and output assets
     // to provide fdv_asset_sent and fdv_asset_received
@@ -559,14 +520,8 @@ function trackAppEvents({ account }: { account: Account }) {
         })
       : null;
     const outputAsset = outputAssetData?.data?.fungible;
-    invariant(
-      inputAsset,
-      'Unable to fetch input asset data for transactionFormed event'
-    );
-    invariant(
-      outputAsset,
-      'Unable to fetch output asset data for transactionFormed event'
-    );
+    invariant(inputAsset, 'Unable to fetch input asset data for transactionFormed event');
+    invariant(outputAsset, 'Unable to fetch output asset data for transactionFormed event');
 
     // Resolve the actual on-chain contract address for the relevant chain,
     // matching the logic used by getTransferAssetAddress in
@@ -574,22 +529,16 @@ function trackAppEvents({ account }: { account: Account }) {
     // Signed events report the same asset addresses (not the fungible id).
     const getFungibleAddress = (
       fungible: typeof inputAsset,
-      chain: string | null | undefined
+      chain: string | null | undefined,
     ): string | null => {
       const implementations = fungible.implementations;
       if (chain && implementations[chain]?.address) {
         return implementations[chain].address;
       }
-      return (
-        Object.values(implementations).find((impl) => impl.address)?.address ??
-        null
-      );
+      return Object.values(implementations).find((impl) => impl.address)?.address ?? null;
     };
     const outputChain = formState.outputChain ?? formState.inputChain;
-    const assetAddressSent = getFungibleAddress(
-      inputAsset,
-      formState.inputChain
-    );
+    const assetAddressSent = getFungibleAddress(inputAsset, formState.inputChain);
     const assetAddressReceived = getFungibleAddress(outputAsset, outputChain);
 
     const params = createParams({
@@ -603,15 +552,12 @@ function trackAppEvents({ account }: { account: Account }) {
       asset_name_received: toMaybeArr([outputAsset.name]),
       asset_address_received: toMaybeArr([assetAddressReceived]),
 
-      usd_amount_sent:
-        Number(formState.inputAmount) * (inputAsset.meta.price || 0),
+      usd_amount_sent: Number(formState.inputAmount) * (inputAsset.meta.price || 0),
       asset_amount_sent: toMaybeArr([Number(formState.inputAmount)]),
       asset_name_sent: toMaybeArr([inputAsset.name]),
       asset_address_sent: toMaybeArr([assetAddressSent]),
 
-      gas: quote.transactionSwap?.evm
-        ? Number(getGas(quote.transactionSwap.evm))
-        : undefined,
+      gas: quote.transactionSwap?.evm ? Number(getGas(quote.transactionSwap.evm)) : undefined,
       network_fee: quote.networkFee?.amount?.usdValue ?? undefined,
       gas_price: quote.transactionSwap?.evm?.gasPrice ?? undefined,
       guaranteed_output_amount: quote.minimumOutputAmount.quantity,
@@ -693,11 +639,7 @@ function trackAppEvents({ account }: { account: Account }) {
     sendToMetabase('signed_message', params);
     const gaParams = await prepareGaParams(params);
     gaCollect('signed_message', gaParams);
-    const mixpanelParams = omit(params, [
-      'request_name',
-      'wallet_address',
-      'address',
-    ]);
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address', 'address']);
     mixpanelTrack('Transaction: Signed Message', mixpanelParams);
   }
 
@@ -742,8 +684,10 @@ function trackAppEvents({ account }: { account: Account }) {
       if (!preferences.analyticsEnabled) {
         return;
       }
-      const { enabled: newlyEnabled, disabled: newlyDisabled } =
-        getWalletNameFlagsChange(state, prevState);
+      const { enabled: newlyEnabled, disabled: newlyDisabled } = getWalletNameFlagsChange(
+        state,
+        prevState,
+      );
 
       newlyEnabled.forEach((key) => {
         const params = createParams({
@@ -871,8 +815,7 @@ function trackAppEvents({ account }: { account: Account }) {
 
     /** We want to use this only if it differs from current version */
     const prevVersion = installedEvent?.previousVersion;
-    const fromVersion =
-      prevVersion && prevVersion !== productionVersion ? prevVersion : null;
+    const fromVersion = prevVersion && prevVersion !== productionVersion ? prevVersion : null;
 
     const params = createParams({
       request_name: 'background_script_reloaded',
@@ -992,11 +935,7 @@ export function initialize({ account }: { account: Account }) {
     handleUserId();
   }
   globalPreferences.on('change', (state, prevState) => {
-    if (
-      state.analyticsEnabled &&
-      !prevState.analyticsEnabled &&
-      account.getUser()
-    ) {
+    if (state.analyticsEnabled && !prevState.analyticsEnabled && account.getUser()) {
       handleUserId();
     }
   });

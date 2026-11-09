@@ -53,7 +53,7 @@ type Response = ResponseBody<WalletPnL>;
 export async function walletGetPnl(
   this: ZerionApiContext,
   params: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   invariant(params.addresses.length > 0, 'Addresses param is empty');
   const firstAddress = params.addresses[0];
@@ -66,6 +66,6 @@ export async function walletGetPnl(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

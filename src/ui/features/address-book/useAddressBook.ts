@@ -12,16 +12,13 @@ function normalizeEntry(entry: AddressBookEntry): AddressBookEntry {
 
 export function useAddressBook() {
   const { preferences, setPreferences } = usePreferences();
-  const entries = useMemo(
-    () => preferences?.addressBook ?? [],
-    [preferences?.addressBook]
-  );
+  const entries = useMemo(() => preferences?.addressBook ?? [], [preferences?.addressBook]);
 
   const upsert = useCallback(
     (entry: AddressBookEntry) => {
       const normalized = normalizeEntry(entry);
       const index = entries.findIndex(
-        (item) => normalizeAddress(item.address) === normalized.address
+        (item) => normalizeAddress(item.address) === normalized.address,
       );
       const next =
         index >= 0
@@ -29,26 +26,24 @@ export function useAddressBook() {
           : [...entries, normalized];
       setPreferences({ addressBook: next });
     },
-    [entries, setPreferences]
+    [entries, setPreferences],
   );
 
   const remove = useCallback(
     (address: string) => {
       const target = normalizeAddress(address);
       setPreferences({
-        addressBook: entries.filter(
-          (item) => normalizeAddress(item.address) !== target
-        ),
+        addressBook: entries.filter((item) => normalizeAddress(item.address) !== target),
       });
     },
-    [entries, setPreferences]
+    [entries, setPreferences],
   );
 
   const reorder = useCallback(
     (next: AddressBookEntry[]) => {
       setPreferences({ addressBook: next });
     },
-    [setPreferences]
+    [setPreferences],
   );
 
   const has = useCallback(
@@ -56,7 +51,7 @@ export function useAddressBook() {
       const target = normalizeAddress(address);
       return entries.some((item) => normalizeAddress(item.address) === target);
     },
-    [entries]
+    [entries],
   );
 
   const find = useCallback(
@@ -64,7 +59,7 @@ export function useAddressBook() {
       const target = normalizeAddress(address);
       return entries.find((item) => normalizeAddress(item.address) === target);
     },
-    [entries]
+    [entries],
   );
 
   return { entries, upsert, remove, reorder, has, find };

@@ -23,7 +23,7 @@ export function BlockieImg({
             size: blocksCount,
             scale: (size / blocksCount) * window.devicePixelRatio,
           }),
-    [address, size]
+    [address, size],
   );
   const ref = useRef<HTMLSpanElement | null>(null);
   useLayoutEffect(() => {

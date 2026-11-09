@@ -1,9 +1,5 @@
 import { baseToCommon } from 'src/shared/units/convert';
-import type {
-  Transaction,
-  VersionedTransaction,
-  MessageV0,
-} from '@solana/web3.js';
+import type { Transaction, VersionedTransaction, MessageV0 } from '@solana/web3.js';
 import { SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import type { AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
@@ -25,8 +21,7 @@ export const SOL_ASSET_FUNGIBLE: Fungible = {
   id: '11111111111111111111111111111111',
   name: 'Solana',
   symbol: 'SOL',
-  iconUrl:
-    'https://token-icons.s3.amazonaws.com/11111111111111111111111111111111.png',
+  iconUrl: 'https://token-icons.s3.amazonaws.com/11111111111111111111111111111111.png',
   verified: true,
   meta: {
     circulatingSupply: null,
@@ -51,7 +46,7 @@ export const SOL_ASSET_FUNGIBLE: Fungible = {
 export function parseSolanaTransaction(
   from: string,
   tx: Transaction | VersionedTransaction,
-  currency: string
+  currency: string,
 ): AddressAction {
   const timestamp = new Date().getTime();
 
@@ -86,7 +81,7 @@ export function parseSolanaTransaction(
             usdValue: null,
             quantity: baseToCommon(
               lamports,
-              SOL_ASSET_FUNGIBLE.implementations.solana.decimals
+              SOL_ASSET_FUNGIBLE.implementations.solana.decimals,
             ).toFixed(),
           },
           direction: 'out' as const,

@@ -33,10 +33,7 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { ConfidentialMask } from 'src/ui/features/confidential-balances';
 import { AccelerateTransaction } from '../History/AccelerateTransaction';
-import {
-  PopoverToast,
-  type PopoverToastHandle,
-} from '../Settings/PopoverToast/PopoverToast';
+import { PopoverToast, type PopoverToastHandle } from '../Settings/PopoverToast/PopoverToast';
 import { RateLine } from './RateLine';
 import { LabelLine } from './LabelLine';
 import { FeeLine } from './FeeLine';
@@ -68,22 +65,11 @@ function AssetContent({
 }) {
   if (fungible) {
     return (
-      <HStack
-        gap={12}
-        alignItems="center"
-        style={{ position: 'relative', height: 44 }}
-      >
+      <HStack gap={12} alignItems="center" style={{ position: 'relative', height: 44 }}>
         <TokenIcon size={36} src={fungible.iconUrl} symbol={fungible.symbol} />
         <VStack gap={0}>
-          <UIText
-            kind="headline/h3"
-            color={direction === 'in' ? 'var(--positive-500)' : undefined}
-          >
-            <HStack
-              gap={4}
-              alignItems="center"
-              style={{ gridTemplateColumns: 'auto 1fr' }}
-            >
+          <UIText kind="headline/h3" color={direction === 'in' ? 'var(--positive-500)' : undefined}>
+            <HStack gap={4} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
               {amount?.encrypted ? (
                 <ConfidentialMask kind="headline/h3" />
               ) : (
@@ -92,11 +78,7 @@ function AssetContent({
                     ? 'Unlimited'
                     : amount?.quantity
                       ? `${
-                          direction === 'out'
-                            ? minus
-                            : direction === 'in'
-                              ? '+'
-                              : ''
+                          direction === 'out' ? minus : direction === 'in' ? '+' : ''
                         }${formatTokenValue(amount?.quantity || '0', '')}`
                       : null}
                 </BlurrableBalance>
@@ -108,21 +90,13 @@ function AssetContent({
             </HStack>
           </UIText>
           {direction != null ? (
-            <UIText
-              kind="small/regular"
-              color="var(--neutral-500)"
-              style={{ display: 'flex' }}
-            >
+            <UIText kind="small/regular" color="var(--neutral-500)" style={{ display: 'flex' }}>
               {amount?.encrypted ? (
                 <ConfidentialMask kind="small/regular" showLock={false} />
               ) : (
                 <BlurrableBalance kind="small/regular">
                   {amount?.value != null
-                    ? formatPriceValue(
-                        amount.value || '0',
-                        'en',
-                        amount.currency
-                      )
+                    ? formatPriceValue(amount.value || '0', 'en', amount.currency)
                     : 'N/A'}
                 </BlurrableBalance>
               )}
@@ -152,19 +126,12 @@ function AssetContent({
                 <HStack gap={4}>
                   <span>
                     {amount?.quantity
-                      ? `Amount: ${formatTokenValue(
-                          amount?.quantity || '0',
-                          ''
-                        )}`
+                      ? `Amount: ${formatTokenValue(amount?.quantity || '0', '')}`
                       : null}
                   </span>
                   <span>
                     {amount?.value != null
-                      ? formatPriceValue(
-                          amount.value || '0',
-                          'en',
-                          amount.currency
-                        )
+                      ? formatPriceValue(amount.value || '0', 'en', amount.currency)
                       : null}
                   </span>
                 </HStack>
@@ -179,11 +146,7 @@ function AssetContent({
   if (collection) {
     return (
       <HStack gap={12} alignItems="center" style={{ height: 44 }}>
-        <TokenIcon
-          size={36}
-          src={collection.iconUrl}
-          symbol={collection.name || 'Collection'}
-        />
+        <TokenIcon size={36} src={collection.iconUrl} symbol={collection.name || 'Collection'} />
         <UIText kind="headline/h3">{collection.name}</UIText>
       </HStack>
     );
@@ -237,16 +200,12 @@ function ActContent({
 }) {
   const approvals = act.content?.approvals;
   const incomingTransfers = useMemo(
-    () =>
-      act.content?.transfers?.filter((transfer) => transfer.direction === 'in'),
-    [act.content?.transfers]
+    () => act.content?.transfers?.filter((transfer) => transfer.direction === 'in'),
+    [act.content?.transfers],
   );
   const outgoingTransfers = useMemo(
-    () =>
-      act.content?.transfers?.filter(
-        (transfer) => transfer.direction === 'out'
-      ),
-    [act.content?.transfers]
+    () => act.content?.transfers?.filter((transfer) => transfer.direction === 'out'),
+    [act.content?.transfers],
   );
 
   return (
@@ -258,11 +217,7 @@ function ActContent({
       }}
     >
       {showActType ? (
-        <UIText
-          kind="small/accent"
-          color="var(--neutral-500)"
-          style={{ paddingBottom: 4 }}
-        >
+        <UIText kind="small/accent" color="var(--neutral-500)" style={{ paddingBottom: 4 }}>
           {act.type.displayValue}
         </UIText>
       ) : null}
@@ -306,9 +261,7 @@ function ActContent({
           ))}
         </VStack>
       ) : null}
-      {outgoingTransfers?.length && incomingTransfers?.length ? (
-        <TransferDivider />
-      ) : null}
+      {outgoingTransfers?.length && incomingTransfers?.length ? <TransferDivider /> : null}
       {incomingTransfers?.length ? (
         <VStack gap={4}>
           {showActType ? null : (
@@ -340,14 +293,10 @@ export function ActionInfo() {
   const { state } = useLocation();
   const toastRef = useRef<PopoverToastHandle>(null);
 
-  invariant(
-    !act_index || isNumeric(act_index),
-    'actIndex should be a number or be empty'
-  );
+  invariant(!act_index || isNumeric(act_index), 'actIndex should be a number or be empty');
   const actIndex = act_index ? Number(act_index) : undefined;
   const addressAction = state?.addressAction as AnyAddressAction | undefined;
-  const targetObject =
-    actIndex != null ? addressAction?.acts?.at(actIndex) : addressAction;
+  const targetObject = actIndex != null ? addressAction?.acts?.at(actIndex) : addressAction;
 
   const actionDate = useMemo(() => {
     return addressAction?.timestamp
@@ -355,14 +304,10 @@ export function ActionInfo() {
       : null;
   }, [addressAction?.timestamp]);
 
-  const localStatus = useActionStatusByHash(
-    targetObject?.transaction?.hash || ''
-  );
+  const localStatus = useActionStatusByHash(targetObject?.transaction?.hash || '');
 
   const initialPending = useRef(
-    addressAction &&
-      isLocalAddressAction(addressAction) &&
-      localStatus === 'pending'
+    addressAction && isLocalAddressAction(addressAction) && localStatus === 'pending',
   );
 
   useEffect(() => {
@@ -374,16 +319,13 @@ export function ActionInfo() {
   if (!addressAction || !targetObject) {
     return (
       <PageColumn>
-        Sorry, action not found. Please, go back and select it from the history
-        again.
+        Sorry, action not found. Please, go back and select it from the history again.
       </PageColumn>
     );
   }
 
   const { type, status: externalStatus, label, transaction } = targetObject;
-  const status = isLocalAddressAction(addressAction)
-    ? localStatus
-    : externalStatus;
+  const status = isLocalAddressAction(addressAction) ? localStatus : externalStatus;
   const isFailed = status === 'failed' || status === 'dropped';
   const isPending = status === 'pending';
 
@@ -395,9 +337,7 @@ export function ActionInfo() {
             <UIText
               kind="body/accent"
               color={isFailed ? 'var(--negative-500)' : 'var(--black)'}
-            >{`${type.displayValue}${
-              isFailed ? ` (${capitalize(status)})` : ''
-            }`}</UIText>
+            >{`${type.displayValue}${isFailed ? ` (${capitalize(status)})` : ''}`}</UIText>
             <UIText kind="small/regular" color="var(--neutral-500)">
               {actionDate}
             </UIText>
@@ -408,10 +348,7 @@ export function ActionInfo() {
       <VStack gap={16} style={{ marginTop: 16 }}>
         <VStack gap={8}>
           {actIndex != null && addressAction?.acts?.at(actIndex) ? (
-            <ActContent
-              act={addressAction.acts[actIndex]}
-              showActType={false}
-            />
+            <ActContent act={addressAction.acts[actIndex]} showActType={false} />
           ) : addressAction.acts?.length === 1 ? (
             <ActContent act={addressAction.acts[0]} showActType={false} />
           ) : (
@@ -444,10 +381,7 @@ export function ActionInfo() {
           )}
         </VStack>
         {isLocalAddressAction(addressAction) && isPending && !actIndex ? (
-          <AccelerateTransaction
-            addressAction={addressAction}
-            onSuccess={() => navigate(-1)}
-          />
+          <AccelerateTransaction addressAction={addressAction} onSuccess={() => navigate(-1)} />
         ) : null}
         <VStack
           gap={20}

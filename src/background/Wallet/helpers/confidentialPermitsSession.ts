@@ -15,17 +15,10 @@ export const confidentialPermitsSessionKey = 'confidentialPermits';
 export type PermitsByAddress = Record<string, StoredPermit[]>;
 
 export async function readSessionPermits(): Promise<PermitsByAddress> {
-  return (
-    (await SessionStorage.get<PermitsByAddress>(
-      confidentialPermitsSessionKey
-    )) ?? {}
-  );
+  return (await SessionStorage.get<PermitsByAddress>(confidentialPermitsSessionKey)) ?? {};
 }
 
-export async function writeSessionPermits(
-  address: string,
-  permits: StoredPermit[]
-) {
+export async function writeSessionPermits(address: string, permits: StoredPermit[]) {
   const all = await readSessionPermits();
   const key = normalizeAddress(address);
   if (permits.length) {

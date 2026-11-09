@@ -27,9 +27,7 @@ function fromBigInt(value: bigint | number | string) {
   return typeof value === 'bigint' ? String(value) : value;
 }
 
-function toSerializableMessage(
-  message: Eip712SignInput
-): SerializableEip712SignInput {
+function toSerializableMessage(message: Eip712SignInput): SerializableEip712SignInput {
   return {
     ...message,
     gasLimit: fromBigInt(message.gasLimit),
@@ -47,7 +45,7 @@ function toSerializableMessage(
 export function createTypedData(transaction: zkSyncTypes.TransactionRequest) {
   invariant(
     Boolean(transaction.customData),
-    'createTypedData expects a transaction with paymaster data'
+    'createTypedData expects a transaction with paymaster data',
   );
   const { chainId } = transaction;
   invariant(chainId, 'ChainId missing from TransactionRequest');
@@ -80,7 +78,7 @@ export function serializePaymasterTx({
 }) {
   invariant(
     transaction.customData,
-    'This method is intended for "paymaster" transactions (customData is expected)'
+    'This method is intended for "paymaster" transactions (customData is expected)',
   );
   const rawTransaction = zkSyncUtils.serializeEip712({
     ...transaction,

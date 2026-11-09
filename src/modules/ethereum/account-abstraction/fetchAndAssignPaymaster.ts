@@ -12,7 +12,7 @@ type NetworksSource = 'mainnet' | 'testnet';
 
 export function adjustedCheckEligibility(
   params: Parameters<ZerionApiClient['paymasterCheckEligibility']>[0],
-  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient },
 ) {
   const txCopy = { ...params };
   const gas = getGas(txCopy);
@@ -52,7 +52,7 @@ async function getPaymasterParams(
     gasPerPubdataByte: string;
     source: NetworksSource;
     apiClient: ZerionApiClient;
-  }
+  },
 ) {
   const transaction = normalizeTransactionProps(incomingTransaction);
   type Request = Parameters<ZerionApiClient['getPaymasterParams']>[0];
@@ -76,20 +76,17 @@ async function getPaymasterParams(
 
 export async function fetchAndAssignPaymaster<T extends IncomingTransaction>(
   tx: T,
-  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient }
+  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient },
 ) {
   const txCopy = { ...tx };
   const gas = getGas(txCopy);
   invariant(gas, 'Tx param missing: {gas}');
   const gasPerPubdataByte = GAS_PER_PUBDATA_BYTE_DEFAULT;
-  const { eligible, paymasterParams, suggestedGas } = await getPaymasterParams(
-    txCopy,
-    {
-      gasPerPubdataByte,
-      source,
-      apiClient,
-    }
-  );
+  const { eligible, paymasterParams, suggestedGas } = await getPaymasterParams(txCopy, {
+    gasPerPubdataByte,
+    source,
+    apiClient,
+  });
   if (eligible && paymasterParams && suggestedGas) {
     txCopy.type = zkSyncUtils.EIP712_TX_TYPE;
     const normalizedSuggestedGas = valueToHex(suggestedGas);

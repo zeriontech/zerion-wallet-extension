@@ -37,11 +37,7 @@ function EnterReferralCodeButton({ onClick }: { onClick: () => void }) {
             </UIText>
           </HStack>
         </Button>
-        <UIText
-          kind="small/regular"
-          color="var(--always-white)"
-          style={{ opacity: 0.5 }}
-        >
+        <UIText kind="small/regular" color="var(--always-white)" style={{ opacity: 0.5 }}>
           if you have one
         </UIText>
       </VStack>
@@ -49,36 +45,23 @@ function EnterReferralCodeButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function ReferralCodeForm({
-  onSuccess,
-}: {
-  onSuccess: (pendingReferrer: ReferrerData) => void;
-}) {
+function ReferralCodeForm({ onSuccess }: { onSuccess: (pendingReferrer: ReferrerData) => void }) {
   const [referralCode, setReferralCode] = useState('');
 
-  const { mutate: applyReferralCode, ...applyReferralCodeMutation } =
-    useMutation({
-      mutationFn: ({
-        referralCode: rawReferralCode,
-      }: {
-        referralCode: string;
-      }) => {
-        return walletPort.request('uiApplyReferralCodeToAllWallets', {
-          referralCode: rawReferralCode.trim(),
-        });
-      },
-      onSuccess,
-    });
+  const { mutate: applyReferralCode, ...applyReferralCodeMutation } = useMutation({
+    mutationFn: ({ referralCode: rawReferralCode }: { referralCode: string }) => {
+      return walletPort.request('uiApplyReferralCodeToAllWallets', {
+        referralCode: rawReferralCode.trim(),
+      });
+    },
+    onSuccess,
+  });
 
   return (
     <>
       <Spacer height={28} />
       <VStack gap={16} className={styles.referralCodeForm}>
-        <UIText
-          kind="body/accent"
-          color="var(--always-white)"
-          style={{ textAlign: 'left' }}
-        >
+        <UIText kind="body/accent" color="var(--always-white)" style={{ textAlign: 'left' }}>
           Referral Code
         </UIText>
         <form

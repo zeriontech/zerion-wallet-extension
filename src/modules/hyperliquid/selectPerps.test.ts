@@ -6,7 +6,7 @@ import type {
 import { DEFAULT_SORTING, selectPerps } from './selectPerps';
 
 function asset(
-  overrides: Partial<PerpUniverseAsset> & Pick<PerpUniverseAsset, 'name'>
+  overrides: Partial<PerpUniverseAsset> & Pick<PerpUniverseAsset, 'name'>,
 ): PerpUniverseAsset {
   return {
     szDecimals: 2,
@@ -33,7 +33,7 @@ function ctx(overrides: Partial<PerpAssetMarketData>): PerpAssetMarketData {
 
 function response(
   assets: PerpUniverseAsset[],
-  ctxs: PerpAssetMarketData[]
+  ctxs: PerpAssetMarketData[],
 ): PerpMetaAndAssetCtxsResponse {
   return [{ universe: assets }, ctxs];
 }
@@ -42,18 +42,13 @@ describe('selectPerps', () => {
   test('merges multiple DEX responses into one list', () => {
     const main = response(
       [asset({ name: 'BTC' }), asset({ name: 'ETH' })],
-      [ctx({ markPx: '65000' }), ctx({ markPx: '3000' })]
+      [ctx({ markPx: '65000' }), ctx({ markPx: '3000' })],
     );
-    const stocks = response(
-      [asset({ name: 'xyz:NVDA' })],
-      [ctx({ markPx: '120' })]
-    );
+    const stocks = response([asset({ name: 'xyz:NVDA' })], [ctx({ markPx: '120' })]);
 
     const result = selectPerps([main, stocks], { sorting: DEFAULT_SORTING });
 
-    expect(result.map((p) => p.name)).toEqual(
-      expect.arrayContaining(['BTC', 'ETH', 'xyz:NVDA'])
-    );
+    expect(result.map((p) => p.name)).toEqual(expect.arrayContaining(['BTC', 'ETH', 'xyz:NVDA']));
     expect(result).toHaveLength(3);
   });
 
@@ -68,7 +63,7 @@ describe('selectPerps', () => {
   test('filters delisted assets', () => {
     const data = response(
       [asset({ name: 'BTC' }), asset({ name: 'OLD', isDelisted: true })],
-      [ctx({}), ctx({})]
+      [ctx({}), ctx({})],
     );
     const result = selectPerps([data], { sorting: DEFAULT_SORTING });
     expect(result.map((p) => p.name)).toEqual(['BTC']);
@@ -77,36 +72,27 @@ describe('selectPerps', () => {
   test('skips assets with no matching ctx', () => {
     const data = response(
       [asset({ name: 'BTC' }), asset({ name: 'ETH' })],
-      [ctx({})] // only one ctx for two assets
+      [ctx({})], // only one ctx for two assets
     );
     const result = selectPerps([data], { sorting: DEFAULT_SORTING });
     expect(result.map((p) => p.name)).toEqual(['BTC']);
   });
 
   test('derives relativeChange1d from markPx/prevDayPx', () => {
-    const data = response(
-      [asset({ name: 'BTC' })],
-      [ctx({ markPx: '110', prevDayPx: '100' })]
-    );
+    const data = response([asset({ name: 'BTC' })], [ctx({ markPx: '110', prevDayPx: '100' })]);
     const [perp] = selectPerps([data], { sorting: DEFAULT_SORTING });
     expect(perp.meta.relativeChange1d).toBeCloseTo(0.1);
     expect(perp.meta.price).toBe(110);
   });
 
   test('relativeChange1d is null when prevDayPx is 0', () => {
-    const data = response(
-      [asset({ name: 'BTC' })],
-      [ctx({ markPx: '110', prevDayPx: '0' })]
-    );
+    const data = response([asset({ name: 'BTC' })], [ctx({ markPx: '110', prevDayPx: '0' })]);
     const [perp] = selectPerps([data], { sorting: DEFAULT_SORTING });
     expect(perp.meta.relativeChange1d).toBeNull();
   });
 
   test('derives volume24h from dayNtlVlm', () => {
-    const data = response(
-      [asset({ name: 'BTC' })],
-      [ctx({ dayNtlVlm: '1200000000' })]
-    );
+    const data = response([asset({ name: 'BTC' })], [ctx({ dayNtlVlm: '1200000000' })]);
     const [perp] = selectPerps([data], { sorting: DEFAULT_SORTING });
     expect(perp.meta.volume24h).toBe(1_200_000_000);
   });
@@ -122,11 +108,7 @@ describe('selectPerps', () => {
   test('sorts by volume descending by default', () => {
     const data = response(
       [asset({ name: 'LOW' }), asset({ name: 'HIGH' }), asset({ name: 'MID' })],
-      [
-        ctx({ dayNtlVlm: '100' }),
-        ctx({ dayNtlVlm: '300' }),
-        ctx({ dayNtlVlm: '200' }),
-      ]
+      [ctx({ dayNtlVlm: '100' }), ctx({ dayNtlVlm: '300' }), ctx({ dayNtlVlm: '200' })],
     );
     const result = selectPerps([data], { sorting: DEFAULT_SORTING });
     expect(result.map((p) => p.name)).toEqual(['HIGH', 'MID', 'LOW']);
@@ -135,7 +117,7 @@ describe('selectPerps', () => {
   test('sorts by price descending', () => {
     const data = response(
       [asset({ name: 'A' }), asset({ name: 'B' })],
-      [ctx({ markPx: '10' }), ctx({ markPx: '20' })]
+      [ctx({ markPx: '10' }), ctx({ markPx: '20' })],
     );
     const result = selectPerps([data], {
       sorting: { field: 'price', direction: 'desc' },
@@ -149,7 +131,7 @@ describe('selectPerps', () => {
       [
         ctx({ markPx: '105', prevDayPx: '100' }), // +5%
         ctx({ markPx: '120', prevDayPx: '100' }), // +20%
-      ]
+      ],
     );
     const result = selectPerps([data], {
       sorting: { field: 'change', direction: 'desc' },
@@ -160,7 +142,7 @@ describe('selectPerps', () => {
   test('null metrics sort last regardless of direction', () => {
     const data = response(
       [asset({ name: 'WITH' }), asset({ name: 'WITHOUT' })],
-      [ctx({ dayNtlVlm: '100' }), ctx({ dayNtlVlm: 'not-a-number' })]
+      [ctx({ dayNtlVlm: '100' }), ctx({ dayNtlVlm: 'not-a-number' })],
     );
     const desc = selectPerps([data], {
       sorting: { field: 'volume', direction: 'desc' },
@@ -175,11 +157,7 @@ describe('selectPerps', () => {
   test('limit slices the result', () => {
     const data = response(
       [asset({ name: 'A' }), asset({ name: 'B' }), asset({ name: 'C' })],
-      [
-        ctx({ dayNtlVlm: '300' }),
-        ctx({ dayNtlVlm: '200' }),
-        ctx({ dayNtlVlm: '100' }),
-      ]
+      [ctx({ dayNtlVlm: '300' }), ctx({ dayNtlVlm: '200' }), ctx({ dayNtlVlm: '100' })],
     );
     const result = selectPerps([data], { sorting: DEFAULT_SORTING, limit: 2 });
     expect(result.map((p) => p.name)).toEqual(['A', 'B']);
@@ -188,7 +166,7 @@ describe('selectPerps', () => {
   test('query filters by symbol and name (case-insensitive)', () => {
     const data = response(
       [asset({ name: 'BTC' }), asset({ name: 'xyz:NVDA' })],
-      [ctx({}), ctx({})]
+      [ctx({}), ctx({})],
     );
     const result = selectPerps([data], {
       sorting: DEFAULT_SORTING,

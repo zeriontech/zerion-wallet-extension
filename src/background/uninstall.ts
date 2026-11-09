@@ -5,7 +5,7 @@ import { version } from 'src/shared/packageVersion';
 
 export function setUninstallURL() {
   const uninstallLink = getRemoteConfigValue(
-    'extension_uninstall_link'
+    'extension_uninstall_link',
   ) as RemoteConfig['extension_uninstall_link'];
 
   if (uninstallLink) {

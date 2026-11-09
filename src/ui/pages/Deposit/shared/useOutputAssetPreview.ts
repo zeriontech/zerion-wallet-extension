@@ -4,10 +4,7 @@ import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
 import { useDepositSuggestedTokens } from 'src/modules/zerion-api/hooks/useDepositSuggestedTokens';
-import type {
-  DepositQuote,
-  OnrampAsset,
-} from 'src/modules/zerion-api/types/DepositFlow';
+import type { DepositQuote, OnrampAsset } from 'src/modules/zerion-api/types/DepositFlow';
 import { getOnrampEcosystem } from './ecosystem';
 
 export interface OutputAssetPreview {
@@ -58,7 +55,7 @@ export function useOutputAssetPreview({
   const shouldLookUpFungible = Boolean(outputFungibleId);
   const fungiblesQuery = useAssetListFungibles(
     { fungibleIds: outputFungibleId ? [outputFungibleId] : [], currency },
-    { suspense: false, enabled: shouldLookUpFungible }
+    { suspense: false, enabled: shouldLookUpFungible },
   );
 
   return useMemo(() => {
@@ -68,21 +65,13 @@ export function useOutputAssetPreview({
 
     // The quote is authoritative: it echoes back the asset and chain the
     // provider actually priced
-    if (
-      quote &&
-      quote.asset.id === outputFungibleId &&
-      quote.chain.id === outputChain
-    ) {
+    if (quote && quote.asset.id === outputFungibleId && quote.chain.id === outputChain) {
       return fromOnrampAsset({ asset: quote.asset, chain: quote.chain });
     }
 
     const data = suggestedTokensQuery.data?.data;
-    const match = [
-      ...(data?.featuredAssets ?? []),
-      ...(data?.assets ?? []),
-    ].find(
-      (item) =>
-        item.asset.id === outputFungibleId && item.chain.id === outputChain
+    const match = [...(data?.featuredAssets ?? []), ...(data?.assets ?? [])].find(
+      (item) => item.asset.id === outputFungibleId && item.chain.id === outputChain,
     );
     if (match) {
       return fromOnrampAsset(match);

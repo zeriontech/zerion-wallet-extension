@@ -22,10 +22,7 @@ export type ConfidentialAnalyticsEvent =
       params: { stage: 'intro' | 'signing' | 'failed' };
     };
 
-export const CONFIDENTIAL_EVENT_NAMES: Record<
-  ConfidentialAnalyticsEvent['name'],
-  string
-> = {
+export const CONFIDENTIAL_EVENT_NAMES: Record<ConfidentialAnalyticsEvent['name'], string> = {
   dialogShown: 'General: Confidential Decrypt Dialog Shown',
   decryptStarted: 'General: Confidential Decrypt Started',
   permitSigned: 'General: Confidential Permit Signed',

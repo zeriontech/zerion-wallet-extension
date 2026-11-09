@@ -52,9 +52,7 @@ export function ToasterArrow({
   const leadX = useMotionValue(phaseToX(0, 0));
   const leadScale = useMotionValue(phaseToScale(0, 0));
   const trailX = useTransform(progress, (p) => phaseToX(p, PHASE_OFFSET));
-  const trailScale = useTransform(progress, (p) =>
-    phaseToScale(p, PHASE_OFFSET)
-  );
+  const trailScale = useTransform(progress, (p) => phaseToScale(p, PHASE_OFFSET));
   // Trailing arrow fades out once we settle, leaving a single centered arrow.
   const trailOpacity = useMotionValue(1);
 
@@ -124,10 +122,7 @@ export function ToasterArrow({
       >
         <ArrowRightImg width={14} height={14} />
       </motion.span>
-      <motion.span
-        className={s.arrowGlyph}
-        style={{ x: leadX, scale: leadScale }}
-      >
+      <motion.span className={s.arrowGlyph} style={{ x: leadX, scale: leadScale }}>
         <ArrowRightImg width={14} height={14} />
       </motion.span>
     </span>

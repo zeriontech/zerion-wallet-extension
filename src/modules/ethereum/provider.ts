@@ -14,9 +14,7 @@ import type { Connection } from './connection';
 function accountsEquals(arr1: string[], arr2: string[]) {
   // it's okay to perform search like this because `accounts`
   // always has at most one element
-  return (
-    arr1.length === arr2.length && arr1.every((item) => arr2.includes(item))
-  );
+  return arr1.length === arr2.length && arr1.every((item) => arr2.includes(item));
 }
 
 async function fetchInitialState(connection: Connection) {
@@ -26,7 +24,7 @@ async function fetchInitialState(connection: Connection) {
     connection.send<WalletNameFlag[]>(
       formatJsonRpcRequestPatched('wallet_getWalletNameFlags', {
         origin: window.location.origin,
-      })
+      }),
     ),
   ]).then(([chainId, accounts, walletNameFlags]) => ({
     chainId,
@@ -77,37 +75,34 @@ export class EthereumProvider extends JsonRpcProvider {
     this.networkVersion = '1';
     this.accounts = [];
 
-    connection.on(
-      'ethereumEvent',
-      ({ event, value }: { event: string; value: unknown }) => {
-        if (event === 'connect') {
-          this.events.emit('connect', { chainId: this.chainId });
+    connection.on('ethereumEvent', ({ event, value }: { event: string; value: unknown }) => {
+      if (event === 'connect') {
+        this.events.emit('connect', { chainId: this.chainId });
+        return;
+      }
+
+      if (event === 'chainChanged' && typeof value === 'string') {
+        if (value === this.chainId) {
           return;
         }
-
-        if (event === 'chainChanged' && typeof value === 'string') {
-          if (value === this.chainId) {
-            return;
-          }
-          updateChainId(this, value);
-        }
-        if (event === 'accountsChanged' && Array.isArray(value)) {
-          if (
-            // it's okay to perform search like this because `this.accounts`
-            // always has at most one element
-            accountsEquals(value, this.accounts)
-          ) {
-            // Do not emit accountChanged because value hasn't changed
-            return;
-          } else if (value.length && !isEthereumAddress(value.at(0))) {
-            this.accounts = [];
-          } else {
-            this.accounts = value;
-          }
-        }
-        this.events.emit(event, value);
+        updateChainId(this, value);
       }
-    );
+      if (event === 'accountsChanged' && Array.isArray(value)) {
+        if (
+          // it's okay to perform search like this because `this.accounts`
+          // always has at most one element
+          accountsEquals(value, this.accounts)
+        ) {
+          // Do not emit accountChanged because value hasn't changed
+          return;
+        } else if (value.length && !isEthereumAddress(value.at(0))) {
+          this.accounts = [];
+        } else {
+          this.accounts = value;
+        }
+      }
+      this.events.emit(event, value);
+    });
 
     this.open();
   }
@@ -132,15 +127,13 @@ export class EthereumProvider extends JsonRpcProvider {
   }
 
   private async _prepareState() {
-    return fetchInitialState(this.connection).then(
-      ({ chainId, accounts, walletNameFlags }) => {
-        updateChainId(this, chainId);
-        this.accounts = accounts;
-        if (walletNameFlags.includes(WalletNameFlag.isMetaMask)) {
-          this.markAsMetamask();
-        }
+    return fetchInitialState(this.connection).then(({ chainId, accounts, walletNameFlags }) => {
+      updateChainId(this, chainId);
+      this.accounts = accounts;
+      if (walletNameFlags.includes(WalletNameFlag.isMetaMask)) {
+        this.markAsMetamask();
       }
-    );
+    });
   }
 
   /**
@@ -149,7 +142,7 @@ export class EthereumProvider extends JsonRpcProvider {
    */
   public request = async (
     request: RequestArguments,
-    context?: unknown
+    context?: unknown,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> => {
     if (request.method === 'eth_chainId') {
@@ -170,7 +163,7 @@ export class EthereumProvider extends JsonRpcProvider {
     }
     const promise = this._getRequestPromise(
       formatJsonRpcRequestPatched(request.method, params || [], request.id),
-      context
+      context,
     );
     if (request.method === 'eth_requestAccounts' && this.nonEip6963Request) {
       return promise.catch((originalError) => {
@@ -187,7 +180,7 @@ export class EthereumProvider extends JsonRpcProvider {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async _getRequestPromise<Result = any, Params = any>(
     request: JsonRpcRequest<Params>,
-    _context?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    _context?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<Result> {
     if (!this.connection.connected) {
       await this.open();
@@ -206,10 +199,7 @@ export class EthereumProvider extends JsonRpcProvider {
 
   // Taken from Rabby
   // shim for legacy api
-  sendAsync = (
-    payload: unknown,
-    callback: (error: null | Error, result: unknown) => void
-  ) => {
+  sendAsync = (payload: unknown, callback: (error: null | Error, result: unknown) => void) => {
     if (Array.isArray(payload)) {
       return Promise.all(
         payload.map(
@@ -219,8 +209,8 @@ export class EthereumProvider extends JsonRpcProvider {
                 // ignore error
                 resolve(res);
               });
-            })
-        )
+            }),
+        ),
       ).then((result) => callback(null, result));
     }
     const { method, params, ...rest } = payload as JsonRpcRequest;
@@ -293,7 +283,7 @@ export class EthereumProvider extends JsonRpcProvider {
   removeAllListeners(event?: string) {
     // eslint-disable-next-line no-console
     console.warn(
-      'ethereum.removeAllListeners() is not part of EIP-1193 standard and you should not rely on it'
+      'ethereum.removeAllListeners() is not part of EIP-1193 standard and you should not rely on it',
     );
     this.events.removeAllListeners(event);
   }
@@ -303,9 +293,7 @@ export class EthereumProvider extends JsonRpcProvider {
    */
   emit(event: string, ...props: unknown[]) {
     // eslint-disable-next-line no-console
-    console.warn(
-      'ethereum.emit() is not part of EIP-1193 standard and you should not rely on it'
-    );
+    console.warn('ethereum.emit() is not part of EIP-1193 standard and you should not rely on it');
     if (event) {
       this.events.emit(event, ...props);
     }

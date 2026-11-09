@@ -4,13 +4,7 @@ import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { BackButton } from 'src/ui/components/BackButton';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
 
-export function NavigationBar({
-  title,
-  home,
-}: {
-  title: string;
-  home?: string;
-}) {
+export function NavigationBar({ title, home }: { title: string; home?: string }) {
   const goBack = useGoBack(home);
   return (
     <nav

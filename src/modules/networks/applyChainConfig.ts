@@ -12,7 +12,7 @@ import { synthesizeExplorer } from './helpers';
  */
 export function applyChainConfig(
   info: NetworkInfo,
-  chainConfig: AddEthereumChainParameter | null
+  chainConfig: AddEthereumChainParameter | null,
 ): NetworkInfo {
   if (!chainConfig) {
     return info;

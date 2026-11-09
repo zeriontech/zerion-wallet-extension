@@ -18,7 +18,7 @@ export class InDappNotificationService {
     const tabs = await browser.tabs.query({});
     return tabs
       .filter((tab): tab is browser.Tabs.Tab & { id: number } =>
-        Boolean(tab.url && tab.id && new URL(tab.url).origin === origin)
+        Boolean(tab.url && tab.id && new URL(tab.url).origin === origin),
       )
       .map((tab) => tab.id);
   }
@@ -49,11 +49,7 @@ export class InDappNotificationService {
     });
   }
 
-  async notifySwitchChainError(
-    chainId: ChainId,
-    origin: string,
-    _error: unknown
-  ) {
+  async notifySwitchChainError(chainId: ChainId, origin: string, _error: unknown) {
     await this.notify(origin, {
       notificationEvent: 'switchChainError',
       chainId: chainId.toString(),

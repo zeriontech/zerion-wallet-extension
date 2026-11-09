@@ -30,20 +30,10 @@ function DialogContent({
         from your address book?
       </UIText>
       <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <Button
-          type="button"
-          kind="neutral"
-          onClick={onClose}
-          style={{ width: '100%' }}
-        >
+        <Button type="button" kind="neutral" onClick={onClose} style={{ width: '100%' }}>
           Cancel
         </Button>
-        <Button
-          type="button"
-          kind="danger"
-          onClick={onConfirm}
-          style={{ width: '100%' }}
-        >
+        <Button type="button" kind="danger" onClick={onConfirm} style={{ width: '100%' }}>
           Remove
         </Button>
       </HStack>
@@ -65,19 +55,9 @@ export function RemoveAddressBookEntryDialog({
   onConfirm: () => void;
 }) {
   return (
-    <Dialog2
-      open={open}
-      onClose={onClose}
-      title="Remove Address"
-      size="content"
-    >
+    <Dialog2 open={open} onClose={onClose} title="Remove Address" size="content">
       {open ? (
-        <DialogContent
-          address={address}
-          name={name}
-          onConfirm={onConfirm}
-          onClose={onClose}
-        />
+        <DialogContent address={address} name={name} onConfirm={onConfirm} onClose={onClose} />
       ) : null}
     </Dialog2>
   );

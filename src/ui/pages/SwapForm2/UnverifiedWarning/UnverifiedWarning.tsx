@@ -11,8 +11,8 @@ export function UnverifiedWarning() {
           Transaction Unverified
         </UIText>
         <UIText kind="small/regular" color="currentColor">
-          Our security provider Blockaid does not support this network for
-          security checks. Please proceed with caution.
+          Our security provider Blockaid does not support this network for security checks. Please
+          proceed with caution.
         </UIText>
       </VStack>
     </div>
