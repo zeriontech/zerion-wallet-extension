@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page, Route } from '@playwright/test';
 import { testWallets } from 'e2e/fixtures/constants';
 import { createExtensionTest } from './test';
 
@@ -43,7 +43,7 @@ function sendFormUrl(extensionPopupUrl: string) {
   const params = new URLSearchParams({
     inputChain: 'ethereum',
     inputFungibleId: 'eth',
-    inputAmount: '0.001',
+    inputAmount: '0.00001',
     to: '0xea79c0adb4f9d249770a8752fc6c0020999c52a0',
   });
   return `${extensionPopupUrl}#/send-form?${params}`;
@@ -90,6 +90,44 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   extensionPopupUrl,
 }) => {
   await page.setViewportSize({ width: 400, height: 640 });
+  // ZPI reports no positions for the test wallet. The Send form refuses to
+  // request a quote for an amount above the held balance (WLT-3053), so give
+  // the wallet an ETH position. Keep the quantity below the dapp transaction's
+  // fee: the dapp fee row then keeps showing "up to max fee", which is the
+  // value these assertions compare with the picker. The Send amount in
+  // `sendFormUrl` stays below this balance.
+  await context.route('**/wallet/get-simple-positions/v1*', async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [
+          {
+            id: 'eth-ethereum',
+            amount: { currency: 'usd', quantity: '0.0001', value: 0.2, usdValue: 0.2 },
+            fungible: {
+              id: 'eth',
+              name: 'Ether',
+              symbol: 'ETH',
+              implementations: { ethereum: { address: null, decimals: 18 } },
+              iconUrl: null,
+              verified: true,
+              new: false,
+              meta: {
+                price: 2000,
+                circulatingSupply: null,
+                totalSupply: null,
+                marketCap: null,
+              },
+            },
+            chain: { id: 'ethereum', name: 'Ethereum', iconUrl: '' },
+          },
+        ],
+        meta: null,
+        errors: null,
+      }),
+    });
+  });
   await context.route('**/chain/get-gas-prices/v1*', async (route) => {
     await route.fulfill({
       status: 200,

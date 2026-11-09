@@ -7,66 +7,10 @@ import {
   type SimulationResult,
 } from 'src/ui/pages/SwapForm2/SwapButton';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
-import { isAmountEntered } from '../shared/amount';
 import type { SendFormState2 } from '../types';
+import type { SendSlotButton } from '../resolveSendSlot';
+import { resolveSendButton } from './resolveSendButton';
 import { useSendSimulation } from './useSendSimulation';
-
-function resolveLabel({
-  formState,
-  transaction,
-  state,
-  simulated,
-  isPreparingTransaction,
-}: {
-  formState: SendFormState2;
-  transaction: MultichainTransaction | null;
-  state: 'idle' | 'simulating';
-  simulated: boolean;
-  isPreparingTransaction: boolean;
-}): string {
-  if (state === 'simulating') return 'Verifying Transaction';
-  if (simulated) return 'Confirm Send';
-  if (!formState.inputFungibleId && !formState.nftId) return 'Select Token';
-  const isNft = Boolean(formState.nftId);
-  if (isNft) {
-    if (!formState.nftAmount || Number(formState.nftAmount) === 0) {
-      return 'Enter an Amount';
-    }
-    // Token mode accepts a typed `0` — non-payable calls (claims, approvals)
-    // need it. Only an untouched (or not-yet-numeric) input is "no amount".
-  } else if (!isAmountEntered(formState.inputAmount)) {
-    return 'Enter an Amount';
-  }
-  if (isPreparingTransaction && !transaction) return 'Preparing Transaction';
-  return 'Send Now';
-}
-
-function isDisabled({
-  formState,
-  transaction,
-  state,
-  simulated,
-  signing,
-}: {
-  formState: SendFormState2;
-  transaction: MultichainTransaction | null;
-  state: 'idle' | 'simulating';
-  simulated: boolean;
-  signing: boolean;
-}) {
-  if (signing) return true;
-  if (state === 'simulating') return true;
-  if (simulated) return false;
-  if (!formState.inputFungibleId && !formState.nftId) return true;
-  const isNft = Boolean(formState.nftId);
-  if (isNft) {
-    if (!formState.nftAmount || Number(formState.nftAmount) === 0) return true;
-  } else if (!isAmountEntered(formState.inputAmount)) {
-    return true;
-  }
-  if (!transaction) return true;
-  return false;
-}
 
 export function SendButton({
   address,
@@ -75,6 +19,8 @@ export function SendButton({
   simulated,
   signing,
   isPreparingTransaction,
+  slotButton,
+  exceedsBalance,
   onSimulationCompleted,
   onSign,
   dangerTitle,
@@ -86,7 +32,9 @@ export function SendButton({
   simulated: boolean;
   signing: boolean;
   isPreparingTransaction: boolean;
-  onSimulationCompleted: (result: SimulationResult) => void;
+  slotButton: SendSlotButton;
+  exceedsBalance: boolean;
+  onSimulationCompleted: (result: SimulationResult, transaction: MultichainTransaction) => void;
   onSign: () => void;
   dangerTitle?: string;
   onCancel: () => void;
@@ -105,19 +53,15 @@ export function SendButton({
   });
   const effectiveFire = simulated ? fire : guardedFire;
 
-  const label = resolveLabel({
-    formState,
-    transaction,
-    state,
-    simulated,
-    isPreparingTransaction,
-  });
-  const disabled = isDisabled({
+  const { label, disabled } = resolveSendButton({
     formState,
     transaction,
     state,
     simulated,
     signing,
+    isPreparingTransaction,
+    slotButton,
+    exceedsBalance,
   });
 
   const isDanger = Boolean(dangerTitle) && (state === 'simulating' || !disabled);

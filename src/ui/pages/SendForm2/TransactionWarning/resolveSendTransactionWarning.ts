@@ -12,19 +12,25 @@ import type { TransactionPrepareError } from 'src/modules/zerion-api/types/Trans
 
 export type { ResolvedTransactionWarning, SimulationResult };
 
-export function backendErrorToMessage(
+export function getSendErrorCopy(
   error: TransactionPrepareError,
   context: { assetSymbol?: string | null; nativeAssetSymbol?: string | null },
-): string {
+): { title: string; description: string | null } {
   if (error.code === 1) {
     const symbol = context.assetSymbol;
-    return symbol ? `Insufficient ${symbol} balance` : 'Insufficient balance';
+    return {
+      title: symbol ? `Insufficient ${symbol} balance` : 'Insufficient balance',
+      description: null,
+    };
   }
   if (error.code === 2) {
     const symbol = context.nativeAssetSymbol;
-    return symbol ? `Insufficient ${symbol} for gas` : 'Insufficient balance for gas';
+    return {
+      title: symbol ? `Insufficient ${symbol} for gas` : 'Insufficient balance for gas',
+      description: null,
+    };
   }
-  return error.message;
+  return { title: error.message, description: null };
 }
 
 /**
@@ -47,14 +53,15 @@ export function resolveSendTransactionWarning({
   nativeAssetSymbol?: string | null;
 }): ResolvedTransactionWarning {
   if (backendError) {
+    const copy = getSendErrorCopy(backendError, {
+      assetSymbol,
+      nativeAssetSymbol,
+    });
     return {
       warning: {
         variant: 'error',
-        title: backendErrorToMessage(backendError, {
-          assetSymbol,
-          nativeAssetSymbol,
-        }),
-        description: undefined,
+        title: copy.title,
+        description: copy.description ?? undefined,
       },
       unverified: false,
       blocksAutoSign: true,

@@ -19,7 +19,7 @@ export function useSendSimulation({
   address: string;
   transaction: MultichainTransaction | null;
   simulated: boolean;
-  onSimulationCompleted: (result: SimulationResult) => void;
+  onSimulationCompleted: (result: SimulationResult, transaction: MultichainTransaction) => void;
   onSign: () => void;
 }) {
   const { currency } = useCurrency();
@@ -34,9 +34,9 @@ export function useSendSimulation({
         currency,
         origin: 'https://app.zerion.io',
       }),
-    onSettled: (data) => {
+    onSettled: (data, _error, txs) => {
       const patched = applySimulationPatch(data, devMenuStore.getState());
-      onSimulationCompleted(patched ?? null);
+      onSimulationCompleted(patched ?? null, txs[0]);
     },
   });
 

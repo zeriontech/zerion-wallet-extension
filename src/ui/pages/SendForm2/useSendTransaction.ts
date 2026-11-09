@@ -21,6 +21,9 @@ import { isAmountEntered, isZeroAmount } from './shared/amount';
 import { toLegacySendFormState } from './shared/toLegacySendFormState';
 import { hexlifyTransactionData } from './shared/hexlifyTransactionData';
 import type { SendFormState2 } from './types';
+import { selectCurrentSendResponse } from './shared/selectCurrentSendResponse';
+
+export { selectCurrentSendResponse };
 
 /**
  * A quote-shaped view of a prepared send. Both the backend and the local prep
@@ -102,6 +105,7 @@ export function useSendTransaction({
   position,
   resolvedInputAmount,
   network,
+  exceedsBalance,
   enabled: enabledParam = true,
 }: {
   address: string;
@@ -109,6 +113,7 @@ export function useSendTransaction({
   position: FungiblePosition | null;
   resolvedInputAmount: string | null;
   network: NetworkInfo | null;
+  exceedsBalance: boolean;
   enabled?: boolean;
 }) {
   const { currency } = useCurrency();
@@ -162,7 +167,13 @@ export function useSendTransaction({
     : isMax || isAmountEntered(effectiveAmount);
 
   const baseGatesPass = Boolean(
-    address && formState.inputChain && formState.to && assetId && amountGatePasses && network,
+    address &&
+    formState.inputChain &&
+    formState.to &&
+    assetId &&
+    amountGatePasses &&
+    !exceedsBalance &&
+    network,
   );
 
   const useBackend = Boolean(network?.flags.supportsSending);
@@ -181,7 +192,6 @@ export function useSendTransaction({
     { source },
     {
       enabled: enabledParam && baseGatesPass && useBackend,
-      keepPreviousData: true,
       suspense: false,
     },
   );
@@ -216,7 +226,6 @@ export function useSendTransaction({
 
   const localQuery = useQuery({
     enabled: localEnabled,
-    keepPreviousData: true,
     suspense: false,
     queryKey: ['prepareSendData/SendForm2', address, addressPosition, legacyFormState],
     queryFn: () => prepareSendData(address, addressPosition, legacyFormState),
@@ -224,11 +233,13 @@ export function useSendTransaction({
     retry: 1,
   });
 
+  const backendResponse = selectCurrentSendResponse(backendQuery.data, backendQuery.isPreviousData);
+
   const data = useMemo<SendTransactionResult | undefined>(() => {
     if (!baseGatesPass) return undefined;
     if (useBackend) {
-      if (!backendQuery.data) return undefined;
-      const { transactionSend, networkFee, inputAmount, error } = backendQuery.data;
+      if (!backendResponse) return undefined;
+      const { transactionSend, networkFee, inputAmount, error } = backendResponse;
       return {
         network,
         sendQuote: {
@@ -250,7 +261,7 @@ export function useSendTransaction({
       inputAmount: null,
       error: null,
     };
-  }, [baseGatesPass, useBackend, backendQuery.data, localQuery.data, network, currency]);
+  }, [baseGatesPass, useBackend, backendResponse, localQuery.data, network, currency]);
 
   const backendEnabled = enabledParam && baseGatesPass && useBackend;
 
