@@ -18,7 +18,23 @@ export class LoginPage extends ExtensionPage {
     `);
   }
 
+  /**
+   * The login view renders nothing while `account/getExistingUser` is in
+   * flight and an error screen if that request fails, which happens right
+   * after locking when the service worker is restarting. Wait for the form and
+   * reload once if the page came up on the error screen.
+   */
+  async waitForUnlockForm() {
+    try {
+      await expect(this.passwordInput).toBeVisible({ timeout: 20_000 });
+    } catch {
+      await this.page.reload();
+      await expect(this.passwordInput).toBeVisible({ timeout: 20_000 });
+    }
+  }
+
   async unlock(password: string) {
+    await this.waitForUnlockForm();
     await this.passwordInput.fill(password);
     await this.unlockButton.click();
   }

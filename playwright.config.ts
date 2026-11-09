@@ -43,6 +43,11 @@ export default defineConfig({
     // Collect trace when retrying the failed test.
     // See https://playwright.dev/docs/trace-viewer
     trace: 'retain-on-failure',
+    // Bound every action and navigation: without these a stalled background
+    // RPC leaves a locator waiting for the whole 2-minute test budget, which
+    // used to turn a transient failure into a hung job.
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
   },
   projects: [
     {
