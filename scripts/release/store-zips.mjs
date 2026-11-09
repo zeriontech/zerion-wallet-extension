@@ -14,7 +14,12 @@
  *     `git archive` of the tagged commit, so AMO reviewers can rebuild the
  *     exact submitted version. See SOURCE_CODE_REVIEW.md.
  *
- * Usage: node scripts/release/store-zips.mjs [--tag vX.Y.Z] [--out-dir dir] [--dry-run]
+ * Beta builds pass `--version-suffix` (the fourth manifest part the beta build
+ * appends) and `--label beta`; without a tag the sources zip is `git archive
+ * HEAD`, which is the commit the beta build came from.
+ *
+ * Usage: node scripts/release/store-zips.mjs [--tag vX.Y.Z] [--out-dir dir]
+ *          [--version-suffix N] [--label beta] [--dry-run]
  */
 
 import { execFileSync } from 'node:child_process';
@@ -22,12 +27,22 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 function parseArgs(argv) {
-  const options = { dryRun: false, outDir: 'store-artifacts', tag: undefined };
+  const options = {
+    dryRun: false,
+    outDir: 'store-artifacts',
+    tag: undefined,
+    versionSuffix: undefined,
+    label: undefined,
+  };
   for (const arg of argv) {
     if (arg === '--dry-run') options.dryRun = true;
     else if (arg.startsWith('--out-dir='))
       options.outDir = arg.slice('--out-dir='.length);
     else if (arg.startsWith('--tag=')) options.tag = arg.slice('--tag='.length);
+    else if (arg.startsWith('--version-suffix='))
+      options.versionSuffix = arg.slice('--version-suffix='.length);
+    else if (arg.startsWith('--label='))
+      options.label = arg.slice('--label='.length);
     else {
       console.error(`Unknown argument: ${arg}`);
       process.exit(1);
@@ -46,11 +61,15 @@ const root = process.cwd();
 const { version } = JSON.parse(
   fs.readFileSync(path.join(root, 'package.json'), 'utf8')
 );
-const tag = options.tag ?? `v${version}`;
+const expectedVersion = options.versionSuffix
+  ? `${version}.${options.versionSuffix}`
+  : version;
+const tag = options.tag ?? `v${expectedVersion}`;
+const suffixLabel = options.label ? `-${options.label}` : '';
 
-if (tag !== `v${version}`) {
+if (tag !== `v${expectedVersion}`) {
   fail(
-    `Tag ${tag} does not match package.json version ${version}. Refusing to zip.`
+    `Tag ${tag} does not match the built version ${expectedVersion}. Refusing to zip.`
   );
 }
 
@@ -64,10 +83,10 @@ function requireBuildOutput(dir) {
   const { version: manifestVersion } = JSON.parse(
     fs.readFileSync(manifestPath, 'utf8')
   );
-  if (manifestVersion !== version) {
+  if (manifestVersion !== expectedVersion) {
     fail(
-      `${dir}/manifest.json has version ${manifestVersion}, but package.json has ${version}. ` +
-        'Run `node scripts/manifest-version.js` and rebuild before zipping.'
+      `${dir}/manifest.json has version ${manifestVersion}, but the build should be ${expectedVersion}. ` +
+        'Rebuild before zipping.'
     );
   }
 }
@@ -87,19 +106,19 @@ const artifacts = {
     root,
     options.outDir,
     'chrome',
-    `zerion-wallet-extension-${tag}.zip`
+    `zerion-wallet-extension-${tag}${suffixLabel}.zip`
   ),
   firefox: path.join(
     root,
     options.outDir,
     'firefox',
-    `zerion-wallet-firefox-addon-${tag}.zip`
+    `zerion-wallet-firefox-addon-${tag}${suffixLabel}.zip`
   ),
   firefoxSources: path.join(
     root,
     options.outDir,
     'firefox',
-    `zerion-wallet-firefox-addon-${tag}-sources.zip`
+    `zerion-wallet-firefox-addon-${tag}${suffixLabel}-sources.zip`
   ),
 };
 
@@ -124,10 +143,11 @@ execFileSync(
   [
     'archive',
     '--format=zip',
-    `--prefix=zerion-wallet-extension-${tag}/`,
+    `--prefix=zerion-wallet-extension-${tag}${suffixLabel}/`,
     '-o',
     artifacts.firefoxSources,
-    tag,
+    // A beta build has no tag; HEAD is the commit it was built from.
+    options.tag ?? 'HEAD',
   ],
   { cwd: root, stdio: 'inherit' }
 );

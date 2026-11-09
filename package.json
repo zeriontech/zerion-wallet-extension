@@ -30,7 +30,8 @@
     "release:store-zips": "node scripts/release/store-zips.mjs",
     "release:publish-stores": "node scripts/release/publish-stores.mjs",
     "refresh-networks-fallback": "node scripts/refresh-networks-fallback.mjs",
-    "build:e2e": "node scripts/build-e2e.js"
+    "build:e2e": "node scripts/build-e2e.js",
+    "build:beta": "node scripts/build-beta.js"
   },
   "alias": {
     "src": "./src",

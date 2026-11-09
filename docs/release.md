@@ -10,7 +10,8 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 | Pull request | `pr.yml` → `pr_attach_build.yml` | production build with PR env, zip attached to the PR thread |
 | Pull request | `pr_push_qa.yml` | build pushed to the `zerion-wallet-extension-qa` repo on the PR branch |
 | Push `main` | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump |
-| Tag `vX.Y.Z` | `release.yml` | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack |
+| Tag `vX.Y.Z` | `release.yml` | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items |
+| Push `main` | `beta.yml` | beta build (coral icons, own Firefox id, fourth version part) and, when configured, upload to the beta store items |
 | Tag `vX.Y.Z` | `release_push_qa.yml` | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa` |
 | Manual | `publish-stores.yml` | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO |
 
@@ -27,6 +28,23 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 Tagging belongs to CI only. `scripts/manifest-version.js` no longer creates or amends commits or tags.
 
 `.changeset/config.json` sets `format: false`: Changesets 3 formats the changelog with `prettier --no-error-on-unmatched-pattern`, which the Prettier 2 pinned in this repo does not support. `npm run version` formats `CHANGELOG.md` with the repo's own Prettier instead, so the Version Packages PR still passes `format:check`.
+
+## Beta channel
+
+There is a second listing of the extension in both stores, used as the beta channel. It is the **same bundle** as production with three differences:
+
+- the extension icons are coral (`src/images/beta/`, generated from the production artwork by swapping the background colour, so the silhouette, rounding and per-size anti-aliasing are identical);
+- the Firefox build gets the add-on id `beta@zerion.io`, because AMO keys an add-on by that id and the beta listing is a separate item (Chrome items are keyed by the store item, so the same ZIP can be uploaded to both);
+- the manifest version gets a fourth part, `<major>.<minor>.<patch>.<run>`, so every upload is a new version (manifests allow at most four parts).
+
+`beta.yml` runs on every push to `main`: it builds both targets with `npm run build:beta`, writes store-shaped ZIPs and submits them to the beta items. **The upload is skipped, not failed, when the beta item ids are not configured** – the build and its artifacts are still produced. The same rule applies to production in `release.yml`: a tag publishes the release, and the store submission runs only if `CHROME_EXTENSION_ID` / `FIREFOX_EXTENSION_ID` are configured.
+
+Store visibility is a dashboard setting, not something the API can set:
+
+- **Chrome Web Store**: create the second item and set visibility to _Private_ with the organisation's domain in the trusted testers list.
+- **Firefox AMO**: publish the beta add-on as _Unlisted_ (installs are possible with the link only) or listed with restricted access, depending on what the reviewer flow allows for the account.
+
+Icons and the beta build are also what the QA build uses on PRs; that path is unchanged.
 
 ### Why a GitHub App token
 
@@ -71,6 +89,8 @@ Tradeoff: we depend on a single third-party submitter covering both stores. If i
 | `FIREFOX_EXTENSION_ID` | Firefox | AMO add-on id/slug |
 | `FIREFOX_JWT_ISSUER` | Firefox | AMO API key |
 | `FIREFOX_JWT_SECRET` | Firefox | AMO API secret |
+| `CHROME_BETA_EXTENSION_ID` | beta | Chrome item id of the beta listing; upload skipped when unset |
+| `FIREFOX_BETA_EXTENSION_ID` | beta | AMO id of the beta listing; upload skipped when unset |
 | `SLACK_AUTH_TOKEN` | both | Already used by `release.yml` |
 
 `CHROME_API_VERSION=v2` is set in the workflow, not stored as a secret. The script refuses to run with anything else: CWS API v1.1 stopped working on 2026-10-15.
@@ -104,7 +124,3 @@ Submission is not transactional: if Chrome succeeded and Firefox failed, both st
 - No store retry/rollback logic (see above).
 - The `hive-protect-tags` bypass list lives in org settings; the repository cannot verify it, only fail loudly when it is wrong.
 - Bundle size is not gated.
-
-## Not planned
-
-- There is no beta channel for the extension: no beta branch, no prerelease manifest versioning, and no store prerelease track.
