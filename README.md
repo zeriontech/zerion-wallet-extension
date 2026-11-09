@@ -18,7 +18,7 @@ You can also download the latest build of the Zerion Extension from [here](https
 
 ## Development
 
-> Release gates, the changeset flow, store publishing and the one-time CI setup are documented in [docs/release.md](docs/release.md).
+> Release gates, the changeset flow, store publishing and the one-time CI setup are documented in [docs/release.md](docs/release.md). The build and check toolchain (Vite+, Oxlint/Oxfmt, Vitest, TSRS) is documented in [docs/build.md](docs/build.md).
 
 ### Prerequisites
 
@@ -26,7 +26,7 @@ You can also download the latest build of the Zerion Extension from [here](https
 
 ### 1. Set Up Node
 
-This project requires Node.js version >=20.10 and npm >=11.10. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org/). After installation, you can verify the versions using the following commands:
+This project requires Node.js version >=22.18 (Vite+ requires it; CI uses 24.x) and npm >=11.10. If you don't have Node.js installed, download and install it from the [official website](https://nodejs.org/). After installation, you can verify the versions using the following commands:
 
 ```shell
 node --version
