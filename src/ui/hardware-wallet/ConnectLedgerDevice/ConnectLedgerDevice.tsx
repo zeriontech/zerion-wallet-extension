@@ -16,7 +16,6 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { AnimatedCheckmark } from 'src/ui/ui-kit/AnimatedCheckmark';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { isMacOS } from 'src/ui/shared/isMacos';
@@ -94,7 +93,7 @@ export function ConnectLedgerDevice({
   onConnect: (data: DeviceConnection) => void;
   onBluetoothEnabled: () => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const {
     mutate: invokeConnectDevice,
     isLoading,

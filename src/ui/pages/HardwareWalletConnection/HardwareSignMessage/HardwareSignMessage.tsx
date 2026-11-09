@@ -14,7 +14,6 @@ import { TextPulse } from 'src/ui/components/TextPulse';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { openUrl } from 'src/ui/shared/openUrl';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { urlContext } from 'src/shared/UrlContext';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import {
@@ -75,8 +74,8 @@ export const HardwareSignMessage = React.forwardRef(
     const navigate = useNavigate();
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
-    const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-    const settingsDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+    const dialogRef = useRef<HTMLDialogElement | null>(null);
+    const settingsDialogRef = useRef<HTMLDialogElement | null>(null);
 
     const { mutateAsync: personalSign, ...personalSignMutation } = useMutation({
       mutationFn: async (message: string) => {

@@ -21,7 +21,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { GenericPrompt } from 'src/ui/components/GenericPrompt';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { getNameFromOrigin } from 'src/shared/dapps';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -43,7 +42,7 @@ function RevokeAllButton({
   onSuccess: () => void;
 }) {
   const removePermissionMutation = useRemovePermissionMutation({ onSuccess });
-  const removeActionDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const removeActionDialogRef = useRef<HTMLDialogElement | null>(null);
 
   return (
     <>
@@ -136,7 +135,7 @@ export function ConnectedSite() {
     navigate(-1);
   }, [navigate, refetch]);
 
-  const removeActionDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const removeActionDialogRef = useRef<HTMLDialogElement | null>(null);
 
   const removePermissionMutation = useRemovePermissionMutation({
     onSuccess: () => {

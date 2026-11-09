@@ -48,7 +48,6 @@ import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Media } from 'src/ui/ui-kit/Media';
 import {
   BLOCKCHAIN_TYPES,
@@ -316,7 +315,7 @@ function WalletGroupSelect() {
   );
   useBackgroundKind(whiteBackgroundKind);
   const title = 'Select Wallet Group';
-  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   if (isLoading) {
     return null;
   }

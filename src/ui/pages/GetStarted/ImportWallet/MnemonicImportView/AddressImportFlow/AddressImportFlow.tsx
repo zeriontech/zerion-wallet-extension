@@ -21,7 +21,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -97,7 +96,7 @@ export function PortfolioValueDetail({ address }: { address: string }) {
 }
 
 function InactiveWalletsHint() {
-  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   return (
     <>
       <UnstyledButton
@@ -137,7 +136,7 @@ export function SelectMoreWalletsDialog({
   wallets: DerivedWallets | null;
   existingAddressesSet: Set<string>;
   activeWallets: Record<string, { active: boolean }>;
-  dialogRef: React.RefObject<HTMLDialogElementInterface>;
+  dialogRef: React.RefObject<HTMLDialogElement>;
   onSubmit: (values: Set<string>) => void;
 }) {
   const groupedByEcosystem = useMemo(() => {
@@ -353,7 +352,7 @@ function AddressImportList({
       )
     );
   });
-  const moreWalletsDialogRef = useRef<HTMLDialogElementInterface>(null);
+  const moreWalletsDialogRef = useRef<HTMLDialogElement>(null);
 
   const handleSelect = (selectedValues: Set<string>) => {
     const selectedWallets = wallets

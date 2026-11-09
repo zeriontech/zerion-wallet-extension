@@ -12,7 +12,6 @@ import { AddressBadge } from 'src/ui/components/AddressBadge';
 import { Media } from 'src/ui/ui-kit/Media';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { GenericPrompt } from 'src/ui/components/GenericPrompt';
 import type { ConnectedSiteItem } from 'src/ui/shared/requests/getPermissionsWithWallets';
@@ -39,7 +38,7 @@ function RevokeAllPermissionsComponent({
     useErrorBoundary: true,
     onSuccess: onRevokeAll,
   });
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   return (
     <>
       <BottomSheetDialog ref={dialogRef} style={{ height: '30vh' }}>

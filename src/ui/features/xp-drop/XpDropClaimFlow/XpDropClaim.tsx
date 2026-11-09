@@ -19,7 +19,6 @@ import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
@@ -280,8 +279,8 @@ export function XpDropClaim() {
   const { globalPreferences } = useGlobalPreferences();
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
-  const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const xpBreakdownDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const walletSelectDialogRef = useRef<HTMLDialogElement | null>(null);
+  const xpBreakdownDialogRef = useRef<HTMLDialogElement | null>(null);
 
   const { data: currentWallet, refetch: refetchCurrentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],

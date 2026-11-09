@@ -10,7 +10,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { FillView } from 'src/ui/components/FillView';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
@@ -169,7 +168,7 @@ function SelectConnectedWalletView({
   onReject: () => void;
 }) {
   useBackgroundKind(whiteBackgroundKind);
-  const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const walletSelectDialogRef = useRef<HTMLDialogElement | null>(null);
   const [selectedWallet, setSelectedWallet] = useState(wallet);
   const originName = new URL(origin).hostname;
 

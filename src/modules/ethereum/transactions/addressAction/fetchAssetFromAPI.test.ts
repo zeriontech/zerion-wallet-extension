@@ -1,12 +1,11 @@
-import { jest } from '@jest/globals';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 
 // The real client transitively imports the extension runtime, and the http
-// client reads package.json, which ESM jest cannot import by name
-jest.unstable_mockModule('src/modules/zerion-api/zerion-api.client', () => ({
-  ZerionAPI: { assetListFungibles: jest.fn() },
+// client reads package.json, which ESM tests cannot import by name
+vi.mock('src/modules/zerion-api/zerion-api.client', () => ({
+  ZerionAPI: { assetListFungibles: vi.fn() },
 }));
-jest.unstable_mockModule('src/shared/packageVersion', () => ({
+vi.mock('src/shared/packageVersion', () => ({
   version: 'test',
   productionVersion: 'test',
 }));
@@ -28,7 +27,7 @@ function fungible(id: string, implementationAddress: string | null = id) {
   } as unknown as Fungible;
 }
 
-const listFungibles = jest.mocked(ZerionAPI.assetListFungibles);
+const listFungibles = vi.mocked(ZerionAPI.assetListFungibles);
 
 function mockListFungibles(
   impl: (fungibleIds: string[]) => Promise<{ data: Fungible[] }>

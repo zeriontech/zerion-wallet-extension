@@ -1,4 +1,4 @@
-import { jest, describe, test, expect } from '@jest/globals';
+import { describe, expect, test, vi } from 'vite-plus/test';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type {
   ExchangePlaceOrderAction,
@@ -83,10 +83,10 @@ type FailFn = (error: Error) => void;
 
 function makeStoreMock() {
   return {
-    start: jest.fn<StartFn>(() => 'session-id'),
-    advance: jest.fn<AdvanceFn>(),
-    succeed: jest.fn<SucceedFn>(),
-    fail: jest.fn<FailFn>(),
+    start: vi.fn<StartFn>(() => 'session-id'),
+    advance: vi.fn<AdvanceFn>(),
+    succeed: vi.fn<SucceedFn>(),
+    fail: vi.fn<FailFn>(),
   };
 }
 
@@ -98,7 +98,7 @@ function okResponse(): ExchangeResponse {
 }
 
 function makeSubmit(impl?: SubmitFn) {
-  const fn = jest.fn<SubmitFn>();
+  const fn = vi.fn<SubmitFn>();
   if (impl) {
     fn.mockImplementation(impl);
   } else {
@@ -108,11 +108,11 @@ function makeSubmit(impl?: SubmitFn) {
 }
 
 function makeSign() {
-  return jest.fn<SignFn>().mockResolvedValue(DUMMY_SIGNATURE);
+  return vi.fn<SignFn>().mockResolvedValue(DUMMY_SIGNATURE);
 }
 
 function makeFetchPreflight(value: PreflightState | PreflightState[]) {
-  const fn = jest.fn<FetchPreflightFn>();
+  const fn = vi.fn<FetchPreflightFn>();
   if (Array.isArray(value)) {
     for (const v of value) fn.mockResolvedValueOnce(v);
   } else {

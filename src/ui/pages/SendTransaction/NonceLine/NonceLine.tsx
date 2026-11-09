@@ -8,7 +8,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { noValueDash } from 'src/ui/shared/typography';
@@ -151,7 +150,7 @@ export function NonceLine({
     useErrorBoundary: false,
     suspense: true,
   });
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const nonce = data?.value;
   const value = userNonce ?? transaction.nonce ?? nonce;
   const displayValue = value != null ? parseInt(String(value)) : noValueDash;

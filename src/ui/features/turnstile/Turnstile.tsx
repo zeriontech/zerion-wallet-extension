@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { walletPort } from 'src/ui/shared/channels';
@@ -13,7 +12,7 @@ function TurnstileDialog() {
   const { innerWidth } = useWindowSizeStore();
   const turnstileWidgetHeight = 88;
   const turnstileWidgetWidth = innerWidth - 32;
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   useEffect(() => {
     dialogRef.current?.showModal();

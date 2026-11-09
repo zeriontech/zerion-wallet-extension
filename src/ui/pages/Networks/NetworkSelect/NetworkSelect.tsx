@@ -3,7 +3,6 @@ import React, { useMemo, useRef } from 'react';
 import { invariant } from 'src/shared/invariant';
 import { NetworkSelectDialog } from 'src/ui/components/NetworkSelectDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -73,7 +72,7 @@ export function NetworkSelect({
     { enabled: Boolean(isEthereumAddress(params.address)) }
   );
   const walletPortfolio = data?.data;
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   function handleDialogOpen() {
     invariant(dialogRef.current, 'Dialog element not found');

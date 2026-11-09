@@ -30,7 +30,6 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { isReadonlyAccount } from 'src/shared/types/validators';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -623,7 +622,11 @@ function AssetAppDistribution({
             </HStack>
           </UnstyledAnchor>
         ) : (
-          <AssetAddressApp app={app} assetFullInfo={assetFullInfo} />
+          <AssetAddressApp
+            key={app.app.id}
+            app={app}
+            assetFullInfo={assetFullInfo}
+          />
         )
       )}
     </VStack>
@@ -846,7 +849,7 @@ export function AssetAddressStats({
   /** The wallet's position in this asset is a Confidential Position (still encrypted) */
   isEncrypted?: boolean;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const { currency } = useCurrency();
   const isUntrackedAsset = assetFullInfo.fungible.meta.price == null;
   const asset = assetFullInfo.fungible;

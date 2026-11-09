@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -204,7 +203,7 @@ export function HistoryDaySelector({
   style?: React.CSSProperties;
 }) {
   const currentDate = useMemo(() => selectedDate || new Date(), [selectedDate]);
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const handleTriggerClick = () => {
     if (!dialogRef.current) return;

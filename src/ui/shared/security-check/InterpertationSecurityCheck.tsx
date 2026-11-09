@@ -6,7 +6,6 @@ import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarn
 import { Button } from 'src/ui/ui-kit/Button';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
@@ -190,9 +189,9 @@ export function InterpretationSecurityCheck({
     isError: boolean;
   };
 }) {
-  const loadingDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const errorDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const successDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const loadingDialogRef = useRef<HTMLDialogElement | null>(null);
+  const errorDialogRef = useRef<HTMLDialogElement | null>(null);
+  const successDialogRef = useRef<HTMLDialogElement | null>(null);
   const mode: InterpretationMode = interpretQuery.isInitialLoading
     ? 'loading'
     : interpretQuery.isError

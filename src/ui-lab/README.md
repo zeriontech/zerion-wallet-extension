@@ -4,23 +4,10 @@ The UI Lab page is used to test components in isolation and in different states 
 
 ## How to run
 
-In `package.json`, there is an "alias" field which is used by [parcel](https://github.com/parcel-bundler/parcel). To run UI Lab, we need to update this field by removing the "ui-lab:" prefixes
-
-```diff
-"alias": {
--  "ui-lab:src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
--  "ui-lab:src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.mock.ts",
--  "ui-lab:webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
-+  "src/ui/shared/channels": "./src/ui/shared/channels.mock.ts",
-+  "src/modules/networks/networks-store.client": "./src/modules/networks/networks-store.mock.ts",
-+  "webextension-polyfill": "/src/ui-lab/webextension-polyfill.mock.ts"
-},
-```
-
-Then, run the UI Lab page:
-
 ```sh
 npm run ui-lab
 ```
 
-When you're done testing the UI Lab page, **edit these lines back to their original value** (bring back the "ui-lab:" prefixes). This is cumbersome, but due to a parcel limitation (https://github.com/parcel-bundler/parcel/issues/3080#issuecomment-1169913261), we cannot provide aliases in a separate config or in a different package.json file.
+`src/ui-lab/vite.config.ts` maps the modules the components expect (channels, the networks store, background constants, `webextension-polyfill`) to their mocks. Add an alias there when a preview needs another mocked module.
+
+The playground shares `scripts/vite-plugins.ts` with the extension build, so `jsx:`/`url:` imports work the same way in previews.

@@ -24,7 +24,6 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import BigNumber from 'bignumber.js';
 import { usePreferences } from 'src/ui/features/preferences';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import SettingsSlidersIcon from 'jsx:src/ui/assets/settings-sliders.svg';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
@@ -67,7 +66,7 @@ export function AssetTitleAndChart({
   asset: Asset;
   address: string;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const { currency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
   const isUntrackedAsset = asset.meta.price == null;

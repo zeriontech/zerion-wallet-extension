@@ -34,7 +34,6 @@ import {
 import SignatureIcon from 'jsx:src/ui/assets/signature.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
@@ -60,7 +59,7 @@ function SignMessageContent({
   wallet: ExternallyOwnedAccount;
 }) {
   useBackgroundKind(whiteBackgroundKind);
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const toastRef = useRef<PopoverToastHandle>(null);
   const [params] = useSearchParams();
   const windowId = params.get('windowId');

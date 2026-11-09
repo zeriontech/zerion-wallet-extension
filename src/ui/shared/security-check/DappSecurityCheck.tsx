@@ -3,7 +3,6 @@ import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-d
 import { Button } from 'src/ui/ui-kit/Button';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import ShieldIcon from 'jsx:src/ui/assets/shield-filled.svg';
@@ -132,7 +131,7 @@ export function DappSecurityCheck({
   status?: DappSecurityStatus;
   isLoading?: boolean;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const isLoading = statusIsLoading || rawStatus === 'loading';
   const status = isLoading ? 'loading' : rawStatus || 'unknown';

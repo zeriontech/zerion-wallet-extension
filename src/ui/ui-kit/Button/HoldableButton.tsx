@@ -55,7 +55,6 @@ const ButtonElement = <As extends ElementType = 'button'>(
     as,
     kind = 'primary',
     size = 44,
-    children,
     className,
     onClick,
     holdColor,

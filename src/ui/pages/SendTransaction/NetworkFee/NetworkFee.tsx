@@ -9,7 +9,6 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/ui/shared/typography';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -67,7 +66,7 @@ export function NetworkFee({
 }) {
   const { networks } = useNetworks();
   const { currency } = useCurrency();
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } =
     transactionFee;
   const {

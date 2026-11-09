@@ -12,7 +12,6 @@ import { urlContext } from 'src/shared/UrlContext';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
@@ -43,7 +42,7 @@ function TestModeDecorationComponent() {
       [shouldRenderSomething]
     )
   );
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   if (!shouldRenderSomething) {
     return null;
   }

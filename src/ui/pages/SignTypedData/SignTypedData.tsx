@@ -32,7 +32,6 @@ import { produce } from 'immer';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { requestChainForOrigin } from 'src/ui/shared/requests/requestChainForOrigin';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import {
   DialogButtonValue,
@@ -130,7 +129,7 @@ function TypedDataDefaultView({
   onOpenAdvancedView: () => void;
 }) {
   const toastRef = useRef<PopoverToastHandle>(null);
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const [params] = useSearchParams();
   const { preferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
@@ -498,7 +497,7 @@ function SignTypedDataContent({
   const { currency } = useCurrency();
 
   const view = params.get('view') || View.default;
-  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const advancedDialogRef = useRef<HTMLDialogElement | null>(null);
   const openAdvancedView = useCallback(() => {
     advancedDialogRef.current?.showModal();
   }, []);

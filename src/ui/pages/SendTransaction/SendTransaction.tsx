@@ -58,7 +58,6 @@ import {
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
@@ -639,7 +638,7 @@ function SendTransactionContent({
   const addressAction = interpretQuery.data?.data.action ?? null;
 
   const view = params.get('view') || View.default;
-  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const advancedDialogRef = useRef<HTMLDialogElement | null>(null);
   const openAdvancedView = useCallback(() => {
     advancedDialogRef.current?.showModal();
   }, []);
@@ -934,7 +933,7 @@ function SolDefaultView({
   const originForHref = useMemo(() => prepareForHref(origin), [origin]);
   const isBatch = rawTransactions.length > 1;
 
-  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const advancedDialogRef = useRef<HTMLDialogElement | null>(null);
 
   const toastRef = useRef<PopoverToastHandle>(null);
 

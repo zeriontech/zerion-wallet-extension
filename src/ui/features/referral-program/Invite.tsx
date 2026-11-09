@@ -15,7 +15,6 @@ import QrCodeIcon from 'jsx:src/ui/assets/qr-code.svg';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAccount';
 import { FillView } from 'src/ui/components/FillView';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { walletPort } from 'src/ui/shared/channels';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -331,13 +330,11 @@ export function Invite() {
   });
   const walletMeta = walletsMeta?.[0];
 
-  const walletSelectDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const referralLinkDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const qrCodeDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const enterReferralCodeDialogRef = useRef<HTMLDialogElementInterface | null>(
-    null
-  );
-  const successDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const walletSelectDialogRef = useRef<HTMLDialogElement | null>(null);
+  const referralLinkDialogRef = useRef<HTMLDialogElement | null>(null);
+  const qrCodeDialogRef = useRef<HTMLDialogElement | null>(null);
+  const enterReferralCodeDialogRef = useRef<HTMLDialogElement | null>(null);
+  const successDialogRef = useRef<HTMLDialogElement | null>(null);
 
   const addWalletParams = useWalletParams(currentWallet);
   const { mutate: acceptZerionOrigin } = useMutation({

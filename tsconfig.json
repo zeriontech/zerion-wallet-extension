@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
     "module": "ESNext",
     "target": "es2021",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -11,15 +10,32 @@
     "strictPropertyInitialization": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "types": ["chrome", "node", "jest", "@types/dom-navigation"],
+    "types": ["chrome", "node", "vitest/globals", "@types/dom-navigation"],
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "outDir": "./dist",
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*": ["./src/*"],
+      "*": ["./*"],
+      "@zeriontech/components/lib/Toggle": [
+        "./node_modules/@zeriontech/components/lib/Toggle/index.d.ts"
+      ],
+      "@zeriontech/components/lib/UIText": [
+        "./node_modules/@zeriontech/components/lib/UIText/index.d.ts"
+      ],
+      "capitalize-ts": ["./node_modules/capitalize-ts/lib/index.d.ts"],
+      "normalized-contains": [
+        "./node_modules/normalized-contains/lib/index.d.ts"
+      ],
+      "react-area": ["./node_modules/react-area/dist/index.d.ts"]
     },
-    "plugins": [{ "name": "typescript-plugin-css-modules" }]
+    "plugins": [
+      {
+        "name": "typescript-plugin-css-modules"
+      }
+    ],
+    "skipLibCheck": true
   },
   "exclude": ["./node_modules"],
   "include": ["src", "__tests__", "e2e", "playwright.config.ts"]

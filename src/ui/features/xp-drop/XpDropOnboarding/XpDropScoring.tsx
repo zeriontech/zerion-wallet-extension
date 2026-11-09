@@ -28,12 +28,12 @@ function CriteriaListItem({
 }
 
 const criteriaItems = [
-  <CriteriaListItem image="🚀" text="Multichain Profile" />,
-  <CriteriaListItem image="💬" text="Social & NFT Activity" />,
-  <CriteriaListItem image="🦸" text="Zerion OG" />,
-  <CriteriaListItem image="🧭" text="Days Onchain" />,
-  <CriteriaListItem image="💎" text="Zerion DNA Holder" />,
-  <CriteriaListItem image="💸" text="Gas Spent" />,
+  <CriteriaListItem key="multichain" image="🚀" text="Multichain Profile" />,
+  <CriteriaListItem key="social" image="💬" text="Social & NFT Activity" />,
+  <CriteriaListItem key="og" image="🦸" text="Zerion OG" />,
+  <CriteriaListItem key="days" image="🧭" text="Days Onchain" />,
+  <CriteriaListItem key="dna" image="💎" text="Zerion DNA Holder" />,
+  <CriteriaListItem key="gas" image="💸" text="Gas Spent" />,
 ];
 
 function ProgressCounter({ counter }: { counter: number }) {

@@ -16,7 +16,6 @@ import {
 } from 'src/ui/ui-kit/FrameList';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogCloseButton } from 'src/ui/ui-kit/ModalDialogs/DialogTitle/DialogCloseButton';
@@ -74,12 +73,8 @@ function TouchIdSettings() {
     useErrorBoundary: true,
     suspense: false,
   });
-  const enablePasskeyDialogRef = useRef<HTMLDialogElementInterface | null>(
-    null
-  );
-  const disablePasskeyDialogRef = useRef<HTMLDialogElementInterface | null>(
-    null
-  );
+  const enablePasskeyDialogRef = useRef<HTMLDialogElement | null>(null);
+  const disablePasskeyDialogRef = useRef<HTMLDialogElement | null>(null);
 
   const userQuery = useQuery({
     queryKey: ['account/getExistingUser'],
@@ -267,9 +262,8 @@ function TouchIdSettings() {
 
 function ChangePassword() {
   const toastRef = useRef<PopoverToastHandle>(null);
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const weakPasswordWarningDialogRef =
-    useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const weakPasswordWarningDialogRef = useRef<HTMLDialogElement | null>(null);
 
   const userQuery = useQuery({
     queryKey: ['account/getExistingUser'],

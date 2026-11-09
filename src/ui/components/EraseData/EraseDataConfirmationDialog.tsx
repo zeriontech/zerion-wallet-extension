@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -51,7 +50,7 @@ function ResetWarningForm() {
 }
 
 export const EraseDataConfirmationDialog = React.forwardRef(
-  (_props, ref: React.Ref<HTMLDialogElementInterface>) => {
+  (_props, ref: React.Ref<HTMLDialogElement>) => {
     const [key, setKey] = useState(1);
     useEffect(() => {
       const dialog = ref && 'current' in ref ? ref.current : null;

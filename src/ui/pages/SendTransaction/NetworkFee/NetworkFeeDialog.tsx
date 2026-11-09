@@ -10,7 +10,6 @@ import {
   DialogButtonValue,
   DialogTitle,
 } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import ArrowLeftcon from 'jsx:src/ui/assets/arrow-left.svg';
@@ -551,7 +550,7 @@ function NetworkFeeButton({
 }
 
 export const NetworkFeeDialog = React.forwardRef<
-  HTMLDialogElementInterface,
+  HTMLDialogElement,
   {
     onSubmit(value: NetworkFeeConfiguration): void;
     onDismiss(): void;

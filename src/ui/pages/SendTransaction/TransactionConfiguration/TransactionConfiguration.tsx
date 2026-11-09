@@ -14,7 +14,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
@@ -149,7 +148,7 @@ function NetworkFeeLine({
     chainGasPrices,
   });
 
-  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   return (
     <>
