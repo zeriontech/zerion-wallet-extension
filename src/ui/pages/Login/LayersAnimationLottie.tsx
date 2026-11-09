@@ -17,10 +17,17 @@ class LottieModule {
   private disposables: Array<() => void> = [];
 
   async prepareResources() {
-    const [lottieWeb, animationData] = await Promise.all([
+    const [lottieWeb, animationModule] = await Promise.all([
       loadLottieWeb(),
       import('./login-animation-lottie.json'),
     ]);
+    /**
+     * Bundlers disagree on JSON dynamic imports: Parcel returned the object,
+     * ESM returns a module namespace. lottie-web mutates the object it is
+     * given, and a frozen module namespace throws, so unwrap `default`.
+     */
+    const animationData =
+      (animationModule as { default?: unknown }).default ?? animationModule;
     return { lottieWeb, animationData };
   }
 

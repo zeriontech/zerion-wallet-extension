@@ -1,1 +1,2 @@
-export { PopoverToast, PopoverToastHandle } from './PopoverToast';
+export { PopoverToast } from './PopoverToast';
+export type { PopoverToastHandle } from './PopoverToast';

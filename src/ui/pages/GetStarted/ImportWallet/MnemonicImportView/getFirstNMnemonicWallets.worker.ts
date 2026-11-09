@@ -1,3 +1,4 @@
+import 'src/shared/polyfills';
 import { HDNode } from '@ethersproject/hdnode';
 import { Keypair } from '@solana/web3.js';
 import * as bip39 from 'bip39';

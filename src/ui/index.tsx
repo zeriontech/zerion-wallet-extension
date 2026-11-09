@@ -1,3 +1,4 @@
+import 'src/shared/polyfills';
 import React from 'react';
 import browser from 'webextension-polyfill';
 import type { Root } from 'react-dom/client';

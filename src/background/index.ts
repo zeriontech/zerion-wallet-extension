@@ -1,3 +1,4 @@
+import 'src/shared/polyfills';
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
 import { mainNetworksStore } from 'src/modules/networks/networks-store.background';

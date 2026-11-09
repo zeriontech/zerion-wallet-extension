@@ -1,7 +1,0 @@
-{
-  "extends": "@parcel/config-webextension",
-  "transformers": {
-    "jsx:*.svg": ["@parcel/transformer-svg-react"],
-    "jsx:*": ["..."]
-  }
-}

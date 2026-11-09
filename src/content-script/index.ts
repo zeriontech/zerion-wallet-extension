@@ -1,3 +1,4 @@
+import 'src/shared/polyfills';
 import browser from 'webextension-polyfill';
 import {
   isJsonRpcPayload,
