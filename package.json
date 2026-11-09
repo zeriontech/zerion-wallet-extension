@@ -33,7 +33,6 @@
     "build:e2e": "node scripts/build-e2e.mjs",
     "build:beta": "node scripts/build.mjs --brand=beta",
     "test:watch": "vp test"
-
   },
   "repository": {
     "type": "git",

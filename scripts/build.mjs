@@ -39,6 +39,16 @@ export const BUILD_TARGETS = [
   'in-page',
 ];
 
+/** Manifests allow at most four numeric version parts. */
+function assertVersionSuffix(suffix) {
+  if (!/^\d+$/.test(String(suffix)) || Number(suffix) > 65535) {
+    throw new Error(
+      `Version suffix must be a number between 0 and 65535, got "${suffix}".`
+    );
+  }
+  return String(suffix);
+}
+
 /**
  * @param {object} options
  * @param {'chrome' | 'firefox'} options.platform
@@ -46,12 +56,19 @@ export const BUILD_TARGETS = [
  * @param {Record<string, string>} [options.env] extra build-time env
  * @param {'production' | 'development'} [options.mode] dev builds keep React
  *   dev mode, `development` branches and unminified output
+ * @param {'production' | 'beta'} [options.brand] `beta` swaps the artwork for
+ *   the coral beta icons and gives the Firefox build its own add-on id, so the
+ *   beta listing is a separate store item fed by the same bundle
+ * @param {string} [options.versionSuffix] fourth manifest version part, so each
+ *   automatic beta upload is a new store version
  */
 export function buildExtension({
   platform,
   outDir,
   env = {},
   mode = 'production',
+  brand = 'production',
+  versionSuffix,
 }) {
   const absoluteOut = path.join(projectRoot, outDir);
   fs.rmSync(absoluteOut, { recursive: true, force: true });
@@ -83,11 +100,38 @@ export function buildExtension({
     emitted,
     outDir: absoluteOut,
   });
+
+  copyStatic({ outDir: absoluteOut, sourceRoot });
+
+  if (brand === 'beta') {
+    // The bundle is identical to production apart from the artwork, so the
+    // icons are replaced in the output (`images/` is copied verbatim) instead
+    // of rebuilding with different sources.
+    const betaIcons = path.join(sourceRoot, 'images/beta');
+    for (const file of fs.readdirSync(betaIcons)) {
+      fs.copyFileSync(
+        path.join(betaIcons, file),
+        path.join(absoluteOut, 'images', file)
+      );
+    }
+    if (platform === 'firefox') {
+      // AMO identifies an add-on by this id, and the beta listing is separate.
+      manifest.browser_specific_settings = {
+        ...manifest.browser_specific_settings,
+        gecko: {
+          ...manifest.browser_specific_settings?.gecko,
+          id: 'beta@zerion.io',
+        },
+      };
+    }
+  }
+  if (versionSuffix) {
+    manifest.version = `${manifest.version}.${assertVersionSuffix(versionSuffix)}`;
+  }
   fs.writeFileSync(
     path.join(absoluteOut, 'manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`
   );
-  copyStatic({ outDir: absoluteOut, sourceRoot });
 
   console.log(`Done ${platform}`); // eslint-disable-line no-console
   return manifest;
@@ -135,10 +179,19 @@ function watchExtension({ platform, outDir }) {
 }
 
 function parseArgs(argv) {
-  const options = { outDir: undefined, platform: undefined, watch: false };
+  const options = {
+    outDir: undefined,
+    platform: undefined,
+    watch: false,
+    brand: 'production',
+    versionSuffix: undefined,
+  };
   for (const arg of argv) {
     if (arg.startsWith('--platform=')) options.platform = arg.slice(11);
     else if (arg.startsWith('--out=')) options.outDir = arg.slice(6);
+    else if (arg.startsWith('--brand=')) options.brand = arg.slice(8);
+    else if (arg.startsWith('--version-suffix='))
+      options.versionSuffix = arg.slice('--version-suffix='.length);
     else if (arg === '--watch') options.watch = true;
     else {
       console.error(`Unknown argument: ${arg}`); // eslint-disable-line no-console
@@ -149,16 +202,29 @@ function parseArgs(argv) {
     console.error('Usage: node scripts/build.mjs --platform=chrome|firefox'); // eslint-disable-line no-console
     process.exit(1);
   }
+  if (!['production', 'beta'].includes(options.brand)) {
+    console.error('--brand must be production or beta'); // eslint-disable-line no-console
+    process.exit(1);
+  }
   return options;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { platform, outDir, watch } = parseArgs(process.argv.slice(2));
-  const resolvedOut =
-    outDir ?? (platform === 'firefox' ? 'dist-firefox' : 'dist');
+  const { platform, outDir, watch, brand, versionSuffix } = parseArgs(
+    process.argv.slice(2)
+  );
+  const defaultOut =
+    brand === 'beta'
+      ? platform === 'firefox'
+        ? 'dist-firefox-beta'
+        : 'dist-beta'
+      : platform === 'firefox'
+        ? 'dist-firefox'
+        : 'dist';
+  const resolvedOut = outDir ?? defaultOut;
   if (watch) {
     watchExtension({ platform, outDir: resolvedOut });
   } else {
-    buildExtension({ platform, outDir: resolvedOut });
+    buildExtension({ platform, outDir: resolvedOut, brand, versionSuffix });
   }
 }

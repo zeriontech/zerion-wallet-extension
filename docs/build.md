@@ -9,6 +9,7 @@ The extension is built and checked with **Vite+** (Vite on Rolldown, Oxlint, Oxf
 | Dev build (watch) | `npm start` | `vp build` on every change (~2 s) |
 | Async build | `npm run build:chrome` / `npm run build:firefox` | `vp build`, 4 targets per platform |
 | E2E build | `npm run build:e2e` | same builder, `dist-e2e`, secrets scanned |
+| Beta build | `npm run build:beta -- --platform=chrome` | same builder, `--brand=beta`: coral icons, beta Firefox id, `<version>.<run>` manifest version |
 | Unit tests | `npm run test:unit` | `vp test run` (Vitest, `vmThreads`) |
 | Lint | `npm run lint:check` | `vp lint --deny-warnings` (Oxlint) |
 | Format | `npm run format:check` | `vp fmt --check` (Oxfmt) |
