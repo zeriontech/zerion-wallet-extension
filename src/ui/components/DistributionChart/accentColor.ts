@@ -130,7 +130,7 @@ export function useAccentColors(
   const [version, setVersion] = useState(0);
 
   const signature = items
-    .map((item) => `${item.id}:${item.accent ? 'h' : item.iconUrl ?? ''}`)
+    .map((item) => `${item.id}:${item.accent ? 'h' : (item.iconUrl ?? '')}`)
     .join('|');
 
   useEffect(() => {

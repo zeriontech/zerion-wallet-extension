@@ -14,7 +14,9 @@
   background-color: var(--white);
   overflow: hidden;
   padding: 24px;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   /* Narrow screens: pin to bottom edge, full width, top-rounded sheet. */
   left: 0;
   right: 0;

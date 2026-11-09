@@ -98,10 +98,10 @@ export function getContainerType(container: WalletContainer): ContainerType {
   return isMnemonicContainer(container)
     ? ContainerType.mnemonic
     : isPrivateKeyContainer(container)
-    ? ContainerType.privateKey
-    : isHardwareContainer(container)
-    ? ContainerType.hardware
-    : isReadonlyContainer(container)
-    ? ContainerType.readonly
-    : throwErr(new Error('Unexpected Container type'));
+      ? ContainerType.privateKey
+      : isHardwareContainer(container)
+        ? ContainerType.hardware
+        : isReadonlyContainer(container)
+          ? ContainerType.readonly
+          : throwErr(new Error('Unexpected Container type'));
 }

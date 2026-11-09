@@ -33,7 +33,7 @@ const ZERO: Size = { width: 0, height: 0 };
 // correct size) and then on every ResizeObserver tick.
 export function useMeasure<T extends HTMLElement>(): [
   (node: T | null) => void,
-  Size
+  Size,
 ] {
   const [element, setElement] = useState<T | null>(null);
   const [size, setSize] = useState<Size>(ZERO);

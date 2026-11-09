@@ -39,8 +39,8 @@ const getItemColor = (direction: AssetChartActions['total']['direction']) => {
   return direction === 'in'
     ? 'var(--positive-500)'
     : direction === 'out'
-    ? 'var(--negative-500)'
-    : undefined;
+      ? 'var(--negative-500)'
+      : undefined;
 };
 
 const getSingleItemTooltip = ({ item }: { item: TooltipBodyItem }) => {
@@ -201,6 +201,6 @@ export const externalTooltip: ExternalTooltip = ({ chart, tooltip }) => {
     inTheMiddle && wideTooltip
       ? 'translate(-50%, 8px)'
       : inRightHalf
-      ? 'translate(calc(-100% - 8px), -8px)'
-      : 'translate(8px, -8px)';
+        ? 'translate(calc(-100% - 8px), -8px)'
+        : 'translate(8px, -8px)';
 };

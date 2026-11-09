@@ -5,8 +5,10 @@ import { UIText } from '../UIText';
 import { HStack } from '../HStack';
 import * as styles from './styles.module.css';
 
-interface FormFieldsetProps
-  extends Omit<React.FieldsetHTMLAttributes<HTMLFieldSetElement>, 'title'> {
+interface FormFieldsetProps extends Omit<
+  React.FieldsetHTMLAttributes<HTMLFieldSetElement>,
+  'title'
+> {
   title: React.ReactNode;
   endTitle?: React.ReactNode;
   startInput: React.ReactNode;

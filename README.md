@@ -18,7 +18,7 @@ You can also download the latest build of the Zerion Extension from [here](https
 
 ## Development
 
-> Release gates, the changeset flow, store publishing and the one-time CI setup are documented in [docs/release.md](docs/release.md). The build and check toolchain (Vite+, Oxlint, Vitest, TSRS) is documented in [docs/build.md](docs/build.md).
+> Release gates, the changeset flow, store publishing and the one-time CI setup are documented in [docs/release.md](docs/release.md). The build and check toolchain (Vite+, Oxlint/Oxfmt, Vitest, TSRS) is documented in [docs/build.md](docs/build.md).
 
 ### Prerequisites
 

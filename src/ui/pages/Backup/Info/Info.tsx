@@ -40,12 +40,12 @@ function Card({
         ? `rotate(0deg)
          scale(1.1)`
         : position === 0
-        ? `rotate(0deg)
+          ? `rotate(0deg)
          scale(1)`
-        : position === 1
-        ? `rotate(7deg)
+          : position === 1
+            ? `rotate(7deg)
          scale(0.85)`
-        : `rotate(14deg)
+            : `rotate(14deg)
          scale(0.7)`,
     config: {
       tension: 200,

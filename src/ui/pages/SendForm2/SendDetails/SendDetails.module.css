@@ -21,7 +21,9 @@
   border: 2px solid var(--neutral-200);
   background-color: var(--white);
   color: var(--neutral-500);
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
 }
 
 .detailsToggle:hover {

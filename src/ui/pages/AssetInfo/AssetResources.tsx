@@ -275,10 +275,13 @@ export function AssetResources({
   }, [implementations, assetFullInfo.extra.mainChain]);
 
   const resourcesById = useMemo(() => {
-    return assetFullInfo.extra.relevantResources.reduce((acc, resource) => {
-      acc[resource.name] = resource;
-      return acc;
-    }, {} as Record<string, AssetResource>);
+    return assetFullInfo.extra.relevantResources.reduce(
+      (acc, resource) => {
+        acc[resource.name] = resource;
+        return acc;
+      },
+      {} as Record<string, AssetResource>
+    );
   }, [assetFullInfo.extra.relevantResources]);
 
   return (

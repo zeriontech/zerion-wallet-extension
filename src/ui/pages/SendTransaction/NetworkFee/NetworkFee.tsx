@@ -98,12 +98,12 @@ export function NetworkFee({
         zeroRoundingFallback: 0.01,
       })
     : feeValueFiat
-    ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
-        zeroRoundingFallback: 0.01,
-      })
-    : feeValueCommon
-    ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
-    : undefined;
+      ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
+          zeroRoundingFallback: 0.01,
+        })
+      : feeValueCommon
+        ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
+        : undefined;
 
   const hintTitle = [
     getFeeTypeTitle(feeEstimation?.type),

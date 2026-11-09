@@ -172,8 +172,8 @@ for (const [store, result] of Object.entries(summary.stores)) {
       result.error
         ? `FAILED - ${result.error}`
         : options.dryRun
-        ? 'credentials OK (dry run, nothing uploaded)'
-        : 'submitted for review'
+          ? 'credentials OK (dry run, nothing uploaded)'
+          : 'submitted for review'
     }`
   );
 }

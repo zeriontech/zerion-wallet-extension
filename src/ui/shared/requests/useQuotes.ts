@@ -151,12 +151,12 @@ export function useQuotes2({
         enabled &&
         Boolean(
           address &&
-            formState.inputChain &&
-            formState.inputAmount &&
-            isNumeric(formState.inputAmount) &&
-            Number(formState.inputAmount) > 0 &&
-            formState.inputFungibleId &&
-            formState.outputFungibleId
+          formState.inputChain &&
+          formState.inputAmount &&
+          isNumeric(formState.inputAmount) &&
+          Number(formState.inputAmount) > 0 &&
+          formState.inputFungibleId &&
+          formState.outputFungibleId
         ),
       mergeResponse: (currentValue, nextValue) => {
         if (!currentValue) {
@@ -395,12 +395,12 @@ export function useQuotesV2({
         enabled &&
         Boolean(
           address &&
-            formState.inputChain &&
-            formState.inputAmount &&
-            isNumeric(formState.inputAmount) &&
-            Number(formState.inputAmount) > 0 &&
-            formState.inputFungibleId &&
-            formState.outputFungibleId
+          formState.inputChain &&
+          formState.inputAmount &&
+          isNumeric(formState.inputAmount) &&
+          Number(formState.inputAmount) > 0 &&
+          formState.inputFungibleId &&
+          formState.outputFungibleId
         ),
       mergeResponse: (currentValue, nextValue) => {
         if (!currentValue) {

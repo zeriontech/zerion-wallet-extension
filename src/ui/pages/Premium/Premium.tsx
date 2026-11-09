@@ -64,24 +64,24 @@ export function PremiumPage() {
   const kind: PremiumStatusKind = isUnlimited
     ? 'active'
     : activePremiumExpirationDate
-    ? isMoreThan7DaysLeft
-      ? 'active'
-      : 'expiring'
-    : previousPremiumExpirationDate != null
-    ? 'expired'
-    : 'none';
+      ? isMoreThan7DaysLeft
+        ? 'active'
+        : 'expiring'
+      : previousPremiumExpirationDate != null
+        ? 'expired'
+        : 'none';
 
   const formattedDateInfo = isUnlimited
     ? 'Lifetime'
     : activePremiumExpirationDate
-    ? kind === 'active'
-      ? `Until ${dayjs(activePremiumExpirationDate).format('MMMM D, YYYY')}`
-      : kind === 'expiring'
-      ? `${dayjs(activePremiumExpirationDate).fromNow(true)} left`
-      : ''
-    : kind === 'expired'
-    ? `On ${dayjs(previousPremiumExpirationDate).format('MMMM D, YYYY')}`
-    : '';
+      ? kind === 'active'
+        ? `Until ${dayjs(activePremiumExpirationDate).format('MMMM D, YYYY')}`
+        : kind === 'expiring'
+          ? `${dayjs(activePremiumExpirationDate).fromNow(true)} left`
+          : ''
+      : kind === 'expired'
+        ? `On ${dayjs(previousPremiumExpirationDate).format('MMMM D, YYYY')}`
+        : '';
 
   return (
     <PageColumn style={{ paddingTop: 40 }}>

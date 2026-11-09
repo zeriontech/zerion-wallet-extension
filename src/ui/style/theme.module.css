@@ -60,9 +60,10 @@
   --notice-600: #e58b0b;
 
   --elevation-100: 0px 2px 4px rgba(22, 22, 26, 0.06);
-  --elevation-200: 0px 0px 0px 1px rgba(21, 21, 31, 0.06),
-    0px 8px 28px rgba(22, 22, 26, 0.08);
-  --elevation-300: 0px 24px 48px -16px rgba(21, 21, 31, 0.24),
+  --elevation-200:
+    0px 0px 0px 1px rgba(21, 21, 31, 0.06), 0px 8px 28px rgba(22, 22, 26, 0.08);
+  --elevation-300:
+    0px 24px 48px -16px rgba(21, 21, 31, 0.24),
     0px 4px 8px -2px rgba(21, 21, 31, 0.08);
 
   --deprecated--bl16ap8: 0px 8px 16px rgba(21, 21, 31, 0.12);
@@ -136,10 +137,11 @@
 
   /* Effect styles */
   --elevation-100: 0px 2px 4px rgba(0, 0, 0, 0.24);
-  --elevation-200: 0px 8px 12px rgba(0, 0, 0, 0.12),
-    0px 2px 4px rgba(0, 0, 0, 0.16), inset 0px 1px 0px rgba(255, 255, 255, 0.05);
-  --elevation-300: 0px 24px 48px rgba(0, 0, 0, 0.24),
-    0px 4px 16px rgba(0, 0, 0, 0.16),
+  --elevation-200:
+    0px 8px 12px rgba(0, 0, 0, 0.12), 0px 2px 4px rgba(0, 0, 0, 0.16),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.05);
+  --elevation-300:
+    0px 24px 48px rgba(0, 0, 0, 0.24), 0px 4px 16px rgba(0, 0, 0, 0.16),
     inset 0px 1px 0px rgba(255, 255, 255, 0.08);
 
   /* Extra stuff, to be finalized with design */

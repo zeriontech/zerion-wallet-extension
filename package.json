@@ -20,8 +20,8 @@
     "ui-lab": "vp dev --config src/ui-lab/vite.config.ts",
     "lint": "vp lint --fix",
     "lint:check": "vp lint --deny-warnings",
-    "format": "prettier --loglevel warn --write \"**/*.{js,jsx,mjs,cjs,json,ts,tsx,css,md,yml,yaml}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,mjs,cjs,json,ts,tsx,css,md,yml,yaml}\"",
+    "format": "vp fmt",
+    "format:check": "vp fmt --check",
     "prepare": "husky install",
     "changeset": "changeset",
     "version": "node scripts/release/version.mjs",
@@ -89,7 +89,6 @@
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.8.8",
     "publish-browser-extension": "^6.2.0",
     "tsrs": "0.18.0-ts7.1.0-dev.20260929",
     "typescript": "^5.8.2",
@@ -99,7 +98,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": "vp lint --fix",
-    "*.{ts,tsx,css,md}": "prettier --write"
+    "*.{ts,tsx,css,md,json}": "vp fmt"
   },
   "dependencies": {
     "@ariakit/react": "^0.4.26",

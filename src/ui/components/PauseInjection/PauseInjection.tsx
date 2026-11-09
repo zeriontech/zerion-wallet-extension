@@ -125,7 +125,7 @@ export function usePausedData() {
   return {
     tabUrl: tabUrlHttp,
     isPaused,
-    pattern: isPausedForAll ? '<all_urls>' : tabUrlHttp?.origin ?? null,
+    pattern: isPausedForAll ? '<all_urls>' : (tabUrlHttp?.origin ?? null),
     isPausedForAll,
     globalPreferences,
     setGlobalPreferences: mutation.mutateAsync,
@@ -166,8 +166,8 @@ export function DisableWalletProviderSettingsItem() {
                 color: isPausedForAll
                   ? 'var(--notice-600)'
                   : isPaused
-                  ? 'var(--neutral-500)'
-                  : undefined,
+                    ? 'var(--neutral-500)'
+                    : undefined,
               }}
             />
             <UIText kind="body/regular">Disable Zerion</UIText>

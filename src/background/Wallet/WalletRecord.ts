@@ -66,8 +66,8 @@ function generateGroupName(
   const prefix = isMnemonicGroup
     ? 'Wallet'
     : isHardwareGroup
-    ? capitalize(walletContainer.provider)
-    : 'Watch';
+      ? capitalize(walletContainer.provider)
+      : 'Watch';
   const name = (index: number) => `${prefix} Group #${index}`;
   if (!record) {
     return name(1);

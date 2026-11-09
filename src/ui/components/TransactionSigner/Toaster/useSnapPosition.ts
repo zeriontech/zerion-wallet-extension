@@ -83,8 +83,8 @@ function quadrantFor(
   return col === 0
     ? 'bottom-left'
     : col === 1
-    ? 'bottom-center'
-    : 'bottom-right';
+      ? 'bottom-center'
+      : 'bottom-right';
 }
 
 export function useSnapPosition({

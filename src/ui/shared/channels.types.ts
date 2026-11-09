@@ -9,11 +9,13 @@ import type { PortMessageChannel } from 'src/shared/PortMessageChannel';
  * type X = { fn1(params: { a: string } ): Promise<number> }
  */
 export type ExtractChannelMethods<T> = {
-  [K in keyof T as K extends string
-    ? T[K] extends (...args: any[]) => Promise<any>
-      ? K
+  [
+    K in keyof T as K extends string
+      ? T[K] extends (...args: any[]) => Promise<any>
+        ? K
+        : never
       : never
-    : never]: T[K] extends (arg: infer Arg, ...args: any[]) => infer R
+  ]: T[K] extends (arg: infer Arg, ...args: any[]) => infer R
     ? Arg extends { params: infer P }
       ? (params: P) => R
       : () => R

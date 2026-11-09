@@ -2,7 +2,7 @@ type VersionableEntity = { version: number };
 
 function ensureVersion<
   PossibleEntry extends VersionableEntity,
-  T extends PossibleEntry
+  T extends PossibleEntry,
 >(entry: PossibleEntry, version: number): asserts entry is T {
   // object without version assumed as version: 1
   if (
@@ -25,14 +25,15 @@ type Arr<N extends number, T extends unknown[] = []> = T['length'] extends N
   ? T
   : Arr<N, [...T, unknown]>;
 type Inc<N extends number> = [...Arr<N>, unknown]['length'];
-type Dec<N extends number> = Arr<N> extends [unknown, ...infer U]
-  ? U['length']
-  : never;
+type Dec<N extends number> =
+  Arr<N> extends [unknown, ...infer U] ? U['length'] : never;
 
 export type Upgrades<T extends VersionableEntity> = {
-  [Version in T['version'] as Dec<Version> extends T['version']
-    ? Version
-    : never]: (
+  [
+    Version in T['version'] as Dec<Version> extends T['version']
+      ? Version
+      : never
+  ]: (
     param: Extract<T, { version: Dec<Version> }>
   ) => Extract<T, { version: Version }>;
 };
@@ -41,9 +42,11 @@ type FinalVersion<T extends VersionableEntity> = Extract<
   T,
   {
     version: keyof {
-      [Version in T['version'] as Inc<Version> extends T['version']
-        ? never
-        : Version]: null;
+      [
+        Version in T['version'] as Inc<Version> extends T['version']
+          ? never
+          : Version
+      ]: null;
     };
   }
 >;

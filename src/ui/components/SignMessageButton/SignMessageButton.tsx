@@ -112,9 +112,8 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
           hardwareSignRef.current,
           'HardwareSignMessage must be mounted'
         );
-        let signature = await hardwareSignRef.current.signTypedData_v4(
-          typedData
-        );
+        let signature =
+          await hardwareSignRef.current.signTypedData_v4(typedData);
         if (legacySigning) {
           signature = applyLegacySignature(signature);
         }
@@ -141,9 +140,8 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
           'HardwareSignMessage must be mounted'
         );
         const { messageHex: message } = params;
-        const signature = await hardwareSignRef.current.solana_signMessage(
-          message
-        );
+        const signature =
+          await hardwareSignRef.current.solana_signMessage(message);
         return signature;
       } else {
         const result = await walletPort.request('solana_signMessage', params);

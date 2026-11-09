@@ -24,7 +24,7 @@ const INITIAL: Measurements = {
 
 export function useMeasure<T extends HTMLElement>(): [
   React.RefCallback<T>,
-  Measurements
+  Measurements,
 ] {
   const [measurements, setMeasurements] = useState<Measurements>(INITIAL);
   const observerRef = useRef<ResizeObserver | null>(null);

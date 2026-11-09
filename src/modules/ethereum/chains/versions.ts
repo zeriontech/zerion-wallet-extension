@@ -26,10 +26,10 @@ export function toAddEthereumChainParameterLegacy(
     rpcUrls: item.rpc_url_user
       ? [item.rpc_url_user]
       : item.rpc_url_internal
-      ? [item.rpc_url_internal]
-      : item.rpc_url_public?.length
-      ? item.rpc_url_public
-      : [],
+        ? [item.rpc_url_internal]
+        : item.rpc_url_public?.length
+          ? item.rpc_url_public
+          : [],
     nativeCurrency: {
       symbol: item.native_asset?.symbol || '<unknown>',
       decimals: (item.native_asset?.decimals || NaN) as 18,

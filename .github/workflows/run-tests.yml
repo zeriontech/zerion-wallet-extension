@@ -83,7 +83,7 @@ jobs:
         # environment; this job has none.
         run: npm ci --ignore-scripts
 
-      # Vite+ toolchain: Oxlint and TSRS (formatting is still Prettier).
+      # All three run through the Vite+ toolchain (Oxlint, Oxfmt, TSRS).
       - name: Lint
         run: npm run lint:check
 

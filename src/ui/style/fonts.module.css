@@ -1,6 +1,7 @@
 @font-face {
   font-family: 'Aeonik Pro';
-  src: url('./fonts/AeonikPro-Regular.woff2') format('woff2'),
+  src:
+    url('./fonts/AeonikPro-Regular.woff2') format('woff2'),
     url('./fonts/AeonikPro-Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
@@ -8,7 +9,8 @@
 
 @font-face {
   font-family: 'Aeonik Pro';
-  src: url('./fonts/AeonikPro-Medium.woff2') format('woff2'),
+  src:
+    url('./fonts/AeonikPro-Medium.woff2') format('woff2'),
     url('./fonts/AeonikPro-Medium.woff') format('woff');
   font-weight: 500;
   font-style: normal;

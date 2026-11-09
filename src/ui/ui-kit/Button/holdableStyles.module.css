@@ -20,7 +20,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transition: transform 300ms ease-in-out, opacity 300ms;
+  transition:
+    transform 300ms ease-in-out,
+    opacity 300ms;
   white-space: nowrap;
 }
 

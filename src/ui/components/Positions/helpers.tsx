@@ -55,7 +55,7 @@ export function getGrossPositionsValue(
 }
 
 export function sortPositionsByValue<
-  T extends Pick<GroupedFungiblePosition, 'value'>
+  T extends Pick<GroupedFungiblePosition, 'value'>,
 >(positions?: T[] | null): T[] {
   if (!positions) {
     return [];

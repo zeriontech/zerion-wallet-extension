@@ -126,7 +126,7 @@ export function PerpsWithdraw() {
           const [name, keyAddress, keyDex] = q.queryKey as [
             string,
             string | null | undefined,
-            string | undefined
+            string | undefined,
           ];
           return (
             name === 'hyperliquid/clearinghouseState' &&
@@ -156,8 +156,8 @@ export function PerpsWithdraw() {
   const errorText = amountTooHigh
     ? 'Exceeds available balance'
     : amountTooLow
-    ? `Minimum withdrawal is ${formatUsd(MIN_WITHDRAW_USD)}`
-    : null;
+      ? `Minimum withdrawal is ${formatUsd(MIN_WITHDRAW_USD)}`
+      : null;
 
   const normalizedAddress = address ? normalizeAddress(address) : null;
   const display = useReceiverDisplayName(normalizedAddress);

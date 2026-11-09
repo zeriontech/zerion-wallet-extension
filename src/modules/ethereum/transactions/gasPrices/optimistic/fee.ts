@@ -73,8 +73,15 @@ export async function createOptimisticFee({
         data,
       ])
     : classicGasPrice != null
-    ? rlpEncode([nonce, classicGasPrice, gasLimit, to, valueToHex(value), data])
-    : null;
+      ? rlpEncode([
+          nonce,
+          classicGasPrice,
+          gasLimit,
+          to,
+          valueToHex(value),
+          data,
+        ])
+      : null;
   if (encoded_tx_data == null) {
     return null;
   }

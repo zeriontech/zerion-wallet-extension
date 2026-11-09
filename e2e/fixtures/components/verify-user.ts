@@ -13,7 +13,10 @@ export class VerifyUserComponent {
     name: this.props?.buttonTitle ?? this.UNLOCK_BUTTON_TITLE,
   });
 
-  constructor(public readonly page: Page, public readonly props?: Props) {}
+  constructor(
+    public readonly page: Page,
+    public readonly props?: Props
+  ) {}
 
   async matchesSnapshot() {
     await expect(this.page.locator('html')).toMatchAriaSnapshot(`

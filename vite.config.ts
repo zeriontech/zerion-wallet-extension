@@ -460,6 +460,48 @@ export default defineConfig(({ mode }) => ({
     exclude: ['**/node_modules/**', 'dist*/**', 'e2e/**'],
   },
 
+  fmt: {
+    // Matches the Prettier 2 configuration this repo used (`.prettierrc`), so
+    // switching the formatter does not reflow the codebase: same width, quotes,
+    // trailing commas and arrow parens. Import sorting and package.json sorting
+    // stay off for the same reason.
+    printWidth: 80,
+    singleQuote: true,
+    trailingComma: 'es5',
+    arrowParens: 'always',
+    sortImports: false,
+    sortPackageJson: false,
+    overrides: [
+      {
+        files: ['*.md'],
+        options: {
+          printWidth: 70,
+          trailingComma: 'none',
+          arrowParens: 'avoid',
+          proseWrap: 'never',
+        },
+      },
+      {
+        files: ['src/env/config.ts'],
+        options: { printWidth: 120 },
+      },
+    ],
+    ignorePatterns: [
+      'node_modules/',
+      'dist/',
+      'dist-firefox/',
+      'dist-e2e/',
+      'e2e-report/',
+      'test-results/',
+      'blob-report/',
+      'playwright/.cache/',
+      'src/manifest.json',
+      'package-lock.json',
+      'src/modules/networks/networks-fallback.json',
+      'src/ui/pages/Login/login-animation-lottie.json',
+    ],
+  },
+
   build: {
     outDir,
     emptyOutDir: target === 'pages',

@@ -203,8 +203,8 @@ export const SignTransactionButton = React.forwardRef(
             activeMutation.isSuccess
               ? 'Sent'
               : isLoadingProp
-              ? 'Preparing...'
-              : buttonTitle
+                ? 'Preparing...'
+                : buttonTitle
           }
           buttonKind={buttonKind}
           onClick={onClick}

@@ -195,8 +195,8 @@ function SendFormComponent({
   // value so nothing can be attached while the field is hidden.
   const showCustomData = Boolean(
     preferences?.configurableTransactionData &&
-      isEthereumAddress(address) &&
-      !isNftMode
+    isEthereumAddress(address) &&
+    !isNftMode
   );
 
   const handleSelectFungible = useCallback(
@@ -441,14 +441,14 @@ function SendFormComponent({
             });
 
       const tokenIconUrl = isNftMode
-        ? nftPosition?.nft.metadata?.content?.imageUrl ??
+        ? (nftPosition?.nft.metadata?.content?.imageUrl ??
           nftPosition?.nft.metadata?.content?.imagePreviewUrl ??
-          null
+          null)
         : position.fungible.iconUrl;
       const tokenSymbol = isNftMode
-        ? nftPosition?.nft.metadata?.name ??
+        ? (nftPosition?.nft.metadata?.name ??
           nftPosition?.nft.collection?.name ??
-          'NFT'
+          'NFT')
         : position.fungible.symbol;
 
       const steps: SignStep[] = [

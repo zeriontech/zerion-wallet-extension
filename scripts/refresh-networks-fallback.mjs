@@ -84,8 +84,8 @@ function toNetworkInfo(chain) {
   const specification = eip155
     ? { eip155: { chainId: eip155.chainId } }
     : solana
-    ? { solana: { genesisHash: solana.genesisHash } }
-    : null;
+      ? { solana: { genesisHash: solana.genesisHash } }
+      : null;
   if (!specification) {
     return null; // a standard the extension does not model, e.g. tron
   }

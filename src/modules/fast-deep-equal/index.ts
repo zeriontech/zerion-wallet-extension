@@ -17,7 +17,7 @@ export function equal<T>(a: unknown, b: T): a is T {
       // @ts-ignore
       if (length != b.length) return false;
       // @ts-ignore
-      for (i = length; i-- !== 0; ) if (!equal(a[i], b[i])) return false;
+      for (i = length; i-- !== 0;) if (!equal(a[i], b[i])) return false;
       return true;
     }
 
@@ -33,10 +33,10 @@ export function equal<T>(a: unknown, b: T): a is T {
     length = keys.length;
     if (length !== Object.keys(b).length) return false;
 
-    for (i = length; i-- !== 0; )
+    for (i = length; i-- !== 0;)
       if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
 
-    for (i = length; i-- !== 0; ) {
+    for (i = length; i-- !== 0;) {
       var key = keys[i];
 
       // @ts-ignore

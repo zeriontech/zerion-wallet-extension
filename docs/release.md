@@ -15,7 +15,7 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 | Tag `vX.Y.Z` | `release_push_qa.yml` | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa` |
 | Manual | `publish-stores.yml` | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO |
 
-All gates run on the Vite+ toolchain — Oxlint, Vitest and TSRS, with Prettier for formatting (Oxfmt is a follow-up change); see `docs/build.md`.
+All gates run on the Vite+ toolchain — Oxlint, Oxfmt, Vitest and TSRS; see `docs/build.md`.
 
 `release.yml` deliberately skips lint, typecheck, formatting and tests: a tag is only created for a commit that already passed every PR gate, so an emergency release is never blocked by CI. Quality gates stay on pull requests.
 
@@ -29,7 +29,7 @@ All gates run on the Vite+ toolchain — Oxlint, Vitest and TSRS, with Prettier 
 
 Tagging belongs to CI only. `scripts/manifest-version.js` no longer creates or amends commits or tags.
 
-`.changeset/config.json` sets `format: false`: Changesets 3 formats the changelog with `prettier --no-error-on-unmatched-pattern`, which the Prettier 2 pinned in this repo does not support. `npm run version` formats `CHANGELOG.md` with the repo's own Prettier instead, so the Version Packages PR still passes `format:check`.
+`.changeset/config.json` sets `format: false`: Changesets would run its own formatter on `CHANGELOG.md`, and `npm run version` formats it with `vp fmt` instead, so the Version Packages PR still passes `format:check`.
 
 ## Beta channel
 

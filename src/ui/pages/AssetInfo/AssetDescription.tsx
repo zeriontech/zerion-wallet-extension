@@ -34,7 +34,7 @@ const TextPreview = ({ text }: { text: string }) => {
         as="p"
         kind="body/regular"
         style={
-          isClamped ?? true
+          (isClamped ?? true)
             ? {
                 display: '-webkit-box',
                 WebkitLineClamp: 4,

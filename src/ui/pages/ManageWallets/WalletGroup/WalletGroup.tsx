@@ -57,12 +57,12 @@ const strings = {
     containerType === ContainerType.mnemonic
       ? 'You can always import it again using your recovery phrase'
       : containerType === ContainerType.privateKey
-      ? 'You can always import it again using your private key'
-      : containerType === ContainerType.hardware
-      ? 'You can import it again by connecting your hardware wallet'
-      : containerType === ContainerType.readonly
-      ? 'You can always add it back to your watch list'
-      : 'You can add it again on the Manage Wallets page',
+        ? 'You can always import it again using your private key'
+        : containerType === ContainerType.hardware
+          ? 'You can import it again by connecting your hardware wallet'
+          : containerType === ContainerType.readonly
+            ? 'You can always add it back to your watch list'
+            : 'You can add it again on the Manage Wallets page',
 };
 
 function EditableWalletGroupName({

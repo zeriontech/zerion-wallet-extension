@@ -77,8 +77,8 @@ export function estimatePasswordStrengh(value: string): StrengthStats {
       uniqueChars.size < 5
         ? Strength.weak
         : uniqueChars.size < 8
-        ? Strength.medium
-        : Strength.strong;
+          ? Strength.medium
+          : Strength.strong;
     return { strength, ...stats };
   }
 }

@@ -156,8 +156,8 @@ export function NetworkSelect({
                 {value === NetworkSelectValue.All
                   ? 'All Networks'
                   : chain
-                  ? networks?.getChainName(chain)
-                  : noValueDash}
+                    ? networks?.getChainName(chain)
+                    : noValueDash}
               </span>
               <ArrowDownIcon style={{ width: 20, height: 20 }} />
             </span>

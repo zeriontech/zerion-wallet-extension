@@ -39,14 +39,14 @@ if (!isNpmVersionLifecycle) {
     }
   );
 
-  // Changesets' own auto-formatter passes `--no-error-on-unmatched-pattern`,
-  // which this repo's Prettier 2 does not support, so `format` is disabled in
+  // Changesets' own auto-formatter looks for a formatter binary it knows; the
+  // repo formats with Oxfmt through `vp`, so `format` is disabled in
   // .changeset/config.json and the changelog is formatted here instead.
   const changelog = path.join(root, 'CHANGELOG.md');
   if (fs.existsSync(changelog)) {
     execFileSync(
-      path.join(root, 'node_modules/.bin/prettier'),
-      ['--write', 'CHANGELOG.md'],
+      path.join(root, 'node_modules/.bin/vp'),
+      ['fmt', 'CHANGELOG.md'],
       { cwd: root, stdio: 'inherit' }
     );
   }

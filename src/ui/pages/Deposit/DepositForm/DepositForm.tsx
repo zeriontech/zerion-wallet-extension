@@ -83,13 +83,13 @@ function DepositFormView({ address }: { address: string }) {
     {
       enabled: Boolean(
         countryId &&
-          currency &&
-          outputFungibleId &&
-          outputChain &&
-          hasValidAmount &&
-          // Don't fire before the probe settles, or the first request would go
-          // out with the wrong flag and immediately be superseded
-          !applePayQuery.isLoading
+        currency &&
+        outputFungibleId &&
+        outputChain &&
+        hasValidAmount &&
+        // Don't fire before the probe settles, or the first request would go
+        // out with the wrong flag and immediately be superseded
+        !applePayQuery.isLoading
       ),
     }
   );

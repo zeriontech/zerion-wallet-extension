@@ -84,10 +84,10 @@ const ButtonElement = <As extends ElementType = 'button'>(
   const state: State = submitting
     ? 'submitting'
     : success
-    ? 'success'
-    : error
-    ? 'error'
-    : innerState;
+      ? 'success'
+      : error
+        ? 'error'
+        : innerState;
   const holdTimerRef = useRef<number | ReturnType<typeof setTimeout>>(0);
   const holdDurationCounter = useRef<number>(0);
   const lastDisplayHintTime = useRef<number>(0);

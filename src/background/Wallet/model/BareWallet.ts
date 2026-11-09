@@ -8,5 +8,4 @@ export interface BareMnemonicWallet extends BareWallet {
 }
 
 export interface MaskedBareWallet
-  extends ExternallyOwnedAccount,
-    MaskedSignerObject {}
+  extends ExternallyOwnedAccount, MaskedSignerObject {}

@@ -383,7 +383,7 @@ function trackAppEvents({ account }: { account: Account }) {
       gas_price: null, // TODO for general case - this is partially covered in addressActionAnalytics
       network_fee: null, // TODO for general case - this is partially covered in addressActionAnalytics
       network_fee_value: feeValueCommon,
-      contract_type: quote ? quote.contractMetadata.name ?? null : null,
+      contract_type: quote ? (quote.contractMetadata.name ?? null) : null,
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
       warning_was_shown: warningWasShown,
       output_amount_color: outputAmountColor,
@@ -800,10 +800,10 @@ function trackAppEvents({ account }: { account: Account }) {
         origin === WalletOrigin.extension
           ? 'created'
           : isPrivateKeyContainer(walletContainer)
-          ? 'imported_private_key'
-          : isMnemonicContainer(walletContainer)
-          ? 'imported_seed_phrase'
-          : 'connected';
+            ? 'imported_private_key'
+            : isMnemonicContainer(walletContainer)
+              ? 'imported_seed_phrase'
+              : 'connected';
       const wallet_provider = getProvider(wallet.address);
 
       const params = createParams({
@@ -851,8 +851,8 @@ function trackAppEvents({ account }: { account: Account }) {
     const likelyReason = installedEvent
       ? installedEvent.reason
       : isIntentionalBrowserRestart
-      ? 'browser restart'
-      : 're-enabled by user';
+        ? 'browser restart'
+        : 're-enabled by user';
 
     if (isIntentionalBrowserRestart) {
       return;

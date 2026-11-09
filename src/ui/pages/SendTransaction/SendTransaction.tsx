@@ -820,8 +820,8 @@ function SendTransactionContent({
                 gridTemplateColumns: interpretationHasCriticalWarning
                   ? '1fr'
                   : preferences?.enableKeyboardShortcutToSign
-                  ? '1fr 2fr'
-                  : '1fr 1fr',
+                    ? '1fr 2fr'
+                    : '1fr 1fr',
                 gap: 8,
               }}
             >

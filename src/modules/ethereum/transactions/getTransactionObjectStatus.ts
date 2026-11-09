@@ -10,8 +10,8 @@ function transactionReceiptToActionStatus(
       ? 'confirmed'
       : 'failed'
     : transactionObject.dropped
-    ? 'dropped'
-    : 'pending';
+      ? 'dropped'
+      : 'pending';
 }
 
 function solanaTransactionObjectToStatus(

@@ -1,6 +1,6 @@
 # Build and check toolchain
 
-The extension is built and checked with **Vite+** (Vite on Rolldown, Oxlint, Vitest) and type-checked with **TSRS**, matching `zerion-web-app`. Formatting is still Prettier 2 for now (see "Formatting is a separate change" below). Everything is configured in `vite.config.ts`; CI calls the same npm scripts as a developer does.
+The extension is built and checked with **Vite+** (Vite on Rolldown, Oxlint, Oxfmt, Vitest) and type-checked with **TSRS**, matching `zerion-web-app`. Everything is configured in `vite.config.ts`; CI calls the same npm scripts as a developer does.
 
 ## Commands
 
@@ -11,7 +11,7 @@ The extension is built and checked with **Vite+** (Vite on Rolldown, Oxlint, Vit
 | E2E build | `npm run build:e2e` | same builder, `dist-e2e`, secrets scanned |
 | Unit tests | `npm run test:unit` | `vp test run` (Vitest, `vmThreads`) |
 | Lint | `npm run lint:check` | `vp lint --deny-warnings` (Oxlint) |
-| Format | `npm run format:check` | Prettier 2 (unchanged for now; see below) |
+| Format | `npm run format:check` | `vp fmt --check` (Oxfmt) |
 | Types | `npm run typecheck` | `tsrs -p . --noEmit` |
 | UI kit playground | `npm run ui-lab` | `vp dev` with `src/ui-lab/vite.config.ts` |
 
@@ -54,9 +54,11 @@ Remaining Parcel-specific adjustments, all deliberate:
 - `@zeriontech/components/lib/style.css` needed a `*.css` ambient declaration (TS 7 resolves CSS imports, the old `node10` resolution did not).
 - `PageTop.tsx` uses `jsx:` imports for SVGs, so `@vitejs/plugin-react` runs with the automatic JSX runtime; the ~250 files that imported `React` only for JSX lost that unused import.
 
-## Formatting is a separate change
+## Formatting
 
-The format **gate** is still Prettier 2 with the existing `.prettierrc`, so this migration does not reformat the repository. Oxfmt is available through `vp fmt` and is the intended replacement, but adopting its output (import sorting, `trailingComma: all`) touches ~700 files — that lands as its own commit so the build migration stays reviewable. Until then, note that Oxlint does not implement `import/order`; the previous ESLint rule is the one gate that moved with that decision.
+The `fmt` block in `vite.config.ts` reproduces the previous Prettier 2 configuration - 80 columns, single quotes, `trailingComma: es5`, `arrowParens: always`, the same markdown override - with import sorting and `package.json` sorting off, so the switch reflowed 120 files instead of ~730. What remains is not configurable: Oxfmt applies Prettier 3's nested-ternary indentation and wraps multi-value CSS declarations differently.
+
+Oxlint does not implement `import/order`; Oxc's answer is Oxfmt's import sorting, which is off here. Import order is therefore not gated.
 
 ## Things that behave differently from the Parcel build
 
@@ -78,7 +80,7 @@ The format **gate** is still Prettier 2 with the existing `.prettierrc`, so this
 | Unit tests (57 files / 478 tests) | 21.8 s | 9.2 s | −58 % |
 | Type check | 14.8 s | 0.36 s | TSRS |
 | Lint | (ESLint, not measured on this tree) | 2.0 s | Oxlint |
-| Format check | 5.4 s (Prettier) | 5.4 s | unchanged |
+| Format check | 5.4 s (Prettier) | 0.3 s | Oxfmt |
 | Output (JS total) | 25.3 MiB | 12.8 MiB | −49 % |
 
 Runner speed varies, so treat CI numbers as the signal and these as a direction. The output-size drop comes from Rolldown's chunking; the manifest, `_locales` and icon files are byte-identical in layout to the Parcel build.

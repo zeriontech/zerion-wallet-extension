@@ -67,8 +67,8 @@ export function NonceLine2({
     userNonce != null
       ? NonceSource.user
       : transaction.nonce != null
-      ? NonceSource.transaction
-      : NonceSource.blockchain;
+        ? NonceSource.transaction
+        : NonceSource.blockchain;
   const sourceTitle = getNonceSourceTitle(source, data?.source || null);
 
   return (

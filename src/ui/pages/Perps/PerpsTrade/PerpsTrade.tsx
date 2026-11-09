@@ -200,7 +200,7 @@ export function PerpsTrade() {
         predicate: (q) => {
           const [name, payload] = q.queryKey as [
             string,
-            { dexIdentifier?: string } | undefined
+            { dexIdentifier?: string } | undefined,
           ];
           return (
             name === 'hyperliquid/metaAndAssetCtxs' &&
@@ -535,7 +535,7 @@ export function PerpsTrade() {
           const [name, keyAddress, keyDex] = q.queryKey as [
             string,
             string | null | undefined,
-            string | undefined
+            string | undefined,
           ];
           return (
             name === 'hyperliquid/clearinghouseState' &&
@@ -554,7 +554,7 @@ export function PerpsTrade() {
         predicate: (q) => {
           const [name, payload] = q.queryKey as [
             string,
-            { address?: string } | undefined
+            { address?: string } | undefined,
           ];
           return (
             name === 'hyperliquid/userFills' && payload?.address === address

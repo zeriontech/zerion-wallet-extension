@@ -503,9 +503,9 @@ export function PositionList({
   );
   const showConfidentialPanel = Boolean(
     confidentialPanel &&
-      address &&
-      isSignable &&
-      hasEncryptedPositions(allItems)
+    address &&
+    isSignable &&
+    hasEncryptedPositions(allItems)
   );
 
   return (

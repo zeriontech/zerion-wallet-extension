@@ -195,8 +195,8 @@ export function InterpretationSecurityCheck({
   const mode: InterpretationMode = interpretQuery.isInitialLoading
     ? 'loading'
     : interpretQuery.isError
-    ? 'error'
-    : 'success';
+      ? 'error'
+      : 'success';
 
   const warnings = useMemo(
     () => sortWarnings(interpretation?.data.warnings),
@@ -208,14 +208,14 @@ export function InterpretationSecurityCheck({
     warningSeverity === 'Red' || warningSeverity === 'Orange'
       ? 'danger'
       : warningSeverity === 'Yellow'
-      ? 'warning'
-      : warningSeverity === 'Gray'
-      ? 'unknown'
-      : mode === 'loading'
-      ? 'loading'
-      : mode === 'success'
-      ? 'ok'
-      : 'unknown';
+        ? 'warning'
+        : warningSeverity === 'Gray'
+          ? 'unknown'
+          : mode === 'loading'
+            ? 'loading'
+            : mode === 'success'
+              ? 'ok'
+              : 'unknown';
 
   return (
     <>
@@ -227,10 +227,10 @@ export function InterpretationSecurityCheck({
             mode === 'loading'
               ? () => loadingDialogRef.current?.showModal()
               : mode === 'error' || warningSeverity === 'Gray'
-              ? () => errorDialogRef.current?.showModal()
-              : mode === 'success' && !warningSeverity
-              ? () => successDialogRef.current?.showModal()
-              : undefined
+                ? () => errorDialogRef.current?.showModal()
+                : mode === 'success' && !warningSeverity
+                  ? () => successDialogRef.current?.showModal()
+                  : undefined
           }
           title={
             warningSeverity === 'Red' ||
@@ -238,12 +238,12 @@ export function InterpretationSecurityCheck({
             warningSeverity === 'Yellow'
               ? 'Risks Found'
               : warningSeverity === 'Gray'
-              ? 'Unverified'
-              : mode === 'loading'
-              ? 'Simulating...'
-              : mode === 'success'
-              ? 'No Risks Found'
-              : 'Unverified'
+                ? 'Unverified'
+                : mode === 'loading'
+                  ? 'Simulating...'
+                  : mode === 'success'
+                    ? 'No Risks Found'
+                    : 'Unverified'
           }
         />
         {mode === 'loading' ? (
@@ -323,8 +323,8 @@ export function InterpretationSecurityCheck({
                   warningSeverity === 'Red' || warningSeverity === 'Orange'
                     ? 'danger'
                     : warningSeverity === 'Yellow'
-                    ? 'warning'
-                    : 'info'
+                      ? 'warning'
+                      : 'info'
                 }
               />
             ))}

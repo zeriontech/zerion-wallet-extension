@@ -144,11 +144,14 @@ export function SelectMoreWalletsDialog({
       activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest';
 
     type Grouped = Record<'active' | 'rest', MaskedBareWallet[] | undefined>;
-    return wallets?.reduce((acc, config) => {
-      const key = `${config.curve}:${config.pathType}`;
-      acc[key] = groupBy(config.wallets, toActiveStatus) as Grouped;
-      return acc;
-    }, {} as { [key: string]: Grouped });
+    return wallets?.reduce(
+      (acc, config) => {
+        const key = `${config.curve}:${config.pathType}`;
+        acc[key] = groupBy(config.wallets, toActiveStatus) as Grouped;
+        return acc;
+      },
+      {} as { [key: string]: Grouped }
+    );
   }, [activeWallets, wallets]);
 
   type CurveValue = 'ecdsa' | 'ed25519';

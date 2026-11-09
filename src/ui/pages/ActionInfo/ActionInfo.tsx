@@ -91,14 +91,14 @@ function AssetContent({
                   {unlimited
                     ? 'Unlimited'
                     : amount?.quantity
-                    ? `${
-                        direction === 'out'
-                          ? minus
-                          : direction === 'in'
-                          ? '+'
-                          : ''
-                      }${formatTokenValue(amount?.quantity || '0', '')}`
-                    : null}
+                      ? `${
+                          direction === 'out'
+                            ? minus
+                            : direction === 'in'
+                              ? '+'
+                              : ''
+                        }${formatTokenValue(amount?.quantity || '0', '')}`
+                      : null}
                 </BlurrableBalance>
               )}
               <AssetLink

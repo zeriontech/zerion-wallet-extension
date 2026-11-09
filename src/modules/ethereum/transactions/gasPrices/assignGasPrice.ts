@@ -17,7 +17,7 @@ export function assignGasPrice<
       IncomingTransaction,
       keyof ClassicGasPriceProps | keyof EIP1559Props | 'type'
     >
-  >
+  >,
 >(
   transaction: T,
   gasPrice: GasPriceObject

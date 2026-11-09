@@ -56,8 +56,8 @@ function getChartPointColor({
       ? '#01a643'
       : '#4fbf67'
     : theme === Theme.light
-    ? '#ff4a4a'
-    : '#ff5c5c';
+      ? '#ff4a4a'
+      : '#ff5c5c';
 }
 
 function getChartPointBorderColor({
@@ -72,8 +72,8 @@ function getChartPointBorderColor({
       ? '#edfcf2'
       : '#29342f'
     : theme === Theme.light
-    ? '#fcf2ef'
-    : '#382328';
+      ? '#fcf2ef'
+      : '#382328';
 }
 
 function getPointStyle({
@@ -174,8 +174,8 @@ export function AssetChart({
                     actions.total.value > 0
                       ? 'in'
                       : actions.total.value < 0
-                      ? 'out'
-                      : null,
+                        ? 'out'
+                        : null,
                 },
                 asset: assetRef.current,
                 currency,

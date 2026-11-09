@@ -36,7 +36,7 @@ function locallyMaskWallet(wallet: BareWallet | HDNode) {
       : null,
     privateKey: encodeForMasking(wallet.privateKey),
     address: wallet.address,
-    name: 'name' in wallet ? wallet.name ?? null : null,
+    name: 'name' in wallet ? (wallet.name ?? null) : null,
   };
 }
 

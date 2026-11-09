@@ -72,8 +72,8 @@ function createSeedTransaction({
     kind === 0
       ? '0x'
       : kind === 1
-      ? erc20.encodeFunctionData('transfer', [RECEIVER, amount])
-      : erc20.encodeFunctionData('approve', [SPENDER, amount]);
+        ? erc20.encodeFunctionData('transfer', [RECEIVER, amount])
+        : erc20.encodeFunctionData('approve', [SPENDER, amount]);
   const hash = randomHex(32);
   return {
     hash,

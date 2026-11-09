@@ -37,12 +37,9 @@ async function syncVersion() {
     )
   );
 
-  await execAsync('./node_modules/.bin/prettier', [
-    '--write',
+  await execAsync('./node_modules/.bin/vp', [
+    'fmt',
     'src/manifest-chrome.json',
-  ]);
-  await execAsync('./node_modules/.bin/prettier', [
-    '--write',
     'src/manifest-firefox.json',
   ]);
 }

@@ -8,7 +8,7 @@ const useProxy =
   process.env.E2E_USE_PROXY === '1' ||
   Boolean(
     process.env.ZERION_API_DEVELOPMENT_KEY ||
-      process.env.CF_ZPI_DEV_BYPASS_SECRET
+    process.env.CF_ZPI_DEV_BYPASS_SECRET
   );
 
 // See https://playwright.dev/docs/test-configuration.

@@ -81,10 +81,10 @@ export function TransactionStepper({ steps }: { steps: Step[] }) {
                     step.status === 'confirmed'
                       ? 'var(--positive-500)'
                       : step.status === 'failed'
-                      ? 'var(--negative-500)'
-                      : isActive
-                      ? 'var(--black)'
-                      : 'var(--neutral-600)',
+                        ? 'var(--negative-500)'
+                        : isActive
+                          ? 'var(--black)'
+                          : 'var(--neutral-600)',
                 }}
               >
                 {step.label}
