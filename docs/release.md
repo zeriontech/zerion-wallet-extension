@@ -33,11 +33,18 @@ Tagging belongs to CI only. `scripts/manifest-version.js` no longer creates or a
 
 There is a second listing of the extension in both stores, used as the beta channel. It is the **same bundle** as production with three differences:
 
-- the extension icons are coral (`src/images/beta/`, generated from the production artwork by swapping the background colour, so the silhouette, rounding and per-size anti-aliasing are identical);
+- the eight icon files are exchanged in the **finished bundle** (`src/images/beta/`, generated from the production artwork by swapping the background colour, so the silhouette, rounding and per-size anti-aliasing are identical). `scripts/build-beta.js` runs the same `build.js` / `build-firefox.js` as production and then overwrites the emitted, content-hashed PNGs in place, so every JS and CSS file in the beta ZIP is byte-identical to production — only the icons and the manifest version differ;
 - the Firefox build gets the add-on id `beta@zerion.io`, because AMO keys an add-on by that id and the beta listing is a separate item (Chrome items are keyed by the store item, so the same ZIP can be uploaded to both);
 - the manifest version gets a fourth part, `<major>.<minor>.<patch>.<run>`, so every upload is a new version (manifests allow at most four parts).
 
-`beta.yml` runs on every push to `main`: it builds both targets with `npm run build:beta`, writes store-shaped ZIPs and submits them to the beta items. **The upload is skipped, not failed, when the beta item ids are not configured** – the build and its artifacts are still produced. The same rule applies to production in `release.yml`: a tag publishes the release, and the store submission runs only if `CHROME_EXTENSION_ID` / `FIREFOX_EXTENSION_ID` are configured.
+`beta.yml` runs on every push to `main`: it builds both targets with `npm run build:beta`, writes store-shaped ZIPs with the same packaging script as production and submits them to the beta items. Because beta reuses the production build, packaging and submission path, a green beta run is also the check that the production path works; the two differ only in their trigger and in the store item ids. **The upload is skipped, not failed, when the beta item ids are not configured** – the build and its artifacts are still produced. The same rule applies to production in `release.yml`: a tag publishes the release, and the store submission runs only if `CHROME_EXTENSION_ID` / `FIREFOX_EXTENSION_ID` are configured.
+
+What "submit" means differs by channel:
+
+|  | Chrome Web Store | Firefox AMO |
+| --- | --- | --- |
+| Beta (every `main` push) | upload, submit and publish immediately | upload, submit for review |
+| Production (tag) | **upload only** (`CHROME_SKIP_SUBMIT_REVIEW`); publish from the dashboard so the canary / staged rollout is chosen by hand | upload, submit for review |
 
 Store visibility is a dashboard setting, not something the API can set:
 

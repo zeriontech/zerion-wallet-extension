@@ -53,6 +53,9 @@ jobs:
       - name: Submit release to the stores
         if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
         env:
+          # Production upload only: the release is published from the Chrome
+          # Web Store dashboard, where the canary/staged rollout is controlled.
+          CHROME_SKIP_SUBMIT_REVIEW: 'true'
           CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
           CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}

@@ -1,20 +1,22 @@
 /* eslint-env node */
 /* eslint-disable no-console, security/detect-non-literal-fs-filename -- CLI script: prints progress and resolves build output paths */
 /**
- * Beta build: the same bundle as production with the beta artwork.
+ * Beta build: the production build, then the icon assets are exchanged in the
+ * finished bundle.
  *
- * The icons have to be swapped in `src/images` before the bundler runs, because
- * both the manifest and the runtime `new URL('../images/...', import.meta.url)`
- * references resolve to content-hashed files: replacing them after the build
- * would mean rewriting the manifest and the bundle. The originals are restored
- * in a `finally`, so a local run leaves no changes behind.
+ * The bundler runs exactly as it does for production (`scripts/build.js` /
+ * `scripts/build-firefox.js`), so the ZIP is the production ZIP with different
+ * PNGs inside — the manifest, the JS and every other asset stay byte-identical.
+ * The icon files are content-hashed by Parcel and referenced from the manifest
+ * and from `new URL('../images/…', import.meta.url)` calls, so they are
+ * overwritten in place, keeping their names.
  *
- * The manifest is patched after the build:
+ * After the swap the manifest is patched:
  * - `version` gets a fourth part (`<version>.<BETA_VERSION_SUFFIX>`) so every
  *   automatic upload is a new store version (manifests allow four parts);
- * - Firefox gets its own add-on id, because AMO identifies an add-on by it and
- *   the beta listing is a separate item. Chrome items are keyed by the store
- *   item, so the same zip works for both.
+ * - Firefox gets `beta@zerion.io`, because AMO identifies an add-on by that id
+ *   and the beta listing is a separate item. Chrome items are keyed by the
+ *   store item, so the same ZIP works for both.
  *
  * Usage: node scripts/build-beta.js --platform=chrome|firefox
  */
@@ -22,11 +24,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const { execAsync } = require('./execAsync');
 
-const API_ICON_SIZES = ['16', '32', '48', '128'];
-const ICON_FILES = API_ICON_SIZES.flatMap((size) => [
-  `logo-icon-${size}.png`,
-  `logo-icon-${size}-disabled.png`,
-]);
+const ICON_SIZES = ['16', '32', '48', '128'];
 
 function parseArgs(argv) {
   const platform = argv
@@ -53,39 +51,59 @@ function versionSuffix() {
   return suffix;
 }
 
+/** Replaces every emitted icon file, content-hashed name included. */
+async function replaceIcons(outDir) {
+  const betaImages = path.join(__dirname, '../src/images/beta');
+  const entries = await fs.readdir(outDir);
+  let replaced = 0;
+  for (const file of entries) {
+    if (!file.startsWith('logo-icon-') || !file.endsWith('.png')) continue;
+    const [size, ...rest] = file
+      .slice('logo-icon-'.length)
+      .split('.')[0]
+      .split('-');
+    if (!ICON_SIZES.includes(size)) continue;
+    const disabled = rest.includes('disabled') ? '-disabled' : '';
+    const source = path.join(betaImages, `logo-icon-${size}${disabled}.png`);
+    await fs.copyFile(source, path.join(outDir, file));
+    replaced += 1;
+  }
+  if (replaced === 0) {
+    throw new Error(`No icon assets found in ${outDir}; did the build run?`);
+  }
+  return replaced;
+}
+
 async function buildBeta({ platform }) {
   const root = path.join(__dirname, '..');
-  const images = path.join(root, 'src/images');
-  const betaImages = path.join(images, 'beta');
-  const backup = path.join(root, '.beta-icon-backup');
   const outDir = path.join(
     root,
     platform === 'firefox' ? 'dist-firefox' : 'dist'
   );
 
-  await fs.mkdir(backup, { recursive: true });
-  for (const file of ICON_FILES) {
-    await fs.copyFile(path.join(images, file), path.join(backup, file));
-  }
-  try {
-    for (const file of ICON_FILES) {
-      await fs.copyFile(path.join(betaImages, file), path.join(images, file));
-    }
-    await execAsync(process.execPath, [
-      path.join(
-        __dirname,
-        platform === 'firefox' ? 'build-firefox.js' : 'build.js'
-      ),
-    ]);
-  } finally {
-    for (const file of ICON_FILES) {
-      await fs.copyFile(path.join(backup, file), path.join(images, file));
-    }
-    await fs.rm(backup, { recursive: true, force: true });
-  }
+  // Same build as production, unchanged.
+  await execAsync(process.execPath, [
+    path.join(
+      __dirname,
+      platform === 'firefox' ? 'build-firefox.js' : 'build.js'
+    ),
+  ]);
 
   const manifestPath = path.join(outDir, 'manifest.json');
   const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+
+  // Manifest icons first (these are the ones the browser shows), then the rest
+  // of the emitted icon assets (the disabled variants used by the toolbar).
+  for (const size of ICON_SIZES) {
+    const iconPath = manifest.icons?.[size];
+    if (!iconPath) continue;
+    await fs.copyFile(
+      path.join(root, 'src/images/beta', `logo-icon-${size}.png`),
+      path.join(outDir, iconPath)
+    );
+  }
+  await replaceIcons(outDir);
+
   const { version } = require('../package.json');
   const suffix = versionSuffix();
   manifest.version = suffix ? `${version}.${suffix}` : version;
