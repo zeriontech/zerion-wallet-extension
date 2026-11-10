@@ -1,4 +1,4 @@
-import throttle from 'lodash/throttle';
+import { throttle } from 'src/shared/throttle';
 import ky from 'ky';
 import { PROXY_URL } from 'src/env/config';
 import type { ConfigPlugin } from '../ConfigPlugin';

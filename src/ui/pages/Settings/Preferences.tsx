@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useCombobox } from 'downshift';
-import { normalizedContains } from 'normalized-contains';
+import { normalizedContains } from 'src/shared/normalizedContains';
 import { Route, Routes } from 'react-router-dom';
 import type { CurrencyConfig } from 'src/modules/currency/currencies';
 import { CURRENCIES } from 'src/modules/currency/currencies';

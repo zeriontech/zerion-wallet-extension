@@ -76,7 +76,7 @@ import {
   fetchAndAssignPaymaster,
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
@@ -96,7 +96,7 @@ import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';

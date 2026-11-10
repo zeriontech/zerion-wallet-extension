@@ -3,7 +3,7 @@ import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfig
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { InsufficientFundsWarning } from './InsufficientFundsWarning';
 import { TransactionWarning } from './TransactionWarning';

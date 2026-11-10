@@ -1,5 +1,5 @@
 import type { Options as KyOptions } from 'ky';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { ClientOptions } from '../shared';
 import { CLIENT_DEFAULTS, ZerionHttpClient } from '../shared';
 import type { ZerionApiContext } from '../zerion-api-bare';

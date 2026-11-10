@@ -1,4 +1,4 @@
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type {

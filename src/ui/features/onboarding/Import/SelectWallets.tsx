@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useRef } from 'react';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { invariant } from 'src/shared/invariant';
 import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import { wait } from 'src/shared/wait';

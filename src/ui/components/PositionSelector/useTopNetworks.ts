@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import GridIcon from 'jsx:src/ui/assets/distribution-grid.svg';
 import ListIcon from 'jsx:src/ui/assets/distribution-list.svg';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue/formatCurrencyValue';

@@ -17,7 +17,7 @@ import * as s from 'src/ui/style/helpers.module.css';
 import { getBaseQuantity, getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { Button } from 'src/ui/ui-kit/Button';
 import { AssetAnchor } from 'src/ui/components/AssetLink';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';

@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import { Theme } from './Theme';
 import type { ThemeState } from './ThemeState';
 

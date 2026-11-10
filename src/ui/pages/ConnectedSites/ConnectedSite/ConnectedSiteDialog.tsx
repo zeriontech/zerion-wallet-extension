@@ -3,7 +3,7 @@ import { animated } from '@react-spring/web';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import { invariant } from 'src/shared/invariant';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { getPermissionsWithWallets } from 'src/ui/shared/requests/getPermissionsWithWallets';

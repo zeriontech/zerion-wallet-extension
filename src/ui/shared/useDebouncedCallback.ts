@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import debounce from 'lodash/debounce';
+import { debounce } from 'moderndash';
 
 export function useDebouncedCallback<T, K>(callback: (...args: T[]) => K, delay: number) {
   const debouncedCallback = useMemo(() => debounce(callback, delay), [callback, delay]);

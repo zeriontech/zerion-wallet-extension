@@ -38,7 +38,7 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';

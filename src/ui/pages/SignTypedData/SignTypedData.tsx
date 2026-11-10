@@ -21,7 +21,7 @@ import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { interpretSignature } from 'src/ui/shared/requests/interpret';
-import { Content, RenderArea } from 'react-area';
+import { Content, RenderArea } from 'src/shared/react-area';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageTop } from 'src/ui/components/PageTop';
 import { AllowanceView } from 'src/ui/components/AllowanceView';
@@ -53,7 +53,7 @@ import {
   SecurityStatusBackground,
 } from 'src/ui/shared/security-check';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';

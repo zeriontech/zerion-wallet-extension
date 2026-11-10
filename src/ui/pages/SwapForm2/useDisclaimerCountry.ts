@@ -1,4 +1,4 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useDetectedCountry } from 'src/modules/zerion-api/hooks/useDetectedCountry';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import type { DisclaimerOverride } from 'src/ui/features/dev-menu/store-types';

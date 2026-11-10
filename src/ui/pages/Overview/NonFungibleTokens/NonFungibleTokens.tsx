@@ -21,7 +21,7 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { isSolanaAddress } from 'src/modules/solana/shared';

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { useLocation } from 'react-router-dom';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import { useDepositQuotes } from 'src/modules/zerion-api/hooks/useDepositQuotes';

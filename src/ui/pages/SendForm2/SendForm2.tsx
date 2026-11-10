@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
-import isEqual from 'lodash/isEqual';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
@@ -55,7 +54,7 @@ import {
   type SignStep,
 } from 'src/ui/components/TransactionSigner';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import {
   createSendTokenAddressAction,
@@ -611,7 +610,7 @@ function SendFormComponent({
     result: SimulationResult,
     simulatedTransaction: MultichainTransaction,
   ) => {
-    if (!isEqual(simulatedTransaction, clientTransactionRef.current)) {
+    if (!equal(simulatedTransaction, clientTransactionRef.current)) {
       return;
     }
     setSimulationResult(result);

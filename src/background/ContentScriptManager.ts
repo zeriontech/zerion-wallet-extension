@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill';
 import { createNanoEvents } from 'nanoevents';
 import { produce } from 'immer';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import { difference } from 'src/shared/difference';
 import { globalPreferences, type GlobalPreferences } from './Wallet/GlobalPreferences';
 

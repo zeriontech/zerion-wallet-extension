@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import dayjs from 'dayjs';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';

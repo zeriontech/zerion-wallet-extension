@@ -1,4 +1,4 @@
-import 'normalize.css';
+import 'src/ui/style/normalize.css';
 import 'src/ui/style/theme.module.css';
 import 'src/ui/style/fonts.module.css';
 import { useLayoutEffect } from 'react';

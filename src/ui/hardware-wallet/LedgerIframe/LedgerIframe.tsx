@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { themeStore } from 'src/ui/features/appearance';
 import { useCurrency } from 'src/modules/currency/useCurrency';

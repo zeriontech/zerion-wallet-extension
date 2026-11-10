@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useId, useMemo } from 'react';
 import { useLocation, matchPath } from 'react-router-dom';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import QuestionHintIcon from 'jsx:src/ui/assets/question-hint.svg';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';

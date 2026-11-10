@@ -42,7 +42,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { InputPosition } from 'src/ui/pages/SwapForm2/InputPosition';

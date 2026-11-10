@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import memoizeOne from 'memoize-one';
+import memoizeOne from 'src/shared/memoizeOne';
 import type { Provider as ZksProvider } from 'zksync-ethers';
 import { EIP712Signer, utils as zksUtils, types as zksTypes } from 'zksync-ethers';
 import type { IncomingTransaction } from '../types/IncomingTransaction';

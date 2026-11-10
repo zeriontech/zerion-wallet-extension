@@ -1,6 +1,6 @@
 import { produce } from 'immer';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
-import omit from 'lodash/omit';
+import { omit } from 'src/shared/omit';
 import { Networks } from 'src/modules/networks/Networks';
 import { sendRpcRequest } from 'src/shared/custom-rpc/rpc-request';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';

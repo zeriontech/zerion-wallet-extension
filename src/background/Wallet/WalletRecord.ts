@@ -2,7 +2,7 @@ import { decrypt, encrypt } from 'src/modules/crypto';
 import type { Draft } from 'immer';
 import { createDraft, finishDraft, produce } from 'immer';
 import { nanoid } from 'nanoid';
-import sortBy from 'lodash/sortBy';
+import { sort } from 'moderndash';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -19,7 +19,7 @@ import {
   isReadonlyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
@@ -184,9 +184,9 @@ export class WalletRecordModel {
   }
 
   static getWalletGroupByAddress(record: WalletRecord, address: string) {
-    const sortedGroups = sortBy(record.walletManager.groups, (group) =>
-      getContainerType(group.walletContainer),
-    );
+    const sortedGroups = sort(record.walletManager.groups, {
+      by: (group) => getContainerType(group.walletContainer),
+    });
     for (const group of sortedGroups) {
       const wallet = group.walletContainer.getWalletByAddress(address);
       if (wallet) {
@@ -200,9 +200,9 @@ export class WalletRecordModel {
     record: WalletRecord,
     { address, groupId }: { address: string; groupId: string | null },
   ) {
-    const sortedGroups = sortBy(record.walletManager.groups, (group) =>
-      getContainerType(group.walletContainer),
-    );
+    const sortedGroups = sort(record.walletManager.groups, {
+      by: (group) => getContainerType(group.walletContainer),
+    });
     const group = sortedGroups.find((group) => {
       if (groupId) {
         return group.id === groupId;
@@ -215,9 +215,9 @@ export class WalletRecordModel {
   }
 
   static getSignerWalletByAddress(record: WalletRecord, address: string): BareWallet | null {
-    const sortedGroups = sortBy(record.walletManager.groups, (group) =>
-      getContainerType(group.walletContainer),
-    );
+    const sortedGroups = sort(record.walletManager.groups, {
+      by: (group) => getContainerType(group.walletContainer),
+    });
     for (const group of sortedGroups) {
       if (isSignerContainer(group.walletContainer)) {
         const wallet = group.walletContainer.getWalletByAddress(address);

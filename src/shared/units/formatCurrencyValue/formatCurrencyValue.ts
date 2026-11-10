@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import memoize from 'memoize-one';
+import memoize from 'src/shared/memoizeOne';
 import type { CurrencyConfig } from 'src/modules/currency/currencies';
 import { CURRENCIES, resolveOptions } from 'src/modules/currency/currencies';
 import { minus as typographicMinus } from 'src/ui/shared/typography';
@@ -26,13 +26,15 @@ import { minus as typographicMinus } from 'src/ui/shared/typography';
 const AMOUNT_FLOOR = 0.001;
 const NA_DASH = '–'; // en dash, shown for NaN / missing data
 
-const getCurrencyFormatter = memoize((locale, currency, config = {}) => {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    ...config,
-  });
-});
+const getCurrencyFormatter = memoize(
+  (locale: string, currency: string, config: Intl.NumberFormatOptions | null = {}) => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      ...config,
+    });
+  },
+);
 
 /** Round a positive number to a single significant digit. */
 function roundToOneSignificantDigit(value: number) {

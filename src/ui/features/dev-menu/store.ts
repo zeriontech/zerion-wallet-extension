@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import {
   DEFAULT_DEV_MENU_STATE,
   type DevMenuState,

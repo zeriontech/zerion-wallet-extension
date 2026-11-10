@@ -1,5 +1,5 @@
 import { BigNumber } from 'bignumber.js';
-import memoize from 'lodash/memoize';
+import { memoize } from 'moderndash';
 import { NBSP } from '../../ui/shared/typography';
 
 const tokenValueFormatters = {
