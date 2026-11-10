@@ -61,7 +61,9 @@ jobs:
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
-        run: npm run build:beta -- --platform=chrome --out=dist
+        run: >-
+          npm run build:beta -- --platform=chrome --out=dist
+          --version-suffix=${{ env.BETA_VERSION_SUFFIX }}
 
       - name: Build beta Firefox
         env:
@@ -69,7 +71,9 @@ jobs:
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
-        run: npm run build:beta -- --platform=firefox --out=dist-firefox
+        run: >-
+          npm run build:beta -- --platform=firefox --out=dist-firefox
+          --version-suffix=${{ env.BETA_VERSION_SUFFIX }}
 
       - name: Create store artifacts
         run: >-
