@@ -1,0 +1,170 @@
+name: Publish to stores
+
+# Manual only, and dry-run by default: nothing reaches the Chrome Web Store or
+# AMO unless someone explicitly starts this workflow with dry_run = false.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish (defaults to the latest v* tag)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Validate credentials and ZIPs without uploading (default)'
+        type: boolean
+        default: true
+      store:
+        description: 'Which store to submit to'
+        type: choice
+        options:
+          - all
+          - chrome
+          - firefox
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-stores
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish ${{ inputs.tag || 'latest' }} (${{ inputs.store }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Guard rail for real submissions: require approval on this environment
+    # before any store credential is read.
+    environment: store-publishing
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve release tag
+        id: release
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          TAG="$INPUT_TAG"
+          if [ -z "$TAG" ]; then
+            TAG=$(git tag --list 'v*.*.*' --sort=-v:refname | head -n1)
+          fi
+          if [ -z "$TAG" ]; then
+            echo "::error::No v*.*.* tag found. Pass the tag input explicitly."
+            exit 1
+          fi
+          git checkout --force "refs/tags/$TAG"
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "${TAG#v}" != "$VERSION" ]; then
+            echo "::error::Tag $TAG does not match package.json version $VERSION. Refusing to publish a mismatched build."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      # Same environment as release.yml so the store build matches the
+      # published GitHub Release artifacts.
+      - name: Build release artifacts
+        env:
+          ZERION_API_URL: https://zpi.zerion.io/
+          ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
+          PROXY_URL: https://proxy.zerion.io/
+          DEFI_SDK_TRANSACTIONS_API_URL: https://transactions.zerion.io
+          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
+          GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
+          GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
+          FEATURE_LOYALTY_FLOW: on
+          FEATURE_BRIDGE_FORM: on
+          FEATURE_SOLANA: on
+        run: |
+          npm run build:production
+          npm run release:store-zips -- --tag=${{ steps.release.outputs.tag }}
+
+      - name: Submit to stores
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          STORE: ${{ inputs.store }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          CHROME_API_VERSION: v2
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          ARGS=(--store="$STORE")
+          if [ "$DRY_RUN" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          node scripts/release/publish-stores.mjs "${ARGS[@]}" \
+            --chrome-zip="store-artifacts/chrome/zerion-wallet-extension-${TAG}.zip" \
+            --firefox-zip="store-artifacts/firefox/zerion-wallet-firefox-addon-${TAG}.zip" \
+            --firefox-sources-zip="store-artifacts/firefox/zerion-wallet-firefox-addon-${TAG}-sources.zip"
+
+      - name: Summarize submission
+        id: summary
+        if: always()
+        run: |
+          if [ ! -f store-submission.json ]; then
+            echo "details=no submission summary (the job failed before submitting)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          DETAILS=$(node -e "
+            const summary = require('./store-submission.json');
+            const names = { chrome: 'Chrome Web Store', firefox: 'Firefox AMO' };
+            const lines = Object.entries(summary.stores).map(([store, result]) =>
+              result.error
+                ? names[store] + ': FAILED'
+                : names[store] + ': ' + (summary.dryRun ? 'credentials OK (dry run)' : 'submitted for review')
+            );
+            console.log(summary.version + (summary.dryRun ? ' (dry run) ' : ' ') + '| ' + lines.join(' | '));
+          ")
+          echo "details=$DETAILS" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844 # v1.23.0
+        with:
+          channel-id: 'C04JLLQRB43'
+          payload: |
+            {
+              "text": ${{ toJSON(format('Store publishing {0}: {1}', github.run_id, steps.summary.outputs.details)) }},
+              "icon_emoji": "${{ job.status == 'success' && ':rocket:' || ':cry-cat:' }}",
+              "unfurl_links": false,
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ${{ toJSON(format('*Store publishing {0}* (<{1}/{2}/actions/runs/{3}|run>)\n*Tag:* `{4}`\n*Result:* {5}', job.status, github.server_url, github.repository, github.run_id, steps.release.outputs.tag, steps.summary.outputs.details)) }}
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Initiated by:* ${{ github.triggering_actor }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}

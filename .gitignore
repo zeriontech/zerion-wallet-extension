@@ -12,3 +12,10 @@ dist-firefox
 settings.local.json
 dist-e2e
 .parcel-cache-e2e
+
+# Beta build: production icons are stashed here while the beta artwork builds
+.beta-icon-backup/
+store-artifacts/
+dist-beta/
+dist-firefox-beta/
+store-submission.json

@@ -1,0 +1,111 @@
+name: Beta build
+
+# Every push to main produces the beta build and uploads it to the two beta
+# store items. The upload is skipped (not failed) when the beta item ids are not
+# configured, so the workflow is safe in forks and before the store items exist.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Validate store credentials without uploading'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: beta
+  cancel-in-progress: true
+
+jobs:
+  beta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # Non-secret build configuration, identical to release.yml.
+      ZERION_API_URL: https://zpi.zerion.io/
+      ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
+      PROXY_URL: https://proxy.zerion.io/
+      DEFI_SDK_TRANSACTIONS_API_URL: https://transactions.zerion.io
+      FEATURE_LOYALTY_FLOW: on
+      FEATURE_BRIDGE_FORM: on
+      FEATURE_SOLANA: on
+      # Fourth manifest version part: every run is a new store version.
+      BETA_VERSION_SUFFIX: ${{ github.run_number }}
+      # Beta items. Everything else (publisher, service account, AMO JWT) is
+      # shared with production, so only the ids are beta-specific.
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_BETA_EXTENSION_ID }}
+      FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_BETA_EXTENSION_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build beta Chrome
+        env:
+          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
+          GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
+          GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
+        run: npm run build:beta -- --platform=chrome
+
+      - name: Build beta Firefox
+        env:
+          TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
+          MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
+          GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
+          GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
+        run: npm run build:beta -- --platform=firefox
+
+      - name: Create store artifacts
+        run: >-
+          node scripts/release/store-zips.mjs
+          --version-suffix=${{ env.BETA_VERSION_SUFFIX }}
+          --label=beta
+
+      - name: Submit to the beta store items
+        if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
+        env:
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          STORE=all
+          if [ -z "$CHROME_EXTENSION_ID" ]; then STORE=firefox; fi
+          if [ -z "$FIREFOX_EXTENSION_ID" ]; then STORE=chrome; fi
+          ARGS=(--store="$STORE")
+          if [ "$DRY_RUN" = "true" ]; then ARGS+=(--dry-run); fi
+          node scripts/release/publish-stores.mjs "${ARGS[@]}" \
+            --chrome-zip="$(ls store-artifacts/chrome/*.zip)" \
+            --firefox-zip="$(ls store-artifacts/firefox/*-beta.zip | grep -v sources)" \
+            --firefox-sources-zip="$(ls store-artifacts/firefox/*-sources.zip)"
+
+      - name: Notice when store upload is skipped
+        if: ${{ env.CHROME_EXTENSION_ID == '' && env.FIREFOX_EXTENSION_ID == '' }}
+        run: |
+          echo "::notice::CHROME_BETA_EXTENSION_ID and FIREFOX_BETA_EXTENSION_ID are not configured; beta build produced without uploading."
+
+      - name: Upload beta build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: beta-build
+          path: store-artifacts/
+          retention-days: 7
+          if-no-files-found: error

@@ -1,0 +1,95 @@
+name: Version Packages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: version-packages
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Version packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The release App credentials live only in the `release` environment, which
+    # is restricted to `main`: a workflow pushed on any other branch cannot read them.
+    environment: release
+    steps:
+      - name: Verify release app credentials
+        env:
+          RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+          RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+        run: |
+          if [ -z "$RELEASE_APP_ID" ] || [ -z "$RELEASE_APP_PRIVATE_KEY" ]; then
+            echo "::error::RELEASE_APP_ID / RELEASE_APP_PRIVATE_KEY are not configured in the 'release' environment. The release tag must be pushed by a GitHub App (never GITHUB_TOKEN) that has contents: write here and is a bypass actor on the 'hive-protect-tags' ruleset."
+            exit 1
+          fi
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      # The app must be a bypass actor on `hive-protect-tags`, otherwise the
+      # tag push in the last step is rejected. This is one-time org setup.
+      - name: Preflight - app token can read this repository
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          if ! gh api "repos/$GITHUB_REPOSITORY" >/dev/null; then
+            echo "::error::The RELEASE_APP_ID token cannot read $GITHUB_REPOSITORY. Check that the app is installed on this repository with contents: write."
+            exit 1
+          fi
+          echo "Tag creation requires the app from RELEASE_APP_ID to be a bypass actor on the 'hive-protect-tags' ruleset with contents: write on $GITHUB_REPOSITORY."
+
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        # No lifecycle scripts: this job holds the app token.
+        run: npm ci --ignore-scripts
+
+      # Opens or updates the Version Packages PR. Never publishes or tags here.
+      - name: Create or update version pull request
+        id: changesets
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          version-script: npm run version
+          publish-script: 'true'
+          pr-title: 'Version Packages'
+          commit-message: 'chore(release): version packages'
+          create-github-releases: false
+          push-git-tags: false
+
+      # When no changesets remain (the Version Packages PR just merged) tag the
+      # versioned commit. The tag push, made with the app token, is what
+      # triggers release.yml and release_push_qa.yml.
+      - name: Tag version
+        if: ${{ steps.changesets.outputs.has-changesets == 'false' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: npm run release:tag

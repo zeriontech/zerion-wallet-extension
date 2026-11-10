@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      # Store submission is automatic, but only when the item ids are
+      # configured; otherwise the steps below are skipped.
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+      FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -38,6 +43,37 @@ jobs:
         run: |
           npm ci
           npm run build:production
+
+      # Store uploads need the manifest at the archive root, which differs from
+      # the release artifacts below (one containing directory).
+      - name: Create store artifacts
+        if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
+        run: node scripts/release/store-zips.mjs --tag=${{ github.ref_name }}
+
+      - name: Submit release to the stores
+        if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
+        env:
+          # Production upload only: the release is published from the Chrome
+          # Web Store dashboard, where the canary/staged rollout is controlled.
+          CHROME_SKIP_SUBMIT_REVIEW: 'true'
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          STORE=all
+          if [ -z "$CHROME_EXTENSION_ID" ]; then STORE=firefox; fi
+          if [ -z "$FIREFOX_EXTENSION_ID" ]; then STORE=chrome; fi
+          node scripts/release/publish-stores.mjs --store="$STORE" \
+            --chrome-zip="$(ls store-artifacts/chrome/*.zip)" \
+            --firefox-zip="$(ls store-artifacts/firefox/*.zip | grep -v sources)" \
+            --firefox-sources-zip="$(ls store-artifacts/firefox/*-sources.zip)"
+
+      - name: Notice when store upload is skipped
+        if: ${{ env.CHROME_EXTENSION_ID == '' && env.FIREFOX_EXTENSION_ID == '' }}
+        run: |
+          echo "::notice::CHROME_EXTENSION_ID and FIREFOX_EXTENSION_ID are not configured; release published without store upload."
 
       - name: Compress build artifacts
         shell: bash
