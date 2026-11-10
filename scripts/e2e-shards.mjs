@@ -25,6 +25,7 @@ const TESTS = [
   ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 3.4],
   ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 3.3],
   ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
+  ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 4.0],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with private key › User can create a new wallet when there are no existing backups',
