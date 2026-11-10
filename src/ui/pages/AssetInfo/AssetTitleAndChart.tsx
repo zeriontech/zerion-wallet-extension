@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { formatPercent } from 'src/shared/units/formatPercent';
