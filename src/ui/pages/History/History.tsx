@@ -33,7 +33,7 @@ import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';

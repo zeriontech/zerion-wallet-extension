@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { isTruthy } from 'src/shared/isTruthy';
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';

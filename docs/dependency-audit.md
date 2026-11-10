@@ -13,15 +13,15 @@ Baseline: `origin/main` at `504b10ba` (Vite+/Vitest/Oxlint/Oxfmt).
 
 | Metric                             |   clean main |        final |
 | ---------------------------------- | -----------: | -----------: |
-| Direct dependencies                |           63 |           47 |
+| Direct dependencies                |           63 |           45 |
 | Dev dependencies                   |           27 |           22 |
-| `npm ls --all --parseable` entries |          741 |          705 |
-| Lockfile package entries           |          814 |          778 |
-| `package-lock.json` size           |    395,921 B |    384,141 B |
+| `npm ls --all --parseable` entries |          741 |          703 |
+| Lockfile package entries           |          814 |          776 |
+| `package-lock.json` size           |    395,921 B |    383,543 B |
 | `node_modules` on disk             |      421 MiB |      418 MiB |
 | `npm audit` total                  |           41 |           22 |
 | `npm audit` high / critical        |       20 / 0 |        0 / 0 |
-| Chrome dist JS                     | 13,409,323 B | 13,253,992 B |
+| Chrome dist JS                     | 13,409,323 B | 13,246,824 B |
 | Background entry                   |  2,526,284 B |  2,464,629 B |
 | In-page entry                      |    261,261 B |    274,331 B |
 
@@ -45,6 +45,8 @@ while the removed tiny packages were small on disk.
 | `normalize.css`                                                                                                      | vendored 8.0.1 stylesheet (MIT)                                                                     |
 | `memoize-one`                                                                                                        | local `memoizeOne` wrapper on ModernDash `memoize` (last-call `===` cache)                          |
 | `@solana/spl-token`                                                                                                  | local SPL transfer/ATA/mint-decimals builders with instruction tests                                |
+| `rlp`                                                                                                                | `ethers.encodeRlp`, with odd-length hex normalization; parity-tested then test removed              |
+| `dayjs`                                                                                                              | local `src/shared/date` covering the used subset; parity-tested then test removed                   |
 | Unused: `@ethersproject/abstract-provider`, `bip32`, `@noble/ed25519`, `stream-browserify`, `buffer`                 | removed                                                                                             |
 | Unused dev: `@tanstack/eslint-plugin-query`, `@types/lodash`, `@types/socket.io-client`, `confusing-browser-globals` | removed                                                                                             |
 
@@ -62,9 +64,9 @@ and `@playwright/test` 1.64 with the devtools launch option moved to a Chromium 
   upgrade campaign; only security patches where behavior was unchanged.
 - **classnames** is kept (widely used, actively maintained); `memoize-one`
   was removed because a last-call wrapper on ModernDash `memoize` is trivial.
-- **nanoevents, nanoid, uuid, rlp, tweetnacl** — widely used and maintained;
-  `rlp` and `tweetnacl` have one call site each but replacing them would touch
-  crypto/encoding code for little dependency gain.
+- **nanoevents, nanoid, uuid, tweetnacl** — widely used and maintained;
+  `tweetnacl` has one signing call site but replacing it would touch crypto
+  code for little dependency gain.
 
 ## Remaining audit findings
 
