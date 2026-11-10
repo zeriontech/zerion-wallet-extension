@@ -71,6 +71,7 @@ const buildEnv = {
   ZERION_TESTNET_API_URL: USE_PROXY
     ? `${PROXY_BASE}/zpi-testnet/`
     : 'https://zpi-testnet.zerion.io/',
+  RPC_PROXY_URL: USE_PROXY ? `${PROXY_BASE}/rpc` : undefined,
   BACKEND_ENV: '',
   PROXY_URL: 'https://proxy.zerion.io/',
   DEFI_SDK_TRANSACTIONS_API_URL: 'https://transactions.zerion.io',
