@@ -19,26 +19,20 @@ describe('hidden fungible mutators', () => {
   });
 
   test('hide refuses the 501st id and keeps the stored list untouched', () => {
-    const ids = Array.from(
-      { length: HIDDEN_FUNGIBLE_IDS_LIMIT },
-      (_, index) => `token-${index}`
-    );
+    const ids = Array.from({ length: HIDDEN_FUNGIBLE_IDS_LIMIT }, (_, index) => `token-${index}`);
     expect(addHiddenFungibleId(ids, 'one-more')).toBeNull();
     expect(ids).toHaveLength(HIDDEN_FUNGIBLE_IDS_LIMIT);
   });
 
   test('unhide removes only the requested id', () => {
-    expect(removeHiddenFungibleId(['eth', 'usdc', 'dai'], 'usdc')).toEqual([
-      'eth',
-      'dai',
-    ]);
+    expect(removeHiddenFungibleId(['eth', 'usdc', 'dai'], 'usdc')).toEqual(['eth', 'dai']);
     expect(removeHiddenFungibleId(['eth'], 'dai')).toEqual(['eth']);
   });
 
   test('the cap boundary allows the 500th hide and refuses the next', () => {
     const ids = Array.from(
       { length: HIDDEN_FUNGIBLE_IDS_LIMIT - 1 },
-      (_, index) => `token-${index}`
+      (_, index) => `token-${index}`,
     );
     expect(canHideMoreFungibles(ids)).toBe(true);
     const full = addHiddenFungibleId(ids, 'last-allowed');

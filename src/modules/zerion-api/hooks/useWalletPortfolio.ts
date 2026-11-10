@@ -67,16 +67,13 @@ export function useWalletPortfolio(
 ) {
   // Signed Permits make confidential amounts count towards the total, so
   // their fingerprint is part of the key: a new permit refetches the portfolio
-  const { permits, fingerprint, isReady } = useConfidentialPermits(
-    params.addresses
-  );
+  const { permits, fingerprint, isReady } = useConfidentialPermits(params.addresses);
   // The device-wide hidden list is part of the request and therefore of the
   // key: changing it refetches instead of re-filtering cached data.
-  const { hiddenFungibleIds, isReady: hiddenIdsAreReady } =
-    useHiddenFungibleIds();
+  const { hiddenFungibleIds, isReady: hiddenIdsAreReady } = useHiddenFungibleIds();
   const filteredParams = useMemo(
     () => ({ ...params, hiddenFungibleIds }),
-    [params, hiddenFungibleIds]
+    [params, hiddenFungibleIds],
   );
   const portfolioQuery = useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key

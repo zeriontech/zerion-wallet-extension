@@ -12,8 +12,6 @@ export function reportAssetSpam(assetId: string, walletAddress?: string) {
   });
 }
 
-export function trackAssetVisibilityChanged(
-  params: AssetVisibilityChangedParams
-) {
+export function trackAssetVisibilityChanged(params: AssetVisibilityChangedParams) {
   emitter.emit('assetVisibilityChanged', params);
 }

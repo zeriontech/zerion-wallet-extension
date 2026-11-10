@@ -12,7 +12,7 @@ describe('getAssetVisibilityEvent', () => {
         screenName: 'Asset',
         walletAddress: '0x0000000000000000000000000000000000000001',
         hiddenAssetsCount: 3,
-      })
+      }),
     ).toEqual({
       event: 'General: Asset Hidden',
       properties: {
@@ -34,7 +34,7 @@ describe('getAssetVisibilityEvent', () => {
         entryPoint: 'list',
         screenName: 'Hidden Assets',
         hiddenAssetsCount: 0,
-      })
+      }),
     ).toEqual({
       event: 'General: Asset Unhidden',
       properties: {

@@ -9,11 +9,7 @@ const test = extensionTest;
  * Talks to the background wallet port directly so the test can seed the
  * device-wide preference without depending on a live asset page.
  */
-async function walletRequest(
-  page: Page,
-  method: string,
-  params: Record<string, unknown>
-) {
+async function walletRequest(page: Page, method: string, params: Record<string, unknown>) {
   return page.evaluate(
     async ({ method, params }) => {
       const port = chrome.runtime.connect({
@@ -32,14 +28,11 @@ async function walletRequest(
         port.postMessage({ jsonrpc: '2.0', id, method, params });
       });
     },
-    { method, params }
+    { method, params },
   );
 }
 
-test('Hidden Assets persists, lists and unhides a token', async ({
-  extensionPopupUrl,
-  page,
-}) => {
+test('Hidden Assets persists, lists and unhides a token', async ({ extensionPopupUrl, page }) => {
   const settingsUrl = new URL('#/settings', extensionPopupUrl).toString();
   await page.goto(settingsUrl);
 
@@ -64,10 +57,8 @@ test('Hidden Assets persists, lists and unhides a token', async ({
   await page.getByRole('button', { name: /Unhide/i }).click();
   await expect(page.getByText('No hidden tokens yet')).toBeVisible();
 
-  const preferences = (await walletRequest(
-    page,
-    'getGlobalPreferences',
-    {}
-  )) as { hiddenFungibleIds?: string[] };
+  const preferences = (await walletRequest(page, 'getGlobalPreferences', {})) as {
+    hiddenFungibleIds?: string[];
+  };
   expect(preferences.hiddenFungibleIds).toEqual([]);
 });

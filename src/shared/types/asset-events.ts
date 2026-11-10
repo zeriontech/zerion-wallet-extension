@@ -1,15 +1,6 @@
-export type AssetVisibilityEntryPoint =
-  | 'menu'
-  | 'hint'
-  | 'long_press'
-  | 'banner'
-  | 'list';
+export type AssetVisibilityEntryPoint = 'menu' | 'hint' | 'long_press' | 'banner' | 'list';
 
-export type AssetVisibilityScreenName =
-  | 'Asset'
-  | 'Overview'
-  | 'All assets'
-  | 'Hidden Assets';
+export type AssetVisibilityScreenName = 'Asset' | 'Overview' | 'All assets' | 'Hidden Assets';
 
 export interface AssetVisibilityChangedParams {
   isHidden: boolean;

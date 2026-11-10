@@ -34,11 +34,8 @@ export function useWalletGroupedPositions(
 ) {
   // Signed Permits are part of the request, so their fingerprint is part of
   // the key: a newly signed (or dropped) permit refetches the positions
-  const { permits, fingerprint, isReady } = useConfidentialPermits(
-    params.addresses
-  );
-  const { hiddenFungibleIds, isReady: hiddenIdsAreReady } =
-    useHiddenFungibleIds();
+  const { permits, fingerprint, isReady } = useConfidentialPermits(params.addresses);
+  const { hiddenFungibleIds, isReady: hiddenIdsAreReady } = useHiddenFungibleIds();
   // A positive assetIds filter is a single-asset lookup (the asset page). iOS
   // parity: hidden ids are not attached to single-asset views, so the hidden
   // token's own holdings and PnL keep working.
@@ -47,7 +44,7 @@ export function useWalletGroupedPositions(
       ...params,
       hiddenFungibleIds: params.assetIds?.length ? [] : hiddenFungibleIds,
     }),
-    [params, hiddenFungibleIds]
+    [params, hiddenFungibleIds],
   );
   return useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
@@ -55,14 +52,10 @@ export function useWalletGroupedPositions(
     queryKey: persistentQuery([QUERY_KEY, filteredParams, source, fingerprint]),
     queryFn: () =>
       withPermits(permits, (permits) =>
-        ZerionAPI.walletGetGroupedPositions(
-          { ...filteredParams, permits },
-          { source }
-        )
+        ZerionAPI.walletGetGroupedPositions({ ...filteredParams, permits }, { source }),
       ),
     suspense,
-    enabled:
-      enabled && isReady && hiddenIdsAreReady && params.addresses.length > 0,
+    enabled: enabled && isReady && hiddenIdsAreReady && params.addresses.length > 0,
     keepPreviousData,
     staleTime: STALE_TIME,
     refetchInterval,

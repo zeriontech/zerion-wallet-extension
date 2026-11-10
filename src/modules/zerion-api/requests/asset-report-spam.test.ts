@@ -1,13 +1,11 @@
-import { jest } from '@jest/globals';
+import { beforeEach, describe, expect, test, vi } from 'vite-plus/test';
+import { assetReportSpam } from './asset-report-spam';
 
-// Static imports would bind the real HTTP client before the mock is installed.
-const post = jest.fn(
-  (..._args: unknown[]): Promise<unknown> => Promise.resolve({})
-);
+const mocks = vi.hoisted(() => ({ post: vi.fn() }));
 
-jest.unstable_mockModule('../shared', () => ({
+vi.mock('../shared', () => ({
   CLIENT_DEFAULTS: { source: 'mainnet' },
-  ZerionHttpClient: { post },
+  ZerionHttpClient: { post: mocks.post },
 }));
 
 const context = {
@@ -16,17 +14,17 @@ const context = {
 };
 
 function lastBody() {
-  const [options] = post.mock.calls.at(-1) as [{ body: string }];
+  const [options] = mocks.post.mock.calls.at(-1) as [{ body: string }];
   return JSON.parse(options.body);
 }
 
 describe('assetReportSpam', () => {
   beforeEach(() => {
-    post.mockClear();
+    mocks.post.mockReset();
+    mocks.post.mockResolvedValue({});
   });
 
   test('reports the asset and the wallet it was hidden from', async () => {
-    const { assetReportSpam } = await import('./asset-report-spam');
     await assetReportSpam.call(context, {
       assetId: 'eth',
       wallet: '0x0000000000000000000000000000000000000001',
@@ -38,7 +36,6 @@ describe('assetReportSpam', () => {
   });
 
   test('omits an empty wallet', async () => {
-    const { assetReportSpam } = await import('./asset-report-spam');
     await assetReportSpam.call(context, { assetId: 'eth', wallet: '' });
     expect(lastBody()).toEqual({ assetId: 'eth' });
   });

@@ -32,10 +32,7 @@ import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { preferenceStore } from 'src/ui/features/appearance';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
-import {
-  HiddenAssets,
-  useHiddenFungibleIds,
-} from 'src/ui/features/hidden-assets';
+import { HiddenAssets, useHiddenFungibleIds } from 'src/ui/features/hidden-assets';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { FrameListItemAnchor, FrameListItemLink } from 'src/ui/ui-kit/FrameList';
@@ -132,11 +129,8 @@ function SettingsMain() {
   useBackgroundKind({ kind: 'white' });
 
   const { hasTestWallet } = useStore(metaAppState);
-  const { rawHiddenFungibleIds, isReady: hiddenIdsAreReady } =
-    useHiddenFungibleIds();
-  const evmAddress = currentWallet
-    ? isEthereumAddress(currentWallet.address)
-    : false;
+  const { rawHiddenFungibleIds, isReady: hiddenIdsAreReady } = useHiddenFungibleIds();
+  const evmAddress = currentWallet ? isEthereumAddress(currentWallet.address) : false;
 
   return (
     <PageColumn>

@@ -9,7 +9,7 @@ export const ASSET_LOOKUP_BATCH_SIZE = 50;
 export async function fetchFungiblesByIds(
   ids: string[],
   currency: string,
-  source: 'mainnet' | 'testnet'
+  source: 'mainnet' | 'testnet',
 ): Promise<Fungible[]> {
   const batches: string[][] = [];
   for (let index = 0; index < ids.length; index += ASSET_LOOKUP_BATCH_SIZE) {
@@ -17,8 +17,8 @@ export async function fetchFungiblesByIds(
   }
   const responses = await Promise.all(
     batches.map((fungibleIds) =>
-      ZerionAPI.assetListFungibles({ fungibleIds, currency }, { source })
-    )
+      ZerionAPI.assetListFungibles({ fungibleIds, currency }, { source }),
+    ),
   );
   return responses.flatMap((response) => response.data ?? []);
 }

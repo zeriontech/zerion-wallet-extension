@@ -51,35 +51,23 @@ export function useHiddenFungibleActions() {
       await queryClient.cancelQueries({
         queryKey: GLOBAL_PREFERENCES_QUERY_KEY,
       });
-      const previous = queryClient.getQueryData<GlobalPreferences>(
-        GLOBAL_PREFERENCES_QUERY_KEY
-      );
-      queryClient.setQueryData<GlobalPreferences>(
-        GLOBAL_PREFERENCES_QUERY_KEY,
-        (preferences) =>
-          preferences ? { ...preferences, hiddenFungibleIds } : preferences
+      const previous = queryClient.getQueryData<GlobalPreferences>(GLOBAL_PREFERENCES_QUERY_KEY);
+      queryClient.setQueryData<GlobalPreferences>(GLOBAL_PREFERENCES_QUERY_KEY, (preferences) =>
+        preferences ? { ...preferences, hiddenFungibleIds } : preferences,
       );
       // A list change is a request change, not a client-side filter. Mark the
       // wallet reads stale so a key we are returning to (unhide) refetches
       // instead of serving its pre-hide cached response.
       void Promise.all(
-        [
-          'walletGetPortfolio',
-          'walletGetGroupedPositions',
-          'walletGetChart',
-          'walletGetPnl',
-        ].map((queryKey) =>
-          queryClient.invalidateQueries({ queryKey: [queryKey] })
-        )
+        ['walletGetPortfolio', 'walletGetGroupedPositions', 'walletGetChart', 'walletGetPnl'].map(
+          (queryKey) => queryClient.invalidateQueries({ queryKey: [queryKey] }),
+        ),
       );
       return { previous };
     },
     onError: (_error, _preferences, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(
-          GLOBAL_PREFERENCES_QUERY_KEY,
-          context.previous
-        );
+        queryClient.setQueryData(GLOBAL_PREFERENCES_QUERY_KEY, context.previous);
       }
     },
     onSettled: () =>
@@ -102,7 +90,7 @@ export function useHiddenFungibleActions() {
       mutation.mutate(next);
       return next;
     },
-    [mutation, rawHiddenFungibleIds]
+    [mutation, rawHiddenFungibleIds],
   );
 
   /** Same contract as hide: the list after unhiding, or `null` on no-op. */
@@ -115,7 +103,7 @@ export function useHiddenFungibleActions() {
       mutation.mutate(next);
       return next;
     },
-    [mutation, rawHiddenFungibleIds]
+    [mutation, rawHiddenFungibleIds],
   );
 
   return {

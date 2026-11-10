@@ -59,13 +59,13 @@ interface Response {
 export async function walletGetSimplePositions(
   this: ZerionApiContext,
   { address, currency, permits, hiddenFungibleIds }: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const provider = await this.getAddressProviderHeader(address);
   const kyOptions = this.getKyOptions();
   const params = appendHiddenFungibleIds(
     new URLSearchParams({ address, currency }),
-    hiddenFungibleIds
+    hiddenFungibleIds,
   );
   const endpoint = `wallet/get-simple-positions/v1?${params}`;
   return ZerionHttpClient.get<Response>(

@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import {
-  NavigationType,
-  useNavigate,
-  useNavigationType,
-  useParams,
-} from 'react-router-dom';
+import { NavigationType, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -74,11 +69,7 @@ export function AssetInfo() {
   );
   const assetFullInfo = assetFullInfoData?.data;
   const { ready, params } = useAddressParams();
-  const {
-    hiddenFungibleIds,
-    isReady: hiddenIdsAreReady,
-    canHideMore,
-  } = useHiddenFungibleIds();
+  const { hiddenFungibleIds, isReady: hiddenIdsAreReady, canHideMore } = useHiddenFungibleIds();
   const { hide, unhide } = useHiddenFungibleActions();
   const isHidden = hiddenIdsAreReady && hiddenFungibleIds.includes(asset_code);
   const { data: portfolioData } = useWalletPortfolio(
@@ -264,17 +255,9 @@ export function AssetInfo() {
         }
       />
       <PageTop />
-      <VStack
-        gap={24}
-        style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
-      >
-        {isHidden ? (
-          <HiddenAssetBanner onUnhide={() => unhideAsset('banner')} />
-        ) : null}
-        <AssetTitleAndChart
-          asset={assetFullInfo.fungible}
-          address={params.address}
-        />
+      <VStack gap={24} style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}>
+        {isHidden ? <HiddenAssetBanner onUnhide={() => unhideAsset('banner')} /> : null}
+        <AssetTitleAndChart asset={assetFullInfo.fungible} address={params.address} />
         <AssetGlobalStats assetFullInfo={assetFullInfo} />
         <AssetAddressStats
           address={params.address}

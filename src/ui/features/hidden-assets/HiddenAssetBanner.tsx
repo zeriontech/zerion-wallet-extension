@@ -25,12 +25,7 @@ export function HiddenAssetBanner({ onUnhide }: { onUnhide: () => void }) {
         <UIText kind="small/regular" style={{ flexGrow: 1 }}>
           You hid this token
         </UIText>
-        <Button
-          kind="neutral"
-          size={32}
-          onClick={onUnhide}
-          style={{ flexShrink: 0 }}
-        >
+        <Button kind="neutral" size={32} onClick={onUnhide} style={{ flexShrink: 0 }}>
           Unhide
         </Button>
       </HStack>

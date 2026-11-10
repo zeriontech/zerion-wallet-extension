@@ -1,9 +1,6 @@
 import { createNanoEvents } from 'nanoevents';
 import { getError } from 'src/shared/errors/getError';
-import type {
-  BannerClickedParams,
-  ButtonClickedParams,
-} from 'src/shared/types/button-events';
+import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
 import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
 import type {
   PerpsButtonPressedParams,

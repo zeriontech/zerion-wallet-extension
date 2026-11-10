@@ -8,7 +8,7 @@ export function useWalletChart(params: Params, { enabled = true } = {}) {
   const { hiddenFungibleIds, isReady } = useHiddenFungibleIds();
   const filteredParams = useMemo(
     () => ({ ...params, hiddenFungibleIds }),
-    [params, hiddenFungibleIds]
+    [params, hiddenFungibleIds],
   );
   return useQuery({
     queryKey: ['walletGetChart', filteredParams],

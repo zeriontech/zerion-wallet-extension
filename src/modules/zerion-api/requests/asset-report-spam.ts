@@ -18,7 +18,7 @@ type Response = ResponseBody<null>;
 export async function assetReportSpam(
   this: ZerionApiContext,
   { assetId, wallet }: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const body = wallet ? { assetId, wallet } : { assetId };
   return ZerionHttpClient.post<Response>(
@@ -27,6 +27,6 @@ export async function assetReportSpam(
       body: JSON.stringify(body),
       ...options,
     },
-    this.getKyOptions()
+    this.getKyOptions(),
   );
 }

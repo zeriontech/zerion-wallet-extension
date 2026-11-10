@@ -89,10 +89,7 @@ import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
-import type {
-  BannerClickedParams,
-  ButtonClickedParams,
-} from 'src/shared/types/button-events';
+import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
 import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
 import type {
   PerpsButtonPressedParams,
@@ -1856,10 +1853,7 @@ export class Wallet {
     emitter.emit('assetVisibilityChanged', params);
   }
 
-  async perpsScreenViewed({
-    context,
-    params,
-  }: WalletMethodParams<PerpsScreenViewedParams>) {
+  async perpsScreenViewed({ context, params }: WalletMethodParams<PerpsScreenViewedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('perpsScreenViewed', params);
   }

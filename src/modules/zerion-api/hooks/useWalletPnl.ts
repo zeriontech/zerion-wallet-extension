@@ -38,7 +38,7 @@ export function useWalletPnl(
   const { hiddenFungibleIds, isReady } = useHiddenFungibleIds();
   const filteredParams = useMemo(
     () => ({ ...params, hiddenFungibleIds }),
-    [params, hiddenFungibleIds]
+    [params, hiddenFungibleIds],
   );
   return useQuery({
     queryKey: persistentQuery([QUERY_KEY, filteredParams, { source }]),

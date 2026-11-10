@@ -16,10 +16,7 @@ import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  useHiddenFungibleActions,
-  useHiddenFungibleIds,
-} from './useHiddenFungibles';
+import { useHiddenFungibleActions, useHiddenFungibleIds } from './useHiddenFungibles';
 import { trackAssetVisibilityChanged } from './visibility';
 import { useHiddenAssetFungibles } from './useHiddenAssetFungibles';
 
@@ -30,9 +27,9 @@ function matchesAsset(query: string, asset: Fungible | undefined, id: string) {
   const value = query.trim().toLowerCase();
   return Boolean(
     normalizedContains(id.toLowerCase(), value) ||
-      (asset &&
-        (normalizedContains(asset.name.toLowerCase(), value) ||
-          normalizedContains(asset.symbol.toLowerCase(), value)))
+    (asset &&
+      (normalizedContains(asset.name.toLowerCase(), value) ||
+        normalizedContains(asset.symbol.toLowerCase(), value))),
   );
 }
 
@@ -111,11 +108,7 @@ export function HiddenAssets() {
           items={rows.map(({ id, asset }) => ({
             key: id,
             component: (
-              <HStack
-                gap={8}
-                alignItems="center"
-                justifyContent="space-between"
-              >
+              <HStack gap={8} alignItems="center" justifyContent="space-between">
                 <UnstyledLink
                   to={`/asset/${encodeURIComponent(id)}`}
                   style={{ color: 'inherit', minWidth: 0, flexGrow: 1 }}

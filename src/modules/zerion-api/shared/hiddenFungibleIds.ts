@@ -10,9 +10,7 @@ export const HIDDEN_FUNGIBLE_IDS_LIMIT = 500;
  * drop empty entries, deduplicate exact ids, sort deterministically, keep the
  * original spelling/case, and never truncate.
  */
-export function normalizeHiddenFungibleIds(
-  ids: readonly string[] | null | undefined
-): string[] {
+export function normalizeHiddenFungibleIds(ids: readonly string[] | null | undefined): string[] {
   return [...new Set((ids ?? []).filter((id) => id.length > 0))].sort();
 }
 
@@ -21,9 +19,9 @@ export function normalizeHiddenFungibleIds(
  * field removed when the effective list is empty. ZPI treats an omitted list
  * and an empty list the same, but omitting keeps the wire contract explicit.
  */
-export function withNormalizedHiddenFungibleIds<
-  T extends { hiddenFungibleIds?: string[] }
->(params: T): Omit<T, 'hiddenFungibleIds'> & { hiddenFungibleIds?: string[] } {
+export function withNormalizedHiddenFungibleIds<T extends { hiddenFungibleIds?: string[] }>(
+  params: T,
+): Omit<T, 'hiddenFungibleIds'> & { hiddenFungibleIds?: string[] } {
   const { hiddenFungibleIds, ...rest } = params;
   const normalized = normalizeHiddenFungibleIds(hiddenFungibleIds);
   return normalized.length ? { ...rest, hiddenFungibleIds: normalized } : rest;
@@ -32,7 +30,7 @@ export function withNormalizedHiddenFungibleIds<
 /** GET routes carry the list as repeated query keys, never a joined value. */
 export function appendHiddenFungibleIds(
   searchParams: URLSearchParams,
-  ids: readonly string[] | null | undefined
+  ids: readonly string[] | null | undefined,
 ) {
   for (const id of normalizeHiddenFungibleIds(ids)) {
     searchParams.append('hiddenFungibleIds', id);
