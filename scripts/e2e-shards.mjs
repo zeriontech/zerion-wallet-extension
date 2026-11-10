@@ -21,18 +21,10 @@ import { execFileSync } from 'node:child_process';
 
 const TESTS = [
   // file, full title path after `:line:col › `, measured seconds locally
-  [
-    'confidential-balances.spec.ts',
-    'confidential balances: panel → reveal → unmasked',
-    7.9,
-  ],
+  ['confidential-balances.spec.ts', 'confidential balances: panel → reveal → unmasked', 7.9],
   ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 3.4],
   ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 3.3],
-  [
-    'get-started.spec.ts',
-    'Get Started › Onboarded with private key › Matches snapshot',
-    3.2,
-  ],
+  ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with private key › User can create a new wallet when there are no existing backups',
@@ -68,26 +60,14 @@ const TESTS = [
   ['manage-wallets.spec.ts', 'Manage Wallets › Action links are working', 3.6],
   ['manage-wallets.spec.ts', 'Manage Wallets › User can erase all data', 5.1],
   ['onboarding.spec.ts', 'Onboarding › Matches snapshot', 1.0],
-  [
-    'onboarding.spec.ts',
-    'Onboarding › User can create a new wallet and skip backup',
-    4.2,
-  ],
-  [
-    'onboarding.spec.ts',
-    'Onboarding › User can create and backup a new wallet',
-    4.2,
-  ],
+  ['onboarding.spec.ts', 'Onboarding › User can create a new wallet and skip backup', 4.2],
+  ['onboarding.spec.ts', 'Onboarding › User can create and backup a new wallet', 4.2],
   [
     'onboarding.spec.ts',
     'Onboarding › User can import an existing wallet using recovery phrase',
     4.9,
   ],
-  [
-    'onboarding.spec.ts',
-    'Onboarding › User can import an existing wallet using private key',
-    3.1,
-  ],
+  ['onboarding.spec.ts', 'Onboarding › User can import an existing wallet using private key', 3.1],
   ['overview.spec.ts', 'Overview › Matches snapshot', 11.2],
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
@@ -102,9 +82,7 @@ const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  * the file name plus the full describe chain.
  */
 function testPattern({ file, title }) {
-  return `^.*${escapeRegex(file)} ${escapeRegex(
-    title.replaceAll(' › ', ' ')
-  )}$`;
+  return `^.*${escapeRegex(file)} ${escapeRegex(title.replaceAll(' › ', ' '))}$`;
 }
 
 /** Longest-processing-time-first packing. */
@@ -114,9 +92,7 @@ function partition(total) {
     tests: [],
   }));
   for (const test of [...TESTS].sort((a, b) => b.seconds - a.seconds)) {
-    const lightest = shards.reduce((min, shard) =>
-      shard.seconds < min.seconds ? shard : min
-    );
+    const lightest = shards.reduce((min, shard) => (shard.seconds < min.seconds ? shard : min));
     lightest.tests.push(test);
     lightest.seconds += test.seconds;
   }
@@ -132,18 +108,13 @@ function listTests() {
     .split('\n')
     .map((line) => line.match(/› (.+?\.spec\.ts):\d+:\d+ › (.+)$/))
     .filter(Boolean)
-    .map(
-      ([, file, title]) =>
-        `${file.split('/').pop()} ${title.replaceAll(' › ', ' ')}`
-    );
+    .map(([, file, title]) => `${file.split('/').pop()} ${title.replaceAll(' › ', ' ')}`);
 }
 
 function verify(total) {
   const listed = listTests();
   const shards = partition(total);
-  const patterns = shards.map(
-    (shard) => new RegExp(shard.tests.map(testPattern).join('|'))
-  );
+  const patterns = shards.map((shard) => new RegExp(shard.tests.map(testPattern).join('|')));
   const problems = [];
   for (const test of listed) {
     const matches = patterns.filter((pattern) => pattern.test(test)).length;
@@ -152,31 +123,24 @@ function verify(total) {
     }
   }
   if (problems.length > 0) {
-    console.error(
-      `::error::${problems.length} e2e test(s) are not assigned to exactly one shard:`
-    );
+    console.error(`::error::${problems.length} e2e test(s) are not assigned to exactly one shard:`);
     for (const problem of problems) console.error(`  ${problem}`);
     console.error('Update TESTS in scripts/e2e-shards.mjs.');
     process.exit(1);
   }
-  console.log(
-    `${listed.length} tests, each assigned to exactly one of ${total} shards`
-  );
+  console.log(`${listed.length} tests, each assigned to exactly one of ${total} shards`);
 }
 
 function main() {
   const args = process.argv.slice(2);
-  const value = (name) =>
-    args.find((arg) => arg.startsWith(`--${name}=`))?.split('=')[1];
+  const value = (name) => args.find((arg) => arg.startsWith(`--${name}=`))?.split('=')[1];
   const total = Number(value('total') ?? 3);
 
   if (args.includes('--verify')) return verify(total);
 
   const index = Number(value('shard'));
   if (!Number.isInteger(index) || index < 1 || index > total) {
-    console.error(
-      'Usage: node scripts/e2e-shards.mjs --shard=N --total=3 | --verify'
-    );
+    console.error('Usage: node scripts/e2e-shards.mjs --shard=N --total=3 | --verify');
     process.exit(1);
   }
 
@@ -184,9 +148,7 @@ function main() {
   const grep = shard.tests.map(testPattern).join('|');
   // Human summary on stderr: stdout is redirected into $GITHUB_OUTPUT.
   console.error(
-    `Shard ${index}/${total}: ${
-      shard.tests.length
-    } tests, ~${shard.seconds.toFixed(1)}s measured`
+    `Shard ${index}/${total}: ${shard.tests.length} tests, ~${shard.seconds.toFixed(1)}s measured`,
   );
   console.log(`grep=${grep}`);
 }

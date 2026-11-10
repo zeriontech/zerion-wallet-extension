@@ -14,7 +14,7 @@ const fetchNonce = memoize(async (address: string, chainId: ChainId) => {
 type EstimateNetworkFeeFn = typeof estimateNetworkFee;
 
 export async function getNetworkFeeEstimation(
-  params: Omit<Parameters<EstimateNetworkFeeFn>[0], 'getNonce'>
+  params: Omit<Parameters<EstimateNetworkFeeFn>[0], 'getNonce'>,
 ): ReturnType<EstimateNetworkFeeFn> {
   return estimateNetworkFee({ ...params, getNonce: fetchNonce });
 }

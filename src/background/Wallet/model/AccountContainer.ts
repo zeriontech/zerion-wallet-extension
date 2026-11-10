@@ -52,7 +52,7 @@ abstract class AbstractAccountContainer<T extends { address: string }> {
   removeWallet(address: string) {
     const normalizedAddress = normalizeAddress(address);
     const pos = this.wallets.findIndex(
-      (wallet) => normalizeAddress(wallet.address) === normalizedAddress
+      (wallet) => normalizeAddress(wallet.address) === normalizedAddress,
     );
     if (pos === -1) {
       return;
@@ -63,7 +63,7 @@ abstract class AbstractAccountContainer<T extends { address: string }> {
   getWalletByAddress(address: string) {
     const normalizedAddress = normalizeAddress(address);
     const wallet = this.wallets.find(
-      (wallet) => normalizeAddress(wallet.address) === normalizedAddress
+      (wallet) => normalizeAddress(wallet.address) === normalizedAddress,
     );
     return wallet || null;
   }
@@ -122,6 +122,4 @@ export class DeviceAccountContainer
   }
 }
 
-export type AccountContainer =
-  | ReadonlyAccountContainer
-  | DeviceAccountContainer;
+export type AccountContainer = ReadonlyAccountContainer | DeviceAccountContainer;

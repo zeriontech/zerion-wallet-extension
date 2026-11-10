@@ -9,19 +9,12 @@ import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { createChain } from 'src/modules/networks/Chain';
-import {
-  useMainnetNetwork,
-  useNetworkInfo,
-  useNetworks,
-} from 'src/modules/networks/useNetworks';
+import { useMainnetNetwork, useNetworkInfo, useNetworks } from 'src/modules/networks/useNetworks';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { SidepanelOptionsButton } from 'src/shared/sidepanel/SidepanelOptionsButton';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import {
-  useBackgroundKind,
-  whiteBackgroundKind,
-} from 'src/ui/components/Background/Background';
+import { useBackgroundKind, whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { CopyButton } from 'src/ui/components/CopyButton';
 import { DelayedRender } from 'src/ui/components/DelayedRender/DelayedRender';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
@@ -46,10 +39,7 @@ import { usePendingTransactions } from 'src/ui/transactions/usePendingTransactio
 import { PausedBanner } from 'src/ui/components/PauseInjection';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import {
-  SegmentedControlGroup,
-  SegmentedControlLink,
-} from 'src/ui/ui-kit/SegmentedControl';
+import { SegmentedControlGroup, SegmentedControlLink } from 'src/ui/ui-kit/SegmentedControl';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -68,10 +58,7 @@ import { SearchLinkIcon } from '../Search';
 import { ActionButtonsRow } from './ActionButtonsRow';
 import { PercentageChange } from './PercentageChange';
 import { WalletPositionsChart } from './WalletPositionsChart';
-import {
-  NetworkDistributionChart,
-  ProtocolDistributionChart,
-} from './DistributionCharts';
+import { NetworkDistributionChart, ProtocolDistributionChart } from './DistributionCharts';
 import { BackupReminder } from './BackupReminder';
 import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -96,10 +83,7 @@ function PendingTransactionsIndicator() {
     return null;
   } else {
     return (
-      <svg
-        viewBox="0 0 16 16"
-        style={{ width: 8, height: 8, position: 'relative', top: -4 }}
-      >
+      <svg viewBox="0 0 16 16" style={{ width: 8, height: 8, position: 'relative', top: -4 }}>
         <circle cx="8" cy="8" r="8" fill="var(--notice-500)" />
       </svg>
     );
@@ -118,20 +102,12 @@ function TestnetworkGuard({
   children,
 }: React.PropsWithChildren<{
   dappChain: string | null;
-  renderGuard: ({
-    testnetModeEnabled,
-  }: {
-    testnetModeEnabled: boolean;
-  }) => React.ReactNode;
+  renderGuard: ({ testnetModeEnabled }: { testnetModeEnabled: boolean }) => React.ReactNode;
 }>) {
   const { preferences } = usePreferences();
   const dappChain = dappChainStr ? createChain(dappChainStr) : null;
-  const { networks, isLoading } = useNetworks(
-    dappChainStr ? [dappChainStr] : undefined
-  );
-  const currentNetwork = dappChain
-    ? networks?.getNetworkByName(dappChain)
-    : null;
+  const { networks, isLoading } = useNetworks(dappChainStr ? [dappChainStr] : undefined);
+  const currentNetwork = dappChain ? networks?.getNetworkByName(dappChain) : null;
   const { data: mainnetNetwork } = useMainnetNetwork({
     chain: dappChainStr || null,
     enabled:
@@ -142,11 +118,7 @@ function TestnetworkGuard({
   });
   const network = currentNetwork || mainnetNetwork;
   const testnetModeEnabled = Boolean(preferences?.testnetMode?.on);
-  if (
-    dappChainStr &&
-    network &&
-    testnetModeEnabled !== Boolean(network.testnet)
-  ) {
+  if (dappChainStr && network && testnetModeEnabled !== Boolean(network.testnet)) {
     return renderGuard({ testnetModeEnabled });
   }
   return children;
@@ -202,18 +174,11 @@ function CurrentAccountControls() {
                 </span>
               )}
             />
-            <ArrowDownIcon
-              className="content-hover"
-              style={{ width: 24, height: 24 }}
-            />
+            <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
           </UIText>
         </HStack>
       </Button>
-      <CopyButton
-        title="Copy Address"
-        textToCopy={addressToCopy}
-        tooltipContent="Address Copied"
-      />
+      <CopyButton title="Copy Address" textToCopy={addressToCopy} tooltipContent="Address Copied" />
 
       <RenderArea name="wallet-name-end" />
     </HStack>
@@ -269,10 +234,7 @@ function ReadonlyMode() {
             <ReadonlyIcon />
             <span>You’re in view-only mode</span>
           </HStack>
-          <TextLink
-            to="/get-started/existing-select"
-            style={{ color: 'var(--primary)' }}
-          >
+          <TextLink to="/get-started/existing-select" style={{ color: 'var(--primary)' }}>
             Import Wallet
           </TextLink>
         </HStack>
@@ -285,19 +247,13 @@ function OverviewComponent() {
   useBackgroundKind(whiteBackgroundKind);
   const { currency } = useCurrency();
   const location = useLocation();
-  const {
-    singleAddress: address,
-    params,
-    ready,
-    singleAddressNormalized,
-  } = useAddressParams();
+  const { singleAddress: address, params, ready, singleAddressNormalized } = useAddressParams();
   useProfileName({ address, name: null });
   const { data: walletGroup } = useQuery({
     queryKey: ['getWalletGroupByAddress', address],
     queryFn: () => getWalletGroupByAddress(address),
   });
-  const isReadonlyGroup =
-    walletGroup && isReadonlyContainer(walletGroup.walletContainer);
+  const isReadonlyGroup = walletGroup && isReadonlyContainer(walletGroup.walletContainer);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedChain = searchParams.get('chain') || null;
   const setSelectedChain = useEvent((value: string | null) => {
@@ -311,17 +267,14 @@ function OverviewComponent() {
         }
         return current;
       },
-      { replace: true }
+      { replace: true },
     );
   });
   const addressType = address ? getAddressType(address) : null;
   const { data: network } = useNetworkInfo(selectedChain ?? null);
 
   useEffect(() => {
-    if (
-      network &&
-      !isMatchForEcosystem(address, Networks.getEcosystem(network))
-    ) {
+    if (network && !isMatchForEcosystem(address, Networks.getEcosystem(network))) {
       setSelectedChain(null);
     }
   }, [address, network, setSelectedChain]);
@@ -330,7 +283,7 @@ function OverviewComponent() {
   const { data } = useWalletPortfolio(
     { addresses: [params.address], currency },
     { source: httpSource },
-    { enabled: ready, refetchInterval: 40000 }
+    { enabled: ready, refetchInterval: 40000 },
   );
   const walletPortfolio = data?.data;
 
@@ -370,16 +323,12 @@ function OverviewComponent() {
     }
   }, [singleAddressNormalized]);
 
-  const { data: isConnected } = useIsConnectedToActiveTab(
-    singleAddressNormalized
-  );
+  const { data: isConnected } = useIsConnectedToActiveTab(singleAddressNormalized);
 
   const dappChain = isConnected ? siteChain?.toString() : null;
 
   const tabFallback = (
-    <CenteredFillViewportView
-      maxHeight={getMinTabContentHeight(offsetValuesState)}
-    >
+    <CenteredFillViewportView maxHeight={getMinTabContentHeight(offsetValuesState)}>
       <DelayedRender delay={2000}>
         <ViewLoading kind="network" />
       </DelayedRender>
@@ -403,11 +352,7 @@ function OverviewComponent() {
       maxHeight={getMinTabContentHeight(offsetValuesState)}
     >
       <VStack gap={16} style={{ textAlign: 'center' }}>
-        <img
-          src={noResultsImg}
-          style={{ height: 64, placeSelf: 'center' }}
-          alt=""
-        />
+        <img src={noResultsImg} style={{ height: 64, placeSelf: 'center' }} alt="" />
         <VStack gap={8}>
           <UIText kind="headline/h3">Wrong Environment</UIText>
           <UIText kind="small/regular" color="var(--neutral-500)">
@@ -447,9 +392,7 @@ function OverviewComponent() {
     if (!selectedChain) {
       return to;
     }
-    const isActiveRoute = end
-      ? location.pathname === to
-      : location.pathname.startsWith(to);
+    const isActiveRoute = end ? location.pathname === to : location.pathname.startsWith(to);
     if (isActiveRoute) {
       return to;
     } else {
@@ -511,10 +454,7 @@ function OverviewComponent() {
               />
             }
           />
-          <PercentageChange
-            walletPortfolio={walletPortfolio}
-            currency={currency}
-          />
+          <PercentageChange walletPortfolio={walletPortfolio} currency={currency} />
         </div>
       </PageFullBleedColumn>
       <Spacer height={16} />
@@ -622,9 +562,7 @@ function OverviewComponent() {
                     style={{
                       height: TAB_TOP_PADDING,
                       position: 'sticky',
-                      top:
-                        getStickyOffset(offsetValuesState) +
-                        TAB_SELECTOR_HEIGHT,
+                      top: getStickyOffset(offsetValuesState) + TAB_SELECTOR_HEIGHT,
                       zIndex: 1,
                       backgroundColor: 'var(--white)',
                     }}
@@ -671,10 +609,7 @@ function OverviewComponent() {
                     dappChain={dappChain || null}
                     renderGuard={() => testnetGuardView}
                   >
-                    <HistoryList
-                      selectedChain={selectedChain}
-                      onChainChange={setSelectedChain}
-                    />
+                    <HistoryList selectedChain={selectedChain} onChainChange={setSelectedChain} />
                   </TestnetworkGuard>
                 </ViewSuspense>
               }

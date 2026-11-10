@@ -9,13 +9,8 @@ declare module 'chart.js' {
   }
 }
 
-function getDistance(
-  point1: { x: number; y: number },
-  point2: { x: number; y: number }
-) {
-  return Math.sqrt(
-    Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
-  );
+function getDistance(point1: { x: number; y: number }, point2: { x: number; y: number }) {
+  return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
 }
 
 Interaction.modes.magneticActions = function (chart, e) {
@@ -33,37 +28,28 @@ Interaction.modes.magneticActions = function (chart, e) {
   let closestPointWithExtra: InteractionItem | null = null;
   const position = getRelativePosition(e, chart);
 
-  Interaction.evaluateInteractionItems(
-    chart,
-    'xy',
-    position,
-    (element, datasetIndex, index) => {
-      if (Math.abs(element.x - position.x) > magneticRadius) {
-        return;
-      }
-      if (
-        'raw' in element &&
-        Boolean((element.raw as ParsedAssetChartPoint)?.extra)
+  Interaction.evaluateInteractionItems(chart, 'xy', position, (element, datasetIndex, index) => {
+    if (Math.abs(element.x - position.x) > magneticRadius) {
+      return;
+    }
+    if ('raw' in element && Boolean((element.raw as ParsedAssetChartPoint)?.extra)) {
+      if (!closestPointWithExtra) {
+        closestPointWithExtra = {
+          element,
+          datasetIndex,
+          index,
+        };
+      } else if (
+        Math.abs(element.x - position.x) < Math.abs(closestPointWithExtra.element.x - position.x)
       ) {
-        if (!closestPointWithExtra) {
-          closestPointWithExtra = {
-            element,
-            datasetIndex,
-            index,
-          };
-        } else if (
-          Math.abs(element.x - position.x) <
-          Math.abs(closestPointWithExtra.element.x - position.x)
-        ) {
-          closestPointWithExtra = {
-            element,
-            datasetIndex,
-            index,
-          };
-        }
+        closestPointWithExtra = {
+          element,
+          datasetIndex,
+          index,
+        };
       }
     }
-  );
+  });
 
   const activePointMagneticRadius = 8;
   if (

@@ -21,9 +21,7 @@ function hasNonAlphanumeric(s: string) {
     .split('')
     .some(
       (char) =>
-        /\d/.test(char) === false &&
-        char !== ' ' &&
-        char.toLowerCase() === char.toUpperCase()
+        /\d/.test(char) === false && char !== ' ' && char.toLowerCase() === char.toUpperCase(),
     );
 }
 
@@ -50,10 +48,7 @@ export function estimatePasswordStrengh(value: string): StrengthStats {
   const someUpperCase = hasUpperCase(value);
   const someSymbols = hasNonAlphanumeric(value);
   const someNumbers = hasNumbers(value);
-  const score =
-    Number(someLowerCase && someUpperCase) +
-    Number(someSymbols) +
-    Number(someNumbers);
+  const score = Number(someLowerCase && someUpperCase) + Number(someSymbols) + Number(someNumbers);
   const minLength = value.length >= PASSWORD_MIN_LENGTH;
   const stats = {
     someLowerCase,

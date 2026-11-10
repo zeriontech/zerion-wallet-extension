@@ -17,10 +17,7 @@ interface State {
 class UserLifecycleStore extends PersistentStore<State> {
   static initialState: State = { installedEvent: null, firstUiOpenEvent: null };
 
-  constructor(
-    initialState = UserLifecycleStore.initialState,
-    key = 'userLifecycle'
-  ) {
+  constructor(initialState = UserLifecycleStore.initialState, key = 'userLifecycle') {
     super(initialState, key);
 
     emitter.on('screenView', async () => {

@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import type { PublicUser } from 'src/shared/types/User';
@@ -36,10 +29,7 @@ function LoginPageAnimation({ address }: { address: string | null }) {
   const [lottieIsReady, setLottieIsReady] = useState(false);
   const [avatarImageIsReady, setAvatarImageIsReady] = useState(false);
   const [lottieStarted, setLottieStarted] = useState(false);
-  const handleAvatarImageReady = useCallback(
-    () => setAvatarImageIsReady(true),
-    []
-  );
+  const handleAvatarImageReady = useCallback(() => setAvatarImageIsReady(true), []);
   const lottieComponentRef = useRef<LottieComponentHandle | null>(null);
   const hasAddressValue = Boolean(address);
   useEffect(() => {
@@ -75,8 +65,7 @@ function LoginPageAnimation({ address }: { address: string | null }) {
                 ['--spring-easing' as string]:
                   'linear(0, 0.0023, 0.009 0.96%, 0.0344, 0.0735 2.87%, 0.138 4.07%, 0.2844 6.22%, 0.7215 11.97%, 0.8467 13.89%, 0.94, 1.0164 17.24%, 1.0826 19.15%, 1.1231 20.83%, 1.1393, 1.1511 22.74%, 1.1599, 1.163, 1.1612 26.33%, 1.1538 27.77%, 1.1293 30.4%, 1.0497 36.87%, 1.015 40.22%, 0.9998 42.14%, 0.9896 43.81%, 0.9812, 0.976 47.64%, 0.9734 50.28%, 0.9751 53.15%, 0.9966 64.88%, 1.0035 71.82%, 1.0042 77.81%, 0.9993 99.83%)',
                 ['--spring-duration' as string]: '0.8s',
-                transition:
-                  'opacity 400ms, transform var(--spring-duration) var(--spring-easing)',
+                transition: 'opacity 400ms, transform var(--spring-duration) var(--spring-easing)',
               }}
             >
               <WalletAvatar
@@ -129,13 +118,7 @@ export function Login() {
   }, [navigate, params]);
 
   const loginMutation = useMutation({
-    mutationFn: async ({
-      user,
-      password,
-    }: {
-      user: PublicUser;
-      password: string;
-    }) => {
+    mutationFn: async ({ user, password }: { user: PublicUser; password: string }) => {
       return accountPublicRPCPort.request('login', { user, password });
     },
     onSuccess: async () => {
@@ -158,13 +141,8 @@ export function Login() {
     return <Navigate to="/" replace={true} />;
   }
   return (
-    <PageColumn
-      style={{ width: 'clamp(320px, 100vw, 450px)', marginInline: 'auto' }}
-    >
-      <PageFullBleedColumn
-        paddingInline={false}
-        style={{ position: 'relative' }}
-      >
+    <PageColumn style={{ width: 'clamp(320px, 100vw, 450px)', marginInline: 'auto' }}>
+      <PageFullBleedColumn paddingInline={false} style={{ position: 'relative' }}>
         <LoginPageAnimation address={lastUsedAddress || null} />
       </PageFullBleedColumn>
       <Spacer height={74} />
@@ -172,9 +150,7 @@ export function Login() {
         id={formId}
         onSubmit={(event) => {
           event.preventDefault();
-          const password = new FormData(event.currentTarget).get('password') as
-            | string
-            | undefined;
+          const password = new FormData(event.currentTarget).get('password') as string | undefined;
           if (!password) {
             return;
           }
@@ -187,12 +163,7 @@ export function Login() {
       >
         <VStack gap={24} style={{ gridTemplateRows: '1fr auto', flexGrow: 1 }}>
           <VStack gap={24}>
-            <UIText
-              as="label"
-              htmlFor={inputId}
-              kind="headline/h1"
-              style={{ textAlign: 'center' }}
-            >
+            <UIText as="label" htmlFor={inputId} kind="headline/h1" style={{ textAlign: 'center' }}>
               Welcome Back!
             </UIText>
             <VStack gap={4}>

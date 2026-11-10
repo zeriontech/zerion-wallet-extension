@@ -42,10 +42,7 @@ import {
   DEFAULT_CONFIGURATION,
   applyConfiguration,
 } from '../../../SendTransaction/TransactionConfiguration/applyConfiguration';
-import {
-  createCancelTransaction,
-  increaseGasPrices,
-} from '../shared/accelerate-helpers';
+import { createCancelTransaction, increaseGasPrices } from '../shared/accelerate-helpers';
 
 function CancelTxContent({
   wallet,
@@ -68,10 +65,7 @@ function CancelTxContent({
   invariant(originalTransaction, 'Original transaction must be defined');
   const chain = createChain(originalTransaction.chain);
   const { data: chainGasPrices = null } = useGasPrices(chain);
-  const acceleratedGasPrices = useMemo(
-    () => increaseGasPrices(chainGasPrices),
-    [chainGasPrices]
-  );
+  const acceleratedGasPrices = useMemo(() => increaseGasPrices(chainGasPrices), [chainGasPrices]);
 
   const feeValueCommonRef = useRef<string>(); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
@@ -106,7 +100,7 @@ function CancelTxContent({
       const tx = applyConfiguration(
         transaction,
         { ...configuration, nonce: String(nonce) },
-        acceleratedGasPrices
+        acceleratedGasPrices,
       );
       const txResponse = await signTxBtnRef.current.sendTransaction({
         transaction: { evm: tx },
@@ -164,11 +158,7 @@ function CancelTxContent({
       <Spacer height={16} />
       <VStack gap={32}>
         <VStack gap={16} style={{ placeItems: 'center' }}>
-          <img
-            alt=""
-            src={CancelEmojiSrc}
-            srcSet={`${CancelEmojiSrc}, ${CancelEmoji2xSrc} 2x`}
-          />
+          <img alt="" src={CancelEmojiSrc} srcSet={`${CancelEmojiSrc}, ${CancelEmoji2xSrc} 2x`} />
           <UIText kind="headline/h2">Cancel Transaction</UIText>
           <div
             style={{
@@ -183,9 +173,7 @@ function CancelTxContent({
               chainGasPrices={acceleratedGasPrices}
               chain={chain}
               networkFeeConfiguration={configuration.networkFee}
-              onChange={(networkFee) =>
-                setConfiguration((current) => ({ ...current, networkFee }))
-              }
+              onChange={(networkFee) => setConfiguration((current) => ({ ...current, networkFee }))}
               customViewOnly={true}
               label={<UIText kind="body/accent">Network Fee:</UIText>}
               renderDisplayValue={({ hintTitle, displayValue }) => (
@@ -201,10 +189,7 @@ function CancelTxContent({
         </VStack>
         <VStack gap={8} style={{ textAlign: 'center' }}>
           {isError ? (
-            <ErrorMessage
-              error={getError(error)}
-              hardwareError={getHardwareError(error)}
-            />
+            <ErrorMessage error={getError(error)} hardwareError={getHardwareError(error)} />
           ) : null}
           <div
             style={{
@@ -213,12 +198,7 @@ function CancelTxContent({
               gap: 8,
             }}
           >
-            <Button
-              ref={focusNode}
-              kind="neutral"
-              type="button"
-              onClick={onDismiss}
-            >
+            <Button ref={focusNode} kind="neutral" type="button" onClick={onDismiss}>
               Back
             </Button>
             {preferences && globalPreferences ? (
@@ -227,9 +207,7 @@ function CancelTxContent({
                 ref={signTxBtnRef}
                 onClick={() => sendTransaction()}
                 holdToSign={preferences.enableHoldToSignButton}
-                bluetoothSupportEnabled={
-                  globalPreferences.bluetoothSupportEnabled
-                }
+                bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
                 keyboardShortcutEnabled={false}
               />
             ) : null}

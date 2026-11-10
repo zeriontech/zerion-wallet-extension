@@ -44,7 +44,7 @@ export class HyperliquidExchangeError extends Error {
 
 export async function signAndSubmit(
   input: SignAndSubmitInput,
-  deps: SignAndSubmitDeps
+  deps: SignAndSubmitDeps,
 ): Promise<ExchangeResponse> {
   const typedData = isL1Action(input.action)
     ? await buildL1ActionTypedData({
@@ -68,8 +68,7 @@ export async function signAndSubmit(
   // Lazy-load the real submitter so test files that only need types don't
   // transitively pull in `ky` (ESM-only — chokes ts-jest's CJS pipeline).
   const submitFn =
-    deps.submit ??
-    (await import('../api/submitExchangeAction')).submitExchangeAction;
+    deps.submit ?? (await import('../api/submitExchangeAction')).submitExchangeAction;
   const response = await submitFn(body);
   if (response.status === 'err') {
     throw new HyperliquidExchangeError(response.response);

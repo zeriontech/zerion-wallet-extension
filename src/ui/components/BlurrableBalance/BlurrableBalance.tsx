@@ -51,9 +51,8 @@ export function HiddenBalancePixels({
   const numberOfSquares = gridConfig.count * 2;
   // stable per mount so the mosaic doesn't flicker on every re-render
   const opacities = React.useMemo(
-    () =>
-      Array.from({ length: numberOfSquares }, () => Math.random() * 0.4 + 0.1),
-    [numberOfSquares]
+    () => Array.from({ length: numberOfSquares }, () => Math.random() * 0.4 + 0.1),
+    [numberOfSquares],
   );
 
   return (
@@ -77,12 +76,9 @@ export function HiddenBalancePixels({
             backgroundColor: squareColor,
             opacity,
             borderTopLeftRadius: i === 0 ? gridConfig.squareSize / 2 : 0,
-            borderTopRightRadius:
-              i === gridConfig.count - 1 ? gridConfig.squareSize / 2 : 0,
-            borderBottomLeftRadius:
-              i === gridConfig.count ? gridConfig.squareSize / 2 : 0,
-            borderBottomRightRadius:
-              i === numberOfSquares - 1 ? gridConfig.squareSize / 2 : 0,
+            borderTopRightRadius: i === gridConfig.count - 1 ? gridConfig.squareSize / 2 : 0,
+            borderBottomLeftRadius: i === gridConfig.count ? gridConfig.squareSize / 2 : 0,
+            borderBottomRightRadius: i === numberOfSquares - 1 ? gridConfig.squareSize / 2 : 0,
           }}
         />
       ))}
@@ -90,19 +86,12 @@ export function HiddenBalancePixels({
   );
 }
 
-export function BlurrableBalance({
-  children,
-  kind,
-  color,
-  className,
-}: BlurrableBalanceProps) {
+export function BlurrableBalance({ children, kind, color, className }: BlurrableBalanceProps) {
   const { hideBalances } = useStore(preferenceStore);
 
   if (!hideBalances) {
     return <>{children}</>;
   }
 
-  return (
-    <HiddenBalancePixels kind={kind} color={color} className={className} />
-  );
+  return <HiddenBalancePixels kind={kind} color={color} className={className} />;
 }

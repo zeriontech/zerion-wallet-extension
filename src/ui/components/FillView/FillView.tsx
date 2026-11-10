@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import { NAVIGATION_BAR_HEIGHT } from '../URLBar';
 import * as s from './styles.module.css';
@@ -19,15 +13,12 @@ export const FillView = React.forwardRef(
     }: React.HTMLAttributes<HTMLDivElement> & {
       adjustForNavigationBar?: boolean;
     },
-    ref: React.Ref<HTMLDivElement>
+    ref: React.Ref<HTMLDivElement>,
   ) => {
     return (
       <div
         ref={ref}
-        className={cx(
-          className,
-          adjustForNavigationBar ? s.adjustForNavigationBar : null
-        )}
+        className={cx(className, adjustForNavigationBar ? s.adjustForNavigationBar : null)}
         style={{
           ['--navigation-bar-height' as string]: `${NAVIGATION_BAR_HEIGHT}px`,
           height: '100%',
@@ -40,7 +31,7 @@ export const FillView = React.forwardRef(
         {...props}
       />
     );
-  }
+  },
 );
 
 export function CenteredFillViewportView({
@@ -64,8 +55,7 @@ export function CenteredFillViewportView({
     if (!wrapperRef.current || !contentRef.current) {
       return;
     }
-    const availableHeight =
-      window.innerHeight - wrapperRef.current.getBoundingClientRect().top;
+    const availableHeight = window.innerHeight - wrapperRef.current.getBoundingClientRect().top;
     wrapperRef.current.style.height = `${availableHeight}px`;
     setOverflows(contentRef.current.scrollHeight > availableHeight);
   }, []);

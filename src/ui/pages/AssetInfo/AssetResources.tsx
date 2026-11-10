@@ -58,18 +58,10 @@ function MainImplementationButton({
       >
         <HStack gap={4} alignItems="center">
           <HStack gap={6} alignItems="center">
-            <img
-              src={network.iconUrl ?? undefined}
-              alt={network.name}
-              width={24}
-              height={24}
-            />
+            <img src={network.iconUrl ?? undefined} alt={network.name} width={24} height={24} />
             <UIText kind="small/accent">Explorer</UIText>
           </HStack>
-          <LinkIcon
-            className="content-hover"
-            style={{ width: 20, height: 20 }}
-          />
+          <LinkIcon className="content-hover" style={{ width: 20, height: 20 }} />
         </HStack>
       </Button>
     );
@@ -91,23 +83,13 @@ function MainImplementationButton({
     >
       <HStack gap={4} alignItems="center">
         <HStack gap={6} alignItems="center">
-          <img
-            src={network.iconUrl ?? undefined}
-            alt={network.name}
-            width={24}
-            height={24}
-          />
+          <img src={network.iconUrl ?? undefined} alt={network.name} width={24} height={24} />
           <UIText kind="small/accent">{truncateAddress(address, 4)}</UIText>
         </HStack>
         {isSuccess ? (
-          <CheckIcon
-            style={{ color: 'var(--positive-500)', width: 20, height: 20 }}
-          />
+          <CheckIcon style={{ color: 'var(--positive-500)', width: 20, height: 20 }} />
         ) : (
-          <CopyIcon
-            className="content-hover"
-            style={{ width: 20, height: 20 }}
-          />
+          <CopyIcon className="content-hover" style={{ width: 20, height: 20 }} />
         )}
       </HStack>
     </Button>
@@ -155,10 +137,7 @@ function AssetImplementationsDialogContent({
         {implementations.map(({ address, network }) => {
           const explorerHref =
             address && networks
-              ? networks.getExplorerTokenUrlByName(
-                  createChain(network.id),
-                  address
-                )
+              ? networks.getExplorerTokenUrlByName(createChain(network.id), address)
               : network.explorer?.homeUrl;
           return (
             <HStack
@@ -169,12 +148,7 @@ function AssetImplementationsDialogContent({
               style={{ paddingBlock: 12 }}
             >
               <HStack gap={12} alignItems="center">
-                <img
-                  src={network.iconUrl ?? undefined}
-                  alt={network.name}
-                  width={36}
-                  height={36}
-                />
+                <img src={network.iconUrl ?? undefined} alt={network.name} width={36} height={36} />
                 <VStack gap={0}>
                   <UIText kind="body/accent">{network.name}</UIText>
                   {address ? (
@@ -194,10 +168,8 @@ function AssetImplementationsDialogContent({
                     href={explorerHref}
                     className="parent-hover"
                     style={{
-                      ['--parent-content-color' as string]:
-                        'var(--neutral-400)',
-                      ['--parent-hovered-content-color' as string]:
-                        'var(--neutral-700)',
+                      ['--parent-content-color' as string]: 'var(--neutral-400)',
+                      ['--parent-hovered-content-color' as string]: 'var(--neutral-700)',
                       display: 'flex',
                     }}
                   >
@@ -213,13 +185,7 @@ function AssetImplementationsDialogContent({
   );
 }
 
-function ResourceButton({
-  resource,
-  icon,
-}: {
-  resource: AssetResource;
-  icon: React.ReactNode;
-}) {
+function ResourceButton({ resource, icon }: { resource: AssetResource; icon: React.ReactNode }) {
   return (
     <Button
       key={resource.name}
@@ -247,11 +213,7 @@ const WARPCAST_ID = 'warpcast';
 const DEXSCREENER_ID = 'dexscreener';
 const WEBSITE = 'website';
 
-export function AssetResources({
-  assetFullInfo,
-}: {
-  assetFullInfo: AssetFullInfo;
-}) {
+export function AssetResources({ assetFullInfo }: { assetFullInfo: AssetFullInfo }) {
   const { networks } = useNetworks();
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const implementations = useMemo(
@@ -262,14 +224,13 @@ export function AssetResources({
           return network ? { address: config.address, network } : null;
         })
         .filter(isTruthy),
-    [assetFullInfo.fungible.implementations, networks]
+    [assetFullInfo.fungible.implementations, networks],
   );
 
   const mainImplementation = useMemo(() => {
     return (
       implementations.find(
-        (implementation) =>
-          implementation.network.id === assetFullInfo.extra.mainChain
+        (implementation) => implementation.network.id === assetFullInfo.extra.mainChain,
       ) || implementations.at(0)
     );
   }, [implementations, assetFullInfo.extra.mainChain]);
@@ -280,17 +241,13 @@ export function AssetResources({
         acc[resource.name] = resource;
         return acc;
       },
-      {} as Record<string, AssetResource>
+      {} as Record<string, AssetResource>,
     );
   }, [assetFullInfo.extra.relevantResources]);
 
   return (
     <>
-      <HStack
-        gap={6}
-        justifyContent="space-between"
-        style={{ gridTemplateColumns: '1fr auto' }}
-      >
+      <HStack gap={6} justifyContent="space-between" style={{ gridTemplateColumns: '1fr auto' }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <ResourceButton
             resource={{
@@ -367,16 +324,8 @@ export function AssetResources({
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <form
-                method="dialog"
-                onSubmit={(event) => event.stopPropagation()}
-              >
-                <Button
-                  kind="ghost"
-                  value="cancel"
-                  size={36}
-                  style={{ width: 36, padding: 8 }}
-                >
+              <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
+                <Button kind="ghost" value="cancel" size={36} style={{ width: 36, padding: 8 }}>
                   <ArrowLeftIcon style={{ width: 20, height: 20 }} />
                 </Button>
               </form>
@@ -384,9 +333,7 @@ export function AssetResources({
                 Explorers
               </UIText>
             </HStack>
-            <AssetImplementationsDialogContent
-              implementations={implementations}
-            />
+            <AssetImplementationsDialogContent implementations={implementations} />
           </>
         )}
       />

@@ -27,9 +27,7 @@ function StatusBadge({
   const isSuccess = kind === 'complete';
   return (
     <div
-      className={`${s.statusBadge} ${
-        isSuccess ? s.statusBadgeSuccess : s.statusBadgeFailed
-      }`}
+      className={`${s.statusBadge} ${isSuccess ? s.statusBadgeSuccess : s.statusBadgeFailed}`}
       style={{ width: size, height: size }}
     >
       <motion.svg
@@ -128,7 +126,7 @@ function useDriftAnimation(targetX: number, phase: Phase) {
         {
           duration: 5,
           ease: easeFunction,
-        }
+        },
       );
       return;
     }
@@ -141,7 +139,7 @@ function useDriftAnimation(targetX: number, phase: Phase) {
           {
             duration: 0.25,
             ease: [0.39, 0.575, 0.565, 1],
-          }
+          },
         );
       }
     }
@@ -150,12 +148,7 @@ function useDriftAnimation(targetX: number, phase: Phase) {
   return scope;
 }
 
-export function AnimatedIcons({
-  startItem,
-  endItem,
-  phase,
-  size = 'big',
-}: AnimatedIconsProps) {
+export function AnimatedIcons({ startItem, endItem, phase, size = 'big' }: AnimatedIconsProps) {
   const showBothIcons = endItem != null;
   const playExitAnimation = phase === 'complete' || phase === 'failed';
   const reducedMotion = useReducedMotion();

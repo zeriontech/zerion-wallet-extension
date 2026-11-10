@@ -82,8 +82,8 @@ export function ConfidentialInfoHovercard({
               Confidential Balances
             </HovercardHeading>
             <UIText kind="caption/regular" color="var(--neutral-600)">
-              Some tokens in this wallet are encrypted onchain. Decrypt them
-              with your wallet to see the amounts and count them in your total.
+              Some tokens in this wallet are encrypted onchain. Decrypt them with your wallet to see
+              the amounts and count them in your total.
             </UIText>
           </VStack>
         </VStack>

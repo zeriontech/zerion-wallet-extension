@@ -22,10 +22,7 @@ import {
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
 import { useBackgroundKind } from 'src/ui/components/Background';
 
-export function OnMount({
-  children,
-  onMount,
-}: React.PropsWithChildren<{ onMount: () => void }>) {
+export function OnMount({ children, onMount }: React.PropsWithChildren<{ onMount: () => void }>) {
   const onMountRef = useRef(onMount);
   onMountRef.current = onMount;
   useEffect(() => {
@@ -47,9 +44,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
     isSuccess,
     ...finalizeMutation
   } = useMutation({
-    mutationFn: async (
-      mnemonics: NonNullable<MaskedBareWallet['mnemonic']>[]
-    ) => {
+    mutationFn: async (mnemonics: NonNullable<MaskedBareWallet['mnemonic']>[]) => {
       return idempotentRequest.request(JSON.stringify(mnemonics), async () => {
         const data = await walletPort.request('uiImportSeedPhrase', mnemonics);
         await accountPublicRPCPort.request('saveUserAndWallet');
@@ -71,9 +66,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
 
   useEffect(() => {
     if (ready) {
-      const mnemonics = values
-        .map((wallet) => wallet.mnemonic)
-        .filter(isTruthy);
+      const mnemonics = values.map((wallet) => wallet.mnemonic).filter(isTruthy);
       // NOTE: Make sure "finalize" is idempotent
       finalize(mnemonics);
     }
@@ -89,11 +82,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
   return (
     <PageColumn>
       <ImportBackground animate={!ready} />
-      <ImportDecoration
-        wallets={values}
-        isLoading={!ready}
-        loadingTitle="Importing wallets"
-      />
+      <ImportDecoration wallets={values} isLoading={!ready} loadingTitle="Importing wallets" />
 
       <VStack
         gap={4}
@@ -115,12 +104,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
         ) : null}
         {ready && isSuccess ? (
           <animated.div style={style}>
-            <Button
-              as={UnstyledLink}
-              to="/overview"
-              style={{ width: '100%' }}
-              ref={autoFocusRef}
-            >
+            <Button as={UnstyledLink} to="/overview" style={{ width: '100%' }} ref={autoFocusRef}>
               {values.length > 1 ? 'View Wallets' : 'View Wallet'}
             </Button>
           </animated.div>
@@ -130,11 +114,7 @@ function AddressImportMessagesView({ values }: { values: MaskedBareWallet[] }) {
   );
 }
 
-export function AddressImportMessages({
-  values,
-}: {
-  values: MaskedBareWallet[];
-}) {
+export function AddressImportMessages({ values }: { values: MaskedBareWallet[] }) {
   return (
     <ErrorBoundary
       renderError={(error) => {

@@ -23,11 +23,7 @@ export function useAddressPositionFromRpcNode({
     staleTime,
     // Versioned: `useAddressPositionsFromNode2` used to persist a different
     // shape under the unversioned key, which crashed readers of this hook
-    queryKey: persistentQuery([
-      'fetchAddressPositionFromRpcNode/v2',
-      address,
-      chain,
-    ]),
+    queryKey: persistentQuery(['fetchAddressPositionFromRpcNode/v2', address, chain]),
     queryFn: async () => {
       const networksStore = await getNetworksStore();
       const network = await networksStore.fetchNetworkById(chain.toString());

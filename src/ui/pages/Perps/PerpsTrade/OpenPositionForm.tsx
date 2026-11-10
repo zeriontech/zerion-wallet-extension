@@ -25,10 +25,7 @@ function clampDecimal(raw: string): string {
   const sanitized = raw.replace(/[^0-9.]/g, '');
   const firstDot = sanitized.indexOf('.');
   if (firstDot === -1) return sanitized;
-  return (
-    sanitized.slice(0, firstDot + 1) +
-    sanitized.slice(firstDot + 1).replace(/\./g, '')
-  );
+  return sanitized.slice(0, firstDot + 1) + sanitized.slice(firstDot + 1).replace(/\./g, '');
 }
 
 function formatTriggerPrice(price: string, currency: string): string | null {
@@ -73,10 +70,7 @@ export function OpenPositionForm({
   const inputAmount = formState.inputAmount;
   const marginUsd = Number(inputAmount) || 0;
   const szDecimals = asset.universe.szDecimals;
-  const takeProfitDisplay = formatTriggerPrice(
-    formState.takeProfitPrice,
-    currency
-  );
+  const takeProfitDisplay = formatTriggerPrice(formState.takeProfitPrice, currency);
   const stopLossDisplay = formatTriggerPrice(formState.stopLossPrice, currency);
 
   const positionSize = calculatePositionSize({
@@ -118,22 +112,14 @@ export function OpenPositionForm({
       <div className={s.sideSelector}>
         <UnstyledButton
           type="button"
-          className={
-            side === 'long'
-              ? `${s.sideButton} ${s.sideButtonLongActive}`
-              : s.sideButton
-          }
+          className={side === 'long' ? `${s.sideButton} ${s.sideButtonLongActive}` : s.sideButton}
           onClick={() => onChange({ side: 'long' })}
         >
           Long
         </UnstyledButton>
         <UnstyledButton
           type="button"
-          className={
-            side === 'short'
-              ? `${s.sideButton} ${s.sideButtonShortActive}`
-              : s.sideButton
-          }
+          className={side === 'short' ? `${s.sideButton} ${s.sideButtonShortActive}` : s.sideButton}
           onClick={() => onChange({ side: 'short' })}
         >
           Short
@@ -141,10 +127,7 @@ export function OpenPositionForm({
       </div>
 
       <VStack gap={4}>
-        <CenteredAmountInput
-          value={inputAmount}
-          onChange={handleAmountChange}
-        />
+        <CenteredAmountInput value={inputAmount} onChange={handleAmountChange} />
         <UIText
           kind="caption/regular"
           color="var(--neutral-600)"
@@ -240,9 +223,7 @@ export function OpenPositionForm({
             <UIText kind="small/accent">
               {positionSize > 0 ? (
                 <BlurrableBalance kind="small/accent" color="var(--black)">
-                  {`${positionSize.toFixed(Math.max(szDecimals, 2))} ${
-                    asset.universe.name
-                  }`}
+                  {`${positionSize.toFixed(Math.max(szDecimals, 2))} ${asset.universe.name}`}
                 </BlurrableBalance>
               ) : (
                 '—'
@@ -271,8 +252,7 @@ export function OpenPositionForm({
 
       {notional > 0 && notional < MIN_ORDER_NOTIONAL_USD ? (
         <UIText kind="caption/regular" className={s.error}>
-          Order must be at least ${MIN_ORDER_NOTIONAL_USD}. Increase the amount
-          or leverage.
+          Order must be at least ${MIN_ORDER_NOTIONAL_USD}. Increase the amount or leverage.
         </UIText>
       ) : null}
     </VStack>

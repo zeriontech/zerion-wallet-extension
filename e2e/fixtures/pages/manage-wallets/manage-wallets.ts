@@ -2,9 +2,7 @@ import { expect } from '@playwright/test';
 import { ExtensionPage } from '../extension-page';
 
 export class ManageWalletsPage extends ExtensionPage {
-  readonly walletGroupsLinks = this.page
-    .getByText(/Wallets/i)
-    .getByRole('link');
+  readonly walletGroupsLinks = this.page.getByText(/Wallets/i).getByRole('link');
   readonly importedWalletsLinks = this.page
     .getByText(/Imported by Private Key/i)
     .getByRole('link', { name: /0x\.*/ });

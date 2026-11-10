@@ -27,10 +27,7 @@ function clampDecimal(raw: string): string {
   const sanitized = raw.replace(/[^0-9.]/g, '');
   const firstDot = sanitized.indexOf('.');
   if (firstDot === -1) return sanitized;
-  return (
-    sanitized.slice(0, firstDot + 1) +
-    sanitized.slice(firstDot + 1).replace(/\./g, '')
-  );
+  return sanitized.slice(0, firstDot + 1) + sanitized.slice(firstDot + 1).replace(/\./g, '');
 }
 
 export function AddToPositionForm({
@@ -112,10 +109,7 @@ export function AddToPositionForm({
   return (
     <VStack gap={16}>
       <VStack gap={4}>
-        <CenteredAmountInput
-          value={inputAmount}
-          onChange={handleAmountChange}
-        />
+        <CenteredAmountInput value={inputAmount} onChange={handleAmountChange} />
         <UIText
           kind="small/accent"
           color="var(--neutral-600)"
@@ -129,9 +123,7 @@ export function AddToPositionForm({
           <span>Size</span>
           <BlurrableBalance kind="small/accent" color="var(--neutral-600)">
             {formatCurrencyValue(marginUsd, 'en', currency)}
-            {addSize > 0
-              ? ` · ${formatTokenValue(addSize, asset.universe.name)}`
-              : ''}
+            {addSize > 0 ? ` · ${formatTokenValue(addSize, asset.universe.name)}` : ''}
           </BlurrableBalance>
         </UIText>
       </VStack>
@@ -170,11 +162,7 @@ export function AddToPositionForm({
               <BlurrableBalance kind="small/accent" color="var(--black)">
                 {positionAbsSize.toFixed(Math.max(szDecimals, 2))}{' '}
                 {getPerpDisplayName(asset.universe.name)} ·{' '}
-                {formatCurrencyValue(
-                  Number(position.marginUsed),
-                  'en',
-                  currency
-                )}
+                {formatCurrencyValue(Number(position.marginUsed), 'en', currency)}
               </BlurrableBalance>
             </UIText>
           </HStack>
@@ -197,9 +185,7 @@ export function AddToPositionForm({
             <UIText kind="small/accent">
               {addSize > 0 ? (
                 <BlurrableBalance kind="small/accent" color="var(--black)">
-                  {`${addSize.toFixed(Math.max(szDecimals, 2))} ${
-                    asset.universe.name
-                  }`}
+                  {`${addSize.toFixed(Math.max(szDecimals, 2))} ${asset.universe.name}`}
                 </BlurrableBalance>
               ) : (
                 '—'
@@ -239,8 +225,8 @@ export function AddToPositionForm({
 
       {addNotional > 0 && addNotional < MIN_ORDER_NOTIONAL_USD ? (
         <UIText kind="caption/regular" className={s.error}>
-          Add must be at least ${MIN_ORDER_NOTIONAL_USD}. Position leverage is{' '}
-          {positionLeverage}x — increase the amount to clear the minimum.
+          Add must be at least ${MIN_ORDER_NOTIONAL_USD}. Position leverage is {positionLeverage}x —
+          increase the amount to clear the minimum.
         </UIText>
       ) : null}
     </VStack>

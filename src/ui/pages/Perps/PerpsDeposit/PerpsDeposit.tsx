@@ -21,10 +21,7 @@ import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import { resolveTokenValue } from 'src/ui/components/AmountInput/inputKind';
-import {
-  toIncomingTransaction,
-  toMultichainTransaction,
-} from 'src/shared/types/Quote';
+import { toIncomingTransaction, toMultichainTransaction } from 'src/shared/types/Quote';
 import {
   signTransactions,
   QueueAbortError,
@@ -32,10 +29,7 @@ import {
   type SignStep,
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
-import {
-  useGlobalPreferences,
-  usePreferences,
-} from 'src/ui/features/preferences/usePreferences';
+import { useGlobalPreferences, usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { walletPort } from 'src/ui/shared/channels';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -76,9 +70,7 @@ function useUserFormState() {
     const inputAmount = searchParams.get('inputAmount') ?? undefined;
     const rawInputKind = searchParams.get('inputKind');
     const inputKind: 'token' | 'currency' | undefined =
-      rawInputKind === 'token' || rawInputKind === 'currency'
-        ? rawInputKind
-        : undefined;
+      rawInputKind === 'token' || rawInputKind === 'currency' ? rawInputKind : undefined;
     return { inputChain, inputFungibleId, inputAmount, inputKind };
   }, [searchParams]);
 
@@ -110,16 +102,15 @@ function pickDefaultInputChain(positions: FungiblePosition[]): string {
 
 function pickDefaultFungibleOnChain(
   chainId: string,
-  positions: FungiblePosition[]
+  positions: FungiblePosition[],
 ): string | undefined {
   const onChain = positions.filter((p) => p.chain.id === chainId);
   const usdc = onChain.find(
-    (p) =>
-      p.fungible.id.toLowerCase() === HYPERCORE_USDC_FUNGIBLE_ID.toLowerCase()
+    (p) => p.fungible.id.toLowerCase() === HYPERCORE_USDC_FUNGIBLE_ID.toLowerCase(),
   );
   if (usdc) return usdc.fungible.id;
   const sorted = [...onChain].sort(
-    (a, b) => Number(b.amount.value ?? 0) - Number(a.amount.value ?? 0)
+    (a, b) => Number(b.amount.value ?? 0) - Number(a.amount.value ?? 0),
   );
   return sorted[0]?.fungible.id;
 }
@@ -139,10 +130,7 @@ function DepositFormBody({
 
   const [userFormState, setUserFormState] = useUserFormState();
 
-  const defaultInputChain = useMemo(
-    () => pickDefaultInputChain(positions),
-    [positions]
-  );
+  const defaultInputChain = useMemo(() => pickDefaultInputChain(positions), [positions]);
   const inputChain = userFormState.inputChain || defaultInputChain;
 
   const inputFungibleId = useMemo(() => {
@@ -161,21 +149,13 @@ function DepositFormBody({
       to: address,
       slippage: PERPS_DEPOSIT_SLIPPAGE,
     }),
-    [
-      inputChain,
-      inputFungibleId,
-      userFormState.inputAmount,
-      userFormState.inputKind,
-      address,
-    ]
+    [inputChain, inputFungibleId, userFormState.inputAmount, userFormState.inputKind, address],
   );
 
   const inputPosition = useMemo(() => {
     return (
       positions.find(
-        (p) =>
-          p.chain.id === formState.inputChain &&
-          p.fungible.id === formState.inputFungibleId
+        (p) => p.chain.id === formState.inputChain && p.fungible.id === formState.inputFungibleId,
       ) ?? null
     );
   }, [positions, formState.inputChain, formState.inputFungibleId]);
@@ -192,7 +172,7 @@ function DepositFormBody({
       formState.inputChain
         ? (networks?.getByNetworkId(createChain(formState.inputChain)) ?? null)
         : null,
-    [networks, formState.inputChain]
+    [networks, formState.inputChain],
   );
 
   // Pull USDC fungible info purely for the output card icon/name.
@@ -219,9 +199,7 @@ function DepositFormBody({
     currency,
     formState: quotesFormState,
     enabled:
-      Boolean(inputPosition) &&
-      Boolean(resolvedInputAmount) &&
-      Number(resolvedInputAmount) > 0,
+      Boolean(inputPosition) && Boolean(resolvedInputAmount) && Number(resolvedInputAmount) > 0,
     context: 'Bridge',
     pathname,
     inputFiatValue,
@@ -273,9 +251,7 @@ function DepositFormBody({
         // Prefer the provider's explorer (follows the bridge to Hypercore)
         // over the input chain's.
         explorerUrlTemplate:
-          quote.contractMetadata.explorer?.txUrl ??
-          inputNetwork.explorer?.txUrl ??
-          null,
+          quote.contractMetadata.explorer?.txUrl ?? inputNetwork.explorer?.txUrl ?? null,
         sent: {
           symbol: inputPosition.fungible.symbol,
           iconUrl: inputPosition.fungible.iconUrl,
@@ -364,8 +340,7 @@ function DepositFormBody({
         const { promise: queuePromise } = signTransactions(steps, {
           wallet,
           holdToSign: false,
-          bluetoothSupportEnabled:
-            globalPreferences?.bluetoothSupportEnabled ?? null,
+          bluetoothSupportEnabled: globalPreferences?.bluetoothSupportEnabled ?? null,
           onEvent: (event) => {
             if (event.type === 'step-pending' && event.index === 0) {
               settle(() => {
@@ -380,8 +355,7 @@ function DepositFormBody({
           },
         });
         queuePromise.catch((err) => {
-          const unwrapped =
-            err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
+          const unwrapped = err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
           settle(() => reject(unwrapped));
         });
       });
@@ -460,12 +434,7 @@ function DepositFormBody({
             to="/wallet-select"
             title="Change Wallet"
           >
-            <WalletAvatar
-              active={false}
-              address={address}
-              size={24}
-              borderRadius={6}
-            />
+            <WalletAvatar active={false} address={address} size={24} borderRadius={6} />
           </UnstyledLink>
         }
       />
@@ -510,11 +479,7 @@ function DepositFormBody({
           </div>
         </div>
 
-        <UIText
-          kind="caption/regular"
-          color="var(--neutral-600)"
-          className={s.disclosure}
-        >
+        <UIText kind="caption/regular" color="var(--neutral-600)" className={s.disclosure}>
           Funds may take a few minutes to settle on Hyperliquid.
         </UIText>
         <RiskDisclosureBlock />
@@ -522,8 +487,7 @@ function DepositFormBody({
 
       <div className={s.absoluteFooter}>
         <Spacer height={16} />
-        {signMutation.isError &&
-        !(signMutation.error instanceof QueueAbortError) ? (
+        {signMutation.isError && !(signMutation.error instanceof QueueAbortError) ? (
           <VStack gap={0} style={{ paddingBottom: 8 }}>
             <ErrorMessage
               error={getError(signMutation.error)}
@@ -554,13 +518,13 @@ function DepositPageInner({ address }: { address: string }) {
   const { data, isLoading } = useWalletSimplePositions(
     { address, currency },
     { source: useHttpClientSource() },
-    { refetchInterval }
+    { refetchInterval },
   );
   const { networks } = useNetworks();
   // Confidential Positions arrive zeroed until revealed; hide them from the picker
   const positions = useMemo(
     () => (data?.data ?? []).filter((position) => !position.amount.encrypted),
-    [data]
+    [data],
   );
 
   // Filter to bridgeable EVM positions only.
@@ -593,12 +557,7 @@ function DepositPageInner({ address }: { address: string }) {
               to="/wallet-select"
               title="Change Wallet"
             >
-              <WalletAvatar
-                active={false}
-                address={address}
-                size={24}
-                borderRadius={6}
-              />
+              <WalletAvatar active={false} address={address} size={24} borderRadius={6} />
             </UnstyledLink>
           }
         />

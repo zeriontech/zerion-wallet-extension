@@ -5,7 +5,7 @@ export type InputKind = 'token' | 'currency';
 export function resolveTokenValue(
   rawValue: string,
   inputKind: InputKind,
-  price: number | null
+  price: number | null,
 ): string {
   if (inputKind === 'token' || !price) {
     return rawValue;
@@ -19,16 +19,13 @@ export function convertOnToggle(
   rawValue: string,
   fromKind: InputKind,
   toKind: InputKind,
-  price: number | null
+  price: number | null,
 ): string {
   if (fromKind === toKind || !price || !rawValue) return rawValue;
   const bn = new BigNumber(rawValue);
   if (bn.isNaN() || bn.isZero()) return rawValue;
   if (fromKind === 'token' && toKind === 'currency') {
-    return bn
-      .multipliedBy(price)
-      .decimalPlaces(2, BigNumber.ROUND_HALF_UP)
-      .toFixed();
+    return bn.multipliedBy(price).decimalPlaces(2, BigNumber.ROUND_HALF_UP).toFixed();
   }
   if (fromKind === 'currency' && toKind === 'token') {
     const tokenValue = bn.dividedBy(price);

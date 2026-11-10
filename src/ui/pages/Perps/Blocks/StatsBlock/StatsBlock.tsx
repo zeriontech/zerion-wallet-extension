@@ -38,10 +38,7 @@ export function StatsBlock({ asset }: { asset: PerpAssetEntry }) {
 
   return (
     <div className={styles.scrollContainer}>
-      <HStack
-        gap={8}
-        style={{ width: 'max-content', gridAutoColumns: 'max-content' }}
-      >
+      <HStack gap={8} style={{ width: 'max-content', gridAutoColumns: 'max-content' }}>
         <StatPill
           label="24h Volume"
           value={formatPriceValue(dayVolume, 'en', currency, {

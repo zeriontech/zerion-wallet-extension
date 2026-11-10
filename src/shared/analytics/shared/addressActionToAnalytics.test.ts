@@ -17,10 +17,7 @@ function makeAction({
     direction: 'in' | 'out';
     fungibleId: string;
     name: string;
-    implementations: Record<
-      string,
-      { address: string | null; decimals: number }
-    >;
+    implementations: Record<string, { address: string | null; decimals: number }>;
     quantity?: string;
     usdValue?: number;
   }>;
@@ -81,9 +78,7 @@ describe('addressActionToAnalytics', () => {
       outputChain: null,
     });
 
-    expect(result.asset_address_sent).toEqual([
-      '0xcd0611177e2c46b5c83778d3404a23acffb8422d',
-    ]);
+    expect(result.asset_address_sent).toEqual(['0xcd0611177e2c46b5c83778d3404a23acffb8422d']);
   });
 
   test('prefers the implementation on the action chain', () => {

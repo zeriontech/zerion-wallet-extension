@@ -86,10 +86,9 @@ export const NetworkChips = forwardRef<
     showNetworkSelectorTrigger = true,
     mode = 'tablist',
   },
-  ref
+  ref,
 ) {
-  const { ref: dragScrollRef, ...dragScrollProps } =
-    useDragScroll<HTMLDivElement>();
+  const { ref: dragScrollRef, ...dragScrollProps } = useDragScroll<HTMLDivElement>();
 
   // One node, two consumers: the drag handlers scroll the tab list and the
   // parent's forwarded ref queries it for scroll-into-view of the active chip.
@@ -99,7 +98,7 @@ export const NetworkChips = forwardRef<
       if (typeof ref === 'function') ref(node);
       else if (ref) ref.current = node;
     },
-    [dragScrollRef, ref]
+    [dragScrollRef, ref],
   );
 
   return (
@@ -111,11 +110,7 @@ export const NetworkChips = forwardRef<
         aria-label="Filter by network"
       >
         {showAllTab ? (
-          <ChipTab
-            key={ALL_NETWORKS_TAB_ID}
-            id={ALL_NETWORKS_TAB_ID}
-            mode={mode}
-          >
+          <ChipTab key={ALL_NETWORKS_TAB_ID} id={ALL_NETWORKS_TAB_ID} mode={mode}>
             <AllNetworksIcon style={{ width: 16, height: 16 }} />
             All
           </ChipTab>
@@ -151,9 +146,7 @@ export const NetworkChips = forwardRef<
             />
             <Tooltip className={styles.tooltip} gutter={8} portal={false}>
               <span>Browse All Networks</span>
-              <span className={styles.tooltipKbd}>
-                {isMacOS() ? '⇧→' : 'Shift+→'}
-              </span>
+              <span className={styles.tooltipKbd}>{isMacOS() ? '⇧→' : 'Shift+→'}</span>
             </Tooltip>
           </TooltipProvider>
         </div>

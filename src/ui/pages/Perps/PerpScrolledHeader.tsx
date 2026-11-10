@@ -23,12 +23,7 @@ export function PerpScrolledHeader({
   const markPx = asset ? Number(asset.ctx.markPx) : null;
 
   return (
-    <HStack
-      gap={8}
-      alignItems="center"
-      justifyContent="center"
-      className={className}
-    >
+    <HStack gap={8} alignItems="center" justifyContent="center" className={className}>
       <TokenIcon
         src={getPerpIconUrl(coin)}
         symbol={displayName}

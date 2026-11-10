@@ -8,18 +8,14 @@ const OVERRIDE_TO_PERCENT: Record<'3' | '7' | '20', number> = {
   '20': 20,
 };
 
-function scaleAmount<T extends Quote2['outputAmount']>(
-  amount: T,
-  factor: number
-): T {
+function scaleAmount<T extends Quote2['outputAmount']>(amount: T, factor: number): T {
   if (!amount) return amount;
   const scaledQuantity = new BigNumber(amount.quantity).times(factor).toFixed();
   return {
     ...amount,
     quantity: scaledQuantity,
     value: amount.value == null ? amount.value : amount.value * factor,
-    usdValue:
-      amount.usdValue == null ? amount.usdValue : amount.usdValue * factor,
+    usdValue: amount.usdValue == null ? amount.usdValue : amount.usdValue * factor,
   };
 }
 
@@ -31,9 +27,7 @@ function scaleQuote(quote: Quote2, factor: number): Quote2 {
     minimumOutputAmount: scaleAmount(quote.minimumOutputAmount, factor),
   };
   if (quote.rate && quote.rate.length >= 2) {
-    next.rate = quote.rate.map((r, i) =>
-      i === 1 ? { ...r, value: r.value * factor } : r
-    );
+    next.rate = quote.rate.map((r, i) => (i === 1 ? { ...r, value: r.value * factor } : r));
   }
   return next;
 }

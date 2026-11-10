@@ -35,7 +35,7 @@ export function getTopNetworks(
   positions: FungiblePosition[],
   ensureChainId: string | null | undefined,
   extraChainId: string | null | undefined,
-  options: TopNetworksOptions = {}
+  options: TopNetworksOptions = {},
 ): TopNetworksEntry[] {
   const {
     limit = 10,
@@ -82,9 +82,7 @@ export function getTopNetworks(
     };
   };
 
-  const sorted = Array.from(chainMap.values()).sort(
-    (a, b) => b.count - a.count
-  );
+  const sorted = Array.from(chainMap.values()).sort((a, b) => b.count - a.count);
   let derived: TopNetworksEntry[] = sorted.slice(0, limit).map((e) => ({
     chainId: e.chainId,
     name: e.name,
@@ -137,16 +135,10 @@ export function useTopNetworks(
   ensureChainId?: string | null,
   /** If set, ensures this chain is always included in the result */
   extraChainId?: string | null,
-  options: TopNetworksOptions = {}
+  options: TopNetworksOptions = {},
 ): TopNetworksEntry[] {
-  const {
-    limit,
-    pinnedFirstChainId,
-    pinnedChainIds,
-    fallbackChainId,
-    networks,
-    padChainIds,
-  } = options;
+  const { limit, pinnedFirstChainId, pinnedChainIds, fallbackChainId, networks, padChainIds } =
+    options;
   return useMemo(
     () =>
       getTopNetworks(positions, ensureChainId, extraChainId, {
@@ -167,6 +159,6 @@ export function useTopNetworks(
       fallbackChainId,
       networks,
       padChainIds,
-    ]
+    ],
   );
 }

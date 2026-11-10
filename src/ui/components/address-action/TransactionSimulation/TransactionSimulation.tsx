@@ -93,26 +93,19 @@ export function TransactionSimulation({
             transactionAction,
             networks,
             currency,
-            source
+            source,
           )
         : null;
     },
     staleTime: Infinity,
     keepPreviousData: true,
-    enabled:
-      Boolean(transaction.evm) &&
-      Boolean(networks) &&
-      Boolean(transactionAction),
+    enabled: Boolean(transaction.evm) && Boolean(networks) && Boolean(transactionAction),
     useErrorBoundary: true,
   });
 
   const localSolanaAddressAction = useMemo(() => {
     return transaction.solana
-      ? parseSolanaTransaction(
-          address,
-          solFromBase64(transaction.solana),
-          currency
-        )
+      ? parseSolanaTransaction(address, solFromBase64(transaction.solana), currency)
       : null;
   }, [transaction.solana, address, currency]);
 
@@ -136,7 +129,7 @@ export function TransactionSimulation({
     chain && maybeApproval?.fungible && customAllowanceValueBase
       ? baseToCommon(
           customAllowanceValueBase,
-          getDecimals({ asset: maybeApproval.fungible, chain })
+          getDecimals({ asset: maybeApproval.fungible, chain }),
         ).toFixed()
       : requestedAllowanceQuantityCommon;
 
@@ -164,17 +157,12 @@ export function TransactionSimulation({
         renderWhenOpen={() => {
           return (
             <>
-              <DialogTitle
-                title={<UIText kind="body/accent">Details</UIText>}
-                closeKind="icon"
-              />
+              <DialogTitle title={<UIText kind="body/accent">Details</UIText>} closeKind="icon" />
               <TransactionAdvancedView
                 network={network}
                 interpretation={interpretation}
                 transaction={
-                  transaction.evm
-                    ? { evm: transaction.evm }
-                    : { solana: [transaction.solana] }
+                  transaction.evm ? { evm: transaction.evm } : { solana: [transaction.solana] }
                 }
                 addressAction={addressAction}
                 onCopyData={() => toastRef.current?.showToast()}
@@ -226,10 +214,7 @@ export function TransactionSimulation({
             <HStack gap={0} alignItems="center" justifyContent="center">
               <ScrollIcon />
               <span>Details</span>
-              <ArrowDownIcon
-                className="content-hover"
-                style={{ width: 24, height: 24 }}
-              />
+              <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
             </HStack>
           </Button>
         </HStack>

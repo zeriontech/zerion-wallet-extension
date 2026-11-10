@@ -17,19 +17,13 @@ import * as styles from './styles.module.css';
 export const pinButtonStyles = styles;
 
 async function updateNetworks() {
-  return Promise.all([
-    mainNetworksStore.update(),
-    testenvNetworksStore.update(),
-  ]);
+  return Promise.all([mainNetworksStore.update(), testenvNetworksStore.update()]);
 }
 
 export function usePinNetworkMutation() {
   return useMutation({
     mutationFn: async ({ chain, pin }: { chain: string; pin: boolean }) => {
-      await walletPort.request(
-        pin ? 'pinEthereumChain' : 'unpinEthereumChain',
-        { chain }
-      );
+      await walletPort.request(pin ? 'pinEthereumChain' : 'unpinEthereumChain', { chain });
       await updateNetworks();
     },
   });
@@ -96,9 +90,6 @@ export function PinNetworkButton({
 export function renderPinNetworkAction(networks: Networks) {
   return (network: NetworkInfo) =>
     Networks.isEip155(network) ? (
-      <PinNetworkButton
-        chain={network.id}
-        pinned={networks.isPinned(createChain(network.id))}
-      />
+      <PinNetworkButton chain={network.id} pinned={networks.isPinned(createChain(network.id))} />
     ) : null;
 }

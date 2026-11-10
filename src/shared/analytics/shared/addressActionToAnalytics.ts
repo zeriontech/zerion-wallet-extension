@@ -20,9 +20,7 @@ interface AnalyticsTransactionData {
   gas_price?: number;
 }
 
-export function toMaybeArr<T>(
-  arr: (T | null | undefined)[] | null | undefined
-): T[] | undefined {
+export function toMaybeArr<T>(arr: (T | null | undefined)[] | null | undefined): T[] | undefined {
   return arr?.length ? arr.filter(isTruthy) : undefined;
 }
 
@@ -38,10 +36,7 @@ export function toMaybeArr<T>(
  * Ethereum) have no contract address, so this returns `null` for them rather
  * than a bogus value.
  */
-function getTransferAssetAddress(
-  transfer: Transfer,
-  chain: string | null
-): string | null {
+function getTransferAssetAddress(transfer: Transfer, chain: string | null): string | null {
   const implementations = transfer.fungible?.implementations;
   if (!implementations) {
     return null;
@@ -49,9 +44,7 @@ function getTransferAssetAddress(
   if (chain && implementations[chain]?.address) {
     return implementations[chain].address;
   }
-  return (
-    Object.values(implementations).find((impl) => impl.address)?.address ?? null
-  );
+  return Object.values(implementations).find((impl) => impl.address)?.address ?? null;
 }
 
 export function addressActionToAnalytics({
@@ -73,54 +66,35 @@ export function addressActionToAnalytics({
   }
   const act = addressAction.acts?.at(0);
   const actChain = act?.transaction?.chain?.id ?? null;
-  const outgoing = act?.content?.transfers?.filter(
-    ({ direction }) => direction === 'out'
-  );
-  const incoming = act?.content?.transfers?.filter(
-    ({ direction }) => direction === 'in'
-  );
+  const outgoing = act?.content?.transfers?.filter(({ direction }) => direction === 'out');
+  const incoming = act?.content?.transfers?.filter(({ direction }) => direction === 'in');
 
   const value = {
     action_type: addressAction.type.displayValue || 'Execute',
-    usd_amount_sent:
-      outgoing?.reduce((acc, item) => acc + (item.amount?.usdValue || 0), 0) ??
-      null,
+    usd_amount_sent: outgoing?.reduce((acc, item) => acc + (item.amount?.usdValue || 0), 0) ?? null,
     usd_amount_received:
-      incoming?.reduce((acc, item) => acc + (item.amount?.usdValue || 0), 0) ??
-      null,
-    asset_amount_sent: toMaybeArr(
-      outgoing?.map((item) => item.amount?.quantity)
-    ),
-    asset_amount_received: toMaybeArr(
-      incoming?.map((item) => item.amount?.quantity)
-    ),
+      incoming?.reduce((acc, item) => acc + (item.amount?.usdValue || 0), 0) ?? null,
+    asset_amount_sent: toMaybeArr(outgoing?.map((item) => item.amount?.quantity)),
+    asset_amount_received: toMaybeArr(incoming?.map((item) => item.amount?.quantity)),
     asset_name_sent: toMaybeArr(outgoing?.map((item) => item.fungible?.name)),
-    asset_name_received: toMaybeArr(
-      incoming?.map((item) => item.fungible?.name)
-    ),
+    asset_name_received: toMaybeArr(incoming?.map((item) => item.fungible?.name)),
     asset_address_sent: toMaybeArr(
-      outgoing?.map((item) => getTransferAssetAddress(item, actChain))
+      outgoing?.map((item) => getTransferAssetAddress(item, actChain)),
     ),
     // For cross-chain (bridge) actions the received asset lives on the output
     // chain, not the act's (source) chain — prefer it when resolving its
     // implementation address.
     asset_address_received: toMaybeArr(
-      incoming?.map((item) =>
-        getTransferAssetAddress(item, outputChain ?? actChain)
-      )
+      incoming?.map((item) => getTransferAssetAddress(item, outputChain ?? actChain)),
     ),
   };
   if (quote) {
     const zerion_fee_percentage = quote.protocolFee.percentage;
-    const zerion_fee_usd_amount =
-      quote.protocolFee.amount.usdValue ?? undefined;
+    const zerion_fee_usd_amount = quote.protocolFee.amount.usdValue ?? undefined;
     const network_fee = quote.networkFee?.amount?.usdValue ?? undefined;
-    const currentTransactionEvm =
-      quote.transactionSwap?.evm || quote.transactionApprove?.evm;
+    const currentTransactionEvm = quote.transactionSwap?.evm || quote.transactionApprove?.evm;
     const gas_price =
-      currentTransactionEvm?.gasPrice != null
-        ? Number(currentTransactionEvm.gasPrice)
-        : undefined;
+      currentTransactionEvm?.gasPrice != null ? Number(currentTransactionEvm.gasPrice) : undefined;
 
     return {
       ...value,

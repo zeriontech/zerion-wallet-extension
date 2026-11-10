@@ -52,7 +52,7 @@ interface Response {
 export async function walletGetSimplePositions(
   this: ZerionApiContext,
   { address, currency, permits }: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const provider = await this.getAddressProviderHeader(address);
   const kyOptions = this.getKyOptions();
@@ -67,6 +67,6 @@ export async function walletGetSimplePositions(
       },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

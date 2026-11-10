@@ -17,7 +17,7 @@ describe('resolveReceiverFamiliarity', () => {
         myWalletAddresses: ['0x0000000000000000000000000000000000000001'],
         watchlistAddresses: ['0x0000000000000000000000000000000000000002'],
         addressBookAddresses: ['0x0000000000000000000000000000000000000003'],
-      })
+      }),
     ).toBe('unknown');
   });
 
@@ -27,7 +27,7 @@ describe('resolveReceiverFamiliarity', () => {
         ...EMPTY,
         to: EVM,
         myWalletAddresses: [EVM],
-      })
+      }),
     ).toBe('known');
   });
 
@@ -37,7 +37,7 @@ describe('resolveReceiverFamiliarity', () => {
         ...EMPTY,
         to: EVM,
         watchlistAddresses: [EVM],
-      })
+      }),
     ).toBe('known');
   });
 
@@ -47,7 +47,7 @@ describe('resolveReceiverFamiliarity', () => {
         ...EMPTY,
         to: EVM,
         addressBookAddresses: [EVM],
-      })
+      }),
     ).toBe('known');
   });
 
@@ -57,14 +57,14 @@ describe('resolveReceiverFamiliarity', () => {
         ...EMPTY,
         to: EVM.toLowerCase(),
         addressBookAddresses: [EVM],
-      })
+      }),
     ).toBe('known');
     expect(
       resolveReceiverFamiliarity({
         ...EMPTY,
         to: EVM,
         addressBookAddresses: [EVM.toLowerCase()],
-      })
+      }),
     ).toBe('known');
   });
 
@@ -74,14 +74,14 @@ describe('resolveReceiverFamiliarity', () => {
         ...EMPTY,
         to: SOLANA,
         addressBookAddresses: [SOLANA],
-      })
+      }),
     ).toBe('known');
     expect(
       resolveReceiverFamiliarity({
         ...EMPTY,
         to: SOLANA,
         addressBookAddresses: [SOLANA.toLowerCase()],
-      })
+      }),
     ).toBe('unknown');
   });
 

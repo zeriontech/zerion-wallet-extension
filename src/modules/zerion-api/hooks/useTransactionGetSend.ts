@@ -34,7 +34,7 @@ export function useTransactionGetSend(
     enabled?: boolean;
     keepPreviousData?: boolean;
     suspense?: boolean;
-  } = {}
+  } = {},
 ) {
   return useQuery({
     queryKey: [QUERY_KEY, params, source],

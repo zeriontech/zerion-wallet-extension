@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ComboboxProvider,
-  Combobox,
-  TabProvider,
-  useTabContext,
-} from '@ariakit/react';
+import { ComboboxProvider, Combobox, TabProvider, useTabContext } from '@ariakit/react';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
@@ -19,10 +14,7 @@ import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { Input } from 'src/ui/ui-kit/Input';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
-import {
-  NetworkChips,
-  TabPanelWrapper,
-} from 'src/ui/components/PositionSelector/NetworkChips';
+import { NetworkChips, TabPanelWrapper } from 'src/ui/components/PositionSelector/NetworkChips';
 import { TokenRow } from 'src/ui/components/PositionSelector/TokenRow';
 import { TokenListSkeleton } from 'src/ui/components/PositionSelector/TokenListSkeleton';
 import { useTopNetworks } from 'src/ui/components/PositionSelector/useTopNetworks';
@@ -55,44 +47,40 @@ const RECEIVE_PAD_CHAIN_IDS = [
   'zksync-era',
 ] as const;
 
-const SearchCombobox = React.forwardRef<HTMLInputElement>(
-  function SearchCombobox(_props, ref) {
-    const tab = useTabContext();
-    return (
-      <div style={{ position: 'relative' }}>
-        <SearchIcon
-          role="presentation"
-          style={{
-            pointerEvents: 'none',
-            position: 'absolute',
-            left: 12,
-            top: 10,
-            width: 24,
-            height: 24,
-            color: 'var(--neutral-500)',
-          }}
-        />
-        <Combobox
-          ref={ref}
-          autoSelect="always"
-          placeholder="Search tokens"
-          render={<Input style={{ paddingLeft: 40 }} />}
-          onKeyDown={(event) => {
-            if (event.key !== 'Tab') return;
-            const activeId = tab?.getState().selectedId;
-            const options = { activeId, focusLoop: false };
-            const nextId = event.shiftKey
-              ? tab?.previous(options)
-              : tab?.next(options);
-            if (!nextId) return;
-            event.preventDefault();
-            tab?.select(nextId);
-          }}
-        />
-      </div>
-    );
-  }
-);
+const SearchCombobox = React.forwardRef<HTMLInputElement>(function SearchCombobox(_props, ref) {
+  const tab = useTabContext();
+  return (
+    <div style={{ position: 'relative' }}>
+      <SearchIcon
+        role="presentation"
+        style={{
+          pointerEvents: 'none',
+          position: 'absolute',
+          left: 12,
+          top: 10,
+          width: 24,
+          height: 24,
+          color: 'var(--neutral-500)',
+        }}
+      />
+      <Combobox
+        ref={ref}
+        autoSelect="always"
+        placeholder="Search tokens"
+        render={<Input style={{ paddingLeft: 40 }} />}
+        onKeyDown={(event) => {
+          if (event.key !== 'Tab') return;
+          const activeId = tab?.getState().selectedId;
+          const options = { activeId, focusLoop: false };
+          const nextId = event.shiftKey ? tab?.previous(options) : tab?.next(options);
+          if (!nextId) return;
+          event.preventDefault();
+          tab?.select(nextId);
+        }}
+      />
+    </div>
+  );
+});
 
 type RowItem = {
   fungible: Fungible;
@@ -120,7 +108,7 @@ function renderFungibleRow(
   { fungible, chainId, chainIconUrl, chainName }: RowItem,
   currency: string,
   positionLookup: Map<string, FungiblePosition>,
-  onSelect: (fungible: Fungible, chainId: string) => void
+  onSelect: (fungible: Fungible, chainId: string) => void,
 ) {
   const match = positionLookup.get(positionKey(chainId, fungible.id));
   return (
@@ -214,9 +202,7 @@ function ReceiveFungiblesList({
   return (
     <VirtualizedTokenList
       items={virtualItems}
-      renderItem={(row) =>
-        renderFungibleRow(row, currency, positionLookup, onSelect)
-      }
+      renderItem={(row) => renderFungibleRow(row, currency, positionLookup, onSelect)}
       renderHeader={(label) => (
         <div className={styles.sectionHeader}>
           <UIText kind="small/accent" color="var(--neutral-500)">
@@ -232,11 +218,9 @@ function buildOtherRows(
   fungible: Fungible,
   activeChain: string,
   chipOrder: string[],
-  networks: Networks
+  networks: Networks,
 ): RowItem[] {
-  const implChains = Object.keys(fungible.implementations).filter(
-    (c) => c !== activeChain
-  );
+  const implChains = Object.keys(fungible.implementations).filter((c) => c !== activeChain);
   if (implChains.length === 0) return [];
   const implSet = new Set(implChains);
   const ordered: string[] = [];
@@ -333,9 +317,7 @@ function SearchResults({
   return (
     <VirtualizedTokenList
       items={virtualItems}
-      renderItem={(row) =>
-        renderFungibleRow(row, currency, positionLookup, onSelect)
-      }
+      renderItem={(row) => renderFungibleRow(row, currency, positionLookup, onSelect)}
       renderHeader={(label) => (
         <div className={styles.sectionHeader}>
           <UIText kind="small/accent" color="var(--neutral-500)">
@@ -347,10 +329,7 @@ function SearchResults({
   );
 }
 
-function resolveDefaultChain(
-  outputChainId: string | null,
-  inputChainId: string | null
-): string {
+function resolveDefaultChain(outputChainId: string | null, inputChainId: string | null): string {
   return outputChainId || inputChainId || SOLANA_CHAIN_ID;
 }
 
@@ -376,7 +355,7 @@ export function OutputPositionSelector({
   const { currency } = useCurrency();
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectedNetwork, setSelectedNetwork] = useState<string>(() =>
-    resolveDefaultChain(outputChainId, inputChainId)
+    resolveDefaultChain(outputChainId, inputChainId),
   );
   const [pinnedFromDialog, setPinnedFromDialog] = useState<string | null>(null);
   const networkSelector = useDialog2();
@@ -384,9 +363,7 @@ export function OutputPositionSelector({
   const chipsRef = useRef<HTMLDivElement>(null);
 
   const scrollChipIntoView = (chainId: string) => {
-    const el = chipsRef.current?.querySelector<HTMLElement>(
-      `[data-chain-id="${chainId}"]`
-    );
+    const el = chipsRef.current?.querySelector<HTMLElement>(`[data-chain-id="${chainId}"]`);
     el?.scrollIntoView({ block: 'nearest', inline: 'center' });
   };
 
@@ -414,9 +391,7 @@ export function OutputPositionSelector({
       const cached = cache.get(chainId);
       if (cached !== undefined) return cached;
       const network = networks.getByNetworkId(createChain(chainId));
-      const ok = Boolean(
-        network?.flags.supportsTrading || network?.flags.supportsBridging
-      );
+      const ok = Boolean(network?.flags.supportsTrading || network?.flags.supportsBridging);
       cache.set(chainId, ok);
       return ok;
     };
@@ -424,22 +399,19 @@ export function OutputPositionSelector({
 
   const tradablePositions = useMemo(
     () => positions.filter((p) => isTradableChainId(p.chain.id)),
-    [positions, isTradableChainId]
+    [positions, isTradableChainId],
   );
 
   const tradablePadChainIds = useMemo(
     () => RECEIVE_PAD_CHAIN_IDS.filter((id) => isTradableChainId(id)),
-    [isTradableChainId]
+    [isTradableChainId],
   );
 
   // Same predicate as the network dialog below.
   const visiblePinnedNetworks = useVisiblePinnedNetworks(networks);
   const pinnedChainIds = useMemo(
-    () =>
-      visiblePinnedNetworks
-        .map((n) => n.id)
-        .filter((id) => isTradableChainId(id)),
-    [visiblePinnedNetworks, isTradableChainId]
+    () => visiblePinnedNetworks.map((n) => n.id).filter((id) => isTradableChainId(id)),
+    [visiblePinnedNetworks, isTradableChainId],
   );
 
   const topNetworks: TopNetworksEntry[] = useTopNetworks(
@@ -452,13 +424,10 @@ export function OutputPositionSelector({
       fallbackChainId: ETHEREUM_CHAIN_ID,
       networks,
       padChainIds: tradablePadChainIds,
-    }
+    },
   );
 
-  const chipOrder = useMemo(
-    () => topNetworks.map((n) => n.chainId),
-    [topNetworks]
-  );
+  const chipOrder = useMemo(() => topNetworks.map((n) => n.chainId), [topNetworks]);
 
   const chainDistribution = useMemo(() => {
     const distribution: Record<string, number> = {};
@@ -485,10 +454,7 @@ export function OutputPositionSelector({
     return map;
   }, [receiverPositions]);
 
-  const debouncedSetQuery = useDebouncedCallback(
-    (value: string) => setDebouncedQuery(value),
-    300
-  );
+  const debouncedSetQuery = useDebouncedCallback((value: string) => setDebouncedQuery(value), 300);
 
   return (
     <>

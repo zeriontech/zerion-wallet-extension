@@ -11,10 +11,7 @@ interface FormDescription {
 
 function readFormValidity(form: HTMLFormElement): FormDescription {
   for (const element of form.elements) {
-    if (
-      element instanceof HTMLInputElement ||
-      element instanceof HTMLSelectElement
-    ) {
+    if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement) {
       if ('name' in element && element.name && !element.validity.valid) {
         return {
           valid: form.checkValidity(),
@@ -27,19 +24,12 @@ function readFormValidity(form: HTMLFormElement): FormDescription {
 }
 
 const defaultState = { valid: true, formError: null };
-export function useFormValidity({
-  formRef,
-}: {
-  formRef: React.RefObject<HTMLFormElement>;
-}) {
+export function useFormValidity({ formRef }: { formRef: React.RefObject<HTMLFormElement> }) {
   const [validity, setCurrentError] = useState<FormDescription>(defaultState);
-  const handleFormChange = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      const form = event.currentTarget;
-      setCurrentError(readFormValidity(form));
-    },
-    []
-  );
+  const handleFormChange = useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    const form = event.currentTarget;
+    setCurrentError(readFormValidity(form));
+  }, []);
   useEffect(() => {
     const form = formRef.current;
     if (form) {
@@ -49,10 +39,7 @@ export function useFormValidity({
       };
       form.addEventListener('customInputValueChange', handleInputValueChange);
       return () => {
-        form.removeEventListener(
-          'customInputValueChange',
-          handleInputValueChange
-        );
+        form.removeEventListener('customInputValueChange', handleInputValueChange);
       };
     }
   }, [formRef]);

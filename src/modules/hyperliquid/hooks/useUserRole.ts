@@ -6,10 +6,7 @@ export const USER_ROLE_QUERY_KEY = 'hyperliquid/userRole';
 
 export function useUserRole(
   payload: PerpUserRolePayload,
-  {
-    suspense = false,
-    enabled = true,
-  }: { suspense?: boolean; enabled?: boolean } = {}
+  { suspense = false, enabled = true }: { suspense?: boolean; enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: [USER_ROLE_QUERY_KEY, payload],

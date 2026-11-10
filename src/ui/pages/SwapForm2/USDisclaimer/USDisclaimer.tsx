@@ -30,9 +30,8 @@ export function USDisclaimer() {
         <VStack gap={8}>
           <UIText kind="small/accent">Disclaimer for US Residents</UIText>
           <UIText kind="caption/regular" color="var(--neutral-500)">
-            Zerion is not registered with or regulated by the Securities and
-            Exchange Commission relating to its creation, offering, and/or
-            operation of a Covered User Interface.
+            Zerion is not registered with or regulated by the Securities and Exchange Commission
+            relating to its creation, offering, and/or operation of a Covered User Interface.
           </UIText>
         </VStack>
         <HStack gap={0}>

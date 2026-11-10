@@ -3,10 +3,7 @@
 The extension used to keep chain data in its own snake_case `NetworkConfig` shape, fed first by the defi-sdk socket and, after PR 12, by an adapter over ZPI's `chain/list/v1` / `chain/get/v1`. Series 2 retires that shape: the model is now `NetworkInfo` in `src/modules/networks/NetworkInfo.ts`.
 
 ```ts
-type ChainBaseAsset = Pick<
-  Fungible,
-  'id' | 'name' | 'symbol' | 'iconUrl' | 'implementations'
->;
+type ChainBaseAsset = Pick<Fungible, 'id' | 'name' | 'symbol' | 'iconUrl' | 'implementations'>;
 type NetworkInfo = Omit<ChainFullInfo, 'baseAsset'> & {
   baseAsset?: ChainBaseAsset | null;
   hidden?: boolean; // client-side

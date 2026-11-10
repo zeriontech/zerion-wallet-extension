@@ -10,14 +10,13 @@ import type { SerializableTransactionResponse } from 'src/modules/ethereum/types
 export async function registerTransaction(
   transaction: SerializableTransactionResponse,
   chain: string,
-  mode: 'default' | 'testnet'
+  mode: 'default' | 'testnet',
 ) {
   if (isCustomNetworkId(chain)) {
     return;
   }
   const source = mode === 'testnet' ? 'testnet' : 'mainnet';
-  return ZerionAPI.transactionCollect(
-    { hash: transaction.hash, chain },
-    { source }
-  ).catch(() => null);
+  return ZerionAPI.transactionCollect({ hash: transaction.hash, chain }, { source }).catch(
+    () => null,
+  );
 }

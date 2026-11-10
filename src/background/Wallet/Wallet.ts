@@ -11,10 +11,7 @@ import type {
   NotificationWindow,
   NotificationWindowProps,
 } from 'src/background/NotificationWindow/NotificationWindow';
-import type {
-  ChannelContext,
-  PrivateChannelContext,
-} from 'src/shared/types/ChannelContext';
+import type { ChannelContext, PrivateChannelContext } from 'src/shared/types/ChannelContext';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import {
   InvalidParams,
@@ -92,10 +89,7 @@ import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
-import type {
-  BannerClickedParams,
-  ButtonClickedParams,
-} from 'src/shared/types/button-events';
+import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
 import type {
   PerpsButtonPressedParams,
   PerpsPositionActionParams,
@@ -110,10 +104,7 @@ import {
   checkEip712Tx,
 } from 'src/modules/ethereum/account-abstraction/zksync-patch';
 import { isSolanaAddress } from 'src/modules/solana/shared';
-import {
-  solFromBase64,
-  solToBase64,
-} from 'src/modules/solana/transactions/create';
+import { solFromBase64, solToBase64 } from 'src/modules/solana/transactions/create';
 import { fromSecretKeyToEd25519 } from 'src/modules/solana/keypairs';
 import type { SolSignTransactionResult } from 'src/modules/solana/transactions/SolTransactionResponse';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
@@ -125,11 +116,7 @@ import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
-import type {
-  AssetClickedParams,
-  DaylightEventParams,
-  ScreenViewParams,
-} from '../events';
+import type { AssetClickedParams, DaylightEventParams, ScreenViewParams } from '../events';
 import { emitter } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
@@ -146,25 +133,20 @@ import { toEthersWallet } from './helpers/toEthersWallet';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
 import type { MaskedBareWallet } from './model/BareWallet';
-import {
-  MnemonicWalletContainer,
-  PrivateKeyWalletContainer,
-} from './model/WalletContainer';
+import { MnemonicWalletContainer, PrivateKeyWalletContainer } from './model/WalletContainer';
 import { WalletRecordModel as Model } from './WalletRecord';
 import { WalletStore } from './persistence';
 import { WalletOrigin } from './model/WalletOrigin';
 import { globalPreferences } from './GlobalPreferences';
 import type { State as GlobalPreferencesState } from './GlobalPreferences';
 import type { Device, DeviceAccount } from './model/AccountContainer';
-import {
-  DeviceAccountContainer,
-  ReadonlyAccountContainer,
-} from './model/AccountContainer';
+import { DeviceAccountContainer, ReadonlyAccountContainer } from './model/AccountContainer';
 import { toPlainTransactionResponse } from './model/ethers-v5-types';
 
-async function prepareNonce<
-  T extends { nonce?: number | null; from?: string | null },
->(transaction: T, network: NetworkInfo) {
+async function prepareNonce<T extends { nonce?: number | null; from?: string | null }>(
+  transaction: T,
+  network: NetworkInfo,
+) {
   if (transaction.nonce == null) {
     invariant(transaction.from, '"from" field is missing from transaction');
     const txCount = await backgroundGetBestKnownTransactionCount({
@@ -229,7 +211,7 @@ export class Wallet {
   constructor(
     id: string,
     userCredentials: Credentials | null,
-    notificationWindow: NotificationWindow
+    notificationWindow: NotificationWindow,
   ) {
     this.emitter = createNanoEvents();
 
@@ -238,11 +220,9 @@ export class Wallet {
     this.disposer.add(
       globalPreferences.on('change', (state, prevState) => {
         emitter.emit('globalPreferencesChange', state, prevState);
-      })
+      }),
     );
-    this.disposer.add(
-      this.walletStore.on('change', this.notifyExternalStores.bind(this))
-    );
+    this.disposer.add(this.walletStore.on('change', this.notifyExternalStores.bind(this)));
     this.disposer.add(
       emitter.on('transactionSent', (result, { chain, clientScope }) => {
         if (result.evm && clientScope === 'Swap') {
@@ -251,7 +231,7 @@ export class Wallet {
             chain,
           });
         }
-      })
+      }),
     );
 
     this.notificationWindow = notificationWindow;
@@ -335,9 +315,7 @@ export class Wallet {
   }: PublicMethodParams<{ credentials: Credentials; isNewUser: boolean }>) {
     this.id = credentials.id;
     this.userCredentials = credentials;
-    this.setExpirationForSeedPhraseEncryptionKey(
-      isNewUser ? 1000 * 1800 : 1000 * 120
-    );
+    this.setExpirationForSeedPhraseEncryptionKey(isNewUser ? 1000 * 1800 : 1000 * 120);
     await this.syncWithWalletStore();
   }
 
@@ -347,10 +325,7 @@ export class Wallet {
 
   async testMethod({ params: value }: WalletMethodParams<number>) {
     return new Promise<string>((r) =>
-      setTimeout(
-        () => r(`Hello, curious developer. Your value is ${value}`),
-        1500
-      )
+      setTimeout(() => r(`Hello, curious developer. Your value is ${value}`), 1500),
     );
   }
 
@@ -380,20 +355,16 @@ export class Wallet {
     const reEncryptedRecord = await Model.reEncryptRecord(
       this.record,
       oldCredentials,
-      newCredentials
+      newCredentials,
     );
     const encryptedRecord = await Model.encryptRecord(
       newCredentials.encryptionKey,
-      reEncryptedRecord
+      reEncryptedRecord,
     );
     return encryptedRecord;
   }
 
-  async verifyRecoveryPhraseCredentials({
-    credentials,
-  }: {
-    credentials: SessionCredentials;
-  }) {
+  async verifyRecoveryPhraseCredentials({ credentials }: { credentials: SessionCredentials }) {
     this.ensureActiveSession(this.userCredentials);
     this.ensureRecord(this.record);
     await Model.ensureSeedPhraseCredentials(this.record, credentials);
@@ -408,15 +379,14 @@ export class Wallet {
   }): Promise<string> {
     this.ensureActiveSession(this.userCredentials);
     this.ensureRecord(this.record);
-    const recordWithUpdatedMnemonics =
-      await Model.reEncryptMnemonicWithNewCredentialsIfNeeded(
-        this.record,
-        initialCredentials,
-        currentCredentials
-      );
+    const recordWithUpdatedMnemonics = await Model.reEncryptMnemonicWithNewCredentialsIfNeeded(
+      this.record,
+      initialCredentials,
+      currentCredentials,
+    );
     const encryptedRecord = await Model.encryptRecord(
       currentCredentials.encryptionKey,
-      recordWithUpdatedMnemonics
+      recordWithUpdatedMnemonics,
     );
     return encryptedRecord;
   }
@@ -445,9 +415,7 @@ export class Wallet {
     return walletContainer.wallets.map((wallet) => maskWallet(wallet));
   }
 
-  async uiImportPrivateKey({
-    params: privateKey,
-  }: WalletMethodParams<LocallyEncoded>) {
+  async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<LocallyEncoded>) {
     const walletContainer = new PrivateKeyWalletContainer([
       { privateKey: decodeMasked(privateKey) },
     ]);
@@ -529,10 +497,7 @@ export class Wallet {
     if (!this.pendingWallet) {
       return null;
     }
-    return Model.getPendingRecoveryPhrase(
-      this.pendingWallet,
-      this.userCredentials
-    );
+    return Model.getPendingRecoveryPhrase(this.pendingWallet, this.userCredentials);
   }
 
   async getPendingWallet({ context }: WalletMethodParams) {
@@ -568,10 +533,7 @@ export class Wallet {
     return mnemonic.phrase === value;
   }
 
-  async getPrivateKey({
-    params: { address },
-    context,
-  }: WalletMethodParams<{ address: string }>) {
+  async getPrivateKey({ params: { address }, context }: WalletMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials); // require anyway
@@ -692,7 +654,7 @@ export class Wallet {
 
   allowedOrigin(
     context: Partial<ChannelContext> | undefined,
-    address: string
+    address: string,
   ): context is PartiallyRequired<ChannelContext, 'origin'> {
     if (!context || !context.origin) {
       throw new Error('This method requires context');
@@ -714,9 +676,7 @@ export class Wallet {
     context,
   }: WalletMethodParams<{ address: string; origin: string }>) {
     this.verifyInternalOrigin(context);
-    return !this.record
-      ? false
-      : Model.isAccountAvailable(this.record, { address, origin });
+    return !this.record ? false : Model.isAccountAvailable(this.record, { address, origin });
   }
 
   async getOriginPermissions({ context }: PublicMethodParams) {
@@ -735,10 +695,7 @@ export class Wallet {
     this.updateWalletStore(this.record);
 
     const { currentAddress } = this.record.walletManager;
-    this.emitter.emit(
-      'currentAddressChange',
-      [currentAddress].filter(isTruthy)
-    );
+    this.emitter.emit('currentAddressChange', [currentAddress].filter(isTruthy));
   }
 
   readCurrentAddress() {
@@ -753,16 +710,14 @@ export class Wallet {
     return currentAddress;
   }
 
-  private ensureRecord(
-    record: WalletRecord | null
-  ): asserts record is WalletRecord {
+  private ensureRecord(record: WalletRecord | null): asserts record is WalletRecord {
     if (!record) {
       throw new RecordNotFound();
     }
   }
 
   private ensureActiveSession(
-    credentials: Credentials | null
+    credentials: Credentials | null,
   ): asserts credentials is SessionCredentials {
     if (!credentials || !isSessionCredentials(credentials)) {
       throw new SessionExpired();
@@ -770,22 +725,16 @@ export class Wallet {
   }
 
   private verifyInternalOrigin(
-    context: Partial<ChannelContext | PrivateChannelContext> | undefined
-  ): asserts context is PartiallyRequired<
-    ChannelContext | PrivateChannelContext,
-    'origin'
-  > {
-    if (
-      context?.origin !== INTERNAL_ORIGIN &&
-      context?.origin !== INTERNAL_ORIGIN_SYMBOL
-    ) {
+    context: Partial<ChannelContext | PrivateChannelContext> | undefined,
+  ): asserts context is PartiallyRequired<ChannelContext | PrivateChannelContext, 'origin'> {
+    if (context?.origin !== INTERNAL_ORIGIN && context?.origin !== INTERNAL_ORIGIN_SYMBOL) {
       throw new OriginNotAllowed();
     }
   }
 
   // TODO: when is this helper needed?
   private ensureStringOrigin(
-    context: Partial<ChannelContext | PrivateChannelContext> | undefined
+    context: Partial<ChannelContext | PrivateChannelContext> | undefined,
   ): asserts context is PartiallyRequired<ChannelContext, 'origin'> {
     this.verifyInternalOrigin(context);
     if (typeof context.origin !== 'string') {
@@ -813,13 +762,7 @@ export class Wallet {
     return Model.getLastSwapChain(this.record, { address });
   }
 
-  private setLastSwapChainByAddress({
-    address,
-    chain,
-  }: {
-    address: string;
-    chain: string;
-  }) {
+  private setLastSwapChainByAddress({ address, chain }: { address: string; chain: string }) {
     this.ensureRecord(this.record);
     this.record = Model.setLastSwapChain(this.record, { address, chain });
     this.updateWalletStore(this.record);
@@ -830,9 +773,7 @@ export class Wallet {
     context,
   }: WalletMethodParams<{ groupId: string }>) {
     this.verifyInternalOrigin(context);
-    const group = this.record?.walletManager.groups.find(
-      (group) => group.id === groupId
-    );
+    const group = this.record?.walletManager.groups.find((group) => group.id === groupId);
     return group ? maskWalletGroup(group) : null;
   }
 
@@ -851,10 +792,7 @@ export class Wallet {
     return null;
   }
 
-  async getWalletGroupByAddress({
-    params,
-    context,
-  }: WalletMethodParams<{ address: string }>) {
+  async getWalletGroupByAddress({ params, context }: WalletMethodParams<{ address: string }>) {
     this.verifyInternalOrigin(context);
     return this.getWalletGroupByAddressSync({ params, context });
   }
@@ -867,11 +805,8 @@ export class Wallet {
     if (!this.record) {
       throw new RecordNotFound();
     }
-    const group = this.record.walletManager.groups.find(
-      (group) => group.id === groupId
-    );
-    const addresses =
-      group?.walletContainer.wallets.map((wallet) => wallet.address) ?? [];
+    const group = this.record.walletManager.groups.find((group) => group.id === groupId);
+    const addresses = group?.walletContainer.wallets.map((wallet) => wallet.address) ?? [];
     this.record = Model.removeWalletGroup(this.record, { groupId });
     this.updateWalletStore(this.record);
     await this.removePermitsOfMissingWallets(addresses);
@@ -929,8 +864,8 @@ export class Wallet {
       this.record?.walletManager.groups.some(
         (group) =>
           !isReadonlyContainer(group.walletContainer) &&
-          group.walletContainer.getWalletByAddress(address)
-      )
+          group.walletContainer.getWalletByAddress(address),
+      ),
     );
   }
 
@@ -939,9 +874,7 @@ export class Wallet {
    * has a signable wallet in the record; see `hasSignableWallet`.
    */
   private async removePermitsOfMissingWallets(addresses: string[]) {
-    const gone = addresses.filter(
-      (address) => !this.hasSignableWallet(address)
-    );
+    const gone = addresses.filter((address) => !this.hasSignableWallet(address));
     if (gone.length) {
       await removeSessionPermits(gone);
     }
@@ -1160,11 +1093,7 @@ export class Wallet {
     const chainId = networks.getChainId(createChain(chain));
     invariant(chainId, 'Chain id should exist for fetch allowance');
     const provider = await this.getProvider(chainId);
-    const contract = new ethers.Contract(
-      contractAddress,
-      ERC20_ALLOWANCE_ABI,
-      provider
-    );
+    const contract = new ethers.Contract(contractAddress, ERC20_ALLOWANCE_ABI, provider);
     const resultUntyped = await contract.allowance(owner, spender);
     const result = resultUntyped as bigint | string;
     return BigInt(result).toString();
@@ -1184,10 +1113,7 @@ export class Wallet {
     } as Parameters<Wallet['setChainForOrigin']>[0]);
   }
 
-  async uiChainSelected({
-    params: { chain },
-    context,
-  }: WalletMethodParams<{ chain: string }>) {
+  async uiChainSelected({ params: { chain }, context }: WalletMethodParams<{ chain: string }>) {
     this.verifyInternalOrigin(context);
     emitter.emit('ui:chainSelected', createChain(chain));
   }
@@ -1230,9 +1156,7 @@ export class Wallet {
       if (currentAddress && isSolanaAddress(currentAddress)) {
         // TODO: What's the correct return value in this case? Can we avoid this?
         // eslint-disable-next-line no-console
-        console.warn(
-          `Solana does not support chainId (requested by ${origin})`
-        );
+        console.warn(`Solana does not support chainId (requested by ${origin})`);
       }
       return fallbackChainId;
     }
@@ -1257,9 +1181,7 @@ export class Wallet {
     throw new Error('setChainId is deprecated. Use setChainForOrigin instead');
   }
 
-  setChainForOrigin(
-    params: Parameters<(typeof Model)['setChainForOrigin']>[1]
-  ) {
+  setChainForOrigin(params: Parameters<(typeof Model)['setChainForOrigin']>[1]) {
     this.ensureRecord(this.record);
     this.record = Model.setChainForOrigin(this.record, params);
     this.updateWalletStore(this.record);
@@ -1381,18 +1303,15 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     if (!incomingTransaction.from) {
       throw new Error(
-        '"from" field is missing from the transaction object. Send from current address?'
+        '"from" field is missing from the transaction object. Send from current address?',
       );
     }
     const currentAddress = this.ensureCurrentAddress();
     const { initiator } = txContext;
-    if (
-      normalizeAddress(incomingTransaction.from) !==
-      normalizeAddress(currentAddress)
-    ) {
+    if (normalizeAddress(incomingTransaction.from) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
-        'transaction "from" field is different from currently selected address'
+        'transaction "from" field is different from currently selected address',
       );
     }
 
@@ -1450,11 +1369,7 @@ export class Wallet {
         const safeTx = removeSignature(transactionResponse);
 
         const safeTxPlain = toPlainTransactionResponse(safeTx);
-        emitter.emit(
-          'transactionSent',
-          { evm: safeTxPlain },
-          { mode, ...txContext }
-        );
+        emitter.emit('transactionSent', { evm: safeTxPlain }, { mode, ...txContext });
         return safeTxPlain;
       } catch (error) {
         const ethersError = getEthersError(error);
@@ -1498,11 +1413,7 @@ export class Wallet {
     const currentAddress = this.ensureCurrentAddress();
     // TODO: infer signer address from transaction instead
     invariant(isSolanaAddress(currentAddress), 'Active address is not solana');
-    const {
-      transaction: txBase64,
-      params: transactionContextParams,
-      silent = false,
-    } = params;
+    const { transaction: txBase64, params: transactionContextParams, silent = false } = params;
     invariant(txBase64, () => new InvalidParams());
     const transaction = solFromBase64(txBase64);
 
@@ -1512,11 +1423,7 @@ export class Wallet {
       id: createChain('solana'),
     }); // MUST assert even if result is not used
     if (!silent) {
-      emitter.emit(
-        'transactionSent',
-        { solana: result },
-        { mode, ...transactionContextParams }
-      );
+      emitter.emit('transactionSent', { solana: result }, { mode, ...transactionContextParams });
       // TODO: process Solana Txs errors and emit 'transactionFailed' event
     }
     return result;
@@ -1533,8 +1440,7 @@ export class Wallet {
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
     const currentAddress = this.ensureCurrentAddress();
-    const { transactions: txsBase64, params: transactionContextParams } =
-      params;
+    const { transactions: txsBase64, params: transactionContextParams } = params;
     invariant(txsBase64 && Array.isArray(txsBase64), () => new InvalidParams());
     invariant(txsBase64.length > 0, 'No transactions provided');
     const { mode } = await this.assertNetworkMode({
@@ -1557,11 +1463,7 @@ export class Wallet {
          */
         contextParamsCopy.addressAction = null;
       }
-      emitter.emit(
-        'transactionSent',
-        { solana: result },
-        { mode, ...contextParamsCopy }
-      );
+      emitter.emit('transactionSent', { solana: result }, { mode, ...contextParamsCopy });
       // TODO: process Solana Txs errors and emit 'transactionFailed' event
     });
 
@@ -1593,15 +1495,9 @@ export class Wallet {
 
     const transaction = solFromBase64(signed);
 
-    const signature = await connection.sendRawTransaction(
-      transaction.serialize()
-    );
+    const signature = await connection.sendRawTransaction(transaction.serialize());
     const result = { signature, publicKey, tx: solToBase64(transaction) };
-    emitter.emit(
-      'transactionSent',
-      { solana: result },
-      { mode, ...params.params }
-    );
+    emitter.emit('transactionSent', { solana: result }, { mode, ...params.params });
     // TODO: process Solana Txs errors and emit 'transactionFailed' event
     return result;
   }
@@ -1628,15 +1524,9 @@ export class Wallet {
 
     const transaction = solFromBase64(signed);
 
-    const signature = await connection.sendRawTransaction(
-      transaction.serialize()
-    );
+    const signature = await connection.sendRawTransaction(transaction.serialize());
     const result = { signature, publicKey, tx: solToBase64(transaction) };
-    emitter.emit(
-      'transactionSent',
-      { solana: result },
-      { mode, ...params.params }
-    );
+    emitter.emit('transactionSent', { solana: result }, { mode, ...params.params });
     // TODO: process Solana Txs errors and emit 'transactionFailed' event
     return result;
   }
@@ -1644,9 +1534,7 @@ export class Wallet {
   async solana_signMessageWithAddress({
     params: { signerAddress, messageHex, ...messageContextParams },
     context,
-  }: WalletMethodParams<
-    { signerAddress: string; messageHex: string } & MessageContextParams
-  >) {
+  }: WalletMethodParams<{ signerAddress: string; messageHex: string } & MessageContextParams>) {
     this.verifyInternalOrigin(context);
     const messageUint8 = ethers.getBytes(messageHex);
     const keypair = this.getKeypairByAddress(signerAddress);
@@ -1666,9 +1554,9 @@ export class Wallet {
   async solana_signMessage({
     params,
     context,
-  }: WalletMethodParams<
-    { messageHex: string } & MessageContextParams
-  >): Promise<{ signatureSerialized: string }> {
+  }: WalletMethodParams<{ messageHex: string } & MessageContextParams>): Promise<{
+    signatureSerialized: string;
+  }> {
     this.verifyInternalOrigin(context);
     this.ensureRecord(this.record);
     const address = this.ensureCurrentAddress();
@@ -1699,21 +1587,14 @@ export class Wallet {
       let transactionResponse: ethers.TransactionResponse;
       if (isEip712Tx) {
         const provider = await this.getZkSyncProvider(chainId);
-        transactionResponse = await broadcastTransactionPatched(
-          provider,
-          serialized
-        );
+        transactionResponse = await broadcastTransactionPatched(provider, serialized);
       } else {
         const provider = await this.getProvider(chainId);
         transactionResponse = await provider.broadcastTransaction(serialized);
       }
       const safeTx = removeSignature(transactionResponse);
       const safeTxPlain = toPlainTransactionResponse(safeTx);
-      emitter.emit(
-        'transactionSent',
-        { evm: safeTxPlain },
-        { mode, ...txContext }
-      );
+      emitter.emit('transactionSent', { evm: safeTxPlain }, { mode, ...txContext });
       return safeTxPlain;
     } catch (error) {
       const ethersError = getEthersError(error);
@@ -1944,26 +1825,17 @@ export class Wallet {
     return this.record?.transactions || [];
   }
 
-  async buttonClicked({
-    context,
-    params,
-  }: WalletMethodParams<ButtonClickedParams>) {
+  async buttonClicked({ context, params }: WalletMethodParams<ButtonClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('buttonClicked', params);
   }
 
-  async bannerClicked({
-    context,
-    params,
-  }: WalletMethodParams<BannerClickedParams>) {
+  async bannerClicked({ context, params }: WalletMethodParams<BannerClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('bannerClicked', params);
   }
 
-  async perpsScreenViewed({
-    context,
-    params,
-  }: WalletMethodParams<PerpsScreenViewedParams>) {
+  async perpsScreenViewed({ context, params }: WalletMethodParams<PerpsScreenViewedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('perpsScreenViewed', params);
   }
@@ -1976,26 +1848,17 @@ export class Wallet {
     emitter.emit('confidentialAnalyticsEvent', params);
   }
 
-  async perpsButtonPressed({
-    context,
-    params,
-  }: WalletMethodParams<PerpsButtonPressedParams>) {
+  async perpsButtonPressed({ context, params }: WalletMethodParams<PerpsButtonPressedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('perpsButtonPressed', params);
   }
 
-  async perpsPositionAction({
-    context,
-    params,
-  }: WalletMethodParams<PerpsPositionActionParams>) {
+  async perpsPositionAction({ context, params }: WalletMethodParams<PerpsPositionActionParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('perpsPositionAction', params);
   }
 
-  async assetClicked({
-    context,
-    params,
-  }: WalletMethodParams<AssetClickedParams>) {
+  async assetClicked({ context, params }: WalletMethodParams<AssetClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('assetClicked', params);
   }
@@ -2040,10 +1903,7 @@ export class Wallet {
     emitter.emit('mnemonicRestorationError');
   }
 
-  async reportLedgerError({
-    context,
-    params,
-  }: WalletMethodParams<{ errorMessage: string }>) {
+  async reportLedgerError({ context, params }: WalletMethodParams<{ errorMessage: string }>) {
     this.verifyInternalOrigin(context);
     emitter.emit('reportLedgerError', params.errorMessage);
   }
@@ -2061,17 +1921,10 @@ export class Wallet {
     const { mode } = await this.assertNetworkMode({
       id: createChain(params.inputChain),
     });
-    emitter.emit(
-      'quoteError',
-      params,
-      mode === 'default' ? 'mainnet' : 'testnet'
-    );
+    emitter.emit('quoteError', params, mode === 'default' ? 'mainnet' : 'testnet');
   }
 
-  async transactionFormed({
-    context,
-    params,
-  }: WalletMethodParams<TransactionFormedContext>) {
+  async transactionFormed({ context, params }: WalletMethodParams<TransactionFormedContext>) {
     this.verifyInternalOrigin(context);
     emitter.emit('transactionFormed', params);
   }
@@ -2081,17 +1934,12 @@ export class Wallet {
     emitter.emit('unlockedAppOpened');
   }
 
-  async daylightAction({
-    context,
-    params,
-  }: WalletMethodParams<DaylightEventParams>) {
+  async daylightAction({ context, params }: WalletMethodParams<DaylightEventParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('daylightAction', params);
   }
 
-  async blockOriginWithWarning({
-    params: { origin },
-  }: WalletMethodParams<{ origin: string }>) {
+  async blockOriginWithWarning({ params: { origin } }: WalletMethodParams<{ origin: string }>) {
     return phishingDefenceService.blockOriginWithWarning(origin);
   }
 
@@ -2104,9 +1952,7 @@ export class Wallet {
     return phishingDefenceService.getDappSecurityStatus(url);
   }
 
-  async ignoreDappSecurityWarning({
-    params: { url },
-  }: WalletMethodParams<{ url: string }>) {
+  async ignoreDappSecurityWarning({ params: { url } }: WalletMethodParams<{ url: string }>) {
     return phishingDefenceService.ignoreDappSecurityWarning(url);
   }
 
@@ -2127,9 +1973,7 @@ export class Wallet {
   async openPersonalSign({
     params: { params, context, id },
     context: walletContext,
-  }: WalletMethodParams<
-    Parameters<(typeof this.publicEthereumController)['personal_sign']>[0]
-  >) {
+  }: WalletMethodParams<Parameters<(typeof this.publicEthereumController)['personal_sign']>[0]>) {
     this.verifyInternalOrigin(walletContext);
     return this.publicEthereumController.personal_sign({
       params,
@@ -2139,9 +1983,7 @@ export class Wallet {
   }
 
   private async checkTestnetMode(
-    options:
-      | { chainId: ChainId; id?: undefined }
-      | { id: Chain; chainId?: undefined }
+    options: { chainId: ChainId; id?: undefined } | { id: Chain; chainId?: undefined },
   ): Promise<
     | { violation: true; network: NetworkInfo; mode: 'testnet' | 'default' }
     | { violation: false; network: null; mode: 'testnet' | 'default' }
@@ -2177,14 +2019,12 @@ export class Wallet {
   }
 
   /** Signing mainnet transactions must not be allowed in testnet mode */
-  private async assertNetworkMode(
-    options: Parameters<typeof this.checkTestnetMode>[0]
-  ) {
+  private async assertNetworkMode(options: Parameters<typeof this.checkTestnetMode>[0]) {
     const result = await this.checkTestnetMode(options);
     const { violation } = result;
     if (violation) {
       throw new Error(
-        `Testnet Mode violation: ${result.network.name} is a mainnet. Turn off Testnet Mode before continuing`
+        `Testnet Mode violation: ${result.network.name} is a mainnet. Turn off Testnet Mode before continuing`,
       );
     }
     return result;
@@ -2246,13 +2086,7 @@ export class Wallet {
     return rpcUrl;
   }
 
-  async getRpcUrlByChainId({
-    chainId,
-    type,
-  }: {
-    chainId: ChainId;
-    type: 'public' | 'internal';
-  }) {
+  async getRpcUrlByChainId({ chainId, type }: { chainId: ChainId; type: 'public' | 'internal' }) {
     const network = await fetchNetworkByChainId({
       preferences: Model.getPreferences(this.record),
       chainId,
@@ -2309,30 +2143,22 @@ class PublicController {
   wallet: Wallet;
   notificationWindow: NotificationWindow;
 
-  constructor(
-    wallet: Wallet,
-    { notificationWindow }: { notificationWindow: NotificationWindow }
-  ) {
+  constructor(wallet: Wallet, { notificationWindow }: { notificationWindow: NotificationWindow }) {
     this.wallet = wallet;
     this.notificationWindow = notificationWindow;
   }
 
-  private async safeOpenDialogWindow<T>(
-    origin: string,
-    props: NotificationWindowProps<T>
-  ) {
+  private async safeOpenDialogWindow<T>(origin: string, props: NotificationWindowProps<T>) {
     const id = await this.notificationWindow.open(props);
-    phishingDefenceService
-      .checkDapp(origin)
-      .then(({ status, isWhitelisted }) => {
-        if (status === 'phishing' && !isWhitelisted) {
-          phishingDefenceService.blockOriginWithWarning(origin);
-          this.notificationWindow.emit('reject', {
-            id,
-            error: new UserRejected('Malicious DApp'),
-          });
-        }
-      });
+    phishingDefenceService.checkDapp(origin).then(({ status, isWhitelisted }) => {
+      if (status === 'phishing' && !isWhitelisted) {
+        phishingDefenceService.blockOriginWithWarning(origin);
+        this.notificationWindow.emit('reject', {
+          id,
+          error: new UserRejected('Malicious DApp'),
+        });
+      }
+    });
   }
 
   async showCorrectEcosystemWalletSelection({
@@ -2358,7 +2184,7 @@ class PublicController {
         onResolve: async ({ address }: { address: string }) => {
           invariant(
             isMatchForEcosystem(address, ecosystem),
-            'Selected address does not match required ecosystem'
+            'Selected address does not match required ecosystem',
           );
           await this.wallet.setCurrentAddress({
             params: { address },
@@ -2387,10 +2213,7 @@ class PublicController {
 
   async sol_connect({ context, id }: PublicMethodParams) {
     invariant(context?.origin, 'This method requires origin');
-    return this.eth_requestAccounts(
-      { id, context, params: [] },
-      { ecosystem: 'solana' }
-    );
+    return this.eth_requestAccounts({ id, context, params: [] }, { ecosystem: 'solana' });
   }
 
   async sol_disconnect({ context }: PublicMethodParams) {
@@ -2579,12 +2402,8 @@ class PublicController {
   }
 
   async eth_requestAccounts(
-    {
-      context,
-      id,
-      params,
-    }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>,
-    opts: { ecosystem: BlockchainType } = { ecosystem: 'evm' }
+    { context, id, params }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>,
+    opts: { ecosystem: BlockchainType } = { ecosystem: 'evm' },
   ): Promise<string[]> {
     if (debugValue && process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
@@ -2604,9 +2423,7 @@ class PublicController {
       });
       // Some ethereum dapps expect lowercase to be returned, otherwise they crash the moment after connection
       const result = [
-        isEthereumAddress(currentAddress)
-          ? currentAddress.toLowerCase()
-          : currentAddress,
+        isEthereumAddress(currentAddress) ? currentAddress.toLowerCase() : currentAddress,
       ];
       if (debugValue && process.env.NODE_ENV === 'development') {
         result.push(String(debugValue));
@@ -2621,7 +2438,7 @@ class PublicController {
       this.safeOpenDialogWindow(origin, {
         route: '/requestAccounts',
         search: `?origin=${origin}&nonEip6963Request=${String(
-          params?.[0]?.nonEip6963Request ? 'yes' : 'no'
+          params?.[0]?.nonEip6963Request ? 'yes' : 'no',
         )}&ecosystem=${opts.ecosystem}`,
         requestId: `${origin}:${id}`,
         tabId: context.tabId || null,
@@ -2635,10 +2452,7 @@ class PublicController {
           invariant(address, 'Invalid arguments: missing address');
           invariant(resolvedOrigin, 'Invalid arguments: missing origin');
           invariant(resolvedOrigin === origin, 'Resolved origin mismatch');
-          invariant(
-            isMatchForEcosystem(address, opts.ecosystem),
-            'Wrong addr for ecosystem'
-          );
+          invariant(isMatchForEcosystem(address, opts.ecosystem), 'Wrong addr for ecosystem');
           const currentAddress = this.wallet.ensureCurrentAddress();
           if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
             await this.wallet.setCurrentAddress({
@@ -2692,10 +2506,7 @@ class PublicController {
     context,
     id,
   }: PublicMethodParams<
-    [
-      IncomingTransaction,
-      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?,
-    ]
+    [IncomingTransaction, /* TODO: refactor to use {context} instead? */ { clientScope?: string }?]
   >) {
     this.wallet.ensureCurrentAddress();
     await this.showCorrectEcosystemWalletSelection({
@@ -2790,7 +2601,7 @@ class PublicController {
     if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
-        `Address parameter is different from currently selected address. Expected: ${currentAddress}, received: ${address}`
+        `Address parameter is different from currently selected address. Expected: ${currentAddress}, received: ${address}`,
       );
     }
     const stringifiedData = sanitizeTypedDataRaw(data);
@@ -2869,17 +2680,14 @@ class PublicController {
       message = shouldBeAddress;
     } else {
       throw new Error(
-        `Address is required for "personal_sign" method. Received [${params[0]}, ${params[1]}]`
+        `Address is required for "personal_sign" method. Received [${params[0]}, ${params[1]}]`,
       );
     }
 
-    if (
-      address &&
-      normalizeAddress(address) !== normalizeAddress(currentAddress)
-    ) {
+    if (address && normalizeAddress(address) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
-        `Address parameter is different from currently selected address. Received: ${address}`
+        `Address parameter is different from currently selected address. Received: ${address}`,
       );
     }
     if (!this.wallet.allowedOrigin(context, currentAddress)) {
@@ -2928,9 +2736,7 @@ class PublicController {
     params,
     context,
     id,
-  }: PublicMethodParams<[{ chainId?: string | number }]>): Promise<
-    null | object
-  > {
+  }: PublicMethodParams<[{ chainId?: string | number }]>): Promise<null | object> {
     const currentAddress = this.wallet.readCurrentAddress();
     if (!context || !context.origin) {
       throw new OriginNotAllowed();
@@ -2940,7 +2746,7 @@ class PublicController {
     const { chainId: chainIdParameter } = params[0];
     invariant(
       chainIdParameter,
-      'ChainId is a required param for wallet_switchEthereumChain method'
+      'ChainId is a required param for wallet_switchEthereumChain method',
     );
     const chainId = normalizeChainId(chainIdParameter);
 
@@ -2952,10 +2758,7 @@ class PublicController {
     });
     const networksStore = getNetworksStore(preferences);
     const networks = await networksStore.loadNetworksByChainId(chainId);
-    if (
-      !currentAddress ||
-      !this.wallet.allowedOrigin(context, currentAddress)
-    ) {
+    if (!currentAddress || !this.wallet.allowedOrigin(context, currentAddress)) {
       const chain = networks.getChainById(chainId);
       return new Promise((resolve, reject) => {
         this.safeOpenDialogWindow(origin, {
@@ -3026,7 +2829,7 @@ class PublicController {
   }
 
   private generatePermissionResponse(
-    params: [{ [name: string]: unknown }]
+    params: [{ [name: string]: unknown }],
   ): Web3WalletPermission[] {
     if (params?.[0] && 'eth_accounts' in params[0]) {
       return [{ parentCapability: 'eth_accounts' }];
@@ -3047,16 +2850,12 @@ class PublicController {
     id,
     context,
     params,
-  }: PublicMethodParams<[{ [name: string]: unknown }]>): Promise<
-    Web3WalletPermission[]
-  > {
+  }: PublicMethodParams<[{ [name: string]: unknown }]>): Promise<Web3WalletPermission[]> {
     await this.eth_requestAccounts({ context, id, params: [] });
     return this.generatePermissionResponse(params);
   }
 
-  async wallet_getPermissions({
-    context,
-  }: PublicMethodParams): Promise<Web3WalletPermission[]> {
+  async wallet_getPermissions({ context }: PublicMethodParams): Promise<Web3WalletPermission[]> {
     if (this.getIsAllowedOrigin({ context })) {
       return [{ parentCapability: 'eth_accounts' }];
     } else {
@@ -3112,9 +2911,7 @@ class PublicController {
     });
   }
 
-  async wallet_isKnownDapp({
-    context,
-  }: PublicMethodParams<{ origin: string }>) {
+  async wallet_isKnownDapp({ context }: PublicMethodParams<{ origin: string }>) {
     invariant(context?.origin, 'This method requires origin');
     return isKnownDapp({ origin: context.origin });
   }

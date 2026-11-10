@@ -52,8 +52,7 @@ function getSlippageWarning(percentValue: string) {
 }
 
 function SlippageWarning({ percentValue }: { percentValue: string }) {
-  const { isTooLarge, isTooSmall, isOptimal } =
-    getSlippageWarning(percentValue);
+  const { isTooLarge, isTooSmall, isOptimal } = getSlippageWarning(percentValue);
 
   if (isOptimal) {
     return null;
@@ -68,20 +67,12 @@ function SlippageWarning({ percentValue }: { percentValue: string }) {
       }}
     >
       <HStack gap={12} alignItems="center">
-        <WarningIcon
-          size={32}
-          outlineStrokeWidth={5}
-          borderWidth="2px"
-          glow={true}
-        />
+        <WarningIcon size={32} outlineStrokeWidth={5} borderWidth="2px" glow={true} />
         <UIText kind="small/regular" color="var(--neutral-700)">
           {isTooLarge ? (
             <span>You may receive up to {percentValue}% less tokens</span>
           ) : isTooSmall ? (
-            <span>
-              Transaction may potentially fail due to the volatility of asset
-              prices.
-            </span>
+            <span>Transaction may potentially fail due to the volatility of asset prices.</span>
           ) : (
             <br />
           )}
@@ -93,13 +84,7 @@ function SlippageWarning({ percentValue }: { percentValue: string }) {
 
 const INPUT_TEXT_KIND = 'body/accent';
 
-function CustomValueOverlay({
-  isOptimal,
-  value,
-}: {
-  isOptimal: boolean;
-  value: string | null;
-}) {
+function CustomValueOverlay({ isOptimal, value }: { isOptimal: boolean; value: string | null }) {
   return (
     <div
       style={{
@@ -155,12 +140,10 @@ export function SlippageSettings({
     userSlippage,
   });
 
-  const [isAuto, setIsAuto] = useState(
-    () => includeAuto && userSlippage == null
-  );
+  const [isAuto, setIsAuto] = useState(() => includeAuto && userSlippage == null);
   const [percentValue, setPercentValue] = useState(String(slippagePercent));
   const [isCustomValue, setIsCustomValue] = useState(
-    () => !isAuto && !slippageOptions.includes(Number(percentValue))
+    () => !isAuto && !slippageOptions.includes(Number(percentValue)),
   );
   const [isCustomValueFocused, setIsCustomValueFocused] = useState(false);
   const { isOptimal } = getSlippageWarning(percentValue);
@@ -171,7 +154,7 @@ export function SlippageSettings({
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       const checked = formRef.current?.querySelector<HTMLInputElement>(
-        'input[name="slippage"]:checked'
+        'input[name="slippage"]:checked',
       );
       checked?.focus();
     });
@@ -226,9 +209,7 @@ export function SlippageSettings({
               key={value}
               name="slippage"
               value={value}
-              checked={
-                !isAuto && !isCustomValue && String(value) === percentValue
-              }
+              checked={!isAuto && !isCustomValue && String(value) === percentValue}
               onChange={() => {
                 setIsAuto(false);
                 setPercentValue(String(value));
@@ -245,11 +226,7 @@ export function SlippageSettings({
           ))}
           <div style={{ position: 'relative' }}>
             <CustomValueOverlay
-              value={
-                isCustomValue
-                  ? percentValue || (isCustomValueFocused ? '' : null)
-                  : null
-              }
+              value={isCustomValue ? percentValue || (isCustomValueFocused ? '' : null) : null}
               isOptimal={isOptimal}
             />
             <Input
@@ -282,13 +259,8 @@ export function SlippageSettings({
           </div>
         </div>
         {isAuto ? null : <SlippageWarning percentValue={percentValue} />}
-        <UIText
-          kind="body/regular"
-          color="var(--neutral-500)"
-          style={{ paddingBottom: 24 }}
-        >
-          Your transaction will fail if the price changes more than the
-          slippage.
+        <UIText kind="body/regular" color="var(--neutral-500)" style={{ paddingBottom: 24 }}>
+          Your transaction will fail if the price changes more than the slippage.
         </UIText>
       </VStack>
       <div style={{ display: 'grid', gap: 8, gridTemplateColumns: '1fr 1fr' }}>

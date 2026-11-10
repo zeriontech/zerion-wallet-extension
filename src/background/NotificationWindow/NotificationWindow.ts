@@ -114,10 +114,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
 
   private events = createNanoEvents<Events>();
 
-  constructor(
-    initialState = NotificationWindow.initialState,
-    key = NotificationWindow.key
-  ) {
+  constructor(initialState = NotificationWindow.initialState, key = NotificationWindow.key) {
     super(initialState, key);
     this.trackOpenedWindows();
     this.trackWindowEvents();
@@ -141,13 +138,12 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     const values = Object.values(pendingWindows);
     const pendingWindowIds = values.map((entry) => entry.windowId);
     const windowQueries = await Promise.allSettled(
-      pendingWindowIds.map((id) => browser.windows.get(id))
+      pendingWindowIds.map((id) => browser.windows.get(id)),
     );
     const existingWindows = windowQueries
       .filter(
-        <T>(
-          result: PromiseSettledResult<T>
-        ): result is PromiseFulfilledResult<T> => result.status === 'fulfilled'
+        <T>(result: PromiseSettledResult<T>): result is PromiseFulfilledResult<T> =>
+          result.status === 'fulfilled',
       )
       .map((result) => result.value.id);
     const existingWindowsSet = new Set(existingWindows);
@@ -161,7 +157,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
             delete draft[key];
           }
         }
-      })
+      }),
     );
   }
 
@@ -257,7 +253,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       this.setState((state) =>
         produce(state, (draft) => {
           draft[requestId] = { windowId, id, tabId };
-        })
+        }),
       );
     });
     this.events.on('settle', async ({ id, windowId }) => {
@@ -265,9 +261,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       // Delay: let other code react to 'settle' first before cleaning up PendingState
       await new Promise((r) => setTimeout(r, 16));
       if (id?.startsWith('sidepanel:')) {
-        const entry = Object.values(this.getState()).find(
-          (entry) => entry.id === id
-        );
+        const entry = Object.values(this.getState()).find((entry) => entry.id === id);
         if (entry) {
           try {
             const sidepanelPath = getSidepanelUrl();
@@ -288,7 +282,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
             for (const requestId of matchingRequestIds) {
               delete draft[requestId];
             }
-          })
+          }),
         );
       }
     });
@@ -328,13 +322,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       .map(([key]) => key as DappRpcRequestId);
   }
 
-  private getMatchingRequestIds({
-    id,
-    windowId,
-  }: {
-    id?: InternalRequestId;
-    windowId?: number;
-  }) {
+  private getMatchingRequestIds({ id, windowId }: { id?: InternalRequestId; windowId?: number }) {
     if (id) {
       const requestId = this.getRequestId(id);
       return requestId ? [requestId] : [];
@@ -361,20 +349,17 @@ export class NotificationWindow extends PersistentStore<PendingState> {
     height,
   }: NotificationWindowProps<T>) {
     const requestId = requestIdRaw as DappRpcRequestId;
-    const unlisten = this.events.on(
-      'settle',
-      ({ status, id, windowId, result, error }) => {
-        const matchingRequestIds = this.getMatchingRequestIds({ id, windowId });
-        if (matchingRequestIds.includes(requestId)) {
-          if (status === 'fulfilled') {
-            onResolve(result as T);
-          } else if (status === 'rejected') {
-            onDismiss(error);
-          }
-          unlisten();
+    const unlisten = this.events.on('settle', ({ status, id, windowId, result, error }) => {
+      const matchingRequestIds = this.getMatchingRequestIds({ id, windowId });
+      if (matchingRequestIds.includes(requestId)) {
+        if (status === 'fulfilled') {
+          onResolve(result as T);
+        } else if (status === 'rejected') {
+          onDismiss(error);
         }
+        unlisten();
       }
-    );
+    });
     const pendingWindows = this.getState();
     if (pendingWindows[requestId]) {
       // Window is already opened for this request and all necessary listeners
@@ -382,9 +367,7 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       return pendingWindows[requestId].id;
     }
 
-    const tabWhereRequestComesFrom = tabId
-      ? await browser.tabs.get(tabId)
-      : null;
+    const tabWhereRequestComesFrom = tabId ? await browser.tabs.get(tabId) : null;
     const sidepanelIsOpen = await isSidepanelOpen({
       windowId: tabWhereRequestComesFrom?.windowId ?? null,
     });

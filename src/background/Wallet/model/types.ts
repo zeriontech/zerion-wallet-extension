@@ -157,18 +157,12 @@ export interface WalletRecordVersion3 {
   publicPreferences: PublicPreferences;
 }
 
-export interface WalletRecordVersion4 extends Omit<
-  WalletRecordVersion3,
-  'version'
-> {
+export interface WalletRecordVersion4 extends Omit<WalletRecordVersion3, 'version'> {
   version: 4;
   feed: unknown; // Old WalletFeed type was removed
 }
 
-export interface WalletRecordVersion5 extends Omit<
-  WalletRecordVersion4,
-  'version'
-> {
+export interface WalletRecordVersion5 extends Omit<WalletRecordVersion4, 'version'> {
   /** This version introduces normalized addresses in "permissions", see ./versions.ts */
   version: 5;
 }

@@ -10,17 +10,11 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
-import {
-  FLOAT_INPUT_PATTERN,
-  INT_INPUT_PATTERN,
-} from 'src/ui/shared/forms/inputs';
+import { FLOAT_INPUT_PATTERN, INT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { apostrophe } from 'src/ui/shared/typography';
 import { formDataToGasConfiguration } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkFeeDialog';
 import { getEffectiveGasPrice } from '../getEffectiveGasPrice';
-import {
-  getCustomFeeRatio,
-  type NetworkFeeQuote,
-} from '../getNetworkFeeForSpeed';
+import { getCustomFeeRatio, type NetworkFeeQuote } from '../getNetworkFeeForSpeed';
 import { formatNetworkFee } from '../formatNetworkFee';
 
 const EIP1559_FALLBACK = {
@@ -66,21 +60,18 @@ function decimalInput(value: string): number | null {
   return Number.isFinite(num) ? num : null;
 }
 
-const setPatternValidity =
-  (message: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.validity.patternMismatch) {
-      event.currentTarget.setCustomValidity(message);
-    } else {
-      event.currentTarget.setCustomValidity('');
-    }
-  };
+const setPatternValidity = (message: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  if (event.currentTarget.validity.patternMismatch) {
+    event.currentTarget.setCustomValidity(message);
+  } else {
+    event.currentTarget.setCustomValidity('');
+  }
+};
 
 const setGasPriceValidationMessage = setPatternValidity(
-  'Gas Price value must be a positive number'
+  'Gas Price value must be a positive number',
 );
-const setGasLimitValidationMessage = setPatternValidity(
-  'Gas Limit value must be a natural number'
-);
+const setGasLimitValidationMessage = setPatternValidity('Gas Limit value must be a natural number');
 
 function setFormValue(form: HTMLFormElement, name: string, value: string) {
   const input = form.elements.namedItem(name);
@@ -89,13 +80,7 @@ function setFormValue(form: HTMLFormElement, name: string, value: string) {
   }
 }
 
-function DisplayRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function DisplayRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <HStack gap={24} justifyContent="space-between">
       <UIText kind="small/regular">{label}</UIText>
@@ -184,13 +169,9 @@ export function NetworkFeeCustomForm({
   // inputs above the quote defaults so a previously-saved custom fee is shown
   // when the form reopens.
   const customNetworkFee =
-    configuration?.networkFee.speed === 'custom'
-      ? configuration.networkFee
-      : null;
+    configuration?.networkFee.speed === 'custom' ? configuration.networkFee : null;
   const custom = {
-    priorityFee: weiToGweiOrNull(
-      customNetworkFee?.custom1559GasPrice?.priorityFee
-    ),
+    priorityFee: weiToGweiOrNull(customNetworkFee?.custom1559GasPrice?.priorityFee),
     maxFee: weiToGweiOrNull(customNetworkFee?.custom1559GasPrice?.maxFee),
     classicGasPrice: weiToGweiOrNull(customNetworkFee?.customClassicGasPrice),
     gasLimit: customNetworkFee?.gasLimit || null,
@@ -218,8 +199,7 @@ export function NetworkFeeCustomForm({
     gasLimit: isEip1559 ? eip1559Initial.gasLimit : classicInitial.gasLimit,
   });
   const trackValue =
-    (name: keyof typeof values) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    (name: keyof typeof values) => (event: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = event.currentTarget;
       setValues((prev) => ({ ...prev, [name]: value }));
     };
@@ -238,9 +218,7 @@ export function NetworkFeeCustomForm({
   // fills the input with it; entering a value significantly lower than it
   // (more than ~10% below) shows a warning.
   const recommendedGasLimit = defaults?.gasLimit || null;
-  const recommendedGasLimitNum = recommendedGasLimit
-    ? decimalInput(recommendedGasLimit)
-    : null;
+  const recommendedGasLimitNum = recommendedGasLimit ? decimalInput(recommendedGasLimit) : null;
   const showLowGasLimitWarning =
     recommendedGasLimitNum != null &&
     gasLimitNum != null &&
@@ -257,27 +235,26 @@ export function NetworkFeeCustomForm({
       const priorityWei = gweiInputToWei(values.priorityFee);
       const effective = getEffectiveGasPrice(
         { maxFee: maxFeeWei, maxPriorityFee: priorityWei },
-        baseFee
+        baseFee,
       );
       expectedFee = formatNetworkFee(
         quote,
-        getCustomFeeRatio(quote, effective, gasLimitNum, baseFee)
+        getCustomFeeRatio(quote, effective, gasLimitNum, baseFee),
       );
       maxFeeDisplay = formatNetworkFee(
         quote,
-        getCustomFeeRatio(quote, maxFeeWei, gasLimitNum, baseFee)
+        getCustomFeeRatio(quote, maxFeeWei, gasLimitNum, baseFee),
       );
     } else {
       const gasPriceWei = gweiInputToWei(values.classicGasPrice);
       expectedFee = formatNetworkFee(
         quote,
-        getCustomFeeRatio(quote, gasPriceWei, gasLimitNum, baseFee)
+        getCustomFeeRatio(quote, gasPriceWei, gasLimitNum, baseFee),
       );
     }
   }
 
-  const baseFeeDisplay =
-    baseFee != null ? `~${weiToGweiStr(baseFee)} GWEI` : NO_VALUE;
+  const baseFeeDisplay = baseFee != null ? `~${weiToGweiStr(baseFee)} GWEI` : NO_VALUE;
 
   return (
     <form
@@ -361,10 +338,7 @@ export function NetworkFeeCustomForm({
               ) : null}
             </VStack>
             <VStack gap={8}>
-              <DisplayRow
-                label="Expected Fee"
-                value={expectedFee ?? NO_VALUE}
-              />
+              <DisplayRow label="Expected Fee" value={expectedFee ?? NO_VALUE} />
               <DisplayRow label="Max Fee" value={maxFeeDisplay ?? NO_VALUE} />
             </VStack>
           </>

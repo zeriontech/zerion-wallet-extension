@@ -25,10 +25,7 @@ import {
   useMeasure,
   useValueScaling,
 } from 'src/ui/components/AmountInput/ValueWithSymbol';
-import {
-  getPriceImpactPercentage,
-  type PriceImpact,
-} from './shared/price-impact';
+import { getPriceImpactPercentage, type PriceImpact } from './shared/price-impact';
 import { FormFieldset } from './FormFieldset';
 import { AssetSelectorButton } from './AssetSelectorButton';
 import * as assetSelectorStyles from './AssetSelectorButton.module.css';
@@ -48,11 +45,7 @@ function OutputDescription({
 }) {
   const { currency } = useCurrency();
 
-  if (
-    outputAmount == null ||
-    outputAmount === '' ||
-    Number(outputAmount) === 0
-  ) {
+  if (outputAmount == null || outputAmount === '' || Number(outputAmount) === 0) {
     return null;
   }
 
@@ -70,13 +63,10 @@ function OutputDescription({
         : 'var(--neutral-600)';
 
   const price = position?.fungible.meta.price;
-  const fiatValue =
-    price != null ? new BigNumber(outputAmount).times(price) : null;
+  const fiatValue = price != null ? new BigNumber(outputAmount).times(price) : null;
 
   const priceImpactPercentage =
-    priceImpact && (isLossWarning || isProfit)
-      ? getPriceImpactPercentage(priceImpact)
-      : null;
+    priceImpact && (isLossWarning || isProfit) ? getPriceImpactPercentage(priceImpact) : null;
 
   const primaryText =
     inputKind === 'currency'
@@ -94,7 +84,7 @@ function OutputDescription({
         <UIText kind="small/regular" color={color}>
           {`(${priceImpactPercentage > 0 ? '+' : ''}${formatPercent(
             priceImpactPercentage,
-            'en'
+            'en',
           )}%)`}
         </UIText>
       ) : null}
@@ -105,10 +95,7 @@ function OutputDescription({
 function AssetSelectorSkeleton() {
   return (
     <HStack gap={8} alignItems="center">
-      <div
-        className={styles.skeletonCircle}
-        style={{ width: 32, height: 32 }}
-      />
+      <div className={styles.skeletonCircle} style={{ width: 32, height: 32 }} />
       <div className={styles.skeleton} style={{ width: 72, height: 24 }} />
     </HStack>
   );
@@ -150,21 +137,17 @@ export function OutputPosition({
     if (outputAmount == null) return '0';
     if (inputKind === 'currency') {
       const fiat =
-        outputPrice != null
-          ? new BigNumber(outputAmount).times(outputPrice).toFixed()
-          : null;
+        outputPrice != null ? new BigNumber(outputAmount).times(outputPrice).toFixed() : null;
       return roundCurrencyDisplayValue(fiat) ?? '0';
     }
     return roundTokenDisplayValue(outputAmount) ?? '0';
   })();
 
-  const [containerRef, { width: containerWidth }] =
-    useMeasure<HTMLDivElement>();
-  const { defaultMirrorRef, shrunkMirrorRef, textWidth, activeKind } =
-    useValueScaling({
-      text: displayValue,
-      containerWidth,
-    });
+  const [containerRef, { width: containerWidth }] = useMeasure<HTMLDivElement>();
+  const { defaultMirrorRef, shrunkMirrorRef, textWidth, activeKind } = useValueScaling({
+    text: displayValue,
+    containerWidth,
+  });
 
   return (
     <>
@@ -179,17 +162,10 @@ export function OutputPosition({
             <TooltipProvider placement="top" timeout={1000}>
               <TooltipAnchor
                 render={
-                  <AssetSelectorButton
-                    position={position}
-                    onClick={selectorDialog.openDialog}
-                  />
+                  <AssetSelectorButton position={position} onClick={selectorDialog.openDialog} />
                 }
               />
-              <Tooltip
-                className={assetSelectorStyles.tooltip}
-                gutter={8}
-                portal={false}
-              >
+              <Tooltip className={assetSelectorStyles.tooltip} gutter={8} portal={false}>
                 <UIText kind="caption/regular">
                   <span>Select Asset to Receive</span>{' '}
                   <span className={assetSelectorStyles.tooltipKbd}>
@@ -218,9 +194,7 @@ export function OutputPosition({
               </HiddenMirror>
               <div style={{ textAlign: 'end' }}>{displayValue}</div>
               <CurrencySymbolOverlay
-                currencySymbol={
-                  inputKind === 'currency' ? currencySymbol : null
-                }
+                currencySymbol={inputKind === 'currency' ? currencySymbol : null}
                 textWidth={textWidth}
               />
             </div>

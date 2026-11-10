@@ -3,7 +3,7 @@ import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-ac
 import type { TransactionObject } from './types';
 
 function transactionReceiptToActionStatus(
-  transactionObject: Pick<TransactionObject, 'receipt' | 'dropped'>
+  transactionObject: Pick<TransactionObject, 'receipt' | 'dropped'>,
 ): ActionStatus {
   return transactionObject.receipt
     ? transactionObject.receipt.status === 1
@@ -14,9 +14,7 @@ function transactionReceiptToActionStatus(
       : 'pending';
 }
 
-function solanaTransactionObjectToStatus(
-  transactionObject: TransactionObject
-): ActionStatus {
+function solanaTransactionObjectToStatus(transactionObject: TransactionObject): ActionStatus {
   invariant(transactionObject.signature, 'Must be solana tx');
   if (transactionObject.dropped) {
     return 'dropped';
@@ -29,9 +27,7 @@ function solanaTransactionObjectToStatus(
   }
 }
 
-export function getTransactionObjectStatus(
-  transactionObject: TransactionObject
-) {
+export function getTransactionObjectStatus(transactionObject: TransactionObject) {
   if (transactionObject.signature) {
     return solanaTransactionObjectToStatus(transactionObject);
   } else {

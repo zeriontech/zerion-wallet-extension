@@ -41,9 +41,9 @@ export function ActionsList({
   const groupedByDate = useMemo(
     () =>
       groupBy(actions, (item) =>
-        startOfDate(new Date(item.timestamp).getTime() || Date.now()).getTime()
+        startOfDate(new Date(item.timestamp).getTime() || Date.now()).getTime(),
       ),
-    [actions]
+    [actions],
   );
 
   const targetDate = useMemo(() => {
@@ -183,10 +183,7 @@ export function ActionsList({
                         testnetMode={testnetMode}
                       />
                     ) : (
-                      <ActionItem
-                        addressAction={addressAction}
-                        testnetMode={testnetMode}
-                      />
+                      <ActionItem addressAction={addressAction} testnetMode={testnetMode} />
                     ),
                 };
               })}

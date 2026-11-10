@@ -41,8 +41,7 @@ export function useDepositHandoff({
       quote: DepositQuote;
       paymentMethodId: string;
     }) => {
-      const { outputFungibleId, outputChain, currency, fiatValue, countryId } =
-        formState;
+      const { outputFungibleId, outputChain, currency, fiatValue, countryId } = formState;
       invariant(outputFungibleId, 'outputFungibleId is required');
       invariant(outputChain, 'outputChain is required');
       invariant(currency, 'currency is required');

@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-  useImperativeHandle,
-} from 'react';
+import React, { useState, useCallback, useEffect, useRef, useImperativeHandle } from 'react';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 
 interface CallbackProps {
@@ -26,7 +20,7 @@ export interface InputHandle {
 
 function DebouncedInputComponent(
   { onChange, delay = 500, render, value }: Props,
-  ref: React.Ref<InputHandle>
+  ref: React.Ref<InputHandle>,
 ) {
   const [innerValue, setInnerValue] = useState(value);
   const pendingRef = useRef(false);
@@ -44,7 +38,7 @@ function DebouncedInputComponent(
       pendingRef.current = false;
       onChangeRef.current(inputValue);
     }, []),
-    delay
+    delay,
   );
 
   const handleChange = useCallback(
@@ -53,7 +47,7 @@ function DebouncedInputComponent(
       debouncedSetValue(newValue);
       setInnerValue(newValue);
     },
-    [debouncedSetValue]
+    [debouncedSetValue],
   );
 
   useEffect(() => {

@@ -2,9 +2,7 @@ import type { SolSignTransactionResult } from 'src/modules/solana/transactions/S
 import { invariant } from 'src/shared/invariant';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 
-export function ensureSolanaResult(
-  res: SignTransactionResult
-): SolSignTransactionResult {
+export function ensureSolanaResult(res: SignTransactionResult): SolSignTransactionResult {
   invariant(res.solana);
   const solana = Array.isArray(res.solana) ? res.solana.at(0) : res.solana;
   invariant(solana, 'No solana transaction found in result object');

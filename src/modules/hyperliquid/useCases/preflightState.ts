@@ -51,18 +51,16 @@ export interface PreflightRawState {
 
 export function derivePreflightState(
   raw: PreflightRawState,
-  input: Pick<PreflightFetchInput, 'requiredMaxBuilderFee' | 'coin'>
+  input: Pick<PreflightFetchInput, 'requiredMaxBuilderFee' | 'coin'>,
 ): PreflightState {
-  const hyperliquidEnabled =
-    raw.userRole != null && raw.userRole.role !== 'missing';
+  const hyperliquidEnabled = raw.userRole != null && raw.userRole.role !== 'missing';
   const referrerSet = Boolean(raw.referral?.referredBy);
   const builderFeeApproved =
-    raw.maxBuilderFee != null &&
-    raw.maxBuilderFee >= input.requiredMaxBuilderFee;
+    raw.maxBuilderFee != null && raw.maxBuilderFee >= input.requiredMaxBuilderFee;
   const coin = input.coin;
   const matchedPosition = coin
     ? raw.clearinghouseState?.assetPositions.find(
-        (entry) => entry.position.coin.toLowerCase() === coin.toLowerCase()
+        (entry) => entry.position.coin.toLowerCase() === coin.toLowerCase(),
       )?.position
     : undefined;
   const currentLeverage: PreflightLeverage | null = matchedPosition
@@ -79,23 +77,20 @@ export function derivePreflightState(
   };
 }
 
-export async function fetchPreflightState(
-  input: PreflightFetchInput
-): Promise<PreflightState> {
-  const [userRole, referral, maxBuilderFee, clearinghouseState] =
-    await Promise.all([
-      perpUserRole({ address: input.address }),
-      perpReferral({ address: input.address }),
-      perpMaxBuilderFee({ address: input.address, builder: input.builder }),
-      input.coin
-        ? perpClearinghouseState({
-            address: input.address,
-            dexIdentifier: input.dexIdentifier,
-          })
-        : Promise.resolve(null),
-    ]);
+export async function fetchPreflightState(input: PreflightFetchInput): Promise<PreflightState> {
+  const [userRole, referral, maxBuilderFee, clearinghouseState] = await Promise.all([
+    perpUserRole({ address: input.address }),
+    perpReferral({ address: input.address }),
+    perpMaxBuilderFee({ address: input.address, builder: input.builder }),
+    input.coin
+      ? perpClearinghouseState({
+          address: input.address,
+          dexIdentifier: input.dexIdentifier,
+        })
+      : Promise.resolve(null),
+  ]);
   return derivePreflightState(
     { userRole, referral, maxBuilderFee, clearinghouseState },
-    { requiredMaxBuilderFee: input.requiredMaxBuilderFee, coin: input.coin }
+    { requiredMaxBuilderFee: input.requiredMaxBuilderFee, coin: input.coin },
   );
 }

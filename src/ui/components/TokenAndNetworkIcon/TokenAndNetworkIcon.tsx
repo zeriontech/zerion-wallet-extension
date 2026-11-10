@@ -52,11 +52,7 @@ export function TokenAndNetworkIcon({
           backgroundColor: 'var(--neutral-200)',
         }}
       >
-        <NetworkIcon
-          src={networkIconUrl}
-          name={networkName}
-          size={networkIconSize}
-        />
+        <NetworkIcon src={networkIconUrl} name={networkName} size={networkIconSize} />
       </div>
     </div>
   );

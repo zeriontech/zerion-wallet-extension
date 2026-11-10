@@ -23,9 +23,5 @@ export function ChainValue({
       ? chainDistribution?.totalValue
       : chainDistribution?.positionsChainsDistribution[chain.toString()];
 
-  return formatCurrencyValue(
-    value || 0,
-    'en',
-    currency
-  ) as React.ReactNode as JSX.Element;
+  return formatCurrencyValue(value || 0, 'en', currency) as React.ReactNode as JSX.Element;
 }

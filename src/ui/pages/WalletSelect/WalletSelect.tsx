@@ -41,10 +41,7 @@ import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { usePreferences } from 'src/ui/features/preferences';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
-import {
-  DEFAULT_WALLET_LIST_GROUPS,
-  getWalletId,
-} from 'src/shared/wallet/wallet-list';
+import { DEFAULT_WALLET_LIST_GROUPS, getWalletId } from 'src/shared/wallet/wallet-list';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import * as styles from './styles.module.css';
@@ -68,7 +65,7 @@ function PortfolioRow({
         walletsOrder,
         walletGroups,
       }),
-    [walletsOrder, walletGroups]
+    [walletsOrder, walletGroups],
   );
 
   const portfolioWalletIdSet = useMemo(() => {
@@ -81,17 +78,15 @@ function PortfolioRow({
         group.walletContainer.wallets.map((wallet) => ({
           address: wallet.address,
           groupId: group.id,
-        }))
+        })),
       )
-      .filter(({ address, groupId }) =>
-        portfolioWalletIdSet.has(getWalletId({ address, groupId }))
-      )
+      .filter(({ address, groupId }) => portfolioWalletIdSet.has(getWalletId({ address, groupId })))
       .map(({ address }) => address);
   }, [walletGroups, portfolioWalletIdSet]);
 
   const { data, isLoading } = useWalletPortfolio(
     { addresses, currency },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
   );
   const walletPortfolio = data?.data;
 
@@ -109,11 +104,7 @@ function PortfolioRow({
               ) : (
                 <BlurrableBalance kind="headline/h3" color="var(--black)">
                   <NeutralDecimals
-                    parts={formatCurrencyToParts(
-                      walletPortfolio.totalValue || 0,
-                      'en',
-                      currency
-                    )}
+                    parts={formatCurrencyToParts(walletPortfolio.totalValue || 0, 'en', currency)}
                   />
                 </BlurrableBalance>
               )}
@@ -146,7 +137,7 @@ export function WalletSelect() {
       }
       setSearchParams(searchParams, { replace: true });
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -157,29 +148,23 @@ export function WalletSelect() {
     useErrorBoundary: true,
   });
   const ownedGroups = useMemo(
-    () =>
-      walletGroups?.filter(
-        (group) => !isReadonlyContainer(group.walletContainer)
-      ),
-    [walletGroups]
+    () => walletGroups?.filter((group) => !isReadonlyContainer(group.walletContainer)),
+    [walletGroups],
   );
   const ownedAddresses = useMemo(
     () =>
       ownedGroups?.flatMap((group) =>
-        group.walletContainer.wallets.map((wallet) => wallet.address)
+        group.walletContainer.wallets.map((wallet) => wallet.address),
       ) || [],
-    [ownedGroups]
+    [ownedGroups],
   );
 
   const allWallets = useMemo(
     () => walletGroups?.flatMap((g) => g.walletContainer.wallets) ?? [],
-    [walletGroups]
+    [walletGroups],
   );
   const totalWalletCount = allWallets.length;
-  const allAddresses = useMemo(
-    () => allWallets.map((w) => w.address),
-    [allWallets]
-  );
+  const allAddresses = useMemo(() => allWallets.map((w) => w.address), [allWallets]);
 
   const { data: walletsMeta } = useWalletsMetaByChunks({
     addresses: allAddresses,
@@ -230,9 +215,8 @@ export function WalletSelect() {
 
   const walletListPredicate = useCallback(
     (wallet: AnyWallet) =>
-      (!ecosystem || isMatchForEcosystem(wallet.address, ecosystem)) &&
-      matchesSearch(wallet),
-    [ecosystem, matchesSearch]
+      (!ecosystem || isMatchForEcosystem(wallet.address, ecosystem)) && matchesSearch(wallet),
+    [ecosystem, matchesSearch],
   );
 
   if (isLoading) {
@@ -318,10 +302,7 @@ export function WalletSelect() {
       {title}
       <Spacer height={10} />
       {ownedAddressesCount > 1 && !editMode ? (
-        <PortfolioRow
-          walletGroups={walletGroups}
-          walletsOrder={preferences?.walletsOrder}
-        />
+        <PortfolioRow walletGroups={walletGroups} walletsOrder={preferences?.walletsOrder} />
       ) : null}
       {ownedAddressesCount > 1 && totalWalletCount >= 5 && !editMode ? (
         <Spacer height={16} />
@@ -351,9 +332,7 @@ export function WalletSelect() {
       >
         {editMode ? (
           <WalletListEdit
-            walletsOrder={
-              preferences?.walletsOrder || DEFAULT_WALLET_LIST_GROUPS
-            }
+            walletsOrder={preferences?.walletsOrder || DEFAULT_WALLET_LIST_GROUPS}
             walletGroups={walletGroups}
             onChange={(newOrder) => {
               setPreferences({
@@ -373,9 +352,7 @@ export function WalletSelect() {
             predicate={walletListPredicate}
             renderItemFooter={({ wallet }) => {
               const walletMeta = walletsMeta?.find(
-                (meta) =>
-                  normalizeAddress(meta.address) ===
-                  normalizeAddress(wallet.address)
+                (meta) => normalizeAddress(meta.address) === normalizeAddress(wallet.address),
               );
               const addWalletParams = getWalletParams(wallet);
               const exploreRewardsUrl = walletMeta?.membership.newRewards
@@ -407,8 +384,7 @@ export function WalletSelect() {
                       style={{
                         width: 20,
                         height: 20,
-                        color:
-                          'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
+                        color: 'linear-gradient(90deg, #a024ef 0%, #fdbb6c 100%)',
                       }}
                     />
                     <UIText kind="small/accent" color="var(--primary-500)">
@@ -421,9 +397,7 @@ export function WalletSelect() {
           />
         )}
         {editMode ? null : (
-          <div
-            style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 8 }}>
             <Button
               kind="neutral"
               size={36}

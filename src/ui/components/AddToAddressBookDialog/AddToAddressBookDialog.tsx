@@ -46,12 +46,7 @@ function DialogContent({
     >
       <VStack gap={24}>
         <VStack gap={16} style={{ justifyItems: 'center' }}>
-          <WalletAvatar
-            address={address}
-            size={48}
-            active={false}
-            borderRadius={12}
-          />
+          <WalletAvatar address={address} size={48} active={false} borderRadius={12} />
           <VStack gap={8} style={{ justifyItems: 'center', width: '100%' }}>
             <UIText kind="headline/h2" className={styles.nameInputWrapper}>
               <span className={styles.nameField} data-value={displayValue}>
@@ -110,11 +105,7 @@ export function AddToAddressBookDialog({
   return (
     <Dialog2 open={open} onClose={onClose} title={title} size="content">
       {open ? (
-        <DialogContent
-          address={address}
-          initialName={initialName}
-          onSubmit={onSubmit}
-        />
+        <DialogContent address={address} initialName={initialName} onSubmit={onSubmit} />
       ) : null}
     </Dialog2>
   );

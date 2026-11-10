@@ -8,10 +8,7 @@ interface Params {
   onSuccess?: () => void;
 }
 
-export const useCopyToClipboard = ({
-  text,
-  onSuccess = () => null,
-}: Params) => {
+export const useCopyToClipboard = ({ text, onSuccess = () => null }: Params) => {
   const textRef = useRef(text);
   const onSuccessEvent = useEvent(onSuccess);
 
@@ -26,7 +23,7 @@ export const useCopyToClipboard = ({
       debounce(() => {
         setIsSuccess(false);
       }, 1000),
-    []
+    [],
   );
 
   const handleCopy = useCallback(() => {

@@ -19,11 +19,7 @@ import * as styles from './Pnl.module.css';
 const PLACEHOLDER = '—';
 
 function getColor(value: number | null | undefined) {
-  return !value
-    ? 'var(--black)'
-    : value > 0
-      ? 'var(--positive-500)'
-      : 'var(--negative-500)';
+  return !value ? 'var(--black)' : value > 0 ? 'var(--positive-500)' : 'var(--negative-500)';
 }
 
 function getSign(value: number | null | undefined) {
@@ -48,10 +44,7 @@ function PnlValue({
       color={color}
       style={{ display: 'flex', gap: 4, alignItems: 'flex-end' }}
     >
-      <span>{`${getSign(absolute)}${formatPercent(
-        Math.abs(relative * 100),
-        'en'
-      )}%`}</span>
+      <span>{`${getSign(absolute)}${formatPercent(Math.abs(relative * 100), 'en')}%`}</span>
       <BlurrableBalance kind="small/accent" color={color}>
         {`(${formatCurrencyValue(Math.abs(absolute), 'en', currency)})`}
       </BlurrableBalance>
@@ -109,13 +102,12 @@ export function Pnl() {
   const pnlQuery = useWalletPnl(
     { addresses: [params.address], currency },
     { source },
-    { enabled: ready && isPremium }
+    { enabled: ready && isPremium },
   );
   const pnl = pnlQuery.data?.data ?? null;
 
   const checkingPremium = walletsMetaQuery.isInitialLoading;
-  const loadingPnl =
-    ready && isPremium && pnlQuery.data === undefined && !pnlQuery.isError;
+  const loadingPnl = ready && isPremium && pnlQuery.data === undefined && !pnlQuery.isError;
   const isLoading = checkingPremium || loadingPnl;
 
   return (

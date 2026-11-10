@@ -54,13 +54,13 @@ export class RequestCache {
     key: string,
     getter: () => Promise<unknown>,
     { staleTime, retryTime }: Options = {},
-    oldItem?: CacheItem
+    oldItem?: CacheItem,
   ): CacheItem {
     const promise = getter();
 
     promise.then(
       () => this.handlePromiseSettle(key, 'fulfilled'),
-      () => this.handlePromiseSettle(key, 'rejected')
+      () => this.handlePromiseSettle(key, 'rejected'),
     );
     return {
       promise,
@@ -74,11 +74,7 @@ export class RequestCache {
     };
   }
 
-  async get<T>(
-    key: string,
-    getter: () => Promise<T>,
-    options?: Options
-  ): Promise<T> {
+  async get<T>(key: string, getter: () => Promise<T>, options?: Options): Promise<T> {
     const item = this.map.get(key);
     if (item && !RequestCache.isStale(item)) {
       return item.promise as Promise<T>;

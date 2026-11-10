@@ -10,10 +10,7 @@ import {
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 
-function localActionAssetQueryKey(
-  assetQuery: AssetQuery,
-  source: NetworksSource
-) {
+function localActionAssetQueryKey(assetQuery: AssetQuery, source: NetworksSource) {
   return [
     'localActionAsset',
     getAssetQueryFungibleId(assetQuery),
@@ -25,7 +22,7 @@ function localActionAssetQueryKey(
 export function useLocalActionAsset(
   request: LocalActionContentRequest,
   source: NetworksSource,
-  { enabled }: { enabled: boolean }
+  { enabled }: { enabled: boolean },
 ) {
   return useQuery({
     queryKey: localActionAssetQueryKey(request.assetQuery, source),
@@ -46,14 +43,12 @@ export function useLocalActionAsset(
  */
 export function getLocalActionSearchTerms(
   request: LocalActionContentRequest,
-  source: NetworksSource
+  source: NetworksSource,
 ): string[] {
   const cached = queryClient.getQueryData<Asset | null>(
-    localActionAssetQueryKey(request.assetQuery, source)
+    localActionAssetQueryKey(request.assetQuery, source),
   );
-  return [
-    getAssetQueryFungibleId(request.assetQuery),
-    cached?.name,
-    cached?.symbol,
-  ].filter(isTruthy);
+  return [getAssetQueryFungibleId(request.assetQuery), cached?.name, cached?.symbol].filter(
+    isTruthy,
+  );
 }

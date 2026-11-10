@@ -16,7 +16,7 @@ function isUnauthorized(error: unknown) {
  */
 export async function withPermits<T>(
   permits: SignedPermit[],
-  request: (permits: SignedPermit[] | undefined) => Promise<T>
+  request: (permits: SignedPermit[] | undefined) => Promise<T>,
 ): Promise<T> {
   if (permits.length === 0) {
     return request(undefined);
@@ -30,8 +30,8 @@ export async function withPermits<T>(
     const addresses = new Set(permits.map((permit) => permit.address));
     await Promise.all(
       Array.from(addresses).map((address) =>
-        walletPort.request('clearConfidentialPermits', { address })
-      )
+        walletPort.request('clearConfidentialPermits', { address }),
+      ),
     );
     invalidateConfidentialPermits();
     return request(undefined);

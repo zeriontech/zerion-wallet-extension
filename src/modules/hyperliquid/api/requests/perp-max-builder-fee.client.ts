@@ -5,7 +5,7 @@ import type {
 } from './perp-max-builder-fee.types';
 
 export async function perpMaxBuilderFee(
-  payload: PerpMaxBuilderFeePayload
+  payload: PerpMaxBuilderFeePayload,
 ): Promise<PerpMaxBuilderFeeResponse | null> {
   return postInfo<PerpMaxBuilderFeeResponse>({
     type: 'maxBuilderFee',

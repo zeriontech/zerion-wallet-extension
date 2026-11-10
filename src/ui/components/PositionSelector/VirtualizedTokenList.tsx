@@ -37,7 +37,7 @@ export function VirtualizedTokenList<T>({
   renderItem: (data: T, index: number) => React.ReactNode;
   renderHeader?: (
     label: string,
-    Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>
+    Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>,
   ) => React.ReactNode;
   rowHeight?: number;
 }) {
@@ -51,8 +51,7 @@ export function VirtualizedTokenList<T>({
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement,
-    estimateSize: (index) =>
-      items[index].kind === 'header' ? SECTION_HEADER_HEIGHT : rowHeight,
+    estimateSize: (index) => (items[index].kind === 'header' ? SECTION_HEADER_HEIGHT : rowHeight),
     overscan: 6,
     scrollMargin: listRef.current?.offsetTop ?? 0,
     getItemKey: (index) => items[index].key,

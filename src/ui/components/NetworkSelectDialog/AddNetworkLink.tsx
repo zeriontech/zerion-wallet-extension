@@ -25,14 +25,9 @@ export function AddNetworkLink() {
             style: { padding: 0 },
             pad: false,
             component: (
-              <SurfaceItemLink
-                to="/networks/create"
-                style={{ paddingInline: 0 }}
-              >
+              <SurfaceItemLink to="/networks/create" style={{ paddingInline: 0 }}>
                 <HStack gap={8} alignItems="center" style={{ paddingBlock: 4 }}>
-                  <AddCircleIcon
-                    style={{ display: 'block', marginInline: 'auto' }}
-                  />
+                  <AddCircleIcon style={{ display: 'block', marginInline: 'auto' }} />
                   <UIText kind="body/accent">Add Network</UIText>
                 </HStack>
               </SurfaceItemLink>

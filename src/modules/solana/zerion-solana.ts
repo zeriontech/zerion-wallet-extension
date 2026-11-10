@@ -1,13 +1,6 @@
 import EventEmitter from 'events';
-import type {
-  SolanaSignInInput,
-  SolanaSignInOutput,
-} from '@solana/wallet-standard-features';
-import type {
-  SendOptions,
-  Transaction,
-  VersionedTransaction,
-} from '@solana/web3.js';
+import type { SolanaSignInInput, SolanaSignInOutput } from '@solana/wallet-standard-features';
+import type { SendOptions, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
 import type { Ghost } from '@zeriontech/solana-wallet-standard';
 import { formatJsonRpcRequestPatched } from 'src/shared/custom-rpc/formatJsonRpcRequestPatched';
@@ -29,27 +22,24 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     this.connection = connection;
     this.publicKey = null;
 
-    connection.on(
-      'ethereumEvent',
-      ({ event, value }: { event: string; value: unknown }) => {
-        if (event === 'accountsChanged' && Array.isArray(value)) {
-          const address = value.at(0) as string | undefined;
-          if (address) {
-            if (address === this.publicKey?.toBase58()) {
-              // value hasn't changed, do not notify
-              return;
-            } else if (!isSolanaAddress(address)) {
-              this.publicKey = null;
-            } else {
-              this.publicKey = new PublicKey(address);
-            }
-          } else {
+    connection.on('ethereumEvent', ({ event, value }: { event: string; value: unknown }) => {
+      if (event === 'accountsChanged' && Array.isArray(value)) {
+        const address = value.at(0) as string | undefined;
+        if (address) {
+          if (address === this.publicKey?.toBase58()) {
+            // value hasn't changed, do not notify
+            return;
+          } else if (!isSolanaAddress(address)) {
             this.publicKey = null;
+          } else {
+            this.publicKey = new PublicKey(address);
           }
-          this.emit('accountChanged');
+        } else {
+          this.publicKey = null;
         }
+        this.emit('accountChanged');
       }
-    );
+    });
   }
 
   async connect(): Promise<{ publicKey: PublicKey }> {
@@ -75,14 +65,12 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     const signature = await this.connection.send<string>(
       formatJsonRpcRequestPatched('sol_signMessage', {
         messageSerialized: uint8ArrayToBase64(message),
-      })
+      }),
     );
     return { signature: base64ToUint8Array(signature) };
   }
 
-  async signTransaction<T extends Transaction | VersionedTransaction>(
-    transaction: T
-  ): Promise<T> {
+  async signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T> {
     const txBase64 = solToBase64(transaction);
     const { tx } = await this.connection.rpcRequest('sol_signTransaction', {
       txBase64,
@@ -91,25 +79,23 @@ export class ZerionSolana extends EventEmitter implements Ghost {
   }
 
   async signAllTransactions<T extends Transaction | VersionedTransaction>(
-    transactions: T[]
+    transactions: T[],
   ): Promise<T[]> {
     const transactionsBase64 = transactions.map((tx) => solToBase64(tx));
-    const results = await this.connection.rpcRequest(
-      'sol_signAllTransactions',
-      { transactionsBase64 }
-    );
+    const results = await this.connection.rpcRequest('sol_signAllTransactions', {
+      transactionsBase64,
+    });
     return results.map((result) => solFromBase64(result.tx)) as T[];
   }
 
   async signAndSendTransaction<T extends Transaction | VersionedTransaction>(
     transaction: T,
-    _options?: SendOptions | undefined
+    _options?: SendOptions | undefined,
   ): Promise<{ signature: string }> {
     const txBase64 = solToBase64(transaction);
-    const { signature } = await this.connection.rpcRequest(
-      'sol_signAndSendTransaction',
-      { txBase64 }
-    );
+    const { signature } = await this.connection.rpcRequest('sol_signAndSendTransaction', {
+      txBase64,
+    });
     invariant(signature, 'signature is expected');
     return { signature };
   }

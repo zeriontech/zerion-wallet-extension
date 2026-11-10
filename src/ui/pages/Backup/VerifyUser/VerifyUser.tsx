@@ -30,13 +30,7 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
     useErrorBoundary: true,
   });
   const loginMutation = useMutation({
-    mutationFn: ({
-      user,
-      password,
-    }: {
-      user: PublicUser;
-      password: string;
-    }) => {
+    mutationFn: ({ user, password }: { user: PublicUser; password: string }) => {
       return accountPublicRPCPort.request('login', { user, password });
     },
     onSuccess() {
@@ -60,16 +54,15 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
       )}
       <VStack gap={8}>
         <UIText kind="small/regular" color="var(--neutral-600)">
-          For security, it{apostrophe}s crucial to write down the recovery
-          phrase and store it securely.
+          For security, it{apostrophe}s crucial to write down the recovery phrase and store it
+          securely.
         </UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">
-          Your recovery phrase is the only way to access your accounts and
-          assets, even if you forget your passcode.
+          Your recovery phrase is the only way to access your accounts and assets, even if you
+          forget your passcode.
         </UIText>
         <UIText kind="small/regular" color="var(--neutral-600)">
-          Never share your recovery phrase or passcode with anyone, including
-          Zerion team members.
+          Never share your recovery phrase or passcode with anyone, including Zerion team members.
         </UIText>
       </VStack>
     </VStack>
@@ -78,11 +71,7 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
       <div className={helperStyles.container}>
-        <UnstyledButton
-          onClick={goBack}
-          aria-label="Go Back"
-          className={helperStyles.backButton}
-        >
+        <UnstyledButton onClick={goBack} aria-label="Go Back" className={helperStyles.backButton}>
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
         <Stack
@@ -103,9 +92,9 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
             <form
               onSubmit={(event) => {
                 event.preventDefault();
-                const password = new FormData(event.currentTarget).get(
-                  'password'
-                ) as string | undefined;
+                const password = new FormData(event.currentTarget).get('password') as
+                  | string
+                  | undefined;
                 if (!password) {
                   return;
                 }
@@ -127,15 +116,12 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
                   />
                   {loginMutation.error ? (
                     <UIText kind="caption/regular" color="var(--negative-500)">
-                      {(loginMutation.error as Error).message ||
-                        'unknown error'}
+                      {(loginMutation.error as Error).message || 'unknown error'}
                     </UIText>
                   ) : null}
                 </VStack>
                 <Button kind="primary" disabled={loginMutation.isLoading}>
-                  {loginMutation.isLoading
-                    ? 'Checking password...'
-                    : 'Reveal Recovery Phrase'}
+                  {loginMutation.isLoading ? 'Checking password...' : 'Reveal Recovery Phrase'}
                 </Button>
               </VStack>
             </form>
@@ -143,9 +129,7 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
           {isNarrowView ? null : faq}
         </Stack>
       </div>
-      {isNarrowView ? (
-        <div className={helperStyles.faqContainer}>{faq}</div>
-      ) : null}
+      {isNarrowView ? <div className={helperStyles.faqContainer}>{faq}</div> : null}
       <PrivacyFooter />
     </VStack>
   );

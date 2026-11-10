@@ -36,15 +36,11 @@ const AUTO_LOCK_TIMER_OPTIONS = [
 ].filter(isTruthy) satisfies TimerOptions;
 
 export const AUTO_LOCK_TIMER_OPTIONS_TITLES = Object.fromEntries(
-  Object.values(AUTO_LOCK_TIMER_OPTIONS).map(({ title, value }) => [
-    value,
-    title,
-  ])
+  Object.values(AUTO_LOCK_TIMER_OPTIONS).map(({ title, value }) => [value, title]),
 );
 
 export function AutoLockTimer() {
-  const { globalPreferences, setGlobalPreferences, mutation } =
-    useGlobalPreferences();
+  const { globalPreferences, setGlobalPreferences, mutation } = useGlobalPreferences();
   useBackgroundKind({ kind: 'white' });
   const goBack = useGoBack();
 
@@ -63,15 +59,9 @@ export function AutoLockTimer() {
           {AUTO_LOCK_TIMER_OPTIONS.map((preference) => (
             <FrameListItemButton
               key={preference.value}
-              onClick={() =>
-                setGlobalPreferences({ autoLockTimeout: preference.value })
-              }
+              onClick={() => setGlobalPreferences({ autoLockTimeout: preference.value })}
             >
-              <HStack
-                gap={8}
-                alignItems="center"
-                justifyContent="space-between"
-              >
+              <HStack gap={8} alignItems="center" justifyContent="space-between">
                 <UIText kind="body/accent">{preference.title}</UIText>
                 {preference.value === globalPreferences?.autoLockTimeout ? (
                   <CheckIcon

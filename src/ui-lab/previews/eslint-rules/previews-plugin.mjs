@@ -15,10 +15,7 @@ const noPreviewRule = {
   create(context) {
     return {
       CallExpression(node) {
-        if (
-          node.callee.type === 'Identifier' &&
-          node.callee.name === 'registerPreview'
-        ) {
+        if (node.callee.type === 'Identifier' && node.callee.name === 'registerPreview') {
           context.report({
             node: node.callee,
             messageId: 'noRegisterPreview',

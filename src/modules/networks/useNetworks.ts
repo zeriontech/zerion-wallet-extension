@@ -27,9 +27,7 @@ function useNetworksStore() {
 const queryKeyHashFn: QueryKeyHashFunction<
   (string | string[] | NetworksStore | null | undefined)[]
 > = (queryKey) => {
-  const stringifiable = queryKey.map((x) =>
-    x instanceof NetworksStore ? x.toString() : x
-  );
+  const stringifiable = queryKey.map((x) => (x instanceof NetworksStore ? x.toString() : x));
   return hashQueryKey(stringifiable);
 };
 
@@ -55,10 +53,7 @@ export function useNetworks(chains?: string[]) {
         refetchType: 'none',
       });
       if (networks) {
-        queryClient.setQueryData(
-          ['loadNetworks', chains, networksStore.toString()],
-          networks
-        );
+        queryClient.setQueryData(['loadNetworks', chains, networksStore.toString()], networks);
       }
     });
   }, [chains, networksStore]);
@@ -68,13 +63,10 @@ export function useNetworks(chains?: string[]) {
     ...query,
     loadNetworkByChainId: useCallback(
       (chainId: ChainId) => {
-        invariant(
-          networksStore,
-          'networksStore is not ready until preferences are read'
-        );
+        invariant(networksStore, 'networksStore is not ready until preferences are read');
         return networksStore.loadNetworksByChainId(chainId);
       },
-      [networksStore]
+      [networksStore],
     ),
   };
 }
@@ -85,7 +77,7 @@ export function useNetworkInfo(
     staleTime = 1000 * 60 * 5,
     suspense = false,
     enabled = true,
-  }: { staleTime?: number; suspense?: boolean; enabled?: boolean } = {}
+  }: { staleTime?: number; suspense?: boolean; enabled?: boolean } = {},
 ) {
   const networksStore = useNetworksStore();
   return useQuery({
@@ -117,10 +109,7 @@ export function useMainnetNetwork({
     enabled,
     queryKey: ['getMainnetworkItem', chainStr],
     queryFn: async () => {
-      invariant(
-        chainStr,
-        'Do not enable this query when "chain" is unavailable'
-      );
+      invariant(chainStr, 'Do not enable this query when "chain" is unavailable');
       await mainNetworksStore.load({ chains: [chainStr] });
       const network = mainNetworksStore
         .getState()

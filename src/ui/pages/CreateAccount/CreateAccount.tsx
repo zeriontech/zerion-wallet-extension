@@ -26,9 +26,7 @@ export function CreateAccount() {
   const inputId = useId();
   const [value, setValue] = useState('');
   const [repeatValue, setRepeatValue] = useState('');
-  const [focusedInput, setFocusedInput] = useState<
-    'password' | 'confirmPassword'
-  >('password');
+  const [focusedInput, setFocusedInput] = useState<'password' | 'confirmPassword'>('password');
   const [formError, setFormError] = useState<null | {
     type: string;
     message: string;
@@ -60,12 +58,12 @@ export function CreateAccount() {
           onChange={() => setFormError(null)}
           onSubmit={(event) => {
             event.preventDefault();
-            const password = new FormData(event.currentTarget).get(
-              'password'
-            ) as string | undefined;
-            const repeatedPassword = new FormData(event.currentTarget).get(
-              'confirmPassword'
-            ) as string | undefined;
+            const password = new FormData(event.currentTarget).get('password') as
+              | string
+              | undefined;
+            const repeatedPassword = new FormData(event.currentTarget).get('confirmPassword') as
+              | string
+              | undefined;
             if (!password) {
               return;
             }
@@ -102,8 +100,7 @@ export function CreateAccount() {
               </VStack>
               {createUserMutation.error ? (
                 <UIText kind="caption/regular" color="var(--negative-500)">
-                  {(createUserMutation.error as Error).message ||
-                    'unknown error'}
+                  {(createUserMutation.error as Error).message || 'unknown error'}
                 </UIText>
               ) : null}
             </VStack>
@@ -132,8 +129,7 @@ export function CreateAccount() {
                   }}
                 >
                   {(value?.length || 0) >= PASSWORD_MIN_LENGTH &&
-                  (focusedInput === 'confirmPassword' ||
-                    value === repeatValue) ? (
+                  (focusedInput === 'confirmPassword' || value === repeatValue) ? (
                     <AnimatedCheckmark
                       animate={focusedInput === 'confirmPassword'}
                       checked={value === repeatValue}

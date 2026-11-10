@@ -35,9 +35,7 @@ describe('builder-fee unit conversion', () => {
   test('approved max (100) covers the per-order fee (40)', () => {
     // The whole point of approving the fixed cap: its rate must be >= the
     // order fee's rate so Hyperliquid accepts the order.
-    expect(builderFeeUnitToRate(100)).toBeGreaterThanOrEqual(
-      builderFeeUnitToRate(40)
-    );
+    expect(builderFeeUnitToRate(100)).toBeGreaterThanOrEqual(builderFeeUnitToRate(40));
   });
 });
 

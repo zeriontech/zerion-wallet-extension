@@ -16,11 +16,7 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function securityCheckUrl(
-  this: ZerionApiContext,
-  payload: Params,
-  options?: ClientOptions
-) {
+export function securityCheckUrl(this: ZerionApiContext, payload: Params, options?: ClientOptions) {
   const params = new URLSearchParams({ url: payload.url });
   const kyOptions = this.getKyOptions();
   const endpoint = `security/check-url/v1?${params}`;

@@ -18,10 +18,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Button } from 'src/ui/ui-kit/Button';
 import { createChain } from 'src/modules/networks/Chain';
-import {
-  useMainnetNetwork,
-  useNetworks,
-} from 'src/modules/networks/useNetworks';
+import { useMainnetNetwork, useNetworks } from 'src/modules/networks/useNetworks';
 import { Networks } from 'src/modules/networks/Networks';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { usePreferences } from 'src/ui/features/preferences';
@@ -56,10 +53,7 @@ function ConnectedSitesPageLink() {
       <HStack gap={8} alignItems="center">
         <UIText kind="small/accent">All Connections</UIText>
         <animated.div style={{ ...iconStyle, display: 'flex' }}>
-          <ArrowRightIcon
-            style={{ width: 20, height: 20 }}
-            className="content-hover"
-          />
+          <ArrowRightIcon style={{ width: 20, height: 20 }} className="content-hover" />
         </animated.div>
       </HStack>
     </Button>
@@ -79,8 +73,7 @@ function NetworksDisclosureButton({
 
   const { data: mainnetNetwork } = useMainnetNetwork({
     chain: value,
-    enabled:
-      Boolean(preferences?.testnetMode?.on) && !isLoading && !selectedNetwork,
+    enabled: Boolean(preferences?.testnetMode?.on) && !isLoading && !selectedNetwork,
   });
   const chain = createChain(value);
   const network = selectedNetwork || mainnetNetwork;
@@ -103,9 +96,7 @@ function NetworksDisclosureButton({
       className="parent-hover"
     >
       <HStack gap={8} alignItems="center">
-        {network ? (
-          <NetworkIcon size={24} src={network.iconUrl} name={network.name} />
-        ) : null}
+        {network ? <NetworkIcon size={24} src={network.iconUrl} name={network.name} /> : null}
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>
           <span
             style={{
@@ -117,23 +108,14 @@ function NetworksDisclosureButton({
           >
             {network?.name || capitalize(String(chain))}
           </span>
-          <ArrowDownIcon
-            className="content-hover"
-            style={{ width: 20, height: 20 }}
-          />
+          <ArrowDownIcon className="content-hover" style={{ width: 20, height: 20 }} />
         </span>
       </HStack>
     </Button>
   );
 }
 
-function DappChainSwitcher({
-  originName,
-  address,
-}: {
-  originName: string;
-  address: string;
-}) {
+function DappChainSwitcher({ originName, address }: { originName: string; address: string }) {
   const { data: siteChain, refetch } = useQuery({
     queryKey: ['requestChainForOrigin', originName, address],
     queryFn: () => requestChainForOrigin(originName, getAddressType(address)),
@@ -207,7 +189,7 @@ export function ConnectedSiteDialog({
   });
   const connectedSite = useMemo(
     () => getConnectedSite(originName, connectedSites),
-    [connectedSites, originName]
+    [connectedSites, originName],
   );
   const siteOrigin = connectedSite?.origin;
   const siteHostname = siteOrigin ? new URL(siteOrigin).hostname : null;
@@ -224,11 +206,10 @@ export function ConnectedSiteDialog({
     () =>
       currentAddress
         ? connectedSite?.addresses.some(
-            (address) =>
-              normalizeAddress(address) === normalizeAddress(currentAddress)
+            (address) => normalizeAddress(address) === normalizeAddress(currentAddress),
           )
         : false,
-    [connectedSite?.addresses, currentAddress]
+    [connectedSite?.addresses, currentAddress],
   );
 
   if (!connectedSite) {
@@ -242,10 +223,7 @@ export function ConnectedSiteDialog({
         {siteHostname}
       </UIText>
       {currentWalletIsConnected && currentAddress ? (
-        <DappChainSwitcher
-          originName={connectedSite.origin}
-          address={currentAddress}
-        />
+        <DappChainSwitcher originName={connectedSite.origin} address={currentAddress} />
       ) : null}
       <label style={{ width: '100%' }}>
         <Surface
@@ -256,10 +234,7 @@ export function ConnectedSiteDialog({
             cursor: 'pointer',
           }}
         >
-          <MetamaskMode
-            originName={originName}
-            onClick={() => setTimeout(onDismiss, 300)}
-          />
+          <MetamaskMode originName={originName} onClick={() => setTimeout(onDismiss, 300)} />
         </Surface>
       </label>
       <HStack

@@ -1,11 +1,7 @@
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { walletPort } from 'src/ui/shared/channels';
-import {
-  runIntent,
-  type PerpsIntent,
-  type RunIntentContext,
-} from './runIntent';
+import { runIntent, type PerpsIntent, type RunIntentContext } from './runIntent';
 
 /**
  * UI-side entry point: wires the orchestrator to `walletPort.signTypedData_v4`

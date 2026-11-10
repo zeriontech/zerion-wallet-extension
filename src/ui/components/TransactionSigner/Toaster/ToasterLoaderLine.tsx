@@ -1,11 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  animate,
-  motion,
-  useAnimationControls,
-  useMotionValue,
-  useTransform,
-} from 'motion/react';
+import { animate, motion, useAnimationControls, useMotionValue, useTransform } from 'motion/react';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -38,22 +32,15 @@ function progressToLeftPct(p: number): number {
   return SWEEP_MIN_LEFT_PCT + p * (SWEEP_MAX_LEFT_PCT - SWEEP_MIN_LEFT_PCT);
 }
 
-export function ToasterLoaderLine({
-  terminal,
-}: {
-  terminal: TerminalKind | null;
-}) {
+export function ToasterLoaderLine({ terminal }: { terminal: TerminalKind | null }) {
   const progress = useMotionValue(0);
   const blobLeft = useTransform(progress, (p) => `${progressToLeftPct(p)}%`);
   const blobRight = useTransform(
     progress,
-    (p) => `${100 - progressToLeftPct(p) - BLOB_WIDTH_PCT}%`
+    (p) => `${100 - progressToLeftPct(p) - BLOB_WIDTH_PCT}%`,
   );
   // Opacity peaks at the center of the sweep (p = 0.5) and dips at edges.
-  const blobOpacity = useTransform(
-    progress,
-    (p) => 1 - 0.3 * Math.abs(p - 0.5) * 2
-  );
+  const blobOpacity = useTransform(progress, (p) => 1 - 0.3 * Math.abs(p - 0.5) * 2);
 
   const stretchControls = useAnimationControls();
   const solidControls = useAnimationControls();
@@ -101,9 +88,7 @@ export function ToasterLoaderLine({
     });
 
     setSolidColor(
-      terminal === 'success'
-        ? 'var(--positive-300, #99dbb4)'
-        : 'var(--negative-300, #ffd0c9)'
+      terminal === 'success' ? 'var(--positive-300, #99dbb4)' : 'var(--negative-300, #ffd0c9)',
     );
 
     let cancelled = false;
@@ -205,8 +190,8 @@ function ToasterLoaderLinePreview() {
         </Button>
       </HStack>
       <UIText kind="caption/regular" color="var(--neutral-500)">
-        Container is 320×40 with relative positioning so the absolutely-
-        positioned line renders at the top edge.
+        Container is 320×40 with relative positioning so the absolutely- positioned line renders at
+        the top edge.
       </UIText>
       <div
         key={nonce}

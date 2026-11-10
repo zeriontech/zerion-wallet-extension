@@ -24,10 +24,7 @@ function StatColumn({
   align?: 'start' | 'end';
 }) {
   return (
-    <VStack
-      gap={0}
-      style={{ alignItems: align === 'end' ? 'flex-end' : 'flex-start' }}
-    >
+    <VStack gap={0} style={{ alignItems: align === 'end' ? 'flex-end' : 'flex-start' }}>
       <UIText kind="caption/regular" color="var(--neutral-600)">
         {label}
       </UIText>
@@ -52,16 +49,12 @@ export function PerpsPositionCard({
   const marginUsed = Number(position.marginUsed);
   const unrealizedPnl = Number(position.unrealizedPnl);
   const roe = Number(position.returnOnEquity) * 100;
-  const liquidationPx =
-    position.liquidationPx != null ? Number(position.liquidationPx) : null;
+  const liquidationPx = position.liquidationPx != null ? Number(position.liquidationPx) : null;
   const isPositivePnl = unrealizedPnl >= 0;
   const leverageValue = position.leverage.value;
 
   return (
-    <UnstyledLink
-      to={`/perps/${encodeURIComponent(position.coin)}`}
-      className={styles.card}
-    >
+    <UnstyledLink to={`/perps/${encodeURIComponent(position.coin)}`} className={styles.card}>
       <VStack gap={12}>
         <HStack gap={12} alignItems="center">
           <HStack gap={8} alignItems="center" style={{ flex: 1, minWidth: 0 }}>
@@ -88,9 +81,7 @@ export function PerpsPositionCard({
                   padding: '2px 4px',
                   borderRadius: 4,
                   width: 'max-content',
-                  backgroundColor: isLong
-                    ? 'var(--positive-200)'
-                    : 'var(--negative-200)',
+                  backgroundColor: isLong ? 'var(--positive-200)' : 'var(--negative-200)',
                   color: isLong ? 'var(--positive-500)' : 'var(--negative-500)',
                 }}
               >
@@ -106,9 +97,7 @@ export function PerpsPositionCard({
             </UIText>
             <UIText
               kind="small/regular"
-              color={
-                isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
-              }
+              color={isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'}
               style={{ display: 'flex', gap: 4 }}
             >
               <span>
@@ -120,9 +109,7 @@ export function PerpsPositionCard({
               </span>
               <BlurrableBalance
                 kind="small/regular"
-                color={
-                  isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
-                }
+                color={isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'}
               >
                 ({formatCurrencyValue(Math.abs(unrealizedPnl), 'en', currency)})
               </BlurrableBalance>
@@ -136,23 +123,14 @@ export function PerpsPositionCard({
             gap: 16,
           }}
         >
-          <StatColumn
-            label="Entry Price"
-            value={formatPriceValue(entryPx, 'en', currency)}
-          />
+          <StatColumn label="Entry Price" value={formatPriceValue(entryPx, 'en', currency)} />
           <StatColumn
             label="Market Price"
-            value={
-              markPx != null ? formatPriceValue(markPx, 'en', currency) : '—'
-            }
+            value={markPx != null ? formatPriceValue(markPx, 'en', currency) : '—'}
           />
           <StatColumn
             label="Liq. Price"
-            value={
-              liquidationPx != null
-                ? formatPriceValue(liquidationPx, 'en', currency)
-                : '—'
-            }
+            value={liquidationPx != null ? formatPriceValue(liquidationPx, 'en', currency) : '—'}
             align="end"
           />
         </div>

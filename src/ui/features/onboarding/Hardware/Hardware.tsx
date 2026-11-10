@@ -31,9 +31,7 @@ export function Hardware() {
   const goBack = useGoBack();
   const { isNarrowView } = useWindowSizeStore();
   const [params, setSearchParams] = useSearchParams();
-  const [ledgerParams, setLedgerParams] = useState<LedgerAccountImport | null>(
-    null
-  );
+  const [ledgerParams, setLedgerParams] = useState<LedgerAccountImport | null>(null);
   const view = params.get('view') || 'hardware';
   const step = params.get('step') || 'create';
   assertViewParam(view);
@@ -53,10 +51,7 @@ export function Hardware() {
           password,
         });
       }
-      const data = await walletPort.request(
-        'uiImportHardwareWallet',
-        ledgerParams
-      );
+      const data = await walletPort.request('uiImportHardwareWallet', ledgerParams);
       await accountPublicRPCPort.request('saveUserAndWallet');
       await setCurrentAddress({ address: data.address });
     },
@@ -77,7 +72,7 @@ export function Hardware() {
       setLedgerParams(params);
       setSearchParams(`view=${ViewParam.password}`);
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   const handlePasswordSubmit = useCallback(
@@ -87,7 +82,7 @@ export function Hardware() {
       }
       createUserAndWallet({ password, ledgerParams });
     },
-    [ledgerParams, createUserAndWallet]
+    [ledgerParams, createUserAndWallet],
   );
 
   const { sessionDataIsLoading } = useOnboardingSession({
@@ -115,11 +110,7 @@ export function Hardware() {
               </UIText>
             </div>
           ) : null}
-          <UnstyledButton
-            onClick={goBack}
-            aria-label="Go Back"
-            className={styles.backButton}
-          >
+          <UnstyledButton onClick={goBack} aria-label="Go Back" className={styles.backButton}>
             <ArrowLeftIcon style={{ width: 20, height: 20 }} />
           </UnstyledButton>
           <Stack

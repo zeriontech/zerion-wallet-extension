@@ -29,19 +29,14 @@ async function hkdf({
   length?: number;
 }): Promise<string> {
   // Convert inputs to Uint8Array
-  const ikmArray =
-    typeof ikm === 'string' ? utf8ToUint8Array(ikm) : new Uint8Array(ikm);
+  const ikmArray = typeof ikm === 'string' ? utf8ToUint8Array(ikm) : new Uint8Array(ikm);
   const saltArray = utf8ToUint8Array(salt);
   const infoArray = utf8ToUint8Array(info);
 
   // Import IKM as a CryptoKey for HKDF
-  const ikmKey = await crypto.subtle.importKey(
-    'raw',
-    ikmArray,
-    { name: 'HKDF' },
-    false,
-    ['deriveBits']
-  );
+  const ikmKey = await crypto.subtle.importKey('raw', ikmArray, { name: 'HKDF' }, false, [
+    'deriveBits',
+  ]);
 
   // Derive bits using HKDF
   const derivedBits = await crypto.subtle.deriveBits(
@@ -52,14 +47,12 @@ async function hkdf({
       info: infoArray,
     },
     ikmKey,
-    length * 8 // Convert bytes to bits
+    length * 8, // Convert bytes to bits
   );
 
   // Convert to hex string for consistency with existing sha256 function
   const hashArray = Array.from(new Uint8Array(derivedBits));
-  const hashHex = hashArray
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
   return hashHex;
 }
@@ -75,7 +68,7 @@ async function hkdf({
  */
 export async function deriveEncryptionKeyFromPRF(
   prfOutput: ArrayBuffer,
-  salt: string
+  salt: string,
 ): Promise<string> {
   return hkdf({
     ikm: prfOutput,

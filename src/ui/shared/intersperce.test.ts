@@ -78,8 +78,6 @@ describe('intersperce', () => {
   test('index parameter', () => {
     const input = [null, 'b', null, 'c', 'd'];
     const expected = ['b', '1', 'c', '2', 'd'];
-    expect(intersperce(input, (_key, index) => String(index))).toEqual(
-      expected
-    );
+    expect(intersperce(input, (_key, index) => String(index))).toEqual(expected);
   });
 });

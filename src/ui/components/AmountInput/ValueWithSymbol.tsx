@@ -31,10 +31,7 @@ const ZERO: Size = { width: 0, height: 0 };
 // callback-ref invocations and observer setup. The effect reads
 // getBoundingClientRect() synchronously on mount (so the first paint has the
 // correct size) and then on every ResizeObserver tick.
-export function useMeasure<T extends HTMLElement>(): [
-  (node: T | null) => void,
-  Size,
-] {
+export function useMeasure<T extends HTMLElement>(): [(node: T | null) => void, Size] {
   const [element, setElement] = useState<T | null>(null);
   const [size, setSize] = useState<Size>(ZERO);
 
@@ -45,7 +42,7 @@ export function useMeasure<T extends HTMLElement>(): [
       setSize((prev) =>
         prev.width === rect.width && prev.height === rect.height
           ? prev
-          : { width: rect.width, height: rect.height }
+          : { width: rect.width, height: rect.height },
       );
     };
     measure();
@@ -165,9 +162,7 @@ export function HiddenMirror({
     <span
       ref={mirrorRef}
       aria-hidden
-      style={
-        kind ? { ...baseMirrorStyle, ...getKindStyle(kind) } : baseMirrorStyle
-      }
+      style={kind ? { ...baseMirrorStyle, ...getKindStyle(kind) } : baseMirrorStyle}
     >
       {children}
     </span>

@@ -25,13 +25,11 @@ function LabelInfo({ label }: { label: ActionLabel }) {
   const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
     x: 2,
   });
-  const { style: successIconStyle, trigger: successCopyTrigger } =
-    useTransformTrigger({ x: 2 });
+  const { style: successIconStyle, trigger: successCopyTrigger } = useTransformTrigger({ x: 2 });
 
   const { data: localWallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address],
-    queryFn: () =>
-      walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
+    queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
     enabled: Boolean(address),
     suspense: false,
   });
@@ -53,11 +51,7 @@ function LabelInfo({ label }: { label: ActionLabel }) {
       className={address ? helperStyles.hoverUnderline : undefined}
       style={{ justifySelf: 'end', cursor: address ? 'pointer' : 'auto' }}
     >
-      <HStack
-        gap={8}
-        alignItems="center"
-        style={{ gridTemplateColumns: 'auto 1fr' }}
-      >
+      <HStack gap={8} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
         {contractIconUrl ? (
           <TokenIcon
             src={contractIconUrl}
@@ -68,15 +62,8 @@ function LabelInfo({ label }: { label: ActionLabel }) {
         ) : address ? (
           <WalletAvatar size={ICON_SIZE} address={address} borderRadius={4} />
         ) : null}
-        <HStack
-          gap={4}
-          alignItems="center"
-          style={{ gridTemplateColumns: '1fr auto' }}
-        >
-          <UIText
-            kind="small/accent"
-            style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
-          >
+        <HStack gap={4} alignItems="center" style={{ gridTemplateColumns: '1fr auto' }}>
+          <UIText kind="small/accent" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {contractName || walletName}
           </UIText>
           {address ? (

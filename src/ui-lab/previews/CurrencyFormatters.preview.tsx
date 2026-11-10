@@ -55,15 +55,7 @@ const PRICE_CASES: Case[] = [
   [NaN, '–'],
 ];
 
-function CaseRow({
-  input,
-  expected,
-  actual,
-}: {
-  input: number;
-  expected: string;
-  actual: string;
-}) {
+function CaseRow({ input, expected, actual }: { input: number; expected: string; actual: string }) {
   const matches = actual === expected;
   return (
     <HStack
@@ -81,10 +73,7 @@ function CaseRow({
       <UIText kind="small/regular" color="var(--neutral-500)">
         {expected}
       </UIText>
-      <UIText
-        kind="small/accent"
-        color={matches ? 'var(--positive-500)' : 'var(--negative-500)'}
-      >
+      <UIText kind="small/accent" color={matches ? 'var(--positive-500)' : 'var(--negative-500)'}>
         {matches ? '✓' : '✗ mismatch'}
       </UIText>
     </HStack>
@@ -124,12 +113,7 @@ function Section({
         </UIText>
       </HStack>
       {cases.map(([input, expected]) => (
-        <CaseRow
-          key={String(input)}
-          input={input}
-          expected={expected}
-          actual={format(input)}
-        />
+        <CaseRow key={String(input)} input={input} expected={expected} actual={format(input)} />
       ))}
     </VStack>
   );

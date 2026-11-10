@@ -26,10 +26,7 @@ function RadioGroupExample() {
           pad: false,
           component: (
             <ItemLabel>
-              <UIText
-                kind="body/regular"
-                color={selected === fruit ? 'var(--primary)' : undefined}
-              >
+              <UIText kind="body/regular" color={selected === fruit ? 'var(--primary)' : undefined}>
                 <HStack gap={8} alignItems="center">
                   <Radio
                     name="fruit"
@@ -55,9 +52,7 @@ function RadioGroupExample() {
 export const readme: Readme = {
   id: 'radio-button',
   name: 'Radio Button',
-  description: () => (
-    <UIText kind="body/regular">Decorated radio button</UIText>
-  ),
+  description: () => <UIText kind="body/regular">Decorated radio button</UIText>,
   component: () => (
     <WindowSize
       style={{

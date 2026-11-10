@@ -23,7 +23,7 @@ export const SecretInput = React.forwardRef(
       hint: React.ReactNode | null;
       showRevealElement: boolean;
     } & React.InputHTMLAttributes<HTMLInputElement>,
-    ref: React.Ref<HTMLInputElement>
+    ref: React.Ref<HTMLInputElement>,
   ) => {
     const [inputValue, setInputValue] = useState('');
     const [didRevealOnce, setDidRevealOnce] = useState(false);
@@ -75,13 +75,9 @@ export const SecretInput = React.forwardRef(
                 }}
               >
                 {reveal ? (
-                  <VisibleIcon
-                    style={{ display: 'block', color: 'var(--neutral-500)' }}
-                  />
+                  <VisibleIcon style={{ display: 'block', color: 'var(--neutral-500)' }} />
                 ) : (
-                  <InvisibleIcon
-                    style={{ display: 'block', color: 'var(--neutral-500)' }}
-                  />
+                  <InvisibleIcon style={{ display: 'block', color: 'var(--neutral-500)' }} />
                 )}
               </Button>
             ) : null}
@@ -101,17 +97,14 @@ export const SecretInput = React.forwardRef(
           </HStack>
           {isTechnicalHint ? (
             <UIText kind="caption/regular" color="var(--notice-500)">
-              We cleared your clipboard after you copied the recovery phrase. If
-              you saved it somewhere, you can copy and paste it here now.
+              We cleared your clipboard after you copied the recovery phrase. If you saved it
+              somewhere, you can copy and paste it here now.
             </UIText>
           ) : null}
           {hint}
         </VStack>
         {didRevealOnce && inputValue ? (
-          <Surface
-            padding={12}
-            style={{ backgroundColor: 'var(--neutral-200)' }}
-          >
+          <Surface padding={12} style={{ backgroundColor: 'var(--neutral-200)' }}>
             <UIText
               kind="body/regular"
               style={{
@@ -127,5 +120,5 @@ export const SecretInput = React.forwardRef(
         ) : null}
       </VStack>
     );
-  }
+  },
 );

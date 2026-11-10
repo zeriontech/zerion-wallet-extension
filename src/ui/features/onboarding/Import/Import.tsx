@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Navigate,
-  Route,
-  Routes,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { animated } from '@react-spring/web';
 import { isTruthy } from 'is-truthy-ts';
@@ -80,7 +73,7 @@ function ImportWallet() {
       setWallets(wallets);
       setSearchParams(`view=${ViewParam.password}`);
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   const { mutate: createUserAndWallet, isLoading } = useMutation({
@@ -107,7 +100,7 @@ function ImportWallet() {
           if (type === 'mnemonic') {
             data = await walletPort.request(
               'uiImportSeedPhrase',
-              wallets.map((wallet) => wallet.mnemonic).filter(isTruthy)
+              wallets.map((wallet) => wallet.mnemonic).filter(isTruthy),
             );
           }
           await accountPublicRPCPort.request('saveUserAndWallet');
@@ -141,7 +134,7 @@ function ImportWallet() {
       }
       createUserAndWallet({ password, wallets });
     },
-    [wallets, createUserAndWallet, showErrorBoundary]
+    [wallets, createUserAndWallet, showErrorBoundary],
   );
 
   const { sessionDataIsLoading } = useOnboardingSession({
@@ -153,15 +146,11 @@ function ImportWallet() {
   }
 
   if (view === ViewParam.password && !wallets?.length) {
-    return (
-      <Navigate to={{ search: `view=${ViewParam.secret}` }} replace={true} />
-    );
+    return <Navigate to={{ search: `view=${ViewParam.secret}` }} replace={true} />;
   }
 
   if (view === ViewParam['select-wallets'] && !mnemonic) {
-    return (
-      <Navigate to={{ search: `view=${ViewParam.secret}` }} replace={true} />
-    );
+    return <Navigate to={{ search: `view=${ViewParam.secret}` }} replace={true} />;
   }
 
   return (
@@ -174,19 +163,11 @@ function ImportWallet() {
             </UIText>
           </div>
         ) : null}
-        <UnstyledButton
-          onClick={goBack}
-          aria-label="Go Back"
-          className={helperStyles.backButton}
-        >
+        <UnstyledButton onClick={goBack} aria-label="Go Back" className={helperStyles.backButton}>
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
         <HStack gap={4} className={styles.steps} justifyContent="center">
-          <Step
-            active={
-              view === ViewParam.secret || view === ViewParam['select-wallets']
-            }
-          />
+          <Step active={view === ViewParam.secret || view === ViewParam['select-wallets']} />
           <Step active={view === ViewParam.password} />
         </HStack>
         {type ? (
@@ -194,8 +175,7 @@ function ImportWallet() {
             gap={isNarrowView ? 0 : 60}
             direction={isNarrowView ? 'vertical' : 'horizontal'}
             style={{
-              gridTemplateColumns:
-                isNarrowView || showError ? undefined : '380px auto',
+              gridTemplateColumns: isNarrowView || showError ? undefined : '380px auto',
               justifyContent: 'center',
             }}
           >
@@ -211,9 +191,7 @@ function ImportWallet() {
             ) : view === 'secret' ? (
               type === 'private-key' ? (
                 <ImportKey
-                  onWalletCreate={(wallet) =>
-                    handleWallets([wallet as MaskedBareWallet])
-                  }
+                  onWalletCreate={(wallet) => handleWallets([wallet as MaskedBareWallet])}
                 />
               ) : type === 'mnemonic' ? (
                 <ImportMnemonic
@@ -226,9 +204,7 @@ function ImportWallet() {
             ) : view === 'select-wallets' ? (
               <SelectWallets mnemonic={mnemonic} onSelect={handleWallets} />
             ) : null}
-            {isNarrowView || showError ? null : (
-              <RenderArea name="onboarding-faq" />
-            )}
+            {isNarrowView || showError ? null : <RenderArea name="onboarding-faq" />}
           </Stack>
         ) : null}
       </div>
@@ -242,15 +218,7 @@ function ImportWallet() {
   );
 }
 
-function TypeLink({
-  title,
-  to,
-  icon,
-}: {
-  title: string;
-  to: string;
-  icon: React.ReactNode;
-}) {
+function TypeLink({ title, to, icon }: { title: string; to: string; icon: React.ReactNode }) {
   const { style: iconStyle, trigger: hoverTrigger } = useTransformTrigger({
     x: 2,
   });
@@ -298,19 +266,13 @@ function TypeSelector() {
         style={{ paddingBottom: 0, paddingInline: 0, overflow: 'hidden' }}
       >
         <div style={{ paddingBottom: 80, paddingInline: 88 }}>
-          <UnstyledButton
-            onClick={goBack}
-            aria-label="Go Back"
-            className={helperStyles.backButton}
-          >
+          <UnstyledButton onClick={goBack} aria-label="Go Back" className={helperStyles.backButton}>
             <ArrowLeftIcon style={{ width: 20, height: 20 }} />
           </UnstyledButton>
           <VStack gap={60}>
             <VStack gap={8}>
               <UIText kind="headline/h2">Import wallet</UIText>
-              <UIText kind="body/regular">
-                Select a method to import your existing wallet.
-              </UIText>
+              <UIText kind="body/regular">Select a method to import your existing wallet.</UIText>
             </VStack>
             <Stack
               direction={isNarrowView ? 'vertical' : 'horizontal'}
@@ -322,11 +284,7 @@ function TypeSelector() {
                 to="./mnemonic"
                 icon={<img src={dialogIconSrc} />}
               />
-              <TypeLink
-                title="Private Key"
-                to="./private-key"
-                icon={<img src={keyIconSrc} />}
-              />
+              <TypeLink title="Private Key" to="./private-key" icon={<img src={keyIconSrc} />} />
             </Stack>
           </VStack>
         </div>

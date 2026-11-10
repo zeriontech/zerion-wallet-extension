@@ -28,10 +28,10 @@ export function usePreferences() {
   const mutation = useOptimisticMutation(setPreferences, {
     relatedQueryKey: ['wallet/getPreferences'],
     onMutate: ({ client, variables }) => {
-      client.setQueryData<Preferences>(
-        ['wallet/getPreferences'],
-        (preferences) => ({ ...preferences, ...variables })
-      );
+      client.setQueryData<Preferences>(['wallet/getPreferences'], (preferences) => ({
+        ...preferences,
+        ...variables,
+      }));
     },
   });
   return {
@@ -66,7 +66,7 @@ export function useGlobalPreferences() {
     onMutate: ({ client, variables }) =>
       client.setQueryData<GlobalPreferences>(
         ['wallet/getGlobalPreferences'],
-        (globalPreferences) => ({ ...globalPreferences, ...variables })
+        (globalPreferences) => ({ ...globalPreferences, ...variables }),
       ),
   });
   return {

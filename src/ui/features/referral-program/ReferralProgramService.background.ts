@@ -36,13 +36,7 @@ class ReferralProgramService {
     emitter.on('walletCreated', this.applyReferralCodeToWallet.bind(this));
   }
 
-  async signReferralMessage({
-    address,
-    referralCode,
-  }: {
-    address: string;
-    referralCode: string;
-  }) {
+  async signReferralMessage({ address, referralCode }: { address: string; referralCode: string }) {
     invariant(this.options, "Options aren't expected to become null");
 
     const walletFacade = this.options.getWallet();
@@ -54,25 +48,18 @@ class ReferralProgramService {
      * Calls appropriate `walletFacade` method based on whether
      * signer is an ethereum or a solana address
      */
-    async function signHelper({
-      address,
-      message,
-    }: {
-      address: string;
-      message: string;
-    }) {
+    async function signHelper({ address, message }: { address: string; message: string }) {
       const CLIENT_SCOPE = 'Referral Program';
       if (isSolanaAddress(address)) {
-        const { signatureSerialized } =
-          await walletFacade.solana_signMessageWithAddress({
-            params: {
-              signerAddress: address,
-              messageHex: ethers.hexlify(ethers.toUtf8Bytes(message)),
-              initiator: INTERNAL_ORIGIN,
-              clientScope: CLIENT_SCOPE,
-            },
-            context: { origin: INTERNAL_ORIGIN },
-          });
+        const { signatureSerialized } = await walletFacade.solana_signMessageWithAddress({
+          params: {
+            signerAddress: address,
+            messageHex: ethers.hexlify(ethers.toUtf8Bytes(message)),
+            initiator: INTERNAL_ORIGIN,
+            clientScope: CLIENT_SCOPE,
+          },
+          context: { origin: INTERNAL_ORIGIN },
+        });
         return signatureSerialized;
       } else if (isEthereumAddress(address)) {
         return walletFacade.signMessage({
@@ -129,11 +116,7 @@ class ReferralProgramService {
     }
   }
 
-  async applyReferralCodeToAllWallets({
-    referralCode,
-  }: {
-    referralCode: string;
-  }) {
+  async applyReferralCodeToAllWallets({ referralCode }: { referralCode: string }) {
     invariant(this.options, "Options aren't expected to become null");
     const walletFacade = this.options.getWallet();
 
@@ -146,12 +129,11 @@ class ReferralProgramService {
     });
 
     const signerWalletGroups = walletGroups?.filter((group) =>
-      isSignerContainer(group.walletContainer)
+      isSignerContainer(group.walletContainer),
     );
     const ownedBareWallets =
       signerWalletGroups?.flatMap(
-        (group) =>
-          group.walletContainer.wallets.filter(isBareWallet) as BareWallet[]
+        (group) => group.walletContainer.wallets.filter(isBareWallet) as BareWallet[],
       ) || [];
     const ownedAddresses = ownedBareWallets.map((wallet) => wallet.address);
 
@@ -164,15 +146,14 @@ class ReferralProgramService {
     const eligibleAddresses = walletsMeta
       .filter(
         (meta) =>
-          meta.membership.referrer === null &&
-          meta.membership.referralCode !== referralCode
+          meta.membership.referrer === null && meta.membership.referralCode !== referralCode,
       )
       .map((meta) => meta.address);
 
     await Promise.allSettled(
       eligibleAddresses.map((address) =>
-        this.signAndSendReferWalletMessage({ address, referralCode })
-      )
+        this.signAndSendReferWalletMessage({ address, referralCode }),
+      ),
     );
 
     await saveReferrerData(checkedReferrer);
@@ -180,11 +161,7 @@ class ReferralProgramService {
     return checkedReferrer;
   }
 
-  async applyReferralCodeToWallet({
-    walletContainer,
-  }: {
-    walletContainer: WalletContainer;
-  }) {
+  async applyReferralCodeToWallet({ walletContainer }: { walletContainer: WalletContainer }) {
     const currentReferrer = await readSavedReferrerData();
     const referralCode = currentReferrer?.referralCode;
 
@@ -197,8 +174,8 @@ class ReferralProgramService {
         this.signAndSendReferWalletMessage({
           address: wallet.address,
           referralCode,
-        })
-      )
+        }),
+      ),
     );
   }
 }

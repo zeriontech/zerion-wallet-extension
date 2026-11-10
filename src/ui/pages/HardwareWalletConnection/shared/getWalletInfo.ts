@@ -7,15 +7,12 @@ export interface WalletInfo {
   name: null | string;
 }
 
-export async function getWalletInfo(
-  address: string,
-  currency: string
-): Promise<WalletInfo> {
+export async function getWalletInfo(address: string, currency: string): Promise<WalletInfo> {
   const [name, portfolioData] = await Promise.all([
     lookupAddressName(address),
     queryWalletPortfolio(
       { addresses: [address], currency },
-      { source: await getHttpClientSource() }
+      { source: await getHttpClientSource() },
     ),
   ]);
   return { portfolio: portfolioData.data.totalValue, name };

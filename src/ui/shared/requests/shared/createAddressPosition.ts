@@ -28,14 +28,9 @@ export function createAddressPosition({
       type: null,
       name: network.baseAsset?.name || `${capitalize(network.name)} Token`,
       symbol: network.baseAsset?.symbol || '<unknown-symbol>',
-      id:
-        network.baseAsset?.id ||
-        network.baseAsset?.symbol.toLowerCase() ||
-        '<unknown-id>',
+      id: network.baseAsset?.id || network.baseAsset?.symbol.toLowerCase() || '<unknown-id>',
       asset_code:
-        implementation?.address ||
-        network.baseAsset?.symbol.toLowerCase() ||
-        '<unknown-id>',
+        implementation?.address || network.baseAsset?.symbol.toLowerCase() || '<unknown-id>',
       decimals: Number(implementation?.decimals) || NaN,
       icon_url: network.baseAsset?.iconUrl || network.iconUrl || null,
       is_verified: false,

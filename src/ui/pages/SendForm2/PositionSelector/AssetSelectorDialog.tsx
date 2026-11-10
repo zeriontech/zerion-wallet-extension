@@ -5,10 +5,7 @@ import { Dialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { isMacOS } from 'src/ui/shared/isMacos';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import {
-  SegmentedControlGroup,
-  SegmentedControlRadio,
-} from 'src/ui/ui-kit/SegmentedControl';
+import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/SegmentedControl';
 import { TokensPanel } from './TokensPanel';
 import { NftsPanel } from './NftsPanel';
 import * as styles from './AssetSelectorDialog.module.css';
@@ -71,12 +68,7 @@ export function AssetSelectorDialog({
   const nftShortcut = isMacOS() ? '⇧↓' : 'Shift+↓';
 
   return (
-    <Dialog2
-      open={open}
-      onClose={onClose}
-      title="Select Asset"
-      autoFocusInput={false}
-    >
+    <Dialog2 open={open} onClose={onClose} title="Select Asset" autoFocusInput={false}>
       {open ? (
         <>
           <KeyboardShortcut

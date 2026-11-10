@@ -51,9 +51,7 @@ function roundToOneSignificantDigit(value: number) {
  * its own fraction/significant digits (eth/btc, krw/jpy/idr/ngn) or any call
  * passing runtime `opts` opts out and keeps the existing formatting.
  */
-function shouldApplyAmountRule(
-  resolvedOptions: Intl.NumberFormatOptions | null
-) {
+function shouldApplyAmountRule(resolvedOptions: Intl.NumberFormatOptions | null) {
   if (!resolvedOptions) {
     return true;
   }
@@ -69,7 +67,7 @@ export function formatCurrencyValue(
   value: BigNumber.Value,
   locale: string,
   currency: string,
-  opts: Intl.NumberFormatOptions | null = null
+  opts: Intl.NumberFormatOptions | null = null,
 ) {
   const number = value instanceof BigNumber ? value.toNumber() : Number(value);
   if (Number.isNaN(number)) {
@@ -81,8 +79,7 @@ export function formatCurrencyValue(
   const config = CURRENCIES[currency] as CurrencyConfig | undefined;
   const numberFormatOptions = resolveOptions(number, config || null, opts);
 
-  const applyAmountRule =
-    opts == null && shouldApplyAmountRule(numberFormatOptions);
+  const applyAmountRule = opts == null && shouldApplyAmountRule(numberFormatOptions);
 
   // Amount rule for plain fiat currencies: keep at least 2 decimals, and below
   // 1 round to a single significant digit with a 0.001 floor.
@@ -90,10 +87,7 @@ export function formatCurrencyValue(
   let amountConfig: Intl.NumberFormatOptions | null = null;
   if (applyAmountRule) {
     if (absValue > 0 && absValue < 1) {
-      displayValue = Math.max(
-        roundToOneSignificantDigit(absValue),
-        AMOUNT_FLOOR
-      );
+      displayValue = Math.max(roundToOneSignificantDigit(absValue), AMOUNT_FLOOR);
     }
     amountConfig = {
       // 0 -> "$0"; otherwise always show at least 2 decimals.
@@ -124,7 +118,7 @@ export function formatCurrencyToParts(
   value: BigNumber.Value,
   locale: string,
   currency: string,
-  opts: Intl.NumberFormatOptions | null = null
+  opts: Intl.NumberFormatOptions | null = null,
 ) {
   const number = value instanceof BigNumber ? value.toNumber() : Number(value);
   const config = CURRENCIES[currency] as CurrencyConfig | undefined;

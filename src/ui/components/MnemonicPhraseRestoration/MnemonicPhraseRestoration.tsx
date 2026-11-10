@@ -34,11 +34,10 @@ function IntroView({
     <VStack gap={24}>
       <UIText kind="body/accent">Recovery Phrase Needs Re-encryption</UIText>
       <UIText kind="small/regular" color="var(--neutral-800)">
-        An issue in a previous app version left some users' recovery phrases
-        encrypted with their original password instead of their current one.
-        Your funds are safe and your wallets work normally — but to view or
-        restore your recovery phrase, you'll need your original password. Need
-        help? Contact support at{' '}
+        An issue in a previous app version left some users' recovery phrases encrypted with their
+        original password instead of their current one. Your funds are safe and your wallets work
+        normally — but to view or restore your recovery phrase, you'll need your original password.
+        Need help? Contact support at{' '}
         <TextAnchor
           href="https://help.zerion.io"
           target="_blank"
@@ -53,11 +52,7 @@ function IntroView({
         <Button kind="primary" onClick={onRemember} style={{ width: '100%' }}>
           I remember my original password
         </Button>
-        <Button
-          kind="regular"
-          onClick={onDontRemember}
-          style={{ width: '100%' }}
-        >
+        <Button kind="regular" onClick={onDontRemember} style={{ width: '100%' }}>
           I don't remember it
         </Button>
         <Button kind="ghost" onClick={onCancel} style={{ width: '100%' }}>
@@ -89,9 +84,8 @@ function RecoverView({
     <VStack gap={24}>
       <UIText kind="body/accent">Restore Recovery Phrase</UIText>
       <UIText kind="small/regular" color="var(--neutral-800)">
-        Enter the password you used when you first set up the wallet, and your
-        current password. We'll re-encrypt your recovery phrase so it matches.{' '}
-        Need help? Contact support at{' '}
+        Enter the password you used when you first set up the wallet, and your current password.
+        We'll re-encrypt your recovery phrase so it matches. Need help? Contact support at{' '}
         <TextAnchor
           href="https://help.zerion.io"
           target="_blank"
@@ -106,12 +100,8 @@ function RecoverView({
         onSubmit={(event) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
-          const initialPassword = formData.get('initialPassword') as
-            | string
-            | undefined;
-          const currentPassword = formData.get('currentPassword') as
-            | string
-            | undefined;
+          const initialPassword = formData.get('initialPassword') as string | undefined;
+          const currentPassword = formData.get('currentPassword') as string | undefined;
           if (!initialPassword || !currentPassword) {
             return;
           }
@@ -140,11 +130,7 @@ function RecoverView({
             </UIText>
           ) : null}
           <VStack gap={8}>
-            <Button
-              kind="primary"
-              disabled={isLoading}
-              style={{ width: '100%' }}
-            >
+            <Button kind="primary" disabled={isLoading} style={{ width: '100%' }}>
               {isLoading ? (
                 <HStack gap={0} style={{ justifyContent: 'center' }}>
                   <CircleSpinner />
@@ -174,8 +160,8 @@ function SuccessView({ onDone }: { onDone: () => void }) {
     <VStack gap={24}>
       <UIText kind="body/accent">Recovery Phrase Restored</UIText>
       <UIText kind="small/regular" color="var(--neutral-800)">
-        Your recovery phrase is now encrypted with your current password. You
-        can view or back it up normally.
+        Your recovery phrase is now encrypted with your current password. You can view or back it up
+        normally.
       </UIText>
       <Button kind="primary" onClick={onDone} style={{ width: '100%' }}>
         Done
@@ -195,14 +181,13 @@ function NoPasswordView({
     <VStack gap={24}>
       <UIText kind="body/accent">Manage Your Wallets</UIText>
       <UIText kind="small/regular" color="var(--neutral-800)">
-        Without your original password, your recovery phrase can't be
-        re-encrypted. Your wallets and funds remain safe and fully usable.
+        Without your original password, your recovery phrase can't be re-encrypted. Your wallets and
+        funds remain safe and fully usable.
       </UIText>
       <UIText kind="small/regular" color="var(--neutral-800)">
-        The cleanest fix is to reimport your wallets when you have your recovery
-        phrase available. If you need to access them right away, you can export
-        each wallet's private key individually from Manage Wallets. Need help?
-        Contact support at{' '}
+        The cleanest fix is to reimport your wallets when you have your recovery phrase available.
+        If you need to access them right away, you can export each wallet's private key individually
+        from Manage Wallets. Need help? Contact support at{' '}
         <TextAnchor
           href="https://help.zerion.io"
           target="_blank"
@@ -214,11 +199,7 @@ function NoPasswordView({
         .
       </UIText>
       <VStack gap={8}>
-        <Button
-          kind="primary"
-          onClick={onGoToManageWallets}
-          style={{ width: '100%' }}
-        >
+        <Button kind="primary" onClick={onGoToManageWallets} style={{ width: '100%' }}>
           Go to Manage Wallets
         </Button>
         <Button kind="ghost" onClick={onBack} style={{ width: '100%' }}>
@@ -250,7 +231,7 @@ export function MnemonicPhraseRestoration() {
     }) => {
       if (initialPassword === currentPassword) {
         throw new Error(
-          'Initial and current passwords must be different. If they were the same, no re-encryption is needed.'
+          'Initial and current passwords must be different. If they were the same, no re-encryption is needed.',
         );
       }
       if (!userQuery.data) {

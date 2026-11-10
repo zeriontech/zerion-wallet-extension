@@ -2,14 +2,9 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 const MAX_RECENT_ADDRESSES_SIZE = 16;
 
-export function updateRecentAddresses(
-  to: string,
-  recentAddresses: string[]
-): string[] {
+export function updateRecentAddresses(to: string, recentAddresses: string[]): string[] {
   const normalizedAddress = normalizeAddress(to);
-  const addressIndex = recentAddresses.findIndex(
-    (item) => item === normalizedAddress
-  );
+  const addressIndex = recentAddresses.findIndex((item) => item === normalizedAddress);
   if (addressIndex >= 0) {
     return [
       normalizedAddress,
@@ -17,8 +12,5 @@ export function updateRecentAddresses(
       ...recentAddresses.slice(addressIndex + 1, MAX_RECENT_ADDRESSES_SIZE),
     ];
   }
-  return [
-    normalizedAddress,
-    ...recentAddresses.slice(0, MAX_RECENT_ADDRESSES_SIZE - 1),
-  ];
+  return [normalizedAddress, ...recentAddresses.slice(0, MAX_RECENT_ADDRESSES_SIZE - 1)];
 }

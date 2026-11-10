@@ -4,10 +4,7 @@ import { fetchRemoteConfig } from './firebase';
 
 export function useFirebaseConfig<T extends keyof RemoteConfig>(
   keys: T[],
-  {
-    suspense = false,
-    enabled = true,
-  }: { suspense?: boolean; enabled?: boolean } = {}
+  { suspense = false, enabled = true }: { suspense?: boolean; enabled?: boolean } = {},
 ) {
   return useQuery({
     // it's okay to put the `keys` array inside queryKey array without memoizing:

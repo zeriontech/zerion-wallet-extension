@@ -22,10 +22,7 @@ export function ShowTestnetsHint() {
       Looking for testnets?
       <br />
       Enable Testnet Mode in{' '}
-      <TextLink
-        to="/settings/developer-tools"
-        style={{ color: 'var(--primary)' }}
-      >
+      <TextLink to="/settings/developer-tools" style={{ color: 'var(--primary)' }}>
         Settings → Developer Tools
       </TextLink>
     </UIText>
@@ -44,11 +41,7 @@ export function NetworksEmptyView({ testnetMode }: { testnetMode: boolean }) {
         }}
       >
         <VStack gap={16} style={{ justifyItems: 'center' }}>
-          <img
-            src={noResultsImg}
-            style={{ width: 80, height: 64 }}
-            alt="no results"
-          />
+          <img src={noResultsImg} style={{ width: 80, height: 64 }} alt="no results" />
           <VStack gap={8} style={{ justifyItems: 'center' }}>
             <UIText kind="headline/h3">No results found</UIText>
             <UIText kind="small/regular" color="var(--neutral-500)">
@@ -56,11 +49,7 @@ export function NetworksEmptyView({ testnetMode }: { testnetMode: boolean }) {
             </UIText>
           </VStack>
         </VStack>
-        <Button
-          as={UnstyledLink}
-          to="/networks/create"
-          style={{ paddingInline: 16 }}
-        >
+        <Button as={UnstyledLink} to="/networks/create" style={{ paddingInline: 16 }}>
           Add Network
         </Button>
       </VStack>

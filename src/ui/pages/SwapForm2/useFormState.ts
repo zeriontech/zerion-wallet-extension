@@ -54,36 +54,27 @@ function useDefaultFormState({
       Boolean(outputFungibleId) &&
       chainId === outputChainId &&
       fungibleId === outputFungibleId,
-    [outputChainId, outputFungibleId]
+    [outputChainId, outputFungibleId],
   );
 
   const preferredInputChain = useMemo(() => {
-    const chainDistribution = positions.reduce<Record<string, number>>(
-      (acc, position) => {
-        acc[position.chain.id] =
-          (acc[position.chain.id] || 0) + (position.amount.value || 0);
-        return acc;
-      },
-      {}
-    );
+    const chainDistribution = positions.reduce<Record<string, number>>((acc, position) => {
+      acc[position.chain.id] = (acc[position.chain.id] || 0) + (position.amount.value || 0);
+      return acc;
+    }, {});
     if (inputChainId && chainDistribution[inputChainId]) {
       return inputChainId;
     }
     const sortedChains = Object.keys(chainDistribution).sort(
-      (a, b) => (chainDistribution[b] || 0) - (chainDistribution[a] || 0)
+      (a, b) => (chainDistribution[b] || 0) - (chainDistribution[a] || 0),
     );
     for (const chainId of sortedChains) {
       const networkConfig = networks.getByNetworkId(createChain(chainId));
-      if (
-        networkConfig?.flags.supportsTrading ||
-        networkConfig?.flags.supportsBridging
-      ) {
+      if (networkConfig?.flags.supportsTrading || networkConfig?.flags.supportsBridging) {
         return chainId;
       }
     }
-    return getAddressType(address) === 'evm'
-      ? NetworkId.Ethereum
-      : NetworkId.Solana;
+    return getAddressType(address) === 'evm' ? NetworkId.Ethereum : NetworkId.Solana;
   }, [address, positions, networks, inputChainId]);
 
   const { defaultInputChain, defaultInputFungibleId } = useMemo(() => {
@@ -91,12 +82,10 @@ function useDefaultFormState({
       [...list].sort((a, b) => (b.amount.value || 0) - (a.amount.value || 0));
 
     const onPreferredChain = sortedByValue(
-      positions.filter(
-        (p) => p.chain.id === preferredInputChain && p.amount.value
-      )
+      positions.filter((p) => p.chain.id === preferredInputChain && p.amount.value),
     );
     const firstOnPreferred = onPreferredChain.find(
-      (p) => !matchesOutput(p.chain.id, p.fungible.id)
+      (p) => !matchesOutput(p.chain.id, p.fungible.id),
     );
     if (firstOnPreferred) {
       return {
@@ -106,9 +95,7 @@ function useDefaultFormState({
     }
 
     const acrossChains = sortedByValue(positions.filter((p) => p.amount.value));
-    const firstAcrossChains = acrossChains.find(
-      (p) => !matchesOutput(p.chain.id, p.fungible.id)
-    );
+    const firstAcrossChains = acrossChains.find((p) => !matchesOutput(p.chain.id, p.fungible.id));
     if (firstAcrossChains) {
       return {
         defaultInputChain: firstAcrossChains.chain.id,
@@ -116,12 +103,9 @@ function useDefaultFormState({
       };
     }
 
-    const networkConfig = networks.getByNetworkId(
-      createChain(preferredInputChain)
-    );
+    const networkConfig = networks.getByNetworkId(createChain(preferredInputChain));
     const nativeOnPreferred =
-      networkConfig?.baseAsset?.id ||
-      (getAddressType(address) === 'evm' ? ETH_ID : SOL_ID);
+      networkConfig?.baseAsset?.id || (getAddressType(address) === 'evm' ? ETH_ID : SOL_ID);
     if (!matchesOutput(preferredInputChain, nativeOnPreferred)) {
       return {
         defaultInputChain: preferredInputChain,
@@ -129,9 +113,7 @@ function useDefaultFormState({
       };
     }
 
-    const ethereumFallback = matchesOutput(NetworkId.Ethereum, ETH_ID)
-      ? USDC_ID
-      : ETH_ID;
+    const ethereumFallback = matchesOutput(NetworkId.Ethereum, ETH_ID) ? USDC_ID : ETH_ID;
     return {
       defaultInputChain: NetworkId.Ethereum,
       defaultInputFungibleId: ethereumFallback,
@@ -139,9 +121,7 @@ function useDefaultFormState({
   }, [preferredInputChain, positions, networks, address, matchesOutput]);
 
   const inputSupportsTrading = useMemo(() => {
-    const networkConfig = networks.getByNetworkId(
-      createChain(defaultInputChain)
-    );
+    const networkConfig = networks.getByNetworkId(createChain(defaultInputChain));
     return Boolean(networkConfig?.flags.supportsTrading);
   }, [defaultInputChain, networks]);
 
@@ -177,14 +157,10 @@ function useDefaultFormState({
         return fungible.id;
       }
     }
-    const networkConfig = networks.getByNetworkId(
-      createChain(defaultOutputChain)
+    const networkConfig = networks.getByNetworkId(createChain(defaultOutputChain));
+    const fallbackList = [networkConfig?.baseAsset?.id, USDC_ID, USDT_ID].filter(
+      (id): id is string => Boolean(id),
     );
-    const fallbackList = [
-      networkConfig?.baseAsset?.id,
-      USDC_ID,
-      USDT_ID,
-    ].filter((id): id is string => Boolean(id));
     for (const id of fallbackList) {
       if (id !== effectiveInputFungibleId) {
         return id;
@@ -206,17 +182,9 @@ function useDefaultFormState({
       outputChain: defaultOutputChain,
       outputFungibleId: defaultOutputFungibleId,
     };
-  }, [
-    defaultInputChain,
-    defaultInputFungibleId,
-    defaultOutputChain,
-    defaultOutputFungibleId,
-  ]);
+  }, [defaultInputChain, defaultInputFungibleId, defaultOutputChain, defaultOutputFungibleId]);
 
-  return useMemo(
-    () => ({ defaults, outputDefaultPending }),
-    [defaults, outputDefaultPending]
-  );
+  return useMemo(() => ({ defaults, outputDefaultPending }), [defaults, outputDefaultPending]);
 }
 
 export function useFormState({
@@ -228,19 +196,17 @@ export function useFormState({
   positions: FungiblePosition[];
   networks: Networks;
 }) {
-  const [userFormState, setUserFormState] =
-    useSearchParamsObj<SwapFormState2>();
+  const [userFormState, setUserFormState] = useSearchParamsObj<SwapFormState2>();
 
-  const { defaults: defaultFormState, outputDefaultPending } =
-    useDefaultFormState({
-      address,
-      positions,
-      networks,
-      inputChainId: userFormState.inputChain,
-      inputFungibleId: userFormState.inputFungibleId,
-      outputChainId: userFormState.outputChain,
-      outputFungibleId: userFormState.outputFungibleId,
-    });
+  const { defaults: defaultFormState, outputDefaultPending } = useDefaultFormState({
+    address,
+    positions,
+    networks,
+    inputChainId: userFormState.inputChain,
+    inputFungibleId: userFormState.inputFungibleId,
+    outputChainId: userFormState.outputChain,
+    outputFungibleId: userFormState.outputFungibleId,
+  });
 
   const formState = useMemo(() => {
     return {
@@ -264,17 +230,12 @@ export function useFormState({
     const missingInputChain =
       userFormState.inputChain == null && defaultFormState.inputChain != null;
     const missingInputFungibleId =
-      userFormState.inputFungibleId == null &&
-      defaultFormState.inputFungibleId != null;
+      userFormState.inputFungibleId == null && defaultFormState.inputFungibleId != null;
     if (!missingInputChain && !missingInputFungibleId) return;
     setUserFormState((state) => ({
       ...state,
-      ...(missingInputChain
-        ? { inputChain: defaultFormState.inputChain }
-        : null),
-      ...(missingInputFungibleId
-        ? { inputFungibleId: defaultFormState.inputFungibleId }
-        : null),
+      ...(missingInputChain ? { inputChain: defaultFormState.inputChain } : null),
+      ...(missingInputFungibleId ? { inputFungibleId: defaultFormState.inputFungibleId } : null),
     }));
   }, [
     userFormState.inputChain,
@@ -286,27 +247,24 @@ export function useFormState({
 
   const handleChange = useCallback<HandleChangeFunction>(
     (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),
-    [setUserFormState]
+    [setUserFormState],
   );
 
   const selectInput = useCallback(
     (chainId: string, fungibleId: string) => {
       setUserFormState((state) => {
         const collidesWithOutput =
-          state.outputChain === chainId &&
-          state.outputFungibleId === fungibleId;
+          state.outputChain === chainId && state.outputFungibleId === fungibleId;
         return {
           ...state,
           ...CLEARED_GAS_OVERRIDES,
           inputChain: chainId,
           inputFungibleId: fungibleId,
-          ...(collidesWithOutput
-            ? { outputChain: undefined, outputFungibleId: undefined }
-            : null),
+          ...(collidesWithOutput ? { outputChain: undefined, outputFungibleId: undefined } : null),
         };
       });
     },
-    [setUserFormState]
+    [setUserFormState],
   );
 
   const selectOutput = useCallback(
@@ -319,13 +277,11 @@ export function useFormState({
           ...CLEARED_GAS_OVERRIDES,
           outputChain: chainId,
           outputFungibleId: fungibleId,
-          ...(collidesWithInput
-            ? { inputChain: undefined, inputFungibleId: undefined }
-            : null),
+          ...(collidesWithInput ? { inputChain: undefined, inputFungibleId: undefined } : null),
         };
       });
     },
-    [setUserFormState]
+    [setUserFormState],
   );
 
   const reverseTokens = useCallback(() => {
@@ -338,10 +294,8 @@ export function useFormState({
         ...CLEARED_GAS_OVERRIDES,
         inputChain: newInputChain,
         outputChain: newOutputChain,
-        inputFungibleId:
-          state.outputFungibleId || defaultFormState.outputFungibleId,
-        outputFungibleId:
-          state.inputFungibleId || defaultFormState.inputFungibleId,
+        inputFungibleId: state.outputFungibleId || defaultFormState.outputFungibleId,
+        outputFungibleId: state.inputFungibleId || defaultFormState.inputFungibleId,
         inputAmount: undefined,
         outputAmount: undefined,
         ...(isSameChain ? { to: undefined } : null),

@@ -26,19 +26,14 @@ function ReferralLink({ value }: { value: string }) {
         btnStyle={{
           padding: 0,
           display: 'block',
-          ['--button-text' as string]:
-            'var(--copy-button-text-color, var(--neutral-500))',
+          ['--button-text' as string]: 'var(--copy-button-text-color, var(--neutral-500))',
         }}
       />
     </HStack>
   );
 }
 
-export function ReferralLinkDialog({
-  myReferralLink,
-}: {
-  myReferralLink: string;
-}) {
+export function ReferralLinkDialog({ myReferralLink }: { myReferralLink: string }) {
   return (
     <VStack gap={24}>
       <DialogTitle

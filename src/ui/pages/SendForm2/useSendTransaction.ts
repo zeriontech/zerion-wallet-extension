@@ -11,11 +11,7 @@ import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
 import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
-import type {
-  Quote2,
-  TransactionEVM,
-  TransactionMultichainBackend,
-} from 'src/shared/types/Quote';
+import type { Quote2, TransactionEVM, TransactionMultichainBackend } from 'src/shared/types/Quote';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
@@ -74,9 +70,7 @@ function toBackendEvm(tx: IncomingTransaction): TransactionEVM {
   };
 }
 
-function toBackendTransaction(
-  tx: MultichainTransaction
-): TransactionMultichainBackend {
+function toBackendTransaction(tx: MultichainTransaction): TransactionMultichainBackend {
   if (tx.evm) {
     return { evm: toBackendEvm(tx.evm), solana: null };
   }
@@ -90,7 +84,7 @@ function toBackendTransaction(
  */
 function toQuoteNetworkFee(
   networkFee: NetworkFeeType | null,
-  currency: string
+  currency: string,
 ): SendQuote['networkFee'] {
   if (!networkFee) {
     return null;
@@ -140,12 +134,7 @@ export function useSendTransaction({
       return undefined;
     }
     return hexlifyTransactionData(formState.data);
-  }, [
-    preferences?.configurableTransactionData,
-    address,
-    isNftMode,
-    formState.data,
-  ]);
+  }, [preferences?.configurableTransactionData, address, isNftMode, formState.data]);
 
   // A typed zero is never a max-send. On a zero-balance position (the synthetic
   // one built for a token the wallet doesn't hold — the calldata-claim case)
@@ -164,9 +153,7 @@ export function useSendTransaction({
 
   const assetId = formState.nftId ?? formState.inputFungibleId;
 
-  const effectiveAmount = isNftMode
-    ? (formState.nftAmount ?? '1')
-    : resolvedInputAmount;
+  const effectiveAmount = isNftMode ? (formState.nftAmount ?? '1') : resolvedInputAmount;
 
   // Token mode prepares a send for any entered amount, including `0`; NFT mode
   // still requires at least one unit.
@@ -175,12 +162,7 @@ export function useSendTransaction({
     : isMax || isAmountEntered(effectiveAmount);
 
   const baseGatesPass = Boolean(
-    address &&
-    formState.inputChain &&
-    formState.to &&
-    assetId &&
-    amountGatePasses &&
-    network
+    address && formState.inputChain && formState.to && assetId && amountGatePasses && network,
   );
 
   const useBackend = Boolean(network?.flags.supportsSending);
@@ -201,14 +183,14 @@ export function useSendTransaction({
       enabled: enabledParam && baseGatesPass && useBackend,
       keepPreviousData: true,
       suspense: false,
-    }
+    },
   );
 
   // Local fallback path — only fires when the network exists and does NOT
   // support backend-based sending. Mirrors the prior hook behavior.
   const addressPosition = useMemo(
     () => (position ? fungiblePositionToAddressPosition(position) : null),
-    [position]
+    [position],
   );
 
   // Gas overrides are applied at sign time (via applyConfiguration), not in the
@@ -230,19 +212,13 @@ export function useSendTransaction({
     };
   }, [formState, resolvedInputAmount, customData]);
 
-  const localEnabled =
-    enabledParam && baseGatesPass && !useBackend && Boolean(addressPosition);
+  const localEnabled = enabledParam && baseGatesPass && !useBackend && Boolean(addressPosition);
 
   const localQuery = useQuery({
     enabled: localEnabled,
     keepPreviousData: true,
     suspense: false,
-    queryKey: [
-      'prepareSendData/SendForm2',
-      address,
-      addressPosition,
-      legacyFormState,
-    ],
+    queryKey: ['prepareSendData/SendForm2', address, addressPosition, legacyFormState],
     queryFn: () => prepareSendData(address, addressPosition, legacyFormState),
     staleTime: 20000,
     retry: 1,
@@ -252,8 +228,7 @@ export function useSendTransaction({
     if (!baseGatesPass) return undefined;
     if (useBackend) {
       if (!backendQuery.data) return undefined;
-      const { transactionSend, networkFee, inputAmount, error } =
-        backendQuery.data;
+      const { transactionSend, networkFee, inputAmount, error } = backendQuery.data;
       return {
         network,
         sendQuote: {
@@ -269,22 +244,13 @@ export function useSendTransaction({
     return {
       network: local.network,
       sendQuote: {
-        transactionSwap: local.transaction
-          ? toBackendTransaction(local.transaction)
-          : null,
+        transactionSwap: local.transaction ? toBackendTransaction(local.transaction) : null,
         networkFee: toQuoteNetworkFee(local.networkFee, currency),
       },
       inputAmount: null,
       error: null,
     };
-  }, [
-    baseGatesPass,
-    useBackend,
-    backendQuery.data,
-    localQuery.data,
-    network,
-    currency,
-  ]);
+  }, [baseGatesPass, useBackend, backendQuery.data, localQuery.data, network, currency]);
 
   const backendEnabled = enabledParam && baseGatesPass && useBackend;
 

@@ -3,12 +3,9 @@ import { invariant } from './invariant';
 /** TODO: Write Type Tests */
 export function assertProp<T extends object, K extends keyof T>(
   value: T,
-  prop: K
+  prop: K,
 ): asserts value is T & { [P in K]-?: NonNullable<T[P]> } {
-  invariant(
-    prop in value && value[prop] != null,
-    `Missing property: ${String(prop)}`
-  );
+  invariant(prop in value && value[prop] != null, `Missing property: ${String(prop)}`);
 }
 
 // Test Cases:

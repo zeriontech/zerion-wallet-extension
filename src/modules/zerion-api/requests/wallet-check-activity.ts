@@ -28,13 +28,13 @@ function toAddressActivity(response: Response): AddressActivity {
 export async function walletCheckActivity(
   this: ZerionApiContext,
   params: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const endpoint = 'wallet/check-activity/v1';
   const kyOptions = this.getKyOptions();
   const response = await ZerionHttpClient.post<Response>(
     { endpoint, body: JSON.stringify(params), ...options },
-    kyOptions
+    kyOptions,
   );
   return toAddressActivity(response);
 }

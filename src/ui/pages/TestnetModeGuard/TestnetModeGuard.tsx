@@ -16,19 +16,14 @@ export function TestnetModeGuard() {
   invariant(windowId, 'windowId get-parameter is required');
   const targetNetwork = params.get('targetNetwork');
   invariant(targetNetwork, 'targetNetwork get-parameter is required');
-  const network = useMemo(
-    () => JSON.parse(targetNetwork) as NetworkInfo,
-    [targetNetwork]
-  );
+  const network = useMemo(() => JSON.parse(targetNetwork) as NetworkInfo, [targetNetwork]);
 
   const handleConfirm = () => windowPort.confirm(windowId, {});
   const handleReject = () => windowPort.reject(windowId);
 
   return (
     <PageColumn>
-      <div
-        style={{ display: 'grid', gridTemplateRows: '1fr auto', flexGrow: 1 }}
-      >
+      <div style={{ display: 'grid', gridTemplateRows: '1fr auto', flexGrow: 1 }}>
         <VStack
           gap={16}
           style={{
@@ -40,8 +35,8 @@ export function TestnetModeGuard() {
           <NetworkIcon size={36} name={network.name} src={network.iconUrl} />
           <UIText kind="headline/h3">Switching to {network.name}?</UIText>
           <UIText kind="body/regular">
-            Testnet mode is currently active. Would you like to disable it and
-            interact with {network.name} instead?
+            Testnet mode is currently active. Would you like to disable it and interact with{' '}
+            {network.name} instead?
           </UIText>
         </VStack>
 

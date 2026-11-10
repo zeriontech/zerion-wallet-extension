@@ -12,7 +12,7 @@ export class QueueError extends Error {
   constructor(
     public failedAt: number,
     public completedResults: SignTransactionResult[],
-    public cause: Error
+    public cause: Error,
   ) {
     super(`Queue failed at step ${failedAt}: ${cause.message}`);
   }
@@ -22,7 +22,7 @@ export class QueueAbortError extends Error {
   name = 'QueueAbortError';
   constructor(
     public abortedAt: number,
-    public completedResults: SignTransactionResult[]
+    public completedResults: SignTransactionResult[],
   ) {
     super(`Queue aborted at step ${abortedAt}`);
   }
@@ -32,7 +32,7 @@ export class TransactionFailedOnChainError extends Error {
   name = 'TransactionFailedOnChainError';
   constructor(
     public status: 'failed' | 'dropped',
-    public txHash: string
+    public txHash: string,
   ) {
     super(`Transaction ${txHash} ${status} on-chain`);
   }

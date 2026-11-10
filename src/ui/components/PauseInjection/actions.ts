@@ -35,7 +35,7 @@ function calculateExpires(duration: TurnOffDuration) {
 
 export function createInjectionPreference(
   globalPreferences: GlobalPreferences,
-  formData: SubmitData
+  formData: SubmitData,
 ): Pick<GlobalPreferences, 'providerInjection'> {
   return {
     providerInjection: {
@@ -49,7 +49,7 @@ export function createInjectionPreference(
 
 export function disableInjectionPreference(
   globalPreferences: GlobalPreferences,
-  pattern: string | null
+  pattern: string | null,
 ): Pick<GlobalPreferences, 'providerInjection'> {
   if (!globalPreferences.providerInjection || !pattern) {
     return {};

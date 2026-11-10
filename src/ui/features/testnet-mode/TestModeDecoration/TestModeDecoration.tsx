@@ -26,12 +26,7 @@ function TestModeDecorationComponent() {
   const checkboxId = useId();
   const { shortcutsDisabled } = useStore(testnetModeStore);
 
-  useBodyStyle(
-    useMemo(
-      () => ({ ['--technical-panel-bottom-height' as string]: '40px' }),
-      []
-    )
-  );
+  useBodyStyle(useMemo(() => ({ ['--technical-panel-bottom-height' as string]: '40px' }), []));
 
   const isDialog = urlContext.windowType === 'dialog';
   const isSidepanel = urlContext.windowType === 'sidepanel';
@@ -39,8 +34,8 @@ function TestModeDecorationComponent() {
   useBodyStyle(
     useMemo(
       () => (shouldRenderSomething ? { paddingBottom: '36px' } : {}),
-      [shouldRenderSomething]
-    )
+      [shouldRenderSomething],
+    ),
   );
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   if (!shouldRenderSomething) {
@@ -78,8 +73,7 @@ function TestModeDecorationComponent() {
             inset: 0,
             background:
               'linear-gradient(45deg, cyan, rgb(0, 58, 255), rgb(255, 0, 228), rgb(0, 255, 188))',
-            WebkitMask:
-              'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             maskComposite: 'exclude',
             padding: on ? (isSidepanel ? 4 : '4px 4px 2px') : 0,
             borderRadius: 'var(--sidepanel-border-radius)',
@@ -119,12 +113,7 @@ function TestModeDecorationComponent() {
           >
             <ZStack>
               <HStack gap={8} style={{ placeSelf: 'center' }}>
-                <UIText
-                  kind="small/accent"
-                  color="var(--primary)"
-                  as="label"
-                  htmlFor={checkboxId}
-                >
+                <UIText kind="small/accent" color="var(--primary)" as="label" htmlFor={checkboxId}>
                   {!isDialog ? 'Testnet Mode' : 'Testnets'}
                 </UIText>
                 {!isDialog ? (
@@ -150,10 +139,7 @@ function TestModeDecorationComponent() {
                   <QuestionHintIcon style={{ color: 'var(--neutral-800)' }} />
                 </UnstyledButton>
               ) : null}
-              <BottomSheetDialog
-                ref={dialogRef}
-                style={{ height: 'min-content' }}
-              >
+              <BottomSheetDialog ref={dialogRef} style={{ height: 'min-content' }}>
                 <DialogTitle
                   alignTitle="start"
                   title={<UIText kind="headline/h3">Testnet Mode</UIText>}
@@ -161,8 +147,8 @@ function TestModeDecorationComponent() {
                 />
                 <Spacer height={16} />
                 <UIText kind="small/regular">
-                  Testnet Mode allows you to access test networks. To disable
-                  the Testnet Mode switch, go to{' '}
+                  Testnet Mode allows you to access test networks. To disable the Testnet Mode
+                  switch, go to{' '}
                   <TextLink
                     to="/settings/developer-tools"
                     style={{ color: 'var(--primary)' }}
@@ -196,7 +182,7 @@ export function TestModeDecoration() {
   const { pathname } = useLocation();
   const matchesBlackList = useMemo(
     () => routesBlackList.some((pattern) => matchPath(pattern, pathname)),
-    [pathname]
+    [pathname],
   );
   if (matchesBlackList) {
     return null;

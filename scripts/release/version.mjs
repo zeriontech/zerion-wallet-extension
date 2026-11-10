@@ -21,42 +21,30 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
-const root = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../..'
-);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 // `npm run version` -> npm_command=run; `npm version` -> npm_command=version.
 const isNpmVersionLifecycle = process.env.npm_command === 'version';
 
 if (!isNpmVersionLifecycle) {
-  execFileSync(
-    process.execPath,
-    [require.resolve('@changesets/cli/bin.js'), 'version'],
-    {
-      cwd: root,
-      stdio: 'inherit',
-    }
-  );
+  execFileSync(process.execPath, [require.resolve('@changesets/cli/bin.js'), 'version'], {
+    cwd: root,
+    stdio: 'inherit',
+  });
 
   // Changesets' own auto-formatter looks for a formatter binary it knows; the
   // repo formats with Oxfmt through `vp`, so `format` is disabled in
   // .changeset/config.json and the changelog is formatted here instead.
   const changelog = path.join(root, 'CHANGELOG.md');
   if (fs.existsSync(changelog)) {
-    execFileSync(
-      path.join(root, 'node_modules/.bin/vp'),
-      ['fmt', 'CHANGELOG.md'],
-      { cwd: root, stdio: 'inherit' }
-    );
+    execFileSync(path.join(root, 'node_modules/.bin/vp'), ['fmt', 'CHANGELOG.md'], {
+      cwd: root,
+      stdio: 'inherit',
+    });
   }
 }
 
-execFileSync(
-  process.execPath,
-  [path.join(root, 'scripts/manifest-version.js')],
-  {
-    cwd: root,
-    stdio: 'inherit',
-  }
-);
+execFileSync(process.execPath, [path.join(root, 'scripts/manifest-version.js')], {
+  cwd: root,
+  stdio: 'inherit',
+});

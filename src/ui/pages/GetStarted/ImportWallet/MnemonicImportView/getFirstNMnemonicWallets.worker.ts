@@ -5,15 +5,9 @@ import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import type { BareWallet, MaskedBareWallet } from 'src/shared/types/BareWallet';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
-import {
-  getAccountPathEthereum,
-  getAccountPath,
-} from 'src/shared/wallet/derivation-paths';
+import { getAccountPathEthereum, getAccountPath } from 'src/shared/wallet/derivation-paths';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
-import {
-  decodeMasked,
-  encodeForMasking,
-} from 'src/shared/wallet/encode-locally';
+import { decodeMasked, encodeForMasking } from 'src/shared/wallet/encode-locally';
 import { fromSolanaKeypair } from 'src/modules/solana/keypairs';
 
 export interface Params {

@@ -22,10 +22,7 @@ import type { ExternallyOwnedAccount } from 'src/shared/types/ExternallyOwnedAcc
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
-import {
-  assertKnownEcosystems,
-  isMatchForEcosystem,
-} from 'src/shared/wallet/shared';
+import { assertKnownEcosystems, isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { EmptyView2 } from 'src/ui/components/EmptyView';
 import { useBackgroundKind } from 'src/ui/components/Background';
@@ -39,19 +36,18 @@ import { WalletList } from '../WalletSelect/WalletList';
 import { useWalletSearchPredicate } from '../WalletSelect/useWalletSearchPredicate';
 import type { AnyWallet } from '../WalletSelect/shared';
 
-const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
-  {
-    evm: {
-      src: 'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png',
-      srcSet:
-        'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png, https://cdn.zerion.io/images/dna-assets/ethereum-connection_2x.png 2x',
-    },
-    solana: {
-      src: 'https://cdn.zerion.io/images/dna-assets/solana-connection.png',
-      srcSet:
-        'https://cdn.zerion.io/images/dna-assets/solana-connection.png, https://cdn.zerion.io/images/dna-assets/solana-connection_2x.png 2x',
-    },
-  };
+const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> = {
+  evm: {
+    src: 'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png',
+    srcSet:
+      'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png, https://cdn.zerion.io/images/dna-assets/ethereum-connection_2x.png 2x',
+  },
+  solana: {
+    src: 'https://cdn.zerion.io/images/dna-assets/solana-connection.png',
+    srcSet:
+      'https://cdn.zerion.io/images/dna-assets/solana-connection.png, https://cdn.zerion.io/images/dna-assets/solana-connection_2x.png 2x',
+  },
+};
 
 const ECOSYSTEM_NAMES: Record<BlockchainType, string> = {
   evm: 'Ethereum',
@@ -75,11 +71,8 @@ function WalletSelectDialog({
   const [searchQuery, setSearchQuery] = useState('');
 
   const allAddresses = useMemo(
-    () =>
-      walletGroups?.flatMap((g) =>
-        g.walletContainer.wallets.map((w) => w.address)
-      ) ?? [],
-    [walletGroups]
+    () => walletGroups?.flatMap((g) => g.walletContainer.wallets.map((w) => w.address)) ?? [],
+    [walletGroups],
   );
   const totalWalletCount = allAddresses.length;
 
@@ -99,7 +92,7 @@ function WalletSelectDialog({
       isMatchForEcosystem(item.address, ecosystem) &&
       connectedAddresses.has(normalizeAddress(item.address)) &&
       matchesSearch(item),
-    [ecosystem, connectedAddresses, matchesSearch]
+    [ecosystem, connectedAddresses, matchesSearch],
   );
 
   return walletGroups?.length ? (
@@ -110,9 +103,7 @@ function WalletSelectDialog({
           style={{ width: 80, height: 64 }}
           {...ECOSYSTEM_ICONS[ecosystem]}
         />
-        <UIText kind="body/accent">
-          Select a connected {ECOSYSTEM_NAMES[ecosystem]} wallet
-        </UIText>
+        <UIText kind="body/accent">Select a connected {ECOSYSTEM_NAMES[ecosystem]} wallet</UIText>
       </VStack>
       {totalWalletCount >= 5 ? (
         <DebouncedInput
@@ -213,10 +204,7 @@ function SelectConnectedWalletView({
               url={origin}
               alt={`Logo for ${origin}`}
             />
-            <UIText
-              kind="headline/h2"
-              style={{ maxWidth: '100%', overflowWrap: 'anywhere' }}
-            >
+            <UIText kind="headline/h2" style={{ maxWidth: '100%', overflowWrap: 'anywhere' }}>
               {originName}
             </UIText>
           </VStack>
@@ -229,13 +217,8 @@ function SelectConnectedWalletView({
               borderRadius: 12,
             }}
           >
-            <UIText
-              kind="small/accent"
-              color="var(--neutral-600)"
-              style={{ textAlign: 'center' }}
-            >
-              This request requires{' '}
-              {ecosystem === 'evm' ? 'an Ethereum' : 'a Solana'} wallet.
+            <UIText kind="small/accent" color="var(--neutral-600)" style={{ textAlign: 'center' }}>
+              This request requires {ecosystem === 'evm' ? 'an Ethereum' : 'a Solana'} wallet.
               <br />
               Please select one of your connected wallets.
             </UIText>
@@ -254,11 +237,7 @@ function SelectConnectedWalletView({
                     padding: '8px 12px',
                   }}
                 >
-                  <WalletAvatar
-                    address={currentWallet.address}
-                    size={24}
-                    borderRadius={8}
-                  />
+                  <WalletAvatar address={currentWallet.address} size={24} borderRadius={8} />
                   <UIText kind="small/accent" color="var(--black)">
                     <WalletDisplayName wallet={currentWallet} />
                   </UIText>
@@ -282,17 +261,9 @@ function SelectConnectedWalletView({
                   ['--parent-hovered-content-color' as string]: 'var(--black)',
                 }}
               >
-                <HStack
-                  gap={16}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
+                <HStack gap={16} justifyContent="space-between" alignItems="center">
                   <HStack gap={12} alignItems="center">
-                    <WalletAvatar
-                      address={selectedWallet.address}
-                      size={44}
-                      borderRadius={12}
-                    />
+                    <WalletAvatar address={selectedWallet.address} size={44} borderRadius={12} />
                     <VStack gap={0} style={{ justifyItems: 'start' }}>
                       <UIText kind="small/accent" color="var(--neutral-500)">
                         Wallet
@@ -302,10 +273,7 @@ function SelectConnectedWalletView({
                       </UIText>
                     </VStack>
                   </HStack>
-                  <ArrowDownIcon
-                    className="content-hover"
-                    style={{ width: 24, height: 24 }}
-                  />
+                  <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
                 </HStack>
               </UnstyledButton>
             </VStack>
@@ -361,7 +329,7 @@ export function SelectConnectedWallet() {
       ]);
 
       const connectedAddresses = new Set(
-        (permissions[origin]?.addresses ?? []).map(normalizeAddress)
+        (permissions[origin]?.addresses ?? []).map(normalizeAddress),
       );
 
       const predicate = (wallet: { address: string }) =>
@@ -369,11 +337,10 @@ export function SelectConnectedWallet() {
         connectedAddresses.has(normalizeAddress(wallet.address));
 
       const walletGroups = allWalletGroups?.filter((group) =>
-        group.walletContainer.wallets.some(predicate)
+        group.walletContainer.wallets.some(predicate),
       );
 
-      const wallet =
-        walletGroups?.at(0)?.walletContainer.wallets.find(predicate) ?? null;
+      const wallet = walletGroups?.at(0)?.walletContainer.wallets.find(predicate) ?? null;
 
       if (!wallet) {
         throw new NoConnectedWalletForEcosystemError(ecosystem);
@@ -392,12 +359,9 @@ export function SelectConnectedWallet() {
     (result: { address: string }) => {
       windowPort.confirm(windowId, result);
     },
-    [windowId]
+    [windowId],
   );
-  const handleReject = useCallback(
-    () => windowPort.reject(windowId),
-    [windowId]
-  );
+  const handleReject = useCallback(() => windowPort.reject(windowId), [windowId]);
 
   if (isError) {
     if (error instanceof NoConnectedWalletForEcosystemError) {

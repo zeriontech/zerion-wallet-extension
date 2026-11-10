@@ -1,17 +1,12 @@
 import browser from 'webextension-polyfill';
-import {
-  isJsonRpcPayload,
-  isJsonRpcRequest,
-} from '@walletconnect/jsonrpc-utils';
+import { isJsonRpcPayload, isJsonRpcRequest } from '@walletconnect/jsonrpc-utils';
 import type { Wallet } from 'src/shared/types/Wallet';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { mapRPCMessageToController } from '../mapRPCMessageToController';
 import { getPortContext } from '../getPortContext';
 import type { PortMessageHandler } from '../PortRegistry';
 
-export function createWalletMessageHandler(
-  getWallet: () => Wallet
-): PortMessageHandler {
+export function createWalletMessageHandler(getWallet: () => Wallet): PortMessageHandler {
   return function walletMessageHandler(port, msg): boolean {
     const isValidRequest = isJsonRpcPayload(msg) && isJsonRpcRequest(msg);
 

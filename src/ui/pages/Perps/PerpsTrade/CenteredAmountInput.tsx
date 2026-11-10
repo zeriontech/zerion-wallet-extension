@@ -35,9 +35,7 @@ export function CenteredAmountInput({
 
   const isEmpty = value.length === 0;
   const measured = isEmpty ? placeholder : value;
-  const { inputFontSize, dollarFontSize, dollarPaddingTop } = getSizes(
-    measured.length
-  );
+  const { inputFontSize, dollarFontSize, dollarPaddingTop } = getSizes(measured.length);
 
   useLayoutEffect(() => {
     if (!mirrorRef.current) return;
@@ -79,10 +77,7 @@ export function CenteredAmountInput({
           onChange={(e) => {
             const raw = e.currentTarget.value.replace(/[^\d.]/g, '');
             const parts = raw.split('.');
-            const normalized =
-              parts.length <= 1
-                ? raw
-                : `${parts[0]}.${parts.slice(1).join('')}`;
+            const normalized = parts.length <= 1 ? raw : `${parts[0]}.${parts.slice(1).join('')}`;
             onChange(normalized);
           }}
           className={s.amountInput}

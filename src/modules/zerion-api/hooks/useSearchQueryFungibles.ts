@@ -7,7 +7,7 @@ import type { Params } from '../requests/search-query-fungibles';
 
 export function useSearchQueryFungibles(
   { query, currency, chain, sort, limit = 5 }: Params,
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ) {
   const queryData = useInfiniteQuery<Response | null>({
     queryKey: ['searchQueryFungibles', query, currency, chain, limit, sort],
@@ -22,8 +22,7 @@ export function useSearchQueryFungibles(
         cursor: pageParam,
       });
     },
-    getNextPageParam: (lastPage) =>
-      lastPage?.meta?.pagination.cursor || undefined,
+    getNextPageParam: (lastPage) => lastPage?.meta?.pagination.cursor || undefined,
     staleTime: 30000,
     suspense: false,
     refetchOnWindowFocus: false,

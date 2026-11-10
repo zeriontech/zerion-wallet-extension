@@ -49,11 +49,7 @@ function NameAndPortfolioComposition({
             )}
           />
         ) : (
-          <WalletAvatar
-            address={wallet.address}
-            size={iconSize}
-            active={false}
-          />
+          <WalletAvatar address={wallet.address} size={iconSize} active={false} />
         )
       }
       text={
@@ -68,11 +64,7 @@ function NameAndPortfolioComposition({
             render={(query) => (
               <UIText kind={detailTextKind}>
                 {query.data
-                  ? formatCurrencyValue(
-                      query.data.data?.totalValue || 0,
-                      'en',
-                      currency
-                    )
+                  ? formatCurrencyValue(query.data.data?.totalValue || 0, 'en', currency)
                   : NBSP}
               </UIText>
             )}

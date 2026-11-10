@@ -53,9 +53,7 @@ function isOnboardingMode(port: RuntimePort) {
     return false;
   }
   const portSenderUrl = new URL(port.sender.url);
-  return (
-    portSenderUrl.searchParams.get(UrlContextParam.appMode) === 'onboarding'
-  );
+  return portSenderUrl.searchParams.get(UrlContextParam.appMode) === 'onboarding';
 }
 
 function verifyPort(port: RuntimePort) {
@@ -138,9 +136,7 @@ initialize().then((values) => {
 
   new ContentScriptManager().removeExpiredRecords().activate();
 
-  portRegistry.addMessageHandler(
-    createWalletMessageHandler(() => account.getCurrentWallet())
-  );
+  portRegistry.addMessageHandler(createWalletMessageHandler(() => account.getCurrentWallet()));
   portRegistry.addMessageHandler((port, msg) => {
     if (port.name === 'handshake') {
       port.postMessage({ ack: (msg as { syn: number }).syn + 1 });
@@ -150,26 +146,24 @@ initialize().then((values) => {
     createPortMessageHandler({
       check: (port) => port.name === 'accountPublicRPC',
       controller: accountPublicRPC,
-    })
+    }),
   );
   portRegistry.addMessageHandler(
     createPortMessageHandler({
       check: (port) => port.name === 'dnaService',
       controller: dnaService,
-    })
+    }),
   );
   portRegistry.addMessageHandler(
     createPortMessageHandler({
       check: (port) => port.name === 'sessionCacheService',
       controller: new SessionCacheService(),
-    })
+    }),
   );
-  portRegistry.addMessageHandler(
-    createNotificationWindowMessageHandler(notificationWindow)
-  );
+  portRegistry.addMessageHandler(createNotificationWindowMessageHandler(notificationWindow));
   portRegistry.addMessageHandler(
     // createHttpConnectionMessageHandler(httpConnection)
-    createHttpConnectionMessageHandler(() => account.getCurrentWallet())
+    createHttpConnectionMessageHandler(() => account.getCurrentWallet()),
   );
 
   handleAccountEvents({ account });
@@ -180,10 +174,7 @@ initialize().then((values) => {
   ethereumEventsBroadcaster.startListening();
 
   portRegistry.addListener('disconnect', (port: RuntimePort) => {
-    if (
-      port.name === `${browser.runtime.id}/wallet` &&
-      !isOnboardingMode(port)
-    ) {
+    if (port.name === `${browser.runtime.id}/wallet` && !isOnboardingMode(port)) {
       // Means extension UI is closed
       account.expirePasswordSession();
       emitter.emit('uiClosed', { url: port.sender?.url || null });

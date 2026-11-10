@@ -1,16 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  ComboboxProvider,
-  Combobox,
-  TabProvider,
-  useTabContext,
-} from '@ariakit/react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ComboboxProvider, Combobox, TabProvider, useTabContext } from '@ariakit/react';
 import { normalizedContains } from 'normalized-contains';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -40,44 +29,40 @@ import * as styles from 'src/ui/components/PositionSelector/styles.module.css';
 import { NetworkSelect2 } from 'src/ui/components/NetworkSelect2';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 
-const SearchCombobox = React.forwardRef<HTMLInputElement>(
-  function SearchCombobox(_props, ref) {
-    const tab = useTabContext();
-    return (
-      <div style={{ position: 'relative' }}>
-        <SearchIcon
-          role="presentation"
-          style={{
-            pointerEvents: 'none',
-            position: 'absolute',
-            left: 12,
-            top: 10,
-            width: 24,
-            height: 24,
-            color: 'var(--neutral-500)',
-          }}
-        />
-        <Combobox
-          ref={ref}
-          autoSelect="always"
-          placeholder="Search tokens"
-          render={<Input style={{ paddingLeft: 40 }} />}
-          onKeyDown={(event) => {
-            if (event.key !== 'Tab') return;
-            const activeId = tab?.getState().selectedId;
-            const options = { activeId, focusLoop: false };
-            const nextId = event.shiftKey
-              ? tab?.previous(options)
-              : tab?.next(options);
-            if (!nextId) return;
-            event.preventDefault();
-            tab?.select(nextId);
-          }}
-        />
-      </div>
-    );
-  }
-);
+const SearchCombobox = React.forwardRef<HTMLInputElement>(function SearchCombobox(_props, ref) {
+  const tab = useTabContext();
+  return (
+    <div style={{ position: 'relative' }}>
+      <SearchIcon
+        role="presentation"
+        style={{
+          pointerEvents: 'none',
+          position: 'absolute',
+          left: 12,
+          top: 10,
+          width: 24,
+          height: 24,
+          color: 'var(--neutral-500)',
+        }}
+      />
+      <Combobox
+        ref={ref}
+        autoSelect="always"
+        placeholder="Search tokens"
+        render={<Input style={{ paddingLeft: 40 }} />}
+        onKeyDown={(event) => {
+          if (event.key !== 'Tab') return;
+          const activeId = tab?.getState().selectedId;
+          const options = { activeId, focusLoop: false };
+          const nextId = event.shiftKey ? tab?.previous(options) : tab?.next(options);
+          if (!nextId) return;
+          event.preventDefault();
+          tab?.select(nextId);
+        }}
+      />
+    </div>
+  );
+});
 
 /** A single list row, unifying held positions and searched (not-held) tokens. */
 type RowItem = {
@@ -127,7 +112,7 @@ function matchesAddressQuery(fungible: Fungible, query: string): boolean {
   return (
     fungible.id.toLowerCase().includes(query) ||
     Object.values(fungible.implementations).some((impl) =>
-      impl.address ? impl.address.toLowerCase().includes(query) : false
+      impl.address ? impl.address.toLowerCase().includes(query) : false,
     )
   );
 }
@@ -136,10 +121,7 @@ function matchesAddressQuery(fungible: Fungible, query: string): boolean {
  * Orders a fungible's implementation chains so the ones already surfaced as
  * network chips come first (in chip order), then the rest in backend order.
  */
-function orderImplementationChains(
-  implChains: string[],
-  chipOrder: string[]
-): string[] {
+function orderImplementationChains(implChains: string[], chipOrder: string[]): string[] {
   const remaining = new Set(implChains);
   const ordered: string[] = [];
   for (const chainId of chipOrder) {
@@ -177,11 +159,7 @@ export function InputPositionSelector({
   positions: FungiblePosition[];
   networks: Networks | null;
   defaultSelectedTab?: string | null;
-  onSelect: (
-    chainId: string,
-    fungibleId: string,
-    selectedTab: string | null
-  ) => void;
+  onSelect: (chainId: string, fungibleId: string, selectedTab: string | null) => void;
   open: boolean;
   onClose: () => void;
 }) {
@@ -193,16 +171,14 @@ export function InputPositionSelector({
     (chainId: string) => {
       if (!networks) return true;
       const network = networks.getByNetworkId(createChain(chainId));
-      return Boolean(
-        network?.flags.supportsTrading || network?.flags.supportsBridging
-      );
+      return Boolean(network?.flags.supportsTrading || network?.flags.supportsBridging);
     },
-    [networks]
+    [networks],
   );
 
   const tradablePositions = useMemo(
     () => positions.filter((p) => isTradableChainId(p.chain.id)),
-    [positions, isTradableChainId]
+    [positions, isTradableChainId],
   );
 
   const [selectedNetwork, setSelectedNetwork] = useState<string | null>(() => {
@@ -217,15 +193,13 @@ export function InputPositionSelector({
   const chipsRef = useRef<HTMLDivElement>(null);
 
   const scrollChipIntoView = (chainId: string) => {
-    const el = chipsRef.current?.querySelector<HTMLElement>(
-      `[data-chain-id="${chainId}"]`
-    );
+    const el = chipsRef.current?.querySelector<HTMLElement>(`[data-chain-id="${chainId}"]`);
     el?.scrollIntoView({ block: 'nearest', inline: 'center' });
   };
 
   const debouncedSetQuery = useDebouncedCallback(
     useCallback((value: string) => setDebouncedQuery(value), []),
-    300
+    300,
   );
 
   useEffect(() => {
@@ -245,7 +219,7 @@ export function InputPositionSelector({
 
   const chainIdsInPositions = useMemo(
     () => new Set(tradablePositions.map((p) => p.chain.id)),
-    [tradablePositions]
+    [tradablePositions],
   );
 
   // Same predicate as the network dialog below: pinned chains only surface
@@ -256,20 +230,14 @@ export function InputPositionSelector({
       visiblePinnedNetworks
         .map((n) => n.id)
         .filter((id) => chainIdsInPositions.has(id) && isTradableChainId(id)),
-    [visiblePinnedNetworks, chainIdsInPositions, isTradableChainId]
+    [visiblePinnedNetworks, chainIdsInPositions, isTradableChainId],
   );
 
-  const topNetworks = useTopNetworks(
-    tradablePositions,
-    selectedNetwork,
-    pinnedFromDialog,
-    { pinnedChainIds }
-  );
+  const topNetworks = useTopNetworks(tradablePositions, selectedNetwork, pinnedFromDialog, {
+    pinnedChainIds,
+  });
 
-  const chipOrder = useMemo(
-    () => topNetworks.map((n) => n.chainId),
-    [topNetworks]
-  );
+  const chipOrder = useMemo(() => topNetworks.map((n) => n.chainId), [topNetworks]);
 
   const showNetworkSelectorTrigger = topNetworks.length >= 4;
 
@@ -302,26 +270,22 @@ export function InputPositionSelector({
         (p) =>
           normalizedContains(p.fungible.name.toLowerCase(), query) ||
           normalizedContains(p.fungible.symbol.toLowerCase(), query) ||
-          matchesAddressQuery(p.fungible, query)
+          matchesAddressQuery(p.fungible, query),
       );
     }
     return result.sort((a, b) => (b.amount.value || 0) - (a.amount.value || 0));
   }, [tradablePositions, selectedNetwork, searchValue]);
 
-  const { fungibles: searchFungibles, queryData: searchQueryData } =
-    useSearchQueryFungibles(
-      { query: debouncedQuery, currency, limit: 50 },
-      { enabled: Boolean(debouncedQuery) }
-    );
+  const { fungibles: searchFungibles, queryData: searchQueryData } = useSearchQueryFungibles(
+    { query: debouncedQuery, currency, limit: 50 },
+    { enabled: Boolean(debouncedQuery) },
+  );
 
   // Held (chain, fungible) pairs are shown in the holdings group above, so they
   // are dropped from the not-held search group to avoid duplicates.
   const heldKeys = useMemo(
-    () =>
-      new Set(
-        tradablePositions.map((p) => positionKey(p.chain.id, p.fungible.id))
-      ),
-    [tradablePositions]
+    () => new Set(tradablePositions.map((p) => positionKey(p.chain.id, p.fungible.id))),
+    [tradablePositions],
   );
 
   const notHeldRows = useMemo<RowItem[]>(() => {
@@ -335,10 +299,7 @@ export function InputPositionSelector({
         ? fungible.implementations[selectedNetwork]
           ? [selectedNetwork]
           : []
-        : orderImplementationChains(
-            Object.keys(fungible.implementations),
-            chipOrder
-          );
+        : orderImplementationChains(Object.keys(fungible.implementations), chipOrder);
       for (const chainId of candidateChains) {
         if (!isTradableChainId(chainId)) continue;
         const key = positionKey(chainId, fungible.id);
@@ -365,13 +326,11 @@ export function InputPositionSelector({
   ]);
 
   const virtualItems = useMemo<VirtualListItem<RowItem>[]>(() => {
-    const items: VirtualListItem<RowItem>[] = filteredPositions.map(
-      (position) => ({
-        kind: 'item',
-        key: `held-${position.chain.id}-${position.fungible.id}`,
-        data: heldRow(position),
-      })
-    );
+    const items: VirtualListItem<RowItem>[] = filteredPositions.map((position) => ({
+      kind: 'item',
+      key: `held-${position.chain.id}-${position.fungible.id}`,
+      data: heldRow(position),
+    }));
     if (notHeldRows.length > 0) {
       items.push({
         kind: 'header',
@@ -448,10 +407,7 @@ export function InputPositionSelector({
                         <TokenListSkeleton count={5} />
                       ) : (
                         <div className={styles.emptyState}>
-                          <UIText
-                            kind="body/regular"
-                            color="var(--neutral-500)"
-                          >
+                          <UIText kind="body/regular" color="var(--neutral-500)">
                             No tokens found
                           </UIText>
                         </div>
@@ -470,21 +426,14 @@ export function InputPositionSelector({
                               tokenQuantity={row.tokenQuantity}
                               currency={currency}
                               onSelect={() => {
-                                onSelect(
-                                  row.chainId,
-                                  row.fungible.id,
-                                  selectedNetwork
-                                );
+                                onSelect(row.chainId, row.fungible.id, selectedNetwork);
                                 onClose();
                               }}
                             />
                           )}
                           renderHeader={(label) => (
                             <div className={styles.sectionHeader}>
-                              <UIText
-                                kind="small/accent"
-                                color="var(--neutral-500)"
-                              >
+                              <UIText kind="small/accent" color="var(--neutral-500)">
                                 {label}
                               </UIText>
                             </div>

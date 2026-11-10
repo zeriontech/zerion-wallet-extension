@@ -1,4 +1,1 @@
-export {
-  BottomSheetDialog,
-  AnimationPreset as DialogAnimationPreset,
-} from './BottomSheetDialog';
+export { BottomSheetDialog, AnimationPreset as DialogAnimationPreset } from './BottomSheetDialog';

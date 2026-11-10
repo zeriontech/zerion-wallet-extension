@@ -29,7 +29,7 @@ export function AnalyticsIdHandler() {
       callbackFn={(params) => {
         invariant(
           isObj(params) && typeof params.userId === 'string',
-          'Got invalid payload from set-referral-code web app message'
+          'Got invalid payload from set-referral-code web app message',
         );
         setAnalyticsId(params.userId);
       }}

@@ -27,21 +27,10 @@ export function SessionExpired({ onRestart }: { onRestart: () => void }) {
   return (
     <div className={helperStyles.container}>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <img
-          alt="session expired"
-          src={SessionExpiredImg}
-          width={185}
-          height={144}
-        />
+        <img alt="session expired" src={SessionExpiredImg} width={185} height={144} />
       </div>
-      <VStack
-        gap={40}
-        style={{ justifyContent: 'center', textAlign: 'center' }}
-      >
-        <VStack
-          gap={12}
-          style={{ justifyContent: 'center', textAlign: 'center' }}
-        >
+      <VStack gap={40} style={{ justifyContent: 'center', textAlign: 'center' }}>
+        <VStack gap={12} style={{ justifyContent: 'center', textAlign: 'center' }}>
           <UIText kind="headline/h1" color="var(--neutral-600)">
             Session expired
           </UIText>

@@ -52,9 +52,7 @@ export function AddFundsOptionsContent({
                       borderRadius: 12,
                     }}
                   >
-                    <IdentityIcon
-                      style={{ width: 24, height: 24, display: 'block' }}
-                    />
+                    <IdentityIcon style={{ width: 24, height: 24, display: 'block' }} />
                   </div>
                 }
                 gap={12}
@@ -105,8 +103,7 @@ export function AddFundsOptionsContent({
           alignItems="start"
           detailText={
             <UIText kind="body/accent" color="var(--neutral-500)">
-              Transfer crypto from another wallet or exchange with QR code or
-              wallet address
+              Transfer crypto from another wallet or exchange with QR code or wallet address
             </UIText>
           }
         />

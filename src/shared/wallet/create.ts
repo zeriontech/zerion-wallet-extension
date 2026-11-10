@@ -13,9 +13,7 @@ import { getAccountPath, isSolanaPath } from './derivation-paths';
 import { BLOCKCHAIN_TYPES, type BlockchainType } from './classifiers';
 import { assertKnownEcosystems } from './shared';
 
-export function walletToObject(
-  wallet: EthersV5Wallet | BareWallet
-): BareWallet {
+export function walletToObject(wallet: EthersV5Wallet | BareWallet): BareWallet {
   return {
     mnemonic: wallet.mnemonic,
     privateKey: wallet.privateKey,
@@ -36,7 +34,7 @@ function fromPrivateKey(privateKey: string) {
 function fromEthersWallet(wallet: EthersV5Wallet): BareMnemonicWallet;
 function fromEthersWallet(wallet: PrivateKeyWallet): BareWallet;
 function fromEthersWallet(
-  wallet: EthersV5Wallet | PrivateKeyWallet
+  wallet: EthersV5Wallet | PrivateKeyWallet,
 ): BareWallet | BareMnemonicWallet {
   return {
     mnemonic: wallet.mnemonic,
@@ -46,9 +44,7 @@ function fromEthersWallet(
   };
 }
 
-export function restoreBareWallet(
-  wallet: Partial<BareWallet>
-): BareWallet | BareMnemonicWallet {
+export function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet | BareMnemonicWallet {
   const { address, privateKey, mnemonic, name } = wallet;
   if (address && privateKey) {
     return {
@@ -69,10 +65,7 @@ export function restoreBareWallet(
       const keypair = fromMnemonicToEd25519(mnemonic.phrase, mnemonic.path);
       return fromSolanaKeypair({ mnemonic, keypair });
     } else {
-      const wallet = EthersV5Wallet.fromMnemonic(
-        mnemonic.phrase,
-        mnemonic.path
-      );
+      const wallet = EthersV5Wallet.fromMnemonic(mnemonic.phrase, mnemonic.path);
       return fromEthersWallet(wallet);
     }
   } else {
@@ -89,9 +82,7 @@ function seedToSolanaWallet(phrase: string): BareMnemonicWallet {
   return fromSolanaKeypair({ mnemonic, keypair });
 }
 
-export function generateWalletsForEcosystems(
-  ecosystems: BlockchainType[]
-): BareMnemonicWallet[] {
+export function generateWalletsForEcosystems(ecosystems: BlockchainType[]): BareMnemonicWallet[] {
   invariant(ecosystems.length > 0, 'Must provide at least one ecosystem');
   assertKnownEcosystems(ecosystems);
   const seedWallet = EthersV5Wallet.createRandom();

@@ -16,7 +16,7 @@ export function RateLine({ rate }: { rate: ActionRate }) {
       <UIText kind="small/accent" style={{ justifySelf: 'end' }}>
         {`${formatTokenValue(
           rate[0].value,
-          rate[0].symbol
+          rate[0].symbol,
         )} = ${formatTokenValue(rate[1].value, rate[1].symbol)}`}
       </UIText>
     </HStack>

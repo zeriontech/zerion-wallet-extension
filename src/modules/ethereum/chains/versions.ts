@@ -1,12 +1,7 @@
 import type { Upgrades } from 'src/shared/type-utils/versions';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { AddEthereumChainParameter } from '../types/AddEthereumChainParameter';
-import type {
-  ChainConfig,
-  ChainConfigV1,
-  ChainConfigV2,
-  EthereumChainConfig,
-} from './types';
+import type { ChainConfig, ChainConfigV1, ChainConfigV2, EthereumChainConfig } from './types';
 import { toCustomNetworkId } from './helpers';
 
 type PossibleEntry = ChainConfigV1 | ChainConfigV2 | ChainConfig;
@@ -20,7 +15,7 @@ function maybeLocalChainId(id?: string | null) {
  * supports old external_id field from NetworkConfigStoredV0
  */
 export function toAddEthereumChainParameterLegacy(
-  item: ChainConfigV1['ethereumChains'][number]['value']
+  item: ChainConfigV1['ethereumChains'][number]['value'],
 ): AddEthereumChainParameter {
   return {
     rpcUrls: item.rpc_url_user
@@ -50,9 +45,7 @@ export const upgrades: Upgrades<PossibleEntry> = {
       const ethereumChainConfigs: EthereumChainConfig[] = [];
       for (const { value, ...config } of entry.ethereumChains || []) {
         const chainConfig = toAddEthereumChainParameterLegacy(value);
-        const id = maybeLocalChainId(value.id)
-          ? toCustomNetworkId(value.external_id)
-          : value.id;
+        const id = maybeLocalChainId(value.id) ? toCustomNetworkId(value.external_id) : value.id;
         ethereumChainConfigs.push({
           ...config,
           id,

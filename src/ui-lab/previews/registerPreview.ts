@@ -14,9 +14,7 @@ export const previews: PreviewConfig[] = [];
  * should not be commited to final code. In order to create permanent previews
  * use the `registerPreviewPermanent` function
  */
-export function registerPreview(
-  preview: PartiallyOptional<PreviewConfig, 'name'>
-) {
+export function registerPreview(preview: PartiallyOptional<PreviewConfig, 'name'>) {
   if (process.env.NODE_ENV !== 'development') {
     return;
   }

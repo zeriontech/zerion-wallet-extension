@@ -8,9 +8,7 @@ export const USER_ABSTRACTION_QUERY_KEY = 'hyperliquid/userAbstraction';
 // rather than polling.
 const ABSTRACTION_STALE_TIME = Number.POSITIVE_INFINITY;
 
-export function userAbstractionQueryOptions(payload: {
-  address: string | null | undefined;
-}) {
+export function userAbstractionQueryOptions(payload: { address: string | null | undefined }) {
   const { address } = payload;
   return {
     queryKey: [USER_ABSTRACTION_QUERY_KEY, address] as const,
@@ -24,7 +22,7 @@ export function userAbstractionQueryOptions(payload: {
 
 export function useUserAbstraction(
   payload: { address: string | null | undefined },
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: [USER_ABSTRACTION_QUERY_KEY, payload.address],

@@ -32,7 +32,7 @@ export const BaseDialog = React.forwardRef(
       onClosed,
       ...props
     }: BaseDialogProps,
-    ref: React.Ref<HTMLDialogElement>
+    ref: React.Ref<HTMLDialogElement>,
   ) => {
     const [open, setOpen] = useState(props.open ?? false);
     const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -121,7 +121,7 @@ export const BaseDialog = React.forwardRef(
             setRef(ref, node);
             setRef(dialogRef, node);
           },
-          [ref]
+          [ref],
         )}
         style={{
           overflow: 'visible', // TODO: why not "auto"? Is it for some "click outside" edge case?
@@ -141,9 +141,7 @@ export const BaseDialog = React.forwardRef(
          */}
         <div
           ref={useCallback((node: HTMLDivElement | null) => {
-            setUIContextValue(
-              node ? { uiScrollRootElement: node } : defaultUIContextValue
-            );
+            setUIContextValue(node ? { uiScrollRootElement: node } : defaultUIContextValue);
           }, [])}
           className={styles.hiddenScrollbar}
           style={{
@@ -155,16 +153,10 @@ export const BaseDialog = React.forwardRef(
           }}
         >
           <UIContext.Provider value={uiContextValue}>
-            {renderWhenOpen
-              ? open
-                ? renderWhenOpen()
-                : null
-              : render
-                ? render(open)
-                : children}
+            {renderWhenOpen ? (open ? renderWhenOpen() : null) : render ? render(open) : children}
           </UIContext.Provider>
         </div>
       </dialog>
     );
-  }
+  },
 );

@@ -102,11 +102,7 @@ describe('Get Started', () => {
       await addressImportMessagesView.finish();
     });
 
-    test('User can create a new backup', async ({
-      page,
-      getStartedPage,
-      password,
-    }) => {
+    test('User can create a new backup', async ({ page, getStartedPage, password }) => {
       await getStartedPage.createNewWalletLink.click();
 
       const walletGroupSelectPage = new WalletGroupSelectPage(page);
@@ -125,10 +121,7 @@ describe('Get Started', () => {
       await generateWalletView.finish();
     });
 
-    test('User can import existing wallet using private key', async ({
-      page,
-      getStartedPage,
-    }) => {
+    test('User can import existing wallet using private key', async ({ page, getStartedPage }) => {
       await getStartedPage.addExistingWalletLink.click();
 
       const existingWalletOptionsPage = new ExistingWalletOptionsPage(page);
@@ -137,9 +130,7 @@ describe('Get Started', () => {
 
       const importWalletView = new ImportWalletView(page);
       await importWalletView.matchesSnapshot();
-      await importWalletView.phraseOrPrivateKeyInput.fill(
-        testWallets.charlie.privateKey
-      );
+      await importWalletView.phraseOrPrivateKeyInput.fill(testWallets.charlie.privateKey);
       await importWalletView.importButton.click();
 
       const privateKeyImportView = new PrivateKeyImportView(page);
@@ -161,9 +152,7 @@ describe('Get Started', () => {
 
       const importWalletView = new ImportWalletView(page);
       await importWalletView.matchesSnapshot();
-      await importWalletView.phraseOrPrivateKeyInput.fill(
-        testWallets.charlie.recoveryPhrase
-      );
+      await importWalletView.phraseOrPrivateKeyInput.fill(testWallets.charlie.recoveryPhrase);
       await importWalletView.importButton.click();
 
       const verifyUserPage = new VerifyUserComponent(page);
@@ -189,9 +178,7 @@ describe('Get Started', () => {
 
       const addReadonlyAddressPage = new AddReadonlyAddressPage(page);
       await addReadonlyAddressPage.matchesSnapshot();
-      await addReadonlyAddressPage.addressInput.fill(
-        testWallets.charlie.address
-      );
+      await addReadonlyAddressPage.addressInput.fill(testWallets.charlie.address);
       await addReadonlyAddressPage.continueButton.click();
     });
   });

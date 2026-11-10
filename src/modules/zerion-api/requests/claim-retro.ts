@@ -22,6 +22,6 @@ export function claimRetro(this: ZerionApiContext, params: Params) {
         signature: params.signature,
       }),
     },
-    kyOptions
+    kyOptions,
   );
 }

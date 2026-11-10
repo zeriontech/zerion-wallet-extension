@@ -116,12 +116,7 @@ function GenerateWalletView() {
         ) : null}
         {ready && finalizeMutation.isSuccess && generatedWallets ? (
           <animated.div style={style}>
-            <Button
-              as={UnstyledLink}
-              to="/overview"
-              style={{ width: '100%' }}
-              ref={autoFocusRef}
-            >
+            <Button as={UnstyledLink} to="/overview" style={{ width: '100%' }} ref={autoFocusRef}>
               {generatedWallets.length > 1 ? 'View Wallets' : 'View Wallet'}
             </Button>
           </animated.div>

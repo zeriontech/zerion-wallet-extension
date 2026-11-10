@@ -15,7 +15,7 @@ const samples = {
     signatureSerialized:
       's53NPbWmjc3eJeB4g4GoxZ82mpZ1SD+kddEyjMLZOQvtbndBiGstxc0otzJEuN4JKqBNHOXUixGRtOxG5aXnCQ==',
     sampleKey: opaqueType<LocallyEncoded>(
-      'AEdhfER+YHRgbkFDW3ZqV25eA1Z0XWFsYwUOXURTdlZHen9AQBl6W1NgQE4aBFloU1dUVlpTT0pwGVZQd2hnXkx8Yht9VUdjVUV4VHNPeQBDfFl/alYBQw=='
+      'AEdhfER+YHRgbkFDW3ZqV25eA1Z0XWFsYwUOXURTdlZHen9AQBl6W1NgQE4aBFloU1dUVlpTT0pwGVZQd2hnXkx8Yht9VUdjVUV4VHNPeQBDfFl/alYBQw==',
     ),
   },
 
@@ -27,7 +27,7 @@ const samples = {
     signatureBase58:
       '2dzuWD1gBQGrn7PaHhfHXnTv5zKDTcSCiGky5iDCf6N9c7Zf63R87fbVkmgQW89M8r156ggRfD9W1f8Hw74vzMGw',
     sampleKey: opaqueType<LocallyEncoded>(
-      'AEdhfER+YHRgbkFDW3ZqV25eA1Z0XWFsYwUOXURTdlZHen9AQBl6W1NgQE4aBFloU1dUVlpTT0pwGVZQd2hnXkx8Yht9VUdjVUV4VHNPeQBDfFl/alYBQw=='
+      'AEdhfER+YHRgbkFDW3ZqV25eA1Z0XWFsYwUOXURTdlZHen9AQBl6W1NgQE4aBFloU1dUVlpTT0pwGVZQd2hnXkx8Yht9VUdjVUV4VHNPeQBDfFl/alYBQw==',
     ),
   },
 
@@ -37,7 +37,7 @@ const samples = {
       'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAECrPSNQxC49BOfYHZ0ZxnI92VBagTCOfsKLHzbWm2dD/kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP9ZUXyUAx5B6nZ/JH9odAk4F/6fhVBdjyEiWYwMPFWlAQECAAAMAgAAACAdmgAAAAAA',
     ] as StringBase64[],
     sampleKey: opaqueType<LocallyEncoded>(
-      'AEdhfER+YHRgbkFDW3ZqV25eA1Z0XWFsYwUOXURTdlZHen9AQBl6W1NgQE4aBFloU1dUVlpTT0pwGVZQd2hnXkx8Yht9VUdjVUV4VHNPeQBDfFl/alYBQw=='
+      'AEdhfER+YHRgbkFDW3ZqV25eA1Z0XWFsYwUOXURTdlZHen9AQBl6W1NgQE4aBFloU1dUVlpTT0pwGVZQd2hnXkx8Yht9VUdjVUV4VHNPeQBDfFl/alYBQw==',
     ),
     results: [
       {
@@ -62,9 +62,7 @@ describe('Solana signing functions', () => {
     const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
     const messageUint8 = ethers.getBytes(sample.messageHex);
     const result = SolanaSigning.signMessage(messageUint8, keypair);
-    expect(uint8ArrayToBase64(result.signature)).toBe(
-      sample.signatureSerialized
-    );
+    expect(uint8ArrayToBase64(result.signature)).toBe(sample.signatureSerialized);
   });
 
   test('signTransaction', () => {
@@ -80,9 +78,7 @@ describe('Solana signing functions', () => {
   test('signAllTransactions', () => {
     const sample = samples.signAllTransactions;
     const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
-    const transactions = sample.transactionsBase64.map((tx) =>
-      solFromBase64(tx)
-    );
+    const transactions = sample.transactionsBase64.map((tx) => solFromBase64(tx));
     const results = SolanaSigning.signAllTransactions(transactions, keypair);
 
     expect(results[0].signature).toBe(sample.results[0].signatureBase58);

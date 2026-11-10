@@ -42,10 +42,10 @@ type MetabaseEvent =
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };
 
-export function sendToMetabase<
-  E extends MetabaseEvent,
-  T extends BaseParams<E>,
->(event: E, params: T) {
+export function sendToMetabase<E extends MetabaseEvent, T extends BaseParams<E>>(
+  event: E,
+  params: T,
+) {
   logToConsole(Loglevel.info, 'group', `Metabase: ${params.request_name}`);
   logTable(Loglevel.info, params);
   logToConsole(Loglevel.info, 'groupEnd');
@@ -68,9 +68,7 @@ async function readOs() {
 readOs();
 
 const detectedBrowser = detectBrowser(globalThis.navigator.userAgent);
-const browserInfo = [detectedBrowser.browser, detectedBrowser.version].join(
-  ' '
-);
+const browserInfo = [detectedBrowser.browser, detectedBrowser.version].join(' ');
 
 export function createParams<T extends BaseParams>(data: T) {
   return {

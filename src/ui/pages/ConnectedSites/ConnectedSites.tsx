@@ -28,11 +28,7 @@ import type { InputHandle } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { ConnectedSite } from './ConnectedSite';
 
-function RevokeAllPermissionsComponent({
-  onRevokeAll,
-}: {
-  onRevokeAll: () => void;
-}) {
+function RevokeAllPermissionsComponent({ onRevokeAll }: { onRevokeAll: () => void }) {
   const removeAllOriginsMutation = useMutation({
     mutationFn: () => walletPort.request('removeAllOriginPermissions'),
     useErrorBoundary: true,
@@ -57,9 +53,7 @@ function RevokeAllPermissionsComponent({
             },
             component: (
               <UIText kind="body/regular" color="var(--negative-500)">
-                {removeAllOriginsMutation.isLoading
-                  ? 'Loading...'
-                  : 'Disconnect All'}
+                {removeAllOriginsMutation.isLoading ? 'Loading...' : 'Disconnect All'}
               </UIText>
             ),
           },
@@ -87,11 +81,7 @@ function ConnectedSitesList({
             key: item.origin,
             to: `/connected-sites/${encodeURIComponent(item.origin)}`,
             component: (
-              <HStack
-                gap={4}
-                justifyContent="space-between"
-                alignItems="center"
-              >
+              <HStack gap={4} justifyContent="space-between" alignItems="center">
                 <Media
                   image={
                     <div>
@@ -108,11 +98,7 @@ function ConnectedSitesList({
                       />
                     </div>
                   }
-                  text={
-                    <UIText kind="body/accent">
-                      {new URL(item.origin).hostname}
-                    </UIText>
-                  }
+                  text={<UIText kind="body/accent">{new URL(item.origin).hostname}</UIText>}
                   vGap={0}
                   detailText={
                     <div
@@ -146,9 +132,7 @@ function ConnectedSitesList({
           };
         })}
       />
-      {showRevokeAll ? (
-        <RevokeAllPermissionsComponent onRevokeAll={onRevokeAll} />
-      ) : null}
+      {showRevokeAll ? <RevokeAllPermissionsComponent onRevokeAll={onRevokeAll} /> : null}
     </VStack>
   );
 }
@@ -244,9 +228,7 @@ function ConnectedSitesMain() {
       return allConnectedSites;
     }
     const query = searchQuery.trim();
-    return allConnectedSites?.filter((site) =>
-      site.origin.toLowerCase().includes(query)
-    );
+    return allConnectedSites?.filter((site) => site.origin.toLowerCase().includes(query));
   }, [allConnectedSites, searchQuery]);
 
   return (

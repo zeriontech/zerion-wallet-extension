@@ -21,10 +21,7 @@ import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
-import {
-  getWalletId,
-  type WalletListGroup,
-} from 'src/shared/wallet/wallet-list';
+import { getWalletId, type WalletListGroup } from 'src/shared/wallet/wallet-list';
 import * as styles from './styles.module.css';
 import type { AnyWallet, WalletGroupInfo } from './shared';
 import { getFullWalletList } from './shared';
@@ -68,8 +65,7 @@ function WalletListItem({
       btnStyle={{
         padding: 0,
         display: 'block',
-        ['--button-text' as string]:
-          'var(--copy-button-text-color, var(--neutral-500))',
+        ['--button-text' as string]: 'var(--copy-button-text-color, var(--neutral-500))',
       }}
       tooltipPosition="center-bottom"
       tooltipContent="Address Copied"
@@ -85,8 +81,7 @@ function WalletListItem({
       }}
     />
   );
-  const ecosystemPrefix =
-    getAddressType(wallet.address) === 'evm' ? 'Eth' : 'Sol';
+  const ecosystemPrefix = getAddressType(wallet.address) === 'evm' ? 'Eth' : 'Sol';
 
   return (
     <>
@@ -146,8 +141,7 @@ function WalletListItem({
                               : ''
                           }${data.value}`}
                         </span>
-                        {showAddressValues &&
-                        data.type !== WalletNameType.address ? (
+                        {showAddressValues && data.type !== WalletNameType.address ? (
                           <>
                             <span
                               className={styles.addressHint}
@@ -202,15 +196,12 @@ function WalletListItem({
                   render={(query) => (
                     <UIText kind="headline/h3" style={{ display: 'flex' }}>
                       {query.data ? (
-                        <BlurrableBalance
-                          kind="headline/h3"
-                          color="var(--black)"
-                        >
+                        <BlurrableBalance kind="headline/h3" color="var(--black)">
                           <NeutralDecimals
                             parts={formatCurrencyToParts(
                               query.data.data?.totalValue || 0,
                               'en',
-                              currency
+                              currency,
                             )}
                           />
                         </BlurrableBalance>
@@ -222,9 +213,7 @@ function WalletListItem({
                 />
               }
             />
-            {isSelected ? (
-              <CheckIcon style={{ width: 24, height: 24 }} />
-            ) : null}
+            {isSelected ? <CheckIcon style={{ width: 24, height: 24 }} /> : null}
           </HStack>
           {renderFooter ? renderFooter() : null}
         </VStack>
@@ -266,13 +255,10 @@ export function WalletList({
         walletGroups,
         predicate,
       }),
-    [walletsOrder, walletGroups, predicate]
+    [walletsOrder, walletGroups, predicate],
   );
   const walletMap = useMemo(() => {
-    const map = new Map<
-      string,
-      { group: WalletGroupInfo; wallet: AnyWallet }
-    >();
+    const map = new Map<string, { group: WalletGroupInfo; wallet: AnyWallet }>();
     for (const group of walletGroups) {
       for (const wallet of group.walletContainer.wallets) {
         map.set(
@@ -280,7 +266,7 @@ export function WalletList({
             address: wallet.address,
             groupId: group.id,
           }),
-          { group, wallet }
+          { group, wallet },
         );
       }
     }
@@ -340,14 +326,9 @@ export function WalletList({
                   useCssAnchors={supportsCssAnchor}
                   showAddressValues={showAddressValues}
                   isSelected={
-                    normalizeAddress(wallet.address) ===
-                    normalizeAddress(selectedAddress)
+                    normalizeAddress(wallet.address) === normalizeAddress(selectedAddress)
                   }
-                  renderFooter={
-                    renderItemFooter
-                      ? () => renderItemFooter({ group, wallet })
-                      : null
-                  }
+                  renderFooter={renderItemFooter ? () => renderItemFooter({ group, wallet }) : null}
                 />
               );
             })}

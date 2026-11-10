@@ -19,9 +19,7 @@ export function normalizeNumberValue(value: BigNumber.Value): BigNumber.Value {
 }
 
 export function baseToCommon(value: BigNumber.Value, decimalPlaces: number) {
-  return new BigNumber(normalizeNumberValue(value)).shiftedBy(
-    0 - decimalPlaces
-  );
+  return new BigNumber(normalizeNumberValue(value)).shiftedBy(0 - decimalPlaces);
 }
 
 export function commonToBase(value: BigNumber.Value, decimalPlaces: number) {

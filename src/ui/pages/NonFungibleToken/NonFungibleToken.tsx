@@ -30,7 +30,7 @@ export function NonFungibleToken() {
   const { data } = useWalletNftPosition(
     { address: singleAddress, currency, nftId },
     { source },
-    { enabled: Boolean(chain && asset_code && singleAddress) }
+    { enabled: Boolean(chain && asset_code && singleAddress) },
   );
   const nft = data?.data.nft;
 
@@ -39,7 +39,7 @@ export function NonFungibleToken() {
       return null;
     }
     const webAppUrlObject = new URL(
-      `https://app.zerion.io/nfts/${nft.chain}/${nft.contractAddress}:${nft.tokenId}`
+      `https://app.zerion.io/nfts/${nft.chain}/${nft.contractAddress}:${nft.tokenId}`,
     );
     if (singleAddress) {
       webAppUrlObject.searchParams.append('address', singleAddress);
@@ -58,9 +58,7 @@ export function NonFungibleToken() {
     <Background backgroundKind="white">
       <PageColumn style={{ paddingTop: 18 }}>
         <NavigationTitle
-          title={
-            nft ? `${nft.collection.name} • ${nft.metadata.name}` : 'NFT Info'
-          }
+          title={nft ? `${nft.collection.name} • ${nft.metadata.name}` : 'NFT Info'}
         />
         {nft ? (
           <VStack gap={24}>
@@ -96,11 +94,7 @@ export function NonFungibleToken() {
           style={{ backgroundColor: 'var(--white)' }}
         >
           <Spacer height={24} />
-          <HStack
-            gap={8}
-            alignItems="center"
-            style={{ gridTemplateColumns: '1fr 1fr' }}
-          >
+          <HStack gap={8} alignItems="center" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <Button
               as={UnstyledAnchor}
               href={links.webAppLink}

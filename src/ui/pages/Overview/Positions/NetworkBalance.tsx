@@ -5,10 +5,7 @@ import { isTruthy } from 'is-truthy-ts';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
-import {
-  useMainnetNetwork,
-  useNetworks,
-} from 'src/modules/networks/useNetworks';
+import { useMainnetNetwork, useNetworks } from 'src/modules/networks/useNetworks';
 import { intersperce } from 'src/ui/shared/intersperce';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -43,9 +40,7 @@ function DisclosureButton({
   const { networks, isLoading } = useNetworks();
   const { preferences } = usePreferences();
   const selectedNetwork =
-    value === NetworkSelectValue.All
-      ? null
-      : networks?.getNetworkByName(createChain(value));
+    value === NetworkSelectValue.All ? null : networks?.getNetworkByName(createChain(value));
 
   const { data: mainnetNetwork } = useMainnetNetwork({
     chain: value,
@@ -59,9 +54,7 @@ function DisclosureButton({
   const network = selectedNetwork || mainnetNetwork;
 
   const selectedNetworkName =
-    value === NetworkSelectValue.All
-      ? allNetworksString
-      : network?.name || value;
+    value === NetworkSelectValue.All ? allNetworksString : network?.name || value;
 
   return (
     <UnstyledButton
@@ -107,13 +100,10 @@ function DisclosureButton({
             ],
             (key) => (
               <div key={key}>·</div>
-            )
+            ),
           )}
           {disabled ? null : (
-            <ArrowDownIcon
-              className="content-hover"
-              style={{ width: 24, height: 24 }}
-            />
+            <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
           )}
         </HStack>
       </UIText>
@@ -143,9 +133,7 @@ export function NetworkBalance({
 
   const SCROLL_THRESHOLD = getTabScrollContentHeight(offsetValuesState) - 8;
 
-  const dappNetwork = dappChain
-    ? networks?.getNetworkByName(createChain(dappChain))
-    : null;
+  const dappNetwork = dappChain ? networks?.getNetworkByName(createChain(dappChain)) : null;
 
   const temporary_solanaDisabledSelector = standard === 'solana';
 
@@ -153,8 +141,7 @@ export function NetworkBalance({
     ? NetworkId.Solana
     : selectedChain || NetworkSelectValue.All;
 
-  const showHelperButton =
-    !temporary_solanaDisabledSelector && Boolean(selectedChain || dappChain);
+  const showHelperButton = !temporary_solanaDisabledSelector && Boolean(selectedChain || dappChain);
   const showAllNetworksHelperButton =
     (!dappChain && selectedChain !== NetworkSelectValue.All) ||
     (dappChain && selectedChain === dappChain);
@@ -162,8 +149,7 @@ export function NetworkBalance({
   const hasValue = totalValue != null;
 
   useEffect(() => {
-    const handleScroll = () =>
-      setShowWalletNameContent(window.scrollY > SCROLL_THRESHOLD);
+    const handleScroll = () => setShowWalletNameContent(window.scrollY > SCROLL_THRESHOLD);
 
     handleScroll();
     window.addEventListener('scroll', handleScroll);
@@ -267,9 +253,7 @@ export function NetworkBalance({
         {showHelperButton ? (
           <Button
             kind="text-primary"
-            onClick={() =>
-              onChange(showAllNetworksHelperButton ? null : dappChain)
-            }
+            onClick={() => onChange(showAllNetworksHelperButton ? null : dappChain)}
             style={{
               ['--button-text' as string]: 'var(--primary)',
               overflow: 'hidden',
@@ -277,9 +261,7 @@ export function NetworkBalance({
               textOverflow: 'ellipsis',
             }}
           >
-            {showAllNetworksHelperButton
-              ? allNetworksString
-              : dappNetwork?.name}
+            {showAllNetworksHelperButton ? allNetworksString : dappNetwork?.name}
           </Button>
         ) : null}
       </HStack>

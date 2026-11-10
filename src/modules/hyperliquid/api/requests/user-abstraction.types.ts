@@ -2,11 +2,7 @@
 // string. Documented modes from the iOS implementation are `disabled` /
 // `dexAbstraction` / `unifiedAccount` / `portfolioMargin`; the live endpoint
 // also returns `default` for the no-abstraction classic state.
-export type AbstractionMode =
-  | 'disabled'
-  | 'dexAbstraction'
-  | 'unifiedAccount'
-  | 'portfolioMargin';
+export type AbstractionMode = 'disabled' | 'dexAbstraction' | 'unifiedAccount' | 'portfolioMargin';
 
 export interface UserAbstractionPayload {
   address: string;

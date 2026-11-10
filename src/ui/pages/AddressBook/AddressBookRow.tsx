@@ -21,28 +21,17 @@ export function AddressBookRow({
   rightSlot?: React.ReactNode;
   showAddressHint?: boolean;
 }) {
-  const ecosystemPrefix =
-    getAddressType(entry.address) === 'evm' ? 'Eth' : 'Sol';
+  const ecosystemPrefix = getAddressType(entry.address) === 'evm' ? 'Eth' : 'Sol';
   const wallet = { address: entry.address, name: entry.name ?? null };
 
   return (
     <div className={styles.row}>
       <VStack gap={0}>
-        <HStack
-          gap={4}
-          justifyContent="space-between"
-          alignItems="center"
-          style={{ padding: 12 }}
-        >
+        <HStack gap={4} justifyContent="space-between" alignItems="center" style={{ padding: 12 }}>
           <Media
             vGap={0}
             image={
-              <WalletAvatar
-                address={entry.address}
-                size={40}
-                active={false}
-                borderRadius={12}
-              />
+              <WalletAvatar address={entry.address} size={40} active={false} borderRadius={12} />
             }
             text={
               <UIText kind="small/regular">
@@ -56,9 +45,7 @@ export function AddressBookRow({
                       }}
                     >
                       {`${
-                        data.type !== WalletNameType.domain
-                          ? `${ecosystemPrefix} ${middot} `
-                          : ''
+                        data.type !== WalletNameType.domain ? `${ecosystemPrefix} ${middot} ` : ''
                       }${data.value}`}
                     </span>
                   )}

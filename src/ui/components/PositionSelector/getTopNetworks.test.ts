@@ -28,11 +28,7 @@ describe('getTopNetworks', () => {
   ];
 
   it('orders by position count without pins', () => {
-    expect(ids(getTopNetworks(positions, null, null))).toEqual([
-      'base',
-      'ethereum',
-      'arbitrum',
-    ]);
+    expect(ids(getTopNetworks(positions, null, null))).toEqual(['base', 'ethereum', 'arbitrum']);
   });
 
   it('puts pinned chains first in pin order and dedupes them', () => {

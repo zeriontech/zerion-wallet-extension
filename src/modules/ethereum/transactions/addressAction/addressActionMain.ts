@@ -17,17 +17,11 @@ import type {
   IncomingTransactionWithFrom,
 } from '../../types/IncomingTransaction';
 
-export type LocalActionTransaction = Omit<
-  NonNullable<AddressAction['transaction']>,
-  'hash'
-> & {
+export type LocalActionTransaction = Omit<NonNullable<AddressAction['transaction']>, 'hash'> & {
   hash: string | null;
 };
 
-type LocalAct = Omit<
-  NonNullable<AddressAction['acts']>[number],
-  'transaction'
-> & {
+type LocalAct = Omit<NonNullable<AddressAction['acts']>[number], 'transaction'> & {
   transaction: LocalActionTransaction;
 };
 
@@ -49,13 +43,12 @@ export type LocalAddressAction = Omit<AddressAction, 'transaction' | 'acts'> & {
 export type AnyAddressAction = AddressAction | LocalAddressAction;
 
 export function isLocalAddressAction(
-  addressAction: AddressAction | LocalAddressAction
+  addressAction: AddressAction | LocalAddressAction,
 ): addressAction is LocalAddressAction {
   return 'local' in addressAction && addressAction.local;
 }
 
-export const ZERO_HASH =
-  '0x0000000000000000000000000000000000000000000000000000000000000000';
+export const ZERO_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 const toEmptyActionTx = (chain: string): LocalAddressAction['rawTransaction'] =>
   ({
@@ -64,10 +57,7 @@ const toEmptyActionTx = (chain: string): LocalAddressAction['rawTransaction'] =>
     nonce: -1,
   }) as const;
 
-const toActionTx = (
-  tx: IncomingTransaction,
-  chain: string
-): LocalAddressAction['rawTransaction'] =>
+const toActionTx = (tx: IncomingTransaction, chain: string): LocalAddressAction['rawTransaction'] =>
   ({
     ...tx,
     chain,
@@ -127,13 +117,8 @@ function convertNetworkToActionChain(network: NetworkInfo): ActionChain {
   };
 }
 
-export function getExplorerUrl(
-  explorerUrlTemplate: string | null,
-  hash: string | null
-) {
-  return hash && explorerUrlTemplate
-    ? explorerUrlTemplate.replace('{HASH}', hash)
-    : null;
+export function getExplorerUrl(explorerUrlTemplate: string | null, hash: string | null) {
+  return hash && explorerUrlTemplate ? explorerUrlTemplate.replace('{HASH}', hash) : null;
 }
 
 export function createSendTokenAddressAction({
@@ -897,11 +882,11 @@ export function createApproveAddressAction2({
 
 export function createAcceleratedAddressAction(
   originalAddressAction: LocalAddressAction,
-  transaction: IncomingTransaction
+  transaction: IncomingTransaction,
 ): LocalAddressAction {
   invariant(
     originalAddressAction.rawTransaction,
-    'Missing initial transaction data to create a cancel transaction'
+    'Missing initial transaction data to create a cancel transaction',
   );
   const chain = originalAddressAction.rawTransaction.chain;
   return {
@@ -916,11 +901,11 @@ export function createAcceleratedAddressAction(
 
 export function createCancelAddressAction(
   originalAddressAction: LocalAddressAction,
-  transaction: IncomingTransactionWithFrom
+  transaction: IncomingTransactionWithFrom,
 ): LocalAddressAction {
   invariant(
     originalAddressAction.rawTransaction,
-    'Missing initial transaction data to create a cancel transaction'
+    'Missing initial transaction data to create a cancel transaction',
   );
   const chain = originalAddressAction.rawTransaction.chain;
   const type = { displayValue: 'Send', value: 'send' as const };

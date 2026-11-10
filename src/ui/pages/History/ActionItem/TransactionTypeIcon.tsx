@@ -38,13 +38,7 @@ export const transactionIconStyle = {
   height: TRANSACTION_ICON_SIZE,
 };
 
-export function TransactionTypeIcon({
-  type,
-  size,
-}: {
-  type: ActionType;
-  size?: number;
-}) {
+export function TransactionTypeIcon({ type, size }: { type: ActionType; size?: number }) {
   const style = useMemo(
     () => ({
       display: 'flex',
@@ -57,7 +51,7 @@ export function TransactionTypeIcon({
           }
         : transactionIconStyle),
     }),
-    [size]
+    [size],
   );
 
   if (type === 'approve') {
@@ -115,13 +109,7 @@ export function TransactionTypeIcon({
   return <UnknownIcon style={style} />;
 }
 
-function TransactionMultipleAssetsIcon({
-  amount,
-  size,
-}: {
-  amount: number;
-  size: number;
-}) {
+function TransactionMultipleAssetsIcon({ amount, size }: { amount: number; size: number }) {
   if (amount === 2) {
     return <ChangeAssets2 style={{ width: size, height: size }} />;
   }
@@ -172,9 +160,7 @@ function ApprovalIcon({
     return null;
   }
   if (approvals.length > 1) {
-    return (
-      <TransactionMultipleAssetsIcon amount={approvals.length} size={size} />
-    );
+    return <TransactionMultipleAssetsIcon amount={approvals.length} size={size} />;
   }
 
   return (
@@ -201,9 +187,7 @@ function TransferIcon({
     return null;
   }
   if (transfers.length > 1) {
-    return (
-      <TransactionMultipleAssetsIcon amount={transfers.length} size={size} />
-    );
+    return <TransactionMultipleAssetsIcon amount={transfers.length} size={size} />;
   }
   return (
     <HistoryAssetIcon
@@ -216,20 +200,15 @@ function TransferIcon({
   );
 }
 
-export function TransactionItemIcon({
-  addressAction,
-}: {
-  addressAction: AnyAddressAction;
-}) {
+export function TransactionItemIcon({ addressAction }: { addressAction: AnyAddressAction }) {
   const approvals = addressAction.content?.approvals;
   const incomingTransfers = useMemo(
     () => addressAction.content?.transfers?.filter((t) => t.direction === 'in'),
-    [addressAction]
+    [addressAction],
   );
   const outgoingTransfers = useMemo(
-    () =>
-      addressAction.content?.transfers?.filter((t) => t.direction === 'out'),
-    [addressAction]
+    () => addressAction.content?.transfers?.filter((t) => t.direction === 'out'),
+    [addressAction],
   );
 
   if (incomingTransfers?.length && outgoingTransfers?.length) {

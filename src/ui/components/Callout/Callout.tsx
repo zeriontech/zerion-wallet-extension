@@ -23,9 +23,7 @@ export function Callout({
   description: React.ReactNode;
 }) {
   return (
-    <div
-      className={cn(styles.card, kind === 'negative' ? styles.negative : null)}
-    >
+    <div className={cn(styles.card, kind === 'negative' ? styles.negative : null)}>
       <VStack gap={title ? 8 : 0}>
         {title ? (
           <UIText kind="small/accent" color="currentColor">

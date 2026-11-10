@@ -286,11 +286,7 @@
   top: 0;
   height: 6px;
   border-radius: 50%;
-  background: radial-gradient(
-    ellipse 50% 50% at center,
-    var(--neutral-400) 0%,
-    transparent 100%
-  );
+  background: radial-gradient(ellipse 50% 50% at center, var(--neutral-400) 0%, transparent 100%);
 }
 
 .loaderStretch {
@@ -298,11 +294,7 @@
   top: 0;
   height: 6px;
   border-radius: 50%;
-  background: radial-gradient(
-    ellipse 50% 50% at center,
-    var(--neutral-400) 0%,
-    transparent 100%
-  );
+  background: radial-gradient(ellipse 50% 50% at center, var(--neutral-400) 0%, transparent 100%);
 }
 
 .loaderSolid {

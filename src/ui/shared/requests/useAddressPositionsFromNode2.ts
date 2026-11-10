@@ -13,7 +13,7 @@ import { fetchAddressPositionFromRpcNode } from './fetchAddressPositionFromRpcNo
 function toFungiblePosition(
   network: NetworkInfo,
   balanceBaseUnits: string,
-  currency: string
+  currency: string,
 ): FungiblePosition | null {
   const native = network.baseAsset;
   const implementation = getBaseAssetImplementation(network);
@@ -96,11 +96,7 @@ export function useAddressPositionsFromNode2({
 
   const positions = useMemo<FungiblePosition[]>(() => {
     if (!query.data || query.data.balance == null) return [];
-    const fungible = toFungiblePosition(
-      query.data.network,
-      query.data.balance,
-      currency
-    );
+    const fungible = toFungiblePosition(query.data.network, query.data.balance, currency);
     return fungible ? [fungible] : [];
   }, [query.data, currency]);
 

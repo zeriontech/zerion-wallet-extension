@@ -9,13 +9,7 @@
 }
 
 .zerionOgGradient {
-  background: linear-gradient(
-    80deg,
-    #cd657f 7%,
-    #8a6df1 34%,
-    #71a1f3 62%,
-    #3bb1ed 90%
-  );
+  background: linear-gradient(80deg, #cd657f 7%, #8a6df1 34%, #71a1f3 62%, #3bb1ed 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

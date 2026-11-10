@@ -5,9 +5,7 @@ import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 import type { ChainGasPrice } from './types';
 
-export async function fetchGasPriceFromNode(
-  network: NetworkInfo
-): Promise<ChainGasPrice> {
+export async function fetchGasPriceFromNode(network: NetworkInfo): Promise<ChainGasPrice> {
   const url = Networks.getNetworkRpcUrlInternal(network);
   if (!url) {
     throw new Error(`RPC URL is missing from network config for ${network.id}`);
@@ -44,10 +42,7 @@ export async function fetchGasPrice({
   apiClient: ZerionApiClient;
 }) {
   try {
-    const response = await apiClient.getGasPrices(
-      { chain: createChain(network.id) },
-      { source }
-    );
+    const response = await apiClient.getGasPrices({ chain: createChain(network.id) }, { source });
     const chainGasPrices = response.data;
     if (chainGasPrices) {
       return chainGasPrices;

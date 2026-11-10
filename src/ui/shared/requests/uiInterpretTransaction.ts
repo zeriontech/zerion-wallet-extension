@@ -1,15 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  interpretSignature,
-  interpretTransactions,
-} from 'src/ui/shared/requests/interpret';
+import { interpretSignature, interpretTransactions } from 'src/ui/shared/requests/interpret';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { invariant } from 'src/shared/invariant';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import {
-  getPreferences,
-  usePreferences,
-} from 'src/ui/features/preferences/usePreferences';
+import { getPreferences, usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { fetchAndAssignPaymaster } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -44,11 +38,9 @@ export async function interpretTxBasedOnEligibility({
   let network: NetworkInfo | null = null;
   if (transactions[0].evm) {
     const networks = await networksStore.loadNetworksByChainId(
-      normalizeChainId(transactions[0].evm.chainId)
+      normalizeChainId(transactions[0].evm.chainId),
     );
-    const chain = networks.getChainById(
-      normalizeChainId(transactions[0].evm.chainId)
-    );
+    const chain = networks.getChainById(normalizeChainId(transactions[0].evm.chainId));
     network = chain ? networks?.getNetworkByName(chain) || null : null;
     invariant(network, `Unidentified network: ${transactions[0].evm.chainId}`);
   }
@@ -73,16 +65,10 @@ export async function interpretTxBasedOnEligibility({
         origin,
         currency,
       },
-      { source }
+      { source },
     );
-  } else if (
-    network.flags.supportsSponsoredTransactions &&
-    eligibilityQueryData
-  ) {
-    invariant(
-      transactions[0].evm,
-      'Only EVM transactions are supported for paymaster'
-    );
+  } else if (network.flags.supportsSponsoredTransactions && eligibilityQueryData) {
+    invariant(transactions[0].evm, 'Only EVM transactions are supported for paymaster');
     const toSign = await fetchAndAssignPaymaster(transactions[0].evm, {
       source,
       apiClient: ZerionAPI,
@@ -98,7 +84,7 @@ export async function interpretTxBasedOnEligibility({
         currency,
         origin,
       },
-      { source }
+      { source },
     );
   } else {
     return null;

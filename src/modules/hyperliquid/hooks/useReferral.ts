@@ -6,10 +6,7 @@ export const REFERRAL_QUERY_KEY = 'hyperliquid/referral';
 
 export function useReferral(
   payload: PerpReferralPayload,
-  {
-    suspense = false,
-    enabled = true,
-  }: { suspense?: boolean; enabled?: boolean } = {}
+  { suspense = false, enabled = true }: { suspense?: boolean; enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: [REFERRAL_QUERY_KEY, payload],

@@ -21,11 +21,7 @@ function remove<T>(arr: T[], predicate: (item: T) => boolean) {
 }
 
 function updateChainOrigin(origin: string, prevOrigin: string | null) {
-  if (
-    prevOrigin &&
-    prevOrigin !== BACKEND_NETWORK_ORIGIN &&
-    prevOrigin !== INTERNAL_ORIGIN
-  ) {
+  if (prevOrigin && prevOrigin !== BACKEND_NETWORK_ORIGIN && prevOrigin !== INTERNAL_ORIGIN) {
     return prevOrigin;
   }
   return origin;
@@ -66,7 +62,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
           draft.visitedChains = [];
         }
         upsert(draft.visitedChains, chainStr, (x) => x);
-      })
+      }),
     );
   }
 
@@ -81,7 +77,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
         if (draft.pinnedChains) {
           remove(draft.pinnedChains, (x) => x === chainStr);
         }
-      })
+      }),
     );
   }
 
@@ -93,7 +89,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
           draft.pinnedChains = [];
         }
         upsert(draft.pinnedChains, chainStr, (x) => x);
-      })
+      }),
     );
   }
 
@@ -104,7 +100,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
         if (draft.pinnedChains) {
           remove(draft.pinnedChains, (x) => x === chainStr);
         }
-      })
+      }),
     );
   }
 
@@ -125,13 +121,11 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
       origin: string;
       id: string;
       prevId: string | null;
-    }
+    },
   ): EthereumChainConfig {
     const prevId = maybePrevId || id;
     const state = this.getState();
-    const existingItems = new Map(
-      state.ethereumChainConfigs.map((config) => [config.id, config])
-    );
+    const existingItems = new Map(state.ethereumChainConfigs.map((config) => [config.id, config]));
     const existingEntry = existingItems.get(prevId);
     const existingPreviousIds = existingEntry?.previousIds || null;
     const previousIds =
@@ -147,21 +141,13 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
       id,
       previousIds,
     };
-    if (
-      existingEntry?.origin === newEntry.origin &&
-      equal(existingEntry.value, newEntry.value)
-    ) {
+    if (existingEntry?.origin === newEntry.origin && equal(existingEntry.value, newEntry.value)) {
       return existingEntry;
     }
     const newState = produce(state, (draft) => {
-      upsert(draft.ethereumChainConfigs, newEntry, (x) =>
-        x.id === prevId ? id : x.id
-      );
+      upsert(draft.ethereumChainConfigs, newEntry, (x) => (x.id === prevId ? id : x.id));
       if (prevId !== id) {
-        draft.pinnedChains = remapPinnedChains(
-          draft.pinnedChains,
-          new Map([[prevId, id]])
-        );
+        draft.pinnedChains = remapPinnedChains(draft.pinnedChains, new Map([[prevId, id]]));
       }
     });
     this.setState(newState);
@@ -177,7 +163,7 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
         if (isCustomNetworkId(chainStr) && draft.pinnedChains) {
           remove(draft.pinnedChains, (x) => x === chainStr);
         }
-      })
+      }),
     );
     // known networks should be kept in the `other networks` list after removing the config
     this.addVisitedChain(chain);
@@ -203,14 +189,9 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
         }
         try {
           const { chainId } = config.value;
-          const network = await getNetworkByChainId(
-            chainId,
-            this.networksApiParams
-          );
+          const network = await getNetworkByChainId(chainId, this.networksApiParams);
           if (!network) {
-            throw new Error(
-              `Unable to fetch network info by chainId: ${config.value.chainId}`
-            );
+            throw new Error(`Unable to fetch network info by chainId: ${config.value.chainId}`);
           }
           // Remove user-defined is_testnet when network becomes backend-supported
           const { is_testnet, ...valueWithoutTestnet } = config.value;
@@ -237,5 +218,5 @@ class ChainConfigStore extends PersistentStore<ChainConfig> {
 
 export const chainConfigStore = new ChainConfigStore(
   ChainConfigStore.initialState,
-  'chain-configs'
+  'chain-configs',
 );

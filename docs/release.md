@@ -4,16 +4,16 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 
 ## Gate matrix
 
-| Event | Workflow | What runs |
-| --- | --- | --- |
-| Pull request | `run-tests.yml` | `changeset-check` (or the `skip-changeset` label), `static` (`lint:check`, `format:check`, `typecheck`), `test` (`test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs, sharded 3 ways, balanced by measured test duration). `static`, `test`, `build` and `e2e` run in parallel; `changeset-check` is independent |
-| Pull request | `pr.yml` → `pr_attach_build.yml` | production build with PR env, zip attached to the PR thread |
-| Pull request | `pr_push_qa.yml` | build pushed to the `zerion-wallet-extension-qa` repo on the PR branch |
-| Push `main` | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump |
-| Tag `vX.Y.Z` | `release.yml` | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items |
-| Push `main` | `beta.yml` | beta build (coral icons, own Firefox id, fourth version part) and, when configured, upload to the beta store items |
-| Tag `vX.Y.Z` | `release_push_qa.yml` | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa` |
-| Manual | `publish-stores.yml` | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO |
+| Event        | Workflow                         | What runs                                                                                                                                                                                                                                                                                                                |
+| ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Pull request | `run-tests.yml`                  | `changeset-check` (or the `skip-changeset` label), `static` (`lint:check`, `format:check`, `typecheck`), `test` (`test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs, sharded 3 ways, balanced by measured test duration). `static`, `test`, `build` and `e2e` run in parallel; `changeset-check` is independent |
+| Pull request | `pr.yml` → `pr_attach_build.yml` | production build with PR env, zip attached to the PR thread                                                                                                                                                                                                                                                              |
+| Pull request | `pr_push_qa.yml`                 | build pushed to the `zerion-wallet-extension-qa` repo on the PR branch                                                                                                                                                                                                                                                   |
+| Push `main`  | `version-packages.yml`           | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                                                                                                                                  |
+| Tag `vX.Y.Z` | `release.yml`                    | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                                                                                                                                  |
+| Push `main`  | `beta.yml`                       | beta build (coral icons, own Firefox id, fourth version part) and, when configured, upload to the beta store items                                                                                                                                                                                                       |
+| Tag `vX.Y.Z` | `release_push_qa.yml`            | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa`                                                                                                                                                                                                                                                        |
+| Manual       | `publish-stores.yml`             | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                                                                                                                                         |
 
 All gates run on the Vite+ toolchain — Oxlint, Oxfmt, Vitest and TSRS; see `docs/build.md`.
 
@@ -43,10 +43,10 @@ There is a second listing of the extension in both stores, used as the beta chan
 
 What "submit" means differs by channel:
 
-|  | Chrome Web Store | Firefox AMO |
-| --- | --- | --- |
-| Beta (every `main` push) | upload, submit and publish immediately | upload, submit for review |
-| Production (tag) | **upload only** (`CHROME_SKIP_SUBMIT_REVIEW`); publish from the dashboard so the canary / staged rollout is chosen by hand | upload, submit for review |
+|                          | Chrome Web Store                                                                                                           | Firefox AMO               |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| Beta (every `main` push) | upload, submit and publish immediately                                                                                     | upload, submit for review |
+| Production (tag)         | **upload only** (`CHROME_SKIP_SUBMIT_REVIEW`); publish from the dashboard so the canary / staged rollout is chosen by hand | upload, submit for review |
 
 Store visibility is a dashboard setting, not something the API can set:
 
@@ -89,18 +89,18 @@ Tradeoff: we depend on a single third-party submitter covering both stores. If i
 
 ### Required secrets
 
-| Secret | For | Notes |
-| --- | --- | --- |
-| `CHROME_EXTENSION_ID` | Chrome | Extension ID in the Web Store |
-| `CHROME_PUBLISHER_ID` | Chrome | Publisher ID from the developer dashboard |
-| `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL` | Chrome | CWS API v2 service account |
-| `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY` | Chrome | Service account key, newlines may be literal `\n` |
-| `FIREFOX_EXTENSION_ID` | Firefox | AMO add-on id/slug |
-| `FIREFOX_JWT_ISSUER` | Firefox | AMO API key |
-| `FIREFOX_JWT_SECRET` | Firefox | AMO API secret |
-| `CHROME_BETA_EXTENSION_ID` | beta | Chrome item id of the beta listing; upload skipped when unset |
-| `FIREFOX_BETA_EXTENSION_ID` | beta | AMO id of the beta listing; upload skipped when unset |
-| `SLACK_AUTH_TOKEN` | both | Already used by `release.yml` |
+| Secret                                | For     | Notes                                                         |
+| ------------------------------------- | ------- | ------------------------------------------------------------- |
+| `CHROME_EXTENSION_ID`                 | Chrome  | Extension ID in the Web Store                                 |
+| `CHROME_PUBLISHER_ID`                 | Chrome  | Publisher ID from the developer dashboard                     |
+| `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL` | Chrome  | CWS API v2 service account                                    |
+| `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY`  | Chrome  | Service account key, newlines may be literal `\n`             |
+| `FIREFOX_EXTENSION_ID`                | Firefox | AMO add-on id/slug                                            |
+| `FIREFOX_JWT_ISSUER`                  | Firefox | AMO API key                                                   |
+| `FIREFOX_JWT_SECRET`                  | Firefox | AMO API secret                                                |
+| `CHROME_BETA_EXTENSION_ID`            | beta    | Chrome item id of the beta listing; upload skipped when unset |
+| `FIREFOX_BETA_EXTENSION_ID`           | beta    | AMO id of the beta listing; upload skipped when unset         |
+| `SLACK_AUTH_TOKEN`                    | both    | Already used by `release.yml`                                 |
 
 `CHROME_API_VERSION=v2` is set in the workflow, not stored as a secret. The script refuses to run with anything else: CWS API v1.1 stopped working on 2026-10-15.
 

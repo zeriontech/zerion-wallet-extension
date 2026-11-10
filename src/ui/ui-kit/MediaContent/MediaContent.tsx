@@ -87,9 +87,7 @@ export function MediaContent({
         alt={alt}
         style={style}
         className={className}
-        renderError={() => (
-          <MediaError style={errorStyle} src={content.image_preview_url} />
-        )}
+        renderError={() => <MediaError style={errorStyle} src={content.image_preview_url} />}
         renderLoading={renderLoading}
         onReady={onReady}
       />
@@ -106,9 +104,7 @@ export function MediaContent({
         playsInline={true}
         style={style}
         className={className}
-        renderError={() => (
-          <MediaError image="📹" style={errorStyle} src={content.video_url} />
-        )}
+        renderError={() => <MediaError image="📹" style={errorStyle} src={content.video_url} />}
         renderLoading={renderLoading}
         onReady={onReady}
       >
@@ -125,17 +121,14 @@ export function MediaContent({
         autoPlay={false}
         style={style}
         className={className}
-        renderError={() => (
-          <MediaError image="🎵" style={errorStyle} src={content.audio_url} />
-        )}
+        renderError={() => <MediaError image="🎵" style={errorStyle} src={content.audio_url} />}
         renderLoading={renderLoading}
         onReady={onReady}
       />
     );
   }
   if (content?.image_url || content?.image_preview_url) {
-    const imageSrc =
-      content.image_url || content.image_preview_url || 'no-image';
+    const imageSrc = content.image_url || content.image_preview_url || 'no-image';
     return (
       <Image
         // safari doesn't emit img onError for empty string src

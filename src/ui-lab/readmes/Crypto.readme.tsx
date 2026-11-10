@@ -125,10 +125,7 @@ const Crypto = () => {
             <UIText kind="small/regular" color="var(--neutral-500)">
               Salt
             </UIText>
-            <UIText
-              kind="body/regular"
-              style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}
-            >
+            <UIText kind="body/regular" style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>
               {salt}
             </UIText>
             <Button onClick={onGenerateSalt}>Generate salt</Button>

@@ -40,7 +40,7 @@ type Response = ResponseBody<AssetChart>;
 export async function assetGetChart(
   this: ZerionApiContext,
   payload: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const kyOptions = this.getKyOptions();
   return ZerionHttpClient.post<Response>(
@@ -49,6 +49,6 @@ export async function assetGetChart(
       body: JSON.stringify(payload),
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

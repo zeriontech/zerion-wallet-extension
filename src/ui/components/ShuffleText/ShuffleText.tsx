@@ -2,8 +2,7 @@ import React from 'react';
 import { useLayoutEffect, useRef } from 'react';
 
 function randomChar() {
-  const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   return chars.charAt(Math.floor(Math.random() * chars.length));
 }
 
@@ -13,7 +12,7 @@ interface ShuffleController {
 function shuffleText(
   targetElement: HTMLElement,
   targetText: string,
-  duration = 2000
+  duration = 2000,
 ): ShuffleController {
   let currentText: string = targetElement.innerText;
   let currentTime = 0;

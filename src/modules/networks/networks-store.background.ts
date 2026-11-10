@@ -20,7 +20,7 @@ export const mainNetworksStore = new NetworksStore(
     },
     getApiClient: () => ZerionAPI,
     source: 'mainnet',
-  }
+  },
 );
 
 export const testenvNetworksStore = new NetworksStore(
@@ -37,11 +37,11 @@ export const testenvNetworksStore = new NetworksStore(
     },
     getApiClient: () => ZerionAPI,
     source: 'testnet',
-  }
+  },
 );
 
 export function getNetworksStore(
-  preferences: Pick<WalletRecord['publicPreferences'], 'testnetMode'>
+  preferences: Pick<WalletRecord['publicPreferences'], 'testnetMode'>,
 ) {
   return preferences.testnetMode?.on ? testenvNetworksStore : mainNetworksStore;
 }
@@ -62,10 +62,7 @@ export async function fetchNetworkById({
   apiEnv,
 }: { networkId: Chain } & FetchNetworkOptions): Promise<NetworkInfo | null> {
   const id = networkId.toString();
-  if (
-    preferences.testnetMode?.on &&
-    (apiEnv === 'current' || apiEnv === 'testnet-first')
-  ) {
+  if (preferences.testnetMode?.on && (apiEnv === 'current' || apiEnv === 'testnet-first')) {
     const testNetworks = await testenvNetworksStore.load({ chains: [id] });
     const network = testNetworks.getNetworkByName(networkId);
     if (network) {
@@ -83,12 +80,8 @@ export async function fetchNetworkByChainId({
   preferences,
   apiEnv,
 }: { chainId: ChainId } & FetchNetworkOptions): Promise<NetworkInfo | null> {
-  if (
-    preferences.testnetMode?.on &&
-    (apiEnv === 'current' || apiEnv === 'testnet-first')
-  ) {
-    const testNetworks =
-      await testenvNetworksStore.loadNetworksByChainId(chainId);
+  if (preferences.testnetMode?.on && (apiEnv === 'current' || apiEnv === 'testnet-first')) {
+    const testNetworks = await testenvNetworksStore.loadNetworksByChainId(chainId);
     try {
       return testNetworks.getNetworkById(chainId);
     } catch {

@@ -30,7 +30,7 @@ export const ReverseButton = ({ onClick }: { onClick: () => void }) => {
             { transform: 'rotate(0) scale(0.90)', opacity: 0.9 },
             { transform: `rotate(${spin}) scale(1)`, opacity: 1 },
           ],
-          { duration: 160, easing: 'ease-in-out' }
+          { duration: 160, easing: 'ease-in-out' },
         );
         clickCountRef.current += 1;
       }}

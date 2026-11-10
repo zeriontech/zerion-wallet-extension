@@ -22,10 +22,9 @@ async function probe(): Promise<boolean> {
     if (typeof PaymentRequest === 'undefined') {
       return false;
     }
-    const request = new PaymentRequest(
-      [{ supportedMethods: 'https://apple.com/apple-pay' }],
-      { total: { label: 'Total', amount: { currency: 'USD', value: '1.00' } } }
-    );
+    const request = new PaymentRequest([{ supportedMethods: 'https://apple.com/apple-pay' }], {
+      total: { label: 'Total', amount: { currency: 'USD', value: '1.00' } },
+    });
     return await request.canMakePayment();
   } catch {
     return false;

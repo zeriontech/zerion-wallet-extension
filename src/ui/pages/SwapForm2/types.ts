@@ -41,5 +41,5 @@ export type SwapFormState2 = {
 
 export type HandleChangeFunction = <K extends keyof SwapFormState2>(
   key: K,
-  value: SwapFormState2[K]
+  value: SwapFormState2[K],
 ) => void;

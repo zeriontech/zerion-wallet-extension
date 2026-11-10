@@ -1,16 +1,10 @@
 import type { Options as KyOptions } from 'ky';
 import { securityCheckUrl } from './requests/security-check-url';
 import { registerAddresses } from './requests/register-wallets';
-import {
-  getWalletsMeta,
-  getWalletsMetaByChunks,
-} from './requests/wallet-get-meta';
+import { getWalletsMeta, getWalletsMetaByChunks } from './requests/wallet-get-meta';
 import { getGasPrices } from './requests/get-gas-prices';
 import { registerChain } from './requests/register-chain';
-import {
-  paymasterCheckEligibility,
-  getPaymasterParams,
-} from './requests/paymaster-transactions';
+import { paymasterCheckEligibility, getPaymasterParams } from './requests/paymaster-transactions';
 import { walletGetGroupedPositions } from './requests/wallet-get-grouped-positions';
 import { walletGetPortfolio } from './requests/wallet-get-portfolio';
 import { checkReferral } from './requests/check-referral';

@@ -5,10 +5,7 @@ import {
   isJsonRpcRequest,
 } from '@walletconnect/jsonrpc-utils';
 import type { Wallet } from 'src/shared/types/Wallet';
-import {
-  isRpcRequestWithContext,
-  requestWithContextToRpcRequest,
-} from 'src/shared/custom-rpc';
+import { isRpcRequestWithContext, requestWithContextToRpcRequest } from 'src/shared/custom-rpc';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { invariant } from 'src/shared/invariant';
 import { isWhitelistedForZerionRpc } from 'src/shared/dapps/zerion-rpc-whitelist';
@@ -16,25 +13,17 @@ import { getPortContext } from '../getPortContext';
 import { HttpConnection } from '../HttpConnection';
 import type { PortMessageHandler } from '../PortRegistry';
 
-export function createHttpConnectionMessageHandler(
-  getWallet: () => Wallet
-): PortMessageHandler {
+export function createHttpConnectionMessageHandler(getWallet: () => Wallet): PortMessageHandler {
   return function httpConnectionMessageHandler(port, msg) {
     const context = getPortContext(port);
     if (port.name === `${browser.runtime.id}/ethereum`) {
-      if (
-        isJsonRpcPayload(msg) &&
-        isJsonRpcRequest(msg) &&
-        Boolean(msg.method)
-      ) {
+      if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg) && Boolean(msg.method)) {
         const wallet = getWallet();
         wallet.publicEthereumController
           .eth_chainId({ context, id: msg.id })
           .then((chainIdStr) => {
             const chainId = normalizeChainId(chainIdStr);
-            const type = isWhitelistedForZerionRpc(context.origin)
-              ? 'internal'
-              : 'public';
+            const type = isWhitelistedForZerionRpc(context.origin) ? 'internal' : 'public';
             return wallet.getRpcUrlByChainId({ chainId, type });
           })
           .then((url) => {

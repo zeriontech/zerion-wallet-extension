@@ -32,12 +32,7 @@ export function TopUpWalletCTA({ wallet }: { wallet: ExternallyOwnedAccount }) {
       >
         Top Up Your Wallet
       </Button>
-      <Dialog2
-        open={open}
-        onClose={closeDialog}
-        title="Add Funds"
-        size="content"
-      >
+      <Dialog2 open={open} onClose={closeDialog} title="Add Funds" size="content">
         <div style={{ padding: 16 }}>
           <Suspense fallback={null}>
             <AddFundsOptionsContent

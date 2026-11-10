@@ -15,8 +15,8 @@ async function updateDevName() {
         description: `For the branch: ${GIT_BRANCH_NAME}`,
       },
       null,
-      2
-    )
+      2,
+    ),
   );
 }
 

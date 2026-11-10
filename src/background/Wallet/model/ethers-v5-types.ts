@@ -76,9 +76,7 @@ export interface EthersV5TransactionResponse extends EthersV5Transaction {
   raw?: string;
 }
 
-function fromEthersBigNumber(
-  x: EthersV5BigNumber | number | string | bigint | null | undefined
-) {
+function fromEthersBigNumber(x: EthersV5BigNumber | number | string | bigint | null | undefined) {
   if (x == null) {
     return null;
   }
@@ -90,7 +88,7 @@ function fromEthersBigNumber(
 }
 
 export function v5ToPlainTransactionResponse(
-  value: EthersV5TransactionResponse
+  value: EthersV5TransactionResponse,
 ): SerializableTransactionResponse {
   return {
     blockHash: value.blockHash ?? null,
@@ -104,8 +102,7 @@ export function v5ToPlainTransactionResponse(
     index: 0 /** Not sure? */,
     maxFeePerBlobGas: null,
     maxFeePerGas: fromEthersBigNumber(value.maxFeePerGas)?.toString() ?? null,
-    maxPriorityFeePerGas:
-      fromEthersBigNumber(value.maxPriorityFeePerGas)?.toString() ?? null,
+    maxPriorityFeePerGas: fromEthersBigNumber(value.maxPriorityFeePerGas)?.toString() ?? null,
     nonce: Number(fromEthersBigNumber(value.nonce) ?? 0),
     to: value.to ?? null,
     type: value.type ?? 0,
@@ -114,7 +111,7 @@ export function v5ToPlainTransactionResponse(
 }
 
 export function toPlainTransactionResponse(
-  value: PartiallyOptional<ethers.TransactionResponse, 'gasPrice' | 'signature'>
+  value: PartiallyOptional<ethers.TransactionResponse, 'gasPrice' | 'signature'>,
 ): SerializableTransactionResponse {
   return {
     blockHash: value.blockHash,
@@ -137,7 +134,7 @@ export function toPlainTransactionResponse(
 }
 
 export function txPlainToEthersV5TransactionResponse(
-  value: SerializableTransactionResponse
+  value: SerializableTransactionResponse,
 ): EthersV5TransactionResponse {
   return {
     chainId: EthersV5BigNumber.from(value.chainId),
@@ -163,7 +160,7 @@ export function toEthersV5TransactionResponse(
    * https://github.com/zksync-sdk/zksync-ethers/issues/224
    * https://github.com/ethers-io/ethers.js/issues/4891
    */
-  value: Partial<ethers.TransactionResponse>
+  value: Partial<ethers.TransactionResponse>,
 ): EthersV5TransactionResponse {
   invariant(value.chainId, 'chainId is required');
   invariant(value.from, 'from is required');
@@ -199,7 +196,7 @@ export interface EthersV5TransactionReceiptStripped {
 }
 
 export function toEthersV5Receipt(
-  value: ethers.TransactionReceipt
+  value: ethers.TransactionReceipt,
 ): EthersV5TransactionReceiptStripped {
   return {
     blockHash: value.blockHash,

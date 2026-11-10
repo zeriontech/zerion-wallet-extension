@@ -36,7 +36,7 @@ export interface Response {
 export function searchQueryFungibles(
   this: ZerionApiContext,
   { query, currency, chain, sort, cursor, limit = 5 }: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const params = new URLSearchParams({ currency, limit: String(limit) });
   if (query) {

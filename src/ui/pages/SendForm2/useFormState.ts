@@ -57,14 +57,13 @@ export function useFormState({
   address: string;
   positions: FungiblePosition[];
 }) {
-  const [userFormState, setUserFormState] =
-    useSearchParamsObj<SendFormState2>();
+  const [userFormState, setUserFormState] = useSearchParamsObj<SendFormState2>();
 
   const defaultFormState = useDefaultFormState({ address, positions });
 
   const formState = useMemo(
     () => ({ ...defaultFormState, ...userFormState }),
-    [defaultFormState, userFormState]
+    [defaultFormState, userFormState],
   );
 
   // Pin the resolved input defaults into the URL so the displayed asset stays
@@ -78,17 +77,12 @@ export function useFormState({
     const missingInputChain =
       userFormState.inputChain == null && defaultFormState.inputChain != null;
     const missingInputFungibleId =
-      userFormState.inputFungibleId == null &&
-      defaultFormState.inputFungibleId != null;
+      userFormState.inputFungibleId == null && defaultFormState.inputFungibleId != null;
     if (!missingInputChain && !missingInputFungibleId) return;
     setUserFormState((state) => ({
       ...state,
-      ...(missingInputChain
-        ? { inputChain: defaultFormState.inputChain }
-        : null),
-      ...(missingInputFungibleId
-        ? { inputFungibleId: defaultFormState.inputFungibleId }
-        : null),
+      ...(missingInputChain ? { inputChain: defaultFormState.inputChain } : null),
+      ...(missingInputFungibleId ? { inputFungibleId: defaultFormState.inputFungibleId } : null),
     }));
   }, [
     userFormState.inputChain,
@@ -100,7 +94,7 @@ export function useFormState({
 
   const handleChange = useCallback<HandleChangeFunction>(
     (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),
-    [setUserFormState]
+    [setUserFormState],
   );
 
   const selectFungible = useCallback(
@@ -114,7 +108,7 @@ export function useFormState({
         nftAmount: undefined,
       }));
     },
-    [setUserFormState]
+    [setUserFormState],
   );
 
   const selectNft = useCallback(
@@ -132,14 +126,8 @@ export function useFormState({
         data: undefined,
       }));
     },
-    [setUserFormState]
+    [setUserFormState],
   );
 
-  return [
-    formState,
-    handleChange,
-    setUserFormState,
-    selectFungible,
-    selectNft,
-  ] as const;
+  return [formState, handleChange, setUserFormState, selectFungible, selectNft] as const;
 }

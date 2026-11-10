@@ -7,7 +7,7 @@ const testAddress = process.env.TEST_WALLET_ADDRESS;
 
 invariant(
   testAddress,
-  'Test address not found in .env. Create .env file and put TEST_WALLET_ADDRESS variable there equal to any ethereum address'
+  'Test address not found in .env. Create .env file and put TEST_WALLET_ADDRESS variable there equal to any ethereum address',
 );
 
 export const samples = {

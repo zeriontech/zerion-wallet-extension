@@ -56,8 +56,7 @@ export function NetworkRow({
 }) {
   const { currency } = useCurrency();
   const isAll = value === NetworkSelectValue.All;
-  const preferChainDistribution =
-    isAll || value in (chainDistribution?.chains || {});
+  const preferChainDistribution = isAll || value in (chainDistribution?.chains || {});
   const chain = isAll ? null : createChain(value);
   const showFallback =
     !preferChainDistribution &&
@@ -73,23 +72,15 @@ export function NetworkRow({
       className={styles.row}
     >
       {isAll || !iconUrl ? (
-        <AllNetworksIcon
-          style={{ width: 24, height: 24, flexShrink: 0 }}
-          role="presentation"
-        />
+        <AllNetworksIcon style={{ width: 24, height: 24, flexShrink: 0 }} role="presentation" />
       ) : (
         <NetworkIcon size={24} src={iconUrl} name={name} />
       )}
       <div className={styles.rowMain}>
-        <UIText
-          kind="body/accent"
-          color={selected ? 'var(--primary)' : 'var(--black)'}
-        >
+        <UIText kind="body/accent" color={selected ? 'var(--primary)' : 'var(--black)'}>
           {name}
         </UIText>
-        {pinned ? (
-          <PinIcon className={styles.pinIcon} role="img" aria-label="Pinned" />
-        ) : null}
+        {pinned ? <PinIcon className={styles.pinIcon} role="img" aria-label="Pinned" /> : null}
       </div>
       <BlurrableBalance
         kind="small/regular"
@@ -106,7 +97,7 @@ export function NetworkRow({
                 ? chainDistribution?.totalValue
                 : chainDistribution?.positionsChainsDistribution[value]) || 0,
               'en',
-              currency
+              currency,
             )
           ) : showFallback && address && chain ? (
             <NativeBalance address={address} chain={chain} />

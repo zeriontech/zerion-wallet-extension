@@ -33,13 +33,7 @@ function badgeColors(kind: ReturnType<typeof classifyFill>) {
   return { bg: 'var(--neutral-200)', fg: 'var(--neutral-700)' };
 }
 
-function FillRow({
-  fill,
-  displayName,
-}: {
-  fill: PerpFill;
-  displayName: string;
-}) {
+function FillRow({ fill, displayName }: { fill: PerpFill; displayName: string }) {
   const { currency } = useCurrency();
 
   const px = Number(fill.px);
@@ -95,15 +89,11 @@ function FillRow({
         {showPnl ? (
           <UIText
             kind="caption/accent"
-            color={
-              isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
-            }
+            color={isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'}
           >
             <BlurrableBalance
               kind="caption/accent"
-              color={
-                isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'
-              }
+              color={isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)'}
             >
               {formatCurrencyValue(closedPnl, 'en', currency)}
             </BlurrableBalance>
@@ -117,18 +107,9 @@ function FillRow({
   );
 }
 
-export function HistoryBlock({
-  fills,
-  displayName,
-}: {
-  fills: PerpFill[];
-  displayName: string;
-}) {
+export function HistoryBlock({ fills, displayName }: { fills: PerpFill[]; displayName: string }) {
   const [visible, setVisible] = useState(PAGE_SIZE);
-  const sorted = useMemo(
-    () => [...fills].sort((a, b) => b.time - a.time),
-    [fills]
-  );
+  const sorted = useMemo(() => [...fills].sort((a, b) => b.time - a.time), [fills]);
   const slice = sorted.slice(0, visible);
   const hasMore = visible < sorted.length;
 
@@ -141,20 +122,12 @@ export function HistoryBlock({
       <UIText kind="body/accent">History</UIText>
       <VStack gap={0}>
         {slice.map((fill) => (
-          <FillRow
-            key={`${fill.hash}-${fill.tid}`}
-            fill={fill}
-            displayName={displayName}
-          />
+          <FillRow key={`${fill.hash}-${fill.tid}`} fill={fill} displayName={displayName} />
         ))}
       </VStack>
       {hasMore ? (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Button
-            kind="regular"
-            size={40}
-            onClick={() => setVisible((v) => v + PAGE_SIZE)}
-          >
+          <Button kind="regular" size={40} onClick={() => setVisible((v) => v + PAGE_SIZE)}>
             Show more
           </Button>
         </div>

@@ -8,10 +8,7 @@ import type { BackendSourceParams } from '../shared';
 const STALE_TIME = 20000;
 const QUERY_KEY = 'walletGetPnl';
 
-export function queryWalletPnl(
-  params: Params,
-  clientParams: BackendSourceParams
-) {
+export function queryWalletPnl(params: Params, clientParams: BackendSourceParams) {
   return queryClient.fetchQuery({
     queryKey: persistentQuery([QUERY_KEY, params, clientParams]),
     queryFn: () => ZerionAPI.walletGetPnl(params, clientParams),
@@ -34,7 +31,7 @@ export function useWalletPnl(
     keepPreviousData?: boolean;
     refetchInterval?: number;
     refetchOnWindowFocus?: boolean;
-  } = {}
+  } = {},
 ) {
   return useQuery({
     queryKey: persistentQuery([QUERY_KEY, params, { source }]),

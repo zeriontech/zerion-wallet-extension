@@ -1,7 +1,6 @@
 export const data = [
   {
-    iconUrl:
-      'https://app.zerion.io/favicon.04feae3d6d8251c8e2a509368b11af14.png',
+    iconUrl: 'https://app.zerion.io/favicon.04feae3d6d8251c8e2a509368b11af14.png',
     title: 'Zerion',
     url: 'https://app.zerion.io/',
   },
@@ -52,8 +51,7 @@ export const data = [
     url: 'https://app.aave.com/',
   },
   {
-    iconUrl:
-      'https://play.alienworlds.io/alienworlds-missions-favicon-128x128.png',
+    iconUrl: 'https://play.alienworlds.io/alienworlds-missions-favicon-128x128.png',
     title: 'Alien Worlds',
     url: 'https://play.alienworlds.io/',
   },
@@ -68,8 +66,7 @@ export const data = [
     url: 'https://stake.lido.fi/',
   },
   {
-    iconUrl:
-      'https://www.convexfinance.com/static/favicons/apple-touch-icon.png',
+    iconUrl: 'https://www.convexfinance.com/static/favicons/apple-touch-icon.png',
     title: 'Convex Finance',
     url: 'https://www.convexfinance.com/',
   },
@@ -89,8 +86,7 @@ export const data = [
     url: 'https://dforce.network',
   },
   {
-    iconUrl:
-      'https://d36mxiodymuqjm.cloudfront.net/website/sm-badge_beta_180.png',
+    iconUrl: 'https://d36mxiodymuqjm.cloudfront.net/website/sm-badge_beta_180.png',
     title: 'Splinterlands',
     url: 'https://splinterlands.com/',
   },
@@ -140,8 +136,7 @@ export const data = [
     url: 'https://mintable.app/',
   },
   {
-    iconUrl:
-      'https://storage.kalao.io/marketplace-env/favicon/apple-touch-icon-114.png',
+    iconUrl: 'https://storage.kalao.io/marketplace-env/favicon/apple-touch-icon-114.png',
     title: 'Kalao',
     url: 'https://marketplace.kalao.io/',
   },
@@ -286,8 +281,7 @@ export const data = [
     url: 'https://www.aavegotchi.com/',
   },
   {
-    iconUrl:
-      'https://pegaxy.io/wp-content/uploads/2021/09/cropped-favicon-180x180.png',
+    iconUrl: 'https://pegaxy.io/wp-content/uploads/2021/09/cropped-favicon-180x180.png',
     title: 'Pegaxy',
     url: 'https://pegaxy.io/',
   },
@@ -297,8 +291,7 @@ export const data = [
     url: 'https://www.synthetix.io/',
   },
   {
-    iconUrl:
-      'https://app.xwg.games/static/img/meta/apple-touch-icon-180x180.png',
+    iconUrl: 'https://app.xwg.games/static/img/meta/apple-touch-icon-180x180.png',
     title: 'X World Games',
     url: 'https://app.xwg.games/#/',
   },
@@ -308,8 +301,7 @@ export const data = [
     url: 'https://starsharks.com/',
   },
   {
-    iconUrl:
-      'https://app.liquity.fi/wp-content/themes/liquity-contract/logo256.png',
+    iconUrl: 'https://app.liquity.fi/wp-content/themes/liquity-contract/logo256.png',
     title: 'Liquity',
     url: 'https://app.liquity.fi/',
   },
@@ -339,8 +331,7 @@ export const data = [
     url: 'https://shibaswap.com/',
   },
   {
-    iconUrl:
-      'https://vesper.finance/wp-content/uploads/2021/12/VSP_favicon.svg',
+    iconUrl: 'https://vesper.finance/wp-content/uploads/2021/12/VSP_favicon.svg',
     title: 'Vesper',
     url: 'https://vesper.finance/',
   },
@@ -597,8 +588,7 @@ export const data = [
     url: 'https://cryptocities.net/',
   },
   {
-    iconUrl:
-      'https://app.seascape.network/template/seascape/index/img/favicon.ico',
+    iconUrl: 'https://app.seascape.network/template/seascape/index/img/favicon.ico',
     title: 'Profit Circus S3 ETH',
     url: 'https://app.seascape.network',
   },

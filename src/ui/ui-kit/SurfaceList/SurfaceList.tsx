@@ -18,40 +18,22 @@ export const ItemLink = React.forwardRef<
     decorationStyle?: React.CSSProperties;
     highlighted?: boolean;
   } & React.AnchorHTMLAttributes<HTMLAnchorElement>
->(
-  (
-    {
-      to,
-      onClick,
-      children,
-      style,
-      className,
-      decorationStyle,
-      highlighted,
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <UnstyledLink
-        {...props}
-        ref={ref}
-        style={{ color: 'inherit', ...style }}
-        to={to}
-        onClick={onClick}
-        className={cn(
-          s.option,
-          highlighted ? s.highlighted : undefined,
-          className
-        )}
-      >
-        <div className={s.decoration} style={decorationStyle}>
-          {children}
-        </div>
-      </UnstyledLink>
-    );
-  }
-);
+>(({ to, onClick, children, style, className, decorationStyle, highlighted, ...props }, ref) => {
+  return (
+    <UnstyledLink
+      {...props}
+      ref={ref}
+      style={{ color: 'inherit', ...style }}
+      to={to}
+      onClick={onClick}
+      className={cn(s.option, highlighted ? s.highlighted : undefined, className)}
+    >
+      <div className={s.decoration} style={decorationStyle}>
+        {children}
+      </div>
+    </UnstyledLink>
+  );
+});
 
 export function ItemAnchor({
   href,
@@ -97,25 +79,13 @@ export const ItemButton = React.forwardRef<
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
 >(
   (
-    {
-      children,
-      style,
-      highlighted,
-      outlined = false,
-      decorationStyle,
-      className,
-      ...props
-    },
-    ref
+    { children, style, highlighted, outlined = false, decorationStyle, className, ...props },
+    ref,
   ) => {
     return (
       <UnstyledButton
         style={{ color: 'inherit', ...style }}
-        className={cn(
-          className,
-          s.option,
-          highlighted ? s.highlighted : undefined
-        )}
+        className={cn(className, s.option, highlighted ? s.highlighted : undefined)}
         ref={ref}
         {...props}
       >
@@ -131,7 +101,7 @@ export const ItemButton = React.forwardRef<
         </div>
       </UnstyledButton>
     );
-  }
+  },
 );
 
 export const ItemLabel = React.forwardRef<
@@ -187,12 +157,11 @@ export const SurfaceList = React.forwardRef(
       gap?: number;
       style?: React.CSSProperties;
     } & React.HTMLAttributes<HTMLDivElement>,
-    ref: React.Ref<HTMLDivElement>
+    ref: React.Ref<HTMLDivElement>,
   ) => {
     const emptyItemPaddingBlock = 8;
     const firstItemIsInteractive = items.length && isInteractive(items[0]);
-    const lastItemIsInteractive =
-      items.length && isInteractive(items[items.length - 1]);
+    const lastItemIsInteractive = items.length && isInteractive(items[items.length - 1]);
     return (
       <Surface
         ref={ref}
@@ -206,19 +175,12 @@ export const SurfaceList = React.forwardRef(
       >
         <VStack gap={gap} style={{ height: style?.height }}>
           {items.map((item, index) => {
-            const {
-              style,
-              separatorTop = false,
-              separatorLeadingInset = 0,
-              pad = true,
-            } = item;
+            const { style, separatorTop = false, separatorLeadingInset = 0, pad = true } = item;
             const isInteractiveItem = isInteractive(item);
             const component = item.to ? (
               <ItemLink
                 to={item.to}
-                onClick={
-                  item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
-                }
+                onClick={item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']}
               >
                 {item.component}
               </ItemLink>
@@ -226,26 +188,18 @@ export const SurfaceList = React.forwardRef(
               <ItemAnchor
                 href={item.href}
                 target={item.target}
-                onClick={
-                  item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']
-                }
+                onClick={item.onClick as React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick']}
               >
                 {item.component}
               </ItemAnchor>
             ) : item.onClick ? (
-              <ItemButton
-                disabled={item.disabled}
-                onClick={item.onClick}
-                type={item.buttonType}
-              >
+              <ItemButton disabled={item.disabled} onClick={item.onClick} type={item.buttonType}>
                 {item.component}
               </ItemButton>
             ) : pad === false ? (
               item.component
             ) : (
-              <div style={{ paddingBlock: emptyItemPaddingBlock }}>
-                {item.component}
-              </div>
+              <div style={{ paddingBlock: emptyItemPaddingBlock }}>{item.component}</div>
             );
             if (item.key == null) {
               throw new Error('No key');
@@ -268,8 +222,7 @@ export const SurfaceList = React.forwardRef(
                   <div
                     style={{
                       height: 1,
-                      marginLeft:
-                        (isInteractiveItem ? 16 : 0) + separatorLeadingInset,
+                      marginLeft: (isInteractiveItem ? 16 : 0) + separatorLeadingInset,
                       marginRight: isInteractiveItem ? 16 : 0,
                       marginBottom: 4,
                       marginTop: 4,
@@ -284,5 +237,5 @@ export const SurfaceList = React.forwardRef(
         </VStack>
       </Surface>
     );
-  }
+  },
 );

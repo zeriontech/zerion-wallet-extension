@@ -4,10 +4,7 @@ import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import type { PerpFill } from 'src/modules/hyperliquid/api/requests/perp-user-fills.types';
 import type { PerpCandle } from 'src/modules/hyperliquid/api/requests/perp-candle-snapshot.types';
-import {
-  classifyFill,
-  type FillKind,
-} from 'src/modules/hyperliquid/classifyFill';
+import { classifyFill, type FillKind } from 'src/modules/hyperliquid/classifyFill';
 
 export interface TradeBuckets {
   fillsByBucket: Map<number, PerpFill[]>;
@@ -21,10 +18,7 @@ function getCandleSpan(candles: PerpCandle[]): number {
   return 0;
 }
 
-export function bucketFills(
-  fills: PerpFill[],
-  candles: PerpCandle[]
-): TradeBuckets | null {
+export function bucketFills(fills: PerpFill[], candles: PerpCandle[]): TradeBuckets | null {
   if (candles.length === 0) return null;
   const span = getCandleSpan(candles);
   if (span <= 0) return null;
@@ -50,10 +44,7 @@ export function bucketFills(
   return { fillsByBucket };
 }
 
-export function getCandleBucketStart(
-  candleTime: number,
-  candles: PerpCandle[]
-): number | null {
+export function getCandleBucketStart(candleTime: number, candles: PerpCandle[]): number | null {
   if (candles.length === 0) return null;
   const span = getCandleSpan(candles);
   if (span <= 0) return null;
@@ -64,8 +55,7 @@ export function getCandleBucketStart(
 
 const TOOLTIP_TRADES_HEADER_STYLE =
   'font-size: 11px; line-height: 14px; letter-spacing: 0.4px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-top: 4px;';
-const TOOLTIP_TRADE_ROW_STYLE =
-  'display: flex; align-items: center; gap: 8px; min-width: 180px;';
+const TOOLTIP_TRADE_ROW_STYLE = 'display: flex; align-items: center; gap: 8px; min-width: 180px;';
 const TOOLTIP_BADGE_BASE_STYLE =
   'padding: 1px 6px; border-radius: 4px; font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: 0.2px; white-space: nowrap;';
 const TOOLTIP_TRADE_TEXT_STYLE =
@@ -86,7 +76,7 @@ function getBadgeStyle(kind: FillKind): string {
 export function buildTradesTooltipSection(
   fills: PerpFill[],
   currency: string,
-  displayName: string
+  displayName: string,
 ): HTMLElement {
   const sorted = [...fills].sort((a, b) => a.time - b.time);
   const rows = sorted.map((fill) => {
@@ -104,19 +94,15 @@ export function buildTradesTooltipSection(
       r(
         'span',
         { style: TOOLTIP_TRADE_TEXT_STYLE },
-        `${formatTokenValue(sz, displayName)} @ ${formatPriceValue(
-          px,
-          'en',
-          currency
-        )}`
+        `${formatTokenValue(sz, displayName)} @ ${formatPriceValue(px, 'en', currency)}`,
       ),
       showPnl
         ? r(
             'span',
             { style: `${TOOLTIP_TRADE_PNL_STYLE} color: ${pnlColor};` },
-            formatCurrencyValue(closedPnl, 'en', currency)
+            formatCurrencyValue(closedPnl, 'en', currency),
           )
-        : null
+        : null,
     );
   });
 
@@ -127,6 +113,6 @@ export function buildTradesTooltipSection(
         'display: flex; flex-direction: column; gap: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 4px;',
     },
     r('div', { style: TOOLTIP_TRADES_HEADER_STYLE }, 'Trades'),
-    ...rows
+    ...rows,
   );
 }

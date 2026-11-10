@@ -31,8 +31,7 @@ export function Receive() {
 
   const { data: localWallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address],
-    queryFn: () =>
-      walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
+    queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
     suspense: false,
   });
 
@@ -44,10 +43,7 @@ export function Receive() {
       <NavigationTitle
         title="Receive"
         elementEnd={
-          <WalletSelectButton
-            address={address}
-            clearSearchParams={CLEARED_ON_WALLET_CHANGE}
-          />
+          <WalletSelectButton address={address} clearSearchParams={CLEARED_ON_WALLET_CHANGE} />
         }
       />
       <PageColumn>

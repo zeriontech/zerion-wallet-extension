@@ -22,10 +22,7 @@ const INITIAL: Measurements = {
   y: 0,
 };
 
-export function useMeasure<T extends HTMLElement>(): [
-  React.RefCallback<T>,
-  Measurements,
-] {
+export function useMeasure<T extends HTMLElement>(): [React.RefCallback<T>, Measurements] {
   const [measurements, setMeasurements] = useState<Measurements>(INITIAL);
   const observerRef = useRef<ResizeObserver | null>(null);
 
@@ -54,7 +51,7 @@ export function useMeasure<T extends HTMLElement>(): [
           prev.x === next.x &&
           prev.y === next.y
             ? prev
-            : next
+            : next,
         );
       });
       observer.observe(node);

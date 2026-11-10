@@ -14,16 +14,13 @@ import { valueToHex } from 'src/shared/units/valueToHex';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 export function fromAddressActionTransaction(
-  transaction: (
-    | TransactionObject['transaction']
-    | LocalAddressAction['rawTransaction']
-  ) & {
+  transaction: (TransactionObject['transaction'] | LocalAddressAction['rawTransaction']) & {
     gasLimit?: BigNumberish;
     gasPrice?: BigNumberish;
     maxFeePerGas?: BigNumberish;
     maxPriorityFeePerGas?: BigNumberish;
     value?: BigNumberish;
-  }
+  },
 ) {
   const tx = omit(transaction, [
     'chain',
@@ -61,9 +58,7 @@ function increase(value: number, multiplier: number) {
   return Math.round(value * multiplier);
 }
 
-export function increaseGasPrices(
-  chainGasPrices: ChainGasPrice | null
-): ChainGasPrice | null {
+export function increaseGasPrices(chainGasPrices: ChainGasPrice | null): ChainGasPrice | null {
   if (!chainGasPrices) {
     return null;
   }
@@ -112,9 +107,7 @@ export function isCancelTx(addressAction: AnyAddressAction) {
       // TODO:
       // This logic falsely counts mint transaction on https://docs.zero.network/build-on-zero/claim-docs
       // as "cancel". This isn't critical currently as it only affects some UI labels, and doesn't affect functionality
-      return (
-        Number(restoreValue(value)) === 0 && Number(restoreValue(data)) === 0
-      );
+      return Number(restoreValue(value)) === 0 && Number(restoreValue(data)) === 0;
     }
   }
   return false;

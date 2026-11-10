@@ -10,11 +10,7 @@ export function isSolanaAddress(address: string) {
 
 function isByteArrayPrivateKey(key: unknown): key is number[] {
   // Check if it's an array with 64 elements and each element is a valid byte (0-255)
-  return (
-    Array.isArray(key) &&
-    key.length === 64 &&
-    key.every((byte) => byte >= 0 && byte <= 255)
-  );
+  return Array.isArray(key) && key.length === 64 && key.every((byte) => byte >= 0 && byte <= 255);
 }
 
 export function isSolanaPrivateKey(value: string) {

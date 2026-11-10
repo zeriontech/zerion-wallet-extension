@@ -5,7 +5,7 @@ type WalletNameFlagsValue = WalletNameFlag[] | 'no-value';
 
 export function getWalletNameFlagsByOrigin(
   preferences: Required<GlobalPreferences>,
-  origin: string
+  origin: string,
 ): WalletNameFlagsValue {
   return preferences.walletNameFlags[origin] || 'no-value';
 }

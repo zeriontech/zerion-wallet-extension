@@ -20,12 +20,6 @@ export const DEFAULT_WALLET_LIST_GROUPS: WalletListGroup[] = [
   },
 ];
 
-export function getWalletId({
-  address,
-  groupId,
-}: {
-  address: string;
-  groupId: string;
-}): string {
+export function getWalletId({ address, groupId }: { address: string; groupId: string }): string {
   return `${groupId}--${address}`;
 }

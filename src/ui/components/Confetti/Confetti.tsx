@@ -34,9 +34,7 @@ function createPieces(): Piece[] {
         [fromLeft ? 'left' : 'right']: 20,
         '--tx': `${Math.cos(angle) * 160 * power * (fromLeft ? 1 : -1)}vw`,
         '--peak': `${-Math.sin(angle) * 72 * power}vh`,
-        '--spin': `${
-          (240 + Math.random() * 720) * (Math.random() < 0.5 ? -1 : 1)
-        }deg`,
+        '--spin': `${(240 + Math.random() * 720) * (Math.random() < 0.5 ? -1 : 1)}deg`,
         '--size': `${12 + Math.random() * 14}px`,
         '--dur': `${duration}ms`,
         '--delay': `${delay}ms`,
@@ -93,6 +91,6 @@ export function Confetti({ onDone }: { onDone: () => void }) {
         </span>
       ))}
     </div>,
-    document.body
+    document.body,
   );
 }

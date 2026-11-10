@@ -46,7 +46,7 @@ export type InterpretResponse = Response;
 export async function walletSimulateTransaction(
   this: ZerionApiContext,
   params: Payload,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const provider = await this.getAddressProviderHeader(params.address);
   const kyOptions = this.getKyOptions();
@@ -58,6 +58,6 @@ export async function walletSimulateTransaction(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

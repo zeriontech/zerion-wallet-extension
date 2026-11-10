@@ -1,12 +1,7 @@
 import type { ActionAsset, Asset, NFTAsset } from 'src/defi-sdk.types';
 
 export function getFungibleAsset(asset?: ActionAsset) {
-  if (
-    asset &&
-    'fungible' in asset &&
-    asset?.fungible &&
-    'asset_code' in asset.fungible
-  ) {
+  if (asset && 'fungible' in asset && asset?.fungible && 'asset_code' in asset.fungible) {
     return asset.fungible as Asset;
   }
   return null;

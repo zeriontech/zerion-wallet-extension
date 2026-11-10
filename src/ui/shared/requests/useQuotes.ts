@@ -24,9 +24,7 @@ export interface QuotesData<T> {
 }
 
 function createSwapQuotesUrl(address: string, formState: SwapFormState) {
-  const searchParams = new URLSearchParams(
-    Object.entries(formState).filter(([_, v]) => v)
-  );
+  const searchParams = new URLSearchParams(Object.entries(formState).filter(([_, v]) => v));
   searchParams.set('from', address);
   return createUrl({
     base: ZERION_API_URL,
@@ -69,8 +67,7 @@ export function useQuotes2({
     }
     const slippageOptions = getSlippageOptions({
       chain,
-      userSlippage:
-        formState.slippage != null ? Number(formState.slippage) : null,
+      userSlippage: formState.slippage != null ? Number(formState.slippage) : null,
     });
     return {
       ...formState,
@@ -101,18 +98,12 @@ export function useQuotes2({
       backendMessage?: string;
       requestParams: Partial<SwapFormState> & { from: string };
     }) => {
-      invariant(
-        requestParams.inputFungibleId,
-        'Unable to find inputFungibleId in quotes request'
-      );
+      invariant(requestParams.inputFungibleId, 'Unable to find inputFungibleId in quotes request');
       invariant(
         requestParams.outputFungibleId,
-        'Unable to find outputFungibleId in quotes request'
+        'Unable to find outputFungibleId in quotes request',
       );
-      invariant(
-        requestParams.inputAmount,
-        'Unable to find inputAmount in quotes request'
-      );
+      invariant(requestParams.inputAmount, 'Unable to find inputAmount in quotes request');
       walletPort.request('quoteError', {
         message,
         errorCode: code,
@@ -129,12 +120,10 @@ export function useQuotes2({
         outputChain: requestParams.outputChain || null,
         contractType: null,
         pathname,
-        slippage: requestParams.slippage
-          ? Number(requestParams.slippage)
-          : null,
+        slippage: requestParams.slippage ? Number(requestParams.slippage) : null,
       });
     },
-    [context, pathname]
+    [context, pathname],
   );
 
   const {
@@ -142,55 +131,51 @@ export function useQuotes2({
     isLoading,
     error,
     done,
-  } = useEventSource<Quote2[]>(
-    `${url ?? 'no-url'}-${refetchHash}`,
-    url ?? null,
-    {
-      headers: createHeaders({}),
-      enabled:
-        enabled &&
-        Boolean(
-          address &&
-          formState.inputChain &&
-          formState.inputAmount &&
-          isNumeric(formState.inputAmount) &&
-          Number(formState.inputAmount) > 0 &&
-          formState.inputFungibleId &&
-          formState.outputFungibleId
-        ),
-      mergeResponse: (currentValue, nextValue) => {
-        if (!currentValue) {
-          return nextValue;
-        }
-        if (!nextValue) {
-          return currentValue;
-        }
-        return currentValue.map((item) => {
-          const updatedItem = nextValue.find(
-            (nextItem) =>
-              nextItem.contractMetadata &&
-              item.contractMetadata &&
-              nextItem.contractMetadata.id === item.contractMetadata.id
-          );
-          return updatedItem || item;
-        });
-      },
-      eventCodeToMessage: QUOTES_EVENT_CODE_TO_MESSAGE,
-      onError: ({ parsedError, rawEvent, requestUrl }) => {
-        handleQuoteError({
-          message: parsedError.message,
-          code: rawEvent.code,
-          // Raw (placeholder-unreplaced) backend detail groups well in analytics.
-          backendMessage: parsedError.details?.detail ?? rawEvent.message,
-          requestParams: Object.fromEntries(
-            requestUrl.searchParams.entries()
-          ) as Partial<SwapFormState> & {
-            from: string;
-          },
-        });
-      },
-    }
-  );
+  } = useEventSource<Quote2[]>(`${url ?? 'no-url'}-${refetchHash}`, url ?? null, {
+    headers: createHeaders({}),
+    enabled:
+      enabled &&
+      Boolean(
+        address &&
+        formState.inputChain &&
+        formState.inputAmount &&
+        isNumeric(formState.inputAmount) &&
+        Number(formState.inputAmount) > 0 &&
+        formState.inputFungibleId &&
+        formState.outputFungibleId,
+      ),
+    mergeResponse: (currentValue, nextValue) => {
+      if (!currentValue) {
+        return nextValue;
+      }
+      if (!nextValue) {
+        return currentValue;
+      }
+      return currentValue.map((item) => {
+        const updatedItem = nextValue.find(
+          (nextItem) =>
+            nextItem.contractMetadata &&
+            item.contractMetadata &&
+            nextItem.contractMetadata.id === item.contractMetadata.id,
+        );
+        return updatedItem || item;
+      });
+    },
+    eventCodeToMessage: QUOTES_EVENT_CODE_TO_MESSAGE,
+    onError: ({ parsedError, rawEvent, requestUrl }) => {
+      handleQuoteError({
+        message: parsedError.message,
+        code: rawEvent.code,
+        // Raw (placeholder-unreplaced) backend detail groups well in analytics.
+        backendMessage: parsedError.details?.detail ?? rawEvent.message,
+        requestParams: Object.fromEntries(
+          requestUrl.searchParams.entries(),
+        ) as Partial<SwapFormState> & {
+          from: string;
+        },
+      });
+    },
+  });
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const refetchInterval = config?.quotes_refetch_interval ?? 20000;
@@ -318,7 +303,7 @@ export function useQuotesV2({
       getSlippageOptions({
         chain,
         userSlippage: Number(formState.slippage),
-      }).slippagePercent
+      }).slippagePercent,
     );
   }, [chain, formState.slippage]);
 
@@ -345,18 +330,12 @@ export function useQuotesV2({
       backendMessage?: string;
       requestParams: Partial<SwapFormState> & { from: string };
     }) => {
-      invariant(
-        requestParams.inputFungibleId,
-        'Unable to find inputFungibleId in quotes request'
-      );
+      invariant(requestParams.inputFungibleId, 'Unable to find inputFungibleId in quotes request');
       invariant(
         requestParams.outputFungibleId,
-        'Unable to find outputFungibleId in quotes request'
+        'Unable to find outputFungibleId in quotes request',
       );
-      invariant(
-        requestParams.inputAmount,
-        'Unable to find inputAmount in quotes request'
-      );
+      invariant(requestParams.inputAmount, 'Unable to find inputAmount in quotes request');
       walletPort.request('quoteError', {
         message,
         errorCode: code,
@@ -373,12 +352,10 @@ export function useQuotesV2({
         outputChain: requestParams.outputChain || null,
         contractType: null,
         pathname,
-        slippage: requestParams.slippage
-          ? Number(requestParams.slippage)
-          : null,
+        slippage: requestParams.slippage ? Number(requestParams.slippage) : null,
       });
     },
-    [context, pathname]
+    [context, pathname],
   );
 
   const {
@@ -386,55 +363,51 @@ export function useQuotesV2({
     isLoading,
     error,
     done,
-  } = useEventSource<Quote2[]>(
-    `${url ?? 'no-url'}-${refetchHash}`,
-    url ?? null,
-    {
-      headers: createHeaders({}),
-      enabled:
-        enabled &&
-        Boolean(
-          address &&
-          formState.inputChain &&
-          formState.inputAmount &&
-          isNumeric(formState.inputAmount) &&
-          Number(formState.inputAmount) > 0 &&
-          formState.inputFungibleId &&
-          formState.outputFungibleId
-        ),
-      mergeResponse: (currentValue, nextValue) => {
-        if (!currentValue) {
-          return nextValue;
-        }
-        if (!nextValue) {
-          return currentValue;
-        }
-        return currentValue.map((item) => {
-          const updatedItem = nextValue.find(
-            (nextItem) =>
-              nextItem.contractMetadata &&
-              item.contractMetadata &&
-              nextItem.contractMetadata.id === item.contractMetadata.id
-          );
-          return updatedItem || item;
-        });
-      },
-      eventCodeToMessage: QUOTES_EVENT_CODE_TO_MESSAGE,
-      onError: ({ parsedError, rawEvent, requestUrl }) => {
-        handleQuoteError({
-          message: parsedError.message,
-          code: rawEvent.code,
-          // Raw (placeholder-unreplaced) backend detail groups well in analytics.
-          backendMessage: parsedError.details?.detail ?? rawEvent.message,
-          requestParams: Object.fromEntries(
-            requestUrl.searchParams.entries()
-          ) as Partial<SwapFormState> & {
-            from: string;
-          },
-        });
-      },
-    }
-  );
+  } = useEventSource<Quote2[]>(`${url ?? 'no-url'}-${refetchHash}`, url ?? null, {
+    headers: createHeaders({}),
+    enabled:
+      enabled &&
+      Boolean(
+        address &&
+        formState.inputChain &&
+        formState.inputAmount &&
+        isNumeric(formState.inputAmount) &&
+        Number(formState.inputAmount) > 0 &&
+        formState.inputFungibleId &&
+        formState.outputFungibleId,
+      ),
+    mergeResponse: (currentValue, nextValue) => {
+      if (!currentValue) {
+        return nextValue;
+      }
+      if (!nextValue) {
+        return currentValue;
+      }
+      return currentValue.map((item) => {
+        const updatedItem = nextValue.find(
+          (nextItem) =>
+            nextItem.contractMetadata &&
+            item.contractMetadata &&
+            nextItem.contractMetadata.id === item.contractMetadata.id,
+        );
+        return updatedItem || item;
+      });
+    },
+    eventCodeToMessage: QUOTES_EVENT_CODE_TO_MESSAGE,
+    onError: ({ parsedError, rawEvent, requestUrl }) => {
+      handleQuoteError({
+        message: parsedError.message,
+        code: rawEvent.code,
+        // Raw (placeholder-unreplaced) backend detail groups well in analytics.
+        backendMessage: parsedError.details?.detail ?? rawEvent.message,
+        requestParams: Object.fromEntries(
+          requestUrl.searchParams.entries(),
+        ) as Partial<SwapFormState> & {
+          from: string;
+        },
+      });
+    },
+  });
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const refetchInterval = config?.quotes_refetch_interval ?? 20000;
@@ -476,8 +449,7 @@ export function useQuotesV2({
   }
 
   const { priceImpactOverride } = useStore(devMenuStore);
-  const baseQuotes =
-    usePreviousData && resultRef.current ? resultRef.current : quotes;
+  const baseQuotes = usePreviousData && resultRef.current ? resultRef.current : quotes;
   const overriddenQuotes = useMemo(
     () =>
       applyPriceImpactOverride({
@@ -485,7 +457,7 @@ export function useQuotesV2({
         inputFiatValue,
         override: priceImpactOverride,
       }),
-    [baseQuotes, inputFiatValue, priceImpactOverride]
+    [baseQuotes, inputFiatValue, priceImpactOverride],
   );
 
   return {

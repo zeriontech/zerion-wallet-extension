@@ -16,13 +16,10 @@ interface Result {
 
 const QUERY_KEY = ['wallet/getCurrentAddress'];
 
-const queryFn = () =>
-  walletPort.request('getCurrentAddress').then((result) => result || null);
+const queryFn = () => walletPort.request('getCurrentAddress').then((result) => result || null);
 
 export function readCachedCurrentAddress() {
-  return queryClient.getQueryData<Awaited<ReturnType<typeof queryFn>>>(
-    QUERY_KEY
-  );
+  return queryClient.getQueryData<Awaited<ReturnType<typeof queryFn>>>(QUERY_KEY);
 }
 
 export function useAddressParams(): Result {
@@ -38,10 +35,7 @@ export function useAddressParams(): Result {
   const address = addressResult || '';
   const addressNormalized = normalizeAddress(address);
   return {
-    params: useMemo(
-      () => ({ address: addressNormalized }),
-      [addressNormalized]
-    ),
+    params: useMemo(() => ({ address: addressNormalized }), [addressNormalized]),
     singleAddressNormalized: addressNormalized,
     maybeSingleAddress: address || null,
     singleAddress: address,

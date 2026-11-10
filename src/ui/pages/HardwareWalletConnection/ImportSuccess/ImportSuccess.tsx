@@ -21,26 +21,16 @@ export function ImportSuccess() {
   const addresses = params.getAll('address');
   const next = params.get('next');
   invariant(next, '"Next" param is required');
-  invariant(
-    addresses && addresses.length > 0,
-    'address parameters are missing'
-  );
+  invariant(addresses && addresses.length > 0, 'address parameters are missing');
   return (
     <PageColumn paddingInline={24}>
-      <NavigationTitle
-        urlBar="none"
-        title={null}
-        documentTitle="Import Success"
-      />
+      <NavigationTitle urlBar="none" title={null} documentTitle="Import Success" />
       <PageTop />
       <VStack gap={24}>
-        <CheckDouble
-          style={{ width: 52, height: 52, color: 'var(--positive-500)' }}
-        />
+        <CheckDouble style={{ width: 52, height: 52, color: 'var(--positive-500)' }} />
         <UIText kind="headline/hero">Connected Successfully!</UIText>
         <UIText kind="headline/h3">
-          You've successfully added {addresses.length}{' '}
-          {pluralize(addresses.length)}
+          You've successfully added {addresses.length} {pluralize(addresses.length)}
         </UIText>
         <VStack
           gap={8}

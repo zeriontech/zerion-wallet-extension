@@ -27,13 +27,7 @@ export function VerifyUser({
     useErrorBoundary: true,
   });
   const loginMutation = useMutation({
-    mutationFn: ({
-      user,
-      password,
-    }: {
-      user: PublicUser;
-      password: string;
-    }) => {
+    mutationFn: ({ user, password }: { user: PublicUser; password: string }) => {
       return accountPublicRPCPort.request('login', { user, password });
     },
     onSuccess() {
@@ -69,9 +63,7 @@ export function VerifyUser({
         }}
         onSubmit={(event) => {
           event.preventDefault();
-          const password = new FormData(event.currentTarget).get('password') as
-            | string
-            | undefined;
+          const password = new FormData(event.currentTarget).get('password') as string | undefined;
           if (!password) {
             return;
           }

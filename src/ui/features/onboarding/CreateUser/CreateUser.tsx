@@ -58,10 +58,7 @@ export function CreateUser() {
   }, []);
 
   const [values, toggleValueOriginal] = useToggledValues(
-    () =>
-      new Set<BlockchainType>(
-        FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']
-      )
+    () => new Set<BlockchainType>(FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']),
   );
   const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : noop;
 
@@ -114,11 +111,7 @@ export function CreateUser() {
             </UIText>
           </div>
         ) : null}
-        <UnstyledButton
-          onClick={goBack}
-          aria-label="Go Back"
-          className={helperStyles.backButton}
-        >
+        <UnstyledButton onClick={goBack} aria-label="Go Back" className={helperStyles.backButton}>
           <ArrowLeftIcon style={{ width: 20, height: 20 }} />
         </UnstyledButton>
         {view === 'password' ? (
@@ -126,8 +119,7 @@ export function CreateUser() {
             gap={isNarrowView ? 0 : 60}
             direction={isNarrowView ? 'vertical' : 'horizontal'}
             style={{
-              gridTemplateColumns:
-                isNarrowView || showError ? undefined : '380px auto',
+              gridTemplateColumns: isNarrowView || showError ? undefined : '380px auto',
               justifyContent: 'center',
             }}
           >
@@ -140,24 +132,17 @@ export function CreateUser() {
                 setSearchParams(`view=${ViewParam['select-wallets']}`);
               }}
             />
-            {isNarrowView || showError ? null : (
-              <RenderArea name="onboarding-faq" />
-            )}
+            {isNarrowView || showError ? null : <RenderArea name="onboarding-faq" />}
           </Stack>
         ) : view === 'select-wallets' ? (
           <div>
             <VStack gap={8}>
               <UIText kind="headline/h2">Create New Wallet</UIText>
-              <UIText kind="body/regular">
-                You can update this selection later in Settings
-              </UIText>
+              <UIText kind="body/regular">You can update this selection later in Settings</UIText>
             </VStack>
             <Spacer height={24} />
             <div style={{ marginInline: -16 }}>
-              <EcosystemOptionsList
-                values={values}
-                onValueToggle={toggleValue}
-              />
+              <EcosystemOptionsList values={values} onValueToggle={toggleValue} />
             </div>
             <Spacer height={32} />
             <Button

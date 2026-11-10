@@ -8,10 +8,7 @@ import type {
 } from 'src/shared/types/SignatureContextParams';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import type {
-  BannerClickedParams,
-  ButtonClickedParams,
-} from 'src/shared/types/button-events';
+import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
 import type {
   PerpsButtonPressedParams,
   PerpsPositionActionParams,
@@ -53,27 +50,20 @@ export const emitter = createNanoEvents<{
   chainsUpdated: () => void;
   chainChanged: (chain: Chain, origin: string) => void;
   'ui:chainSelected': (chain: Chain) => void;
-  globalError: (data: {
-    name: 'network_error' | 'signing_error';
-    message: string;
-  }) => void;
+  globalError: (data: { name: 'network_error' | 'signing_error'; message: string }) => void;
   switchChainError: (chainId: ChainId, origin: string, error: unknown) => void;
   transactionFormed: (context: TransactionFormedContext) => void;
   transactionSent: (
     result: SignTransactionResult,
-    context: { mode: 'default' | 'testnet' } & TransactionContextParams
+    context: { mode: 'default' | 'testnet' } & TransactionContextParams,
   ) => void;
   transactionFailed: (
     errorMessage: string,
-    context: { mode: 'default' | 'testnet' } & TransactionContextParams
+    context: { mode: 'default' | 'testnet' } & TransactionContextParams,
   ) => void;
   quoteError: (context: QuoteErrorContext, source: NetworksSource) => void;
-  typedDataSigned: (
-    data: { typedData: TypedData; address: string } & MessageContextParams
-  ) => void;
-  messageSigned: (
-    data: { message: string; address: string } & MessageContextParams
-  ) => void;
+  typedDataSigned: (data: { typedData: TypedData; address: string } & MessageContextParams) => void;
+  messageSigned: (data: { message: string; address: string } & MessageContextParams) => void;
   userActivity: () => void;
   connectToSiteEvent: (info: { origin: string }) => void;
   sessionExpired: () => void;
@@ -92,13 +82,10 @@ export const emitter = createNanoEvents<{
     origin: WalletOrigin;
     groupId: string | null;
   }) => void;
-  addEthereumChain: (data: {
-    values: [AddEthereumChainParameter];
-    origin: string;
-  }) => void;
+  addEthereumChain: (data: { values: [AddEthereumChainParameter]; origin: string }) => void;
   globalPreferencesChange: (
     state: GlobalPreferencesState,
-    prevState: GlobalPreferencesState
+    prevState: GlobalPreferencesState,
   ) => void;
   holdToSignPreferenceChange: (active: boolean) => void;
   keyboardShortcutToSignPreferenceChange: (active: boolean) => void;

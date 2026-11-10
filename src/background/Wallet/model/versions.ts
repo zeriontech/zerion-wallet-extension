@@ -19,7 +19,7 @@ type PossibleEntry =
 
 function mapObject<V, NewValue>(
   object: Record<string, V>,
-  callbackFn: (params: [string, V]) => [string, NewValue]
+  callbackFn: (params: [string, V]) => [string, NewValue],
 ) {
   return Object.fromEntries(Object.entries<V>(object).map(callbackFn));
 }
@@ -59,9 +59,7 @@ export const walletRecordUpgrades: Upgrades<PossibleEntry> = {
       ...entry,
       version: 5,
       permissions: mapObject(entry.permissions, ([key, value]) => {
-        const addresses = value.addresses.map((address) =>
-          normalizeAddress(address)
-        );
+        const addresses = value.addresses.map((address) => normalizeAddress(address));
         return [key, { ...value, addresses }];
       }),
     };

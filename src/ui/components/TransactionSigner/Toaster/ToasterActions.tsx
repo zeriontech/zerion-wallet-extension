@@ -67,7 +67,7 @@ function ToasterAction({
       event.stopPropagation();
       onClick?.();
     },
-    [onClick]
+    [onClick],
   );
   const commonProps = {
     className: s.actionButton,
@@ -81,12 +81,7 @@ function ToasterAction({
     ...enterAnimation(reducedMotion, index),
   };
   return href ? (
-    <motion.a
-      {...commonProps}
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+    <motion.a {...commonProps} href={href} target="_blank" rel="noopener noreferrer">
       {children}
     </motion.a>
   ) : (
@@ -112,7 +107,7 @@ export function ToasterActions({
 
   const href = useMemo(
     () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
-    [explorerUrl]
+    [explorerUrl],
   );
 
   if (!hash && !href) {
@@ -134,19 +129,13 @@ export function ToasterActions({
               className={s.actionIcon}
               style={isSuccess ? { color: 'var(--positive-500)' } : undefined}
               initial={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.6, filter: 'blur(4px)' }
+                reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(4px)' }
               }
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               exit={
-                reducedMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, scale: 0.6, filter: 'blur(4px)' }
+                reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(4px)' }
               }
-              transition={
-                reducedMotion ? { duration: 0.1 } : { duration: 0.18 }
-              }
+              transition={reducedMotion ? { duration: 0.1 } : { duration: 0.18 }}
             >
               {isSuccess ? (
                 <CheckIcon style={{ width: ICON_SIZE, height: ICON_SIZE }} />

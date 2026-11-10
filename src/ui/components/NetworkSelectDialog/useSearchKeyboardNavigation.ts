@@ -15,9 +15,7 @@ export function useSearchKeyboardNavigation({
   }, [searchRef]);
 
   const selectNext = useCallback(() => {
-    const activeElement = document.activeElement as
-      | HTMLInputElement
-      | HTMLButtonElement;
+    const activeElement = document.activeElement as HTMLInputElement | HTMLButtonElement;
     let index: number | null = null;
     if (activeElement === searchRef.current) {
       index = -1;
@@ -29,7 +27,7 @@ export function useSearchKeyboardNavigation({
       const nextNetwork = document.querySelector<HTMLButtonElement>(
         `button[data-class='${itemClassName}'][data-index='${
           index + 1
-        }'], a[data-class='${itemClassName}'][data-index='${index + 1}']`
+        }'], a[data-class='${itemClassName}'][data-index='${index + 1}']`,
       );
       if (nextNetwork) {
         nextNetwork.focus();
@@ -38,9 +36,7 @@ export function useSearchKeyboardNavigation({
   }, [itemClassName, searchRef]);
 
   const selectPrev = useCallback(() => {
-    const activeElement = document.activeElement as
-      | HTMLInputElement
-      | HTMLButtonElement;
+    const activeElement = document.activeElement as HTMLInputElement | HTMLButtonElement;
     let index: number | null = null;
     if (activeElement?.dataset?.class === itemClassName) {
       index = Number((activeElement as HTMLButtonElement).dataset.index);
@@ -49,7 +45,7 @@ export function useSearchKeyboardNavigation({
       const prevNetwork = document.querySelector<HTMLButtonElement>(
         `button[data-class='${itemClassName}'][data-index='${
           index - 1
-        }'], a[data-class='${itemClassName}'][data-index='${index - 1}']`
+        }'], a[data-class='${itemClassName}'][data-index='${index - 1}']`,
       );
       if (prevNetwork) {
         prevNetwork.focus();

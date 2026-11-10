@@ -13,12 +13,8 @@ export const LOCAL_TRANSACTION_TTL_MS = 1000 * 60 * 60 * 24;
 /** EIP-155 chain id for evm items, NetworkId.Solana for solana items */
 export type TransactionNetworkKey = string;
 
-export function getTransactionNetworkKey(
-  item: TransactionObject
-): TransactionNetworkKey {
-  return item.hash
-    ? normalizeChainId(item.transaction.chainId)
-    : NetworkId.Solana;
+export function getTransactionNetworkKey(item: TransactionObject): TransactionNetworkKey {
+  return item.hash ? normalizeChainId(item.transaction.chainId) : NetworkId.Solana;
 }
 
 export function isExpiredTransaction(item: TransactionObject, now: number) {
@@ -33,14 +29,10 @@ export function isExpiredTransaction(item: TransactionObject, now: number) {
  */
 export function getExpiredTransactions(
   transactions: StoredTransactions,
-  {
-    now,
-    networksWithHistory,
-  }: { now: number; networksWithHistory: Set<TransactionNetworkKey> }
+  { now, networksWithHistory }: { now: number; networksWithHistory: Set<TransactionNetworkKey> },
 ) {
   return transactions.filter(
     (item) =>
-      isExpiredTransaction(item, now) &&
-      networksWithHistory.has(getTransactionNetworkKey(item))
+      isExpiredTransaction(item, now) && networksWithHistory.has(getTransactionNetworkKey(item)),
   );
 }

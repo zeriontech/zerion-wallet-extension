@@ -13,10 +13,7 @@ import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
 import { isRpcRequest } from 'src/shared/custom-rpc';
 import { useAllSignerOrHwAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
-import {
-  useBackgroundKind,
-  useBodyStyle,
-} from 'src/ui/components/Background/Background';
+import { useBackgroundKind, useBodyStyle } from 'src/ui/components/Background/Background';
 import { NavigationBackButton } from 'src/ui/components/NavigationBackButton';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import FullTextLogo from 'jsx:src/ui/assets/zerion-full-logo.svg';
@@ -44,11 +41,7 @@ export function FrameLayout({
         flexDirection: 'column',
       }}
     >
-      <NavigationTitle
-        urlBar="none"
-        title={null}
-        documentTitle="Connect your Ledger"
-      />
+      <NavigationTitle urlBar="none" title={null} documentTitle="Connect your Ledger" />
       <div
         style={{
           display: 'grid',
@@ -147,10 +140,7 @@ export function HardwareWalletConnectionStart({
             finalize(params);
           }
         } else if (method === 'wallet-info') {
-          const result = await getWalletInfo(
-            (params as { address: string }).address,
-            currency
-          );
+          const result = await getWalletInfo((params as { address: string }).address, currency);
           if (iframeRef.current && iframeRef.current.contentWindow) {
             iframeRef.current.contentWindow.postMessage({ id, result }, '*');
           }
@@ -163,15 +153,7 @@ export function HardwareWalletConnectionStart({
     }
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [
-    finalize,
-    onImport,
-    navigate,
-    requestId,
-    searchParams,
-    currency,
-    setGlobalPreferences,
-  ]);
+  }, [finalize, onImport, navigate, requestId, searchParams, currency, setGlobalPreferences]);
 
   if (!globalPreferences) {
     return null;

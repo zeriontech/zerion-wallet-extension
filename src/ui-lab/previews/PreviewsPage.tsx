@@ -26,9 +26,7 @@ function PreviewList() {
           >
             <UIText kind="headline/h2">{preview.name}</UIText>
           </UnstyledLink>
-          {typeof preview.component === 'function'
-            ? preview.component()
-            : preview.component}
+          {typeof preview.component === 'function' ? preview.component() : preview.component}
         </VStack>
       ))}
     </VStack>
@@ -43,11 +41,7 @@ export default function PreviewsPage() {
       <NavigationBar title="Component Previews" />
       <DocumentTitle title="Component Previews" />
       <Spacer height={36} />
-      {previews.length ? (
-        <PreviewList />
-      ) : (
-        <EmptyView2>No Previews Yet</EmptyView2>
-      )}
+      {previews.length ? <PreviewList /> : <EmptyView2>No Previews Yet</EmptyView2>}
       <PageBottom />
     </PageColumn>
   );

@@ -4,7 +4,7 @@ import { getAssetChange24h } from './helpers';
 function position(
   overrides: Partial<GroupedFungiblePosition> & {
     priceChange?: number | null;
-  }
+  },
 ): GroupedFungiblePosition {
   const { priceChange = null, ...rest } = overrides;
   return {
@@ -20,9 +20,7 @@ function position(
       implementations: {},
       iconUrl: null,
       price:
-        priceChange == null
-          ? null
-          : { value: 1, relativeChange24h: priceChange, changedAt: 0 },
+        priceChange == null ? null : { value: 1, relativeChange24h: priceChange, changedAt: 0 },
       isDisplayable: true,
       isVerified: true,
       isNew: false,
@@ -45,14 +43,12 @@ describe('getAssetChange24h', () => {
           relativeChange24h: 42.45,
           absoluteChange24h: 683.82,
         }),
-      ])
+      ]),
     ).toEqual({ relative: 42.45, absolute: 683.82 });
   });
 
   test('falls back to the price move with the value 24h ago as base', () => {
-    const change = getAssetChange24h([
-      position({ value: 2275, priceChange: 165.2 }),
-    ]);
+    const change = getAssetChange24h([position({ value: 2275, priceChange: 165.2 })]);
     expect(change?.relative).toBe(165.2);
     expect(change?.absolute).toBeCloseTo(1417.16, 1);
   });

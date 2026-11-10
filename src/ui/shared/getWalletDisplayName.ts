@@ -2,11 +2,7 @@ import type { BareWallet } from 'src/shared/types/BareWallet';
 import { truncateAddress } from './truncateAddress';
 
 export function emojify(value: string) {
-  if (
-    /\bhacked\b/i.test(value) ||
-    /\bleaked\b/i.test(value) ||
-    /\blost\b/i.test(value)
-  ) {
+  if (/\bhacked\b/i.test(value) || /\bleaked\b/i.test(value) || /\blost\b/i.test(value)) {
     return `${value} 😱`;
   } else {
     return value;
@@ -15,15 +11,10 @@ export function emojify(value: string) {
 
 export function getWalletDisplayName(
   wallet: Pick<BareWallet, 'address' | 'name'>,
-  {
-    padding = 4,
-    maxCharacters,
-  }: { padding?: number; maxCharacters?: number } = {}
+  { padding = 4, maxCharacters }: { padding?: number; maxCharacters?: number } = {},
 ) {
   if (typeof wallet.address !== 'string') {
-    throw new Error(
-      `Address is missing from Wallet object: ${JSON.stringify(wallet)}`
-    );
+    throw new Error(`Address is missing from Wallet object: ${JSON.stringify(wallet)}`);
   }
   const displayName = wallet.name ?? truncateAddress(wallet.address, padding);
   const value = emojify(displayName);

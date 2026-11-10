@@ -91,8 +91,7 @@ export function Background({
     if (!backgroundColor) {
       return;
     }
-    const previousValue =
-      uiScrollRootElement.style.getPropertyValue('--background');
+    const previousValue = uiScrollRootElement.style.getPropertyValue('--background');
     uiScrollRootElement.style.backgroundColor = backgroundColor;
     return () => {
       uiScrollRootElement.style.backgroundColor = previousValue;

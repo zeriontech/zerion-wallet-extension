@@ -33,11 +33,7 @@ export function SuccessDialog({
         {referrer.address ? (
           <UIText kind="small/accent" style={{ textAlign: 'center' }}>
             <ReferrerLink handle={referrer.handle} address={referrer.address} />{' '}
-            <UIText
-              kind="small/regular"
-              inline={true}
-              color="var(--neutral-500)"
-            >
+            <UIText kind="small/regular" inline={true} color="var(--neutral-500)">
               has invited you!
             </UIText>
           </UIText>
@@ -46,32 +42,18 @@ export function SuccessDialog({
       <VStack gap={8}>
         <PremiumTrialBanner backgroundColor="var(--white)" />
         <HStack gap={8} style={{ gridAutoColumns: '1fr 2fr' }}>
-          <FeatureCard
-            icon="🚀"
-            iconStyle={{ fontSize: '36px' }}
-            text="Early Access"
-          />
+          <FeatureCard icon="🚀" iconStyle={{ fontSize: '36px' }} text="Early Access" />
           <FeatureCard
             icon={<PremiumIcon style={{ width: 36, height: 36 }} />}
             text="Perks for All Wallets"
           />
         </HStack>
         <HStack gap={8} style={{ gridAutoColumns: 'auto 1fr' }}>
-          <FeatureCard
-            icon={<ChartPromoIcon />}
-            text="Multichain Profit/Loss"
-          />
-          <FeatureCard
-            icon={<ReducedFeesPromoIcon />}
-            text="Reduced Trading Fees"
-          />
+          <FeatureCard icon={<ChartPromoIcon />} text="Multichain Profit/Loss" />
+          <FeatureCard icon={<ReducedFeesPromoIcon />} text="Reduced Trading Fees" />
         </HStack>
         <HStack gap={8} style={{ gridAutoColumns: '1fr 2fr' }}>
-          <FeatureCard
-            icon="🦸"
-            iconStyle={{ fontSize: '36px' }}
-            text="Priority Support"
-          />
+          <FeatureCard icon="🦸" iconStyle={{ fontSize: '36px' }} text="Priority Support" />
           <FeatureCard icon={<CsvPromoIcon />} text="Download History" />
         </HStack>
       </VStack>

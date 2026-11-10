@@ -57,17 +57,12 @@ export function SpeedUp({
   const [configuration, setConfiguration] = useState(DEFAULT_CONFIGURATION);
   invariant(originalTransaction, 'Original transaction must be defined');
   const transaction = useMemo(() => {
-    const tx = removeGasPrice(
-      fromAddressActionTransaction(originalTransaction)
-    );
+    const tx = removeGasPrice(fromAddressActionTransaction(originalTransaction));
     return { ...tx, from: address };
   }, [address, originalTransaction]);
   const chain = createChain(originalTransaction.chain);
   const { data: chainGasPrices = null } = useGasPrices(chain);
-  const acceleratedGasPrices = useMemo(
-    () => increaseGasPrices(chainGasPrices),
-    [chainGasPrices]
-  );
+  const acceleratedGasPrices = useMemo(() => increaseGasPrices(chainGasPrices), [chainGasPrices]);
 
   const feeValueCommonRef = useRef<string>(); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
@@ -103,7 +98,7 @@ export function SpeedUp({
       const tx = applyConfiguration(
         transaction,
         { ...configuration, nonce: String(nonce) },
-        acceleratedGasPrices
+        acceleratedGasPrices,
       );
       assertProp(tx, 'chainId');
       const txResponse = await signTxBtnRef.current.sendTransaction({
@@ -162,11 +157,7 @@ export function SpeedUp({
       <Spacer height={16} />
       <VStack gap={32}>
         <VStack gap={16} style={{ placeItems: 'center' }}>
-          <img
-            alt=""
-            src={RocketSrc}
-            srcSet={`${RocketSrc}, ${Rocket2xSrc} 2x`}
-          />
+          <img alt="" src={RocketSrc} srcSet={`${RocketSrc}, ${Rocket2xSrc} 2x`} />
           <UIText kind="headline/h2">Speed Up Transaction</UIText>
           <div
             style={{
@@ -181,9 +172,7 @@ export function SpeedUp({
               chainGasPrices={acceleratedGasPrices}
               chain={chain}
               networkFeeConfiguration={configuration.networkFee}
-              onChange={(networkFee) =>
-                setConfiguration((current) => ({ ...current, networkFee }))
-              }
+              onChange={(networkFee) => setConfiguration((current) => ({ ...current, networkFee }))}
               customViewOnly={true}
               label={<UIText kind="body/accent">Network Fee:</UIText>}
               renderDisplayValue={({ hintTitle, displayValue }) => (
@@ -199,10 +188,7 @@ export function SpeedUp({
         </VStack>
         <VStack gap={8} style={{ textAlign: 'center' }}>
           {isError ? (
-            <ErrorMessage
-              error={getError(error)}
-              hardwareError={getHardwareError(error)}
-            />
+            <ErrorMessage error={getError(error)} hardwareError={getHardwareError(error)} />
           ) : null}
           <div
             style={{
@@ -211,12 +197,7 @@ export function SpeedUp({
               gap: 8,
             }}
           >
-            <Button
-              ref={focusNode}
-              kind="neutral"
-              type="button"
-              onClick={onDismiss}
-            >
+            <Button ref={focusNode} kind="neutral" type="button" onClick={onDismiss}>
               Back
             </Button>
             {preferences && globalPreferences ? (
@@ -225,9 +206,7 @@ export function SpeedUp({
                 ref={signTxBtnRef}
                 onClick={() => sendTransaction()}
                 holdToSign={preferences.enableHoldToSignButton}
-                bluetoothSupportEnabled={
-                  globalPreferences.bluetoothSupportEnabled
-                }
+                bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
                 keyboardShortcutEnabled={false}
               />
             ) : null}

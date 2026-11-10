@@ -4,9 +4,7 @@ import { spotClearinghouseState } from './api/requests/spot-clearinghouse-state.
 import { userAbstraction } from './api/requests/user-abstraction.client';
 import { computeEffectiveAccountValueUSD } from './computeEffectiveValues';
 
-export async function fetchHyperliquidBalance(
-  address: string
-): Promise<number | null> {
+export async function fetchHyperliquidBalance(address: string): Promise<number | null> {
   // Fan out the independent queries: perp DEX list, spot balances, and
   // user-abstraction mode. Spot + abstraction are needed to support
   // unified-account users, whose perp `marginSummary.accountValue` is
@@ -26,9 +24,7 @@ export async function fetchHyperliquidBalance(
   }
 
   const perpStates = await Promise.all(
-    dexIdentifiers.map((dexIdentifier) =>
-      perpClearinghouseState({ address, dexIdentifier })
-    )
+    dexIdentifiers.map((dexIdentifier) => perpClearinghouseState({ address, dexIdentifier })),
   );
 
   const anyPerpOk = perpStates.some((state) => state != null);

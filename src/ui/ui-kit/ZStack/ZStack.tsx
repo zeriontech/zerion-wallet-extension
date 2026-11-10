@@ -1,9 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import {
-  zstack,
-  hideLowerElements as hideLowerElementsClassName,
-} from './styles.module.css';
+import { zstack, hideLowerElements as hideLowerElementsClassName } from './styles.module.css';
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   hideLowerElements?: boolean;

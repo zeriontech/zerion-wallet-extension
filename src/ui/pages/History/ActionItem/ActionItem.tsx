@@ -24,17 +24,11 @@ import {
   HistoryTokenValue,
   TransactionCurrencyValue,
 } from './TransactionItemValue';
-import {
-  transactionIconStyle,
-  TransactionItemIcon,
-} from './TransactionTypeIcon';
+import { transactionIconStyle, TransactionItemIcon } from './TransactionTypeIcon';
 import * as styles from './styles.module.css';
 
 function checkIsDnaMint(action: AnyAddressAction) {
-  return (
-    normalizeAddress(action.label?.contract?.address || '') ===
-    DNA_MINT_CONTRACT_ADDRESS
-  );
+  return normalizeAddress(action.label?.contract?.address || '') === DNA_MINT_CONTRACT_ADDRESS;
 }
 
 function ActionTitle({
@@ -52,7 +46,7 @@ function ActionTitle({
 
   const explorerUrlPrepared = useMemo(
     () => (explorerUrl ? prepareForHref(explorerUrl)?.toString() : undefined),
-    [explorerUrl]
+    [explorerUrl],
   );
 
   return (
@@ -87,13 +81,9 @@ function AddressTruncated({ value }: { value: string }) {
 }
 
 function ActionLabel({ addressAction }: { addressAction: AnyAddressAction }) {
-  const address =
-    addressAction.label?.wallet?.address ||
-    addressAction.label?.contract?.address;
+  const address = addressAction.label?.wallet?.address || addressAction.label?.contract?.address;
 
-  const text =
-    addressAction.label?.wallet?.name ||
-    addressAction.label?.contract?.dapp.name;
+  const text = addressAction.label?.wallet?.name || addressAction.label?.contract?.dapp.name;
 
   if (text && text !== address) {
     return (
@@ -114,16 +104,8 @@ function ActionDetail({ addressAction }: { addressAction: AnyAddressAction }) {
 
   return (
     <HStack alignItems="center" gap={4}>
-      <NetworkIcon
-        size={16}
-        src={chainInfo?.iconUrl}
-        name={chainInfo?.name || null}
-      />
-      <UIText
-        kind="small/regular"
-        color="var(--neutral-500)"
-        style={{ display: 'flex' }}
-      >
+      <NetworkIcon size={16} src={chainInfo?.iconUrl} name={chainInfo?.name || null} />
+      <UIText kind="small/regular" color="var(--neutral-500)" style={{ display: 'flex' }}>
         {addressAction.status === 'pending' ? (
           <span style={{ color: 'var(--notice-500)' }}>Pending</span>
         ) : addressAction.status === 'failed' ? (
@@ -151,23 +133,14 @@ export function ActionItem({
   const navigate = useNavigate();
 
   const incomingTransfers = useMemo(
-    () =>
-      addressAction.content?.transfers?.filter(
-        (transfer) => transfer.direction === 'in'
-      ),
-    [addressAction.content?.transfers]
+    () => addressAction.content?.transfers?.filter((transfer) => transfer.direction === 'in'),
+    [addressAction.content?.transfers],
   );
   const outgoingTransfers = useMemo(
-    () =>
-      addressAction.content?.transfers?.filter(
-        (transfer) => transfer.direction === 'out'
-      ),
-    [addressAction.content?.transfers]
+    () => addressAction.content?.transfers?.filter((transfer) => transfer.direction === 'out'),
+    [addressAction.content?.transfers],
   );
-  const approvals = useMemo(
-    () => addressAction.content?.approvals || [],
-    [addressAction]
-  );
+  const approvals = useMemo(() => addressAction.content?.approvals || [], [addressAction]);
 
   const shouldUsePositiveColor = incomingTransfers?.length === 1;
 
@@ -180,8 +153,7 @@ export function ActionItem({
         cursor: 'pointer',
         position: 'relative',
         height: 42,
-        gridTemplateColumns:
-          'minmax(min-content, max-content) minmax(100px, max-content)',
+        gridTemplateColumns: 'minmax(min-content, max-content) minmax(100px, max-content)',
       }}
       alignItems="center"
       onClick={(event) => {
@@ -223,9 +195,7 @@ export function ActionItem({
       >
         <UIText
           kind="body/regular"
-          color={
-            shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'
-          }
+          color={shouldUsePositiveColor ? 'var(--positive-500)' : 'var(--black)'}
           style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -247,10 +217,7 @@ export function ActionItem({
               kind="body/regular"
             />
           ) : approvals.length ? (
-            <HistoryApprovalValue
-              approvals={approvals}
-              withLink={!testnetMode}
-            />
+            <HistoryApprovalValue approvals={approvals} withLink={!testnetMode} />
           ) : null}
         </UIText>
         <UIText kind="small/regular" color="var(--neutral-500)">

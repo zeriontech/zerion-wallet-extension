@@ -13,9 +13,7 @@ const tokenValueFormatters = {
 export function roundTokenValue(value: BigNumber.Value) {
   const number = value instanceof BigNumber ? value.toNumber() : Number(value);
   const formatter =
-    Math.abs(number) < 0.1
-      ? tokenValueFormatters['<0.1']
-      : tokenValueFormatters.default;
+    Math.abs(number) < 0.1 ? tokenValueFormatters['<0.1'] : tokenValueFormatters.default;
   return formatter.format(number);
 }
 
@@ -29,7 +27,7 @@ const getDefaultFormatter = memoize((notation?: 'compact') => {
 export function formatTokenValue(
   value: BigNumber.Value,
   symbol?: string,
-  { notation }: { notation?: 'compact' } = {}
+  { notation }: { notation?: 'compact' } = {},
 ) {
   const roundedString = roundTokenValue(value);
   const formatter = getDefaultFormatter(notation);

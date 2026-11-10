@@ -6,11 +6,7 @@ import type { ChainId } from '../ethereum/transactions/ChainId';
 import { isCustomNetworkId } from '../ethereum/chains/helpers';
 import type { EthereumChainConfig } from '../ethereum/chains/types';
 import { Networks } from './Networks';
-import {
-  getNetworkByChainId,
-  getNetworkById,
-  getSupportedNetworks,
-} from './networks-api';
+import { getNetworkByChainId, getNetworkById, getSupportedNetworks } from './networks-api';
 import type { NetworkInfo } from './NetworkInfo';
 import { toNetworkInfo } from './helpers';
 import { createChain } from './Chain';
@@ -19,13 +15,8 @@ interface State {
   networks: Networks | null;
 }
 
-function mergeNetworkInfos(
-  prevConfigs: NetworkInfo[],
-  nextConfigs: NetworkInfo[]
-) {
-  const nextConfigMap = Object.fromEntries(
-    nextConfigs.map((config) => [config.id, config])
-  );
+function mergeNetworkInfos(prevConfigs: NetworkInfo[], nextConfigs: NetworkInfo[]) {
+  const nextConfigMap = Object.fromEntries(nextConfigs.map((config) => [config.id, config]));
   const prevConfigsSet = new Set(prevConfigs.map((item) => item.id));
   return [
     ...prevConfigs.map((config) => nextConfigMap[config.id] ?? config),
@@ -58,9 +49,7 @@ export class NetworksStore extends Store<State> {
    */
   private getApiClient: () => ZerionApiClient;
   source: NetworksSource;
-  private getOtherNetworkData:
-    | null
-    | (() => Promise<OtherNetworkData | undefined>);
+  private getOtherNetworkData: null | (() => Promise<OtherNetworkData | undefined>);
 
   constructor(
     state: State,
@@ -72,7 +61,7 @@ export class NetworksStore extends Store<State> {
       getOtherNetworkData?: NetworksStore['getOtherNetworkData'];
       getApiClient: () => ZerionApiClient;
       source: NetworksSource;
-    }
+    },
   ) {
     super(state);
     this.getOtherNetworkData = getOtherNetworkData ?? null;
@@ -94,10 +83,7 @@ export class NetworksStore extends Store<State> {
     const visitedChains = chainConfigs?.visitedChains;
     const pinnedChains = chainConfigs?.pinnedChains;
     const networks = new Networks({
-      networks: mergeNetworkInfos(
-        this.networkConfigs,
-        this.customNetworkConfigs
-      ),
+      networks: mergeNetworkInfos(this.networkConfigs, this.customNetworkConfigs),
       ethereumChainConfigs: savedChainConfigs || [],
       visitedChains: visitedChains || [],
       pinnedChains: pinnedChains || [],
@@ -106,15 +92,8 @@ export class NetworksStore extends Store<State> {
     return networks;
   }
 
-  private async fetchNetworks({
-    chains = [],
-    update,
-  }: {
-    chains?: string[];
-    update?: boolean;
-  }) {
-    const existingNetworksCollection =
-      this.getState().networks?.getNetworksCollection();
+  private async fetchNetworks({ chains = [], update }: { chains?: string[]; update?: boolean }) {
+    const existingNetworksCollection = this.getState().networks?.getNetworksCollection();
     const shouldUpdateNetworksInfo =
       update || chains.some((id) => !existingNetworksCollection?.[id]);
     const existingNetworks = this.getState().networks;
@@ -131,10 +110,7 @@ export class NetworksStore extends Store<State> {
     const commonNetworkConfigs = update
       ? []
       : await getSupportedNetworks(params).catch(() => [] as NetworkInfo[]);
-    const knownNetworkConfigs = mergeNetworkInfos(
-      this.networkConfigs,
-      commonNetworkConfigs
-    );
+    const knownNetworkConfigs = mergeNetworkInfos(this.networkConfigs, commonNetworkConfigs);
     const knownIdSet = new Set(knownNetworkConfigs.map(({ id }) => id));
 
     /**
@@ -143,22 +119,18 @@ export class NetworksStore extends Store<State> {
      * requested, visited and pinned slugs through an exact-match search.
      */
     const savedConfigsToFetch = savedChainConfigs.filter(
-      (config) => !isCustomNetworkId(config.id) && !knownIdSet.has(config.id)
+      (config) => !isCustomNetworkId(config.id) && !knownIdSet.has(config.id),
     );
     const savedIdsToFetch = new Set(savedConfigsToFetch.map(({ id }) => id));
-    const slugsToFetch = Array.from(
-      new Set([...chains, ...visitedChains, ...pinnedChains])
-    ).filter(
+    const slugsToFetch = Array.from(new Set([...chains, ...visitedChains, ...pinnedChains])).filter(
       (id) =>
         !isCustomNetworkId(id) &&
         !knownIdSet.has(id) &&
         !savedIdsToFetch.has(id) &&
-        !this.unresolvedSlugs.has(id)
+        !this.unresolvedSlugs.has(id),
     );
     const extraResults = await Promise.allSettled([
-      ...savedConfigsToFetch.map((config) =>
-        getNetworkByChainId(config.value.chainId, params)
-      ),
+      ...savedConfigsToFetch.map((config) => getNetworkByChainId(config.value.chainId, params)),
       ...slugsToFetch.map((id) => getNetworkById(id, params)),
     ]);
     slugsToFetch.forEach((id, index) => {
@@ -168,16 +140,11 @@ export class NetworksStore extends Store<State> {
       }
     });
     const extraNetworkConfigs = extraResults.flatMap((result) =>
-      result.status === 'fulfilled' && result.value ? [result.value] : []
+      result.status === 'fulfilled' && result.value ? [result.value] : [],
     );
 
-    this.networkConfigs = mergeNetworkInfos(
-      knownNetworkConfigs,
-      extraNetworkConfigs
-    );
-    const fulfilledNetworkIdSet = new Set(
-      this.networkConfigs.map(({ id }) => id)
-    );
+    this.networkConfigs = mergeNetworkInfos(knownNetworkConfigs, extraNetworkConfigs);
+    const fulfilledNetworkIdSet = new Set(this.networkConfigs.map(({ id }) => id));
     this.customNetworkConfigs = savedChainConfigs
       .filter((config) => !fulfilledNetworkIdSet.has(config.id))
       .map((config) => toNetworkInfo(config.value, config.id));
@@ -207,10 +174,7 @@ export class NetworksStore extends Store<State> {
   }
 
   async pushConfigs(...extraNetworkConfigs: NetworkInfo[]) {
-    this.networkConfigs = mergeNetworkInfos(
-      this.networkConfigs,
-      extraNetworkConfigs
-    );
+    this.networkConfigs = mergeNetworkInfos(this.networkConfigs, extraNetworkConfigs);
     return this.updateNetworks();
   }
 
@@ -235,11 +199,9 @@ export class NetworksStore extends Store<State> {
   async loadNetworksByChainId(chainId: ChainId) {
     const key = `chainId-${chainId}`;
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.#fetchNetworkByChainId(chainId).finally(
-        () => {
-          delete this.loaderPromises[key];
-        }
-      );
+      this.loaderPromises[key] = this.#fetchNetworkByChainId(chainId).finally(() => {
+        delete this.loaderPromises[key];
+      });
     }
     return this.loaderPromises[key];
   }
@@ -273,11 +235,9 @@ export class NetworksStore extends Store<State> {
     }
     const key = 'update';
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ update: true }).finally(
-        () => {
-          delete this.loaderPromises[key];
-        }
-      );
+      this.loaderPromises[key] = this.fetchNetworks({ update: true }).finally(() => {
+        delete this.loaderPromises[key];
+      });
     }
     return this.loaderPromises[key];
   }

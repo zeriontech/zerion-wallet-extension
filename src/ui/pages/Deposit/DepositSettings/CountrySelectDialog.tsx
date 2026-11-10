@@ -1,10 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  Combobox,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxProvider,
-} from '@ariakit/react';
+import { Combobox, ComboboxItem, ComboboxList, ComboboxProvider } from '@ariakit/react';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import CheckIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { normalizedIncludes } from 'src/shared/normalizedIncludes';
@@ -49,23 +44,16 @@ function CountryList({
     }
     return countries.filter(
       (country) =>
-        normalizedIncludes(country.name, trimmed) ||
-        normalizedIncludes(country.id, trimmed)
+        normalizedIncludes(country.name, trimmed) || normalizedIncludes(country.id, trimmed),
     );
   }, [countries, query]);
 
   return (
-    <ComboboxProvider
-      open={true}
-      focusLoop={true}
-      includesBaseElement={true}
-      setValue={setQuery}
-    >
+    <ComboboxProvider open={true} focusLoop={true} includesBaseElement={true} setValue={setQuery}>
       <VStack gap={8} style={{ paddingInline: 16, paddingBottom: 16 }}>
         <VStack gap={4} className={styles.stickyHeader}>
           <UIText kind="small/regular" color="var(--neutral-500)">
-            Pick the country where your card was issued or your bank account is
-            held.
+            Pick the country where your card was issued or your bank account is held.
           </UIText>
           <div className={styles.searchWrapper}>
             <SearchIcon role="presentation" className={styles.searchIcon} />
@@ -151,19 +139,8 @@ export function CountrySelectDialog({
   onSelect: (countryId: string) => void;
 }) {
   return (
-    <Dialog2
-      open={open}
-      onClose={onClose}
-      title="Country"
-      size="full"
-      autoFocusInput={false}
-    >
-      <CountryList
-        countries={countries}
-        value={value}
-        onSelect={onSelect}
-        onClose={onClose}
-      />
+    <Dialog2 open={open} onClose={onClose} title="Country" size="full" autoFocusInput={false}>
+      <CountryList countries={countries} value={value} onSelect={onSelect} onClose={onClose} />
     </Dialog2>
   );
 }

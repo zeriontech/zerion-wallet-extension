@@ -34,9 +34,10 @@ export function toTypedData(intent: IntentEVM): TypedData {
   const types = intent.types.EIP712Domain
     ? intent.types
     : {
-        EIP712Domain: DOMAIN_FIELD_ORDER.filter((field) => field in domain).map(
-          (field) => ({ name: field, type: DOMAIN_FIELD_TYPES[field] })
-        ),
+        EIP712Domain: DOMAIN_FIELD_ORDER.filter((field) => field in domain).map((field) => ({
+          name: field,
+          type: DOMAIN_FIELD_TYPES[field],
+        })),
         ...intent.types,
       };
   return {

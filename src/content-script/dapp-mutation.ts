@@ -14,14 +14,12 @@ function visitTextNodes(node: Element, cb: (node: Node) => boolean) {
 // to perform slightly slower in Chrome and *much* slower in Safari
 
 const injectedRegexes: Record<string, RegExp> = {
-  default:
-    /\b(Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/i,
+  default: /\b(Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/i,
   'https://app.1inch.io':
     /\b(Web3|Injected Wallet|Injected|Detected Wallet|Browser Wallet|Web3 Wallet)\b/i,
 };
 
-const labelsInjectedRe =
-  injectedRegexes[window.location.origin] || injectedRegexes.default;
+const labelsInjectedRe = injectedRegexes[window.location.origin] || injectedRegexes.default;
 const labelsMetamaskRe = /\bMeta[mM]ask\b/;
 const zerionRe = /zerion/i;
 
@@ -44,10 +42,7 @@ function getMostLikelyIcon(imageLikeElements: NodeListOf<Element>) {
     // it's tricky to know which image to update
     return Array.from(imageLikeElements).find((img) => {
       const re = /\b(metamask|injected|detected|browser)\b/i;
-      return (
-        re.test(img.getAttribute('src') || '') ||
-        re.test(img.getAttribute('alt') || '')
-      );
+      return re.test(img.getAttribute('src') || '') || re.test(img.getAttribute('alt') || '');
     });
   }
 }
@@ -67,7 +62,7 @@ const iconSelectors = {
 
 function replaceButtonImage(node: HTMLElement, context: Context) {
   const imageLikeElements = node.querySelectorAll(
-    context.isOnboardV2 ? iconSelectors.onboardV2 : iconSelectors.default
+    context.isOnboardV2 ? iconSelectors.onboardV2 : iconSelectors.default,
   );
   const element = getMostLikelyIcon(imageLikeElements);
   if (
@@ -108,12 +103,9 @@ const buttonLikeSelectors: Record<string, string> = {
   'https://unstoppabledomains.com': 'button,[role=button],.MuiGrid-item',
 };
 
-function rewriteConnectButtons(
-  node: ParentNode = document.body,
-  context: Context
-) {
+function rewriteConnectButtons(node: ParentNode = document.body, context: Context) {
   const buttonLikeElements = node.querySelectorAll<HTMLElement>(
-    buttonLikeSelectors[window.location.origin] || buttonLikeSelectors.default
+    buttonLikeSelectors[window.location.origin] || buttonLikeSelectors.default,
   );
 
   type Item = { element: HTMLElement; textNode: Node };
@@ -209,10 +201,7 @@ function monitorAddedNodes(cb: (element: HTMLElement) => boolean | void) {
   return () => observer.disconnect();
 }
 
-function observeConnectButtons(
-  node: ParentNode = document.body,
-  context: Context
-) {
+function observeConnectButtons(node: ParentNode = document.body, context: Context) {
   const observer = new MutationObserver((mutations) => {
     if (mutations.some((m) => m.addedNodes.length || m.type === 'attributes')) {
       // can we narrow down the algorithm to use rewriteConnectButtons(mutation.target)?

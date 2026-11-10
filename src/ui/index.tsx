@@ -61,7 +61,7 @@ function renderApp({ initialView, inspect }: AppProps) {
   reactRoot.render(
     <React.StrictMode>
       <App initialView={initialView} inspect={inspect} />
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 }
 

@@ -2,10 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon-small.svg';
 import WatchAddressIcon from 'jsx:src/ui/assets/watch-address.svg';
-import {
-  isDeviceAccount,
-  isReadonlyAccount,
-} from 'src/shared/types/validators';
+import { isDeviceAccount, isReadonlyAccount } from 'src/shared/types/validators';
 import { walletPort } from 'src/ui/shared/channels';
 
 export function WalletSourceIcon({
@@ -23,8 +20,7 @@ export function WalletSourceIcon({
 }) {
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address, groupId],
-    queryFn: () =>
-      walletPort.request('uiGetWalletByAddress', { address, groupId }),
+    queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId }),
     suspense: false,
   });
 
@@ -33,9 +29,7 @@ export function WalletSourceIcon({
   }
 
   return isDeviceAccount(wallet) ? (
-    <LedgerIcon
-      style={{ position: 'absolute', bottom: 0, right: 0, ...style }}
-    />
+    <LedgerIcon style={{ position: 'absolute', bottom: 0, right: 0, ...style }} />
   ) : isReadonlyAccount(wallet) ? (
     <WatchAddressIcon
       style={{

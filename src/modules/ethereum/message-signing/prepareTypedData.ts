@@ -54,9 +54,7 @@ export function sanitizeTypedData(typedData: TypedData): TypedData {
   return typedData;
 }
 
-export function sanitizeTypedDataRaw(
-  data: string | Partial<TypedData>
-): string {
+export function sanitizeTypedDataRaw(data: string | Partial<TypedData>): string {
   try {
     return JSON.stringify(sanitizeTypedData(toTypedData(data)));
   } catch {
@@ -71,22 +69,19 @@ const ESCAPE_ARRAY_SYMBOLS_PATTERN = /^([^\x5b]*)(\x5b|$)/;
 // based on https://github.com/ethers-io/ethers.js/blob/13593809bd61ef24c01d79de82563540d77098db/src.ts/hash/typed-data.ts#L210
 export function removeUnusedTypes(
   types: TypedData['types'],
-  primaryType: TypedData['primaryType']
+  primaryType: TypedData['primaryType'],
 ): TypedData['types'] {
-  const parents = new Map<string, string[]>(
-    Object.keys(types).map((key) => [key, []])
-  );
+  const parents = new Map<string, string[]>(Object.keys(types).map((key) => [key, []]));
   for (const name in types) {
     for (const field of types[name]) {
-      const baseType =
-        field.type.match(ESCAPE_ARRAY_SYMBOLS_PATTERN)?.[1] || null;
+      const baseType = field.type.match(ESCAPE_ARRAY_SYMBOLS_PATTERN)?.[1] || null;
       if (baseType) {
         parents.get(baseType)?.push(name);
       }
     }
   }
   const unusedTypes = Array.from(parents.keys()).filter(
-    (type) => parents.get(type)?.length === 0 && type !== primaryType
+    (type) => parents.get(type)?.length === 0 && type !== primaryType,
   );
   return omit(types, unusedTypes);
 }

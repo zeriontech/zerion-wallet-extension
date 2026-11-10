@@ -52,8 +52,7 @@ describe('formatCurrencyValueExtra', () => {
       output: '$0.001',
     },
     {
-      description:
-        'zeroRoundingFallback should NOT be used when formatted output is not zero',
+      description: 'zeroRoundingFallback should NOT be used when formatted output is not zero',
       input: {
         value: 0.023,
         locale: 'en',
@@ -63,8 +62,7 @@ describe('formatCurrencyValueExtra', () => {
       output: '$0.02',
     },
     {
-      description:
-        'amount rule: tiny eur value shows real digits, fallback not used',
+      description: 'amount rule: tiny eur value shows real digits, fallback not used',
       input: {
         value: 0.000293,
         locale: 'en',
@@ -74,8 +72,7 @@ describe('formatCurrencyValueExtra', () => {
       output: '€0.001',
     },
     {
-      description:
-        'amount rule: tiny eur value shows real digits, fallback not used',
+      description: 'amount rule: tiny eur value shows real digits, fallback not used',
       input: {
         value: 0.000293,
         locale: 'en',
@@ -127,18 +124,15 @@ describe('formatCurrencyValueExtra', () => {
     },
   ];
   for (const testCase of testCases) {
-    test(
-      testCase.description || `${testCase.input.value} -> ${testCase.output}`,
-      () => {
-        const { input, output } = testCase;
-        const result = formatCurrencyValueExtra(
-          input.value,
-          input.locale,
-          input.currency,
-          input.opts
-        );
-        expect(result).toBe(output);
-      }
-    );
+    test(testCase.description || `${testCase.input.value} -> ${testCase.output}`, () => {
+      const { input, output } = testCase;
+      const result = formatCurrencyValueExtra(
+        input.value,
+        input.locale,
+        input.currency,
+        input.opts,
+      );
+      expect(result).toBe(output);
+    });
   }
 });

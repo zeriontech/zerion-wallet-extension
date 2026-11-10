@@ -7,13 +7,7 @@ import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { Button } from 'src/ui/ui-kit/Button';
 
-export function AppLink({
-  app,
-  style,
-}: {
-  app: AppInfo;
-  style?: React.CSSProperties;
-}) {
+export function AppLink({ app, style }: { app: AppInfo; style?: React.CSSProperties }) {
   const { url: rawUrl } = app;
   const url = useMemo(() => (rawUrl ? prepareForHref(rawUrl) : null), [rawUrl]);
 

@@ -10,7 +10,7 @@ const STALE_TIME = 20000;
 export function useWalletNftPosition(
   params: Params,
   { source }: BackendSourceParams,
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: persistentQuery([QUERY_KEY, params, source]),

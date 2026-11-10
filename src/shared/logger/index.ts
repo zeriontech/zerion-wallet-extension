@@ -33,17 +33,11 @@ export function logToConsole<M extends 'log' | 'table' | 'group' | 'groupEnd'>(
   }
 }
 
-export function log(
-  level: Loglevel,
-  ...args: Parameters<(typeof console)['log']>
-) {
+export function log(level: Loglevel, ...args: Parameters<(typeof console)['log']>) {
   return logToConsole(level, 'log', ...args);
 }
 
-export function logTable(
-  level: Loglevel,
-  ...args: Parameters<(typeof console)['table']>
-) {
+export function logTable(level: Loglevel, ...args: Parameters<(typeof console)['table']>) {
   return logToConsole(level, 'table', ...args);
 }
 

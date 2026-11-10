@@ -1,8 +1,5 @@
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
-import {
-  HYPERLIQUID_SIGNATURE_CHAIN_ID,
-  HYPERLIQUID_USER_SIGNED_DOMAIN,
-} from '../constants';
+import { HYPERLIQUID_SIGNATURE_CHAIN_ID, HYPERLIQUID_USER_SIGNED_DOMAIN } from '../constants';
 import type {
   ExchangeApproveBuilderFeeAction,
   ExchangeSetAbstractionAction,
@@ -17,9 +14,7 @@ const EIP712_DOMAIN_TYPES = [
   { name: 'verifyingContract', type: 'address' },
 ];
 
-function buildApproveBuilderFeeTypedData(
-  action: ExchangeApproveBuilderFeeAction
-): TypedData {
+function buildApproveBuilderFeeTypedData(action: ExchangeApproveBuilderFeeAction): TypedData {
   const primaryType = 'HyperliquidTransaction:ApproveBuilderFee';
   return {
     types: {
@@ -45,9 +40,7 @@ function buildApproveBuilderFeeTypedData(
   };
 }
 
-function buildSetAbstractionTypedData(
-  action: ExchangeSetAbstractionAction
-): TypedData {
+function buildSetAbstractionTypedData(action: ExchangeSetAbstractionAction): TypedData {
   const primaryType = 'HyperliquidTransaction:UserSetAbstraction';
   return {
     types: {
@@ -99,9 +92,7 @@ function buildWithdraw3TypedData(action: ExchangeWithdraw3Action): TypedData {
   };
 }
 
-export function buildUserSignedActionTypedData(
-  action: UserSignedAction
-): TypedData {
+export function buildUserSignedActionTypedData(action: UserSignedAction): TypedData {
   switch (action.type) {
     case 'approveBuilderFee':
       return buildApproveBuilderFeeTypedData(action);

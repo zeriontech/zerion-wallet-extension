@@ -16,9 +16,7 @@ import { previews } from './registerPreview';
 function PreviewItem({ preview }: { preview: PreviewConfig }) {
   return (
     <VStack key={preview.name} gap={12}>
-      {typeof preview.component === 'function'
-        ? preview.component()
-        : preview.component}
+      {typeof preview.component === 'function' ? preview.component() : preview.component}
     </VStack>
   );
 }
@@ -28,10 +26,7 @@ export default function PreviewItemPage() {
   const params = useParams();
   const name = params.name;
   invariant(name, 'name param is required');
-  const item = useMemo(
-    () => previews.find((preview) => preview.name === name),
-    [name]
-  );
+  const item = useMemo(() => previews.find((preview) => preview.name === name), [name]);
   if (!item) {
     return <NotFoundPage />;
   }

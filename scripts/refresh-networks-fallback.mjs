@@ -35,7 +35,7 @@ const FLAG_KEYS = [
 ];
 const OUTPUT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../src/modules/networks/networks-fallback.json'
+  '../src/modules/networks/networks-fallback.json',
 );
 
 async function fetchDirect() {
@@ -65,12 +65,10 @@ async function fetchViaChrome() {
         const res = await fetch(url, { headers, credentials: 'include' });
         return { status: res.status, text: await res.text() };
       },
-      { url: HOST + ENDPOINT, headers: HEADERS }
+      { url: HOST + ENDPOINT, headers: HEADERS },
     );
     if (status !== 200) {
-      throw new Error(
-        `chain/list/v1 answered ${status}: ${text.slice(0, 200)}`
-      );
+      throw new Error(`chain/list/v1 answered ${status}: ${text.slice(0, 200)}`);
     }
     return text;
   } finally {
@@ -106,9 +104,7 @@ function toNetworkInfo(chain) {
           implementations: implementation ? { [chain.id]: implementation } : {},
         }
       : null,
-    flags: Object.fromEntries(
-      FLAG_KEYS.map((key) => [key, Boolean(chain.flags?.[key])])
-    ),
+    flags: Object.fromEntries(FLAG_KEYS.map((key) => [key, Boolean(chain.flags?.[key])])),
     rpcUrl: chain.rpcUrl,
     publicRpcUrl: chain.publicRpcUrl,
   };
@@ -128,9 +124,7 @@ async function main() {
   const { data } = JSON.parse(text);
   const networks = data.map(toNetworkInfo).filter(Boolean);
   fs.writeFileSync(OUTPUT, JSON.stringify(networks, null, 2) + '\n');
-  console.log(
-    `Wrote ${networks.length} chains to ${path.relative(process.cwd(), OUTPUT)}`
-  );
+  console.log(`Wrote ${networks.length} chains to ${path.relative(process.cwd(), OUTPUT)}`);
 }
 
 main().catch((error) => {

@@ -21,9 +21,7 @@ interface InternalHandle {
 
 const handle: InternalHandle = { controller: null };
 
-export function setLedgerIframeController(
-  controller: LedgerIframeController | null
-): void {
+export function setLedgerIframeController(controller: LedgerIframeController | null): void {
   handle.controller = controller;
 }
 

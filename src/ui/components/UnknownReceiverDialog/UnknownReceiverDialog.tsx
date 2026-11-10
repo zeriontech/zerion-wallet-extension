@@ -85,20 +85,13 @@ function DialogContent({
             // A plain padded row, not a FrameListItem: the saved state is not
             // interactive and FrameListItem highlights on hover.
             <HStack gap={8} alignItems="center" style={{ padding: 12 }}>
-              <PersonSuccessIcon
-                style={{ width: 20, height: 20, color: 'var(--positive-500)' }}
-              />
+              <PersonSuccessIcon style={{ width: 20, height: 20, color: 'var(--positive-500)' }} />
               <UIText kind="body/regular" color="var(--positive-500)">
-                {savedEntry.name
-                  ? `Saved as ${savedEntry.name}`
-                  : 'Saved to Address Book'}
+                {savedEntry.name ? `Saved as ${savedEntry.name}` : 'Saved to Address Book'}
               </UIText>
             </HStack>
           ) : (
-            <FrameListItemButton
-              onClick={addToBookDialog.openDialog}
-              style={{ width: '100%' }}
-            >
+            <FrameListItemButton onClick={addToBookDialog.openDialog} style={{ width: '100%' }}>
               <AngleRightRow>
                 <HStack gap={8} alignItems="center">
                   <PersonAddIcon style={{ width: 20, height: 20 }} />
@@ -108,10 +101,7 @@ function DialogContent({
             </FrameListItemButton>
           )}
         </Frame>
-        <HStack
-          gap={8}
-          style={{ gridAutoColumns: '1fr', gridAutoFlow: 'column' }}
-        >
+        <HStack gap={8} style={{ gridAutoColumns: '1fr', gridAutoFlow: 'column' }}>
           <Button kind="regular" onClick={onCancel} ref={focusNode}>
             Cancel
           </Button>

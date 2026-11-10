@@ -16,9 +16,7 @@ function decode(value: string) {
   const base64 = value.replaceAll('-', '+').replaceAll('_', '/');
   const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
   return JSON.parse(
-    new TextDecoder().decode(
-      Uint8Array.from(atob(padded), (c) => c.charCodeAt(0))
-    )
+    new TextDecoder().decode(Uint8Array.from(atob(padded), (c) => c.charCodeAt(0))),
   );
 }
 
@@ -30,10 +28,7 @@ describe('confidentialPermitsHeader', () => {
 
   test('round-trips permits verbatim as an array', () => {
     expect(decode(encodeConfidentialPermitsHeader([permit]))).toEqual([permit]);
-    expect(decode(encodeConfidentialPermitsHeader([permit, permit]))).toEqual([
-      permit,
-      permit,
-    ]);
+    expect(decode(encodeConfidentialPermitsHeader([permit, permit]))).toEqual([permit, permit]);
   });
 
   test('omits the header when there are no permits', () => {

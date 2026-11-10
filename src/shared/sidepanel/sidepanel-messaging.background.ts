@@ -5,11 +5,7 @@ import type { SidepanelMessageRequest } from './types';
 /**
  * Sidepanel can be opened in one browser window and not in the other
  */
-export async function isSidepanelOpen({
-  windowId,
-}: {
-  windowId: number | null;
-}) {
+export async function isSidepanelOpen({ windowId }: { windowId: number | null }) {
   try {
     const response = await browser.runtime.sendMessage({
       payload: { method: 'is-sidepanel-open', params: { windowId } },
@@ -20,11 +16,7 @@ export async function isSidepanelOpen({
   }
 }
 
-export async function closeSidepanel({
-  windowId,
-}: {
-  windowId: number | null;
-}) {
+export async function closeSidepanel({ windowId }: { windowId: number | null }) {
   try {
     return await browser.runtime.sendMessage({
       payload: { method: 'close-sidepanel', params: { windowId } },

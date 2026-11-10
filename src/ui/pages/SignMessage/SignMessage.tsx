@@ -27,10 +27,7 @@ import { ethers } from 'ethers';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { usePhishingDefenceStatus } from 'src/ui/components/PhishingDefence/usePhishingDefenceStatus';
-import {
-  DappSecurityCheck,
-  SecurityStatusBackground,
-} from 'src/ui/shared/security-check';
+import { DappSecurityCheck, SecurityStatusBackground } from 'src/ui/shared/security-check';
 import SignatureIcon from 'jsx:src/ui/assets/signature.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
@@ -66,8 +63,7 @@ function SignMessageContent({
   const { preferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
   invariant(windowId, 'windowId get-parameter is required');
-  const handleSignSuccess = (signature: string) =>
-    windowPort.confirm(windowId, signature);
+  const handleSignSuccess = (signature: string) => windowPort.confirm(windowId, signature);
 
   const clientScope = clientScopeParam || 'External Dapp';
 
@@ -80,7 +76,7 @@ function SignMessageContent({
       if (isSolanaAddress(wallet.address)) {
         invariant(
           ethers.isHexString(message),
-          'Solana message is expected to be serialized to hex string'
+          'Solana message is expected to be serialized to hex string',
         );
         return signMsgBtnRef.current.signMessage({
           messageHex: message,
@@ -142,10 +138,7 @@ function SignMessageContent({
             <UIText kind="small/regular" color="var(--neutral-600)">
               Message
             </UIText>
-            <UIText
-              kind="body/regular"
-              style={{ maxHeight: '80vh', overflowY: 'auto' }}
-            >
+            <UIText kind="body/regular" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
               {messageText}
             </UIText>
           </VStack>
@@ -188,11 +181,7 @@ function SignMessageContent({
             <UIText kind="headline/h2">Sign Message</UIText>
             <UIText kind="small/accent" color="var(--neutral-500)">
               {originForHref ? (
-                <TextAnchor
-                  href={originForHref.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <TextAnchor href={originForHref.href} target="_blank" rel="noopener noreferrer">
                   {originForHref.hostname}
                 </TextAnchor>
               ) : (
@@ -200,12 +189,7 @@ function SignMessageContent({
               )}
             </UIText>
             <HStack gap={8} alignItems="center">
-              <WalletAvatar
-                address={wallet.address}
-                size={20}
-                active={false}
-                borderRadius={6}
-              />
+              <WalletAvatar address={wallet.address} size={20} active={false} borderRadius={6} />
               <UIText kind="small/regular">
                 <WalletDisplayName wallet={wallet} />
               </UIText>
@@ -293,12 +277,7 @@ function SignMessageContent({
               gap: 8,
             }}
           >
-            <Button
-              kind="regular"
-              type="button"
-              onClick={handleReject}
-              ref={focusNode}
-            >
+            <Button kind="regular" type="button" onClick={handleReject} ref={focusNode}>
               Cancel
             </Button>
             {preferences && globalPreferences ? (
@@ -308,12 +287,8 @@ function SignMessageContent({
                 onClick={() => confirmRequest()}
                 disabled={confirmMutation.isLoading}
                 holdToSign={preferences.enableHoldToSignButton}
-                bluetoothSupportEnabled={
-                  globalPreferences.bluetoothSupportEnabled
-                }
-                keyboardShortcutEnabled={
-                  preferences.enableKeyboardShortcutToSign
-                }
+                bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
+                keyboardShortcutEnabled={preferences.enableKeyboardShortcutToSign}
               />
             ) : null}
           </div>

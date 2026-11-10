@@ -9,7 +9,7 @@ import * as styles from './styles.module.css';
 export const FrameListItem = React.forwardRef(
   (
     { className, style, ...props }: React.HTMLAttributes<HTMLDivElement>,
-    ref: React.Ref<HTMLDivElement>
+    ref: React.Ref<HTMLDivElement>,
   ) => {
     return (
       <div
@@ -19,14 +19,11 @@ export const FrameListItem = React.forwardRef(
         {...props}
       />
     );
-  }
+  },
 );
 
 export const FrameListItemLink = React.forwardRef(
-  (
-    { className, style, ...props }: LinkProps,
-    ref: React.Ref<HTMLAnchorElement>
-  ) => {
+  ({ className, style, ...props }: LinkProps, ref: React.Ref<HTMLAnchorElement>) => {
     return (
       <UnstyledLink
         ref={ref}
@@ -35,17 +32,13 @@ export const FrameListItemLink = React.forwardRef(
         {...props}
       />
     );
-  }
+  },
 );
 
 export const FrameListItemAnchor = React.forwardRef(
   (
-    {
-      className,
-      style,
-      ...props
-    }: React.AnchorHTMLAttributes<HTMLAnchorElement>,
-    ref: React.Ref<HTMLAnchorElement>
+    { className, style, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>,
+    ref: React.Ref<HTMLAnchorElement>,
   ) => {
     return (
       <UnstyledAnchor
@@ -55,17 +48,13 @@ export const FrameListItemAnchor = React.forwardRef(
         {...props}
       />
     );
-  }
+  },
 );
 
 export const FrameListItemButton = React.forwardRef(
   (
-    {
-      className,
-      style,
-      ...props
-    }: React.ButtonHTMLAttributes<HTMLButtonElement>,
-    ref: React.Ref<HTMLButtonElement>
+    { className, style, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>,
+    ref: React.Ref<HTMLButtonElement>,
   ) => {
     return (
       <UnstyledButton
@@ -75,5 +64,5 @@ export const FrameListItemButton = React.forwardRef(
         {...props}
       />
     );
-  }
+  },
 );

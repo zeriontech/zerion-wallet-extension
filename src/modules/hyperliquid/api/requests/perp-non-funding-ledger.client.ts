@@ -5,7 +5,7 @@ import type {
 } from './perp-non-funding-ledger.types';
 
 export async function perpNonFundingLedger(
-  payload: NonFundingLedgerPayload
+  payload: NonFundingLedgerPayload,
 ): Promise<NonFundingLedgerUpdate[] | null> {
   return postInfo<NonFundingLedgerUpdate[]>({
     type: 'userNonFundingLedgerUpdates',

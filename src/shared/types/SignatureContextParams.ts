@@ -2,13 +2,7 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import type { SwapFormState } from './SwapFormState';
 import type { Quote2 } from './Quote';
 
-type ClientScope =
-  | string
-  | 'Swap'
-  | 'Bridge'
-  | 'Send'
-  | 'Zerion DNA'
-  | 'External Dapp';
+type ClientScope = string | 'Swap' | 'Bridge' | 'Send' | 'Zerion DNA' | 'External Dapp';
 
 export type TransactionContextParams = {
   chain: string; // Cannot use type {Chain} because it's not serializable and this object is being sent between Ports

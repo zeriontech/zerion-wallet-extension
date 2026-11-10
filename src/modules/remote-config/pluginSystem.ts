@@ -36,9 +36,7 @@ export async function activatePlugins() {
 
 export function get(key: string) {
   if (!isReady) {
-    throw new Error(
-      'You are trying to read value from config before it has initialized'
-    );
+    throw new Error('You are trying to read value from config before it has initialized');
   }
   let value = undefined;
   for (const plugin of plugins) {

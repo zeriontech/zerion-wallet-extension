@@ -59,8 +59,7 @@ export function InteractionRequested({
   let IconComponent = config?.icon;
 
   if (kind === 'confirm-open-app') {
-    IconComponent =
-      ecosystem === 'solana' ? EcosystemSolanaIcon : EcosystemEthereumIcon;
+    IconComponent = ecosystem === 'solana' ? EcosystemSolanaIcon : EcosystemEthereumIcon;
   }
 
   if (!config || !IconComponent) {
@@ -80,9 +79,7 @@ export function InteractionRequested({
             exit={{ opacity: 0, y: -12, filter: 'blur(8px)' }}
             transition={{ duration: 0.3 }}
           >
-            <IconComponent
-              style={{ width: 44, height: 44, color: 'var(--black)' }}
-            />
+            <IconComponent style={{ width: 44, height: 44, color: 'var(--black)' }} />
           </motion.div>
         </AnimatePresence>
       </div>

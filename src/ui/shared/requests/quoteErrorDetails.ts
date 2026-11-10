@@ -21,9 +21,7 @@ function nonEmptyString(value: unknown): string | null {
 }
 
 /** Returns `null` unless the payload carries a title or a detail. */
-export function parseQuoteErrorDetails(
-  payload: unknown
-): QuoteErrorDetails | null {
+export function parseQuoteErrorDetails(payload: unknown): QuoteErrorDetails | null {
   if (!payload || typeof payload !== 'object' || !('errors' in payload)) {
     return null;
   }
@@ -43,9 +41,7 @@ export function parseQuoteErrorDetails(
 }
 
 /** Parses a JSON string; anything unparsable yields `null`. */
-export function parseQuoteErrorDetailsFromText(
-  text: string
-): QuoteErrorDetails | null {
+export function parseQuoteErrorDetailsFromText(text: string): QuoteErrorDetails | null {
   try {
     return parseQuoteErrorDetails(JSON.parse(text));
   } catch {

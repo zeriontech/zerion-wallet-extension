@@ -19,7 +19,7 @@ export const DEFAULT_CONFIGURATION: CustomConfiguration = {
 export function applyConfiguration<T extends IncomingTransaction>(
   transaction: T,
   configuration: CustomConfiguration,
-  chainGasPrices?: ChainGasPrice | null
+  chainGasPrices?: ChainGasPrice | null,
 ) {
   const { nonce, networkFee } = configuration;
   return produce(transaction, (draft) => {
@@ -40,9 +40,7 @@ export function applyConfiguration<T extends IncomingTransaction>(
       } else if (chainGasPrices) {
         assignGasPrice(draft, chainGasPrices.fast);
       } else {
-        throw new Error(
-          'Either chain gas price or custom gas price config should be defined'
-        );
+        throw new Error('Either chain gas price or custom gas price config should be defined');
       }
     } else if (chainGasPrices) {
       assignGasPrice(draft, chainGasPrices[networkFee.speed]);

@@ -21,7 +21,7 @@ interface UsePerpMarketsResult {
  */
 export function usePerpMarkets(
   dexList: DexIdentifier[],
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ): UsePerpMarketsResult {
   const results = useQueries({
     queries: dexList.map((dex) => {

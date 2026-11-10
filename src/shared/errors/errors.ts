@@ -58,9 +58,7 @@ export class UserRejectedTxSignature extends Error {
 export class OriginNotAllowed extends Error {
   code = 4100; // Unauthorized; The requested method and/or account has not been authorized by the user
 
-  constructor(
-    message = 'Origin Not Allowed: Try calling eth_requestAccounts first.'
-  ) {
+  constructor(message = 'Origin Not Allowed: Try calling eth_requestAccounts first.') {
     super(message);
   }
 }
@@ -69,7 +67,7 @@ export class SwitchChainError extends Error {
   code = 4902;
 
   constructor(
-    message = 'Unrecognized chainId: Try adding the chain using wallet_addEthereumChain first.'
+    message = 'Unrecognized chainId: Try adding the chain using wallet_addEthereumChain first.',
   ) {
     super(message);
   }

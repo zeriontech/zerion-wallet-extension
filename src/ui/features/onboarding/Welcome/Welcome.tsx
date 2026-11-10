@@ -78,10 +78,7 @@ function ImportOption({
           }}
         >
           {primaryImage}
-          <div
-            style={{ position: 'absolute' }}
-            className={secondaryIconClassName}
-          >
+          <div style={{ position: 'absolute' }} className={secondaryIconClassName}>
             <animated.div
               style={{
                 ...style,
@@ -111,10 +108,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
       />
     ),
     secondaryIcon: (
-      <CreateIcon
-        className={styles.secondaryIcon}
-        style={{ width: 44, height: 44 }}
-      />
+      <CreateIcon className={styles.secondaryIcon} style={{ width: 44, height: 44 }} />
     ),
     secondaryIconClassName: styles.createIcon,
   },
@@ -131,10 +125,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
       />
     ),
     secondaryIcon: (
-      <ImportIcon
-        className={styles.secondaryIcon}
-        style={{ width: 49, height: 54 }}
-      />
+      <ImportIcon className={styles.secondaryIcon} style={{ width: 49, height: 54 }} />
     ),
     secondaryIconClassName: styles.importIcon,
   },
@@ -151,10 +142,7 @@ const IMPORT_OPTIONS: ImportOptionConfig[] = [
       />
     ),
     secondaryIcon: (
-      <HardWareIcon
-        className={styles.secondaryIcon}
-        style={{ width: 34, height: 63 }}
-      />
+      <HardWareIcon className={styles.secondaryIcon} style={{ width: 34, height: 63 }} />
     ),
     secondaryIconClassName: styles.hardwareIcon,
   },
@@ -209,10 +197,7 @@ function Banner() {
       >
         Welcome to Zerion
       </div>
-      <UIText
-        kind={isNarrowView ? 'body/accent' : 'headline/h3'}
-        color="var(--always-white)"
-      >
+      <UIText kind={isNarrowView ? 'body/accent' : 'headline/h3'} color="var(--always-white)">
         A wallet for self-custodial humans. All your crypto & NFTs. 10+ chains.
       </UIText>
     </VStack>
@@ -222,15 +207,11 @@ function Banner() {
 export function Welcome() {
   const { isNarrowView } = useWindowSizeStore();
 
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
+  const { data: loyaltyEnabled } = useRemoteConfigValue('extension_loyalty_enabled');
 
   return (
     <VStack gap={isNarrowView ? 24 : 40}>
-      {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? (
-        <ReferralProgramHandler />
-      ) : null}
+      {FEATURE_LOYALTY_FLOW === 'on' && loyaltyEnabled ? <ReferralProgramHandler /> : null}
       <Banner />
       <ImportOptions />
     </VStack>

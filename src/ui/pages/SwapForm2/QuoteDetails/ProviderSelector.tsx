@@ -38,18 +38,12 @@ function formatNetworkFee(quote: Quote2): string {
     return 'Free';
   }
   if (networkFee?.amount?.value != null) {
-    return formatCurrencyValueExtra(
-      networkFee.amount.value,
-      'en',
-      networkFee.amount.currency,
-      { zeroRoundingFallback: 0.01 }
-    );
+    return formatCurrencyValueExtra(networkFee.amount.value, 'en', networkFee.amount.currency, {
+      zeroRoundingFallback: 0.01,
+    });
   }
   if (networkFee?.amount?.quantity) {
-    return formatTokenValue(
-      networkFee.amount.quantity,
-      networkFee.fungible?.symbol ?? ''
-    );
+    return formatTokenValue(networkFee.amount.quantity, networkFee.fungible?.symbol ?? '');
   }
   return noValueDash;
 }
@@ -86,11 +80,7 @@ function ProviderCard({
             />
             <UIText kind="body/accent">{quote.contractMetadata.name}</UIText>
           </HStack>
-          <div
-            className={`${styles.rankBadge} ${
-              isSelected ? styles.rankBadgeSelected : ''
-            }`}
-          >
+          <div className={`${styles.rankBadge} ${isSelected ? styles.rankBadgeSelected : ''}`}>
             <UIText kind="caption/accent">{rank}</UIText>
           </div>
         </HStack>
@@ -138,16 +128,13 @@ export function ProviderSelector({
       <div className={styles.wrapper}>
         <VStack gap={24}>
           <UIText kind="body/accent">
-            Zerion finds the most efficient path for your trade across top DEX
-            aggregators.
+            Zerion finds the most efficient path for your trade across top DEX aggregators.
           </UIText>
           <VStack gap={16}>
             <SortByChip onClick={sortByDialog.openDialog} />
             <VStack gap={16}>
               {quotes.map((quote, index) => {
-                const isSelected =
-                  selectedQuote?.contractMetadata.id ===
-                  quote.contractMetadata.id;
+                const isSelected = selectedQuote?.contractMetadata.id === quote.contractMetadata.id;
                 return (
                   <ProviderCard
                     key={quote.contractMetadata.id}
@@ -163,12 +150,7 @@ export function ProviderSelector({
         </VStack>
       </div>
       <div className={styles.footer}>
-        <Button
-          kind="neutral"
-          size={48}
-          onClick={onReset}
-          style={{ width: '100%' }}
-        >
+        <Button kind="neutral" size={48} onClick={onReset} style={{ width: '100%' }}>
           Auto-select first rate
         </Button>
       </div>

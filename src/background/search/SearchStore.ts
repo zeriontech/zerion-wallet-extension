@@ -7,10 +7,7 @@ type SearchStoreState = {
 
 const MAX_RECENT_SEARCH_SIZE = 10;
 
-function updateSearchHistory(
-  fungibleId: string,
-  recentSearch: string[]
-): string[] {
+function updateSearchHistory(fungibleId: string, recentSearch: string[]): string[] {
   const searchIndex = recentSearch.findIndex((item) => item === fungibleId);
   if (searchIndex >= 0) {
     return [
@@ -54,7 +51,4 @@ class SearchStore extends PersistentStore<SearchStoreState> {
   }
 }
 
-export const searchStore = new SearchStore(
-  SearchStore.initialState,
-  'search-store'
-);
+export const searchStore = new SearchStore(SearchStore.initialState, 'search-store');

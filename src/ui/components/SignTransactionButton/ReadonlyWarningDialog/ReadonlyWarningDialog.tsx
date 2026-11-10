@@ -23,16 +23,11 @@ const ReadonlyWarningDialog = React.forwardRef<
       renderWhenOpen={() => (
         <div style={{ textAlign: 'start' }}>
           <UIText kind="headline/h3">
-            <DialogTitle
-              title="Import Wallet"
-              alignTitle="start"
-              closeKind="icon"
-            />
+            <DialogTitle title="Import Wallet" alignTitle="start" closeKind="icon" />
           </UIText>
           <Spacer height={16} />
           <div>
-            To perform transactions, import your wallet using your private keys
-            or recovery phrase.
+            To perform transactions, import your wallet using your private keys or recovery phrase.
           </div>
           <Spacer height={24} />
           <form
@@ -76,9 +71,7 @@ export function WithReadonlyWarningDialog({
     // in the next version of '@tanstack/react-query'
     suspense: false,
   });
-  const isReadonlyGroup = walletGroup
-    ? isReadonlyContainer(walletGroup.walletContainer)
-    : null;
+  const isReadonlyGroup = walletGroup ? isReadonlyContainer(walletGroup.walletContainer) : null;
   return (
     <>
       {isReadonlyGroup ? <ReadonlyWarningDialog ref={dialogRef} /> : null}

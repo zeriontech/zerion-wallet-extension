@@ -27,9 +27,7 @@ export function isStepStale(enqueuedAt: number, now: number = Date.now()) {
  * swallowed: a refresh failure shouldn't block a tx the user already
  * approved; we fall through to the original values.
  */
-export async function refreshStaleGasForStep(
-  step: SignStep
-): Promise<SignStep> {
+export async function refreshStaleGasForStep(step: SignStep): Promise<SignStep> {
   if (step.kind !== 'send') return step;
   const tx = step.params.transaction.evm;
   if (!tx) return step;
@@ -58,14 +56,11 @@ export async function refreshStaleGasForStep(
     const previousGasRaw = getGas(tx);
     const previousGas = previousGasRaw == null ? null : Number(previousGasRaw);
     const fresh = gasResult.status === 'fulfilled' ? gasResult.value : null;
-    const freshPrice =
-      priceResult.status === 'fulfilled' ? priceResult.value : null;
+    const freshPrice = priceResult.status === 'fulfilled' ? priceResult.value : null;
 
     const shouldUpdateGas =
       fresh != null &&
-      (previousGas == null ||
-        !Number.isFinite(previousGas) ||
-        fresh > previousGas);
+      (previousGas == null || !Number.isFinite(previousGas) || fresh > previousGas);
     if (!shouldUpdateGas && !freshPrice) return step;
 
     return produce(step, (draft) => {

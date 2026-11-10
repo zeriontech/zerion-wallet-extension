@@ -22,20 +22,15 @@ export function useInputPosition({
   const { inputChain, inputFungibleId } = formState;
 
   const networkConfig = useMemo(
-    () =>
-      inputChain
-        ? (networks.getByNetworkId(createChain(inputChain)) ?? null)
-        : null,
-    [inputChain, networks]
+    () => (inputChain ? (networks.getByNetworkId(createChain(inputChain)) ?? null) : null),
+    [inputChain, networks],
   );
   const supportsPositions = networkConfig?.flags.supportsPositions ?? true;
 
   const simpleMatch = useMemo(() => {
     if (!inputChain || !inputFungibleId) return null;
     return (
-      positions.find(
-        (p) => p.chain.id === inputChain && p.fungible.id === inputFungibleId
-      ) ?? null
+      positions.find((p) => p.chain.id === inputChain && p.fungible.id === inputFungibleId) ?? null
     );
   }, [positions, inputChain, inputFungibleId]);
 
@@ -48,21 +43,14 @@ export function useInputPosition({
   const nodeMatch = useMemo(() => {
     if (simpleMatch) return null;
     if (!inputFungibleId) return null;
-    return (
-      nodeQuery.data?.find((p) => p.fungible.id === inputFungibleId) ?? null
-    );
+    return nodeQuery.data?.find((p) => p.fungible.id === inputFungibleId) ?? null;
   }, [nodeQuery.data, simpleMatch, inputFungibleId]);
 
   const needsSynthetic = Boolean(
-    inputFungibleId &&
-    !simpleMatch &&
-    !nodeMatch &&
-    (supportsPositions || !nodeQuery.isLoading)
+    inputFungibleId && !simpleMatch && !nodeMatch && (supportsPositions || !nodeQuery.isLoading),
   );
   const fungibleQuery = useAssetListFungibles(
-    inputFungibleId
-      ? { fungibleIds: [inputFungibleId], currency }
-      : { currency }
+    inputFungibleId ? { fungibleIds: [inputFungibleId], currency } : { currency },
   );
 
   const syntheticPosition = useMemo<FungiblePosition | null>(() => {
@@ -84,20 +72,12 @@ export function useInputPosition({
         iconUrl: networkConfig.iconUrl ?? '',
       },
     };
-  }, [
-    needsSynthetic,
-    networkConfig,
-    fungibleQuery.data,
-    inputChain,
-    inputFungibleId,
-    currency,
-  ]);
+  }, [needsSynthetic, networkConfig, fungibleQuery.data, inputChain, inputFungibleId, currency]);
 
   const position = simpleMatch ?? nodeMatch ?? syntheticPosition ?? null;
 
   const isLoading =
-    (!supportsPositions && nodeQuery.isLoading) ||
-    (needsSynthetic && fungibleQuery.isLoading);
+    (!supportsPositions && nodeQuery.isLoading) || (needsSynthetic && fungibleQuery.isLoading);
 
   return { position, isLoading };
 }

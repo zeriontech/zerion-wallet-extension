@@ -20,10 +20,7 @@ import path from 'node:path';
 const target = process.argv[2] || 'e2e-report';
 const secrets = [
   ...new Set(
-    [
-      process.env.ZERION_API_DEVELOPMENT_KEY,
-      process.env.CF_ZPI_DEV_BYPASS_SECRET,
-    ].filter(Boolean)
+    [process.env.ZERION_API_DEVELOPMENT_KEY, process.env.CF_ZPI_DEV_BYPASS_SECRET].filter(Boolean),
   ),
 ];
 
@@ -33,9 +30,7 @@ if (secrets.length === 0) {
 }
 
 if (!fs.existsSync(target)) {
-  process.stdout.write(
-    `Report directory ${target} does not exist; skipping.\n`
-  );
+  process.stdout.write(`Report directory ${target} does not exist; skipping.\n`);
   process.exit(0);
 }
 
@@ -80,20 +75,14 @@ function scanZip(file, depth = 0, label = file) {
 
     if (depth >= MAX_ARCHIVE_DEPTH) {
       // A nested archive we refuse to descend into could hide the secret.
-      const entries = runUnzip(['-Z1', file])
-        .toString('utf8')
-        .split('\n')
-        .filter(Boolean);
+      const entries = runUnzip(['-Z1', file]).toString('utf8').split('\n').filter(Boolean);
       if (entries.some((entry) => entry.endsWith('.zip'))) {
         errors.push(label);
       }
       return;
     }
 
-    const entries = runUnzip(['-Z1', file])
-      .toString('utf8')
-      .split('\n')
-      .filter(Boolean);
+    const entries = runUnzip(['-Z1', file]).toString('utf8').split('\n').filter(Boolean);
     for (const entry of entries) {
       if (!entry.endsWith('.zip')) {
         continue;
@@ -158,16 +147,12 @@ if (!targetStat.isDirectory() || targetStat.isSymbolicLink()) {
 }
 
 if (errors.length > 0) {
-  process.stderr.write(
-    `Refusing to upload: could not inspect ${errors.join(', ')}\n`
-  );
+  process.stderr.write(`Refusing to upload: could not inspect ${errors.join(', ')}\n`);
   process.exit(1);
 }
 
 if (found.length > 0) {
-  process.stderr.write(
-    `Refusing to upload: the bypass secret was found in ${found.join(', ')}\n`
-  );
+  process.stderr.write(`Refusing to upload: the bypass secret was found in ${found.join(', ')}\n`);
   process.exit(1);
 }
 

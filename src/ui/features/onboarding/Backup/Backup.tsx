@@ -49,7 +49,7 @@ export function Backup() {
 
   const handleSessionExpired = useCallback(
     () => navigate('/onboarding/session-expired', { replace: true }),
-    [navigate]
+    [navigate],
   );
 
   return (

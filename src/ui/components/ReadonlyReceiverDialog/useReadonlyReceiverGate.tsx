@@ -28,20 +28,16 @@ export function useReadonlyReceiverGate({
   const recipientWallet =
     walletGroup && normalizedTo
       ? (walletGroup.walletContainer.wallets.find(
-          (wallet) => normalizeAddress(wallet.address) === normalizedTo
+          (wallet) => normalizeAddress(wallet.address) === normalizedTo,
         ) ?? null)
       : null;
 
   const isExcluded = normalizedTo
-    ? (preferences?.addressesExcludedFromReceiverReadonlyWarning?.includes(
-        normalizedTo
-      ) ?? false)
+    ? (preferences?.addressesExcludedFromReceiverReadonlyWarning?.includes(normalizedTo) ?? false)
     : false;
 
   const shouldGate = Boolean(
-    walletGroup &&
-    isReadonlyContainer(walletGroup.walletContainer) &&
-    !isExcluded
+    walletGroup && isReadonlyContainer(walletGroup.walletContainer) && !isExcluded,
   );
 
   const guardedFire = useCallback(() => {
@@ -55,21 +51,17 @@ export function useReadonlyReceiverGate({
   const handleProceed = useCallback(
     ({ dontShowAgain }: { dontShowAgain: boolean }) => {
       if (dontShowAgain && normalizedTo) {
-        const current =
-          preferences?.addressesExcludedFromReceiverReadonlyWarning ?? [];
+        const current = preferences?.addressesExcludedFromReceiverReadonlyWarning ?? [];
         if (!current.includes(normalizedTo)) {
           setPreferences({
-            addressesExcludedFromReceiverReadonlyWarning: [
-              ...current,
-              normalizedTo,
-            ],
+            addressesExcludedFromReceiverReadonlyWarning: [...current, normalizedTo],
           });
         }
       }
       closeDialog();
       fire();
     },
-    [normalizedTo, preferences, setPreferences, closeDialog, fire]
+    [normalizedTo, preferences, setPreferences, closeDialog, fire],
   );
 
   const dialog = (

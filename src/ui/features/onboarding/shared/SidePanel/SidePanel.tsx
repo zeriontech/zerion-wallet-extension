@@ -1,12 +1,6 @@
 import React from 'react';
 import cn from 'classnames';
-import {
-  animated,
-  useSpring,
-  config,
-  useSpringRef,
-  useChain,
-} from '@react-spring/web';
+import { animated, useSpring, config, useSpringRef, useChain } from '@react-spring/web';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
@@ -41,9 +35,7 @@ export function SidePanel({
     },
   });
 
-  useChain(
-    show ? [backdropStyleRef, panelStyleRef] : [panelStyleRef, backdropStyleRef]
-  );
+  useChain(show ? [backdropStyleRef, panelStyleRef] : [panelStyleRef, backdropStyleRef]);
 
   return (
     <>

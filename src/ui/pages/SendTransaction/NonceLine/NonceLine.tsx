@@ -72,16 +72,13 @@ export function NonceDialogForm({
           pattern="^0x[\dabcdef]+|\d+"
           onInvalid={(event) =>
             event.currentTarget.setCustomValidity(
-              'Nonce must be either a 0x-prefixed hex value or an integer'
+              'Nonce must be either a 0x-prefixed hex value or an integer',
             )
           }
           onInput={(event) => event.currentTarget.setCustomValidity('')}
         />
       </VStack>
-      <HStack
-        gap={8}
-        style={{ paddingTop: 24, gridTemplateColumns: '1fr 1fr' }}
-      >
+      <HStack gap={8} style={{ paddingTop: 24, gridTemplateColumns: '1fr 1fr' }}>
         <Button
           kind="regular"
           onClick={(event) => {
@@ -104,11 +101,7 @@ enum NonceSource {
   blockchain,
 }
 
-function getNonceSourceTitle(
-  source: NonceSource,
-  isClickable: boolean,
-  rpcUrl: string | null
-) {
+function getNonceSourceTitle(source: NonceSource, isClickable: boolean, rpcUrl: string | null) {
   const types = {
     [NonceSource.user]: 'Custom Nonce',
     [NonceSource.transaction]: 'Incoming Transaction',
@@ -127,10 +120,7 @@ export function NonceLine({
   userNonce,
   onChange,
 }: {
-  transaction: PartiallyRequired<
-    Pick<IncomingTransaction, 'from' | 'nonce'>,
-    'from'
-  >;
+  transaction: PartiallyRequired<Pick<IncomingTransaction, 'from' | 'nonce'>, 'from'>;
   chain: Chain;
   userNonce: string | null;
   onChange: null | ((nonce: string | null) => void);
@@ -160,11 +150,7 @@ export function NonceLine({
       : transaction.nonce != null
         ? NonceSource.transaction
         : NonceSource.blockchain;
-  const sourceTitle = getNonceSourceTitle(
-    source,
-    Boolean(onChange),
-    data?.source || null
-  );
+  const sourceTitle = getNonceSourceTitle(source, Boolean(onChange), data?.source || null);
   return (
     <>
       {onChange ? (

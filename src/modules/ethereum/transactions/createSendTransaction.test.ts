@@ -114,9 +114,7 @@ const tests = [
 
 describe('createSendNativeOrContractTransaction', () => {
   test('creates valid native token send transactions', () => {
-    const nativeCases = tests.filter(
-      (x) => x.input.tokenInterface === 'native'
-    );
+    const nativeCases = tests.filter((x) => x.input.tokenInterface === 'native');
     for (const testCase of nativeCases) {
       const result = createSendNativeOrContractTransaction(testCase.input);
       expect(result).toEqual(testCase.output);
@@ -134,7 +132,7 @@ describe('createSendNativeOrContractTransaction', () => {
       createSendNativeOrContractTransaction({
         ...tests[0].input,
         inputToken: null,
-      })
+      }),
     ).toThrow();
   });
 });
@@ -147,11 +145,7 @@ describe('toEthersV5CompatibleHexValue', () => {
     expect(toEthersV5CompatibleHexValue('0x03')).toBe('0x3');
   });
   test('0x0de0b6b3a7640000', () => {
-    expect(toEthersV5CompatibleHexValue('0x0de0b6b3a7640000')).toBe(
-      '0xde0b6b3a7640000'
-    );
-    expect(toEthersV5CompatibleHexValue('0xde0b6b3a7640000')).toBe(
-      '0xde0b6b3a7640000'
-    );
+    expect(toEthersV5CompatibleHexValue('0x0de0b6b3a7640000')).toBe('0xde0b6b3a7640000');
+    expect(toEthersV5CompatibleHexValue('0xde0b6b3a7640000')).toBe('0xde0b6b3a7640000');
   });
 });

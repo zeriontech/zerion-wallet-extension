@@ -28,10 +28,7 @@ const WarningSeverityPriority: Record<WarningSeverity, number> = {
 
 function warningComparator(a: Warning, b: Warning) {
   // We have fallback value here in case backend introduces new severity value
-  return (
-    (WarningSeverityPriority[b.severity] || 0) -
-    (WarningSeverityPriority[a.severity] || 0)
-  );
+  return (WarningSeverityPriority[b.severity] || 0) - (WarningSeverityPriority[a.severity] || 0);
 }
 
 function sortWarnings(warnings?: Warning[]) {
@@ -51,11 +48,7 @@ export function hasCriticalWarning(warnings?: Warning[] | null) {
 
 type InterpretationMode = 'loading' | 'error' | 'success';
 
-function InterpretationDescritionDialog({
-  mode,
-}: {
-  mode: InterpretationMode;
-}) {
+function InterpretationDescritionDialog({ mode }: { mode: InterpretationMode }) {
   if (mode === 'loading') {
     return (
       <VStack
@@ -63,27 +56,19 @@ function InterpretationDescritionDialog({
         style={{
           padding: '16px 16px 24px',
           position: 'relative',
-          background:
-            'linear-gradient(111deg, var(--neutral-100) 0%, var(--neutral-200) 100%)',
+          background: 'linear-gradient(111deg, var(--neutral-100) 0%, var(--neutral-200) 100%)',
         }}
       >
         <VStack gap={16} style={{ position: 'relative' }}>
           <UIText kind="headline/h3">Transaction Analysis</UIText>
           <UIText kind="body/regular">
-            We simulate your transaction behavior to preview the exact outcome,
-            identify risks, and protect your funds before signing and executing
-            onchain.
+            We simulate your transaction behavior to preview the exact outcome, identify risks, and
+            protect your funds before signing and executing onchain.
           </UIText>
-          <UIText kind="body/regular">
-            Security checks are powered by Blockaid.
-          </UIText>
+          <UIText kind="body/regular">Security checks are powered by Blockaid.</UIText>
         </VStack>
         <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-          <Button
-            value={DialogButtonValue.cancel}
-            kind="primary"
-            style={{ width: '100%' }}
-          >
+          <Button value={DialogButtonValue.cancel} kind="primary" style={{ width: '100%' }}>
             Close
           </Button>
         </form>
@@ -97,8 +82,7 @@ function InterpretationDescritionDialog({
         style={{
           padding: '16px 16px 24px',
           position: 'relative',
-          background:
-            'linear-gradient(111deg, var(--primary-100) 0%, var(--primary-200) 100%)',
+          background: 'linear-gradient(111deg, var(--primary-100) 0%, var(--primary-200) 100%)',
         }}
       >
         <WarningIcon
@@ -115,19 +99,13 @@ function InterpretationDescritionDialog({
         <VStack gap={16} style={{ position: 'relative' }}>
           <UIText kind="headline/h3">Unverified</UIText>
           <UIText kind="body/regular">
-            We were unable to simulate the transaction or complete all security
-            checks. Please proceed with caution.
+            We were unable to simulate the transaction or complete all security checks. Please
+            proceed with caution.
           </UIText>
-          <UIText kind="body/regular">
-            Security checks are powered by Blockaid.
-          </UIText>
+          <UIText kind="body/regular">Security checks are powered by Blockaid.</UIText>
         </VStack>
         <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-          <Button
-            value={DialogButtonValue.cancel}
-            kind="primary"
-            style={{ width: '100%' }}
-          >
+          <Button value={DialogButtonValue.cancel} kind="primary" style={{ width: '100%' }}>
             Close
           </Button>
         </form>
@@ -141,8 +119,7 @@ function InterpretationDescritionDialog({
       style={{
         padding: '16px 16px 24px',
         position: 'relative',
-        background:
-          'linear-gradient(111deg, var(--positive-100) 0%, var(--positive-200) 100%)',
+        background: 'linear-gradient(111deg, var(--positive-100) 0%, var(--positive-200) 100%)',
       }}
     >
       <ShieldIcon
@@ -159,19 +136,13 @@ function InterpretationDescritionDialog({
       <VStack gap={16} style={{ position: 'relative' }}>
         <UIText kind="headline/h3">No Risks Found</UIText>
         <UIText kind="body/regular">
-          Our simulation found no security issues. However, it is always crucial
-          to double-check and proceed with caution.
+          Our simulation found no security issues. However, it is always crucial to double-check and
+          proceed with caution.
         </UIText>
-        <UIText kind="body/regular">
-          Security checks are powered by Blockaid.
-        </UIText>
+        <UIText kind="body/regular">Security checks are powered by Blockaid.</UIText>
       </VStack>
       <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-        <Button
-          value={DialogButtonValue.cancel}
-          kind="primary"
-          style={{ width: '100%' }}
-        >
+        <Button value={DialogButtonValue.cancel} kind="primary" style={{ width: '100%' }}>
           Close
         </Button>
       </form>
@@ -198,10 +169,7 @@ export function InterpretationSecurityCheck({
       ? 'error'
       : 'success';
 
-  const warnings = useMemo(
-    () => sortWarnings(interpretation?.data.warnings),
-    [interpretation]
-  );
+  const warnings = useMemo(() => sortWarnings(interpretation?.data.warnings), [interpretation]);
   const warningSeverity = warnings?.at(0)?.severity;
 
   const securityButtonKind: SecurityButtonKind =
@@ -257,9 +225,7 @@ export function InterpretationSecurityCheck({
             }}
           >
             <DelayedRender delay={11000}>
-              <span style={{ color: 'var(--black)' }}>
-                (Going to give up soon...)
-              </span>
+              <span style={{ color: 'var(--black)' }}>(Going to give up soon...)</span>
             </DelayedRender>
             <DelayedRender delay={6000}>
               <span style={{ color: 'var(--black)' }}>

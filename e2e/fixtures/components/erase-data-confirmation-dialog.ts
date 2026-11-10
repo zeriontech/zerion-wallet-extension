@@ -6,9 +6,7 @@ export class EraseDataConfirmationDialog {
     name: /Erase My Data/i,
   });
   readonly backButton = this.dialog.getByRole('button', { name: /Back/i });
-  readonly eraseMyDataCheckbox = this.dialog.locator(
-    'label > input[type="checkbox"] + div'
-  );
+  readonly eraseMyDataCheckbox = this.dialog.locator('label > input[type="checkbox"] + div');
 
   constructor(public readonly dialog: Locator) {}
 

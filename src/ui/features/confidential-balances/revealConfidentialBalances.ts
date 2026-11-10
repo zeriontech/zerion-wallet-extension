@@ -13,17 +13,11 @@ import { trackConfidentialEvent } from './analytics';
 
 export const CONFIDENTIAL_CLIENT_SCOPE = 'Confidential Balances';
 
-export async function preparePermits(
-  address: string,
-  source: NetworksSource
-): Promise<Permit[]> {
+export async function preparePermits(address: string, source: NetworksSource): Promise<Permit[]> {
   if (devMenuStore.getState().confidentialPermitsOverride === 'fake') {
     return createFakePermits(address);
   }
-  const response = await ZerionAPI.walletPreparePermits(
-    { address },
-    { source }
-  );
+  const response = await ZerionAPI.walletPreparePermits({ address }, { source });
   return response?.data?.permits ?? [];
 }
 
@@ -53,7 +47,7 @@ export const signWithBackground: PermitSigner = (typedData: TypedData) =>
  */
 export function createLedgerPermitSigner(
   address: string,
-  signOnDevice: (typedData: TypedData) => Promise<string>
+  signOnDevice: (typedData: TypedData) => Promise<string>,
 ): PermitSigner {
   return async (typedData) => {
     const signature = await signOnDevice(typedData);
@@ -80,7 +74,7 @@ export async function signPermits(
   {
     sign = signWithBackground,
     onStep,
-  }: { sign?: PermitSigner; onStep?: (index: number) => void } = {}
+  }: { sign?: PermitSigner; onStep?: (index: number) => void } = {},
 ): Promise<StoredPermit[]> {
   const stored = await signPermitBatch(address, permits, sign, {
     onStep,

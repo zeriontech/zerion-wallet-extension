@@ -12,19 +12,16 @@ enum AccountProvider {
 }
 
 export function getProviderNameFromGroup(
-  group: WalletGroup | null
+  group: WalletGroup | null,
 ): AccountProvider | AccountProviderName {
   return group
     ? isAccountContainer(group.walletContainer)
-      ? ((group.walletContainer.provider as AccountProviderName) ??
-        AccountProvider.readOnly)
+      ? ((group.walletContainer.provider as AccountProviderName) ?? AccountProvider.readOnly)
       : AccountProvider.zerionExtension
     : AccountProvider.viewerNotAdded;
 }
 
-export function getProviderForApiV4(
-  provider: AccountProvider | AccountProviderName
-) {
+export function getProviderForApiV4(provider: AccountProvider | AccountProviderName) {
   switch (provider) {
     case AccountProvider.viewerNotAdded: {
       return 'viewer_not_added';
@@ -41,9 +38,7 @@ export function getProviderForApiV4(
   }
 }
 
-export function getProviderForMetabase(
-  provider: AccountProvider | AccountProviderName
-) {
+export function getProviderForMetabase(provider: AccountProvider | AccountProviderName) {
   switch (provider) {
     case AccountProvider.viewerNotAdded: {
       return 'viewer_not_added';

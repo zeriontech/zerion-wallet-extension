@@ -4,9 +4,7 @@ import { getError } from 'src/shared/errors/getError';
 export class ErrorBoundary extends React.Component<
   React.PropsWithChildren<{
     forceIsErrorForTesting?: boolean;
-    renderError: (
-      error?: (Error & { code?: number }) | null
-    ) => React.ReactNode;
+    renderError: (error?: (Error & { code?: number }) | null) => React.ReactNode;
   }>
 > {
   state = { hasError: false, error: null };

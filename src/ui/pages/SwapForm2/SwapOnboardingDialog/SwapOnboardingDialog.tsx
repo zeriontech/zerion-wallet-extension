@@ -39,13 +39,7 @@ const BULLETS: Bullet[] = [
   },
 ];
 
-export function SwapOnboardingDialog({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function SwapOnboardingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <Dialog2
       open={open}
@@ -70,12 +64,7 @@ export function SwapOnboardingDialog({
             </UIText>
             <VStack gap={12} style={{ paddingInline: 16 }}>
               {BULLETS.map((bullet) => (
-                <HStack
-                  key={bullet.title}
-                  gap={8}
-                  alignItems="center"
-                  style={{ width: '100%' }}
-                >
+                <HStack key={bullet.title} gap={8} alignItems="center" style={{ width: '100%' }}>
                   <img
                     src={bullet.icon}
                     alt=""

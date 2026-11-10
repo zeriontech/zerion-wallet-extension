@@ -38,7 +38,7 @@ export function synthesizeExplorer(homeUrl: string): ChainExplorer {
  */
 export function toNetworkInfo(
   value: AddEthereumChainParameter,
-  maybeId: string | null
+  maybeId: string | null,
 ): NetworkInfo {
   invariant(value.rpcUrls, 'RPC URL should be defined in network config');
   invariant(value.chainId, 'chainId should be defined in network config');
@@ -80,9 +80,7 @@ export function toNetworkInfo(
   };
 }
 
-export function toAddEthereumChainParameter(
-  item: NetworkInfo
-): AddEthereumChainParameter {
+export function toAddEthereumChainParameter(item: NetworkInfo): AddEthereumChainParameter {
   const implementation = getBaseAssetImplementation(item);
   const rpcUrl = item.rpcUrlUser || item.rpcUrl || item.publicRpcUrl;
   return {

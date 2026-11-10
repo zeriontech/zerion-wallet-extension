@@ -25,10 +25,7 @@ function Details({
   summary,
   content,
 }: {
-  summary: (opts: {
-    isOpen: boolean;
-    bind: { onClick: () => void };
-  }) => React.ReactNode;
+  summary: (opts: { isOpen: boolean; bind: { onClick: () => void } }) => React.ReactNode;
   content: React.ReactNode;
 }) {
   const [isOpen, setOpen] = useState(false);
@@ -65,9 +62,7 @@ function App() {
                       <HStack gap={8} justifyContent="space-between">
                         <UIText kind="headline/h3">{readme.name}</UIText>
                         <ChevronRightIcon
-                          style={
-                            isOpen ? { transform: 'rotate(90deg)' } : undefined
-                          }
+                          style={isOpen ? { transform: 'rotate(90deg)' } : undefined}
                         />
                       </HStack>
                     </Button>
@@ -91,5 +86,5 @@ if (!root) {
 createRoot(root).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

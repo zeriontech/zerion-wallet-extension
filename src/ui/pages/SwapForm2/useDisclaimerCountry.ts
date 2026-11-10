@@ -9,10 +9,7 @@ import type { DisclaimerOverride } from 'src/ui/features/dev-menu/store-types';
  * answer is `false`: the banner appears once the country is known instead of
  * being guessed and then retracted.
  */
-function useIsDetectedCountry(
-  countryCode: string,
-  override: DisclaimerOverride
-) {
+function useIsDetectedCountry(countryCode: string, override: DisclaimerOverride) {
   const { data } = useDetectedCountry();
   if (override === 'force-on') {
     return true;

@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import {
-  NavigationType,
-  useNavigate,
-  useNavigationType,
-  useParams,
-} from 'react-router-dom';
+import { NavigationType, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -50,10 +45,7 @@ import { AssetAddressStats } from './AssetAddressDetails';
 import { AssetGlobalStats } from './AssetGlobalStats';
 import { AssetTitleAndChart } from './AssetTitleAndChart';
 import { AssetResources } from './AssetResources';
-import {
-  AssetDefaultHeader,
-  AssetHeader as AssetScrolledHeader,
-} from './AssetHeader';
+import { AssetDefaultHeader, AssetHeader as AssetScrolledHeader } from './AssetHeader';
 import { AssetDescription } from './AssetDescription';
 import * as styles from './styles.module.css';
 
@@ -69,12 +61,7 @@ function ReportAssetLink({ asset }: { asset: Asset }) {
         ['--parent-hovered-content-color' as string]: 'var(--neutral-700)',
       }}
     >
-      <HStack
-        gap={8}
-        alignItems="center"
-        className="content-hover"
-        justifyContent="center"
-      >
+      <HStack gap={8} alignItems="center" className="content-hover" justifyContent="center">
         <FlagIcon style={{ width: 20, height: 20 }} />
         <UIText kind="small/accent">Report Asset</UIText>
       </HStack>
@@ -99,11 +86,7 @@ function ShareAssetLink({ asset }: { asset: Asset }) {
       >
         Link Copied to Clipboard
       </PopoverToast>
-      <UnstyledButton
-        onClick={handleCopy}
-        title="Copy Link"
-        aria-label="Copy Link"
-      >
+      <UnstyledButton onClick={handleCopy} title="Copy Link" aria-label="Copy Link">
         <ShareIcon />
       </UnstyledButton>
     </>
@@ -126,7 +109,7 @@ export function AssetInfo() {
   const { currency } = useCurrency();
   const { data: assetFullInfoData, isLoading } = useAssetFullInfo(
     { currency, fungibleId: asset_code },
-    { source: useHttpClientSource() }
+    { source: useHttpClientSource() },
   );
   const assetFullInfo = assetFullInfoData?.data;
   const { ready, params } = useAddressParams();
@@ -137,7 +120,7 @@ export function AssetInfo() {
       nftPriceType: 'not_included',
     },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready },
   );
   const { data: walletData } = useWalletAssetDetails(
     {
@@ -147,12 +130,12 @@ export function AssetInfo() {
       addresses: [params.address],
     },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready },
   );
   const { data: simplePositionsData } = useWalletSimplePositions(
     { address: params.address, currency },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready },
   );
 
   // Position-level 24h Return (the figure iOS shows), scoped to this asset
@@ -164,7 +147,7 @@ export function AssetInfo() {
       assetIds: [asset_code],
     },
     { source: useHttpClientSource() },
-    { enabled: ready }
+    { enabled: ready },
   );
 
   const { isPremium, walletsMetaQuery } = usePremiumStatus({
@@ -178,7 +161,7 @@ export function AssetInfo() {
       currency,
     },
     { source: useHttpClientSource() },
-    { enabled: ready && isPremium }
+    { enabled: ready && isPremium },
   );
 
   const { data: wallet } = useQuery({
@@ -234,17 +217,14 @@ export function AssetInfo() {
   const isWatchedAddress = isReadonlyAccount(wallet);
   const isEmptyBalance = walletData?.data.totalValue === 0;
 
-  const chainForSwap = isEmptyBalance
-    ? assetFullInfo.extra.mainChain
-    : chainWithTheBiggestBalance;
+  const chainForSwap = isEmptyBalance ? assetFullInfo.extra.mainChain : chainWithTheBiggestBalance;
 
   const biggestInputPosition = isEmptyBalance
     ? (simplePositionsData?.data ?? [])
         .filter((p) => p.fungible.id !== asset_code)
         .reduce<FungiblePosition | null>(
-          (max, p) =>
-            (p.amount.value ?? 0) > (max?.amount.value ?? 0) ? p : max,
-          null
+          (max, p) => ((p.amount.value ?? 0) > (max?.amount.value ?? 0) ? p : max),
+          null,
         )
     : null;
   const inputChainForBuy = biggestInputPosition?.chain.id ?? chainForSwap;
@@ -265,28 +245,16 @@ export function AssetInfo() {
       <NavigationTitle
         title={
           <div className={styles.headerContainer}>
-            <AssetDefaultHeader
-              asset={assetFullInfo.fungible}
-              className={styles.defaultHeader}
-            />
-            <AssetScrolledHeader
-              asset={assetFullInfo.fungible}
-              className={styles.header}
-            />
+            <AssetDefaultHeader asset={assetFullInfo.fungible} className={styles.defaultHeader} />
+            <AssetScrolledHeader asset={assetFullInfo.fungible} className={styles.header} />
           </div>
         }
         documentTitle={`${assetFullInfo.fungible.name} - info`}
         elementEnd={<ShareAssetLink asset={assetFullInfo.fungible} />}
       />
       <PageTop />
-      <VStack
-        gap={24}
-        style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}
-      >
-        <AssetTitleAndChart
-          asset={assetFullInfo.fungible}
-          address={params.address}
-        />
+      <VStack gap={24} style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}>
+        <AssetTitleAndChart asset={assetFullInfo.fungible} address={params.address} />
         <AssetGlobalStats assetFullInfo={assetFullInfo} />
         <AssetAddressStats
           address={params.address}
@@ -298,9 +266,8 @@ export function AssetInfo() {
           premiumStatus={premiumStatus}
           isEncrypted={Boolean(
             simplePositionsData?.data.some(
-              (position) =>
-                position.fungible.id === asset_code && position.amount.encrypted
-            )
+              (position) => position.fungible.id === asset_code && position.amount.encrypted,
+            ),
           )}
         />
         <AssetResources assetFullInfo={assetFullInfo} />
@@ -323,9 +290,7 @@ export function AssetInfo() {
             <Button kind="primary" size={48} as={UnstyledLink} to={swapUrl}>
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <SwapIcon style={{ width: 20, height: 20 }} />
-                <UIText kind="body/accent">
-                  {isEmptyBalance ? 'Buy' : 'Swap'}
-                </UIText>
+                <UIText kind="body/accent">{isEmptyBalance ? 'Buy' : 'Swap'}</UIText>
               </HStack>
             </Button>
             {isEmptyBalance ? null : (
@@ -346,7 +311,7 @@ export function AssetInfo() {
             title="Recipient"
             onSelect={(address) => {
               navigate(
-                `/send-form?to=${address}&inputFungibleId=${asset_code}&inputChain=${chainWithTheBiggestBalance}`
+                `/send-form?to=${address}&inputFungibleId=${asset_code}&inputChain=${chainWithTheBiggestBalance}`,
               );
             }}
           />

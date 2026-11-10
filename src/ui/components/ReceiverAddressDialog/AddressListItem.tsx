@@ -89,8 +89,7 @@ export function AddressListItem({
   const firstHandle = meta?.identities?.[0]?.handle ?? null;
 
   const normalizedAddress = normalizeAddress(address);
-  const title =
-    localName || firstHandle || truncateAddress(normalizedAddress, 5);
+  const title = localName || firstHandle || truncateAddress(normalizedAddress, 5);
 
   return (
     <>
@@ -112,11 +111,7 @@ export function AddressListItem({
             borderRadius={AVATAR_RADIUS}
           />
         ) : (
-          <BlockieImg
-            address={address}
-            size={AVATAR_SIZE}
-            borderRadius={AVATAR_RADIUS}
-          />
+          <BlockieImg address={address} size={AVATAR_SIZE} borderRadius={AVATAR_RADIUS} />
         )}
       </div>
       <VStack gap={0} style={{ overflow: 'hidden', minWidth: 0 }}>

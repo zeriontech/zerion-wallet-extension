@@ -28,23 +28,15 @@ import { RemoveAddressBookEntryDialog } from './RemoveAddressBookEntryDialog';
 
 function EmptyState({ onAddClick }: { onAddClick: () => void }) {
   return (
-    <VStack
-      gap={16}
-      style={{ textAlign: 'center', paddingInline: 24, paddingBlock: 32 }}
-    >
+    <VStack gap={16} style={{ textAlign: 'center', paddingInline: 24, paddingBlock: 32 }}>
       <VStack gap={8}>
         <UIText kind="headline/h2">Address Book is Empty</UIText>
         <UIText kind="body/regular" color="var(--neutral-500)">
-          Make your transfers quick and secure by saving frequently used
-          addresses.
+          Make your transfers quick and secure by saving frequently used addresses.
         </UIText>
       </VStack>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Button
-          kind="primary"
-          style={{ paddingInline: 24 }}
-          onClick={onAddClick}
-        >
+        <Button kind="primary" style={{ paddingInline: 24 }} onClick={onAddClick}>
           Add First Address
         </Button>
       </div>
@@ -58,13 +50,10 @@ export function AddressBook() {
   const { preferences } = usePreferences();
   const pickerDialog = useDialog2();
 
-  const pickerPredicate = useCallback(
-    (address: string) => !has(address),
-    [has]
-  );
+  const pickerPredicate = useCallback((address: string) => !has(address), [has]);
   const pickerValidateMatch = useCallback(
     (address: string) => (has(address) ? 'Already in your Address Book' : ''),
-    [has]
+    [has],
   );
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,7 +67,7 @@ export function AddressBook() {
       }
       setSearchParams(searchParams, { replace: true });
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Auto-exit edit mode when the list becomes empty
@@ -88,20 +77,14 @@ export function AddressBook() {
     }
   }, [editMode, entries.length, setEditMode]);
 
-  const [editingEntry, setEditingEntry] = useState<AddressBookEntry | null>(
-    null
-  );
+  const [editingEntry, setEditingEntry] = useState<AddressBookEntry | null>(null);
   const [editingAddress, setEditingAddress] = useState<string | null>(null);
-  const [removingEntry, setRemovingEntry] = useState<AddressBookEntry | null>(
-    null
-  );
+  const [removingEntry, setRemovingEntry] = useState<AddressBookEntry | null>(null);
 
   const filteredRecents = useMemo(() => {
-    const savedSet = new Set(
-      entries.map((entry) => normalizeAddress(entry.address))
-    );
+    const savedSet = new Set(entries.map((entry) => normalizeAddress(entry.address)));
     return (preferences?.recentAddresses ?? []).filter(
-      (address) => !savedSet.has(normalizeAddress(address))
+      (address) => !savedSet.has(normalizeAddress(address)),
     );
   }, [preferences?.recentAddresses, entries]);
 

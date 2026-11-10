@@ -36,9 +36,7 @@ export function AvatarIcon({
 
   const strokeWidth = borderWidth ?? (size > 24 ? 2 : 1);
   const imageSize = highlight ? size - strokeWidth * 4 : size;
-  const imageBorderRadius = highlight
-    ? borderRadius - strokeWidth * 2
-    : borderRadius;
+  const imageBorderRadius = highlight ? borderRadius - strokeWidth * 2 : borderRadius;
   const padding = highlight ? strokeWidth * 2 : 0;
 
   return (
@@ -70,19 +68,11 @@ export function AvatarIcon({
             forcePreview={size <= 40 || mediaContent.type === 'audio'}
             onReady={onReady}
             renderUnsupportedContent={() => (
-              <BlockieImg
-                address={address}
-                size={imageSize}
-                borderRadius={imageBorderRadius}
-              />
+              <BlockieImg address={address} size={imageSize} borderRadius={imageBorderRadius} />
             )}
           />
         ) : (
-          <BlockieImg
-            address={address}
-            size={imageSize}
-            borderRadius={imageBorderRadius}
-          />
+          <BlockieImg address={address} size={imageSize} borderRadius={imageBorderRadius} />
         )}
       </div>
       {active ? <div className={s.activeIndicator} /> : null}

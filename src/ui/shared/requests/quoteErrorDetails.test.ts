@@ -1,7 +1,4 @@
-import {
-  parseQuoteErrorDetails,
-  parseQuoteErrorDetailsFromText,
-} from './quoteErrorDetails';
+import { parseQuoteErrorDetails, parseQuoteErrorDetailsFromText } from './quoteErrorDetails';
 
 describe('parseQuoteErrorDetails', () => {
   it('reads the first ZPI error entry', () => {
@@ -16,7 +13,7 @@ describe('parseQuoteErrorDetails', () => {
             dappUrl: 'https://app.zama.org/',
           },
         ],
-      })
+      }),
     ).toEqual({
       title: 'Bad request',
       detail: 'Unshielding is not supported. Please use ${DAPP}.',
@@ -26,15 +23,16 @@ describe('parseQuoteErrorDetails', () => {
   });
 
   it('nulls missing and blank fields', () => {
-    expect(
-      parseQuoteErrorDetails({ errors: [{ title: 'Oops', dappName: '  ' }] })
-    ).toEqual({ title: 'Oops', detail: null, dappName: null, dappUrl: null });
+    expect(parseQuoteErrorDetails({ errors: [{ title: 'Oops', dappName: '  ' }] })).toEqual({
+      title: 'Oops',
+      detail: null,
+      dappName: null,
+      dappUrl: null,
+    });
   });
 
   it('returns null without a title or detail', () => {
-    expect(parseQuoteErrorDetails({ errors: [{ dappName: 'Zama' }] })).toBe(
-      null
-    );
+    expect(parseQuoteErrorDetails({ errors: [{ dappName: 'Zama' }] })).toBe(null);
     expect(parseQuoteErrorDetails({ errors: [] })).toBe(null);
     expect(parseQuoteErrorDetails({ errors: 'nope' })).toBe(null);
     expect(parseQuoteErrorDetails({ data: null })).toBe(null);
@@ -45,9 +43,7 @@ describe('parseQuoteErrorDetails', () => {
 
 describe('parseQuoteErrorDetailsFromText', () => {
   it('parses JSON text', () => {
-    expect(
-      parseQuoteErrorDetailsFromText('{"errors":[{"detail":"No route"}]}')
-    ).toEqual({
+    expect(parseQuoteErrorDetailsFromText('{"errors":[{"detail":"No route"}]}')).toEqual({
       title: null,
       detail: 'No route',
       dappName: null,

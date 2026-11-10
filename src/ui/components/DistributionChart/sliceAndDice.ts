@@ -19,7 +19,7 @@ const OTHERS_ID = '__others__';
  */
 export function buildDistributionItems(
   raw: DistributionItem[],
-  { othersThreshold = OTHERS_THRESHOLD }: { othersThreshold?: number } = {}
+  { othersThreshold = OTHERS_THRESHOLD }: { othersThreshold?: number } = {},
 ): DistributionItem[] {
   const positive = raw.filter((item) => item.value > 0);
   const total = positive.reduce((sum, item) => sum + item.value, 0);
@@ -74,7 +74,7 @@ function worstAspectRatio(areas: number[], side: number): number {
 export function computeTiles(
   items: DistributionItem[],
   width: number,
-  height: number
+  height: number,
 ): DistributionTile[] {
   const total = items.reduce((sum, item) => sum + item.value, 0);
   if (total <= 0 || width <= 0 || height <= 0) {
@@ -129,8 +129,7 @@ export function computeTiles(
     // Keep adding to the row while it keeps (or improves) the aspect ratio.
     if (
       row.length === 0 ||
-      worstAspectRatio([...current, next.area], side) <=
-        worstAspectRatio(current, side)
+      worstAspectRatio([...current, next.area], side) <= worstAspectRatio(current, side)
     ) {
       row.push(next);
       queue.shift();

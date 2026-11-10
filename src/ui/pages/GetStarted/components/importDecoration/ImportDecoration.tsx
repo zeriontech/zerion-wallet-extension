@@ -24,8 +24,7 @@ export function ImportBackground({ animate }: { animate: boolean }) {
 }
 
 function WalletItem({ wallet }: { wallet: MaskedBareWallet | BareWallet }) {
-  const ecosystemPrefix =
-    getAddressType(wallet.address) === 'evm' ? 'Eth' : 'Sol';
+  const ecosystemPrefix = getAddressType(wallet.address) === 'evm' ? 'Eth' : 'Sol';
 
   return (
     <HStack
@@ -48,9 +47,7 @@ function WalletItem({ wallet }: { wallet: MaskedBareWallet | BareWallet }) {
             }}
           >
             {`${
-              data.type !== WalletNameType.domain
-                ? `${ecosystemPrefix} ${middot} `
-                : ''
+              data.type !== WalletNameType.domain ? `${ecosystemPrefix} ${middot} ` : ''
             }${data.value}`}
           </span>
         )}
@@ -59,11 +56,7 @@ function WalletItem({ wallet }: { wallet: MaskedBareWallet | BareWallet }) {
   );
 }
 
-function WalletList({
-  wallets,
-}: {
-  wallets: (MaskedBareWallet | BareWallet)[];
-}) {
+function WalletList({ wallets }: { wallets: (MaskedBareWallet | BareWallet)[] }) {
   const isMultiple = wallets.length > 1;
   const restWaleltsCount = Math.max(wallets.length - 3, 0);
 
@@ -76,10 +69,7 @@ function WalletList({
 
   return (
     <animated.div style={{ ...style, width: '100%' }}>
-      <VStack
-        gap={16}
-        style={{ padding: 16, borderRadius: 12, background: 'var(--white' }}
-      >
+      <VStack gap={16} style={{ padding: 16, borderRadius: 12, background: 'var(--white' }}>
         <UIText kind="headline/h3" style={{ textAlign: 'center' }}>
           {isMultiple ? 'Your wallets are ready' : 'Your wallet is ready'}
         </UIText>

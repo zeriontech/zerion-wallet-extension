@@ -22,8 +22,8 @@ async function syncVersion() {
         version: toManifestVersion(version),
       },
       null,
-      2
-    )
+      2,
+    ),
   );
   await fs.writeFile(
     path.join(src, 'manifest-firefox.json'),
@@ -33,8 +33,8 @@ async function syncVersion() {
         version: toManifestVersion(version),
       },
       null,
-      2
-    )
+      2,
+    ),
   );
 
   await execAsync('./node_modules/.bin/vp', [

@@ -20,10 +20,7 @@ type Options = {
   onAccessProvider?: () => void;
 };
 
-export function initializeEIP6963(
-  provider: EthereumProvider,
-  options?: Options
-) {
+export function initializeEIP6963(provider: EthereumProvider, options?: Options) {
   const providerDetail = { info, provider };
   Object.defineProperty(providerDetail, 'provider', {
     get() {

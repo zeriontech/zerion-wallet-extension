@@ -35,7 +35,7 @@ export function AddressActionDetails({
         customAllowanceQuantityCommon: allowanceQuantityCommon,
         customAllowanceQuantityBase,
       }),
-    [addressAction, allowanceQuantityCommon, customAllowanceQuantityBase]
+    [addressAction, allowanceQuantityCommon, customAllowanceQuantityBase],
   );
 
   const showEndElement =

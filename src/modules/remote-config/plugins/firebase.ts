@@ -38,9 +38,7 @@ const knownKeys: (keyof RemoteConfig)[] = [
   'swap_form_balance_pulling_params',
 ];
 
-export async function fetchRemoteConfig<T extends keyof RemoteConfig>(
-  keys: T[]
-) {
+export async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {
   const params = new URLSearchParams(keys.map((key) => ['key', key]));
   return ky
     .get(new URL(`remote-config?${params.toString()}`, PROXY_URL), {
@@ -93,10 +91,7 @@ export const firebase: ConfigPlugin & { refresh(): void } = {
      * By doing this, we make the remoteConfig "eventually up-to-date"
      */
     firebase.refresh();
-    const config =
-      remoteConfig && !isEmptyConfig(remoteConfig)
-        ? remoteConfig
-        : defaultConfig;
+    const config = remoteConfig && !isEmptyConfig(remoteConfig) ? remoteConfig : defaultConfig;
     const value = config[key];
     return { value };
   },

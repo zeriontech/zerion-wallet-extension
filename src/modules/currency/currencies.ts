@@ -22,7 +22,7 @@ export interface CurrencyConfig {
 
 function resolveCurrencyOptions(
   value: number,
-  config: CurrencyConfig | null
+  config: CurrencyConfig | null,
 ): Intl.NumberFormatOptions | null {
   if (config) {
     if (config.options && 'lessThanOne' in config.options) {
@@ -40,20 +40,16 @@ function resolveCurrencyOptions(
 export function resolveOptions(
   value: number,
   config: CurrencyConfig | null,
-  runtimeOptions: Intl.NumberFormatOptions | null
+  runtimeOptions: Intl.NumberFormatOptions | null,
 ): Intl.NumberFormatOptions | null {
   const currencyOptions = resolveCurrencyOptions(value, config);
-  return runtimeOptions
-    ? { ...currencyOptions, ...runtimeOptions }
-    : currencyOptions;
+  return runtimeOptions ? { ...currencyOptions, ...runtimeOptions } : currencyOptions;
 }
 
 const setCustomSymbol = (symbol: string) => (parts: Intl.NumberFormatPart[]) =>
   parts
     .filter((part) => part.type !== 'literal')
-    .map((part) =>
-      part.type === 'currency' ? { ...part, value: symbol } : part
-    );
+    .map((part) => (part.type === 'currency' ? { ...part, value: symbol } : part));
 
 export const CURRENCIES: Record<string, CurrencyConfig> = {
   usd: {
@@ -225,9 +221,9 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
  * The subset of {@link CURRENCIES} a user can actually spend. Ordered as
  * declared, with `usd` first.
  */
-export const FIAT_CURRENCIES: CurrencyConfig[] = Object.values(
-  CURRENCIES
-).filter((config) => config.type === 'fiat');
+export const FIAT_CURRENCIES: CurrencyConfig[] = Object.values(CURRENCIES).filter(
+  (config) => config.type === 'fiat',
+);
 
 /**
  * Falls back to `usd` when the user's display currency is a crypto

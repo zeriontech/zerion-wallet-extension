@@ -33,10 +33,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { Frame } from 'src/ui/ui-kit/Frame';
-import {
-  FrameListItemAnchor,
-  FrameListItemLink,
-} from 'src/ui/ui-kit/FrameList';
+import { FrameListItemAnchor, FrameListItemLink } from 'src/ui/ui-kit/FrameList';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { StickyBottomPanel } from 'src/ui/ui-kit/BottomPanel';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -103,9 +100,7 @@ function SettingsMain() {
     mutationFn: () => accountPublicRPCPort.request('logout'),
   });
 
-  const { data: loyaltyEnabled } = useRemoteConfigValue(
-    'extension_loyalty_enabled'
-  );
+  const { data: loyaltyEnabled } = useRemoteConfigValue('extension_loyalty_enabled');
 
   const { data: currentWallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -114,9 +109,7 @@ function SettingsMain() {
     },
   });
 
-  const addressType = currentWallet
-    ? getAddressType(currentWallet?.address)
-    : null;
+  const addressType = currentWallet ? getAddressType(currentWallet?.address) : null;
 
   const { mutate: acceptZerionOrigin } = useMutation({
     mutationFn: async () => {
@@ -134,9 +127,7 @@ function SettingsMain() {
   useBackgroundKind({ kind: 'white' });
 
   const { hasTestWallet } = useStore(metaAppState);
-  const evmAddress = currentWallet
-    ? isEthereumAddress(currentWallet.address)
-    : false;
+  const evmAddress = currentWallet ? isEthereumAddress(currentWallet.address) : false;
 
   return (
     <PageColumn>
@@ -471,8 +462,8 @@ function DeveloperTools() {
             }}
             detailText={
               <span>
-                When enabled, we add Zerion Wallet label to connect buttons in
-                DApps so that they{apostrophe}re easier to spot
+                When enabled, we add Zerion Wallet label to connect buttons in DApps so that they
+                {apostrophe}re easier to spot
               </span>
             }
           />
@@ -527,11 +518,7 @@ function Privacy() {
             text={
               <>
                 <span>Hide Balances</span>{' '}
-                <UIText
-                  kind="caption/accent"
-                  inline={true}
-                  color="var(--neutral-700)"
-                >
+                <UIText kind="caption/accent" inline={true} color="var(--neutral-700)">
                   <code
                     style={{
                       backgroundColor: 'var(--neutral-100)',
@@ -553,8 +540,8 @@ function Privacy() {
             }}
             detailText={
               <span>
-                Replace balance amounts with blur squares. Useful if you don't
-                want to expose your balances in public.
+                Replace balance amounts with blur squares. Useful if you don't want to expose your
+                balances in public.
               </span>
             }
           />
@@ -570,10 +557,9 @@ function Privacy() {
             }}
             detailText={
               <span>
-                Help us improve our app experience by sharing anonymous
-                statistics about how you use Zerion. We will not associate any
-                of this to you and your personal data will not be sent to us.
-                Read more in our{' '}
+                Help us improve our app experience by sharing anonymous statistics about how you use
+                Zerion. We will not associate any of this to you and your personal data will not be
+                sent to us. Read more in our{' '}
                 <UnstyledAnchor
                   href="https://s3.amazonaws.com/cdn.zerion.io/assets/privacy.pdf"
                   target="_blank"
@@ -614,9 +600,7 @@ function Experiments() {
               });
             }}
             detailText={
-              <span>
-                Sign transactions with a long click to avoid accidental signing
-              </span>
+              <span>Sign transactions with a long click to avoid accidental signing</span>
             }
           />
         </Frame>
@@ -660,8 +644,8 @@ function Experiments() {
               }}
               detailText={
                 <span>
-                  Due to browser limitations, signing flows for your hardware
-                  wallets will open in a tab view instead of popup or sidepanel.
+                  Due to browser limitations, signing flows for your hardware wallets will open in a
+                  tab view instead of popup or sidepanel.
                 </span>
               }
             />

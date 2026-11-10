@@ -1,7 +1,4 @@
-import type {
-  Permit,
-  SignedPermit,
-} from 'src/modules/zerion-api/requests/wallet-prepare-permits';
+import type { Permit, SignedPermit } from 'src/modules/zerion-api/requests/wallet-prepare-permits';
 import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 
 /** Upper bound on how long a Signed Permit is reused locally: up to 30 days, and never past `expireAt` */
@@ -23,7 +20,7 @@ export function toStoredPermit(
   address: string,
   permit: Permit,
   signature: string,
-  signedAt = Date.now()
+  signedAt = Date.now(),
 ): StoredPermit {
   return {
     address,
@@ -46,7 +43,7 @@ export function toSignedPermit(permit: StoredPermit): SignedPermit {
 
 export function getValidPermits(
   permits: StoredPermit[] | null | undefined,
-  now = Date.now()
+  now = Date.now(),
 ): StoredPermit[] {
   return permits ? permits.filter((permit) => isPermitValid(permit, now)) : [];
 }
@@ -58,7 +55,7 @@ export function getValidPermits(
  */
 export function collectPermitsForRequest(
   permitLists: (StoredPermit[] | null | undefined)[],
-  now = Date.now()
+  now = Date.now(),
 ): SignedPermit[] {
   const result: SignedPermit[] = [];
   for (const list of permitLists) {
@@ -77,10 +74,6 @@ export function collectPermitsForRequest(
  * keys: when a permit is signed, dropped or expires the key changes and the
  * data refetches naturally. Never put the signatures themselves in a key.
  */
-export function getPermitsFingerprint(
-  permits: SignedPermit[] | null | undefined
-): string | null {
-  return permits?.length
-    ? permits.map((permit) => permit.signature.slice(-16)).join(',')
-    : null;
+export function getPermitsFingerprint(permits: SignedPermit[] | null | undefined): string | null {
+  return permits?.length ? permits.map((permit) => permit.signature.slice(-16)).join(',') : null;
 }

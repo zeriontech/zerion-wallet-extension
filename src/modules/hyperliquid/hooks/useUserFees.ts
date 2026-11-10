@@ -6,10 +6,7 @@ export const USER_FEES_QUERY_KEY = 'hyperliquid/userFees';
 
 export function useUserFees(
   payload: PerpUserFeesPayload,
-  {
-    suspense = false,
-    enabled = true,
-  }: { suspense?: boolean; enabled?: boolean } = {}
+  { suspense = false, enabled = true }: { suspense?: boolean; enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: [USER_FEES_QUERY_KEY, payload],

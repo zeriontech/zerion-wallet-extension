@@ -14,10 +14,7 @@ import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue/format
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import BigNumber from 'bignumber.js';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
-import {
-  QUICK_AMOUNTS,
-  QuickAmountButton,
-} from 'src/ui/shared/forms/QuickAmounts';
+import { QUICK_AMOUNTS, QuickAmountButton } from 'src/ui/shared/forms/QuickAmounts';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
@@ -101,17 +98,11 @@ export function InputPosition({
     inputKind === 'token' ? (
       inputPrice != null ? (
         <UIText kind="small/regular">
-          {formatCurrencyValue(
-            new BigNumber(inputAmount || '0').times(inputPrice),
-            'en',
-            currency
-          )}
+          {formatCurrencyValue(new BigNumber(inputAmount || '0').times(inputPrice), 'en', currency)}
         </UIText>
       ) : null
     ) : (
-      <UIText kind="small/regular">
-        {roundTokenDisplayValue(resolvedInputAmount) || '0'}
-      </UIText>
+      <UIText kind="small/regular">{roundTokenDisplayValue(resolvedInputAmount) || '0'}</UIText>
     );
 
   const shakeControls = useAnimationControls();
@@ -131,12 +122,7 @@ export function InputPosition({
   const handleToggle = () => {
     const nextKind = inputKind === 'token' ? 'currency' : 'token';
     if (inputAmount) {
-      const converted = convertOnToggle(
-        inputAmount,
-        inputKind,
-        nextKind,
-        inputPrice
-      );
+      const converted = convertOnToggle(inputAmount, inputKind, nextKind, inputPrice);
       onChange('inputAmount', converted);
     }
     onChange('inputKind', nextKind);
@@ -165,13 +151,11 @@ export function InputPosition({
     setLiveInput(inputAmount ?? '');
   }, [inputAmount]);
 
-  const [containerRef, { width: containerWidth }] =
-    useMeasure<HTMLDivElement>();
-  const { defaultMirrorRef, shrunkMirrorRef, textWidth, activeKind } =
-    useValueScaling({
-      text: liveInput || '0',
-      containerWidth,
-    });
+  const [containerRef, { width: containerWidth }] = useMeasure<HTMLDivElement>();
+  const { defaultMirrorRef, shrunkMirrorRef, textWidth, activeKind } = useValueScaling({
+    text: liveInput || '0',
+    containerWidth,
+  });
 
   return (
     <>
@@ -182,10 +166,7 @@ export function InputPosition({
           positionBalance ? (
             <HStack gap={16} alignItems="center">
               {quickAmounts.map(({ factor, title }) => (
-                <QuickAmountButton
-                  key={factor}
-                  onClick={() => handleQuickAmount(factor)}
-                >
+                <QuickAmountButton key={factor} onClick={() => handleQuickAmount(factor)}>
                   {title}
                 </QuickAmountButton>
               ))}
@@ -206,17 +187,10 @@ export function InputPosition({
           <TooltipProvider placement="top" timeout={1000}>
             <TooltipAnchor
               render={
-                <AssetSelectorButton
-                  position={position}
-                  onClick={selectorDialog.openDialog}
-                />
+                <AssetSelectorButton position={position} onClick={selectorDialog.openDialog} />
               }
             />
-            <Tooltip
-              className={assetSelectorStyles.tooltip}
-              gutter={8}
-              portal={false}
-            >
+            <Tooltip className={assetSelectorStyles.tooltip} gutter={8} portal={false}>
               <UIText kind="caption/regular">
                 <span>Select Asset to Pay</span>{' '}
                 <span className={assetSelectorStyles.tooltipKbd}>
@@ -262,9 +236,7 @@ export function InputPosition({
                     value={value}
                     placeholder="0"
                     onChange={(event) => {
-                      const next = event.currentTarget.value
-                        .replace(',', '.')
-                        .replace(/\s/g, '');
+                      const next = event.currentTarget.value.replace(',', '.').replace(/\s/g, '');
                       if (!/^\d*\.?\d*$/.test(next)) return;
                       setLiveInput(next);
                       handleChange(next);
@@ -275,9 +247,7 @@ export function InputPosition({
                 )}
               />
               <CurrencySymbolOverlay
-                currencySymbol={
-                  inputKind === 'currency' ? currencySymbol : null
-                }
+                currencySymbol={inputKind === 'currency' ? currencySymbol : null}
                 textWidth={textWidth}
                 color={liveInput ? 'var(--black)' : 'var(--neutral-600)'}
               />
@@ -288,9 +258,7 @@ export function InputPosition({
           <motion.div
             animate={shakeControls}
             style={{
-              color: notEnoughBalance
-                ? 'var(--negative-500)'
-                : 'var(--neutral-600)',
+              color: notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)',
               display: 'flex',
               gap: 4,
             }}
@@ -298,9 +266,7 @@ export function InputPosition({
             <span>Balance:</span>
             <BlurrableBalance
               kind="small/regular"
-              color={
-                notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)'
-              }
+              color={notEnoughBalance ? 'var(--negative-500)' : 'var(--neutral-600)'}
             >
               {positionBalance ? formatTokenValue(positionBalance) : null}
             </BlurrableBalance>

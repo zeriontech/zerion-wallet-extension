@@ -6,7 +6,7 @@ import { adjustedCheckEligibility } from 'src/modules/ethereum/account-abstracti
 
 export function useTxEligibility(
   tx: Parameters<ZerionApiClient['paymasterCheckEligibility']>[0] | null,
-  { enabled: enabledParam = true } = {}
+  { enabled: enabledParam = true } = {},
 ) {
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';

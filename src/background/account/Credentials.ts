@@ -14,10 +14,6 @@ export interface SessionCredentials extends Credentials {
   seedPhraseEncryptionKey: string;
 }
 
-export function isSessionCredentials(
-  x: Credentials | SessionCredentials
-): x is SessionCredentials {
-  return Boolean(
-    x.seedPhraseEncryptionKey && x.seedPhraseEncryptionKey_deprecated
-  );
+export function isSessionCredentials(x: Credentials | SessionCredentials): x is SessionCredentials {
+  return Boolean(x.seedPhraseEncryptionKey && x.seedPhraseEncryptionKey_deprecated);
 }

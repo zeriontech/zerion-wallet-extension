@@ -85,7 +85,7 @@ export function useSwapQuote({
 
   const selectedQuote = useMemo(() => {
     const userQuote = quotesQuery.quotes?.find(
-      (quote) => quote.contractMetadata?.id === userQuoteId
+      (quote) => quote.contractMetadata?.id === userQuoteId,
     );
     const defaultQuote = quotesQuery.quotes?.[0];
     return userQuote || defaultQuote || null;

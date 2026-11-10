@@ -10,7 +10,7 @@ export type Opaque<T, Name> = {
 };
 
 export function opaqueType<T extends Opaque<unknown, unknown>>(
-  value: T[typeof OpaqueSymbols.type]
+  value: T[typeof OpaqueSymbols.type],
 ) {
   return value as T;
 }

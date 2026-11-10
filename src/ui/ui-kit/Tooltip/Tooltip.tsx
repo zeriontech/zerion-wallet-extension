@@ -9,19 +9,12 @@ import { getRootDomNode } from 'src/ui/shared/getRootDomNode';
 // it to its internal `Portal`, but `TooltipOptions` does not re-expose it.
 // Without this, body-portaled tooltip wrappers land as <body> grid items.
 type TooltipExtraProps = {
-  portalElement?:
-    | HTMLElement
-    | ((element: HTMLElement) => HTMLElement | null)
-    | null;
+  portalElement?: HTMLElement | ((element: HTMLElement) => HTMLElement | null) | null;
 };
 
 export type TooltipProps = AriaTooltipProps & TooltipExtraProps;
 
-export function Tooltip({
-  portal = true,
-  portalElement,
-  ...rest
-}: TooltipProps) {
+export function Tooltip({ portal = true, portalElement, ...rest }: TooltipProps) {
   const resolvedPortalElement =
     portal && portalElement === undefined ? getRootDomNode() : portalElement;
   return (

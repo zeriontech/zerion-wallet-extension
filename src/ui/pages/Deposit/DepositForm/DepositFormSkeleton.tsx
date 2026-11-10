@@ -37,15 +37,9 @@ function FieldsetSkeleton({
         >
           <HStack gap={8} alignItems="center">
             {withIcon ? (
-              <div
-                className={styles.skeletonCircle}
-                style={{ width: 32, height: 32 }}
-              />
+              <div className={styles.skeletonCircle} style={{ width: 32, height: 32 }} />
             ) : null}
-            <div
-              className={styles.skeleton}
-              style={{ width: 64, height: 24 }}
-            />
+            <div className={styles.skeleton} style={{ width: 64, height: 24 }} />
           </HStack>
           <div className={styles.skeleton} style={{ width: 88, height: 24 }} />
         </HStack>
@@ -57,10 +51,7 @@ function FieldsetSkeleton({
 export function DepositFormSkeleton({ address }: { address?: string }) {
   return (
     <Background backgroundKind="white">
-      <DepositHeaderControls
-        address={address ?? null}
-        settingsDisabled={true}
-      />
+      <DepositHeaderControls address={address ?? null} settingsDisabled={true} />
       <PageColumn>
         <Spacer height={DEPOSIT_PAGE_TOP} />
         <NavigationTitle title="Buy Crypto" />

@@ -27,8 +27,7 @@ export function ChooseGlobalProvider({
   onReject: () => void;
 }) {
   useBackgroundKind(bgKind);
-  const { globalPreferences, setGlobalPreferencesAsync } =
-    useGlobalPreferences();
+  const { globalPreferences, setGlobalPreferencesAsync } = useGlobalPreferences();
   if (!globalPreferences) {
     return <ViewLoading />;
   }
@@ -53,9 +52,7 @@ export function ChooseGlobalProvider({
           <VStack gap={24}>
             <UIText kind="headline/h2" style={{ textAlign: 'center' }}>
               <div>Connect to</div>
-              <div style={{ color: 'var(--neutral-500)' }}>
-                {new URL(origin).hostname}
-              </div>
+              <div style={{ color: 'var(--neutral-500)' }}>{new URL(origin).hostname}</div>
             </UIText>
             <VStack gap={8}>
               <Button kind="primary" onClick={() => onConfirm()}>
@@ -71,7 +68,7 @@ export function ChooseGlobalProvider({
                     createInjectionPreference(globalPreferences, {
                       origin,
                       duration: TurnOffDuration.forever,
-                    })
+                    }),
                   );
                   // Give ContentScriptManager time to update
                   await new Promise((r) => setTimeout(r, 100));
@@ -105,9 +102,7 @@ export function ChooseGlobalProvider({
   );
 }
 
-export function ChooseGlobalProviderGuard({
-  children,
-}: React.PropsWithChildren) {
+export function ChooseGlobalProviderGuard({ children }: React.PropsWithChildren) {
   const [params, setParams] = useSearchParams();
   const origin = params.get('origin');
   const windowId = params.get('windowId');
@@ -135,7 +130,7 @@ export function ChooseGlobalProviderGuard({
               newParams.set('providerSelected', 'yes');
               return newParams;
             },
-            { replace: true }
+            { replace: true },
           );
         }}
         onReject={() => {

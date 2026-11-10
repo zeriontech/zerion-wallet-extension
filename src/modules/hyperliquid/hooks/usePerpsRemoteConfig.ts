@@ -20,9 +20,7 @@ interface RemoteConfigResponse {
   hyperliquid_perps_config?: HyperliquidPerpsConfig;
 }
 
-async function fetchHyperliquidPerpsConfig(): Promise<
-  HyperliquidPerpsConfig | undefined
-> {
+async function fetchHyperliquidPerpsConfig(): Promise<HyperliquidPerpsConfig | undefined> {
   const response = await ky
     .get(new URL('remote-config?key=hyperliquid_perps_config', PROXY_URL), {
       timeout: 30000,

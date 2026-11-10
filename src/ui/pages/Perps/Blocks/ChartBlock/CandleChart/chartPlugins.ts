@@ -36,7 +36,7 @@ function drawPill(
   pillY: number,
   pillWidth: number,
   pillHeight: number,
-  bg: string
+  bg: string,
 ) {
   const radius = 4;
   ctx.fillStyle = bg;
@@ -103,10 +103,7 @@ export function drawHorizontalLinePlugin({
   };
 }
 
-function formatCursorTime(
-  t: number,
-  interval: PerpCandleInterval | undefined
-): string {
+function formatCursorTime(t: number, interval: PerpCandleInterval | undefined): string {
   const date = new Date(t);
   const isIntraday =
     interval == null ||
@@ -159,10 +156,7 @@ export function drawVerticalLinePlugin({
       const pillWidth = textWidth + PILL_PADDING_X * 2;
       const pillHeight = 16 + PILL_PADDING_Y * 2;
       const idealLeft = cursorX - pillWidth / 2;
-      const pillX = Math.max(
-        chartArea.left,
-        Math.min(idealLeft, chartArea.right - pillWidth)
-      );
+      const pillX = Math.max(chartArea.left, Math.min(idealLeft, chartArea.right - pillWidth));
       const pillY = chartArea.bottom + 1;
 
       drawPill(ctx, pillX, pillY, pillWidth, pillHeight, pillBg);
@@ -215,7 +209,7 @@ function buildTooltipContent(data: OhlcvData, currency: string) {
       'div',
       { style: ROW_STYLE },
       r('span', { style: LABEL_STYLE }, label),
-      r('span', { style: VALUE_STYLE }, value)
+      r('span', { style: VALUE_STYLE }, value),
     );
 
   return r(
@@ -228,7 +222,7 @@ function buildTooltipContent(data: OhlcvData, currency: string) {
     row('High', formatPriceValue(data.high, 'en', currency)),
     row('Low', formatPriceValue(data.low, 'en', currency)),
     row('Close', formatPriceValue(data.close, 'en', currency)),
-    row('Volume', formatTokenValue(data.volume))
+    row('Volume', formatTokenValue(data.volume)),
   );
 }
 
@@ -268,8 +262,7 @@ export function createExternalTooltip({
     }
 
     const cursor = getCursor();
-    const tradesSection =
-      cursor && getTradesSection ? getTradesSection(cursor.t) : null;
+    const tradesSection = cursor && getTradesSection ? getTradesSection(cursor.t) : null;
 
     const content = buildTooltipContent(ohlcv, getCurrency());
     if (tradesSection) {
@@ -282,8 +275,7 @@ export function createExternalTooltip({
     const inRightHalf = chart.width / 2 < tooltip.caretX;
 
     const tooltipHeight = tooltipEl.offsetHeight;
-    const flipAbove =
-      cursorY + TOOLTIP_OFFSET + tooltipHeight > chart.chartArea.bottom;
+    const flipAbove = cursorY + TOOLTIP_OFFSET + tooltipHeight > chart.chartArea.bottom;
     const verticalTransform = flipAbove
       ? `translateY(calc(-100% - ${TOOLTIP_OFFSET}px))`
       : `translateY(${TOOLTIP_OFFSET}px)`;

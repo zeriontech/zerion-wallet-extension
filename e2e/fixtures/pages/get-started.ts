@@ -90,7 +90,7 @@ export class ExistingWalletOptionsPage {
 
 export class ImportWalletView {
   readonly phraseOrPrivateKeyInput = this.page.getByPlaceholder(
-    /Recovery phrase or a private key/i
+    /Recovery phrase or a private key/i,
   );
   readonly importButton = this.page.getByRole('button', {
     name: /Import/i,
@@ -121,9 +121,7 @@ export class PrivateKeyImportView {
   constructor(public readonly page: Page) {}
 
   async ready() {
-    await expect(
-      this.page.getByRole('link', { name: /View Wallet/i })
-    ).toBeEnabled();
+    await expect(this.page.getByRole('link', { name: /View Wallet/i })).toBeEnabled();
   }
 
   async matchesSnapshot() {
@@ -165,9 +163,7 @@ export class GenerateWalletView {
   constructor(public readonly page: Page) {}
 
   async ready() {
-    await expect(
-      this.page.getByRole('link', { name: /View Wallets?/i })
-    ).toBeInViewport();
+    await expect(this.page.getByRole('link', { name: /View Wallets?/i })).toBeInViewport();
   }
 
   async matchesSnapshot() {
@@ -189,9 +185,7 @@ export class AddressImportMessagesView {
   constructor(public readonly page: Page) {}
 
   async ready() {
-    await expect(
-      this.page.getByRole('link', { name: /View Wallets?/i })
-    ).toBeEnabled();
+    await expect(this.page.getByRole('link', { name: /View Wallets?/i })).toBeEnabled();
   }
 
   async matchesSnapshot() {
@@ -210,9 +204,7 @@ export class AddressImportMessagesView {
 }
 
 export class AddReadonlyAddressPage {
-  readonly addressInput = this.page.getByPlaceholder(
-    /Address, domain or identity/i
-  );
+  readonly addressInput = this.page.getByPlaceholder(/Address, domain or identity/i);
   readonly continueButton = this.page.getByRole('button', {
     name: /Continue/i,
   });

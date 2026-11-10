@@ -53,11 +53,7 @@ import { getFullWalletList } from './shared';
 
 export function arrayMove<T>(array: T[], from: number, to: number): T[] {
   const newArray = array.slice();
-  newArray.splice(
-    to < 0 ? newArray.length + to : to,
-    0,
-    newArray.splice(from, 1)[0]
-  );
+  newArray.splice(to < 0 ? newArray.length + to : to, 0, newArray.splice(from, 1)[0]);
 
   return newArray;
 }
@@ -102,8 +98,7 @@ function WalletListEditItem({
   listIndex?: number;
 }) {
   const { currency } = useCurrency();
-  const ecosystemPrefix =
-    getAddressType(wallet.address) === 'evm' ? 'Eth' : 'Sol';
+  const ecosystemPrefix = getAddressType(wallet.address) === 'evm' ? 'Eth' : 'Sol';
 
   return (
     <div
@@ -116,12 +111,7 @@ function WalletListEditItem({
       }}
     >
       <VStack gap={0}>
-        <HStack
-          gap={4}
-          justifyContent="space-between"
-          alignItems="center"
-          style={{ padding: 12 }}
-        >
+        <HStack gap={4} justifyContent="space-between" alignItems="center" style={{ padding: 12 }}>
           <Media
             vGap={0}
             image={
@@ -151,9 +141,7 @@ function WalletListEditItem({
                       }}
                     >
                       {`${
-                        data.type !== WalletNameType.domain
-                          ? `${ecosystemPrefix} ${middot} `
-                          : ''
+                        data.type !== WalletNameType.domain ? `${ecosystemPrefix} ${middot} ` : ''
                       }${data.value}`}
                     </span>
                   )}
@@ -173,7 +161,7 @@ function WalletListEditItem({
                           parts={formatCurrencyToParts(
                             query.data.data?.totalValue || 0,
                             'en',
-                            currency
+                            currency,
                           )}
                         />
                       </BlurrableBalance>
@@ -212,19 +200,12 @@ function DraggableWalletItem({
   groupId: string;
   listIndex: number;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: walletId });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: walletId,
+  });
 
   const style = {
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     transition,
     opacity: isDragging ? 0 : 1,
     cursor: 'grab',
@@ -232,11 +213,7 @@ function DraggableWalletItem({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <WalletListEditItem
-        wallet={wallet}
-        groupId={groupId}
-        listIndex={listIndex}
-      />
+      <WalletListEditItem wallet={wallet} groupId={groupId} listIndex={listIndex} />
     </div>
   );
 }
@@ -254,8 +231,8 @@ function WalletListEditInner({
   const [items, setItems] = useState<Record<string, string[]>>(() =>
     groups.reduce(
       (acc, group) => ({ ...acc, [group.id]: group.walletIds }),
-      {} as Record<string, string[]>
-    )
+      {} as Record<string, string[]>,
+    ),
   );
   const [activeId, setActiveId] = useState<string | null>(null);
   const lastOverId = useRef<UniqueIdentifier | null>(null);
@@ -266,7 +243,7 @@ function WalletListEditInner({
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   const findContainer = useCallback(
@@ -275,20 +252,16 @@ function WalletListEditInner({
         return id;
       }
 
-      return Object.keys(items).find((key) =>
-        items[key].includes(id as string)
-      );
+      return Object.keys(items).find((key) => items[key].includes(id as string));
     },
-    [items]
+    [items],
   );
 
   const collisionDetectionStrategy: CollisionDetection = useCallback(
     (args) => {
       const pointerIntersections = pointerWithin(args);
       const intersections =
-        pointerIntersections.length > 0
-          ? pointerIntersections
-          : rectIntersection(args);
+        pointerIntersections.length > 0 ? pointerIntersections : rectIntersection(args);
       let overId = getFirstCollision(intersections, 'id');
 
       if (overId != null) {
@@ -302,8 +275,7 @@ function WalletListEditInner({
               ...args,
               droppableContainers: args.droppableContainers.filter(
                 (container) =>
-                  container.id !== overId &&
-                  containerItems.includes(container.id as string)
+                  container.id !== overId && containerItems.includes(container.id as string),
               ),
             })[0]?.id;
 
@@ -325,7 +297,7 @@ function WalletListEditInner({
 
       return lastOverId.current ? [{ id: lastOverId.current }] : [];
     },
-    [activeId, items]
+    [activeId, items],
   );
 
   const handleDragStart = useCallback(({ active }: DragStartEvent) => {
@@ -342,9 +314,7 @@ function WalletListEditInner({
 
       // Determine if overId is a container or an item
       const isOverContainer = overId in items;
-      const overContainer = isOverContainer
-        ? (overId as string)
-        : findContainer(overId);
+      const overContainer = isOverContainer ? (overId as string) : findContainer(overId);
       const activeContainer = findContainer(active.id);
 
       if (!overContainer || !activeContainer) {
@@ -368,8 +338,7 @@ function WalletListEditInner({
             const isBelowOverItem =
               over &&
               active.rect.current.translated &&
-              active.rect.current.translated.top >
-                over.rect.top + over.rect.height;
+              active.rect.current.translated.top > over.rect.top + over.rect.height;
 
             const modifier = isBelowOverItem ? 1 : 0;
 
@@ -381,21 +350,21 @@ function WalletListEditInner({
           return {
             ...items,
             [activeContainer]: items[activeContainer as string].filter(
-              (item) => item !== active.id
+              (item) => item !== active.id,
             ),
             [overContainer]: [
               ...items[overContainer as string].slice(0, newIndex),
               items[activeContainer as string][activeIndex],
               ...items[overContainer as string].slice(
                 newIndex,
-                items[overContainer as string].length
+                items[overContainer as string].length,
               ),
             ],
           };
         });
       }
     },
-    [findContainer, items]
+    [findContainer, items],
   );
 
   const handleDragEnd = useCallback(
@@ -420,27 +389,17 @@ function WalletListEditInner({
       }
 
       const isOverContainer = overId in items;
-      const overContainer = isOverContainer
-        ? (overId as string)
-        : findContainer(overId);
+      const overContainer = isOverContainer ? (overId as string) : findContainer(overId);
 
       if (overContainer && activeContainer === overContainer) {
         // Reordering within the same container
-        const activeIndex = items[activeContainer as string].indexOf(
-          active.id as string
-        );
-        const overIndex = items[overContainer as string].indexOf(
-          overId as string
-        );
+        const activeIndex = items[activeContainer as string].indexOf(active.id as string);
+        const overIndex = items[overContainer as string].indexOf(overId as string);
 
         if (activeIndex !== overIndex && overIndex !== -1) {
           setItems((items) => ({
             ...items,
-            [overContainer]: arrayMove(
-              items[overContainer as string],
-              activeIndex,
-              overIndex
-            ),
+            [overContainer]: arrayMove(items[overContainer as string], activeIndex, overIndex),
           }));
         }
       }
@@ -448,7 +407,7 @@ function WalletListEditInner({
 
       setActiveId(null);
     },
-    [findContainer, items]
+    [findContainer, items],
   );
 
   useEffect(() => {
@@ -495,11 +454,7 @@ function WalletListEditInner({
       <SortableContext items={allIds} strategy={verticalListSortingStrategy}>
         <VStack gap={0}>
           {groups.map((group) => (
-            <DroppableContainer
-              key={group.id}
-              id={group.id}
-              items={items[group.id] || []}
-            >
+            <DroppableContainer key={group.id} id={group.id} items={items[group.id] || []}>
               <VStack gap={2}>
                 <UIText
                   kind="small/accent"
@@ -559,10 +514,7 @@ function WalletListEditInner({
       </SortableContext>
       <DragOverlay>
         {activeWallet ? (
-          <WalletListEditItem
-            wallet={activeWallet.wallet}
-            groupId={activeWallet.group.id}
-          />
+          <WalletListEditItem wallet={activeWallet.wallet} groupId={activeWallet.group.id} />
         ) : null}
       </DragOverlay>
     </DndContext>
@@ -585,13 +537,10 @@ export function WalletListEdit({
         walletGroups,
         filterEmptyGroups: false,
       }),
-    [walletsOrder, walletGroups]
+    [walletsOrder, walletGroups],
   );
   const walletMap = useMemo(() => {
-    const map = new Map<
-      string,
-      { group: WalletGroupInfo; wallet: AnyWallet }
-    >();
+    const map = new Map<string, { group: WalletGroupInfo; wallet: AnyWallet }>();
     for (const group of walletGroups) {
       for (const wallet of group.walletContainer.wallets) {
         map.set(
@@ -599,18 +548,12 @@ export function WalletListEdit({
             address: wallet.address,
             groupId: group.id,
           }),
-          { group, wallet }
+          { group, wallet },
         );
       }
     }
     return map;
   }, [walletGroups]);
 
-  return (
-    <WalletListEditInner
-      groups={groups}
-      walletMap={walletMap}
-      onChange={onChange}
-    />
-  );
+  return <WalletListEditInner groups={groups} walletMap={walletMap} onChange={onChange} />;
 }

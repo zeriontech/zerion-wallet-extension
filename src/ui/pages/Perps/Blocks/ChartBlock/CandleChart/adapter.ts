@@ -1,9 +1,5 @@
 import { _adapters, type TimeUnit } from 'chart.js';
-import dayjs, {
-  type ManipulateType,
-  type OpUnitType,
-  type QUnitType,
-} from 'dayjs';
+import dayjs, { type ManipulateType, type OpUnitType, type QUnitType } from 'dayjs';
 
 const FORMATS = {
   datetime: 'MMM D, YYYY, h:mm:ss a',

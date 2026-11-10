@@ -18,9 +18,7 @@ export function parcelSchemePlugin({ projectRoot }: { projectRoot: string }) {
     name: 'parcel-schemes',
     enforce: 'pre' as const,
     resolveId(id: string, importer?: string) {
-      const scheme = ['jsx:', 'url:', 'data-url:'].find((prefix) =>
-        id.startsWith(prefix)
-      );
+      const scheme = ['jsx:', 'url:', 'data-url:'].find((prefix) => id.startsWith(prefix));
       if (!scheme) return null;
       const specifier = id.slice(scheme.length);
       const assetPath =
@@ -49,8 +47,5 @@ export const sourceAlias = (sourceRoot: string) => ({
  */
 export const componentsAlias = (projectRoot: string) => ({
   find: /^@zeriontech\/components\/lib\//,
-  replacement: path.join(
-    projectRoot,
-    'node_modules/@zeriontech/components/lib/'
-  ),
+  replacement: path.join(projectRoot, 'node_modules/@zeriontech/components/lib/'),
 });

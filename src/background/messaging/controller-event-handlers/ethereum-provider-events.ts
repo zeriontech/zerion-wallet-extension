@@ -18,13 +18,7 @@ export class EthereumEventsBroadcaster implements Listener {
   getActivePorts: PortsGetter;
   private disposers: Array<() => void>;
 
-  constructor({
-    account,
-    getActivePorts,
-  }: {
-    account: Account;
-    getActivePorts: PortsGetter;
-  }) {
+  constructor({ account, getActivePorts }: { account: Account; getActivePorts: PortsGetter }) {
     this.account = account;
     this.getActivePorts = getActivePorts;
     this.disposers = [];
@@ -42,7 +36,7 @@ export class EthereumEventsBroadcaster implements Listener {
         port.name === `${browser.runtime.id}/ethereum` ||
         // "/wallet" is our own UI and we need to notify changes to it
         // when it's opened as a sidepanel
-        port.name === `${browser.runtime.id}/wallet`
+        port.name === `${browser.runtime.id}/wallet`,
     );
   }
 
@@ -61,7 +55,7 @@ export class EthereumEventsBroadcaster implements Listener {
             value: accounts,
           });
         });
-      })
+      }),
     );
 
     this.disposers.push(
@@ -78,7 +72,7 @@ export class EthereumEventsBroadcaster implements Listener {
             value: chainId,
           });
         });
-      })
+      }),
     );
 
     this.disposers.push(
@@ -96,7 +90,7 @@ export class EthereumEventsBroadcaster implements Listener {
             });
           }
         });
-      })
+      }),
     );
 
     this.disposers.push(
@@ -117,7 +111,7 @@ export class EthereumEventsBroadcaster implements Listener {
             port.postMessage({ type: 'walletEvent', event: 'pauseInjection' });
           }
         });
-      })
+      }),
     );
   }
 

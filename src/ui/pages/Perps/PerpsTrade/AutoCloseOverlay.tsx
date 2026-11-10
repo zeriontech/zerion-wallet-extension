@@ -2,10 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { PERPS_SCREEN } from 'src/shared/types/perps-events';
 import { emitter } from 'src/ui/shared/events';
 import { Button } from 'src/ui/ui-kit/Button';
-import {
-  SegmentedControlGroup,
-  SegmentedControlRadio,
-} from 'src/ui/ui-kit/SegmentedControl';
+import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/SegmentedControl';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -25,10 +22,7 @@ function clampDecimal(raw: string): string {
   const sanitized = raw.replace(/[^0-9.]/g, '');
   const firstDot = sanitized.indexOf('.');
   if (firstDot === -1) return sanitized;
-  return (
-    sanitized.slice(0, firstDot + 1) +
-    sanitized.slice(firstDot + 1).replace(/\./g, '')
-  );
+  return sanitized.slice(0, firstDot + 1) + sanitized.slice(firstDot + 1).replace(/\./g, '');
 }
 
 // A take profit triggers on the winning side of entry; a stop loss on the
@@ -37,9 +31,7 @@ function clampDecimal(raw: string): string {
 //   Long TP / Short SL → price goes up
 //   Long SL / Short TP → price goes down
 function isTriggerPriceAboveEntry(side: Side, kind: Kind): boolean {
-  return (
-    (side === 'long' && kind === 'tp') || (side === 'short' && kind === 'sl')
-  );
+  return (side === 'long' && kind === 'tp') || (side === 'short' && kind === 'sl');
 }
 
 // PnL % is computed on margin (not notional), so leverage scales it:
@@ -57,8 +49,7 @@ function pnlPercentToPrice({
   leverage: number;
   kind: Kind;
 }): string {
-  if (!Number.isFinite(pnlPercent) || pnlPercent <= 0 || entryPrice <= 0)
-    return '';
+  if (!Number.isFinite(pnlPercent) || pnlPercent <= 0 || entryPrice <= 0) return '';
   const moveFraction = pnlPercent / 100 / Math.max(leverage, 1);
   const price = isTriggerPriceAboveEntry(side, kind)
     ? entryPrice * (1 + moveFraction)
@@ -131,7 +122,7 @@ function AutoCloseDialogBody({
           leverage,
           kind: 'tp',
         })
-      : ''
+      : '',
   );
   const [sl, setSl] = useState(() =>
     initial.stopLossPrice
@@ -142,7 +133,7 @@ function AutoCloseDialogBody({
           leverage,
           kind: 'sl',
         })
-      : ''
+      : '',
   );
 
   // Convert a single field's raw value between modes. Empty stays empty.
@@ -165,7 +156,7 @@ function AutoCloseDialogBody({
             kind,
           });
     },
-    [entryPrice, side, leverage]
+    [entryPrice, side, leverage],
   );
 
   const handleModeChange = useCallback(
@@ -178,19 +169,17 @@ function AutoCloseDialogBody({
       setSl((value) => convertValue(value, mode, next, 'sl'));
       setMode(next);
     },
-    [mode, convertValue]
+    [mode, convertValue],
   );
 
   const handleTpChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      setTp(clampDecimal(e.currentTarget.value)),
-    []
+    (e: React.ChangeEvent<HTMLInputElement>) => setTp(clampDecimal(e.currentTarget.value)),
+    [],
   );
 
   const handleSlChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      setSl(clampDecimal(e.currentTarget.value)),
-    []
+    (e: React.ChangeEvent<HTMLInputElement>) => setSl(clampDecimal(e.currentTarget.value)),
+    [],
   );
 
   const handleConfirm = useCallback(() => {
@@ -269,17 +258,9 @@ function AutoCloseDialogBody({
   );
 }
 
-export function AutoCloseOverlay({
-  open,
-  ...rest
-}: DialogProps & { open: boolean }) {
+export function AutoCloseOverlay({ open, ...rest }: DialogProps & { open: boolean }) {
   return (
-    <Dialog2
-      open={open}
-      onClose={rest.onClose}
-      title="Auto-close"
-      size="content"
-    >
+    <Dialog2 open={open} onClose={rest.onClose} title="Auto-close" size="content">
       {/* Mount the stateful body only while open so it re-derives its initial
           state from `initial` on every opening and never persists it. */}
       {open ? <AutoCloseDialogBody {...rest} /> : null}

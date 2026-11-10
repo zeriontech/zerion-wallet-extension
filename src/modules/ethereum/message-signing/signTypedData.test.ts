@@ -49,7 +49,7 @@ const sample = {
   },
   /** The key is supposed to be empty. It's masked only to avoid automatic detection by tools and bots */
   sampleKey: opaqueType<LocallyEncoded>(
-    'AkhQUBgIB0wGAQEHAwQUUw9PA11UCFBVHwQPH1BeAAVQV0kEBh5VCAIDAwZMU1QbBgoGAQAESFFQTwQNUFNXABUG'
+    'AkhQUBgIB0wGAQEHAwQUUw9PA11UCFBVHwQPH1BeAAVQV0kEBh5VCAIDAwZMU1QbBgoGAQAESFFQTwQNUFNXABUG',
   ),
   signature:
     '0x3f95712ebab7d433d35532e32282785ada5749f28ed4c8b8a535146b7657452e21d22e79cce97c43709ef8d958865696ea6b1a43edc0cf1e517d3a46e23d63341c',

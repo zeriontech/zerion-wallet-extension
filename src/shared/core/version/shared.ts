@@ -8,8 +8,7 @@ export async function getCurrentVersion() {
   return saved ?? 'no-version';
 }
 
-export const checkExisingData = async () =>
-  Boolean(await BrowserStorage.get('currentUser'));
+export const checkExisingData = async () => Boolean(await BrowserStorage.get('currentUser'));
 
 export async function eraseAndUpdateToLatestVersion() {
   await browser.storage.local.clear();

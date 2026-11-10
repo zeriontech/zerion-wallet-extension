@@ -4,9 +4,7 @@ function makeNotConfigurable<T>(object: T) {
   if (!object || typeof object !== 'object') {
     return;
   }
-  Object.keys(object).forEach((key) =>
-    Object.defineProperty(object, key, { configurable: false })
-  );
+  Object.keys(object).forEach((key) => Object.defineProperty(object, key, { configurable: false }));
 }
 
 type ForeignProvider = EthereumProvider & { isRabby?: boolean };
@@ -22,10 +20,7 @@ interface Params {
 const otherProviders = new Set();
 let firstOtherProvider: unknown = null;
 
-export function handleForeignProvider({
-  foreignProvider,
-  ourProvider,
-}: Params) {
+export function handleForeignProvider({ foreignProvider, ourProvider }: Params) {
   if (foreignProvider) {
     otherProviders.add(foreignProvider);
     if (!firstOtherProvider) {

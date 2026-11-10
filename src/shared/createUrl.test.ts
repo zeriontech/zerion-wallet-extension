@@ -7,39 +7,39 @@ describe('createUrl', () => {
   });
 
   test('simple cases', () => {
-    expect(
-      createUrl({ base: 'https://example.com', pathname: '/api' }).toString()
-    ).toBe('https://example.com/api');
+    expect(createUrl({ base: 'https://example.com', pathname: '/api' }).toString()).toBe(
+      'https://example.com/api',
+    );
 
-    expect(
-      createUrl({ base: 'https://example.com/', pathname: '/api' }).toString()
-    ).toBe('https://example.com/api');
+    expect(createUrl({ base: 'https://example.com/', pathname: '/api' }).toString()).toBe(
+      'https://example.com/api',
+    );
 
     expect(
       createUrl({
         base: 'https://example.com/base/',
         pathname: './api/',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/base/api/');
 
     expect(
       createUrl({
         base: 'https://example.com/base',
         pathname: './api/subpath/path',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api/subpath/path');
   });
 
   test('empty pathname', () => {
-    expect(
-      createUrl({ base: 'https://example.com/', pathname: '' }).toString()
-    ).toBe('https://example.com/');
+    expect(createUrl({ base: 'https://example.com/', pathname: '' }).toString()).toBe(
+      'https://example.com/',
+    );
 
     expect(
       createUrl({
         base: 'https://example.com',
         pathname: '',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/');
   });
 
@@ -48,7 +48,7 @@ describe('createUrl', () => {
       createUrl({
         base: new URL('https://example.com/base'),
         pathname: './api',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api');
   });
 
@@ -58,7 +58,7 @@ describe('createUrl', () => {
         base: 'https://example.com',
         pathname: '/api',
         searchParams: new URLSearchParams({ search: 'hello' }),
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api?search=hello');
 
     expect(
@@ -66,7 +66,7 @@ describe('createUrl', () => {
         base: 'https://example.com',
         pathname: '/api',
         searchParams: { search: 'hello', a: 'b' },
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api?search=hello&a=b');
 
     expect(
@@ -74,7 +74,7 @@ describe('createUrl', () => {
         base: 'https://example.com',
         pathname: '/api/',
         searchParams: 'name=apple&name=cherry&color=green',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api/?name=apple&name=cherry&color=green');
 
     expect(
@@ -82,7 +82,7 @@ describe('createUrl', () => {
         base: 'https://example.com',
         pathname: '/api/',
         searchParams: '',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api/');
   });
 
@@ -91,21 +91,21 @@ describe('createUrl', () => {
       createUrl({
         base: 'https://example.com?a=b',
         pathname: '/api',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api?a=b');
 
     expect(
       createUrl({
         base: 'https://example.com/base/?a=b',
         pathname: './api',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/base/api?a=b');
 
     expect(
       createUrl({
         base: 'https://example.com/base/?a=b',
         pathname: '',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/base/?a=b');
   });
 
@@ -115,7 +115,7 @@ describe('createUrl', () => {
         base: 'https://example.com/base/?a=b',
         pathname: './api',
         searchParams: new URLSearchParams({ b: 'c' }),
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/base/api?a=b&b=c');
 
     expect(
@@ -123,7 +123,7 @@ describe('createUrl', () => {
         base: 'https://example.com/base/?a=b',
         pathname: './api',
         searchParams: new URLSearchParams({ a: 'c' }),
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/base/api?a=b&a=c');
   });
 
@@ -132,14 +132,14 @@ describe('createUrl', () => {
       createUrl({
         base: 'https://example.com',
         pathname: './api?color=red',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/api?color=red');
 
     expect(
       createUrl({
         base: 'https://example.com/base/',
         pathname: './api/subpath/?color=red&season=winter',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/base/api/subpath/?color=red&season=winter');
   });
 
@@ -149,17 +149,15 @@ describe('createUrl', () => {
         base: 'https://example.com/base/',
         pathname: './api/subpath/?color=red&season=winter',
         searchParams: '?fruit=banana',
-      }).toString()
-    ).toBe(
-      'https://example.com/base/api/subpath/?color=red&season=winter&fruit=banana'
-    );
+      }).toString(),
+    ).toBe('https://example.com/base/api/subpath/?color=red&season=winter&fruit=banana');
 
     expect(
       createUrl({
         base: 'https://example.com/base/',
         pathname: './api/subpath/?color=red&season=winter',
         searchParams: '',
-      }).toString()
+      }).toString(),
     ).toBe('https://example.com/base/api/subpath/?color=red&season=winter');
   });
 
@@ -169,10 +167,8 @@ describe('createUrl', () => {
         base: 'https://example.com?base=1&a=b',
         pathname: './api/subpath/?color=red&season=winter',
         searchParams: '?fruit=banana',
-      }).toString()
-    ).toBe(
-      'https://example.com/api/subpath/?base=1&a=b&color=red&season=winter&fruit=banana'
-    );
+      }).toString(),
+    ).toBe('https://example.com/api/subpath/?base=1&a=b&color=red&season=winter&fruit=banana');
 
     expect(
       createUrl({
@@ -183,9 +179,9 @@ describe('createUrl', () => {
           color: 'green',
           plant: '',
         }),
-      }).toString()
+      }).toString(),
     ).toBe(
-      'https://example.com/api/subpath/?base=1&a=b&color=red&season=winter&fruit=banana&color=green&plant='
+      'https://example.com/api/subpath/?base=1&a=b&color=red&season=winter&fruit=banana&color=green&plant=',
     );
   });
 
@@ -198,9 +194,9 @@ describe('createUrl', () => {
         color: 'green',
         plant: '',
       }),
-    }).toString()
+    }).toString(),
   ).toBe(
-    'https://example.com/v1?base=1&a=b&color=red&season=winter&fruit=banana&color=green&plant='
+    'https://example.com/v1?base=1&a=b&color=red&season=winter&fruit=banana&color=green&plant=',
   );
 
   expect(
@@ -208,6 +204,6 @@ describe('createUrl', () => {
       base: new URL('https://example.com/v1?base=1&a=b'),
       pathname: '',
       searchParams: new URLSearchParams({ fruit: 'banana' }),
-    }).toString()
+    }).toString(),
   ).toBe('https://example.com/v1?base=1&a=b&fruit=banana');
 });

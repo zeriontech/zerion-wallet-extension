@@ -3,10 +3,7 @@ import type { Asset } from 'src/defi-sdk.types';
 import { isTruthy } from 'is-truthy-ts';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
-import type {
-  EIP1559,
-  NetworkFeeConfiguration,
-} from 'src/shared/types/TransactionConfiguration';
+import type { EIP1559, NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { useNativeAsset } from 'src/ui/shared/requests/useNativeAsset';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -24,9 +21,7 @@ import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
 
-function getGasPriceFromTransaction(
-  transaction: IncomingTransaction
-): GasPriceObject | null {
+function getGasPriceFromTransaction(transaction: IncomingTransaction): GasPriceObject | null {
   const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = transaction;
   if (gasPrice) {
     return { classic: Number(gasPrice), eip1559: null, optimistic: null };
@@ -73,7 +68,7 @@ function getGasPriceFromConfiguration({
 
 function getGasFromConfiguration(
   transaction: IncomingTransaction,
-  configuration: NetworkFeeConfiguration | null
+  configuration: NetworkFeeConfiguration | null,
 ) {
   if (configuration?.speed === 'custom') {
     return configuration.gasLimit ?? getGas(transaction);
@@ -95,7 +90,7 @@ function useFeeEstimation(
     networkFeeConfiguration: NetworkFeeConfiguration | null;
     chainGasPrices: ChainGasPrice | null;
   },
-  { keepPreviousData = false } = {}
+  { keepPreviousData = false } = {},
 ) {
   const gas = getGasFromConfiguration(transaction, networkFeeConfiguration);
   if (!gas || Number(gas) === 0) {
@@ -105,14 +100,7 @@ function useFeeEstimation(
   return useQuery({
     keepPreviousData,
     suspense: !keepPreviousData,
-    queryKey: [
-      'feeEstimation',
-      chain,
-      transaction,
-      networkFeeConfiguration,
-      chainGasPrices,
-      gas,
-    ],
+    queryKey: ['feeEstimation', chain, transaction, networkFeeConfiguration, chainGasPrices, gas],
     queryFn: async () => {
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
@@ -136,13 +124,7 @@ function useFeeEstimation(
   });
 }
 
-function calculateTotalValue({
-  txValue,
-  fee,
-}: {
-  txValue: BigNumber;
-  fee: number | BigNumber;
-}) {
+function calculateTotalValue({ txValue, fee }: { txValue: BigNumber; fee: number | BigNumber }) {
   return txValue.plus(typeof fee === 'number' ? String(fee) : fee.toFixed());
 }
 
@@ -178,10 +160,8 @@ function calculateTransactionCosts({
   }
 
   const price = nativeAsset?.price?.value;
-  const nativeBalanceBase =
-    nativeBalance != null ? commonToBase(nativeBalance, decimals) : null;
-  const isLowBalance =
-    nativeBalanceBase != null ? maxTotalValueBase.gt(nativeBalanceBase) : false;
+  const nativeBalanceBase = nativeBalance != null ? commonToBase(nativeBalance, decimals) : null;
+  const isLowBalance = nativeBalanceBase != null ? maxTotalValueBase.gt(nativeBalanceBase) : false;
   const feeValueCommon = baseToCommon(estimatedFee, decimals);
   const feeValueFiat = price != null ? feeValueCommon.times(price) : null;
   const maxFeeValueCommon = baseToCommon(maxFee, decimals);
@@ -205,20 +185,14 @@ function calculateTransactionCosts({
 
 const findMatchingEip1559 = (gasPrices: ChainGasPrice, eip1559: EIP1559) => {
   const isMatch = (value1: EIP1559, value2: EIP1559) =>
-    value1.maxFee === value2.maxFee &&
-    value1.priorityFee === value2.priorityFee;
+    value1.maxFee === value2.maxFee && value1.priorityFee === value2.priorityFee;
   const { fast, average } = gasPrices;
   return [fast, average]
     .filter(isTruthy)
-    .find(
-      ({ eip1559: eip1559Info }) => eip1559Info && isMatch(eip1559Info, eip1559)
-    );
+    .find(({ eip1559: eip1559Info }) => eip1559Info && isMatch(eip1559Info, eip1559));
 };
 
-function getFeeTime(
-  gasPrice: GasPriceObject | null,
-  chainGasPrices: ChainGasPrice | null
-) {
+function getFeeTime(gasPrice: GasPriceObject | null, chainGasPrices: ChainGasPrice | null) {
   if (gasPrice?.eip1559 && chainGasPrices?.fast.eip1559) {
     // backend API only has time estimation for eip1559 info
     const eip1559Info = findMatchingEip1559(chainGasPrices, gasPrice.eip1559);
@@ -248,7 +222,7 @@ export function useTransactionFee({
 }) {
   const feeEstimationQuery = useFeeEstimation(
     { chain, transaction, networkFeeConfiguration, chainGasPrices },
-    { keepPreviousData }
+    { keepPreviousData },
   );
 
   const feeEstimation = feeEstimationQuery.data?.feeEstimation;
@@ -257,12 +231,11 @@ export function useTransactionFee({
 
   const time = useMemo(
     () => getFeeTime(transactionGasPrice || null, chainGasPrices || null),
-    [chainGasPrices, transactionGasPrice]
+    [chainGasPrices, transactionGasPrice],
   );
 
   const source = useHttpClientSource();
-  const { value: nativeAsset, isLoading: isLoadingNativeAsset } =
-    useNativeAsset(chain, { source });
+  const { value: nativeAsset, isLoading: isLoadingNativeAsset } = useNativeAsset(chain, { source });
   const { networks } = useNetworks();
 
   const { data: nativeBalance } = useNativeBalance({
@@ -283,11 +256,10 @@ export function useTransactionFee({
             nativeBalance: nativeBalance.valueCommon ?? null,
           })
         : null,
-    [chain, feeEstimation, nativeAsset, nativeBalance, networks, transaction]
+    [chain, feeEstimation, nativeAsset, nativeBalance, networks, transaction],
   );
   const costsAreLoading =
-    !costs &&
-    ((!feeEstimation && feeEstimationQuery.isFetching) || isLoadingNativeAsset);
+    !costs && ((!feeEstimation && feeEstimationQuery.isFetching) || isLoadingNativeAsset);
 
   const feeValueCommon = costs?.feeValueCommon;
   useEffect(() => {

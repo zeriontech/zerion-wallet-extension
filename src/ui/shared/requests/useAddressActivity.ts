@@ -14,7 +14,7 @@ export function useAddressActivity(
   {
     enabled = true,
     keepPreviousData = false,
-  }: { enabled?: boolean; keepPreviousData?: boolean } = {}
+  }: { enabled?: boolean; keepPreviousData?: boolean } = {},
 ) {
   return useQuery({
     queryKey: ['walletCheckActivity', params, source],

@@ -17,10 +17,7 @@ function getPremiumStatus({
   walletsMeta: WalletMeta[];
 }) {
   return walletsMeta.some((meta) => {
-    if (
-      meta.membership.premium &&
-      meta.membership.premium?.plan !== 'Restricted'
-    ) {
+    if (meta.membership.premium && meta.membership.premium?.plan !== 'Restricted') {
       return true;
     }
     if (
@@ -58,7 +55,7 @@ export function usePremiumStatus({ address }: { address?: string }) {
           normalizedAddress,
           walletsMeta: walletsMetaQuery.data || [],
         }),
-      [normalizedAddress, walletsMetaQuery.data]
+      [normalizedAddress, walletsMetaQuery.data],
     ),
     walletsMetaQuery,
   };
@@ -68,11 +65,7 @@ export function usePremiumStatus({ address }: { address?: string }) {
  * In most of the time we need to check premium status for the whole wallet
  * However, in some cases (trading) we need to check premium status for a single particular address
  */
-export function useSingleAddressPremiumStatus({
-  address,
-}: {
-  address: string;
-}) {
+export function useSingleAddressPremiumStatus({ address }: { address: string }) {
   const normalizedAddress = normalizeAddress(address);
 
   const walletsMetaQuery = useWalletsMetaByChunks({
@@ -90,7 +83,7 @@ export function useSingleAddressPremiumStatus({
           normalizedAddress,
           walletsMeta: walletsMetaQuery.data || [],
         }),
-      [normalizedAddress, walletsMetaQuery.data]
+      [normalizedAddress, walletsMetaQuery.data],
     ),
     walletsMetaQuery,
   };

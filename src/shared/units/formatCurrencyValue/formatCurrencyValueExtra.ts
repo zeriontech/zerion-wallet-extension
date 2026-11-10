@@ -1,8 +1,7 @@
 import { BigNumber } from 'bignumber.js';
 import { formatCurrencyValue } from './formatCurrencyValue';
 
-const toNumber = (v: BigNumber.Value) =>
-  v instanceof BigNumber ? v.toNumber() : Number(v);
+const toNumber = (v: BigNumber.Value) => (v instanceof BigNumber ? v.toNumber() : Number(v));
 
 function adjustRoundingFallback(fallbackValue: number, value: number) {
   let adjusted = fallbackValue;
@@ -31,16 +30,13 @@ export function formatCurrencyValueExtra(
      * zeroRoundingFallback notation will NOT be used
      */
     zeroRoundingFallback?: number;
-  } = {}
+  } = {},
 ) {
   const formattedValue = formatCurrencyValue(value, locale, currency);
   if (zeroRoundingFallback) {
     const formattedZero = formatCurrencyValue(0, locale, currency);
     if (formattedValue === formattedZero && !new BigNumber(value).isZero()) {
-      const adjusted = adjustRoundingFallback(
-        zeroRoundingFallback,
-        toNumber(value)
-      );
+      const adjusted = adjustRoundingFallback(zeroRoundingFallback, toNumber(value));
       return `<${formatCurrencyValue(adjusted, locale, currency, {
         // provided zeroRoundingFallback should be displayed as is
         minimumFractionDigits: 0,

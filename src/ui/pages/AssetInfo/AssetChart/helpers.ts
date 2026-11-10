@@ -28,23 +28,17 @@ export function serializeAssetChartActions({
   asset: Asset;
   currency: string;
 }) {
-  const isSmallQuantity = new BigNumber(action.quantity)
-    .abs()
-    .lt(SMALL_QUANTITY_THRESHOLD);
+  const isSmallQuantity = new BigNumber(action.quantity).abs().lt(SMALL_QUANTITY_THRESHOLD);
   const data: AssetChartPointAction = {
     title: capitalize(action.type || 'total'),
     balance: `${new BigNumber(action.quantity).isPositive() ? '+' : minus}${
       isSmallQuantity ? '<' : ''
     }${formatTokenValue(
-      isSmallQuantity
-        ? SMALL_QUANTITY_THRESHOLD
-        : new BigNumber(action.quantity).abs(),
+      isSmallQuantity ? SMALL_QUANTITY_THRESHOLD : new BigNumber(action.quantity).abs(),
       trimAssetSymbolForTooltip(asset.symbol),
       {
-        notation: new BigNumber(action.quantity).abs().gte(100000)
-          ? 'compact'
-          : undefined,
-      }
+        notation: new BigNumber(action.quantity).abs().gte(100000) ? 'compact' : undefined,
+      },
     )}`,
     value: formatPriceValue(Math.abs(action.value), 'en', currency),
     direction: action.direction,

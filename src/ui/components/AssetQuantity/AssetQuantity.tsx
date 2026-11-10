@@ -23,13 +23,10 @@ function getQuantityLevel(commonQuantity: BigNumber) {
 const formatWithSignificantValue = memoize((value: BigNumber) =>
   formatTokenValue(value, '', {
     notation: value.gt(new BigNumber(1e8)) ? 'compact' : undefined,
-  })
+  }),
 );
 
-function WordBreak({
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLSpanElement>) {
+function WordBreak({ children, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span style={{ wordBreak: 'break-all' }} {...props}>
       {children}
@@ -37,13 +34,7 @@ function WordBreak({
   );
 }
 
-export function AssetQuantity({
-  sign,
-  quantity,
-}: {
-  sign?: string;
-  quantity: string;
-}) {
+export function AssetQuantity({ sign, quantity }: { sign?: string; quantity: string }) {
   const quantityNumber = new BigNumber(quantity);
   const level = getQuantityLevel(quantityNumber);
 
@@ -51,9 +42,7 @@ export function AssetQuantity({
     <WordBreak>
       {level === QuantityLevel.veryLarge ? (
         <>
-          <span style={{ position: 'relative', top: -1 }}>
-            {veryMuchGreater}
-          </span>
+          <span style={{ position: 'relative', top: -1 }}>{veryMuchGreater}</span>
           1T
         </>
       ) : null}

@@ -46,7 +46,7 @@ export function depositGetPaymentLink(
     referrerDomain,
     redirectUrl,
   }: Params,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const params = new URLSearchParams({
     address,

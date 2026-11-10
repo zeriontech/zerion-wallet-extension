@@ -6,10 +6,7 @@ import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import type { SignatureStatus } from '@solana/web3.js';
 import { Connection } from '@solana/web3.js';
 import { invariant } from 'src/shared/invariant';
-import {
-  getRemoteConfigValue,
-  type RemoteConfig,
-} from 'src/modules/remote-config';
+import { getRemoteConfigValue, type RemoteConfig } from 'src/modules/remote-config';
 
 const DEFAULT_MAX_RETRIES = 180;
 const DEFAULT_INTERVAL_MS = 1000;
@@ -46,9 +43,7 @@ class Interval {
   }
 }
 
-const getProviderMemoized = memoize(
-  (url: string) => new ethers.JsonRpcProvider(url)
-);
+const getProviderMemoized = memoize((url: string) => new ethers.JsonRpcProvider(url));
 
 class ReceiptGetter {
   async get(provider: ethers.Provider, hash: string) {
@@ -86,10 +81,7 @@ export class TransactionsPoller {
 
   emitter = createNanoEvents<{
     'evm:mined': (receipt: ethers.TransactionReceipt) => void;
-    'solana:mined': (
-      signature: string,
-      signatureStatus: SignatureStatus
-    ) => void;
+    'solana:mined': (signature: string, signatureStatus: SignatureStatus) => void;
     'evm:dropped': (hash: string) => void;
     'solana:dropped': (signature: string) => void;
   }>();
@@ -105,14 +97,10 @@ export class TransactionsPoller {
   private async getTransactionCount(url: string, from: string) {
     const key = `${from}:${url}`;
     const provider = getProviderMemoized(url);
-    return this.requestCache.get(
-      key,
-      () => provider.getTransactionCount(from),
-      {
-        staleTime: (fulfilledCount) => (fulfilledCount < 3 ? 30000 : 180000),
-        retryTime: (rejectedCount) => (rejectedCount < 10 ? 1000 : Infinity),
-      }
-    );
+    return this.requestCache.get(key, () => provider.getTransactionCount(from), {
+      staleTime: (fulfilledCount) => (fulfilledCount < 3 ? 30000 : 180000),
+      retryTime: (rejectedCount) => (rejectedCount < 10 ? 1000 : Infinity),
+    });
   }
 
   private static receiptStaleTimeFuntion(fulfilledCount: number) {
@@ -128,14 +116,10 @@ export class TransactionsPoller {
   private async getTransactionReceipt(url: string, hash: string) {
     const key = `${hash}:${url}`;
     const provider = getProviderMemoized(url);
-    return this.requestCache.get(
-      key,
-      () => this.receiptGetter.get(provider, hash),
-      {
-        staleTime: TransactionsPoller.receiptStaleTimeFuntion,
-        retryTime: (rejectedCount) => (rejectedCount < 10 ? 1000 : Infinity),
-      }
-    );
+    return this.requestCache.get(key, () => this.receiptGetter.get(provider, hash), {
+      staleTime: TransactionsPoller.receiptStaleTimeFuntion,
+      retryTime: (rejectedCount) => (rejectedCount < 10 ? 1000 : Infinity),
+    });
   }
 
   private async getSignatureStatus(url: string, signature: string) {
@@ -151,7 +135,7 @@ export class TransactionsPoller {
       {
         staleTime: (fulfilledCount) => (fulfilledCount < 5 ? 2000 : 5000),
         retryTime: (rejectedCount) => (rejectedCount < 10 ? 1000 : Infinity),
-      }
+      },
     );
   }
 
@@ -176,11 +160,9 @@ export class TransactionsPoller {
         }
         return Promise.all([
           this.getTransactionCount(rpcUrl, value.from).then((count) =>
-            this.handleTransactionCount(count, value)
+            this.handleTransactionCount(count, value),
           ),
-          this.getTransactionReceipt(rpcUrl, hash).then((receipt) =>
-            this.handleReceipt(receipt)
-          ),
+          this.getTransactionReceipt(rpcUrl, hash).then((receipt) => this.handleReceipt(receipt)),
         ]);
       } else if (value.standard === 'solana') {
         const { signature } = value;
@@ -261,10 +243,7 @@ export class TransactionsPoller {
     }
   }
 
-  private handleSignature(
-    signatureStatus: SignatureStatus | null,
-    signature: string
-  ) {
+  private handleSignature(signatureStatus: SignatureStatus | null, signature: string) {
     if (!signatureStatus) {
       this.checkForStaleness(signature);
       return;
@@ -294,7 +273,7 @@ export class TransactionsPoller {
     let maxRetries = DEFAULT_MAX_RETRIES;
     try {
       const remoteConfig = getRemoteConfigValue(
-        'tx_polling_preferences'
+        'tx_polling_preferences',
       ) as RemoteConfig['tx_polling_preferences'];
       interval = remoteConfig?.interval_ms ?? DEFAULT_INTERVAL_MS;
       maxRetries = remoteConfig?.max_attempts ?? DEFAULT_MAX_RETRIES;
@@ -302,7 +281,7 @@ export class TransactionsPoller {
       // eslint-disable-next-line no-console
       console.warn(
         'Failed to get tx_polling_preferences from remote config, using default interval',
-        e
+        e,
       );
     }
     if (this.map.size) {

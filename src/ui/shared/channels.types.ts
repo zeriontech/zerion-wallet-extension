@@ -34,9 +34,7 @@ type ExtractParams<T> = T extends (params: infer P) => any ? P : never;
 export type RPCApi<T> = {
   request<K extends keyof T>(
     method: K,
-    ...args: T[K] extends () => Promise<any>
-      ? []
-      : [params: ExtractParams<T[K]>]
+    ...args: T[K] extends () => Promise<any> ? [] : [params: ExtractParams<T[K]>]
   ): T[K] extends (...args: any[]) => Promise<infer R> ? Promise<R> : never;
 };
 

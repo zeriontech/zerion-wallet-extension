@@ -27,11 +27,7 @@ export function NetworkUpdateSuccess({
 
   return (
     <PageColumn>
-      <NavigationTitle
-        urlBar="none"
-        title={null}
-        documentTitle="RPC URL updated successfully"
-      />
+      <NavigationTitle urlBar="none" title={null} documentTitle="RPC URL updated successfully" />
       <Spacer height={64} />
       <CheckIcon
         style={{

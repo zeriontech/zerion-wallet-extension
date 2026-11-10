@@ -46,7 +46,7 @@ export interface Response {
 export async function transactionGetSend(
   this: ZerionApiContext,
   params: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const provider = await this.getAddressProviderHeader(params.from);
   const kyOptions = this.getKyOptions();
@@ -71,6 +71,6 @@ export async function transactionGetSend(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

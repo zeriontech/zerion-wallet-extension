@@ -7,9 +7,7 @@ import { SolanaTransactionLegacy } from './SolTransaction';
 import { solToBase64 } from './transactions/create';
 import type { SolSignTransactionResult } from './transactions/SolTransactionResponse';
 
-function getSignatureFromLegacyTransaction(
-  transaction: SolanaTransactionLegacy
-): string | null {
+function getSignatureFromLegacyTransaction(transaction: SolanaTransactionLegacy): string | null {
   const first = transaction.signatures.at(0);
   if (first?.signature) {
     return bs58.encode(first.signature);
@@ -17,9 +15,7 @@ function getSignatureFromLegacyTransaction(
   return null;
 }
 
-function getSignatureFromVersionedTransaction(
-  transaction: VersionedTransaction
-): string | null {
+function getSignatureFromVersionedTransaction(transaction: VersionedTransaction): string | null {
   if (transaction.signatures.length > 0) {
     return bs58.encode(transaction.signatures[0]);
   }
@@ -27,10 +23,7 @@ function getSignatureFromVersionedTransaction(
 }
 
 export class SolanaSigning {
-  static signMessage(
-    message: Uint8Array,
-    keypair: Keypair
-  ): { signature: Uint8Array } {
+  static signMessage(message: Uint8Array, keypair: Keypair): { signature: Uint8Array } {
     const signature = nacl.sign.detached(message, keypair.secretKey);
     return { signature };
   }
@@ -43,10 +36,7 @@ export class SolanaSigning {
     }
   }
 
-  static signTransaction(
-    transaction: SolTransaction,
-    keypair: Keypair
-  ): SolSignTransactionResult {
+  static signTransaction(transaction: SolTransaction, keypair: Keypair): SolSignTransactionResult {
     if (transaction instanceof SolanaTransactionLegacy) {
       transaction.sign(keypair);
     } else {
@@ -64,7 +54,7 @@ export class SolanaSigning {
 
   static signAllTransactions(
     transactions: SolTransaction[],
-    keypair: Keypair
+    keypair: Keypair,
   ): SolSignTransactionResult[] {
     const results: SolSignTransactionResult[] = [];
     for (const transaction of transactions) {

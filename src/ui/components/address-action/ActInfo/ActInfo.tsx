@@ -44,15 +44,8 @@ function AssetContent({
       <HStack gap={12} alignItems="center" style={{ position: 'relative' }}>
         <TokenIcon size={36} src={fungible.iconUrl} symbol={fungible.symbol} />
         <VStack gap={0}>
-          <UIText
-            kind="headline/h3"
-            color={direction === 'in' ? 'var(--positive-500)' : undefined}
-          >
-            <HStack
-              gap={4}
-              alignItems="center"
-              style={{ gridTemplateColumns: 'auto 1fr' }}
-            >
+          <UIText kind="headline/h3" color={direction === 'in' ? 'var(--positive-500)' : undefined}>
+            <HStack gap={4} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
               {amount?.encrypted ? (
                 // Not tappable here: the reveal cannot decode a simulated
                 // amount anyway, and it would stack a permit signing flow
@@ -79,11 +72,7 @@ function AssetContent({
               style={amount?.encrypted ? { display: 'flex' } : undefined}
             >
               {amount?.encrypted ? (
-                <ConfidentialMask
-                  kind="small/regular"
-                  interactive={false}
-                  showLock={false}
-                />
+                <ConfidentialMask kind="small/regular" interactive={false} showLock={false} />
               ) : amount?.value != null ? (
                 formatPriceValue(amount.value || '0', 'en', amount.currency)
               ) : (
@@ -106,19 +95,11 @@ function AssetContent({
         />
         <VStack gap={0}>
           <UIText kind="headline/h3">
-            <HStack
-              gap={4}
-              alignItems="center"
-              style={{ gridTemplateColumns: 'auto 1fr' }}
-            >
+            <HStack gap={4} alignItems="center" style={{ gridTemplateColumns: 'auto 1fr' }}>
               <span>
                 {amount?.quantity
                   ? `${
-                      direction === 'out'
-                        ? minus
-                        : direction === 'in'
-                          ? '+'
-                          : ''
+                      direction === 'out' ? minus : direction === 'in' ? '+' : ''
                     }${formatTokenValue(amount?.quantity || '0', '')}`
                   : null}
               </span>
@@ -142,11 +123,7 @@ function AssetContent({
   if (collection) {
     return (
       <HStack gap={12} alignItems="center">
-        <TokenIcon
-          size={36}
-          src={collection.iconUrl}
-          symbol={collection.name || 'Collection'}
-        />
+        <TokenIcon size={36} src={collection.iconUrl} symbol={collection.name || 'Collection'} />
         <VStack gap={0}>
           <UIText kind="headline/h3">{collection.name}</UIText>
         </VStack>
@@ -155,10 +132,7 @@ function AssetContent({
   }
 }
 
-function Appear({
-  children,
-  delay = 0,
-}: React.PropsWithChildren<{ delay?: number }>) {
+function Appear({ children, delay = 0 }: React.PropsWithChildren<{ delay?: number }>) {
   const style = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -180,12 +154,11 @@ export function ActInfo({
 }) {
   const incomingTransfers = useMemo(
     () => act.content?.transfers?.filter(({ direction }) => direction === 'in'),
-    [act.content?.transfers]
+    [act.content?.transfers],
   );
   const outgoingTransfers = useMemo(
-    () =>
-      act.content?.transfers?.filter(({ direction }) => direction === 'out'),
-    [act.content?.transfers]
+    () => act.content?.transfers?.filter(({ direction }) => direction === 'out'),
+    [act.content?.transfers],
   );
   const approvals = act.content?.approvals;
 
@@ -195,15 +168,9 @@ export function ActInfo({
 
   const outgoingDelay = initialDelay + (approvals?.length ? 150 : 0);
   const incomingDelay =
-    initialDelay +
-    (outgoingTransfers?.length ? 150 : 0) +
-    (approvals?.length ? 150 : 0);
+    initialDelay + (outgoingTransfers?.length ? 150 : 0) + (approvals?.length ? 150 : 0);
 
-  if (
-    !approvals?.length &&
-    !outgoingTransfers?.length &&
-    !incomingTransfers?.length
-  ) {
+  if (!approvals?.length && !outgoingTransfers?.length && !incomingTransfers?.length) {
     return null;
   }
 
@@ -214,9 +181,7 @@ export function ActInfo({
           <Surface
             style={{
               paddingBlock: 8,
-              paddingInline: elementEnd
-                ? `${paddingInline} 40px`
-                : paddingInline,
+              paddingInline: elementEnd ? `${paddingInline} 40px` : paddingInline,
             }}
           >
             <VStack gap={4}>
@@ -244,9 +209,7 @@ export function ActInfo({
           <Surface
             style={{
               paddingBlock: 8,
-              paddingInline: elementEnd
-                ? `${paddingInline} 40px`
-                : paddingInline,
+              paddingInline: elementEnd ? `${paddingInline} 40px` : paddingInline,
             }}
           >
             <UIText kind="caption/accent" color="var(--neutral-500)">
@@ -274,9 +237,7 @@ export function ActInfo({
           <Surface
             style={{
               paddingBlock: 8,
-              paddingInline: elementEnd
-                ? `${paddingInline} 40px`
-                : paddingInline,
+              paddingInline: elementEnd ? `${paddingInline} 40px` : paddingInline,
             }}
           >
             <UIText kind="caption/accent" color="var(--neutral-500)">

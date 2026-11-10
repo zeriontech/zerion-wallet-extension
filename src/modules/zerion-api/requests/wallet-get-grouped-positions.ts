@@ -5,16 +5,9 @@ import type { ZerionApiContext } from '../zerion-api-bare';
 import type { ResponseBody } from './ResponseBody';
 import type { SignedPermit } from './wallet-prepare-permits';
 
-export type GroupedPositionsGroupBy =
-  | 'by-position'
-  | 'by-app'
-  | 'by-chain'
-  | 'by-wallet';
+export type GroupedPositionsGroupBy = 'by-position' | 'by-app' | 'by-chain' | 'by-wallet';
 
-export type GroupedPositionsSortBy =
-  | 'value'
-  | 'relativeChange24h'
-  | 'updatedAt';
+export type GroupedPositionsSortBy = 'value' | 'relativeChange24h' | 'updatedAt';
 
 export interface Params {
   /** Wallet addresses (1–100) */
@@ -171,13 +164,12 @@ export interface WalletGroupedPositions {
   totalValue?: number;
 }
 
-export type WalletGetGroupedPositionsResponse =
-  ResponseBody<WalletGroupedPositions | null>;
+export type WalletGetGroupedPositionsResponse = ResponseBody<WalletGroupedPositions | null>;
 
 export async function walletGetGroupedPositions(
   this: ZerionApiContext,
   params: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   invariant(params.addresses.length > 0, 'Addresses param is empty');
   const firstAddress = params.addresses[0];
@@ -191,22 +183,20 @@ export async function walletGetGroupedPositions(
       headers: { 'Zerion-Wallet-Provider': provider },
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }
 
 /** Every position in the response, whichever axis it came back on */
 export function flattenGroupedPositions(
-  data: WalletGroupedPositions | null | undefined
+  data: WalletGroupedPositions | null | undefined,
 ): GroupedFungiblePosition[] {
   if (!data) {
     return [];
   }
   return [
     ...(data.positions ?? []),
-    ...(data.apps ?? []).flatMap((app) =>
-      app.groups.flatMap((group) => group.fungiblePositions)
-    ),
+    ...(data.apps ?? []).flatMap((app) => app.groups.flatMap((group) => group.fungiblePositions)),
     ...(data.chains ?? []).flatMap((chain) => chain.positions),
   ];
 }

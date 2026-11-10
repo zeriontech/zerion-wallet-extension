@@ -26,12 +26,5 @@ export function NetworkFeeIcon({
 }: React.HTMLAttributes<HTMLImageElement> & { speed: NetworkFeeSpeed }) {
   const src = useMemo(() => getNetworkSpeedSrc(speed), [speed]);
   const src2x = useMemo(() => getNetworkSpeedSrc(speed, '2x'), [speed]);
-  return (
-    <img
-      {...props}
-      src={src}
-      alt={`${speed} icon`}
-      srcSet={`${src}, ${src2x} 2x`}
-    />
-  );
+  return <img {...props} src={src} alt={`${speed} icon`} srcSet={`${src}, ${src2x} 2x`} />;
 }

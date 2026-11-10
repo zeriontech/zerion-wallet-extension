@@ -21,6 +21,6 @@ export async function verifySandbox() {
     },
     () => {
       return null; // we're safe
-    }
+    },
   );
 }

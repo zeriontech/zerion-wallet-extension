@@ -14,10 +14,7 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { Frame } from 'src/ui/ui-kit/Frame';
-import {
-  FrameListItemButton,
-  FrameListItemLink,
-} from 'src/ui/ui-kit/FrameList';
+import { FrameListItemButton, FrameListItemLink } from 'src/ui/ui-kit/FrameList';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -49,17 +46,14 @@ function CurrencyPage() {
       }));
       goBack();
     },
-    [goBack]
+    [goBack],
   );
 
   const [query, setQuery] = useState('');
 
   const filteredItems = useMemo(
-    () =>
-      query
-        ? allCurrencies.filter((item) => matchesCurrency(query, item))
-        : allCurrencies,
-    [query]
+    () => (query ? allCurrencies.filter((item) => matchesCurrency(query, item)) : allCurrencies),
+    [query],
   );
 
   const { getInputProps, getMenuProps, getItemProps, highlightedIndex } =
@@ -121,16 +115,9 @@ function CurrencyPage() {
                   }
                   {...getItemProps({ item, index })}
                 >
-                  <HStack
-                    gap={8}
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
+                  <HStack gap={8} alignItems="center" justifyContent="space-between">
                     <HStack gap={8} alignItems="center">
-                      <UIText
-                        kind="headline/h3"
-                        style={{ width: 24, textAlign: 'center' }}
-                      >
+                      <UIText kind="headline/h3" style={{ width: 24, textAlign: 'center' }}>
                         {item.symbol}
                       </UIText>
                       <UIText kind="body/accent">{item.name}</UIText>
@@ -167,11 +154,7 @@ function PreferencesMain() {
         <VStack gap={0}>
           <FrameListItemLink to="currency">
             <AngleRightRow>
-              <HStack
-                gap={24}
-                alignItems="center"
-                justifyContent="space-between"
-              >
+              <HStack gap={24} alignItems="center" justifyContent="space-between">
                 <UIText kind="body/accent">Currency</UIText>
                 <UIText kind="small/regular" color="var(--neutral-500)">
                   {CURRENCIES[currency].code.toUpperCase()}

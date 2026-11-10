@@ -16,16 +16,15 @@ export async function createApprovalTransaction(params: {
   amountBase: string;
 }): Promise<{ to: string; data: string }> {
   const { contractAddress, spenderAddress, amountBase } = params;
-  const abi = [
-    'function approve(address, uint256) public returns (bool success)',
-  ];
+  const abi = ['function approve(address, uint256) public returns (bool success)'];
   const contract = new ethers.Contract(contractAddress, abi);
   return contract.approve.populateTransaction(spenderAddress, amountBase);
 }
 
-export async function modifyApproveAmount<
-  T extends { data?: string; to?: string },
->(transaction: T, amountBase: string) {
+export async function modifyApproveAmount<T extends { data?: string; to?: string }>(
+  transaction: T,
+  amountBase: string,
+) {
   const parsed = parseApprove(transaction);
   invariant(parsed?.type === 'approve', 'Failed to parse approval transaction');
   const newApproval = await createApprovalTransaction({
@@ -33,10 +32,7 @@ export async function modifyApproveAmount<
     spenderAddress: parsed.spenderAddress,
     amountBase,
   });
-  invariant(
-    transaction.to === newApproval.to,
-    "new approval doesn't match incoming transaction"
-  );
+  invariant(transaction.to === newApproval.to, "new approval doesn't match incoming transaction");
   return {
     ...transaction,
     ...newApproval,
@@ -62,8 +58,7 @@ export function applyCustomAllowance({
   return produce(addressAction, (draft) => {
     if (draft.acts?.[0].content?.approvals?.[0]) {
       if (draft.acts[0].content.approvals[0].amount) {
-        draft.acts[0].content.approvals[0].amount.quantity =
-          customAllowanceQuantityCommon;
+        draft.acts[0].content.approvals[0].amount.quantity = customAllowanceQuantityCommon;
       } else {
         draft.acts[0].content.approvals[0].amount = {
           quantity: customAllowanceQuantityCommon,
@@ -74,7 +69,7 @@ export function applyCustomAllowance({
       }
       if (customAllowanceQuantityBase != null) {
         draft.acts[0].content.approvals[0].unlimited = isUnlimitedApproval(
-          customAllowanceQuantityBase
+          customAllowanceQuantityBase,
         );
       }
     }

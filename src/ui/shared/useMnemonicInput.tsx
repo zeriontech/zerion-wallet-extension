@@ -43,7 +43,7 @@ export function useMnemonicInput({
         });
       });
     },
-    [setValue, maxInputNumber]
+    [setValue, maxInputNumber],
   );
 
   const handleKeyDown = useCallback(
@@ -51,9 +51,7 @@ export function useMnemonicInput({
       if (e.code === 'Space' && index + 1 < phraseMode) {
         e.preventDefault();
         document.getElementById(`word-${index + 1}`)?.focus();
-        (
-          document.getElementById(`word-${index + 1}`) as HTMLInputElement
-        )?.select();
+        (document.getElementById(`word-${index + 1}`) as HTMLInputElement)?.select();
       }
       if (e.code === 'Backspace' && !e.currentTarget.value?.length) {
         e.preventDefault();
@@ -66,14 +64,11 @@ export function useMnemonicInput({
       if (
         e.code === 'ArrowRight' &&
         index + 1 < phraseMode &&
-        (e.currentTarget.selectionStart || 0) >=
-          (e.currentTarget.value?.length || 0)
+        (e.currentTarget.selectionStart || 0) >= (e.currentTarget.value?.length || 0)
       ) {
         e.preventDefault();
         document.getElementById(`word-${index + 1}`)?.focus();
-        (
-          document.getElementById(`word-${index + 1}`) as HTMLInputElement
-        )?.setSelectionRange(0, 0);
+        (document.getElementById(`word-${index + 1}`) as HTMLInputElement)?.setSelectionRange(0, 0);
       }
       if (e.code === 'ArrowUp') {
         e.preventDefault();
@@ -84,20 +79,18 @@ export function useMnemonicInput({
         document.getElementById(`word-${index + 3}`)?.focus();
       }
     },
-    [phraseMode]
+    [phraseMode],
   );
 
   return {
     getInputProps: (index: number) => ({
       type:
-        type ||
-        (revealEnabled && (hoveredInput === index || focusedInput === index))
+        type || (revealEnabled && (hoveredInput === index || focusedInput === index))
           ? 'text'
           : 'password',
       required: index < phraseMode,
       disabled: index >= phraseMode,
-      onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) =>
-        handleKeyDown(e, index),
+      onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, index),
       onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
         setValue((current) => {
           return produce(current, (draft) => {

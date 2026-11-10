@@ -15,7 +15,7 @@ export type Response = ResponseBody<ChainFullInfo>;
 export function chainGet(
   this: ZerionApiContext,
   { eip155Id }: Params,
-  options: ClientOptions = CLIENT_DEFAULTS
+  options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const params = new URLSearchParams({ eip155Id: String(eip155Id) });
   const endpoint = `chain/get/v1?${params}`;

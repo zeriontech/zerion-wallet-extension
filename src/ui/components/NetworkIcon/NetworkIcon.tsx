@@ -53,9 +53,7 @@ export function NetworkIcon({ src, name, size = 32, style }: Props) {
         src={src}
         alt={name || undefined}
         style={{ width: '100%', display: 'block', ...style }}
-        renderError={() => (
-          <TextFallback name={name} size={size} style={style} src={src} />
-        )}
+        renderError={() => <TextFallback name={name} size={size} style={style} src={src} />}
       />
     </div>
   ) : (
@@ -72,10 +70,7 @@ registerPreviewPermanent({
         <UIText kind="body/regular">Arbitrum</UIText>
       </HStack>
       <HStack gap={8} alignItems="center">
-        <NetworkIcon
-          name="Base"
-          src="https://chain-icons.s3.amazonaws.com/chainlist/8453"
-        />
+        <NetworkIcon name="Base" src="https://chain-icons.s3.amazonaws.com/chainlist/8453" />
         <UIText kind="body/regular">Base</UIText>
       </HStack>
     </VStack>

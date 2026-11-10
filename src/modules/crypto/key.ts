@@ -7,13 +7,10 @@ import { getRandomBase64 } from './random';
 async function createMasterKey(password: string): Promise<CryptoKey> {
   const passArray = utf8ToUint8Array(password);
   // For the PBKDF2 algorithm the baseKey is password.
-  return await globalThis.crypto.subtle.importKey(
-    'raw',
-    passArray,
-    { name: 'PBKDF2' },
-    false,
-    ['deriveBits', 'deriveKey']
-  );
+  return await globalThis.crypto.subtle.importKey('raw', passArray, { name: 'PBKDF2' }, false, [
+    'deriveBits',
+    'deriveKey',
+  ]);
 }
 
 /**
@@ -22,10 +19,7 @@ async function createMasterKey(password: string): Promise<CryptoKey> {
  * @param masterKey A master key to derive from.
  * @param salt - The salt, Base64 string.
  */
-async function createSecretKey(
-  masterKey: CryptoKey,
-  salt: string
-): Promise<CryptoKey> {
+async function createSecretKey(masterKey: CryptoKey, salt: string): Promise<CryptoKey> {
   const saltArray = base64ToUint8Array(salt);
 
   // In 2021, OWASP recommended to use 310000 iterations for
@@ -42,7 +36,7 @@ async function createSecretKey(
     masterKey,
     { name: 'AES-GCM', length: 256 },
     true,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   );
 }
 
@@ -59,10 +53,7 @@ export function createSalt() {
  * @param password - The password, UTF-8 string.
  * @param salt - The salt, Base64 string.
  */
-export async function createCryptoKey(
-  password: string,
-  salt: string
-): Promise<CryptoKey> {
+export async function createCryptoKey(password: string, salt: string): Promise<CryptoKey> {
   const masterKey = await createMasterKey(password);
   const secretKey = await createSecretKey(masterKey, salt);
 

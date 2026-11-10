@@ -21,11 +21,7 @@ export function ToasterIcons({ view }: { view: ToasterView | undefined }) {
     return (
       <div className={s.iconSlot}>
         <div className={s.iconSingle}>
-          <TokenIcon
-            src={view.token.iconUrl ?? undefined}
-            symbol={view.token.symbol}
-            size={32}
-          />
+          <TokenIcon src={view.token.iconUrl ?? undefined} symbol={view.token.symbol} size={32} />
         </div>
         <div className={s.chainBadge}>
           <NetworkIcon src={view.chain.iconUrl} name={null} size={12} />
@@ -37,15 +33,8 @@ export function ToasterIcons({ view }: { view: ToasterView | undefined }) {
   if (view.kind === 'send') {
     return (
       <div className={s.iconSlot}>
-        <div
-          className={s.iconBack}
-          style={view.isNft ? { borderRadius: 6 } : undefined}
-        >
-          <TokenIcon
-            src={view.token.iconUrl ?? undefined}
-            symbol={view.token.symbol}
-            size={28}
-          />
+        <div className={s.iconBack} style={view.isNft ? { borderRadius: 6 } : undefined}>
+          <TokenIcon src={view.token.iconUrl ?? undefined} symbol={view.token.symbol} size={28} />
         </div>
         <div className={s.iconFront} style={{ borderRadius: 6 }}>
           <WalletAvatar
@@ -66,11 +55,7 @@ export function ToasterIcons({ view }: { view: ToasterView | undefined }) {
   return (
     <div className={s.iconSlot}>
       <div className={s.iconBack}>
-        <TokenIcon
-          src={view.sent.iconUrl ?? undefined}
-          symbol={view.sent.symbol}
-          size={25}
-        />
+        <TokenIcon src={view.sent.iconUrl ?? undefined} symbol={view.sent.symbol} size={25} />
       </div>
       <div className={s.iconFront}>
         <TokenIcon

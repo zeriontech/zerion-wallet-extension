@@ -2,10 +2,7 @@ import React from 'react';
 import cn from 'classnames';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
-import {
-  KeyboardShortcut,
-  ShortcutHint,
-} from 'src/ui/components/KeyboardShortcut';
+import { KeyboardShortcut, ShortcutHint } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { HoldHint, useHoldToFire } from './SwapButton';
 import * as styles from './SwapButton.module.css';
@@ -27,9 +24,7 @@ export function HoldableButton({
 }) {
   const { preferences } = usePreferences();
   const holdEnabled = Boolean(preferences?.enableHoldToSignButton);
-  const keyboardShortcutEnabled = Boolean(
-    preferences?.enableKeyboardShortcutToSign
-  );
+  const keyboardShortcutEnabled = Boolean(preferences?.enableKeyboardShortcutToSign);
   const windowFocused = useWindowFocus();
   const shortcutActive = keyboardShortcutEnabled && !disabled;
 

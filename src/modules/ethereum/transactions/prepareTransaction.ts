@@ -37,7 +37,7 @@ function toSerializableSignature(signature: SignatureLike): SignatureLike {
 
 /** Gets rid of BigInt values */
 function toSerializableAuthorizationList(
-  list: NonNullable<IncomingTransaction['authorizationList']>
+  list: NonNullable<IncomingTransaction['authorizationList']>,
 ): NonNullable<IncomingTransaction['authorizationList']> {
   return list.map((item) => ({
     address: item.address,
@@ -62,21 +62,15 @@ export function prepareTransaction(incomingTransaction: IncomingTransactionAA) {
   if (incomingTransaction.value) {
     transaction.value = valueToHex(incomingTransaction.value);
   }
-  if (
-    incomingTransaction.chainId &&
-    typeof incomingTransaction.chainId === 'string'
-  ) {
+  if (incomingTransaction.chainId && typeof incomingTransaction.chainId === 'string') {
     transaction.chainId = parseInt(incomingTransaction.chainId);
   }
-  if (
-    incomingTransaction.type != null &&
-    typeof incomingTransaction.type === 'string'
-  ) {
+  if (incomingTransaction.type != null && typeof incomingTransaction.type === 'string') {
     transaction.type = parseInt(incomingTransaction.type);
   }
   if (incomingTransaction.authorizationList?.length) {
     transaction.authorizationList = toSerializableAuthorizationList(
-      incomingTransaction.authorizationList
+      incomingTransaction.authorizationList,
     );
   }
   return transaction;

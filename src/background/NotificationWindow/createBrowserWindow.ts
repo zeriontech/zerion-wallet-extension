@@ -37,9 +37,7 @@ export async function createBrowserWindow({
   search,
   type,
 }: WindowProps) {
-  const width =
-    rawWidth ??
-    (type === 'tab' ? DEFAULT_TAB_VIEW_WIDTH : DEFAULT_WINDOW_SIZE.width);
+  const width = rawWidth ?? (type === 'tab' ? DEFAULT_TAB_VIEW_WIDTH : DEFAULT_WINDOW_SIZE.width);
   const id = nanoid();
   const params = new URLSearchParams(search);
   params.append('windowId', id);
@@ -60,10 +58,7 @@ export async function createBrowserWindow({
   let heightValue = DEFAULT_WINDOW_SIZE.height;
   if (height === 'max') {
     const currentWindow = await browser.windows.getCurrent();
-    heightValue = Math.max(
-      DEFAULT_WINDOW_SIZE.height,
-      currentWindow.height ?? 0
-    );
+    heightValue = Math.max(DEFAULT_WINDOW_SIZE.height, currentWindow.height ?? 0);
   } else {
     heightValue = height;
   }

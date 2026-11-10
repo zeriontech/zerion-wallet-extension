@@ -161,11 +161,7 @@ registerPreviewPermanent({
   component: () => (
     <VStack gap={12}>
       {samples.map((sample, index) => (
-        <ErrorMessage
-          key={index}
-          error={getError(sample.value)}
-          hardwareError={null}
-        />
+        <ErrorMessage key={index} error={getError(sample.value)} hardwareError={null} />
       ))}
     </VStack>
   ),

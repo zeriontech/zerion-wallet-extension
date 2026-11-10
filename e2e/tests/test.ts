@@ -1,10 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import {
-  test as baseTest,
-  chromium,
-  type BrowserContext,
-} from '@playwright/test';
+import { test as baseTest, chromium, type BrowserContext } from '@playwright/test';
 import type { TestWallet } from 'e2e/fixtures/types';
 import { onboardExistingWallet } from 'e2e/fixtures/pages/onboarding';
 import { testWallets } from 'e2e/fixtures/constants';
@@ -12,15 +8,12 @@ import { SeedType } from 'src/shared/SeedType';
 
 // E2E has its own build: API traffic is routed through the local proxy and no
 // CI secret is compiled into the extension. See scripts/build-e2e.js.
-const extensionPath = path.resolve(
-  process.cwd(),
-  process.env.E2E_DIST || 'dist-e2e'
-);
+const extensionPath = path.resolve(process.cwd(), process.env.E2E_DIST || 'dist-e2e');
 
 // eslint-disable-next-line security/detect-non-literal-fs-filename -- path is the E2E build directory
 if (!fs.existsSync(path.join(extensionPath, 'manifest.json'))) {
   throw new Error(
-    `E2E extension build not found at ${extensionPath}. Run \`npm run build:e2e\` first.`
+    `E2E extension build not found at ${extensionPath}. Run \`npm run build:e2e\` first.`,
   );
 }
 
@@ -163,8 +156,7 @@ export function createExtensionTest(testConfig?: Config) {
       // Determine headless mode:
       // - in CI: always run headed
       // - in dev: use RUN_HEADED_IN_DEV value unless overridden by testConfig
-      const headless =
-        !process.env.CI && (testConfig?.headless ?? !RUN_HEADED_IN_DEV);
+      const headless = !process.env.CI && (testConfig?.headless ?? !RUN_HEADED_IN_DEV);
       const context = await chromium.launchPersistentContext('', {
         headless,
         devtools: Boolean(testConfig?.devtools),
@@ -200,8 +192,7 @@ export function createExtensionTest(testConfig?: Config) {
     onboardingWallet: [
       async ({ context, password }, use) => {
         const wallet = testConfig?.onboarding?.wallet ?? testWallets.alice;
-        const seedType =
-          testConfig?.onboarding?.seedType ?? SeedType.privateKey;
+        const seedType = testConfig?.onboarding?.seedType ?? SeedType.privateKey;
         await onboardExistingWallet(context, { wallet, seedType, password });
         await use(wallet);
       },

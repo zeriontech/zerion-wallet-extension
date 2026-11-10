@@ -47,8 +47,8 @@ export function PageLayout({
       () => ({
         ['--background' as string]: 'var(--neutral-100)',
       }),
-      []
-    )
+      [],
+    ),
   );
 
   return (
@@ -66,9 +66,7 @@ export function PageLayout({
         {...props}
         style={{
           paddingTop: hardwareImportStyle ? 0 : HEADER_HEIGHT,
-          maxWidth: hardwareImportStyle
-            ? HARDWARE_IMPORT_MAX_WIDTH
-            : MAX_CONTENT_WIDTH,
+          maxWidth: hardwareImportStyle ? HARDWARE_IMPORT_MAX_WIDTH : MAX_CONTENT_WIDTH,
           marginInline: 'auto',
           ...style,
         }}

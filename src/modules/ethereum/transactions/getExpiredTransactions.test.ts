@@ -59,7 +59,7 @@ describe('getExpiredTransactions', () => {
       getExpiredTransactions(transactions, {
         now,
         networksWithHistory: new Set(),
-      })
+      }),
     ).toEqual([]);
   });
 });

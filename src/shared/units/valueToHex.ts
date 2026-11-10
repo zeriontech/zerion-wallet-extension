@@ -2,10 +2,7 @@ import type { BigNumberish } from '@ethersproject/bignumber';
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexValue, isHexString } from '@ethersproject/bytes';
 
-export function valueToHex(
-  value: BigNumberish,
-  transformEmptyString = false
-): string {
+export function valueToHex(value: BigNumberish, transformEmptyString = false): string {
   if (isHexString(value)) {
     return value as string;
   } else if (value === '') {

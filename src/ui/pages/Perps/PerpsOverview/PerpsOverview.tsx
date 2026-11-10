@@ -42,16 +42,10 @@ type PerpsHistoryItem =
 
 function dayStartMs(time: number): number {
   const date = new Date(time);
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  ).getTime();
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
-function groupByDay(
-  items: PerpsHistoryItem[]
-): { day: number; items: PerpsHistoryItem[] }[] {
+function groupByDay(items: PerpsHistoryItem[]): { day: number; items: PerpsHistoryItem[] }[] {
   const groups = new Map<number, PerpsHistoryItem[]>();
   for (const item of items) {
     const key = dayStartMs(item.time);
@@ -92,10 +86,7 @@ function PerpsPositionsList({
     return (
       <div style={{ paddingInline: 16 }}>
         <Frame style={{ padding: '16px' }}>
-          <VStack
-            gap={16}
-            style={{ justifyItems: 'stretch', textAlign: 'center' }}
-          >
+          <VStack gap={16} style={{ justifyItems: 'stretch', textAlign: 'center' }}>
             <VStack gap={8} style={{ justifyItems: 'center' }}>
               <img
                 src="https://cdn.zerion.io/images/dna-assets/perps_onboarding_1.png"
@@ -149,10 +140,7 @@ function PerpsPositionsList({
               }}
             />
           ) : null}
-          <PerpsPositionCard
-            position={position}
-            markPx={coinToMarkPx.get(position.coin) ?? null}
-          />
+          <PerpsPositionCard position={position} markPx={coinToMarkPx.get(position.coin) ?? null} />
         </React.Fragment>
       ))}
     </VStack>
@@ -200,8 +188,7 @@ function PerpsHistoryList({ address }: { address: string }) {
   const grouped = useMemo(() => groupByDay(slice), [slice]);
   const hasMore = visible < merged.length;
 
-  const isInitialLoading =
-    (fillsQuery.isLoading || ledgerQuery.isLoading) && merged.length === 0;
+  const isInitialLoading = (fillsQuery.isLoading || ledgerQuery.isLoading) && merged.length === 0;
 
   if (isInitialLoading) {
     return <PerpsHistoryListSkeleton />;
@@ -241,18 +228,14 @@ function PerpsHistoryList({ address }: { address: string }) {
                   key={`ledger-${item.data.hash}-${item.time}`}
                   update={item.data}
                 />
-              )
+              ),
             )}
           </VStack>
         </VStack>
       ))}
       {hasMore ? (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Button
-            kind="regular"
-            size={40}
-            onClick={() => setVisible((v) => v + PAGE_SIZE)}
-          >
+          <Button kind="regular" size={40} onClick={() => setVisible((v) => v + PAGE_SIZE)}>
             Show more
           </Button>
         </div>
@@ -273,8 +256,7 @@ export function PerpsOverview() {
     if (onboardingDismissed) setOnboardingOpen(false);
   }, [onboardingDismissed]);
 
-  const { effectiveAccountValueUSD, isModeReady } =
-    useHyperliquidAccountSummary({ address });
+  const { effectiveAccountValueUSD, isModeReady } = useHyperliquidAccountSummary({ address });
 
   // Lifted here as the single source for the positions list (presentational
   // below), the markets-list loading gate, and the DEX list. React Query
@@ -306,19 +288,12 @@ export function PerpsOverview() {
             <UIText kind="headline/h3">
               <BlurrableBalance kind="body/accent" color="var(--black)">
                 <NeutralDecimals
-                  parts={formatCurrencyToParts(
-                    effectiveAccountValueUSD,
-                    'en',
-                    currency
-                  )}
+                  parts={formatCurrencyToParts(effectiveAccountValueUSD, 'en', currency)}
                 />
               </BlurrableBalance>
             </UIText>
           ) : (
-            <div
-              className={skeletonStyles.skeleton}
-              style={{ width: 128, height: 24 }}
-            />
+            <div className={skeletonStyles.skeleton} style={{ width: 128, height: 24 }} />
           )}
           <UnstyledButton
             type="button"
@@ -392,11 +367,7 @@ export function PerpsOverview() {
       />
       <PerpsMarketsList dexList={dexList} positionsLoading={positionsLoading} />
       <Spacer height={16} />
-      <Dialog2
-        open={historyDialog.open}
-        onClose={historyDialog.closeDialog}
-        title="History"
-      >
+      <Dialog2 open={historyDialog.open} onClose={historyDialog.closeDialog} title="History">
         <PerpsHistoryList address={address} />
         <Spacer height={16} />
       </Dialog2>

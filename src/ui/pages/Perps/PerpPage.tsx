@@ -4,10 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { findPerpAsset } from 'src/modules/hyperliquid/findPerpAsset';
-import {
-  getPerpDisplayName,
-  parsePerpId,
-} from 'src/modules/hyperliquid/parsePerpId';
+import { getPerpDisplayName, parsePerpId } from 'src/modules/hyperliquid/parsePerpId';
 import { useClearinghouseState } from 'src/modules/hyperliquid/hooks/useClearinghouseState';
 import { useMetaAndAssetCtxs } from 'src/modules/hyperliquid/hooks/useMetaAndAssetCtxs';
 import { useUserFills } from 'src/modules/hyperliquid/hooks/useUserFills';
@@ -51,34 +48,28 @@ export function PerpPage() {
   const { data: ctxData } = useMetaAndAssetCtxs({
     dexIdentifier: parsed.dexIdentifier,
   });
-  const asset = useMemo(
-    () => findPerpAsset(ctxData, parsed.coin),
-    [ctxData, parsed.coin]
-  );
+  const asset = useMemo(() => findPerpAsset(ctxData, parsed.coin), [ctxData, parsed.coin]);
 
-  const { data: clearingState, isLoading: positionLoading } =
-    useClearinghouseState(
-      { address, dexIdentifier: parsed.dexIdentifier },
-      { enabled: Boolean(address) }
-    );
+  const { data: clearingState, isLoading: positionLoading } = useClearinghouseState(
+    { address, dexIdentifier: parsed.dexIdentifier },
+    { enabled: Boolean(address) },
+  );
   const { data: fillsData, isLoading: fillsLoading } = useUserFills(
     { address },
-    { enabled: Boolean(address) }
+    { enabled: Boolean(address) },
   );
 
   const position = useMemo(() => {
     if (!clearingState) return null;
     const entry = clearingState.assetPositions.find(
-      (e) => e.position.coin.toLowerCase() === parsed.coin.toLowerCase()
+      (e) => e.position.coin.toLowerCase() === parsed.coin.toLowerCase(),
     );
     return entry?.position ?? null;
   }, [clearingState, parsed.coin]);
 
   const fillsForCoin = useMemo(() => {
     if (!fillsData) return [];
-    return fillsData.filter(
-      (fill) => fill.coin.toLowerCase() === parsed.coin.toLowerCase()
-    );
+    return fillsData.filter((fill) => fill.coin.toLowerCase() === parsed.coin.toLowerCase());
   }, [fillsData, parsed.coin]);
 
   const showPositionSection = Boolean(address) && position != null;
@@ -120,12 +111,7 @@ export function PerpPage() {
               to="/wallet-select"
               title="Change Wallet"
             >
-              <WalletAvatar
-                active={false}
-                address={address}
-                size={24}
-                borderRadius={6}
-              />
+              <WalletAvatar active={false} address={address} size={24} borderRadius={6} />
             </UnstyledLink>
           ) : undefined
         }
@@ -133,11 +119,7 @@ export function PerpPage() {
       <PageTop />
       <VStack gap={12}>
         {asset ? <Heading asset={asset} /> : <HeadingSkeleton />}
-        <ChartBlock
-          coin={parsed.coin}
-          fills={fillsForCoin}
-          displayName={displayName}
-        />
+        <ChartBlock coin={parsed.coin} fills={fillsForCoin} displayName={displayName} />
         {asset ? <StatsBlock asset={asset} /> : <StatsBlockSkeleton />}
       </VStack>
       <Spacer height={12} />

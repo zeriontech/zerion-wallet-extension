@@ -10,17 +10,9 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { getSigningStepState } from './signPermitBatch';
 
-function StepMark({
-  state,
-}: {
-  state: ReturnType<typeof getSigningStepState>;
-}) {
+function StepMark({ state }: { state: ReturnType<typeof getSigningStepState> }) {
   if (state === 'signed') {
-    return (
-      <CheckIcon
-        style={{ width: 20, height: 20, color: 'var(--positive-500)' }}
-      />
-    );
+    return <CheckIcon style={{ width: 20, height: 20, color: 'var(--positive-500)' }} />;
   }
   if (state === 'signing') {
     return <CircleSpinner size="20px" color="var(--primary)" />;
@@ -89,9 +81,7 @@ export function SigningSteps({
                   name={network?.name || permit.chain}
                   src={network?.iconUrl}
                 />
-                <UIText kind="body/accent">
-                  {network?.name || permit.chain}
-                </UIText>
+                <UIText kind="body/accent">{network?.name || permit.chain}</UIText>
               </HStack>
               <StepMark state={state} />
             </HStack>

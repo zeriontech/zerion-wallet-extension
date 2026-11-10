@@ -12,13 +12,11 @@ export interface PerpAssetEntry {
 
 export function findPerpAsset(
   data: PerpMetaAndAssetCtxsResponse | null | undefined,
-  coin: string
+  coin: string,
 ): PerpAssetEntry | null {
   if (!data) return null;
   const [meta, ctxs] = data;
-  const index = meta.universe.findIndex(
-    (item) => item.name.toLowerCase() === coin.toLowerCase()
-  );
+  const index = meta.universe.findIndex((item) => item.name.toLowerCase() === coin.toLowerCase());
   if (index === -1) return null;
   const universe = meta.universe[index];
   const ctx = ctxs[index];

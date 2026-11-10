@@ -63,9 +63,7 @@ function Indicator({ value, weakest }: { value: Strength; weakest: boolean }) {
   const atLeastMedium = value === Strength.medium || value === Strength.strong;
 
   return (
-    <div
-      style={{ display: 'grid', gap: 4, gridTemplateColumns: '1fr 1fr 1fr' }}
-    >
+    <div style={{ display: 'grid', gap: 4, gridTemplateColumns: '1fr 1fr 1fr' }}>
       <Rect
         color={
           value === Strength.medium || value === Strength.strong

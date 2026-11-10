@@ -23,7 +23,7 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
     initialRoute?: string;
     appSearchParams?: string;
   },
-  ref: React.ForwardedRef<HTMLIFrameElement>
+  ref: React.ForwardedRef<HTMLIFrameElement>,
 ) {
   const themeState = useStore(themeStore);
   const { currency } = useCurrency();
@@ -44,13 +44,9 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
         }}
       >
         <VStack gap={4} style={{ textAlign: 'center', justifyItems: 'center' }}>
-          <ErrorIcon
-            style={{ width: 48, height: 48, color: 'var(--notice-500)' }}
-          />
+          <ErrorIcon style={{ width: 48, height: 48, color: 'var(--notice-500)' }} />
           <VStack gap={4}>
-            <UIText kind="headline/h3">
-              Ledger is not supported in Firefox
-            </UIText>
+            <UIText kind="headline/h3">Ledger is not supported in Firefox</UIText>
             <UIText kind="body/regular" color="var(--neutral-500)">
               Please try a different browser
             </UIText>
@@ -73,7 +69,7 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
       sandbox="allow-scripts"
       allow="hid; bluetooth"
       src={`/ui/hardware-wallet/ledger.html?theme-state=${encodeURIComponent(
-        JSON.stringify(themeState)
+        JSON.stringify(themeState),
       )}&currency=${currency}#${initialRoute}?${appSearchParams}`}
       style={{
         border: 'none',

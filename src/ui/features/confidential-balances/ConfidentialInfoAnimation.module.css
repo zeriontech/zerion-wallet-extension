@@ -102,18 +102,8 @@
 .ghost {
   color: var(--neutral-600);
   filter: blur(calc(1.6 * var(--u)));
-  -webkit-mask-image: conic-gradient(
-    #000 25%,
-    transparent 25% 50%,
-    #000 50% 75%,
-    transparent 75%
-  );
-  mask-image: conic-gradient(
-    #000 25%,
-    transparent 25% 50%,
-    #000 50% 75%,
-    transparent 75%
-  );
+  -webkit-mask-image: conic-gradient(#000 25%, transparent 25% 50%, #000 50% 75%, transparent 75%);
+  mask-image: conic-gradient(#000 25%, transparent 25% 50%, #000 50% 75%, transparent 75%);
   -webkit-mask-size: calc(5 * var(--u)) calc(5 * var(--u));
   mask-size: calc(5 * var(--u)) calc(5 * var(--u));
   animation-name: ghost;
@@ -135,12 +125,7 @@
   left: 0;
   width: calc(56 * var(--u));
   pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--glare) 50%,
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--glare) 50%, transparent);
   animation-name: beam;
 }
 

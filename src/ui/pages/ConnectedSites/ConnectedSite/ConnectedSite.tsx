@@ -34,13 +34,7 @@ import { getConnectedSite } from '../shared/getConnectedSite';
 import { MetamaskMode } from './MetamaskMode';
 import * as styles from './styles.module.css';
 
-function RevokeAllButton({
-  origin,
-  onSuccess,
-}: {
-  origin: string;
-  onSuccess: () => void;
-}) {
+function RevokeAllButton({ origin, onSuccess }: { origin: string; onSuccess: () => void }) {
   const removePermissionMutation = useRemovePermissionMutation({ onSuccess });
   const removeActionDialogRef = useRef<HTMLDialogElement | null>(null);
 
@@ -87,9 +81,7 @@ function SiteLink({ title, href }: { title: string; href: string }) {
       <HStack gap={4} justifyContent="space-between" alignItems="center">
         <Media
           vGap={0}
-          image={
-            <GlobeIcon style={{ display: 'block', width: 32, height: 32 }} />
-          }
+          image={<GlobeIcon style={{ display: 'block', width: 32, height: 32 }} />}
           text={<UIText kind="body/accent">{title}</UIText>}
           detailText={
             <UIText kind="caption/regular" color="var(--neutral-500)">
@@ -122,12 +114,12 @@ export function ConnectedSite() {
   });
   const connectedSite = useMemo(
     () => getConnectedSite(originName, connectedSites),
-    [connectedSites, originName]
+    [connectedSites, originName],
   );
   const siteOrigin = connectedSite?.origin;
   const connectedSiteOriginForHref = useMemo(
     () => (siteOrigin ? prepareForHref(siteOrigin) : null),
-    [siteOrigin]
+    [siteOrigin],
   );
   const navigate = useNavigate();
   const handleAllRemoveSuccess = useCallback(() => {
@@ -161,10 +153,7 @@ export function ConnectedSite() {
           <VStack gap={24}>
             <VStack gap={4}>
               {connectedSiteOriginForHref ? (
-                <SiteLink
-                  title={title}
-                  href={connectedSiteOriginForHref.href}
-                />
+                <SiteLink title={title} href={connectedSiteOriginForHref.href} />
               ) : null}
               <label
                 style={{
@@ -192,11 +181,7 @@ export function ConnectedSite() {
                       key: wallet.address,
                       style: { padding: 0 },
                       component: (
-                        <HStack
-                          gap={4}
-                          justifyContent="space-between"
-                          alignItems="center"
-                        >
+                        <HStack gap={4} justifyContent="space-between" alignItems="center">
                           <Media
                             image={
                               <WalletAvatar
@@ -207,19 +192,13 @@ export function ConnectedSite() {
                               />
                             }
                             text={
-                              <UIText
-                                kind="body/accent"
-                                style={{ wordBreak: 'break-all' }}
-                              >
+                              <UIText kind="body/accent" style={{ wordBreak: 'break-all' }}>
                                 <WalletDisplayName wallet={wallet} />
                               </UIText>
                             }
                             detailText={
                               wallet.name ? (
-                                <UIText
-                                  kind="caption/regular"
-                                  color="var(--neutral-500)"
-                                >
+                                <UIText kind="caption/regular" color="var(--neutral-500)">
                                   {truncateAddress(wallet.address)}
                                 </UIText>
                               ) : null
@@ -232,9 +211,7 @@ export function ConnectedSite() {
                             aria-label="disconnect address"
                             onClick={() => {
                               if (removeActionDialogRef.current) {
-                                showConfirmDialog(
-                                  removeActionDialogRef.current
-                                ).then(() => {
+                                showConfirmDialog(removeActionDialogRef.current).then(() => {
                                   removePermissionMutation.mutate({
                                     origin: connectedSite.origin,
                                     address: wallet.address,

@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RenderArea } from 'react-area';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -73,17 +67,11 @@ import { createEmptyChainConfig } from './shared/createEmptyChainConfig';
 import { SearchResults } from './shared/SearchResults';
 import { NetworkList } from './shared/NetworkList';
 import { NetworkForm } from './NetworkForm';
-import {
-  PinNetworkButton,
-  renderPinNetworkAction,
-} from './shared/PinNetworkButton';
+import { PinNetworkButton, renderPinNetworkAction } from './shared/PinNetworkButton';
 import { PinnedNetworks } from './PinnedNetworks';
 
 async function updateNetworks() {
-  return Promise.all([
-    mainNetworksStore.update(),
-    testenvNetworksStore.update(),
-  ]);
+  return Promise.all([mainNetworksStore.update(), testenvNetworksStore.update()]);
 }
 
 type SaveChainConfigParams = {
@@ -92,11 +80,7 @@ type SaveChainConfigParams = {
   prevChain: string | null;
 };
 
-async function saveChainConfig({
-  chain,
-  chainConfig,
-  prevChain,
-}: SaveChainConfigParams) {
+async function saveChainConfig({ chain, chainConfig, prevChain }: SaveChainConfigParams) {
   return walletPort.request('addEthereumChain', {
     values: [chainConfig],
     origin: isCustomNetworkId(chain) ? INTERNAL_ORIGIN : BACKEND_NETWORK_ORIGIN,
@@ -125,7 +109,7 @@ function NetworkCreatePage() {
             .getNetworks()
             .filter((n) => NetworksModule.isEip155(n))
             .map((n) => NetworksModule.getChainId(n))
-            .filter(isTruthy)
+            .filter(isTruthy),
         )
       : null;
   }, [networks]);
@@ -172,28 +156,14 @@ function NetworkCreatePage() {
   );
 }
 
-const FORBIDDEN_FIELDS = new Set([
-  'chainId',
-  'nativeCurrency.decimals',
-  'hidden',
-  'is_testnet',
-]);
+const FORBIDDEN_FIELDS = new Set(['chainId', 'nativeCurrency.decimals', 'hidden', 'is_testnet']);
 
-function RemoveNetworkConfirmationDialog({
-  network,
-}: {
-  network: NetworkInfo;
-}) {
+function RemoveNetworkConfirmationDialog({ network }: { network: NetworkInfo }) {
   return (
-    <form
-      method="dialog"
-      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-    >
+    <form method="dialog" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <VStack gap={8}>
         <UIText kind="headline/h3">Are you sure?</UIText>
-        <UIText kind="body/regular">
-          {network.name} configuration will be removed
-        </UIText>
+        <UIText kind="body/regular">{network.name} configuration will be removed</UIText>
       </VStack>
       <HStack
         gap={12}
@@ -220,12 +190,7 @@ function NetworkPage() {
   const network = networks?.getNetworkByName(createChain(chainStr));
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
-  const {
-    isCustomNetwork,
-    isSavedNetwork,
-    isVisitedNetwork,
-    isSupportsPositions,
-  } = useMemo(() => {
+  const { isCustomNetwork, isSavedNetwork, isVisitedNetwork, isSupportsPositions } = useMemo(() => {
     const chain = createChain(chainStr);
     return {
       isCustomNetwork: isCustomNetworkId(chainStr),
@@ -241,12 +206,10 @@ function NetworkPage() {
         ?.getNetworks()
         .filter((n) => NetworksModule.isEip155(n))
         .map((n) => NetworksModule.getChainId(n))
-        .filter(isTruthy)
+        .filter(isTruthy),
     );
     const chainId =
-      network && NetworksModule.isEip155(network)
-        ? NetworksModule.getChainId(network)
-        : null;
+      network && NetworksModule.isEip155(network) ? NetworksModule.getChainId(network) : null;
     if (chainId) {
       set.delete(chainId);
     }
@@ -285,12 +248,9 @@ function NetworkPage() {
   });
   // Mutations refresh the networks store before goBack runs, so the network
   // may already be gone from the store while we are still on its page
-  const isLeaving = [
-    saveMutation,
-    removeMutation,
-    resetMutation,
-    removeFromVisitedMutation,
-  ].some((mutation) => mutation.isLoading || mutation.isSuccess);
+  const isLeaving = [saveMutation, removeMutation, resetMutation, removeFromVisitedMutation].some(
+    (mutation) => mutation.isLoading || mutation.isSuccess,
+  );
   useBackgroundKind({ kind: 'white' });
   if ((!networks && !network) || isStale || (!network && isLeaving)) {
     return <ViewLoading kind="network" />;
@@ -302,20 +262,14 @@ function NetworkPage() {
     <>
       <PageColumn>
         <NavigationTitle
-          title={
-            network.name ||
-            network.id ||
-            NetworksModule.getChainId(network) ||
-            ''
-          }
+          title={network.name || network.id || NetworksModule.getChainId(network) || ''}
           elementEnd={
             <HStack
               gap={0}
               alignItems="center"
               style={{
                 position: 'relative',
-                left:
-                  isCustomNetwork && NetworksModule.isEip155(network) ? -40 : 0,
+                left: isCustomNetwork && NetworksModule.isEip155(network) ? -40 : 0,
               }}
             >
               {NetworksModule.isEip155(network) ? (
@@ -335,14 +289,10 @@ function NetworkPage() {
                     if (!dialogRef.current) {
                       return;
                     }
-                    showConfirmDialog(dialogRef.current).then(() =>
-                      removeMutation.mutate(network)
-                    );
+                    showConfirmDialog(dialogRef.current).then(() => removeMutation.mutate(network));
                   }}
                 >
-                  <TrashIcon
-                    style={{ display: 'block', marginInline: 'auto' }}
-                  />
+                  <TrashIcon style={{ display: 'block', marginInline: 'auto' }} />
                 </Button>
               ) : null}
             </HStack>
@@ -364,9 +314,7 @@ function NetworkPage() {
           }
           isSubmitting={saveMutation.isLoading}
           onReset={
-            isSavedNetwork && !isCustomNetwork
-              ? () => resetMutation.mutate(network)
-              : undefined
+            isSavedNetwork && !isCustomNetwork ? () => resetMutation.mutate(network) : undefined
           }
           onRemoveFromVisited={
             // we show networks with supported positions based on the balance
@@ -396,8 +344,7 @@ function WalletNetworkList({
   networks: NetworksModule;
   groups: NetworkGroups;
 }) {
-  const startsWithPinned =
-    groups[0]?.key === 'pinned' && groups[0].items.length;
+  const startsWithPinned = groups[0]?.key === 'pinned' && groups[0].items.length;
   return (
     <>
       {/* Untitled pinned rows would otherwise touch the search input */}
@@ -422,7 +369,7 @@ function WalletNetworkList({
                 />
               ) : null}
             </React.Fragment>
-          ) : null
+          ) : null,
         )}
       </VStack>
       <Spacer height={8} />
@@ -452,11 +399,10 @@ function NetworksView({
   useBackgroundKind(whiteBackgroundKind);
   const debouncedSetSearchParams = useDebouncedCallback(
     useCallback(
-      (value: string) =>
-        setSearchParams(value ? [['query', value]] : [], { replace: true }),
-      [setSearchParams]
+      (value: string) => setSearchParams(value ? [['query', value]] : [], { replace: true }),
+      [setSearchParams],
     ),
-    300
+    300,
   );
   const groups = useMemo(() => {
     if (!networks) {
@@ -471,7 +417,7 @@ function NetworksView({
     });
   }, [networks, chainDistribution, testnetMode]);
   const hasPinnedNetworks = groups.some(
-    (group) => group.key === 'pinned' && group.items.length > 0
+    (group) => group.key === 'pinned' && group.items.length > 0,
   );
 
   const {
@@ -573,13 +519,10 @@ export function Networks() {
   const { data, isLoading: walletPortfolioIsLoading } = useWalletPortfolio(
     { addresses: addresses || [], currency },
     { source: useHttpClientSource() },
-    { enabled: Boolean(addresses?.length), refetchOnWindowFocus: false }
+    { enabled: Boolean(addresses?.length), refetchOnWindowFocus: false },
   );
   const walletPortfolio = data?.data;
-  const chains = useMemo(
-    () => Object.keys(walletPortfolio?.chains || {}),
-    [walletPortfolio]
-  );
+  const chains = useMemo(() => Object.keys(walletPortfolio?.chains || {}), [walletPortfolio]);
   const { networks, isLoading } = useNetworks(chains);
 
   useEffect(() => {

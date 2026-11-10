@@ -37,8 +37,7 @@ export class DnaService {
   }
 
   async pushAction(action: DnaAction) {
-    const currentQueue =
-      await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
+    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
     await BrowserStorage.set(ACTION_QUEUE_KEY, [
       ...(currentQueue || []),
       { ...action, timestamp: Date.now() },
@@ -61,24 +60,21 @@ export class DnaService {
   }
 
   private async popAction() {
-    const currentQueue =
-      await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
+    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
     currentQueue?.shift();
     await BrowserStorage.set(ACTION_QUEUE_KEY, currentQueue);
     this.tryRegisterAction();
   }
 
   private async takeFirstRecentAction() {
-    const currentQueue =
-      await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
+    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
     if (!currentQueue?.length) {
       return null;
     }
     const currentTime = Date.now();
     while (
       currentQueue[0] &&
-      (!currentQueue[0].timestamp ||
-        currentTime - currentQueue[0].timestamp > ONE_DAY)
+      (!currentQueue[0].timestamp || currentTime - currentQueue[0].timestamp > ONE_DAY)
     ) {
       currentQueue.shift();
     }
@@ -158,10 +154,7 @@ export class DnaService {
     hash: string;
     chain: string;
   }) {
-    const actionId = uuidv5(
-      `sign(${chain}, ${hash})`,
-      'ddf8b936-fec5-48b3-a258-a73dcd897f0a'
-    );
+    const actionId = uuidv5(`sign(${chain}, ${hash})`, 'ddf8b936-fec5-48b3-a258-a73dcd897f0a');
 
     return this.pushAction({
       address: normalizeAddress(address),
@@ -231,9 +224,7 @@ export class DnaService {
     // wallets previously registered without 'v' are effectively unregistered.
     // To handle this, we have to re-register all existing wallets.
 
-    const hasBeenFinished = await BrowserStorage.get<boolean>(
-      REGISTER_ALL_WALLETS_INVOKED_KEY
-    );
+    const hasBeenFinished = await BrowserStorage.get<boolean>(REGISTER_ALL_WALLETS_INVOKED_KEY);
     if (hasBeenFinished) {
       return;
     }
@@ -250,21 +241,16 @@ export class DnaService {
           group.walletContainer.wallets.map((wallet) => ({
             address: wallet.address,
             origin: group.origin || undefined,
-          }))
+          })),
         ) || [];
 
-    const walletRegistrationRequests = ownedAddressesWithGroupOrigins.map(
-      ({ address, origin }) =>
-        this.registerWallet({ params: { address, origin } })
+    const walletRegistrationRequests = ownedAddressesWithGroupOrigins.map(({ address, origin }) =>
+      this.registerWallet({ params: { address, origin } }),
     );
 
     const results = await Promise.allSettled(walletRegistrationRequests);
-    const hasRejectedRequests = results.some(
-      (result) => result.status === 'rejected'
-    );
-    const hasFulfilledRequests = results.some(
-      (result) => result.status === 'fulfilled'
-    );
+    const hasRejectedRequests = results.some((result) => result.status === 'rejected');
+    const hasFulfilledRequests = results.some((result) => result.status === 'fulfilled');
 
     if (hasFulfilledRequests && !hasRejectedRequests) {
       await BrowserStorage.set(REGISTER_ALL_WALLETS_INVOKED_KEY, true);

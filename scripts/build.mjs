@@ -25,26 +25,16 @@ import dotenv from 'dotenv';
 
 import { buildManifest, copyStatic, readBuildMeta } from './manifest.mjs';
 
-const projectRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..'
-);
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = path.join(projectRoot, 'src');
 const vpBin = path.join(projectRoot, 'node_modules/.bin/vp');
 
-export const BUILD_TARGETS = [
-  'pages',
-  'background',
-  'content-script',
-  'in-page',
-];
+export const BUILD_TARGETS = ['pages', 'background', 'content-script', 'in-page'];
 
 /** Manifests allow at most four numeric version parts. */
 function assertVersionSuffix(suffix) {
   if (!/^\d+$/.test(String(suffix)) || Number(suffix) > 65535) {
-    throw new Error(
-      `Version suffix must be a number between 0 and 65535, got "${suffix}".`
-    );
+    throw new Error(`Version suffix must be a number between 0 and 65535, got "${suffix}".`);
   }
   return String(suffix);
 }
@@ -74,7 +64,7 @@ export function buildExtension({
   fs.rmSync(absoluteOut, { recursive: true, force: true });
 
   const sourceManifest = JSON.parse(
-    fs.readFileSync(path.join(sourceRoot, `manifest-${platform}.json`), 'utf8')
+    fs.readFileSync(path.join(sourceRoot, `manifest-${platform}.json`), 'utf8'),
   );
 
   for (const target of BUILD_TARGETS) {
@@ -109,10 +99,7 @@ export function buildExtension({
     // of rebuilding with different sources.
     const betaIcons = path.join(sourceRoot, 'images/beta');
     for (const file of fs.readdirSync(betaIcons)) {
-      fs.copyFileSync(
-        path.join(betaIcons, file),
-        path.join(absoluteOut, 'images', file)
-      );
+      fs.copyFileSync(path.join(betaIcons, file), path.join(absoluteOut, 'images', file));
     }
     if (platform === 'firefox') {
       // AMO identifies an add-on by this id, and the beta listing is separate.
@@ -130,7 +117,7 @@ export function buildExtension({
   }
   fs.writeFileSync(
     path.join(absoluteOut, 'manifest.json'),
-    `${JSON.stringify(manifest, null, 2)}\n`
+    `${JSON.stringify(manifest, null, 2)}\n`,
   );
 
   console.log(`Done ${platform}`); // eslint-disable-line no-console
@@ -210,9 +197,7 @@ function parseArgs(argv) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { platform, outDir, watch, brand, versionSuffix } = parseArgs(
-    process.argv.slice(2)
-  );
+  const { platform, outDir, watch, brand, versionSuffix } = parseArgs(process.argv.slice(2));
   const defaultOut =
     brand === 'beta'
       ? platform === 'firefox'

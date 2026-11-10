@@ -17,6 +17,6 @@ export function isWhitelistedForZerionRpc(origin: string | undefined) {
     return false;
   }
   return WHITELISTED_DAPP_DOMAINS.some(
-    (domain) => hostname === domain || hostname.endsWith(`.${domain}`)
+    (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
   );
 }

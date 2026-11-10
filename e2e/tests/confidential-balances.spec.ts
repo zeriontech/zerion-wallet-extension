@@ -41,8 +41,7 @@ function fakeGroupedPositions(encrypted: boolean) {
   };
   const usdcAsset = {
     id: 'cusdc-confidential-mock',
-    iconUrl:
-      'https://cdn.zerion.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png',
+    iconUrl: 'https://cdn.zerion.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png',
     name: 'Confidential USDC',
     price: { value: 1, relativeChange24h: 0, changedAt: 0 },
     symbol: 'cUSDC',
@@ -216,8 +215,8 @@ test('confidential balances: panel → reveal → unmasked', async ({
   await page.evaluate(() =>
     localStorage.setItem(
       'dev-menu-overrides',
-      JSON.stringify({ confidentialPermitsOverride: 'fake' })
-    )
+      JSON.stringify({ confidentialPermitsOverride: 'fake' }),
+    ),
   );
   await page.reload();
 
@@ -250,26 +249,20 @@ test('confidential balances: panel → reveal → unmasked', async ({
   await hoverMoving(page, masks.first());
   await expect(infoCard).toBeVisible();
   await masks.first().click();
-  await expect(
-    page.getByRole('button', { name: 'Reveal', exact: true })
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reveal', exact: true })).toBeVisible();
   await expect(infoCard).toBeHidden();
   // the decrypt animation (illustrative "4,210" USDC row) lives in the
   // hovercard now, not in the dialog card
   await expect(page.getByText('4,210', { exact: true })).toHaveCount(0);
   await shot(page, '2-dialog-from-mask');
   await page.keyboard.press('Escape');
-  await expect(
-    page.getByRole('button', { name: 'Reveal', exact: true })
-  ).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Reveal', exact: true })).toBeHidden();
 
   // Panel → dialog → Reveal
   await panel.click();
   const reveal = page.getByRole('button', { name: 'Reveal', exact: true });
   await expect(reveal).toBeVisible();
-  await expect(
-    page.getByText(/Decrypt them with your wallet to reveal/)
-  ).toBeVisible();
+  await expect(page.getByText(/Decrypt them with your wallet to reveal/)).toBeVisible();
   await shot(page, '3-dialog-from-panel');
   await reveal.click();
   await expect(page.getByText('Decrypting balances…')).toBeVisible();
@@ -288,12 +281,7 @@ test('confidential balances: panel → reveal → unmasked', async ({
   expect(positionsPermits.length).toBeGreaterThan(0);
   expect(positionsPermits[0]).toHaveLength(3);
   for (const permit of positionsPermits[0] as Record<string, unknown>[]) {
-    expect(Object.keys(permit).sort()).toEqual([
-      'address',
-      'contracts',
-      'expireAt',
-      'signature',
-    ]);
+    expect(Object.keys(permit).sort()).toEqual(['address', 'contracts', 'expireAt', 'signature']);
     expect(String(permit.signature)).toMatch(/^0x[0-9a-f]{130}$/);
   }
   expect(portfolioPermits.length).toBeGreaterThan(0);
@@ -305,8 +293,6 @@ test('confidential balances: panel → reveal → unmasked', async ({
   await expect(page.getByText('4,210 cUSDC')).toBeVisible({ timeout: 20000 });
   await expect(panel).toBeHidden();
   await page.getByRole('link', { name: 'History' }).click();
-  await expect
-    .poll(() => actionsPermits.length, { timeout: 20000 })
-    .toBeGreaterThan(0);
+  await expect.poll(() => actionsPermits.length, { timeout: 20000 }).toBeGreaterThan(0);
   expect(actionsPermits[0]).toHaveLength(3);
 });

@@ -1,13 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DragEndEvent } from '@dnd-kit/core';
-import {
-  DndContext,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import {
   SortableContext,
   arrayMove,
@@ -41,21 +35,10 @@ import {
 } from '../shared/PinNetworkButton';
 import * as styles from './styles.module.css';
 
-function SortableRow({
-  network,
-  onUnpin,
-}: {
-  network: NetworkInfo;
-  onUnpin: () => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: network.id });
+function SortableRow({ network, onUnpin }: { network: NetworkInfo; onUnpin: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: network.id,
+  });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -70,9 +53,7 @@ function SortableRow({
       <HStack gap={4} justifyContent="space-between" alignItems="center">
         <Media
           vGap={0}
-          image={
-            <NetworkIcon size={24} src={network.iconUrl} name={network.name} />
-          }
+          image={<NetworkIcon size={24} src={network.iconUrl} name={network.name} />}
           text={<UIText kind="body/accent">{network.name}</UIText>}
           detailText={null}
         />
@@ -88,17 +69,9 @@ function SortableRow({
             className={pinButtonStyles.pinButton}
             style={{ display: 'flex' }}
           >
-            <UnpinIcon
-              className={pinButtonStyles.pinIcon}
-              style={{ width: 20, height: 20 }}
-            />
+            <UnpinIcon className={pinButtonStyles.pinIcon} style={{ width: 20, height: 20 }} />
           </UnstyledButton>
-          <div
-            {...attributes}
-            {...listeners}
-            className={styles.dragHandle}
-            title="Drag to reorder"
-          >
+          <div {...attributes} {...listeners} className={styles.dragHandle} title="Drag to reorder">
             <DragIcon />
           </div>
         </HStack>
@@ -129,9 +102,7 @@ function PinnedNetworkListEdit({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const handleDragEnd = useCallback(
     ({ active, over }: DragEndEvent) => {
@@ -143,26 +114,18 @@ function PinnedNetworkListEdit({
       setLocalOrder(next);
       onReorder(next);
     },
-    [localOrder, onReorder]
+    [localOrder, onReorder],
   );
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
         items={localOrder.map((item) => item.id)}
         strategy={verticalListSortingStrategy}
       >
         <VStack gap={0}>
           {localOrder.map((network) => (
-            <SortableRow
-              key={network.id}
-              network={network}
-              onUnpin={() => onUnpin(network)}
-            />
+            <SortableRow key={network.id} network={network} onUnpin={() => onUnpin(network)} />
           ))}
         </VStack>
       </SortableContext>
@@ -181,7 +144,7 @@ export function PinnedNetworks() {
       networks
         ?.getPinnedNetworks('evm')
         .filter((network) => Boolean(network.testnet) === testnetMode) ?? [],
-    [networks, testnetMode]
+    [networks, testnetMode],
   );
   const { mutate: setPinned } = useSetPinnedNetworksMutation();
   const { mutate: togglePin } = usePinNetworkMutation();
@@ -192,11 +155,11 @@ export function PinnedNetworks() {
       setPinned(
         reorderPinnedChains(
           networks.getPinnedChainIds(),
-          next.map((network) => network.id)
-        )
+          next.map((network) => network.id),
+        ),
       );
     },
-    [networks, setPinned]
+    [networks, setPinned],
   );
 
   const handleUnpin = useCallback(
@@ -204,10 +167,10 @@ export function PinnedNetworks() {
       const isLast = items.length === 1;
       togglePin(
         { chain: network.id, pin: false },
-        { onSuccess: isLast ? () => navigate(-1) : undefined }
+        { onSuccess: isLast ? () => navigate(-1) : undefined },
       );
     },
-    [items.length, navigate, togglePin]
+    [items.length, navigate, togglePin],
   );
 
   if (!networks) {
@@ -221,15 +184,10 @@ export function PinnedNetworks() {
       {items.length ? (
         <>
           <UIText kind="small/regular" color="var(--neutral-500)">
-            Drag to reorder. Pinned networks appear at the top of network
-            selectors.
+            Drag to reorder. Pinned networks appear at the top of network selectors.
           </UIText>
           <Spacer height={8} />
-          <PinnedNetworkListEdit
-            items={items}
-            onReorder={handleReorder}
-            onUnpin={handleUnpin}
-          />
+          <PinnedNetworkListEdit items={items} onReorder={handleReorder} onUnpin={handleUnpin} />
         </>
       ) : (
         <UIText

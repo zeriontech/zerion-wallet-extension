@@ -75,10 +75,7 @@ function WalletSelectDialog({
 }) {
   return (
     <div style={{ ['--surface-background-color' as string]: 'none' }}>
-      <DialogTitle
-        title={<UIText kind="body/accent">Select Wallet</UIText>}
-        closeKind="icon"
-      />
+      <DialogTitle title={<UIText kind="body/accent">Select Wallet</UIText>} closeKind="icon" />
       <WalletList
         selectedAddress={value}
         walletGroups={walletGroups}
@@ -127,13 +124,7 @@ function ChangeWalletButton({
   );
 }
 
-function XpBreakdown({
-  heading,
-  items,
-}: {
-  heading: string;
-  items: XpBreakdownItem[];
-}) {
+function XpBreakdown({ heading, items }: { heading: string; items: XpBreakdownItem[] }) {
   return (
     <VStack gap={12}>
       <UIText kind="headline/h3">{heading}</UIText>
@@ -147,10 +138,7 @@ function XpBreakdown({
             style={{ gridTemplateColumns: '1fr auto', padding: '12px 0' }}
           >
             <VStack gap={0}>
-              <UIText
-                kind="body/accent"
-                color={amount > 0 ? 'var(--black)' : 'var(--neutral-500)'}
-              >
+              <UIText kind="body/accent" color={amount > 0 ? 'var(--black)' : 'var(--neutral-500)'}>
                 {title}
               </UIText>
               <UIText kind="small/regular" color="var(--neutral-500)">
@@ -173,29 +161,17 @@ function XpBreakdown({
 function XpDropBreakdownDialog({ retro }: { retro: RetrodropInfo }) {
   return (
     <div style={{ ['--surface-background-color' as string]: 'none' }}>
-      <DialogTitle
-        title={<UIText kind="body/accent">XP Breakdown</UIText>}
-        closeKind="icon"
-      />
+      <DialogTitle title={<UIText kind="body/accent">XP Breakdown</UIText>} closeKind="icon" />
       <Spacer height={24} />
       <VStack gap={24}>
         <XpBreakdown heading="Zerion OG" items={retro.zerion.breakdown} />
-        <XpBreakdown
-          heading="Onchain Activity in the Past Year"
-          items={retro.global.breakdown}
-        />
+        <XpBreakdown heading="Onchain Activity in the Past Year" items={retro.global.breakdown} />
       </VStack>
     </div>
   );
 }
 
-function StatsItem({
-  title,
-  value,
-}: {
-  title: React.ReactNode;
-  value: React.ReactNode;
-}) {
+function StatsItem({ title, value }: { title: React.ReactNode; value: React.ReactNode }) {
   return (
     <Frame style={{ padding: 16 }}>
       <VStack gap={4}>
@@ -242,9 +218,7 @@ function Stats({ zerionOg, activity }: { zerionOg: number; activity: number }) {
 }
 
 function HCenter({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>{children}</div>
-  );
+  return <div style={{ display: 'flex', justifyContent: 'center' }}>{children}</div>;
 }
 
 function XpLevel({ claimedXp, level }: { claimedXp: number; level: number }) {
@@ -297,9 +271,7 @@ export function XpDropClaim() {
   const { data: walletGroups, ...walletGroupsQuery } = useWalletGroups();
   const { ownedWalletGroups, ownedWalletAddresses } = useMemo(() => {
     const ownedWalletGroups =
-      walletGroups?.filter(
-        (group) => !isReadonlyContainer(group.walletContainer)
-      ) ?? [];
+      walletGroups?.filter((group) => !isReadonlyContainer(group.walletContainer)) ?? [];
     const ownedWalletAddresses = ownedWalletGroups
       .flatMap((group) => group.walletContainer.wallets)
       .map((wallet) => wallet.address);
@@ -315,12 +287,10 @@ export function XpDropClaim() {
     () =>
       selectedWallet
         ? walletsMeta?.find(
-            (meta) =>
-              normalizeAddress(meta.address) ===
-              normalizeAddress(selectedWallet.address)
+            (meta) => normalizeAddress(meta.address) === normalizeAddress(selectedWallet.address),
           )
         : null,
-    [selectedWallet, walletsMeta]
+    [selectedWallet, walletsMeta],
   );
 
   const {
@@ -421,11 +391,7 @@ export function XpDropClaim() {
       <>
         <NavigationTitle title="Not eligible" backTo="/overview" />
         <FillView>
-          <UIText
-            kind="body/regular"
-            color="var(--neutral-500)"
-            style={{ textAlign: 'center' }}
-          >
+          <UIText kind="body/regular" color="var(--neutral-500)" style={{ textAlign: 'center' }}>
             The selected wallet is not eligible for an XP drop. <br />
             Please select another wallet and try again.
           </UIText>
@@ -440,11 +406,7 @@ export function XpDropClaim() {
     <>
       <PageColumn>
         <NavigationTitle
-          title={
-            personalSignMutation.isSuccess
-              ? 'Congratulations!'
-              : 'Claim Your XP'
-          }
+          title={personalSignMutation.isSuccess ? 'Congratulations!' : 'Claim Your XP'}
           backTo="/overview"
         />
         <PageTop />
@@ -472,10 +434,7 @@ export function XpDropClaim() {
             <XpLevel level={retro.level} claimedXp={totalXp} />
           ) : (
             <>
-              <Stats
-                zerionOg={retro.zerion.total}
-                activity={retro.global.total}
-              />
+              <Stats zerionOg={retro.zerion.total} activity={retro.global.total} />
               <HCenter>
                 <Button
                   kind="neutral"
@@ -536,9 +495,7 @@ export function XpDropClaim() {
               }}
               buttonKind="primary"
               holdToSign={false}
-              bluetoothSupportEnabled={
-                globalPreferences.bluetoothSupportEnabled
-              }
+              bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
             >
               {personalSignMutation.isLoading ? (
                 <HCenter>

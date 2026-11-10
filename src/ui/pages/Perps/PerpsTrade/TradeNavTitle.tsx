@@ -11,7 +11,7 @@ import type { TradeMode, TradeSide } from './useTradeFormState';
 function getTradeTitle(
   mode: TradeMode | null,
   side: TradeSide,
-  positionIsLong: boolean | null
+  positionIsLong: boolean | null,
 ): string {
   const effectiveMode = mode ?? 'open';
   if (effectiveMode === 'open') {
@@ -54,8 +54,7 @@ export function TradeNavTitle({
         <UIText kind="body/accent">{displayName}</UIText>
       </HStack>
       <UIText kind="small/accent" color="var(--neutral-600)">
-        Price{' '}
-        {markPrice > 0 ? formatPriceValue(markPrice, 'en', currency) : '—'}
+        Price {markPrice > 0 ? formatPriceValue(markPrice, 'en', currency) : '—'}
       </UIText>
     </VStack>
   );

@@ -5,11 +5,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgr from 'vite-plugin-svgr';
 import { defineConfig } from 'vite-plus';
 
-import {
-  componentsAlias,
-  parcelSchemePlugin,
-  sourceAlias,
-} from '../../scripts/vite-plugins';
+import { componentsAlias, parcelSchemePlugin, sourceAlias } from '../../scripts/vite-plugins';
 
 /**
  * Dev-only playground for the ui-kit. Replaces the Parcel config that used the
@@ -38,10 +34,7 @@ export default defineConfig({
       },
       {
         find: /^src\/modules\/networks\/networks-store\.client$/,
-        replacement: path.join(
-          sourceRoot,
-          'modules/networks/networks-store.client.mock.ts'
-        ),
+        replacement: path.join(sourceRoot, 'modules/networks/networks-store.client.mock.ts'),
       },
       {
         find: /^src\/background\/constants$/,
@@ -49,10 +42,7 @@ export default defineConfig({
       },
       {
         find: /^webextension-polyfill$/,
-        replacement: path.join(
-          sourceRoot,
-          'ui-lab/webextension-polyfill.mock.ts'
-        ),
+        replacement: path.join(sourceRoot, 'ui-lab/webextension-polyfill.mock.ts'),
       },
     ],
   },

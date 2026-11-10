@@ -11,13 +11,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <HStack
       gap={8}
@@ -73,16 +67,13 @@ export function PositionBlock({
   const marginUsed = Number(position.marginUsed);
   const unrealizedPnl = Number(position.unrealizedPnl);
   const roe = Number(position.returnOnEquity) * 100;
-  const liquidationPx =
-    position.liquidationPx != null ? Number(position.liquidationPx) : null;
+  const liquidationPx = position.liquidationPx != null ? Number(position.liquidationPx) : null;
   const fundingSinceOpen = Number(position.cumFunding.sinceOpen);
   const isPositivePnl = unrealizedPnl >= 0;
   const isPositiveFunding = fundingSinceOpen >= 0;
   const leverageValue = position.leverage.value;
 
-  const pnlColor = isPositivePnl
-    ? 'var(--positive-500)'
-    : 'var(--negative-500)';
+  const pnlColor = isPositivePnl ? 'var(--positive-500)' : 'var(--negative-500)';
 
   return (
     <VStack gap={8}>
@@ -105,9 +96,7 @@ export function PositionBlock({
                   borderRadius: 6,
                   position: 'relative',
                   top: 1,
-                  backgroundColor: isLong
-                    ? 'var(--positive-200)'
-                    : 'var(--negative-200)',
+                  backgroundColor: isLong ? 'var(--positive-200)' : 'var(--negative-200)',
                   color: isLong ? 'var(--positive-500)' : 'var(--negative-500)',
                 }}
               >
@@ -135,13 +124,7 @@ export function PositionBlock({
                     %
                   </span>
                   <BlurrableBalance kind="body/accent" color={pnlColor}>
-                    (
-                    {formatCurrencyValue(
-                      Math.abs(unrealizedPnl),
-                      'en',
-                      currency
-                    )}
-                    )
+                    ({formatCurrencyValue(Math.abs(unrealizedPnl), 'en', currency)})
                   </BlurrableBalance>
                 </span>
               }
@@ -166,17 +149,10 @@ export function PositionBlock({
             </BlurrableBalance>
           }
         />
-        <DetailRow
-          label="Entry Price"
-          value={formatPriceValue(entryPx, 'en', currency)}
-        />
+        <DetailRow label="Entry Price" value={formatPriceValue(entryPx, 'en', currency)} />
         <DetailRow
           label="Liquidation Price"
-          value={
-            liquidationPx != null
-              ? formatPriceValue(liquidationPx, 'en', currency)
-              : '—'
-          }
+          value={liquidationPx != null ? formatPriceValue(liquidationPx, 'en', currency) : '—'}
         />
         <DetailRow
           label="Funding Payments"

@@ -34,7 +34,7 @@ export function useClearinghouseState(
     suspense?: boolean;
     enabled?: boolean;
     refetchInterval?: number | false;
-  } = {}
+  } = {},
 ) {
   // Share the exact cache entry (and flat `[name, address, dexIdentifier]` key
   // shape) with `useClearinghouseStates` so a single invalidation refreshes

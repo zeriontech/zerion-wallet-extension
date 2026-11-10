@@ -21,17 +21,10 @@ import ConnectionOnIcon from 'jsx:src/ui/assets/connection-toggle-on.svg';
 import ConnectionOffIcon from 'jsx:src/ui/assets/connection-toggle-off.svg';
 import DisconnectIcon from 'jsx:src/ui/assets/disconnect.svg';
 import type { RpcRequest } from 'src/shared/custom-rpc';
-import {
-  isRpcRequest,
-  isRpcResponse,
-  isRpcResult,
-} from 'src/shared/custom-rpc';
+import { isRpcRequest, isRpcResponse, isRpcResult } from 'src/shared/custom-rpc';
 import { isClassProperty } from 'src/shared/core/isClassProperty';
 import { createNanoEvents } from 'nanoevents';
-import {
-  solFromBase64,
-  solToBase64,
-} from 'src/modules/solana/transactions/create';
+import { solFromBase64, solToBase64 } from 'src/modules/solana/transactions/create';
 import { uint8ArrayToBase64 } from 'src/modules/crypto';
 import { Transaction } from '@solana/web3.js';
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
@@ -59,12 +52,10 @@ async function getConnectedSessionId({
   transport?: TransportIdentifier;
 }) {
   return Promise.race([
-    rejectAfterDelay(DEVICE_CONNECTION_TIMEOUT, 'Device not connected').catch(
-      () => {
-        unsubscribeCheckDeviceListeners();
-        return null;
-      }
-    ),
+    rejectAfterDelay(DEVICE_CONNECTION_TIMEOUT, 'Device not connected').catch(() => {
+      unsubscribeCheckDeviceListeners();
+      return null;
+    }),
     checkDevice({ transportIdentifier: transport })
       .then(({ sessionId }) => sessionId)
       .catch(() => {
@@ -81,7 +72,7 @@ type HardwareRPCRequest = Omit<RpcRequest, 'id'> & {
 };
 
 function isHardwareRpcRequest(
-  payload: Partial<RpcRequest> | unknown
+  payload: Partial<RpcRequest> | unknown,
 ): payload is HardwareRPCRequest {
   return isRpcRequest(payload);
 }
@@ -99,26 +90,20 @@ export class DeviceController {
 
   static signTransaction =
     (params: unknown) =>
-    (
-      sessionId: string,
-      onInteractionRequested?: (type: UserInteractionRequested) => void
-    ) => {
+    (sessionId: string, onInteractionRequested?: (type: UserInteractionRequested) => void) => {
       assertSignTransactionParams(params);
       return signTransaction(
         {
           derivationPath: params.derivationPath,
           rawTransaction: params.transaction,
         },
-        { sessionId, onInteractionRequested }
+        { sessionId, onInteractionRequested },
       );
     };
 
   static solana_signTransaction =
     (params: unknown) =>
-    (
-      sessionId: string,
-      onInteractionRequested?: (type: UserInteractionRequested) => void
-    ) => {
+    (sessionId: string, onInteractionRequested?: (type: UserInteractionRequested) => void) => {
       assertSignSolanaTransactionParams(params);
 
       /**
@@ -138,7 +123,7 @@ export class DeviceController {
           derivationPath: params.derivationPath,
           transaction: cleanedTransaction,
         },
-        { sessionId, onInteractionRequested }
+        { sessionId, onInteractionRequested },
       );
 
       return {
@@ -161,45 +146,36 @@ export class DeviceController {
 
   static personalSign =
     (params: unknown) =>
-    (
-      sessionId: string,
-      onInteractionRequested?: (type: UserInteractionRequested) => void
-    ) => {
+    (sessionId: string, onInteractionRequested?: (type: UserInteractionRequested) => void) => {
       assertPersonalSignParams(params);
       const message = toUtf8String(params.message);
       return personalSign(
         { derivationPath: params.derivationPath, message },
-        { sessionId, onInteractionRequested }
+        { sessionId, onInteractionRequested },
       );
     };
 
   static signTypedData_v4 =
     (params: unknown) =>
-    (
-      sessionId: string,
-      onInteractionRequested?: (type: UserInteractionRequested) => void
-    ) => {
+    (sessionId: string, onInteractionRequested?: (type: UserInteractionRequested) => void) => {
       assertSignTypedData_v4Params(params);
       return signTypedData_v4(
         {
           derivationPath: params.derivationPath,
           rawTypedData: params.typedData,
         },
-        { sessionId, onInteractionRequested }
+        { sessionId, onInteractionRequested },
       );
     };
 
   static solana_signMessage =
     (params: unknown) =>
-    (
-      sessionId: string,
-      onInteractionRequested?: (type: UserInteractionRequested) => void
-    ) => {
+    (sessionId: string, onInteractionRequested?: (type: UserInteractionRequested) => void) => {
       assertPersonalSignParams(params);
       const message = toUtf8String(params.message);
       return solanaSignMessage(
         { derivationPath: params.derivationPath, message },
-        { sessionId, onInteractionRequested }
+        { sessionId, onInteractionRequested },
       );
     };
 
@@ -223,7 +199,7 @@ export class DeviceController {
           const { promise, cancel } = DeviceController[method](params)(
             // @ts-ignore Controller[method] should be callable here
             sessionId,
-            this.onInteractionRequested
+            this.onInteractionRequested,
           );
           this.cancelLedgerRequest = cancel;
           const result = await promise;
@@ -232,7 +208,7 @@ export class DeviceController {
           this.onError?.(error);
           window.parent.postMessage(
             { id, error: parseLedgerError(error).toString() },
-            window.location.origin
+            window.location.origin,
           );
         } finally {
           this.lastRequestId = null;
@@ -242,11 +218,7 @@ export class DeviceController {
     this.emitter.emit('message', event.data);
   };
 
-  request({
-    method,
-    params,
-    id: maybeId,
-  }: Omit<RpcRequest, 'id'> & { id?: string }) {
+  request({ method, params, id: maybeId }: Omit<RpcRequest, 'id'> & { id?: string }) {
     const id = maybeId ?? nanoid();
     window.parent.postMessage({ id, method, params }, window.location.origin);
     return new Promise((resolve, reject) => {
@@ -303,10 +275,10 @@ export function SignConnector() {
    * because connect flow should be triggered by user interaction (click),
    * and the parent window can't do it.
    */
-  const [interruptedRequest, setInterruptedRequest] =
-    useState<HardwareRPCRequest | null>(null);
-  const [interactionRequested, setInteractionRequested] =
-    useState<UserInteractionRequested | null>(null);
+  const [interruptedRequest, setInterruptedRequest] = useState<HardwareRPCRequest | null>(null);
+  const [interactionRequested, setInteractionRequested] = useState<UserInteractionRequested | null>(
+    null,
+  );
   const [controller] = useState(() => new DeviceController());
   useEffect(() => {
     return controller.listen({
@@ -341,7 +313,7 @@ export function SignConnector() {
           id: requestId,
           error: getDeniedByUserError().toString(),
         },
-        window.location.origin
+        window.location.origin,
       );
     }
     setInterruptedRequest(null);
@@ -367,10 +339,7 @@ export function SignConnector() {
 
   useEffect(() => {
     function listener(event: MessageEvent) {
-      if (
-        isRpcRequest(event.data) &&
-        event.data.method === 'ledger/setSignParams'
-      ) {
+      if (isRpcRequest(event.data) && event.data.method === 'ledger/setSignParams') {
         const partial = event.data.params as
           | { ecosystem?: BlockchainType; supportBluetooth?: boolean }
           | undefined;
@@ -405,7 +374,7 @@ export function SignConnector() {
           id: interruptedRequest?.id,
           error: parseLedgerError(error).toString(),
         },
-        window.location.origin
+        window.location.origin,
       );
       controller.request({ method: 'ledger/sign/error' });
     },
@@ -441,13 +410,9 @@ export function SignConnector() {
               }}
             />
             <VStack gap={6}>
-              <Button onClick={() => mutate(transports.hid)}>
-                Sign via USB
-              </Button>
+              <Button onClick={() => mutate(transports.hid)}>Sign via USB</Button>
               {supportBluetooth ? (
-                <Button onClick={() => mutate(transports.bluetooth)}>
-                  Sign via Bluetooth
-                </Button>
+                <Button onClick={() => mutate(transports.bluetooth)}>Sign via Bluetooth</Button>
               ) : null}
               <Button onClick={interruptRequest} kind="danger">
                 Cancel
@@ -548,11 +513,7 @@ export function SignConnector() {
           height: 200,
         }}
       >
-        <HStack
-          gap={8}
-          style={{ padding: 12, width: '100%' }}
-          justifyContent="center"
-        >
+        <HStack gap={8} style={{ padding: 12, width: '100%' }} justifyContent="center">
           <CircleSpinner color="var(--primary)" size="20px" />
           <UIText kind="body/accent">Connecting...</UIText>
         </HStack>
@@ -571,11 +532,7 @@ export function SignConnector() {
       gap={4}
     >
       <InteractionRequested kind={interactionRequested} ecosystem={ecosystem} />
-      <Button
-        onClick={interruptRequest}
-        kind="regular"
-        style={{ width: '100%' }}
-      >
+      <Button onClick={interruptRequest} kind="regular" style={{ width: '100%' }}>
         Cancel
       </Button>
     </VStack>

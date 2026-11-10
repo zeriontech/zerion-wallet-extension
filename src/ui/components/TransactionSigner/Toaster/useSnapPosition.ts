@@ -36,8 +36,7 @@ function useViewportSize(): ViewportSize {
     height: typeof window === 'undefined' ? 0 : window.innerHeight,
   }));
   useEffect(() => {
-    const onResize = () =>
-      setSize({ width: window.innerWidth, height: window.innerHeight });
+    const onResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -69,22 +68,14 @@ export function getAnchorStyle(position: SnapPosition): CSSProperties {
   return { top, bottom, left, right, translate };
 }
 
-function quadrantFor(
-  centerX: number,
-  centerY: number,
-  viewport: ViewportSize
-): SnapPosition {
+function quadrantFor(centerX: number, centerY: number, viewport: ViewportSize): SnapPosition {
   const { width, height } = viewport;
   const col = centerX < width / 3 ? 0 : centerX < (width * 2) / 3 ? 1 : 2;
   const row = centerY < height / 2 ? 0 : 1;
   if (row === 0) {
     return col === 0 ? 'top-left' : col === 1 ? 'top-center' : 'top-right';
   }
-  return col === 0
-    ? 'bottom-left'
-    : col === 1
-      ? 'bottom-center'
-      : 'bottom-right';
+  return col === 0 ? 'bottom-left' : col === 1 ? 'bottom-center' : 'bottom-right';
 }
 
 export function useSnapPosition({

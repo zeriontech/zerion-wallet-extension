@@ -19,9 +19,7 @@ export const walletPort = new PortMessageChannel({
 
 type BlockTag = 'latest' | 'earliest' | 'pending';
 interface NodeMethods {
-  eth_getBalance(
-    request: RpcRequestWithContext<[string, BlockTag]>
-  ): Promise<string>;
+  eth_getBalance(request: RpcRequestWithContext<[string, BlockTag]>): Promise<string>;
 }
 
 export const httpConnectionPort = new PortMessageChannel({
@@ -53,7 +51,7 @@ class WindowPort extends PortMessageChannel {
     // result MUST NOT be undefined, otherwise the payload will not be interpreter
     // as JsonRpcResult or RpcResult, because `undefined` properties get removed
     // when sent via ports
-    result: T
+    result: T,
   ) {
     try {
       return this.request('resolve', [{ windowId, result }]);

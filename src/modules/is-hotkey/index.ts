@@ -4,8 +4,7 @@
  */
 
 const IS_MAC =
-  typeof window != 'undefined' &&
-  /Mac|iPod|iPhone|iPad/.test(window.navigator.platform);
+  typeof window != 'undefined' && /Mac|iPod|iPhone|iPad/.test(window.navigator.platform);
 
 const MODIFIERS: Record<string, string | undefined> = {
   alt: 'altKey',
@@ -169,18 +168,13 @@ function parseHotkey(value: string, options: null | Options) {
   return ret;
 }
 
-function isHotkey(
-  hotkey: string | string[],
-  event: KeyboardEvent,
-  options?: Options
-) {
+function isHotkey(hotkey: string | string[], event: KeyboardEvent, options?: Options) {
   if (!Array.isArray(hotkey)) {
     hotkey = [hotkey];
   }
 
   const array = hotkey.map((string) => parseHotkey(string, options ?? null));
-  const check = (e: KeyboardEvent) =>
-    array.some((object) => compareHotkey(object, e));
+  const check = (e: KeyboardEvent) => array.some((object) => compareHotkey(object, e));
   return check(event);
 }
 

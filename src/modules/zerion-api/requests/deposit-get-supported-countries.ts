@@ -17,7 +17,7 @@ export interface Response {
 export function depositGetSupportedCountries(
   this: ZerionApiContext,
   _params?: undefined,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const endpoint = 'deposit/supported-countries/v1';
   const kyOptions = this.getKyOptions();

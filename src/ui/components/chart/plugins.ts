@@ -5,11 +5,7 @@ import { Theme } from 'src/ui/features/appearance';
  * Draws a dashed vertical guide line at the currently hovered point, mirroring
  * the asset chart's hover affordance. Generic — works for any scatter chart.
  */
-export function drawVerticalLinePlugin({
-  getTheme,
-}: {
-  getTheme: () => Theme;
-}): Plugin<'scatter'> {
+export function drawVerticalLinePlugin({ getTheme }: { getTheme: () => Theme }): Plugin<'scatter'> {
   return {
     id: 'verticalLine',
     afterDraw: (chart) => {
@@ -44,11 +40,7 @@ export function drawVerticalLinePlugin({
  * Draws a dot at the currently hovered point. Generic — works for any scatter
  * chart.
  */
-export function drawDotPlugin({
-  getTheme,
-}: {
-  getTheme: () => Theme;
-}): Plugin<'scatter'> {
+export function drawDotPlugin({ getTheme }: { getTheme: () => Theme }): Plugin<'scatter'> {
   return {
     id: 'drawDot',
     afterDraw: (chart) => {
@@ -109,10 +101,7 @@ export function drawRangePlugin({
       ctx.lineTo(x, chart.height);
       ctx.lineTo(x, 0);
       ctx.closePath();
-      ctx.fillStyle =
-        theme === Theme.light
-          ? 'rgba(0, 0, 0, 0.1)'
-          : 'rgba(255, 255, 255, 0.1)';
+      ctx.fillStyle = theme === Theme.light ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
       ctx.fill();
 
       ctx.restore();

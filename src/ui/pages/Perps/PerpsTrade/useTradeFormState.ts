@@ -23,9 +23,7 @@ const KEYS = [
 ] as const;
 
 function parseMode(value: string | null): TradeMode | null {
-  return value === 'open' || value === 'add' || value === 'close'
-    ? value
-    : null;
+  return value === 'open' || value === 'add' || value === 'close' ? value : null;
 }
 
 function parseSide(value: string | null): TradeSide | null {
@@ -51,7 +49,7 @@ export function useTradeFormState() {
       takeProfitPrice: searchParams.get('takeProfitPrice') ?? '',
       stopLossPrice: searchParams.get('stopLossPrice') ?? '',
     }),
-    [searchParams]
+    [searchParams],
   );
 
   const updateState = useCallback(
@@ -60,11 +58,7 @@ export function useTradeFormState() {
       for (const key of KEYS) {
         if (!(key in patch)) continue;
         const value = patch[key];
-        if (
-          value === null ||
-          value === undefined ||
-          (typeof value === 'string' && value === '')
-        ) {
+        if (value === null || value === undefined || (typeof value === 'string' && value === '')) {
           next.delete(key);
         } else {
           next.set(key, String(value));
@@ -72,10 +66,10 @@ export function useTradeFormState() {
       }
       navigate(
         { search: next.toString() ? `?${next.toString()}` : '' },
-        { replace: options?.replace ?? true }
+        { replace: options?.replace ?? true },
       );
     },
-    [navigate, searchParams]
+    [navigate, searchParams],
   );
 
   const clearForm = useCallback(
@@ -84,10 +78,10 @@ export function useTradeFormState() {
       for (const key of KEYS) next.delete(key);
       navigate(
         { search: next.toString() ? `?${next.toString()}` : '' },
-        { replace: options?.replace ?? true }
+        { replace: options?.replace ?? true },
       );
     },
-    [navigate, searchParams]
+    [navigate, searchParams],
   );
 
   return { state, updateState, clearForm };

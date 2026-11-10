@@ -12,7 +12,7 @@ export function useWalletAssetPnl(
   }: {
     suspense?: boolean;
     enabled?: boolean;
-  } = {}
+  } = {},
 ) {
   return useQuery({
     queryKey: ['assetGetFungiblePnl', params, source],

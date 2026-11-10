@@ -22,11 +22,7 @@ export function NetworkCreateSuccess({
 }) {
   return (
     <PageColumn>
-      <NavigationTitle
-        urlBar="none"
-        title={null}
-        documentTitle="Network added successfully"
-      />
+      <NavigationTitle urlBar="none" title={null} documentTitle="Network added successfully" />
       <Spacer height={paddingTop} />
       <CheckIcon
         style={{
@@ -55,10 +51,7 @@ export function NetworkCreateSuccess({
       </UIText>
       <Spacer height={32} />
       <VStack gap={8} style={{ textAlign: 'center' }}>
-        <ValueCell
-          label="RPC URL"
-          value={chainConfig.rpcUrls[0] || noValueDash}
-        />
+        <ValueCell label="RPC URL" value={chainConfig.rpcUrls[0] || noValueDash} />
         <ValueCell label="Chain ID" value={chainConfig.chainId} />
         <ValueCell
           label="Currency Symbol"

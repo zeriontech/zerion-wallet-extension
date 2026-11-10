@@ -12,9 +12,7 @@ describe('backendErrorToMessage', () => {
       message: 'raw',
       hint: null,
     };
-    expect(backendErrorToMessage(error, { assetSymbol: 'USDC' })).toBe(
-      'Insufficient USDC balance'
-    );
+    expect(backendErrorToMessage(error, { assetSymbol: 'USDC' })).toBe('Insufficient USDC balance');
   });
 
   it('maps code 1 without asset symbol', () => {
@@ -33,7 +31,7 @@ describe('backendErrorToMessage', () => {
       hint: null,
     };
     expect(backendErrorToMessage(error, { nativeAssetSymbol: 'ETH' })).toBe(
-      'Insufficient ETH for gas'
+      'Insufficient ETH for gas',
     );
   });
 
@@ -43,9 +41,7 @@ describe('backendErrorToMessage', () => {
       message: 'raw',
       hint: null,
     };
-    expect(backendErrorToMessage(error, {})).toBe(
-      'Insufficient balance for gas'
-    );
+    expect(backendErrorToMessage(error, {})).toBe('Insufficient balance for gas');
   });
 
   it('falls back to error.message for unknown codes', () => {

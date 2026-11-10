@@ -39,7 +39,7 @@ export async function signPermitBatch(
   }: {
     onStep?: (index: number) => void;
     onSigned?: (index: number, permit: Permit) => void;
-  } = {}
+  } = {},
 ): Promise<StoredPermit[]> {
   const stored: StoredPermit[] = [];
   const normalizedAddress = normalizeAddress(address);
@@ -63,7 +63,7 @@ export type SigningStepState = 'signed' | 'signing' | 'pending';
 export function getSigningStepState(
   index: number,
   /** Index of the permit on the device now; `permits.length` once all signed */
-  currentIndex: number
+  currentIndex: number,
 ): SigningStepState {
   if (index < currentIndex) {
     return 'signed';

@@ -8,11 +8,8 @@ import { resolveReceiverFamiliarity } from './resolveReceiverFamiliarity';
  * picker dialog renders, so "known" here means exactly "the user would have
  * seen this address in the picker" — minus Recents.
  */
-export function useReceiverFamiliarity(
-  to: string | null | undefined
-): ReceiverFamiliarity {
-  const { walletItems, watchlistItems, addressBookItems } =
-    useReceiverAddressItems();
+export function useReceiverFamiliarity(to: string | null | undefined): ReceiverFamiliarity {
+  const { walletItems, watchlistItems, addressBookItems } = useReceiverAddressItems();
 
   return useMemo(
     () =>
@@ -22,6 +19,6 @@ export function useReceiverFamiliarity(
         watchlistAddresses: watchlistItems.map((item) => item.address),
         addressBookAddresses: addressBookItems.map((item) => item.address),
       }),
-    [to, walletItems, watchlistItems, addressBookItems]
+    [to, walletItems, watchlistItems, addressBookItems],
   );
 }

@@ -34,16 +34,10 @@ export function ReadonlyReceiverDialog({
       size="content"
     >
       <VStack gap={24} style={{ padding: 24, justifyItems: 'center' }}>
-        <VStack
-          gap={16}
-          style={{ justifyItems: 'center', textAlign: 'center' }}
-        >
-          <UIText kind="headline/h3">
-            The wallet you’ve selected is read-only
-          </UIText>
+        <VStack gap={16} style={{ justifyItems: 'center', textAlign: 'center' }}>
+          <UIText kind="headline/h3">The wallet you’ve selected is read-only</UIText>
           <UIText kind="body/regular">
-            You’ll need to import the private keys or recovery phrase to access
-            the funds
+            You’ll need to import the private keys or recovery phrase to access the funds
           </UIText>
         </VStack>
         {wallet ? (
@@ -58,11 +52,7 @@ export function ReadonlyReceiverDialog({
             }}
           >
             <HStack gap={8} alignItems="center">
-              <WalletAvatar
-                address={wallet.address}
-                size={28}
-                borderRadius={6}
-              />
+              <WalletAvatar address={wallet.address} size={28} borderRadius={6} />
               <UIText kind="body/accent">
                 <WalletDisplayName wallet={wallet} />
               </UIText>

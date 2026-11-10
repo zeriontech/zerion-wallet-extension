@@ -92,9 +92,8 @@ function TransactionDetails({
   interpretation?: InterpretResponse | null;
 }) {
   const accessList = useMemo(
-    () =>
-      transaction.accessList ? accessListify(transaction.accessList) : null,
-    [transaction.accessList]
+    () => (transaction.accessList ? accessListify(transaction.accessList) : null),
+    [transaction.accessList],
   );
 
   return (
@@ -102,58 +101,34 @@ function TransactionDetails({
       <Surface padding={16}>
         <VStack gap={16}>
           {transaction.from ? (
-            <AddressLine
-              network={network}
-              label="from"
-              address={transaction.from}
-            />
+            <AddressLine network={network} label="from" address={transaction.from} />
           ) : (
             <TextLine label="from" value={noValueDash} />
           )}
           {transaction.to ? (
-            <AddressLine
-              network={network}
-              label="to"
-              address={transaction.to}
-            />
+            <AddressLine network={network} label="to" address={transaction.to} />
           ) : (
             <TextLine label="to" value={noValueDash} />
           )}
-          <TextLine
-            label="nonce"
-            value={transaction.nonce ? String(transaction.nonce) : null}
-          />
+          <TextLine label="nonce" value={transaction.nonce ? String(transaction.nonce) : null} />
           <TextLine label="value" value={maybeHexValue(transaction.value)} />
           <TextLine
             label="chainId"
-            value={
-              transaction.chainId == null ? null : String(transaction.chainId)
-            }
+            value={transaction.chainId == null ? null : String(transaction.chainId)}
           />
           <TextLine label="gas" value={maybeHexValue(transaction.gas)} />
-          <TextLine
-            label="gasLimit"
-            value={maybeHexValue(transaction.gasLimit)}
-          />
-          <TextLine
-            label="gasPrice"
-            value={maybeHexValue(transaction.gasPrice)}
-          />
+          <TextLine label="gasLimit" value={maybeHexValue(transaction.gasLimit)} />
+          <TextLine label="gasPrice" value={maybeHexValue(transaction.gasPrice)} />
           <TextLine label="type" value={transaction.type} />
           <TextLine
             label="maxPriorityFeePerGas"
             value={maybeHexValue(transaction.maxPriorityFeePerGas)}
           />
-          <TextLine
-            label="maxFeePerGas"
-            value={maybeHexValue(transaction.maxFeePerGas)}
-          />
+          <TextLine label="maxFeePerGas" value={maybeHexValue(transaction.maxFeePerGas)} />
           <TextLine
             label="data"
             wrap={true}
-            value={
-              transaction.data ? toUtf8String(transaction.data) : noValueDash
-            }
+            value={transaction.data ? toUtf8String(transaction.data) : noValueDash}
           />
         </VStack>
       </Surface>
@@ -167,11 +142,7 @@ function TransactionDetails({
                     {address}
                   </UIText>
                   {storageKeys.map((storageKey) => (
-                    <UIText
-                      key={storageKey}
-                      kind="body/regular"
-                      color="var(--black)"
-                    >
+                    <UIText key={storageKey} kind="body/regular" color="var(--black)">
                       {storageKey}
                     </UIText>
                   ))}

@@ -128,10 +128,8 @@
   --button-text: var(--black);
   --angle: 0deg;
   background:
-    linear-gradient(var(--button-background), var(--button-background))
-      padding-box,
-    conic-gradient(from var(--angle), var(--neutral-300), var(--black))
-      border-box;
+    linear-gradient(var(--button-background), var(--button-background)) padding-box,
+    conic-gradient(from var(--angle), var(--neutral-300), var(--black)) border-box;
   border: 2px solid transparent;
   border-radius: 16px;
   animation: rotate-gradient 2.5s infinite linear;

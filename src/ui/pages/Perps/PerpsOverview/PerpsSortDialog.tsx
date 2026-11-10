@@ -5,10 +5,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import type {
-  PerpSortField,
-  PerpSorting,
-} from 'src/modules/hyperliquid/selectPerps';
+import type { PerpSortField, PerpSorting } from 'src/modules/hyperliquid/selectPerps';
 
 const OPTIONS: { field: PerpSortField; label: string }[] = [
   { field: 'volume', label: 'Volume' },
@@ -28,13 +25,7 @@ export function PerpsSortDialog({
   onSelect: (sorting: PerpSorting) => void;
 }) {
   return (
-    <Dialog2
-      open={open}
-      onClose={onClose}
-      title="Sort by"
-      size="content"
-      autoFocusInput={false}
-    >
+    <Dialog2 open={open} onClose={onClose} title="Sort by" size="content" autoFocusInput={false}>
       <VStack gap={8} style={{ padding: 16, paddingBottom: 32 }}>
         {OPTIONS.map(({ field, label }) => {
           const isActive = sorting.field === field;
@@ -52,9 +43,7 @@ export function PerpsSortDialog({
                 padding: 16,
                 borderRadius: 12,
                 backgroundColor: 'var(--neutral-100)',
-                border: `1px solid ${
-                  isActive ? 'var(--primary)' : 'transparent'
-                }`,
+                border: `1px solid ${isActive ? 'var(--primary)' : 'transparent'}`,
               }}
             >
               <HStack

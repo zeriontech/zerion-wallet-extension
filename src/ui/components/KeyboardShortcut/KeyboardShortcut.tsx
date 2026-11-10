@@ -43,10 +43,7 @@ export function KeyboardShortcut({
       // or virtual-focus widgets, event.target may not be the focused input.
       if (!availableDuringInputs) {
         const target = event.target instanceof Element ? event.target : null;
-        if (
-          isEditableElement(target) ||
-          isEditableElement(document.activeElement)
-        ) {
+        if (isEditableElement(target) || isEditableElement(document.activeElement)) {
           return;
         }
       }

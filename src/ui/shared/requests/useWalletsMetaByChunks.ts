@@ -26,7 +26,7 @@ export function useWalletsMetaByChunks({
           const normalizedAddress = normalizeAddress(walletMeta.address);
           queryClient.setQueryData(
             ['ZerionAPI.getWalletsMetaByChunks', [normalizedAddress]],
-            [walletMeta]
+            [walletMeta],
           );
         });
       }

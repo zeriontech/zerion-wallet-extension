@@ -56,10 +56,8 @@ export async function createOptimisticFee({
   const data = transaction.data ?? '0x';
 
   const baseFee = optimistic.underlying.eip1559?.baseFee;
-  const eip1559GasPrice =
-    gasPriceObject?.eip1559 || optimistic.underlying.eip1559;
-  const classicGasPrice =
-    gasPriceObject?.classic || optimistic.underlying.classic;
+  const eip1559GasPrice = gasPriceObject?.eip1559 || optimistic.underlying.eip1559;
+  const classicGasPrice = gasPriceObject?.classic || optimistic.underlying.classic;
 
   const nonce = await getNonce();
   const encoded_tx_data = eip1559GasPrice
@@ -73,37 +71,27 @@ export async function createOptimisticFee({
         data,
       ])
     : classicGasPrice != null
-      ? rlpEncode([
-          nonce,
-          classicGasPrice,
-          gasLimit,
-          to,
-          valueToHex(value),
-          data,
-        ])
+      ? rlpEncode([nonce, classicGasPrice, gasLimit, to, valueToHex(value), data])
       : null;
   if (encoded_tx_data == null) {
     return null;
   }
   const zero_tx_bytes_number = countZeroBytes(encoded_tx_data); // number of zero bytes (!), i.e. '00' substring in encoded tx.
-  const non_zero_tx_bytes_number =
-    bytesLength(encoded_tx_data) - zero_tx_bytes_number; // len is a number of bytes (!) in encoded tx.
+  const non_zero_tx_bytes_number = bytesLength(encoded_tx_data) - zero_tx_bytes_number; // len is a number of bytes (!) in encoded tx.
 
   const tx_data_gas = zero_tx_bytes_number * 4 + non_zero_tx_bytes_number * 16;
   const l1GasEstimation = (tx_data_gas + fixedOverhead) * dynamicOverhead;
 
   return {
     maxFee:
-      (eip1559GasPrice
-        ? Number(eip1559GasPrice.maxFee)
-        : Number(classicGasPrice)) *
+      (eip1559GasPrice ? Number(eip1559GasPrice.maxFee) : Number(classicGasPrice)) *
         Number(gasLimit) +
       Math.round(l1GasEstimation * 1.25), // Optimism guarantees that there should not be one-time jumps of l1 component of gas estimation more than 25%
     estimatedFee:
       (eip1559GasPrice
         ? Math.min(
             Number(eip1559GasPrice.maxFee),
-            Number(baseFee) + Number(eip1559GasPrice.priorityFee)
+            Number(baseFee) + Number(eip1559GasPrice.priorityFee),
           )
         : Number(classicGasPrice)) *
         Number(gasLimit) +

@@ -13,11 +13,7 @@ interface Response {
   errors?: { title: string; detail: string }[];
 }
 
-export function getGasPrices(
-  this: ZerionApiContext,
-  { chain }: Params,
-  options?: ClientOptions
-) {
+export function getGasPrices(this: ZerionApiContext, { chain }: Params, options?: ClientOptions) {
   const params = new URLSearchParams({ chain: chain.toString() });
   const kyOptions = this.getKyOptions();
   const endpoint = `chain/get-gas-prices/v1?${params}`;

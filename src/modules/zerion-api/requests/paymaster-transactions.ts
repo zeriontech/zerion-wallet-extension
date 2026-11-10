@@ -29,10 +29,7 @@ type NonNullableRequiredKeys<T> = {
 
 type Keys = keyof PaymasterEligibilityParams['transaction'];
 type PaymasterEligibilityParamsAdapted = NonNullableRequiredKeys<
-  Pick<
-    IncomingTransaction,
-    Exclude<Keys, 'gasPerPubdataByte' | 'value' | 'data'>
-  >
+  Pick<IncomingTransaction, Exclude<Keys, 'gasPerPubdataByte' | 'value' | 'data'>>
 > &
   Pick<IncomingTransaction, 'value' | 'data'> & {
     gasPerPubdataByte?: string;
@@ -46,7 +43,7 @@ type PaymasterEligibilityResponse = ResponseBody<{
 export function paymasterCheckEligibility(
   this: ZerionApiContext,
   tx: PaymasterEligibilityParamsAdapted,
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const {
     from,
@@ -78,7 +75,7 @@ export function paymasterCheckEligibility(
       body: JSON.stringify(params),
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }
 
@@ -111,12 +108,9 @@ type PaymasterParamsResponse = ResponseBody<PaymasterParamsResponseData>;
 export function getPaymasterParams(
   this: ZerionApiContext,
   requestAdapted: {
-    transaction: PartiallyOptional<
-      PaymasterParamsRequest['transaction'],
-      'value' | 'data'
-    >;
+    transaction: PartiallyOptional<PaymasterParamsRequest['transaction'], 'value' | 'data'>;
   },
-  options?: ClientOptions
+  options?: ClientOptions,
 ) {
   const { transaction } = requestAdapted;
   const params: PaymasterParamsRequest = {
@@ -141,6 +135,6 @@ export function getPaymasterParams(
       body: JSON.stringify(params),
       ...options,
     },
-    kyOptions
+    kyOptions,
   );
 }

@@ -23,9 +23,7 @@ function permitsQueryOptions(address: string) {
 }
 
 /** Raw stored list for one wallet, expired ones included (dev tooling) */
-export function useStoredConfidentialPermits(
-  address: string | null | undefined
-) {
+export function useStoredConfidentialPermits(address: string | null | undefined) {
   return useQuery({
     ...permitsQueryOptions(address ?? ''),
     enabled: Boolean(address),
@@ -75,21 +73,17 @@ export function useConfidentialPermits(addresses: string[]): {
     () => collectPermitsForRequest(permitLists),
     // permitLists is a fresh array every render; its content is what matters
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [fingerprintInput]
+    [fingerprintInput],
   );
   return { permits, fingerprint: getPermitsFingerprint(permits), isReady };
 }
 
 /** Imperative twin of `useConfidentialPermits` for non-hook query helpers */
-export async function getConfidentialPermits(
-  addresses: string[]
-): Promise<SignedPermit[]> {
+export async function getConfidentialPermits(addresses: string[]): Promise<SignedPermit[]> {
   const permitLists = await Promise.all(
     addresses
       .filter(Boolean)
-      .map((address) =>
-        queryClient.fetchQuery(permitsQueryOptions(address)).catch(() => null)
-      )
+      .map((address) => queryClient.fetchQuery(permitsQueryOptions(address)).catch(() => null)),
   );
   return collectPermitsForRequest(permitLists);
 }

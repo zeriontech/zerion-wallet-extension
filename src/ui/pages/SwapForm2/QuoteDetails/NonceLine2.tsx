@@ -36,10 +36,7 @@ export function NonceLine2({
   userNonce,
   onChange,
 }: {
-  transaction: PartiallyRequired<
-    Pick<IncomingTransaction, 'from' | 'nonce'>,
-    'from'
-  >;
+  transaction: PartiallyRequired<Pick<IncomingTransaction, 'from' | 'nonce'>, 'from'>;
   chain: Chain;
   userNonce: string | null;
   onChange: (nonce: string | null) => void;
@@ -95,18 +92,11 @@ export function NonceLine2({
           </HStack>
         </HStack>
       </UnstyledButton>
-      <Dialog2
-        open={dialog.open}
-        onClose={dialog.closeDialog}
-        title="Nonce"
-        size="content"
-      >
+      <Dialog2 open={dialog.open} onClose={dialog.closeDialog} title="Nonce" size="content">
         <div style={{ padding: 16, paddingTop: 0 }}>
           <NonceDialogForm
             defaultValue={userNonce ? String(parseInt(userNonce)) : ''}
-            placeholder={
-              nonce != null ? String(transaction.nonce || nonce) : ''
-            }
+            placeholder={nonce != null ? String(transaction.nonce || nonce) : ''}
             onSubmit={(nonce) => {
               dialog.closeDialog();
               onChange(nonce);

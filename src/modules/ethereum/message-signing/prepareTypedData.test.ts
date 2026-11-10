@@ -33,9 +33,7 @@ describe('sanitizeTypedData', () => {
   test('trims whitespace-padded string chainId', () => {
     expect(sanitizeTypedData(createTypedData(' 1')).domain.chainId).toBe('1');
     expect(sanitizeTypedData(createTypedData('1 ')).domain.chainId).toBe('1');
-    expect(sanitizeTypedData(createTypedData(' 0x89 ')).domain.chainId).toBe(
-      '0x89'
-    );
+    expect(sanitizeTypedData(createTypedData(' 0x89 ')).domain.chainId).toBe('0x89');
   });
 
   test('does not mutate the input typedData', () => {
@@ -69,9 +67,7 @@ describe('sanitizeTypedDataRaw', () => {
 
   test('preserves well-formed payloads', () => {
     const typedData = createTypedData(1);
-    expect(sanitizeTypedDataRaw(JSON.stringify(typedData))).toBe(
-      JSON.stringify(typedData)
-    );
+    expect(sanitizeTypedDataRaw(JSON.stringify(typedData))).toBe(JSON.stringify(typedData));
     expect(sanitizeTypedDataRaw(typedData)).toBe(JSON.stringify(typedData));
   });
 

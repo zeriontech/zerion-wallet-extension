@@ -6,9 +6,7 @@ import { createExtensionTest } from './test';
 const extensionTest = createExtensionTest();
 const test = extensionTest.extend<{ manageWalletsPage: ManageWalletsPage }>({
   manageWalletsPage: async ({ extensionPopupUrl, page }, use) => {
-    await use(
-      new ManageWalletsPage(page, { extensionPopupUrl, path: '/wallets' })
-    );
+    await use(new ManageWalletsPage(page, { extensionPopupUrl, path: '/wallets' }));
   },
 });
 
@@ -24,11 +22,7 @@ describe('Manage Wallets', () => {
     await manageWalletsPage.matchesSnapshot();
   });
 
-  test('Action links are working', async ({
-    context,
-    page,
-    manageWalletsPage,
-  }) => {
+  test('Action links are working', async ({ context, page, manageWalletsPage }) => {
     await manageWalletsPage.createNewWalletLink.click();
     await expect(page).toHaveURL(/.*\/get-started/);
     await page.goBack();
@@ -48,16 +42,10 @@ describe('Manage Wallets', () => {
     await expect(newPage).toHaveURL(/.*\/connect-hardware-wallet/);
   });
 
-  test('User can erase all data', async ({
-    context,
-    page,
-    manageWalletsPage,
-  }) => {
+  test('User can erase all data', async ({ context, page, manageWalletsPage }) => {
     await manageWalletsPage.eraseAllDataButton.click();
 
-    const eraseDataConfirmationDialog = new EraseDataConfirmationDialog(
-      page.getByRole('dialog')
-    );
+    const eraseDataConfirmationDialog = new EraseDataConfirmationDialog(page.getByRole('dialog'));
     await eraseDataConfirmationDialog.matchesSnapshot();
     await eraseDataConfirmationDialog.confirm();
 

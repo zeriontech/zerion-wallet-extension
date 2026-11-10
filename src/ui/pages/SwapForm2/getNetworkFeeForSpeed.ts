@@ -39,7 +39,7 @@ export function getBaseFee(gasPrices: ChainGasPrice | null): number | null {
  */
 export function getSwapOriginalEffectiveGasPrice(
   quote: NetworkFeeQuote | null,
-  baseFee: number | null
+  baseFee: number | null,
 ): number | null {
   const swapEvm = quote?.transactionSwap?.evm;
   if (!swapEvm) {
@@ -51,7 +51,7 @@ export function getSwapOriginalEffectiveGasPrice(
       maxFee: toNum(swapEvm.maxFee),
       maxPriorityFee: toNum(swapEvm.maxPriorityFee),
     },
-    baseFee
+    baseFee,
   );
 }
 
@@ -59,23 +59,21 @@ export function getSwapOriginalEffectiveGasPrice(
 export function getPresetEffectiveGasPrice(
   speed: Exclude<NetworkFeeSpeed, 'custom'>,
   gasPrices: ChainGasPrice | null,
-  baseFee: number | null
+  baseFee: number | null,
 ): number | null {
   if (!gasPrices) {
     return null;
   }
   const speedGasPrice = gasPrices[speed];
-  const eip1559 =
-    speedGasPrice?.eip1559 ?? speedGasPrice?.optimistic?.underlying.eip1559;
-  const classic =
-    speedGasPrice?.classic ?? speedGasPrice?.optimistic?.underlying.classic;
+  const eip1559 = speedGasPrice?.eip1559 ?? speedGasPrice?.optimistic?.underlying.eip1559;
+  const classic = speedGasPrice?.classic ?? speedGasPrice?.optimistic?.underlying.classic;
   return getEffectiveGasPrice(
     {
       gasPrice: eip1559 ? null : classic,
       maxFee: eip1559?.maxFee ?? null,
       maxPriorityFee: eip1559?.priorityFee ?? null,
     },
-    baseFee
+    baseFee,
   );
 }
 
@@ -87,7 +85,7 @@ export function getPresetEffectiveGasPrice(
 export function getConfigurationEffectiveGasPrice(
   networkFee: CustomConfiguration['networkFee'],
   gasPrices: ChainGasPrice | null,
-  baseFee: number | null
+  baseFee: number | null,
 ): number | null {
   const { speed, custom1559GasPrice, customClassicGasPrice } = networkFee;
   if (speed === 'custom') {
@@ -97,7 +95,7 @@ export function getConfigurationEffectiveGasPrice(
         maxFee: custom1559GasPrice?.maxFee ?? null,
         maxPriorityFee: custom1559GasPrice?.priorityFee ?? null,
       },
-      baseFee
+      baseFee,
     );
   }
   return getPresetEffectiveGasPrice(speed, gasPrices, baseFee);
@@ -111,7 +109,7 @@ export function getConfigurationEffectiveGasPrice(
 export function getNetworkFeeRatio(
   quote: NetworkFeeQuote | null,
   effectiveGasPrice: number | null,
-  baseFee: number | null
+  baseFee: number | null,
 ): number {
   const original = getSwapOriginalEffectiveGasPrice(quote, baseFee);
   if (!original || original <= 0) {
@@ -124,9 +122,7 @@ export function getNetworkFeeRatio(
 }
 
 /** The swap tx's original gas limit (decimal), or `null` if unavailable. */
-export function getSwapOriginalGasLimit(
-  quote: NetworkFeeQuote | null
-): number | null {
+export function getSwapOriginalGasLimit(quote: NetworkFeeQuote | null): number | null {
   return toNum(quote?.transactionSwap?.evm?.gas);
 }
 
@@ -138,14 +134,10 @@ const hexToGwei = (hex: string | null | undefined) =>
  * custom network-fee form, taken from the swap tx's own values. These seed the
  * form below any existing user override and above the hardcoded fallbacks.
  */
-export function getCustomFormDefaults(
-  quote: NetworkFeeQuote | null
-): CustomFormDefaults {
+export function getCustomFormDefaults(quote: NetworkFeeQuote | null): CustomFormDefaults {
   const swapEvm = quote?.transactionSwap?.evm;
   return {
-    priorityFee: swapEvm?.maxPriorityFee
-      ? hexToGwei(swapEvm.maxPriorityFee)
-      : null,
+    priorityFee: swapEvm?.maxPriorityFee ? hexToGwei(swapEvm.maxPriorityFee) : null,
     maxFee: swapEvm?.maxFee ? hexToGwei(swapEvm.maxFee) : null,
     baseFee: swapEvm?.gasPrice ? hexToGwei(swapEvm.gasPrice) : null,
     gasLimit: swapEvm?.gas ? new BigNumber(swapEvm.gas).toFixed() : null,
@@ -162,7 +154,7 @@ export function getCustomFeeRatio(
   quote: NetworkFeeQuote | null,
   effectiveGasPrice: number | null,
   gasLimit: number | null,
-  baseFee: number | null
+  baseFee: number | null,
 ): number {
   const priceRatio = getNetworkFeeRatio(quote, effectiveGasPrice, baseFee);
   const originalGasLimit = getSwapOriginalGasLimit(quote);

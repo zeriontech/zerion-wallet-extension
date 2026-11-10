@@ -37,15 +37,11 @@ export function PortfolioValue({
     { source: useHttpClientSource() },
     {
       enabled,
-      hyperliquidDelayMs: staggerHyperliquid
-        ? (listIndex ?? 0) * HYPERLIQUID_STAGGER_STEP_MS
-        : 0,
+      hyperliquidDelayMs: staggerHyperliquid ? (listIndex ?? 0) * HYPERLIQUID_STAGGER_STEP_MS : 0,
       // Only override focus-refetch for staggered lists; otherwise leave it to
       // the hook default (mirrors the main portfolio query's behavior).
-      ...(staggerHyperliquid
-        ? { hyperliquidRefetchOnWindowFocus: false }
-        : null),
-    }
+      ...(staggerHyperliquid ? { hyperliquidRefetchOnWindowFocus: false } : null),
+    },
   );
   return render(query);
 }

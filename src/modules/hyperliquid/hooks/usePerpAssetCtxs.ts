@@ -11,7 +11,7 @@ interface UsePerpAssetCtxsResult {
 
 export function usePerpAssetCtxs(
   dexes: DexIdentifier[],
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true }: { enabled?: boolean } = {},
 ): UsePerpAssetCtxsResult {
   const results = useQueries({
     queries: dexes.map((dex) => {

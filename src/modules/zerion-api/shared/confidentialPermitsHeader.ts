@@ -7,10 +7,7 @@ function toBase64Url(bytes: Uint8Array): string {
   for (const byte of bytes) {
     binary += String.fromCharCode(byte);
   }
-  return btoa(binary)
-    .replaceAll('+', '-')
-    .replaceAll('/', '_')
-    .replace(/=+$/, '');
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 }
 
 /**
@@ -18,9 +15,7 @@ function toBase64Url(bytes: Uint8Array): string {
  * compact JSON array (always an array, even for one permit) as unpadded
  * base64url (RFC 4648 §5). `contracts` / `expireAt` are echoed verbatim.
  */
-export function encodeConfidentialPermitsHeader(
-  permits: SignedPermit[]
-): string {
+export function encodeConfidentialPermitsHeader(permits: SignedPermit[]): string {
   return toBase64Url(new TextEncoder().encode(JSON.stringify(permits)));
 }
 
@@ -30,7 +25,7 @@ export function encodeConfidentialPermitsHeader(
  * the backend, and omitting keeps the request identical to today's.
  */
 export function getConfidentialPermitsHeaders(
-  permits: SignedPermit[] | undefined
+  permits: SignedPermit[] | undefined,
 ): Record<string, string> {
   return permits?.length
     ? {

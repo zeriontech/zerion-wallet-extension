@@ -1,14 +1,7 @@
 import EventEmitter from 'events';
 import ky from 'ky';
-import type {
-  JsonRpcError,
-  JsonRpcPayload,
-  JsonRpcResult,
-} from '@walletconnect/jsonrpc-utils';
-import {
-  formatJsonRpcError,
-  isJsonRpcRequest,
-} from '@walletconnect/jsonrpc-utils';
+import type { JsonRpcError, JsonRpcPayload, JsonRpcResult } from '@walletconnect/jsonrpc-utils';
+import { formatJsonRpcError, isJsonRpcRequest } from '@walletconnect/jsonrpc-utils';
 
 export class HttpConnection extends EventEmitter {
   private url: string;
@@ -41,7 +34,7 @@ export class HttpConnection extends EventEmitter {
           const payload = formatJsonRpcError(request.id, error.message);
           this.emit('payload', payload);
           return payload;
-        }
+        },
       );
   }
 }

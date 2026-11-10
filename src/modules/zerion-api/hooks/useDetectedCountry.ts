@@ -6,9 +6,7 @@ import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
  * pre-selects the deposit form's country (once the user picks one explicitly,
  * it is not consulted again), and it gates the UK / US swap disclaimers.
  */
-export function useDetectedCountry({
-  enabled = true,
-}: { enabled?: boolean } = {}) {
+export function useDetectedCountry({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['geoGetCountry'],
     queryFn: () => ZerionAPI.geoGetCountry(),

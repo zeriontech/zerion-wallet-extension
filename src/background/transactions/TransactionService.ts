@@ -17,10 +17,7 @@ import {
   type AnyAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
-import {
-  getNetworkByChainId,
-  getNetworkById,
-} from 'src/modules/networks/networks-api';
+import { getNetworkByChainId, getNetworkById } from 'src/modules/networks/networks-api';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
@@ -42,10 +39,7 @@ import {
 } from '../Wallet/model/ethers-v5-types';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
-import {
-  createSeedTransactions,
-  DEV_SEED_INITIATOR,
-} from './devSeedLocalTransactions';
+import { createSeedTransactions, DEV_SEED_INITIATOR } from './devSeedLocalTransactions';
 
 const ONE_DAY_IN_MINUTES = 1 * 60 * 24;
 
@@ -54,7 +48,7 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
     this.setState((state) =>
       produce(state, (draft) => {
         upsert(draft, value, (x) => x.hash ?? x.signature);
-      })
+      }),
     );
   }
 
@@ -68,9 +62,7 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
 
   bulkDeleteTransactionsById(ids: string[]) {
     const idsSet = new Set(ids);
-    this.setState((state) =>
-      state.filter((item) => !idsSet.has(item.hash ?? item.signature))
-    );
+    this.setState((state) => state.filter((item) => !idsSet.has(item.hash ?? item.signature)));
   }
 
   clearPendingTransactions() {
@@ -82,9 +74,7 @@ class TransactionsStore extends PersistentStore<StoredTransactions> {
   }
 
   removeTransactionsByInitiator(initiator: string) {
-    this.setState((state) =>
-      state.filter((item) => item.initiator !== initiator)
-    );
+    this.setState((state) => state.filter((item) => item.initiator !== initiator));
   }
 }
 
@@ -227,14 +217,10 @@ export class TransactionService {
     const savedTransactions = await this.transactionsStore.getSavedState();
     // Dev fixtures are spread over days on purpose; they are removed explicitly
     // through the dev menu, not by age.
-    const transactions = savedTransactions.filter(
-      (item) => item.initiator !== DEV_SEED_INITIATOR
-    );
+    const transactions = savedTransactions.filter((item) => item.initiator !== DEV_SEED_INITIATOR);
     const now = Date.now();
     const keys = new Set(
-      transactions
-        .filter((item) => isExpiredTransaction(item, now))
-        .map(getTransactionNetworkKey)
+      transactions.filter((item) => isExpiredTransaction(item, now)).map(getTransactionNetworkKey),
     );
     if (!keys.size) {
       return;
@@ -251,7 +237,7 @@ export class TransactionService {
     });
     if (expired.length) {
       this.transactionsStore.bulkDeleteTransactionsById(
-        expired.map((item) => item.hash ?? item.signature)
+        expired.map((item) => item.hash ?? item.signature),
       );
     }
   }
@@ -268,10 +254,7 @@ export class TransactionService {
 
   static toTransactionObject(
     result: SignTransactionResult,
-    {
-      initiator,
-      addressAction,
-    }: { initiator: string; addressAction?: AnyAddressAction }
+    { initiator, addressAction }: { initiator: string; addressAction?: AnyAddressAction },
   ): TransactionObject {
     const timestamp = Date.now();
     if (result.evm) {
@@ -316,7 +299,7 @@ export class TransactionService {
       this.transactionsStore.setState((state) =>
         produce(state, (draft) => {
           draft.push(newItem);
-        })
+        }),
       );
       this.startPurgeInterval();
     });
@@ -336,9 +319,7 @@ export class TransactionService {
           receipt: toEthersV5Receipt(receipt),
         });
         if (item.relatedTransactionHash) {
-          const relatedItem = this.transactionsStore.getByHash(
-            item.relatedTransactionHash
-          );
+          const relatedItem = this.transactionsStore.getByHash(item.relatedTransactionHash);
           // NOTE: there still a possible opposite case:
           // There can be a transaction with "relatedTransactionHash" equal to currently mined one,
           // but this might be resolved by transactionsPoller
@@ -346,19 +327,16 @@ export class TransactionService {
         }
       }
     });
-    this.transactionsPoller.emitter.on(
-      'solana:mined',
-      (signature, signatureStatus) => {
-        const item = this.transactionsStore.getBySignature(signature);
-        if (item) {
-          invariant(item.signature, 'Item must be solana');
-          this.transactionsStore.upsertTransaction({
-            ...item,
-            signatureStatus,
-          });
-        }
+    this.transactionsPoller.emitter.on('solana:mined', (signature, signatureStatus) => {
+      const item = this.transactionsStore.getBySignature(signature);
+      if (item) {
+        invariant(item.signature, 'Item must be solana');
+        this.transactionsStore.upsertTransaction({
+          ...item,
+          signatureStatus,
+        });
       }
-    );
+    });
     this.transactionsPoller.emitter.on('evm:dropped', (hash) => {
       const item = this.transactionsStore.getByHash(hash);
       this.markAsDropped(item);
@@ -374,17 +352,9 @@ export class TransactionService {
     this.transactionsStore.clearPendingTransactions();
   }
 
-  async devSeedLocalTransactions({
-    address,
-    count,
-  }: {
-    address: string;
-    count: number;
-  }) {
+  async devSeedLocalTransactions({ address, count }: { address: string; count: number }) {
     await this.transactionsStore.ready();
-    this.transactionsStore.bulkAddTransactions(
-      createSeedTransactions({ address, count })
-    );
+    this.transactionsStore.bulkAddTransactions(createSeedTransactions({ address, count }));
   }
 
   async devClearSeededLocalTransactions() {

@@ -1,7 +1,4 @@
-import {
-  HYPERLIQUID_CHAIN,
-  HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX,
-} from '../constants';
+import { HYPERLIQUID_CHAIN, HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX } from '../constants';
 import type { ExchangeWithdraw3Action } from './types';
 
 // Mirrors iOS `ExchangeWithdrawAction`. The `time` field is both the EIP-712

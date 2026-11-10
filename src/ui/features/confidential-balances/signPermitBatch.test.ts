@@ -42,9 +42,7 @@ describe('signPermitBatch', () => {
   it('signs every permit in order and reports each step', async () => {
     const steps: number[] = [];
     const signed: number[] = [];
-    const sign = vi.fn(
-      async (typedData: TypedData) => `sig:${typedData.domain.chainId}`
-    );
+    const sign = vi.fn(async (typedData: TypedData) => `sig:${typedData.domain.chainId}`);
 
     const result = await signPermitBatch(ADDRESS, permits, sign, {
       onStep: (index) => steps.push(index),
@@ -53,29 +51,16 @@ describe('signPermitBatch', () => {
 
     expect(steps).toEqual([0, 1, 2]);
     expect(signed).toEqual([0, 1, 2]);
-    expect(result.map((permit) => permit.signature)).toEqual([
-      'sig:1',
-      'sig:8453',
-      'sig:42161',
-    ]);
-    expect(result.map((permit) => permit.chain)).toEqual([
-      'ethereum',
-      'base',
-      'arbitrum',
-    ]);
-    expect(
-      result.every((permit) => permit.address === ADDRESS.toLowerCase())
-    ).toBe(true);
+    expect(result.map((permit) => permit.signature)).toEqual(['sig:1', 'sig:8453', 'sig:42161']);
+    expect(result.map((permit) => permit.chain)).toEqual(['ethereum', 'base', 'arbitrum']);
+    expect(result.every((permit) => permit.address === ADDRESS.toLowerCase())).toBe(true);
   });
 
   it('is all-or-nothing: a rejection midway carries its index and yields nothing', async () => {
     const steps: number[] = [];
     const signed: number[] = [];
     const denied = new Error('Signature denied by user');
-    const sign = vi
-      .fn<PermitSigner>()
-      .mockResolvedValueOnce('sig:1')
-      .mockRejectedValueOnce(denied);
+    const sign = vi.fn<PermitSigner>().mockResolvedValueOnce('sig:1').mockRejectedValueOnce(denied);
 
     const promise = signPermitBatch(ADDRESS, permits, sign, {
       onStep: (index) => steps.push(index),

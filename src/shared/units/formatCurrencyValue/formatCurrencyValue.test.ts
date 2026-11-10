@@ -101,11 +101,7 @@ describe('formatCurrencyValue', () => {
   for (const testCase of testCases) {
     test(`${testCase.input.value} ${testCase.input.currency} -> ${testCase.output}`, () => {
       const { input, output } = testCase;
-      const result = formatCurrencyValue(
-        input.value,
-        input.locale,
-        input.currency
-      );
+      const result = formatCurrencyValue(input.value, input.locale, input.currency);
       expect(result).toBe(output);
     });
   }

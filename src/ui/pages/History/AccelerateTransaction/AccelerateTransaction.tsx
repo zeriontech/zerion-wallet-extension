@@ -34,12 +34,9 @@ export function AccelerateTransaction({
   if (isLoading || !wallet) {
     return null;
   }
-  const isAccelerated =
-    isLocalAddressAction(addressAction) && addressAction.relatedTransaction;
+  const isAccelerated = isLocalAddressAction(addressAction) && addressAction.relatedTransaction;
   const isCancel = isCancelTx(addressAction);
-  const disabled =
-    !addressAction.transaction ||
-    addressAction.transaction.chain.id === 'solana';
+  const disabled = !addressAction.transaction || addressAction.transaction.chain.id === 'solana';
   return view === 'default' ? (
     <>
       <VStack gap={16}>
@@ -56,9 +53,7 @@ export function AccelerateTransaction({
                 <HStack gap={8} alignItems="center">
                   <CircleSpinner />
                   <UIText kind="body/regular">
-                    {isCancel
-                      ? 'Transaction cancelling...'
-                      : 'Transaction pending...'}
+                    {isCancel ? 'Transaction cancelling...' : 'Transaction pending...'}
                   </UIText>
                 </HStack>
                 {isAccelerated && !isCancel ? (

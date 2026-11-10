@@ -25,7 +25,7 @@ export function NetworkDistributionChart({ address }: { address: string }) {
   const { data, isLoading } = useWalletPortfolio(
     { addresses: [address], currency },
     { source },
-    { enabled: Boolean(address), refetchInterval: 40000 }
+    { enabled: Boolean(address), refetchInterval: 40000 },
   );
 
   const items = useMemo<DistributionItem[]>(() => {
@@ -60,9 +60,7 @@ export function NetworkDistributionChart({ address }: { address: string }) {
         isLoading={isLoading}
         onSelect={setSelected}
         view={preferences?.networkDistributionChartView ?? 'grid'}
-        onViewChange={(view) =>
-          setPreferences({ networkDistributionChartView: view })
-        }
+        onViewChange={(view) => setPreferences({ networkDistributionChartView: view })}
       />
       <PositionsListDialog
         open={selected != null}

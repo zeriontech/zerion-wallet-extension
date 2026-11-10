@@ -19,7 +19,7 @@ export function SquareElement({
           alignItems: 'center',
           justifyContent: 'center',
         },
-        style
+        style,
       )}
       {...props}
     >

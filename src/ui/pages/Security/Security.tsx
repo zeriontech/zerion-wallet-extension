@@ -10,10 +10,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { Frame } from 'src/ui/ui-kit/Frame';
-import {
-  FrameListItemButton,
-  FrameListItemLink,
-} from 'src/ui/ui-kit/FrameList';
+import { FrameListItemButton, FrameListItemLink } from 'src/ui/ui-kit/FrameList';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
@@ -26,10 +23,7 @@ import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import {
-  estimatePasswordStrengh,
-  Strength,
-} from 'src/shared/validation/password-strength';
+import { estimatePasswordStrengh, Strength } from 'src/shared/validation/password-strength';
 import { getError } from 'get-error';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
@@ -54,8 +48,7 @@ function TouchIdSettings() {
         return false;
       }
       try {
-        const available =
-          await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
         return available;
       } catch {
         return false;
@@ -165,8 +158,8 @@ function TouchIdSettings() {
             <UIText kind="headline/h3">Turn Off {passkeyTitle} Unlock?</UIText>
             <Spacer height={8} />
             <UIText kind="body/regular">
-              You will be able to log in only with your password. You can turn
-              this back on at any time.
+              You will be able to log in only with your password. You can turn this back on at any
+              time.
             </UIText>
             <Spacer height={16} />
             <Button kind="danger" value="confirm" style={{ width: '100%' }}>
@@ -186,9 +179,7 @@ function TouchIdSettings() {
         renderWhenOpen={() => {
           return (
             <>
-              <DialogCloseButton
-                style={{ position: 'absolute', top: 8, right: 8 }}
-              />
+              <DialogCloseButton style={{ position: 'absolute', top: 8, right: 8 }} />
               <VStack gap={24}>
                 <VStack gap={8}>
                   <UIText kind="headline/h1">Enter Password</UIText>
@@ -199,19 +190,16 @@ function TouchIdSettings() {
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
-                    const password = new FormData(event.currentTarget).get(
-                      'password'
-                    ) as string | undefined;
+                    const password = new FormData(event.currentTarget).get('password') as
+                      | string
+                      | undefined;
                     if (!password) {
                       return;
                     }
                     setupTouchIdMutation.mutate(password);
                   }}
                 >
-                  <VStack
-                    gap={32}
-                    style={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}
-                  >
+                  <VStack gap={32} style={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}>
                     <VStack gap={4}>
                       <Input
                         autoFocus={true}
@@ -221,20 +209,14 @@ function TouchIdSettings() {
                         required={true}
                       />
                       {setupTouchIdMutation.error ? (
-                        <UIText
-                          kind="caption/regular"
-                          color="var(--negative-500)"
-                        >
-                          {(setupTouchIdMutation.error as Error).message ||
-                            'unknown error'}
+                        <UIText kind="caption/regular" color="var(--negative-500)">
+                          {(setupTouchIdMutation.error as Error).message || 'unknown error'}
                         </UIText>
                       ) : null}
                     </VStack>
                     <Button disabled={setupTouchIdMutation.isLoading}>
                       {setupTouchIdMutation.isLoading ? (
-                        <div
-                          style={{ display: 'flex', justifyContent: 'center' }}
-                        >
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
                           <CircleSpinner />
                         </div>
                       ) : (
@@ -286,9 +268,7 @@ function ChangePassword() {
       newPassword: string;
     }) => {
       if (oldPassword === newPassword) {
-        throw new Error(
-          'The new password must be different from the current one.'
-        );
+        throw new Error('The new password must be different from the current one.');
       }
       invariant(userQuery.data, 'User must be defined');
       // Change password
@@ -332,23 +312,16 @@ function ChangePassword() {
           </UIText>
         </AngleRightRow>
       </FrameListItemButton>
-      <BottomSheetDialog
-        ref={weakPasswordWarningDialogRef}
-        height="fit-content"
-      >
+      <BottomSheetDialog ref={weakPasswordWarningDialogRef} height="fit-content">
         <form method="dialog">
           <VStack gap={16}>
             <UIText kind="headline/h3">Weak Password</UIText>
             <UIText kind="body/regular">
-              Your new password is considered weak. Are you sure you want to
-              proceed with this password?
+              Your new password is considered weak. Are you sure you want to proceed with this
+              password?
             </UIText>
             <VStack gap={8}>
-              <Button
-                kind="primary"
-                value="cancel"
-                style={{ paddingInline: 12, width: '100%' }}
-              >
+              <Button kind="primary" value="cancel" style={{ paddingInline: 12, width: '100%' }}>
                 Improve Password
               </Button>
               <Button kind="regular" value="confirm" style={{ width: '100%' }}>
@@ -364,24 +337,16 @@ function ChangePassword() {
         renderWhenOpen={() => {
           return (
             <>
-              <DialogCloseButton
-                style={{ position: 'absolute', top: 8, right: 8 }}
-              />
+              <DialogCloseButton style={{ position: 'absolute', top: 8, right: 8 }} />
               <VStack gap={24}>
                 <UIText kind="headline/h1">Change Password</UIText>
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
                     const formData = new FormData(event.currentTarget);
-                    const oldPassword = formData.get('oldPassword') as
-                      | string
-                      | undefined;
-                    const newPassword = formData.get('newPassword') as
-                      | string
-                      | undefined;
-                    const confirmPassword = formData.get('confirmPassword') as
-                      | string
-                      | undefined;
+                    const oldPassword = formData.get('oldPassword') as string | undefined;
+                    const newPassword = formData.get('newPassword') as string | undefined;
+                    const confirmPassword = formData.get('confirmPassword') as string | undefined;
 
                     if (!oldPassword || !newPassword || !confirmPassword) {
                       return;
@@ -393,9 +358,7 @@ function ChangePassword() {
 
                     if (weakPasswordWarningDialogRef.current) {
                       (stats.strength === Strength.weak
-                        ? showConfirmDialog(
-                            weakPasswordWarningDialogRef.current
-                          )
+                        ? showConfirmDialog(weakPasswordWarningDialogRef.current)
                         : Promise.resolve()
                       ).then(() => {
                         changePasswordMutation.mutate({
@@ -406,10 +369,7 @@ function ChangePassword() {
                     }
                   }}
                 >
-                  <VStack
-                    gap={32}
-                    style={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}
-                  >
+                  <VStack gap={32} style={{ flexGrow: 1, gridTemplateRows: '1fr auto' }}>
                     <VStack gap={32}>
                       <Input
                         autoFocus={true}
@@ -442,12 +402,8 @@ function ChangePassword() {
                         />
                       </VStack>
                       {changePasswordMutation.error ? (
-                        <UIText
-                          kind="caption/regular"
-                          color="var(--negative-500)"
-                        >
-                          {getError(changePasswordMutation.error).message ||
-                            'unknown error'}
+                        <UIText kind="caption/regular" color="var(--negative-500)">
+                          {getError(changePasswordMutation.error).message || 'unknown error'}
                         </UIText>
                       ) : null}
                     </VStack>
@@ -462,9 +418,7 @@ function ChangePassword() {
                     }
                   >
                     {changePasswordMutation.isLoading ? (
-                      <div
-                        style={{ display: 'flex', justifyContent: 'center' }}
-                      >
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <CircleSpinner />
                       </div>
                     ) : value && confirmValue && value !== confirmValue ? (
@@ -501,11 +455,7 @@ function AutoLockTimerLink() {
           <UIText kind="body/accent">Auto-Lock Timer</UIText>
           {globalPreferences ? (
             <UIText kind="small/regular" color="var(--neutral-500)">
-              {
-                AUTO_LOCK_TIMER_OPTIONS_TITLES[
-                  globalPreferences.autoLockTimeout
-                ]
-              }
+              {AUTO_LOCK_TIMER_OPTIONS_TITLES[globalPreferences.autoLockTimeout]}
             </UIText>
           ) : (
             <CircleSpinner />

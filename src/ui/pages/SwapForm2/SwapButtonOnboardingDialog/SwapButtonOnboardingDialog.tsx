@@ -49,22 +49,14 @@ export function SwapButtonOnboardingDialog({
         overflow: 'hidden',
       }}
     >
-      <VStack
-        gap={8}
-        style={{ paddingInline: 16, paddingTop: 16, paddingBottom: 25 }}
-      >
+      <VStack gap={8} style={{ paddingInline: 16, paddingTop: 16, paddingBottom: 25 }}>
         <VStack gap={32} style={{ paddingBlock: 24 }}>
           <UIText kind="headline/h1" style={{ paddingInline: 24 }}>
             Set. Tap. Swap.
           </UIText>
           <VStack gap={16} style={{ paddingInline: 16 }}>
             {BULLETS.map((bullet) => (
-              <HStack
-                key={bullet.title}
-                gap={8}
-                alignItems="center"
-                style={{ width: '100%' }}
-              >
+              <HStack key={bullet.title} gap={8} alignItems="center" style={{ width: '100%' }}>
                 <img
                   src={bullet.icon}
                   alt=""

@@ -11,10 +11,7 @@ import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { FillView } from 'src/ui/components/FillView';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import {
-  DialogButtonValue,
-  DialogTitle,
-} from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
+import { DialogButtonValue, DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { invariant } from 'src/shared/invariant';
 import { focusNode } from 'src/ui/shared/focusNode';
@@ -27,10 +24,7 @@ import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 import type { DeviceAccount } from 'src/shared/types/Device';
-import {
-  assertKnownEcosystems,
-  isMatchForEcosystem,
-} from 'src/shared/wallet/shared';
+import { assertKnownEcosystems, isMatchForEcosystem } from 'src/shared/wallet/shared';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { EmptyView2 } from 'src/ui/components/EmptyView';
 import { useBackgroundKind } from 'src/ui/components/Background';
@@ -38,38 +32,31 @@ import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { usePhishingDefenceStatus } from 'src/ui/components/PhishingDefence/usePhishingDefenceStatus';
-import {
-  SecurityStatusBackground,
-  DappSecurityCheck,
-} from 'src/ui/shared/security-check';
+import { SecurityStatusBackground, DappSecurityCheck } from 'src/ui/shared/security-check';
 import { useEvent } from 'src/ui/shared/useEvent';
 import type { Permission } from 'src/shared/types/Permission';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
-import {
-  KeyboardShortcut,
-  ShortcutHint,
-} from 'src/ui/components/KeyboardShortcut';
+import { KeyboardShortcut, ShortcutHint } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { WalletList } from '../WalletSelect/WalletList';
 import { useWalletSearchPredicate } from '../WalletSelect/useWalletSearchPredicate';
 import type { AnyWallet } from '../WalletSelect/shared';
 
-const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> =
-  {
-    evm: {
-      src: 'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png',
-      srcSet:
-        'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png, https://cdn.zerion.io/images/dna-assets/ethereum-connection_2x.png 2x',
-    },
-    solana: {
-      src: 'https://cdn.zerion.io/images/dna-assets/solana-connection.png',
-      srcSet:
-        'https://cdn.zerion.io/images/dna-assets/solana-connection.png, https://cdn.zerion.io/images/dna-assets/solana-connection_2x.png 2x',
-    },
-  };
+const ECOSYSTEM_ICONS: Record<BlockchainType, { src: string; srcSet: string }> = {
+  evm: {
+    src: 'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png',
+    srcSet:
+      'https://cdn.zerion.io/images/dna-assets/ethereum-connection.png, https://cdn.zerion.io/images/dna-assets/ethereum-connection_2x.png 2x',
+  },
+  solana: {
+    src: 'https://cdn.zerion.io/images/dna-assets/solana-connection.png',
+    srcSet:
+      'https://cdn.zerion.io/images/dna-assets/solana-connection.png, https://cdn.zerion.io/images/dna-assets/solana-connection_2x.png 2x',
+  },
+};
 
 function WalletSelectDialog({
   value,
@@ -86,11 +73,8 @@ function WalletSelectDialog({
   const [searchQuery, setSearchQuery] = useState('');
 
   const allAddresses = useMemo(
-    () =>
-      walletGroups?.flatMap((g) =>
-        g.walletContainer.wallets.map((w) => w.address)
-      ) ?? [],
-    [walletGroups]
+    () => walletGroups?.flatMap((g) => g.walletContainer.wallets.map((w) => w.address)) ?? [],
+    [walletGroups],
   );
   const totalWalletCount = allAddresses.length;
 
@@ -106,9 +90,8 @@ function WalletSelectDialog({
   });
 
   const walletListPredicate = useCallback(
-    (item: AnyWallet) =>
-      isMatchForEcosystem(item.address, ecosystem) && matchesSearch(item),
-    [ecosystem, matchesSearch]
+    (item: AnyWallet) => isMatchForEcosystem(item.address, ecosystem) && matchesSearch(item),
+    [ecosystem, matchesSearch],
   );
 
   return walletGroups?.length ? (
@@ -239,10 +222,7 @@ function RequestAccountsView({
           }}
         />
       </CenteredDialog>
-      <BottomSheetDialog
-        ref={connectionDescriptionDialogRef}
-        height="fit-content"
-      >
+      <BottomSheetDialog ref={connectionDescriptionDialogRef} height="fit-content">
         <VStack gap={32}>
           <VStack gap={16}>
             <img
@@ -253,17 +233,12 @@ function RequestAccountsView({
             />
             <UIText kind="headline/h3">Approve Site Connection</UIText>
             <UIText kind="body/regular">
-              This site will have read-only access to your balances and
-              transaction activity. It cannot access your funds or execute
-              transactions without your approval.
+              This site will have read-only access to your balances and transaction activity. It
+              cannot access your funds or execute transactions without your approval.
             </UIText>
           </VStack>
           <form method="dialog" onSubmit={(event) => event.stopPropagation()}>
-            <Button
-              value={DialogButtonValue.cancel}
-              kind="primary"
-              style={{ width: '100%' }}
-            >
+            <Button value={DialogButtonValue.cancel} kind="primary" style={{ width: '100%' }}>
               Close
             </Button>
           </form>
@@ -289,24 +264,15 @@ function RequestAccountsView({
               url={origin}
               alt={`Logo for ${origin}`}
             />
-            <UIText
-              kind="headline/h2"
-              style={{ maxWidth: '100%', overflowWrap: 'anywhere' }}
-            >
+            <UIText kind="headline/h2" style={{ maxWidth: '100%', overflowWrap: 'anywhere' }}>
               {originName}
             </UIText>
-            <UnstyledButton
-              onClick={() =>
-                connectionDescriptionDialogRef.current?.showModal()
-              }
-            >
+            <UnstyledButton onClick={() => connectionDescriptionDialogRef.current?.showModal()}>
               <HStack gap={4} alignItems="center">
                 <UIText kind="body/regular" color="var(--neutral-600)">
                   Wants to connect to your wallet
                 </UIText>
-                <InfoIcon
-                  style={{ width: 20, height: 20, color: 'var(--neutral-600)' }}
-                />
+                <InfoIcon style={{ width: 20, height: 20, color: 'var(--neutral-600)' }} />
               </HStack>
             </UnstyledButton>
           </VStack>
@@ -323,11 +289,7 @@ function RequestAccountsView({
           >
             <HStack gap={16} justifyContent="space-between" alignItems="center">
               <HStack gap={12} alignItems="center">
-                <WalletAvatar
-                  address={selectedWallet.address}
-                  size={44}
-                  borderRadius={12}
-                />
+                <WalletAvatar address={selectedWallet.address} size={44} borderRadius={12} />
                 <VStack gap={0} style={{ justifyItems: 'start' }}>
                   <UIText kind="body/regular" color="var(--neutral-600)">
                     Wallet
@@ -337,10 +299,7 @@ function RequestAccountsView({
                   </UIText>
                 </VStack>
               </HStack>
-              <ArrowDownIcon
-                className="content-hover"
-                style={{ width: 24, height: 24 }}
-              />
+              <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
             </HStack>
           </UnstyledButton>
           <DappSecurityCheck
@@ -357,26 +316,15 @@ function RequestAccountsView({
             paddingBottom: 32,
           }}
         >
-          <Button
-            type="button"
-            kind="regular"
-            onClick={onReject}
-            ref={focusNode}
-          >
+          <Button type="button" kind="regular" onClick={onReject} ref={focusNode}>
             Cancel
           </Button>
           <KeyboardShortcut
             combination="mod+enter"
-            onKeyDown={() =>
-              onConfirm({ address: selectedWallet.address, origin })
-            }
+            onKeyDown={() => onConfirm({ address: selectedWallet.address, origin })}
             disabled={!shortcutActive}
           />
-          <Button
-            onClick={() =>
-              onConfirm({ address: selectedWallet.address, origin })
-            }
-          >
+          <Button onClick={() => onConfirm({ address: selectedWallet.address, origin })}>
             <HStack gap={4} alignItems="center" justifyContent="center">
               Connect
               {shortcutActive && windowFocused ? <ShortcutHint /> : null}
@@ -409,7 +357,7 @@ export function RequestAccounts() {
       const allWalletGroups = await walletPort.request('uiGetWalletGroups');
       const walletGroups = allWalletGroups?.filter((group) => {
         return group.walletContainer.wallets.some((wallet) =>
-          isMatchForEcosystem(wallet.address, ecosystem)
+          isMatchForEcosystem(wallet.address, ecosystem),
         );
       });
 
@@ -423,7 +371,7 @@ export function RequestAccounts() {
           walletGroups
             ?.at(0)
             ?.walletContainer.wallets.find((wallet) =>
-              isMatchForEcosystem(wallet.address, ecosystem)
+              isMatchForEcosystem(wallet.address, ecosystem),
             ) ?? null;
       }
       if (!wallet) {
@@ -438,7 +386,7 @@ export function RequestAccounts() {
     (result: { address: string; origin: string }) => {
       windowPort.confirm(windowId, result);
     },
-    [windowId]
+    [windowId],
   );
   const handleReject = () => windowPort.reject(windowId);
 
@@ -460,12 +408,7 @@ export function RequestAccounts() {
           'You do not have Solana wallets to connect. Please close this window and visit Settings –> Manage Wallets to create a Solana wallet',
         evm: 'You do not have Ethereum wallets to connect. Please close this window and visit Settings –> Manage Wallets to create an Ethereum wallet',
       };
-      return (
-        <EmptyView2
-          title="No wallets to connect"
-          message={messages[ecosystem]}
-        />
-      );
+      return <EmptyView2 title="No wallets to connect" message={messages[ecosystem]} />;
     } else {
       throw error;
     }

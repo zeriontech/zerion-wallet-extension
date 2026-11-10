@@ -3,22 +3,13 @@ import { useMutation } from '@tanstack/react-query';
 import { pushUnique, removeFromArray } from 'src/shared/array-mutations';
 import type { WalletNameFlag } from 'src/shared/types/WalletNameFlag';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
-import {
-  getWalletNameFlagsByOrigin,
-  isMetamaskModeOn,
-} from 'src/shared/preferences-helpers';
+import { getWalletNameFlagsByOrigin, isMetamaskModeOn } from 'src/shared/preferences-helpers';
 
 export function useWalletNameFlags(tabOrigin?: string) {
   const { globalPreferences, query, mutation } = useGlobalPreferences();
 
   const setWalletNameFlags = useMutation({
-    mutationFn: async ({
-      flag,
-      checked,
-    }: {
-      flag: WalletNameFlag;
-      checked: boolean;
-    }) => {
+    mutationFn: async ({ flag, checked }: { flag: WalletNameFlag; checked: boolean }) => {
       const updatedPreferences = produce(globalPreferences, (draft) => {
         if (!draft || !tabOrigin) {
           return;
@@ -49,9 +40,7 @@ export function useWalletNameFlags(tabOrigin?: string) {
       ? getWalletNameFlagsByOrigin(globalPreferences, tabOrigin)
       : null;
 
-  const isMetaMask = walletNameFlags
-    ? isMetamaskModeOn(walletNameFlags)
-    : false;
+  const isMetaMask = walletNameFlags ? isMetamaskModeOn(walletNameFlags) : false;
 
   return {
     walletNameFlags,

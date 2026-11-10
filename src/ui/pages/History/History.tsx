@@ -22,10 +22,7 @@ import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useWalletActions } from 'src/modules/zerion-api/hooks/useWalletActions';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
-import type {
-  ActionType,
-  AddressAction,
-} from 'src/modules/zerion-api/requests/wallet-get-actions';
+import type { ActionType, AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -56,13 +53,10 @@ function sortActions<T extends { timestamp?: number }>(actions: T[]) {
 function mergeLocalAndBackendActions(
   local: AnyAddressAction[],
   backend: AddressAction[],
-  hasMoreBackendActions: boolean
+  hasMoreBackendActions: boolean,
 ) {
   const backendHashes = new Set(
-    backend.flatMap(
-      (tx) =>
-        tx.transaction?.hash || tx.acts?.map((act) => act.transaction.hash)
-    )
+    backend.flatMap((tx) => tx.transaction?.hash || tx.acts?.map((act) => act.transaction.hash)),
   );
 
   const lastBackendActionDatetime = backend.at(-1)?.timestamp;
@@ -76,11 +70,8 @@ function mergeLocalAndBackendActions(
       (tx) =>
         tx.transaction?.hash &&
         backendHashes.has(tx.transaction.hash) === false &&
-        !tx.acts?.some(
-          (act) =>
-            act.transaction.hash && backendHashes.has(act.transaction.hash)
-        ) &&
-        tx.timestamp >= lastBackendTimestamp
+        !tx.acts?.some((act) => act.transaction.hash && backendHashes.has(act.transaction.hash)) &&
+        tx.timestamp >= lastBackendTimestamp,
     )
     .concat(backend);
   return sortActions(merged);
@@ -101,9 +92,7 @@ function useMinedAndPendingAddressActions({
 }) {
   const { params } = useAddressParams();
   const { networks, loadNetworkByChainId } = useNetworks();
-  const isSupportedByBackend = chain
-    ? networks?.supports('actions', chain)
-    : true;
+  const isSupportedByBackend = chain ? networks?.supports('actions', chain) : true;
   const localActions = useLocalAddressTransactions(params);
   const source = useHttpClientSource();
   const { currency } = useCurrency();
@@ -122,12 +111,8 @@ function useMinedAndPendingAddressActions({
       // History view down.
       const results = await Promise.allSettled(
         localActions.map((transactionObject) =>
-          pendingTransactionToAddressAction(
-            transactionObject,
-            loadNetworkByChainId,
-            currency
-          )
-        )
+          pendingTransactionToAddressAction(transactionObject, loadNetworkByChainId, currency),
+        ),
       );
       return results.flatMap((result) => {
         if (result.status === 'fulfilled') {
@@ -147,8 +132,7 @@ function useMinedAndPendingAddressActions({
     let items = localItems;
     if (chain) {
       items = items.filter(
-        ({ addressAction }) =>
-          addressAction.transaction?.chain.id === chain.toString()
+        ({ addressAction }) => addressAction.transaction?.chain.id === chain.toString(),
       );
     }
     if (searchQuery) {
@@ -156,39 +140,27 @@ function useMinedAndPendingAddressActions({
         isMatchForAllWords(
           searchQuery,
           addressAction,
-          contentRequest
-            ? getLocalActionSearchTerms(contentRequest, source)
-            : undefined
-        )
+          contentRequest ? getLocalActionSearchTerms(contentRequest, source) : undefined,
+        ),
       );
     }
     if (startDate) {
       items = items.filter(({ addressAction }) =>
-        dayjs(addressAction.timestamp).isBefore(dayjs(startDate))
+        dayjs(addressAction.timestamp).isBefore(dayjs(startDate)),
       );
     }
     if (actionTypes?.length) {
       items = items.filter(
         ({ addressAction }) =>
           actionTypes.includes(addressAction.type.value) ||
-          addressAction.acts?.some((act) =>
-            actionTypes.includes(act.type.value)
-          )
+          addressAction.acts?.some((act) => actionTypes.includes(act.type.value)),
       );
     }
     if (assetTypes?.length === 1 && assetTypes?.[0] === 'nft') {
       items = [];
     }
     return items;
-  }, [
-    localItems,
-    chain,
-    searchQuery,
-    source,
-    startDate,
-    actionTypes,
-    assetTypes,
-  ]);
+  }, [localItems, chain, searchQuery, source, startDate, actionTypes, assetTypes]);
 
   const contentRequests = useMemo(() => {
     const map = new Map<string, LocalActionContentRequest>();
@@ -212,7 +184,7 @@ function useMinedAndPendingAddressActions({
       limit: 10,
     },
     { source },
-    { enabled: isSupportedByBackend }
+    { enabled: isSupportedByBackend },
   );
 
   return useMemo(() => {
@@ -223,15 +195,12 @@ function useMinedAndPendingAddressActions({
         ? mergeLocalAndBackendActions(
             localAddressActions.map((item) => item.addressAction),
             backendItems,
-            hasMore
+            hasMore,
           )
         : null,
       contentRequests,
       ...localActionsQuery,
-      isLoading:
-        queryData.isLoading ||
-        queryData.isFetching ||
-        localActionsQuery.isLoading,
+      isLoading: queryData.isLoading || queryData.isFetching || localActionsQuery.isLoading,
       queryData,
       refetch,
     };
@@ -246,18 +215,9 @@ function useMinedAndPendingAddressActions({
   ]);
 }
 
-function HistoryEmptyView({
-  hasFilters,
-  onReset,
-}: {
-  hasFilters: boolean;
-  onReset(): void;
-}) {
+function HistoryEmptyView({ hasFilters, onReset }: { hasFilters: boolean; onReset(): void }) {
   return (
-    <VStack
-      gap={6}
-      style={{ textAlign: 'center', padding: 20, paddingBlock: 80 }}
-    >
+    <VStack gap={6} style={{ textAlign: 'center', padding: 20, paddingBlock: 80 }}>
       <UIText kind="headline/hero">🥺</UIText>
       <UIText kind="small/accent" color="var(--neutral-500)">
         <VStack gap={4}>
@@ -306,9 +266,7 @@ export function HistoryList({
 
   const chainValue = selectedChain || NetworkSelectValue.All;
   const chain =
-    chainValue && chainValue !== NetworkSelectValue.All
-      ? createChain(chainValue)
-      : null;
+    chainValue && chainValue !== NetworkSelectValue.All ? createChain(chainValue) : null;
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
   const { actions, contentRequests, isLoading, queryData, refetch } =
@@ -327,7 +285,7 @@ export function HistoryList({
         actionTypes: keys.length ? keys.join(',') : undefined,
       }));
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   const handleAssetTypeChange = useCallback(
@@ -337,7 +295,7 @@ export function HistoryList({
         assetTypes: value === 'all' ? undefined : value,
       }));
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   const handleDateChange = useCallback(
@@ -347,7 +305,7 @@ export function HistoryList({
         date: date ? formatDate(date) : undefined,
       }));
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   const handleResetAll = useCallback(() => {
@@ -363,11 +321,7 @@ export function HistoryList({
 
   const actionFilters = (
     <div style={{ paddingInline: 16 }}>
-      <HStack
-        gap={8}
-        alignItems="center"
-        style={{ gridTemplateColumns: '1fr auto auto' }}
-      >
+      <HStack gap={8} alignItems="center" style={{ gridTemplateColumns: '1fr auto auto' }}>
         <ActionSearch
           value={searchQuery}
           onChange={setSearchQuery}
@@ -431,21 +385,14 @@ export function HistoryList({
 
   if (!actions?.length) {
     return (
-      <CenteredFillViewportView
-        maxHeight={getGrownTabMaxHeight(offsetValuesState)}
-      >
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
-          {actionFilters}
-        </div>
+      <CenteredFillViewportView maxHeight={getGrownTabMaxHeight(offsetValuesState)}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>{actionFilters}</div>
         {isLoading ? (
           <ViewLoading kind="network" />
         ) : (
           <HistoryEmptyView
             hasFilters={Boolean(
-              searchQuery ||
-              selectedChain ||
-              hasActiveFilters ||
-              searchParams.date
+              searchQuery || selectedChain || hasActiveFilters || searchParams.date,
             )}
             onReset={() => {
               setSearchQuery(undefined);

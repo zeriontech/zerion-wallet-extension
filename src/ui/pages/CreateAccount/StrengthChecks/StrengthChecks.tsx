@@ -5,13 +5,7 @@ import TickIcon from 'jsx:src/ui/assets/check.svg';
 import type { StrengthStats } from 'src/shared/validation/password-strength';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 
-export function CheckmarkBadge({
-  text,
-  positive,
-}: {
-  text: React.ReactNode;
-  positive: boolean;
-}) {
+export function CheckmarkBadge({ text, positive }: { text: React.ReactNode; positive: boolean }) {
   const { style, trigger } = useTransformTrigger({
     timing: 80,
     scale: 1.05,
@@ -38,9 +32,7 @@ export function CheckmarkBadge({
         alignItems: 'center',
         borderRadius: 6,
         gap: 4,
-        backgroundColor: positive
-          ? 'var(--positive-200)'
-          : 'var(--neutral-200)',
+        backgroundColor: positive ? 'var(--positive-200)' : 'var(--neutral-200)',
         color: positive ? 'var(--positive-500)' : 'var(--neutral-500)',
       }}
     >
@@ -62,10 +54,7 @@ export function StrengthChecks({ stats }: { stats: StrengthStats }) {
         paddingRight: 12, // make items wrap to a new line earlier (according to design)
       }}
     >
-      <CheckmarkBadge
-        text={`Min. ${PASSWORD_MIN_LENGTH} characters`}
-        positive={stats.minLength}
-      />
+      <CheckmarkBadge text={`Min. ${PASSWORD_MIN_LENGTH} characters`} positive={stats.minLength} />
       <CheckmarkBadge
         text="Mix case letters"
         positive={stats.someUpperCase && stats.someLowerCase}

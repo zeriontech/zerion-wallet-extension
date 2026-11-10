@@ -87,9 +87,7 @@ export function CopyButton({
             right: tooltipPosition === 'center-bottom' ? undefined : 0,
             left: tooltipPosition === 'center-bottom' ? 10 : undefined,
             transform:
-              tooltipPosition === 'center-bottom'
-                ? 'translateX(-50%)'
-                : 'translateX(100%)',
+              tooltipPosition === 'center-bottom' ? 'translateX(-50%)' : 'translateX(100%)',
           }}
         >
           {tooltipContent}

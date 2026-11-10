@@ -7,10 +7,7 @@ import {
   usePopoverStore,
 } from 'src/ui/ui-kit/Popover';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import {
-  SegmentedControlGroup,
-  SegmentedControlRadio,
-} from 'src/ui/ui-kit/SegmentedControl';
+import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/SegmentedControl';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
 import { devForceShowSwapOnboarding } from 'src/ui/pages/SwapForm2/SwapOnboardingDialog/devForceShowStore';
@@ -80,11 +77,10 @@ const DISCLAIMER_OPTIONS: { value: DisclaimerOverride; label: string }[] = [
   { value: 'force-off', label: 'Hide' },
 ];
 
-const READONLY_WALL_OPTIONS: { value: ReadonlyWallOverride; label: string }[] =
-  [
-    { value: 'off', label: 'Off' },
-    { value: 'disabled', label: 'Disabled' },
-  ];
+const READONLY_WALL_OPTIONS: { value: ReadonlyWallOverride; label: string }[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'disabled', label: 'Disabled' },
+];
 
 const CONFIDENTIAL_PERMITS_OPTIONS: {
   value: ConfidentialPermitsOverride;
@@ -110,20 +106,15 @@ export function DevMenu() {
   const active = hasAnyOverride(state);
   const popoverStore = usePopoverStore({ placement: 'top-end' });
   const { preferences, setPreferences } = usePreferences();
-  const perpsOnboardingDismissed =
-    preferences?.perpsOnboardingDismissed === true;
+  const perpsOnboardingDismissed = preferences?.perpsOnboardingDismissed === true;
   const { singleAddress } = useAddressParams();
-  const { data: storedPermits } = useStoredConfidentialPermits(
-    singleAddress || null
-  );
+  const { data: storedPermits } = useStoredConfidentialPermits(singleAddress || null);
   const storedPermitsCount = storedPermits?.length ?? 0;
   const localTransactions = useStore(localTransactionsStore);
   const seededTransactionsCount = localTransactions.filter(
-    (item) => item.initiator === DEV_SEED_INITIATOR
+    (item) => item.initiator === DEV_SEED_INITIATOR,
   ).length;
-  const canSeedTransactions = Boolean(
-    singleAddress && isEthereumAddress(singleAddress)
-  );
+  const canSeedTransactions = Boolean(singleAddress && isEthereumAddress(singleAddress));
 
   return (
     <>
@@ -207,12 +198,8 @@ export function DevMenu() {
                         key={option.value}
                         name="dev-menu-simulation-warning"
                         value={option.value}
-                        checked={
-                          state.simulationWarningOverride === option.value
-                        }
-                        onChange={() =>
-                          setSimulationWarningOverride(option.value)
-                        }
+                        checked={state.simulationWarningOverride === option.value}
+                        onChange={() => setSimulationWarningOverride(option.value)}
                       >
                         {option.label}
                       </SegmentedControlRadio>
@@ -227,12 +214,8 @@ export function DevMenu() {
                         key={option.value}
                         name="dev-menu-simulation-status"
                         value={option.value}
-                        checked={
-                          state.simulationStatusOverride === option.value
-                        }
-                        onChange={() =>
-                          setSimulationStatusOverride(option.value)
-                        }
+                        checked={state.simulationStatusOverride === option.value}
+                        onChange={() => setSimulationStatusOverride(option.value)}
                       >
                         {option.label}
                       </SegmentedControlRadio>
@@ -247,12 +230,8 @@ export function DevMenu() {
                         key={option.value}
                         name="dev-menu-simulation-output-discrepancy"
                         value={option.value}
-                        checked={
-                          state.simulationOutputDiscrepancy === option.value
-                        }
-                        onChange={() =>
-                          setSimulationOutputDiscrepancy(option.value)
-                        }
+                        checked={state.simulationOutputDiscrepancy === option.value}
+                        onChange={() => setSimulationOutputDiscrepancy(option.value)}
                       >
                         {option.label}
                       </SegmentedControlRadio>
@@ -314,9 +293,7 @@ export function DevMenu() {
                   </div>
                 </div>
                 <div className={styles.row}>
-                  <span className={styles.rowLabel}>
-                    swap_button_onboarding
-                  </span>
+                  <span className={styles.rowLabel}>swap_button_onboarding</span>
                   <div className={styles.navLinks}>
                     <button
                       type="button"
@@ -363,12 +340,8 @@ export function DevMenu() {
                         key={option.value}
                         name="dev-menu-confidential-permits"
                         value={option.value}
-                        checked={
-                          state.confidentialPermitsOverride === option.value
-                        }
-                        onChange={() =>
-                          setConfidentialPermitsOverride(option.value)
-                        }
+                        checked={state.confidentialPermitsOverride === option.value}
+                        onChange={() => setConfidentialPermitsOverride(option.value)}
                       >
                         {option.label}
                       </SegmentedControlRadio>
@@ -455,8 +428,7 @@ export function DevMenu() {
                         setPreferences({ perpsOnboardingDismissed: false });
                       }}
                     >
-                      reset (dismissed:{' '}
-                      {perpsOnboardingDismissed ? 'yes' : 'no'})
+                      reset (dismissed: {perpsOnboardingDismissed ? 'yes' : 'no'})
                     </button>
                   </div>
                 </div>

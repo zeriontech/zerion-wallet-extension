@@ -36,7 +36,7 @@ export function AllowanceView({
   const { currency } = useCurrency();
   invariant(
     requestedAllowanceQuantityBase,
-    'requestedAllowanceQuantityBase is required to set custom allowance'
+    'requestedAllowanceQuantityBase is required to set custom allowance',
   );
 
   // Simple Positions: the balance must be the one on `network`, which a
@@ -47,14 +47,13 @@ export function AllowanceView({
     {
       enabled: Boolean(assetId),
       refetchInterval: usePositionsRefetchInterval(10000),
-    }
+    },
   );
   const positions = data?.data;
 
   const position = useMemo(() => {
     const found = positions?.find(
-      (position) =>
-        position.chain.id === network.id && position.fungible.id === assetId
+      (position) => position.chain.id === network.id && position.fungible.id === assetId,
     );
     return found ? fungiblePositionToAddressPosition(found) : undefined;
   }, [network.id, assetId, positions]);
@@ -87,11 +86,7 @@ export function AllowanceView({
         requestedAllowanceQuantityBase={
           new BigNumber(normalizeNumberValue(requestedAllowanceQuantityBase))
         }
-        value={
-          new BigNumber(
-            normalizeNumberValue(value || requestedAllowanceQuantityBase)
-          )
-        }
+        value={new BigNumber(normalizeNumberValue(value || requestedAllowanceQuantityBase))}
         onSubmit={onChange}
         footerRenderArea="sign-transaction-footer"
         addressAction={addressAction}

@@ -38,7 +38,7 @@ export async function getSupportedNetworks({
   try {
     const { data } = await apiClient.chainList(
       { supportedOnly: true, includeTestnets: source === 'testnet' },
-      { source }
+      { source },
     );
     return toNetworkInfos(data);
   } catch (error) {
@@ -52,13 +52,10 @@ export async function getSupportedNetworks({
 /** Exact lookup by EIP-155 chain id (hex or decimal string) */
 export async function getNetworkByChainId(
   chainId: string,
-  { apiClient, source }: NetworksApiParams
+  { apiClient, source }: NetworksApiParams,
 ): Promise<NetworkInfo | null> {
   try {
-    const { data } = await apiClient.chainGet(
-      { eip155Id: Number(chainId) },
-      { source }
-    );
+    const { data } = await apiClient.chainGet({ eip155Id: Number(chainId) }, { source });
     return toNetworkInfo(data);
   } catch (error) {
     if (error instanceof HTTPError && error.response.status === 404) {
@@ -74,11 +71,11 @@ export async function getNetworkByChainId(
  */
 export async function getNetworkById(
   id: string,
-  { apiClient, source }: NetworksApiParams
+  { apiClient, source }: NetworksApiParams,
 ): Promise<NetworkInfo | null> {
   const { data } = await apiClient.chainList(
     { searchQuery: id, supportedOnly: false, includeTestnets: true },
-    { source }
+    { source },
   );
   const chain = data.find((item) => item.id === id);
   return chain ? toNetworkInfo(chain) : null;
@@ -99,7 +96,7 @@ export async function getNetworksBySearch({
       supportedOnly: false,
       includeTestnets,
     },
-    { source }
+    { source },
   );
   return toNetworkInfos(data);
 }

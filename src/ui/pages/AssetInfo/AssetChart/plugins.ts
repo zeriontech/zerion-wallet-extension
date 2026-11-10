@@ -3,11 +3,7 @@ import { Theme } from 'src/ui/features/appearance';
 import { getChartColor } from 'src/ui/components/chart/helpers';
 import type { ParsedAssetChartPoint } from './types';
 
-export function drawDotPlugin({
-  getTheme,
-}: {
-  getTheme: () => Theme;
-}): Plugin<'scatter'> {
+export function drawDotPlugin({ getTheme }: { getTheme: () => Theme }): Plugin<'scatter'> {
   return {
     id: 'drawDot',
     afterDraw: (chart) => {
@@ -47,11 +43,7 @@ export function drawDotPlugin({
   };
 }
 
-export function drawVerticalLinePlugin({
-  getTheme,
-}: {
-  getTheme: () => Theme;
-}): Plugin<'scatter'> {
+export function drawVerticalLinePlugin({ getTheme }: { getTheme: () => Theme }): Plugin<'scatter'> {
   return {
     id: 'verticalLine',
     afterDraw: (chart) => {
@@ -84,11 +76,7 @@ export function drawVerticalLinePlugin({
 
 export const PULSE_CAP_CIRCLE_ID = 'asset-chart-pulse-cap-circle';
 
-export function drawCapPointPlugin({
-  getTheme,
-}: {
-  getTheme: () => Theme;
-}): Plugin<'scatter'> {
+export function drawCapPointPlugin({ getTheme }: { getTheme: () => Theme }): Plugin<'scatter'> {
   return {
     id: 'capPoint',
     afterDraw: (chart) => {
@@ -104,8 +92,7 @@ export function drawCapPointPlugin({
         return;
       }
 
-      const chartPoints = chart.data.datasets.at(0)
-        ?.data as ParsedAssetChartPoint[];
+      const chartPoints = chart.data.datasets.at(0)?.data as ParsedAssetChartPoint[];
 
       // Don't draw the cap point if last point has an action to show
       if (chartPoints.at(-1)?.extra) {
@@ -117,8 +104,7 @@ export function drawCapPointPlugin({
 
       const strokeColor = getChartColor({
         theme: getTheme(),
-        isPositive:
-          (chartPoints?.at(0)?.y || 0) <= (chartPoints?.at(-1)?.y || 0),
+        isPositive: (chartPoints?.at(0)?.y || 0) <= (chartPoints?.at(-1)?.y || 0),
         isHighlighted: false,
       });
 

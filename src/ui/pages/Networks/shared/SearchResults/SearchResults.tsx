@@ -12,19 +12,11 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { NetworkList } from '../NetworkList';
 import { renderPinNetworkAction } from '../PinNetworkButton';
 
-export function SearchResults({
-  query,
-  testnetMode,
-}: {
-  query: string;
-  testnetMode: boolean;
-}) {
+export function SearchResults({ query, testnetMode }: { query: string; testnetMode: boolean }) {
   const { pathname } = useLocation();
   const { networks, isLoading } = useSearchNetworks({ query });
   const items = useMemo(() => {
-    const allNetworks = testnetMode
-      ? networks?.getNetworks()
-      : networks?.getMainnets();
+    const allNetworks = testnetMode ? networks?.getNetworks() : networks?.getMainnets();
     return allNetworks ? filterAndSortNetworksByQuery(allNetworks, query) : [];
   }, [query, networks, testnetMode]);
 
@@ -40,9 +32,7 @@ export function SearchResults({
         networks={networks}
         networkList={items}
         renderItemActions={renderPinNetworkAction(networks)}
-        getItemTo={(item) =>
-          `/networks/network/${item.id}?from=${encodeURIComponent(pathname)}`
-        }
+        getItemTo={(item) => `/networks/network/${item.id}?from=${encodeURIComponent(pathname)}`}
       />
       {testnetMode ? null : (
         <>

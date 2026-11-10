@@ -11,7 +11,7 @@ import { usePreferences } from 'src/ui/features/preferences';
  */
 export function useVisiblePinnedNetworks(
   networks: Networks | null | undefined,
-  standard: BlockchainType | 'all' = 'all'
+  standard: BlockchainType | 'all' = 'all',
 ): NetworkInfo[] {
   const { preferences } = usePreferences();
   const testnetMode = Boolean(preferences?.testnetMode?.on);
@@ -19,10 +19,7 @@ export function useVisiblePinnedNetworks(
     () =>
       networks
         ?.getPinnedNetworks(standard)
-        .filter(
-          (network) =>
-            Boolean(network.testnet) === testnetMode && !network.hidden
-        ) ?? [],
-    [networks, standard, testnetMode]
+        .filter((network) => Boolean(network.testnet) === testnetMode && !network.hidden) ?? [],
+    [networks, standard, testnetMode],
   );
 }

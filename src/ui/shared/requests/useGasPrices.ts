@@ -2,10 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { type Chain } from 'src/modules/networks/Chain';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
-import {
-  getPreferences,
-  usePreferences,
-} from 'src/ui/features/preferences/usePreferences';
+import { getPreferences, usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { useNetworkInfo } from 'src/modules/networks/useNetworks';
 import { Networks } from 'src/modules/networks/Networks';
@@ -37,7 +34,7 @@ export function useGasPrices(
     suspense?: boolean;
     refetchInterval?: number;
     keepPreviousData?: boolean;
-  } = {}
+  } = {},
 ) {
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';

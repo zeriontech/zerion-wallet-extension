@@ -28,7 +28,7 @@ export function filterNetworksByQuery(query: string) {
  */
 export function filterAndSortNetworksByQuery(
   networks: NetworkInfo[],
-  query: string
+  query: string,
 ): NetworkInfo[] {
   if (!query) {
     return networks;
@@ -50,10 +50,7 @@ export function filterAndSortNetworksByQuery(
     const networkId = network.id.toLowerCase();
 
     // Priority 1: Name or ID starts with query
-    if (
-      networkName.startsWith(normalizedQuery) ||
-      networkId.startsWith(normalizedQuery)
-    ) {
+    if (networkName.startsWith(normalizedQuery) || networkId.startsWith(normalizedQuery)) {
       startsWithMatches.push(network);
       processedIds.add(network.id);
     }

@@ -75,7 +75,7 @@ export type TransactionEVM = {
   } | null;
 };
 export function toIncomingTransaction(
-  tx: TransactionEVM
+  tx: TransactionEVM,
 ): PartiallyRequired<IncomingTransaction, 'from' | 'chainId'> {
   const { type, nonce, gas, gasPrice, maxFee, maxPriorityFee, ...rest } = tx;
   const partial: IncomingTransaction = {
@@ -189,9 +189,7 @@ export interface Quote2 {
   finalSlippage: number | null;
 }
 
-export function toMultichainTransaction(
-  tx: TransactionMultichain
-): MultichainTransaction {
+export function toMultichainTransaction(tx: TransactionMultichain): MultichainTransaction {
   if (tx.solana) {
     return { solana: tx.solana as StringBase64 };
   } else if (tx.evm) {

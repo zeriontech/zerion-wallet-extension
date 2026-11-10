@@ -81,13 +81,7 @@ const FAILED_TITLE: Record<PerpsActivityKind, string> = {
 
 function CheckIcon({ reducedMotion }: { reducedMotion: boolean }) {
   return (
-    <motion.svg
-      width={18}
-      height={18}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-    >
+    <motion.svg width={18} height={18} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <motion.path
         d="M3.5 8.5l3 3 6-6"
         stroke="currentColor"
@@ -108,13 +102,7 @@ function CheckIcon({ reducedMotion }: { reducedMotion: boolean }) {
 
 function CrossIcon({ reducedMotion }: { reducedMotion: boolean }) {
   return (
-    <motion.svg
-      width={18}
-      height={18}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-    >
+    <motion.svg width={18} height={18} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <motion.path
         d="M4 4l8 8"
         stroke="currentColor"
@@ -146,9 +134,7 @@ function CrossIcon({ reducedMotion }: { reducedMotion: boolean }) {
 }
 
 function useSession(): PerpsActivitySession | null {
-  const [state, setState] = useState<PerpsActivitySession | null>(() =>
-    getSession()
-  );
+  const [state, setState] = useState<PerpsActivitySession | null>(() => getSession());
   useEffect(() => {
     return subscribe(() => {
       setState(getSession());
@@ -199,16 +185,10 @@ function ToasterIconArea({
             key="success"
             className={`${s.statusBadge} ${s.statusBadgeSuccess}`}
             initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+              reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
             }
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }}
             transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
           >
             <CheckIcon reducedMotion={reducedMotion} />
@@ -218,16 +198,10 @@ function ToasterIconArea({
             key="failed"
             className={`${s.statusBadge} ${s.statusBadgeFailed}`}
             initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+              reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
             }
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }}
             transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
           >
             <CrossIcon reducedMotion={reducedMotion} />
@@ -237,38 +211,23 @@ function ToasterIconArea({
             key="withdraw-arrow"
             className={s.withdrawArrow}
             initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+              reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
             }
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }}
             transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
           >
-            <ToasterArrowDown
-              terminal={terminal}
-              reducedMotion={reducedMotion}
-            />
+            <ToasterArrowDown terminal={terminal} reducedMotion={reducedMotion} />
           </motion.div>
         ) : iconUrl ? (
           <motion.div
             key={`coin-${session.coin}`}
             className={s.coinIcon}
             initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+              reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
             }
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }}
             transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
           >
             <TokenIcon src={iconUrl} symbol={session.coin ?? ''} size={28} />
@@ -278,16 +237,10 @@ function ToasterIconArea({
             key="running"
             className={s.spinner}
             initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
+              reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
             }
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: 'blur(8px)' }}
             transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
           >
             <CircleSpinner size="20px" />
@@ -314,17 +267,9 @@ function ToasterTextArea({
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={title}
-          initial={
-            reducedMotion
-              ? { opacity: 0 }
-              : { opacity: 0, y: 8, filter: 'blur(2px)' }
-          }
+          initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(2px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={
-            reducedMotion
-              ? { opacity: 0 }
-              : { opacity: 0, y: -8, filter: 'blur(2px)' }
-          }
+          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(2px)' }}
           transition={reducedMotion ? { duration: 0.1 } : { duration: 0.3 }}
         >
           {title}
@@ -335,22 +280,10 @@ function ToasterTextArea({
           <motion.span
             key={subtitle}
             className={s.subtitle}
-            initial={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, y: 8, filter: 'blur(2px)' }
-            }
+            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(2px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, y: -8, filter: 'blur(2px)' }
-            }
-            transition={
-              reducedMotion
-                ? { duration: 0.1 }
-                : { duration: 0.22, ease: SLIDE_EASE }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(2px)' }}
+            transition={reducedMotion ? { duration: 0.1 } : { duration: 0.22, ease: SLIDE_EASE }}
           >
             {subtitle}
           </motion.span>
@@ -378,9 +311,7 @@ export function PerpsActivityToaster() {
   // Two-phase entrance, ported from TransactionToaster: appear compact (icon
   // only) without any vertical shift, hold briefly, then expand to reveal the
   // text with a subtle scale swell.
-  const [entrancePhase, setEntrancePhase] = useState<'compact' | 'expanded'>(
-    'compact'
-  );
+  const [entrancePhase, setEntrancePhase] = useState<'compact' | 'expanded'>('compact');
   const expandTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleExitComplete = useCallback(() => {
@@ -397,7 +328,7 @@ export function PerpsActivityToaster() {
         clearTimeout(expandTimerRef.current);
       }
     },
-    []
+    [],
   );
 
   // Reduced motion skips the staged reveal: show the full pill at once.
@@ -422,11 +353,7 @@ export function PerpsActivityToaster() {
               scale: targetScale,
               width: targetWidth,
             }}
-            exit={
-              reducedMotion
-                ? { opacity: 0 }
-                : { opacity: 0, filter: 'blur(8px)', scale: 0.85 }
-            }
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(8px)', scale: 0.85 }}
             transition={
               reducedMotion
                 ? { duration: 0.1 }
@@ -434,9 +361,7 @@ export function PerpsActivityToaster() {
                     opacity: { duration: 0.2, ease: SLIDE_EASE },
                     // Clean settle for the compact appear (0.8 → 0.9), bouncy
                     // spring only for the expand swell (0.9 → 1).
-                    scale: expanded
-                      ? SCALE_SPRING
-                      : { duration: 0.26, ease: SLIDE_EASE },
+                    scale: expanded ? SCALE_SPRING : { duration: 0.26, ease: SLIDE_EASE },
                     width: EXPAND_SPRING,
                   }
             }
@@ -453,9 +378,7 @@ export function PerpsActivityToaster() {
             {/* Top loader line, shown only while pending and only when an icon
                 anchors it. It recolors + fades on terminal on its own. */}
             {hasIcon ? (
-              <ToasterLoaderLine
-                terminal={terminal === 'running' ? null : terminal}
-              />
+              <ToasterLoaderLine terminal={terminal === 'running' ? null : terminal} />
             ) : null}
             <div ref={measureRef} className={s.measureWrap}>
               <ToasterIconArea
@@ -486,11 +409,7 @@ export function PerpsActivityToaster() {
                       }
                 }
               >
-                <ToasterTextArea
-                  title={title}
-                  subtitle={subtitle}
-                  reducedMotion={reducedMotion}
-                />
+                <ToasterTextArea title={title} subtitle={subtitle} reducedMotion={reducedMotion} />
               </motion.div>
             </div>
           </motion.div>
@@ -569,8 +488,8 @@ function PerpsActivityToasterPreview() {
   return (
     <VStack gap={16}>
       <UIText kind="caption/regular" color="var(--neutral-700)">
-        Toaster pills render at the App root — they appear top-center over the
-        full viewport, not inside this preview area.
+        Toaster pills render at the App root — they appear top-center over the full viewport, not
+        inside this preview area.
       </UIText>
       <HStack gap={8} style={{ flexWrap: 'wrap' }}>
         {PREVIEW_KINDS.map((k) => (
@@ -585,20 +504,10 @@ function PerpsActivityToasterPreview() {
         ))}
       </HStack>
       <HStack gap={8} style={{ flexWrap: 'wrap' }}>
-        <Button
-          kind="primary"
-          size={36}
-          onClick={runHappyPath}
-          disabled={running}
-        >
+        <Button kind="primary" size={36} onClick={runHappyPath} disabled={running}>
           Run happy path
         </Button>
-        <Button
-          kind="regular"
-          size={36}
-          onClick={runFailPath}
-          disabled={running}
-        >
+        <Button kind="regular" size={36} onClick={runFailPath} disabled={running}>
           Run fail path
         </Button>
         <Button kind="regular" size={36} onClick={reset}>

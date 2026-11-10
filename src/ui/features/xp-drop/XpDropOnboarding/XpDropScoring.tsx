@@ -12,13 +12,7 @@ import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import * as styles from './styles.module.css';
 
-function CriteriaListItem({
-  image,
-  text,
-}: {
-  image: React.ReactNode;
-  text: React.ReactNode;
-}) {
+function CriteriaListItem({ image, text }: { image: React.ReactNode; text: React.ReactNode }) {
   return (
     <HStack gap={16} alignItems="center" className={styles.criteriaItem}>
       <div className={styles.criteriaImage}>{image}</div>
@@ -78,9 +72,7 @@ export function XpDropScoring() {
     }
   }, [counter, navigate]);
 
-  const visibleItems = criteriaItems
-    .slice(counter)
-    .map((item, index) => ({ item, key: index }));
+  const visibleItems = criteriaItems.slice(counter).map((item, index) => ({ item, key: index }));
 
   const transitions = useTransition(visibleItems, {
     keys: (item) => item.key,

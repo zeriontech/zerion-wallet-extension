@@ -27,9 +27,7 @@ export function createNode(
   }
   for (const child of children) {
     if (child !== null) {
-      el.appendChild(
-        typeof child === 'string' ? document.createTextNode(child) : child
-      );
+      el.appendChild(typeof child === 'string' ? document.createTextNode(child) : child);
     }
   }
   return el;

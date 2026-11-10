@@ -38,10 +38,9 @@ interface NewSwapGasPrice {
  */
 function resolveSwapGasPrice(
   config: CustomConfiguration,
-  gasPrices: ChainGasPrice
+  gasPrices: ChainGasPrice,
 ): NewSwapGasPrice | null {
-  const { speed, custom1559GasPrice, customClassicGasPrice } =
-    config.networkFee;
+  const { speed, custom1559GasPrice, customClassicGasPrice } = config.networkFee;
 
   if (speed === 'custom') {
     if (custom1559GasPrice) {
@@ -65,8 +64,7 @@ function resolveSwapGasPrice(
   if (!speedGasPrice) {
     return null;
   }
-  const eip1559 =
-    speedGasPrice.eip1559 ?? speedGasPrice.optimistic?.underlying.eip1559;
+  const eip1559 = speedGasPrice.eip1559 ?? speedGasPrice.optimistic?.underlying.eip1559;
   if (eip1559) {
     return {
       maxFee: new BigNumber(eip1559.maxFee),
@@ -74,8 +72,7 @@ function resolveSwapGasPrice(
       gasPrice: null,
     };
   }
-  const classic =
-    speedGasPrice.classic ?? speedGasPrice.optimistic?.underlying.classic;
+  const classic = speedGasPrice.classic ?? speedGasPrice.optimistic?.underlying.classic;
   if (classic != null) {
     return {
       maxFee: null,
@@ -90,7 +87,7 @@ function resolveSwapGasPrice(
 function applyGasPriceToSwapTx(
   evm: TransactionEVM,
   next: NewSwapGasPrice,
-  gasLimit: string | null
+  gasLimit: string | null,
 ): TransactionEVM {
   const updated: TransactionEVM = { ...evm };
   if (next.gasPrice != null) {
@@ -99,8 +96,7 @@ function applyGasPriceToSwapTx(
     updated.maxPriorityFee = null;
   } else if (next.maxFee != null || next.maxPriorityFee != null) {
     updated.maxFee = next.maxFee != null ? bnToHex(next.maxFee) : null;
-    updated.maxPriorityFee =
-      next.maxPriorityFee != null ? bnToHex(next.maxPriorityFee) : null;
+    updated.maxPriorityFee = next.maxPriorityFee != null ? bnToHex(next.maxPriorityFee) : null;
     updated.gasPrice = null;
   }
   if (gasLimit != null && gasLimit !== '') {
@@ -118,10 +114,7 @@ interface SwapFieldRatios {
 }
 
 /** A field's old→new ratio, or `null` when it can't be derived (no old value). */
-function fieldRatio(
-  oldValue: BigNumber | null,
-  newValue: BigNumber | null
-): number | null {
+function fieldRatio(oldValue: BigNumber | null, newValue: BigNumber | null): number | null {
   if (oldValue == null || newValue == null || oldValue.isZero()) {
     return null;
   }
@@ -139,7 +132,7 @@ function fieldRatio(
 function scaleApproveTx(
   evm: TransactionEVM,
   ratios: SwapFieldRatios,
-  gasLimitRatio: number
+  gasLimitRatio: number,
 ): TransactionEVM {
   const updated: TransactionEVM = { ...evm };
 
@@ -152,10 +145,7 @@ function scaleApproveTx(
   };
 
   updated.maxFee = scaleField(evm.maxFee, ratios.maxFee);
-  updated.maxPriorityFee = scaleField(
-    evm.maxPriorityFee,
-    ratios.maxPriorityFee
-  );
+  updated.maxPriorityFee = scaleField(evm.maxPriorityFee, ratios.maxPriorityFee);
   updated.gasPrice = scaleField(evm.gasPrice, ratios.gasPrice);
 
   const gas = hexToBn(evm.gas);
@@ -181,7 +171,7 @@ function scaleApproveTx(
 export function applyTransactionConfiguration(
   quote: Quote2,
   config: CustomConfiguration,
-  gasPrices: ChainGasPrice | null
+  gasPrices: ChainGasPrice | null,
 ): Quote2 {
   const transactionSwap = quote.transactionSwap;
   const swapEvm = transactionSwap?.evm;
@@ -198,10 +188,7 @@ export function applyTransactionConfiguration(
   // The approve tx mirrors these field-by-field.
   const ratios: SwapFieldRatios = {
     maxFee: fieldRatio(hexToBn(swapEvm.maxFee), next.maxFee),
-    maxPriorityFee: fieldRatio(
-      hexToBn(swapEvm.maxPriorityFee),
-      next.maxPriorityFee
-    ),
+    maxPriorityFee: fieldRatio(hexToBn(swapEvm.maxPriorityFee), next.maxPriorityFee),
     gasPrice: fieldRatio(hexToBn(swapEvm.gasPrice), next.gasPrice),
   };
 
@@ -211,15 +198,9 @@ export function applyTransactionConfiguration(
       ? Number(config.networkFee.gasLimit)
       : null;
   const gasLimitRatio =
-    customGasLimit != null && originalGas && originalGas > 0
-      ? customGasLimit / originalGas
-      : 1;
+    customGasLimit != null && originalGas && originalGas > 0 ? customGasLimit / originalGas : 1;
 
-  const newSwapEvm = applyGasPriceToSwapTx(
-    swapEvm,
-    next,
-    config.networkFee.gasLimit
-  );
+  const newSwapEvm = applyGasPriceToSwapTx(swapEvm, next, config.networkFee.gasLimit);
 
   const result: Quote2 = {
     ...quote,

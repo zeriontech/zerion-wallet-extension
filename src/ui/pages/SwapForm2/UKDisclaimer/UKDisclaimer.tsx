@@ -22,9 +22,8 @@ export function UKDisclaimer() {
       <VStack gap={8}>
         <UIText kind="small/accent">Disclaimer for UK Residents</UIText>
         <UIText kind="caption/regular" color="var(--neutral-500)">
-          Remember, investing in crypto carries a high risk, and you should only
-          invest what you can afford to lose. There is no safety if things go
-          wrong.{' '}
+          Remember, investing in crypto carries a high risk, and you should only invest what you can
+          afford to lose. There is no safety if things go wrong.{' '}
           <TextAnchor
             style={{ color: 'var(--primary)' }}
             href="https://ramp.network/risk-warning"

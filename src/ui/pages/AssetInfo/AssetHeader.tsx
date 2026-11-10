@@ -10,29 +10,13 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 
-export function AssetHeader({
-  asset,
-  className,
-}: {
-  asset: Asset;
-  className?: string;
-}) {
+export function AssetHeader({ asset, className }: { asset: Asset; className?: string }) {
   const { currency } = useCurrency();
   const isUntrackedAsset = asset.meta.price == null;
 
   return (
-    <HStack
-      gap={8}
-      alignItems="center"
-      justifyContent="center"
-      className={className}
-    >
-      <TokenIcon
-        src={asset.iconUrl}
-        symbol={asset.symbol}
-        size={20}
-        title={asset.name}
-      />
+    <HStack gap={8} alignItems="center" justifyContent="center" className={className}>
+      <TokenIcon src={asset.iconUrl} symbol={asset.symbol} size={20} title={asset.name} />
       <UIText kind="body/accent" style={{ display: 'flex', gap: 4 }}>
         <span>{asset.symbol}</span>
         {isUntrackedAsset ? null : (
@@ -48,30 +32,15 @@ export function AssetHeader({
   );
 }
 
-export function AssetDefaultHeader({
-  asset,
-  className,
-}: {
-  asset: Asset;
-  className?: string;
-}) {
+export function AssetDefaultHeader({ asset, className }: { asset: Asset; className?: string }) {
   return (
     <HStack gap={8} className={className}>
-      <TokenIcon
-        src={asset.iconUrl}
-        symbol={asset.symbol}
-        size={40}
-        title={asset.name}
-      />
+      <TokenIcon src={asset.iconUrl} symbol={asset.symbol} size={40} title={asset.name} />
       <VStack gap={0}>
         <UIText kind="caption/regular" color="var(--neutral-500)">
           {asset.symbol}
         </UIText>
-        <HStack
-          gap={4}
-          alignItems="center"
-          style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}
-        >
+        <HStack gap={4} alignItems="center" style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}>
           <UIText
             kind="headline/h3"
             style={{

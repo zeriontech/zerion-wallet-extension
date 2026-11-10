@@ -34,11 +34,7 @@ export const LedgerDialogWrapper = forwardRef<
           />
         ) : null}
       </AnimatePresence>
-      <div
-        className={s.container}
-        data-open={open ? 'true' : 'false'}
-        aria-hidden={!open}
-      >
+      <div className={s.container} data-open={open ? 'true' : 'false'} aria-hidden={!open}>
         <LedgerIframe
           ref={ref}
           initialRoute="/signConnector"
@@ -55,6 +51,6 @@ export const LedgerDialogWrapper = forwardRef<
         />
       </div>
     </>,
-    getRootDomNode()
+    getRootDomNode(),
   );
 });

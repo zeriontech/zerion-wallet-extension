@@ -4,13 +4,7 @@ import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { TextLink } from 'src/ui/ui-kit/TextLink';
 
-export function NFTAnchor({
-  nft,
-  address,
-}: {
-  nft: NFTPreview;
-  address?: string;
-}) {
+export function NFTAnchor({ nft, address }: { nft: NFTPreview; address?: string }) {
   return (
     <TextAnchor
       href={`https://app.zerion.io/nfts/${nft.chain}/${nft.contractAddress}:${nft.tokenId}?address=${address}`}
@@ -32,13 +26,7 @@ export function NFTAnchor({
   );
 }
 
-export function NFTLink({
-  nft,
-  style,
-}: {
-  nft: NFTPreview;
-  style?: React.CSSProperties;
-}) {
+export function NFTLink({ nft, style }: { nft: NFTPreview; style?: React.CSSProperties }) {
   return (
     <TextLink
       to={`/nft/${nft.chain}/${nft.contractAddress}:${nft.tokenId}`}

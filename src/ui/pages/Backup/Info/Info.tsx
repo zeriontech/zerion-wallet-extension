@@ -59,8 +59,7 @@ function Card({
         ...style,
         position: 'absolute',
         transition: 'opacity 300ms ease-in-out, filter 300ms ease-in-out',
-        opacity:
-          position < 0 ? 0 : position === 0 ? 1 : position === 1 ? 0.4 : 0.2,
+        opacity: position < 0 ? 0 : position === 0 ? 1 : position === 1 ? 0.4 : 0.2,
         pointerEvents: position < 0 ? 'none' : undefined,
         transformOrigin: position < 0 ? '50% 50%' : '100% 100%',
         filter: position < 0 ? 'blur(5px)' : undefined,
@@ -185,11 +184,7 @@ export function Info({
                   index={0}
                   activeIndex={activeCard}
                   image={
-                    <img
-                      src={CardImg1}
-                      alt="Write down seed phrase"
-                      className={styles.cardImg}
-                    />
+                    <img src={CardImg1} alt="Write down seed phrase" className={styles.cardImg} />
                   }
                   text={`For security, it${apostrophe}s crucial to write down the recovery phrase and store it securely.`}
                 />
@@ -209,11 +204,7 @@ export function Info({
                   index={2}
                   activeIndex={activeCard}
                   image={
-                    <img
-                      src={CardImg3}
-                      alt="Never share seed phrase"
-                      className={styles.cardImg}
-                    />
+                    <img src={CardImg3} alt="Never share seed phrase" className={styles.cardImg} />
                   }
                   text="Never share your recovery phrase or passcode with anyone, including Zerion team members."
                 />

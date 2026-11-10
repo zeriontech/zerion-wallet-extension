@@ -38,7 +38,7 @@ export function LocalActionItem({
     const content = buildActionContent(
       contentRequest.transactionAction,
       asset,
-      contentRequest.assetQuery.currency
+      contentRequest.assetQuery.currency,
     );
     return applyLocalActionContent(addressAction, contentRequest, content);
   }, [addressAction, asset, contentRequest]);

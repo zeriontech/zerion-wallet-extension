@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { spotClearinghouseState } from '../api/requests/spot-clearinghouse-state.client';
 
-export const SPOT_CLEARINGHOUSE_STATE_QUERY_KEY =
-  'hyperliquid/spotClearinghouseState';
+export const SPOT_CLEARINGHOUSE_STATE_QUERY_KEY = 'hyperliquid/spotClearinghouseState';
 
 export function spotClearinghouseStateQueryOptions(payload: {
   address: string | null | undefined;
@@ -20,15 +19,11 @@ export function spotClearinghouseStateQueryOptions(payload: {
 
 export function useSpotClearinghouseState(
   payload: { address: string | null | undefined },
-  {
-    enabled = true,
-    refetchInterval,
-  }: { enabled?: boolean; refetchInterval?: number | false } = {}
+  { enabled = true, refetchInterval }: { enabled?: boolean; refetchInterval?: number | false } = {},
 ) {
   return useQuery({
     queryKey: [SPOT_CLEARINGHOUSE_STATE_QUERY_KEY, payload.address],
-    queryFn: () =>
-      spotClearinghouseState({ address: payload.address as string }),
+    queryFn: () => spotClearinghouseState({ address: payload.address as string }),
     enabled: enabled && Boolean(payload.address),
     staleTime: 10_000,
     keepPreviousData: true,

@@ -11,9 +11,7 @@ export interface BackendSourceParams {
   source: NetworksSource;
 }
 
-type UrlInput =
-  | ({ endpoint: string } & Partial<BackendSourceParams>)
-  | { url: string | URL };
+type UrlInput = ({ endpoint: string } & Partial<BackendSourceParams>) | { url: string | URL };
 
 type GetOptions = UrlInput;
 type PostOptions = UrlInput & { body: BodyInit };
@@ -46,7 +44,7 @@ const resolveUrl = (input: UrlInput): string | URL => {
     const base = source === 'testnet' ? ZERION_TESTNET_API_URL : ZERION_API_URL;
     invariant(
       base,
-      `One of API URLs not found in env: ${ZERION_TESTNET_API_URL}, ${ZERION_API_URL}`
+      `One of API URLs not found in env: ${ZERION_TESTNET_API_URL}, ${ZERION_API_URL}`,
     );
     return createUrl({ base, pathname: endpoint });
   }
