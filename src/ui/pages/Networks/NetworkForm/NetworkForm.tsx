@@ -1,7 +1,6 @@
 import React, { useId, useState } from 'react';
-import { Content } from 'react-area';
-import { produce } from 'immer';
-import merge from 'lodash/merge';
+import { Content } from 'src/shared/react-area';
+import { merge } from 'moderndash';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -256,7 +255,7 @@ export function NetworkForm({
             return;
           }
           const formObject = collectData(event.currentTarget, parsers);
-          const result = produce(chainConfig, (draft) => merge(draft, formObject));
+          const result = merge(chainConfig, formObject) as unknown as AddEthereumChainParameter;
           onSubmit(
             // custom network id should be generated from (probably) updated chainId
             !chain || isCustomNetworkId(chain) ? toCustomNetworkId(result.chainId) : chain,

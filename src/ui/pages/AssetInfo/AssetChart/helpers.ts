@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import type { AssetChartActions } from 'src/modules/zerion-api/requests/asset-get-chart';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';

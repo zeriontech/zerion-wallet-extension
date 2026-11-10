@@ -9,9 +9,9 @@ import {
 import {
   getAssociatedTokenAddress,
   createTransferInstruction,
-  getMint,
+  getMintDecimals,
   createAssociatedTokenAccountInstruction,
-} from '@solana/spl-token';
+} from 'src/modules/solana/splToken';
 import type { AddressPosition } from 'src/defi-sdk.types';
 import { Networks } from 'src/modules/networks/Networks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
@@ -90,14 +90,12 @@ export async function buildSolanaTransfer(
     });
     invariant(tokenAddressInChain, 'Token implementation must be a solana address');
     const mint = new PublicKey(tokenAddressInChain);
-    const fromTokenAccount = await getAssociatedTokenAddress(mint, fromPubkey);
-    const toTokenAccount = await getAssociatedTokenAddress(mint, toPubkey);
+    const fromTokenAccount = getAssociatedTokenAddress(mint, fromPubkey);
+    const toTokenAccount = getAssociatedTokenAddress(mint, toPubkey);
 
     const toTokenAccountInfo = await connection.getAccountInfo(toTokenAccount);
 
-    const mintInfo = await getMint(connection, mint);
-
-    const { decimals } = mintInfo;
+    const decimals = await getMintDecimals(connection, mint);
     const amount = commonToBase(formState.tokenValue, decimals);
 
     const instructions: TransactionInstruction[] = [];
@@ -105,16 +103,21 @@ export async function buildSolanaTransfer(
     if (!toTokenAccountInfo) {
       // If the recipient has never received this token, we must perform an additional step
       instructions.push(
-        createAssociatedTokenAccountInstruction(fromPubkey, toTokenAccount, toPubkey, mint),
+        createAssociatedTokenAccountInstruction({
+          payer: fromPubkey,
+          associatedToken: toTokenAccount,
+          owner: toPubkey,
+          mint,
+        }),
       );
     }
     instructions.push(
-      createTransferInstruction(
-        fromTokenAccount,
-        toTokenAccount,
-        fromPubkey,
-        BigInt(amount.toFixed(0, BigNumber.ROUND_DOWN)),
-      ),
+      createTransferInstruction({
+        source: fromTokenAccount,
+        destination: toTokenAccount,
+        owner: fromPubkey,
+        amount: BigInt(amount.toFixed(0, BigNumber.ROUND_DOWN)),
+      }),
     );
 
     tx.add(...instructions);

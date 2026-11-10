@@ -1,4 +1,4 @@
-import groupBy from 'lodash/groupBy';
+import { group } from 'moderndash';
 import React, { useMemo, useRef, useState } from 'react';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
@@ -139,7 +139,7 @@ export function SelectMoreWalletsDialog({
     return wallets?.reduce(
       (acc, config) => {
         const key = `${config.curve}:${config.pathType}`;
-        acc[key] = groupBy(config.wallets, toActiveStatus) as Grouped;
+        acc[key] = group(config.wallets, toActiveStatus) as Grouped;
         return acc;
       },
       {} as { [key: string]: Grouped },

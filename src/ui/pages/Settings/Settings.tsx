@@ -51,7 +51,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isMacOS } from 'src/ui/shared/isMacos';

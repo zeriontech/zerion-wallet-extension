@@ -1,4 +1,4 @@
-import memoize from 'memoize-one';
+import memoize from 'src/shared/memoizeOne';
 import type { CurrencyConfig } from 'src/modules/currency/currencies';
 import { CURRENCIES } from 'src/modules/currency/currencies';
 
@@ -20,7 +20,7 @@ const toSubscript = (n: number) =>
     .map((d) => SUBSCRIPT_DIGITS[Number(d)])
     .join('');
 
-const getZeroFormatter = memoize((locale, currency) => {
+const getZeroFormatter = memoize((locale: string, currency: string) => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,

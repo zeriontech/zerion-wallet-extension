@@ -1,4 +1,4 @@
-import throttle from 'lodash/throttle';
+import { throttle } from 'src/shared/throttle';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';

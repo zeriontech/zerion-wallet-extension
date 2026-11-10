@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import type { TransactionObject } from 'src/modules/ethereum/transactions/types';
 import { getExplorerUrl } from 'src/modules/ethereum/transactions/addressAction';
 import { localTransactionsStore } from 'src/ui/transactions/transactions-store';

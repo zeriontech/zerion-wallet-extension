@@ -8,7 +8,7 @@ import {
   hashQueryKey,
   hydrate,
 } from '@tanstack/react-query';
-import throttle from 'lodash/throttle';
+import { throttle } from 'src/shared/throttle';
 import { sessionCacheService } from '../channels';
 
 interface PersistedClient {

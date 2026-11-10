@@ -1,4 +1,4 @@
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import React, { useMemo, useRef } from 'react';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
@@ -190,7 +190,7 @@ function ResourceButton({ resource, icon }: { resource: AssetResource; icon: Rea
     <Button
       key={resource.name}
       as={UnstyledAnchor}
-      rel="noopenner noreferrer"
+      rel="() => {}enner noreferrer"
       target="_blank"
       kind="regular"
       size={36}

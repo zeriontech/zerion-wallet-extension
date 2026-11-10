@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import groupBy from 'lodash/groupBy';
+import { group } from 'moderndash';
 import { startOfDate } from 'src/shared/units/startOfDate';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -40,7 +40,7 @@ export function ActionsList({
   const { preferences } = usePreferences();
   const groupedByDate = useMemo(
     () =>
-      groupBy(actions, (item) =>
+      group(actions, (item) =>
         startOfDate(new Date(item.timestamp).getTime() || Date.now()).getTime(),
       ),
     [actions],

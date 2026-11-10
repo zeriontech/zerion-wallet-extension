@@ -10,7 +10,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import {

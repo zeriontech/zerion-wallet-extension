@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AreaProvider } from 'react-area';
+import { AreaProvider } from 'src/shared/react-area';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { HashRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -12,7 +12,7 @@ import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { Playground } from 'src/ui-lab/Playground';
 import { useNavigate } from 'react-router-dom';

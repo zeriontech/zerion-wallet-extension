@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
 import { valueToHex } from 'src/shared/units/valueToHex';

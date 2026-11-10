@@ -1,4 +1,4 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import React from 'react';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';

@@ -2,7 +2,6 @@ import { decrypt, encrypt } from 'src/modules/crypto';
 import type { Draft } from 'immer';
 import { createDraft, finishDraft, produce } from 'immer';
 import { nanoid } from 'nanoid';
-import sortBy from 'lodash/sortBy';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -19,7 +18,7 @@ import {
   isReadonlyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';

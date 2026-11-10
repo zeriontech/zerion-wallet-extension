@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 
 export const swapOnboardingDevForceShowStore = new Store<boolean>(false);
 

@@ -1,4 +1,4 @@
-import groupBy from 'lodash/groupBy';
+import { group } from 'moderndash';
 import type { MaskedBareWallet } from 'src/shared/types/BareWallet';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
@@ -75,7 +75,7 @@ export function suggestInitialWallets({
 } {
   const allWallets = wallets.flatMap((config) => config.wallets);
   const newOnes = allWallets.filter((w) => !existingAddressesSet.has(normalizeAddress(w.address)));
-  const grouped = groupBy(newOnes, ({ address }) =>
+  const grouped = group(newOnes, ({ address }) =>
     activeWallets[normalizeAddress(address)]?.active ? 'active' : 'rest',
   );
   const { active, rest } = grouped as Record<'active' | 'rest', MaskedBareWallet[] | undefined>;

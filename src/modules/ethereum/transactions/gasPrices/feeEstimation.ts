@@ -1,4 +1,4 @@
-import memoize from 'lodash/memoize';
+import { memoize } from 'moderndash';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { getTransactionCount } from '../getTransactionCount';
 import type { ChainId } from '../ChainId';

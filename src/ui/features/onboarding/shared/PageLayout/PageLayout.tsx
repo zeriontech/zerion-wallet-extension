@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import Logo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { useBodyStyle } from 'src/ui/components/Background/Background';

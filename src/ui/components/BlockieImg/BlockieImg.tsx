@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
-import { createIcon } from '@download/blockies';
+import { createIcon } from 'src/ui/components/BlockieImg/blockies';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { generateSolanaBlockie } from './generateSolanaBlockie';

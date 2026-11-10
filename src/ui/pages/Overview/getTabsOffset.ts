@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 
 export const offsetValues = new Store({
   stickyOffset: 52,

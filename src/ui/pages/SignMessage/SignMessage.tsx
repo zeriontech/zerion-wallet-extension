@@ -37,7 +37,7 @@ import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';

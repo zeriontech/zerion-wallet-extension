@@ -13,7 +13,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useMutation } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { useNavigate } from 'react-router-dom';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 
 export function RestoreData() {
   const navigate = useNavigate();

@@ -10,7 +10,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import type { ParsedError } from 'src/shared/errors/parse-error/parseError';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import { samples } from 'src/shared/errors/parse-error/samples';
