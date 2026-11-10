@@ -1,67 +1,86 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Store } from './store';
 
 type StorePublicInterface<T> = Omit<Store<T>, 'emitter'>;
+
 interface DisposableStore<T> extends StorePublicInterface<T> {
   dispose: () => void;
 }
 
-function isDisposable<T>(
+function isDisposableStore<T>(
   store: StorePublicInterface<T> | DisposableStore<T>,
 ): store is DisposableStore<T> {
   return 'dispose' in store && Boolean(store.dispose);
 }
 
-/** Subscribe a component to a vendored store. */
-export function useStore<State>(
-  store: StorePublicInterface<State> | DisposableStore<State>,
-): State {
-  const state = useSyncExternalStore(
-    (onStoreChange) => store.on('change', onStoreChange),
-    () => store.getState(),
-  );
+export function useStore<State>(store: StorePublicInterface<State> | DisposableStore<State>) {
+  const [value, setValue] = useState<StorePublicInterface<State>['state']>(() => {
+    return store.getState();
+  });
+  const newValue = store.getState();
+  if (newValue !== value) {
+    setValue(newValue);
+  }
   useEffect(() => {
+    let didUnsubscribe = false;
+    setValue(store.getState());
+    const unlisten = store.on('change', (newState) => {
+      if (didUnsubscribe) {
+        return;
+      }
+      setValue(newState);
+    });
     return () => {
-      if (isDisposable(store)) {
+      didUnsubscribe = true;
+      unlisten();
+      if (isDisposableStore(store)) {
         store.dispose();
       }
     };
   }, [store]);
-  return state;
+  return value;
 }
 
-/** Subscribe to a subset of store fields, re-rendering only when they change. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any -- matches store-unit's public generic
 export function useSelectorStore<T extends Record<string, any>>(
   store: Store<T>,
-  fields: (keyof T)[],
-): T {
-  const fieldsRef = useRef(fields);
-  fieldsRef.current = fields;
-  const [state, setState] = useState(() => store.getState());
-  const stateRef = useRef(state);
-  const current = store.getState();
-  if (current !== state) {
-    const changed = fieldsRef.current.some((field) => current[field] !== state[field]);
-    if (changed) {
-      stateRef.current = current;
-      setState(current);
-    } else {
-      stateRef.current = current;
+  fieldsOrComparer: (keyof T)[],
+) {
+  const keysRef = useRef<null | Array<keyof T>>(fieldsOrComparer);
+  if (keysRef.current !== fieldsOrComparer) {
+    keysRef.current = fieldsOrComparer;
+  }
+  const [value, setValue] = useState<StorePublicInterface<T>['state']>(() => {
+    return store.getState();
+  });
+  const lastCheckedValueRef = useRef(value);
+  const newValue = store.getState();
+  if (newValue !== value) {
+    if (lastCheckedValueRef.current !== newValue) {
+      if (keysRef.current.some((key) => newValue[key] !== value[key])) {
+        setValue(newValue);
+      }
     }
+    lastCheckedValueRef.current = newValue;
   }
   useEffect(() => {
-    const unsubscribe = store.on('change', (next, prev) => {
-      if (fieldsRef.current.some((field) => next[field] !== prev[field])) {
-        setState(next);
+    let didUnsubscribe = false;
+    setValue(store.getState());
+    const unlisten = store.on('change', (newState, prevState) => {
+      if (didUnsubscribe || !keysRef.current) {
+        return;
+      }
+      if (keysRef.current.some((key) => newState[key] !== prevState[key])) {
+        setValue(newState);
       }
     });
     return () => {
-      unsubscribe();
-      if (isDisposable(store)) {
+      didUnsubscribe = true;
+      unlisten();
+      if (isDisposableStore(store)) {
         store.dispose();
       }
     };
   }, [store]);
-  return state;
+  return value;
 }

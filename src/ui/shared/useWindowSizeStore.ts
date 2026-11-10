@@ -1,5 +1,5 @@
 import memoize from 'src/shared/memoizeOne';
-import { throttle } from 'src/shared/throttle';
+import { debounce } from 'moderndash';
 import { Store } from 'src/shared/store/store';
 import { useStore } from 'src/shared/store/useStore';
 
@@ -31,13 +31,9 @@ export const windowSizeStore = new Store(createState());
 if (typeof window !== 'undefined') {
   window.addEventListener(
     'resize',
-    throttle(
-      () => {
-        windowSizeStore.setState(createState());
-      },
-      300,
-      { trailing: true },
-    ),
+    debounce(() => {
+      windowSizeStore.setState(createState());
+    }, 300),
   );
 }
 

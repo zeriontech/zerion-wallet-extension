@@ -8,7 +8,7 @@ import {
   hashQueryKey,
   hydrate,
 } from '@tanstack/react-query';
-import { throttle } from 'src/shared/throttle';
+import { debounce } from 'moderndash';
 import { sessionCacheService } from '../channels';
 
 interface PersistedClient {
@@ -124,10 +124,10 @@ export async function persistQueryClient(
     hydrate(queryClient, persistedClient.clientState);
   }
 
-  const throttledhandleQueryCacheUpdate = throttle(handleQueryCacheUpdate, 800, { trailing: true });
+  const debouncedhandleQueryCacheUpdate = debounce(handleQueryCacheUpdate, 800);
   queryClient.getQueryCache().subscribe((event) => {
     if (isCacheEventType(event.type)) {
-      throttledhandleQueryCacheUpdate(queryClient, buildHash);
+      debouncedhandleQueryCacheUpdate(queryClient, buildHash);
     }
   });
 }
