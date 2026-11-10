@@ -25,6 +25,7 @@ import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { noValueDash } from 'src/ui/shared/typography';
+import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { SlippageSettings } from '../SlippageSettings';
 import type { SwapFormState2 } from '../types';
@@ -32,9 +33,8 @@ import { NetworkFeeDialog2 } from '../NetworkFeeDialog2';
 import { formatNetworkFee } from '../formatNetworkFee';
 import {
   getBaseFee,
-  getConfigurationEffectiveGasPrice,
   getCustomFormDefaults,
-  getNetworkFeeRatio,
+  getNetworkFeeRatioForConfiguration,
 } from '../getNetworkFeeForSpeed';
 import { ProviderSelector } from './ProviderSelector';
 import { NonceLine2 } from './NonceLine2';
@@ -166,16 +166,11 @@ export function QuoteDetails({
   // is used for the quote's "original" price too.
   const baseFee = getBaseFee(gasPrices);
 
-  // The displayed network fee scales by the ratio of the new effective gas
-  // price (from the configuration) to the swap tx's original effective price.
+  // The displayed network fee uses the same ratio as the picker rows, so a
+  // preset and a Custom fee (prices + gas limit) show identical amounts.
   // No quote refetch. Recomputes on user change and on the 20s gas poll.
   const feeRatio = useMemo(() => {
-    const effective = getConfigurationEffectiveGasPrice(
-      configuration.networkFee,
-      gasPrices,
-      baseFee,
-    );
-    return getNetworkFeeRatio(quote, effective, baseFee);
+    return getNetworkFeeRatioForConfiguration(quote, configuration.networkFee, gasPrices, baseFee);
   }, [quote, gasPrices, baseFee, configuration.networkFee]);
 
   // Quote-derived defaults (GWEI) for the custom form, seeded from the swap
@@ -185,6 +180,7 @@ export function QuoteDetails({
   const inputChain = createChain(formState.inputChain);
   const inputChainName = networks.getChainName(inputChain);
   const inputChainIconUrl = networks.getByNetworkId(inputChain)?.iconUrl;
+  const inputChainBaseAssetSymbol = networks.getByNetworkId(inputChain)?.baseAsset?.symbol;
 
   const outputChain = createChain(formState.outputChain);
   const outputChainName = networks.getChainName(outputChain);
@@ -211,7 +207,12 @@ export function QuoteDetails({
                   value={
                     quote ? (
                       <HStack gap={4} alignItems="center">
-                        <UIText kind="small/accent">{formatNetworkFee(quote, feeRatio)}</UIText>
+                        <NetworkFeeLevelLabel speed={configuration.networkFee.speed} />
+                        <UIText kind="small/accent">
+                          {formatNetworkFee(quote, feeRatio, {
+                            fallbackSymbol: inputChainBaseAssetSymbol,
+                          })}
+                        </UIText>
                         {evmTx ? <ChevronRightIcon className={styles.detailLinkChevron} /> : null}
                       </HStack>
                     ) : quotesQuery.isLoading ? (
@@ -489,6 +490,7 @@ export function QuoteDetails({
           quote={quote}
           gasPrices={gasPrices}
           baseFee={baseFee}
+          fallbackSymbol={inputChainBaseAssetSymbol}
         />
       ) : null}
     </MotionConfig>

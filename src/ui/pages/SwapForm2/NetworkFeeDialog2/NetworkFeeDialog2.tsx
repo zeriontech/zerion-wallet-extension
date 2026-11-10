@@ -37,7 +37,7 @@ function Header({ view, onBack }: { view: View; onBack: () => void }) {
         ) : null}
       </div>
       <UIText kind="body/accent" className={styles.headerTitle}>
-        {view === 'selector' ? 'Network Fee' : 'Custom'}
+        {view === 'selector' ? 'Network speed' : 'Custom'}
       </UIText>
       <div className={styles.headerRight}>
         <DialogDismiss className={styles.iconButton} aria-label="Close">
@@ -58,6 +58,9 @@ export function NetworkFeeDialog2({
   quote = null,
   gasPrices = null,
   baseFee = null,
+  fallbackFiatValue = null,
+  fallbackSymbol = null,
+  currency = null,
 }: {
   open: boolean;
   onClose: () => void;
@@ -75,6 +78,12 @@ export function NetworkFeeDialog2({
   gasPrices?: ChainGasPrice | null;
   /** Current EIP-1559 base fee (wei), used to compute effective prices. */
   baseFee?: number | null;
+  /** Unscaled fiat fallback when the quote has no `networkFee.amount.value`. */
+  fallbackFiatValue?: number | null;
+  /** Native symbol fallback when the quote has no fungible symbol. */
+  fallbackSymbol?: string | null;
+  /** Currency for `fallbackFiatValue`. */
+  currency?: string | null;
 }) {
   const [view, setView] = useState<View>('selector');
 
@@ -128,6 +137,12 @@ export function NetworkFeeDialog2({
                     quote={quote}
                     gasPrices={gasPrices}
                     baseFee={baseFee}
+                    configuration={configuration}
+                    defaults={defaults}
+                    isEip1559={isEip1559}
+                    fallbackFiatValue={fallbackFiatValue}
+                    fallbackSymbol={fallbackSymbol}
+                    currency={currency}
                     onSelectPreset={handlePresetSelect}
                     onSelectCustom={() => setView('custom')}
                   />
@@ -145,6 +160,9 @@ export function NetworkFeeDialog2({
                     configuration={configuration}
                     quote={quote}
                     baseFee={baseFee}
+                    fallbackFiatValue={fallbackFiatValue}
+                    fallbackSymbol={fallbackSymbol}
+                    currency={currency}
                     onSubmit={handleCustomSubmit}
                   />
                 </motion.div>

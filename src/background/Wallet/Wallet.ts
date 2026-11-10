@@ -95,6 +95,7 @@ import type {
   PerpsPositionActionParams,
   PerpsScreenViewedParams,
 } from 'src/shared/types/perps-events';
+import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
 import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 import type { ConfidentialAnalyticsEvent } from 'src/shared/types/confidential-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
@@ -1828,6 +1829,14 @@ export class Wallet {
   async buttonClicked({ context, params }: WalletMethodParams<ButtonClickedParams>) {
     this.verifyInternalOrigin(context);
     emitter.emit('buttonClicked', params);
+  }
+
+  async networkFeeLevelChanged({
+    context,
+    params,
+  }: WalletMethodParams<NetworkFeeLevelChangedParams>) {
+    this.verifyInternalOrigin(context);
+    emitter.emit('networkFeeLevelChanged', params);
   }
 
   async bannerClicked({ context, params }: WalletMethodParams<BannerClickedParams>) {

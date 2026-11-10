@@ -137,6 +137,9 @@ export function NetworkFeeCustomForm({
   configuration,
   quote = null,
   baseFee = null,
+  fallbackFiatValue = null,
+  fallbackSymbol = null,
+  currency = null,
   onSubmit,
 }: {
   isEip1559: boolean;
@@ -151,6 +154,10 @@ export function NetworkFeeCustomForm({
   quote?: NetworkFeeQuote | null;
   /** Current EIP-1559 base fee (wei), used to compute the effective price. */
   baseFee?: number | null;
+  /** Shared fallbacks so the form summary matches the row and picker. */
+  fallbackFiatValue?: number | null;
+  fallbackSymbol?: string | null;
+  currency?: string | null;
   onSubmit: (value: NetworkFeeConfiguration) => void;
 }) {
   // Quote-derived defaults (above the hardcoded fallbacks). The Reset button
@@ -168,8 +175,7 @@ export function NetworkFeeCustomForm({
   // Existing custom override (in wei), converted to GWEI strings. These seed the
   // inputs above the quote defaults so a previously-saved custom fee is shown
   // when the form reopens.
-  const customNetworkFee =
-    configuration?.networkFee.speed === 'custom' ? configuration.networkFee : null;
+  const customNetworkFee = configuration?.networkFee;
   const custom = {
     priorityFee: weiToGweiOrNull(customNetworkFee?.custom1559GasPrice?.priorityFee),
     maxFee: weiToGweiOrNull(customNetworkFee?.custom1559GasPrice?.maxFee),
@@ -240,16 +246,19 @@ export function NetworkFeeCustomForm({
       expectedFee = formatNetworkFee(
         quote,
         getCustomFeeRatio(quote, effective, gasLimitNum, baseFee),
+        { fallbackFiatValue, fallbackSymbol, currency },
       );
       maxFeeDisplay = formatNetworkFee(
         quote,
         getCustomFeeRatio(quote, maxFeeWei, gasLimitNum, baseFee),
+        { fallbackFiatValue, fallbackSymbol, currency },
       );
     } else {
       const gasPriceWei = gweiInputToWei(values.classicGasPrice);
       expectedFee = formatNetworkFee(
         quote,
         getCustomFeeRatio(quote, gasPriceWei, gasLimitNum, baseFee),
+        { fallbackFiatValue, fallbackSymbol, currency },
       );
     }
   }

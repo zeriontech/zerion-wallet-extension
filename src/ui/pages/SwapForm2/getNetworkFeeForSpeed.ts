@@ -1,11 +1,12 @@
 import BigNumber from 'bignumber.js';
 import type {
   CustomConfiguration,
+  NetworkFeeConfiguration,
   NetworkFeeSpeed,
 } from 'src/shared/types/TransactionConfiguration';
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
-import { weiToGweiStr } from 'src/shared/units/formatGasPrice';
+import { gweiToWei, weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { getEffectiveGasPrice } from './getEffectiveGasPrice';
 import type { CustomFormDefaults } from './NetworkFeeDialog2/NetworkFeeCustomForm';
 
@@ -163,4 +164,83 @@ export function getCustomFeeRatio(
       ? gasLimit / originalGasLimit
       : 1;
   return priceRatio * limitRatio;
+}
+
+/**
+ * The display multiplier for a complete network-fee configuration. Presets use
+ * `gasPrices[speed]`; Custom combines its gas prices with its gas limit, so the
+ * fee row, the picker row and the custom form all show the same amount.
+ */
+export function getNetworkFeeRatioForConfiguration(
+  quote: NetworkFeeQuote | null,
+  networkFee: NetworkFeeConfiguration,
+  gasPrices: ChainGasPrice | null,
+  baseFee: number | null,
+): number {
+  if (networkFee.speed === 'custom') {
+    const effective = getConfigurationEffectiveGasPrice(networkFee, gasPrices, baseFee);
+    const gasLimit =
+      networkFee.gasLimit != null && networkFee.gasLimit !== ''
+        ? Number(networkFee.gasLimit)
+        : null;
+    return getCustomFeeRatio(
+      quote,
+      effective,
+      gasLimit != null && Number.isFinite(gasLimit) ? gasLimit : null,
+      baseFee,
+    );
+  }
+  const effective = getPresetEffectiveGasPrice(networkFee.speed, gasPrices, baseFee);
+  return getNetworkFeeRatio(quote, effective, baseFee);
+}
+
+const gweiStringToWei = (value: string | null | undefined) => {
+  if (!value) {
+    return null;
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? gweiToWei(num) : null;
+};
+
+const decimalStringToNumber = (value: string | null | undefined) => {
+  if (!value) {
+    return null;
+  }
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+};
+
+/**
+ * The Custom-row amount before the user has configured Custom. Mirrors the
+ * custom form's quote-derived initial values so the picker row is not blank.
+ * Returns `null` when the defaults cannot produce a trustworthy amount.
+ */
+export function getCustomFeeRatioFromDefaults(
+  quote: NetworkFeeQuote | null,
+  defaults: CustomFormDefaults | undefined,
+  isEip1559: boolean,
+  baseFee: number | null,
+): number | null {
+  if (!quote || !defaults) {
+    return null;
+  }
+  const gasLimit = decimalStringToNumber(defaults.gasLimit);
+  if (isEip1559) {
+    const effective = getEffectiveGasPrice(
+      {
+        maxFee: gweiStringToWei(defaults.maxFee),
+        maxPriorityFee: gweiStringToWei(defaults.priorityFee),
+      },
+      baseFee,
+    );
+    if (effective == null) {
+      return null;
+    }
+    return getCustomFeeRatio(quote, effective, gasLimit, baseFee);
+  }
+  const gasPrice = gweiStringToWei(defaults.baseFee);
+  if (gasPrice == null) {
+    return null;
+  }
+  return getCustomFeeRatio(quote, gasPrice, gasLimit, baseFee);
 }

@@ -25,6 +25,7 @@ type MetabaseEvent =
   | 'keyboard_shortcut_to_sign_preference'
   | 'cloudflare_challenge_issued'
   | 'button_clicked'
+  | 'network_fee_level_changed'
   | 'banner_clicked'
   | 'asset_clicked'
   | 'passkey_login_enabled'

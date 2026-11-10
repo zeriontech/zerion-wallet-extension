@@ -2,7 +2,9 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import type { Quote2, TransactionEVM } from 'src/shared/types/Quote';
 import {
   getCustomFeeRatio,
+  getCustomFeeRatioFromDefaults,
   getNetworkFeeRatio,
+  getNetworkFeeRatioForConfiguration,
   getPresetEffectiveGasPrice,
   getSwapOriginalEffectiveGasPrice,
 } from './getNetworkFeeForSpeed';
@@ -43,7 +45,7 @@ function makeGasPrices(eip1559: {
   baseFee: number;
 }): ChainGasPrice {
   const speed = { classic: null, eip1559, optimistic: null, eta: null };
-  // Average is half the priority of fast, for ratio assertions below.
+  // Slow is half the priority of fast, for ratio assertions below.
   const averageSpeed = {
     classic: null,
     eip1559: { ...eip1559, priorityFee: eip1559.priorityFee / 2 },
@@ -109,5 +111,104 @@ describe('getCustomFeeRatio', () => {
   test('gas-limit ratio defaults to 1 when gasLimit is null', () => {
     const quote = makeQuote(makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) }));
     expect(getCustomFeeRatio(quote, 200, null, 90)).toBe(2);
+  });
+});
+
+describe('getNetworkFeeRatioForConfiguration', () => {
+  const gasPrices = makeGasPrices({
+    maxFee: 400,
+    priorityFee: 110,
+    baseFee: 90,
+  });
+
+  test('scales a preset from its gas price', () => {
+    const quote = makeQuote(makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) }));
+    expect(
+      getNetworkFeeRatioForConfiguration(
+        quote,
+        {
+          speed: 'average',
+          custom1559GasPrice: null,
+          customClassicGasPrice: null,
+          gasLimit: null,
+        },
+        gasPrices,
+        90,
+      ),
+    ).toBe(1.45);
+  });
+
+  test('includes the custom gas limit in a custom configuration', () => {
+    const quote = makeQuote(makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) }));
+    expect(
+      getNetworkFeeRatioForConfiguration(
+        quote,
+        {
+          speed: 'custom',
+          custom1559GasPrice: { maxFee: 200, priorityFee: 10 },
+          customClassicGasPrice: null,
+          gasLimit: '512',
+        },
+        gasPrices,
+        90,
+      ),
+    ).toBe(2);
+  });
+
+  test('scales a classic gas-price configuration', () => {
+    const quote = makeQuote(makeEvm({ gas: hex(256), gasPrice: hex(100) }));
+    const classicGasPrices = {
+      fast: { classic: 200, eip1559: null, optimistic: null, eta: null },
+      average: { classic: 150, eip1559: null, optimistic: null, eta: null },
+    };
+    expect(
+      getNetworkFeeRatioForConfiguration(
+        quote,
+        {
+          speed: 'fast',
+          custom1559GasPrice: null,
+          customClassicGasPrice: null,
+          gasLimit: null,
+        },
+        classicGasPrices,
+        null,
+      ),
+    ).toBe(2);
+  });
+});
+
+describe('getCustomFeeRatioFromDefaults', () => {
+  test('prices the Custom row from quote-derived defaults', () => {
+    const quote = makeQuote(
+      makeEvm({
+        gas: hex(256),
+        maxFee: hex(200_000_000_000),
+        maxPriorityFee: hex(10_000_000_000),
+      }),
+    );
+    expect(
+      getCustomFeeRatioFromDefaults(
+        quote,
+        {
+          maxFee: '200',
+          priorityFee: '10',
+          baseFee: '90',
+          gasLimit: '512',
+        },
+        true,
+        90_000_000_000,
+      ),
+    ).toBe(2);
+  });
+
+  test('prices a classic Custom row from its base fee', () => {
+    const quote = makeQuote(makeEvm({ gas: hex(256), gasPrice: hex(100_000_000_000) }));
+    expect(
+      getCustomFeeRatioFromDefaults(quote, { baseFee: '200', gasLimit: '256' }, false, null),
+    ).toBe(2);
+  });
+
+  test('returns null when defaults cannot produce a price', () => {
+    expect(getCustomFeeRatioFromDefaults(makeQuote(null), undefined, true, null)).toBe(null);
   });
 });
