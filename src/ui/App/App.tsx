@@ -1,7 +1,8 @@
+import type { JSX } from 'react';
 import React, { useMemo } from 'react';
-import { AreaProvider } from 'react-area';
-import { QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { HashRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { AreaProvider } from 'src/shared/react-area';
+import { QueryClientProvider, useSuspenseQuery } from '@tanstack/react-query';
+import { HashRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router';
 import dayjs from 'dayjs';
 import * as styles from 'src/ui/style/global.module.css';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -12,10 +13,10 @@ import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { Playground } from 'src/ui-lab/Playground';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { accountPublicRPCPort, walletPort, windowPort } from '../shared/channels';
@@ -88,7 +89,7 @@ import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 const isProd = process.env.NODE_ENV === 'production';
 
 const useAuthState = () => {
-  const { data, isFetching } = useQuery({
+  const { data, isFetching } = useSuspenseQuery({
     queryKey: ['authState'],
     queryFn: async () => {
       const [isAuthenticated, existingUser, wallet] = await Promise.all([
@@ -102,7 +103,6 @@ const useAuthState = () => {
         wallet,
       };
     },
-    useErrorBoundary: true,
     retry: false,
     refetchOnWindowFocus: false,
   });

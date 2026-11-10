@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { produce } from 'immer';
 import merge from 'lodash/merge';
 import { Button } from 'src/ui/ui-kit/Button';

@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useStore } from '@store-unit/react';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useStore } from 'src/shared/store/useStore';
 import BigNumber from 'bignumber.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigationType } from 'react-router';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
   createApproveAddressAction2,
@@ -31,7 +31,7 @@ import {
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences, usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
@@ -312,10 +312,9 @@ function SwapFormComponent({
     setPreferences({ crossChainSwapOnboardingShown: true });
   });
 
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
   });
 
   const { data: inputFungibleUsdInfo } = useAssetListFungibles({
@@ -782,7 +781,7 @@ function SwapFormComponent({
             quotesQuery={quotesQuery}
             gasPrices={gasPrices ?? null}
             simulated={hasSimulated}
-            signing={signMutation.isLoading}
+            signing={signMutation.isPending}
             isCrossEcosystem={isCrossEcosystem}
             receiverEcosystemMismatch={receiverEcosystemMismatch}
             isCrossChain={isCrossChain}

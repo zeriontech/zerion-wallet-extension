@@ -18,8 +18,7 @@ export function useReceiverAddressItems() {
   const { data: walletGroups, isLoading } = useQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
-    suspense: false,
+    throwOnError: true,
   });
   const { preferences } = usePreferences();
   const { entries: addressBookEntries } = useAddressBook();

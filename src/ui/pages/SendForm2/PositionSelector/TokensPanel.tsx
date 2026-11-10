@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ComboboxProvider, Combobox, TabProvider, useTabContext } from '@ariakit/react';
-import { normalizedContains } from 'normalized-contains';
+import { normalizedIncludes } from 'src/shared/normalizedIncludes';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
@@ -247,8 +247,8 @@ export function TokensPanel({
       const query = searchValue.toLowerCase();
       result = result.filter(
         (p) =>
-          normalizedContains(p.fungible.name.toLowerCase(), query) ||
-          normalizedContains(p.fungible.symbol.toLowerCase(), query),
+          normalizedIncludes(p.fungible.name.toLowerCase(), query) ||
+          normalizedIncludes(p.fungible.symbol.toLowerCase(), query),
       );
     }
     return result.sort((a, b) => (b.amount.value || 0) - (a.amount.value || 0));

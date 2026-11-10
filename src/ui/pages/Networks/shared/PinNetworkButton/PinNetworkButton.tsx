@@ -48,11 +48,11 @@ export function PinNetworkButton({
   pinned: boolean;
   kind?: 'row' | 'title';
 }) {
-  const { mutate, isLoading } = usePinNetworkMutation();
+  const { mutate, isPending } = usePinNetworkMutation();
   const title = pinned ? 'Unpin network' : 'Pin network';
   const Icon = pinned ? UnpinIcon : PinIcon;
   const onClick = () => {
-    if (!isLoading) {
+    if (!isPending) {
       mutate({ chain, pin: !pinned });
     }
   };

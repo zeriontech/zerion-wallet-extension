@@ -12,13 +12,13 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { FillView } from 'src/ui/components/FillView';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import CheckIcon from 'jsx:src/ui/assets/check-circle-thin-gradient.svg';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { useWalletParams } from 'src/ui/shared/requests/useWalletParams';
 import { emitter } from 'src/ui/shared/events';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 
 const ZERION_ORIGIN = 'https://app.zerion.io';
 
@@ -74,7 +74,7 @@ export function XpDropClaimSuccess() {
     fire(customConfetti);
   }, []);
 
-  const { data: currentWallet } = useQuery({
+  const { data: currentWallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');

@@ -1,16 +1,21 @@
-import { Wallet as EthersV5Wallet } from '@ethersproject/wallet';
+import { Wallet } from 'ethers';
 import type { BareWallet } from 'src/shared/types/BareWallet';
 
 export function generateRandomRecoveryPhrase() {
-  return EthersV5Wallet.createRandom().mnemonic.phrase;
+  const mnemonic = Wallet.createRandom().mnemonic;
+  if (!mnemonic) {
+    throw new Error('Expected a mnemonic for a random wallet');
+  }
+  return mnemonic.phrase;
 }
 
 export function generateRandomWallet(): BareWallet {
-  const wallet = EthersV5Wallet.createRandom();
+  const wallet = Wallet.createRandom();
   return {
     name: null,
     address: wallet.address,
     privateKey: wallet.privateKey,
-    mnemonic: wallet.mnemonic,
+    mnemonic:
+      wallet.mnemonic && wallet.path ? { phrase: wallet.mnemonic.phrase, path: wallet.path } : null,
   };
 }

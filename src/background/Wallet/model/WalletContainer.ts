@@ -114,11 +114,15 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     credentials: SessionCredentials;
     ecosystems?: BlockchainType[];
   }): Promise<MnemonicWalletContainer> {
-    const initial = wallets?.length ? wallets : generateWalletsForEcosystems(ecosystems ?? ['evm']);
+    const initial = wallets?.length
+      ? wallets
+      : await generateWalletsForEcosystems(ecosystems ?? ['evm']);
     const phrase = initial[0].mnemonic?.phrase;
     invariant(phrase, MISSING_MNEMONIC);
     const seedHash = await seedPhraseToHash(phrase);
-    const walletContainer = new MnemonicWalletContainer(initial, seedHash);
+    const restored = await Promise.all(initial.map(restoreBareWallet));
+    assertMnemonicWallets(restored);
+    const walletContainer = new MnemonicWalletContainer(restored, seedHash);
     const { mnemonic } = walletContainer.getFirstWallet();
     if (mnemonic) {
       const encryptedMnemonic = await encrypt(credentials.seedPhraseEncryptionKey, mnemonic.phrase);
@@ -157,9 +161,12 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     }
   }
 
-  private static constructorDeprecated(wallets: BareMnemonicWallet[]) {
+  private static async constructorDeprecated(wallets: BareMnemonicWallet[]) {
     /** Use this method when both seedHash and seedPhraseEncryptionKey_deprecated are unknown */
-    const instance = new MnemonicWalletContainer(wallets, '<temp>');
+    const restored = wallets.length
+      ? await Promise.all(wallets.map(restoreBareWallet))
+      : [await restoreBareWallet({})];
+    const instance = new MnemonicWalletContainer(restored as BareMnemonicWallet[], '<temp>');
     instance.seedHash = undefined;
     return instance;
   }
@@ -169,14 +176,16 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     invariant(seedType === SeedType.mnemonic, 'Must be a MnemonicWalletContainer');
     assertMnemonicWallets(wallets);
     if (seedHash) {
-      return new MnemonicWalletContainer(wallets, seedHash);
+      const restored = await Promise.all(wallets.map(restoreBareWallet));
+      assertMnemonicWallets(restored);
+      return new MnemonicWalletContainer(restored, seedHash);
     } else if (isSessionCredentials(credentials)) {
       return await MnemonicWalletContainer.restoreFromDeprecated({
         wallets,
         credentials,
       });
     } else {
-      return MnemonicWalletContainer.constructorDeprecated(wallets);
+      return await MnemonicWalletContainer.constructorDeprecated(wallets);
     }
   }
 
@@ -184,19 +193,10 @@ export class MnemonicWalletContainer extends WalletContainerImpl {
     return decryptMnemonic(phrase, credentials);
   }
 
-  constructor(wallets: MnemonicSeed[], seedHash: string) {
+  constructor(wallets: BareMnemonicWallet[], seedHash: string) {
     super();
     this.seedHash = seedHash;
-    if (!wallets.length) {
-      this.wallets = [restoreBareWallet({})];
-    } else {
-      this.wallets = wallets.map((wallet) => {
-        if (!wallet.mnemonic) {
-          throw new Error(MISSING_MNEMONIC);
-        }
-        return restoreBareWallet(wallet);
-      });
-    }
+    this.wallets = wallets;
   }
 
   addWallet(wallet: BareWallet, seedHash: string) {
@@ -217,19 +217,22 @@ export class PrivateKeyWalletContainer extends WalletContainerImpl {
   seedType = SeedType.privateKey;
   seedHash = undefined;
 
-  constructor(wallets: Array<PartiallyRequired<BareWallet, 'privateKey'>>) {
+  constructor(wallets: Array<BareWallet>) {
     super();
     if (!wallets || wallets.length > 1) {
       throw new Error(
         `Wallets array is expected to have exactly one element, instead got: ${wallets?.length}`,
       );
     }
-    this.wallets = wallets.map((wallet) => {
-      if (!wallet.privateKey) {
-        throw new Error('PrivateKey container is expected to have a wallet with a privateKey');
-      }
-      return restoreBareWallet(wallet);
-    });
+    if (!wallets[0]?.privateKey || !wallets[0]?.address) {
+      throw new Error('PrivateKey container requires a complete wallet');
+    }
+    this.wallets = wallets;
+  }
+
+  static async create(wallets: Array<PartiallyRequired<BareWallet, 'privateKey'>>) {
+    const restored = await Promise.all(wallets.map(restoreBareWallet));
+    return new PrivateKeyWalletContainer(restored as BareWallet[]);
   }
 
   addWallet() {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
@@ -34,14 +34,14 @@ function GenerateWalletView() {
   const {
     mutate: generateMnemonicWallet,
     data: generatedWallets,
-    isLoading,
+    isPending,
     status,
   } = useMutation({
     mutationFn: async () => {
       await new Promise((r) => setTimeout(r, 1000));
       return walletPort.request('uiGenerateMnemonic', { ecosystems });
     },
-    useErrorBoundary: true,
+    throwOnError: true,
   });
   useEffect(() => {
     if (status === 'idle') {
@@ -66,7 +66,7 @@ function GenerateWalletView() {
     }
   }, [generatedWallets, finalize]);
 
-  const ready = !isLoading && !finalizeMutation.isLoading;
+  const ready = !isPending && !finalizeMutation.isPending;
 
   const { style, trigger } = useTransformTrigger({
     scale: 1.1,

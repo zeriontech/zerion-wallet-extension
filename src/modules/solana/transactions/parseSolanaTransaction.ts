@@ -9,12 +9,12 @@ function isSystemTransfer(ix: TransactionInstruction): boolean {
   return (
     ix.programId.equals(SystemProgram.programId) &&
     ix.data.length === 12 &&
-    ix.data.readUInt32LE(0) === 2 // SystemProgram.transfer instruction code
+    new DataView(ix.data.buffer, ix.data.byteOffset).getUint32(0, true) === 2 // SystemProgram.transfer instruction code
   );
 }
 
 function parseLamports(ix: TransactionInstruction): number {
-  return Number(ix.data.readBigUInt64LE(4));
+  return Number(new DataView(ix.data.buffer, ix.data.byteOffset).getBigUint64(4, true));
 }
 
 export const SOL_ASSET_FUNGIBLE: Fungible = {

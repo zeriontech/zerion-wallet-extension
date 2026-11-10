@@ -18,8 +18,7 @@ export function useReceiverDisplayName(address: string | null | undefined): {
   const { data: walletMetaList } = useWalletsMetaByChunks({
     addresses: normalized ? [normalized] : [],
     enabled: Boolean(normalized),
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 10,
   });
 

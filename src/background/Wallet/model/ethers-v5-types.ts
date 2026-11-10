@@ -2,12 +2,16 @@
  * EthersV5* types descriptions are copied literally from ethers@v5
  * We need to preserve them because we used these values for persistence
  */
-import { BigNumber as EthersV5BigNumber } from '@ethersproject/bignumber';
+import { toBeHex } from 'ethers';
 import type { ethers } from 'ethers';
 import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import { invariant } from 'src/shared/invariant';
 import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
-import { valueToHex } from 'src/shared/units/valueToHex';
+import {
+  isEthersV5BigNumber,
+  valueToHex,
+  type EthersV5BigNumber,
+} from 'src/shared/units/valueToHex';
 
 // Actual sample from storage:
 //  {
@@ -80,8 +84,8 @@ function fromEthersBigNumber(x: EthersV5BigNumber | number | string | bigint | n
   if (x == null) {
     return null;
   }
-  if (EthersV5BigNumber.isBigNumber(x)) {
-    return BigInt(EthersV5BigNumber.from(x).toHexString());
+  if (isEthersV5BigNumber(x)) {
+    return BigInt(x._hex);
   } else {
     return BigInt(x);
   }
@@ -137,7 +141,7 @@ export function txPlainToEthersV5TransactionResponse(
   value: SerializableTransactionResponse,
 ): EthersV5TransactionResponse {
   return {
-    chainId: EthersV5BigNumber.from(value.chainId),
+    chainId: { _hex: toBeHex(value.chainId), _isBigNumber: true },
     data: value.data,
     from: value.from,
     gasLimit: value.gasLimit,

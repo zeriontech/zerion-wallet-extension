@@ -22,6 +22,5 @@ export function useSearchQuery({
     },
     enabled: query.trim().length > 0,
     staleTime: 30000,
-    suspense: false,
   });
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { Combobox, ComboboxItem, ComboboxList, ComboboxProvider } from '@ariakit/react';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';

@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useId, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { usePerpsRemoteConfig } from 'src/modules/hyperliquid/hooks/usePerpsRemoteConfig';
 import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useHyperliquidAccountSummary';
 import { runPerpsIntent } from 'src/modules/hyperliquid/useCases';
@@ -147,7 +147,7 @@ export function PerpsWithdraw() {
     }
   }
 
-  const submitDisabled = !address || !amountValid || withdrawMutation.isLoading;
+  const submitDisabled = !address || !amountValid || withdrawMutation.isPending;
 
   const errorText = amountTooHigh
     ? 'Exceeds available balance'

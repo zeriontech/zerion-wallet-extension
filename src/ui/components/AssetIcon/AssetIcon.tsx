@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import React from 'react';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import type { Collection, NFTPreview } from 'src/modules/zerion-api/requests/wallet-get-actions';

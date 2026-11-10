@@ -12,10 +12,10 @@ export function solFromBase64(base64: StringBase64): SolTransaction {
   }
 }
 
-export function solToBase64(
+export async function solToBase64(
   transaction: SolTransaction,
   { requireAllSignatures } = { requireAllSignatures: false },
-): StringBase64 {
-  const serialized = transaction.serialize({ requireAllSignatures });
+): Promise<StringBase64> {
+  const serialized = await transaction.serialize({ requireAllSignatures });
   return uint8ArrayToBase64(serialized) as StringBase64;
 }

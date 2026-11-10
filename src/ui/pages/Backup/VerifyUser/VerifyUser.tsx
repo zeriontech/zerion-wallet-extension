@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import type { PublicUser } from 'src/shared/types/User';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
@@ -22,12 +22,11 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
 
   const goBack = useGoBack();
 
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isPending } = useSuspenseQuery({
     queryKey: ['account/getExistingUser'],
     queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
     },
-    useErrorBoundary: true,
   });
   const loginMutation = useMutation({
     mutationFn: ({ user, password }: { user: PublicUser; password: string }) => {
@@ -41,7 +40,7 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
 
   const inputId = useId();
 
-  if (isLoading) {
+  if (isPending) {
     return null;
   }
 
@@ -120,8 +119,8 @@ export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {
                     </UIText>
                   ) : null}
                 </VStack>
-                <Button kind="primary" disabled={loginMutation.isLoading}>
-                  {loginMutation.isLoading ? 'Checking password...' : 'Reveal Recovery Phrase'}
+                <Button kind="primary" disabled={loginMutation.isPending}>
+                  {loginMutation.isPending ? 'Checking password...' : 'Reveal Recovery Phrase'}
                 </Button>
               </VStack>
             </form>

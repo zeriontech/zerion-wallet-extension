@@ -1,4 +1,4 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import type { AddressParams } from 'src/defi-sdk.types';
 import { useMemo } from 'react';
 import { filterAddressTransactions } from './filterAddressTransactions';

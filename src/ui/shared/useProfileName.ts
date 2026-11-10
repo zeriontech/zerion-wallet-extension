@@ -30,13 +30,12 @@ export function useProfileName(
     queryKey: persistentQuery([lookupAddressNameKey, wallet.address]),
     queryFn: async () => lookupAddressName(wallet.address),
     enabled: !wallet.name,
-    suspense: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     retryOnMount: false,
     retry: 0,
     staleTime: 40000,
-    useErrorBoundary: false,
+    throwOnError: false,
   });
 
   const domainName = isDomainLoading ? null : domain;

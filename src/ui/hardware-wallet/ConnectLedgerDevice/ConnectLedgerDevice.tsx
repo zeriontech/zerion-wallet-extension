@@ -88,7 +88,7 @@ export function ConnectLedgerDevice({
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const {
     mutate: invokeConnectDevice,
-    isLoading,
+    isPending,
     isSuccess,
     isError,
     error: maybeError,
@@ -178,7 +178,7 @@ export function ConnectLedgerDevice({
           ) : null}
           <Spacer height={24} />
           {/* disable on isSuccess to prevent flick of button before redirect */}
-          {isLoading || isSuccess ? (
+          {isPending || isSuccess ? (
             <HStack alignItems="center" gap={24}>
               <CircleSpinner color="var(--primary)" size="24px" />
               <UIText kind="headline/h3">Connecting...</UIText>

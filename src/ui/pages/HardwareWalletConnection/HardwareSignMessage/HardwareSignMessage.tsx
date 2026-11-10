@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import React, { useEffect, useImperativeHandle, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import LedgerIcon from 'jsx:src/ui/assets/ledger-icon.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import { LedgerIframe } from 'src/ui/hardware-wallet/LedgerIframe';
@@ -90,7 +90,7 @@ export const HardwareSignMessage = React.forwardRef(function HardwareSignMessage
       } catch (error) {
         const normalizedError = parseLedgerError(error);
         if (deniedByUser(normalizedError)) {
-          throw new Error('Signature denied by user');
+          throw new Error('Signature denied by user', { cause: error });
         }
         throw normalizedError;
       }
@@ -114,7 +114,7 @@ export const HardwareSignMessage = React.forwardRef(function HardwareSignMessage
       } catch (error) {
         const normalizedError = parseLedgerError(error);
         if (deniedByUser(normalizedError)) {
-          throw new Error('Signature denied by user');
+          throw new Error('Signature denied by user', { cause: error });
         }
         throw normalizedError;
       }
@@ -138,7 +138,7 @@ export const HardwareSignMessage = React.forwardRef(function HardwareSignMessage
       } catch (error) {
         const normalizedError = parseLedgerError(error);
         if (deniedByUser(normalizedError)) {
-          throw new Error('Signature denied by user');
+          throw new Error('Signature denied by user', { cause: error });
         }
         throw normalizedError;
       }
@@ -205,10 +205,10 @@ export const HardwareSignMessage = React.forwardRef(function HardwareSignMessage
     solana_signMessage,
   }));
 
-  const isLoading =
-    personalSignMutation.isLoading ||
-    signTypedData_v4Mutation.isLoading ||
-    solana_signMessageMutation.isLoading;
+  const isPending =
+    personalSignMutation.isPending ||
+    signTypedData_v4Mutation.isPending ||
+    solana_signMessageMutation.isPending;
 
   const windowFocused = useWindowFocus();
 
@@ -271,7 +271,7 @@ export const HardwareSignMessage = React.forwardRef(function HardwareSignMessage
             <SettingsIcon style={{ width: 20, height: 20 }} />
           </UnstyledButton>
         ) : null}
-        {isLoading ? (
+        {isPending ? (
           <Button
             kind="loading-border"
             disabled={true}
@@ -283,7 +283,7 @@ export const HardwareSignMessage = React.forwardRef(function HardwareSignMessage
         ) : (
           <Button
             kind={buttonKind}
-            disabled={isLoading || isSigning}
+            disabled={isPending || isSigning}
             style={{
               paddingInline: keyboardShortcutEnabled ? 0 : 16, // fit longer button label
               width: '100%',

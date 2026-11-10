@@ -22,7 +22,6 @@ export const perpDexsQueryOptions = {
   staleTime: 1000 * 60 * 5,
   keepPreviousData: true,
   retry: 1,
-  suspense: false,
 };
 
 export function usePerpDexs({ enabled = true }: { enabled?: boolean } = {}) {

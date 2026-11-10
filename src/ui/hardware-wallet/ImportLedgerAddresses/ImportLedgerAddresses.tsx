@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  type InfiniteData,
+  type QueryKey,
+} from '@tanstack/react-query';
 import type { UserInteractionRequested } from '@zeriontech/hardware-wallet-connection';
 import {
   deniedByUser,
@@ -88,7 +93,6 @@ function WalletMediaData({
   handleRequest: (request: ControllerRequest) => Promise<unknown>;
 }) {
   const { data } = useQuery({
-    suspense: false,
     queryKey: ['iframe/wallet-info', wallet.address],
     queryFn: () =>
       handleRequest({
@@ -224,7 +228,13 @@ export function ImportLedgerAddresses({
     isLoading,
     error: maybeError,
     refetch,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<
+    { derivationPath: string; account: { address: string } }[],
+    Error,
+    InfiniteData<{ derivationPath: string; account: { address: string } }[]>,
+    QueryKey,
+    number
+  >({
     queryKey: [
       'ledger/addresses',
       COUNT,
@@ -234,7 +244,8 @@ export function ImportLedgerAddresses({
       setInteractionRequested,
       setLoadedWallets,
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
       if (curve === null || pathType === null) {
         return [];
       }
@@ -269,9 +280,8 @@ export function ImportLedgerAddresses({
     },
     retry: 0,
     refetchOnWindowFocus: false,
-    suspense: false,
     staleTime: Infinity, // addresses found on ledger will not change
-    useErrorBoundary: false,
+    throwOnError: false,
     enabled: curve !== null && pathType !== null,
   });
 

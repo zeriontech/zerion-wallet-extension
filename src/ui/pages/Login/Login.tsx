@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useNavigate, useSearchParams, Navigate } from 'react-router';
 import type { PublicUser } from 'src/shared/types/User';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -87,10 +87,10 @@ export function Login() {
   const navigate = useNavigate();
   const {
     data: user,
-    isLoading,
+    isPending,
     error,
     isError,
-  } = useQuery({
+  } = useSuspenseQuery({
     queryKey: ['account/getExistingUser'],
     queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
@@ -131,7 +131,7 @@ export function Login() {
   });
 
   useBodyStyle(useMemo(() => ({ backgroundColor: 'var(--white)' }), []));
-  if (isLoading) {
+  if (isPending) {
     return null;
   }
   if (isError) {
@@ -189,8 +189,8 @@ export function Login() {
               />
             ) : null}
           </VStack>
-          <Button form={formId} disabled={loginMutation.isLoading}>
-            {loginMutation.isLoading ? 'Checking...' : 'Unlock'}
+          <Button form={formId} disabled={loginMutation.isPending}>
+            {loginMutation.isPending ? 'Checking...' : 'Unlock'}
           </Button>
         </VStack>
       </form>

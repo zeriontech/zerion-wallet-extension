@@ -7,11 +7,10 @@ export function usePendingRecoveryPhrase() {
     queryFn: () => {
       return walletPort.request('getPendingRecoveryPhrase');
     },
-    cacheTime: 0 /** sensitive value, prevent from being cached */,
-    suspense: false,
+    gcTime: 0 /** sensitive value, prevent from being cached */,
     retry: 0,
     refetchOnMount: false,
     refetchOnWindowFocus: true,
-    useErrorBoundary: false,
+    throwOnError: false,
   });
 }

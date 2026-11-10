@@ -32,7 +32,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { useMutation } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -357,7 +357,7 @@ export function SignConnector() {
     return () => window.removeEventListener('message', listener);
   }, []);
 
-  const { mutate, isLoading } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async (transport: TransportIdentifier) => {
       const { sessionId } = await connectDevice({
         transportIdentifier: transport,
@@ -385,7 +385,7 @@ export function SignConnector() {
   });
 
   return interruptedRequest ? (
-    !isLoading ? (
+    !isPending ? (
       windowType === 'tab' ? (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <div

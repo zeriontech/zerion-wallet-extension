@@ -40,7 +40,7 @@ async function registerServiceWorker() {
     // return registration.update();
   } else {
     const { background } = browser.runtime.getManifest();
-    if (background && 'service_worker' in background) {
+    if (background && 'service_worker' in background && background.service_worker) {
       await navigator.serviceWorker.register(background.service_worker);
     }
   }

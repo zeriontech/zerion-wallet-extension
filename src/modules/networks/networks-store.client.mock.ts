@@ -89,22 +89,18 @@ export const ETHEREUM_CHAIN_SOURCES: EthereumChainConfig[] = [
 
 class NetworksStoreMock extends NetworksStore {
   async load() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.getState().networks!;
   }
 
   async update() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.getState().networks!;
   }
 
   async loadNetworksByChainId(_chainId: ChainId) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.getState().networks!;
   }
 
   async pushConfigs(..._extraNetworkConfigs: NetworkInfo[]) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.getState().networks!;
   }
 }

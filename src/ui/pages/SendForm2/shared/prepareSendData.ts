@@ -291,7 +291,7 @@ export async function prepareSendData(
       paymasterPossible: false,
       paymasterEligibility: null,
       networkFee: fee != null ? createNetworkFee(fee, network) : null,
-      transaction: { solana: solToBase64(tx) },
+      transaction: { solana: await solToBase64(tx) },
     };
   }
 }

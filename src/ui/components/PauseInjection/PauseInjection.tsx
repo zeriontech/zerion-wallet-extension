@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Button } from 'src/ui/ui-kit/Button';
 import ConnectionIconOn from 'jsx:src/ui/assets/pause-feature-on.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -103,7 +103,7 @@ function PauseInjectionDialog({
 }
 
 export function usePausedData() {
-  const { data: tabData } = useQuery({
+  const { data: tabData } = useSuspenseQuery({
     queryKey: ['activeTab/origin'],
     queryFn: getActiveTabOrigin,
   });

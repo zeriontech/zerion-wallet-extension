@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useNavigate, useSearchParams } from 'react-router';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -21,7 +21,7 @@ import { setURLSearchParams } from 'src/ui/shared/setURLSearchParams';
 import { AddressActionDetails } from 'src/ui/components/address-action/AddressActionDetails';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { interpretSignature } from 'src/ui/shared/requests/interpret';
-import { Content, RenderArea } from 'react-area';
+import { Content, RenderArea } from 'src/shared/react-area';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageTop } from 'src/ui/components/PageTop';
 import { AllowanceView } from 'src/ui/components/AllowanceView';
@@ -53,7 +53,7 @@ import {
   SecurityStatusBackground,
 } from 'src/ui/shared/security-check';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { getActionApproval } from 'src/modules/ethereum/transactions/addressAction';
@@ -491,11 +491,9 @@ function SignTypedDataContent({
     navigate(-1);
   };
 
-  const { data: chain } = useQuery({
+  const { data: chain } = useSuspenseQuery({
     queryKey: ['requestChainForOrigin', origin, wallet.address],
     queryFn: () => requestChainForOrigin(origin, getAddressType(wallet.address)),
-    useErrorBoundary: true,
-    suspense: true,
   });
 
   const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
@@ -521,7 +519,6 @@ function SignTypedDataContent({
           )
         : null,
     enabled: Boolean(chainId && network?.flags.supportsSimulations),
-    suspense: false,
     retry: 1,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -608,10 +605,9 @@ function SignTypedDataContent({
 
 export function SignTypedData() {
   const [params] = useSearchParams();
-  const { data: wallet, isLoading } = useQuery({
+  const { data: wallet, isLoading } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
   });
   if (isLoading || !wallet) {
     return null;

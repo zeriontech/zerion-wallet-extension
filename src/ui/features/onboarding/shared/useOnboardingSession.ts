@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
 import { emitter } from 'src/ui/shared/events';
 
@@ -17,7 +17,6 @@ export function useOnboardingSession({
       const result = await getCurrentUser();
       return result || null;
     },
-    suspense: false,
     refetchOnWindowFocus: false,
   });
 

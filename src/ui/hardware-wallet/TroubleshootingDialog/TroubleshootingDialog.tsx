@@ -80,11 +80,11 @@ export function TroubleshootingDialog({ error }: { error: LedgerError | null }) 
             If the problem persists, you can submit a report to help us improve.
           </UIText>
           {error ? (
-            reportMutation.isIdle || reportMutation.isLoading ? (
+            reportMutation.isIdle || reportMutation.isPending ? (
               <Button
                 kind="primary"
                 onClick={() => reportMutation.mutate()}
-                disabled={reportMutation.isLoading}
+                disabled={reportMutation.isPending}
               >
                 Submit Report
               </Button>

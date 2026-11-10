@@ -112,11 +112,13 @@ function isDappNotification(message: unknown): message is InDappNotification {
 }
 
 export function initializeInDappNotifications() {
-  browser.runtime.onMessage.addListener((message, sender, _sendResponse) => {
-    // Check if the message is from the background script (extension process).
-    // Messages from background scripts will not have the `sender.tab` property.
-    if (!sender.tab && isDappNotification(message)) {
-      showNotification(message);
-    }
-  });
+  browser.runtime.onMessage.addListener(
+    (message: unknown, sender: browser.Runtime.MessageSender) => {
+      // Check if the message is from the background script (extension process).
+      // Messages from background scripts will not have the `sender.tab` property.
+      if (!sender.tab && isDappNotification(message)) {
+        showNotification(message);
+      }
+    },
+  );
 }

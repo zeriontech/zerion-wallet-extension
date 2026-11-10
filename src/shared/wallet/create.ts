@@ -1,4 +1,4 @@
-import { Wallet as EthersV5Wallet } from '@ethersproject/wallet';
+import { HDNodeWallet, Wallet as EthersWallet } from 'ethers';
 import sortBy from 'lodash/sortBy';
 import {
   fromMnemonicToEd25519,
@@ -13,38 +13,48 @@ import { getAccountPath, isSolanaPath } from './derivation-paths';
 import { BLOCKCHAIN_TYPES, type BlockchainType } from './classifiers';
 import { assertKnownEcosystems } from './shared';
 
-export function walletToObject(wallet: EthersV5Wallet | BareWallet): BareWallet {
-  return {
-    mnemonic: wallet.mnemonic,
-    privateKey: wallet.privateKey,
-    address: wallet.address,
-    name: wallet instanceof EthersV5Wallet ? null : wallet.name,
-  };
+type AnyEthersWallet = EthersWallet | HDNodeWallet;
+
+function toBareMnemonic(wallet: HDNodeWallet) {
+  return wallet.mnemonic && wallet.path
+    ? { phrase: wallet.mnemonic.phrase, path: wallet.path }
+    : null;
 }
 
-type PrivateKeyWallet = Omit<EthersV5Wallet, 'mnemonic'> & {
-  mnemonic: EthersV5Wallet['mnemonic'] | null;
-};
+function isAnyEthersWallet(wallet: AnyEthersWallet | BareWallet): wallet is AnyEthersWallet {
+  return wallet instanceof EthersWallet || wallet instanceof HDNodeWallet;
+}
 
-/** Fixes wrong type where in EthersV5Wallet is never null */
+export function walletToObject(wallet: AnyEthersWallet | BareWallet): BareWallet {
+  if (isAnyEthersWallet(wallet)) {
+    return {
+      mnemonic: wallet instanceof HDNodeWallet ? toBareMnemonic(wallet) : null,
+      privateKey: wallet.privateKey,
+      address: wallet.address,
+      name: null,
+    };
+  }
+  return wallet;
+}
+
 function fromPrivateKey(privateKey: string) {
-  return new EthersV5Wallet(privateKey) as PrivateKeyWallet;
+  return new EthersWallet(privateKey);
 }
 
-function fromEthersWallet(wallet: EthersV5Wallet): BareMnemonicWallet;
-function fromEthersWallet(wallet: PrivateKeyWallet): BareWallet;
-function fromEthersWallet(
-  wallet: EthersV5Wallet | PrivateKeyWallet,
-): BareWallet | BareMnemonicWallet {
+function fromEthersWallet(wallet: HDNodeWallet): BareMnemonicWallet;
+function fromEthersWallet(wallet: EthersWallet): BareWallet;
+function fromEthersWallet(wallet: AnyEthersWallet): BareWallet | BareMnemonicWallet {
   return {
-    mnemonic: wallet.mnemonic,
+    mnemonic: wallet instanceof HDNodeWallet ? toBareMnemonic(wallet) : null,
     privateKey: wallet.privateKey,
     address: wallet.address,
     name: null,
   };
 }
 
-export function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet | BareMnemonicWallet {
+export async function restoreBareWallet(
+  wallet: Partial<BareWallet>,
+): Promise<BareWallet | BareMnemonicWallet> {
   const { address, privateKey, mnemonic, name } = wallet;
   if (address && privateKey) {
     return {
@@ -55,37 +65,39 @@ export function restoreBareWallet(wallet: Partial<BareWallet>): BareWallet | Bar
     };
   } else if (privateKey) {
     if (isSolanaPrivateKey(privateKey)) {
-      const keypair = fromSecretKeyToEd25519(privateKey);
+      const keypair = await fromSecretKeyToEd25519(privateKey);
       return fromSolanaKeypair({ keypair, mnemonic: null });
     } else {
       return fromEthersWallet(fromPrivateKey(privateKey));
     }
   } else if (mnemonic) {
     if (isSolanaPath(mnemonic.path)) {
-      const keypair = fromMnemonicToEd25519(mnemonic.phrase, mnemonic.path);
+      const keypair = await fromMnemonicToEd25519(mnemonic.phrase, mnemonic.path);
       return fromSolanaKeypair({ mnemonic, keypair });
     } else {
-      const wallet = EthersV5Wallet.fromMnemonic(mnemonic.phrase, mnemonic.path);
+      const wallet = HDNodeWallet.fromPhrase(mnemonic.phrase, undefined, mnemonic.path);
       return fromEthersWallet(wallet);
     }
   } else {
-    return fromEthersWallet(EthersV5Wallet.createRandom());
+    return fromEthersWallet(EthersWallet.createRandom());
   }
 }
 
-function seedToSolanaWallet(phrase: string): BareMnemonicWallet {
+async function seedToSolanaWallet(phrase: string): Promise<BareMnemonicWallet> {
   const mnemonic = {
     phrase,
     path: getAccountPath('solanaBip44Change', 0),
   };
-  const keypair = fromMnemonicToEd25519(mnemonic.phrase, mnemonic.path);
+  const keypair = await fromMnemonicToEd25519(mnemonic.phrase, mnemonic.path);
   return fromSolanaKeypair({ mnemonic, keypair });
 }
 
-export function generateWalletsForEcosystems(ecosystems: BlockchainType[]): BareMnemonicWallet[] {
+export async function generateWalletsForEcosystems(
+  ecosystems: BlockchainType[],
+): Promise<BareMnemonicWallet[]> {
   invariant(ecosystems.length > 0, 'Must provide at least one ecosystem');
   assertKnownEcosystems(ecosystems);
-  const seedWallet = EthersV5Wallet.createRandom();
+  const seedWallet = EthersWallet.createRandom();
   const result: BareMnemonicWallet[] = [];
 
   const toPriority = (value: BlockchainType) => BLOCKCHAIN_TYPES.indexOf(value);
@@ -95,7 +107,8 @@ export function generateWalletsForEcosystems(ecosystems: BlockchainType[]): Bare
     if (ecosystem === 'evm') {
       result.push(fromEthersWallet(seedWallet));
     } else if (ecosystem === 'solana') {
-      result.push(seedToSolanaWallet(seedWallet.mnemonic.phrase));
+      invariant(seedWallet.mnemonic, 'Seed wallet must have a mnemonic');
+      result.push(await seedToSolanaWallet(seedWallet.mnemonic.phrase));
     }
   }
   return result;

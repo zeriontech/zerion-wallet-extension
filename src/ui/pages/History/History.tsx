@@ -10,7 +10,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import {
@@ -24,7 +24,7 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { ActionType, AddressAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { useLocalAddressTransactions } from 'src/ui/transactions/useLocalAddressTransactions';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   pendingTransactionToAddressAction,
   type LocalActionContentRequest,
@@ -103,7 +103,8 @@ function useMinedAndPendingAddressActions({
   // rebuild anything.
   // `source` is part of the key because the networks resolver behind
   // `loadNetworkByChainId` swaps with testnet mode.
-  const { data: localItems, ...localActionsQuery } = useQuery({
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
+  const { data: localItems, ...localActionsQuery } = useSuspenseQuery({
     queryKey: ['pages/history', localActions, currency, source],
     queryFn: async () => {
       // One item that fails to build (e.g. its chain metadata cannot be
@@ -122,7 +123,6 @@ function useMinedAndPendingAddressActions({
         return [];
       });
     },
-    useErrorBoundary: false,
   });
 
   const localAddressActions = useMemo(() => {

@@ -25,8 +25,7 @@ export function WalletAvatar({
 }) {
   const { data, isLoading } = useWalletsMetaByChunks({
     addresses: [normalizeAddress(address)],
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
   const isPremium = !disablePremiumHighlight && Boolean(data?.at(0)?.membership.premium);

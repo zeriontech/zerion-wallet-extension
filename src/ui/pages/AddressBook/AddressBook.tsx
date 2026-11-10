@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import type { AddressBookEntry } from 'src/background/Wallet/model/types';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageBottom } from 'src/ui/components/PageBottom';

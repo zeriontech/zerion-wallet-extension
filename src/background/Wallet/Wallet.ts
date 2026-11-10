@@ -6,7 +6,7 @@ import type { Emitter } from 'nanoevents';
 import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import omit from 'lodash/omit';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type {
   NotificationWindow,
   NotificationWindowProps,
@@ -194,7 +194,6 @@ interface WalletEvents {
 
 export class Wallet {
   public id: string;
-  // eslint-disable-next-line no-use-before-define
   public publicEthereumController: PublicController;
   private userCredentials: Credentials | null;
   private seedPhraseExpiryTimerId: NodeJS.Timeout | number = 0;
@@ -416,7 +415,7 @@ export class Wallet {
   }
 
   async uiImportPrivateKey({ params: privateKey }: WalletMethodParams<LocallyEncoded>) {
-    const walletContainer = new PrivateKeyWalletContainer([
+    const walletContainer = await PrivateKeyWalletContainer.create([
       { privateKey: decodeMasked(privateKey) },
     ]);
     this.pendingWallet = {
@@ -1222,13 +1221,13 @@ export class Wallet {
     return new ethers.JsonRpcProvider(nodeUrl);
   }
 
-  private getKeypairByAddress(address: string): Keypair {
+  private async getKeypairByAddress(address: string): Promise<Keypair> {
     this.ensureRecord(this.record);
     invariant(isSolanaAddress(address), 'Keypairs are for solana addresseses');
     const signerWallet = Model.getSignerWalletByAddress(this.record, address);
     invariant(signerWallet, `Signer wallet not found for ${address}`);
 
-    return fromSecretKeyToEd25519(signerWallet.privateKey);
+    return await fromSecretKeyToEd25519(signerWallet.privateKey);
   }
 
   private getOfflineSignerByAddress(address: string) {
@@ -1417,8 +1416,8 @@ export class Wallet {
     invariant(txBase64, () => new InvalidParams());
     const transaction = solFromBase64(txBase64);
 
-    const keypair = this.getKeypairByAddress(currentAddress);
-    const result = SolanaSigning.signTransaction(transaction, keypair);
+    const keypair = await this.getKeypairByAddress(currentAddress);
+    const result = await SolanaSigning.signTransaction(transaction, keypair);
     const { mode } = await this.assertNetworkMode({
       id: createChain('solana'),
     }); // MUST assert even if result is not used
@@ -1448,8 +1447,8 @@ export class Wallet {
     }); // MUST assert even if result is not used
     const transactions = txsBase64.map((tx) => solFromBase64(tx));
     // TODO: infer signer address from transaction instead
-    const keypair = this.getKeypairByAddress(currentAddress);
-    const results = SolanaSigning.signAllTransactions(transactions, keypair);
+    const keypair = await this.getKeypairByAddress(currentAddress);
+    const results = await SolanaSigning.signAllTransactions(transactions, keypair);
 
     results.forEach((result) => {
       const contextParamsCopy = { ...transactionContextParams };
@@ -1495,8 +1494,8 @@ export class Wallet {
 
     const transaction = solFromBase64(signed);
 
-    const signature = await connection.sendRawTransaction(transaction.serialize());
-    const result = { signature, publicKey, tx: solToBase64(transaction) };
+    const signature = await connection.sendRawTransaction(await transaction.serialize());
+    const result = { signature, publicKey, tx: await solToBase64(transaction) };
     emitter.emit('transactionSent', { solana: result }, { mode, ...params.params });
     // TODO: process Solana Txs errors and emit 'transactionFailed' event
     return result;
@@ -1524,8 +1523,8 @@ export class Wallet {
 
     const transaction = solFromBase64(signed);
 
-    const signature = await connection.sendRawTransaction(transaction.serialize());
-    const result = { signature, publicKey, tx: solToBase64(transaction) };
+    const signature = await connection.sendRawTransaction(await transaction.serialize());
+    const result = { signature, publicKey, tx: await solToBase64(transaction) };
     emitter.emit('transactionSent', { solana: result }, { mode, ...params.params });
     // TODO: process Solana Txs errors and emit 'transactionFailed' event
     return result;
@@ -1537,7 +1536,7 @@ export class Wallet {
   }: WalletMethodParams<{ signerAddress: string; messageHex: string } & MessageContextParams>) {
     this.verifyInternalOrigin(context);
     const messageUint8 = ethers.getBytes(messageHex);
-    const keypair = this.getKeypairByAddress(signerAddress);
+    const keypair = await this.getKeypairByAddress(signerAddress);
     const result = SolanaSigning.signMessage(messageUint8, keypair);
     this.registerPersonalSign({
       params: {

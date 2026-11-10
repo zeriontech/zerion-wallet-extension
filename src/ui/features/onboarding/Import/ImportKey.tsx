@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import type { ValidationResult } from 'src/shared/validation/ValidationResult';
@@ -26,7 +26,7 @@ export function ImportKey({
   const { isNarrowView } = useWindowSizeStore();
   const [validation, setValidation] = useState<ValidationResult | null>(null);
 
-  const { mutate, isLoading } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async (value: string) => {
       setValidation(null);
       const secretKey = prepareUserInputSeedOrPrivateKey(value);
@@ -76,10 +76,10 @@ export function ImportKey({
               autoFocus={true}
               autoComplete="off"
             />
-            <Button kind="primary" style={{ width: '100%' }} disabled={isLoading}>
+            <Button kind="primary" style={{ width: '100%' }} disabled={isPending}>
               <HStack gap={8} alignItems="center" justifyContent="center">
                 <span>Import Wallet</span>
-                {isLoading ? <CircleSpinner /> : null}
+                {isPending ? <CircleSpinner /> : null}
               </HStack>
             </Button>
             {!validation || validation.valid ? null : (

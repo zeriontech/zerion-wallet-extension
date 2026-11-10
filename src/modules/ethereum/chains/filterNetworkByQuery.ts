@@ -1,4 +1,4 @@
-import { normalizedContains } from 'normalized-contains';
+import { normalizedIncludes } from 'src/shared/normalizedIncludes';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 
@@ -6,7 +6,7 @@ function contains(str1?: string, str2?: string) {
   if (str1 == null || str2 == null) {
     return false;
   }
-  return normalizedContains(str1.toLowerCase(), str2.toLowerCase());
+  return normalizedIncludes(str1.toLowerCase(), str2.toLowerCase());
 }
 
 export function filterNetworksByQuery(query: string) {

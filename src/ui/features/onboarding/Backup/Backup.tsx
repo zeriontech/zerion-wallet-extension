@@ -5,7 +5,7 @@ import { invariant } from 'src/shared/invariant';
 import { getWalletGroupByAddress } from 'src/ui/shared/requests/getWalletGroupByAddress';
 import { SessionExpired } from 'src/shared/errors/errors';
 import { BackupComponent } from 'src/ui/pages/Backup/Backup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 
@@ -32,7 +32,7 @@ export function Backup() {
     mutationFn: () => ensurePendingWalletAndUser(),
     onSuccess: () => navigate('/onboarding/success'),
     onError: handleError,
-    useErrorBoundary: true,
+    throwOnError: true,
   });
 
   const { mutate: handleSuccess } = useMutation({
@@ -44,7 +44,7 @@ export function Backup() {
     },
     onSuccess: () => navigate('/onboarding/success'),
     onError: handleError,
-    useErrorBoundary: true,
+    throwOnError: true,
   });
 
   const handleSessionExpired = useCallback(

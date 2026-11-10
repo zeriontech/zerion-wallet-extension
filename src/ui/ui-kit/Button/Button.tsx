@@ -45,20 +45,18 @@ interface Props {
   size?: Size;
 }
 
-const ButtonElement = <As extends ElementType = 'button'>(
-  {
-    style,
-    as,
-    kind = 'primary',
-    size = 44,
-    children,
-    className,
-    ...props
-  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
-      ref?: ComponentPropsWithRef<As>['ref'];
-    },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>,
-) => {
+const ButtonElement = <As extends ElementType = 'button'>({
+  style,
+  as,
+  kind = 'primary',
+  size = 44,
+  children,
+  className,
+  ref,
+  ...props
+}: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
+    ref?: ComponentPropsWithRef<As>['ref'];
+  }) => {
   const isButton = as == null || as === 'button';
   return (
     <UIText
@@ -86,4 +84,4 @@ const ButtonElement = <As extends ElementType = 'button'>(
   );
 };
 
-export const Button = React.forwardRef(ButtonElement) as typeof ButtonElement;
+export const Button = ButtonElement;

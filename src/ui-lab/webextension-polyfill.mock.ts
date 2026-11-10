@@ -36,6 +36,8 @@ const browser = {
           discarded: false,
           audible: false,
           groupId: 1,
+          frozen: false,
+          lastAccessed: 0,
         },
       ];
     },

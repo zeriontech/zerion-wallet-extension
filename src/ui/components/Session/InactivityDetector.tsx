@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { walletPort } from 'src/ui/shared/channels';
 
 export function InactivityDetector() {

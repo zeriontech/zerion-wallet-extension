@@ -13,7 +13,7 @@ import JigsawIcon from 'jsx:./assets/jigsaw.svg';
 import coinImgSrc from 'url:src/ui/assets/zer_coin.png';
 import sparkImgSrc from 'url:src/ui/assets/zer_spark.png';
 import starImgSrc from 'url:src/ui/assets/zer_star.png';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
 import { readSavedReferrerData } from '../../referral-program/shared/storage';
@@ -100,13 +100,12 @@ export function Success() {
     };
   }, [fireConfetti]);
 
-  const { data: currentReferrer } = useQuery({
+  const { data: currentReferrer } = useSuspenseQuery({
     queryKey: ['readSavedReferrerData'],
     queryFn: async () => {
       const result = await readSavedReferrerData();
       return result || null;
     },
-    suspense: true,
   });
 
   const [pendingReferrer, setPendingReferrer] = useState<ReferrerData | null>(null);

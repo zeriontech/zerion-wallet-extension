@@ -55,7 +55,7 @@ export function useOutputAssetPreview({
   const shouldLookUpFungible = Boolean(outputFungibleId);
   const fungiblesQuery = useAssetListFungibles(
     { fungibleIds: outputFungibleId ? [outputFungibleId] : [], currency },
-    { suspense: false, enabled: shouldLookUpFungible },
+    { enabled: shouldLookUpFungible },
   );
 
   return useMemo(() => {

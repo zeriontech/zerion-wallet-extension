@@ -89,7 +89,7 @@ export interface Params {
   limit?: number;
 }
 
-interface Response {
+export interface Response {
   data: NftPosition[];
   meta: NftPaginationMeta | null;
   errors: null;

@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import type { PublicUser } from 'src/shared/types/User';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
@@ -19,12 +19,11 @@ export function VerifyUser({
   buttonTitle?: React.ReactNode;
   onSuccess: () => void;
 }) {
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isPending } = useSuspenseQuery({
     queryKey: ['account/getExistingUser'],
     queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
     },
-    useErrorBoundary: true,
   });
   const loginMutation = useMutation({
     mutationFn: ({ user, password }: { user: PublicUser; password: string }) => {
@@ -36,7 +35,7 @@ export function VerifyUser({
     },
   });
   const inputId = useId();
-  if (isLoading) {
+  if (isPending) {
     return null;
   }
   return (
@@ -89,8 +88,8 @@ export function VerifyUser({
               </UIText>
             ) : null}
           </VStack>
-          <Button disabled={loginMutation.isLoading}>
-            {loginMutation.isLoading ? 'Checking...' : buttonTitle}
+          <Button disabled={loginMutation.isPending}>
+            {loginMutation.isPending ? 'Checking...' : buttonTitle}
           </Button>
         </VStack>
       </form>

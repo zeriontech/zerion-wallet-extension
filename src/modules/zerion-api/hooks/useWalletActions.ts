@@ -11,11 +11,9 @@ export function useWalletActions(
   params: Payload,
   { source }: BackendSourceParams,
   {
-    suspense = false,
     enabled = true,
     refetchInterval = false,
   }: {
-    suspense?: boolean;
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number | false;
@@ -26,10 +24,11 @@ export function useWalletActions(
     () => ['walletGetActions', params, source, fingerprint],
     [params, source, fingerprint],
   );
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
   const queryData = useInfiniteQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey,
+    initialPageParam: params.cursor,
     queryFn: ({ pageParam }) =>
       withPermits(permits, (permits) =>
         ZerionAPI.walletGetActions(
@@ -43,7 +42,6 @@ export function useWalletActions(
         ),
       ),
     enabled: enabled && isReady,
-    suspense,
     getNextPageParam: (lastPage) => lastPage?.meta?.pagination.cursor || undefined,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
@@ -61,7 +59,7 @@ export function useWalletActions(
       pages: data?.pages.slice(0, 1) || [],
       pageParams: data?.pageParams.slice(0, 1) || [],
     }));
-    queryClient.refetchQueries(queryKey);
+    queryClient.refetchQueries({ queryKey });
   }, [queryKey]);
 
   return { actions, refetch, queryData };

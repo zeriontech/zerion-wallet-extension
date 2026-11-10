@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 

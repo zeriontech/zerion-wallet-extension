@@ -25,7 +25,6 @@ export function useFetchDappIcon(url: string) {
       const html = await fetch(url).then((res) => res.text());
       return extractFaviconUrl(url, html);
     },
-    suspense: false,
     retry: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,

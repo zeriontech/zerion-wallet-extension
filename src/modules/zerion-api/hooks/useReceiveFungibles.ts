@@ -7,6 +7,5 @@ export function useReceiveFungibles(params: Params) {
     queryKey: ['assetGetReceiveFungibles', params],
     queryFn: () => ZerionAPI.assetGetReceiveFungibles(params),
     staleTime: 20000,
-    suspense: false,
   });
 }

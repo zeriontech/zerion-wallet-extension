@@ -9,7 +9,7 @@ import type { SwapFormState } from 'src/shared/types/SwapFormState';
 import { createHeaders } from 'src/modules/zerion-api/shared';
 import { invariant } from 'src/shared/invariant';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { applyPriceImpactOverride } from 'src/ui/features/dev-menu/applyPriceImpactOverride';
 import { walletPort } from '../channels';
@@ -177,7 +177,7 @@ export function useQuotes2({
     },
   });
 
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const refetchInterval = config?.quotes_refetch_interval ?? 20000;
 
   useEffect(() => {
@@ -409,7 +409,7 @@ export function useQuotesV2({
     },
   });
 
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const refetchInterval = config?.quotes_refetch_interval ?? 20000;
 
   useEffect(() => {

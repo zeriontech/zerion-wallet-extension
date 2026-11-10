@@ -1,11 +1,12 @@
-import { useStore } from '@store-unit/react';
-import { useQuery } from '@tanstack/react-query';
+import type { JSX } from 'react';
+import { useStore } from 'src/shared/store/useStore';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 // import FireIcon from 'jsx:src/ui/assets/fire.svg';
 import React, { useEffect, useRef } from 'react';
-import { RenderArea } from 'react-area';
-import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
+import { RenderArea } from 'src/shared/react-area';
+import { Route, Routes, useLocation, useSearchParams } from 'react-router';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { createChain } from 'src/modules/networks/Chain';
@@ -126,7 +127,7 @@ function TestnetworkGuard({
 
 function CurrentAccountControls() {
   const { singleAddress, ready } = useAddressParams();
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
@@ -249,7 +250,7 @@ function OverviewComponent() {
   const location = useLocation();
   const { singleAddress: address, params, ready, singleAddressNormalized } = useAddressParams();
   useProfileName({ address, name: null });
-  const { data: walletGroup } = useQuery({
+  const { data: walletGroup } = useSuspenseQuery({
     queryKey: ['getWalletGroupByAddress', address],
     queryFn: () => getWalletGroupByAddress(address),
   });
@@ -297,10 +298,9 @@ function OverviewComponent() {
     });
   };
 
-  const { data: tabData } = useQuery({
+  const { data: tabData } = useSuspenseQuery({
     queryKey: ['activeTab/origin'],
     queryFn: getActiveTabOrigin,
-    useErrorBoundary: true,
   });
   const activeTabOrigin = tabData?.tabOrigin;
   const { data: siteChain } = useQuery({
@@ -312,8 +312,7 @@ function OverviewComponent() {
       return null;
     },
     enabled: Boolean(activeTabOrigin),
-    useErrorBoundary: true,
-    suspense: false,
+    throwOnError: true,
   });
 
   // Update backend record with 'platform: extension'
@@ -400,7 +399,7 @@ function OverviewComponent() {
     }
   };
 
-  const { data: currentWallet } = useQuery({
+  const { data: currentWallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');

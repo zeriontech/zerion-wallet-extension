@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useLocation, useNavigate } from 'react-router';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -286,7 +286,7 @@ export function Invite() {
   const { pathname } = useLocation();
   const { preferences } = usePreferences();
 
-  const { data: currentWallet } = useQuery({
+  const { data: currentWallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });

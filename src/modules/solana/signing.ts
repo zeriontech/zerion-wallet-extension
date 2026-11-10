@@ -1,11 +1,14 @@
 import type { Keypair, VersionedTransaction } from '@solana/web3.js';
-import nacl from 'tweetnacl';
+import * as ed from '@noble/ed25519';
+import { sha512 } from '@noble/hashes/sha2.js';
 import bs58 from 'bs58';
 import { invariant } from 'src/shared/invariant';
 import type { SolTransaction } from './SolTransaction';
 import { SolanaTransactionLegacy } from './SolTransaction';
 import { solToBase64 } from './transactions/create';
 import type { SolSignTransactionResult } from './transactions/SolTransactionResponse';
+
+ed.hashes.sha512 = sha512;
 
 function getSignatureFromLegacyTransaction(transaction: SolanaTransactionLegacy): string | null {
   const first = transaction.signatures.at(0);
@@ -24,7 +27,8 @@ function getSignatureFromVersionedTransaction(transaction: VersionedTransaction)
 
 export class SolanaSigning {
   static signMessage(message: Uint8Array, keypair: Keypair): { signature: Uint8Array } {
-    const signature = nacl.sign.detached(message, keypair.secretKey);
+    // Solana secret keys are seed || public key; noble signs with the 32-byte seed.
+    const signature = ed.sign(message, keypair.secretKey.subarray(0, 32));
     return { signature };
   }
 
@@ -36,11 +40,14 @@ export class SolanaSigning {
     }
   }
 
-  static signTransaction(transaction: SolTransaction, keypair: Keypair): SolSignTransactionResult {
+  static async signTransaction(
+    transaction: SolTransaction,
+    keypair: Keypair,
+  ): Promise<SolSignTransactionResult> {
     if (transaction instanceof SolanaTransactionLegacy) {
-      transaction.sign(keypair);
+      await transaction.sign(keypair);
     } else {
-      transaction.sign([keypair]);
+      await transaction.sign([keypair]);
     }
     const signature = SolanaSigning.getTransactionSignature(transaction);
     invariant(signature, 'Could not resolve signature of a signed tranasction');
@@ -48,17 +55,17 @@ export class SolanaSigning {
     return {
       signature,
       publicKey: keypair.publicKey.toBase58(),
-      tx: solToBase64(transaction),
+      tx: await solToBase64(transaction),
     };
   }
 
-  static signAllTransactions(
+  static async signAllTransactions(
     transactions: SolTransaction[],
     keypair: Keypair,
-  ): SolSignTransactionResult[] {
+  ): Promise<SolSignTransactionResult[]> {
     const results: SolSignTransactionResult[] = [];
     for (const transaction of transactions) {
-      results.push(SolanaSigning.signTransaction(transaction, keypair));
+      results.push(await SolanaSigning.signTransaction(transaction, keypair));
     }
     return results;
   }

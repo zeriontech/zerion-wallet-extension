@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import BigNumber from 'bignumber.js';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useSearchParams } from 'react-router-dom';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { Navigate, useNavigate } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
@@ -42,7 +42,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { InputPosition } from 'src/ui/pages/SwapForm2/InputPosition';
@@ -207,10 +207,9 @@ function DepositFormBody({
 
   const quote = quotesQuery.quotes?.[0] ?? null;
 
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
   });
 
   const { mutate: handleDeposit, ...signMutation } = useMutation({
@@ -413,13 +412,13 @@ function DepositFormBody({
     !resolvedInputAmount ||
     insufficientBalance ||
     quotesQuery.isLoading ||
-    signMutation.isLoading;
+    signMutation.isPending;
 
   const buttonLabel = insufficientBalance
     ? 'Insufficient balance'
     : quotesQuery.isLoading && !quote
       ? 'Fetching offers…'
-      : signMutation.isLoading
+      : signMutation.isPending
         ? 'Sending…'
         : 'Deposit';
 
@@ -515,7 +514,7 @@ function DepositPageInner({ address }: { address: string }) {
 
   const { currency } = useCurrency();
   const refetchInterval = usePositionsRefetchInterval(20000);
-  const { data, isLoading } = useWalletSimplePositions(
+  const { data, isPending } = useWalletSimplePositions(
     { address, currency },
     { source: useHttpClientSource() },
     { refetchInterval },
@@ -546,7 +545,7 @@ function DepositPageInner({ address }: { address: string }) {
     if (onboardingDismissed) setOnboardingOpen(false);
   }, [onboardingDismissed]);
 
-  if (isLoading || !networks) {
+  if (isPending || !networks) {
     return (
       <PageColumn>
         <NavigationTitle

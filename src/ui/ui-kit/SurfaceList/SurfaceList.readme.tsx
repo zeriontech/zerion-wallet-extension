@@ -1,4 +1,4 @@
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import React from 'react';
 import { WindowSize } from 'src/ui-lab/components/WindowSize';
 import type { Readme } from 'src/ui-lab/types';
@@ -40,7 +40,7 @@ export const readme: Readme = {
             <SurfaceList
               items={['apple', 'mango', 'cherry'].map((fruit, index) => ({
                 key: index,
-                onClick: () => {}, //eslint-disable-line @typescript-eslint/no-empty-function
+                onClick: () => {},
                 component: <UIText kind="body/regular">{fruit}</UIText>,
               }))}
             />
@@ -50,7 +50,7 @@ export const readme: Readme = {
             <SurfaceList
               items={['apple', 'mango', 'cherry'].map((fruit, index) => ({
                 key: index,
-                onClick: () => {}, //eslint-disable-line @typescript-eslint/no-empty-function
+                onClick: () => {},
                 component: (
                   <UIText as="label" kind="body/regular" color="var(--primary)">
                     <HStack gap={8} alignItems="center">

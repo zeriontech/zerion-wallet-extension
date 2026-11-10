@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import React, { useEffect, useId, useMemo, useRef } from 'react';
-import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
+import { Route, Routes, useNavigate, useSearchParams } from 'react-router';
 import { FillView } from 'src/ui/components/FillView';
 import { PageFullBleedColumn } from 'src/ui/components/PageFullBleedColumn';
 import type { LedgerAccountImport } from 'src/ui/hardware-wallet/types';

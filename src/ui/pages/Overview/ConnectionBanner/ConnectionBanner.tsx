@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
 import { useMainnetNetwork, useNetworks } from 'src/modules/networks/useNetworks';
@@ -26,8 +26,7 @@ function ConnectedNetworkBadge({ originName, address }: { originName: string; ad
   const { data: siteChain } = useQuery({
     queryKey: ['requestChainForOrigin', originName, address],
     queryFn: () => requestChainForOrigin(originName, getAddressType(address)),
-    useErrorBoundary: true,
-    suspense: false,
+    throwOnError: true,
   });
   const value = siteChain?.toString();
   const selectedNetwork = value ? networks?.getNetworkByName(createChain(value)) : null;
@@ -57,10 +56,9 @@ function ConnectedNetworkBadge({ originName, address }: { originName: string; ad
  */
 export function ConnectionBanner() {
   const { singleAddressNormalized: address } = useAddressParams();
-  const { data: tabData } = useQuery({
+  const { data: tabData } = useSuspenseQuery({
     queryKey: ['activeTab/origin'],
     queryFn: getActiveTabOrigin,
-    useErrorBoundary: true,
   });
   const { data: isConnected } = useIsConnectedToActiveTab(address);
   const [showDialog, setShowDialog] = useState(false);

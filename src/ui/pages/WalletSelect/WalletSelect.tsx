@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort } from 'src/ui/shared/channels';
@@ -142,10 +142,9 @@ export function WalletSelect() {
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: walletGroups, isLoading: isLoadingWalletGroups } = useQuery({
+  const { data: walletGroups, isLoading: isLoadingWalletGroups } = useSuspenseQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
   });
   const ownedGroups = useMemo(
     () => walletGroups?.filter((group) => !isReadonlyContainer(group.walletContainer)),
@@ -168,8 +167,7 @@ export function WalletSelect() {
 
   const { data: walletsMeta } = useWalletsMetaByChunks({
     addresses: allAddresses,
-    useErrorBoundary: false,
-    suspense: false,
+    throwOnError: false,
   });
 
   const ownedAddressesCount = ownedAddresses.length;

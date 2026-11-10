@@ -142,17 +142,17 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
     [personalSignMutation, signTypedData_v4Mutation, solanaSignMutation].find(
       (x) => x.status !== 'idle',
     ) || personalSignMutation;
-  const isLoading = activeMutation.isLoading;
+  const isPending = activeMutation.isPending;
   const isSuccess = activeMutation.isSuccess;
   const isError = activeMutation.isError;
 
   // there is a small delay after using a holdable button
   // button should be disabled after successful sign to prevent a duplicating call
-  const disabled = isLoading || Boolean(holdToSign && isSuccess);
+  const disabled = isPending || Boolean(holdToSign && isSuccess);
   const title = buttonTitle || 'Sign';
   const windowFocused = useWindowFocus();
   const shortcutActive =
-    Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled && !isLoading;
+    Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled && !isPending;
 
   return isDeviceAccount(wallet) ? (
     <>
@@ -165,7 +165,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
         ref={hardwareSignRef}
         ecosystem={getAddressType(wallet.address)}
         derivationPath={wallet.derivationPath}
-        isSigning={isLoading}
+        isSigning={isPending}
         children={children}
         buttonTitle={isSuccess ? 'Signed' : buttonTitle}
         buttonKind={buttonKind}
@@ -212,7 +212,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
               submittingText="Sending..."
               onClick={handleClick}
               success={isSuccess}
-              submitting={isLoading}
+              submitting={isPending}
               disabled={disabled}
               error={isError}
               kind={buttonKind}
@@ -228,7 +228,7 @@ export const SignMessageButton = React.forwardRef(function SignMessageButton(
               {...buttonProps}
             >
               {children ||
-                (isLoading ? (
+                (isPending ? (
                   'Signing...'
                 ) : (
                   <HStack gap={4} alignItems="center" justifyContent="center">

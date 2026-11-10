@@ -24,7 +24,7 @@ export function EraseDataListButton({ textKind }: { textKind: UITextProps['kind'
       }
     },
   });
-  if (eraseAllData.isLoading) {
+  if (eraseAllData.isPending) {
     return (
       <CenteredDialog
         open={true}

@@ -6,14 +6,12 @@ import { queryClient } from './queryClient';
 export function useWalletsMetaByChunks({
   addresses,
   enabled = true,
-  suspense = true,
-  useErrorBoundary = true,
+  throwOnError = true,
   staleTime,
 }: {
   addresses: string[];
   enabled?: boolean;
-  suspense?: boolean;
-  useErrorBoundary?: boolean;
+  throwOnError?: boolean;
   staleTime?: number;
 }) {
   return useQuery({
@@ -32,8 +30,7 @@ export function useWalletsMetaByChunks({
       }
       return result;
     },
-    suspense,
-    useErrorBoundary,
+    throwOnError,
     staleTime,
   });
 }

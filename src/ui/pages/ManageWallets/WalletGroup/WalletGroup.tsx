@@ -1,6 +1,6 @@
 import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
@@ -107,7 +107,7 @@ function EditableWalletGroupName({
             setValue(name);
           }}
         />
-        {renameMutation.isLoading ? <CircleSpinner style={{ display: 'inline-block' }} /> : null}
+        {renameMutation.isPending ? <CircleSpinner style={{ display: 'inline-block' }} /> : null}
       </div>
       {renameMutation.isError ? (
         <UIText kind="caption/regular" color="var(--negative-500)">
@@ -290,7 +290,7 @@ export function WalletGroup() {
   const { refetch } = useWalletGroups();
   const removeWalletGroupMutation = useMutation({
     mutationFn: () => walletPort.request('removeWalletGroup', { groupId }),
-    useErrorBoundary: true,
+    throwOnError: true,
     onSuccess() {
       refetch();
       navigate(-1);
@@ -381,7 +381,7 @@ export function WalletGroup() {
                     <UIText kind="body/accent" color="var(--negative-500)">
                       Remove Group
                     </UIText>
-                    {removeWalletGroupMutation.isLoading ? (
+                    {removeWalletGroupMutation.isPending ? (
                       <CircleSpinner style={{ display: 'inline-block' }} />
                     ) : null}
                   </HStack>

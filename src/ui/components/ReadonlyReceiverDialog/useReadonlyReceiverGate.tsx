@@ -22,7 +22,6 @@ export function useReadonlyReceiverGate({
     queryKey: ['getWalletGroupByAddress', normalizedTo],
     queryFn: () => getWalletGroupByAddress(normalizedTo as string),
     enabled: Boolean(normalizedTo),
-    suspense: false,
   });
 
   const recipientWallet =

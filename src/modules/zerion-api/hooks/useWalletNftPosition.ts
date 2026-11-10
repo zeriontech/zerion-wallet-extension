@@ -17,6 +17,5 @@ export function useWalletNftPosition(
     queryFn: () => ZerionAPI.walletGetNftPosition(params, { source }),
     enabled,
     staleTime: STALE_TIME,
-    suspense: false,
   });
 }

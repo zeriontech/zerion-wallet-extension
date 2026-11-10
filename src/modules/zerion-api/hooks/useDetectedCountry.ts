@@ -13,6 +13,5 @@ export function useDetectedCountry({ enabled = true }: { enabled?: boolean } = {
     enabled,
     // The user's location does not change within a session
     staleTime: Infinity,
-    suspense: false,
   });
 }

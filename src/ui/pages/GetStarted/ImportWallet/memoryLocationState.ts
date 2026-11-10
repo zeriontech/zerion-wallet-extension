@@ -11,10 +11,10 @@
  * This is done to avoid reading state when you navigate to a route
  * without expecting this state to be read
  */
-import { useStore } from '@store-unit/react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useStore } from 'src/shared/store/useStore';
+import { useLocation, useSearchParams } from 'react-router';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 
 type State = Record<string, { value: LocallyEncoded } | undefined>;
 

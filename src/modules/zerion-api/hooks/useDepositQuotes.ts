@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { Params } from '../requests/deposit-get-quotes';
 
@@ -11,7 +11,6 @@ export function useDepositQuotes(params: Params, { enabled = true }: { enabled?:
     staleTime: 20000,
     // Typing in the amount field re-keys the query on every keystroke; without
     // this the whole "Receive" side flickers empty between quotes
-    keepPreviousData: true,
-    suspense: false,
+    placeholderData: keepPreviousDataPlaceholder,
   });
 }

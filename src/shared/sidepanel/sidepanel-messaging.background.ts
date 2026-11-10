@@ -7,10 +7,10 @@ import type { SidepanelMessageRequest } from './types';
  */
 export async function isSidepanelOpen({ windowId }: { windowId: number | null }) {
   try {
-    const response = await browser.runtime.sendMessage({
+    const response = (await browser.runtime.sendMessage({
       payload: { method: 'is-sidepanel-open', params: { windowId } },
-    } satisfies SidepanelMessageRequest);
-    return response.sidepanelStatus === 'open';
+    } satisfies SidepanelMessageRequest)) as { sidepanelStatus?: 'open' | 'closed' } | undefined;
+    return response?.sidepanelStatus === 'open';
   } catch (error) {
     return false;
   }

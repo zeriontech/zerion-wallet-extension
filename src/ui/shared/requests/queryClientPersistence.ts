@@ -5,10 +5,10 @@ import {
   type QueryKey,
   defaultShouldDehydrateQuery,
   dehydrate,
-  hashQueryKey,
   hydrate,
 } from '@tanstack/react-query';
 import throttle from 'lodash/throttle';
+import { hashKey } from '@tanstack/query-core';
 import { sessionCacheService } from '../channels';
 
 interface PersistedClient {
@@ -64,7 +64,7 @@ const queryKeysToPersist = new Set<string>();
 
 /** Marks queryKey as a candidate for persistence */
 export function persistentQuery<T extends QueryKey>(queryKey: T): T {
-  queryKeysToPersist.add(hashQueryKey(queryKey));
+  queryKeysToPersist.add(hashKey(queryKey));
   return queryKey;
 }
 
@@ -77,7 +77,7 @@ function handleQueryCacheUpdate(queryClient: QueryClient, buster: string) {
         return false;
       }
     },
-    dehydrateMutations: false,
+    shouldDehydrateMutation: () => false,
   });
   const persistedClient: PersistedClient = {
     buster,

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import type { Params } from 'src/modules/zerion-api/requests/wallet-check-activity';
 import type { BackendSourceParams } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
@@ -20,7 +20,7 @@ export function useAddressActivity(
     queryKey: ['walletCheckActivity', params, source],
     queryFn: () => ZerionAPI.walletCheckActivity(params, { source }),
     enabled: enabled && params.addresses.length > 0,
-    keepPreviousData,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     staleTime: 20000,
   });
 }

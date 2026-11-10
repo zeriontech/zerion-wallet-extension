@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { useSearchNetworks } from 'src/modules/networks/useNetworks';
 import { filterAndSortNetworksByQuery } from 'src/modules/ethereum/chains/filterNetworkByQuery';

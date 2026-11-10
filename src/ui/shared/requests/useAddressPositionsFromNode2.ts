@@ -91,7 +91,6 @@ export function useAddressPositionsFromNode2({
     },
     enabled: enabled && Boolean(address),
     staleTime,
-    suspense: false,
   });
 
   const positions = useMemo<FungiblePosition[]>(() => {

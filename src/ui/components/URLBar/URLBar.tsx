@@ -1,17 +1,14 @@
 import React, { useEffect, useLayoutEffect, useReducer, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { RenderArea } from 'react-area';
+import { useLocation, useNavigate } from 'react-router';
+import { RenderArea } from 'src/shared/react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Store } from 'store-unit';
-import { useStore } from '@store-unit/react';
+import { Store } from 'src/shared/store/store';
+import { useStore } from 'src/shared/store/useStore';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
 import { getDocumentTitle } from 'src/ui/shared/getDocumentTitle';
+import { capitalize } from 'src/shared/capitalize';
 import { BackButton } from '../BackButton';
-
-function capitalize(str: string) {
-  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
-}
 
 function titleFromPathname(pathname: string) {
   const parts = pathname.split('/');

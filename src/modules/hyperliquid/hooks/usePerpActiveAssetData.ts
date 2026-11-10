@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { perpActiveAssetData } from '../api/requests/perp-active-asset-data.client';
 
 export const PERP_ACTIVE_ASSET_DATA_QUERY_KEY = 'hyperliquid/activeAssetData';
@@ -37,7 +37,7 @@ export function usePerpActiveAssetData(
       }),
     enabled: enabled && Boolean(payload.address) && Boolean(payload.coin),
     staleTime: 10_000,
-    keepPreviousData: true,
+    placeholderData: keepPreviousDataPlaceholder,
     retry: 1,
     refetchInterval,
   });

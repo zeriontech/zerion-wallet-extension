@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import type { Chain } from 'src/modules/networks/Chain';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
@@ -42,7 +42,7 @@ export function NonceLine2({
   onChange: (nonce: string | null) => void;
 }) {
   const { from } = transaction;
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useSuspenseQuery({
     queryKey: ['getTransactionCount', from, chain],
     queryFn: async () => {
       const networksStore = await getNetworksStore();
@@ -53,8 +53,6 @@ export function NonceLine2({
         defaultBlock: 'pending',
       });
     },
-    useErrorBoundary: false,
-    suspense: true,
   });
   const dialog = useDialog2();
   const nonce = data?.value;

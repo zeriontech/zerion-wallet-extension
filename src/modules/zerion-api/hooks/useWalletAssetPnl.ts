@@ -7,17 +7,14 @@ export function useWalletAssetPnl(
   params: Params,
   { source }: BackendSourceParams,
   {
-    suspense = false,
     enabled = true,
   }: {
-    suspense?: boolean;
     enabled?: boolean;
   } = {},
 ) {
   return useQuery({
     queryKey: ['assetGetFungiblePnl', params, source],
     queryFn: () => ZerionAPI.assetGetFungiblePnl(params, { source }),
-    suspense,
     enabled,
     staleTime: 20000,
   });

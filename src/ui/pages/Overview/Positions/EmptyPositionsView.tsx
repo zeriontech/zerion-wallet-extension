@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import ArrowCircleIcon from 'jsx:src/ui/assets/arrow-circle-outlined.svg';
 import { usePreferences } from 'src/ui/features/preferences';
 import { walletPort } from 'src/ui/shared/channels';
@@ -8,12 +8,12 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { emitter } from 'src/ui/shared/events';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { AddFundsOptionsDialog } from '../../Receive/AddFundsOptionsDialog';
 
 export function EmptyPositionsView() {
   const { pathname } = useLocation();
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');

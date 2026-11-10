@@ -1,6 +1,6 @@
 import React, { useId, useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';

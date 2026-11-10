@@ -1,13 +1,13 @@
-import type { QueryClient } from '@tanstack/react-query';
+import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function useOptimisticMutation<Args, Res, QueryType = unknown>(
-  mutationFn: (...args: Args[]) => Promise<Res>,
+  mutationFn: (variables: Args) => Promise<Res>,
   {
     relatedQueryKey: queryKey,
     onMutate,
   }: {
-    relatedQueryKey: string[];
+    relatedQueryKey: QueryKey;
     onMutate?: (info: { client: QueryClient; variables: Args }) => unknown;
   },
 ) {
@@ -21,9 +21,9 @@ export function useOptimisticMutation<Args, Res, QueryType = unknown>(
       onMutate?.({ client, variables });
       return { previous };
     },
-    onError: (_err, _args, context) => {
+    onError: (_err, _args, context: OptimisticContext | undefined) => {
       client.setQueryData(queryKey, context?.previous);
     },
-    onSettled: () => client.invalidateQueries(queryKey),
+    onSettled: () => client.invalidateQueries({ queryKey }),
   });
 }

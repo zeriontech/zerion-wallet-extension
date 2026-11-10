@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { invariant } from 'src/shared/invariant';
 import { findPerpAsset } from 'src/modules/hyperliquid/findPerpAsset';
 import { getPerpDisplayName, parsePerpId } from 'src/modules/hyperliquid/parsePerpId';
@@ -587,7 +587,7 @@ export function PerpsTrade() {
     closeBlocker ||
     minNotionalBlocker ||
     dexIndexMissing ||
-    submitMutation.isLoading;
+    submitMutation.isPending;
 
   return (
     <PageColumn>

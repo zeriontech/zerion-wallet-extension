@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { spotClearinghouseState } from '../api/requests/spot-clearinghouse-state.client';
 
 export const SPOT_CLEARINGHOUSE_STATE_QUERY_KEY = 'hyperliquid/spotClearinghouseState';
@@ -13,7 +13,6 @@ export function spotClearinghouseStateQueryOptions(payload: {
     staleTime: 10_000,
     keepPreviousData: true,
     retry: 1,
-    suspense: false,
   };
 }
 
@@ -26,9 +25,8 @@ export function useSpotClearinghouseState(
     queryFn: () => spotClearinghouseState({ address: payload.address as string }),
     enabled: enabled && Boolean(payload.address),
     staleTime: 10_000,
-    keepPreviousData: true,
+    placeholderData: keepPreviousDataPlaceholder,
     retry: 1,
     refetchInterval,
-    suspense: false,
   });
 }

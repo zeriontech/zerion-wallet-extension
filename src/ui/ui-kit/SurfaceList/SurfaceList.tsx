@@ -1,6 +1,7 @@
+import type { JSX } from 'react';
 import React from 'react';
 import cn from 'classnames';
-import type { LinkProps } from 'react-router-dom';
+import type { LinkProps } from 'react-router';
 import { Surface } from '../Surface/Surface';
 import { UnstyledAnchor } from '../UnstyledAnchor';
 import { UnstyledButton } from '../UnstyledButton';
@@ -125,7 +126,7 @@ export const ItemLabel = React.forwardRef<
 });
 
 export interface Item {
-  key: string | number;
+  key: React.Key;
   component: JSX.Element;
   to?: LinkProps['to'];
   href?: string;

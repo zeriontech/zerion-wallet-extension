@@ -1,16 +1,23 @@
 import { useMemo } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, type InfiniteData, type QueryKey } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { Response } from 'src/modules/zerion-api/requests/search-query-fungibles';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { Params } from '../requests/search-query-fungibles';
 
 export function useSearchQueryFungibles(
   { query, currency, chain, sort, limit = 5 }: Params,
   { enabled = true }: { enabled?: boolean } = {},
 ) {
-  const queryData = useInfiniteQuery<Response | null>({
+  const queryData = useInfiniteQuery<
+    Response | null,
+    Error,
+    InfiniteData<Response | null>,
+    QueryKey,
+    string | undefined
+  >({
     queryKey: ['searchQueryFungibles', query, currency, chain, limit, sort],
+    initialPageParam: undefined,
     enabled,
     queryFn: ({ pageParam }) => {
       return ZerionAPI.searchQueryFungibles({
@@ -24,7 +31,6 @@ export function useSearchQueryFungibles(
     },
     getNextPageParam: (lastPage) => lastPage?.meta?.pagination.cursor || undefined,
     staleTime: 30000,
-    suspense: false,
     refetchOnWindowFocus: false,
   });
 

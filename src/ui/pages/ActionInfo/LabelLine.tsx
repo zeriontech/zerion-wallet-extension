@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import { useQuery } from '@tanstack/react-query';
 import { animated } from '@react-spring/web';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -31,7 +31,6 @@ function LabelInfo({ label }: { label: ActionLabel }) {
     queryKey: ['wallet/uiGetWalletByAddress', address],
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
     enabled: Boolean(address),
-    suspense: false,
   });
 
   const walletName = localWallet?.name || wallet?.name || null;

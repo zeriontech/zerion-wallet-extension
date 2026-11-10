@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { Asset } from 'src/defi-sdk.types';
 import type { LocalActionContentRequest } from 'src/modules/ethereum/transactions/addressAction/creators';
 import {
@@ -28,10 +28,9 @@ export function useLocalActionAsset(
     queryKey: localActionAssetQueryKey(request.assetQuery, source),
     queryFn: () => fetchAssetFromAPI(request.assetQuery, source),
     enabled,
-    suspense: false,
     // A failed lookup leaves this one row without an amount; it must not take
     // the whole History view down.
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 5,
   });
 }

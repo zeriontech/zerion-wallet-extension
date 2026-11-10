@@ -1,5 +1,4 @@
-import 'src/shared/polyfills';
-import { HDNode } from '@ethersproject/hdnode';
+import { HDNodeWallet } from 'ethers';
 import { Keypair } from '@solana/web3.js';
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
@@ -23,18 +22,22 @@ export interface Params {
 
 export type Result = MaskedBareWallet[];
 
-function locallyMaskWallet(wallet: BareWallet | HDNode) {
+function locallyMaskWallet(wallet: BareWallet | HDNodeWallet) {
+  const mnemonic =
+    wallet instanceof HDNodeWallet
+      ? wallet.mnemonic && wallet.path
+        ? { phrase: wallet.mnemonic.phrase, path: wallet.path }
+        : null
+      : wallet.mnemonic;
   return {
-    mnemonic: wallet.mnemonic
-      ? { ...wallet.mnemonic, phrase: encodeForMasking(wallet.mnemonic.phrase) }
-      : null,
+    mnemonic: mnemonic ? { ...mnemonic, phrase: encodeForMasking(mnemonic.phrase) } : null,
     privateKey: encodeForMasking(wallet.privateKey),
     address: wallet.address,
     name: 'name' in wallet ? (wallet.name ?? null) : null,
   };
 }
 
-function fromHDNode(hdNode: HDNode): MaskedBareWallet {
+function fromHDNode(hdNode: HDNodeWallet): MaskedBareWallet {
   if (!hdNode.mnemonic) {
     throw new Error('Expected an HDNode with a mnemonic');
   }
@@ -47,7 +50,7 @@ function getFirstNMnemonicWalletsEcdsa({ phrase, n }: Omit<Params, 'curve'>) {
   // NOTE:
   // ethers.utils.HDNode is _much_ faster at generating wallets
   // than ethers.Wallet
-  const hd = HDNode.fromMnemonic(decodeMasked(phrase));
+  const hd = HDNodeWallet.fromPhrase(decodeMasked(phrase), undefined, 'm');
   for (let i = 0; i < n; i++) {
     const path = getAccountPathEthereum(i);
     const wallet = hd.derivePath(path);
@@ -57,7 +60,7 @@ function getFirstNMnemonicWalletsEcdsa({ phrase, n }: Omit<Params, 'curve'>) {
 }
 
 /** Solana keypairs */
-function getFirstNMnemonicWalletsEd25519({
+async function getFirstNMnemonicWalletsEd25519({
   phrase: phraseEncoded,
   n,
   pathType = 'solanaBip44Change',
@@ -68,17 +71,17 @@ function getFirstNMnemonicWalletsEd25519({
   for (let i = 0; i < n; i++) {
     const path = getAccountPath(pathType, i);
     const { key: derivedSeed } = derivePath(path, seed.toString('hex'));
-    const keypair = Keypair.fromSeed(derivedSeed);
+    const keypair = await Keypair.fromSeed(derivedSeed);
     const wallet = fromSolanaKeypair({ mnemonic: { phrase, path }, keypair });
     result.push(locallyMaskWallet(wallet));
   }
   return result;
 }
 
-function main(params: Params) {
+async function main(params: Params) {
   if (params.curve === 'ed25519') {
     // TODO: measure performance time
-    return getFirstNMnemonicWalletsEd25519(params);
+    return await getFirstNMnemonicWalletsEd25519(params);
   } else if (params.curve === 'ecdsa') {
     return getFirstNMnemonicWalletsEcdsa(params);
   } else {
@@ -87,6 +90,5 @@ function main(params: Params) {
 }
 
 global.onmessage = (event: MessageEvent<Params>) => {
-  const result = main(event.data);
-  global.postMessage(result);
+  main(event.data).then((result) => global.postMessage(result));
 };

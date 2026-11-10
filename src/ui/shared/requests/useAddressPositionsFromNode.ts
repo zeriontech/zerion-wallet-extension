@@ -10,16 +10,13 @@ export function useAddressPositionFromRpcNode({
   chain,
   staleTime,
   enabled = true,
-  suspense = true,
 }: {
   address: string;
   chain: Chain;
   staleTime: number;
   enabled?: boolean;
-  suspense?: boolean;
 }) {
   return useQuery({
-    suspense,
     staleTime,
     // Versioned: `useAddressPositionsFromNode2` used to persist a different
     // shape under the unversioned key, which crashed readers of this hook
@@ -38,7 +35,6 @@ export function useAddressPositionsFromNode(params: {
   chain: Chain;
   staleTime: number;
   enabled?: boolean;
-  suspense?: boolean;
 }) {
   const { data, ...query } = useAddressPositionFromRpcNode(params);
   const positions = useMemo(() => (data ? [data] : data), [data]);

@@ -36,10 +36,10 @@ export function DisconnectFromDappButton({
           origin,
         });
       }}
-      disabled={removePermissionMutation.isLoading}
+      disabled={removePermissionMutation.isPending}
     >
       <UIText kind="small/accent">
-        {removePermissionMutation.isLoading ? 'Disconnecting…' : 'Disconnect Wallet'}
+        {removePermissionMutation.isPending ? 'Disconnecting…' : 'Disconnect Wallet'}
       </UIText>
     </Button>
   );

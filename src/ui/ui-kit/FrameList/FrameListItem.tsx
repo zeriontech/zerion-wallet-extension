@@ -1,6 +1,6 @@
 import React from 'react';
 import cn from 'classnames';
-import type { LinkProps } from 'react-router-dom';
+import type { LinkProps } from 'react-router';
 import { UnstyledLink } from '../UnstyledLink';
 import { UnstyledAnchor } from '../UnstyledAnchor';
 import { UnstyledButton } from '../UnstyledButton';

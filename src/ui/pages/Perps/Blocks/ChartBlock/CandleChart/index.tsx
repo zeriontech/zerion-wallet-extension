@@ -10,7 +10,7 @@ import {
   type ActiveElement,
 } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import type {
   PerpCandle,
   PerpCandleInterval,

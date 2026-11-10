@@ -17,6 +17,9 @@ export function drawVerticalLinePlugin({ getTheme }: { getTheme: () => Theme }):
       }
 
       const { x, y } = activeElement.element.tooltipPosition(false);
+      if (x == null || y == null) {
+        return;
+      }
 
       ctx.save();
 
@@ -52,6 +55,9 @@ export function drawDotPlugin({ getTheme }: { getTheme: () => Theme }): Plugin<'
       }
 
       const { x, y } = activeElement.element.tooltipPosition(false);
+      if (x == null || y == null) {
+        return;
+      }
 
       const color = getTheme() === Theme.light ? '#9c9fa8' : '#70737b';
 
@@ -91,6 +97,9 @@ export function drawRangePlugin({
       }
 
       const { x } = activeElement.element.tooltipPosition(false);
+      if (x == null) {
+        return;
+      }
 
       ctx.save();
 

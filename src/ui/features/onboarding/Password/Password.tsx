@@ -1,6 +1,6 @@
 import React, { useId, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Content } from 'react-area';
+import { useNavigate } from 'react-router';
+import { Content } from 'src/shared/react-area';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { StrengthIndicator } from 'src/ui/pages/CreateAccount/StrengthIndicator';
 import { Button } from 'src/ui/ui-kit/Button';

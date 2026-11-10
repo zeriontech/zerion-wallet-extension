@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type { ForwardedRef } from 'react';
 import React from 'react';
 import { Surface } from '../../Surface';

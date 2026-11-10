@@ -1,9 +1,8 @@
 import { ethers } from 'ethers';
-import { isValidMnemonic as isValidMnemonicV5 } from '@ethersproject/hdnode';
 import { isSolanaPrivateKey } from 'src/modules/solana/shared';
 
 export function isValidMnemonic(phrase: string) {
-  return isValidMnemonicV5(phrase);
+  return ethers.Mnemonic.isValidMnemonic(phrase);
 }
 
 export function isValidPrivateKey(rawInput: string) {

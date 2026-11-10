@@ -65,7 +65,7 @@ export function EnterReferralCodeDialog({
               name="referralCode"
               placeholder="Enter Code"
               required={true}
-              disabled={applyReferralCodeMutation.isLoading}
+              disabled={applyReferralCodeMutation.isPending}
             />
             {applyReferralCodeMutation.isError ? (
               <UIText kind="caption/regular" color="var(--negative-500)">
@@ -77,8 +77,8 @@ export function EnterReferralCodeDialog({
             <Button kind="regular" type="button" onClick={() => onDismiss()}>
               Back
             </Button>
-            <Button kind="primary" disabled={applyReferralCodeMutation.isLoading}>
-              {applyReferralCodeMutation.isLoading ? 'Applying...' : 'Apply'}
+            <Button kind="primary" disabled={applyReferralCodeMutation.isPending}>
+              {applyReferralCodeMutation.isPending ? 'Applying...' : 'Apply'}
             </Button>
           </HStack>
         </VStack>

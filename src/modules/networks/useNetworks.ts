@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import type { QueryKeyHashFunction } from '@tanstack/react-query';
-import { useQuery, hashQueryKey } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
+import { hashKey } from '@tanstack/query-core';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { emitter } from 'src/ui/shared/events';
 import {
@@ -28,7 +29,7 @@ const queryKeyHashFn: QueryKeyHashFunction<
   (string | string[] | NetworksStore | null | undefined)[]
 > = (queryKey) => {
   const stringifiable = queryKey.map((x) => (x instanceof NetworksStore ? x.toString() : x));
-  return hashQueryKey(stringifiable);
+  return hashKey(stringifiable);
 };
 
 export function useNetworks(chains?: string[]) {
@@ -41,8 +42,7 @@ export function useNetworks(chains?: string[]) {
       return networksStore.load(chains ? { chains } : undefined);
     },
     staleTime: 1000 * 60 * 5,
-    suspense: false,
-    useErrorBoundary: true,
+    throwOnError: true,
     enabled: Boolean(networksStore),
   });
 
@@ -73,11 +73,7 @@ export function useNetworks(chains?: string[]) {
 
 export function useNetworkInfo(
   id: string | null,
-  {
-    staleTime = 1000 * 60 * 5,
-    suspense = false,
-    enabled = true,
-  }: { staleTime?: number; suspense?: boolean; enabled?: boolean } = {},
+  { staleTime = 1000 * 60 * 5, enabled = true }: { staleTime?: number; enabled?: boolean } = {},
 ) {
   const networksStore = useNetworksStore();
   return useQuery({
@@ -89,7 +85,6 @@ export function useNetworkInfo(
       return networksStore.fetchNetworkById(id);
     },
     staleTime,
-    suspense,
     enabled: Boolean(networksStore && id && enabled),
   });
 }
@@ -117,8 +112,7 @@ export function useMainnetNetwork({
       return network ?? null;
     },
     staleTime: 1000 * 60 * 5,
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
   });
 }
 
@@ -139,8 +133,7 @@ export function useSearchNetworks({ query = '' }: { query?: string }) {
       emitter.emit('networksSearchResponse', query, data.length);
       return data;
     },
-    suspense: false,
-    keepPreviousData: true,
+    placeholderData: keepPreviousDataPlaceholder,
   });
   const { networks } = useNetworks();
   return { networks, ...queryResult };

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { fetchGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { type Chain } from 'src/modules/networks/Chain';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
@@ -27,11 +27,9 @@ export async function queryGasPrices(chain: Chain) {
 export function useGasPrices(
   chain: Chain | null,
   {
-    suspense = false,
     refetchInterval,
     keepPreviousData,
   }: {
-    suspense?: boolean;
     refetchInterval?: number;
     keepPreviousData?: boolean;
   } = {},
@@ -47,11 +45,10 @@ export function useGasPrices(
       }
       return fetchGasPrice({ network, source, apiClient: ZerionAPI });
     },
-    useErrorBoundary: true,
+    throwOnError: true,
     enabled: Boolean(network && Networks.isEip155(network)),
-    suspense,
     refetchInterval,
-    keepPreviousData,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     staleTime: 10000,
   });
 }

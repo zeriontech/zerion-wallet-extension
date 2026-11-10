@@ -21,7 +21,6 @@ export function WalletSourceIcon({
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address, groupId],
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId }),
-    suspense: false,
   });
 
   if (!wallet) {

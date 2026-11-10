@@ -12,7 +12,7 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
@@ -75,10 +75,12 @@ async function lookupAddressByQuery(query: string) {
   } catch (unknownError) {
     const error = unknownError instanceof AggregateError ? unknownError.errors[0] : unknownError;
     if (error instanceof HTTPError) {
-      const payload = await (error as HTTPError).response.json();
+      const payload = (await error.response.json()) as {
+        errors?: Array<{ title?: string }>;
+      };
       const message = payload.errors?.[0]?.title;
       if (message) {
-        throw new Error(message);
+        throw new Error(message, { cause: unknownError });
       }
     }
     throw error;
@@ -90,7 +92,7 @@ export function AddReadonlyAddress() {
   const formId = useId();
   const navigate = useNavigate();
 
-  const { mutate, isLoading: isSubmitting } = useMutation({
+  const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: submitReadonlyAddress,
     onSuccess: () => navigate('/overview'),
   });
@@ -106,7 +108,6 @@ export function AddReadonlyAddress() {
     staleTime: 20000,
     retry: 0,
     enabled: Boolean(query),
-    suspense: false,
   });
 
   const isDomainResolving = query && isInitialLoading && !isSupportedAddress;

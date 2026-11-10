@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router';
 import { ViewArea } from 'src/ui/components/ViewArea';
 
 const PreviewsPage = React.lazy(() => import('./previews/PreviewsPage'));

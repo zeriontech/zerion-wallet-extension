@@ -27,7 +27,6 @@ export function usePerpAssetCtxs(
         staleTime: 25_000,
         refetchInterval: 30_000,
         enabled,
-        suspense: false,
       };
     }),
   });

@@ -24,7 +24,7 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { NetworkFee } from '../../../SendTransaction/NetworkFee';
@@ -64,7 +64,7 @@ export function SpeedUp({
   const { data: chainGasPrices = null } = useGasPrices(chain);
   const acceleratedGasPrices = useMemo(() => increaseGasPrices(chainGasPrices), [chainGasPrices]);
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | undefined>(undefined); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);

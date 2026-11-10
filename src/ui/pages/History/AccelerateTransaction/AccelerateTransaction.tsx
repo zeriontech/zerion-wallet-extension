@@ -12,7 +12,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { walletPort } from 'src/ui/shared/channels';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { ViewLoadingSuspense } from 'src/ui/components/ViewLoading/ViewLoading';
 import { SpeedUp } from './SpeedUp';
 import { CancelTx } from './CancelTx';
@@ -26,10 +26,9 @@ export function AccelerateTransaction({
   onSuccess: () => void;
 }) {
   const [view, setView] = useState<'speedup' | 'cancel' | 'default'>('default');
-  const { data: wallet, isLoading } = useQuery({
+  const { data: wallet, isLoading } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
   });
   if (isLoading || !wallet) {
     return null;

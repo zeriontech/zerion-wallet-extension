@@ -202,7 +202,7 @@ function useSimulation({
     },
   });
 
-  const state: ButtonState = simulationMutation.isLoading ? 'simulating' : 'idle';
+  const state: ButtonState = simulationMutation.isPending ? 'simulating' : 'idle';
 
   const fire = useCallback(() => {
     if (simulated) {

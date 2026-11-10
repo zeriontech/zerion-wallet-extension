@@ -1,6 +1,6 @@
 import React, { useCallback, useId, useRef, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { NotFoundPage } from 'src/ui/components/NotFoundPage';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -89,7 +89,7 @@ function EditableWalletName({
             setValue(name);
           }}
         />
-        {renameMutation.isLoading ? <CircleSpinner style={{ display: 'inline-block' }} /> : null}
+        {renameMutation.isPending ? <CircleSpinner style={{ display: 'inline-block' }} /> : null}
       </div>
       {renameMutation.isError ? (
         <UIText kind="caption/regular" color="var(--negative-500)">
@@ -161,14 +161,13 @@ export function WalletAccount() {
   const navigate = useNavigate();
   const {
     data: wallet,
-    isLoading,
+    isPending,
     refetch: refetchWallet,
-  } = useQuery({
+  } = useSuspenseQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address, groupId],
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId }),
-    useErrorBoundary: true,
   });
-  const { data: walletGroup, isLoading: walletGroupIsLoading } = useQuery({
+  const { data: walletGroup, isPending: walletGroupIsLoading } = useSuspenseQuery({
     queryKey: ['getWalletGroupByAddress', address],
     queryFn: () => getWalletGroupByAddress(address),
   });
@@ -176,7 +175,7 @@ export function WalletAccount() {
   const { value: displayName } = useProfileName({ address, name: walletName });
   const removeAddressMutation = useMutation({
     mutationFn: () => walletPort.request('removeAddress', { address, groupId }),
-    useErrorBoundary: false,
+    throwOnError: false,
     onSuccess() {
       refetchWallet();
       navigate(-1);
@@ -184,7 +183,7 @@ export function WalletAccount() {
   });
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const nameInputId = useId();
-  if (isLoading || walletGroupIsLoading) {
+  if (isPending || walletGroupIsLoading) {
     return <NavigationTitle title={null} documentTitle="" />;
   }
   if (!wallet || !walletGroup) {

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
-import { useStore } from '@store-unit/react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useStore } from 'src/shared/store/useStore';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useWalletSimplePositions } from 'src/modules/zerion-api/hooks/useWalletSimplePositions';
@@ -48,7 +48,7 @@ import {
   type SignStep,
 } from 'src/ui/components/TransactionSigner';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import {
   createSendTokenAddressAction,
@@ -145,7 +145,7 @@ function SendFormComponent({
   }, [formState.inputAmount, inputKind, inputPrice]);
 
   const nftEnabled = Boolean(formState.nftId);
-  const { data: nftResponse, isLoading: nftLoading } = useWalletNftPosition(
+  const { data: nftResponse, isPending: nftLoading } = useWalletNftPosition(
     { address, currency, nftId: formState.nftId ?? '' },
     { source },
     { enabled: nftEnabled },
@@ -161,10 +161,9 @@ function SendFormComponent({
     [portfolioData],
   );
 
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
   });
 
   const { preferences, setPreferences } = usePreferences();
@@ -329,7 +328,7 @@ function SendFormComponent({
   const cancelToastRef = useRef<PopoverToastHandle>(null);
   const handleCancel = () => {
     setUserFormState(resetAfterBroadcast);
-    queryClient.invalidateQueries(['transactionGetSend']);
+    queryClient.invalidateQueries({ queryKey: ['transactionGetSend'] });
     cancelToastRef.current?.showToast();
   };
 
@@ -475,7 +474,9 @@ function SendFormComponent({
                   });
                 }
                 setUserFormState(resetAfterBroadcast);
-                queryClient.invalidateQueries(['transactionGetSend']);
+                queryClient.invalidateQueries({
+                  queryKey: ['transactionGetSend'],
+                });
                 resolve();
               });
             } else if (event.type === 'step-error' && event.index === 0) {
@@ -494,7 +495,7 @@ function SendFormComponent({
               });
             }
             setUserFormState(resetAfterBroadcast);
-            queryClient.invalidateQueries(['transactionGetSend']);
+            queryClient.invalidateQueries({ queryKey: ['transactionGetSend'] });
             resolve();
           });
         }
@@ -701,7 +702,7 @@ function SendFormComponent({
             formState={formState}
             transaction={clientTransaction}
             simulated={hasSimulated}
-            signing={signMutation.isLoading}
+            signing={signMutation.isPending}
             isPreparingTransaction={sendDataLoading}
             onSimulationCompleted={handleSimulationCompleted}
             onSign={() => guardedSign(simulationResult)}

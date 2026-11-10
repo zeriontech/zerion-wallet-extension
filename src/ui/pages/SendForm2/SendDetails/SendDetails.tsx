@@ -153,7 +153,7 @@ export function SendDetails({
   const feeFungibleId = networkFee?.fungible?.id ?? network?.baseAsset?.id;
   const { data: feeFungibleResponse } = useAssetListFungibles(
     feeFungibleId ? { fungibleIds: [feeFungibleId], currency } : { currency },
-    { suspense: false },
+    {},
   );
   const feePrice = feeFungibleId
     ? (feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta.price ?? null)

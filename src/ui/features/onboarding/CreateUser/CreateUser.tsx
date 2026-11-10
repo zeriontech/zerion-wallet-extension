@@ -2,8 +2,8 @@ import { useMutation } from '@tanstack/react-query';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import noop from 'lodash/noop';
 import React, { useCallback, useState } from 'react';
-import { RenderArea } from 'react-area';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { RenderArea } from 'src/shared/react-area';
+import { useNavigate, useSearchParams } from 'react-router';
 import { invariant } from 'src/shared/invariant';
 import { wait } from 'src/shared/wait';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
@@ -62,7 +62,7 @@ export function CreateUser() {
   );
   const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : noop;
 
-  const { mutate: handleSubmit, isLoading } = useMutation({
+  const { mutate: handleSubmit, isPending } = useMutation({
     mutationFn: async () => {
       await wait(2000);
       invariant(password && password !== '', 'Password not set');
@@ -104,7 +104,7 @@ export function CreateUser() {
             : undefined
         }
       >
-        {isLoading ? (
+        {isPending ? (
           <div className={helperStyles.loadingOverlay}>
             <UIText kind="headline/hero" className={helperStyles.loadingTitle}>
               Creating Wallet

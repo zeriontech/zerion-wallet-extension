@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import type { WalletRecord } from 'src/shared/types/WalletRecord';
 import { walletPort } from 'src/ui/shared/channels';
 import { useOptimisticMutation } from 'src/ui/shared/requests/useOptimisticMutation';
@@ -19,11 +19,9 @@ export async function getPreferences() {
 }
 
 export function usePreferences() {
-  const query = useQuery({
+  const query = useSuspenseQuery({
     queryKey: ['wallet/getPreferences'],
     queryFn: () => walletPort.request('getPreferences'),
-    useErrorBoundary: true,
-    suspense: true,
   });
   const mutation = useOptimisticMutation(setPreferences, {
     relatedQueryKey: ['wallet/getPreferences'],
@@ -54,11 +52,9 @@ export async function fetchGlobalPreferences() {
 }
 
 export function useGlobalPreferences() {
-  const query = useQuery({
+  const query = useSuspenseQuery({
     queryKey: ['wallet/getGlobalPreferences'],
     queryFn: () => walletPort.request('getGlobalPreferences'),
-    useErrorBoundary: true,
-    suspense: true,
   });
 
   const mutation = useOptimisticMutation(setGlobalPreferences, {

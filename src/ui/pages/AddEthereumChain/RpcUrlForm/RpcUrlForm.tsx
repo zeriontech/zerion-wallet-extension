@@ -8,7 +8,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';

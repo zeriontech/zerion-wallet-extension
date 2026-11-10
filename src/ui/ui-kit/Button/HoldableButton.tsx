@@ -49,32 +49,31 @@ const HINT_SHOW_DURATION = 1500;
 const HINT_SHOW_MIN_BREAK = 2000;
 const HOLD_DURATION_MARGIN = 100;
 
-const ButtonElement = <As extends ElementType = 'button'>(
-  {
-    style,
-    as,
-    kind = 'primary',
-    size = 44,
-    className,
-    onClick,
-    holdColor,
-    successColor,
-    errorColor,
-    text,
-    submittingText = 'Submitting...',
-    successText = 'Success',
-    errorText = 'Something was wrong',
-    holdDuration = 1000,
-    submitting,
-    success,
-    error,
-    holdHint = 'Please press and hold the button',
-    ...props
-  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
-      ref?: ComponentPropsWithRef<As>['ref'];
-    },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>,
-) => {
+const ButtonElement = <As extends ElementType = 'button'>({
+  style,
+  as,
+  kind = 'primary',
+  size = 44,
+  children,
+  className,
+  onClick,
+  holdColor,
+  successColor,
+  errorColor,
+  text,
+  submittingText = 'Submitting...',
+  successText = 'Success',
+  errorText = 'Something was wrong',
+  holdDuration = 1000,
+  submitting,
+  success,
+  error,
+  holdHint = 'Please press and hold the button',
+  ref,
+  ...props
+}: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
+    ref?: ComponentPropsWithRef<As>['ref'];
+  }) => {
   const realButtonRef = useRef<HTMLButtonElement | null>(null);
   const [innerState, setInnerState] = useState<'idle' | 'hold' | 'submitting'>('idle');
   const [showHint, setShowHint] = useState(false);
@@ -213,4 +212,4 @@ const ButtonElement = <As extends ElementType = 'button'>(
   );
 };
 
-export const HoldableButton = React.forwardRef(ButtonElement) as typeof ButtonElement;
+export const HoldableButton = ButtonElement;

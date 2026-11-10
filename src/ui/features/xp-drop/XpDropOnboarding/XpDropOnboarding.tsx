@@ -1,6 +1,6 @@
 import React from 'react';
-import type { To } from 'react-router-dom';
-import { Link, Route, Routes } from 'react-router-dom';
+import type { To } from 'react-router';
+import { Link, Route, Routes } from 'react-router';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { VStack } from 'src/ui/ui-kit/VStack';

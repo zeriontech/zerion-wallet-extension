@@ -3,17 +3,15 @@ import type { ComponentPropsWithRef, ComponentPropsWithoutRef, ElementType } fro
 import cn from 'classnames';
 import * as styles from './styles.module.css';
 
-const FrameElement = <As extends ElementType = 'div'>(
-  {
-    as,
-    className,
-    interactiveStyles = false,
-    ...props
-  }: { as?: As; interactiveStyles?: boolean } & ComponentPropsWithoutRef<As> & {
-      ref?: ComponentPropsWithRef<As>['ref'];
-    },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>,
-) => {
+const FrameElement = <As extends ElementType = 'div'>({
+  as,
+  className,
+  interactiveStyles = false,
+  ref,
+  ...props
+}: { as?: As; interactiveStyles?: boolean } & ComponentPropsWithoutRef<As> & {
+    ref?: ComponentPropsWithRef<As>['ref'];
+  }) => {
   return React.createElement(as || 'div', {
     ref,
     className: cn(className, styles.frame, interactiveStyles ? styles.interactive : null),
@@ -21,4 +19,4 @@ const FrameElement = <As extends ElementType = 'div'>(
   });
 };
 
-export const Frame = React.forwardRef(FrameElement) as typeof FrameElement;
+export const Frame = FrameElement;

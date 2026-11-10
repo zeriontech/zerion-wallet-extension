@@ -64,7 +64,7 @@ export function PrivateKeyImportView({
     scale: 1.1,
     timing: 100,
   });
-  const ready = !importWallet.isLoading;
+  const ready = !importWallet.isPending;
   useEffect(() => {
     if (ready) {
       trigger();

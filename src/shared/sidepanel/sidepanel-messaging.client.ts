@@ -4,7 +4,7 @@ import { isSidepanelMessageRequest } from './types';
 import { browserState } from './BrowserState';
 
 export function initializeSidepanelMessaging() {
-  browser.runtime.onMessage.addListener(async (request) => {
+  browser.runtime.onMessage.addListener(async (request: unknown) => {
     if (isSidepanelMessageRequest(request)) {
       if (request.payload.method === 'is-sidepanel-open') {
         const { initialWindowId } = browserState;

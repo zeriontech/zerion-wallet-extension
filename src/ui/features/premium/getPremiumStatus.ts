@@ -43,8 +43,7 @@ export function usePremiumStatus({ address }: { address?: string }) {
   const walletsMetaQuery = useWalletsMetaByChunks({
     addresses: addresses || [],
     enabled: Boolean(addresses?.length),
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 
@@ -71,8 +70,7 @@ export function useSingleAddressPremiumStatus({ address }: { address: string }) 
   const walletsMetaQuery = useWalletsMetaByChunks({
     addresses: [normalizedAddress],
     enabled: Boolean(normalizedAddress),
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 

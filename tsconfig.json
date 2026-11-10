@@ -33,7 +33,8 @@
         "name": "typescript-plugin-css-modules"
       }
     ],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "exclude": ["./node_modules"],
   "include": ["src", "__tests__", "e2e", "playwright.config.ts"]

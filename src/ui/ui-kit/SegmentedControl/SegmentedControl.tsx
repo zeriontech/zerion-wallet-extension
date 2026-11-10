@@ -1,8 +1,8 @@
 import type { ReactNode, HTMLProps } from 'react';
 import React, { createContext, useContext } from 'react';
 import cx from 'classnames';
-import { NavLink } from 'react-router-dom';
-import type { NavLinkProps } from 'react-router-dom';
+import { NavLink } from 'react-router';
+import type { NavLinkProps } from 'react-router';
 import type { Kind as UITextKind } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import * as s from './SegmentedControl.module.css';

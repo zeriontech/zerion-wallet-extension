@@ -71,7 +71,7 @@ export class ZerionSolana extends EventEmitter implements Ghost {
   }
 
   async signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T> {
-    const txBase64 = solToBase64(transaction);
+    const txBase64 = await solToBase64(transaction);
     const { tx } = await this.connection.rpcRequest('sol_signTransaction', {
       txBase64,
     });
@@ -81,7 +81,7 @@ export class ZerionSolana extends EventEmitter implements Ghost {
   async signAllTransactions<T extends Transaction | VersionedTransaction>(
     transactions: T[],
   ): Promise<T[]> {
-    const transactionsBase64 = transactions.map((tx) => solToBase64(tx));
+    const transactionsBase64 = await Promise.all(transactions.map((tx) => solToBase64(tx)));
     const results = await this.connection.rpcRequest('sol_signAllTransactions', {
       transactionsBase64,
     });
@@ -92,7 +92,7 @@ export class ZerionSolana extends EventEmitter implements Ghost {
     transaction: T,
     _options?: SendOptions | undefined,
   ): Promise<{ signature: string }> {
-    const txBase64 = solToBase64(transaction);
+    const txBase64 = await solToBase64(transaction);
     const { signature } = await this.connection.rpcRequest('sol_signAndSendTransaction', {
       txBase64,
     });

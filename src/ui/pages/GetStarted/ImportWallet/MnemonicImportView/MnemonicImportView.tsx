@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -51,7 +51,7 @@ function useMnenomicPhraseForLocation({
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    useErrorBoundary: false,
+    throwOnError: false,
   });
   useEffect(() => {
     if (getRecoveryPhraseQuery.error) {
@@ -92,7 +92,7 @@ export function MnemonicImportView({
       return prepareWalletsToImport(phrase);
     },
     enabled: Boolean(phrase),
-    useErrorBoundary: true,
+    throwOnError: true,
   });
   const source = useHttpClientSource();
   const { data: activityData } = useAddressActivity(

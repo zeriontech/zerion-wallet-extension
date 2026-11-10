@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Combobox, ComboboxProvider, ComboboxItem } from '@ariakit/react/combobox';
-import { normalizedContains } from 'normalized-contains';
+import { normalizedIncludes } from 'src/shared/normalizedIncludes';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
@@ -29,15 +29,15 @@ function matches(query: string, item: AddressItem, handlesByAddress: Map<string,
   }
   const value = query.toLowerCase();
   const normalized = normalizeAddress(item.address);
-  if (normalizedContains(normalized.toLowerCase(), value)) return true;
-  if (normalizedContains(truncateAddress(normalized, 4), value)) return true;
-  if (item.name != null && normalizedContains(item.name.toLowerCase(), value)) {
+  if (normalizedIncludes(normalized.toLowerCase(), value)) return true;
+  if (normalizedIncludes(truncateAddress(normalized, 4), value)) return true;
+  if (item.name != null && normalizedIncludes(item.name.toLowerCase(), value)) {
     return true;
   }
   const handles = handlesByAddress.get(normalized);
   if (handles) {
     for (const handle of handles) {
-      if (normalizedContains(handle.toLowerCase(), value)) return true;
+      if (normalizedIncludes(handle.toLowerCase(), value)) return true;
     }
   }
   return false;
@@ -82,8 +82,7 @@ export function ReceiverAddressDialog({
   const { data: walletMetaList } = useWalletsMetaByChunks({
     addresses: allAddresses,
     enabled: allAddresses.length > 0,
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 10,
   });
 
@@ -114,7 +113,6 @@ export function ReceiverAddressDialog({
       }
       return resolveDomain(normalizedValue);
     },
-    suspense: false,
     enabled: Boolean(normalizedValue),
   });
 
@@ -123,8 +121,7 @@ export function ReceiverAddressDialog({
   const { isFetching: isExactMatchMetaFetching } = useWalletsMetaByChunks({
     addresses: resolvedAddress ? [resolvedAddress] : [],
     enabled: Boolean(resolvedAddress),
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 10,
   });
 

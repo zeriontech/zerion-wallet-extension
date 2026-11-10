@@ -1,15 +1,8 @@
-import { ethers } from 'ethers';
-import RLP from 'rlp';
+import { encodeRlp, ethers, toBeHex } from 'ethers';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import type { ChainGasPrice } from '../types';
 import type { GasPriceObject } from '../GasPriceObject';
-
-function bufferToHex(buffer: Uint8Array) {
-  return Array.from(buffer)
-    .map((x) => x.toString(16).padStart(2, '0'))
-    .join('');
-}
 
 function bytesLength(str: string) {
   return ethers.getBytes(str).length;
@@ -20,8 +13,14 @@ function countZeroBytes(str: string) {
 }
 
 function rlpEncode(values: (string | number)[]) {
-  const encoded = RLP.encode(values);
-  return `0x${bufferToHex(encoded)}`;
+  const normalized = values.map((value) => {
+    if (typeof value === 'number') {
+      return value === 0 ? '0x' : toBeHex(value);
+    }
+    const hex = value.startsWith('0x') ? value.slice(2) : value;
+    return `0x${hex.length % 2 === 0 ? hex : `0${hex}`}`;
+  });
+  return encodeRlp(normalized);
 }
 
 interface OptimisticFee {

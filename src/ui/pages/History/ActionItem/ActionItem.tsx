@@ -14,7 +14,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { isInteractiveElement } from 'src/ui/shared/isInteractiveElement';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { DNA_MINT_CONTRACT_ADDRESS } from './constants';
 import {

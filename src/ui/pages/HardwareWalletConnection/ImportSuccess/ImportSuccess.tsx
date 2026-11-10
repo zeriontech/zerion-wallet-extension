@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { invariant } from 'src/shared/invariant';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { VStack } from 'src/ui/ui-kit/VStack';

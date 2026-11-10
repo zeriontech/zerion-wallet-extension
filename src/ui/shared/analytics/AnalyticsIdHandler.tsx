@@ -13,7 +13,6 @@ export function AnalyticsIdHandler() {
     queryFn: async () => {
       return (await BrowserStorage.get<string>(analyticsIdKey)) || null;
     },
-    suspense: false,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });

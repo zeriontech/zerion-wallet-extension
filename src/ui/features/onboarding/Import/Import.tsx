@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import { animated } from '@react-spring/web';
-import { isTruthy } from 'is-truthy-ts';
-import { RenderArea } from 'react-area';
+import { isTruthy } from 'src/shared/isTruthy';
+import { RenderArea } from 'src/shared/react-area';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -76,7 +76,7 @@ function ImportWallet() {
     [setSearchParams],
   );
 
-  const { mutate: createUserAndWallet, isLoading } = useMutation({
+  const { mutate: createUserAndWallet, isPending } = useMutation({
     mutationFn: async ({
       password,
       wallets,
@@ -121,7 +121,7 @@ function ImportWallet() {
       }
       setShowError(true);
     },
-    useErrorBoundary: true,
+    throwOnError: true,
   });
 
   const showErrorBoundary = useErrorBoundary();
@@ -156,7 +156,7 @@ function ImportWallet() {
   return (
     <VStack gap={isNarrowView ? 16 : 56}>
       <div className={helperStyles.container} style={{ minHeight: 430 }}>
-        {isLoading ? (
+        {isPending ? (
           <div className={helperStyles.loadingOverlay}>
             <UIText kind="headline/hero" className={helperStyles.loadingTitle}>
               Importing Wallet

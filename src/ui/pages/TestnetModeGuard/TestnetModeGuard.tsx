@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { invariant } from 'src/shared/invariant';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';

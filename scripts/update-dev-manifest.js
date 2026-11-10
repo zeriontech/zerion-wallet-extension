@@ -1,4 +1,3 @@
-/* eslint-env node */
 const fs = require('fs/promises');
 const path = require('path');
 const manifest = require('../dist/manifest.json');

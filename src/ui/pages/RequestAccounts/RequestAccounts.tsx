@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -80,8 +80,7 @@ function WalletSelectDialog({
 
   const { data: walletsMeta } = useWalletsMetaByChunks({
     addresses: allAddresses,
-    useErrorBoundary: false,
-    suspense: false,
+    throwOnError: false,
   });
 
   const matchesSearch = useWalletSearchPredicate({
@@ -169,8 +168,7 @@ function useRedirectIfOriginAlreadyAllowed({
       return result;
     },
     enabled: Boolean(address),
-    useErrorBoundary: true,
-    suspense: true,
+    throwOnError: true,
     refetchOnWindowFocus: false,
     retry: false,
   });
@@ -348,10 +346,9 @@ export function RequestAccounts() {
   invariant(origin, 'origin get-parameter is required');
   invariant(windowId, 'windowId get-parameter is required');
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error } = useSuspenseQuery({
     retry: 1,
     queryKey: ['prepareRequestAccountsViewData', ecosystem],
-    useErrorBoundary: false,
     queryFn: async () => {
       const currentWallet = await walletPort.request('uiGetCurrentWallet');
       const allWalletGroups = await walletPort.request('uiGetWalletGroups');

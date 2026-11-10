@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { useQuery } from '@tanstack/react-query';
-import { RenderArea } from 'react-area';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
+import { RenderArea } from 'src/shared/react-area';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { describeTransaction } from 'src/modules/ethereum/transactions/describeTransaction';
@@ -98,9 +98,9 @@ export function TransactionSimulation({
         : null;
     },
     staleTime: Infinity,
-    keepPreviousData: true,
+    placeholderData: keepPreviousDataPlaceholder,
     enabled: Boolean(transaction.evm) && Boolean(networks) && Boolean(transactionAction),
-    useErrorBoundary: true,
+    throwOnError: true,
   });
 
   const localSolanaAddressAction = useMemo(() => {

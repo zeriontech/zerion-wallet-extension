@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -78,8 +78,7 @@ function WalletSelectDialog({
 
   const { data: walletsMeta } = useWalletsMetaByChunks({
     addresses: allAddresses,
-    useErrorBoundary: false,
-    suspense: false,
+    throwOnError: false,
   });
 
   const matchesSearch = useWalletSearchPredicate({
@@ -315,12 +314,9 @@ export function SelectConnectedWallet() {
   invariant(origin, 'origin get-parameter is required');
   invariant(windowId, 'windowId get-parameter is required');
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error } = useSuspenseQuery({
     retry: 1,
-    // some bug in linter, probably
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ['prepareSelectConnectedWalletData', ecosystem, origin],
-    useErrorBoundary: false,
     queryFn: async () => {
       const [permissions, allWalletGroups, currentWallet] = await Promise.all([
         walletPort.request('getOriginPermissions'),

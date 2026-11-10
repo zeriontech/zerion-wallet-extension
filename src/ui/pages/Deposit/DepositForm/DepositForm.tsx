@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { getError } from 'get-error';
-import { useLocation } from 'react-router-dom';
+import { getError } from 'src/shared/errors/getErrorBase';
+import { useLocation } from 'react-router';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import { useDepositQuotes } from 'src/modules/zerion-api/hooks/useDepositQuotes';
 import { isNumeric } from 'src/shared/isNumeric';
@@ -86,7 +86,7 @@ function DepositFormView({ address }: { address: string }) {
         hasValidAmount &&
         // Don't fire before the probe settles, or the first request would go
         // out with the wrong flag and immediately be superseded
-        !applePayQuery.isLoading,
+        !applePayQuery.isPending,
       ),
     },
   );
@@ -338,11 +338,11 @@ function DepositFormView({ address }: { address: string }) {
                   !selectedQuote ||
                   !selectedPaymentMethod ||
                   quotesQuery.isFetching ||
-                  handoffMutation.isLoading
+                  handoffMutation.isPending
                 }
                 onClick={guardedHandoff}
               >
-                {handoffMutation.isLoading ? (
+                {handoffMutation.isPending ? (
                   <HStack gap={8} alignItems="center">
                     <CircleSpinner color="currentColor" />
                     <span>Opening {selectedQuote?.provider.name}…</span>

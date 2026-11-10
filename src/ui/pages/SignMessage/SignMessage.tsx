@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { walletPort, windowPort } from 'src/ui/shared/channels';
@@ -38,7 +38,7 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
@@ -246,7 +246,7 @@ function SignMessageContent({
           </UnstyledButton>
           <DappSecurityCheck
             status={securityQuery.data?.status}
-            isLoading={securityQuery.isLoading}
+            isLoading={securityQuery.isPending}
           />
         </VStack>
       </PageColumn>
@@ -285,7 +285,7 @@ function SignMessageContent({
                 ref={signMsgBtnRef}
                 wallet={wallet}
                 onClick={() => confirmRequest()}
-                disabled={confirmMutation.isLoading}
+                disabled={confirmMutation.isPending}
                 holdToSign={preferences.enableHoldToSignButton}
                 bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
                 keyboardShortcutEnabled={preferences.enableKeyboardShortcutToSign}
@@ -300,12 +300,11 @@ function SignMessageContent({
 
 export function SignMessage() {
   const [params] = useSearchParams();
-  const { data: wallet, isLoading } = useQuery({
+  const { data: wallet, isPending } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
   });
-  if (isLoading || !wallet) {
+  if (isPending || !wallet) {
     return null;
   }
   const clientScope = params.get('clientScope');

@@ -12,7 +12,6 @@ export function useTxEligibility(
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
   const enabled = !tx ? false : enabledParam;
   return useQuery({
-    suspense: false,
     queryKey: ['adjustedCheckEligibility', tx, source],
     queryFn: async () => {
       if (!tx) {

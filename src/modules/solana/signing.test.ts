@@ -57,29 +57,29 @@ const samples = {
 };
 
 describe('Solana signing functions', () => {
-  test('signMessage', () => {
+  test('signMessage', async () => {
     const sample = samples.signMessage;
-    const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
+    const keypair = await fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
     const messageUint8 = ethers.getBytes(sample.messageHex);
     const result = SolanaSigning.signMessage(messageUint8, keypair);
     expect(uint8ArrayToBase64(result.signature)).toBe(sample.signatureSerialized);
   });
 
-  test('signTransaction', () => {
+  test('signTransaction', async () => {
     const sample = samples.signTransaction;
-    const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
+    const keypair = await fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
     const transaction = solFromBase64(sample.txBase64);
-    const result = SolanaSigning.signTransaction(transaction, keypair);
+    const result = await SolanaSigning.signTransaction(transaction, keypair);
 
     expect(result.signature).toBe(sample.signatureBase58);
     expect(result.tx).toBe(sample.txSignedBase64);
   });
 
-  test('signAllTransactions', () => {
+  test('signAllTransactions', async () => {
     const sample = samples.signAllTransactions;
-    const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
+    const keypair = await fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));
     const transactions = sample.transactionsBase64.map((tx) => solFromBase64(tx));
-    const results = SolanaSigning.signAllTransactions(transactions, keypair);
+    const results = await SolanaSigning.signAllTransactions(transactions, keypair);
 
     expect(results[0].signature).toBe(sample.results[0].signatureBase58);
     expect(results[0].tx).toBe(sample.results[0].txSignedBase64);

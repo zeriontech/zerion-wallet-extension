@@ -167,7 +167,7 @@ export function NftsPanel({
       limit: 30,
     },
     { source },
-    { suspense: false },
+    {},
   );
 
   useEffect(() => {

@@ -9,6 +9,7 @@ export function wrappedGetNetworkById(networks: Networks, chainId: ChainId) {
     if (error instanceof UnsupportedNetwork) {
       throw new Error(
         `No network configuration found for ${chainId}.\nYou can add a custom network in the "Settings -> Networks" section.`,
+        { cause: error },
       );
     } else {
       throw error;

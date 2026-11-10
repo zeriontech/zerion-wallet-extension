@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { useCombobox } from 'downshift';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -33,7 +33,11 @@ import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientS
 import { invariant } from 'src/shared/invariant';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useEvent } from 'src/ui/shared/useEvent';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  keepPreviousData as keepPreviousDataPlaceholder,
+} from '@tanstack/react-query';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { useSearchQuery } from './useSearchQuery';
 
@@ -172,7 +176,7 @@ const PerpView = React.forwardRef<
   {
     perp: Perp;
     highlighted?: boolean;
-    onClick: () => void;
+    onClick?: React.AnchorHTMLAttributes<HTMLAnchorElement>['onClick'];
   }
 >(({ perp, highlighted, onClick }, ref) => {
   const { currency } = useCurrency();
@@ -263,7 +267,7 @@ const RecentItem = React.forwardRef<
 >(({ fungibleId, index, highlighted, onClick }, ref) => {
   const { currency } = useCurrency();
 
-  const { data, isLoading } = useAssetFullInfo(
+  const { data, isPending } = useAssetFullInfo(
     { fungibleId, currency },
     { source: useHttpClientSource() },
   );
@@ -273,15 +277,15 @@ const RecentItem = React.forwardRef<
   const removeRecentSearchMutation = useMutation({
     mutationFn: () => walletPort.request('removeRecentSearch', { fungibleId }),
     onSuccess: () => {
-      queryClient.refetchQueries(['wallet/getSearchHistory']);
+      queryClient.refetchQueries({ queryKey: ['wallet/getSearchHistory'] });
     },
   });
 
-  if (!isLoading && !fungible) {
+  if (!isPending && !fungible) {
     return null;
   }
 
-  if (isLoading) {
+  if (isPending) {
     return <div style={{ height: 68 }} />;
   }
 
@@ -307,7 +311,7 @@ const RecentItem = React.forwardRef<
         size={28}
         aria-label="Remove item from recent"
         onClick={() => removeRecentSearchMutation.mutate()}
-        disabled={removeRecentSearchMutation.isLoading}
+        disabled={removeRecentSearchMutation.isPending}
       >
         <CloseIcon style={{ width: 20, height: 20, color: 'var(--neutral-500)' }} />
       </Button>
@@ -340,11 +344,10 @@ export function Search() {
   const { data: searchHistory } = useQuery({
     queryKey: ['wallet/getSearchHistory'],
     queryFn: () => walletPort.request('getSearchHistory'),
-    suspense: false,
-    keepPreviousData: true,
+    placeholderData: keepPreviousDataPlaceholder,
   });
 
-  const { data: searchResults, isLoading } = useSearchQuery({
+  const { data: searchResults, isPending } = useSearchQuery({
     query: normalizedQuery,
     currency,
   });
@@ -443,6 +446,7 @@ export function Search() {
           component: (
             <RecentItem
               fungibleId={item.fungibleId}
+              index={index}
               highlighted={highlightedIndex === index}
               {...getItemProps({
                 item,
@@ -477,6 +481,7 @@ export function Search() {
         component: (
           <SearchResultItem
             fungible={item.fungible}
+            index={index}
             highlighted={highlightedIndex === index}
             {...getItemProps({
               item,
@@ -492,7 +497,7 @@ export function Search() {
   const clearSearchHistoryMutation = useMutation({
     mutationFn: () => walletPort.request('clearSearchHistory'),
     onSuccess: () => {
-      queryClient.refetchQueries(['wallet/getSearchHistory']);
+      queryClient.refetchQueries({ queryKey: ['wallet/getSearchHistory'] });
     },
   });
 
@@ -533,14 +538,14 @@ export function Search() {
                   className="hover:underline"
                   aria-label="Clear recent search"
                   onClick={() => clearSearchHistoryMutation.mutate()}
-                  disabled={clearSearchHistoryMutation.isLoading}
+                  disabled={clearSearchHistoryMutation.isPending}
                 >
                   Clear
                 </UnstyledButton>
               </UIText>
             </HStack>
           ) : null}
-          {normalizedQuery && isLoading ? (
+          {normalizedQuery && isPending ? (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <CircleSpinner />
             </div>

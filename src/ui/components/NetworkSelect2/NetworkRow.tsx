@@ -23,7 +23,6 @@ function NativeBalance({ address, chain }: { address: string; chain: Chain }) {
   const { data: balance } = useNativeBalance({
     address,
     chain,
-    suspense: false,
     staleTime: TEN_MINUTES,
   });
   if (balance?.valueCommon == null) {

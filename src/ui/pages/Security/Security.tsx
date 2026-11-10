@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { Route, Routes } from 'react-router';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { ViewSuspense } from 'src/ui/components/ViewSuspense';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -24,7 +24,7 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { estimatePasswordStrengh, Strength } from 'src/shared/validation/password-strength';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { isMacOS } from 'src/ui/shared/isMacos';
@@ -41,7 +41,7 @@ function TouchIdSettings() {
   const passkeyTitle = getPasskeyTitle();
 
   // Check if passkeys are supported on this device
-  const passkeyAvailabilityQuery = useQuery({
+  const passkeyAvailabilityQuery = useSuspenseQuery({
     queryKey: ['passkey/isSupported'],
     queryFn: async () => {
       if (!window.PublicKeyCredential) {
@@ -55,7 +55,7 @@ function TouchIdSettings() {
       }
     },
     staleTime: Infinity,
-    cacheTime: Infinity,
+    gcTime: Infinity,
   });
 
   const defaultValueQuery = useQuery({
@@ -63,18 +63,16 @@ function TouchIdSettings() {
     queryFn: () => {
       return accountPublicRPCPort.request('getPasskeyEnabled');
     },
-    useErrorBoundary: true,
-    suspense: false,
+    throwOnError: true,
   });
   const enablePasskeyDialogRef = useRef<HTMLDialogElement | null>(null);
   const disablePasskeyDialogRef = useRef<HTMLDialogElement | null>(null);
 
-  const userQuery = useQuery({
+  const userQuery = useSuspenseQuery({
     queryKey: ['account/getExistingUser'],
     queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
     },
-    useErrorBoundary: true,
   });
 
   const handleSetupClick = useCallback(() => {
@@ -118,10 +116,10 @@ function TouchIdSettings() {
 
   const checked = userValue ?? defaultValueQuery.data ?? false;
   const disabled =
-    userQuery.isLoading ||
-    setupTouchIdMutation.isLoading ||
-    removeTouchIdMutation.isLoading ||
-    defaultValueQuery.isLoading;
+    userQuery.isPending ||
+    setupTouchIdMutation.isPending ||
+    removeTouchIdMutation.isPending ||
+    defaultValueQuery.isPending;
 
   // Hide the setting if passkeys are not supported
   if (!passkeyAvailabilityQuery.data) {
@@ -214,8 +212,8 @@ function TouchIdSettings() {
                         </UIText>
                       ) : null}
                     </VStack>
-                    <Button disabled={setupTouchIdMutation.isLoading}>
-                      {setupTouchIdMutation.isLoading ? (
+                    <Button disabled={setupTouchIdMutation.isPending}>
+                      {setupTouchIdMutation.isPending ? (
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                           <CircleSpinner />
                         </div>
@@ -247,12 +245,11 @@ function ChangePassword() {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const weakPasswordWarningDialogRef = useRef<HTMLDialogElement | null>(null);
 
-  const userQuery = useQuery({
+  const userQuery = useSuspenseQuery({
     queryKey: ['account/getExistingUser'],
     queryFn: () => {
       return accountPublicRPCPort.request('getExistingUser');
     },
-    useErrorBoundary: true,
   });
 
   const [value, setValue] = useState('');
@@ -290,7 +287,7 @@ function ChangePassword() {
       setValue('');
       setConfirmValue('');
       zeroizeAfterSubmission();
-      queryClient.refetchQueries(['account/getPasskeyEnabled']);
+      queryClient.refetchQueries({ queryKey: ['account/getPasskeyEnabled'] });
     },
     onError: (error) => {
       walletPort.request('passwordChangeError');
@@ -411,13 +408,13 @@ function ChangePassword() {
                   <Button
                     style={{ width: '100%' }}
                     disabled={
-                      changePasswordMutation.isLoading ||
+                      changePasswordMutation.isPending ||
                       !value ||
                       !confirmValue ||
                       value !== confirmValue
                     }
                   >
-                    {changePasswordMutation.isLoading ? (
+                    {changePasswordMutation.isPending ? (
                       <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <CircleSpinner />
                       </div>

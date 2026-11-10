@@ -27,7 +27,6 @@ export function useStoredConfidentialPermits(address: string | null | undefined)
   return useQuery({
     ...permitsQueryOptions(address ?? ''),
     enabled: Boolean(address),
-    suspense: false,
   });
 }
 
@@ -44,7 +43,6 @@ export function useWalletByAddress(address: string | null | undefined) {
     // the record only changes through explicit user actions; never poll
     staleTime: Infinity,
     enabled: Boolean(address),
-    suspense: false,
   });
 }
 
@@ -60,9 +58,7 @@ export function useConfidentialPermits(addresses: string[]): {
   isReady: boolean;
 } {
   const queries = useQueries({
-    queries: addresses
-      .filter(Boolean)
-      .map((address) => ({ ...permitsQueryOptions(address), suspense: false })),
+    queries: addresses.filter(Boolean).map((address) => permitsQueryOptions(address)),
   });
   const isReady = queries.every((query) => query.isFetched || query.isError);
   const permitLists = queries.map((query) => query.data);

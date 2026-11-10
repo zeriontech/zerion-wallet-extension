@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { useBackgroundKind } from 'src/ui/components/Background';
@@ -32,7 +32,6 @@ export function Receive() {
   const { data: localWallet } = useQuery({
     queryKey: ['wallet/uiGetWalletByAddress', address],
     queryFn: () => walletPort.request('uiGetWalletByAddress', { address, groupId: null }),
-    suspense: false,
   });
 
   const surfaceVariables = useReceiveSurfaceVariables();

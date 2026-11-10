@@ -15,7 +15,7 @@ export function toTypedData(data: string | Partial<TypedData>): TypedData {
       const typedData = JSON.parse(data) as TypedData;
       return typedData;
     } catch (e) {
-      throw new Error('Failed to parse typedData input');
+      throw new Error('Failed to parse typedData input', { cause: e });
     }
   } else {
     if (!isTypedData(data)) {

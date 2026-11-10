@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
 import { isReadonlyAccount } from 'src/shared/types/validators';
 import { findPerpAsset } from 'src/modules/hyperliquid/findPerpAsset';
@@ -76,7 +76,7 @@ export function PerpPage() {
   const showHistorySection = Boolean(address) && fillsForCoin.length > 0;
   const showRiskDisclosure = Boolean(address);
 
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });

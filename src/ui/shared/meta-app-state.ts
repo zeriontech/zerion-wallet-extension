@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { isReadonlyContainer } from 'src/shared/types/validators';

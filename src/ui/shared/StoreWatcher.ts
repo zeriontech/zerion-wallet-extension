@@ -1,5 +1,5 @@
-import type { Store } from 'store-unit';
-import { useStore } from '@store-unit/react';
+import type { Store } from 'src/shared/store/store';
+import { useStore } from 'src/shared/store/useStore';
 
 export function StoreWatcher<T>({
   store,

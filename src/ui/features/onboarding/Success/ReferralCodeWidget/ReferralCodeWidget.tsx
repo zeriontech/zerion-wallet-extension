@@ -90,7 +90,7 @@ function ReferralCodeForm({ onSuccess }: { onSuccess: (pendingReferrer: Referrer
                   required={true}
                   value={referralCode}
                   onChange={(event) => setReferralCode(event.target.value)}
-                  disabled={applyReferralCodeMutation.isLoading}
+                  disabled={applyReferralCodeMutation.isPending}
                 />
                 {referralCode.length > 0 ? (
                   <UnstyledButton
@@ -125,7 +125,7 @@ function ReferralCodeForm({ onSuccess }: { onSuccess: (pendingReferrer: Referrer
                   ['--button-background' as string]: 'var(--always-white)',
                   ['--button-background-hover' as string]: '#f0f0f2',
                 }}
-                disabled={applyReferralCodeMutation.isLoading}
+                disabled={applyReferralCodeMutation.isPending}
               >
                 <CheckIcon
                   style={{

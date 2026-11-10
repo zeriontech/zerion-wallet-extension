@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { urlContext } from 'src/shared/UrlContext';
 

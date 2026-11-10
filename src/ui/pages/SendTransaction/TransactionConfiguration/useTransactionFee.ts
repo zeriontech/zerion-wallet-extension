@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { Asset } from 'src/defi-sdk.types';
-import { isTruthy } from 'is-truthy-ts';
-import { useQuery } from '@tanstack/react-query';
+import { isTruthy } from 'src/shared/isTruthy';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import type { EIP1559, NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
@@ -98,8 +98,7 @@ function useFeeEstimation(
     throw new Error('gas field is expected to be found on Transaction object');
   }
   return useQuery({
-    keepPreviousData,
-    suspense: !keepPreviousData,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     queryKey: ['feeEstimation', chain, transaction, networkFeeConfiguration, chainGasPrices, gas],
     queryFn: async () => {
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);

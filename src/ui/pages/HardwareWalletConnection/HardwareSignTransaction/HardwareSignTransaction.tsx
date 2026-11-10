@@ -217,7 +217,7 @@ export const HardwareSignTransaction = React.forwardRef(function HardwareSignTra
       } catch (error) {
         const normalizedError = parseLedgerError(error);
         if (deniedByUser(normalizedError)) {
-          throw new Error('Signature denied by user');
+          throw new Error('Signature denied by user', { cause: error });
         }
         throw normalizedError;
       }
@@ -239,7 +239,7 @@ export const HardwareSignTransaction = React.forwardRef(function HardwareSignTra
       } catch (error) {
         const normalizedError = parseLedgerError(error);
         if (deniedByUser(normalizedError)) {
-          throw new Error('Signature denied by user');
+          throw new Error('Signature denied by user', { cause: error });
         }
         throw normalizedError;
       }
@@ -253,14 +253,14 @@ export const HardwareSignTransaction = React.forwardRef(function HardwareSignTra
 
   const windowFocused = useWindowFocus();
 
-  return signMutation.isLoading || signSolanaMutation.isLoading ? (
+  return signMutation.isPending || signSolanaMutation.isPending ? (
     <Button kind="loading-border" disabled={true} title="Follow instructions on your ledger device">
       <TextPulse>Sign on Device</TextPulse>
     </Button>
   ) : (
     <Button
       kind={buttonKind}
-      disabled={signMutation.isLoading || signSolanaMutation.isLoading || isSending}
+      disabled={signMutation.isPending || signSolanaMutation.isPending || isSending}
       style={{
         paddingInline: keyboardShortcutEnabled ? 0 : 16, // fit longer button label
       }}

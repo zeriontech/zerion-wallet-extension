@@ -1,12 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { walletPort } from 'src/ui/shared/channels';
 
 export function useWalletAddresses() {
-  const { data: walletGroups, ...query } = useQuery({
+  const { data: walletGroups, ...query } = useSuspenseQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
   });
 
   const addresses = useMemo(() => {

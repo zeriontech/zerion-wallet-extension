@@ -1,6 +1,11 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  useMutation,
+  useQuery,
+  useSuspenseQuery,
+  keepPreviousData as keepPreviousDataPlaceholder,
+} from '@tanstack/react-query';
+import { useNavigate, useSearchParams } from 'react-router';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import {
   getActionApproval,
@@ -74,7 +79,7 @@ import {
   fetchAndAssignPaymaster,
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
@@ -94,7 +99,7 @@ import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { baseToCommon, commonToBase } from 'src/shared/units/convert';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
@@ -208,9 +213,9 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   /**
    * We _cannot_ proceed without resolving chain id,
    * but we _can_ proceed without resolving network fee.
-   * This is why one query uses suspense: true and another suspense: false
+   * This is why one query is suspenseful and the other handles its own loading state
    */
-  const resolveChainQuery = useQuery({
+  const resolveChainQuery = useSuspenseQuery({
     queryKey: ['resolveChain', transaction, origin],
     queryFn: async () => {
       const currentChain = await walletPort.request('requestChainForOrigin', {
@@ -227,8 +232,7 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
     queryKey: ['resolveGasAndFee', withChainId, source],
     queryFn: async () => (withChainId ? resolveGasAndFee(withChainId, { source }) : null),
     enabled: Boolean(withChainId),
-    useErrorBoundary: true,
-    suspense: false,
+    throwOnError: true,
   });
   return {
     /** popuLATERtrasaction - it's partially populated now and will get more data later :D */
@@ -514,7 +518,6 @@ function SendTransactionContent({
     // transaction gas type may change when gasPrices responds, so we should wait
     // to avoid inconsistency between paymasterCheckEligibility and getPaymasterParams calls
     enabled: paymasterPossible && gasPricesQuery.isFetched,
-    suspense: false,
     staleTime: 120000,
     retry: 1,
     queryKey: ['paymaster/check-eligibility', populatedTransaction, source],
@@ -538,9 +541,9 @@ function SendTransactionContent({
   });
 
   const paymasterEligible = Boolean(eligibilityQuery.data?.data?.eligible);
-  const { isStale } = useStaleTime(eligibilityQuery.isLoading, 2000);
+  const { isStale } = useStaleTime(eligibilityQuery.isPending, 2000);
   /** avoid a flash between network fee and "free" label, but not wait too long */
-  const paymasterWaiting = paymasterPossible && eligibilityQuery.isLoading && !isStale;
+  const paymasterWaiting = paymasterPossible && eligibilityQuery.isPending && !isStale;
 
   const gasPricesReady = Boolean(chainGasPrices);
   const { isStale: isStaleGasPricesValue } = useStaleTime(gasPricesReady, 2000);
@@ -556,8 +559,7 @@ function SendTransactionContent({
     enabled: Boolean(network?.flags.supportsSimulations && !isWaitingForGasrices),
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
-    keepPreviousData: true,
-    suspense: false,
+    placeholderData: keepPreviousDataPlaceholder,
     queryKey: [
       'interpretTxBasedOnEligibility',
       populatedTransaction,
@@ -590,7 +592,8 @@ function SendTransactionContent({
         address: wallet.address,
         transactions: [{ evm: configuredTx }],
         eligibilityQueryData: eligibilityQuery.data?.data.eligible,
-        eligibilityQueryStatus: eligibilityQuery.status,
+        eligibilityQueryStatus:
+          eligibilityQuery.status === 'pending' ? 'loading' : eligibilityQuery.status,
         currency,
         origin,
       });
@@ -617,7 +620,7 @@ function SendTransactionContent({
     advancedDialogRef.current?.showModal();
   }, []);
 
-  const feeValueCommonRef = useRef<string>(); /** for analytics only */
+  const feeValueCommonRef = useRef<string | undefined>(undefined); /** for analytics only */
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
@@ -800,13 +803,13 @@ function SendTransactionContent({
               </Button>
               {preferences && globalPreferences ? (
                 <SignTransactionButton
-                  // TODO: set loading state when {sendTransactionMutation.isLoading}
+                  // TODO: set loading state when {sendTransactionMutation.isPending}
                   // (important for paymaster flow)
                   wallet={wallet}
                   ref={sendTxBtnRef}
                   onClick={() => sendTransaction()}
-                  isLoading={sendTransactionMutation.isLoading}
-                  disabled={sendTransactionMutation.isLoading}
+                  isPending={sendTransactionMutation.isPending}
+                  disabled={sendTransactionMutation.isPending}
                   buttonKind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
                   buttonTitle={interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined}
                   holdToSign={preferences.enableHoldToSignButton}
@@ -825,10 +828,9 @@ function SendTransactionContent({
 
 function EthSendTransaction() {
   const [params] = useSearchParams();
-  const { data: wallet, isLoading } = useQuery({
+  const { data: wallet, isPending } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
   });
   const transactionStringified = params.get('transaction');
   invariant(transactionStringified, 'transaction get-parameter is required for this view');
@@ -844,7 +846,7 @@ function EthSendTransaction() {
   const { populatedTransaction } = usePreparedTx(incomingTransaction, origin);
   const { networks } = useNetworks();
 
-  if (isLoading || !wallet || !networks || !populatedTransaction) {
+  if (isPending || !wallet || !networks || !populatedTransaction) {
     return null;
   }
   const chainId = normalizeChainId(populatedTransaction.chainId);
@@ -989,7 +991,7 @@ function SolDefaultView({
       </VStack>
       <div style={{ marginTop: 'auto' }}>
         {addressAction?.fee ? (
-          <AddressActionNetworkFee fee={addressAction.fee} isLoading={txInterpretQuery.isLoading} />
+          <AddressActionNetworkFee fee={addressAction.fee} isLoading={txInterpretQuery.isPending} />
         ) : null}
       </div>
 
@@ -1077,11 +1079,9 @@ function SolSendTransaction() {
 
   invariant(origin, 'origin get-parameter is required for this view');
 
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    suspense: true,
-    useErrorBoundary: true,
   });
   invariant(wallet, 'Wallet must be available');
   const { preferences } = usePreferences();
@@ -1123,8 +1123,7 @@ function SolSendTransaction() {
   const interpretQuery = useQuery({
     // Failing to keepPreviousData currently may break AllowanceView
     // component because we will pass a nullish requestedAllowanceQuantityBase during refetch
-    keepPreviousData: true,
-    suspense: false,
+    placeholderData: keepPreviousDataPlaceholder,
     queryKey: [
       'interpretSolanaTransactions',
       currency,
@@ -1235,8 +1234,8 @@ function SolSendTransaction() {
                 wallet={wallet}
                 ref={sendTxBtnRef}
                 onClick={() => sendTransaction()}
-                isLoading={sendTransactionMutation.isLoading}
-                disabled={sendTransactionMutation.isLoading}
+                isPending={sendTransactionMutation.isPending}
+                disabled={sendTransactionMutation.isPending}
                 buttonKind="primary"
                 holdToSign={preferences.enableHoldToSignButton}
                 bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}

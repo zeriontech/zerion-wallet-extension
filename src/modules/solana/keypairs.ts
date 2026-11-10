@@ -26,12 +26,12 @@ export function fromSolanaKeypair({
   };
 }
 
-export function fromMnemonicToEd25519(phrase: string, path: string): Keypair {
+export async function fromMnemonicToEd25519(phrase: string, path: string): Promise<Keypair> {
   const seed = bip39.mnemonicToSeedSync(phrase);
   const { key: derivedSeed } = derivePath(path, seed.toString('hex'));
-  return Keypair.fromSeed(derivedSeed);
+  return await Keypair.fromSeed(derivedSeed);
 }
 
-export function fromSecretKeyToEd25519(secretKey: string): Keypair {
-  return Keypair.fromSecretKey(bs58.decode(secretKey));
+export async function fromSecretKeyToEd25519(secretKey: string): Promise<Keypair> {
+  return await Keypair.fromSecretKey(bs58.decode(secretKey));
 }

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageHeading } from 'src/ui/components/PageHeading';
@@ -34,7 +34,7 @@ export function ForgotPassword() {
   if (eraseAllData.isSuccess) {
     return null; // avoid flickering while waiting for navigation
   }
-  if (eraseAllData.isLoading) {
+  if (eraseAllData.isPending) {
     return <EraseDataInProgress />;
   }
   return (
@@ -71,7 +71,7 @@ export function ForgotPassword() {
             <UnstyledButton
               style={{ width: '100%' }}
               className={helperStyles.hoverUnderline}
-              disabled={eraseAllData.isLoading}
+              disabled={eraseAllData.isPending}
               onClick={() => {
                 invariant(dialogRef.current, 'dialog element must be mounted');
                 showConfirmDialog(dialogRef.current).then(() => {

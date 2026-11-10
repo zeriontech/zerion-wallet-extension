@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { accountPublicRPCPort } from 'src/ui/shared/channels';
 import type { PublicUser } from 'src/shared/types/User';
 import TouchIdIcon from 'jsx:src/ui/assets/touch-id.svg';
@@ -7,7 +7,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { useNavigationType } from 'react-router-dom';
+import { useNavigationType } from 'react-router';
 import { getPasswordWithPasskey, getPasskeyTitle } from './passkey';
 import * as styles from './styles.module.css';
 
@@ -20,12 +20,11 @@ export function TouchIdLogin({
   onSuccess: () => void;
   style?: React.CSSProperties;
 }) {
-  const defaultValueQuery = useQuery({
+  const defaultValueQuery = useSuspenseQuery({
     queryKey: ['account/getPasskeyEnabled'],
     queryFn: () => {
       return accountPublicRPCPort.request('getPasskeyEnabled');
     },
-    useErrorBoundary: true,
   });
 
   const loginMutation = useMutation({
@@ -63,16 +62,16 @@ export function TouchIdLogin({
         aria-label={`Login with ${passkeyTitle}`}
         onClick={() => loginMutation.mutate()}
         className={styles.touchId}
-        disabled={loginMutation.isLoading}
+        disabled={loginMutation.isPending}
         title={`Unlock with ${passkeyTitle}`}
       >
-        {loginMutation.isLoading ? (
+        {loginMutation.isPending ? (
           <CircleSpinner size="40px" color="var(--primary)" trackColor="var(--primary-200)" />
         ) : (
           <TouchIdIcon />
         )}
       </UnstyledButton>
-      {loginMutation.isLoading ? null : (
+      {loginMutation.isPending ? null : (
         <UIText kind="small/regular" color="var(--white)" className={styles.touchIdPopup}>
           Unlock with {passkeyTitle}
         </UIText>

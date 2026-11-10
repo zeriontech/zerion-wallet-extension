@@ -54,7 +54,7 @@ const Crypto = () => {
     setPassed(text === decrypted.text);
   }
 
-  const { mutate: testMutate, isLoading } = useMutation({
+  const { mutate: testMutate, isPending } = useMutation({
     mutationFn: () => test(),
   });
   useEffect(() => {
@@ -66,7 +66,7 @@ const Crypto = () => {
       <PageColumn>
         <PageTop />
         <VStack gap={16}>
-          {isLoading ? (
+          {isPending ? (
             <UIText kind="body/accent">Running...</UIText>
           ) : passed === true ? (
             <HStack gap={8}>

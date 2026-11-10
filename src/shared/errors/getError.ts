@@ -1,4 +1,4 @@
-import { getError as getErrorBase } from 'get-error';
+import { getError as getErrorBase } from './getErrorBase';
 
 export function normalizeErrorMessage(error: Error) {
   if (!error.message) {

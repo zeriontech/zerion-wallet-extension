@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -182,7 +182,6 @@ export function useSendTransaction({
     {
       enabled: enabledParam && baseGatesPass && useBackend,
       keepPreviousData: true,
-      suspense: false,
     },
   );
 
@@ -216,8 +215,7 @@ export function useSendTransaction({
 
   const localQuery = useQuery({
     enabled: localEnabled,
-    keepPreviousData: true,
-    suspense: false,
+    placeholderData: keepPreviousDataPlaceholder,
     queryKey: ['prepareSendData/SendForm2', address, addressPosition, legacyFormState],
     queryFn: () => prepareSendData(address, addressPosition, legacyFormState),
     staleTime: 20000,

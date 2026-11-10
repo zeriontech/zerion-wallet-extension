@@ -116,9 +116,7 @@ function NetworkFeeLine({
   keepPreviousData?: boolean;
   interpretation?: InterpretResponse | null;
 }) {
-  const { data: chainGasPrices = null } = useGasPrices(chain, {
-    suspense: true,
-  });
+  const { data: chainGasPrices = null } = useGasPrices(chain, {});
   const transactionFee = useTransactionFee({
     address: transaction.from,
     transaction,

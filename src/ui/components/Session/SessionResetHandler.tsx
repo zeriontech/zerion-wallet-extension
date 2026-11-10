@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { isObj } from 'src/shared/isObj';
 import { walletPort } from 'src/ui/shared/channels';
 import { emitter } from 'src/ui/shared/events';

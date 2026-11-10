@@ -41,7 +41,7 @@ export const SignTransactionButton = React.forwardRef(function SignTransactionBu
     buttonTitle,
     onClick,
     buttonKind = 'primary',
-    isLoading: isLoadingProp,
+    isPending: isLoadingProp,
     disabled: disabledAttr,
     holdToSign,
     bluetoothSupportEnabled,
@@ -51,7 +51,7 @@ export const SignTransactionButton = React.forwardRef(function SignTransactionBu
     wallet: ExternallyOwnedAccount;
     buttonTitle?: React.ReactNode;
     buttonKind?: ButtonKind;
-    isLoading?: boolean;
+    isPending?: boolean;
     holdToSign: boolean | null;
     bluetoothSupportEnabled: boolean | null;
     keyboardShortcutEnabled?: boolean | null;
@@ -148,16 +148,16 @@ export const SignTransactionButton = React.forwardRef(function SignTransactionBu
   const activeMutation =
     [sendTxMutation, signAllTransactionsMutation].find((x) => x.status !== 'idle') ||
     sendTxMutation;
-  const isLoading = isLoadingProp || activeMutation.isLoading;
-  const isSending = activeMutation.isLoading;
+  const isPending = isLoadingProp || activeMutation.isPending;
+  const isSending = activeMutation.isPending;
 
   // there is a small delay after using a holdable button
   // button should be disabled after successful sign to prevent a duplicating call
-  const disabled = isLoading || (holdToSign && activeMutation.isSuccess) || disabledAttr;
+  const disabled = isPending || (holdToSign && activeMutation.isSuccess) || disabledAttr;
   const title = buttonTitle || 'Confirm';
   const windowFocused = useWindowFocus();
   const shortcutActive =
-    Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled && !isLoading;
+    Boolean(keyboardShortcutEnabled) && buttonKind !== 'danger' && !disabled && !isPending;
 
   return isDeviceAccount(wallet) ? (
     <>
@@ -218,7 +218,7 @@ export const SignTransactionButton = React.forwardRef(function SignTransactionBu
                 submittingText="Sending..."
                 onClick={handleClick}
                 success={activeMutation.isSuccess}
-                submitting={activeMutation.isLoading}
+                submitting={activeMutation.isPending}
                 error={activeMutation.isError}
                 disabled={disabled}
                 kind={buttonKind}
@@ -234,7 +234,7 @@ export const SignTransactionButton = React.forwardRef(function SignTransactionBu
                 {...buttonProps}
               >
                 {children ||
-                  (isLoading ? (
+                  (isPending ? (
                     'Sending...'
                   ) : (
                     <HStack gap={4} alignItems="center" justifyContent="center">

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { AnimatePresence, motion, useMotionValue } from 'motion/react';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { useMeasure } from 'src/ui/shared/useMeasure';

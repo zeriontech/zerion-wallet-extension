@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
+import { Route, Routes, useNavigate, useSearchParams } from 'react-router';
 import { invariant } from 'src/shared/invariant';
 import { isSessionExpiredError } from 'src/ui/shared/isSessionExpiredError';
 import { PageLayout } from 'src/ui/features/onboarding/shared/PageLayout';
@@ -82,7 +82,7 @@ export function BackupPage() {
         goToVerifyUser();
       }
     },
-    useErrorBoundary: true,
+    throwOnError: true,
   });
 
   return (

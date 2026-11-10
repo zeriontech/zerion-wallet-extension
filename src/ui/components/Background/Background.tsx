@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type React from 'react';
 import { useContext, useEffect, useLayoutEffect, useRef } from 'react';
 import { UIContext } from '../UIContext';

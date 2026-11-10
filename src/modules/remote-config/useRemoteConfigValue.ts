@@ -9,9 +9,8 @@ export function useRemoteConfigValue<K extends keyof RemoteConfig>(key: K) {
       const value = await walletPort.request('getRemoteConfigValue', { key });
       return value as RemoteConfig[K];
     },
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 10000,
-    suspense: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });

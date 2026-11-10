@@ -1,6 +1,6 @@
 import 'src/shared/polyfills';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { HashRouter, Routes, Route, useSearchParams } from 'react-router-dom';
+import { HashRouter, Routes, Route, useSearchParams } from 'react-router';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider, useMutation } from '@tanstack/react-query';
 import { invariant } from 'src/shared/invariant';
@@ -104,7 +104,7 @@ function App() {
   useBackgroundKind({ kind: 'white' });
   const { mutate: invokeVerifySandbox } = useMutation({
     mutationFn: verifySandbox,
-    useErrorBoundary: true,
+    throwOnError: true,
   });
   const [params] = useSearchParams();
   useEffect(() => {
@@ -132,8 +132,7 @@ function App() {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      useErrorBoundary: true,
-      suspense: true,
+      throwOnError: true,
     },
   },
 });

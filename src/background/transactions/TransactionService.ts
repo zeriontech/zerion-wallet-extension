@@ -333,7 +333,13 @@ export class TransactionService {
         invariant(item.signature, 'Item must be solana');
         this.transactionsStore.upsertTransaction({
           ...item,
-          signatureStatus,
+          signatureStatus: {
+            ...signatureStatus,
+            slot: Number(signatureStatus.slot),
+            confirmations:
+              signatureStatus.confirmations == null ? null : Number(signatureStatus.confirmations),
+            confirmationStatus: signatureStatus.confirmationStatus ?? undefined,
+          },
         });
       }
     });

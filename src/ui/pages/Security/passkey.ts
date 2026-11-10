@@ -135,11 +135,17 @@ export async function setupAccountPasskey(password: string) {
     // Handle user cancellation or other creation errors
     if (error instanceof Error) {
       if (error.name === 'NotAllowedError' || error.message.includes('cancelled')) {
-        throw new Error('Passkey setup was cancelled by user');
+        throw new Error('Passkey setup was cancelled by user', {
+          cause: error,
+        });
       }
-      throw new Error(`Failed to create passkey: ${error.message}`);
+      throw new Error(`Failed to create passkey: ${error.message}`, {
+        cause: error,
+      });
     }
-    throw new Error('Failed to create passkey due to an unknown error');
+    throw new Error('Failed to create passkey due to an unknown error', {
+      cause: error,
+    });
   }
 
   if (!cred) {
@@ -200,16 +206,23 @@ export async function getPasswordWithPasskey() {
     // Handle user cancellation or authentication errors
     if (error instanceof Error) {
       if (error.name === 'NotAllowedError' || error.message.includes('cancelled')) {
-        throw new Error('Authentication was cancelled by user');
+        throw new Error('Authentication was cancelled by user', {
+          cause: error,
+        });
       }
       if (error.name === 'InvalidStateError') {
         throw new Error(
           'Passkey not found on this device. Please use password login or set up passkey again.',
+          { cause: error },
         );
       }
-      throw new Error(`Authentication failed: ${error.message}`);
+      throw new Error(`Authentication failed: ${error.message}`, {
+        cause: error,
+      });
     }
-    throw new Error('Authentication failed due to an unknown error');
+    throw new Error('Authentication failed due to an unknown error', {
+      cause: error,
+    });
   }
 
   if (!cred) {

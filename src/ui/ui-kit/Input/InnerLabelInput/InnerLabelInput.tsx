@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import React, { useId } from 'react';
 import type { ForwardedRef } from 'react';
 import type { UITextProps } from '../../UIText';

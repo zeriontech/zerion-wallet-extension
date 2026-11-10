@@ -68,18 +68,16 @@ function useNativeAddressPosition({
 export function useNativeBalance({
   address,
   chain,
-  suspense,
   staleTime,
 }: {
   address: string;
   chain: Chain;
   staleTime: number;
-  suspense?: boolean;
 }): {
   isLoading: boolean;
   data: { valueCommon: BigNumber | null; position: AddressPosition | null };
 } {
-  const { data: network } = useNetworkInfo(chain.toString(), { suspense });
+  const { data: network } = useNetworkInfo(chain.toString());
   const isSupportedByBackend = network?.flags.supportsPositions;
   const nativeAddressPosition = useNativeAddressPosition({
     address,
@@ -90,7 +88,6 @@ export function useNativeBalance({
     address,
     chain,
     enabled: isSupportedByBackend === false,
-    suspense,
     staleTime,
   });
 

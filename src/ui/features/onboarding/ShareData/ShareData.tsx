@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -19,10 +19,10 @@ export function ShareData() {
 
   // Check if analyticsEnabled is already set and navigate to welcome
   useEffect(() => {
-    if (!query.isLoading && globalPreferences?.analyticsEnabled != null) {
+    if (!query.isPending && globalPreferences?.analyticsEnabled != null) {
       navigate('/onboarding/welcome');
     }
-  }, [query.isLoading, globalPreferences?.analyticsEnabled, navigate]);
+  }, [query.isPending, globalPreferences?.analyticsEnabled, navigate]);
 
   const handleAnalyticsChoiceMutation = useMutation({
     mutationFn: async (enabled: boolean) => {
@@ -35,7 +35,7 @@ export function ShareData() {
     },
   });
 
-  if (query.isLoading) {
+  if (query.isPending) {
     return null;
   }
 
@@ -102,7 +102,7 @@ export function ShareData() {
             kind="primary"
             size={48}
             onClick={() => handleAnalyticsChoiceMutation.mutate(true)}
-            disabled={handleAnalyticsChoiceMutation.isLoading}
+            disabled={handleAnalyticsChoiceMutation.isPending}
             style={{ width: '100%' }}
           >
             <UIText kind="body/accent" color="var(--white)">
@@ -113,7 +113,7 @@ export function ShareData() {
             kind="regular"
             size={48}
             onClick={() => handleAnalyticsChoiceMutation.mutate(false)}
-            disabled={handleAnalyticsChoiceMutation.isLoading}
+            disabled={handleAnalyticsChoiceMutation.isPending}
             style={{ width: '100%' }}
           >
             <UIText kind="body/accent">Deny anonymous data collection</UIText>

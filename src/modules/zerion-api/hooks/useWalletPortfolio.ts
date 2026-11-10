@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { fetchHyperliquidBalance } from 'src/modules/hyperliquid/fetchHyperliquidBalance';
@@ -38,7 +38,6 @@ export function useWalletPortfolio(
   params: Params,
   { source }: BackendSourceParams,
   {
-    suspense = false,
     enabled = true,
     keepPreviousData = false,
     refetchInterval,
@@ -46,7 +45,6 @@ export function useWalletPortfolio(
     hyperliquidDelayMs = 0,
     hyperliquidRefetchOnWindowFocus = refetchOnWindowFocus,
   }: {
-    suspense?: boolean;
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number;
@@ -67,15 +65,14 @@ export function useWalletPortfolio(
   // Signed Permits make confidential amounts count towards the total, so
   // their fingerprint is part of the key: a new permit refetches the portfolio
   const { permits, fingerprint, isReady } = useConfidentialPermits(params.addresses);
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
   const portfolioQuery = useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: persistentQuery([QUERY_KEY, params, source, fingerprint]),
     queryFn: () => queryFn(params, { source }, permits),
-    retry: 0, // if not 0, there are too many rerenders if the queryFn throws synchronously
-    suspense,
+    retry: 0,
     enabled: enabled && isReady,
-    keepPreviousData,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     staleTime: STALE_TIME,
     refetchInterval,
     refetchOnWindowFocus,
@@ -97,9 +94,8 @@ export function useWalletPortfolio(
     queryKey: ['hyperliquidBalance', address],
     queryFn: () => fetchHyperliquidBalance(address),
     retry: 0,
-    suspense,
     enabled: Boolean(enabled && isEvmAddress && hyperliquidArmed),
-    keepPreviousData,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     staleTime: STALE_TIME,
     refetchInterval,
     refetchOnWindowFocus: hyperliquidRefetchOnWindowFocus,

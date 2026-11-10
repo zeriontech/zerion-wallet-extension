@@ -1,7 +1,7 @@
 import memoize from 'memoize-one';
 import throttle from 'lodash/throttle';
-import { Store } from 'store-unit';
-import { useStore } from '@store-unit/react';
+import { Store } from 'src/shared/store/store';
+import { useStore } from 'src/shared/store/useStore';
 
 function getWindowSize(): [number, number] {
   if (typeof window === 'undefined') {

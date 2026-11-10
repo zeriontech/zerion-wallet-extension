@@ -49,7 +49,7 @@ function createPieces(): Piece[] {
  */
 export function useTapStreak(target: number, onUnlock: () => void) {
   const streak = useRef(0);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const unlock = useRef(onUnlock);
   unlock.current = onUnlock;
 

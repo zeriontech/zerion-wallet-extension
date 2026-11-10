@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import groupBy from 'lodash/groupBy';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -12,7 +12,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { AddressBadge } from 'src/ui/components/AddressBadge';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { getGroupDisplayName } from 'src/ui/shared/getGroupDisplayName';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -161,10 +161,9 @@ function HardwareWalletList({ walletGroups }: { walletGroups: WalletGroup[] }) {
 }
 
 function WalletGroups() {
-  const { data: walletGroups, isLoading } = useQuery({
+  const { data: walletGroups, isLoading } = useSuspenseQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
   });
   const groupedBySeedType = useMemo(() => {
     if (!walletGroups) {

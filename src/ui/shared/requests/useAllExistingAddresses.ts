@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import {
@@ -9,10 +9,9 @@ import {
 import { walletPort } from 'src/ui/shared/channels';
 
 export function useAllExistingMnemonicAddresses() {
-  const { data: walletGroups } = useQuery({
+  const { data: walletGroups } = useSuspenseQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
     staleTime: 30000,
   });
   return useMemo(
@@ -26,10 +25,9 @@ export function useAllExistingMnemonicAddresses() {
 }
 
 export function useAllSignerOrHwAddresses() {
-  const { data: walletGroups } = useQuery({
+  const { data: walletGroups } = useSuspenseQuery({
     queryKey: ['wallet/uiGetWalletGroups'],
     queryFn: () => walletPort.request('uiGetWalletGroups'),
-    useErrorBoundary: true,
     staleTime: 30000,
   });
   return useMemo(

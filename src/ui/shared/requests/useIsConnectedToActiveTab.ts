@@ -1,12 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import type { JSX } from 'react';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { getActiveTabOrigin } from './getActiveTabOrigin';
 
 export function useIsConnectedToActiveTab(address: string) {
-  const { data } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ['activeTab/origin'],
     queryFn: getActiveTabOrigin,
-    useErrorBoundary: true,
   });
   const tabOrigin = data?.tabOrigin;
   return useQuery({

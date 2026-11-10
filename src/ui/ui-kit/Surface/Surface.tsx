@@ -5,17 +5,15 @@ interface Props {
   padding?: React.CSSProperties['padding'];
 }
 
-export const SurfaceComponent = <As extends ElementType = 'div'>(
-  {
-    style,
-    padding,
-    as,
-    ...props
-  }: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
-      ref?: ComponentPropsWithRef<As>['ref'];
-    },
-  ref: React.Ref<ComponentPropsWithRef<As>['ref']>,
-) => {
+export const SurfaceComponent = <As extends ElementType = 'div'>({
+  style,
+  padding,
+  as,
+  ref,
+  ...props
+}: Props & { as?: As } & ComponentPropsWithoutRef<As> & {
+    ref?: ComponentPropsWithRef<As>['ref'];
+  }) => {
   return React.createElement(as || 'div', {
     ref,
     style: {
@@ -30,4 +28,4 @@ export const SurfaceComponent = <As extends ElementType = 'div'>(
   });
 };
 
-export const Surface = React.forwardRef(SurfaceComponent) as typeof SurfaceComponent;
+export const Surface = SurfaceComponent;

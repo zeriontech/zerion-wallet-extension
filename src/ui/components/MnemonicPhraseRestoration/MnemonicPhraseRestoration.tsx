@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Input } from 'src/ui/ui-kit/Input';
@@ -64,12 +64,12 @@ function IntroView({
 }
 
 function RecoverView({
-  isLoading,
+  isPending,
   error,
   onSubmit,
   onCancel,
 }: {
-  isLoading: boolean;
+  isPending: boolean;
   error: unknown;
   onSubmit: (initialPassword: string, currentPassword: string) => void;
   onCancel: () => void;
@@ -130,8 +130,8 @@ function RecoverView({
             </UIText>
           ) : null}
           <VStack gap={8}>
-            <Button kind="primary" disabled={isLoading} style={{ width: '100%' }}>
-              {isLoading ? (
+            <Button kind="primary" disabled={isPending} style={{ width: '100%' }}>
+              {isPending ? (
                 <HStack gap={0} style={{ justifyContent: 'center' }}>
                   <CircleSpinner />
                 </HStack>
@@ -143,7 +143,7 @@ function RecoverView({
               kind="ghost"
               type="button"
               onClick={onCancel}
-              disabled={isLoading}
+              disabled={isPending}
               style={{ width: '100%' }}
             >
               Cancel
@@ -216,7 +216,7 @@ export function MnemonicPhraseRestoration() {
   const [view, setView] = useState<View>('intro');
   const { setPreferences } = usePreferences();
 
-  const userQuery = useQuery({
+  const userQuery = useSuspenseQuery({
     queryKey: ['account/getExistingUser'],
     queryFn: () => accountPublicRPCPort.request('getExistingUser'),
   });
@@ -334,7 +334,7 @@ export function MnemonicPhraseRestoration() {
         if (view === 'recover') {
           return (
             <RecoverView
-              isLoading={restoreMutation.isLoading}
+              isPending={restoreMutation.isPending}
               error={restoreMutation.error}
               onSubmit={(initialPassword, currentPassword) =>
                 restoreMutation.mutate({ initialPassword, currentPassword })

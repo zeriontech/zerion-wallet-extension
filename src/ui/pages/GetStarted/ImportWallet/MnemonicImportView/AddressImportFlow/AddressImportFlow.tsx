@@ -128,7 +128,7 @@ export function SelectMoreWalletsDialog({
   wallets: DerivedWallets | null;
   existingAddressesSet: Set<string>;
   activeWallets: Record<string, { active: boolean }>;
-  dialogRef: React.RefObject<HTMLDialogElement>;
+  dialogRef: React.RefObject<HTMLDialogElement | null>;
   onSubmit: (values: Set<string>) => void;
 }) {
   const groupedByEcosystem = useMemo(() => {

@@ -8,6 +8,5 @@ export function useDepositSupportedCountries({ enabled = true }: { enabled?: boo
     enabled,
     // The list of on-ramp countries does not change within a session
     staleTime: Infinity,
-    suspense: false,
   });
 }

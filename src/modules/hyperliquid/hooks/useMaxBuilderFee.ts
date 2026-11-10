@@ -6,13 +6,12 @@ export const MAX_BUILDER_FEE_QUERY_KEY = 'hyperliquid/maxBuilderFee';
 
 export function useMaxBuilderFee(
   payload: PerpMaxBuilderFeePayload,
-  { suspense = false, enabled = true }: { suspense?: boolean; enabled?: boolean } = {},
+  { enabled = true }: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: [MAX_BUILDER_FEE_QUERY_KEY, payload],
     queryFn: () => perpMaxBuilderFee(payload),
     retry: 0,
-    suspense,
     enabled: Boolean(enabled && payload.address && payload.builder),
     staleTime: 60_000,
   });

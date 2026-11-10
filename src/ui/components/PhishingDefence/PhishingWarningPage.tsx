@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { VStack } from 'src/ui/ui-kit/VStack';

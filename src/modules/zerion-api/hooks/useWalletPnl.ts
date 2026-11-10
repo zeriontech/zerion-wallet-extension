@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { persistentQuery } from 'src/ui/shared/requests/queryClientPersistence';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { ZerionAPI } from '../zerion-api.client';
@@ -20,13 +20,11 @@ export function useWalletPnl(
   params: Params,
   { source }: BackendSourceParams,
   {
-    suspense = false,
     enabled = true,
     keepPreviousData = false,
     refetchInterval,
     refetchOnWindowFocus = true,
   }: {
-    suspense?: boolean;
     enabled?: boolean;
     keepPreviousData?: boolean;
     refetchInterval?: number;
@@ -36,10 +34,9 @@ export function useWalletPnl(
   return useQuery({
     queryKey: persistentQuery([QUERY_KEY, params, { source }]),
     queryFn: () => ZerionAPI.walletGetPnl(params, { source }),
-    retry: 0, // if not 0, there are too many rerenders if the queryFn throws synchronously
-    suspense,
+    retry: 0,
     enabled,
-    keepPreviousData,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     staleTime: STALE_TIME,
     refetchInterval,
     refetchOnWindowFocus,

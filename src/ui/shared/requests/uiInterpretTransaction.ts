@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { interpretSignature, interpretTransactions } from 'src/ui/shared/requests/interpret';
 import { getNetworksStore } from 'src/modules/networks/networks-store.client';
 import { invariant } from 'src/shared/invariant';
@@ -111,8 +111,7 @@ export function useInterpretTxBasedOnEligibility({
   const keepPreviousData = true;
 
   return useQuery({
-    suspense: false,
-    keepPreviousData,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     refetchOnWindowFocus: false,
     queryKey: [
       'interpretSignature',

@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { formatCurrencyToParts, formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
@@ -45,7 +46,7 @@ import { useAddressPositionsFromNode } from 'src/ui/shared/requests/useAddressPo
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { invariant } from 'src/shared/invariant';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -59,7 +60,7 @@ import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebase
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { walletPort } from 'src/ui/shared/channels';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import {
   ConfidentialBalancesPanel,
@@ -708,7 +709,6 @@ function RawChainPositions({
   } = useAddressPositionsFromNode({
     address,
     chain,
-    suspense: false,
     staleTime: 1000 * 20,
   });
   const apps = useMemo(

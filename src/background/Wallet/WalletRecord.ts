@@ -19,7 +19,7 @@ import {
   isReadonlyContainer,
   isSignerContainer,
 } from 'src/shared/types/validators';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import { upgradeRecord } from 'src/shared/type-utils/versions';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { encodeForMasking } from 'src/shared/wallet/encode-locally';
@@ -524,7 +524,7 @@ export class WalletRecordModel {
           );
         } else if (isPrivateKeyContainer(group.walletContainer)) {
           const { wallets } = group.walletContainer;
-          group.walletContainer = new PrivateKeyWalletContainer(wallets);
+          group.walletContainer = await PrivateKeyWalletContainer.create(wallets);
         } else if (isHardwareContainer(group.walletContainer)) {
           group.walletContainer = new DeviceAccountContainer(group.walletContainer);
         } else if (isReadonlyContainer(group.walletContainer)) {

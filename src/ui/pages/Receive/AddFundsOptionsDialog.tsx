@@ -118,7 +118,7 @@ export function AddFundsOptionsDialog({
   analytics,
 }: {
   wallet: ExternallyOwnedAccount;
-  dialogRef: React.RefObject<HTMLDialogElement>;
+  dialogRef: React.RefObject<HTMLDialogElement | null>;
   analytics: { pathname: string; address: string };
 }) {
   return (

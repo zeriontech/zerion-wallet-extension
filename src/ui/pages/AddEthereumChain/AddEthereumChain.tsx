@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Route, Routes, useSearchParams } from 'react-router-dom';
-import { RenderArea } from 'react-area';
-import { isTruthy } from 'is-truthy-ts';
+import { Route, Routes, useSearchParams } from 'react-router';
+import { RenderArea } from 'src/shared/react-area';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { toAddEthereumChainParameter, toNetworkInfo } from 'src/modules/networks/helpers';
 import { invariant } from 'src/shared/invariant';
@@ -63,12 +63,11 @@ function AddOrUpdateChain({
   const chainId = normalizeChainId(addEthereumChainParameter.chainId);
   const { networks, loadNetworkByChainId } = useNetworks();
 
-  const { data: updatedNetworks, isLoading } = useQuery({
+  const { data: updatedNetworks, isPending } = useQuery({
     queryKey: ['loadNetworkByChainId', chainId],
     queryFn: () => loadNetworkByChainId(chainId),
     enabled: Boolean(chainId),
-    useErrorBoundary: false,
-    suspense: false,
+    throwOnError: false,
   });
 
   const { network, prevNetwork } = useMemo(() => {
@@ -118,7 +117,7 @@ function AddOrUpdateChain({
       : null;
   }, [networks]);
 
-  if (!restrictedChainIds || isLoading) {
+  if (!restrictedChainIds || isPending) {
     return <ViewLoading kind="network" />;
   }
 
@@ -155,7 +154,7 @@ function AddOrUpdateChain({
             network={network}
             prevNetwork={prevNetwork}
             rpcUrlHelpHref={`/addEthereumChain/what-is-rpc-url?${params}`}
-            isSubmitting={addEthereumChainMutation.isLoading}
+            isSubmitting={addEthereumChainMutation.isPending}
             onKeepCurrent={onKeepCurrent}
             onSubmit={(networkId, result) => {
               addEthereumChainMutation.mutate({
@@ -169,7 +168,7 @@ function AddOrUpdateChain({
             chain={network.id}
             chainConfig={addEthereumChainParameter}
             submitText="Add"
-            isSubmitting={addEthereumChainMutation.isLoading}
+            isSubmitting={addEthereumChainMutation.isPending}
             onCancel={onReject}
             onSubmit={(networkId, result) => {
               addEthereumChainMutation.mutate({
@@ -185,7 +184,7 @@ function AddOrUpdateChain({
         <PageBottom />
       </PageColumn>
       <PageStickyFooter>
-        {isLoading ? (
+        {isPending ? (
           <DelayedRender delay={500}>
             <Spacer height={8} />
             <UIText

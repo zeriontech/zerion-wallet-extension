@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { userAbstraction } from '../api/requests/user-abstraction.client';
 
 export const USER_ABSTRACTION_QUERY_KEY = 'hyperliquid/userAbstraction';
@@ -16,7 +16,6 @@ export function userAbstractionQueryOptions(payload: { address: string | null | 
     staleTime: ABSTRACTION_STALE_TIME,
     keepPreviousData: true,
     retry: 1,
-    suspense: false,
   };
 }
 
@@ -29,8 +28,7 @@ export function useUserAbstraction(
     queryFn: () => userAbstraction({ address: payload.address as string }),
     enabled: enabled && Boolean(payload.address),
     staleTime: ABSTRACTION_STALE_TIME,
-    keepPreviousData: true,
+    placeholderData: keepPreviousDataPlaceholder,
     retry: 1,
-    suspense: false,
   });
 }

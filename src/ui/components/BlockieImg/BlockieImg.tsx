@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
-import { createIcon } from '@download/blockies';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
+import { createIcon } from './blockies';
 import { generateSolanaBlockie } from './generateSolanaBlockie';
 
 export function BlockieImg({

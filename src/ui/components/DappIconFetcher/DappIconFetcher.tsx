@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { useFetchDappIcon } from './useFetchDappIcon';
 
 type IconRenderer = (src: string | null) => JSX.Element;

@@ -7,13 +7,14 @@ function getRandomInteger() {
 
 async function sendPortMessage<Req, Resp>(port: browser.Runtime.Port, request: Req) {
   return new Promise<Resp>((resolve, reject) => {
-    const onMessage = (response: Resp) => {
+    const onDisconnect = () => reject(new Error('Port disconnected'));
+    const onMessage = (response: unknown) => {
       port.onMessage.removeListener(onMessage);
-      port.onDisconnect.removeListener(reject);
-      resolve(response);
+      port.onDisconnect.removeListener(onDisconnect);
+      resolve(response as Resp);
     };
     port.onMessage.addListener(onMessage);
-    port.onDisconnect.addListener(reject);
+    port.onDisconnect.addListener(onDisconnect);
     port.postMessage(request);
   });
 }
@@ -53,8 +54,13 @@ export class BackgroundScriptUpdateHandler {
     this.onDisconnect = onDisconnect;
     this.portName = portName;
     this.performHandshake = performHandshake;
-    browser.runtime.onMessage.addListener((request) => {
-      if (request.event === 'background-initialized') {
+    browser.runtime.onMessage.addListener((request: unknown) => {
+      if (
+        typeof request === 'object' &&
+        request !== null &&
+        'event' in request &&
+        request.event === 'background-initialized'
+      ) {
         // this is a custom event that we emit from the background-script
         // If we catch this event in the UI thread, we MUST re-initialize the UI
         this.onActivate();

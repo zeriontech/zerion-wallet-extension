@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { animated } from '@react-spring/web';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import ArrowRightIcon from 'jsx:src/ui/assets/arrow-right.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import { invariant } from 'src/shared/invariant';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import { getPermissionsWithWallets } from 'src/ui/shared/requests/getPermissionsWithWallets';
@@ -119,8 +119,7 @@ function DappChainSwitcher({ originName, address }: { originName: string; addres
   const { data: siteChain, refetch } = useQuery({
     queryKey: ['requestChainForOrigin', originName, address],
     queryFn: () => requestChainForOrigin(originName, getAddressType(address)),
-    useErrorBoundary: true,
-    suspense: false,
+    throwOnError: true,
   });
 
   const switchChainMutation = useMutation({
@@ -139,7 +138,7 @@ function DappChainSwitcher({ originName, address }: { originName: string; addres
         throw new Error('Cannot determine current address type');
       }
     },
-    useErrorBoundary: true,
+    throwOnError: true,
     onSuccess: () => refetch(),
   });
 
@@ -184,8 +183,7 @@ export function ConnectedSiteDialog({
   const { data: connectedSites, refetch } = useQuery({
     queryKey: ['getPermissionsWithWallets'],
     queryFn: getPermissionsWithWallets,
-    useErrorBoundary: true,
-    suspense: false,
+    throwOnError: true,
   });
   const connectedSite = useMemo(
     () => getConnectedSite(originName, connectedSites),
@@ -194,7 +192,7 @@ export function ConnectedSiteDialog({
   const siteOrigin = connectedSite?.origin;
   const siteHostname = siteOrigin ? new URL(siteOrigin).hostname : null;
 
-  const { data: currentWallet } = useQuery({
+  const { data: currentWallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { animated } from '@react-spring/web';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import cn from 'classnames';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import GlobeIcon from 'jsx:src/ui/assets/globe.svg';
@@ -54,7 +54,7 @@ function RevokeAllButton({ origin, onSuccess }: { origin: string; onSuccess: () 
         }}
       >
         <UIText kind="body/accent">
-          {removePermissionMutation.isLoading ? 'Loading...' : 'Disconnect All'}
+          {removePermissionMutation.isPending ? 'Loading...' : 'Disconnect All'}
         </UIText>
       </Button>
     </>
@@ -107,10 +107,9 @@ function SiteLink({ title, href }: { title: string; href: string }) {
 export function ConnectedSite() {
   const { originName } = useParams();
   invariant(originName, 'originName parameter is required for this view');
-  const { data: connectedSites, refetch } = useQuery({
+  const { data: connectedSites, refetch } = useSuspenseQuery({
     queryKey: ['getPermissionsWithWallets'],
     queryFn: getPermissionsWithWallets,
-    useErrorBoundary: true,
   });
   const connectedSite = useMemo(
     () => getConnectedSite(originName, connectedSites),

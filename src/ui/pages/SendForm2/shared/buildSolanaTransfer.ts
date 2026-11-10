@@ -9,9 +9,9 @@ import {
 import {
   getAssociatedTokenAddress,
   createTransferInstruction,
-  getMint,
+  getMintDecimals,
   createAssociatedTokenAccountInstruction,
-} from '@solana/spl-token';
+} from 'src/modules/solana/splToken';
 import type { AddressPosition } from 'src/defi-sdk.types';
 import { Networks } from 'src/modules/networks/Networks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
@@ -58,7 +58,7 @@ export async function buildSolanaTransfer(
     );
     if (isSendingMax) {
       const simulatedTx = await connection.simulateTransaction(tx);
-      const computeUnits = simulatedTx.value.unitsConsumed ?? 100_000;
+      const computeUnits = Number(simulatedTx.value.unitsConsumed ?? 100_000);
       const adjustedUnits = Math.max(Math.min(1_400_000, computeUnits * 1.2), 500);
       const tempTx = new Transaction();
       tempTx.feePayer = fromPubkey;
@@ -95,9 +95,7 @@ export async function buildSolanaTransfer(
 
     const toTokenAccountInfo = await connection.getAccountInfo(toTokenAccount);
 
-    const mintInfo = await getMint(connection, mint);
-
-    const { decimals } = mintInfo;
+    const decimals = await getMintDecimals(connection, mint);
     const amount = commonToBase(formState.tokenValue, decimals);
 
     const instructions: TransactionInstruction[] = [];
@@ -105,22 +103,27 @@ export async function buildSolanaTransfer(
     if (!toTokenAccountInfo) {
       // If the recipient has never received this token, we must perform an additional step
       instructions.push(
-        createAssociatedTokenAccountInstruction(fromPubkey, toTokenAccount, toPubkey, mint),
+        createAssociatedTokenAccountInstruction({
+          payer: fromPubkey,
+          associatedToken: toTokenAccount,
+          owner: toPubkey,
+          mint,
+        }),
       );
     }
     instructions.push(
-      createTransferInstruction(
-        fromTokenAccount,
-        toTokenAccount,
-        fromPubkey,
-        BigInt(amount.toFixed(0, BigNumber.ROUND_DOWN)),
-      ),
+      createTransferInstruction({
+        source: fromTokenAccount,
+        destination: toTokenAccount,
+        owner: fromPubkey,
+        amount: BigInt(amount.toFixed(0, BigNumber.ROUND_DOWN)),
+      }),
     );
 
     tx.add(...instructions);
   }
   const simulatedTransaction = await connection.simulateTransaction(tx);
-  const computeUnitsEsimation = simulatedTransaction.value.unitsConsumed ?? 100_000;
+  const computeUnitsEsimation = Number(simulatedTransaction.value.unitsConsumed ?? 100_000);
   const adjustedComputeUnits = Math.max(Math.min(1_400_000, computeUnitsEsimation * 1.2), 500);
 
   tx.add(
@@ -134,7 +137,8 @@ export async function buildSolanaTransfer(
     }),
   );
 
-  const fee = await tx.getEstimatedFee(connection);
+  const estimatedFee = await tx.getEstimatedFee(connection);
+  const fee = estimatedFee == null ? null : Number(estimatedFee);
 
   return { tx, fee };
 }

@@ -66,10 +66,6 @@ export function WithReadonlyWarningDialog({
   const { data: walletGroup } = useQuery({
     queryKey: ['getWalletGroupByAddress', address],
     queryFn: () => getWalletGroupByAddress(address),
-    // NOTE: if we use {suspense: true} here (default), SendTransaction view crashes
-    // with "max update depth exceeded" ¯\_(ツ)_/¯. Not a good sign, but afaik it should be fixed
-    // in the next version of '@tanstack/react-query'
-    suspense: false,
   });
   const isReadonlyGroup = walletGroup ? isReadonlyContainer(walletGroup.walletContainer) : null;
   return (

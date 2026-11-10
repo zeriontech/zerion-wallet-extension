@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import React, { useMemo, useRef, useState } from 'react';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
@@ -37,7 +37,7 @@ import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { FillView } from 'src/ui/components/FillView';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { setCurrentAddress } from 'src/ui/shared/requests/setCurrentAddress';
 import { wait } from 'src/shared/wait';
@@ -256,7 +256,7 @@ export function XpDropClaim() {
   const walletSelectDialogRef = useRef<HTMLDialogElement | null>(null);
   const xpBreakdownDialogRef = useRef<HTMLDialogElement | null>(null);
 
-  const { data: currentWallet, refetch: refetchCurrentWallet } = useQuery({
+  const { data: currentWallet, refetch: refetchCurrentWallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => walletPort.request('uiGetCurrentWallet'),
   });
@@ -376,7 +376,7 @@ export function XpDropClaim() {
     : selectedWalletMeta?.membership?.retro;
 
   if (
-    walletGroupsQuery.isLoading ||
+    walletGroupsQuery.isPending ||
     !selectedWallet ||
     !walletsMeta ||
     !eligibleWalletGroups ||
@@ -422,7 +422,7 @@ export function XpDropClaim() {
           <HCenter>
             {eligibleAddresses.length > 1 && !personalSignMutation.isSuccess ? (
               <ChangeWalletButton
-                disabled={personalSignMutation.isLoading}
+                disabled={personalSignMutation.isPending}
                 selectedWallet={selectedWallet}
                 onClick={() => walletSelectDialogRef.current?.showModal()}
               />
@@ -497,7 +497,7 @@ export function XpDropClaim() {
               holdToSign={false}
               bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
             >
-              {personalSignMutation.isLoading ? (
+              {personalSignMutation.isPending ? (
                 <HCenter>
                   <CircleSpinner />
                 </HCenter>

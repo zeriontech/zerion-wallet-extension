@@ -7,11 +7,9 @@ export const CANDLE_SNAPSHOT_QUERY_KEY = 'hyperliquid/candleSnapshot';
 export function useCandleSnapshot(
   payload: PerpCandleSnapshotPayload,
   {
-    suspense = false,
     enabled = true,
     refetchInterval,
   }: {
-    suspense?: boolean;
     enabled?: boolean;
     refetchInterval?: number | false;
   } = {},
@@ -20,7 +18,6 @@ export function useCandleSnapshot(
     queryKey: [CANDLE_SNAPSHOT_QUERY_KEY, payload],
     queryFn: () => perpCandleSnapshot(payload),
     retry: 0,
-    suspense,
     enabled,
     staleTime: 10_000,
     refetchInterval,

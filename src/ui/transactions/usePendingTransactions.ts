@@ -1,4 +1,4 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { getPendingTransactions } from 'src/modules/ethereum/transactions/model';
 import { localTransactionsStore } from './transactions-store';
 

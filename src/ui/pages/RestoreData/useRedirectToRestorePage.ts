@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { walletPort } from 'src/ui/shared/channels';
 
 export function useRedirectToRestorePage() {
@@ -8,7 +8,6 @@ export function useRedirectToRestorePage() {
   const { data } = useQuery({
     queryKey: ['restoreDataNeeded'],
     queryFn: () => walletPort.request('checkBackupData'),
-    suspense: false,
   });
 
   useEffect(() => {

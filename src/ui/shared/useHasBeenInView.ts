@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  * until an item is about to be seen.
  */
 export function useHasBeenInView(
-  ref: React.RefObject<Element>,
+  ref: React.RefObject<Element | null>,
   { rootMargin = '200px', enabled = true } = {},
 ) {
   const [hasBeenInView, setHasBeenInView] = useState(false);

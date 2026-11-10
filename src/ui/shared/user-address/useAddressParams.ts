@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { walletPort } from 'src/ui/shared/channels';
 import { queryClient } from '../requests/queryClient';
@@ -27,10 +27,9 @@ export function useAddressParams(): Result {
     data: addressResult,
     isLoading,
     refetch,
-  } = useQuery({
+  } = useSuspenseQuery({
     queryKey: QUERY_KEY,
     queryFn,
-    useErrorBoundary: true,
   });
   const address = addressResult || '';
   const addressNormalized = normalizeAddress(address);

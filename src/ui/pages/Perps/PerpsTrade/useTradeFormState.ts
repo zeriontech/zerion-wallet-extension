@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 
 export type TradeMode = 'open' | 'add' | 'close';
 export type TradeSide = 'long' | 'short';

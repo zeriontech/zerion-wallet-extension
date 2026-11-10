@@ -80,8 +80,7 @@ export function AddressListItem({
 }) {
   const { data } = useWalletsMetaByChunks({
     addresses: [normalizeAddress(address)],
-    suspense: false,
-    useErrorBoundary: false,
+    throwOnError: false,
     staleTime: 1000 * 60 * 10,
   });
   const meta = data?.at(0);

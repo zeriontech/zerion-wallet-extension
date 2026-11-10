@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { isTruthy } from 'is-truthy-ts';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { isTruthy } from 'src/shared/isTruthy';
 import dayjs from 'dayjs';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
@@ -22,7 +22,7 @@ import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebase
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { emitter } from 'src/ui/shared/events';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 
 type PremiumStatusKind = 'active' | 'expiring' | 'expired' | 'none';
 
@@ -30,7 +30,7 @@ export function PremiumPage() {
   useBackgroundKind(whiteBackgroundKind);
   const { pathname } = useLocation();
 
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');
@@ -42,7 +42,6 @@ export function PremiumPage() {
   const { data: walletsMeta, isLoading } = useWalletsMetaByChunks({
     addresses: [wallet?.address].filter(isTruthy),
     enabled: Boolean(wallet?.address),
-    suspense: false,
   });
 
   const membershipInfo = walletsMeta?.at(0)?.membership;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { XpDropClaim } from './XpDropClaim';
 import { XpDropClaimSuccess } from './XpDropClaimSuccess';
 

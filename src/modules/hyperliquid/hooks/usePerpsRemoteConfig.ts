@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import ky from 'ky';
 import { PROXY_URL } from 'src/env/config';
 
@@ -31,7 +31,7 @@ async function fetchHyperliquidPerpsConfig(): Promise<HyperliquidPerpsConfig | u
 }
 
 export function usePerpsRemoteConfig() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['perps/remote-config/hyperliquid_perps_config'],
     queryFn: fetchHyperliquidPerpsConfig,
     retry: 0,

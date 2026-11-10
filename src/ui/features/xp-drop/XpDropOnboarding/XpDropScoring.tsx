@@ -7,7 +7,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import * as styles from './styles.module.css';

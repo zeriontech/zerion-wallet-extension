@@ -1,8 +1,8 @@
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import classNames from 'classnames';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import SwapIcon from 'jsx:src/ui/assets/actions/swap-2.svg';
 import SendIcon from 'jsx:src/ui/assets/actions/send-2.svg';
 import BuyIcon from 'jsx:src/ui/assets/actions/card.svg';
@@ -45,7 +45,7 @@ function ActionButton<As extends ElementType = 'a'>({
 export function ActionButtonsRow() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');

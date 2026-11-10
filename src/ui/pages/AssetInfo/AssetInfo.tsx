@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { NavigationType, useNavigate, useNavigationType, useParams } from 'react-router-dom';
+import { NavigationType, useNavigate, useNavigationType, useParams } from 'react-router';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
@@ -17,7 +17,7 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { useAssetFullInfo } from 'src/modules/zerion-api/hooks/useAssetFullInfo';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { isReadonlyAccount } from 'src/shared/types/validators';
@@ -164,7 +164,7 @@ export function AssetInfo() {
     { enabled: ready && isPremium },
   );
 
-  const { data: wallet } = useQuery({
+  const { data: wallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');

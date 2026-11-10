@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type React from 'react';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';

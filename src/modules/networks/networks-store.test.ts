@@ -5,7 +5,7 @@ import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 vi.mock('ky', () => ({
   HTTPError: class HTTPError extends Error {},
 }));
-vi.mock('store-unit', () => ({
+vi.mock('src/shared/store/store', () => ({
   Store: class Store<T> {
     private state: T;
     constructor(state: T) {

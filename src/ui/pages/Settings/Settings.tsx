@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { Route, Routes, useLocation, useNavigate } from 'react-router';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -49,7 +49,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { getCurrentUser } from 'src/shared/getCurrentUser';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { metaAppState } from 'src/ui/shared/meta-app-state';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { isMacOS } from 'src/ui/shared/isMacos';
@@ -72,7 +72,6 @@ function VersionButton() {
   const { data: currentUserId } = useQuery({
     queryKey: ['getCurrentUserId'],
     queryFn: async () => (await getCurrentUser())?.id,
-    suspense: false,
   });
 
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: currentUserId });
@@ -102,7 +101,7 @@ function SettingsMain() {
 
   const { data: loyaltyEnabled } = useRemoteConfigValue('extension_loyalty_enabled');
 
-  const { data: currentWallet } = useQuery({
+  const { data: currentWallet } = useSuspenseQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
     queryFn: () => {
       return walletPort.request('uiGetCurrentWallet');
@@ -371,7 +370,7 @@ function SettingsMain() {
             <HStack gap={8} alignItems="center" justifyContent="center">
               <LockIcon style={{ color: 'var(--white)' }} />
               <UIText kind="body/accent" color="var(--white)">
-                {logout.isLoading ? 'Locking...' : 'Lock Wallet'}
+                {logout.isPending ? 'Locking...' : 'Lock Wallet'}
               </UIText>
             </HStack>
           </Button>
@@ -401,7 +400,7 @@ function ClearPendingTransactionsLine() {
         as={UnstyledButton}
         interactiveStyles={true}
         onClick={() => clearPendingTransactions()}
-        disabled={mutation.isLoading}
+        disabled={mutation.isPending}
         style={{ padding: 20, textAlign: 'start' }}
       >
         <VStack gap={0}>

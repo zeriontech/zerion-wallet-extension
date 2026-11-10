@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useCombobox } from 'downshift';
-import { normalizedContains } from 'normalized-contains';
-import { Route, Routes } from 'react-router-dom';
+import { normalizedIncludes } from 'src/shared/normalizedIncludes';
+import { Route, Routes } from 'react-router';
 import type { CurrencyConfig } from 'src/modules/currency/currencies';
 import { CURRENCIES } from 'src/modules/currency/currencies';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -27,9 +27,9 @@ const allCurrencies = Object.values(CURRENCIES);
 function matchesCurrency(query: string, item: CurrencyConfig) {
   const value = query.toLowerCase();
   return (
-    normalizedContains(item.name.toLowerCase(), value) ||
-    normalizedContains(item.symbol.toLowerCase(), value) ||
-    normalizedContains(item.code.toLowerCase(), value)
+    normalizedIncludes(item.name.toLowerCase(), value) ||
+    normalizedIncludes(item.symbol.toLowerCase(), value) ||
+    normalizedIncludes(item.code.toLowerCase(), value)
   );
 }
 

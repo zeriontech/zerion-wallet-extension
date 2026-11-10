@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router';
 import { useBodyStyle } from 'src/ui/components/Background/Background';
 import { Success } from './Success';
 import { Welcome } from './Welcome';

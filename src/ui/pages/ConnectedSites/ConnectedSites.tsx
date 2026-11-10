@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Route, Routes } from 'react-router-dom';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { Route, Routes } from 'react-router';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { walletPort } from 'src/ui/shared/channels';
@@ -31,7 +31,7 @@ import { ConnectedSite } from './ConnectedSite';
 function RevokeAllPermissionsComponent({ onRevokeAll }: { onRevokeAll: () => void }) {
   const removeAllOriginsMutation = useMutation({
     mutationFn: () => walletPort.request('removeAllOriginPermissions'),
-    useErrorBoundary: true,
+    throwOnError: true,
     onSuccess: onRevokeAll,
   });
   const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -53,7 +53,7 @@ function RevokeAllPermissionsComponent({ onRevokeAll }: { onRevokeAll: () => voi
             },
             component: (
               <UIText kind="body/regular" color="var(--negative-500)">
-                {removeAllOriginsMutation.isLoading ? 'Loading...' : 'Disconnect All'}
+                {removeAllOriginsMutation.isPending ? 'Loading...' : 'Disconnect All'}
               </UIText>
             ),
           },
@@ -212,13 +212,11 @@ function EmptyView({
 function ConnectedSitesMain() {
   const {
     data: allConnectedSites,
-    isLoading,
+    isPending,
     ...connectedSitesQuery
-  } = useQuery({
+  } = useSuspenseQuery({
     queryKey: ['getPermissionsWithWallets'],
     queryFn: getPermissionsWithWallets,
-    useErrorBoundary: true,
-    suspense: true,
   });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const searchInputRef = useRef<InputHandle | null>(null);
@@ -244,7 +242,7 @@ function ConnectedSitesMain() {
           <Spacer height={24} />
         </>
       ) : null}
-      {isLoading ? null : itemsToDisplay?.length ? (
+      {isPending ? null : itemsToDisplay?.length ? (
         <ConnectedSitesList
           showRevokeAll={!searchQuery}
           items={itemsToDisplay}

@@ -11,6 +11,5 @@ export function useApplePaySupported() {
     queryKey: ['isApplePaySupported'],
     queryFn: isApplePaySupported,
     staleTime: Infinity,
-    suspense: false,
   });
 }

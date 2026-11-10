@@ -15,6 +15,9 @@ export function drawDotPlugin({ getTheme }: { getTheme: () => Theme }): Plugin<'
       }
 
       const { x, y } = activeElement.element.tooltipPosition(false);
+      if (x == null || y == null) {
+        return;
+      }
 
       const hasPointData =
         'raw' in activeElement.element
@@ -55,6 +58,9 @@ export function drawVerticalLinePlugin({ getTheme }: { getTheme: () => Theme }):
       }
 
       const { x, y } = activeElement.element.tooltipPosition(false);
+      if (x == null || y == null) {
+        return;
+      }
 
       ctx.save();
 

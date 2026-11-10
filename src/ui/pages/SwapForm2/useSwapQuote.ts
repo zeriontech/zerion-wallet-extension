@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';

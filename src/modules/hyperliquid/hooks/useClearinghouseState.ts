@@ -20,18 +20,15 @@ export function clearinghouseStateQueryOptions(payload: {
     staleTime: 20_000,
     keepPreviousData: true,
     retry: 0,
-    suspense: false,
   };
 }
 
 export function useClearinghouseState(
   payload: PerpClearinghouseStatePayload,
   {
-    suspense = false,
     enabled = true,
     refetchInterval,
   }: {
-    suspense?: boolean;
     enabled?: boolean;
     refetchInterval?: number | false;
   } = {},
@@ -41,7 +38,6 @@ export function useClearinghouseState(
   // both this hook and the overview's positions list.
   return useQuery({
     ...clearinghouseStateQueryOptions(payload),
-    suspense,
     enabled: Boolean(enabled && payload.address),
     refetchInterval,
   });

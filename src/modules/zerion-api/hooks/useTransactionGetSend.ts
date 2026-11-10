@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData as keepPreviousDataPlaceholder } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { TransactionMultichainBackend } from 'src/shared/types/Quote';
 import type { Amount } from '../types/Amount';
@@ -29,11 +29,9 @@ export function useTransactionGetSend(
   {
     enabled = true,
     keepPreviousData = false,
-    suspense,
   }: {
     enabled?: boolean;
     keepPreviousData?: boolean;
-    suspense?: boolean;
   } = {},
 ) {
   return useQuery({
@@ -43,8 +41,7 @@ export function useTransactionGetSend(
       return response.data;
     },
     enabled,
-    keepPreviousData,
-    suspense,
+    placeholderData: keepPreviousData ? keepPreviousDataPlaceholder : undefined,
     staleTime: STALE_TIME,
     retry: 1,
   });

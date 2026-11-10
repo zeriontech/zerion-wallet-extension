@@ -1,13 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
 
 function useNoBackupCount() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['wallet/getNoBackupCount'],
     queryFn: () => {
       return walletPort.request('getNoBackupCount');
     },
-    useErrorBoundary: true,
   });
 }
 export function useBackupTodosCount() {

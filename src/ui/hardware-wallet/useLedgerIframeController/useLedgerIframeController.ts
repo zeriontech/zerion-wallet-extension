@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { nanoid } from 'nanoid';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { invariant } from 'src/shared/invariant';
 import { isRpcRequest, isRpcResponse } from 'src/shared/custom-rpc';
 import { openUrl } from 'src/ui/shared/openUrl';

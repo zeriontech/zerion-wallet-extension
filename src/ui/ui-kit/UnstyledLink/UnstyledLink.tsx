@@ -1,6 +1,6 @@
 import React from 'react';
-import type { LinkProps } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import type { LinkProps } from 'react-router';
+import { Link } from 'react-router';
 import cx from 'classnames';
 import * as s from './styles.module.css';
 

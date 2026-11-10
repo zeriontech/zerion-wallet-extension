@@ -7,11 +7,9 @@ export const USER_FILLS_QUERY_KEY = 'hyperliquid/userFills';
 export function useUserFills(
   payload: PerpUserFillsPayload,
   {
-    suspense = false,
     enabled = true,
     refetchInterval,
   }: {
-    suspense?: boolean;
     enabled?: boolean;
     refetchInterval?: number | false;
   } = {},
@@ -20,7 +18,6 @@ export function useUserFills(
     queryKey: [USER_FILLS_QUERY_KEY, payload],
     queryFn: () => perpUserFills(payload),
     retry: 0,
-    suspense,
     enabled: Boolean(enabled && payload.address),
     staleTime: 20_000,
     refetchInterval,
