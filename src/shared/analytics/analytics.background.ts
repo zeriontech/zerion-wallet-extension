@@ -192,25 +192,22 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack(event_name, mixpanelParams);
   });
 
-  emitter.on(
-    'networkFeeLevelChanged',
-    async (data: NetworkFeeLevelChangedParams) => {
-      const preferences = await globalPreferences.getPreferences();
-      if (!preferences.analyticsEnabled) {
-        return;
-      }
-      const params = createParams({
-        request_name: 'network_fee_level_changed',
-        level: data.level,
-        chain: data.chain,
-        flow: data.flow,
-      });
-      mixpanelTrack(
-        'Transaction: Network Fee Level Changed',
-        omit(params, ['request_name', 'wallet_address'])
-      );
+  emitter.on('networkFeeLevelChanged', async (data: NetworkFeeLevelChangedParams) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
     }
-  );
+    const params = createParams({
+      request_name: 'network_fee_level_changed',
+      level: data.level,
+      chain: data.chain,
+      flow: data.flow,
+    });
+    mixpanelTrack(
+      'Transaction: Network Fee Level Changed',
+      omit(params, ['request_name', 'wallet_address']),
+    );
+  });
 
   emitter.on('bannerClicked', async (data) => {
     const preferences = await globalPreferences.getPreferences();

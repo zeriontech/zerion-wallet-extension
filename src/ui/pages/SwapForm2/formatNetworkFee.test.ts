@@ -15,10 +15,7 @@ function makeQuote({
   return {
     networkFee: {
       free: false,
-      amount:
-        quantity == null && value == null
-          ? null
-          : { quantity, value, currency },
+      amount: quantity == null && value == null ? null : { quantity, value, currency },
       fungible: symbol ? { symbol } : null,
     },
   } as unknown as NetworkFeeQuote;
@@ -32,15 +29,13 @@ describe('formatNetworkFee', () => {
         fallbackFiatValue: 3,
         fallbackSymbol: 'ETH',
         currency: 'usd',
-      })
+      }),
     ).toBe('$6.00');
   });
 
   test('uses the native symbol fallback for a token quantity', () => {
     const quote = makeQuote({ value: null, symbol: null });
-    expect(formatNetworkFee(quote, 1, { fallbackSymbol: 'ETH' })).toBe(
-      '0.001\u00a0ETH'
-    );
+    expect(formatNetworkFee(quote, 1, { fallbackSymbol: 'ETH' })).toBe('0.001\u00a0ETH');
   });
 
   test('does not depend on the quote having a fungible symbol', () => {
@@ -54,7 +49,7 @@ describe('formatNetworkFee', () => {
       formatNetworkFee(quote, 2, {
         fallbackFiatValue: 100,
         currency: 'usd',
-      })
+      }),
     ).toBe('$6.00');
   });
 

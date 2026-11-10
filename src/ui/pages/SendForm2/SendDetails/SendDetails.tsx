@@ -108,11 +108,9 @@ export function SendDetails({
     sendQuote,
     configuration.networkFee,
     gasPrices,
-    baseFee
+    baseFee,
   );
-  const showNonce = Boolean(
-    preferences?.configurableNonce && isEthereumAddress(address)
-  );
+  const showNonce = Boolean(preferences?.configurableNonce && isEthereumAddress(address));
 
   const chain = createChain(inputChain);
   const chainName = networks.getChainName(chain);
@@ -130,16 +128,13 @@ export function SendDetails({
   const receivedValue =
     showReceived && receivedAmount
       ? (() => {
-          const quantityNode = formatTokenValue(
-            receivedAmount.quantity,
-            tokenSymbol ?? ''
-          );
+          const quantityNode = formatTokenValue(receivedAmount.quantity, tokenSymbol ?? '');
           if (receivedAmount.value != null) {
             return `${quantityNode} (${formatCurrencyValueExtra(
               receivedAmount.value,
               'en',
               currency,
-              { zeroRoundingFallback: 0.01 }
+              { zeroRoundingFallback: 0.01 },
             )})`;
           }
           return quantityNode;
@@ -149,11 +144,10 @@ export function SendDetails({
   const feeFungibleId = networkFee?.fungible?.id ?? network?.baseAsset?.id;
   const { data: feeFungibleResponse } = useAssetListFungibles(
     feeFungibleId ? { fungibleIds: [feeFungibleId], currency } : { currency },
-    { suspense: false }
+    { suspense: false },
   );
   const feePrice = feeFungibleId
-    ? feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta
-        .price ?? null
+    ? (feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta.price ?? null)
     : null;
   const feeQuantity = networkFee?.amount?.quantity ?? null;
   const feeFiatValue =
@@ -172,9 +166,7 @@ export function SendDetails({
               value={
                 sendQuote ? (
                   <HStack gap={4} alignItems="center">
-                    <NetworkFeeLevelLabel
-                      speed={configuration.networkFee.speed}
-                    />
+                    <NetworkFeeLevelLabel speed={configuration.networkFee.speed} />
                     <UIText kind="small/accent">
                       {formatNetworkFee(sendQuote, feeRatio, {
                         fallbackFiatValue: feeFiatValue,
@@ -182,9 +174,7 @@ export function SendDetails({
                         currency,
                       })}
                     </UIText>
-                    {evmTx ? (
-                      <ChevronRightIcon className={styles.detailLinkChevron} />
-                    ) : null}
+                    {evmTx ? <ChevronRightIcon className={styles.detailLinkChevron} /> : null}
                   </HStack>
                 ) : isLoading ? (
                   <CircleSpinner />
@@ -211,15 +201,9 @@ export function SendDetails({
                   >
                     <VStack gap={16}>
                       <div />
-                      {showReceived ? (
-                        <DetailRow label="Received" value={receivedValue} />
-                      ) : null}
+                      {showReceived ? <DetailRow label="Received" value={receivedValue} /> : null}
                       {showNonce ? (
-                        <React.Suspense
-                          fallback={
-                            <DetailRow label="Nonce" value={noValueDash} />
-                          }
-                        >
+                        <React.Suspense fallback={<DetailRow label="Nonce" value={noValueDash} />}>
                           {evmTx && evmTx.from ? (
                             <NonceLine2
                               transaction={{ ...evmTx, from: evmTx.from }}
@@ -258,10 +242,7 @@ export function SendDetails({
             className={styles.detailsToggle}
             onClick={() => setIsExpanded((prev) => !prev)}
           >
-            <UIText
-              kind="caption/regular"
-              style={{ fontWeight: 600, color: 'var(--neutral-500)' }}
-            >
+            <UIText kind="caption/regular" style={{ fontWeight: 600, color: 'var(--neutral-500)' }}>
               Details
             </UIText>
             <motion.span

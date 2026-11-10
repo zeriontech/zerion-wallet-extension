@@ -35,7 +35,7 @@ function position(
   fungibleId: string,
   symbol: string,
   price: number,
-  quantity: string
+  quantity: string,
 ) {
   return {
     id: `${fungibleId}-${chain}`,
@@ -178,22 +178,19 @@ async function setupRoutes({ context }: { context: BrowserContext }) {
     });
   });
 
-  await context.route(
-    '**/wallet/get-simple-positions/v1*',
-    async (route: Route) => {
-      const data = [
-        position(ETH_CHAIN, 'eth', 'ETH', 2000, '1'),
-        position(ETH_CHAIN, 'usdc', 'USDC', 1, '0'),
-        position(BSC_CHAIN, 'bnb', 'BNB', 600, '1'),
-        position(BSC_CHAIN, 'usdc', 'USDC', 1, '0'),
-      ];
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ data, meta: null, errors: null }),
-      });
-    }
-  );
+  await context.route('**/wallet/get-simple-positions/v1*', async (route: Route) => {
+    const data = [
+      position(ETH_CHAIN, 'eth', 'ETH', 2000, '1'),
+      position(ETH_CHAIN, 'usdc', 'USDC', 1, '0'),
+      position(BSC_CHAIN, 'bnb', 'BNB', 600, '1'),
+      position(BSC_CHAIN, 'usdc', 'USDC', 1, '0'),
+    ];
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data, meta: null, errors: null }),
+    });
+  });
 
   await context.route('**/transaction/get-send/v1*', async (route: Route) => {
     const chain = chainParam(route.request().url());
@@ -229,20 +226,15 @@ async function setupRoutes({ context }: { context: BrowserContext }) {
     });
   });
 
-  await context.route(
-    '**/transaction/stream-swap-quotes/v2*',
-    async (route: Route) => {
-      const chain = inputChainParam(route.request().url());
-      const classic = chain === BSC_CHAIN;
-      await route.fulfill({
-        status: 200,
-        contentType: 'text/event-stream',
-        body: `data: ${JSON.stringify([
-          quote(chain, classic),
-        ])}\n\nevent: end\ndata: {}\n\n`,
-      });
-    }
-  );
+  await context.route('**/transaction/stream-swap-quotes/v2*', async (route: Route) => {
+    const chain = inputChainParam(route.request().url());
+    const classic = chain === BSC_CHAIN;
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: `data: ${JSON.stringify([quote(chain, classic)])}\n\nevent: end\ndata: {}\n\n`,
+    });
+  });
 }
 
 async function dismissSwapOnboarding(page: Page) {
@@ -262,9 +254,9 @@ async function openSwap(page: Page, extensionPopupUrl: string, chain: string) {
     outputFungibleId: 'usdc',
   });
   await page.goto(`${extensionPopupUrl}#/swap-form?${params}`);
-  await expect(
-    page.getByText('Network Fee', { exact: true }).last()
-  ).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('Network Fee', { exact: true }).last()).toBeVisible({
+    timeout: 30_000,
+  });
   await dismissSwapOnboarding(page);
   return page.getByRole('button').filter({ hasText: 'Network Fee' }).first();
 }
@@ -278,10 +270,7 @@ async function openSend(page: Page, extensionPopupUrl: string, chain: string) {
     to: RECIPIENT,
   });
   await page.goto(`${extensionPopupUrl}#/send-form?${params}`);
-  const row = page
-    .getByRole('button')
-    .filter({ hasText: 'Network Fee' })
-    .first();
+  const row = page.getByRole('button').filter({ hasText: 'Network Fee' }).first();
   await expect(row).toBeVisible({ timeout: 30_000 });
   return row;
 }
@@ -315,9 +304,7 @@ test('Swap on Ethereum keeps row, picker and custom form in sync', async ({
   const customRow = preset(page, 'Custom');
   const customPickerText = await feeText(customRow);
   await customRow.click();
-  const expectedFeeText = await feeText(
-    page.getByText('Expected Fee').locator('..')
-  );
+  const expectedFeeText = await feeText(page.getByText('Expected Fee').locator('..'));
   expect(expectedFeeText).toBe(customPickerText);
   await page.locator('input[name="maxFee"]').fill('35');
   await page.getByRole('button', { name: 'Save' }).click();
@@ -362,9 +349,7 @@ test('Classic Send on BSC prices Slow and Custom consistently', async ({
   const customRow = preset(page, 'Custom');
   const customPickerText = await feeText(customRow);
   await customRow.click();
-  const expectedFeeText = await feeText(
-    page.getByText('Expected Fee').locator('..')
-  );
+  const expectedFeeText = await feeText(page.getByText('Expected Fee').locator('..'));
   expect(expectedFeeText).toBe(customPickerText);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(row).toContainText('Custom');
@@ -396,9 +381,7 @@ test('Classic Swap on BSC prices Slow and Custom consistently', async ({
   const customRow = preset(page, 'Custom');
   const customPickerText = await feeText(customRow);
   await customRow.click();
-  const expectedFeeText = await feeText(
-    page.getByText('Expected Fee').locator('..')
-  );
+  const expectedFeeText = await feeText(page.getByText('Expected Fee').locator('..'));
   expect(expectedFeeText).toBe(customPickerText);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(row).toContainText('Custom');

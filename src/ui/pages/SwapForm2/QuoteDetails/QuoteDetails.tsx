@@ -97,8 +97,7 @@ function ZerionFeeLabel() {
       </HStack>
       <Tooltip className={styles.tooltip} gutter={8} portal={false}>
         <UIText kind="caption/regular" color="var(--white)">
-          Applies to all Multichain transactions. Zerion Premium DNA holders get
-          discounts.{' '}
+          Applies to all Multichain transactions. Zerion Premium DNA holders get discounts.{' '}
           {isConfigLoading || !learnMoreLink ? null : (
             <UnstyledAnchor
               href={learnMoreLink}
@@ -115,10 +114,7 @@ function ZerionFeeLabel() {
   );
 }
 
-function getSlippageDisplay(
-  formState: SwapFormState2,
-  quote: Quote2 | null
-): string {
+function getSlippageDisplay(formState: SwapFormState2, quote: Quote2 | null): string {
   const chain = createChain(formState.inputChain);
   if (formState.slippage != null && formState.slippage !== 'auto') {
     const { slippagePercent } = getSlippageOptions({
@@ -163,9 +159,7 @@ export function QuoteDetails({
   // Swap-first: the network fee is owned by the swap tx; fall back to approve
   // only when there's no swap tx (shouldn't happen for a valid quote).
   const evmTx = (quote?.transactionSwap ?? quote?.transactionApprove)?.evm;
-  const showNonce = Boolean(
-    preferences?.configurableNonce && isEthereumAddress(address)
-  );
+  const showNonce = Boolean(preferences?.configurableNonce && isEthereumAddress(address));
 
   // Current base fee for the EIP-1559 effective price comes from
   // chain/get-gas-price. The quote ships no base fee, so the same current one
@@ -176,12 +170,7 @@ export function QuoteDetails({
   // preset and a Custom fee (prices + gas limit) show identical amounts.
   // No quote refetch. Recomputes on user change and on the 20s gas poll.
   const feeRatio = useMemo(() => {
-    return getNetworkFeeRatioForConfiguration(
-      quote,
-      configuration.networkFee,
-      gasPrices,
-      baseFee
-    );
+    return getNetworkFeeRatioForConfiguration(quote, configuration.networkFee, gasPrices, baseFee);
   }, [quote, gasPrices, baseFee, configuration.networkFee]);
 
   // Quote-derived defaults (GWEI) for the custom form, seeded from the swap
@@ -191,8 +180,7 @@ export function QuoteDetails({
   const inputChain = createChain(formState.inputChain);
   const inputChainName = networks.getChainName(inputChain);
   const inputChainIconUrl = networks.getByNetworkId(inputChain)?.iconUrl;
-  const inputChainBaseAssetSymbol =
-    networks.getByNetworkId(inputChain)?.baseAsset?.symbol;
+  const inputChainBaseAssetSymbol = networks.getByNetworkId(inputChain)?.baseAsset?.symbol;
 
   const outputChain = createChain(formState.outputChain);
   const outputChainName = networks.getChainName(outputChain);
@@ -202,8 +190,7 @@ export function QuoteDetails({
 
   const isVisible = quotesQuery.isLoading || quote != null;
 
-  const isAutoSlippage =
-    formState.slippage == null || formState.slippage === 'auto';
+  const isAutoSlippage = formState.slippage == null || formState.slippage === 'auto';
   const showAutoSlippageInCollapsed =
     isAutoSlippage && quote?.finalSlippage != null && quote.finalSlippage > 1;
 
@@ -220,19 +207,13 @@ export function QuoteDetails({
                   value={
                     quote ? (
                       <HStack gap={4} alignItems="center">
-                        <NetworkFeeLevelLabel
-                          speed={configuration.networkFee.speed}
-                        />
+                        <NetworkFeeLevelLabel speed={configuration.networkFee.speed} />
                         <UIText kind="small/accent">
                           {formatNetworkFee(quote, feeRatio, {
                             fallbackSymbol: inputChainBaseAssetSymbol,
                           })}
                         </UIText>
-                        {evmTx ? (
-                          <ChevronRightIcon
-                            className={styles.detailLinkChevron}
-                          />
-                        ) : null}
+                        {evmTx ? <ChevronRightIcon className={styles.detailLinkChevron} /> : null}
                       </HStack>
                     ) : quotesQuery.isLoading ? (
                       <CircleSpinner />
@@ -247,12 +228,8 @@ export function QuoteDetails({
                     onClick={slippageDialog.openDialog}
                     value={
                       <HStack gap={4} alignItems="center">
-                        <UIText kind="small/accent">
-                          {getSlippageDisplay(formState, quote)}
-                        </UIText>
-                        <ChevronRightIcon
-                          className={styles.detailLinkChevron}
-                        />
+                        <UIText kind="small/accent">{getSlippageDisplay(formState, quote)}</UIText>
+                        <ChevronRightIcon className={styles.detailLinkChevron} />
                       </HStack>
                     }
                   />
@@ -288,18 +265,14 @@ export function QuoteDetails({
                                 <UIText kind="small/accent">
                                   {getSlippageDisplay(formState, quote)}
                                 </UIText>
-                                <ChevronRightIcon
-                                  className={styles.detailLinkChevron}
-                                />
+                                <ChevronRightIcon className={styles.detailLinkChevron} />
                               </HStack>
                             }
                           />
                         )}
                         {showNonce ? (
                           <React.Suspense
-                            fallback={
-                              <DetailRow label="Nonce" value={noValueDash} />
-                            }
+                            fallback={<DetailRow label="Nonce" value={noValueDash} />}
                           >
                             {evmTx ? (
                               <NonceLine2
@@ -320,16 +293,11 @@ export function QuoteDetails({
                         ) : null}
                         <DetailRow
                           label="Provider"
-                          onClick={
-                            quote ? providerDialog.openDialog : undefined
-                          }
+                          onClick={quote ? providerDialog.openDialog : undefined}
                           value={
                             quote ? (
                               <HStack gap={4} alignItems="center">
-                                <AnimatePresence
-                                  initial={false}
-                                  mode="popLayout"
-                                >
+                                <AnimatePresence initial={false} mode="popLayout">
                                   <motion.div
                                     key={quote.contractMetadata.id}
                                     initial={{
@@ -365,9 +333,7 @@ export function QuoteDetails({
                                     </HStack>
                                   </motion.div>
                                 </AnimatePresence>
-                                <ChevronRightIcon
-                                  className={styles.detailLinkChevron}
-                                />
+                                <ChevronRightIcon className={styles.detailLinkChevron} />
                               </HStack>
                             ) : (
                               noValueDash
@@ -385,9 +351,7 @@ export function QuoteDetails({
                                   size={16}
                                   style={{ borderRadius: 4 }}
                                 />
-                                <UIText kind="small/accent">
-                                  {inputChainName}
-                                </UIText>
+                                <UIText kind="small/accent">{inputChainName}</UIText>
                               </HStack>
                               {isCrossChain ? (
                                 <>
@@ -406,9 +370,7 @@ export function QuoteDetails({
                                       size={16}
                                       style={{ borderRadius: 4 }}
                                     />
-                                    <UIText kind="small/accent">
-                                      {outputChainName}
-                                    </UIText>
+                                    <UIText kind="small/accent">{outputChainName}</UIText>
                                   </HStack>
                                 </>
                               ) : null}
@@ -433,10 +395,7 @@ export function QuoteDetails({
                                   Free
                                 </UIText>
                               ) : (
-                                `${formatPercent(
-                                  quote.protocolFee.percentage,
-                                  'en'
-                                )}%`
+                                `${formatPercent(quote.protocolFee.percentage, 'en')}%`
                               )
                             ) : (
                               noValueDash
@@ -523,9 +482,7 @@ export function QuoteDetails({
         <NetworkFeeDialog2
           open={networkFeeDialog.open}
           onClose={networkFeeDialog.closeDialog}
-          onSubmit={(networkFee) =>
-            onConfigurationChange({ ...configuration, networkFee })
-          }
+          onSubmit={(networkFee) => onConfigurationChange({ ...configuration, networkFee })}
           chain={inputChain}
           txType={evmTx.type}
           configuration={configuration}

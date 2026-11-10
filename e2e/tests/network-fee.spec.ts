@@ -49,18 +49,14 @@ function sendFormUrl(extensionPopupUrl: string) {
   return `${extensionPopupUrl}#/send-form?${params}`;
 }
 
-async function openTransaction(
-  page: Page,
-  extensionPopupUrl: string,
-  nonce: string
-) {
+async function openTransaction(page: Page, extensionPopupUrl: string, nonce: string) {
   await page.goto(sendTransactionUrl(extensionPopupUrl, nonce));
   // Force a real reload: changing only the hash is a same-document navigation
   // and would keep the previous form configuration in memory.
   await page.reload();
-  await expect(
-    page.getByRole('button', { name: 'Network Fee' }).first()
-  ).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Network Fee' }).first()).toBeVisible({
+    timeout: 30_000,
+  });
 }
 
 async function openFeeDialog(page: Page) {
@@ -243,10 +239,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   // Send: the row and the highlighted picker row use the same amount,
   // including the Custom gas limit.
   await page.goto(sendFormUrl(extensionPopupUrl));
-  const sendFeeRow = page
-    .getByRole('button')
-    .filter({ hasText: 'Network Fee' })
-    .first();
+  const sendFeeRow = page.getByRole('button').filter({ hasText: 'Network Fee' }).first();
   await expect(sendFeeRow).toBeVisible({ timeout: 30_000 });
   await expect(sendFeeRow).toContainText('Fast');
 
@@ -284,10 +277,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   // row and the highlighted picker row (fiat fallback or token + symbol).
   sendFeeValue = null;
   await page.reload();
-  const nullFiatRow = page
-    .getByRole('button')
-    .filter({ hasText: 'Network Fee' })
-    .first();
+  const nullFiatRow = page.getByRole('button').filter({ hasText: 'Network Fee' }).first();
   await expect(nullFiatRow).toBeVisible({ timeout: 30_000 });
   await nullFiatRow.click();
   const nullFiatPicker = preset(page, 'Fast');
@@ -302,7 +292,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   const nullFiatCustomPickerText = await feeText(nullFiatCustomRow);
   await nullFiatCustomRow.click();
   const expectedFeeText = parseFeeText(
-    (await page.getByText('Expected Fee').locator('..').textContent()) ?? ''
+    (await page.getByText('Expected Fee').locator('..').textContent()) ?? '',
   );
   expect(expectedFeeText).toBe(nullFiatCustomPickerText);
   await page.getByRole('button', { name: 'Save' }).click();
@@ -310,11 +300,7 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   await expect(nullFiatRow).toContainText(nullFiatCustomPickerText);
 });
 
-test('keeps the acceleration fee UI unchanged', async ({
-  context,
-  page,
-  extensionPopupUrl,
-}) => {
+test('keeps the acceleration fee UI unchanged', async ({ context, page, extensionPopupUrl }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 440, height: 700 });
   await context.route('**/chain/get-gas-prices/v1*', async (route) => {
@@ -406,7 +392,7 @@ test('keeps the acceleration fee UI unchanged', async ({
         { hash, transaction, timestamp: Date.now(), initiator: address },
       ]);
     },
-    { address: testWallets.alice.address }
+    { address: testWallets.alice.address },
   );
 
   const openAcceleration = async (action: 'Speed Up' | 'Cancel') => {

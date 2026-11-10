@@ -22,11 +22,10 @@ import {
 } from '../getNetworkFeeForSpeed';
 import type { CustomFormDefaults } from './NetworkFeeCustomForm';
 
-const PRESETS: { speed: Exclude<NetworkFeeSpeed, 'custom'>; label: string }[] =
-  [
-    { speed: 'fast', label: 'Fast' },
-    { speed: 'average', label: 'Slow' },
-  ];
+const PRESETS: { speed: Exclude<NetworkFeeSpeed, 'custom'>; label: string }[] = [
+  { speed: 'fast', label: 'Fast' },
+  { speed: 'average', label: 'Slow' },
+];
 
 const SELECTED_BORDER = '2px solid var(--primary)';
 const UNSELECTED_BORDER = '2px solid transparent';
@@ -62,7 +61,7 @@ export function NetworkFeeTypeSelector({
 }) {
   const retainedCustom = configuration?.networkFee;
   const hasCustomValues = Boolean(
-    retainedCustom?.custom1559GasPrice || retainedCustom?.customClassicGasPrice
+    retainedCustom?.custom1559GasPrice || retainedCustom?.customClassicGasPrice,
   );
   const customNetworkFee: NetworkFeeConfiguration | null =
     hasCustomValues && retainedCustom
@@ -74,12 +73,7 @@ export function NetworkFeeTypeSelector({
         }
       : null;
   const customRatio = customNetworkFee
-    ? getNetworkFeeRatioForConfiguration(
-        quote,
-        customNetworkFee,
-        gasPrices,
-        baseFee
-      )
+    ? getNetworkFeeRatioForConfiguration(quote, customNetworkFee, gasPrices, baseFee)
     : getCustomFeeRatioFromDefaults(quote, defaults, isEip1559, baseFee);
   const customFeeLabel =
     quote && customRatio != null
@@ -110,7 +104,7 @@ export function NetworkFeeTypeSelector({
             gasLimit: null,
           },
           gasPrices,
-          baseFee
+          baseFee,
         );
         const feeLabel = quote
           ? formatNetworkFee(quote, ratio, {
@@ -137,10 +131,8 @@ export function NetworkFeeTypeSelector({
             onClick={() =>
               onSelectPreset({
                 speed,
-                custom1559GasPrice:
-                  configuration?.networkFee.custom1559GasPrice ?? null,
-                customClassicGasPrice:
-                  configuration?.networkFee.customClassicGasPrice ?? null,
+                custom1559GasPrice: configuration?.networkFee.custom1559GasPrice ?? null,
+                customClassicGasPrice: configuration?.networkFee.customClassicGasPrice ?? null,
                 gasLimit: null,
               })
             }
@@ -191,8 +183,7 @@ export function NetworkFeeTypeSelector({
         style={{
           width: '100%',
           paddingInline: 12,
-          border:
-            selectedSpeed === 'custom' ? SELECTED_BORDER : UNSELECTED_BORDER,
+          border: selectedSpeed === 'custom' ? SELECTED_BORDER : UNSELECTED_BORDER,
         }}
         onClick={onSelectCustom}
       >

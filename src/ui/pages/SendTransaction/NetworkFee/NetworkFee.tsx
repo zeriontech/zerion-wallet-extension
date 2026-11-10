@@ -150,7 +150,7 @@ export function NetworkFee({
               {feeEstimationQuery.isPreviousData ? <CircleSpinner /> : null}
               <UnstyledButton
                 type="button"
-                  aria-label="Network Fee"
+                aria-label="Network Fee"
                 className={disabled ? undefined : helperStyles.hoverUnderline}
                 style={{
                   color: disabled ? 'var(--black)' : 'var(--primary)',
@@ -168,12 +168,12 @@ export function NetworkFee({
                       separatorColor="var(--primary)"
                     />
                   )}
-                {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
-                  <UIText kind="small/accent" title={hintTitle}>
-                    {displayValue}
-                    {displayValueEnd ? ' · ' : null}
-                  </UIText>
-                )}
+                  {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
+                    <UIText kind="small/accent" title={hintTitle}>
+                      {displayValue}
+                      {displayValueEnd ? ' · ' : null}
+                    </UIText>
+                  )}
                 </HStack>
               </UnstyledButton>
             </HStack>

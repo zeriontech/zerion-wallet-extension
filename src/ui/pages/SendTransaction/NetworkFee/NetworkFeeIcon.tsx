@@ -12,10 +12,10 @@ export function NetworkFeeIcon({
     speed === 'fast'
       ? BoltIcon
       : speed === 'average'
-      ? HourglassIcon
-      : speed === 'custom'
-      ? SlidersIcon
-      : null;
+        ? HourglassIcon
+        : speed === 'custom'
+          ? SlidersIcon
+          : null;
   if (!Icon) {
     throw new Error('Unexpected network fee speed');
   }

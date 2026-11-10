@@ -28,7 +28,7 @@ describe('toConfiguration', () => {
         maxPriorityFee: '',
         gasPrice: '',
       },
-      savedAverage
+      savedAverage,
     );
     expect(result.networkFee.speed).toBe('fast');
   });

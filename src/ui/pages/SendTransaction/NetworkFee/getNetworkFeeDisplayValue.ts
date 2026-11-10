@@ -33,9 +33,7 @@ export function getNetworkFeeDisplayValue({
     return [...speedLabels, amount].filter(isTruthy).join(' · ');
   }
   if (speed === 'fast' && !SHOW_FAST_LEVEL_LABEL) {
-    return [time || NETWORK_SPEED_TO_TITLE.fast, amount]
-      .filter(isTruthy)
-      .join(' · ');
+    return [time || NETWORK_SPEED_TO_TITLE.fast, amount].filter(isTruthy).join(' · ');
   }
   return amount;
 }

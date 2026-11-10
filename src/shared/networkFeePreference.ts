@@ -10,10 +10,7 @@ import type {
 /** Picking Custom keeps it for 24 hours, then the saved preset applies again. */
 export const CUSTOM_NETWORK_FEE_TTL = 24 * 60 * 60 * 1000;
 
-const PRESET_CONFIGURATION: Record<
-  Exclude<NetworkFeeSpeed, 'custom'>,
-  NetworkFeeConfiguration
-> = {
+const PRESET_CONFIGURATION: Record<Exclude<NetworkFeeSpeed, 'custom'>, NetworkFeeConfiguration> = {
   fast: {
     speed: 'fast',
     custom1559GasPrice: null,
@@ -29,7 +26,7 @@ const PRESET_CONFIGURATION: Record<
 };
 
 function toCustomNetworkFeeConfiguration(
-  custom: SavedCustomNetworkFee
+  custom: SavedCustomNetworkFee,
 ): NetworkFeeConfiguration | null {
   if (custom.maxFee != null && custom.priorityFee != null) {
     return {
@@ -64,7 +61,7 @@ function toCustomNetworkFeeConfiguration(
 export function resolveSavedNetworkFee(
   preferences: NetworkFeePreferences | undefined,
   chainId: string,
-  now = Date.now()
+  now = Date.now(),
 ): NetworkFeeConfiguration | null {
   const saved = preferences?.[chainId];
   if (!saved) {
@@ -91,7 +88,7 @@ export function resolveSavedNetworkFee(
 
 function toSavedCustomNetworkFee(
   configuration: NetworkFeeConfiguration,
-  savedAt: number
+  savedAt: number,
 ): SavedCustomNetworkFee | null {
   if (configuration.custom1559GasPrice) {
     return {
@@ -118,7 +115,7 @@ export function withSavedNetworkFee(
   preferences: NetworkFeePreferences | undefined,
   chainId: string,
   configuration: NetworkFeeConfiguration,
-  now = Date.now()
+  now = Date.now(),
 ): NetworkFeePreferences {
   const current = preferences ?? {};
   if (configuration.speed !== 'custom') {

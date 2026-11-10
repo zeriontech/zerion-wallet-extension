@@ -481,13 +481,11 @@ function SendTransactionContent({
   const { singleAddress } = useAddressParams();
   const { preferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
-  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(
-    chain.toString()
-  );
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(chain.toString());
   const [configuration, setConfiguration] = useState<CustomConfiguration>(() =>
     savedNetworkFee
       ? { ...DEFAULT_CONFIGURATION, networkFee: savedNetworkFee }
-      : DEFAULT_CONFIGURATION
+      : DEFAULT_CONFIGURATION,
   );
   const handleConfigurationChange = useEvent((value: CustomConfiguration) => {
     const previousSpeed = configuration.networkFee.speed;

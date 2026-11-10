@@ -28,7 +28,7 @@ export function formatNetworkFee(
     fallbackFiatValue = null,
     fallbackSymbol = null,
     currency = null,
-  }: NetworkFeeFormatFallbacks = {}
+  }: NetworkFeeFormatFallbacks = {},
 ): string {
   const { networkFee } = quote;
   if (networkFee?.free) {
@@ -39,29 +39,21 @@ export function formatNetworkFee(
       networkFee.amount.value * ratio,
       'en',
       networkFee.amount.currency,
-      { zeroRoundingFallback: 0.01 }
+      { zeroRoundingFallback: 0.01 },
     );
   }
   const fiatCurrency = currency ?? networkFee?.amount?.currency;
   if (fallbackFiatValue != null && fiatCurrency) {
-    return formatCurrencyValueExtra(
-      fallbackFiatValue * ratio,
-      'en',
-      fiatCurrency,
-      { zeroRoundingFallback: 0.01 }
-    );
+    return formatCurrencyValueExtra(fallbackFiatValue * ratio, 'en', fiatCurrency, {
+      zeroRoundingFallback: 0.01,
+    });
   }
   if (networkFee?.amount?.quantity) {
     const quantity =
       ratio === 1
         ? networkFee.amount.quantity
-        : new BigNumber(networkFee.amount.quantity)
-            .multipliedBy(ratio)
-            .toFixed();
-    return formatTokenValue(
-      quantity,
-      networkFee.fungible?.symbol ?? fallbackSymbol ?? ''
-    );
+        : new BigNumber(networkFee.amount.quantity).multipliedBy(ratio).toFixed();
+    return formatTokenValue(quantity, networkFee.fungible?.symbol ?? fallbackSymbol ?? '');
   }
   return noValueDash;
 }

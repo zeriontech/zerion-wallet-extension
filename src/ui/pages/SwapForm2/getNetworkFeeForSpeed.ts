@@ -175,14 +175,10 @@ export function getNetworkFeeRatioForConfiguration(
   quote: NetworkFeeQuote | null,
   networkFee: NetworkFeeConfiguration,
   gasPrices: ChainGasPrice | null,
-  baseFee: number | null
+  baseFee: number | null,
 ): number {
   if (networkFee.speed === 'custom') {
-    const effective = getConfigurationEffectiveGasPrice(
-      networkFee,
-      gasPrices,
-      baseFee
-    );
+    const effective = getConfigurationEffectiveGasPrice(networkFee, gasPrices, baseFee);
     const gasLimit =
       networkFee.gasLimit != null && networkFee.gasLimit !== ''
         ? Number(networkFee.gasLimit)
@@ -191,14 +187,10 @@ export function getNetworkFeeRatioForConfiguration(
       quote,
       effective,
       gasLimit != null && Number.isFinite(gasLimit) ? gasLimit : null,
-      baseFee
+      baseFee,
     );
   }
-  const effective = getPresetEffectiveGasPrice(
-    networkFee.speed,
-    gasPrices,
-    baseFee
-  );
+  const effective = getPresetEffectiveGasPrice(networkFee.speed, gasPrices, baseFee);
   return getNetworkFeeRatio(quote, effective, baseFee);
 }
 
@@ -227,7 +219,7 @@ export function getCustomFeeRatioFromDefaults(
   quote: NetworkFeeQuote | null,
   defaults: CustomFormDefaults | undefined,
   isEip1559: boolean,
-  baseFee: number | null
+  baseFee: number | null,
 ): number | null {
   if (!quote || !defaults) {
     return null;
@@ -239,7 +231,7 @@ export function getCustomFeeRatioFromDefaults(
         maxFee: gweiStringToWei(defaults.maxFee),
         maxPriorityFee: gweiStringToWei(defaults.priorityFee),
       },
-      baseFee
+      baseFee,
     );
     if (effective == null) {
       return null;

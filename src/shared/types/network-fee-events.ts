@@ -9,8 +9,6 @@ export interface NetworkFeeLevelChangedParams {
   flow: NetworkFeeAnalyticsFlow;
 }
 
-export function toNetworkFeeAnalyticsLevel(
-  speed: NetworkFeeSpeed
-): NetworkFeeAnalyticsLevel {
+export function toNetworkFeeAnalyticsLevel(speed: NetworkFeeSpeed): NetworkFeeAnalyticsLevel {
   return speed === 'average' ? 'slow' : speed;
 }

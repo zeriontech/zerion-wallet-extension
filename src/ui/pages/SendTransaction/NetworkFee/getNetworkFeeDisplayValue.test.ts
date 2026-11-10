@@ -13,28 +13,28 @@ describe('getNetworkFeeDisplayValue', () => {
         ...base,
         speed: 'fast',
         time: '~15 sec',
-      })
+      }),
     ).toBe('$3.00');
     expect(
       getNetworkFeeDisplayValue({
         ...base,
         speed: 'fast',
         time: undefined,
-      })
+      }),
     ).toBe('$3.00');
     expect(
       getNetworkFeeDisplayValue({
         ...base,
         speed: 'average',
         time: '~60 sec',
-      })
+      }),
     ).toBe('$3.00');
     expect(
       getNetworkFeeDisplayValue({
         ...base,
         speed: 'custom',
         time: '~60 sec',
-      })
+      }),
     ).toBe('$3.00');
   });
 
@@ -45,7 +45,7 @@ describe('getNetworkFeeDisplayValue', () => {
         customViewOnly: true,
         speed: 'custom',
         time: '~60 sec',
-      })
+      }),
     ).toBe('~60 sec · Custom · $3.00');
     expect(
       getNetworkFeeDisplayValue({
@@ -53,7 +53,7 @@ describe('getNetworkFeeDisplayValue', () => {
         customViewOnly: true,
         speed: 'average',
         time: undefined,
-      })
+      }),
     ).toBe('Slow · $3.00');
     expect(
       getNetworkFeeDisplayValue({
@@ -61,7 +61,7 @@ describe('getNetworkFeeDisplayValue', () => {
         customViewOnly: true,
         speed: 'fast',
         time: undefined,
-      })
+      }),
     ).toBe('Fast · $3.00');
     expect(
       getNetworkFeeDisplayValue({
@@ -69,7 +69,7 @@ describe('getNetworkFeeDisplayValue', () => {
         customViewOnly: true,
         speed: 'custom',
         time: undefined,
-      })
+      }),
     ).toBe('Custom · $3.00');
   });
 
@@ -80,7 +80,7 @@ describe('getNetworkFeeDisplayValue', () => {
         speed: 'fast',
         feeValueFormatted: undefined,
         time: '~15 sec',
-      })
+      }),
     ).toBe(null);
   });
 });

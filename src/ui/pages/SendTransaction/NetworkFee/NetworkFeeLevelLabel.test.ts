@@ -1,7 +1,4 @@
-import {
-  getNetworkFeeLevelColor,
-  shouldShowNetworkFeeLevelLabel,
-} from './constants';
+import { getNetworkFeeLevelColor, shouldShowNetworkFeeLevelLabel } from './constants';
 
 describe('network fee level label', () => {
   test('keeps Fast quiet and non-Fast levels in the notice colour', () => {

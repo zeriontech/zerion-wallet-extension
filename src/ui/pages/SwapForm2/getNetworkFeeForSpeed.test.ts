@@ -122,9 +122,7 @@ describe('getNetworkFeeRatioForConfiguration', () => {
   });
 
   test('scales a preset from its gas price', () => {
-    const quote = makeQuote(
-      makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) })
-    );
+    const quote = makeQuote(makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) }));
     expect(
       getNetworkFeeRatioForConfiguration(
         quote,
@@ -135,15 +133,13 @@ describe('getNetworkFeeRatioForConfiguration', () => {
           gasLimit: null,
         },
         gasPrices,
-        90
-      )
+        90,
+      ),
     ).toBe(1.45);
   });
 
   test('includes the custom gas limit in a custom configuration', () => {
-    const quote = makeQuote(
-      makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) })
-    );
+    const quote = makeQuote(makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) }));
     expect(
       getNetworkFeeRatioForConfiguration(
         quote,
@@ -154,8 +150,8 @@ describe('getNetworkFeeRatioForConfiguration', () => {
           gasLimit: '512',
         },
         gasPrices,
-        90
-      )
+        90,
+      ),
     ).toBe(2);
   });
 
@@ -175,8 +171,8 @@ describe('getNetworkFeeRatioForConfiguration', () => {
           gasLimit: null,
         },
         classicGasPrices,
-        null
-      )
+        null,
+      ),
     ).toBe(2);
   });
 });
@@ -188,7 +184,7 @@ describe('getCustomFeeRatioFromDefaults', () => {
         gas: hex(256),
         maxFee: hex(200_000_000_000),
         maxPriorityFee: hex(10_000_000_000),
-      })
+      }),
     );
     expect(
       getCustomFeeRatioFromDefaults(
@@ -200,28 +196,19 @@ describe('getCustomFeeRatioFromDefaults', () => {
           gasLimit: '512',
         },
         true,
-        90_000_000_000
-      )
+        90_000_000_000,
+      ),
     ).toBe(2);
   });
 
   test('prices a classic Custom row from its base fee', () => {
-    const quote = makeQuote(
-      makeEvm({ gas: hex(256), gasPrice: hex(100_000_000_000) })
-    );
+    const quote = makeQuote(makeEvm({ gas: hex(256), gasPrice: hex(100_000_000_000) }));
     expect(
-      getCustomFeeRatioFromDefaults(
-        quote,
-        { baseFee: '200', gasLimit: '256' },
-        false,
-        null
-      )
+      getCustomFeeRatioFromDefaults(quote, { baseFee: '200', gasLimit: '256' }, false, null),
     ).toBe(2);
   });
 
   test('returns null when defaults cannot produce a price', () => {
-    expect(
-      getCustomFeeRatioFromDefaults(makeQuote(null), undefined, true, null)
-    ).toBe(null);
+    expect(getCustomFeeRatioFromDefaults(makeQuote(null), undefined, true, null)).toBe(null);
   });
 });

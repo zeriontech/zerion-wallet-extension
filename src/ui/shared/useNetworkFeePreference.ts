@@ -1,9 +1,6 @@
 import { useMemo } from 'react';
 import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';
-import {
-  resolveSavedNetworkFee,
-  withSavedNetworkFee,
-} from 'src/shared/networkFeePreference';
+import { resolveSavedNetworkFee, withSavedNetworkFee } from 'src/shared/networkFeePreference';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
 import { useEvent } from 'src/ui/shared/useEvent';
 
@@ -18,17 +15,13 @@ export function useNetworkFeePreference(chainId: string | null | undefined) {
 
   const savedNetworkFee = useMemo(
     () => (chainId ? resolveSavedNetworkFee(preferences, chainId) : null),
-    [preferences, chainId]
+    [preferences, chainId],
   );
 
   const saveNetworkFee = useEvent((configuration: NetworkFeeConfiguration) => {
     if (!chainId) return;
     setGlobalPreferences({
-      networkFeeByChain: withSavedNetworkFee(
-        preferences,
-        chainId,
-        configuration
-      ),
+      networkFeeByChain: withSavedNetworkFee(preferences, chainId, configuration),
     });
   });
 

@@ -13,8 +13,6 @@ export function getNetworkFeeLevelColor(speed: NetworkFeeSpeed): string {
   return speed === 'fast' ? 'var(--neutral-500)' : 'var(--notice-500)';
 }
 
-export function shouldShowNetworkFeeLevelLabel(
-  speed: NetworkFeeSpeed
-): boolean {
+export function shouldShowNetworkFeeLevelLabel(speed: NetworkFeeSpeed): boolean {
   return speed !== 'fast' || SHOW_FAST_LEVEL_LABEL;
 }
