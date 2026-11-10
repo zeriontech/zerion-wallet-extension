@@ -171,7 +171,8 @@ function parseArgs(argv) {
     platform: undefined,
     watch: false,
     brand: 'production',
-    versionSuffix: undefined,
+    // `beta.yml` exports this for the whole job; the CLI flag wins.
+    versionSuffix: process.env.BETA_VERSION_SUFFIX,
   };
   for (const arg of argv) {
     if (arg.startsWith('--platform=')) options.platform = arg.slice(11);
