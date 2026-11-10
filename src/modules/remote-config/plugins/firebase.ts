@@ -1,4 +1,4 @@
-import { throttle } from 'src/shared/throttle';
+import { debounce } from 'moderndash';
 import ky from 'ky';
 import { PROXY_URL } from 'src/env/config';
 import type { ConfigPlugin } from '../ConfigPlugin';
@@ -79,9 +79,7 @@ export const firebase: ConfigPlugin & { refresh(): void } = {
     });
   },
 
-  refresh: throttle(() => firebase.initialize(), REFRESH_RATE, {
-    leading: false,
-  }),
+  refresh: debounce(() => firebase.initialize(), REFRESH_RATE),
 
   get(key: keyof RemoteConfig) {
     /**
