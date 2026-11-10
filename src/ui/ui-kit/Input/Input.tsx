@@ -15,8 +15,7 @@ const inputFontStyle = {
   letterSpacing,
 };
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   boxHeight?: 40 | 44;
   error?: boolean;
 }

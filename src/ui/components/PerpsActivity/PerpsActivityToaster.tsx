@@ -474,8 +474,8 @@ export function PerpsActivityToaster() {
                   expanded
                     ? { opacity: 1, scale: 1, filter: 'blur(0px)' }
                     : reducedMotion
-                    ? { opacity: 0 }
-                    : { opacity: 0, scale: 1.08, filter: 'blur(2px)' }
+                      ? { opacity: 0 }
+                      : { opacity: 0, scale: 1.08, filter: 'blur(2px)' }
                 }
                 transition={
                   reducedMotion

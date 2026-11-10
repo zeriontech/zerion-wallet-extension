@@ -4,7 +4,6 @@ import { registerPreviewPermanent } from 'src/ui-lab/previews/registerPreview';
 import CheckIcon from 'jsx:src/ui/assets/check_double.svg';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -101,7 +100,7 @@ export function ErrorMessage({
   hardwareError: LedgerError | null;
 }) {
   const parsed = parseError(error);
-  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   if (error.message === 'DeniedByUser') {
     return null;
   }

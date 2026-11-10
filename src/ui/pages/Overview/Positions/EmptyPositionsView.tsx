@@ -7,7 +7,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { type HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { emitter } from 'src/ui/shared/events';
 import { useLocation } from 'react-router-dom';
 import { AddFundsOptionsDialog } from '../../Receive/AddFundsOptionsDialog';
@@ -22,7 +21,7 @@ export function EmptyPositionsView() {
   });
 
   const { preferences } = usePreferences();
-  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const isTestnetMode = preferences?.testnetMode?.on;
 

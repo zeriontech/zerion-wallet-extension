@@ -24,7 +24,7 @@ export async function createApprovalTransaction(params: {
 }
 
 export async function modifyApproveAmount<
-  T extends { data?: string; to?: string }
+  T extends { data?: string; to?: string },
 >(transaction: T, amountBase: string) {
   const parsed = parseApprove(transaction);
   invariant(parsed?.type === 'approve', 'Failed to parse approval transaction');

@@ -20,9 +20,11 @@ type Collection<T> = { [key: string]: T };
 
 /** Purpose vocabulary of {Networks.supports}: `'trading'` reads `flags.supportsTrading` */
 type SupportsFlags = keyof {
-  [K in keyof ChainFlags as K extends `supports${infer S}`
-    ? Uncapitalize<S>
-    : never]: ChainFlags[K];
+  [
+    K in keyof ChainFlags as K extends `supports${infer S}`
+      ? Uncapitalize<S>
+      : never
+  ]: ChainFlags[K];
 };
 
 function toCollection<T, K>(
@@ -233,8 +235,8 @@ export class Networks {
       standard === 'solana'
         ? this.solanaNetworks
         : standard === 'evm'
-        ? this.evmNetworks
-        : this.networks;
+          ? this.evmNetworks
+          : this.networks;
     const ignorePositionsSupport = standard === 'solana'; // TODO: remove check when backend supports Solana positions
     return items.filter((item) => {
       const chain = createChain(item.id);

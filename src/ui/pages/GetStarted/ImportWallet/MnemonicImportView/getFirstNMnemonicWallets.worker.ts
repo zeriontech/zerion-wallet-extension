@@ -1,3 +1,4 @@
+import 'src/shared/polyfills';
 import { HDNode } from '@ethersproject/hdnode';
 import { Keypair } from '@solana/web3.js';
 import * as bip39 from 'bip39';
@@ -35,7 +36,7 @@ function locallyMaskWallet(wallet: BareWallet | HDNode) {
       : null,
     privateKey: encodeForMasking(wallet.privateKey),
     address: wallet.address,
-    name: 'name' in wallet ? wallet.name ?? null : null,
+    name: 'name' in wallet ? (wallet.name ?? null) : null,
   };
 }
 

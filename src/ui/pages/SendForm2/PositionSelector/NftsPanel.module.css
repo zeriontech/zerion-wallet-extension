@@ -34,12 +34,16 @@
 }
 
 .gridItem[data-active-item] .gridItemContent {
-  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary);
+  box-shadow:
+    0 0 0 2px var(--white),
+    0 0 0 4px var(--primary);
 }
 
 @media (hover: hover) {
   .gridItem:hover .gridItemContent {
-    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary);
+    box-shadow:
+      0 0 0 2px var(--white),
+      0 0 0 4px var(--primary);
   }
 }
 

@@ -66,8 +66,8 @@ function OutputDescription({
     isLossWarning || isNoPriceData
       ? 'var(--negative-500)'
       : isProfit
-      ? 'var(--positive-500)'
-      : 'var(--neutral-600)';
+        ? 'var(--positive-500)'
+        : 'var(--neutral-600)';
 
   const price = position?.fungible.meta.price;
   const fiatValue =
@@ -82,8 +82,8 @@ function OutputDescription({
     inputKind === 'currency'
       ? `~${roundTokenDisplayValue(outputAmount) ?? ''}`
       : fiatValue
-      ? `~${formatCurrencyValue(fiatValue, 'en', currency)}`
-      : null;
+        ? `~${formatCurrencyValue(fiatValue, 'en', currency)}`
+        : null;
 
   return (
     <HStack gap={4}>

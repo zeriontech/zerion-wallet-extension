@@ -16,8 +16,8 @@ export function getProviderNameFromGroup(
 ): AccountProvider | AccountProviderName {
   return group
     ? isAccountContainer(group.walletContainer)
-      ? (group.walletContainer.provider as AccountProviderName) ??
-        AccountProvider.readOnly
+      ? ((group.walletContainer.provider as AccountProviderName) ??
+        AccountProvider.readOnly)
       : AccountProvider.zerionExtension
     : AccountProvider.viewerNotAdded;
 }

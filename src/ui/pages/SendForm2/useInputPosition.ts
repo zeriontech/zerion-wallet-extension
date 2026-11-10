@@ -24,7 +24,7 @@ export function useInputPosition({
   const networkConfig = useMemo(
     () =>
       inputChain
-        ? networks.getByNetworkId(createChain(inputChain)) ?? null
+        ? (networks.getByNetworkId(createChain(inputChain)) ?? null)
         : null,
     [inputChain, networks]
   );
@@ -55,9 +55,9 @@ export function useInputPosition({
 
   const needsSynthetic = Boolean(
     inputFungibleId &&
-      !simpleMatch &&
-      !nodeMatch &&
-      (supportsPositions || !nodeQuery.isLoading)
+    !simpleMatch &&
+    !nodeMatch &&
+    (supportsPositions || !nodeQuery.isLoading)
   );
   const fungibleQuery = useAssetListFungibles(
     inputFungibleId

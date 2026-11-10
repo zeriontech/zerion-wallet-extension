@@ -173,7 +173,7 @@ export function applyLocalActionContent(
     ...addressAction,
     content,
     acts: request.fillActs
-      ? addressAction.acts?.map((act) => ({ ...act, content })) ?? null
+      ? (addressAction.acts?.map((act) => ({ ...act, content })) ?? null)
       : addressAction.acts,
   };
 }

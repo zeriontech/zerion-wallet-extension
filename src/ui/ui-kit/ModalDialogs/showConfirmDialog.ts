@@ -1,8 +1,4 @@
-import type { HTMLDialogElementInterface } from './HTMLDialogElementInterface';
-
-export function showConfirmDialog(
-  dialog: HTMLDialogElementInterface
-): Promise<string> {
+export function showConfirmDialog(dialog: HTMLDialogElement): Promise<string> {
   dialog.showModal();
   return new Promise((resolve, reject) => {
     function handler() {

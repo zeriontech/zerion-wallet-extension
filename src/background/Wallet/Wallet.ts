@@ -163,7 +163,7 @@ import {
 import { toPlainTransactionResponse } from './model/ethers-v5-types';
 
 async function prepareNonce<
-  T extends { nonce?: number | null; from?: string | null }
+  T extends { nonce?: number | null; from?: string | null },
 >(transaction: T, network: NetworkInfo) {
   if (transaction.nonce == null) {
     invariant(transaction.from, '"from" field is missing from transaction');
@@ -2694,7 +2694,7 @@ class PublicController {
   }: PublicMethodParams<
     [
       IncomingTransaction,
-      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?
+      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?,
     ]
   >) {
     this.wallet.ensureCurrentAddress();
@@ -2837,7 +2837,7 @@ class PublicController {
       string,
       string,
       string,
-      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?
+      /* TODO: refactor to use {context} instead? */ { clientScope?: string }?,
     ]
   >) {
     if (!params.length) {

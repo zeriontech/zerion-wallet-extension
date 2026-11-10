@@ -26,7 +26,9 @@
   padding: 0;
   min-width: 1ch;
   max-width: 100%;
-  transition: font-size 150ms, line-height 150ms;
+  transition:
+    font-size 150ms,
+    line-height 150ms;
 }
 
 .amountInput::placeholder {
@@ -48,7 +50,11 @@
   font-weight: 500;
   padding-right: 4px;
   pointer-events: none;
-  transition: font-size 150ms, line-height 150ms, padding-top 150ms, color 150ms;
+  transition:
+    font-size 150ms,
+    line-height 150ms,
+    padding-top 150ms,
+    color 150ms;
 }
 
 .sideSelector {

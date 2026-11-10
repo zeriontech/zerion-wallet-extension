@@ -3,8 +3,7 @@ import { invariant } from 'src/shared/invariant';
 import { UIContext, defaultUIContextValue } from 'src/ui/components/UIContext';
 import * as styles from './styles.module.css';
 
-export interface BaseDialogProps
-  extends React.DialogHTMLAttributes<HTMLDialogElement> {
+export interface BaseDialogProps extends React.DialogHTMLAttributes<HTMLDialogElement> {
   containerStyle?: React.CSSProperties;
   closeOnClickOutside?: boolean;
   render?: (open: boolean) => React.ReactNode;
@@ -161,8 +160,8 @@ export const BaseDialog = React.forwardRef(
                 ? renderWhenOpen()
                 : null
               : render
-              ? render(open)
-              : children}
+                ? render(open)
+                : children}
           </UIContext.Provider>
         </div>
       </dialog>

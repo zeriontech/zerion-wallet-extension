@@ -57,7 +57,7 @@ export function AllowanceForm({
     isUnlimitedApproval(requestedAllowanceQuantityBase) ||
     Boolean(
       addressAction?.type.value === 'approve' &&
-        getActionApproval(addressAction)?.unlimited
+      getActionApproval(addressAction)?.unlimited
     );
   const isCurrentAllowanceUnlimited =
     isUnlimitedApproval(value) ||

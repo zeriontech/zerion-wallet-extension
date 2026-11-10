@@ -119,10 +119,10 @@ export class TransactionsPoller {
     return fulfilledCount < 3
       ? 3000
       : fulfilledCount < 5
-      ? 8000
-      : fulfilledCount < 10
-      ? 20000
-      : 120000;
+        ? 8000
+        : fulfilledCount < 10
+          ? 20000
+          : 120000;
   }
 
   private async getTransactionReceipt(url: string, hash: string) {

@@ -56,9 +56,9 @@ export function interpretTransactions(
           transaction.evm.type != null
             ? valueToHex(transaction.evm.type)
             : transaction.evm.maxFeePerGas ||
-              transaction.evm.maxPriorityFeePerGas
-            ? '0x2'
-            : '0x1',
+                transaction.evm.maxPriorityFeePerGas
+              ? '0x2'
+              : '0x1',
         nonce: valueToHex(transaction.evm.nonce),
         maxFee:
           transaction.evm.maxFeePerGas != null

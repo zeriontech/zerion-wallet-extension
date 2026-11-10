@@ -20,7 +20,9 @@
 }
 
 .animatedDecoration {
-  animation: scaleUpDown 3s infinite ease-in-out, fullRotate 10s infinite linear;
+  animation:
+    scaleUpDown 3s infinite ease-in-out,
+    fullRotate 10s infinite linear;
 }
 
 .fancyBackground {

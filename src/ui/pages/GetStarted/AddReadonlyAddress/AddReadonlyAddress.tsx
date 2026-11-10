@@ -127,10 +127,10 @@ export function AddReadonlyAddress() {
     customValidity: isSupportedAddress
       ? '' // Form MUST be valid for valid eth address regardless of the getWalletsMeta request state
       : isDomainResolving
-      ? 'Wait until address is resolved'
-      : resolveError
-      ? 'Address not recognized'
-      : '',
+        ? 'Wait until address is resolved'
+        : resolveError
+          ? 'Address not recognized'
+          : '',
   });
 
   // Do not _display_ error for input like {hello},
@@ -171,7 +171,7 @@ export function AddReadonlyAddress() {
         <input
           type="hidden"
           name="address"
-          value={isSupportedAddress ? query : hints.address ?? ''}
+          value={isSupportedAddress ? query : (hints.address ?? '')}
           required={true}
         />
         <VStack gap={4}>

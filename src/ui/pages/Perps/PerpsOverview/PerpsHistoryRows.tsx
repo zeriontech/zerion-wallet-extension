@@ -232,8 +232,8 @@ export function PerpsHistoryLedgerRow({
     type === 'deposit'
       ? { text: `+${formatted}`, color: 'var(--positive-500)' }
       : type === 'send'
-      ? { text: `-${formatted}`, color: 'var(--negative-500)' }
-      : { text: formatted, color: undefined };
+        ? { text: `-${formatted}`, color: 'var(--negative-500)' }
+        : { text: formatted, color: undefined };
   const isInbound = type === 'deposit';
 
   return (

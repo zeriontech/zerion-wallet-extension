@@ -30,7 +30,10 @@ export class QueueAbortError extends Error {
 
 export class TransactionFailedOnChainError extends Error {
   name = 'TransactionFailedOnChainError';
-  constructor(public status: 'failed' | 'dropped', public txHash: string) {
+  constructor(
+    public status: 'failed' | 'dropped',
+    public txHash: string
+  ) {
     super(`Transaction ${txHash} ${status} on-chain`);
   }
 }

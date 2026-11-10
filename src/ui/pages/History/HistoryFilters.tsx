@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
 import type { ActionType } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -174,7 +173,7 @@ function AssetTypeDialog({
   onSelect: (value: string) => void;
   onClose: () => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const open = useCallback(() => {
     if (!dialogRef.current) return;
@@ -259,7 +258,7 @@ function ActionTypeDialogContent({
   dialogRef,
   initialKeys,
 }: {
-  dialogRef: React.RefObject<HTMLDialogElementInterface | null>;
+  dialogRef: React.RefObject<HTMLDialogElement | null>;
   initialKeys: string[];
 }) {
   const [selected, setSelected] = useState<Set<string>>(
@@ -352,7 +351,7 @@ function ActionTypeDialog({
   onApply: (keys: string[]) => void;
   onClose: () => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const open = useCallback(() => {
     if (!dialogRef.current) return;
@@ -407,7 +406,7 @@ export function HistoryFiltersButton({
   onAssetTypeChange: (value: string) => void;
   onResetAll: () => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const hasAnyFilter =
     hasActiveFilters || Boolean(selectedChain) || Boolean(date);

@@ -9,8 +9,8 @@ export function getColor(value?: number) {
   return !value
     ? 'var(--black)'
     : value > 0
-    ? 'var(--positive-500)'
-    : 'var(--negative-500)';
+      ? 'var(--positive-500)'
+      : 'var(--negative-500)';
 }
 
 export function getSign(value?: number) {

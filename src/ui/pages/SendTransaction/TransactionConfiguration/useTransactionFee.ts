@@ -170,8 +170,8 @@ function calculateTransactionCosts({
   const decimals = nativeAsset
     ? getDecimals({ asset: nativeAsset, chain })
     : network
-    ? getBaseAssetDecimals(network)
-    : undefined;
+      ? getBaseAssetDecimals(network)
+      : undefined;
 
   if (decimals == null) {
     return null;

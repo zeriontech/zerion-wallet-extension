@@ -14,7 +14,6 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
 import { InterpretationSecurityCheck } from 'src/ui/shared/security-check/InterpertationSecurityCheck';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { TransactionAdvancedView } from 'src/ui/pages/SendTransaction/TransactionAdvancedView';
 import type { PopoverToastHandle } from 'src/ui/pages/Settings/PopoverToast';
@@ -53,7 +52,7 @@ export function TransactionSimulation({
   onOpenAllowanceForm?: () => void;
   fallbackAddressAction: LocalAddressAction | null;
 }) {
-  const advancedDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const advancedDialogRef = useRef<HTMLDialogElement | null>(null);
   const toastRef = useRef<PopoverToastHandle>(null);
 
   const { networks } = useNetworks();

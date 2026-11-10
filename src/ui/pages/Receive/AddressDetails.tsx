@@ -24,7 +24,6 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
@@ -62,7 +61,7 @@ function NetworkList({ standard }: { standard: BlockchainType }) {
 }
 
 function SupportedNetworks({ address }: { address: string }) {
-  const dialogRef = useRef<HTMLDialogElementInterface>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const standard = getAddressType(address);
   const { networks } = useNetworks();
 

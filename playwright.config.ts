@@ -8,7 +8,7 @@ const useProxy =
   process.env.E2E_USE_PROXY === '1' ||
   Boolean(
     process.env.ZERION_API_DEVELOPMENT_KEY ||
-      process.env.CF_ZPI_DEV_BYPASS_SECRET
+    process.env.CF_ZPI_DEV_BYPASS_SECRET
   );
 
 // See https://playwright.dev/docs/test-configuration.
@@ -43,6 +43,11 @@ export default defineConfig({
     // Collect trace when retrying the failed test.
     // See https://playwright.dev/docs/trace-viewer
     trace: 'retain-on-failure',
+    // Bound every action and navigation: without these a stalled background
+    // RPC leaves a locator waiting for the whole 2-minute test budget, which
+    // used to turn a transient failure into a hung job.
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
   },
   projects: [
     {

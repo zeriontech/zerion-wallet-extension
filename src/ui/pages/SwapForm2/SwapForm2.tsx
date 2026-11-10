@@ -167,14 +167,14 @@ function SwapFormComponent({
   const inputNetworkConfig = useMemo(
     () =>
       formState.inputChain
-        ? networks.getByNetworkId(createChain(formState.inputChain)) ?? null
+        ? (networks.getByNetworkId(createChain(formState.inputChain)) ?? null)
         : null,
     [networks, formState.inputChain]
   );
   const outputNetworkConfig = useMemo(
     () =>
       formState.outputChain
-        ? networks.getByNetworkId(createChain(formState.outputChain)) ?? null
+        ? (networks.getByNetworkId(createChain(formState.outputChain)) ?? null)
         : null,
     [networks, formState.outputChain]
   );
@@ -430,7 +430,9 @@ function SwapFormComponent({
         tx: MultichainTransaction,
         nonce: number
       ): MultichainTransaction => (tx.evm ? { evm: { ...tx.evm, nonce } } : tx);
-      const withoutNonce = (tx: MultichainTransaction): MultichainTransaction =>
+      const withoutNonce = (
+        tx: MultichainTransaction
+      ): MultichainTransaction =>
         tx.evm
           ? (() => {
               const { nonce: _omit, ...rest } = tx.evm;

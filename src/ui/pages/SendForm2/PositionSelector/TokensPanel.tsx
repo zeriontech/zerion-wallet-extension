@@ -250,8 +250,8 @@ export function TokensPanel({
 
   const useNodePositions = Boolean(
     selectedNetwork &&
-      selectedNetworkConfig &&
-      !selectedNetworkConfig.flags.supportsPositions
+    selectedNetworkConfig &&
+    !selectedNetworkConfig.flags.supportsPositions
   );
 
   // All-chains view: simple positions only (no node-positions fan-out).

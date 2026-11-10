@@ -6,7 +6,6 @@ import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
@@ -41,12 +40,12 @@ function Card({
         ? `rotate(0deg)
          scale(1.1)`
         : position === 0
-        ? `rotate(0deg)
+          ? `rotate(0deg)
          scale(1)`
-        : position === 1
-        ? `rotate(7deg)
+          : position === 1
+            ? `rotate(7deg)
          scale(0.85)`
-        : `rotate(14deg)
+            : `rotate(14deg)
          scale(0.7)`,
     config: {
       tension: 200,
@@ -140,7 +139,7 @@ export function Info({
 }) {
   const { isNarrowView } = useWindowSizeStore();
   const [activeCard, setActiveCard] = useState(0);
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const handleClick = useCallback(() => {
     if (activeCard < MAX_CARD_INDEX) {

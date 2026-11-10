@@ -20,15 +20,15 @@ export function getChartColor({
         ? '#99dbb4'
         : '#1fc260'
       : isHighlighted
-      ? '#2d4435'
-      : '#31b566'
+        ? '#2d4435'
+        : '#31b566'
     : theme === Theme.light
-    ? isHighlighted
-      ? '#ffd0c9'
-      : '#ff4a4a'
-    : isHighlighted
-    ? '#8a393b'
-    : '#ff5c5c';
+      ? isHighlighted
+        ? '#ffd0c9'
+        : '#ff4a4a'
+      : isHighlighted
+        ? '#8a393b'
+        : '#ff5c5c';
 }
 
 export function getSortedRangeIndexes({

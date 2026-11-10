@@ -1,12 +1,11 @@
-import { jest } from '@jest/globals';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';
 
-// ky and store-unit ship ESM only, which jest doesn't transform; the store's
+// ky and store-unit ship ESM only, which the test runner doesn't transform; the store's
 // event API is not exercised here
-jest.unstable_mockModule('ky', () => ({
+vi.mock('ky', () => ({
   HTTPError: class HTTPError extends Error {},
 }));
-jest.unstable_mockModule('store-unit', () => ({
+vi.mock('store-unit', () => ({
   Store: class Store<T> {
     private state: T;
     constructor(state: T) {

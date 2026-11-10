@@ -79,7 +79,7 @@ function AddOrUpdateChain({
 
   const { network, prevNetwork } = useMemo(() => {
     const prevNetwork = updatedNetworks?.hasNetworkById(chainId)
-      ? updatedNetworks.getNetworkById(chainId) ?? null
+      ? (updatedNetworks.getNetworkById(chainId) ?? null)
       : null;
     const network = prevNetwork
       ? applyChainConfig(prevNetwork, addEthereumChainParameter)

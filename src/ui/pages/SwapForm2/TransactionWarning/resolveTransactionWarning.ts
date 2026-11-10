@@ -140,8 +140,8 @@ function resolveFormStateWarning({
     const unsupported = !inputNetwork.flags.supportsBridging
       ? inputNetwork
       : !outputNetwork.flags.supportsBridging
-      ? outputNetwork
-      : null;
+        ? outputNetwork
+        : null;
     if (unsupported) {
       return {
         variant: 'warning',
@@ -203,8 +203,8 @@ function resolveFormStateWarning({
 
   const shouldHaveQuotes = Boolean(
     formState.inputAmount &&
-      formState.inputFungibleId &&
-      formState.outputFungibleId
+    formState.inputFungibleId &&
+    formState.outputFungibleId
   );
   if (
     shouldHaveQuotes &&

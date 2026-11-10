@@ -44,7 +44,7 @@ type BaseParams<E = MetabaseEvent> = { request_name: E };
 
 export function sendToMetabase<
   E extends MetabaseEvent,
-  T extends BaseParams<E>
+  T extends BaseParams<E>,
 >(event: E, params: T) {
   logToConsole(Loglevel.info, 'group', `Metabase: ${params.request_name}`);
   logTable(Loglevel.info, params);

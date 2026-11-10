@@ -20,8 +20,8 @@ function useNetworksStore() {
   return !preferences
     ? null
     : preferences.testnetMode?.on
-    ? testenvNetworksStore
-    : mainNetworksStore;
+      ? testenvNetworksStore
+      : mainNetworksStore;
 }
 
 const queryKeyHashFn: QueryKeyHashFunction<

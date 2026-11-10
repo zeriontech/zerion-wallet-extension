@@ -22,8 +22,8 @@ function getColor(value: number | null | undefined) {
   return !value
     ? 'var(--black)'
     : value > 0
-    ? 'var(--positive-500)'
-    : 'var(--negative-500)';
+      ? 'var(--positive-500)'
+      : 'var(--negative-500)';
 }
 
 function getSign(value: number | null | undefined) {

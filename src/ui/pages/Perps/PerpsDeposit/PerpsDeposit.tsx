@@ -190,7 +190,7 @@ function DepositFormBody({
   const inputNetwork = useMemo(
     () =>
       formState.inputChain
-        ? networks?.getByNetworkId(createChain(formState.inputChain)) ?? null
+        ? (networks?.getByNetworkId(createChain(formState.inputChain)) ?? null)
         : null,
     [networks, formState.inputChain]
   );
@@ -397,7 +397,7 @@ function DepositFormBody({
           const [name, keyAddress, keyDex] = q.queryKey as [
             string,
             string | null | undefined,
-            string | undefined
+            string | undefined,
           ];
           return (
             name === 'hyperliquid/clearinghouseState' &&
@@ -444,10 +444,10 @@ function DepositFormBody({
   const buttonLabel = insufficientBalance
     ? 'Insufficient balance'
     : quotesQuery.isLoading && !quote
-    ? 'Fetching offers…'
-    : signMutation.isLoading
-    ? 'Sending…'
-    : 'Deposit';
+      ? 'Fetching offers…'
+      : signMutation.isLoading
+        ? 'Sending…'
+        : 'Deposit';
 
   return (
     <PageColumn>

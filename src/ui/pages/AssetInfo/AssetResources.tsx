@@ -11,7 +11,6 @@ import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledAnchor } from 'src/ui/ui-kit/UnstyledAnchor';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
@@ -254,7 +253,7 @@ export function AssetResources({
   assetFullInfo: AssetFullInfo;
 }) {
   const { networks } = useNetworks();
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const implementations = useMemo(
     () =>
       Object.entries(assetFullInfo.fungible.implementations)
@@ -276,10 +275,13 @@ export function AssetResources({
   }, [implementations, assetFullInfo.extra.mainChain]);
 
   const resourcesById = useMemo(() => {
-    return assetFullInfo.extra.relevantResources.reduce((acc, resource) => {
-      acc[resource.name] = resource;
-      return acc;
-    }, {} as Record<string, AssetResource>);
+    return assetFullInfo.extra.relevantResources.reduce(
+      (acc, resource) => {
+        acc[resource.name] = resource;
+        return acc;
+      },
+      {} as Record<string, AssetResource>
+    );
   }, [assetFullInfo.extra.relevantResources]);
 
   return (

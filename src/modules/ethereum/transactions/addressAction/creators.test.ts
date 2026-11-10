@@ -1,15 +1,14 @@
-import { jest } from '@jest/globals';
 import { createSeedTransactions } from 'src/background/transactions/devSeedLocalTransactions';
 import { Networks } from 'src/modules/networks/Networks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { TransactionObject } from '../types';
 
 // The real client transitively imports the extension runtime, and the http
-// client reads package.json, which ESM jest cannot import by name
-jest.unstable_mockModule('src/modules/zerion-api/zerion-api.client', () => ({
-  ZerionAPI: { assetListFungibles: jest.fn() },
+// client reads package.json, which ESM tests cannot import by name
+vi.mock('src/modules/zerion-api/zerion-api.client', () => ({
+  ZerionAPI: { assetListFungibles: vi.fn() },
 }));
-jest.unstable_mockModule('src/shared/packageVersion', () => ({
+vi.mock('src/shared/packageVersion', () => ({
   version: 'test',
   productionVersion: 'test',
 }));
@@ -66,7 +65,7 @@ const loadNetworkByChainId = async () => networks;
 const address = '0x52Fb91492000F2a900a6b75B37D588AB37378e59';
 
 test('building many local actions makes no asset requests', async () => {
-  const spy = jest.mocked(ZerionAPI.assetListFungibles);
+  const spy = vi.mocked(ZerionAPI.assetListFungibles);
   const seeded = createSeedTransactions({ address, count: 600 });
   const items = await Promise.all(
     seeded.map((tx) =>

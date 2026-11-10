@@ -3,7 +3,6 @@ import {
   BottomSheetDialog,
   DialogAnimationPreset,
 } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -21,7 +20,7 @@ import { needsBackup } from 'src/ui/components/BackupInfoNote/BackupInfoNote';
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 function BackupReminderComponent({ onDismiss }: { onDismiss: () => void }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   useLayoutEffect(() => {

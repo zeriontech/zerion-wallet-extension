@@ -27,21 +27,21 @@ export function useReadonlyReceiverGate({
 
   const recipientWallet =
     walletGroup && normalizedTo
-      ? walletGroup.walletContainer.wallets.find(
+      ? (walletGroup.walletContainer.wallets.find(
           (wallet) => normalizeAddress(wallet.address) === normalizedTo
-        ) ?? null
+        ) ?? null)
       : null;
 
   const isExcluded = normalizedTo
-    ? preferences?.addressesExcludedFromReceiverReadonlyWarning?.includes(
+    ? (preferences?.addressesExcludedFromReceiverReadonlyWarning?.includes(
         normalizedTo
-      ) ?? false
+      ) ?? false)
     : false;
 
   const shouldGate = Boolean(
     walletGroup &&
-      isReadonlyContainer(walletGroup.walletContainer) &&
-      !isExcluded
+    isReadonlyContainer(walletGroup.walletContainer) &&
+    !isExcluded
   );
 
   const guardedFire = useCallback(() => {

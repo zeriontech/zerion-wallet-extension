@@ -127,10 +127,8 @@
   --button-background: var(--white);
   --button-text: var(--black);
   --angle: 0deg;
-  background: linear-gradient(
-        var(--button-background),
-        var(--button-background)
-      )
+  background:
+    linear-gradient(var(--button-background), var(--button-background))
       padding-box,
     conic-gradient(from var(--angle), var(--neutral-300), var(--black))
       border-box;

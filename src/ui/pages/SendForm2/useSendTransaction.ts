@@ -165,7 +165,7 @@ export function useSendTransaction({
   const assetId = formState.nftId ?? formState.inputFungibleId;
 
   const effectiveAmount = isNftMode
-    ? formState.nftAmount ?? '1'
+    ? (formState.nftAmount ?? '1')
     : resolvedInputAmount;
 
   // Token mode prepares a send for any entered amount, including `0`; NFT mode
@@ -176,11 +176,11 @@ export function useSendTransaction({
 
   const baseGatesPass = Boolean(
     address &&
-      formState.inputChain &&
-      formState.to &&
-      assetId &&
-      amountGatePasses &&
-      network
+    formState.inputChain &&
+    formState.to &&
+    assetId &&
+    amountGatePasses &&
+    network
   );
 
   const useBackend = Boolean(network?.flags.supportsSending);
@@ -192,7 +192,7 @@ export function useSendTransaction({
       from: address,
       to: formState.to ?? '',
       assetId: assetId ?? '',
-      amount: isMax ? undefined : effectiveAmount ?? undefined,
+      amount: isMax ? undefined : (effectiveAmount ?? undefined),
       max: isMax ? true : undefined,
       data: customData,
     },

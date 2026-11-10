@@ -6,7 +6,7 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 
 | Event | Workflow | What runs |
 | --- | --- | --- |
-| Pull request | `run-tests.yml` | `changeset-check` (or the `skip-changeset` label), `quality` (`lint:check`, `format:check`, `typecheck`, `test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs) |
+| Pull request | `run-tests.yml` | `changeset-check` (or the `skip-changeset` label), `static` (`lint:check`, `format:check`, `typecheck`), `test` (`test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs, sharded 3 ways, balanced by measured test duration). `static`, `test`, `build` and `e2e` run in parallel; `changeset-check` is independent |
 | Pull request | `pr.yml` → `pr_attach_build.yml` | production build with PR env, zip attached to the PR thread |
 | Pull request | `pr_push_qa.yml` | build pushed to the `zerion-wallet-extension-qa` repo on the PR branch |
 | Push `main` | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump |
@@ -14,6 +14,8 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 | Push `main` | `beta.yml` | beta build (coral icons, own Firefox id, fourth version part) and, when configured, upload to the beta store items |
 | Tag `vX.Y.Z` | `release_push_qa.yml` | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa` |
 | Manual | `publish-stores.yml` | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO |
+
+All gates run on the Vite+ toolchain — Oxlint, Oxfmt, Vitest and TSRS; see `docs/build.md`.
 
 `release.yml` deliberately skips lint, typecheck, formatting and tests: a tag is only created for a commit that already passed every PR gate, so an emergency release is never blocked by CI. Quality gates stay on pull requests.
 
@@ -27,7 +29,7 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 
 Tagging belongs to CI only. `scripts/manifest-version.js` no longer creates or amends commits or tags.
 
-`.changeset/config.json` sets `format: false`: Changesets 3 formats the changelog with `prettier --no-error-on-unmatched-pattern`, which the Prettier 2 pinned in this repo does not support. `npm run version` formats `CHANGELOG.md` with the repo's own Prettier instead, so the Version Packages PR still passes `format:check`.
+`.changeset/config.json` sets `format: false`: Changesets would run its own formatter on `CHANGELOG.md`, and `npm run version` formats it with `vp fmt` instead, so the Version Packages PR still passes `format:check`.
 
 ## Beta channel
 
@@ -74,14 +76,14 @@ Unchanged: `release_push_qa.yml` pushes to branch `release-candidate-<tag>` in `
 
 ### Tool choice: `publish-browser-extension`
 
-`wxt submit` is an alias for [`publish-browser-extension`](https://www.npmjs.com/package/publish-browser-extension) (the WXT docs say so, and `wxt submit --help` reports `publish-extension`). We install the underlying package directly instead of WXT: same functionality, 3 runtime dependencies (`cac`, `tasuku`, `@topcli/prompts`), no framework coupling to this Parcel repo.
+`wxt submit` is an alias for [`publish-browser-extension`](https://www.npmjs.com/package/publish-browser-extension) (the WXT docs say so, and `wxt submit --help` reports `publish-extension`). We install the underlying package directly instead of WXT: same functionality, 3 runtime dependencies (`cac`, `tasuku`, `@topcli/prompts`), no framework coupling to this repo's Parcel-era build (now Vite).
 
 What it gives us in one command: Chrome upload + publish, Firefox upload + submit with a sources ZIP, and `--dry-run` that authenticates against both stores without uploading. We call it through `scripts/release/publish-stores.mjs` so we get per-store statuses for Slack and a redacted failure path.
 
 Rejected alternatives:
 
 - `chrome-webstore-upload-cli` + `web-ext sign`: two tools, two auth models, no shared dry-run. The CLI documents only OAuth `CLIENT_ID`/`CLIENT_SECRET`/ `REFRESH_TOKEN`, i.e. Chrome Web Store API **v1.1**, which Google retired on 2026-10-15; `web-ext` alone pulls ~27 dependencies.
-- Plasmo's submit: tied to Plasmo's build output and framework; this repo builds with Parcel.
+- Plasmo's submit: tied to Plasmo's build output and framework; this repo builds with Vite+ (see `docs/build.md`).
 
 Tradeoff: we depend on a single third-party submitter covering both stores. If it breaks, store submission is manual (upload the same ZIPs by hand) until it is fixed; nothing else in the release flow depends on it.
 

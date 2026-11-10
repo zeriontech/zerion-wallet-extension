@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
@@ -13,7 +12,7 @@ import { isReadonlyContainer } from 'src/shared/types/validators';
 import { invariant } from 'src/shared/invariant';
 
 const ReadonlyWarningDialog = React.forwardRef<
-  HTMLDialogElementInterface,
+  HTMLDialogElement,
   object // later can describe Props
 >((_props, ref) => {
   return (
@@ -68,7 +67,7 @@ export function WithReadonlyWarningDialog({
     handleClick: (event: React.MouseEvent<HTMLButtonElement> | null) => void;
   }) => React.ReactNode;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const { data: walletGroup } = useQuery({
     queryKey: ['getWalletGroupByAddress', address],
     queryFn: () => getWalletGroupByAddress(address),

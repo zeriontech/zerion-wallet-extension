@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { invariant } from 'src/shared/invariant';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { SurfaceList } from 'src/ui/ui-kit/SurfaceList';
 import type { UITextProps } from 'src/ui/ui-kit/UIText';
@@ -18,7 +17,7 @@ export function EraseDataListButton({
 }: {
   textKind: UITextProps['kind'];
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {
       const isTab = urlContext.windowType === 'tab';

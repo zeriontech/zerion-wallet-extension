@@ -300,8 +300,8 @@ function RevealDialogContent({
     flowStep.type === 'signing'
       ? flowStep
       : flowStep.type === 'refetching' && flowStep.permits
-      ? { permits: flowStep.permits, currentIndex: flowStep.permits.length }
-      : null;
+        ? { permits: flowStep.permits, currentIndex: flowStep.permits.length }
+        : null;
   const isLoading =
     !signingSteps &&
     (flowStep.type === 'revealing' || flowStep.type === 'refetching');

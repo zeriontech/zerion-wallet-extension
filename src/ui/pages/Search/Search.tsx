@@ -57,8 +57,8 @@ const FungibleView = React.forwardRef<
     relativeChange1d == null
       ? 'var(--neutral-500)'
       : relativeChange1d >= 0
-      ? 'var(--positive-500)'
-      : 'var(--negative-500)';
+        ? 'var(--positive-500)'
+        : 'var(--negative-500)';
   const changePrefix =
     relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
 
@@ -186,8 +186,8 @@ const PerpView = React.forwardRef<
     relativeChange1d == null
       ? 'var(--neutral-500)'
       : relativeChange1d >= 0
-      ? 'var(--positive-500)'
-      : 'var(--negative-500)';
+        ? 'var(--positive-500)'
+        : 'var(--negative-500)';
   const changePrefix =
     relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
 

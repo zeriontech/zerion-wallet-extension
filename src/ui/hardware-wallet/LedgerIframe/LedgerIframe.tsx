@@ -72,7 +72,7 @@ export const LedgerIframe = React.forwardRef(function LedgerIframeComponent(
       // as a third-party origin.
       sandbox="allow-scripts"
       allow="hid; bluetooth"
-      src={`ui/hardware-wallet/ledger.html?theme-state=${encodeURIComponent(
+      src={`/ui/hardware-wallet/ledger.html?theme-state=${encodeURIComponent(
         JSON.stringify(themeState)
       )}&currency=${currency}#${initialRoute}?${appSearchParams}`}
       style={{

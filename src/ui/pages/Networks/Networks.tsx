@@ -48,7 +48,6 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
@@ -219,7 +218,7 @@ function NetworkPage() {
   const goBack = useCallback(() => navigate(-1), [navigate]);
   const { networks, isStale } = useNetworks();
   const network = networks?.getNetworkByName(createChain(chainStr));
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const {
     isCustomNetwork,

@@ -56,7 +56,7 @@ const samples = {
   },
 };
 
-describe.only('Solana signing functions', () => {
+describe('Solana signing functions', () => {
   test('signMessage', () => {
     const sample = samples.signMessage;
     const keypair = fromSecretKeyToEd25519(decodeMasked(sample.sampleKey));

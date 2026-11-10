@@ -87,9 +87,8 @@ export async function fetchNetworkByChainId({
     preferences.testnetMode?.on &&
     (apiEnv === 'current' || apiEnv === 'testnet-first')
   ) {
-    const testNetworks = await testenvNetworksStore.loadNetworksByChainId(
-      chainId
-    );
+    const testNetworks =
+      await testenvNetworksStore.loadNetworksByChainId(chainId);
     try {
       return testNetworks.getNetworkById(chainId);
     } catch {

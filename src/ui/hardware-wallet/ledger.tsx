@@ -1,3 +1,4 @@
+import 'src/shared/polyfills';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { HashRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';

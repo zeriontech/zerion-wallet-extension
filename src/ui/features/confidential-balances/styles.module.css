@@ -44,7 +44,9 @@
   box-shadow: var(--elevation-300);
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
-  transition: opacity 150ms ease-out, transform 150ms ease-out;
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms ease-out;
 }
 
 /* Ariakit detects the transition above, flips `data-enter` while the card is

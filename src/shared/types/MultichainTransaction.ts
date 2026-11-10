@@ -4,7 +4,7 @@ import type { OneOf } from '../type-utils/OneOf';
 
 export type MultichainTransaction<
   E extends IncomingTransactionWithChainId = IncomingTransactionWithChainId,
-  S extends SolTxSerializable = SolTxSerializable
+  S extends SolTxSerializable = SolTxSerializable,
 > = OneOf<{
   evm: E;
   solana: S;

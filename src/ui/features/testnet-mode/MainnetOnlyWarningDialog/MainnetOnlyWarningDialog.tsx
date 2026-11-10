@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
@@ -11,7 +10,7 @@ import { WarningIcon } from 'src/ui/components/WarningIcon';
 import { usePreferences } from '../../preferences';
 
 const MainnetOnlyWarningDialog = React.forwardRef<
-  HTMLDialogElementInterface,
+  HTMLDialogElement,
   { message: React.ReactNode } // later can describe Props
 >(({ message }, ref) => {
   return (
@@ -66,7 +65,7 @@ export function WithMainnetOnlyWarningDialog<T extends 'button' | 'a'>({
     handleClick: NonNullable<ClickHandler<T>>;
   }) => React.ReactNode;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const { preferences } = usePreferences();
   const isTestnetMode = preferences?.testnetMode?.on;
   return (

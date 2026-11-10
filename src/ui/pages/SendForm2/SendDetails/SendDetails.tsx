@@ -164,8 +164,8 @@ export function SendDetails({
     { suspense: false }
   );
   const feePrice = feeFungibleId
-    ? feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta
-        .price ?? null
+    ? (feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta
+        .price ?? null)
     : null;
   const feeQuantity = networkFee?.amount?.quantity ?? null;
   const feeFiatValue =

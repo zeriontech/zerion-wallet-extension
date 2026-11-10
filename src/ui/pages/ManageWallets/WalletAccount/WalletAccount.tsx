@@ -26,7 +26,6 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { Button } from 'src/ui/ui-kit/Button';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { WarningIcon } from 'src/ui/components/WarningIcon';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { invariant } from 'src/shared/invariant';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
@@ -200,7 +199,7 @@ export function WalletAccount() {
       navigate(-1);
     },
   });
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const nameInputId = useId();
   if (isLoading || walletGroupIsLoading) {
     return <NavigationTitle title={null} documentTitle="" />;

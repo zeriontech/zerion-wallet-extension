@@ -6,7 +6,6 @@ import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarn
 import { Button } from 'src/ui/ui-kit/Button';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
@@ -190,14 +189,14 @@ export function InterpretationSecurityCheck({
     isError: boolean;
   };
 }) {
-  const loadingDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const errorDialogRef = useRef<HTMLDialogElementInterface | null>(null);
-  const successDialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const loadingDialogRef = useRef<HTMLDialogElement | null>(null);
+  const errorDialogRef = useRef<HTMLDialogElement | null>(null);
+  const successDialogRef = useRef<HTMLDialogElement | null>(null);
   const mode: InterpretationMode = interpretQuery.isInitialLoading
     ? 'loading'
     : interpretQuery.isError
-    ? 'error'
-    : 'success';
+      ? 'error'
+      : 'success';
 
   const warnings = useMemo(
     () => sortWarnings(interpretation?.data.warnings),
@@ -209,14 +208,14 @@ export function InterpretationSecurityCheck({
     warningSeverity === 'Red' || warningSeverity === 'Orange'
       ? 'danger'
       : warningSeverity === 'Yellow'
-      ? 'warning'
-      : warningSeverity === 'Gray'
-      ? 'unknown'
-      : mode === 'loading'
-      ? 'loading'
-      : mode === 'success'
-      ? 'ok'
-      : 'unknown';
+        ? 'warning'
+        : warningSeverity === 'Gray'
+          ? 'unknown'
+          : mode === 'loading'
+            ? 'loading'
+            : mode === 'success'
+              ? 'ok'
+              : 'unknown';
 
   return (
     <>
@@ -228,10 +227,10 @@ export function InterpretationSecurityCheck({
             mode === 'loading'
               ? () => loadingDialogRef.current?.showModal()
               : mode === 'error' || warningSeverity === 'Gray'
-              ? () => errorDialogRef.current?.showModal()
-              : mode === 'success' && !warningSeverity
-              ? () => successDialogRef.current?.showModal()
-              : undefined
+                ? () => errorDialogRef.current?.showModal()
+                : mode === 'success' && !warningSeverity
+                  ? () => successDialogRef.current?.showModal()
+                  : undefined
           }
           title={
             warningSeverity === 'Red' ||
@@ -239,12 +238,12 @@ export function InterpretationSecurityCheck({
             warningSeverity === 'Yellow'
               ? 'Risks Found'
               : warningSeverity === 'Gray'
-              ? 'Unverified'
-              : mode === 'loading'
-              ? 'Simulating...'
-              : mode === 'success'
-              ? 'No Risks Found'
-              : 'Unverified'
+                ? 'Unverified'
+                : mode === 'loading'
+                  ? 'Simulating...'
+                  : mode === 'success'
+                    ? 'No Risks Found'
+                    : 'Unverified'
           }
         />
         {mode === 'loading' ? (
@@ -324,8 +323,8 @@ export function InterpretationSecurityCheck({
                   warningSeverity === 'Red' || warningSeverity === 'Orange'
                     ? 'danger'
                     : warningSeverity === 'Yellow'
-                    ? 'warning'
-                    : 'info'
+                      ? 'warning'
+                      : 'info'
                 }
               />
             ))}

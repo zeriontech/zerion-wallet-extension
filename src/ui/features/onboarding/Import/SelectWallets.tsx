@@ -24,7 +24,6 @@ import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { SelectWalletsFAQ } from '../FAQ';
 import * as helperStyles from '../shared/helperStyles.module.css';
 
@@ -55,7 +54,7 @@ function ChooseWalletsToImport({
     );
   });
 
-  const moreWalletsDialogRef = useRef<HTMLDialogElementInterface>(null);
+  const moreWalletsDialogRef = useRef<HTMLDialogElement>(null);
 
   const handleSelect = (selectedValues: Set<string>) => {
     const selectedWallets = wallets

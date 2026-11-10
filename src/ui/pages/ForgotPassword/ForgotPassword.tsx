@@ -9,7 +9,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { invariant } from 'src/shared/invariant';
 import { focusNode } from 'src/ui/shared/focusNode';
@@ -22,7 +21,7 @@ import { urlContext } from 'src/shared/UrlContext';
 import * as s from './styles.module.css';
 
 export function ForgotPassword() {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const eraseAllData = useEraseDataMutation({
     onSuccess: () => {
       if (urlContext.windowType === 'tab') {

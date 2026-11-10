@@ -71,8 +71,8 @@ function Indicator({ value, weakest }: { value: Strength; weakest: boolean }) {
           value === Strength.medium || value === Strength.strong
             ? colors[value]
             : weakest
-            ? colors.weakest
-            : colors.empty
+              ? colors.weakest
+              : colors.empty
         }
       />
       <Rect color={atLeastMedium ? colors[value] : colors.empty} />

@@ -230,8 +230,8 @@ export function NetworkList({
         index === 0 && title
           ? 36
           : networks.isSavedLocallyChain(createChain(items[index].key))
-          ? 64
-          : 48
+            ? 64
+            : 48
       }
       overscan={5}
       stickyFirstElement={Boolean(title)}

@@ -37,9 +37,8 @@ export class DnaService {
   }
 
   async pushAction(action: DnaAction) {
-    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(
-      ACTION_QUEUE_KEY
-    );
+    const currentQueue =
+      await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
     await BrowserStorage.set(ACTION_QUEUE_KEY, [
       ...(currentQueue || []),
       { ...action, timestamp: Date.now() },
@@ -62,18 +61,16 @@ export class DnaService {
   }
 
   private async popAction() {
-    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(
-      ACTION_QUEUE_KEY
-    );
+    const currentQueue =
+      await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
     currentQueue?.shift();
     await BrowserStorage.set(ACTION_QUEUE_KEY, currentQueue);
     this.tryRegisterAction();
   }
 
   private async takeFirstRecentAction() {
-    const currentQueue = await BrowserStorage.get<DnaActionWithTimestamp[]>(
-      ACTION_QUEUE_KEY
-    );
+    const currentQueue =
+      await BrowserStorage.get<DnaActionWithTimestamp[]>(ACTION_QUEUE_KEY);
     if (!currentQueue?.length) {
       return null;
     }

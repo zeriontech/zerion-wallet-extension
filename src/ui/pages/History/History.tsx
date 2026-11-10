@@ -443,9 +443,9 @@ export function HistoryList({
           <HistoryEmptyView
             hasFilters={Boolean(
               searchQuery ||
-                selectedChain ||
-                hasActiveFilters ||
-                searchParams.date
+              selectedChain ||
+              hasActiveFilters ||
+              searchParams.date
             )}
             onReset={() => {
               setSearchQuery(undefined);

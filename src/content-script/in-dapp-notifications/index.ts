@@ -44,7 +44,7 @@ const notifications = {
         ),
         r('button', { 'aria-label': 'Close', class:styles.closeButton})
       )
-    )
+    );
 
     return el;
   },
@@ -64,7 +64,7 @@ const notifications = {
         )
       ),
       r('button', { 'aria-label': 'Close', class: styles.closeButton })
-    )
+    );
 
     return el;
   },

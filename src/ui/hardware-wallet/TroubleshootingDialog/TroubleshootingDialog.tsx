@@ -5,7 +5,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { useMutation } from '@tanstack/react-query';
 import { walletPort } from 'src/ui/shared/channels';
@@ -15,7 +14,7 @@ export function TroubleshootingDialog({
 }: {
   error: LedgerError | null;
 }) {
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const reportMutation = useMutation({
     mutationFn: async () => {
       return walletPort.request('reportLedgerError', {

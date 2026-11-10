@@ -21,8 +21,8 @@ export function PerpsMarketRow({ perp }: { perp: Perp }) {
     relativeChange1d == null
       ? 'var(--neutral-500)'
       : relativeChange1d >= 0
-      ? 'var(--positive-500)'
-      : 'var(--negative-500)';
+        ? 'var(--positive-500)'
+        : 'var(--negative-500)';
   const changePrefix =
     relativeChange1d != null && relativeChange1d > 0 ? '+' : '';
   // iOS subtitle: "{24h volume, compact} · {leverage}x", e.g. "$2.5M · 10x".

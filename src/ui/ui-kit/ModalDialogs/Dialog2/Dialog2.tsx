@@ -137,24 +137,24 @@ export function Dialog2({
                         filter: 'blur(4px)',
                       }
                     : size === 'content'
-                    ? {
-                        transform:
-                          'translate(-50%, calc(-50% + 24px)) scale(0.96)',
-                        opacity: 0,
-                        filter: 'blur(4px)',
-                      }
-                    : {
-                        transform: 'translate(-50%, 24px) scale(0.96)',
-                        opacity: 0,
-                        filter: 'blur(4px)',
-                      }
+                      ? {
+                          transform:
+                            'translate(-50%, calc(-50% + 24px)) scale(0.96)',
+                          opacity: 0,
+                          filter: 'blur(4px)',
+                        }
+                      : {
+                          transform: 'translate(-50%, 24px) scale(0.96)',
+                          opacity: 0,
+                          filter: 'blur(4px)',
+                        }
                 }
                 animate={{
                   transform: isNarrow
                     ? 'translateY(0px) scale(1)'
                     : size === 'content'
-                    ? 'translate(-50%, -50%) scale(1)'
-                    : 'translate(-50%, 0px) scale(1)',
+                      ? 'translate(-50%, -50%) scale(1)'
+                      : 'translate(-50%, 0px) scale(1)',
                   opacity: 1,
                   filter: 'blur(0px)',
                 }}
@@ -166,17 +166,17 @@ export function Dialog2({
                         filter: 'blur(4px)',
                       }
                     : size === 'content'
-                    ? {
-                        transform:
-                          'translate(-50%, calc(-50% + 24px)) scale(0.96)',
-                        opacity: 0,
-                        filter: 'blur(4px)',
-                      }
-                    : {
-                        transform: 'translate(-50%, 24px) scale(0.96)',
-                        opacity: 0,
-                        filter: 'blur(4px)',
-                      }
+                      ? {
+                          transform:
+                            'translate(-50%, calc(-50% + 24px)) scale(0.96)',
+                          opacity: 0,
+                          filter: 'blur(4px)',
+                        }
+                      : {
+                          transform: 'translate(-50%, 24px) scale(0.96)',
+                          opacity: 0,
+                          filter: 'blur(4px)',
+                        }
                 }
                 transition={{ duration: size === 'content' ? 0.15 : 0.15 }}
               />

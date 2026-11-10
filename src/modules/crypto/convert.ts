@@ -29,8 +29,8 @@ export function uint8ArrayToBase64(array: Uint8Array) {
   return globalThis.btoa(str);
 }
 
-export function arrayBufferToBase64(buffer: ArrayBuffer) {
-  const bytes = new Uint8Array(buffer);
+export function arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array) {
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   return uint8ArrayToBase64(bytes);
 }
 

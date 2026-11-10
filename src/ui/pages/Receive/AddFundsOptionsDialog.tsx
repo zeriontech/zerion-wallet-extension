@@ -7,7 +7,6 @@ import { FrameListItemLink } from 'src/ui/ui-kit/FrameList';
 import { Media } from 'src/ui/ui-kit/Media';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
@@ -122,7 +121,7 @@ export function AddFundsOptionsDialog({
   analytics,
 }: {
   wallet: ExternallyOwnedAccount;
-  dialogRef: React.RefObject<HTMLDialogElementInterface>;
+  dialogRef: React.RefObject<HTMLDialogElement>;
   analytics: { pathname: string; address: string };
 }) {
   return (

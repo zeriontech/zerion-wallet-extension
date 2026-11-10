@@ -1,4 +1,4 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { Permit } from 'src/modules/zerion-api/requests/wallet-prepare-permits';
 import {
@@ -42,7 +42,7 @@ describe('signPermitBatch', () => {
   it('signs every permit in order and reports each step', async () => {
     const steps: number[] = [];
     const signed: number[] = [];
-    const sign = jest.fn(
+    const sign = vi.fn(
       async (typedData: TypedData) => `sig:${typedData.domain.chainId}`
     );
 
@@ -72,7 +72,7 @@ describe('signPermitBatch', () => {
     const steps: number[] = [];
     const signed: number[] = [];
     const denied = new Error('Signature denied by user');
-    const sign = jest
+    const sign = vi
       .fn<PermitSigner>()
       .mockResolvedValueOnce('sig:1')
       .mockRejectedValueOnce(denied);
@@ -95,7 +95,7 @@ describe('signPermitBatch', () => {
   });
 
   it('returns an empty batch for no permits without calling the signer', async () => {
-    const sign = jest.fn<PermitSigner>();
+    const sign = vi.fn<PermitSigner>();
     await expect(signPermitBatch(ADDRESS, [], sign)).resolves.toEqual([]);
     expect(sign).not.toHaveBeenCalled();
   });

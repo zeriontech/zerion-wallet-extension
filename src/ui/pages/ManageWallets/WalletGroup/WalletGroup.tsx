@@ -27,7 +27,6 @@ import {
 } from 'src/ui/shared/requests/useWalletGroups';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';
-import type { HTMLDialogElementInterface } from 'src/ui/ui-kit/ModalDialogs/HTMLDialogElementInterface';
 import { showConfirmDialog } from 'src/ui/ui-kit/ModalDialogs/showConfirmDialog';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
@@ -58,12 +57,12 @@ const strings = {
     containerType === ContainerType.mnemonic
       ? 'You can always import it again using your recovery phrase'
       : containerType === ContainerType.privateKey
-      ? 'You can always import it again using your private key'
-      : containerType === ContainerType.hardware
-      ? 'You can import it again by connecting your hardware wallet'
-      : containerType === ContainerType.readonly
-      ? 'You can always add it back to your watch list'
-      : 'You can add it again on the Manage Wallets page',
+        ? 'You can always import it again using your private key'
+        : containerType === ContainerType.hardware
+          ? 'You can import it again by connecting your hardware wallet'
+          : containerType === ContainerType.readonly
+            ? 'You can always add it back to your watch list'
+            : 'You can add it again on the Manage Wallets page',
 };
 
 function EditableWalletGroupName({
@@ -302,7 +301,7 @@ function WalletGroupItems({
 export function WalletGroup() {
   const navigate = useNavigate();
   const { groupId } = useParams();
-  const dialogRef = useRef<HTMLDialogElementInterface | null>(null);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   if (!groupId) {
     throw new Error('Group Id is required for this view');
   }

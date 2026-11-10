@@ -95,8 +95,8 @@ export function PhishingDefenceStatus({
               {type === 'transaction'
                 ? 'Transaction'
                 : type === 'dapp'
-                ? 'Dapp'
-                : 'Initiator'}
+                  ? 'Dapp'
+                  : 'Initiator'}
             </UIText>
           </HStack>
           <UIText kind="small/regular" color="var(--negative-500)">

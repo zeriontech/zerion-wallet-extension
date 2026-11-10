@@ -62,7 +62,7 @@ const toEmptyActionTx = (chain: string): LocalAddressAction['rawTransaction'] =>
     chain,
     hash: ZERO_HASH,
     nonce: -1,
-  } as const);
+  }) as const;
 
 const toActionTx = (
   tx: IncomingTransaction,
@@ -74,7 +74,7 @@ const toActionTx = (
     hash: (tx as { hash?: string }).hash || ZERO_HASH,
     nonce: -1,
     value: tx.value ?? undefined,
-  } as const);
+  }) as const;
 
 export function convertAssetToFungible(asset: Asset | null): Fungible | null {
   if (!asset) {

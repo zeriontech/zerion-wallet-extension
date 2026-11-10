@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useEvent } from '../useEvent';
 
 export function useSearchParamsObj<
-  T extends Record<string, string | undefined>
+  T extends Record<string, string | undefined>,
 >() {
   const [searchParams, setSearchParams] = useSearchParams();
   const value = useMemo(() => {

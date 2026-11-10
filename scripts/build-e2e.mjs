@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+
+/* eslint-disable security/detect-non-literal-fs-filename -- scans the build output directory */
+
+/**
+ * E2E-only build. It differs from the production build in three ways:
+ * - Output goes to dist-e2e and never leaves the runner.
+ * - Feature flags and the test wallet are pinned, so snapshots do not depend
+ *   on workflow configuration.
+ * - API traffic goes through the local proxy (see e2e/proxy.mjs) when a
+ *   Cloudflare bypass secret is configured, so the secret is never compiled
+ *   into the extension.
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+
+import dotenv from 'dotenv';
+
+import { buildExtension } from './build.mjs';
+
+dotenv.config();
+
+const PROXY_PORT = process.env.E2E_PROXY_PORT || '4789';
+const PROXY_BASE = `http://127.0.0.1:${PROXY_PORT}`;
+const SECRETS = [
+  ...new Set(
+    [
+      process.env.ZERION_API_DEVELOPMENT_KEY,
+      process.env.CF_ZPI_DEV_BYPASS_SECRET,
+    ].filter(Boolean)
+  ),
+];
+
+// With a bypass secret, route API traffic through the local proxy so the
+// secret never enters Chromium. Without one (local development), call ZPI
+// directly — there is no secret to protect.
+const USE_PROXY = SECRETS.length > 0 || process.env.E2E_USE_PROXY === '1';
+
+// Public wallet from e2e/fixtures/constants.ts. E2E always onboards this
+// wallet; it must not depend on a CI secret.
+const TEST_WALLET_ADDRESS = '0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1';
+
+// Scan in-process so the secret never appears in subprocess arguments or in
+// a subprocess error message.
+function containsSecret(directory, secret) {
+  const needle = Buffer.from(secret);
+  const stack = [directory];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(file);
+        continue;
+      }
+      // Fail closed on symlinks and other non-regular files.
+      if (!entry.isFile()) {
+        return true;
+      }
+      if (fs.readFileSync(file).includes(needle)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+console.log(
+  `Building E2E extension (API target: ${
+    USE_PROXY ? 'local proxy' : 'direct ZPI'
+  })`
+); // eslint-disable-line no-console
+
+const buildEnv = {
+  PLATFORM: 'chrome',
+  ZERION_API_URL: USE_PROXY ? `${PROXY_BASE}/zpi/` : 'https://zpi.zerion.io/',
+  ZERION_TESTNET_API_URL: USE_PROXY
+    ? `${PROXY_BASE}/zpi-testnet/`
+    : 'https://zpi-testnet.zerion.io/',
+  BACKEND_ENV: '',
+  PROXY_URL: 'https://proxy.zerion.io/',
+  DEFI_SDK_TRANSACTIONS_API_URL: 'https://transactions.zerion.io',
+  TEST_WALLET_ADDRESS,
+  MIXPANEL_TOKEN_PUBLIC: '',
+  GOOGLE_ANALYTICS_MEASUREMENT_ID: '',
+  GOOGLE_ANALYTICS_API_SECRET: '',
+  FEATURE_SEND_FORM: 'on',
+  FEATURE_BRIDGE_FORM: 'on',
+  FEATURE_LOYALTY_FLOW: 'off',
+  FEATURE_SOLANA: 'on',
+};
+
+// Defence in depth: never let the bypass secret reach the bundler. `buildEnv`
+// never contained the keys — `buildExtension` spreads `process.env` too — so
+// remove them from the inherited environment as well.
+const SECRET_ENV_VARS = [
+  'ZERION_API_DEVELOPMENT_KEY',
+  'CF_ZPI_DEV_BYPASS_SECRET',
+];
+for (const name of SECRET_ENV_VARS) {
+  delete buildEnv[name];
+  delete process.env[name];
+}
+
+buildExtension({ platform: 'chrome', outDir: 'dist-e2e', env: buildEnv });
+
+for (const secret of SECRETS) {
+  if (containsSecret('dist-e2e', secret)) {
+    throw new Error(
+      'E2E build contains the Cloudflare bypass secret. Refusing to continue.'
+    );
+  }
+}
+
+console.log('Done E2E'); // eslint-disable-line no-console
