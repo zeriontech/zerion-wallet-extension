@@ -4,11 +4,18 @@ import type { ZerionApiContext } from '../zerion-api-bare';
 import type { Fungible } from '../types/Fungible';
 import type { Amount } from '../types/Amount';
 import { getConfidentialPermitsHeaders } from '../shared/confidentialPermitsHeader';
+import { appendHiddenFungibleIds } from '../shared/hiddenFungibleIds';
 import type { SignedPermit } from './wallet-prepare-permits';
 
 export interface Params {
   address: string;
   currency: string;
+  /**
+   * Fungible asset IDs to exclude. Declared for the request contract; no
+   * extension caller passes it: this route feeds Send/Swap/balance caches and
+   * must keep showing a hidden token's holdings.
+   */
+  hiddenFungibleIds?: string[];
   /**
    * Signed decryption permits unlocking confidential amounts. This is a GET,
    * so they travel in the `Zerion-Confidential-Permits` header as unpadded
@@ -51,12 +58,15 @@ interface Response {
 
 export async function walletGetSimplePositions(
   this: ZerionApiContext,
-  { address, currency, permits }: Params,
+  { address, currency, permits, hiddenFungibleIds }: Params,
   options: ClientOptions = CLIENT_DEFAULTS,
 ) {
   const provider = await this.getAddressProviderHeader(address);
   const kyOptions = this.getKyOptions();
-  const params = new URLSearchParams({ address, currency });
+  const params = appendHiddenFungibleIds(
+    new URLSearchParams({ address, currency }),
+    hiddenFungibleIds,
+  );
   const endpoint = `wallet/get-simple-positions/v1?${params}`;
   return ZerionHttpClient.get<Response>(
     {

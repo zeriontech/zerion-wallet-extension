@@ -40,6 +40,7 @@ import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
 import { gaCollect, prepareGaParams } from './google-analytics';
 import { waitForAnalyticsIdSet } from './analyticsId';
+import { getAssetVisibilityEvent } from './shared/assetVisibilityEvent';
 
 const toEcosystemProperty = (value: 'evm' | 'solana') =>
   value === 'evm' ? 'EVM' : value === 'solana' ? 'Solana' : value;
@@ -226,6 +227,21 @@ function trackAppEvents({ account }: { account: Account }) {
     const event_name = 'General: Banner Clicked';
     const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
     mixpanelTrack(event_name, mixpanelParams);
+  });
+
+  emitter.on('assetVisibilityChanged', async (data) => {
+    const preferences = await globalPreferences.getPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const { event, properties } = getAssetVisibilityEvent(data);
+    const params = createParams({
+      request_name: 'asset_visibility_changed',
+      wallet_address: data.walletAddress,
+      ...properties,
+    });
+    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+    mixpanelTrack(event, mixpanelParams);
   });
 
   emitter.on('perpsScreenViewed', async (data) => {

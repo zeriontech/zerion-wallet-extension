@@ -25,12 +25,14 @@ import SecurityIcon from 'jsx:src/ui/assets/security.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ToolsIcon from 'jsx:src/ui/assets/hammer.svg';
+import EyeIcon from 'jsx:src/ui/assets/eye.svg';
 import { version } from 'src/shared/packageVersion';
 import { apostrophe, middot } from 'src/ui/shared/typography';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { preferenceStore } from 'src/ui/features/appearance';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences';
+import { HiddenAssets, useHiddenFungibleIds } from 'src/ui/features/hidden-assets';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { Frame } from 'src/ui/ui-kit/Frame';
 import { FrameListItemAnchor, FrameListItemLink } from 'src/ui/ui-kit/FrameList';
@@ -127,6 +129,7 @@ function SettingsMain() {
   useBackgroundKind({ kind: 'white' });
 
   const { hasTestWallet } = useStore(metaAppState);
+  const { rawHiddenFungibleIds, isReady: hiddenIdsAreReady } = useHiddenFungibleIds();
   const evmAddress = currentWallet ? isEthereumAddress(currentWallet.address) : false;
 
   return (
@@ -266,6 +269,23 @@ function SettingsMain() {
                 <HStack gap={8} alignItems="center">
                   <SecurityIcon />
                   <UIText kind="body/regular">Security</UIText>
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+            <FrameListItemLink to="/settings/hidden-assets">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center" style={{ width: '100%' }}>
+                  <EyeIcon style={{ width: 24, height: 24 }} />
+                  <UIText kind="body/regular">Hidden Assets</UIText>
+                  {hiddenIdsAreReady && rawHiddenFungibleIds.length > 0 ? (
+                    <UIText
+                      kind="small/regular"
+                      color="var(--neutral-500)"
+                      style={{ marginLeft: 'auto' }}
+                    >
+                      {rawHiddenFungibleIds.length}
+                    </UIText>
+                  ) : null}
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
@@ -689,6 +709,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <Security />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/hidden-assets"
+        element={
+          <ViewSuspense>
+            <HiddenAssets />
           </ViewSuspense>
         }
       />

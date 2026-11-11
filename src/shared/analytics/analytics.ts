@@ -28,6 +28,7 @@ type MetabaseEvent =
   | 'network_fee_level_changed'
   | 'banner_clicked'
   | 'asset_clicked'
+  | 'asset_visibility_changed'
   | 'passkey_login_enabled'
   | 'passkey_login_disabled'
   | 'password_change_success'
