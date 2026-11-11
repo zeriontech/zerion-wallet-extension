@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
+import isEqual from 'lodash/isEqual';
 import { useStore } from '@store-unit/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -79,6 +80,10 @@ import type { SendFormState2 } from './types';
 import { useFormState } from './useFormState';
 import { useInputPosition } from './useInputPosition';
 import { useSendTransaction } from './useSendTransaction';
+import { resolveSendSlot } from './resolveSendSlot';
+import { exceedsBalance as resolveExceedsBalance } from './exceedsBalance';
+import { resolveSendTopUpTarget } from './resolveSendTopUpTarget';
+import { SendTopUpCTA } from './SendTopUpCTA';
 import { nftPositionToDefiSdkNft } from './shared/nftPositionToDefiSdkNft';
 import { InputPosition } from './InputPosition';
 import { InputNftPosition } from './InputNftPosition';
@@ -246,19 +251,35 @@ function SendFormComponent({
     return networks.getNetworkByName(createChain(formState.inputChain)) ?? null;
   }, [networks, formState.inputChain]);
 
+  const exceedsBalance = resolveExceedsBalance({
+    formState,
+    inputPrice,
+    balanceQuantity: isNftMode
+      ? (nftPosition?.amount.quantity ?? null)
+      : (position?.amount.quantity ?? null),
+  });
+
   const { data: sendData, isLoading: sendDataLoading } = useSendTransaction({
     address,
     formState,
     position,
     resolvedInputAmount,
     network: sendNetwork,
+    exceedsBalance,
     enabled: !ecosystemMismatch,
   });
 
   const sendQuote = sendData?.sendQuote ?? null;
-  const sendTransaction = sendQuote?.transactionSwap ?? null;
   const sendInputAmount = sendData?.inputAmount ?? null;
   const sendError = sendData?.error ?? null;
+
+  const slot = resolveSendSlot(
+    sendData ? { error: sendError, networkFee: sendQuote?.networkFee ?? null } : null,
+    {
+      assetSymbol: position?.fungible.symbol ?? null,
+      nativeAssetSymbol: sendNetwork?.baseAsset?.symbol ?? null,
+    },
+  );
 
   // Single shared gas-prices fetch for the send chain. Powers preset pricing in
   // the network-fee dialog, the live displayed-fee scaling, and the gas applied
@@ -302,6 +323,9 @@ function SendFormComponent({
     const configured = applyConfiguration(clientTx.evm, configuration, gasPrices ?? null);
     return { evm: configured };
   }, [sendQuote, formState, configuration, gasPrices]);
+
+  const clientTransactionRef = useRef(clientTransaction);
+  clientTransactionRef.current = clientTransaction;
 
   // Reset simulation/sign state when form state changes meaningfully.
   const [simulationResult, setSimulationResult] = useState<SimulationResult>(null);
@@ -571,7 +595,13 @@ function SendFormComponent({
     onIntercept: () => setHasSimulated(true),
   });
 
-  const handleSimulationCompleted = (result: SimulationResult) => {
+  const handleSimulationCompleted = (
+    result: SimulationResult,
+    simulatedTransaction: MultichainTransaction,
+  ) => {
+    if (!isEqual(simulatedTransaction, clientTransactionRef.current)) {
+      return;
+    }
     setSimulationResult(result);
     const fresh = resolveSendTransactionWarning({
       simulationResult: result,
@@ -656,7 +686,7 @@ function SendFormComponent({
               onChange={(value) => handleChange('data', value)}
             />
           ) : null}
-          {sendTransaction || sendDataLoading ? (
+          {slot.details ? (
             <SendDetails
               inputChain={formState.inputChain}
               networks={networks}
@@ -717,6 +747,15 @@ function SendFormComponent({
         ) : null}
         {wallet && isReadonlyAccount(wallet) && !readonlyWallDisabled ? (
           <ReadonlySignButton wallet={wallet} />
+        ) : wallet && slot.button === 'top-up' ? (
+          <SendTopUpCTA
+            wallet={wallet}
+            depositTarget={resolveSendTopUpTarget({
+              error: sendError,
+              formState,
+              baseAssetId: sendNetwork?.baseAsset?.id ?? null,
+            })}
+          />
         ) : (
           <SendButton
             address={address}
@@ -725,6 +764,8 @@ function SendFormComponent({
             simulated={hasSimulated}
             signing={signMutation.isLoading}
             isPreparingTransaction={sendDataLoading}
+            slotButton={slot.button}
+            exceedsBalance={exceedsBalance}
             onSimulationCompleted={handleSimulationCompleted}
             onSign={() => guardedSign(simulationResult)}
             onCancel={handleCancel}

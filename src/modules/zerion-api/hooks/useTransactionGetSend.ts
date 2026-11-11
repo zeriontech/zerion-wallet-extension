@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { UseQueryOptions } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { TransactionMultichainBackend } from 'src/shared/types/Quote';
 import type { Amount } from '../types/Amount';
@@ -23,6 +24,21 @@ export interface TransactionGetSendResult {
   transactionSend: null | TransactionMultichainBackend;
 }
 
+export function transactionGetSendQueryOptions(
+  params: Params,
+  source: BackendSourceParams['source'],
+): UseQueryOptions<TransactionGetSendResult> {
+  return {
+    queryKey: [QUERY_KEY, params, source],
+    queryFn: async (): Promise<TransactionGetSendResult> => {
+      const response = await ZerionAPI.transactionGetSend(params, { source });
+      return response.data;
+    },
+    staleTime: STALE_TIME,
+    retry: 1,
+  };
+}
+
 export function useTransactionGetSend(
   params: Params,
   { source }: BackendSourceParams,
@@ -37,15 +53,9 @@ export function useTransactionGetSend(
   } = {},
 ) {
   return useQuery({
-    queryKey: [QUERY_KEY, params, source],
-    queryFn: async (): Promise<TransactionGetSendResult> => {
-      const response = await ZerionAPI.transactionGetSend(params, { source });
-      return response.data;
-    },
+    ...transactionGetSendQueryOptions(params, source),
     enabled,
     keepPreviousData,
     suspense,
-    staleTime: STALE_TIME,
-    retry: 1,
   });
 }

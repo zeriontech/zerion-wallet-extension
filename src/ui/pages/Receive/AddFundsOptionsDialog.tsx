@@ -11,13 +11,16 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WithMainnetOnlyWarningDialog } from 'src/ui/features/testnet-mode/MainnetOnlyWarningDialog';
 import { isReadonlyAccount } from 'src/shared/types/validators';
+import { depositPathFor, type DepositTarget } from 'src/ui/pages/SendForm2/resolveSendTopUpTarget';
 
 export function AddFundsOptionsContent({
   wallet,
   analytics,
+  depositTarget = null,
 }: {
   wallet: ExternallyOwnedAccount;
   analytics: { pathname: string; address: string };
+  depositTarget?: DepositTarget | null;
 }) {
   // See the note in ActionButtonsRow: buying to an address the user only
   // watches sends real money somewhere they may not be able to spend from.
@@ -31,7 +34,7 @@ export function AddFundsOptionsContent({
           render={({ handleClick }) => (
             <FrameListItemLink
               style={{ border: '2px solid var(--neutral-100)' }}
-              to="/deposit"
+              to={depositPathFor(depositTarget)}
               onClick={(event) => {
                 handleClick(event);
                 emitter.emit('buttonClicked', {

@@ -1,5 +1,2 @@
-export {
-  resolveSendTransactionWarning,
-  backendErrorToMessage,
-} from './resolveSendTransactionWarning';
+export { resolveSendTransactionWarning } from './resolveSendTransactionWarning';
 export type { ResolvedTransactionWarning, SimulationResult } from './resolveSendTransactionWarning';
