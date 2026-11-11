@@ -13,7 +13,7 @@
  * one shard, so adding or renaming a test cannot silently drop it from CI.
  *
  * Usage:
- *   node scripts/e2e-shards.mjs --shard=1 --total=3   # prints `grep=` for GITHUB_OUTPUT
+ *   node scripts/e2e-shards.mjs --shard=1 --total=5   # prints `grep=` for GITHUB_OUTPUT
  *   node scripts/e2e-shards.mjs --verify
  */
 
@@ -78,6 +78,74 @@ const TESTS = [
   ['overview.spec.ts', 'Overview › Matches snapshot', 11.2],
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
+
+  // Dapp suite. These only run when DAPP_URL is set; CI points then at the
+  // hosted zerion-test-dapp deployment.
+  [
+    'connection.spec.ts',
+    'Connection › EIP-6963 discovery exposes Zerion and connection returns the account',
+    8.0,
+  ],
+  [
+    'connection.spec.ts',
+    'Connection › rejecting the connection leaves the dapp disconnected and allows a retry',
+    8.0,
+  ],
+  [
+    'connection.spec.ts',
+    'Connection › clearing the active provider and selecting Zerion again reconnects without an approval window',
+    8.0,
+  ],
+  [
+    'networks.spec.ts',
+    'Networks › wallet_switchEthereumChain switches the dapp and emits chainChanged',
+    8.0,
+  ],
+  [
+    'networks.spec.ts',
+    'Networks › rejecting wallet_switchEthereumChain returns the rejection to the dapp',
+    8.0,
+  ],
+  [
+    'networks.spec.ts',
+    'Networks › wallet_addEthereumChain surfaces the chain update and then switches',
+    10.0,
+  ],
+  [
+    'signatures.spec.ts',
+    'Signatures › personal_sign approves a signature and a rejection reaches the dapp',
+    9.0,
+  ],
+  [
+    'signatures.spec.ts',
+    'Signatures › eth_signTypedData_v4 signs typed data and reports rejection',
+    9.0,
+  ],
+  [
+    'signatures.spec.ts',
+    'Signatures › SIWE and the PermitSingle fixture are signed as personal_sign and typed data',
+    9.0,
+  ],
+  [
+    'transactions.spec.ts',
+    'Transactions › eth_sendTransaction opens the approval and surfaces the missing testnet balance',
+    10.0,
+  ],
+  [
+    'transactions.spec.ts',
+    'Transactions › rejecting eth_sendTransaction returns error code 4001 to the dapp',
+    8.0,
+  ],
+  [
+    'unsupported-features.spec.ts',
+    'Unsupported methods and malformed payloads › unsupported signing and transaction methods fail without an approval window',
+    10.0,
+  ],
+  [
+    'unsupported-features.spec.ts',
+    'Unsupported methods and malformed payloads › malformed personal_sign params are rejected before an approval window',
+    8.0,
+  ],
 ].map(([file, title, seconds]) => ({ file, title, seconds }));
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -141,13 +209,13 @@ function verify(total) {
 function main() {
   const args = process.argv.slice(2);
   const value = (name) => args.find((arg) => arg.startsWith(`--${name}=`))?.split('=')[1];
-  const total = Number(value('total') ?? 3);
+  const total = Number(value('total') ?? 5);
 
   if (args.includes('--verify')) return verify(total);
 
   const index = Number(value('shard'));
   if (!Number.isInteger(index) || index < 1 || index > total) {
-    console.error('Usage: node scripts/e2e-shards.mjs --shard=N --total=3 | --verify');
+    console.error('Usage: node scripts/e2e-shards.mjs --shard=N --total=5 | --verify');
     process.exit(1);
   }
 
