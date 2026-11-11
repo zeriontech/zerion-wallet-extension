@@ -7,7 +7,7 @@ Solana web3, React, react-query, and the other large/core libraries as they are;
 replace tiny or low-usage packages with ModernDash, native APIs, or small local
 modules; and remove unused direct dependencies.
 
-Baseline: `origin/main` at `504b10ba` (Vite+/Vitest/Oxlint/Oxfmt).
+Baseline: `origin/main` at `e58b0d3d` (Vite+/Vitest/Oxlint/Oxfmt).
 
 ## Final metrics
 
@@ -21,7 +21,7 @@ Baseline: `origin/main` at `504b10ba` (Vite+/Vitest/Oxlint/Oxfmt).
 | `node_modules` on disk             |      421 MiB |      418 MiB |
 | `npm audit` total                  |           41 |           22 |
 | `npm audit` high / critical        |       20 / 0 |        0 / 0 |
-| Chrome dist JS                     | 13,409,323 B | 13,246,824 B |
+| Chrome dist JS                     | 13,409,323 B | 13,254,108 B |
 | Background entry                   |  2,526,284 B |  2,464,629 B |
 | In-page entry                      |    261,261 B |    274,331 B |
 
