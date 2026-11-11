@@ -13,11 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      # Store submission is automatic, but only when the item ids are
-      # configured; otherwise the steps below are skipped.
-      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-      FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -45,35 +40,18 @@ jobs:
           npm run build:production
 
       # Store uploads need the manifest at the archive root, which differs from
-      # the release artifacts below (one containing directory).
+      # the release artifacts below (one containing directory). They are handed
+      # to the `submit-stores` job, which holds the store credentials.
       - name: Create store artifacts
-        if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
         run: node scripts/release/store-zips.mjs --tag=${{ github.ref_name }}
 
-      - name: Submit release to the stores
-        if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
-        env:
-          # Production upload only: the release is published from the Chrome
-          # Web Store dashboard, where the canary/staged rollout is controlled.
-          CHROME_SKIP_SUBMIT_REVIEW: 'true'
-          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
-          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
-          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
-          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
-          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
-        run: |
-          STORE=all
-          if [ -z "$CHROME_EXTENSION_ID" ]; then STORE=firefox; fi
-          if [ -z "$FIREFOX_EXTENSION_ID" ]; then STORE=chrome; fi
-          node scripts/release/publish-stores.mjs --store="$STORE" \
-            --chrome-zip="$(ls store-artifacts/chrome/*.zip)" \
-            --firefox-zip="$(ls store-artifacts/firefox/*.zip | grep -v sources)" \
-            --firefox-sources-zip="$(ls store-artifacts/firefox/*-sources.zip)"
-
-      - name: Notice when store upload is skipped
-        if: ${{ env.CHROME_EXTENSION_ID == '' && env.FIREFOX_EXTENSION_ID == '' }}
-        run: |
-          echo "::notice::CHROME_EXTENSION_ID and FIREFOX_EXTENSION_ID are not configured; release published without store upload."
+      - name: Upload store artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: store-artifacts
+          path: store-artifacts/
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Compress build artifacts
         shell: bash
@@ -122,3 +100,63 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
+
+  submit-stores:
+    name: Submit release to the stores
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Store credentials live in this environment, not in the repository. Adding
+    # required reviewers here gates the upload only; the release above already
+    # happened.
+    environment: store-publishing
+    permissions:
+      contents: read
+    env:
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+      FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Download store artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: store-artifacts
+          path: store-artifacts
+
+      - name: Submit release to the stores
+        if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
+        env:
+          # Production upload only: the release is published from the Chrome
+          # Web Store dashboard, where the canary/staged rollout is controlled.
+          CHROME_SKIP_SUBMIT_REVIEW: 'true'
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          STORE=all
+          if [ -z "$CHROME_EXTENSION_ID" ]; then STORE=firefox; fi
+          if [ -z "$FIREFOX_EXTENSION_ID" ]; then STORE=chrome; fi
+          node scripts/release/publish-stores.mjs --store="$STORE" \
+            --chrome-zip="$(ls store-artifacts/chrome/*.zip)" \
+            --firefox-zip="$(ls store-artifacts/firefox/*.zip | grep -v sources)" \
+            --firefox-sources-zip="$(ls store-artifacts/firefox/*-sources.zip)"
+
+      - name: Notice when store upload is skipped
+        if: ${{ env.CHROME_EXTENSION_ID == '' && env.FIREFOX_EXTENSION_ID == '' }}
+        run: |
+          echo "::notice::CHROME_EXTENSION_ID and FIREFOX_EXTENSION_ID are not configured; release published without store upload."

@@ -4,16 +4,24 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 
 ## Gate matrix
 
-| Event        | Workflow                         | What runs                                                                                                                                                                                                                                                                                                                |
-| ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Pull request | `run-tests.yml`                  | `changeset-check` (or the `skip-changeset` label), `static` (`lint:check`, `format:check`, `typecheck`), `test` (`test:unit`), `build` (same-repo PRs), `e2e` (same-repo PRs, sharded 3 ways, balanced by measured test duration). `static`, `test`, `build` and `e2e` run in parallel; `changeset-check` is independent |
-| Pull request | `pr.yml` → `pr_attach_build.yml` | production build with PR env, zip attached to the PR thread                                                                                                                                                                                                                                                              |
-| Pull request | `pr_push_qa.yml`                 | build pushed to the `zerion-wallet-extension-qa` repo on the PR branch                                                                                                                                                                                                                                                   |
-| Push `main`  | `version-packages.yml`           | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                                                                                                                                  |
-| Tag `vX.Y.Z` | `release.yml`                    | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                                                                                                                                  |
-| Push `main`  | `beta.yml`                       | beta build (coral icons, own Firefox id, fourth version part) and, when configured, upload to the beta store items                                                                                                                                                                                                       |
-| Tag `vX.Y.Z` | `release_push_qa.yml`            | `release-candidate-vX.Y.Z` branch in `zerion-wallet-extension-qa`                                                                                                                                                                                                                                                        |
-| Manual       | `publish-stores.yml`             | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                                                                                                                                         |
+| Event        | Workflow               | What runs                                                                                                                                                                                               |
+| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pull request | `ci.yml`               | `changeset-check` (or the `skip-changeset` label), `quality` (`_quality.yml`: lint, format, typecheck, unit tests, e2e — same-repo PRs only, 5 shards), `build` (same-repo PRs; zip attached to the PR) |
+| Push `main`  | `beta.yml`             | `quality` first, then the beta build (coral icons, own Firefox id, fourth version part) and, when configured, the beta store upload                                                                     |
+| Push `main`  | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                 |
+| Tag `vX.Y.Z` | `release.yml`          | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                 |
+| Manual       | `publish-stores.yml`   | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                        |
+
+`_quality.yml` is the single definition of the quality gate (static checks, unit
+tests and the e2e matrix) and is called by `ci.yml` for pull requests and by
+`beta.yml` for every push to `main`, so a merged commit is gated again before the
+beta build is produced. Callers use `secrets: inherit`; the e2e job declares the
+bypass secret as optional, so the gate works without it. `release.yml`
+deliberately does not call it.
+
+Fork pull requests are not a supported path: their `build` and `e2e` jobs are
+skipped (they need repository secrets), and only the static checks and unit tests
+run there.
 
 All gates run on the Vite+ toolchain — Oxlint, Oxfmt, Vitest and TSRS; see `docs/build.md`.
 
@@ -25,7 +33,7 @@ All gates run on the Vite+ toolchain — Oxlint, Oxfmt, Vitest and TSRS; see `do
 2. On merge to `main`, `version-packages.yml` runs `changesets/action`, which opens or updates the **Version Packages** PR.
 3. Merging that PR bumps `package.json`, runs `node scripts/manifest-version.js` (so `src/manifest-chrome.json` and `src/manifest-firefox.json` stay in sync), writes `CHANGELOG.md`, and deletes the consumed changesets.
 4. With no changesets left, `version-packages.yml` runs `scripts/release/tag-version.mjs`, which creates and pushes the annotated `vX.Y.Z` tag. It is a no-op when that tag already exists.
-5. The tag push triggers `release.yml` (artifacts + GitHub Release + Slack) and `release_push_qa.yml` (release-candidate branch for QA).
+5. The tag push triggers `release.yml` (artifacts + GitHub Release + Slack + store upload).
 
 Tagging belongs to CI only. `scripts/manifest-version.js` no longer creates or amends commits or tags.
 
@@ -59,16 +67,12 @@ Icons and the beta build are also what the QA build uses on PRs; that path is un
 
 The tag push uses a token minted from `RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KEY`, never `GITHUB_TOKEN`:
 
-- pushes made with `GITHUB_TOKEN` do not trigger other workflows, so `release.yml` and `release_push_qa.yml` would never run;
+- pushes made with `GITHUB_TOKEN` do not trigger other workflows, so `release.yml` would never run;
 - the org ruleset `hive-protect-tags` (active) only allows tag creation by its bypass actors.
 
 The app needs `contents: write` on this repository (plus `pull-requests: write` so `changesets/action` can open the Version Packages PR) and must be listed as a bypass actor on `hive-protect-tags`. Misconfiguration fails the workflow before the tag is created: the preflight step fails when the app token cannot read the repository, and `tag-version.mjs` fails with an error naming `RELEASE_APP_ID` and `hive-protect-tags` when the push is rejected.
 
 The app is `zerion-ci-release-extension`, installed only on this repository. zerion-web-app has its own App (`zerion-ci-release`): any key of an App can mint tokens for every repo it is installed on, so the two repos must not share one. `RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KEY` are secrets of the `release` environment, whose deployment branches are limited to `main`, and the `version-packages` job declares `environment: release`. Do not copy them into repository or organization secrets: those are readable by a workflow pushed on any branch, and the key can push release tags past `hive-protect-tags`.
-
-### QA repository contract
-
-Unchanged: `release_push_qa.yml` pushes to branch `release-candidate-<tag>` in `zeriontech/zerion-wallet-extension-qa` through `.github/actions/push_qa_repo`, using `QA_REPO_APP_ID` / `QA_REPO_APP_PRIVATE_KEY`. `release.yml` keeps the artifact names `zerion-wallet-extension-<tag>.{zip,tar.gz}` and `zerion-wallet-firefox-addon-<tag>.{zip,tar.gz}`.
 
 ## Store publishing
 
@@ -104,6 +108,26 @@ Tradeoff: we depend on a single third-party submitter covering both stores. If i
 
 `CHROME_API_VERSION=v2` is set in the workflow, not stored as a secret. The script refuses to run with anything else: CWS API v1.1 stopped working on 2026-10-15.
 
+All store credentials live in the **`store-publishing` environment**, never in
+repository secrets. The workflows that need them declare it on a dedicated job,
+so the build jobs never see them:
+
+| Workflow             | Job with `environment: store-publishing` |
+| -------------------- | ---------------------------------------- |
+| `beta.yml`           | `publish` (`needs: build`)               |
+| `release.yml`        | `submit-stores` (`needs: release`)       |
+| `publish-stores.yml` | `publish`                                |
+
+Adding required reviewers to that environment therefore gates the upload only:
+a beta build still runs on every `main` push, and a tag still produces the
+GitHub Release, while the submission waits for approval. Without reviewers the
+uploads stay automatic and are skipped when the item ids are unset.
+
+One consequence worth knowing: a job only sees environment secrets of the
+environment it declares. If the ids were added as repository secrets instead,
+the jobs would still read them (repository secrets are visible everywhere), but
+the environment would no longer be the single place they live.
+
 ### Manual first run
 
 1. Upload both extensions to the stores by hand once; neither store creates a new listing through the API.
@@ -124,7 +148,7 @@ Submission is not transactional: if Chrome succeeded and Firefox failed, both st
 1. Bump the version and sync the manifests: `npm version <bump> --no-git-tag-version` (the `version` lifecycle hook skips `changeset version` and only syncs the manifests; `postversion` does the same). Plain `npm version` also works but tags before the manifest sync is committed, so prefer the explicit two-step.
 2. Add the `CHANGELOG.md` entry, commit and merge to `main`.
 3. Create and push the tag with an account that is a bypass actor on `hive-protect-tags`: `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z`.
-4. `release.yml` and `release_push_qa.yml` run from the tag. Publish to the stores with `publish-stores.yml` once the release looks right.
+4. `release.yml` runs from the tag and uploads to the production store items (Chrome draft only). Publish from the Chrome Web Store dashboard once the release looks right.
 
 ## Deliberate gaps
 

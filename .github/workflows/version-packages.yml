@@ -85,7 +85,7 @@ jobs:
 
       # When no changesets remain (the Version Packages PR just merged) tag the
       # versioned commit. The tag push, made with the app token, is what
-      # triggers release.yml and release_push_qa.yml.
+      # triggers release.yml.
       - name: Tag version
         if: ${{ steps.changesets.outputs.has-changesets == 'false' }}
         env:
