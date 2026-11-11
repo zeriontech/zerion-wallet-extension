@@ -98,6 +98,26 @@ Tradeoff: we depend on a single third-party submitter covering both stores. If i
 
 `CHROME_API_VERSION=v2` is set in the workflow, not stored as a secret. The script refuses to run with anything else: CWS API v1.1 stopped working on 2026-10-15.
 
+All store credentials live in the **`store-publishing` environment**, never in
+repository secrets. The workflows that need them declare it on a dedicated job,
+so the build jobs never see them:
+
+| Workflow             | Job with `environment: store-publishing` |
+| -------------------- | ---------------------------------------- |
+| `beta.yml`           | `publish` (`needs: build`)               |
+| `release.yml`        | `submit-stores` (`needs: release`)       |
+| `publish-stores.yml` | `publish`                                |
+
+Adding required reviewers to that environment therefore gates the upload only:
+a beta build still runs on every `main` push, and a tag still produces the
+GitHub Release, while the submission waits for approval. Without reviewers the
+uploads stay automatic and are skipped when the item ids are unset.
+
+One consequence worth knowing: a job only sees environment secrets of the
+environment it declares. If the ids were added as repository secrets instead,
+the jobs would still read them (repository secrets are visible everywhere), but
+the environment would no longer be the single place they live.
+
 ### Manual first run
 
 1. Upload both extensions to the stores by hand once; neither store creates a new listing through the API.
