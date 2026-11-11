@@ -85,7 +85,7 @@ allowlisted.
 ## CI
 
 The dapp tests are part of the normal `e2e` job in
-`.github/workflows/run-tests.yml`. There is no separate dapp workflow:
+`.github/workflows/ci.yml`. There is no separate dapp workflow:
 
 - The e2e matrix has five shards. `scripts/e2e-shards.mjs` assigns all 22
   extension tests and all 13 dapp tests to exactly one shard.

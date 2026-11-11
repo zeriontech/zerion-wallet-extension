@@ -5,8 +5,7 @@
  *
  * Tagging belongs to CI: `scripts/manifest-version.js` only syncs the
  * manifests. This script runs from `version-packages.yml` after the Version
- * Packages PR merges, and the tag it pushes is what triggers `release.yml` and
- * `release_push_qa.yml`.
+ * Packages PR merges, and the tag it pushes is what triggers `release.yml`.
  *
  * The push must use a GitHub App token (`RELEASE_APP_ID` /
  * `RELEASE_APP_PRIVATE_KEY`), never `GITHUB_TOKEN`:
