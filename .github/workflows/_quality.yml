@@ -1,9 +1,9 @@
 name: Quality
 
 # The quality gate, defined once and called from every flow that needs it:
-# `ci.yml` for pull requests, `beta.yml` for every push to `main` (so a merged
-# commit is gated again before the beta build is produced). Mirrors
-# `zerion-web-app`'s `_quality.yml`.
+# `ci.yml` for pull requests, `beta.yml` for every push to `main` (in parallel
+# with the beta build, so a merged commit is gated again before its beta build is
+# uploaded). Mirrors `zerion-web-app`'s `_quality.yml`.
 on:
   workflow_call:
     # Optional: the e2e job skips when the bypass secret is absent.
@@ -74,7 +74,7 @@ jobs:
   e2e:
     # The only quality job that receives the ZPI bypass secret; it only runs on
     # pull requests from this repository. Post-merge runs come from `beta.yml`,
-    # which calls this workflow before the beta build. The extension is
+    # which calls this workflow in parallel with the beta build. The extension is
     # built against a local proxy, so the secret never reaches Chromium,
     # traces, or the build output.
     #
