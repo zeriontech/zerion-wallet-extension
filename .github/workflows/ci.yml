@@ -2,8 +2,8 @@ name: CI
 
 # Pull-request CI: the changeset gate, the shared quality workflow, the
 # production build (whose zip is attached to the PR) and e2e. `main` is gated by
-# `beta.yml`, which calls the same quality workflow before it builds. Mirrors
-# `zerion-web-app`'s `ci.yml`.
+# `beta.yml`, which calls the same quality workflow alongside its beta build.
+# Mirrors `zerion-web-app`'s `ci.yml`.
 on:
   pull_request:
     # `labeled` / `unlabeled` exist so the `skip-changeset` label can satisfy

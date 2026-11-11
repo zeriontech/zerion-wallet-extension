@@ -7,17 +7,17 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 | Event        | Workflow               | What runs                                                                                                                                                                                               |
 | ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pull request | `ci.yml`               | `changeset-check` (or the `skip-changeset` label), `quality` (`_quality.yml`: lint, format, typecheck, unit tests, e2e — same-repo PRs only, 5 shards), `build` (same-repo PRs; zip attached to the PR) |
-| Push `main`  | `beta.yml`             | `quality` first, then the beta build (coral icons, own Firefox id, fourth version part) and, when configured, the beta store upload                                                                     |
+| Push `main`  | `beta.yml`             | `quality` and the beta build (coral icons, own Firefox id, fourth version part) in parallel, then, when both pass and the item ids are configured, the beta store upload                                |
 | Push `main`  | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                 |
 | Tag `vX.Y.Z` | `release.yml`          | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                 |
 | Manual       | `publish-stores.yml`   | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                        |
 
 `_quality.yml` is the single definition of the quality gate (static checks, unit
 tests and the e2e matrix) and is called by `ci.yml` for pull requests and by
-`beta.yml` for every push to `main`, so a merged commit is gated again before the
-beta build is produced. Callers use `secrets: inherit`; the e2e job declares the
-bypass secret as optional, so the gate works without it. `release.yml`
-deliberately does not call it.
+`beta.yml` for every push to `main`, in parallel with the beta build, so a merged
+commit is gated again in the same run that produces the beta upload. Callers use
+`secrets: inherit`; the e2e job declares the bypass secret as optional, so the
+gate works without it. `release.yml` deliberately does not call it.
 
 Fork pull requests are not a supported path: their `build` and `e2e` jobs are
 skipped (they need repository secrets), and only the static checks and unit tests
@@ -47,7 +47,7 @@ There is a second listing of the extension in both stores, used as the beta chan
 - the Firefox build gets the add-on id `beta@zerion.io`, because AMO keys an add-on by that id and the beta listing is a separate item (Chrome items are keyed by the store item, so the same ZIP can be uploaded to both);
 - the manifest version gets a fourth part, `<major>.<minor>.<patch>.<run>`, so every upload is a new version (manifests allow at most four parts).
 
-`beta.yml` runs on every push to `main`: it builds both targets with `npm run build:beta`, writes store-shaped ZIPs with the same packaging script as production and submits them to the beta items. Because beta reuses the production build, packaging and submission path, a green beta run is also the check that the production path works; the two differ only in their trigger and in the store item ids. **The upload is skipped, not failed, when the beta item ids are not configured** – the build and its artifacts are still produced. The same rule applies to production in `release.yml`: a tag publishes the release, and the store submission runs only if `CHROME_EXTENSION_ID` / `FIREFOX_EXTENSION_ID` are configured.
+`beta.yml` runs on every push to `main`: it builds both targets with `npm run build:beta` in parallel with the quality gate, writes store-shaped ZIPs with the same packaging script as production and submits them to the beta items once both jobs pass. A red `main` therefore still never uploads a beta build, but the build no longer waits for the quality gate. Because beta reuses the production build, packaging and submission path, a green beta run is also the check that the production path works; the two differ only in their trigger and in the store item ids. **The upload is skipped, not failed, when the beta item ids are not configured** – the build and its artifacts are still produced. The same rule applies to production in `release.yml`: a tag publishes the release, and the store submission runs only if `CHROME_EXTENSION_ID` / `FIREFOX_EXTENSION_ID` are configured.
 
 What "submit" means differs by channel:
 
@@ -114,7 +114,7 @@ so the build jobs never see them:
 
 | Workflow             | Job with `environment: store-publishing` |
 | -------------------- | ---------------------------------------- |
-| `beta.yml`           | `publish` (`needs: build`)               |
+| `beta.yml`           | `publish` (`needs: [quality, build]`)    |
 | `release.yml`        | `submit-stores` (`needs: release`)       |
 | `publish-stores.yml` | `publish`                                |
 

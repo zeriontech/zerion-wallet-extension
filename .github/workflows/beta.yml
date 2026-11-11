@@ -23,13 +23,13 @@ concurrency:
 jobs:
   quality:
     name: Quality
-    # Post-merge gate: a red `main` never produces or uploads a beta build.
+    # Post-merge gate: a red `main` never uploads a beta build. Runs in parallel
+    # with `build`; `publish` waits for both.
     uses: ./.github/workflows/_quality.yml
     secrets: inherit
 
   build:
     name: Build beta
-    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -96,7 +96,9 @@ jobs:
 
   publish:
     name: Publish beta to stores
-    needs: build
+    # Both must be green: publishing a build that failed quality would ship a
+    # broken beta, so the upload is the join point of the two parallel jobs.
+    needs: [quality, build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     # Store credentials live in this environment. Adding required reviewers here
