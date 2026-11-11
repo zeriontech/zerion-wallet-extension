@@ -91,6 +91,40 @@ describe('resolveSendButton', () => {
     ).toEqual({ label: 'Preparing Transaction', disabled: true });
   });
 
+  it.each<[string, SendFormState2]>([
+    ['token', withAmount],
+    [
+      'NFT',
+      { inputChain: 'ethereum', inputFungibleId: '', nftId: 'ethereum:0xc:1', nftAmount: '2' },
+    ],
+  ])(
+    'shows a disabled Preparing Transaction while a %s amount edit is pending over a quote',
+    (_name, formState) => {
+      // While the edit debounces, useSendTransaction yields no data and reports loading.
+      expect(
+        resolveSendButton({ ...base, formState, transaction: null, isPreparingTransaction: true }),
+      ).toEqual({ label: 'Preparing Transaction', disabled: true });
+    },
+  );
+
+  it.each(['0', '00', '1e3', '0x1', '1.5', '-1'])(
+    'reads a disabled Enter an Amount for the NFT amount %p',
+    (nftAmount) => {
+      expect(
+        resolveSendButton({
+          ...base,
+          formState: {
+            inputChain: 'ethereum',
+            inputFungibleId: '',
+            nftId: 'ethereum:0xc:1',
+            nftAmount,
+          },
+          transaction,
+        }),
+      ).toEqual({ label: 'Enter an Amount', disabled: true });
+    },
+  );
+
   it('shows a disabled Insufficient balance when the amount exceeds the balance', () => {
     expect(resolveSendButton({ ...base, exceedsBalance: true })).toEqual({
       label: 'Insufficient balance',

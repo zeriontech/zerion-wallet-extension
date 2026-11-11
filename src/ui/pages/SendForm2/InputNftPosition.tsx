@@ -15,10 +15,7 @@ import { FormFieldset } from './FormFieldset';
 import type { HandleChangeFunction, SendFormState2 } from './types';
 import { NftSelectorButton } from './NftSelectorButton';
 import * as assetSelectorStyles from './AssetSelectorButton.module.css';
-
-function isErc721(nftPosition: NftPosition | null): boolean {
-  return nftPosition?.nft.interface === 'ERC721';
-}
+import { isNftAmountEditable } from './shared/nftRequestAmount';
 
 function partialIntBalance(balance: string, factor: number): string {
   if (factor === 1) return new BigNumber(balance).toFixed(0);
@@ -33,18 +30,18 @@ export function InputNftPosition({
   onChange,
   nftPosition,
   onOpenSelector,
+  onAmountDraft,
 }: {
   formState: SendFormState2;
   onChange: HandleChangeFunction;
   nftPosition: NftPosition | null;
   onOpenSelector: () => void;
+  onAmountDraft: (raw: string) => void;
 }) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const erc721 = isErc721(nftPosition);
   const balanceQuantity = nftPosition?.amount.quantity ?? null;
-  const showAmountInput =
-    !erc721 && balanceQuantity != null && new BigNumber(balanceQuantity).isGreaterThan(1);
+  const showAmountInput = isNftAmountEditable(nftPosition);
 
   // When amount input is hidden, keep form state at '1'.
   useEffect(() => {
@@ -131,6 +128,7 @@ export function InputNftPosition({
                 onChange={(event) => {
                   const next = event.currentTarget.value.replace(/\s/g, '');
                   if (!/^\d*$/.test(next)) return;
+                  onAmountDraft(next);
                   handleChange(next);
                 }}
                 pattern="\d+"
