@@ -190,7 +190,7 @@ function ResourceButton({ resource, icon }: { resource: AssetResource; icon: Rea
     <Button
       key={resource.name}
       as={UnstyledAnchor}
-      rel="() => {}enner noreferrer"
+      rel="noopenner noreferrer"
       target="_blank"
       kind="regular"
       size={36}
