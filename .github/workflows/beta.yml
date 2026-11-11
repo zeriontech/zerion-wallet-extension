@@ -21,11 +21,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  beta:
+  build:
+    name: Build beta
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     env:
-      # Non-secret build configuration, identical to release.yml.
+      # Non-secret build configuration, identical to release.yml. No store
+      # credentials here: they only exist in the `publish` job's environment.
       ZERION_API_URL: https://zpi.zerion.io/
       ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
       PROXY_URL: https://proxy.zerion.io/
@@ -35,10 +37,6 @@ jobs:
       FEATURE_SOLANA: on
       # Fourth manifest version part: every run is a new store version.
       BETA_VERSION_SUFFIX: ${{ github.run_number }}
-      # Beta items. Everything else (publisher, service account, AMO JWT) is
-      # shared with production, so only the ids are beta-specific.
-      CHROME_EXTENSION_ID: ${{ secrets.CHROME_BETA_EXTENSION_ID }}
-      FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_BETA_EXTENSION_ID }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -81,6 +79,48 @@ jobs:
           --version-suffix=${{ env.BETA_VERSION_SUFFIX }}
           --label=beta
 
+      - name: Upload beta build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: beta-build
+          path: store-artifacts/
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    name: Publish beta to stores
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Store credentials live in this environment. Adding required reviewers here
+    # gates the upload only; the build above runs without them.
+    environment: store-publishing
+    env:
+      # Beta items. Everything else (publisher, service account, AMO JWT) is
+      # shared with production, so only the ids are beta-specific.
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_BETA_EXTENSION_ID }}
+      FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_BETA_EXTENSION_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Download store artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: beta-build
+          path: store-artifacts
+
       - name: Submit to the beta store items
         if: ${{ env.CHROME_EXTENSION_ID != '' || env.FIREFOX_EXTENSION_ID != '' }}
         env:
@@ -105,11 +145,3 @@ jobs:
         if: ${{ env.CHROME_EXTENSION_ID == '' && env.FIREFOX_EXTENSION_ID == '' }}
         run: |
           echo "::notice::CHROME_BETA_EXTENSION_ID and FIREFOX_BETA_EXTENSION_ID are not configured; beta build produced without uploading."
-
-      - name: Upload beta build
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: beta-build
-          path: store-artifacts/
-          retention-days: 7
-          if-no-files-found: error
