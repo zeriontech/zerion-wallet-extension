@@ -104,7 +104,7 @@ export function PhishingWarningPage() {
                 <UnstyledAnchor
                   style={{ cursor: 'pointer', textDecoration: 'underline' }}
                   href={safeUrl?.toString()}
-                  rel="noopener norefferer"
+                  rel="noopenner norefferer"
                   onClick={() => {
                     if (safeUrl?.origin) {
                       walletPort.request('ignoreDappSecurityWarning', {

@@ -334,11 +334,7 @@ function AssetStats({
         <StatLine
           title="Asset PnL & More"
           value={() => (
-            <UnstyledAnchor
-              href={PREMIUM_LANDING_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <UnstyledAnchor href={PREMIUM_LANDING_LINK} target="_blank" rel="noopener noreferrer">
               <UIText kind="body/accent" className={styles.gradientText}>
                 Buy Premium
               </UIText>
