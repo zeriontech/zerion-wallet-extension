@@ -2,7 +2,7 @@ name: Beta build
 
 # Every push to main produces the beta build and uploads it to the two beta
 # store items. The upload is skipped (not failed) when the beta item ids are not
-# configured, so the workflow is safe in forks and before the store items exist.
+# configured, so the workflow is safe before the store items exist.
 on:
   push:
     branches: [main]
@@ -21,8 +21,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    name: Quality
+    # Post-merge gate: a red `main` never produces or uploads a beta build.
+    uses: ./.github/workflows/_quality.yml
+    secrets: inherit
+
   build:
     name: Build beta
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:

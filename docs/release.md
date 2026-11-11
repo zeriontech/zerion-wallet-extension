@@ -4,14 +4,24 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 
 ## Gate matrix
 
-| Event        | Workflow               | What runs                                                                                                                                                                                                                                            |
-| ------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pull request | `ci.yml`               | `changeset-check` (or the `skip-changeset` label), `static` (`lint:check`, `format:check`, `typecheck`), `test` (`test:unit`), `build` (same-repo PRs; zip attached to the PR), `e2e` (same-repo PRs, sharded 5 ways). All gate jobs run in parallel |
-| Push `main`  | `ci.yml`               | `static`, `test`, `build` (post-merge signal; no PR comment, no e2e)                                                                                                                                                                                 |
-| Push `main`  | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                                                              |
-| Push `main`  | `beta.yml`             | beta build (coral icons, own Firefox id, fourth version part) and, when configured, upload to the beta store items                                                                                                                                   |
-| Tag `vX.Y.Z` | `release.yml`          | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                                                              |
-| Manual       | `publish-stores.yml`   | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                                                                     |
+| Event        | Workflow               | What runs                                                                                                                                                                                               |
+| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pull request | `ci.yml`               | `changeset-check` (or the `skip-changeset` label), `quality` (`_quality.yml`: lint, format, typecheck, unit tests, e2e — same-repo PRs only, 5 shards), `build` (same-repo PRs; zip attached to the PR) |
+| Push `main`  | `beta.yml`             | `quality` first, then the beta build (coral icons, own Firefox id, fourth version part) and, when configured, the beta store upload                                                                     |
+| Push `main`  | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                 |
+| Tag `vX.Y.Z` | `release.yml`          | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                 |
+| Manual       | `publish-stores.yml`   | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                        |
+
+`_quality.yml` is the single definition of the quality gate (static checks, unit
+tests and the e2e matrix) and is called by `ci.yml` for pull requests and by
+`beta.yml` for every push to `main`, so a merged commit is gated again before the
+beta build is produced. Callers use `secrets: inherit`; the e2e job declares the
+bypass secret as optional, so the gate works without it. `release.yml`
+deliberately does not call it.
+
+Fork pull requests are not a supported path: their `build` and `e2e` jobs are
+skipped (they need repository secrets), and only the static checks and unit tests
+run there.
 
 All gates run on the Vite+ toolchain — Oxlint, Oxfmt, Vitest and TSRS; see `docs/build.md`.
 
