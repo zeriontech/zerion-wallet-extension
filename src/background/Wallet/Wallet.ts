@@ -618,14 +618,6 @@ export class Wallet {
     this.emitter.emit('permissionsUpdated');
   }
 
-  async emitConnectionEvent({
-    context,
-    params: { origin },
-  }: WalletMethodParams<{ origin: string }>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('connectToSiteEvent', { origin });
-  }
-
   allowedOrigin(
     context: Partial<ChannelContext> | undefined,
     address: string,
