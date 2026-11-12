@@ -20,9 +20,6 @@ invariant(process.env.ZERION_API_URL, 'ZERION_API_URL is required in env');
 export const ZERION_API_URL = backendUrl(process.env.ZERION_API_URL, BACKEND_ENV);
 invariant(process.env.ZERION_TESTNET_API_URL, 'ZERION_TESTNET_API_URL is required in env');
 export const ZERION_TESTNET_API_URL = backendUrl(process.env.ZERION_TESTNET_API_URL, BACKEND_ENV);
-invariant(process.env.DEFI_SDK_TRANSACTIONS_API_URL, 'DEFI_SDK_TRANSACTIONS_API_URL is required in env');
-export const DEFI_SDK_TRANSACTIONS_API_URL = backendUrl(process.env.DEFI_SDK_TRANSACTIONS_API_URL, BACKEND_ENV);
-
 invariant(process.env.PROXY_URL, 'PROXY_URL is required in env');
 export const PROXY_URL = process.env.PROXY_URL;
 export const RPC_PROXY_URL = process.env.RPC_PROXY_URL;
