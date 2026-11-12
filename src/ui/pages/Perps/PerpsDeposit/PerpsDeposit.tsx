@@ -6,8 +6,8 @@ import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
-  createApproveAddressAction2,
-  createBridgeAddressAction2,
+  createApproveAddressAction,
+  createBridgeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
@@ -276,7 +276,7 @@ function DepositFormBody({
             initiator: INTERNAL_ORIGIN,
             clientScope: 'Swap',
             feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-            addressAction: createApproveAddressAction2({
+            addressAction: createApproveAddressAction({
               transaction: toIncomingTransaction(approveTx.evm),
               hash: null,
               explorerUrl: null,
@@ -306,7 +306,7 @@ function DepositFormBody({
           initiator: INTERNAL_ORIGIN,
           clientScope: 'Bridge',
           feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-          addressAction: createBridgeAddressAction2({
+          addressAction: createBridgeAddressAction({
             address,
             transaction: toMultichainTransaction(swapTx),
             hash: null,
