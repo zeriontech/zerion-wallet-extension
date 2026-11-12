@@ -16,6 +16,7 @@ import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTra
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { fungiblePositionToAddressPosition } from 'src/ui/shared/requests/shared/fungiblePositionToAddressPosition';
+import { CLEARED_GAS_OVERRIDES } from 'src/ui/shared/forms/formState';
 import { prepareSendData } from './shared/prepareSendData';
 import { isAmountEntered, isZeroAmount } from './shared/amount';
 import { toLegacySendFormState } from './shared/toLegacySendFormState';
@@ -219,11 +220,7 @@ export function useSendTransaction({
     const base = toLegacySendFormState(formState, resolvedInputAmount);
     return {
       ...base,
-      networkFeeSpeed: undefined,
-      maxFee: undefined,
-      maxPriorityFee: undefined,
-      gasPrice: undefined,
-      gasLimit: undefined,
+      ...CLEARED_GAS_OVERRIDES,
       nonce: undefined,
       data: customData,
     };

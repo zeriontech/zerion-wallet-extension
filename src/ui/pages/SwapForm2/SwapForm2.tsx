@@ -60,6 +60,7 @@ import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { fromConfiguration, toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
+import { CLEARED_GAS_OVERRIDES } from 'src/ui/shared/forms/formState';
 import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
@@ -100,15 +101,11 @@ import * as styles from './styles.module.css';
 function resetAfterBroadcast(state: Partial<SwapFormState2>): Partial<SwapFormState2> {
   return {
     ...state,
+    ...CLEARED_GAS_OVERRIDES,
     inputAmount: '',
     to: undefined,
     nonce: undefined,
     slippage: undefined,
-    networkFeeSpeed: undefined,
-    maxPriorityFee: undefined,
-    maxFee: undefined,
-    gasPrice: undefined,
-    gasLimit: undefined,
   };
 }
 
