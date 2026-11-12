@@ -13,7 +13,7 @@ import { NetworkFeeIconBadge } from 'src/ui/pages/SendTransaction/NetworkFee/Net
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { formatNetworkFee } from '../formatNetworkFee';
 import {
   getCustomFeeRatioFromDefaults,

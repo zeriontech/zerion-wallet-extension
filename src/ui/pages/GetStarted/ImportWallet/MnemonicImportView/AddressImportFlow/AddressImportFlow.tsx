@@ -16,7 +16,7 @@ import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { useAllExistingMnemonicAddresses } from 'src/ui/shared/requests/useAllExistingAddresses';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';

@@ -6,7 +6,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { minus, noValueDash } from 'src/ui/shared/typography';
+import { minus, noValueDash } from 'src/shared/typography';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';

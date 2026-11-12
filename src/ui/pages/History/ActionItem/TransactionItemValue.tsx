@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { minus } from 'src/ui/shared/typography';
+import { minus } from 'src/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';

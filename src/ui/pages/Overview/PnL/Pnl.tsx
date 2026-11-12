@@ -8,7 +8,7 @@ import { useWalletPnl } from 'src/modules/zerion-api/hooks/useWalletPnl';
 import { usePremiumStatus } from 'src/ui/features/premium/getPremiumStatus';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { minus, NBSP } from 'src/ui/shared/typography';
+import { minus, NBSP } from 'src/shared/typography';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';

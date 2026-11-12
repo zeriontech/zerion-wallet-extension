@@ -12,7 +12,7 @@ import type { Asset } from 'src/defi-sdk.types';
 import BigNumber from 'bignumber.js';
 import { collectData } from 'src/ui/shared/form-data';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { almostEqual, noValueDash } from 'src/ui/shared/typography';
+import { almostEqual, noValueDash } from 'src/shared/typography';
 import * as s from 'src/ui/style/helpers.module.css';
 import { getBaseQuantity, getCommonQuantity } from 'src/modules/networks/asset';
 import type { Chain } from 'src/modules/networks/Chain';

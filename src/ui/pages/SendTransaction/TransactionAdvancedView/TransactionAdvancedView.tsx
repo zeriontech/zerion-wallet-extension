@@ -4,7 +4,7 @@ import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { VStack } from 'src/ui/ui-kit/VStack';

@@ -88,7 +88,7 @@ import { decodeMasked } from 'src/shared/wallet/encode-locally';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
-import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
+import { referralProgramService } from 'src/modules/referral-program/ReferralProgramService.background';
 import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
 import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
 import type {

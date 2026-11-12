@@ -14,7 +14,7 @@ import { Stack } from 'src/ui/ui-kit/Stack';
 import * as helperStyles from 'src/ui/features/onboarding/shared/helperStyles.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { useGoBack } from 'src/ui/shared/navigation/useGoBack';
-import { apostrophe } from 'src/ui/shared/typography';
+import { apostrophe } from 'src/shared/typography';
 import * as styles from './styles.module.css';
 
 export function VerifyUser({ onSuccess }: { onSuccess: () => void }) {

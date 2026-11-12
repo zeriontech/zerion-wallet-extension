@@ -11,7 +11,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import AllNetworksIcon from 'jsx:src/ui/assets/all-networks.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { createChain } from 'src/modules/networks/Chain';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';

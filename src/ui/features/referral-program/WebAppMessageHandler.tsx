@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { invariant } from 'src/shared/invariant';
 import { isObj } from 'src/shared/isObj';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
-import { saveReferrerData } from './shared/storage';
+import { saveReferrerData } from 'src/modules/referral-program/storage';
 
 const ZERION_WEB_APP_URL = new URL('https://app.zerion.io');
 

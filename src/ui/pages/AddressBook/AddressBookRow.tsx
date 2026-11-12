@@ -9,7 +9,7 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletNameType } from 'src/ui/shared/useProfileName';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
-import { middot } from 'src/ui/shared/typography';
+import { middot } from 'src/shared/typography';
 import * as styles from './styles.module.css';
 
 export function AddressBookRow({

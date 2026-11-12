@@ -39,7 +39,7 @@ import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { middot, NBSP } from 'src/ui/shared/typography';
+import { middot, NBSP } from 'src/shared/typography';
 import { WalletNameType } from 'src/ui/shared/useProfileName';
 import type { WalletListGroup } from 'src/shared/wallet/wallet-list';
 import { getWalletId } from 'src/shared/wallet/wallet-list';

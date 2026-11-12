@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import type { NetworkFeeQuote } from './getNetworkFeeForSpeed';
 
 export interface NetworkFeeFormatFallbacks {

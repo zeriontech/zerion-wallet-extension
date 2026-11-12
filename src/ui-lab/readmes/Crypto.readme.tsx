@@ -20,7 +20,7 @@ import { PageTop } from 'src/ui/components/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 
 type Secret = {
   text: string;

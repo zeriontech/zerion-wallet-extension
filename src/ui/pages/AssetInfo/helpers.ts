@@ -1,4 +1,4 @@
-import { minus } from 'src/ui/shared/typography';
+import { minus } from 'src/shared/typography';
 import type { GroupedFungiblePosition } from 'src/ui/components/Positions/types';
 import { getPositionChange24h, getPositionValue } from 'src/ui/components/Positions/change24h';
 

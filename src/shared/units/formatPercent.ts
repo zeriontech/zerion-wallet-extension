@@ -1,6 +1,6 @@
 import memoize from 'memoize-one';
 import type BigNumber from 'bignumber.js';
-import { minus } from 'src/ui/shared/typography';
+import { minus } from 'src/shared/typography';
 import { toNumber } from './toNumber';
 
 const getFormatter = memoize((locale, maximumFractionDigits, minimumFractionDigits = 0) => {

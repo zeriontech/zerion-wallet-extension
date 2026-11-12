@@ -2,7 +2,7 @@ import { prepareStorage } from 'src/shared/core/version/version.background';
 import { DnaService } from 'src/modules/dna-service/dna.background';
 import { initialize as initializeAnalytics } from 'src/shared/analytics/analytics.background';
 import { initialize as initializeRemoteConfig } from 'src/modules/remote-config';
-import { referralProgramService } from 'src/ui/features/referral-program/ReferralProgramService.background';
+import { referralProgramService } from 'src/modules/referral-program/ReferralProgramService.background';
 import { initialize as initializeLiteweightChainSupport } from './requests/liteweight-chain-support';
 import { InDappNotificationService } from './in-dapp-notifications';
 import { Account, AccountPublicRPC } from './account/Account';
