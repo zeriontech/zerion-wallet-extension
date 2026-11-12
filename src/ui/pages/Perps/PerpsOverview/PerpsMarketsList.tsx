@@ -38,7 +38,7 @@ export function PerpsMarketsList({
   const sortDialog = useDialog2();
 
   // Don't fetch markets until positions have finished loading — positions
-  // render first, markets are supplementary (see CONTEXT.md / ADR-0002).
+  // render first, markets are supplementary (see GLOSSARY.md / ADR-0002).
   const markets = usePerpMarkets(dexList, { enabled: !positionsLoading });
 
   const allPerps = useMemo(() => selectPerps(markets.data, { sorting }), [markets.data, sorting]);

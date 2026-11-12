@@ -2,7 +2,7 @@
 
 The extension used to fetch one flat list of per-chain rows (`wallet/get-positions/v1`, the defi-sdk `AddressPosition` shape: one row per asset per chain per app, with `parent_id` nesting, `apy`, a raw base-unit quantity) and rebuilt every read view on the client: grouping by dapp, then by name, then by parent, and, on All Networks, summing the Wallet group's rows per asset into a cross-chain row with a per-chain tooltip. Swap, Send, Perps deposit and the asset page had already moved to `wallet/get-simple-positions/v1` and `wallet/get-asset-details/v1`.
 
-Decision: the flat endpoint is gone from the extension. Two units remain, chosen by what the screen does (see **Read surface / Trading surface** in `CONTEXT.md`):
+Decision: the flat endpoint is gone from the extension. Two units remain, chosen by what the screen does (see **Read surface / Trading surface** in `GLOSSARY.md`):
 
 - **Read surfaces** — Overview Tokens tab, Stats drill-down, Protocol Distribution, Reveal Dialog — consume **Grouped Positions** (`wallet/get-grouped-positions/v1`, `groupBy: ['by-app']`, `chainIds` for the chain filter). The backend delivers the Apps, the Wallet Bucket and the Position Groups; the client only orders them and pins the gas token.
 - **Trading surfaces and chain-exact balance checks** — Swap, Send, Perps deposit, the approve-amount view, the native-balance fee check and network picker rows, the quote-error analytics balance — consume **Simple Positions** and pick a row by `(chain.id, fungible.id)`.

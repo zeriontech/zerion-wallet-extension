@@ -43,7 +43,7 @@ Tagging belongs to CI only. `scripts/manifest-version.js` no longer creates or a
 
 There is a second listing of the extension in both stores, used as the beta channel. It is the **same bundle** as production with three differences:
 
-- the eight icon files are exchanged in the **finished bundle** (`src/images/beta/`, generated from the production artwork by swapping the background colour, so the silhouette, rounding and per-size anti-aliasing are identical). `scripts/build-beta.js` runs the same `build.js` / `build-firefox.js` as production and then overwrites the emitted, content-hashed PNGs in place, so every JS and CSS file in the beta ZIP is byte-identical to production — only the icons and the manifest version differ;
+- the eight icon files are exchanged in the **finished bundle** (`src/images/beta/`, generated from the production artwork by swapping the background colour, so the silhouette, rounding and per-size anti-aliasing are identical). `npm run build:beta` runs the same builder as production (`scripts/build.mjs --brand=beta`) and then copies the beta icons over the ones in the finished output directory, so every JS and CSS file in the beta ZIP is byte-identical to production — only the icons and the manifest version differ;
 - the Firefox build gets the add-on id `beta@zerion.io`, because AMO keys an add-on by that id and the beta listing is a separate item (Chrome items are keyed by the store item, so the same ZIP can be uploaded to both);
 - the manifest version gets a fourth part, `<major>.<minor>.<patch>.<run>`, so every upload is a new version (manifests allow at most four parts).
 

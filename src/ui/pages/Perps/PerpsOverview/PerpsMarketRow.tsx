@@ -13,7 +13,7 @@ import styles from './PerpsMarketRow.module.css';
 
 // Row layout deliberately duplicates Search.tsx's private `PerpView`, minus the
 // "PERP" badge — the Markets list and Search share a visual but not a code path
-// (Search's row carries combobox-only concerns). See ADR-0002 / CONTEXT.md.
+// (Search's row carries combobox-only concerns). See ADR-0002 / GLOSSARY.md.
 export function PerpsMarketRow({ perp }: { perp: Perp }) {
   const { currency } = useCurrency();
   const { relativeChange1d, price, maxLeverage, volume24h } = perp.meta;
