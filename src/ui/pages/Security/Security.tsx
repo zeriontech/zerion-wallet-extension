@@ -95,7 +95,7 @@ function TouchIdSettings() {
       return setupAccountPasskey(password);
     },
     onSuccess: () => {
-      walletPort.request('passkeyLoginEnabled');
+      walletPort.request('trackUiEvent', { name: 'passkeyLoginEnabled' });
       zeroizeAfterSubmission();
       toastRef.current?.showToast();
       if (!enablePasskeyDialogRef.current) {
@@ -112,7 +112,7 @@ function TouchIdSettings() {
       setUserValue(false);
     },
     onSuccess: () => {
-      walletPort.request('passkeyLoginDisabled');
+      walletPort.request('trackUiEvent', { name: 'passkeyLoginDisabled' });
     },
   });
 
@@ -280,7 +280,7 @@ function ChangePassword() {
     },
     onSuccess: () => {
       zeroizeAfterSubmission();
-      walletPort.request('passwordChangeSuccess');
+      walletPort.request('trackUiEvent', { name: 'passwordChangeSuccess' });
       toastRef.current?.showToast();
       if (dialogRef.current) {
         dialogRef.current.close();
@@ -293,7 +293,7 @@ function ChangePassword() {
       queryClient.refetchQueries(['account/getPasskeyEnabled']);
     },
     onError: (error) => {
-      walletPort.request('passwordChangeError');
+      walletPort.request('trackUiEvent', { name: 'passwordChangeError' });
       maybeTriggerMnemonicRestoration(error);
     },
   });

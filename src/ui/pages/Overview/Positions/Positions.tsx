@@ -496,10 +496,13 @@ export function PositionList({
                 <SurfaceItemLink
                   to={`/asset/${position.asset.id}`}
                   onClick={() => {
-                    walletPort.request('assetClicked', {
-                      assetId: position.asset.id,
-                      pathname,
-                      section: 'Overview',
+                    walletPort.request('trackUiEvent', {
+                      name: 'assetClicked',
+                      data: {
+                        assetId: position.asset.id,
+                        pathname,
+                        section: 'Overview',
+                      },
                     });
                   }}
                   decorationStyle={{ borderRadius: 16 }}

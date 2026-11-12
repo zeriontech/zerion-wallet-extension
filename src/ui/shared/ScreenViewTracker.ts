@@ -15,7 +15,7 @@ function useAuthenticatedAppOpened() {
     accountPublicRPCPort.request('isAuthenticated').then((isAuthenticated) => {
       if (isAuthenticated && !didTrackAppOpened.current) {
         didTrackAppOpened.current = true;
-        walletPort.request('unlockedAppOpened');
+        walletPort.request('trackUiEvent', { name: 'unlockedAppOpened' });
       }
     });
   }, [pathname]);
@@ -32,13 +32,16 @@ function useScreenViewChange() {
   const { mutate } = useMutation({
     mutationFn: async (pathname: string) => {
       const address = await walletPort.request('getCurrentAddress');
-      return walletPort.request('screenView', {
-        title: document.title,
-        pathname,
-        address,
-        previous: previousPathname.current,
-        screenSize: `${window.screen.width}x${window.screen.height}`,
-        windowType: urlContext.windowType,
+      return walletPort.request('trackUiEvent', {
+        name: 'screenView',
+        data: {
+          title: document.title,
+          pathname,
+          address,
+          previous: previousPathname.current,
+          screenSize: `${window.screen.width}x${window.screen.height}`,
+          windowType: urlContext.windowType,
+        },
       });
     },
     onSuccess() {

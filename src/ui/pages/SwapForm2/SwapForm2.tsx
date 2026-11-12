@@ -290,25 +290,28 @@ function SwapFormComponent({
 
   const trackTransactionFormed = useEvent(() => {
     if (!quote) return;
-    walletPort.request('transactionFormed', {
-      formState,
-      quote,
-      scope: isCrossChain ? 'Bridge' : 'Swap',
-      warningWasShown: Boolean(showPriceImpactCallout),
-      outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
-      enoughBalance:
-        inputPosition && resolvedInputAmount
-          ? new BigNumber(inputPosition.amount.quantity).gte(new BigNumber(resolvedInputAmount))
-          : false,
-      slippagePercent: formState.inputChain
-        ? getSlippageOptions({
-            chain: createChain(formState.inputChain),
-            userSlippage:
-              formState.slippage && formState.slippage !== 'auto'
-                ? Number(formState.slippage)
-                : null,
-          }).slippagePercent
-        : undefined,
+    walletPort.request('trackUiEvent', {
+      name: 'transactionFormed',
+      data: {
+        formState,
+        quote,
+        scope: isCrossChain ? 'Bridge' : 'Swap',
+        warningWasShown: Boolean(showPriceImpactCallout),
+        outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+        enoughBalance:
+          inputPosition && resolvedInputAmount
+            ? new BigNumber(inputPosition.amount.quantity).gte(new BigNumber(resolvedInputAmount))
+            : false,
+        slippagePercent: formState.inputChain
+          ? getSlippageOptions({
+              chain: createChain(formState.inputChain),
+              userSlippage:
+                formState.slippage && formState.slippage !== 'auto'
+                  ? Number(formState.slippage)
+                  : null,
+            }).slippagePercent
+          : undefined,
+      },
     });
   });
 

@@ -85,31 +85,31 @@ function trackAppEvents({
   });
 
   emitter.on('buttonClicked', async (data) => {
-    walletPort.request('buttonClicked', data);
+    walletPort.request('trackUiEvent', { name: 'buttonClicked', data });
   });
 
   emitter.on('networkFeeLevelChanged', async (data) => {
-    walletPort.request('networkFeeLevelChanged', data);
+    walletPort.request('trackUiEvent', { name: 'networkFeeLevelChanged', data });
   });
 
   emitter.on('bannerClicked', async (data) => {
-    walletPort.request('bannerClicked', data);
+    walletPort.request('trackUiEvent', { name: 'bannerClicked', data });
   });
 
   emitter.on('assetVisibilityChanged', async (data) => {
-    walletPort.request('assetVisibilityChanged', data);
+    walletPort.request('trackUiEvent', { name: 'assetVisibilityChanged', data });
   });
 
   emitter.on('perpsScreenViewed', async (data) => {
-    walletPort.request('perpsScreenViewed', data);
+    walletPort.request('trackUiEvent', { name: 'perpsScreenViewed', data });
   });
 
   emitter.on('perpsButtonPressed', async (data) => {
-    walletPort.request('perpsButtonPressed', data);
+    walletPort.request('trackUiEvent', { name: 'perpsButtonPressed', data });
   });
 
   emitter.on('perpsPositionAction', async (data) => {
-    walletPort.request('perpsPositionAction', data);
+    walletPort.request('trackUiEvent', { name: 'perpsPositionAction', data });
   });
 
   emitter.on('errorScreenView', async (data) => {
