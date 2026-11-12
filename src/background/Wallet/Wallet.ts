@@ -268,7 +268,7 @@ export class Wallet {
     if (!this.userCredentials) {
       throw new Error('Cannot save pending wallet: encryptionKey is null');
     }
-    this.walletStore.save(this.id, this.userCredentials.encryptionKey, record);
+    await this.walletStore.save(this.id, this.userCredentials.encryptionKey, record);
   }
 
   async ready() {
@@ -601,7 +601,7 @@ export class Wallet {
     const pendingWallet = this.pendingWallet;
     this.pendingWallet = null;
     this.removeSeedPhraseEncryptionKey();
-    this.updateWalletStore(this.record);
+    await this.updateWalletStore(this.record);
     emitter.emit('walletCreated', pendingWallet);
   }
 
