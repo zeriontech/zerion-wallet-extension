@@ -1,4 +1,4 @@
-import { toConfiguration } from './networkFeeConfiguration';
+import { CLEARED_NETWORK_FEE_OVERRIDES, toConfiguration } from './networkFeeConfiguration';
 
 const savedAverage = {
   speed: 'average' as const,
@@ -35,5 +35,23 @@ describe('toConfiguration', () => {
 
   it('keeps fast as the fallback without a saved level', () => {
     expect(toConfiguration({}).networkFee.speed).toBe('fast');
+  });
+});
+
+describe('CLEARED_NETWORK_FEE_OVERRIDES', () => {
+  it('removes every override when spread over a state that has them', () => {
+    const state = {
+      inputChain: 'ethereum',
+      networkFeeSpeed: 'custom',
+      maxPriorityFee: '2',
+      maxFee: '30',
+      gasPrice: '25',
+      gasLimit: '21000',
+    };
+    const cleared = { ...state, ...CLEARED_NETWORK_FEE_OVERRIDES };
+    const remaining = Object.entries(cleared)
+      .filter(([, value]) => value !== undefined)
+      .map(([key]) => key);
+    expect(remaining).toEqual(['inputChain']);
   });
 });

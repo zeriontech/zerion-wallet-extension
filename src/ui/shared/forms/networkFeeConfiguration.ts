@@ -16,6 +16,19 @@ type NetworkFeeSubset = {
   slippage?: string;
 };
 
+/**
+ * Form-state keys that hold a user's network-fee override. An override is
+ * bound to one chain and one prepared transaction or quote, so spread this
+ * into the state whenever either changes, and after a broadcast.
+ */
+export const CLEARED_NETWORK_FEE_OVERRIDES = {
+  networkFeeSpeed: undefined,
+  maxPriorityFee: undefined,
+  maxFee: undefined,
+  gasPrice: undefined,
+  gasLimit: undefined,
+} as const;
+
 export function toConfiguration(
   formState: NetworkFeeSubset,
   savedNetworkFee: NetworkFeeConfiguration | null = null,

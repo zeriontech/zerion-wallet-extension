@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
-import {
-  CLEARED_GAS_OVERRIDES,
-  usePinResolvedInput,
-  type InputSelection,
-} from 'src/ui/shared/forms/formState';
+import { CLEARED_NETWORK_FEE_OVERRIDES } from 'src/ui/shared/forms/networkFeeConfiguration';
+import { usePinDefaultInput } from 'src/ui/shared/forms/usePinDefaultInput';
 import type { Networks } from 'src/modules/networks/Networks';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { NetworkId } from 'src/modules/networks/NetworkId';
@@ -203,11 +200,7 @@ export function useFormState({
     };
   }, [defaultFormState, userFormState]);
 
-  const pinInput = useCallback(
-    (missing: InputSelection) => setUserFormState((state) => ({ ...state, ...missing })),
-    [setUserFormState],
-  );
-  usePinResolvedInput({ fromUrl: userFormState, resolved: defaultFormState, pin: pinInput });
+  usePinDefaultInput({ userFormState, defaultFormState, setUserFormState });
 
   const handleChange = useCallback<HandleChangeFunction>(
     (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),
@@ -221,7 +214,7 @@ export function useFormState({
           state.outputChain === chainId && state.outputFungibleId === fungibleId;
         return {
           ...state,
-          ...CLEARED_GAS_OVERRIDES,
+          ...CLEARED_NETWORK_FEE_OVERRIDES,
           inputChain: chainId,
           inputFungibleId: fungibleId,
           ...(collidesWithOutput ? { outputChain: undefined, outputFungibleId: undefined } : null),
@@ -238,7 +231,7 @@ export function useFormState({
           state.inputChain === chainId && state.inputFungibleId === fungibleId;
         return {
           ...state,
-          ...CLEARED_GAS_OVERRIDES,
+          ...CLEARED_NETWORK_FEE_OVERRIDES,
           outputChain: chainId,
           outputFungibleId: fungibleId,
           ...(collidesWithInput ? { inputChain: undefined, inputFungibleId: undefined } : null),
@@ -255,7 +248,7 @@ export function useFormState({
       const isSameChain = newInputChain === newOutputChain;
       return {
         ...state,
-        ...CLEARED_GAS_OVERRIDES,
+        ...CLEARED_NETWORK_FEE_OVERRIDES,
         inputChain: newInputChain,
         outputChain: newOutputChain,
         inputFungibleId: state.outputFungibleId || defaultFormState.outputFungibleId,

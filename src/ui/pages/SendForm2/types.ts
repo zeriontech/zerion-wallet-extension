@@ -1,5 +1,5 @@
 import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
-import type { FormChangeHandler } from 'src/ui/shared/forms/formState';
+import type { FormChangeHandler } from 'src/ui/shared/forms/FormChangeHandler';
 
 export type SendFormState2 = {
   /** @description Blockchain the send happens on */

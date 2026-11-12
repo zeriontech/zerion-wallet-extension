@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParamsObj } from 'src/ui/shared/forms/useSearchParamsObj';
-import {
-  CLEARED_GAS_OVERRIDES,
-  usePinResolvedInput,
-  type InputSelection,
-} from 'src/ui/shared/forms/formState';
+import { CLEARED_NETWORK_FEE_OVERRIDES } from 'src/ui/shared/forms/networkFeeConfiguration';
+import { usePinDefaultInput } from 'src/ui/shared/forms/usePinDefaultInput';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
@@ -54,11 +51,7 @@ export function useFormState({
     [defaultFormState, userFormState],
   );
 
-  const pinInput = useCallback(
-    (missing: InputSelection) => setUserFormState((state) => ({ ...state, ...missing })),
-    [setUserFormState],
-  );
-  usePinResolvedInput({ fromUrl: userFormState, resolved: defaultFormState, pin: pinInput });
+  usePinDefaultInput({ userFormState, defaultFormState, setUserFormState });
 
   const handleChange = useCallback<HandleChangeFunction>(
     (key, value) => setUserFormState((state) => ({ ...state, [key]: value })),
@@ -69,7 +62,7 @@ export function useFormState({
     (chainId: string, fungibleId: string) => {
       setUserFormState((state) => ({
         ...state,
-        ...CLEARED_GAS_OVERRIDES,
+        ...CLEARED_NETWORK_FEE_OVERRIDES,
         inputChain: chainId,
         inputFungibleId: fungibleId,
         nftId: undefined,
@@ -83,7 +76,7 @@ export function useFormState({
     (nftId: string, chainId: string) => {
       setUserFormState((state) => ({
         ...state,
-        ...CLEARED_GAS_OVERRIDES,
+        ...CLEARED_NETWORK_FEE_OVERRIDES,
         nftId,
         inputChain: chainId,
         inputFungibleId: undefined,
