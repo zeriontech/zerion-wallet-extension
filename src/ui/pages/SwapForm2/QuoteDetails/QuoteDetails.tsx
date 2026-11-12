@@ -29,13 +29,13 @@ import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { SlippageSettings } from '../SlippageSettings';
 import type { SwapFormState2 } from '../types';
-import { NetworkFeeDialog2 } from '../NetworkFeeDialog2';
-import { formatNetworkFee } from '../formatNetworkFee';
+import { NetworkFeeDialog2 } from 'src/ui/components/NetworkFeeDialog2';
+import { formatNetworkFee } from 'src/ui/components/NetworkFeeDialog2/formatNetworkFee';
 import {
   getBaseFee,
   getCustomFormDefaults,
   getNetworkFeeRatioForConfiguration,
-} from '../getNetworkFeeForSpeed';
+} from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
 import { ProviderSelector } from './ProviderSelector';
 import { NonceLine2 } from './NonceLine2';
 import * as styles from './QuoteDetails.module.css';

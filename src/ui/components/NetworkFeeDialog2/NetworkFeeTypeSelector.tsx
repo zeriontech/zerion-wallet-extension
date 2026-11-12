@@ -14,12 +14,12 @@ import CheckmarkCheckedIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { noValueDash } from 'src/shared/typography';
-import { formatNetworkFee } from '../formatNetworkFee';
+import { formatNetworkFee } from './formatNetworkFee';
 import {
   getCustomFeeRatioFromDefaults,
   getNetworkFeeRatioForConfiguration,
   type NetworkFeeQuote,
-} from '../getNetworkFeeForSpeed';
+} from './getNetworkFeeForSpeed';
 import type { CustomFormDefaults } from './NetworkFeeCustomForm';
 
 const PRESETS: { speed: Exclude<NetworkFeeSpeed, 'custom'>; label: string }[] = [

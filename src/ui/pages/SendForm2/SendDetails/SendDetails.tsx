@@ -27,13 +27,13 @@ import { noValueDash } from 'src/shared/typography';
 import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
 import { NonceLine2 } from 'src/ui/pages/SwapForm2/QuoteDetails/NonceLine2';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
-import { NetworkFeeDialog2 } from 'src/ui/pages/SwapForm2/NetworkFeeDialog2';
-import { formatNetworkFee } from 'src/ui/pages/SwapForm2/formatNetworkFee';
+import { NetworkFeeDialog2 } from 'src/ui/components/NetworkFeeDialog2';
+import { formatNetworkFee } from 'src/ui/components/NetworkFeeDialog2/formatNetworkFee';
 import {
   getBaseFee,
   getCustomFormDefaults,
   getNetworkFeeRatioForConfiguration,
-} from 'src/ui/pages/SwapForm2/getNetworkFeeForSpeed';
+} from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import type { SendQuote } from '../useSendTransaction';
 import * as styles from './SendDetails.module.css';
