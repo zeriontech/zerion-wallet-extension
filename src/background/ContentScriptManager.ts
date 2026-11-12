@@ -4,6 +4,7 @@ import { produce } from 'immer';
 import { isTruthy } from 'src/shared/isTruthy';
 import { difference } from 'src/shared/difference';
 import { globalPreferences, type GlobalPreferences } from './Wallet/GlobalPreferences';
+import { getProviderInjectionMatches } from './getProviderInjectionMatches';
 
 function setActiveIcon({ tabId }: { tabId?: number }) {
   if (process.env.NODE_ENV === 'development') {
@@ -190,18 +191,7 @@ export class ContentScriptManager {
   }
 
   getMatches() {
-    const allUrls = this.providerInjection?.['<all_urls>'];
-    if (!allUrls) {
-      return ['<all_urls>'];
-    }
-    const NOTHING_MATCHES = undefined;
-    if (allUrls.expires == null) {
-      return NOTHING_MATCHES;
-    } else if (allUrls.expires > Date.now()) {
-      return NOTHING_MATCHES;
-    } else {
-      return ['<all_urls'];
-    }
+    return getProviderInjectionMatches(this.providerInjection?.['<all_urls>'], Date.now());
   }
 
   getExcludeMatches() {

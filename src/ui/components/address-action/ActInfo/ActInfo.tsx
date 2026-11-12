@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { minus } from 'src/ui/shared/typography';
+import { minus } from 'src/shared/typography';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { animated, useSpring } from '@react-spring/web';

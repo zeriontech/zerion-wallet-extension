@@ -14,7 +14,7 @@ import {
 } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { formatSeconds } from 'src/shared/units/formatSeconds';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import * as styles from './ProviderSelector.module.css';
 
 function formatReceive(quote: Quote2): string {

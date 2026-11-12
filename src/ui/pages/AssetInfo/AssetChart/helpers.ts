@@ -4,7 +4,7 @@ import type { AssetChartActions } from 'src/modules/zerion-api/requests/asset-ge
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { ellipsis, minus } from 'src/ui/shared/typography';
+import { ellipsis, minus } from 'src/shared/typography';
 
 function trimAssetSymbolForTooltip(symbol: string) {
   return symbol.length > 5 ? `${symbol.slice(0, 5)}${ellipsis}` : symbol;

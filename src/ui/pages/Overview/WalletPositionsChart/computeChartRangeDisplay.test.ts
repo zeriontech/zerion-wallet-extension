@@ -1,5 +1,5 @@
 import dayjs from 'src/shared/date';
-import { minus } from 'src/ui/shared/typography';
+import { minus } from 'src/shared/typography';
 import { computeChartRangeDisplay, type WalletChartPoint } from './computeChartRangeDisplay';
 
 const POSITIVE_COLOR = 'var(--positive-500)';

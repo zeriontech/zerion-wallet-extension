@@ -13,7 +13,7 @@ Baseline: `origin/main` at `e58b0d3d` (Vite+/Vitest/Oxlint/Oxfmt).
 
 | Metric                             |   clean main |        final |
 | ---------------------------------- | -----------: | -----------: |
-| Direct dependencies                |           63 |           45 |
+| Direct dependencies                |           63 |           46 |
 | Dev dependencies                   |           27 |           22 |
 | `npm ls --all --parseable` entries |          741 |          703 |
 | Lockfile package entries           |          814 |          776 |

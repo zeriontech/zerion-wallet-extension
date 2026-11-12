@@ -18,7 +18,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import { toCustomNetworkId, isCustomNetworkId } from 'src/modules/ethereum/chains/helpers';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
-import { apostrophe } from 'src/ui/shared/typography';
+import { apostrophe } from 'src/shared/typography';
 
 export function Field({
   label,

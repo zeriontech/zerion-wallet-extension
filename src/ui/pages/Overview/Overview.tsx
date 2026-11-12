@@ -60,7 +60,6 @@ import { PercentageChange } from './PercentageChange';
 import { WalletPositionsChart } from './WalletPositionsChart';
 import { NetworkDistributionChart, ProtocolDistributionChart } from './DistributionCharts';
 import { BackupReminder } from './BackupReminder';
-import { RestoreRecoveryPhraseReminder } from './RestoreRecoveryPhraseReminder';
 import { ConnectionBanner } from './ConnectionBanner';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
@@ -416,7 +415,6 @@ function OverviewComponent() {
     >
       <PageFullBleedColumn paddingInline={true} style={{ paddingInline: 0 }}>
         <BackupReminder />
-        <RestoreRecoveryPhraseReminder />
       </PageFullBleedColumn>
       <PageFullBleedColumn
         paddingInline={true}

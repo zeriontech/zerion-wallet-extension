@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import memoize from 'src/shared/memoizeOne';
 import type { CurrencyConfig } from 'src/modules/currency/currencies';
 import { CURRENCIES, resolveOptions } from 'src/modules/currency/currencies';
-import { minus as typographicMinus } from 'src/ui/shared/typography';
+import { minus as typographicMinus } from 'src/shared/typography';
 import { countLeadingZeros, formatSubscriptValue } from './formatSubscriptValue';
 
 const PRICE_SIGNIFICANT_DIGITS = 4;

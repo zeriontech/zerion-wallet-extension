@@ -26,8 +26,8 @@ import {
 } from 'src/ui/components/AmountInput/ValueWithSymbol';
 import { FormFieldset } from './FormFieldset';
 import type { HandleChangeFunction, SendFormState2 } from './types';
-import { AssetSelectorButton } from './AssetSelectorButton';
-import * as assetSelectorStyles from './AssetSelectorButton.module.css';
+import { AssetSelectorButton } from 'src/ui/components/AssetSelectorButton';
+import * as assetSelectorStyles from 'src/ui/components/AssetSelectorButton/AssetSelectorButton.module.css';
 
 function getPartialBalance(balance: string, factor: number): string {
   if (factor === 1) return new BigNumber(balance).toFixed();

@@ -3,7 +3,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { Button } from 'src/ui/ui-kit/Button';
 import CheckIcon from 'jsx:src/ui/assets/check-circle-thin.svg';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { PageBottom } from 'src/ui/components/PageBottom';

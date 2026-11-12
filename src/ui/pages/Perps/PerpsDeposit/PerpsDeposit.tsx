@@ -6,8 +6,8 @@ import { useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
-  createApproveAddressAction2,
-  createBridgeAddressAction2,
+  createApproveAddressAction,
+  createBridgeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
@@ -23,9 +23,8 @@ import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import { resolveTokenValue } from 'src/ui/components/AmountInput/inputKind';
 import { toIncomingTransaction, toMultichainTransaction } from 'src/shared/types/Quote';
 import {
-  signTransactions,
+  signUntilFirstBroadcast,
   QueueAbortError,
-  QueueError,
   type SignStep,
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
@@ -276,7 +275,7 @@ function DepositFormBody({
             initiator: INTERNAL_ORIGIN,
             clientScope: 'Swap',
             feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-            addressAction: createApproveAddressAction2({
+            addressAction: createApproveAddressAction({
               transaction: toIncomingTransaction(approveTx.evm),
               hash: null,
               explorerUrl: null,
@@ -306,7 +305,7 @@ function DepositFormBody({
           initiator: INTERNAL_ORIGIN,
           clientScope: 'Bridge',
           feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-          addressAction: createBridgeAddressAction2({
+          addressAction: createBridgeAddressAction({
             address,
             transaction: toMultichainTransaction(swapTx),
             hash: null,
@@ -329,36 +328,16 @@ function DepositFormBody({
         toaster: depositToasterView,
       });
 
-      return new Promise<void>((resolve, reject) => {
-        let settled = false;
-        const settle = (fn: () => void) => {
-          if (settled) return;
-          settled = true;
-          fn();
-        };
-
-        const { promise: queuePromise } = signTransactions(steps, {
+      await signUntilFirstBroadcast(
+        steps,
+        {
           wallet,
           holdToSign: false,
           bluetoothSupportEnabled: globalPreferences?.bluetoothSupportEnabled ?? null,
-          onEvent: (event) => {
-            if (event.type === 'step-pending' && event.index === 0) {
-              settle(() => {
-                setUserFormState({ inputAmount: '' });
-                resolve();
-              });
-            } else if (event.type === 'step-error' && event.index === 0) {
-              settle(() => reject(event.error));
-            } else if (event.type === 'queue-aborted' && event.index === 0) {
-              settle(() => reject(new QueueAbortError(0, [])));
-            }
-          },
-        });
-        queuePromise.catch((err) => {
-          const unwrapped = err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
-          settle(() => reject(unwrapped));
-        });
-      });
+        },
+        { resolveWhenQueuedBehind: false },
+      );
+      setUserFormState({ inputAmount: '' });
     },
     onSuccess: () => {
       markHyperliquidOpSubmitted();

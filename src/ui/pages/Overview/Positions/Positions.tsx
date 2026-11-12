@@ -40,7 +40,7 @@ import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { useRenderDelay } from 'src/ui/components/DelayedRender/DelayedRender';
-import { minus } from 'src/ui/shared/typography';
+import { minus } from 'src/shared/typography';
 import { useAddressPositionsFromNode } from 'src/ui/shared/requests/useAddressPositionsFromNode';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { invariant } from 'src/shared/invariant';

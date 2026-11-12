@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { PageColumn } from 'src/ui/components/PageColumn';
@@ -25,6 +25,7 @@ import { wait } from 'src/shared/wait';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { ethers } from 'ethers';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import { RequestInitiator } from 'src/ui/components/RequestInitiator';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { usePhishingDefenceStatus } from 'src/ui/components/PhishingDefence/usePhishingDefenceStatus';
 import { DappSecurityCheck, SecurityStatusBackground } from 'src/ui/shared/security-check';
@@ -35,8 +36,6 @@ import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog'
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import CopyIcon from 'jsx:src/ui/assets/copy.svg';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
-import { prepareForHref } from 'src/ui/shared/prepareForHref';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
@@ -103,8 +102,6 @@ function SignMessageContent({
       handleSignSuccess(signature);
     },
   });
-
-  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const handleReject = () => windowPort.reject(windowId);
   const messageText = toUtf8String(message);
@@ -180,13 +177,7 @@ function SignMessageContent({
             />
             <UIText kind="headline/h2">Sign Message</UIText>
             <UIText kind="small/accent" color="var(--neutral-500)">
-              {originForHref ? (
-                <TextAnchor href={originForHref.href} target="_blank" rel="noopener noreferrer">
-                  {originForHref.hostname}
-                </TextAnchor>
-              ) : (
-                'Unknown Initiator'
-              )}
+              <RequestInitiator origin={origin} />
             </UIText>
             <HStack gap={8} alignItems="center">
               <WalletAvatar address={wallet.address} size={20} active={false} borderRadius={6} />

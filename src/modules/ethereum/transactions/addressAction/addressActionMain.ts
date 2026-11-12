@@ -295,9 +295,9 @@ export function createTradeAddressAction({
   transaction,
   hash,
   spendAmount,
-  spendAsset,
+  spendFungible,
   receiveAmount,
-  receiveAsset,
+  receiveFungible,
   network,
   rate,
   explorerUrl,
@@ -305,9 +305,9 @@ export function createTradeAddressAction({
   transaction: MultichainTransaction;
   hash: string | null;
   spendAmount: Amount;
-  spendAsset: Asset;
+  spendFungible: Fungible;
   receiveAmount: Amount;
-  receiveAsset: Asset;
+  receiveFungible: Fungible;
   address: string;
   network: NetworkInfo;
   rate: Quote2['rate'] | null;
@@ -319,13 +319,13 @@ export function createTradeAddressAction({
       {
         direction: 'out' as const,
         amount: spendAmount,
-        fungible: convertAssetToFungible(spendAsset),
+        fungible: spendFungible,
         nft: null,
       },
       {
         direction: 'in' as const,
         amount: receiveAmount,
-        fungible: convertAssetToFungible(receiveAsset),
+        fungible: receiveFungible,
         nft: null,
       },
     ],
@@ -376,9 +376,9 @@ export function createBridgeAddressAction({
   transaction,
   hash,
   spendAmount,
-  spendAsset,
+  spendFungible,
   receiveAmount,
-  receiveAsset,
+  receiveFungible,
   inputNetwork,
   outputNetwork,
   explorerUrl,
@@ -388,9 +388,9 @@ export function createBridgeAddressAction({
   transaction: MultichainTransaction;
   hash: string | null;
   spendAmount: Amount;
-  spendAsset: Asset;
+  spendFungible: Fungible;
   receiveAmount: Amount;
-  receiveAsset: Asset;
+  receiveFungible: Fungible;
   inputNetwork: NetworkInfo;
   outputNetwork: NetworkInfo;
   explorerUrl: string | null;
@@ -402,13 +402,13 @@ export function createBridgeAddressAction({
       {
         direction: 'out' as const,
         amount: spendAmount,
-        fungible: convertAssetToFungible(spendAsset),
+        fungible: spendFungible,
         nft: null,
       },
       {
         direction: 'in' as const,
         amount: receiveAmount,
-        fungible: convertAssetToFungible(receiveAsset),
+        fungible: receiveFungible,
         nft: null,
       },
     ],
@@ -452,7 +452,7 @@ export function createBridgeAddressAction({
                 {
                   direction: 'out',
                   amount: receiveAmount,
-                  fungible: convertAssetToFungible(receiveAsset),
+                  fungible: receiveFungible,
                   nft: null,
                 },
               ],
@@ -480,7 +480,7 @@ export function createBridgeAddressAction({
                 {
                   direction: 'in',
                   amount: receiveAmount,
-                  fungible: convertAssetToFungible(receiveAsset),
+                  fungible: receiveFungible,
                   nft: null,
                 },
               ],
@@ -520,301 +520,6 @@ export function createBridgeAddressAction({
 }
 
 export function createApproveAddressAction({
-  hash,
-  transaction,
-  asset,
-  amount,
-  network,
-  explorerUrl,
-}: {
-  hash: string | null;
-  transaction: IncomingTransactionWithFrom;
-  asset: Asset;
-  amount: Amount;
-  network: NetworkInfo;
-  explorerUrl: string | null;
-}): LocalAddressAction {
-  const content = {
-    approvals: [
-      {
-        amount,
-        fungible: convertAssetToFungible(asset),
-        nft: null,
-        collection: null,
-        unlimited: false,
-      },
-    ],
-    transfers: null,
-  };
-
-  const actionTransaction = {
-    chain: convertNetworkToActionChain(network),
-    hash,
-    explorerUrl,
-  };
-
-  return {
-    id: nanoid(),
-    timestamp: new Date().getTime(),
-    address: transaction.from,
-    content,
-    transaction: actionTransaction,
-    acts: [
-      {
-        content,
-        label: null,
-        rate: null,
-        status: 'pending',
-        transaction: actionTransaction,
-        type: {
-          value: 'approve',
-          displayValue: 'Approve',
-        },
-      },
-    ],
-    status: 'pending',
-    type: {
-      value: 'approve',
-      displayValue: 'Approve',
-    },
-    label: null,
-    fee: null,
-    refund: null,
-    local: true,
-    rawTransaction: toActionTx(transaction, network.id),
-  };
-}
-
-export function createTradeAddressAction2({
-  address,
-  transaction,
-  hash,
-  spendAmount,
-  spendFungible,
-  receiveAmount,
-  receiveFungible,
-  network,
-  rate,
-  explorerUrl,
-}: {
-  transaction: MultichainTransaction;
-  hash: string | null;
-  spendAmount: Amount;
-  spendFungible: Fungible;
-  receiveAmount: Amount;
-  receiveFungible: Fungible;
-  address: string;
-  network: NetworkInfo;
-  rate: Quote2['rate'] | null;
-  explorerUrl: string | null;
-}): LocalAddressAction {
-  const content = {
-    approvals: null,
-    transfers: [
-      {
-        direction: 'out' as const,
-        amount: spendAmount,
-        fungible: spendFungible,
-        nft: null,
-      },
-      {
-        direction: 'in' as const,
-        amount: receiveAmount,
-        fungible: receiveFungible,
-        nft: null,
-      },
-    ],
-  };
-
-  const actionTransaction = {
-    chain: convertNetworkToActionChain(network),
-    hash,
-    explorerUrl,
-  };
-
-  return {
-    id: nanoid(),
-    address,
-    timestamp: new Date().getTime(),
-    content,
-    transaction: actionTransaction,
-    acts: [
-      {
-        content,
-        label: null,
-        rate,
-        status: 'pending',
-        type: {
-          value: 'trade',
-          displayValue: 'Trade',
-        },
-        transaction: actionTransaction,
-      },
-    ],
-    status: 'pending',
-    type: {
-      value: 'trade',
-      displayValue: 'Trade',
-    },
-    label: null,
-    fee: null,
-    refund: null,
-    local: true,
-    rawTransaction: transaction.evm
-      ? toActionTx(transaction.evm, network.id)
-      : toEmptyActionTx(network.id),
-  };
-}
-
-export function createBridgeAddressAction2({
-  address,
-  transaction,
-  hash,
-  spendAmount,
-  spendFungible,
-  receiveAmount,
-  receiveFungible,
-  inputNetwork,
-  outputNetwork,
-  explorerUrl,
-  receiverAddress,
-}: {
-  address: string;
-  transaction: MultichainTransaction;
-  hash: string | null;
-  spendAmount: Amount;
-  spendFungible: Fungible;
-  receiveAmount: Amount;
-  receiveFungible: Fungible;
-  inputNetwork: NetworkInfo;
-  outputNetwork: NetworkInfo;
-  explorerUrl: string | null;
-  receiverAddress: string | null;
-}): LocalAddressAction {
-  const content = {
-    approvals: null,
-    transfers: [
-      {
-        direction: 'out' as const,
-        amount: spendAmount,
-        fungible: spendFungible,
-        nft: null,
-      },
-      {
-        direction: 'in' as const,
-        amount: receiveAmount,
-        fungible: receiveFungible,
-        nft: null,
-      },
-    ],
-  };
-
-  const actionInputTransaction = {
-    chain: convertNetworkToActionChain(inputNetwork),
-    hash,
-    explorerUrl,
-  };
-
-  const actionOutputTransaction = {
-    chain: convertNetworkToActionChain(outputNetwork),
-    hash,
-    explorerUrl,
-  };
-
-  return {
-    id: nanoid(),
-    timestamp: new Date().getTime(),
-    address,
-    content,
-    transaction: actionInputTransaction,
-    acts: [
-      {
-        content,
-        label: null,
-        rate: null,
-        status: 'pending',
-        type: {
-          value: 'send',
-          displayValue: 'Send',
-        },
-        transaction: actionInputTransaction,
-      },
-      receiverAddress
-        ? {
-            content: {
-              approvals: null,
-              transfers: [
-                {
-                  direction: 'out',
-                  amount: receiveAmount,
-                  fungible: receiveFungible,
-                  nft: null,
-                },
-              ],
-            },
-            label: {
-              contract: null,
-              wallet: {
-                address: receiverAddress,
-                name: null,
-                iconUrl: null,
-              },
-            },
-            rate: null,
-            status: 'pending',
-            type: {
-              value: 'send',
-              displayValue: 'Send',
-            },
-            transaction: actionOutputTransaction,
-          }
-        : {
-            content: {
-              approvals: null,
-              transfers: [
-                {
-                  direction: 'in',
-                  amount: receiveAmount,
-                  fungible: receiveFungible,
-                  nft: null,
-                },
-              ],
-            },
-            label: null,
-            rate: null,
-            status: 'pending',
-            type: {
-              value: 'receive',
-              displayValue: 'Receive',
-            },
-            transaction: actionOutputTransaction,
-          },
-    ],
-    status: 'pending',
-    type: {
-      value: 'send',
-      displayValue: receiverAddress ? 'Send' : 'Bridge',
-    },
-    label: receiverAddress
-      ? {
-          contract: null,
-          wallet: {
-            address: receiverAddress,
-            name: null,
-            iconUrl: null,
-          },
-        }
-      : null,
-    fee: null,
-    refund: null,
-    local: true,
-    rawTransaction: transaction.evm
-      ? toActionTx(transaction.evm, inputNetwork.id)
-      : toEmptyActionTx(inputNetwork.id),
-  };
-}
-
-export function createApproveAddressAction2({
   hash,
   transaction,
   fungible,

@@ -16,7 +16,7 @@ import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { computeChartRangeDisplay, type WalletChartPoint } from './computeChartRangeDisplay';
 
 const CHART_TYPE_OPTIONS: ChartPeriod[] = ['1h', '1d', '1w', '1m', '1y', 'max'];

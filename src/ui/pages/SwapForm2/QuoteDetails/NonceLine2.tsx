@@ -8,7 +8,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';

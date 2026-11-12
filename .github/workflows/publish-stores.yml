@@ -82,13 +82,11 @@ jobs:
           ZERION_API_URL: https://zpi.zerion.io/
           ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
           PROXY_URL: https://proxy.zerion.io/
-          DEFI_SDK_TRANSACTIONS_API_URL: https://transactions.zerion.io
           TEST_WALLET_ADDRESS: ${{ secrets.TEST_WALLET_ADDRESS }}
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_PROD }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_LOYALTY_FLOW: on
-          FEATURE_BRIDGE_FORM: on
           FEATURE_SOLANA: on
         run: |
           npm run build:production
@@ -99,7 +97,6 @@ jobs:
           TAG: ${{ steps.release.outputs.tag }}
           STORE: ${{ inputs.store }}
           DRY_RUN: ${{ inputs.dry_run }}
-          CHROME_API_VERSION: v2
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}

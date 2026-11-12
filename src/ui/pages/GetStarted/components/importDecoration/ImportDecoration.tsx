@@ -10,7 +10,7 @@ import { WalletAvatar } from 'src/ui/components/WalletAvatar';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { WalletNameType } from 'src/ui/shared/useProfileName';
-import { middot } from 'src/ui/shared/typography';
+import { middot } from 'src/shared/typography';
 import { WithConfetti } from './WithConfetti';
 import * as styles from './styles.module.css';
 

@@ -13,7 +13,6 @@ import { accountPublicRPCPort, walletPort } from 'src/ui/shared/channels';
 import { emitter } from 'src/ui/shared/events';
 import { getError } from 'src/shared/errors/getError';
 import { zeroizeAfterSubmission } from 'src/ui/shared/zeroize-submission';
-import { usePreferences } from 'src/ui/features/preferences';
 import { urlContext } from 'src/shared/UrlContext';
 import { openUrl } from 'src/ui/shared/openUrl';
 import { getPopupUrl } from 'src/shared/getPopupUrl';
@@ -214,7 +213,6 @@ export function MnemonicPhraseRestoration() {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const navigate = useNavigate();
   const [view, setView] = useState<View>('intro');
-  const { setPreferences } = usePreferences();
 
   const userQuery = useQuery({
     queryKey: ['account/getExistingUser'],
@@ -245,7 +243,6 @@ export function MnemonicPhraseRestoration() {
     },
     onSuccess: () => {
       walletPort.request('mnemonicRestorationSuccess');
-      setPreferences({ restoreRecoveryPhraseSuccess: true });
       setView('success');
     },
     onError: () => {
@@ -303,7 +300,6 @@ export function MnemonicPhraseRestoration() {
   }, []);
 
   const handleGoToManageWallets = useCallback(() => {
-    setPreferences({ restoreRecoveryPhraseSuccess: true });
     dialogRef.current?.close();
     if (urlContext.windowLayout === 'page') {
       openUrl(new URL('#/wallets', getPopupUrl()), {
@@ -313,7 +309,7 @@ export function MnemonicPhraseRestoration() {
     } else {
       navigate('/wallets');
     }
-  }, [navigate, setPreferences]);
+  }, [navigate]);
 
   return (
     <BottomSheetDialog

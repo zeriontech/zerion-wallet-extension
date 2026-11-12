@@ -1,15 +1,16 @@
 import { firebase as firebasePlugin } from './plugins/firebase';
 import { activatePlugins, registerConfigPlugin, get } from './pluginSystem';
 
-export type { RemoteConfig } from './types';
+import type { RemoteConfig } from './types';
 
-// Register plugins
+export type { RemoteConfig };
+
 registerConfigPlugin(firebasePlugin);
 
 export async function initialize() {
   return activatePlugins();
 }
 
-export function getRemoteConfigValue(key: string) {
+export function getRemoteConfigValue(key: keyof RemoteConfig) {
   return get(key);
 }

@@ -11,10 +11,6 @@ export interface RemoteConfig {
     fee: number;
     isZerionFee: boolean;
   }>;
-  loyalty_config: Partial<{
-    referrerXpPercent: number;
-    rewardIconLevel: number;
-  }>;
   zerion_fee_learn_more_link: string;
   premium_page_feedback_link: string;
   quotes_refetch_interval: number;

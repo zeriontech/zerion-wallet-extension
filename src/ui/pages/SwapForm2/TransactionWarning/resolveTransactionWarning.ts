@@ -223,7 +223,7 @@ function resolveFormStateWarning({
  * inspect — Gray severity, missing action/transfers, no matching output
  * transfer, or multiple matching transfers.
  *
- * See `CONTEXT.md` and `docs/adr/0001-output-mismatch-uses-epsilon-not-percentage.md`.
+ * See `GLOSSARY.md` → **Output mismatch**.
  */
 export function resolveTransactionWarning({
   quote,

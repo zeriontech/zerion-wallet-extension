@@ -19,7 +19,7 @@ import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { minus } from 'src/ui/shared/typography';
+import { minus } from 'src/shared/typography';
 import { AssetLink } from 'src/ui/components/AssetLink';
 import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { NFTLink } from 'src/ui/components/NFTLink';

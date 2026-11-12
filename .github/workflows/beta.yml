@@ -38,9 +38,7 @@ jobs:
       ZERION_API_URL: https://zpi.zerion.io/
       ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
       PROXY_URL: https://proxy.zerion.io/
-      DEFI_SDK_TRANSACTIONS_API_URL: https://transactions.zerion.io
       FEATURE_LOYALTY_FLOW: on
-      FEATURE_BRIDGE_FORM: on
       FEATURE_SOLANA: on
       # Fourth manifest version part: every run is a new store version.
       BETA_VERSION_SUFFIX: ${{ github.run_number }}

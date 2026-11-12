@@ -1,9 +1,5 @@
 import type { ConfigPlugin } from './ConfigPlugin';
 
-export const resolvers: {
-  [key: string]: () => void;
-} = {};
-
 const promises: { [key: string]: Promise<void> } = {};
 
 export function registerPromise(key: string, promise: Promise<void>) {

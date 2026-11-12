@@ -4,7 +4,7 @@ import { PageTop } from 'src/ui/components/PageTop/PageTop';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle/NavigationTitle';
 import { HStack } from 'src/ui/ui-kit/HStack/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import * as swapStyles from '../SwapForm2/styles.module.css';
+import * as skeletonStyles from 'src/ui/ui-kit/Skeleton/Skeleton.module.css';
 
 function ReceiverRowSkeleton() {
   return (
@@ -18,8 +18,8 @@ function ReceiverRowSkeleton() {
       }}
     >
       <HStack gap={8} alignItems="center">
-        <div className={swapStyles.skeletonCircle} style={{ width: 24, height: 24 }} />
-        <div className={swapStyles.skeleton} style={{ width: 120, height: 14 }} />
+        <div className={skeletonStyles.skeletonCircle} style={{ width: 24, height: 24 }} />
+        <div className={skeletonStyles.skeleton} style={{ width: 120, height: 14 }} />
       </HStack>
     </div>
   );
@@ -39,19 +39,19 @@ function InputFieldsetSkeleton() {
     >
       <VStack gap={6} style={{ width: '100%' }}>
         <HStack gap={16} justifyContent="space-between" alignItems="center">
-          <div className={swapStyles.skeleton} style={{ width: 64, height: 20 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 64, height: 20 }} />
           <div style={{ height: 20 }} />
         </HStack>
         <HStack gap={16} justifyContent="space-between" alignItems="center" style={{ height: 32 }}>
           <HStack gap={8} alignItems="center">
-            <div className={swapStyles.skeletonCircle} style={{ width: 32, height: 32 }} />
-            <div className={swapStyles.skeleton} style={{ width: 72, height: 24 }} />
+            <div className={skeletonStyles.skeletonCircle} style={{ width: 32, height: 32 }} />
+            <div className={skeletonStyles.skeleton} style={{ width: 72, height: 24 }} />
           </HStack>
-          <div className={swapStyles.skeleton} style={{ width: 96, height: 24 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 96, height: 24 }} />
         </HStack>
         <HStack gap={16} justifyContent="space-between" alignItems="center">
-          <div className={swapStyles.skeleton} style={{ width: 112, height: 20 }} />
-          <div className={swapStyles.skeleton} style={{ width: 64, height: 20 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 112, height: 20 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 64, height: 20 }} />
         </HStack>
       </VStack>
     </div>

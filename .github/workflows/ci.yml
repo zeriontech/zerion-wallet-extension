@@ -18,15 +18,17 @@ env:
   ZERION_TESTNET_API_URL: https://zpi-testnet.zerion.io/
   BACKEND_ENV: ''
   PROXY_URL: https://proxy.zerion.io/
-  DEFI_SDK_TRANSACTIONS_API_URL: https://transactions.zerion.io
   # Public wallet from e2e/fixtures/constants.ts. Unit tests and E2E use it;
   # it is not a secret.
   TEST_WALLET_ADDRESS: '0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1'
-  FEATURE_SEND_FORM: on
 
 concurrency:
   group: ci-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  # A label-only run stays in the same group but must not evict the run that is
+  # already executing: `changeset-check` is the only job it does, so cancelling
+  # would leave the pull request with no quality or build result at all (the
+  # heavy jobs skip on label events). Queued instead.
+  cancel-in-progress: ${{ github.event.action != 'labeled' && github.event.action != 'unlabeled' }}
 
 permissions:
   contents: read
@@ -98,7 +100,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      # `ENV_*` labels on the PR set build flags (e.g. `ENV_FEATURE_BRIDGE_FORM`).
+      # `ENV_*` labels on the PR set build flags (e.g. `ENV_FEATURE_LOYALTY_FLOW`).
       # Runs before the build so the exported values reach it.
       - name: Apply environment labels
         env:
@@ -112,7 +114,6 @@ jobs:
           MIXPANEL_TOKEN_PUBLIC: ${{ secrets.MIXPANEL_TOKEN_PUBLIC_DEV }}
           GOOGLE_ANALYTICS_MEASUREMENT_ID: ${{ secrets.GOOGLE_ANALYTICS_MEASUREMENT_ID }}
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
-          FEATURE_BRIDGE_FORM: on
           FEATURE_LOYALTY_FLOW: off
           FEATURE_SOLANA: on
         run: |

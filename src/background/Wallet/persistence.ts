@@ -1,5 +1,6 @@
 import { produce } from 'immer';
 import { PersistentStore } from 'src/modules/persistent-store';
+import { createSerialQueue } from 'src/shared/createSerialQueue';
 import type { Credentials } from '../account/Credentials';
 import type { WalletRecord } from './model/types';
 import { WalletRecordModel as Model } from './WalletRecord';
@@ -13,6 +14,8 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
   static backupKey = 'wallet-backup';
   /** Store unencrypted "lastRecord" to avoid unnecessary stringifications */
   private lastRecord: WalletRecord | null = null;
+  /** Encryption is slow and async; without a queue, writes land in the order their encryptions finish */
+  private enqueueWrite = createSerialQueue();
 
   constructor(initialState: WalletStoreState, key = WalletStore.key) {
     super(initialState, key);
@@ -36,7 +39,11 @@ export class WalletStore extends PersistentStore<WalletStoreState> {
     return this.lastRecord;
   }
 
-  async save(id: string, encryptionKey: string, record: WalletRecord) {
+  save(id: string, encryptionKey: string, record: WalletRecord): Promise<void> {
+    return this.enqueueWrite(() => this.encryptAndStore(id, encryptionKey, record));
+  }
+
+  private async encryptAndStore(id: string, encryptionKey: string, record: WalletRecord) {
     if (this.lastRecord === record) {
       return;
     }

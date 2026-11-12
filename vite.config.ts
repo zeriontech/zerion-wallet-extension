@@ -18,7 +18,6 @@ import { componentsAlias, parcelSchemePlugin, sourceAlias } from './scripts/vite
  */
 const BUILD_ENV_VARS = [
   'BACKEND_ENV',
-  'DEFI_SDK_TRANSACTIONS_API_URL',
   'FEATURE_LOYALTY_FLOW',
   'FEATURE_SOLANA',
   'GOOGLE_ANALYTICS_API_SECRET',
@@ -443,7 +442,7 @@ export default defineConfig(({ mode }) => ({
     // `vmThreads` keeps per-file isolation but reuses one thread pool instead
     // of spawning a process per test file (which was ~75% of the run).
     pool: 'vmThreads',
-    include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}', '__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}'],
+    include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}'],
     exclude: ['**/node_modules/**', 'dist*/**', 'e2e/**'],
   },
 

@@ -24,7 +24,7 @@ import { AvatarIcon } from 'src/ui/components/WalletAvatar/AvatarIcon';
 import type { WalletInfo } from 'src/ui/pages/HardwareWalletConnection/shared/getWalletInfo';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { getWalletDisplayName } from 'src/ui/shared/getWalletDisplayName';
 import { opaqueType } from 'src/shared/type-utils/Opaque';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';

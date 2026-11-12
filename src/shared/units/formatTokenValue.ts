@@ -1,6 +1,6 @@
 import { BigNumber } from 'bignumber.js';
 import { memoize } from 'moderndash';
-import { NBSP } from '../../ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 
 const tokenValueFormatters = {
   default: new Intl.NumberFormat('en', {

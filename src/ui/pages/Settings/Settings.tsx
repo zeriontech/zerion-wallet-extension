@@ -27,7 +27,7 @@ import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ToolsIcon from 'jsx:src/ui/assets/hammer.svg';
 import EyeIcon from 'jsx:src/ui/assets/eye.svg';
 import { version } from 'src/shared/packageVersion';
-import { apostrophe, middot } from 'src/ui/shared/typography';
+import { apostrophe, middot } from 'src/shared/typography';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
 import { preferenceStore } from 'src/ui/features/appearance';
 import { usePreferences } from 'src/ui/features/preferences';

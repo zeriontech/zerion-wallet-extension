@@ -6,7 +6,7 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { emDash } from 'src/ui/shared/typography';
+import { emDash } from 'src/shared/typography';
 
 export function PerpScrolledHeader({
   coin,

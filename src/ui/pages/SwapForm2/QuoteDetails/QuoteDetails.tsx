@@ -24,7 +24,7 @@ import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import InfoIcon from 'jsx:src/ui/assets/info.svg';
 import { formatPercent } from 'src/shared/units/formatPercent';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { SlippageSettings } from '../SlippageSettings';

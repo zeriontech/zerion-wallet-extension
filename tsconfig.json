@@ -28,13 +28,8 @@
       "normalized-contains": ["./node_modules/normalized-contains/lib/index.d.ts"],
       "react-area": ["./node_modules/react-area/dist/index.d.ts"]
     },
-    "plugins": [
-      {
-        "name": "typescript-plugin-css-modules"
-      }
-    ],
     "skipLibCheck": true
   },
   "exclude": ["./node_modules"],
-  "include": ["src", "__tests__", "e2e", "playwright.config.ts"]
+  "include": ["src", "e2e", "playwright.config.ts"]
 }

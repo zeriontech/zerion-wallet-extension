@@ -57,7 +57,7 @@ Remaining Parcel-specific adjustments, all deliberate:
 
 ## Formatting
 
-The `fmt` block in `vite.config.ts` reproduces the previous Prettier 2 configuration - 80 columns, single quotes, `trailingComma: es5`, `arrowParens: always`, the same markdown override - with import sorting and `package.json` sorting off, so the switch reflowed 120 files instead of ~730. What remains is not configurable: Oxfmt applies Prettier 3's nested-ternary indentation and wraps multi-value CSS declarations differently.
+The `fmt` block in `vite.config.ts` uses Oxfmt's defaults and pins three things: `singleQuote` (Oxlint enforces single quotes), the `ignorePatterns` for build output and generated files, and a wider `printWidth` of 120 for `src/env/config.ts`. The repository was first migrated with a Prettier-2-compatible configuration and then reformatted to the Oxc defaults in `543afadb` ("style: format with Oxc defaults").
 
 Oxlint does not implement `import/order`; Oxc's answer is Oxfmt's import sorting, which is off here. Import order is therefore not gated.
 

@@ -1,6 +1,6 @@
 /**
  * Backend-authored wording of a failed quotes request (a Custom Quote Error,
- * see CONTEXT.md). Parsed from the first entry of the ZPI `errors` array:
+ * see GLOSSARY.md). Parsed from the first entry of the ZPI `errors` array:
  *
  *   { "data": null, "errors": [{ "title": "Bad request",
  *     "detail": "Unshielding … Please use ${DAPP}.",

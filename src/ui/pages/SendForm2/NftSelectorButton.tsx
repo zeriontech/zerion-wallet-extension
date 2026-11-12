@@ -5,7 +5,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import ChevronDownIcon from 'jsx:src/ui/assets/chevron-down.svg';
 import type { NftPosition } from 'src/modules/zerion-api/requests/wallet-get-nft-positions';
-import * as styles from './AssetSelectorButton.module.css';
+import * as styles from 'src/ui/components/AssetSelectorButton/AssetSelectorButton.module.css';
 
 const EMPTY_KEY = '__empty__';
 
