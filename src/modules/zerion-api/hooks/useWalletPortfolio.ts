@@ -77,7 +77,6 @@ export function useWalletPortfolio(
   );
   const portfolioQuery = useQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: persistentQuery([QUERY_KEY, filteredParams, source, fingerprint]),
     queryFn: () => queryFn(filteredParams, { source }, permits),
     retry: 0, // if not 0, there are too many rerenders if the queryFn throws synchronously

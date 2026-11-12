@@ -28,7 +28,6 @@ export function useWalletActions(
   );
   const queryData = useInfiniteQuery({
     // the permits fingerprint stands in for `permits` in the key: signatures themselves never go into a (persisted) query key
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey,
     queryFn: ({ pageParam }) =>
       withPermits(permits, (permits) =>

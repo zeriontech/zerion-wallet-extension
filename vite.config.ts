@@ -442,7 +442,7 @@ export default defineConfig(({ mode }) => ({
     // `vmThreads` keeps per-file isolation but reuses one thread pool instead
     // of spawning a process per test file (which was ~75% of the run).
     pool: 'vmThreads',
-    include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}', '__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}'],
+    include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}'],
     exclude: ['**/node_modules/**', 'dist*/**', 'e2e/**'],
   },
 
