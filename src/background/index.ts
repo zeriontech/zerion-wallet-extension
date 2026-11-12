@@ -9,6 +9,7 @@ import { UrlContextParam } from 'src/shared/types/UrlContext';
 import { initializeSidepanel } from 'src/shared/sidepanel/initialize.background';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { ORIGIN_PROTOCOL } from 'src/shared/originProtocol';
+import { PORT_NAMES } from 'src/shared/portNames';
 import { initialize } from './initialize';
 import { PortRegistry } from './messaging/PortRegistry';
 import { createWalletMessageHandler } from './messaging/port-message-handlers/createWalletMessageHandler';
@@ -62,8 +63,8 @@ function verifyPort(port: RuntimePort) {
     return true;
   } else {
     // the only non-extension (meaning, content-script) port
-    // allowed is `${browser.runtime.id}/ethereum`
-    return port.name === `${browser.runtime.id}/ethereum`;
+    // allowed is PORT_NAMES.ethereum
+    return port.name === PORT_NAMES.ethereum;
   }
 }
 
@@ -101,7 +102,7 @@ Object.assign(globalThis, { portRegistry });
 browser.runtime.onConnect.addListener((port) => {
   if (verifyPort(port)) {
     portRegistry.register(port);
-  } else if (port.name === 'content-script/keepAlive') {
+  } else if (port.name === PORT_NAMES.contentScriptKeepAlive) {
     // This is an attempt to keep service worker alive. By sending a disconnect
     // to the connected port, we force the content script to create a new
     // connection (custom logic), which, in turn, should keep service worker running.
@@ -138,25 +139,25 @@ initialize().then((values) => {
 
   portRegistry.addMessageHandler(createWalletMessageHandler(() => account.getCurrentWallet()));
   portRegistry.addMessageHandler((port, msg) => {
-    if (port.name === 'handshake') {
+    if (port.name === PORT_NAMES.handshake) {
       port.postMessage({ ack: (msg as { syn: number }).syn + 1 });
     }
   });
   portRegistry.addMessageHandler(
     createPortMessageHandler({
-      check: (port) => port.name === 'accountPublicRPC',
+      check: (port) => port.name === PORT_NAMES.accountPublicRPC,
       controller: accountPublicRPC,
     }),
   );
   portRegistry.addMessageHandler(
     createPortMessageHandler({
-      check: (port) => port.name === 'dnaService',
+      check: (port) => port.name === PORT_NAMES.dnaService,
       controller: dnaService,
     }),
   );
   portRegistry.addMessageHandler(
     createPortMessageHandler({
-      check: (port) => port.name === 'sessionCacheService',
+      check: (port) => port.name === PORT_NAMES.sessionCacheService,
       controller: new SessionCacheService(),
     }),
   );
@@ -174,7 +175,7 @@ initialize().then((values) => {
   ethereumEventsBroadcaster.startListening();
 
   portRegistry.addListener('disconnect', (port: RuntimePort) => {
-    if (port.name === `${browser.runtime.id}/wallet` && !isOnboardingMode(port)) {
+    if (port.name === PORT_NAMES.wallet && !isOnboardingMode(port)) {
       // Means extension UI is closed
       account.expirePasswordSession();
       emitter.emit('uiClosed', { url: port.sender?.url || null });
@@ -183,7 +184,7 @@ initialize().then((values) => {
 
   account.on('reset', () => {
     portRegistry.postMessage({
-      portName: `${browser.runtime.id}/wallet`,
+      portName: PORT_NAMES.wallet,
       message: { payload: 'session-logout' },
     });
   });

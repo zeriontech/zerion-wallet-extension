@@ -3,6 +3,7 @@ import { isRpcRequest } from 'src/shared/custom-rpc';
 import { isObj } from 'src/shared/isObj';
 import { invariant } from 'src/shared/invariant';
 import type { ErrorResponse } from '@walletconnect/jsonrpc-utils';
+import { PORT_NAMES } from 'src/shared/portNames';
 import type { PortMessageHandler } from '../PortRegistry';
 
 function assertType<T>(value: unknown, check: (value: unknown) => value is T): asserts value is T {
@@ -20,7 +21,7 @@ export function createNotificationWindowMessageHandler(
   notificationWindow: NotificationWindow,
 ): PortMessageHandler {
   return function notificationWindowMessageHandler(port, msg) {
-    if (port.name !== 'window') {
+    if (port.name !== PORT_NAMES.window) {
       return;
     }
 
