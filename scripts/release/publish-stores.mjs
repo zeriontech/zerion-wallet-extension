@@ -14,7 +14,13 @@
  * Usage:
  *   node scripts/release/publish-stores.mjs --store=all [--dry-run] \
  *     [--chrome-zip=path] [--firefox-zip=path] [--firefox-sources-zip=path] \
- *     [--summary-out=store-submission.json]
+ *     [--summary-out=store-submission.json] [--cancel-pending]
+ *
+ * `--cancel-pending` drops a queued Chrome review before uploading, so a
+ * rolling channel (beta, built on every push to `main`) is not blocked by the
+ * `FAILED_PRECONDITION: You may not edit or publish an item that is in review`
+ * error. Production does not pass it: a submitted review must not be yanked by
+ * a rerun.
  *
  * `--dry-run` authenticates against both stores and validates the ZIPs without
  * uploading anything.
@@ -32,6 +38,7 @@ import {
 
 function parseArgs(argv) {
   const options = {
+    cancelPending: false,
     chromeZip: undefined,
     dryRun: false,
     firefoxSourcesZip: undefined,
@@ -41,6 +48,7 @@ function parseArgs(argv) {
   };
   for (const arg of argv) {
     if (arg === '--dry-run') options.dryRun = true;
+    else if (arg === '--cancel-pending') options.cancelPending = true;
     else if (arg.startsWith('--store=')) options.store = arg.slice('--store='.length);
     else if (arg.startsWith('--chrome-zip=')) options.chromeZip = arg.slice('--chrome-zip='.length);
     else if (arg.startsWith('--firefox-zip='))
@@ -102,7 +110,15 @@ if (stores.includes('chrome')) {
   // that forgot to export it failed after a full build (`beta.yml` and
   // `release.yml` did).
   requireZip(options.chromeZip, '--chrome-zip');
-  config.chrome = { zip: options.chromeZip, apiVersion: 'v2' };
+  // The Chrome Web Store rejects an upload while the item is in review
+  // (`FAILED_PRECONDITION: You may not edit or publish an item that is in
+  // review`). A rolling channel has to cancel that pending submission first,
+  // otherwise it stays stuck as soon as one review is queued.
+  config.chrome = {
+    zip: options.chromeZip,
+    apiVersion: 'v2',
+    cancelPending: options.cancelPending,
+  };
 }
 if (stores.includes('firefox')) {
   requireZip(options.firefoxZip, '--firefox-zip');

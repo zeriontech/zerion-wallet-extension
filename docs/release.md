@@ -51,10 +51,10 @@ There is a second listing of the extension in both stores, used as the beta chan
 
 What "submit" means differs by channel:
 
-|                          | Chrome Web Store                                                                                                           | Firefox AMO               |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| Beta (every `main` push) | upload, submit and publish immediately                                                                                     | upload, submit for review |
-| Production (tag)         | **upload only** (`CHROME_SKIP_SUBMIT_REVIEW`); publish from the dashboard so the canary / staged rollout is chosen by hand | upload, submit for review |
+|                          | Chrome Web Store                                                                                                                                                                    | Firefox AMO               |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| Beta (every `main` push) | upload, submit and publish immediately; a review queued by the previous push is cancelled first (`--cancel-pending`), because Chrome rejects any upload while the item is in review | upload, submit for review |
+| Production (tag)         | **upload only** (`CHROME_SKIP_SUBMIT_REVIEW`); publish from the dashboard so the canary / staged rollout is chosen by hand                                                          | upload, submit for review |
 
 Store visibility is a dashboard setting, not something the API can set:
 
