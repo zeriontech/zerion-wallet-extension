@@ -1,6 +1,6 @@
 import type { QuoteErrorDetails } from './quoteErrorDetails';
 
-/** A failed quotes request (a Quote Error, see CONTEXT.md). */
+/** A failed quotes request (a Quote Error, see GLOSSARY.md). */
 export class QuotesError extends Error {
   status: number;
   /** Backend-authored wording, when the error response carried any. */

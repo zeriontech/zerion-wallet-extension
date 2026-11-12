@@ -3,7 +3,7 @@ export const DAPP_PLACEHOLDER = '${DAPP}';
 export type DescriptionPart =
   | { kind: 'text'; text: string }
   /**
-   * A DApp Referral (see CONTEXT.md). `label: null` means neither a name nor a
+   * A DApp Referral (see GLOSSARY.md). `label: null` means neither a name nor a
    * usable URL was given — render a generic "the dApp".
    * `href: null` means render the label as plain text.
    */
