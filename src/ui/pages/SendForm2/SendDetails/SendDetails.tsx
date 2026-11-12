@@ -25,7 +25,8 @@ import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/shared/typography';
 import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
-import { NonceLine2 } from 'src/ui/pages/SwapForm2/QuoteDetails/NonceLine2';
+import { DetailRow, NonceLine2 } from 'src/ui/components/DetailRow';
+import * as detailRowStyles from 'src/ui/components/DetailRow/DetailRow.module.css';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { NetworkFeeDialog2 } from 'src/ui/components/NetworkFeeDialog2';
 import { formatNetworkFee } from 'src/ui/components/NetworkFeeDialog2/formatNetworkFee';
@@ -37,31 +38,6 @@ import {
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import type { SendQuote } from '../useSendTransaction';
 import * as styles from './SendDetails.module.css';
-
-function DetailRow({
-  label,
-  value,
-  onClick,
-}: {
-  label: React.ReactNode;
-  value: React.ReactNode;
-  onClick?: () => void;
-}) {
-  const content = (
-    <HStack gap={8} justifyContent="space-between" alignItems="center">
-      <UIText kind="small/regular">{label}</UIText>
-      <UIText kind="small/accent">{value}</UIText>
-    </HStack>
-  );
-  if (onClick) {
-    return (
-      <UnstyledButton onClick={onClick} className={styles.detailLinkRow}>
-        {content}
-      </UnstyledButton>
-    );
-  }
-  return content;
-}
 
 export function SendDetails({
   inputChain,
@@ -174,7 +150,9 @@ export function SendDetails({
                         currency,
                       })}
                     </UIText>
-                    {evmTx ? <ChevronRightIcon className={styles.detailLinkChevron} /> : null}
+                    {evmTx ? (
+                      <ChevronRightIcon className={detailRowStyles.detailLinkChevron} />
+                    ) : null}
                   </HStack>
                 ) : isLoading ? (
                   <CircleSpinner />

@@ -37,33 +37,9 @@ import {
   getNetworkFeeRatioForConfiguration,
 } from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
 import { ProviderSelector } from './ProviderSelector';
-import { NonceLine2 } from './NonceLine2';
+import { DetailRow, NonceLine2 } from 'src/ui/components/DetailRow';
+import * as detailRowStyles from 'src/ui/components/DetailRow/DetailRow.module.css';
 import * as styles from './QuoteDetails.module.css';
-
-function DetailRow({
-  label,
-  value,
-  onClick,
-}: {
-  label: React.ReactNode;
-  value: React.ReactNode;
-  onClick?: () => void;
-}) {
-  const content = (
-    <HStack gap={8} justifyContent="space-between" alignItems="center">
-      <UIText kind="small/regular">{label}</UIText>
-      <UIText kind="small/accent">{value}</UIText>
-    </HStack>
-  );
-  if (onClick) {
-    return (
-      <UnstyledButton onClick={onClick} className={styles.detailLinkRow}>
-        {content}
-      </UnstyledButton>
-    );
-  }
-  return content;
-}
 
 function ZerionFeeLabel() {
   const { data: config, isLoading: isConfigLoading } = useFirebaseConfig([
@@ -213,7 +189,9 @@ export function QuoteDetails({
                             fallbackSymbol: inputChainBaseAssetSymbol,
                           })}
                         </UIText>
-                        {evmTx ? <ChevronRightIcon className={styles.detailLinkChevron} /> : null}
+                        {evmTx ? (
+                          <ChevronRightIcon className={detailRowStyles.detailLinkChevron} />
+                        ) : null}
                       </HStack>
                     ) : quotesQuery.isLoading ? (
                       <CircleSpinner />
@@ -229,7 +207,7 @@ export function QuoteDetails({
                     value={
                       <HStack gap={4} alignItems="center">
                         <UIText kind="small/accent">{getSlippageDisplay(formState, quote)}</UIText>
-                        <ChevronRightIcon className={styles.detailLinkChevron} />
+                        <ChevronRightIcon className={detailRowStyles.detailLinkChevron} />
                       </HStack>
                     }
                   />
@@ -265,7 +243,7 @@ export function QuoteDetails({
                                 <UIText kind="small/accent">
                                   {getSlippageDisplay(formState, quote)}
                                 </UIText>
-                                <ChevronRightIcon className={styles.detailLinkChevron} />
+                                <ChevronRightIcon className={detailRowStyles.detailLinkChevron} />
                               </HStack>
                             }
                           />
@@ -333,7 +311,7 @@ export function QuoteDetails({
                                     </HStack>
                                   </motion.div>
                                 </AnimatePresence>
-                                <ChevronRightIcon className={styles.detailLinkChevron} />
+                                <ChevronRightIcon className={detailRowStyles.detailLinkChevron} />
                               </HStack>
                             ) : (
                               noValueDash
