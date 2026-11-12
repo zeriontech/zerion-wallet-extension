@@ -2,7 +2,7 @@ import throttle from 'lodash/throttle';
 import ky from 'ky';
 import { PROXY_URL } from 'src/env/config';
 import type { ConfigPlugin } from '../ConfigPlugin';
-import { registerPromise, resolvers } from '../pluginSystem';
+import { registerPromise } from '../pluginSystem';
 import type { RemoteConfig } from '../types';
 
 const defaultConfig: RemoteConfig = {
@@ -10,7 +10,6 @@ const defaultConfig: RemoteConfig = {
   extension_uninstall_link: '',
   extension_loyalty_enabled: true,
   extension_asset_page_enabled: true,
-  loyalty_config: {},
   zerion_fee_learn_more_link: '',
   fee_comparison_config: [],
   premium_page_feedback_link: '',
@@ -25,18 +24,7 @@ const defaultConfig: RemoteConfig = {
   },
 };
 
-const knownKeys: (keyof RemoteConfig)[] = [
-  'extension_wallet_name_flags',
-  'extension_uninstall_link',
-  'extension_loyalty_enabled',
-  'extension_asset_page_enabled',
-  'loyalty_config',
-  'fee_comparison_config',
-  'premium_page_feedback_link',
-  'quotes_refetch_interval',
-  'tx_polling_preferences',
-  'swap_form_balance_pulling_params',
-];
+const knownKeys = Object.keys(defaultConfig) as (keyof RemoteConfig)[];
 
 export async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[]) {
   const params = new URLSearchParams(keys.map((key) => ['key', key]));
@@ -49,6 +37,8 @@ export async function fetchRemoteConfig<T extends keyof RemoteConfig>(keys: T[])
 }
 
 let remoteConfig: RemoteConfig | undefined;
+
+let markReady: (() => void) | undefined;
 
 function isEmptyConfig(maybeConfig: Partial<RemoteConfig>) {
   if (!maybeConfig) {
@@ -67,7 +57,7 @@ const REFRESH_RATE = 1000 * 60 * 5;
 export const firebase: ConfigPlugin & { refresh(): void } = {
   onRegister() {
     const promise = new Promise<void>((resolve) => {
-      resolvers.firebaseRemoteConfig = resolve;
+      markReady = resolve;
     });
     registerPromise('firebaseRemoteConfig', promise);
   },
@@ -75,7 +65,7 @@ export const firebase: ConfigPlugin & { refresh(): void } = {
   initialize() {
     fetchRemoteConfig(knownKeys).then((config) => {
       remoteConfig = config;
-      resolvers.firebaseRemoteConfig();
+      markReady?.();
     });
   },
 
