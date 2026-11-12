@@ -965,9 +965,6 @@ export function initialize({ account }: { account: Account }) {
     mixpanelIdentify(account);
   };
   account.on('authenticated', () => handleUserId());
-  if (account.getUser()) {
-    handleUserId();
-  }
   globalPreferences.on('change', (state, prevState) => {
     if (state.analyticsEnabled && !prevState.analyticsEnabled && account.getUser()) {
       handleUserId();
