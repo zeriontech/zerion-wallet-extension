@@ -61,6 +61,10 @@ Store visibility is a dashboard setting, not something the API can set:
 - **Chrome Web Store**: create the second item and set visibility to _Private_ with the organisation's domain in the trusted testers list.
 - **Firefox AMO**: publish the beta add-on as _Unlisted_ (installs are possible with the link only) or listed with restricted access, depending on what the reviewer flow allows for the account.
 
+A Chrome item that is in review cannot be uploaded to at all, so the beta `publish` job fails with `400 FAILED_PRECONDITION / NOT_UPDATEABLE: "You may not edit or publish an item that is in review."` This is a valid failure, not a CI defect: the review queued by an earlier submission is still open, and the next `main` push after it is approved goes through. The pipeline deliberately does not cancel the review to make room for the new build (`cancelSubmission` exists, `publish-browser-extension` exposes it as `cancelPending`), because dropping a review of a build testers may already be running is worse than a red run. `Build beta` and all quality jobs are still produced, so the artifacts are available while the store upload waits.
+
+The same rule applies to production uploads: an item in review rejects the upload, and `release.yml` fails instead of cancelling the pending review.
+
 Icons and the beta build are also what the QA build uses on PRs; that path is unchanged.
 
 ### Why a GitHub App token
