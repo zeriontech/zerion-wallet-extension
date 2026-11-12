@@ -318,7 +318,6 @@ export function SelectConnectedWallet() {
   const { data, isLoading, isError, error } = useQuery({
     retry: 1,
     // some bug in linter, probably
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: ['prepareSelectConnectedWalletData', ecosystem, origin],
     useErrorBoundary: false,
     queryFn: async () => {
