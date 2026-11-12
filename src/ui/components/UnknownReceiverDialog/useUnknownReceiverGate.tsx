@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { SimulationResult } from 'src/ui/pages/SwapForm2/SwapButton';
-import type { WarningContent } from 'src/ui/pages/SwapForm2/TransactionWarning';
+import type { SimulationResult } from 'src/ui/shared/requests/useSimulateTransactions';
+import type { WarningContent } from 'src/ui/components/PreSignWarning';
 import { useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { UnknownReceiverDialog } from './UnknownReceiverDialog';
 import { useReceiverFamiliarity } from './useReceiverFamiliarity';

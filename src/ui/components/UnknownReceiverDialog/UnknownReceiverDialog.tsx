@@ -5,8 +5,7 @@ import { AddToAddressBookDialog } from 'src/ui/components/AddToAddressBookDialog
 import { ActInfo } from 'src/ui/components/address-action/ActInfo';
 import { AngleRightRow } from 'src/ui/components/AngleRightRow';
 import { useAddressBook } from 'src/ui/features/address-book';
-import type { WarningContent } from 'src/ui/pages/SwapForm2/TransactionWarning';
-import { TransactionWarning } from 'src/ui/pages/SwapForm2/TransactionWarning';
+import { TransactionWarning, type WarningContent } from 'src/ui/components/PreSignWarning';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Frame } from 'src/ui/ui-kit/Frame';
