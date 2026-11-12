@@ -3,16 +3,15 @@ import { emitter } from 'src/background/events';
 import { isBareWallet, isSignerContainer } from 'src/shared/types/validators';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { WalletContainer } from 'src/shared/types/WalletContainer';
-import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
 import { invariant } from 'src/shared/invariant';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { BareWallet } from 'src/shared/types/BareWallet';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
+import { INTERNAL_ORIGIN, INTERNAL_SYMBOL_CONTEXT } from 'src/background/constants';
 import { getError } from 'src/shared/errors/getError';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
-import { readSavedReferrerData, saveReferrerData } from './shared/storage';
+import { readSavedReferrerData, saveReferrerData } from './storage';
 
 interface Options {
   getWallet: () => Wallet;

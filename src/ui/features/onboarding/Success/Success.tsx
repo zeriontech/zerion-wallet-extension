@@ -16,7 +16,7 @@ import starImgSrc from 'url:src/ui/assets/zer_star.png';
 import { useQuery } from '@tanstack/react-query';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import { FEATURE_LOYALTY_FLOW } from 'src/env/config';
-import { readSavedReferrerData } from '../../referral-program/shared/storage';
+import { readSavedReferrerData } from 'src/modules/referral-program/storage';
 import { CongratulationsWidget } from './CongratulationsWidget';
 import * as styles from './styles.module.css';
 import { ReferralCodeWidget } from './ReferralCodeWidget';
