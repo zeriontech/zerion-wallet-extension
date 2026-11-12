@@ -1,4 +1,4 @@
-import { ellipsis } from './typography';
+import { ellipsis } from 'src/shared/typography';
 
 export function truncateAddress(address: string, padding = 6) {
   const leadingPadding = address.startsWith('0x') ? 2 + padding : padding;

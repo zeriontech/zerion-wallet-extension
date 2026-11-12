@@ -17,7 +17,7 @@ import { useProfileName } from 'src/ui/shared/useProfileName';
 import { Media } from 'src/ui/ui-kit/Media';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { useDebouncedCallback } from 'src/ui/shared/useDebouncedCallback';
 import { UnstyledInput } from 'src/ui/ui-kit/UnstyledInput';

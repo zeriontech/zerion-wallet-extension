@@ -16,7 +16,7 @@ import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { PageStickyFooter } from 'src/ui/components/PageStickyFooter';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { Background } from 'src/ui/components/Background';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { ValueCell } from '../Networks/shared/ValueCell';

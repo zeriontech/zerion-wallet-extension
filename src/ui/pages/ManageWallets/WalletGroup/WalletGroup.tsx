@@ -16,7 +16,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { Button } from 'src/ui/ui-kit/Button';

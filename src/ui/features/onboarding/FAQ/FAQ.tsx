@@ -5,7 +5,7 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import RightAngleIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { apostrophe } from 'src/ui/shared/typography';
+import { apostrophe } from 'src/shared/typography';
 import { useWindowSizeStore } from 'src/ui/shared/useWindowSizeStore';
 import { Stack } from 'src/ui/ui-kit/Stack';
 import lockIconSrc from 'url:src/ui/assets/lock.png';

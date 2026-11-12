@@ -7,7 +7,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import LinkIcon from 'jsx:src/ui/assets/new-window.svg';
 import ChainsIcon from 'jsx:src/ui/assets/pie-chart.svg';
 import { formatCurrencyToParts, formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
-import { middot } from 'src/ui/shared/typography';
+import { middot } from 'src/shared/typography';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import EyeIcon from 'jsx:src/ui/assets/eye.svg';

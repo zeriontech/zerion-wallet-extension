@@ -1,4 +1,4 @@
-import { ellipsis } from './typography';
+import { ellipsis } from 'src/shared/typography';
 
 export const middleTruncate = ({
   value,

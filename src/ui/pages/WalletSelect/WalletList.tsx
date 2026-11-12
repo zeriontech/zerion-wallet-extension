@@ -10,7 +10,7 @@ import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
-import { middot, NBSP } from 'src/ui/shared/typography';
+import { middot, NBSP } from 'src/shared/typography';
 import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { WalletSourceIcon } from 'src/ui/components/WalletSourceIcon';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';

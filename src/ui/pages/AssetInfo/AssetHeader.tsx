@@ -5,7 +5,7 @@ import { formatPriceValue } from 'src/shared/units/formatPriceValue';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { emDash } from 'src/ui/shared/typography';
+import { emDash } from 'src/shared/typography';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import VerifiedIcon from 'jsx:src/ui/assets/verified.svg';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';

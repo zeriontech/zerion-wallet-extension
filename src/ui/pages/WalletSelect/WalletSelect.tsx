@@ -25,7 +25,7 @@ import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import PortfolioIcon from 'jsx:src/ui/assets/portfolio.svg';
 import { Media } from 'src/ui/ui-kit/Media';
-import { ellipsis } from 'src/ui/shared/typography';
+import { ellipsis } from 'src/shared/typography';
 import { useWalletPortfolio } from 'src/modules/zerion-api/hooks/useWalletPortfolio';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';

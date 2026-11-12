@@ -2,7 +2,7 @@ import React from 'react';
 import { formatCurrencyToParts } from 'src/shared/units/formatCurrencyValue';
 import comingSoonImgSrc from 'url:src/ui/assets/coming-soon@2x.png';
 import { ViewLoading } from 'src/ui/components/ViewLoading/ViewLoading';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { MediaContent, convertMediaContent } from 'src/ui/ui-kit/MediaContent';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';

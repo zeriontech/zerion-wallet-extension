@@ -10,7 +10,7 @@ import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { usePreferences } from 'src/ui/features/preferences';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
-import { apostrophe } from 'src/ui/shared/typography';
+import { apostrophe } from 'src/shared/typography';
 import { useEvent } from 'src/ui/shared/useEvent';
 import { useBackupTodosCount } from 'src/ui/shared/requests/useBackupTodosCount';
 import { openHrefInTabView } from 'src/ui/shared/openUrl';

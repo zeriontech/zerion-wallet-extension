@@ -1,5 +1,5 @@
 import React from 'react';
-import { ellipsis, NBSP } from 'src/ui/shared/typography';
+import { ellipsis, NBSP } from 'src/shared/typography';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';

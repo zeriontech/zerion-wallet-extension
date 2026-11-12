@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import React from 'react';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import { muchGreater, veryMuchGreater } from 'src/ui/shared/typography';
+import { muchGreater, veryMuchGreater } from 'src/shared/typography';
 import memoize from 'lodash/memoize';
 
 enum QuantityLevel {

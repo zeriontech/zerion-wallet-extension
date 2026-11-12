@@ -2,7 +2,7 @@ import React from 'react';
 import { formatCurrencyToParts, formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { NeutralDecimals } from 'src/ui/ui-kit/NeutralDecimals';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';

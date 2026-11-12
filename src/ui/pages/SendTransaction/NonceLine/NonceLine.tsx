@@ -10,7 +10,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { Button } from 'src/ui/ui-kit/Button';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import { collectData } from 'src/ui/shared/form-data';

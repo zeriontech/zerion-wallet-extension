@@ -39,7 +39,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { FLOAT_INPUT_PATTERN, INT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { useEstimateGas } from 'src/modules/ethereum/transactions/useEstimateGas';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
-import { apostrophe } from 'src/ui/shared/typography';
+import { apostrophe } from 'src/shared/typography';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { estimateFee } from 'src/modules/ethereum/transactions/gasPrices/eip1559/estimateFee';
 import { useTransactionFee } from '../TransactionConfiguration/useTransactionFee';

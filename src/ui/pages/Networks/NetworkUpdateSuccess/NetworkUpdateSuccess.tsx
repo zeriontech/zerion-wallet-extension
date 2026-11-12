@@ -6,7 +6,7 @@ import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import { noValueDash } from 'src/ui/shared/typography';
+import { noValueDash } from 'src/shared/typography';
 import { Button } from 'src/ui/ui-kit/Button';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';

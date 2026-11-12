@@ -2,7 +2,7 @@ import React from 'react';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { PortfolioValue } from 'src/ui/shared/requests/PortfolioValue';
 import { IsConnectedToActiveTab } from 'src/ui/shared/requests/useIsConnectedToActiveTab';
-import { NBSP } from 'src/ui/shared/typography';
+import { NBSP } from 'src/shared/typography';
 import { Media } from 'src/ui/ui-kit/Media';
 import type { UITextProps } from 'src/ui/ui-kit/UIText';
 import { UIText } from 'src/ui/ui-kit/UIText';

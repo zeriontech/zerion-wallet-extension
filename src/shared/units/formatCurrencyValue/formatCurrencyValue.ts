@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import memoize from 'memoize-one';
 import type { CurrencyConfig } from 'src/modules/currency/currencies';
 import { CURRENCIES, resolveOptions } from 'src/modules/currency/currencies';
-import { minus as typographicMinus } from 'src/ui/shared/typography';
+import { minus as typographicMinus } from 'src/shared/typography';
 
 /**
  * USD formatting — Style 1 ("amount"): money the user has or pays.

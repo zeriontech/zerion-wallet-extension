@@ -1,5 +1,5 @@
 import { truncateAddress } from './truncateAddress';
-import { ellipsis } from './typography';
+import { ellipsis } from 'src/shared/typography';
 
 describe('truncateAddress', () => {
   test('with 0x prefix', () => {
