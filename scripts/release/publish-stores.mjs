@@ -5,8 +5,7 @@
  * through `publish-browser-extension` (the engine behind `wxt submit`).
  *
  * All credentials come from the environment; nothing is ever printed.
- *   Chrome (CWS API v2 — v1.1 was retired on 2026-10-15):
- *     CHROME_API_VERSION=v2
+ *   Chrome (CWS API v2, pinned below — v1.1 was retired on 2026-10-15):
  *     CHROME_EXTENSION_ID, CHROME_PUBLISHER_ID
  *     CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL, CHROME_SERVICE_ACCOUNT_PRIVATE_KEY
  *   Firefox (AMO):
@@ -97,14 +96,11 @@ const stores = options.store === 'all' ? ['chrome', 'firefox'] : [options.store]
 
 const config = { dryRun: options.dryRun };
 if (stores.includes('chrome')) {
-  // CWS API v1.1 stopped working on 2026-10-15; the tool defaults to v1.1.
-  if (process.env.CHROME_API_VERSION !== 'v2') {
-    fail(
-      'CHROME_API_VERSION must be "v2". The Chrome Web Store API v1.1 was retired on 2026-10-15, ' +
-        'so submissions need a service account (CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL / ' +
-        'CHROME_SERVICE_ACCOUNT_PRIVATE_KEY / CHROME_PUBLISHER_ID).',
-    );
-  }
+  // CWS API v1.1 stopped working on 2026-10-15 and the underlying tool still
+  // defaults to it, so the version is pinned here instead of being read from
+  // `CHROME_API_VERSION`. It used to be an env var, which meant every workflow
+  // that forgot to export it failed after a full build (`beta.yml` and
+  // `release.yml` did).
   requireZip(options.chromeZip, '--chrome-zip');
   config.chrome = { zip: options.chromeZip, apiVersion: 'v2' };
 }

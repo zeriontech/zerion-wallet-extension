@@ -106,7 +106,7 @@ Tradeoff: we depend on a single third-party submitter covering both stores. If i
 | `FIREFOX_BETA_EXTENSION_ID`           | beta    | AMO id of the beta listing; upload skipped when unset         |
 | `SLACK_AUTH_TOKEN`                    | both    | Already used by `release.yml`                                 |
 
-`CHROME_API_VERSION=v2` is set in the workflow, not stored as a secret. The script refuses to run with anything else: CWS API v1.1 stopped working on 2026-10-15.
+The Chrome Web Store API version is pinned to `v2` inside `scripts/release/publish-stores.mjs`, not read from a workflow env var and not stored as a secret: CWS API v1.1 stopped working on 2026-10-15 and the underlying tool still defaults to it. Beta and release runs upload without any per-workflow flag.
 
 All store credentials live in the **`store-publishing` environment**, never in
 repository secrets. The workflows that need them declare it on a dedicated job,
