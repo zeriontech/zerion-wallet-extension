@@ -1,11 +1,8 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import {
-  RegularSignButton,
-  DangerSignButton,
-  type SimulationResult,
-} from 'src/ui/pages/SwapForm2/SwapButton';
+import { DangerSignButton, RegularSignButton } from 'src/ui/components/HoldToSignButton';
+import type { SimulationResult } from 'src/ui/shared/requests/useSimulateTransactions';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
 import type { SendFormState2 } from '../types';
 import type { SendSlotButton } from '../resolveSendSlot';

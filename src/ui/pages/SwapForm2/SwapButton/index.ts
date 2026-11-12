@@ -1,9 +1,2 @@
-export {
-  SwapButton,
-  RegularSignButton,
-  DangerSignButton,
-  SimulatingIcon,
-  HoldHint,
-  useHoldToFire,
-} from './SwapButton';
+export { SwapButton } from './SwapButton';
 export type { SimulationResult } from './SwapButton';
