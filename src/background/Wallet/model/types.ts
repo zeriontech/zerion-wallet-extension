@@ -61,7 +61,9 @@ interface PublicPreferences {
   /** @deprecated */
   exploreZeroBannerDismissed?: boolean;
   backupReminderDismissedTime?: number;
+  /** @deprecated */
   restoreRecoveryPhraseReminderDismissedTime?: number;
+  /** @deprecated */
   restoreRecoveryPhraseSuccess?: boolean;
   /** @deprecated */
   enableTestnets?: boolean;
