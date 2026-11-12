@@ -14,7 +14,6 @@ import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
 import { useStore } from '@store-unit/react';
 import { runtimeStore } from 'src/shared/core/runtime-store';
-import { Playground } from 'src/ui-lab/Playground';
 import { useNavigate } from 'react-router-dom';
 import { Login } from '../pages/Login';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -82,8 +81,25 @@ import { RestoreData } from '../pages/RestoreData';
 import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRestorePage';
 import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
 import { Deposit } from '../pages/Deposit';
-import { PerpPage, PerpsDeposit, PerpsTrade, PerpsWithdraw } from '../pages/Perps';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
+
+// Loaded on demand: reached from a perps market only, and they carry the candlestick chart
+const PerpPage = React.lazy(() =>
+  import('../pages/Perps').then((module) => ({ default: module.PerpPage })),
+);
+const PerpsDeposit = React.lazy(() =>
+  import('../pages/Perps').then((module) => ({ default: module.PerpsDeposit })),
+);
+const PerpsTrade = React.lazy(() =>
+  import('../pages/Perps').then((module) => ({ default: module.PerpsTrade })),
+);
+const PerpsWithdraw = React.lazy(() =>
+  import('../pages/Perps').then((module) => ({ default: module.PerpsWithdraw })),
+);
+// Developer tool; never needed for a user's first paint
+const Playground = React.lazy(() =>
+  import('src/ui-lab/Playground').then((module) => ({ default: module.Playground })),
+);
 
 const isProd = process.env.NODE_ENV === 'production';
 
