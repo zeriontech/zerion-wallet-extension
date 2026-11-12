@@ -1,5 +1,6 @@
 export { TransactionSigner } from './TransactionSigner';
 export { signTransactions } from './signTransactions';
+export { signUntilFirstBroadcast } from './signUntilFirstBroadcast';
 export { getQueues } from './store';
 export { useQueueStatus } from './useQueueStatus';
 export { QueueAbortError, QueueError, ReadonlyWalletError } from './errors';

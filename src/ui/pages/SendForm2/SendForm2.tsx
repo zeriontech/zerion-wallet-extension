@@ -48,10 +48,8 @@ import { useGlobalPreferences, usePreferences } from 'src/ui/features/preference
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
-  signTransactions,
-  getQueues,
+  signUntilFirstBroadcast,
   QueueAbortError,
-  QueueError,
   type SignStep,
 } from 'src/ui/components/TransactionSigner';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
@@ -512,59 +510,22 @@ function SendFormComponent({
         },
       ];
 
-      return new Promise<void>((resolve, reject) => {
-        let settled = false;
-        const settle = (fn: () => void) => {
-          if (settled) return;
-          settled = true;
-          fn();
-        };
-
-        const { promise: queuePromise } = signTransactions(steps, {
+      await signUntilFirstBroadcast(
+        steps,
+        {
           wallet,
           holdToSign: false,
           bluetoothSupportEnabled: globalPreferences?.bluetoothSupportEnabled ?? null,
-          onEvent: (event) => {
-            if (event.type === 'step-pending' && event.index === 0) {
-              settle(() => {
-                if (preferences && formState.to) {
-                  setPreferences({
-                    recentAddresses: updateRecentAddresses(
-                      formState.to,
-                      preferences.recentAddresses,
-                    ),
-                  });
-                }
-                setUserFormState(resetAfterBroadcast);
-                queryClient.invalidateQueries(['transactionGetSend']);
-                resolve();
-              });
-            } else if (event.type === 'step-error' && event.index === 0) {
-              settle(() => reject(event.error));
-            } else if (event.type === 'queue-aborted' && event.index === 0) {
-              settle(() => reject(new QueueAbortError(0, [])));
-            }
-          },
+        },
+        { resolveWhenQueuedBehind: true },
+      );
+      if (preferences && formState.to) {
+        setPreferences({
+          recentAddresses: updateRecentAddresses(formState.to, preferences.recentAddresses),
         });
-
-        if (getQueues().length > 1) {
-          settle(() => {
-            if (preferences && formState.to) {
-              setPreferences({
-                recentAddresses: updateRecentAddresses(formState.to, preferences.recentAddresses),
-              });
-            }
-            setUserFormState(resetAfterBroadcast);
-            queryClient.invalidateQueries(['transactionGetSend']);
-            resolve();
-          });
-        }
-
-        queuePromise.catch((err) => {
-          const unwrapped = err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
-          settle(() => reject(unwrapped));
-        });
-      });
+      }
+      setUserFormState(resetAfterBroadcast);
+      queryClient.invalidateQueries(['transactionGetSend']);
     },
     onError: (error) => {
       if (error instanceof QueueAbortError) return;
