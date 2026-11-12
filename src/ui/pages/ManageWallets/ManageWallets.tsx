@@ -25,7 +25,6 @@ import { openHref } from 'src/ui/shared/openUrl';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
 import { BLOCKCHAIN_TYPES } from 'src/shared/wallet/classifiers';
-import { FEATURE_SOLANA } from 'src/env/config';
 import { WalletAccount as WalletAccountPage } from './WalletAccount';
 import { WalletGroup as WalletGroupPage } from './WalletGroup';
 import { groupByEcosystem } from './shared/groupByEcosystem';
@@ -72,7 +71,7 @@ function WalletGroupItem({ group }: { group: WalletGroup }) {
   const byEcosystem = useMemo(() => groupByEcosystem(wallets), [wallets]);
   return (
     <HStack gap={4} justifyContent="space-between" alignItems="center">
-      <VStack gap={FEATURE_SOLANA === 'on' ? 20 : 8}>
+      <VStack gap={20}>
         <UIText kind="small/accent" style={{ overflowWrap: 'break-word' }}>
           {getGroupDisplayName(group.name)}
         </UIText>
@@ -81,7 +80,7 @@ function WalletGroupItem({ group }: { group: WalletGroup }) {
             const wallets = byEcosystem[blockchainType];
             return (
               <VStack key={blockchainType} gap={8}>
-                {FEATURE_SOLANA === 'on' ? <BlockchainTitleHelper kind={blockchainType} /> : null}
+                <BlockchainTitleHelper kind={blockchainType} />
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {wallets.map((wallet) => (
                     <AddressBadge key={wallet.address} wallet={wallet} />

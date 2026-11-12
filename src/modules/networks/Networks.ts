@@ -5,7 +5,7 @@ import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEt
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
-import { FEATURE_SOLANA, RPC_PROXY_URL } from 'src/env/config';
+import { RPC_PROXY_URL } from 'src/env/config';
 import type { ChainFlags } from 'src/modules/zerion-api/types/ChainFullInfo';
 import type { ChainId } from '../ethereum/transactions/ChainId';
 import type { Chain } from './Chain';
@@ -134,9 +134,6 @@ export class Networks {
     this.ethereumChainConfigs = ethereumChainConfigs;
     this.networks = applyChainConfigs(networks, ethereumChainConfigs);
     this.networks = this.networks.filter(Networks.isSupportedEcosystem);
-    if (FEATURE_SOLANA !== 'on') {
-      this.networks = this.networks.filter((n) => Networks.isEip155(n));
-    }
     this.evmNetworks = this.networks.filter((n) => Networks.isEip155(n));
     this.solanaNetworks = this.networks.filter((n) => n.specification.solana != null);
     this.collection = toCollection(

@@ -14,7 +14,6 @@ import dialogIconSrc from 'url:../assets/dialog.png';
 import metamaskIconSrc from 'url:../assets/metamask.png';
 import phantomIconSrc from 'url:../assets/phantom-wallet-icon.svg';
 import walletIconSrc from 'url:../assets/wallet2.png';
-import { FEATURE_SOLANA } from 'src/env/config';
 import { SidePanel } from '../shared/SidePanel';
 import * as styles from './styles.module.css';
 
@@ -159,17 +158,15 @@ export function SecretKeyFAQ() {
                 </HStack>
               </HStack>
             </UnstyledButton>
-            {FEATURE_SOLANA === 'on' ? (
-              <UnstyledButton className={styles.faqButton} onClick={() => setHelpPanel('phantom')}>
-                <HStack gap={8} alignItems="center">
-                  <img style={{ width: 20, height: 20 }} src={phantomIconSrc} />
-                  <HStack gap={0} alignItems="center" style={{ color: 'var(--primary)' }}>
-                    <UIText kind="small/regular">Phantom</UIText>
-                    <RightAngleIcon />
-                  </HStack>
+            <UnstyledButton className={styles.faqButton} onClick={() => setHelpPanel('phantom')}>
+              <HStack gap={8} alignItems="center">
+                <img style={{ width: 20, height: 20 }} src={phantomIconSrc} />
+                <HStack gap={0} alignItems="center" style={{ color: 'var(--primary)' }}>
+                  <UIText kind="small/regular">Phantom</UIText>
+                  <RightAngleIcon />
                 </HStack>
-              </UnstyledButton>
-            ) : null}
+              </HStack>
+            </UnstyledButton>
             <UnstyledButton className={styles.faqButton} onClick={() => setHelpPanel('other')}>
               <HStack gap={8} alignItems="center">
                 <img style={{ width: 20, height: 20, borderRadius: 10 }} src={walletIconSrc} />
@@ -266,17 +263,15 @@ export function PhraseFAQ() {
                 </HStack>
               </HStack>
             </UnstyledButton>
-            {FEATURE_SOLANA === 'on' ? (
-              <UnstyledButton className={styles.faqButton} onClick={() => setHelpPanel('phantom')}>
-                <HStack gap={8} alignItems="center">
-                  <img style={{ width: 20, height: 20 }} src={phantomIconSrc} />
-                  <HStack gap={0} alignItems="center" style={{ color: 'var(--primary)' }}>
-                    <UIText kind="small/regular">Phantom</UIText>
-                    <RightAngleIcon />
-                  </HStack>
+            <UnstyledButton className={styles.faqButton} onClick={() => setHelpPanel('phantom')}>
+              <HStack gap={8} alignItems="center">
+                <img style={{ width: 20, height: 20 }} src={phantomIconSrc} />
+                <HStack gap={0} alignItems="center" style={{ color: 'var(--primary)' }}>
+                  <UIText kind="small/regular">Phantom</UIText>
+                  <RightAngleIcon />
                 </HStack>
-              </UnstyledButton>
-            ) : null}
+              </HStack>
+            </UnstyledButton>
             <UnstyledButton className={styles.faqButton} onClick={() => setHelpPanel('other')}>
               <HStack gap={8} alignItems="center">
                 <img style={{ width: 20, height: 20, borderRadius: 10 }} src={walletIconSrc} />

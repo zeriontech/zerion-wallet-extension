@@ -29,7 +29,6 @@ import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/Segm
 import { useToggledValues } from 'src/ui/components/useToggledValues';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { BlockchainTitleHelper } from 'src/ui/components/BlockchainTitleHelper';
-import { FEATURE_SOLANA } from 'src/env/config';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { suggestInitialWallets, type DerivedWallets } from '../helpers';
 import { AddressImportMessages } from './AddressImportMessages';
@@ -194,41 +193,39 @@ export function SelectMoreWalletsDialog({
                 paddingInline: 20,
               }}
             >
-              {FEATURE_SOLANA === 'on' ? (
-                <div
-                  style={{
-                    placeSelf: 'center',
-                    gridColumnStart: 2,
-                    display: 'flex',
-                    gap: 12,
-                  }}
-                >
-                  <SegmentedControlGroup kind="secondary">
-                    <SegmentedControlRadio
-                      name="curve"
-                      value="ecdsa"
-                      checked={curve === 'ecdsa'}
-                      onChange={(event) => setCurve(event.currentTarget.value as CurveValue)}
-                    >
-                      <HStack gap={8} alignItems="center">
-                        <EcosystemEthereumIcon />
-                        <span>EVM</span>
-                      </HStack>
-                    </SegmentedControlRadio>
-                    <SegmentedControlRadio
-                      name="curve"
-                      value="ed25519"
-                      checked={curve === 'ed25519'}
-                      onChange={(event) => setCurve(event.currentTarget.value as CurveValue)}
-                    >
-                      <HStack gap={8} alignItems="center">
-                        <EcosystemSolanaIcon />
-                        <span>Solana</span>
-                      </HStack>
-                    </SegmentedControlRadio>
-                  </SegmentedControlGroup>
-                </div>
-              ) : null}
+              <div
+                style={{
+                  placeSelf: 'center',
+                  gridColumnStart: 2,
+                  display: 'flex',
+                  gap: 12,
+                }}
+              >
+                <SegmentedControlGroup kind="secondary">
+                  <SegmentedControlRadio
+                    name="curve"
+                    value="ecdsa"
+                    checked={curve === 'ecdsa'}
+                    onChange={(event) => setCurve(event.currentTarget.value as CurveValue)}
+                  >
+                    <HStack gap={8} alignItems="center">
+                      <EcosystemEthereumIcon />
+                      <span>EVM</span>
+                    </HStack>
+                  </SegmentedControlRadio>
+                  <SegmentedControlRadio
+                    name="curve"
+                    value="ed25519"
+                    checked={curve === 'ed25519'}
+                    onChange={(event) => setCurve(event.currentTarget.value as CurveValue)}
+                  >
+                    <HStack gap={8} alignItems="center">
+                      <EcosystemSolanaIcon />
+                      <span>Solana</span>
+                    </HStack>
+                  </SegmentedControlRadio>
+                </SegmentedControlGroup>
+              </div>
               {curve === 'ed25519' ? (
                 <DecoratedSettingsSelect
                   select={(style) => (
