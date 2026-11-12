@@ -159,7 +159,7 @@ export class TransactionService {
         invariant(this.options, "Options aren't expected to become null");
         const wallet = this.options.getWallet();
         try {
-          return wallet.getRpcUrlSolana();
+          return await wallet.getRpcUrlSolana();
         } catch {
           return null;
         }
