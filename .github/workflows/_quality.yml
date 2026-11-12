@@ -80,7 +80,7 @@ jobs:
     #
     # Five shards, balanced by measured duration rather than Playwright's
     # index split (which left 56s/28s/32s). `scripts/e2e-shards.mjs` packs the
-    # 22 extension tests and the 13 dapp tests into five balanced groups and a
+    # 34 extension tests and the 13 dapp tests into five balanced groups and a
     # `--verify` step fails if any test is not assigned to exactly one shard.
     #
     # Dapp tests use the hosted test dapp via DAPP_URL and are skipped when

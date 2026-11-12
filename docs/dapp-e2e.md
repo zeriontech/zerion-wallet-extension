@@ -87,7 +87,7 @@ allowlisted.
 The dapp tests are part of the normal `e2e` job in
 `.github/workflows/ci.yml`. There is no separate dapp workflow:
 
-- The e2e matrix has five shards. `scripts/e2e-shards.mjs` assigns all 22
+- The e2e matrix has five shards. `scripts/e2e-shards.mjs` assigns all 34
   extension tests and all 13 dapp tests to exactly one shard.
 - `DAPP_URL=https://zeriontech.github.io/zerion-test-dapp/` is set for every
   shard; there is no test dapp checkout, install, or dev-server step.

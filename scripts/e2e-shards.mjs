@@ -79,6 +79,14 @@ const TESTS = [
   ['overview.spec.ts', 'Overview › Matches snapshot', 11.2],
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
+  ['lazy-routes.spec.ts', 'Lazy routes › Perps deposit page loads on demand', 4.0],
+  ['lazy-routes.spec.ts', 'Lazy routes › Perps withdraw page loads on demand', 4.0],
+  ['lazy-routes.spec.ts', 'Lazy routes › Playground loads on demand', 4.0],
+  [
+    'lazy-routes.spec.ts',
+    'Lazy routes › Chunks are requested only by the routes that need them',
+    4.0,
+  ],
 
   // Dapp suite. These only run when DAPP_URL is set; CI points then at the
   // hosted zerion-test-dapp deployment.
