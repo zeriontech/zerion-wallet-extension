@@ -42,8 +42,6 @@ export function createNotificationWindowMessageHandler(
           error: params[0].error as ErrorResponse,
         });
         port.postMessage({ id: msg.id, result: null });
-      } else if (msg.method === 'closeCurrentWindow') {
-        notificationWindow.closeCurrentWindow();
       }
     } else {
       return false;

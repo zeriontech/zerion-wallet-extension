@@ -425,9 +425,4 @@ export class NotificationWindow extends PersistentStore<PendingState> {
       return id;
     }
   }
-
-  /** @deprecated */
-  closeCurrentWindow() {
-    console.warn('deprecated'); // eslint-disable-line no-console
-  }
 }
