@@ -25,10 +25,8 @@ import { toMultichainTransaction } from 'src/shared/types/Quote';
 import { toIncomingTransaction } from 'src/shared/types/Quote';
 import { equal } from 'src/modules/fast-deep-equal';
 import {
-  signTransactions,
-  getQueues,
+  signUntilFirstBroadcast,
   QueueAbortError,
-  QueueError,
   type SignStep,
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
@@ -565,55 +563,16 @@ function SwapFormComponent({
         toaster: swapToasterView,
       });
 
-      // Resolves on step-1 broadcast (form reset + button unblock); rejects
-      // on any pre-broadcast failure of step 1. Post-broadcast on-chain
-      // failures of step 1 reach the queue promise after we've already
-      // resolved — they're surfaced by the toaster, not here.
-      // If another queue is already in flight when we enqueue, our queue
-      // will sit in line — don't block the form on it; reset and unblock
-      // immediately so the user can start the next swap.
-      return new Promise<void>((resolve, reject) => {
-        let settled = false;
-        const settle = (fn: () => void) => {
-          if (settled) return;
-          settled = true;
-          fn();
-        };
-
-        const { promise: queuePromise } = signTransactions(steps, {
+      await signUntilFirstBroadcast(
+        steps,
+        {
           wallet,
           holdToSign: false,
           bluetoothSupportEnabled: globalPreferences?.bluetoothSupportEnabled ?? null,
-          onEvent: (event) => {
-            if (event.type === 'step-pending' && event.index === 0) {
-              settle(() => {
-                setUserFormState(resetAfterBroadcast);
-                resolve();
-              });
-            } else if (event.type === 'step-error' && event.index === 0) {
-              settle(() => reject(event.error));
-            } else if (event.type === 'queue-aborted' && event.index === 0) {
-              settle(() => reject(new QueueAbortError(0, [])));
-            }
-          },
-        });
-
-        // signTransactions appends synchronously, so length > 1 means
-        // there's at least one other queue ahead of ours.
-        if (getQueues().length > 1) {
-          settle(() => {
-            setUserFormState(resetAfterBroadcast);
-            resolve();
-          });
-        }
-
-        // Catches pre-flight rejections (e.g. ReadonlyWalletError) that
-        // never emit step events, plus any rejection that races onEvent.
-        queuePromise.catch((err) => {
-          const unwrapped = err instanceof QueueError && err.failedAt === 0 ? err.cause : err;
-          settle(() => reject(unwrapped));
-        });
-      });
+        },
+        { resolveWhenQueuedBehind: true },
+      );
+      setUserFormState(resetAfterBroadcast);
     },
     onError: (error) => {
       if (error instanceof QueueAbortError) return;
