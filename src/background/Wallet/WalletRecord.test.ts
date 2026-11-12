@@ -358,3 +358,75 @@ describe('WalletRecordModel re-encryption methods', () => {
     });
   });
 });
+
+describe('WalletRecordModel address lookups', () => {
+  const READONLY_ONLY_ADDRESS = '0x2222222222222222222222222222222222222222';
+
+  /** The same address held twice: read-only group listed first, private-key group second */
+  function buildRecordWithDuplicateAddress() {
+    const privateKeyContainer = buildPrivateKeyContainer();
+    const { address } = privateKeyContainer.getFirstWallet();
+    const record = buildRecordWithoutMnemonics();
+    record.walletManager.groups = [
+      {
+        id: 'dup-ro',
+        name: '',
+        walletContainer: new ReadonlyAccountContainer([{ address, name: null }]),
+        lastBackedUp: null,
+        origin: WalletOrigin.imported,
+        created: 1700000000000,
+      },
+      {
+        id: 'dup-pk',
+        name: '',
+        walletContainer: privateKeyContainer,
+        lastBackedUp: null,
+        origin: WalletOrigin.imported,
+        created: 1700000000001,
+      },
+    ];
+    return { record, address };
+  }
+
+  it('prefers the signer group when an address is also held read-only', () => {
+    const { record, address } = buildRecordWithDuplicateAddress();
+    expect(WalletRecordModel.getWalletGroupByAddress(record, address)?.id).toBe('dup-pk');
+  });
+
+  it('returns the signer wallet for a duplicated address when no group is named', () => {
+    const { record, address } = buildRecordWithDuplicateAddress();
+    const wallet = WalletRecordModel.getWalletByAddress(record, { address, groupId: null });
+    expect(wallet && 'privateKey' in wallet).toBe(true);
+  });
+
+  it('returns the entry of the named group even when a signer group has the address', () => {
+    const { record, address } = buildRecordWithDuplicateAddress();
+    const wallet = WalletRecordModel.getWalletByAddress(record, { address, groupId: 'dup-ro' });
+    expect(wallet).not.toBeNull();
+    expect(wallet && 'privateKey' in wallet).toBe(false);
+  });
+
+  it('finds the signer wallet behind a read-only duplicate', () => {
+    const { record, address } = buildRecordWithDuplicateAddress();
+    expect(WalletRecordModel.getSignerWalletByAddress(record, address)?.privateKey).toBe(
+      TEST_PRIVATE_KEY,
+    );
+  });
+
+  it('has no signer wallet for an address that is only watched', () => {
+    const record = buildRecordWithoutMnemonics();
+    expect(WalletRecordModel.getSignerWalletByAddress(record, READONLY_ONLY_ADDRESS)).toBeNull();
+    expect(WalletRecordModel.getWalletGroupByAddress(record, READONLY_ONLY_ADDRESS)?.id).toBe(
+      'group-ro',
+    );
+  });
+
+  it('returns null for an address in no group', () => {
+    const record = buildRecordWithoutMnemonics();
+    const unknown = '0x3333333333333333333333333333333333333333';
+    expect(WalletRecordModel.getWalletGroupByAddress(record, unknown)).toBeNull();
+    expect(
+      WalletRecordModel.getWalletByAddress(record, { address: unknown, groupId: null }),
+    ).toBeNull();
+  });
+});
