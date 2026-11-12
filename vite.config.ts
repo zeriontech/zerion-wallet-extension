@@ -18,7 +18,6 @@ import { componentsAlias, parcelSchemePlugin, sourceAlias } from './scripts/vite
  */
 const BUILD_ENV_VARS = [
   'BACKEND_ENV',
-  'DEFI_SDK_TRANSACTIONS_API_URL',
   'FEATURE_LOYALTY_FLOW',
   'FEATURE_SOLANA',
   'GOOGLE_ANALYTICS_API_SECRET',
