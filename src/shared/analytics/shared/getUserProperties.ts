@@ -1,5 +1,5 @@
 import type { Account } from 'src/background/account/Account';
-import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
+import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/constants';
 import { isReadonlyContainer } from 'src/shared/types/validators';
 import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
@@ -9,45 +9,8 @@ import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { PremiumPlan, WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import { PREMIUM_PRIORITY } from 'src/modules/zerion-api/requests/wallet-get-meta';
 import type { Params, WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
-import type { AddressActivity } from 'src/modules/zerion-api/requests/wallet-check-activity';
 import { getProviderForMixpanel, getProviderNameFromGroup } from './getProviderNameFromGroup';
 import { omitNullParams } from './omitNullParams';
-
-function getFundedStatsByEcosystem(activity: AddressActivity | null): {
-  totalCount: number;
-  solanaFundedCount: number;
-  evmFundedCount: number;
-} {
-  if (!activity) {
-    return {
-      totalCount: 0,
-      solanaFundedCount: 0,
-      evmFundedCount: 0,
-    };
-  }
-  const count = (values: Array<{ active: boolean }>) =>
-    values.reduce((sum, value) => sum + (value.active ? 1 : 0), 0);
-
-  const values = Object.values(activity);
-  return {
-    totalCount: count(values),
-    evmFundedCount: count(values.filter((value) => isEthereumAddress(value.address))),
-    solanaFundedCount: count(values.filter((value) => isSolanaAddress(value.address))),
-  };
-}
-
-/**
- * Runs outside React, so the mainnet pinning it used to get accidentally from
- * the defi-sdk singleton is written out literally here.
- */
-async function queryAddressActivity(addresses: string[]) {
-  const source = 'mainnet';
-  return backgroundQueryClient.fetchQuery({
-    queryKey: ['walletCheckActivity', addresses, source],
-    queryFn: () => ZerionAPI.walletCheckActivity({ addresses }, { source }),
-    staleTime: 20000,
-  });
-}
 
 async function queryWalletPortfolio(params: Params) {
   return backgroundQueryClient.fetchQuery({
@@ -57,16 +20,12 @@ async function queryWalletPortfolio(params: Params) {
   });
 }
 
-async function getPortfolioStats(addresses: string[]) {
-  return Promise.allSettled([
-    queryWalletPortfolio({ addresses, currency: 'usd' }),
-    queryAddressActivity(addresses),
-  ]).then(([result1, result2]) => {
-    return {
-      portfolio: result1.status === 'fulfilled' ? result1.value : null,
-      addressActivity: result2.status === 'fulfilled' ? result2.value : null,
-    };
-  });
+async function getPortfolio(addresses: string[]) {
+  try {
+    return await queryWalletPortfolio({ addresses, currency: 'usd' });
+  } catch {
+    return null;
+  }
 }
 
 async function getZerionStats({ ownedWalletsMeta }: { ownedWalletsMeta: WalletMeta[] }) {
@@ -174,9 +133,8 @@ export async function getUserProperties(account: Account) {
     getProviderForMixpanel(getProviderNameFromGroup(group)),
   );
 
-  const portfolioStats = ownedAddresses?.length ? await getPortfolioStats(ownedAddresses) : null;
+  const portfolio = ownedAddresses?.length ? await getPortfolio(ownedAddresses) : null;
   const zerionStats = ownedWalletsMeta ? await getZerionStats({ ownedWalletsMeta }) : null;
-  const fundedStatsByEcosystem = getFundedStatsByEcosystem(portfolioStats?.addressActivity ?? null);
 
   const ownedSolanaAddressesCount = ownedAddresses?.filter((address) =>
     isSolanaAddress(address),
@@ -193,18 +151,15 @@ export async function getUserProperties(account: Account) {
     num_my_wallets: ownedAddressesCount,
     num_my_wallets_with_provider: ownedAddressesCount,
     num_wallets_with_provider: ownedAddressesCount,
-    num_funded_wallets_with_provider: fundedStatsByEcosystem.totalCount,
     num_zerion_wallets: ownedAddressesCount,
     num_connected_wallets: 0,
     num_wallet_groups: groups?.length ?? 0,
     num_solana_wallets: ownedSolanaAddressesCount ?? 0,
-    num_funded_solana_wallets: fundedStatsByEcosystem.solanaFundedCount,
     num_evm_wallets: ownedEvmAddressesCount ?? 0,
-    num_funded_evm_wallets: fundedStatsByEcosystem.evmFundedCount,
     num_watchlist_solana_wallets: readonlySolanaAddressesCount ?? 0,
     num_watchlist_evm_wallets: readonlyEvmAddressesCount ?? 0,
-    total_balance: portfolioStats?.portfolio?.data.totalValue ?? 0,
-    ...getChainBreakdown(portfolioStats?.portfolio?.data ?? null),
+    total_balance: portfolio?.data.totalValue ?? 0,
+    ...getChainBreakdown(portfolio?.data ?? null),
     currency: 'usd',
     language: 'en',
     zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
