@@ -14,7 +14,7 @@ import { QUICK_AMOUNTS, QuickAmountButton } from 'src/ui/shared/forms/QuickAmoun
 import { FormFieldset } from './FormFieldset';
 import type { HandleChangeFunction, SendFormState2 } from './types';
 import { NftSelectorButton } from './NftSelectorButton';
-import * as assetSelectorStyles from './AssetSelectorButton.module.css';
+import * as assetSelectorStyles from 'src/ui/components/AssetSelectorButton/AssetSelectorButton.module.css';
 import { isNftAmountEditable } from './shared/nftRequestAmount';
 
 function partialIntBalance(balance: string, factor: number): string {

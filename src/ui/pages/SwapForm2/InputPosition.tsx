@@ -30,8 +30,8 @@ import {
 } from 'src/ui/components/AmountInput/ValueWithSymbol';
 import { FormFieldset } from './FormFieldset';
 import type { HandleChangeFunction, SwapFormState2 } from './types';
-import { AssetSelectorButton } from './AssetSelectorButton';
-import * as assetSelectorStyles from './AssetSelectorButton.module.css';
+import { AssetSelectorButton } from 'src/ui/components/AssetSelectorButton';
+import * as assetSelectorStyles from 'src/ui/components/AssetSelectorButton/AssetSelectorButton.module.css';
 import { InputPositionSelector } from './PositionSelector/InputPositionSelector';
 
 const QUICK_AMOUNTS_NATIVE = [
