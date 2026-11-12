@@ -30,10 +30,8 @@ import {
 } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
 import { invariant } from 'src/shared/invariant';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import { Button } from 'src/ui/ui-kit/Button';
 import { focusNode } from 'src/ui/shared/focusNode';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -57,7 +55,6 @@ import {
   SignTransactionButton,
   type SendTxBtnHandle,
 } from 'src/ui/components/SignTransactionButton';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { CenteredDialog } from 'src/ui/ui-kit/ModalDialogs/CenteredDialog';
 import { DialogTitle } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
@@ -94,6 +91,7 @@ import {
 } from 'src/ui/shared/security-check';
 import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
+import { RequestInitiator } from 'src/ui/components/RequestInitiator';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getError } from 'get-error';
@@ -288,7 +286,6 @@ function TransactionDefaultView({
 }) {
   const { singleAddress } = useAddressParams();
   const [params] = useSearchParams();
-  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const allowanceViewHref = useMemo(
     () => `?${setURLSearchParams(params, { view: View.customAllowance })}`,
@@ -324,15 +321,7 @@ function TransactionDefaultView({
             {addressAction?.type.displayValue ?? 'Sign Transaction'}
           </UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
-            {origin === INTERNAL_ORIGIN ? (
-              'Zerion'
-            ) : originForHref ? (
-              <TextAnchor href={originForHref.href} target="_blank" rel="noopener noreferrer">
-                {originForHref.hostname}
-              </TextAnchor>
-            ) : (
-              'Unknown Initiator'
-            )}
+            <RequestInitiator origin={origin} />
           </UIText>
           <HStack gap={8} alignItems="center">
             <WalletAvatar address={wallet.address} size={20} active={false} borderRadius={6} />
@@ -906,7 +895,6 @@ function SolDefaultView({
   wallet: ExternallyOwnedAccount;
   networks: Networks;
 }) {
-  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
   const isBatch = rawTransactions.length > 1;
 
   const advancedDialogRef = useRef<HTMLDialogElement | null>(null);
@@ -948,15 +936,7 @@ function SolDefaultView({
             </UIText>
           ) : null}
           <UIText kind="small/accent" color="var(--neutral-500)">
-            {origin === INTERNAL_ORIGIN ? (
-              'Zerion'
-            ) : originForHref ? (
-              <TextAnchor href={originForHref.href} target="_blank" rel="noopener noreferrer">
-                {originForHref.hostname}
-              </TextAnchor>
-            ) : (
-              'Unknown Initiator'
-            )}
+            <RequestInitiator origin={origin} />
           </UIText>
           <HStack gap={8} alignItems="center">
             <WalletAvatar address={wallet.address} size={20} active={false} borderRadius={6} />
