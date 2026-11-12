@@ -26,7 +26,11 @@ env:
 
 concurrency:
   group: ci-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  # A label-only run stays in the same group but must not evict the run that is
+  # already executing: `changeset-check` is the only job it does, so cancelling
+  # would leave the pull request with no quality or build result at all (the
+  # heavy jobs skip on label events). Queued instead.
+  cancel-in-progress: ${{ github.event.action != 'labeled' && github.event.action != 'unlabeled' }}
 
 permissions:
   contents: read
