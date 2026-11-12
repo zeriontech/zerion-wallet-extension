@@ -41,6 +41,7 @@ import { omitNullParams } from './shared/omitNullParams';
 import { gaCollect, prepareGaParams } from './google-analytics';
 import { waitForAnalyticsIdSet } from './analyticsId';
 import { getAssetVisibilityEvent } from './shared/assetVisibilityEvent';
+import { whenAnalyticsEnabled } from './shared/whenAnalyticsEnabled';
 
 const toEcosystemProperty = (value: 'evm' | 'solana') =>
   value === 'evm' ? 'EVM' : value === 'solana' ? 'Solana' : value;
@@ -78,6 +79,10 @@ async function queryWalletSimplePositions(
 
 function trackAppEvents({ account }: { account: Account }) {
   const eip6963Dapps = new Set<string>();
+  const isAnalyticsEnabled = async () =>
+    Boolean((await globalPreferences.getPreferences()).analyticsEnabled);
+  const gated = <Args extends unknown[]>(listener: (...args: Args) => void | Promise<void>) =>
+    whenAnalyticsEnabled(isAnalyticsEnabled, listener);
 
   const getProvider = (address: string) =>
     getProviderForMetabase(queryWalletProvider(account, address));
@@ -102,254 +107,239 @@ function trackAppEvents({ account }: { account: Account }) {
     return createBaseParams(params);
   };
 
-  emitter.on('requestAccountsResolved', async ({ origin, address, explicitly }) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    if (!explicitly) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'dapp_connection',
-      dapp_domain: origin,
-      wallet_address: address,
-      ecosystem: toEcosystemProperty(getAddressType(address)),
-      eip6963_supported: eip6963Dapps.has(origin),
-    });
-    sendToMetabase('dapp_connection', params);
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('DApp: DApp Connection', mixpanelParams);
-  });
+  emitter.on(
+    'requestAccountsResolved',
+    gated(async ({ origin, address, explicitly }) => {
+      if (!explicitly) {
+        return;
+      }
+      const params = createParams({
+        request_name: 'dapp_connection',
+        dapp_domain: origin,
+        wallet_address: address,
+        ecosystem: toEcosystemProperty(getAddressType(address)),
+        eip6963_supported: eip6963Dapps.has(origin),
+      });
+      sendToMetabase('dapp_connection', params);
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('DApp: DApp Connection', mixpanelParams);
+    }),
+  );
 
-  emitter.on('unlockedAppOpened', async () => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    await waitForAnalyticsIdSet();
-    const params = createParams({ request_name: 'unlocked_app_opened' });
-    /**
-     * Global user properties tend to be replaced with updated values from time to time
-     * We attach them to this event to track how user properties change over time
-     */
-    const userProfileProperties = await getUserProperties(account);
-    const mixpanelParams: Record<string, unknown> = {
-      ...omit(params, ['request_name', 'wallet_address']),
-      ...userProfileProperties,
-    };
-    mixpanelTrack('General: App Opened', mixpanelParams);
-  });
+  emitter.on(
+    'unlockedAppOpened',
+    gated(async () => {
+      await waitForAnalyticsIdSet();
+      const params = createParams({ request_name: 'unlocked_app_opened' });
+      /**
+       * Global user properties tend to be replaced with updated values from time to time
+       * We attach them to this event to track how user properties change over time
+       */
+      const userProfileProperties = await getUserProperties(account);
+      const mixpanelParams: Record<string, unknown> = {
+        ...omit(params, ['request_name', 'wallet_address']),
+        ...userProfileProperties,
+      };
+      mixpanelTrack('General: App Opened', mixpanelParams);
+    }),
+  );
 
-  emitter.on('screenView', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    await waitForAnalyticsIdSet();
-    const params = createParams({
-      request_name: 'screen_view',
-      wallet_address: data.address,
-      screen_name: data.pathname,
-      previous_screen_name: data.previous,
-      screen_size: data.screenSize,
-      window_type: data.windowType,
-    });
-    sendToMetabase('screen_view', params);
-    const mixpanelParams: Record<string, unknown> = omit(params, [
-      'request_name',
-      'wallet_address',
-    ]);
-    mixpanelTrack('General: Screen Viewed', mixpanelParams);
-  });
+  emitter.on(
+    'screenView',
+    gated(async (data) => {
+      await waitForAnalyticsIdSet();
+      const params = createParams({
+        request_name: 'screen_view',
+        wallet_address: data.address,
+        screen_name: data.pathname,
+        previous_screen_name: data.previous,
+        screen_size: data.screenSize,
+        window_type: data.windowType,
+      });
+      sendToMetabase('screen_view', params);
+      const mixpanelParams: Record<string, unknown> = omit(params, [
+        'request_name',
+        'wallet_address',
+      ]);
+      mixpanelTrack('General: Screen Viewed', mixpanelParams);
+    }),
+  );
 
-  emitter.on('screenView', async (params) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    await waitForAnalyticsIdSet();
-    const gaParams = await prepareGaParams({
-      page_title: params.title,
-      page_location: params.pathname,
-    });
-    gaCollect('page_view', gaParams);
-  });
+  emitter.on(
+    'screenView',
+    gated(async (params) => {
+      await waitForAnalyticsIdSet();
+      const gaParams = await prepareGaParams({
+        page_title: params.title,
+        page_location: params.pathname,
+      });
+      gaCollect('page_view', gaParams);
+    }),
+  );
 
-  emitter.on('buttonClicked', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const { buttonName, buttonScope, pathname, walletAddress } = data;
-    const params = createParams({
-      request_name: 'button_clicked',
-      screen_name: pathname,
-      button_name: buttonName,
-      wallet_address: walletAddress,
-    });
-    const event_name = `${buttonScope}: Button Pressed`;
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(event_name, mixpanelParams);
-  });
+  emitter.on(
+    'buttonClicked',
+    gated(async (data) => {
+      const { buttonName, buttonScope, pathname, walletAddress } = data;
+      const params = createParams({
+        request_name: 'button_clicked',
+        screen_name: pathname,
+        button_name: buttonName,
+        wallet_address: walletAddress,
+      });
+      const event_name = `${buttonScope}: Button Pressed`;
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack(event_name, mixpanelParams);
+    }),
+  );
 
-  emitter.on('networkFeeLevelChanged', async (data: NetworkFeeLevelChangedParams) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'network_fee_level_changed',
-      level: data.level,
-      chain: data.chain,
-      flow: data.flow,
-    });
-    mixpanelTrack(
-      'Transaction: Network Fee Level Changed',
-      omit(params, ['request_name', 'wallet_address']),
-    );
-  });
+  emitter.on(
+    'networkFeeLevelChanged',
+    gated(async (data: NetworkFeeLevelChangedParams) => {
+      const params = createParams({
+        request_name: 'network_fee_level_changed',
+        level: data.level,
+        chain: data.chain,
+        flow: data.flow,
+      });
+      mixpanelTrack(
+        'Transaction: Network Fee Level Changed',
+        omit(params, ['request_name', 'wallet_address']),
+      );
+    }),
+  );
 
-  emitter.on('bannerClicked', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const { bannerName, pathname, walletAddress, bannerSource, bannerType } = data;
-    const params = createParams({
-      request_name: 'banner_clicked',
-      screen_name: pathname,
-      banner_name: bannerName,
-      wallet_address: walletAddress,
-      ...(bannerSource ? { source: bannerSource } : null),
-      ...(bannerType ? { banner_type: bannerType } : null),
-    });
-    const event_name = 'General: Banner Clicked';
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(event_name, mixpanelParams);
-  });
+  emitter.on(
+    'bannerClicked',
+    gated(async (data) => {
+      const { bannerName, pathname, walletAddress, bannerSource, bannerType } = data;
+      const params = createParams({
+        request_name: 'banner_clicked',
+        screen_name: pathname,
+        banner_name: bannerName,
+        wallet_address: walletAddress,
+        ...(bannerSource ? { source: bannerSource } : null),
+        ...(bannerType ? { banner_type: bannerType } : null),
+      });
+      const event_name = 'General: Banner Clicked';
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack(event_name, mixpanelParams);
+    }),
+  );
 
-  emitter.on('assetVisibilityChanged', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const { event, properties } = getAssetVisibilityEvent(data);
-    const params = createParams({
-      request_name: 'asset_visibility_changed',
-      wallet_address: data.walletAddress,
-      ...properties,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(event, mixpanelParams);
-  });
+  emitter.on(
+    'assetVisibilityChanged',
+    gated(async (data) => {
+      const { event, properties } = getAssetVisibilityEvent(data);
+      const params = createParams({
+        request_name: 'asset_visibility_changed',
+        wallet_address: data.walletAddress,
+        ...properties,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack(event, mixpanelParams);
+    }),
+  );
 
-  emitter.on('perpsScreenViewed', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'perps_screen_viewed',
-      screen_name: data.screen_name,
-      asset_name: data.asset_name,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('Perps: Screen Viewed', mixpanelParams);
-  });
+  emitter.on(
+    'perpsScreenViewed',
+    gated(async (data) => {
+      const params = createParams({
+        request_name: 'perps_screen_viewed',
+        screen_name: data.screen_name,
+        asset_name: data.asset_name,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Perps: Screen Viewed', mixpanelParams);
+    }),
+  );
 
-  emitter.on('perpsButtonPressed', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'perps_button_pressed',
-      button_name: data.button_name,
-      screen_name: data.screen_name,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('Perps: Button Pressed', mixpanelParams);
-  });
+  emitter.on(
+    'perpsButtonPressed',
+    gated(async (data) => {
+      const params = createParams({
+        request_name: 'perps_button_pressed',
+        button_name: data.button_name,
+        screen_name: data.screen_name,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Perps: Button Pressed', mixpanelParams);
+    }),
+  );
 
-  emitter.on('perpsPositionAction', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'perps_position_action',
-      ...data,
-    });
-    sendToMetabase('perps_position_action', params);
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('Perps: Position Action', mixpanelParams);
-  });
+  emitter.on(
+    'perpsPositionAction',
+    gated(async (data) => {
+      const params = createParams({
+        request_name: 'perps_position_action',
+        ...data,
+      });
+      sendToMetabase('perps_position_action', params);
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Perps: Position Action', mixpanelParams);
+    }),
+  );
 
-  emitter.on('confidentialAnalyticsEvent', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    // the wallet address never goes to Mixpanel for this feature
-    const params = createParams({
-      request_name: 'confidential_balances',
-      ...data.params,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(CONFIDENTIAL_EVENT_NAMES[data.name], mixpanelParams);
-  });
+  emitter.on(
+    'confidentialAnalyticsEvent',
+    gated(async (data) => {
+      // the wallet address never goes to Mixpanel for this feature
+      const params = createParams({
+        request_name: 'confidential_balances',
+        ...data.params,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack(CONFIDENTIAL_EVENT_NAMES[data.name], mixpanelParams);
+    }),
+  );
 
-  emitter.on('assetClicked', async (data) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const { assetId, pathname, section } = data;
+  emitter.on(
+    'assetClicked',
+    gated(async (data) => {
+      const { assetId, pathname, section } = data;
 
-    const assetData = await queryFungibleInfo({
-      fungibleId: assetId,
-      currency: 'usd',
-    });
+      const assetData = await queryFungibleInfo({
+        fungibleId: assetId,
+        currency: 'usd',
+      });
 
-    const params = createParams({
-      request_name: 'asset_clicked',
-      screen_name: pathname,
-      asset_id: assetId,
-      asset_name: assetData.data.fungible.name,
-      section_id: section,
-    });
-    const event_name = 'General: Asset Clicked';
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack(event_name, mixpanelParams);
-  });
+      const params = createParams({
+        request_name: 'asset_clicked',
+        screen_name: pathname,
+        asset_id: assetId,
+        asset_name: assetData.data.fungible.name,
+        section_id: section,
+      });
+      const event_name = 'General: Asset Clicked';
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack(event_name, mixpanelParams);
+    }),
+  );
 
-  emitter.on('daylightAction', async ({ event_name, ...data }) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'daylight_action',
-      wallet_address: data.address,
-      event_name,
-      ...data,
-    });
-    sendToMetabase('daylight_action', params);
-  });
+  emitter.on(
+    'daylightAction',
+    gated(async ({ event_name, ...data }) => {
+      const params = createParams({
+        request_name: 'daylight_action',
+        wallet_address: data.address,
+        event_name,
+        ...data,
+      });
+      sendToMetabase('daylight_action', params);
+    }),
+  );
 
-  emitter.on('globalError', async ({ name, message }) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'client_error',
-      type: name,
-      message,
-    });
-    sendToMetabase('client_error', params);
-  });
+  emitter.on(
+    'globalError',
+    gated(async ({ name, message }) => {
+      const params = createParams({
+        request_name: 'client_error',
+        type: name,
+        message,
+      });
+      sendToMetabase('client_error', params);
+    }),
+  );
 
   type TransactionSentContext = {
     status: 'success';
@@ -442,183 +432,180 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack('Transaction: Signed Transaction', mixpanelParams);
   };
 
-  emitter.on('transactionSent', async (result, context) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    trackTransactionSign({ status: 'success', result, context });
-  });
+  emitter.on(
+    'transactionSent',
+    gated(async (result, context) => {
+      trackTransactionSign({ status: 'success', result, context });
+    }),
+  );
 
-  emitter.on('transactionFailed', async (errorMessage, context) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    trackTransactionSign({ status: 'failed', errorMessage, context });
-  });
+  emitter.on(
+    'transactionFailed',
+    gated(async (errorMessage, context) => {
+      trackTransactionSign({ status: 'failed', errorMessage, context });
+    }),
+  );
 
-  emitter.on('quoteError', async (quoteErrorContext, source) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const [inputTokenPositions, inputAssetData, outputAssetData] = await Promise.all([
-      queryWalletSimplePositions({ address: quoteErrorContext.address, currency: 'usd' }, source),
-      quoteErrorContext.inputFungibleId
-        ? queryFungibleInfo({
-            fungibleId: quoteErrorContext.inputFungibleId,
+  emitter.on(
+    'quoteError',
+    gated(async (quoteErrorContext, source) => {
+      const [inputTokenPositions, inputAssetData, outputAssetData] = await Promise.all([
+        queryWalletSimplePositions({ address: quoteErrorContext.address, currency: 'usd' }, source),
+        quoteErrorContext.inputFungibleId
+          ? queryFungibleInfo({
+              fungibleId: quoteErrorContext.inputFungibleId,
+              currency: 'usd',
+            })
+          : null,
+        quoteErrorContext.outputFungibleId
+          ? queryFungibleInfo({
+              fungibleId: quoteErrorContext.outputFungibleId,
+              currency: 'usd',
+            })
+          : null,
+      ]);
+      const inputAsset = inputAssetData?.data?.fungible;
+      const outputAsset = outputAssetData?.data?.fungible;
+      invariant(inputAsset, 'Unable to fetch input asset data for quoteError event');
+      invariant(outputAsset, 'Unable to fetch output asset data for quoteError event');
+      const inputPosition = inputTokenPositions.data.find(
+        (position) =>
+          position.fungible.id === quoteErrorContext.inputFungibleId &&
+          position.chain.id === quoteErrorContext.inputChain,
+      );
+
+      const params = createParams({
+        request_name: 'client_error',
+        action_type: quoteErrorContext.actionType,
+        type: quoteErrorContext.type,
+        name: quoteErrorContext.type,
+        message: quoteErrorContext.message,
+        backend_response_code: quoteErrorContext.errorCode || null,
+        backend_error_message: quoteErrorContext.backendMessage || null,
+        wallet_address: quoteErrorContext.address,
+        client_scope: quoteErrorContext.context,
+        context: quoteErrorContext.context,
+        screen_name: quoteErrorContext.pathname,
+
+        asset_address_sent: [quoteErrorContext.inputFungibleId],
+        asset_address_received: [quoteErrorContext.outputFungibleId],
+        asset_name_sent: toMaybeArr([inputAsset.name]),
+        asset_name_received: toMaybeArr([outputAsset.name]),
+        input_chain: quoteErrorContext.inputChain,
+        output_chain: quoteErrorContext.outputChain,
+        contract_type: quoteErrorContext.contractType || null,
+        slippage: quoteErrorContext.slippage,
+
+        asset_market_cap_sent: inputAsset.meta.marketCap,
+        asset_market_cap_received: outputAsset.meta.marketCap,
+        asset_fdv_sent: inputAsset.meta.fullyDilutedValuation,
+        asset_fdv_received: outputAsset.meta.fullyDilutedValuation,
+        usd_amount_sent: Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
+        asset_amount_sent: toMaybeArr([Number(quoteErrorContext.inputAmount)]),
+        usd_amount_received:
+          quoteErrorContext.outputAmount != null
+            ? Number(quoteErrorContext.outputAmount) * (outputAsset.meta.price || 0)
+            : null,
+        asset_amount_received:
+          quoteErrorContext.outputAmount != null
+            ? toMaybeArr([Number(quoteErrorContext.outputAmount)])
+            : null,
+        wallet_token_balance: inputPosition?.amount.quantity ?? null,
+      });
+      sendToMetabase('client_error', params);
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Client Error', mixpanelParams);
+    }),
+  );
+
+  emitter.on(
+    'transactionFormed',
+    gated(async (context) => {
+      const { formState, quote, enoughBalance, warningWasShown, outputAmountColor, scope } =
+        context;
+
+      // We query fungible info for input and output assets
+      // to provide fdv_asset_sent and fdv_asset_received
+      const inputAssetData = formState.inputFungibleId
+        ? await queryFungibleInfo({
+            fungibleId: formState.inputFungibleId,
             currency: 'usd',
           })
-        : null,
-      quoteErrorContext.outputFungibleId
-        ? queryFungibleInfo({
-            fungibleId: quoteErrorContext.outputFungibleId,
+        : null;
+      const inputAsset = inputAssetData?.data?.fungible;
+      const outputAssetData = formState.outputFungibleId
+        ? await queryFungibleInfo({
+            fungibleId: formState.outputFungibleId,
             currency: 'usd',
           })
-        : null,
-    ]);
-    const inputAsset = inputAssetData?.data?.fungible;
-    const outputAsset = outputAssetData?.data?.fungible;
-    invariant(inputAsset, 'Unable to fetch input asset data for quoteError event');
-    invariant(outputAsset, 'Unable to fetch output asset data for quoteError event');
-    const inputPosition = inputTokenPositions.data.find(
-      (position) =>
-        position.fungible.id === quoteErrorContext.inputFungibleId &&
-        position.chain.id === quoteErrorContext.inputChain,
-    );
+        : null;
+      const outputAsset = outputAssetData?.data?.fungible;
+      invariant(inputAsset, 'Unable to fetch input asset data for transactionFormed event');
+      invariant(outputAsset, 'Unable to fetch output asset data for transactionFormed event');
 
-    const params = createParams({
-      request_name: 'client_error',
-      action_type: quoteErrorContext.actionType,
-      type: quoteErrorContext.type,
-      name: quoteErrorContext.type,
-      message: quoteErrorContext.message,
-      backend_response_code: quoteErrorContext.errorCode || null,
-      backend_error_message: quoteErrorContext.backendMessage || null,
-      wallet_address: quoteErrorContext.address,
-      client_scope: quoteErrorContext.context,
-      context: quoteErrorContext.context,
-      screen_name: quoteErrorContext.pathname,
+      // Resolve the actual on-chain contract address for the relevant chain,
+      // matching the logic used by getTransferAssetAddress in
+      // addressActionToAnalytics so the Swap Form Filled Out and Transaction
+      // Signed events report the same asset addresses (not the fungible id).
+      const getFungibleAddress = (
+        fungible: typeof inputAsset,
+        chain: string | null | undefined,
+      ): string | null => {
+        const implementations = fungible.implementations;
+        if (chain && implementations[chain]?.address) {
+          return implementations[chain].address;
+        }
+        return Object.values(implementations).find((impl) => impl.address)?.address ?? null;
+      };
+      const outputChain = formState.outputChain ?? formState.inputChain;
+      const assetAddressSent = getFungibleAddress(inputAsset, formState.inputChain);
+      const assetAddressReceived = getFungibleAddress(outputAsset, outputChain);
 
-      asset_address_sent: [quoteErrorContext.inputFungibleId],
-      asset_address_received: [quoteErrorContext.outputFungibleId],
-      asset_name_sent: toMaybeArr([inputAsset.name]),
-      asset_name_received: toMaybeArr([outputAsset.name]),
-      input_chain: quoteErrorContext.inputChain,
-      output_chain: quoteErrorContext.outputChain,
-      contract_type: quoteErrorContext.contractType || null,
-      slippage: quoteErrorContext.slippage,
+      const params = createParams({
+        request_name: 'swap_form_filled_out',
+        client_scope: scope,
+        screen_name: scope === 'Swap' ? 'Swap' : 'Bridge',
+        action_type: scope === 'Swap' ? 'Trade' : 'Send',
 
-      asset_market_cap_sent: inputAsset.meta.marketCap,
-      asset_market_cap_received: outputAsset.meta.marketCap,
-      asset_fdv_sent: inputAsset.meta.fullyDilutedValuation,
-      asset_fdv_received: outputAsset.meta.fullyDilutedValuation,
-      usd_amount_sent: Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
-      asset_amount_sent: toMaybeArr([Number(quoteErrorContext.inputAmount)]),
-      usd_amount_received:
-        quoteErrorContext.outputAmount != null
-          ? Number(quoteErrorContext.outputAmount) * (outputAsset.meta.price || 0)
-          : null,
-      asset_amount_received:
-        quoteErrorContext.outputAmount != null
-          ? toMaybeArr([Number(quoteErrorContext.outputAmount)])
-          : null,
-      wallet_token_balance: inputPosition?.amount.quantity ?? null,
-    });
-    sendToMetabase('client_error', params);
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Client Error', mixpanelParams);
-  });
+        usd_amount_received: quote.outputAmount.usdValue ?? undefined,
+        asset_amount_received: toMaybeArr([Number(quote.outputAmount.quantity)]),
+        asset_name_received: toMaybeArr([outputAsset.name]),
+        asset_address_received: toMaybeArr([assetAddressReceived]),
 
-  emitter.on('transactionFormed', async (context) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const { formState, quote, enoughBalance, warningWasShown, outputAmountColor, scope } = context;
+        usd_amount_sent: Number(formState.inputAmount) * (inputAsset.meta.price || 0),
+        asset_amount_sent: toMaybeArr([Number(formState.inputAmount)]),
+        asset_name_sent: toMaybeArr([inputAsset.name]),
+        asset_address_sent: toMaybeArr([assetAddressSent]),
 
-    // We query fungible info for input and output assets
-    // to provide fdv_asset_sent and fdv_asset_received
-    const inputAssetData = formState.inputFungibleId
-      ? await queryFungibleInfo({
-          fungibleId: formState.inputFungibleId,
-          currency: 'usd',
-        })
-      : null;
-    const inputAsset = inputAssetData?.data?.fungible;
-    const outputAssetData = formState.outputFungibleId
-      ? await queryFungibleInfo({
-          fungibleId: formState.outputFungibleId,
-          currency: 'usd',
-        })
-      : null;
-    const outputAsset = outputAssetData?.data?.fungible;
-    invariant(inputAsset, 'Unable to fetch input asset data for transactionFormed event');
-    invariant(outputAsset, 'Unable to fetch output asset data for transactionFormed event');
+        gas: quote.transactionSwap?.evm ? Number(getGas(quote.transactionSwap.evm)) : undefined,
+        network_fee: quote.networkFee?.amount?.usdValue ?? undefined,
+        gas_price: quote.transactionSwap?.evm?.gasPrice ?? undefined,
+        guaranteed_output_amount: quote.minimumOutputAmount.quantity,
+        zerion_fee_percentage: quote.protocolFee.percentage,
+        zerion_fee_usd_amount: quote.protocolFee.amount.usdValue ?? 0,
+        input_chain: formState.inputChain,
+        output_chain: formState.outputChain ?? formState.inputChain,
+        // Effective slippage applied to the quote (manual or auto), in percent.
+        slippage: quote.finalSlippage ?? undefined,
+        // Value computed by the autoslippage engine; present only in Auto mode.
+        autoslippage: quote.autoSlippage ?? undefined,
+        contract_type: quote.contractMetadata.name,
 
-    // Resolve the actual on-chain contract address for the relevant chain,
-    // matching the logic used by getTransferAssetAddress in
-    // addressActionToAnalytics so the Swap Form Filled Out and Transaction
-    // Signed events report the same asset addresses (not the fungible id).
-    const getFungibleAddress = (
-      fungible: typeof inputAsset,
-      chain: string | null | undefined,
-    ): string | null => {
-      const implementations = fungible.implementations;
-      if (chain && implementations[chain]?.address) {
-        return implementations[chain].address;
-      }
-      return Object.values(implementations).find((impl) => impl.address)?.address ?? null;
-    };
-    const outputChain = formState.outputChain ?? formState.inputChain;
-    const assetAddressSent = getFungibleAddress(inputAsset, formState.inputChain);
-    const assetAddressReceived = getFungibleAddress(outputAsset, outputChain);
+        fdv_asset_sent: inputAsset.meta.fullyDilutedValuation ?? undefined,
+        fdv_asset_received: outputAsset.meta.fullyDilutedValuation ?? undefined,
 
-    const params = createParams({
-      request_name: 'swap_form_filled_out',
-      client_scope: scope,
-      screen_name: scope === 'Swap' ? 'Swap' : 'Bridge',
-      action_type: scope === 'Swap' ? 'Trade' : 'Send',
+        enough_balance: enoughBalance,
+        enough_allowance: Boolean(quote.transactionSwap),
+        bridge_fee_usd_amount: quote.bridgeFee?.amount.usdValue ?? 0,
+        warning_was_shown: warningWasShown,
+        output_amount_color: outputAmountColor,
+      });
 
-      usd_amount_received: quote.outputAmount.usdValue ?? undefined,
-      asset_amount_received: toMaybeArr([Number(quote.outputAmount.quantity)]),
-      asset_name_received: toMaybeArr([outputAsset.name]),
-      asset_address_received: toMaybeArr([assetAddressReceived]),
-
-      usd_amount_sent: Number(formState.inputAmount) * (inputAsset.meta.price || 0),
-      asset_amount_sent: toMaybeArr([Number(formState.inputAmount)]),
-      asset_name_sent: toMaybeArr([inputAsset.name]),
-      asset_address_sent: toMaybeArr([assetAddressSent]),
-
-      gas: quote.transactionSwap?.evm ? Number(getGas(quote.transactionSwap.evm)) : undefined,
-      network_fee: quote.networkFee?.amount?.usdValue ?? undefined,
-      gas_price: quote.transactionSwap?.evm?.gasPrice ?? undefined,
-      guaranteed_output_amount: quote.minimumOutputAmount.quantity,
-      zerion_fee_percentage: quote.protocolFee.percentage,
-      zerion_fee_usd_amount: quote.protocolFee.amount.usdValue ?? 0,
-      input_chain: formState.inputChain,
-      output_chain: formState.outputChain ?? formState.inputChain,
-      // Effective slippage applied to the quote (manual or auto), in percent.
-      slippage: quote.finalSlippage ?? undefined,
-      // Value computed by the autoslippage engine; present only in Auto mode.
-      autoslippage: quote.autoSlippage ?? undefined,
-      contract_type: quote.contractMetadata.name,
-
-      fdv_asset_sent: inputAsset.meta.fullyDilutedValuation ?? undefined,
-      fdv_asset_received: outputAsset.meta.fullyDilutedValuation ?? undefined,
-
-      enough_balance: enoughBalance,
-      enough_allowance: Boolean(quote.transactionSwap),
-      bridge_fee_usd_amount: quote.bridgeFee?.amount.usdValue ?? 0,
-      warning_was_shown: warningWasShown,
-      output_amount_color: outputAmountColor,
-    });
-
-    sendToMetabase('swap_form_filled_out', params);
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('Transaction: Swap Form Filled Out', mixpanelParams);
-  });
+      sendToMetabase('swap_form_filled_out', params);
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Transaction: Swap Form Filled Out', mixpanelParams);
+    }),
+  );
 
   async function handleSign({
     type,
@@ -677,40 +664,37 @@ function trackAppEvents({ account }: { account: Account }) {
     mixpanelTrack('Transaction: Signed Message', mixpanelParams);
   }
 
-  emitter.on('typedDataSigned', async ({ typedData, ...rest }) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    handleSign({ type: 'typedDataSigned', ...rest });
-  });
-  emitter.on('messageSigned', async ({ message, ...rest }) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    handleSign({ type: 'messageSigned', ...rest });
-  });
+  emitter.on(
+    'typedDataSigned',
+    gated(async ({ typedData, ...rest }) => {
+      handleSign({ type: 'typedDataSigned', ...rest });
+    }),
+  );
+  emitter.on(
+    'messageSigned',
+    gated(async ({ message, ...rest }) => {
+      handleSign({ type: 'messageSigned', ...rest });
+    }),
+  );
 
   // TODO: add networks-related analytics
-  emitter.on('addEthereumChain', async ({ values: [chainConfig], origin }) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const wallet_address = getCurrentAddress();
-    const params = createParams({
-      request_name: 'custom_evm_network_created',
-      source: origin,
-      network_external_id: chainConfig.chainId,
-      network_rpc_url_internal: chainConfig.rpcUrls[0],
-      network_name: chainConfig.chainName,
-      network_native_asset_symbol: chainConfig.nativeCurrency.symbol,
-      network_explorer_home_url: chainConfig.blockExplorerUrls?.[0],
-      wallet_address,
-    });
-    sendToMetabase('custom_evm_network_created', params);
-  });
+  emitter.on(
+    'addEthereumChain',
+    gated(async ({ values: [chainConfig], origin }) => {
+      const wallet_address = getCurrentAddress();
+      const params = createParams({
+        request_name: 'custom_evm_network_created',
+        source: origin,
+        network_external_id: chainConfig.chainId,
+        network_rpc_url_internal: chainConfig.rpcUrls[0],
+        network_name: chainConfig.chainName,
+        network_native_asset_symbol: chainConfig.nativeCurrency.symbol,
+        network_explorer_home_url: chainConfig.blockExplorerUrls?.[0],
+        wallet_address,
+      });
+      sendToMetabase('custom_evm_network_created', params);
+    }),
+  );
 
   emitter.on('globalPreferencesChange', (state, prevState) => {
     onIdle(async () => {
@@ -742,218 +726,231 @@ function trackAppEvents({ account }: { account: Account }) {
     });
   });
 
-  emitter.on('holdToSignPreferenceChange', async (active) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'hold_to_sign_prerefence',
-      active,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('Experiments: Hold Sign Button', mixpanelParams);
-  });
-
-  emitter.on('keyboardShortcutToSignPreferenceChange', async (active) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'keyboard_shortcut_to_sign_preference',
-      active,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('Experiments: Keyboard Shortcut Sign', mixpanelParams);
-  });
-
-  emitter.on('walletCreated', async ({ walletContainer, origin }) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    for (const wallet of walletContainer.wallets) {
-      const type =
-        origin === WalletOrigin.extension
-          ? 'created'
-          : isPrivateKeyContainer(walletContainer)
-            ? 'imported_private_key'
-            : isMnemonicContainer(walletContainer)
-              ? 'imported_seed_phrase'
-              : 'connected';
-      const wallet_provider = getProvider(wallet.address);
-
+  emitter.on(
+    'holdToSignPreferenceChange',
+    gated(async (active) => {
       const params = createParams({
-        request_name: 'add_wallet',
-        wallet_address: wallet.address.toLowerCase(),
-        type,
-        ecosystem: toEcosystemProperty(getAddressType(wallet.address)),
+        request_name: 'hold_to_sign_prerefence',
+        active,
       });
-      sendToMetabase('add_wallet', params);
-      mixpanelTrack('Wallet: Wallet Added', {
-        wallet_provider,
-        type,
-        ecosystem: params.ecosystem,
-      });
-    }
-  });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Experiments: Hold Sign Button', mixpanelParams);
+    }),
+  );
 
-  emitter.on('firstScreenView', async () => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    await waitForAnalyticsIdSet();
-    mixpanelTrack('General: Launch first time', {});
-    const gaParams = await prepareGaParams({});
-    gaCollect('first_open', gaParams);
-  });
+  emitter.on(
+    'keyboardShortcutToSignPreferenceChange',
+    gated(async (active) => {
+      const params = createParams({
+        request_name: 'keyboard_shortcut_to_sign_preference',
+        active,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Experiments: Keyboard Shortcut Sign', mixpanelParams);
+    }),
+  );
+
+  emitter.on(
+    'walletCreated',
+    gated(async ({ walletContainer, origin }) => {
+      for (const wallet of walletContainer.wallets) {
+        const type =
+          origin === WalletOrigin.extension
+            ? 'created'
+            : isPrivateKeyContainer(walletContainer)
+              ? 'imported_private_key'
+              : isMnemonicContainer(walletContainer)
+                ? 'imported_seed_phrase'
+                : 'connected';
+        const wallet_provider = getProvider(wallet.address);
+
+        const params = createParams({
+          request_name: 'add_wallet',
+          wallet_address: wallet.address.toLowerCase(),
+          type,
+          ecosystem: toEcosystemProperty(getAddressType(wallet.address)),
+        });
+        sendToMetabase('add_wallet', params);
+        mixpanelTrack('Wallet: Wallet Added', {
+          wallet_provider,
+          type,
+          ecosystem: params.ecosystem,
+        });
+      }
+    }),
+  );
+
+  emitter.on(
+    'firstScreenView',
+    gated(async () => {
+      await waitForAnalyticsIdSet();
+      mixpanelTrack('General: Launch first time', {});
+      const gaParams = await prepareGaParams({});
+      gaCollect('first_open', gaParams);
+    }),
+  );
 
   emitter.on('eip6963SupportDetected', ({ origin }) => {
     eip6963Dapps.add(origin);
   });
 
-  emitter.on('backgroundScriptInitialized', async () => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    // We want to check whether background script got restarted in a way
-    // that has led to an unexpected logout.
-    // The browser restart is considered an expected logout.
-    const { startupEvent, installedEvent } = runtimeStore.getState();
+  emitter.on(
+    'backgroundScriptInitialized',
+    gated(async () => {
+      // We want to check whether background script got restarted in a way
+      // that has led to an unexpected logout.
+      // The browser restart is considered an expected logout.
+      const { startupEvent, installedEvent } = runtimeStore.getState();
 
-    const isIntentionalBrowserRestart = Boolean(startupEvent);
+      const isIntentionalBrowserRestart = Boolean(startupEvent);
 
-    const likelyReason = installedEvent
-      ? installedEvent.reason
-      : isIntentionalBrowserRestart
-        ? 'browser restart'
-        : 're-enabled by user';
+      const likelyReason = installedEvent
+        ? installedEvent.reason
+        : isIntentionalBrowserRestart
+          ? 'browser restart'
+          : 're-enabled by user';
 
-    if (isIntentionalBrowserRestart) {
-      return;
-    }
-    const hasExistingUser = await account.hasExistingUser();
-    const didNotOnboardYet = !hasExistingUser;
-    const isAuthenticated = account.isAuthenticated();
-    const { loggedInAt } = await LoginActivity.getState();
-    const didLogoutIntentionally = loggedInAt == null;
+      if (isIntentionalBrowserRestart) {
+        return;
+      }
+      const hasExistingUser = await account.hasExistingUser();
+      const didNotOnboardYet = !hasExistingUser;
+      const isAuthenticated = account.isAuthenticated();
+      const { loggedInAt } = await LoginActivity.getState();
+      const didLogoutIntentionally = loggedInAt == null;
 
-    if (didNotOnboardYet || isAuthenticated || didLogoutIntentionally) {
-      return;
-    }
+      if (didNotOnboardYet || isAuthenticated || didLogoutIntentionally) {
+        return;
+      }
 
-    const sessionExpiry = await estimateSessionExpiry();
+      const sessionExpiry = await estimateSessionExpiry();
 
-    /** We want to use this only if it differs from current version */
-    const prevVersion = installedEvent?.previousVersion;
-    const fromVersion = prevVersion && prevVersion !== productionVersion ? prevVersion : null;
+      /** We want to use this only if it differs from current version */
+      const prevVersion = installedEvent?.previousVersion;
+      const fromVersion = prevVersion && prevVersion !== productionVersion ? prevVersion : null;
 
-    const params = createParams({
-      request_name: 'background_script_reloaded',
-      time_to_expiry: sessionExpiry.timeToExpiry,
-      is_update_from_version: fromVersion,
-      likely_reason: likelyReason,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    const event = 'General: Background Script Reloaded';
-    mixpanelTrack(event, mixpanelParams);
-  });
+      const params = createParams({
+        request_name: 'background_script_reloaded',
+        time_to_expiry: sessionExpiry.timeToExpiry,
+        is_update_from_version: fromVersion,
+        likely_reason: likelyReason,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      const event = 'General: Background Script Reloaded';
+      mixpanelTrack(event, mixpanelParams);
+    }),
+  );
 
-  dnaServiceEmitter.on('registerError', async (error, action) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const request_name = 'client_error';
-    const message = getError(error).message;
-    const type = 'dna action';
-    const params = createParams({ request_name, type, message, action });
-    sendToMetabase(request_name, params);
-  });
+  dnaServiceEmitter.on(
+    'registerError',
+    gated(async (error, action) => {
+      const request_name = 'client_error';
+      const message = getError(error).message;
+      const type = 'dna action';
+      const params = createParams({ request_name, type, message, action });
+      sendToMetabase(request_name, params);
+    }),
+  );
 
-  emitter.on('cloudflareChallengeIssued', async () => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'cloudflare_challenge_issued',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Cloudflare Challenge Issued', mixpanelParams);
-  });
+  emitter.on(
+    'cloudflareChallengeIssued',
+    gated(async () => {
+      const params = createParams({
+        request_name: 'cloudflare_challenge_issued',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Cloudflare Challenge Issued', mixpanelParams);
+    }),
+  );
 
-  emitter.on('passkeyLoginEnabled', () => {
-    const params = createParams({
-      request_name: 'passkey_login_enabled',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Passkey Login Enabled', mixpanelParams);
-  });
+  emitter.on(
+    'passkeyLoginEnabled',
+    gated(() => {
+      const params = createParams({
+        request_name: 'passkey_login_enabled',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Passkey Login Enabled', mixpanelParams);
+    }),
+  );
 
-  emitter.on('passkeyLoginDisabled', () => {
-    const params = createParams({
-      request_name: 'passkey_login_disabled',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Passkey Login Disabled', mixpanelParams);
-  });
+  emitter.on(
+    'passkeyLoginDisabled',
+    gated(() => {
+      const params = createParams({
+        request_name: 'passkey_login_disabled',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Passkey Login Disabled', mixpanelParams);
+    }),
+  );
 
-  emitter.on('passwordChangeSuccess', () => {
-    const params = createParams({
-      request_name: 'password_change_success',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Password Change Success', mixpanelParams);
-  });
+  emitter.on(
+    'passwordChangeSuccess',
+    gated(() => {
+      const params = createParams({
+        request_name: 'password_change_success',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Password Change Success', mixpanelParams);
+    }),
+  );
 
-  emitter.on('passwordChangeError', () => {
-    const params = createParams({
-      request_name: 'password_change_error',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Password Change Failed', mixpanelParams);
-  });
+  emitter.on(
+    'passwordChangeError',
+    gated(() => {
+      const params = createParams({
+        request_name: 'password_change_error',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Password Change Failed', mixpanelParams);
+    }),
+  );
 
-  emitter.on('mnemonicRestorationShown', () => {
-    const params = createParams({
-      request_name: 'mnemonic_restoration_shown',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Mnemonic Restoration Shown', mixpanelParams);
-  });
+  emitter.on(
+    'mnemonicRestorationShown',
+    gated(() => {
+      const params = createParams({
+        request_name: 'mnemonic_restoration_shown',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Mnemonic Restoration Shown', mixpanelParams);
+    }),
+  );
 
-  emitter.on('mnemonicRestorationSuccess', () => {
-    const params = createParams({
-      request_name: 'mnemonic_restoration_success',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Mnemonic Restoration Success', mixpanelParams);
-  });
+  emitter.on(
+    'mnemonicRestorationSuccess',
+    gated(() => {
+      const params = createParams({
+        request_name: 'mnemonic_restoration_success',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Mnemonic Restoration Success', mixpanelParams);
+    }),
+  );
 
-  emitter.on('mnemonicRestorationError', () => {
-    const params = createParams({
-      request_name: 'mnemonic_restoration_error',
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Mnemonic Restoration Failed', mixpanelParams);
-  });
+  emitter.on(
+    'mnemonicRestorationError',
+    gated(() => {
+      const params = createParams({
+        request_name: 'mnemonic_restoration_error',
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Mnemonic Restoration Failed', mixpanelParams);
+    }),
+  );
 
-  emitter.on('reportLedgerError', async (errorMessage: string) => {
-    const preferences = await globalPreferences.getPreferences();
-    if (!preferences.analyticsEnabled) {
-      return;
-    }
-    const params = createParams({
-      request_name: 'report_ledger_error',
-      message: errorMessage,
-    });
-    const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
-    mixpanelTrack('General: Report Ledger Error', mixpanelParams);
-  });
+  emitter.on(
+    'reportLedgerError',
+    gated(async (errorMessage: string) => {
+      const params = createParams({
+        request_name: 'report_ledger_error',
+        message: errorMessage,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Report Ledger Error', mixpanelParams);
+    }),
+  );
 }
 
 export function initialize({ account }: { account: Account }) {
