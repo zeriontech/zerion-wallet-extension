@@ -130,8 +130,6 @@ function validateName(name: string, { minLength = 1 }: { minLength?: number } = 
     return 'Must have at least one character';
   } else if (name.length > MAX_ALLOWED_NAME_LENGTH) {
     return `Must be shorter than ${MAX_ALLOWED_NAME_LENGTH} characters`;
-  } else if (name === 'debug-error-name') {
-    return 'Debug: intentional debugging error';
   }
   return null;
 }

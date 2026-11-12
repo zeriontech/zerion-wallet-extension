@@ -64,7 +64,6 @@ import {
   isMnemonicContainer,
   isReadonlyContainer,
 } from 'src/shared/types/validators';
-import { ERC20_ALLOWANCE_ABI } from 'src/modules/ethereum/abi/allowance-abi';
 import { Disposable } from 'src/shared/Disposable';
 import { getWalletNameFlagsByOrigin } from 'src/shared/preferences-helpers';
 import type {
@@ -325,12 +324,6 @@ export class Wallet {
     this.userCredentials = null;
   }
 
-  async testMethod({ params: value }: WalletMethodParams<number>) {
-    return new Promise<string>((r) =>
-      setTimeout(() => r(`Hello, curious developer. Your value is ${value}`), 1500),
-    );
-  }
-
   async checkBackupData({ context }: WalletMethodParams) {
     this.verifyInternalOrigin(context);
     const backupData = await BrowserStorage.get(WalletStore.backupKey);
@@ -540,17 +533,6 @@ export class Wallet {
     this.ensureRecord(this.record);
     this.ensureActiveSession(this.userCredentials); // require anyway
     return await Model.getPrivateKey(this.record, { address });
-  }
-
-  async verifyPrivateKey({
-    params: { address, value },
-    context,
-  }: WalletMethodParams<{ address: string; value: LocallyEncoded }>) {
-    this.verifyInternalOrigin(context);
-    this.ensureRecord(this.record);
-    this.ensureActiveSession(this.userCredentials); // require anyway
-    const privateKey = await Model.getPrivateKey(this.record, { address });
-    return privateKey === value;
   }
 
   getCurrentWalletSync({ context }: WalletMethodParams) {
@@ -1080,27 +1062,6 @@ export class Wallet {
     return { ...tx, chainId };
   }
 
-  async fetchAllowance({
-    context,
-    params: { chain, contractAddress, owner, spender },
-  }: WalletMethodParams<{
-    chain: string;
-    contractAddress: string;
-    spender: string;
-    owner: string;
-  }>) {
-    this.verifyInternalOrigin(context);
-    const networksStore = getNetworksStore(Model.getPreferences(this.record));
-    const networks = await networksStore.load({ chains: [chain] });
-    const chainId = networks.getChainId(createChain(chain));
-    invariant(chainId, 'Chain id should exist for fetch allowance');
-    const provider = await this.getProvider(chainId);
-    const contract = new ethers.Contract(contractAddress, ERC20_ALLOWANCE_ABI, provider);
-    const resultUntyped = await contract.allowance(owner, spender);
-    const result = resultUntyped as bigint | string;
-    return BigInt(result).toString();
-  }
-
   async switchChainForOrigin({
     params: { evmChain, solanaChain, origin },
     context,
@@ -1118,11 +1079,6 @@ export class Wallet {
   async uiChainSelected({ params: { chain }, context }: WalletMethodParams<{ chain: string }>) {
     this.verifyInternalOrigin(context);
     emitter.emit('ui:chainSelected', createChain(chain));
-  }
-
-  /** @deprecated */
-  async requestChainId({ context: _context }: PublicMethodParams) {
-    throw new Error('requestChainId is deprecated');
   }
 
   private async getNetworkForOrigin({
@@ -1176,11 +1132,6 @@ export class Wallet {
     } else {
       return standard === 'solana' ? NetworkId.Solana : NetworkId.Ethereum;
     }
-  }
-
-  /** @deprecated */
-  setChainId(_chainId: string) {
-    throw new Error('setChainId is deprecated. Use setChainForOrigin instead');
   }
 
   setChainForOrigin(params: Parameters<(typeof Model)['setChainForOrigin']>[1]) {
@@ -1974,32 +1925,6 @@ export class Wallet {
     return phishingDefenceService.ignoreDappSecurityWarning(url);
   }
 
-  async openSendTransaction({
-    params: { params, context, id },
-    context: walletContext,
-  }: WalletMethodParams<
-    Parameters<(typeof this.publicEthereumController)['eth_sendTransaction']>[0]
-  >) {
-    this.verifyInternalOrigin(walletContext);
-    return this.publicEthereumController.eth_sendTransaction({
-      params,
-      context,
-      id,
-    });
-  }
-
-  async openPersonalSign({
-    params: { params, context, id },
-    context: walletContext,
-  }: WalletMethodParams<Parameters<(typeof this.publicEthereumController)['personal_sign']>[0]>) {
-    this.verifyInternalOrigin(walletContext);
-    return this.publicEthereumController.personal_sign({
-      params,
-      context,
-      id,
-    }) as Promise<string>;
-  }
-
   private async checkTestnetMode(
     options: { chainId: ChainId; id?: undefined } | { id: Chain; chainId?: undefined },
   ): Promise<
@@ -2154,8 +2079,6 @@ interface Web3WalletPermission {
   // The date the permission was granted, in UNIX epoch time
   date?: number;
 }
-
-const debugValue = null;
 
 class PublicController {
   wallet: Wallet;
@@ -2423,10 +2346,6 @@ class PublicController {
     { context, id, params }: PublicMethodParams<[] | [{ nonEip6963Request?: boolean }] | null>,
     opts: { ecosystem: BlockchainType } = { ecosystem: 'evm' },
   ): Promise<string[]> {
-    if (debugValue && process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.log('PublicController: eth_requestAccounts', debugValue);
-    }
     const currentAddress = this.wallet.readCurrentAddress();
     if (
       currentAddress &&
@@ -2443,9 +2362,6 @@ class PublicController {
       const result = [
         isEthereumAddress(currentAddress) ? currentAddress.toLowerCase() : currentAddress,
       ];
-      if (debugValue && process.env.NODE_ENV === 'development') {
-        result.push(String(debugValue));
-      }
       return result;
     }
     if (!context?.origin) {
