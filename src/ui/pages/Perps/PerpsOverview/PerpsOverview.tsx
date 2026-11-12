@@ -25,7 +25,7 @@ import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { PERPS_BUTTON, PERPS_SCREEN } from 'src/shared/types/perps-events';
 import { emitter } from 'src/ui/shared/events';
 import { VStack } from 'src/ui/ui-kit/VStack';
-import skeletonStyles from 'src/ui/pages/SwapForm2/styles.module.css';
+import * as skeletonStyles from 'src/ui/ui-kit/Skeleton/Skeleton.module.css';
 import { PerpsOnboarding } from '../PerpsOnboarding';
 import { PerpsMarketsList } from './PerpsMarketsList';
 import { PerpsPositionCard } from './PerpsPositionCard';

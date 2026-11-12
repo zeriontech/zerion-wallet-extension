@@ -58,19 +58,8 @@
   }
 }
 
-.skeleton {
-  background-color: var(--neutral-100);
-  border-radius: 6px;
-}
-
-.skeletonCircle {
-  background-color: var(--neutral-100);
-  border-radius: 50%;
-}
-
-.errorTint .skeleton,
-.errorTint .skeletonCircle {
-  background-color: var(--negative-200);
+.errorTint {
+  --skeleton-color: var(--negative-200);
 }
 
 .errorCard {

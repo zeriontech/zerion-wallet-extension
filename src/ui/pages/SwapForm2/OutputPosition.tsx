@@ -29,7 +29,7 @@ import { getPriceImpactPercentage, type PriceImpact } from './shared/price-impac
 import { FormFieldset } from './FormFieldset';
 import { AssetSelectorButton } from 'src/ui/components/AssetSelectorButton';
 import * as assetSelectorStyles from 'src/ui/components/AssetSelectorButton/AssetSelectorButton.module.css';
-import * as styles from './styles.module.css';
+import * as skeletonStyles from 'src/ui/ui-kit/Skeleton/Skeleton.module.css';
 import { OutputPositionSelector } from './PositionSelector/OutputPositionSelector';
 
 function OutputDescription({
@@ -95,8 +95,8 @@ function OutputDescription({
 function AssetSelectorSkeleton() {
   return (
     <HStack gap={8} alignItems="center">
-      <div className={styles.skeletonCircle} style={{ width: 32, height: 32 }} />
-      <div className={styles.skeleton} style={{ width: 72, height: 24 }} />
+      <div className={skeletonStyles.skeletonCircle} style={{ width: 32, height: 32 }} />
+      <div className={skeletonStyles.skeleton} style={{ width: 72, height: 24 }} />
     </HStack>
   );
 }

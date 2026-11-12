@@ -9,25 +9,26 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import { MiddleLine } from './ReverseButton';
 import * as styles from './styles.module.css';
+import * as skeletonStyles from 'src/ui/ui-kit/Skeleton/Skeleton.module.css';
 
 function FieldsetSkeleton() {
   return (
     <div style={{ padding: 16 }}>
       <VStack gap={6} style={{ width: '100%' }}>
         <HStack gap={16} justifyContent="space-between" alignItems="center">
-          <div className={styles.skeleton} style={{ width: 64, height: 20 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 64, height: 20 }} />
           <div style={{ height: 20 }} />
         </HStack>
         <HStack gap={16} justifyContent="space-between" alignItems="center" style={{ height: 32 }}>
           <HStack gap={8} alignItems="center">
-            <div className={styles.skeletonCircle} style={{ width: 32, height: 32 }} />
-            <div className={styles.skeleton} style={{ width: 72, height: 24 }} />
+            <div className={skeletonStyles.skeletonCircle} style={{ width: 32, height: 32 }} />
+            <div className={skeletonStyles.skeleton} style={{ width: 72, height: 24 }} />
           </HStack>
-          <div className={styles.skeleton} style={{ width: 96, height: 24 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 96, height: 24 }} />
         </HStack>
         <HStack gap={16} justifyContent="space-between" alignItems="center">
-          <div className={styles.skeleton} style={{ width: 112, height: 20 }} />
-          <div className={styles.skeleton} style={{ width: 64, height: 20 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 112, height: 20 }} />
+          <div className={skeletonStyles.skeleton} style={{ width: 64, height: 20 }} />
         </HStack>
       </VStack>
     </div>
@@ -40,7 +41,7 @@ function SkeletonForm({ tinted = false }: { tinted?: boolean }) {
       <FieldsetSkeleton />
       <MiddleLine />
       <div className={styles.reverseButton}>
-        <div className={styles.skeletonCircle} style={{ width: 20, height: 20 }} />
+        <div className={skeletonStyles.skeletonCircle} style={{ width: 20, height: 20 }} />
       </div>
       <FieldsetSkeleton />
     </div>
