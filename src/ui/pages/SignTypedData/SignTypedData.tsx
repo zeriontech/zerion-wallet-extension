@@ -13,7 +13,6 @@ import { invariant } from 'src/shared/invariant';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { WalletDisplayName } from 'src/ui/components/WalletDisplayName';
 import { WalletAvatar } from 'src/ui/components/WalletAvatar';
-import { prepareForHref } from 'src/ui/shared/prepareForHref';
 import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { isPermit, toTypedData } from 'src/modules/ethereum/message-signing/prepareTypedData';
 import { useNetworks } from 'src/modules/networks/useNetworks';
@@ -39,8 +38,8 @@ import { usePreferences } from 'src/ui/features/preferences';
 import { wait } from 'src/shared/wait';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { whiteBackgroundKind } from 'src/ui/components/Background/Background';
+import { RequestInitiator } from 'src/ui/components/RequestInitiator';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import ScrollIcon from 'jsx:src/ui/assets/scroll.svg';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
@@ -52,7 +51,6 @@ import {
   InterpretationSecurityCheck,
   SecurityStatusBackground,
 } from 'src/ui/shared/security-check';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
@@ -139,8 +137,6 @@ function TypedDataDefaultView({
   );
 
   const signMsgBtnRef = useRef<SignMsgBtnHandle | null>(null);
-
-  const originForHref = useMemo(() => prepareForHref(origin), [origin]);
 
   const allowanceViewHref = useMemo(
     () => `?${setURLSearchParams(params, { view: View.customAllowance })}`,
@@ -251,15 +247,7 @@ function TypedDataDefaultView({
           />
           <UIText kind="headline/h2">{title}</UIText>
           <UIText kind="small/accent" color="var(--neutral-500)">
-            {origin === INTERNAL_ORIGIN ? (
-              'Zerion'
-            ) : originForHref ? (
-              <TextAnchor href={originForHref.href} target="_blank" rel="noopener noreferrer">
-                {originForHref.hostname}
-              </TextAnchor>
-            ) : (
-              'Unknown Initiator'
-            )}
+            <RequestInitiator origin={origin} />
           </UIText>
           <HStack gap={8} alignItems="center">
             <WalletAvatar address={wallet.address} size={20} active={false} borderRadius={6} />
