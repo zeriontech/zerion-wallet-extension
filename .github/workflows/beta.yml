@@ -145,7 +145,7 @@ jobs:
           if [ -z "$FIREFOX_EXTENSION_ID" ]; then STORE=chrome; fi
           ARGS=(--store="$STORE")
           if [ "$DRY_RUN" = "true" ]; then ARGS+=(--dry-run); fi
-          node scripts/release/publish-stores.mjs "${ARGS[@]}" --cancel-pending \
+          node scripts/release/publish-stores.mjs "${ARGS[@]}" \
             --chrome-zip="$(ls store-artifacts/chrome/*.zip)" \
             --firefox-zip="$(ls store-artifacts/firefox/*-beta.zip | grep -v sources)" \
             --firefox-sources-zip="$(ls store-artifacts/firefox/*-sources.zip)"
