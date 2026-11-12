@@ -99,7 +99,6 @@ jobs:
           TAG: ${{ steps.release.outputs.tag }}
           STORE: ${{ inputs.store }}
           DRY_RUN: ${{ inputs.dry_run }}
-          CHROME_API_VERSION: v2
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
