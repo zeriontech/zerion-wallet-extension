@@ -6,9 +6,9 @@ import { Navigate, useNavigationType } from 'react-router';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import {
-  createApproveAddressAction2,
-  createBridgeAddressAction2,
-  createTradeAddressAction2,
+  createApproveAddressAction,
+  createBridgeAddressAction,
+  createTradeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
@@ -474,7 +474,7 @@ function SwapFormComponent({
       if (configuredQuote.transactionApprove) {
         const approveTx = configuredQuote.transactionApprove;
         invariant(approveTx.evm, 'Approve transaction must be EVM (Solana has no allowance step)');
-        const fallbackApproveAction = createApproveAddressAction2({
+        const fallbackApproveAction = createApproveAddressAction({
           transaction: toIncomingTransaction(approveTx.evm),
           hash: null,
           explorerUrl: null,
@@ -513,7 +513,7 @@ function SwapFormComponent({
       const swapTx = configuredQuote.transactionSwap;
       invariant(swapTx, 'Configured quote must have a swap transaction');
       const fallbackSwapAction = isCrossChain
-        ? createBridgeAddressAction2({
+        ? createBridgeAddressAction({
             address,
             transaction: toMultichainTransaction(swapTx),
             hash: null,
@@ -526,7 +526,7 @@ function SwapFormComponent({
             outputNetwork,
             receiverAddress: formState.to ?? address,
           })
-        : createTradeAddressAction2({
+        : createTradeAddressAction({
             address,
             transaction: toMultichainTransaction(swapTx),
             hash: null,
