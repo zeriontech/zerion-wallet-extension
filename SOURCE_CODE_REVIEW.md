@@ -17,12 +17,11 @@ The unpacked extension is written to `dist-firefox/`. `npm run build:chrome` wri
 
 ## Build-time environment
 
-`src/env/config.ts` requires four non-secret variables at build time:
+`src/env/config.ts` requires three non-secret variables at build time:
 
 ```shell
 export ZERION_API_URL=https://zpi.zerion.io/
 export ZERION_TESTNET_API_URL=https://zpi-testnet.zerion.io/
-export DEFI_SDK_TRANSACTIONS_API_URL=https://transactions.zerion.io
 export PROXY_URL=https://proxy.zerion.io/
 ```
 

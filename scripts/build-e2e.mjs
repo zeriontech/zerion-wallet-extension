@@ -74,13 +74,10 @@ const buildEnv = {
   RPC_PROXY_URL: USE_PROXY ? `${PROXY_BASE}/rpc` : undefined,
   BACKEND_ENV: '',
   PROXY_URL: 'https://proxy.zerion.io/',
-  DEFI_SDK_TRANSACTIONS_API_URL: 'https://transactions.zerion.io',
   TEST_WALLET_ADDRESS,
   MIXPANEL_TOKEN_PUBLIC: '',
   GOOGLE_ANALYTICS_MEASUREMENT_ID: '',
   GOOGLE_ANALYTICS_API_SECRET: '',
-  FEATURE_SEND_FORM: 'on',
-  FEATURE_BRIDGE_FORM: 'on',
   FEATURE_LOYALTY_FLOW: 'off',
   FEATURE_SOLANA: 'on',
 };
