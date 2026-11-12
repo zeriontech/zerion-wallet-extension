@@ -27,8 +27,8 @@ import {
 } from 'src/ui/components/AmountInput/ValueWithSymbol';
 import { getPriceImpactPercentage, type PriceImpact } from './shared/price-impact';
 import { FormFieldset } from './FormFieldset';
-import { AssetSelectorButton } from './AssetSelectorButton';
-import * as assetSelectorStyles from './AssetSelectorButton.module.css';
+import { AssetSelectorButton } from 'src/ui/components/AssetSelectorButton';
+import * as assetSelectorStyles from 'src/ui/components/AssetSelectorButton/AssetSelectorButton.module.css';
 import * as styles from './styles.module.css';
 import { OutputPositionSelector } from './PositionSelector/OutputPositionSelector';
 
