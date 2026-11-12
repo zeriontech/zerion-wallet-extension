@@ -87,6 +87,8 @@ import { SendTopUpCTA } from './SendTopUpCTA';
 import { nftPositionToDefiSdkNft } from './shared/nftPositionToDefiSdkNft';
 import { InputPosition } from './InputPosition';
 import { InputNftPosition } from './InputNftPosition';
+import { isAmountEditPending } from './shared/amountEditPending';
+import { isNftAmountEditable } from './shared/nftRequestAmount';
 import { NftPreview } from './NftPreview';
 import { AssetSelectorDialog } from './PositionSelector/AssetSelectorDialog';
 import { CustomDataField } from './CustomDataField';
@@ -259,6 +261,13 @@ function SendFormComponent({
       : (position?.amount.quantity ?? null),
   });
 
+  const debouncedAmount = isNftMode ? formState.nftAmount : formState.inputAmount;
+  const [amountDraft, setAmountDraft] = useState<string | null>(null);
+  useEffect(() => {
+    setAmountDraft(null);
+  }, [debouncedAmount, inputKind, formState.inputFungibleId, formState.nftId]);
+  const amountEditPending = isAmountEditPending(amountDraft, debouncedAmount);
+
   const { data: sendData, isLoading: sendDataLoading } = useSendTransaction({
     address,
     formState,
@@ -266,6 +275,8 @@ function SendFormComponent({
     resolvedInputAmount,
     network: sendNetwork,
     exceedsBalance,
+    amountEditPending,
+    nftAmountEditable: isNftAmountEditable(nftPosition),
     enabled: !ecosystemMismatch,
   });
 
@@ -349,6 +360,7 @@ function SendFormComponent({
     formState.maxPriorityFee,
     formState.gasPrice,
     formState.networkFeeSpeed,
+    amountEditPending,
   ]);
 
   const resolved = useMemo(
@@ -667,6 +679,7 @@ function SendFormComponent({
                   onChange={handleChange}
                   nftPosition={nftPosition}
                   onOpenSelector={selectorDialog.openDialog}
+                  onAmountDraft={setAmountDraft}
                 />
                 <NftPreview position={nftPosition} isLoading={nftLoading} />
               </>
@@ -677,6 +690,7 @@ function SendFormComponent({
                 position={position}
                 resolvedInputAmount={resolvedInputAmount}
                 onOpenSelector={selectorDialog.openDialog}
+                onAmountDraft={setAmountDraft}
               />
             )}
           </VStack>

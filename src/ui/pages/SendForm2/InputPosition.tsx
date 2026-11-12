@@ -43,12 +43,14 @@ export function InputPosition({
   position,
   resolvedInputAmount,
   onOpenSelector,
+  onAmountDraft,
 }: {
   formState: SendFormState2;
   onChange: HandleChangeFunction;
   position: FungiblePosition | null;
   resolvedInputAmount: string | null;
   onOpenSelector: () => void;
+  onAmountDraft: (raw: string) => void;
 }) {
   const { currency } = useCurrency();
   const { inputAmount } = formState;
@@ -197,6 +199,7 @@ export function InputPosition({
                     const next = event.currentTarget.value.replace(',', '.').replace(/\s/g, '');
                     if (!/^\d*\.?\d*$/.test(next)) return;
                     setLiveInput(next);
+                    onAmountDraft(next);
                     handleChange(next);
                   }}
                   pattern={FLOAT_INPUT_PATTERN}

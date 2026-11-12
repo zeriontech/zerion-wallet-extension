@@ -1,5 +1,6 @@
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { isAmountEntered } from '../shared/amount';
+import { isPositiveIntegerAmount } from '../shared/nftRequestAmount';
 import type { SendFormState2 } from '../types';
 import type { SendSlotButton } from '../resolveSendSlot';
 
@@ -16,7 +17,7 @@ interface ResolveSendButtonInput {
 
 function hasNoAmount(formState: SendFormState2) {
   if (formState.nftId) {
-    return !formState.nftAmount || Number(formState.nftAmount) === 0;
+    return !isPositiveIntegerAmount(formState.nftAmount);
   }
   // Token mode accepts a typed `0` — non-payable calls (claims, approvals)
   // need it. Only an untouched (or not-yet-numeric) input is "no amount".

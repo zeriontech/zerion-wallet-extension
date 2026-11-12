@@ -22,6 +22,7 @@ import { toLegacySendFormState } from './shared/toLegacySendFormState';
 import { hexlifyTransactionData } from './shared/hexlifyTransactionData';
 import type { SendFormState2 } from './types';
 import { selectCurrentSendResponse } from './shared/selectCurrentSendResponse';
+import { resolveNftRequestAmount } from './shared/nftRequestAmount';
 
 export { selectCurrentSendResponse };
 
@@ -106,6 +107,8 @@ export function useSendTransaction({
   resolvedInputAmount,
   network,
   exceedsBalance,
+  amountEditPending,
+  nftAmountEditable,
   enabled: enabledParam = true,
 }: {
   address: string;
@@ -114,6 +117,8 @@ export function useSendTransaction({
   resolvedInputAmount: string | null;
   network: NetworkInfo | null;
   exceedsBalance: boolean;
+  amountEditPending: boolean;
+  nftAmountEditable: boolean;
   enabled?: boolean;
 }) {
   const { currency } = useCurrency();
@@ -158,12 +163,14 @@ export function useSendTransaction({
 
   const assetId = formState.nftId ?? formState.inputFungibleId;
 
-  const effectiveAmount = isNftMode ? (formState.nftAmount ?? '1') : resolvedInputAmount;
+  const effectiveAmount = isNftMode
+    ? resolveNftRequestAmount(formState.nftAmount, nftAmountEditable)
+    : resolvedInputAmount;
 
   // Token mode prepares a send for any entered amount, including `0`; NFT mode
-  // still requires at least one unit.
+  // requires a positive integer, which `resolveNftRequestAmount` already enforces.
   const amountGatePasses = isNftMode
-    ? Boolean(effectiveAmount && Number(effectiveAmount) > 0)
+    ? effectiveAmount != null
     : isMax || isAmountEntered(effectiveAmount);
 
   const baseGatesPass = Boolean(
@@ -236,7 +243,7 @@ export function useSendTransaction({
   const backendResponse = selectCurrentSendResponse(backendQuery.data, backendQuery.isPreviousData);
 
   const data = useMemo<SendTransactionResult | undefined>(() => {
-    if (!baseGatesPass) return undefined;
+    if (amountEditPending || !baseGatesPass) return undefined;
     if (useBackend) {
       if (!backendResponse) return undefined;
       const { transactionSend, networkFee, inputAmount, error } = backendResponse;
@@ -261,15 +268,25 @@ export function useSendTransaction({
       inputAmount: null,
       error: null,
     };
-  }, [baseGatesPass, useBackend, backendResponse, localQuery.data, network, currency]);
+  }, [
+    amountEditPending,
+    baseGatesPass,
+    useBackend,
+    backendResponse,
+    localQuery.data,
+    network,
+    currency,
+  ]);
 
   const backendEnabled = enabledParam && baseGatesPass && useBackend;
 
   return {
     data,
-    isLoading: useBackend
-      ? backendEnabled && backendQuery.isLoading
-      : localEnabled && localQuery.isLoading,
+    isLoading:
+      amountEditPending ||
+      (useBackend
+        ? backendEnabled && backendQuery.isLoading
+        : localEnabled && localQuery.isLoading),
     isFetching: useBackend ? backendQuery.isFetching : localQuery.isFetching,
   };
 }
