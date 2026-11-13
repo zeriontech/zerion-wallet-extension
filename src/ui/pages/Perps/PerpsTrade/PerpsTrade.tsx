@@ -39,7 +39,7 @@ import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
-import { HoldableButton } from 'src/ui/pages/SwapForm2/SwapButton/HoldableButton';
+import { HoldableButton } from 'src/ui/components/HoldToSignButton';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { VStack } from 'src/ui/ui-kit/VStack';

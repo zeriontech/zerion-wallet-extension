@@ -19,7 +19,7 @@ import { emitter } from 'src/ui/shared/events';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { markHyperliquidOpSubmitted } from 'src/modules/hyperliquid/useHyperliquidRefetchInterval';
-import { HoldableButton } from 'src/ui/pages/SwapForm2/SwapButton/HoldableButton';
+import { HoldableButton } from 'src/ui/components/HoldToSignButton';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { UIText } from 'src/ui/ui-kit/UIText';

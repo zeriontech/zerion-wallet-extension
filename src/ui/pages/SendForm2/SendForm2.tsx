@@ -61,7 +61,7 @@ import {
 } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import type { SimulationResult } from 'src/ui/shared/requests/useSimulateTransactions';
 import { TransactionWarning, UnverifiedWarning } from 'src/ui/components/PreSignWarning';
-import { ReadonlySignButton } from 'src/ui/pages/SwapForm2/ReadonlySignButton';
+import { ReadonlySignButton } from 'src/ui/components/HoldToSignButton';
 import { useReceiverName } from 'src/ui/components/ReceiverAddressDialog';
 import { useUnknownReceiverGate } from 'src/ui/components/UnknownReceiverDialog';
 import { PopoverToast } from 'src/ui/pages/Settings/PopoverToast';

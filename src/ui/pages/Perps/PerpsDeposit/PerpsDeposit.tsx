@@ -46,7 +46,7 @@ import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { InputPosition } from 'src/ui/pages/SwapForm2/InputPosition';
 import type { SwapFormState2 } from 'src/ui/pages/SwapForm2/types';
-import { HoldableButton } from 'src/ui/pages/SwapForm2/SwapButton/HoldableButton';
+import { HoldableButton } from 'src/ui/components/HoldToSignButton';
 import { PERPS_SCREEN } from 'src/shared/types/perps-events';
 import { emitter } from 'src/ui/shared/events';
 import { PerpsOnboarding } from '../PerpsOnboarding';

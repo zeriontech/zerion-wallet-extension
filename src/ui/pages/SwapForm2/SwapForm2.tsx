@@ -79,7 +79,7 @@ import { UKDisclaimer } from './UKDisclaimer';
 import { USDisclaimer } from './USDisclaimer';
 import { SwapButton, type SimulationResult } from './SwapButton';
 import { TopUpWalletCTA } from './TopUpWalletCTA';
-import { ReadonlySignButton } from './ReadonlySignButton';
+import { ReadonlySignButton } from 'src/ui/components/HoldToSignButton';
 import { PriceImpactWarning } from './PriceImpactWarning';
 import { SwapOnboardingDialog } from './SwapOnboardingDialog/SwapOnboardingDialog';
 import {
