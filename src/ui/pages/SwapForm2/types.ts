@@ -1,4 +1,5 @@
 import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
+import type { FormChangeHandler } from 'src/ui/shared/forms/FormChangeHandler';
 
 export type SwapFormState2 = {
   /** @description Source blockchain for the swap */
@@ -39,7 +40,4 @@ export type SwapFormState2 = {
   // sort?: '1' | '2';
 };
 
-export type HandleChangeFunction = <K extends keyof SwapFormState2>(
-  key: K,
-  value: SwapFormState2[K],
-) => void;
+export type HandleChangeFunction = FormChangeHandler<SwapFormState2>;

@@ -1,4 +1,5 @@
 import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
+import type { FormChangeHandler } from 'src/ui/shared/forms/FormChangeHandler';
 
 export type SendFormState2 = {
   /** @description Blockchain the send happens on */
@@ -35,7 +36,4 @@ export type SendFormState2 = {
   nonce?: string;
 };
 
-export type HandleChangeFunction = <K extends keyof SendFormState2>(
-  key: K,
-  value: SendFormState2[K],
-) => void;
+export type HandleChangeFunction = FormChangeHandler<SendFormState2>;

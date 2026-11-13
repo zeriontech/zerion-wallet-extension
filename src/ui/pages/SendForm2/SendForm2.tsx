@@ -23,7 +23,11 @@ import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { applyConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration/applyConfiguration';
-import { fromConfiguration, toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
+import {
+  CLEARED_NETWORK_FEE_OVERRIDES,
+  fromConfiguration,
+  toConfiguration,
+} from 'src/ui/shared/forms/networkFeeConfiguration';
 import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import { PageColumn } from 'src/ui/components/PageColumn/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop/PageTop';
@@ -106,16 +110,12 @@ import * as styles from './SendForm2.module.css';
 function resetAfterBroadcast(state: Partial<SendFormState2>): Partial<SendFormState2> {
   return {
     ...state,
+    ...CLEARED_NETWORK_FEE_OVERRIDES,
     inputAmount: undefined,
     inputKind: undefined,
     nftAmount: undefined,
     data: undefined,
     nonce: undefined,
-    networkFeeSpeed: undefined,
-    maxPriorityFee: undefined,
-    maxFee: undefined,
-    gasPrice: undefined,
-    gasLimit: undefined,
   };
 }
 
