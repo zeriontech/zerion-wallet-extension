@@ -61,7 +61,6 @@ export type BackgroundEvents = {
   typedDataSigned: (data: { typedData: TypedData; address: string } & MessageContextParams) => void;
   messageSigned: (data: { message: string; address: string } & MessageContextParams) => void;
   userActivity: () => void;
-  connectToSiteEvent: (info: { origin: string }) => void;
   sessionExpired: () => void;
   requestAccountsResolved: (data: {
     origin: string;
