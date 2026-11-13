@@ -26,6 +26,7 @@ type MetabaseEvent =
   | 'button_clicked'
   | 'network_fee_level_changed'
   | 'banner_clicked'
+  | 'label_address_copied'
   | 'asset_clicked'
   | 'asset_visibility_changed'
   | 'passkey_login_enabled'
