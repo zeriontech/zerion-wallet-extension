@@ -8,13 +8,13 @@ import {
   readSimulationStatus,
   readSimulationWarnings,
   severityToVariant,
-} from './simulationWarningHelpers';
+} from 'src/ui/components/PreSignWarning/simulationWarningHelpers';
 import type {
   ResolvedTransactionWarning,
   SimulationResult,
   WarningContent,
   WarningVariant,
-} from './simulationWarningHelpers';
+} from 'src/ui/components/PreSignWarning/simulationWarningHelpers';
 
 export type { ResolvedTransactionWarning, SimulationResult, WarningContent, WarningVariant };
 

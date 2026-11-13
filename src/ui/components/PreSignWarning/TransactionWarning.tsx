@@ -2,8 +2,8 @@ import React, { Fragment } from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
-import { splitDappPlaceholder } from '../shared/dappReferral';
-import type { WarningContent } from './resolveTransactionWarning';
+import { splitDappPlaceholder } from './dappReferral';
+import type { WarningContent } from './simulationWarningHelpers';
 import * as styles from './TransactionWarning.module.css';
 
 const GENERIC_DAPP_NAME = 'the dApp';

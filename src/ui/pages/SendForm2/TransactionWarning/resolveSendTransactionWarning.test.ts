@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
 import { getSendErrorCopy, resolveSendTransactionWarning } from './resolveSendTransactionWarning';
 
@@ -96,45 +95,5 @@ describe('resolveSendTransactionWarning — backendError', () => {
     const resolved = resolveSendTransactionWarning({ simulationResult: null });
     expect(resolved.warning).toBeNull();
     expect(resolved.blocksAutoSign).toBe(false);
-  });
-});
-
-describe('max-send predicate', () => {
-  // Mirrors the predicate used in useSendTransaction:
-  //   BigNumber(typedAmountTokenUnits).eq(position.amount.quantity)
-  function isMax(typed: string, balance: string) {
-    return new BigNumber(typed).eq(balance);
-  }
-
-  it('is true when typed amount equals balance exactly', () => {
-    expect(isMax('1', '1')).toBe(true);
-    expect(isMax('1.0', '1')).toBe(true);
-    expect(isMax('0.123456789', '0.123456789')).toBe(true);
-  });
-
-  it('is false when typed amount differs', () => {
-    expect(isMax('0.999', '1')).toBe(false);
-    expect(isMax('1.0001', '1')).toBe(false);
-  });
-});
-
-describe('Received-line comparison', () => {
-  // Mirrors SendDetails: show only when backend's inputAmount.quantity !== typed.
-  function showReceived(receivedQuantity: string, typed: string | null) {
-    if (!typed) return false;
-    return !new BigNumber(receivedQuantity).eq(typed);
-  }
-
-  it('hides when amounts match', () => {
-    expect(showReceived('1', '1')).toBe(false);
-    expect(showReceived('1.0', '1')).toBe(false);
-  });
-
-  it('shows when amounts differ (max-send gas shave case)', () => {
-    expect(showReceived('0.998', '1')).toBe(true);
-  });
-
-  it('hides when typed is null', () => {
-    expect(showReceived('1', null)).toBe(false);
   });
 });

@@ -3,11 +3,11 @@ import {
   readSimulationStatus,
   readSimulationWarnings,
   severityToVariant,
-} from 'src/ui/pages/SwapForm2/TransactionWarning/simulationWarningHelpers';
+} from 'src/ui/components/PreSignWarning/simulationWarningHelpers';
 import type {
   ResolvedTransactionWarning,
   SimulationResult,
-} from 'src/ui/pages/SwapForm2/TransactionWarning/simulationWarningHelpers';
+} from 'src/ui/components/PreSignWarning/simulationWarningHelpers';
 import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
 
 export type { ResolvedTransactionWarning, SimulationResult };

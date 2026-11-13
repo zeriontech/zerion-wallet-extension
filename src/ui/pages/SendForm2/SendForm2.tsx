@@ -59,9 +59,8 @@ import {
   createSendTokenAddressAction,
   createSendNFTAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
-import type { SimulationResult } from 'src/ui/pages/SwapForm2/SwapButton';
-import { TransactionWarning } from 'src/ui/pages/SwapForm2/TransactionWarning';
-import { UnverifiedWarning } from 'src/ui/pages/SwapForm2/UnverifiedWarning/UnverifiedWarning';
+import type { SimulationResult } from 'src/ui/shared/requests/useSimulateTransactions';
+import { TransactionWarning, UnverifiedWarning } from 'src/ui/components/PreSignWarning';
 import { ReadonlySignButton } from 'src/ui/pages/SwapForm2/ReadonlySignButton';
 import { useReceiverName } from 'src/ui/components/ReceiverAddressDialog';
 import { useUnknownReceiverGate } from 'src/ui/components/UnknownReceiverDialog';

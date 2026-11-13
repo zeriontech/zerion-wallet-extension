@@ -1,4 +1,3 @@
-export { TransactionWarning } from './TransactionWarning';
 export {
   resolveTransactionWarning,
   type WarningContent,
