@@ -117,6 +117,7 @@ const baseInputs = {
   formState: baseFormState,
   inputNetwork: ethereum,
   outputNetwork: ethereum,
+  priceImpactNeedsConfirmation: false,
 };
 
 // ---- Tests ----
@@ -493,6 +494,70 @@ describe('resolveTransactionWarning', () => {
       });
       expect(r.unverified).toBe(true); // UnverifiedWarning shows
       expect(r.warning?.title).toBe('Risky'); // TransactionWarning shows too
+      expect(r.dangerTitle).toBe('Proceed Anyway');
+    });
+  });
+
+  describe('price impact that needs confirmation', () => {
+    const cleanSimulation = makeSimulation({
+      incoming: [{ fungibleId: 'usdc', quantity: '100' }],
+    });
+
+    it('turns the button into "Proceed Anyway" before simulation, with no card', () => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        priceImpactNeedsConfirmation: true,
+        simulationResult: null,
+      });
+      expect(r.dangerTitle).toBe('Proceed Anyway');
+      expect(r.warning).toBeNull();
+      expect(r.unverified).toBe(false);
+    });
+
+    it('stops the automatic signature after a clean simulation', () => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        priceImpactNeedsConfirmation: true,
+        simulationResult: cleanSimulation,
+      });
+      expect(r.blocksAutoSign).toBe(true);
+      expect(r.dangerTitle).toBe('Proceed Anyway');
+      expect(r.warning).toBeNull();
+    });
+
+    it('a clean simulation without price impact still signs automatically', () => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        priceImpactNeedsConfirmation: false,
+        simulationResult: cleanSimulation,
+      });
+      expect(r.blocksAutoSign).toBe(false);
+      expect(r.dangerTitle).toBeNull();
+    });
+
+    it('does not replace a simulation warning card', () => {
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        priceImpactNeedsConfirmation: true,
+        simulationResult: makeSimulation({ status: 'failed' }),
+      });
+      expect(r.warning?.title).toBe('Transaction will fail');
+      expect(r.blocksAutoSign).toBe(true);
+      expect(r.dangerTitle).toBe('Proceed Anyway');
+    });
+
+    it('keeps a form-state warning card and adds the danger title', () => {
+      const quote = {
+        outputAmount: { currency: 'usd', quantity: '100', value: null, usdValue: null },
+        error: { code: 1, message: 'Need more ETH' },
+      } as unknown as Quote2;
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        quote,
+        priceImpactNeedsConfirmation: true,
+        simulationResult: null,
+      });
+      expect(r.warning?.title).toBe('Insufficient balance');
       expect(r.dangerTitle).toBe('Proceed Anyway');
     });
   });
