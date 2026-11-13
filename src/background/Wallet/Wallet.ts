@@ -2011,6 +2011,86 @@ class PublicController {
     });
   }
 
+  /**
+   * Every dapp signing request starts here: the current wallet must belong to
+   * `ecosystem` (the user is asked to switch if it does not) and the calling
+   * origin must be connected to it.
+   */
+  private async requireConnectedAccount(
+    context: Partial<ChannelContext> | undefined,
+    ecosystem: BlockchainType,
+  ) {
+    const currentAddress = await this.ensureEcosystemAccount(context, ecosystem);
+    return { currentAddress, ...this.assertConnectedAccount(context, currentAddress) };
+  }
+
+  /**
+   * Brings the current wallet into `ecosystem`, asking the user to switch if
+   * needed, and returns the address that will sign.
+   */
+  private async ensureEcosystemAccount(
+    context: Partial<ChannelContext> | undefined,
+    ecosystem: BlockchainType,
+  ) {
+    this.wallet.ensureCurrentAddress();
+    await this.showCorrectEcosystemWalletSelection({ context, ecosystem });
+    return this.wallet.ensureCurrentAddress();
+  }
+
+  /** The calling origin must be connected to the account that will sign */
+  private assertConnectedAccount(
+    context: Partial<ChannelContext> | undefined,
+    currentAddress: string,
+  ) {
+    if (!this.wallet.allowedOrigin(context, currentAddress)) {
+      throw new OriginNotAllowed();
+    }
+    return { origin: context.origin, tabId: context.tabId || null };
+  }
+
+  /** Opens the approval dialog for a signing request and settles with the user's decision */
+  private async openSigningDialog<T = unknown>({
+    origin,
+    tabId,
+    id,
+    ecosystem,
+    route,
+    search,
+  }: {
+    origin: string;
+    tabId: number | null;
+    id: string | number;
+    ecosystem: BlockchainType;
+    route: string;
+    search: string;
+  }): Promise<T> {
+    const wallet = this.wallet.getCurrentWalletSync({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const preferences = await this.wallet.getGlobalPreferences({
+      context: INTERNAL_SYMBOL_CONTEXT,
+    });
+    const isDeviceWallet = wallet ? isDeviceAccount(wallet) : false;
+    const openInTab = isDeviceWallet && preferences.bluetoothSupportEnabled;
+    return new Promise<T>((resolve, reject) => {
+      this.safeOpenDialogWindow<T>(origin, {
+        requestId: `${origin}:${id}`,
+        route,
+        // Solana requests have never asked for the taller hardware-wallet window
+        height: ecosystem === 'evm' && isDeviceWallet ? 800 : undefined,
+        search,
+        tabId,
+        onResolve: (result) => {
+          resolve(result);
+        },
+        onDismiss: () => {
+          reject(new UserRejectedTxSignature());
+        },
+        type: openInTab ? 'tab' : undefined,
+      });
+    });
+  }
+
   async eth_accounts({ context }: PublicMethodParams) {
     const currentAddress = this.wallet.readCurrentAddress();
     if (!currentAddress) {
@@ -2061,25 +2141,9 @@ class PublicController {
     clientScope?: string;
     method?: 'signAndSendTransaction' | 'signTransaction';
   }>): Promise<SolSignTransactionResult> {
-    this.wallet.ensureCurrentAddress();
-    await this.showCorrectEcosystemWalletSelection({
-      context,
-      ecosystem: 'solana',
-    });
-    const currentAddress = this.wallet.ensureCurrentAddress();
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
-    }
-    const wallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const preferences = await this.wallet.getGlobalPreferences({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
-    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
+    const { origin, tabId } = await this.requireConnectedAccount(context, 'solana');
     const searchParams = new URLSearchParams({
-      origin: context.origin,
+      origin,
       transaction: txBase64,
       ecosystem: 'solana',
       method,
@@ -2087,22 +2151,13 @@ class PublicController {
     if (clientScope) {
       searchParams.append('clientScope', clientScope);
     }
-
-    return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(context.origin, {
-        requestId: `${context.origin}:${id}`,
-        route: '/sendTransaction',
-        // height: isDeviceWallet ? 800 : undefined,
-        search: `?${searchParams}`,
-        tabId: context.tabId || null,
-        onResolve: (result: SolSignTransactionResult) => {
-          resolve(result);
-        },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-        type: openInTab ? 'tab' : undefined,
-      });
+    return this.openSigningDialog<SolSignTransactionResult>({
+      origin,
+      tabId,
+      id,
+      ecosystem: 'solana',
+      route: '/sendTransaction',
+      search: `?${searchParams}`,
     });
   }
 
@@ -2114,25 +2169,9 @@ class PublicController {
     transactionsBase64: string[];
     clientScope?: string;
   }>): Promise<SolSignTransactionResult[]> {
-    this.wallet.ensureCurrentAddress();
-    await this.showCorrectEcosystemWalletSelection({
-      context,
-      ecosystem: 'solana',
-    });
-    const currentAddress = this.wallet.ensureCurrentAddress();
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
-    }
-    const wallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const preferences = await this.wallet.getGlobalPreferences({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
-    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
+    const { origin, tabId } = await this.requireConnectedAccount(context, 'solana');
     const searchParams = new URLSearchParams({
-      origin: context.origin,
+      origin,
       transactions: JSON.stringify(transactionsBase64),
       ecosystem: 'solana',
       method: 'signAllTransactions',
@@ -2140,22 +2179,13 @@ class PublicController {
     if (clientScope) {
       searchParams.append('clientScope', clientScope);
     }
-
-    return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(context.origin, {
-        requestId: `${context.origin}:${id}`,
-        route: '/sendTransaction',
-        // height: isDeviceWallet ? 800 : undefined,
-        search: `?${searchParams}`,
-        tabId: context.tabId || null,
-        onResolve: (result: SolSignTransactionResult[]) => {
-          resolve(result);
-        },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-        type: openInTab ? 'tab' : undefined,
-      });
+    return this.openSigningDialog<SolSignTransactionResult[]>({
+      origin,
+      tabId,
+      id,
+      ecosystem: 'solana',
+      route: '/sendTransaction',
+      search: `?${searchParams}`,
     });
   }
 
@@ -2167,49 +2197,24 @@ class PublicController {
     messageSerialized: string;
     clientScope?: string;
   }>) {
-    this.wallet.ensureCurrentAddress();
-    await this.showCorrectEcosystemWalletSelection({
-      context,
-      ecosystem: 'solana',
-    });
-    const currentAddress = this.wallet.ensureCurrentAddress();
+    const { currentAddress, origin, tabId } = await this.requireConnectedAccount(context, 'solana');
     invariant(isSolanaAddress(currentAddress));
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
-    }
-    const wallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const preferences = await this.wallet.getGlobalPreferences({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
-    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
-
     const messageUint8 = base64ToUint8Array(messageSerialized);
     const searchParams = new URLSearchParams({
       method: 'signMessage',
-      origin: context.origin,
+      origin,
       message: ethers.hexlify(messageUint8),
     });
     if (clientScope) {
       searchParams.append('clientScope', clientScope);
     }
-    return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(context.origin, {
-        requestId: `${context.origin}:${id}`,
-        route: '/signMessage',
-        // height: isDeviceWallet ? 800 : undefined,
-        search: `?${searchParams}`,
-        tabId: context.tabId || null,
-        onResolve: (signature: string) => {
-          resolve(signature);
-        },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-        type: openInTab ? 'tab' : undefined,
-      });
+    return this.openSigningDialog({
+      origin,
+      tabId,
+      id,
+      ecosystem: 'solana',
+      route: '/signMessage',
+      search: `?${searchParams}`,
     });
   }
 
@@ -2313,44 +2318,12 @@ class PublicController {
   }: PublicMethodParams<
     [IncomingTransaction, /* TODO: refactor to use {context} instead? */ { clientScope?: string }?]
   >) {
-    this.wallet.ensureCurrentAddress();
-    await this.showCorrectEcosystemWalletSelection({
-      context,
-      ecosystem: 'evm',
-    });
-    const currentAddress = this.wallet.ensureCurrentAddress();
-    // NOTE: I switched to synchronous method in an attempt to
-    // synchronously open sidepanel in response to a dapp request
-    // because browser only allows to open sidepanel synchronously after
-    // a user action. But currently I abandoned the idea of opening sidepanel
-    // for dapp requests. Instead, we use sidepanel if it is already opened
-    // So this sync method is not necessary.
-    // NOTE:
-    // There is another possible workaround to opening sidepanel but keeping these methods
-    // asyncronous. We can synchronously open sidepanel with some loading UI,
-    // and then later update it with the desired view by calling `.setOptions()` API.
-    const currentWallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
     // TODO: should we check transaction.from instead of currentAddress?
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
-    }
-
-    const wallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const preferences = await this.wallet.getGlobalPreferences({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
-    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
-
+    const { origin, tabId } = await this.requireConnectedAccount(context, 'evm');
     const [transaction, { clientScope } = { clientScope: undefined }] = params;
     invariant(transaction, () => new InvalidParams());
-    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
     const searchParams = new URLSearchParams({
-      origin: context.origin,
+      origin,
       transaction: JSON.stringify(transaction),
     });
     if (clientScope) {
@@ -2359,25 +2332,17 @@ class PublicController {
 
     await this.wallet.ensureTestnetModeForTx({
       transaction,
-      initiator: context.origin,
-      tabId: context.tabId || null,
+      initiator: origin,
+      tabId,
     });
 
-    return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(context.origin, {
-        requestId: `${context.origin}:${id}`,
-        route: '/sendTransaction',
-        height: isDeviceWallet ? 800 : undefined,
-        search: `?${searchParams}`,
-        tabId: context.tabId || null,
-        onResolve: (hash) => {
-          resolve(hash);
-        },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-        type: openInTab ? 'tab' : undefined,
-      });
+    return this.openSigningDialog({
+      origin,
+      tabId,
+      id,
+      ecosystem: 'evm',
+      route: '/sendTransaction',
+      search: `?${searchParams}`,
     });
   }
 
@@ -2386,23 +2351,7 @@ class PublicController {
     params: [address, data],
     id,
   }: PublicMethodParams<[string, TypedData | string]>) {
-    this.wallet.ensureCurrentAddress();
-    await this.showCorrectEcosystemWalletSelection({
-      context,
-      ecosystem: 'evm',
-    });
-    const currentAddress = this.wallet.ensureCurrentAddress();
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
-    }
-    const wallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const preferences = await this.wallet.getGlobalPreferences({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
-    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
+    const { currentAddress, origin, tabId } = await this.requireConnectedAccount(context, 'evm');
     if (normalizeAddress(address) !== normalizeAddress(currentAddress)) {
       throw new Error(
         // TODO?...
@@ -2410,29 +2359,17 @@ class PublicController {
       );
     }
     const stringifiedData = sanitizeTypedDataRaw(data);
-    const currentWallet = await this.wallet.uiGetCurrentWallet({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
-    return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(context.origin, {
-        requestId: `${context.origin}:${id}`,
-        route: '/signTypedData',
-        height: isDeviceWallet ? 800 : undefined,
-        search: `?${new URLSearchParams({
-          origin: context.origin,
-          typedDataRaw: stringifiedData,
-          method: 'eth_signTypedData_v4',
-        })}`,
-        tabId: context.tabId || null,
-        onResolve: (signature) => {
-          resolve(signature);
-        },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-        type: openInTab ? 'tab' : undefined,
-      });
+    return this.openSigningDialog({
+      origin,
+      tabId,
+      id,
+      ecosystem: 'evm',
+      route: '/signTypedData',
+      search: `?${new URLSearchParams({
+        origin,
+        typedDataRaw: stringifiedData,
+        method: 'eth_signTypedData_v4',
+      })}`,
     });
   }
 
@@ -2465,12 +2402,7 @@ class PublicController {
       _password,
       { clientScope } = { clientScope: undefined },
     ] = params;
-    this.wallet.ensureCurrentAddress();
-    await this.showCorrectEcosystemWalletSelection({
-      context,
-      ecosystem: 'evm',
-    });
-    const currentAddress = this.wallet.ensureCurrentAddress();
+    const currentAddress = await this.ensureEcosystemAccount(context, 'evm');
 
     let address = '';
     let message = '';
@@ -2495,45 +2427,23 @@ class PublicController {
         `Address parameter is different from currently selected address. Received: ${address}`,
       );
     }
-    if (!this.wallet.allowedOrigin(context, currentAddress)) {
-      throw new OriginNotAllowed();
-    }
-    const wallet = this.wallet.getCurrentWalletSync({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const preferences = await this.wallet.getGlobalPreferences({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const deviceAccount = wallet ? isDeviceAccount(wallet) : false;
-    const openInTab = deviceAccount && preferences.bluetoothSupportEnabled;
 
-    const currentWallet = await this.wallet.uiGetCurrentWallet({
-      context: INTERNAL_SYMBOL_CONTEXT,
-    });
-    const isDeviceWallet = currentWallet && isDeviceAccount(currentWallet);
+    const { origin, tabId } = this.assertConnectedAccount(context, currentAddress);
     const searchParams = new URLSearchParams({
       method: 'personal_sign',
-      origin: context.origin,
+      origin,
       message,
     });
     if (clientScope) {
       searchParams.append('clientScope', clientScope);
     }
-    return new Promise((resolve, reject) => {
-      this.safeOpenDialogWindow(context.origin, {
-        requestId: `${context.origin}:${id}`,
-        route: '/signMessage',
-        height: isDeviceWallet ? 800 : undefined,
-        search: `?${searchParams}`,
-        tabId: context.tabId || null,
-        onResolve: (signature) => {
-          resolve(signature);
-        },
-        onDismiss: () => {
-          reject(new UserRejectedTxSignature());
-        },
-        type: openInTab ? 'tab' : undefined,
-      });
+    return this.openSigningDialog({
+      origin,
+      tabId,
+      id,
+      ecosystem: 'evm',
+      route: '/signMessage',
+      search: `?${searchParams}`,
     });
   }
 
