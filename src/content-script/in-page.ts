@@ -2,7 +2,6 @@ import {
   type Ghost,
   initialize as initializeWalletStandard,
 } from '@zeriontech/solana-wallet-standard';
-import { FEATURE_SOLANA } from 'src/env/config';
 import { EthereumProvider } from 'src/modules/ethereum/provider';
 import { Connection } from 'src/modules/ethereum/connection';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
@@ -28,12 +27,10 @@ const walletChannelId = popWalletChannelId();
 const broadcastChannel = new BroadcastChannel(walletChannelId);
 const connection = new Connection(broadcastChannel);
 const provider = new EthereumProvider(connection);
-if (FEATURE_SOLANA === 'on') {
-  const zerionSolana = new ZerionSolana(connection);
-  initializeWalletStandard(zerionSolana);
-  Object.assign(provider, { solana: zerionSolana });
-  window.solana = zerionSolana;
-}
+const zerionSolana = new ZerionSolana(connection);
+initializeWalletStandard(zerionSolana);
+Object.assign(provider, { solana: zerionSolana });
+window.solana = zerionSolana;
 
 let isPaused = false;
 

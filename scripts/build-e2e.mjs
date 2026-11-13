@@ -79,7 +79,6 @@ const buildEnv = {
   GOOGLE_ANALYTICS_MEASUREMENT_ID: '',
   GOOGLE_ANALYTICS_API_SECRET: '',
   FEATURE_LOYALTY_FLOW: 'off',
-  FEATURE_SOLANA: 'on',
 };
 
 // Defence in depth: never let the bypass secret reach the bundler. `buildEnv`
