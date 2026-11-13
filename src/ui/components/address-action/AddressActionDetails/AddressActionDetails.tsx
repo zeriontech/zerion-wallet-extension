@@ -1,11 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { applyCustomAllowance } from 'src/modules/ethereum/transactions/appovals';
+import { getLabelAddressCopiedParams } from 'src/shared/analytics/shared/labelAddressCopied';
+import { emitter } from 'src/ui/shared/events';
 import { RecipientLine } from '../RecipientLine';
-import { ApplicationLine } from '../ApplicationLine';
+import { ApplicationLine, ApplicationWalletLine } from '../ApplicationLine';
 import { ActInfo } from '../ActInfo';
+import { getLabelLine } from '../getLabelLine';
 
 export function AddressActionDetails({
   address,
@@ -24,9 +27,26 @@ export function AddressActionDetails({
   showApplicationLine: boolean;
   singleAssetElementEnd: React.ReactNode;
 }) {
-  const recipientAddress = addressAction?.label?.wallet?.address;
+  const labelLine = getLabelLine(addressAction?.label);
   const applicationLineVisible =
-    showApplicationLine && addressAction?.label?.contract && !recipientAddress;
+    showApplicationLine &&
+    (labelLine?.kind === 'application-contract' || labelLine?.kind === 'application-wallet');
+
+  const handleLabelCopy = useCallback(() => {
+    if (!addressAction?.label) {
+      return;
+    }
+    const params = getLabelAddressCopiedParams({
+      label: addressAction.label,
+      chain: network.id,
+      actType: addressAction.type.value,
+      screen: 'signing_preview',
+      isOwnWallet: false,
+    });
+    if (params) {
+      emitter.emit('labelAddressCopied', params);
+    }
+  }, [addressAction, network.id]);
 
   const actionWithAppliedAllowance = useMemo(
     () =>
@@ -45,16 +65,28 @@ export function AddressActionDetails({
 
   return (
     <>
-      {recipientAddress ? (
+      {labelLine?.kind === 'address' ? (
         <RecipientLine
-          recipientAddress={recipientAddress}
-          recipientName={addressAction.label?.wallet?.name || null}
+          caption={labelLine.caption}
+          recipientAddress={labelLine.address}
+          recipientName={labelLine.name || null}
           showNetworkIcon={!applicationLineVisible}
           network={network}
+          copyOnly={labelLine.copyOnly}
+          onCopy={handleLabelCopy}
         />
       ) : null}
-      {applicationLineVisible ? (
+      {applicationLineVisible && labelLine.kind === 'application-contract' && addressAction ? (
         <ApplicationLine addressAction={addressAction} network={network} />
+      ) : null}
+      {applicationLineVisible && labelLine.kind === 'application-wallet' ? (
+        <ApplicationWalletLine
+          caption={labelLine.caption}
+          address={labelLine.address}
+          network={network}
+          copyOnly={labelLine.copyOnly}
+          onCopy={handleLabelCopy}
+        />
       ) : null}
       {actionWithAppliedAllowance?.acts?.length ? (
         <VStack gap={4}>

@@ -1,1 +1,1 @@
-export { ApplicationLine } from './ApplicationLine';
+export { ApplicationLine, ApplicationWalletLine } from './ApplicationLine';

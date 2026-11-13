@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { accessListify } from 'ethers';
 import { Surface } from 'src/ui/ui-kit/Surface';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -18,7 +18,13 @@ import { TextLine } from 'src/ui/components/address-action/TextLine';
 import { Button } from 'src/ui/ui-kit/Button';
 import { useCopyToClipboard } from 'src/ui/shared/useCopyToClipboard';
 import { valueToHex } from 'src/shared/units/valueToHex';
-import { ApplicationLine } from 'src/ui/components/address-action/ApplicationLine';
+import {
+  ApplicationLine,
+  ApplicationWalletLine,
+} from 'src/ui/components/address-action/ApplicationLine';
+import { getLabelLine } from 'src/ui/components/address-action/getLabelLine';
+import { getLabelAddressCopiedParams } from 'src/shared/analytics/shared/labelAddressCopied';
+import { emitter } from 'src/ui/shared/events';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
@@ -185,6 +191,24 @@ export function TransactionAdvancedView({
     onSuccess: onCopyData,
   });
 
+  const labelLine = getLabelLine(addressAction?.label);
+
+  const handleLabelCopy = useCallback(() => {
+    if (!addressAction?.label) {
+      return;
+    }
+    const params = getLabelAddressCopiedParams({
+      label: addressAction.label,
+      chain: network.id,
+      actType: addressAction.type.value,
+      screen: 'signing_advanced',
+      isOwnWallet: false,
+    });
+    if (params) {
+      emitter.emit('labelAddressCopied', params);
+    }
+  }, [addressAction, network.id]);
+
   return (
     <>
       <PageTop />
@@ -194,15 +218,29 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {addressAction?.label?.wallet ? (
+        {labelLine?.kind === 'address' ? (
           <RecipientLine
-            recipientAddress={addressAction.label.wallet.address}
-            recipientName={addressAction.label.wallet.name || null}
+            caption={labelLine.caption}
+            recipientAddress={labelLine.address}
+            recipientName={labelLine.name || null}
             network={network}
             showNetworkIcon={true}
+            copyOnly={labelLine.copyOnly}
+            onCopy={handleLabelCopy}
           />
         ) : null}
-        {addressAction?.label?.contract ? (
+        {labelLine?.kind === 'application-wallet' ? (
+          <ApplicationWalletLine
+            caption={labelLine.caption}
+            address={labelLine.address}
+            network={network}
+            copyOnly={labelLine.copyOnly}
+            onCopy={handleLabelCopy}
+          />
+        ) : null}
+        {addressAction &&
+        (labelLine?.kind === 'application-contract' ||
+          (labelLine?.kind === 'address' && addressAction.label?.contract)) ? (
           <ApplicationLine addressAction={addressAction} network={network} />
         ) : null}
         {transaction.evm ? (
