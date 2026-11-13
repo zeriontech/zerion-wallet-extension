@@ -8,7 +8,7 @@ import type { Quote2 } from 'src/shared/types/Quote';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { gweiToWei, weiToGweiStr } from 'src/shared/units/formatGasPrice';
 import { getEffectiveGasPrice } from './getEffectiveGasPrice';
-import type { CustomFormDefaults } from './NetworkFeeDialog2/NetworkFeeCustomForm';
+import type { CustomFormDefaults } from './NetworkFeeCustomForm';
 
 /**
  * The subset of `Quote2` the network-fee helpers and dialog actually read. Both

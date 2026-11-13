@@ -12,7 +12,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
 import CloseIcon from 'jsx:src/ui/assets/close.svg';
 import ChevronLeftIcon from 'jsx:src/ui/assets/chevron-left-medium.svg';
-import type { NetworkFeeQuote } from '../getNetworkFeeForSpeed';
+import type { NetworkFeeQuote } from './getNetworkFeeForSpeed';
 import { NetworkFeeTypeSelector } from './NetworkFeeTypeSelector';
 import { NetworkFeeCustomForm, type CustomFormDefaults } from './NetworkFeeCustomForm';
 import * as styles from './NetworkFeeDialog2.module.css';

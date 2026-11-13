@@ -13,7 +13,7 @@ import { DelayedRender } from 'src/ui/components/DelayedRender';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import { NonceDialogForm } from 'src/ui/pages/SendTransaction/NonceLine/NonceLine';
-import * as styles from './QuoteDetails.module.css';
+import * as styles from './DetailRow.module.css';
 
 enum NonceSource {
   user,

@@ -34,33 +34,6 @@
   transform: scale(0.97);
 }
 
-.detailLinkButton {
-  display: flex;
-}
-
-.detailLinkRow {
-  display: block;
-  width: 100%;
-  text-align: left;
-}
-
-.detailLinkRow > * {
-  width: 100%;
-}
-
-.detailLinkChevron {
-  display: block;
-  width: 20px;
-  height: 20px;
-  color: var(--neutral-400);
-  transition: color 0.15s ease;
-}
-
-.detailLinkButton:hover .detailLinkChevron,
-.detailLinkRow:hover .detailLinkChevron {
-  color: var(--black);
-}
-
 .tooltip {
   max-width: 240px;
   padding: 8px 12px;

@@ -1,0 +1,21 @@
+.detailLinkRow {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.detailLinkRow > * {
+  width: 100%;
+}
+
+.detailLinkChevron {
+  display: block;
+  width: 20px;
+  height: 20px;
+  color: var(--neutral-400);
+  transition: color 0.15s ease;
+}
+
+.detailLinkRow:hover .detailLinkChevron {
+  color: var(--black);
+}

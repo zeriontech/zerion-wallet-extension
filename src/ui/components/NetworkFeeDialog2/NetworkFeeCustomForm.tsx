@@ -13,9 +13,9 @@ import { InnerLabelInput } from 'src/ui/ui-kit/Input/InnerLabelInput';
 import { FLOAT_INPUT_PATTERN, INT_INPUT_PATTERN } from 'src/ui/shared/forms/inputs';
 import { apostrophe } from 'src/shared/typography';
 import { formDataToGasConfiguration } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkFeeDialog';
-import { getEffectiveGasPrice } from '../getEffectiveGasPrice';
-import { getCustomFeeRatio, type NetworkFeeQuote } from '../getNetworkFeeForSpeed';
-import { formatNetworkFee } from '../formatNetworkFee';
+import { getEffectiveGasPrice } from './getEffectiveGasPrice';
+import { getCustomFeeRatio, type NetworkFeeQuote } from './getNetworkFeeForSpeed';
+import { formatNetworkFee } from './formatNetworkFee';
 
 const EIP1559_FALLBACK = {
   priorityFee: '1.5',
