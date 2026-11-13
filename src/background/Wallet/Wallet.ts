@@ -69,7 +69,6 @@ import { getWalletNameFlagsByOrigin } from 'src/shared/preferences-helpers';
 import type {
   MessageContextParams,
   TransactionContextParams,
-  TransactionFormedContext,
 } from 'src/shared/types/SignatureContextParams';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { Networks } from 'src/modules/networks/Networks';
@@ -88,16 +87,7 @@ import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { referralProgramService } from 'src/modules/referral-program/ReferralProgramService.background';
-import type { BannerClickedParams, ButtonClickedParams } from 'src/shared/types/button-events';
-import type { AssetVisibilityChangedParams } from 'src/shared/types/asset-events';
-import type {
-  PerpsButtonPressedParams,
-  PerpsPositionActionParams,
-  PerpsScreenViewedParams,
-} from 'src/shared/types/perps-events';
-import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
 import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
-import type { ConfidentialAnalyticsEvent } from 'src/shared/types/confidential-events';
 import { signTypedData } from 'src/modules/ethereum/message-signing/signTypedData';
 import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
 import {
@@ -117,8 +107,8 @@ import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
-import type { AssetClickedParams, DaylightEventParams, ScreenViewParams } from '../events';
-import { emitter } from '../events';
+import { emitUiAnalyticsEvent, emitter } from '../events';
+import type { UiAnalyticsEvent } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { lastUsedAddressStore } from '../user-activity';
@@ -1778,110 +1768,14 @@ export class Wallet {
     return this.record?.transactions || [];
   }
 
-  async buttonClicked({ context, params }: WalletMethodParams<ButtonClickedParams>) {
+  async trackUiEvent({ context, params }: WalletMethodParams<UiAnalyticsEvent>) {
     this.verifyInternalOrigin(context);
-    emitter.emit('buttonClicked', params);
-  }
-
-  async networkFeeLevelChanged({
-    context,
-    params,
-  }: WalletMethodParams<NetworkFeeLevelChangedParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('networkFeeLevelChanged', params);
-  }
-
-  async bannerClicked({ context, params }: WalletMethodParams<BannerClickedParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('bannerClicked', params);
-  }
-
-  async assetVisibilityChanged({
-    context,
-    params,
-  }: WalletMethodParams<AssetVisibilityChangedParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('assetVisibilityChanged', params);
-  }
-
-  async perpsScreenViewed({ context, params }: WalletMethodParams<PerpsScreenViewedParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('perpsScreenViewed', params);
-  }
-
-  async confidentialAnalyticsEvent({
-    context,
-    params,
-  }: WalletMethodParams<ConfidentialAnalyticsEvent>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('confidentialAnalyticsEvent', params);
-  }
-
-  async perpsButtonPressed({ context, params }: WalletMethodParams<PerpsButtonPressedParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('perpsButtonPressed', params);
-  }
-
-  async perpsPositionAction({ context, params }: WalletMethodParams<PerpsPositionActionParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('perpsPositionAction', params);
-  }
-
-  async assetClicked({ context, params }: WalletMethodParams<AssetClickedParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('assetClicked', params);
-  }
-
-  async cloudflareChallengeIssued({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('cloudflareChallengeIssued');
-  }
-
-  async passkeyLoginEnabled({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('passkeyLoginEnabled');
-  }
-
-  async passkeyLoginDisabled({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('passkeyLoginDisabled');
-  }
-
-  async passwordChangeSuccess({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('passwordChangeSuccess');
-  }
-
-  async passwordChangeError({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('passwordChangeError');
-  }
-
-  async mnemonicRestorationShown({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('mnemonicRestorationShown');
-  }
-
-  async mnemonicRestorationSuccess({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('mnemonicRestorationSuccess');
-  }
-
-  async mnemonicRestorationError({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('mnemonicRestorationError');
+    emitUiAnalyticsEvent(params);
   }
 
   async reportLedgerError({ context, params }: WalletMethodParams<{ errorMessage: string }>) {
     this.verifyInternalOrigin(context);
     emitter.emit('reportLedgerError', params.errorMessage);
-  }
-
-  async screenView({ context, params }: WalletMethodParams<ScreenViewParams>) {
-    // NOTE: maybe consider adding a more generic method, e.g.:
-    // walletPort.request('sendEvent', { event_name, params }).
-    this.verifyInternalOrigin(context);
-    emitter.emit('screenView', params);
   }
 
   async quoteError({ context, params }: WalletMethodParams<QuoteErrorContext>) {
@@ -1891,21 +1785,6 @@ export class Wallet {
       id: createChain(params.inputChain),
     });
     emitter.emit('quoteError', params, mode === 'default' ? 'mainnet' : 'testnet');
-  }
-
-  async transactionFormed({ context, params }: WalletMethodParams<TransactionFormedContext>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('transactionFormed', params);
-  }
-
-  async unlockedAppOpened({ context }: WalletMethodParams) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('unlockedAppOpened');
-  }
-
-  async daylightAction({ context, params }: WalletMethodParams<DaylightEventParams>) {
-    this.verifyInternalOrigin(context);
-    emitter.emit('daylightAction', params);
   }
 
   async blockOriginWithWarning({ params: { origin } }: WalletMethodParams<{ origin: string }>) {

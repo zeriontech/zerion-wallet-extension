@@ -242,11 +242,11 @@ export function MnemonicPhraseRestoration() {
       });
     },
     onSuccess: () => {
-      walletPort.request('mnemonicRestorationSuccess');
+      walletPort.request('trackUiEvent', { name: 'mnemonicRestorationSuccess' });
       setView('success');
     },
     onError: () => {
-      walletPort.request('mnemonicRestorationError');
+      walletPort.request('trackUiEvent', { name: 'mnemonicRestorationError' });
     },
     onSettled: () => {
       zeroizeAfterSubmission();
@@ -261,7 +261,7 @@ export function MnemonicPhraseRestoration() {
         return;
       }
       dialog.showModal();
-      walletPort.request('mnemonicRestorationShown');
+      walletPort.request('trackUiEvent', { name: 'mnemonicRestorationShown' });
     });
     return unbind;
   }, []);

@@ -317,19 +317,6 @@ function trackAppEvents({ account }: { account: Account }) {
   );
 
   emitter.on(
-    'daylightAction',
-    gated(async ({ event_name, ...data }) => {
-      const params = createParams({
-        request_name: 'daylight_action',
-        wallet_address: data.address,
-        event_name,
-        ...data,
-      });
-      sendToMetabase('daylight_action', params);
-    }),
-  );
-
-  emitter.on(
     'globalError',
     gated(async ({ name, message }) => {
       const params = createParams({

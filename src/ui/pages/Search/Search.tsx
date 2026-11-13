@@ -385,10 +385,13 @@ export function Search() {
   const handleFungibleClick = useCallback(
     (fungibleId: string) => {
       walletPort.request('addRecentSearch', { fungibleId });
-      walletPort.request('assetClicked', {
-        assetId: fungibleId,
-        pathname,
-        section: 'Search',
+      walletPort.request('trackUiEvent', {
+        name: 'assetClicked',
+        data: {
+          assetId: fungibleId,
+          pathname,
+          section: 'Search',
+        },
       });
     },
     [pathname],

@@ -12,7 +12,6 @@ type MetabaseEvent =
   | 'signed_transaction'
   | 'swap_form_filled_out'
   | 'client_error'
-  | 'daylight_action'
   | 'custom_evm_network_created'
   | 'network_search'
   | 'error_screen_view'

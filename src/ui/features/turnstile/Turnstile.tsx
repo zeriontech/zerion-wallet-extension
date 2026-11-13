@@ -57,7 +57,7 @@ export function TurnstileTokenHandler() {
   useEffect(() => {
     return emitter.on('openTurnstile', () => {
       setShowDialog(true);
-      walletPort.request('cloudflareChallengeIssued');
+      walletPort.request('trackUiEvent', { name: 'cloudflareChallengeIssued' });
     });
   }, []);
 
