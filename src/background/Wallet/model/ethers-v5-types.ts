@@ -2,10 +2,14 @@
  * EthersV5* types descriptions are copied literally from ethers@v5
  * We need to preserve them because we used these values for persistence
  */
-import { BigNumber as EthersV5BigNumber } from '@ethersproject/bignumber';
+import {
+  isLegacyBigNumber,
+  legacyBigNumberToStoredHex,
+  toLegacyBigNumber,
+  type LegacyBigNumber,
+} from 'src/shared/units/legacyBigNumber';
 import type { ethers } from 'ethers';
 import type { SerializableTransactionResponse } from 'src/modules/ethereum/types/TransactionResponsePlain';
-import { invariant } from 'src/shared/invariant';
 import type { PartiallyOptional } from 'src/shared/type-utils/PartiallyOptional';
 import { valueToHex } from 'src/shared/units/valueToHex';
 
@@ -41,14 +45,14 @@ interface EthersV5Transaction {
   /** Can it be `number | EthersV5BigNumber`? */
   nonce: number;
 
-  gasLimit: EthersV5BigNumber | string;
-  gasPrice?: EthersV5BigNumber | string;
+  gasLimit: LegacyBigNumber | string;
+  gasPrice?: LegacyBigNumber | string;
 
   data: string;
-  value: EthersV5BigNumber | string;
+  value: LegacyBigNumber | string;
   // Even though chainId is typed as `number` in ethers@v5: https://github.com/ethers-io/ethers.js/blob/0bfa7f497dc5793b66df7adfb42c6b846c51d794/packages/transactions/src.ts/index.ts#L66
   // It can actually be BigNumberish (see actual storage sample above)
-  chainId: EthersV5BigNumber | number;
+  chainId: LegacyBigNumber | number;
 
   r?: string;
   s?: string;
@@ -58,8 +62,8 @@ interface EthersV5Transaction {
   type?: number | null;
 
   // EIP-1559; Type 2
-  maxPriorityFeePerGas?: EthersV5BigNumber | string;
-  maxFeePerGas?: EthersV5BigNumber | string;
+  maxPriorityFeePerGas?: LegacyBigNumber | string;
+  maxFeePerGas?: LegacyBigNumber | string;
 }
 
 export interface EthersV5TransactionResponse extends EthersV5Transaction {
@@ -76,15 +80,11 @@ export interface EthersV5TransactionResponse extends EthersV5Transaction {
   raw?: string;
 }
 
-function fromEthersBigNumber(x: EthersV5BigNumber | number | string | bigint | null | undefined) {
+function fromEthersBigNumber(x: LegacyBigNumber | number | string | bigint | null | undefined) {
   if (x == null) {
     return null;
   }
-  if (EthersV5BigNumber.isBigNumber(x)) {
-    return BigInt(EthersV5BigNumber.from(x).toHexString());
-  } else {
-    return BigInt(x);
-  }
+  return isLegacyBigNumber(x) ? BigInt(legacyBigNumberToStoredHex(x)) : BigInt(x);
 }
 
 export function v5ToPlainTransactionResponse(
@@ -137,7 +137,7 @@ export function txPlainToEthersV5TransactionResponse(
   value: SerializableTransactionResponse,
 ): EthersV5TransactionResponse {
   return {
-    chainId: EthersV5BigNumber.from(value.chainId),
+    chainId: toLegacyBigNumber(value.chainId),
     data: value.data,
     from: value.from,
     gasLimit: value.gasLimit,
@@ -150,36 +150,6 @@ export function txPlainToEthersV5TransactionResponse(
     maxFeePerGas: value.maxFeePerGas ?? undefined,
     maxPriorityFeePerGas: value.maxPriorityFeePerGas ?? undefined,
     to: value.to ?? undefined,
-    type: value.type,
-  };
-}
-
-export function toEthersV5TransactionResponse(
-  /**
-   * Can't trust TransactionResponse type because ethers@v6 is buggy:
-   * https://github.com/zksync-sdk/zksync-ethers/issues/224
-   * https://github.com/ethers-io/ethers.js/issues/4891
-   */
-  value: Partial<ethers.TransactionResponse>,
-): EthersV5TransactionResponse {
-  invariant(value.chainId, 'chainId is required');
-  invariant(value.from, 'from is required');
-  invariant(value.hash, 'hash is required');
-  invariant(value.nonce, 'nonce is required');
-  return {
-    chainId: Number(value.chainId),
-    data: value.data || '',
-    from: value.from,
-    to: value.to ?? undefined,
-    gasLimit: value.gasLimit?.toString() ?? '0',
-    hash: value.hash,
-    nonce: value.nonce,
-    value: value.value?.toString() ?? '0',
-    blockHash: value.blockHash ?? undefined,
-    blockNumber: value.blockNumber ?? undefined,
-    gasPrice: value.gasPrice?.toString(),
-    maxFeePerGas: value.maxFeePerGas?.toString(),
-    maxPriorityFeePerGas: value.maxPriorityFeePerGas?.toString(),
     type: value.type,
   };
 }

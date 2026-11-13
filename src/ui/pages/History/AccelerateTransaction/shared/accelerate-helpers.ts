@@ -1,6 +1,5 @@
 import { produce } from 'immer';
 import type { BigNumberish } from 'ethers';
-import { BigNumber } from '@ethersproject/bignumber';
 import omit from 'lodash/omit';
 import type {
   AnyAddressAction,
@@ -11,6 +10,7 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import type { TransactionObject } from 'src/modules/ethereum/transactions/types';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { valueToHex } from 'src/shared/units/valueToHex';
+import { isLegacyBigNumber, legacyBigNumberToStoredHex } from 'src/shared/units/legacyBigNumber';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 
 export function fromAddressActionTransaction(
@@ -40,11 +40,10 @@ export function fromAddressActionTransaction(
   for (const untypedKey in tx) {
     const key = untypedKey as keyof typeof tx;
     const value = tx[key];
-    if (BigNumber.isBigNumber(value)) {
-      // TODO: Refactor to BigInt,
-      // NOTE: handle cases for { "_hex": "0x06a11e3d", "_isBigNumber": true }
+    if (isLegacyBigNumber(value)) {
+      // stored transactions can hold { "_hex": "0x06a11e3d", "_isBigNumber": true }
       // @ts-ignore
-      tx[key] = BigNumber.from(value).toHexString();
+      tx[key] = legacyBigNumberToStoredHex(value);
     }
   }
   return tx as IncomingTransaction;
