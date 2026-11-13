@@ -1,0 +1,4694 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: defaults tabId to null when the context has none 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": null,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": null,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: does not send clientScope when the parameters omit it 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: opens a dialog for a hardware wallet without bluetooth 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": 800,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: opens a dialog for a software wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: opens a dialog when the transaction slot is the number 0 (not rejected) 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "origin": "https://dapp.example",
+        "transaction": "0",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: opens a tab for a bluetooth hardware wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": 800,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": "tab",
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: opens one dialog and returns what the user resolves 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: opens the signing dialog when the site is connected to the picked wallet but not the previous one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: pins whether the missing transaction or the connection check runs first 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: pins whether the permission check uses the parameters' address or the current one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0x2222222222222222222222222222222222222222",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: pins which error wins when the site is not connected and the parameters are invalid 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: pins which error wins when there is no current wallet and the site is not connected 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses a null transaction 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "InvalidParams",
+      "code": -32602,
+      "message": "Invalid params",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses an empty params array 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "InvalidParams",
+      "code": -32602,
+      "message": "Invalid params",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses when the context has no origin 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": undefined,
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "This method requires context",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses when the site is connected to the wallet from before the switch but not the picked one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses when the site is not connected 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses when the user dismisses the ecosystem switch 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejected",
+      "code": 4001,
+      "message": "User rejected ecosystem wallet switch",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses when the user dismisses the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "throws": {
+      "class": "UserRejectedTxSignature",
+      "code": 4001,
+      "message": "Tx Signature: User denied transaction signature.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: refuses when there is no current wallet 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: rejects an ecosystem switch that resolves a wrong-ecosystem address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [
+    {
+      "class": "Error",
+      "message": "Selected address does not match required ecosystem",
+    },
+  ],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: switches to the wallet the user picks and then opens the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "returns": "0xtransaction-hash",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_sendTransaction: tells the window to reject when the dapp is phishing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "origin": "https://dapp.example",
+        "transaction": "{"from":"0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1","to":"0x2222222222222222222222222222222222222222","value":"0x1"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [
+    {
+      "error": {
+        "class": "UserRejected",
+        "code": 4001,
+        "message": "Malicious DApp",
+      },
+      "event": "reject",
+      "id": "window-1",
+    },
+  ],
+  "ensureTestnetModeForTx": [
+    {
+      "initiator": "https://dapp.example",
+      "tabId": 7,
+    },
+  ],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: accepts a stringified typed data payload 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: accepts an address in a different case 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: defaults tabId to null when the context has none 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": null,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: does not send clientScope when the parameters omit it 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "undefined",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: opens a dialog for a hardware wallet without bluetooth 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": 800,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: opens a dialog for a software wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: opens a tab for a bluetooth hardware wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": 800,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": "tab",
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: opens one dialog and returns what the user resolves 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: opens the signing dialog when the site is connected to the picked wallet but not the previous one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: passes a malformed typed data payload through unchanged 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":"not an object"}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: pins whether the address comparison or the connection check runs first 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: pins whether the permission check uses the parameters' address or the current one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0x2222222222222222222222222222222222222222",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: pins which error wins when the site is not connected and the parameters are invalid 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: pins which error wins when there is no current wallet and the site is not connected 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: refuses an address different from the current one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Address parameter is different from currently selected address. Expected: 0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1, received: 0x2222222222222222222222222222222222222222",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: refuses when the context has no origin 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": undefined,
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "This method requires context",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: refuses when the site is connected to the wallet from before the switch but not the picked one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: refuses when the site is not connected 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: refuses when the user dismisses the ecosystem switch 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejected",
+      "code": 4001,
+      "message": "User rejected ecosystem wallet switch",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: refuses when the user dismisses the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejectedTxSignature",
+      "code": 4001,
+      "message": "Tx Signature: User denied transaction signature.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: refuses when there is no current wallet 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: rejects an ecosystem switch that resolves a wrong-ecosystem address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [
+    {
+      "class": "Error",
+      "message": "Selected address does not match required ecosystem",
+    },
+  ],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: switches to the wallet the user picks and then opens the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > eth_signTypedData_v4: tells the window to reject when the dapp is phishing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signTypedData",
+      "search": {
+        "method": "eth_signTypedData_v4",
+        "origin": "https://dapp.example",
+        "typedDataRaw": "{"types":{"EIP712Domain":[],"Mail":[{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Test","version":"1"},"message":{"contents":"hello"}}",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [
+    {
+      "error": {
+        "class": "UserRejected",
+        "code": 4001,
+        "message": "Malicious DApp",
+      },
+      "event": "reject",
+      "id": "window-1",
+    },
+  ],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: accepts the parameters in the spec order with a lower-case address 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: defaults tabId to null when the context has none 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": null,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: does not send clientScope when the parameters omit it 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Address is required for "personal_sign" method. Received [hello, undefined]",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: opens a dialog for a hardware wallet without bluetooth 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": 800,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: opens a dialog for a software wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: opens a tab for a bluetooth hardware wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": 800,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": "tab",
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: opens one dialog and returns what the user resolves 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: opens the signing dialog when the site is connected to the picked wallet but not the previous one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: pins whether the address comparison or the connection check runs first 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Address parameter is different from currently selected address. Received: 0x2222222222222222222222222222222222222222",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: pins whether the permission check uses the parameters' address or the current one 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Address parameter is different from currently selected address. Received: 0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: pins which error wins when the site is not connected and the parameters are invalid 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "InvalidParams",
+      "code": -32602,
+      "message": "Invalid params",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: pins which error wins when there is no current wallet and the site is not connected 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "InvalidParams",
+      "code": -32602,
+      "message": "Invalid params",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses an address different from the current one 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Address parameter is different from currently selected address. Received: 0x2222222222222222222222222222222222222222",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when neither parameter is an address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Address is required for "personal_sign" method. Received [hello, world]",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when the context has no origin 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": undefined,
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "This method requires context",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when the site is connected to the wallet from before the switch but not the picked one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when the site is not connected 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when the user dismisses the ecosystem switch 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejected",
+      "code": 4001,
+      "message": "User rejected ecosystem wallet switch",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when the user dismisses the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejectedTxSignature",
+      "code": 4001,
+      "message": "Tx Signature: User denied transaction signature.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when there are no parameters 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "InvalidParams",
+      "code": -32602,
+      "message": "Invalid params",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: refuses when there is no current wallet 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: rejects an ecosystem switch that resolves a wrong-ecosystem address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [
+    {
+      "class": "Error",
+      "message": "Selected address does not match required ecosystem",
+    },
+  ],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: switches to the wallet the user picks and then opens the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "evm",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "0xsignature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > personal_sign: tells the window to reject when the dapp is phishing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "0xc3A6672F5c9Ef31E5a086B1C80Ba1Ac73F95Cbb1",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "hello",
+        "method": "personal_sign",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [
+    {
+      "error": {
+        "class": "UserRejected",
+        "code": 4001,
+        "message": "Malicious DApp",
+      },
+      "event": "reject",
+      "id": "window-1",
+    },
+  ],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: defaults tabId to null when the context has none 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": null,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: does not send clientScope when the parameters omit it 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: opens a dialog for a hardware wallet without bluetooth 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: opens a dialog for a software wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: opens a dialog for an empty batch 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "[]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: opens a dialog when the batch is missing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "undefined",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: opens a tab for a bluetooth hardware wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": "tab",
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: opens one dialog and returns what the user resolves 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: opens the signing dialog when the site is connected to the picked wallet but not the previous one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: pins which error wins when the site is not connected and the parameters are invalid 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: pins which error wins when there is no current wallet and the site is not connected 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: refuses when the context has no origin 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": undefined,
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "This method requires context",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: refuses when the site is connected to the wallet from before the switch but not the picked one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: refuses when the site is not connected 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: refuses when the user dismisses the ecosystem switch 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejected",
+      "code": 4001,
+      "message": "User rejected ecosystem wallet switch",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: refuses when the user dismisses the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejectedTxSignature",
+      "code": 4001,
+      "message": "Tx Signature: User denied transaction signature.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: refuses when there is no current wallet 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: rejects an ecosystem switch that resolves a wrong-ecosystem address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [
+    {
+      "class": "Error",
+      "message": "Selected address does not match required ecosystem",
+    },
+  ],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: switches to the wallet the user picks and then opens the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": [
+      "sol-signature",
+    ],
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAllTransactions: tells the window to reject when the dapp is phishing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAllTransactions",
+        "origin": "https://dapp.example",
+        "transactions": "["AQID","BAUG"]",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [
+    {
+      "error": {
+        "class": "UserRejected",
+        "code": 4001,
+        "message": "Malicious DApp",
+      },
+      "event": "reject",
+      "id": "window-1",
+    },
+  ],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: defaults tabId to null when the context has none 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": null,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: does not send clientScope when the parameters omit it 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: opens a dialog for a hardware wallet without bluetooth 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: opens a dialog for a software wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: opens a dialog when txBase64 is missing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "undefined",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: opens a dialog when txBase64 is not a string 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "42",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: opens a tab for a bluetooth hardware wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": "tab",
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: opens one dialog and returns what the user resolves 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: opens the signing dialog when the site is connected to the picked wallet but not the previous one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: pins which error wins when the site is not connected and the parameters are invalid 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: pins which error wins when there is no current wallet and the site is not connected 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: refuses when the context has no origin 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": undefined,
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "This method requires context",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: refuses when the site is connected to the wallet from before the switch but not the picked one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: refuses when the site is not connected 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: refuses when the user dismisses the ecosystem switch 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejected",
+      "code": 4001,
+      "message": "User rejected ecosystem wallet switch",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: refuses when the user dismisses the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejectedTxSignature",
+      "code": 4001,
+      "message": "Tx Signature: User denied transaction signature.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: refuses when there is no current wallet 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: rejects an ecosystem switch that resolves a wrong-ecosystem address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [
+    {
+      "class": "Error",
+      "message": "Selected address does not match required ecosystem",
+    },
+  ],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: switches to the wallet the user picks and then opens the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signAndSendTransaction: tells the window to reject when the dapp is phishing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signAndSendTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [
+    {
+      "error": {
+        "class": "UserRejected",
+        "code": 4001,
+        "message": "Malicious DApp",
+      },
+      "event": "reject",
+      "id": "window-1",
+    },
+  ],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: defaults tabId to null when the context has none 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": null,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: does not send clientScope when the parameters omit it 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: opens a dialog for a hardware wallet without bluetooth 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: opens a dialog for a software wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: opens a dialog when the message is empty 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: opens a tab for a bluetooth hardware wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": "tab",
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: opens one dialog and returns what the user resolves 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: opens the signing dialog when the site is connected to the picked wallet but not the previous one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: pins which error wins when the site is not connected and the parameters are invalid 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: pins which error wins when there is no current wallet and the site is not connected 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: refuses when the context has no origin 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": undefined,
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "This method requires context",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: refuses when the site is connected to the wallet from before the switch but not the picked one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: refuses when the site is not connected 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: refuses when the user dismisses the ecosystem switch 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejected",
+      "code": 4001,
+      "message": "User rejected ecosystem wallet switch",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: refuses when the user dismisses the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejectedTxSignature",
+      "code": 4001,
+      "message": "Tx Signature: User denied transaction signature.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: refuses when there is no current wallet 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: rejects an ecosystem switch that resolves a wrong-ecosystem address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [
+    {
+      "class": "Error",
+      "message": "Selected address does not match required ecosystem",
+    },
+  ],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: switches to the wallet the user picks and then opens the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: tells the window to reject when the dapp is phishing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/signMessage",
+      "search": {
+        "message": "0x68656c6c6f",
+        "method": "signMessage",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [
+    {
+      "error": {
+        "class": "UserRejected",
+        "code": 4001,
+        "message": "Malicious DApp",
+      },
+      "event": "reject",
+      "id": "window-1",
+    },
+  ],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: throws when the message is missing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "DOMException",
+      "message": "InvalidCharacterError",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signMessage: throws when the message is not base64 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "DOMException",
+      "message": "InvalidCharacterError",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: defaults tabId to null when the context has none 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": null,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: does not send clientScope when the parameters omit it 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: opens a dialog for a hardware wallet without bluetooth 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: opens a dialog for a software wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: opens a dialog when txBase64 is missing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "undefined",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: opens a dialog when txBase64 is not a string 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "42",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: opens a tab for a bluetooth hardware wallet 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": "tab",
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: opens one dialog and returns what the user resolves 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: opens the signing dialog when the site is connected to the picked wallet but not the previous one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: pins which error wins when the site is not connected and the parameters are invalid 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: pins which error wins when there is no current wallet and the site is not connected 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: refuses when the context has no origin 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": undefined,
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "This method requires context",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: refuses when the site is connected to the wallet from before the switch but not the picked one 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: refuses when the site is not connected 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "OriginNotAllowed",
+      "code": 4100,
+      "message": "Origin Not Allowed: Try calling eth_requestAccounts first.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: refuses when the user dismisses the ecosystem switch 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejected",
+      "code": 4001,
+      "message": "User rejected ecosystem wallet switch",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: refuses when the user dismisses the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "UserRejectedTxSignature",
+      "code": 4001,
+      "message": "Tx Signature: User denied transaction signature.",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: refuses when there is no current wallet 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "throws": {
+      "class": "Error",
+      "message": "Wallet is not initialized",
+    },
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: rejects an ecosystem switch that resolves a wrong-ecosystem address 1`] = `
+{
+  "allowedOrigin": [],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [
+    {
+      "class": "Error",
+      "message": "Selected address does not match required ecosystem",
+    },
+  ],
+  "setCurrentAddress": [],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: switches to the wallet the user picks and then opens the signing dialog 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:ecosystem-switch:<random>",
+      "route": "/selectConnectedWallet",
+      "search": {
+        "ecosystem": "solana",
+        "origin": "https://dapp.example",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "returns": "sol-signature",
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [
+    "11111111111111111111111111111111",
+  ],
+}
+`;
+
+exports[`PublicController signing methods > recorded behaviour of every method and refusal > sol_signTransaction: tells the window to reject when the dapp is phishing 1`] = `
+{
+  "allowedOrigin": [
+    {
+      "address": "11111111111111111111111111111111",
+      "origin": "https://dapp.example",
+    },
+  ],
+  "dialogs": [
+    {
+      "height": undefined,
+      "requestId": "https://dapp.example:request-1",
+      "route": "/sendTransaction",
+      "search": {
+        "clientScope": "Swap",
+        "ecosystem": "solana",
+        "method": "signTransaction",
+        "origin": "https://dapp.example",
+        "transaction": "AQID",
+      },
+      "tabId": 7,
+      "type": undefined,
+    },
+  ],
+  "emitted": [
+    {
+      "error": {
+        "class": "UserRejected",
+        "code": 4001,
+        "message": "Malicious DApp",
+      },
+      "event": "reject",
+      "id": "window-1",
+    },
+  ],
+  "ensureTestnetModeForTx": [],
+  "outcome": {
+    "pending": true,
+  },
+  "resolutionErrors": [],
+  "setCurrentAddress": [],
+}
+`;
